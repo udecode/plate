@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react';
-
 import { useHydrateAtoms } from 'jotai/utils';
+import type { ReactNode } from 'react';
 
 export const HydrateAtoms = ({
   children,

@@ -9,6 +9,7 @@ import {
   property,
   schema,
 } from '@platejs/plite';
+
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string): Element => ({
@@ -74,7 +75,7 @@ describe('read/update contract', () => {
 
     const commit = editor.read((state) => state.lastCommit());
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.tags, ['history-push', 'paste']);
   });

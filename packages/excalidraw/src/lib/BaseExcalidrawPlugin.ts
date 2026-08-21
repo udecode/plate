@@ -1,5 +1,4 @@
 import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
-
 import { defineBasePlugin } from '@platejs/core';
 import {
   type ElementOf,

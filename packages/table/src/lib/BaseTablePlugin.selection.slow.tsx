@@ -2,12 +2,6 @@
 
 import assert from 'node:assert/strict';
 
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from './BaseTablePlugin';
-import type { TableCellSelection, TableDefinition } from './BaseTablePlugin';
 import { defineBasePlugin } from '@platejs/core';
 import {
   createEditorView,
@@ -16,13 +10,17 @@ import {
   target,
   TextApi,
 } from '@platejs/plite';
-import type { Element } from '@platejs/plite';
-import type { Selection } from '@platejs/plite';
+import type { Element, Selection } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 
 import { createTestTableEditor } from './__tests__/getTestTablePlugins';
-
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from './BaseTablePlugin';
+import type { TableCellSelection, TableDefinition } from './BaseTablePlugin';
 import {
   readTableSelection,
   readTableSelectionViewMetrics,

@@ -45,7 +45,7 @@
       "migrationNotes": [],
       "targets": ["editor", "editor-static"],
       "source": {
-        "line": 13,
+        "line": 28,
         "row": 1,
         "legacyRelease": {
           "date": "2026-06-15",

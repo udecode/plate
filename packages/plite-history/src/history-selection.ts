@@ -10,6 +10,7 @@ import {
   getRangeRoot as getRangeRootMeta,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
+
 import type { Batch } from './history';
 
 export const clonePoint = (point: Point, root?: string): Point => {

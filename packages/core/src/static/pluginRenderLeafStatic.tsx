@@ -1,7 +1,11 @@
+import clsx from 'clsx';
 import React from 'react';
 
-import clsx from 'clsx';
-
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
 import type {
   AnyBasePlugin,
   AnyBasePluginPortal,
@@ -9,12 +13,6 @@ import type {
   BaseEditor,
   StaticRenderLeafProps as RenderLeafProps,
 } from '../lib';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../internal/plugin/compilePlateModel';
-
 import { PliteLeaf } from './components';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 

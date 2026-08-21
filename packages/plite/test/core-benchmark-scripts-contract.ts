@@ -116,7 +116,7 @@ const compareBenchmarkSummaryPaths = [
 
 const readBenchmarkTargetCommands = () => {
   const targetRegistry = JSON.parse(
-    readFileSync(benchmarkTargetsPath, 'utf8')
+    readFileSync(benchmarkTargetsPath, 'utf-8')
   ) as {
     targets: Array<{ command: string }>;
   };
@@ -224,11 +224,11 @@ const extractConstFunctionSource = (
 };
 
 const summarizeEmptySamplesFromPath = (path: string) => {
-  const source = extractSummarizeSource(readFileSync(path, 'utf8'));
+  const source = extractSummarizeSource(readFileSync(path, 'utf-8'));
   const round = (value: number) => Number(value.toFixed(2));
-  const summarize = Function('round', `${source}; return summarize`)(round) as (
-    samples: number[]
-  ) => BenchmarkSummary;
+  const summarize = new Function('round', `${source}; return summarize`)(
+    round
+  ) as (samples: number[]) => BenchmarkSummary;
 
   return summarize([]);
 };
@@ -239,15 +239,14 @@ const emptySummaryFromPath = <TSummary>(
   dependencyName?: string
 ) => {
   const source = extractConstFunctionSource(
-    readFileSync(path, 'utf8'),
+    readFileSync(path, 'utf-8'),
     functionName,
     dependencyName
   );
   const round = (value: number) => Number(value.toFixed(2));
-  const summarize = Function(
-    'round',
-    `${source}; return ${functionName}`
-  )(round) as (samples: number[]) => TSummary;
+  const summarize = new Function('round', `${source}; return ${functionName}`)(
+    round
+  ) as (samples: number[]) => TSummary;
 
   return summarize([]);
 };
@@ -261,7 +260,7 @@ describe('core benchmark scripts contract', () => {
           import.meta.url
         )
       ),
-      'utf8'
+      'utf-8'
     );
     const stats = (await import(
       new URL(
@@ -340,10 +339,10 @@ describe('core benchmark scripts contract', () => {
       samples: number[];
     }>(clipboardLargePayloadPath, 'summarizeHeapDeltas');
     const meanSource = extractConstFunctionSource(
-      readFileSync(transactionExecutionPath, 'utf8'),
+      readFileSync(transactionExecutionPath, 'utf-8'),
       'mean'
     );
-    const mean = Function(`${meanSource}; return mean`) as () => (
+    const mean = new Function(`${meanSource}; return mean`) as () => (
       samples: number[]
     ) => number;
 
@@ -396,7 +395,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('samples retained history heap after a post-run GC pass', () => {
-    const source = readFileSync(historyRetainedMemoryPath, 'utf8');
+    const source = readFileSync(historyRetainedMemoryPath, 'utf-8');
     const measureStart = source.indexOf('const measureRetainedLane');
     const measureEnd = source.indexOf('const measureFullDocumentReplace');
     const measureSource = source.slice(measureStart, measureEnd);
@@ -418,7 +417,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('prepares the move selection document before timing movement', () => {
-    const source = readFileSync(textSelectionPath, 'utf8');
+    const source = readFileSync(textSelectionPath, 'utf-8');
     const setupStart = source.indexOf('const createMoveEditor');
     const setupEnd = source.indexOf('const write =');
     const setupSource = source.slice(setupStart, setupEnd);
@@ -437,7 +436,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('runs active typing warmups through the measured typing path', () => {
-    const source = readFileSync(activeTypingBreakdownPath, 'utf8');
+    const source = readFileSync(activeTypingBreakdownPath, 'utf-8');
     const measureStart = source.indexOf('const measureScenario');
     const measureEnd = source.indexOf('const measureTyping');
     const measureSource = source.slice(measureStart, measureEnd);
@@ -469,7 +468,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps the core huge-document compare assertions out of snapshot materialization', () => {
-    const source = readFileSync(hugeDocumentComparePath, 'utf8');
+    const source = readFileSync(hugeDocumentComparePath, 'utf-8');
     const getChildrenStart = source.indexOf('const getChildren =');
     const getSelectionStart = source.indexOf('const getSelection =');
     const selectStart = source.indexOf('const select =');
@@ -490,7 +489,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps the core huge-document history lane subscribed to snapshots', () => {
-    const source = readFileSync(hugeDocumentComparePath, 'utf8');
+    const source = readFileSync(hugeDocumentComparePath, 'utf-8');
 
     assert.match(source, /const selectAllDeleteTypeUndo = \(\) =>/);
     assert.match(source, /subscribeSnapshot\(editor\)/);
@@ -500,7 +499,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('allows current-only huge-document core profiling without legacy compare cost', () => {
-    const source = readFileSync(hugeDocumentComparePath, 'utf8');
+    const source = readFileSync(hugeDocumentComparePath, 'utf-8');
 
     assert.match(source, /CORE_HUGE_BENCH_CURRENT_ONLY/);
     assert.match(source, /const legacyPackageManager = currentOnly/);
@@ -509,10 +508,10 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps full huge-document core budget evidence separate from legacy ratios', () => {
-    const source = readFileSync(hugeDocumentFullPath, 'utf8');
-    const legacySource = readFileSync(legacyReactComparePath, 'utf8');
-    const overlaysSource = readFileSync(hugeDocumentOverlaysPath, 'utf8');
-    const activeTypingSource = readFileSync(activeTypingBreakdownPath, 'utf8');
+    const source = readFileSync(hugeDocumentFullPath, 'utf-8');
+    const legacySource = readFileSync(legacyReactComparePath, 'utf-8');
+    const overlaysSource = readFileSync(hugeDocumentOverlaysPath, 'utf-8');
+    const activeTypingSource = readFileSync(activeTypingBreakdownPath, 'utf-8');
 
     assert.match(source, /const coreIterations = Number\(/);
     assert.match(source, /HUGE_DOC_FULL_CORE_ITERATIONS/);
@@ -757,14 +756,14 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps browser long-task attribution claim width explicit', () => {
-    const source = readFileSync(hugeDocumentBrowserTracePath, 'utf8');
+    const source = readFileSync(hugeDocumentBrowserTracePath, 'utf-8');
     const helperSource = extractConstFunctionSource(
       source,
       'summarizeLongTaskAttributionTotals',
       'summarizeAttributionTotals'
     );
     const round = (value: number) => Number(value.toFixed(2));
-    const summarizeLongTaskAttributionTotals = Function(
+    const summarizeLongTaskAttributionTotals = new Function(
       'round',
       `${helperSource}; return summarizeLongTaskAttributionTotals`
     )(round) as (
@@ -824,7 +823,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps huge-document burst typing normalized per intent', () => {
-    const source = readFileSync(hugeDocumentBrowserTracePath, 'utf8');
+    const source = readFileSync(hugeDocumentBrowserTracePath, 'utf-8');
 
     assert.match(
       source,
@@ -1097,7 +1096,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps the huge-document cross-editor browser benchmark guarded by external build checks', () => {
-    const source = readFileSync(hugeDocumentCrossEditorPath, 'utf8');
+    const source = readFileSync(hugeDocumentCrossEditorPath, 'utf-8');
 
     assert.match(
       source,
@@ -1141,7 +1140,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('runs the observation compare node traversal through legacy and v2 node APIs', () => {
-    const source = readFileSync(observationComparePath, 'utf8');
+    const source = readFileSync(observationComparePath, 'utf-8');
 
     assert.match(
       source,
@@ -1152,7 +1151,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps observation compare children reads out of snapshot materialization', () => {
-    const source = readFileSync(observationComparePath, 'utf8');
+    const source = readFileSync(observationComparePath, 'utf-8');
     const getChildrenStart = source.indexOf('const getChildren =');
     const insertTextStart = source.indexOf('const insertText =');
     const getChildrenSource = source.slice(getChildrenStart, insertTextStart);
@@ -1166,7 +1165,7 @@ describe('core benchmark scripts contract', () => {
   });
 
   it('keeps normalization compare children reads out of snapshot materialization', () => {
-    const source = readFileSync(normalizationComparePath, 'utf8');
+    const source = readFileSync(normalizationComparePath, 'utf-8');
     const getChildrenStart = source.indexOf('const getChildren =');
     const normalizeStart = source.indexOf('const normalizeEditor =');
     const getChildrenSource = source.slice(getChildrenStart, normalizeStart);

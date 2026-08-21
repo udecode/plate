@@ -1,6 +1,7 @@
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import { resolveEditableImplicitTarget } from './input-controller';
 import type { EditableInputController } from './input-state';
 import { writeTargetRuntime } from './runtime-mutation-state';

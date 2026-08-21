@@ -1,9 +1,10 @@
-import { act, render } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import {
   type Descendant,
   screenReaderAnnouncementEffect,
 } from '@platejs/plite';
+import { act, render } from '@testing-library/react';
+import type { ReactNode } from 'react';
+
 import {
   createReactEditor,
   Plite,

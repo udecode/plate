@@ -1,20 +1,18 @@
 'use client';
 
-import React from 'react';
-
-import type {
-  DropdownMenuItemProps,
-  DropdownMenuProps,
-} from '@radix-ui/react-dropdown-menu';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@platejs/basic-styles/react';
-
+import type {
+  DropdownMenuItemProps,
+  DropdownMenuProps,
+} from '@radix-ui/react-dropdown-menu';
 import { useComposedRef } from '@udecode/cn';
 import debounce from 'lodash/debounce.js';
 import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
 import { type PlateEditor, useEditor, useEditorSelector } from 'platejs/react';
+import React from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -233,7 +231,7 @@ export function FontColorToolbarButton({
 
   React.useEffect(() => {
     if (selectionDefined) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the mark color while menu focus clears editor selection.
+      // Preserve the mark color while menu focus clears editor selection.
       setSelectedColor(color);
     }
   }, [color, selectionDefined]);

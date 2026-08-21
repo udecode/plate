@@ -1,5 +1,7 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
+
 import {
   type BaseEditorOptions,
   type BasePluginInput,
@@ -8,6 +10,7 @@ import {
   defineBasePlugin,
   DebugPlugin,
 } from '@platejs/core';
+import { getPlateRuntime } from '@platejs/core/internal';
 import { pipeDecorate } from '@platejs/core/static/internal';
 import {
   type Element,
@@ -23,16 +26,15 @@ import {
 } from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
 import { PLUGINS } from '@platejs/utils';
+import { createLowlight } from 'lowlight';
+
 import {
   type CodeBlockElement,
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from './BaseCodeBlockPlugin';
-import assert from 'node:assert/strict';
-import { getPlateRuntime } from '@platejs/core/internal';
 import { CodeBlockRules } from './CodeBlockRules';
-import { createLowlight } from 'lowlight';
 
 const createBaseEditorForFixture = <const P extends readonly BasePluginInput[]>(
   options: Omit<BaseEditorOptions, 'plugins'> & {

@@ -1,19 +1,17 @@
 'use client';
 
-import * as React from 'react';
-
 import type { Alignment } from '@platejs/basic-styles';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { ElementApi } from 'platejs';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
 } from 'lucide-react';
+import { ElementApi } from 'platejs';
 import { useEditor, useSelectionFragmentProp } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,

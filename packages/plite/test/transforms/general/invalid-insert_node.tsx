@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import assert from 'node:assert/strict';
+
 import { jsx } from '../..';
 
 jsx;
-
-import assert from 'node:assert/strict';
 
 export const input = (
   <editor>

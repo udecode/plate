@@ -1,14 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getChildren as editorGetChildren,
-  getEditorSelectionRoot,
-  getSnapshot as editorGetSnapshot,
-  isEditor as editorIsEditor,
-  replace as editorReplace,
-  string as editorString,
-  subscribe as editorSubscribe,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -22,6 +13,16 @@ import {
   type SnapshotInput,
   type Value,
 } from '@platejs/plite';
+import {
+  getChildren as editorGetChildren,
+  getEditorSelectionRoot,
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+  string as editorString,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
+
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (
@@ -470,7 +471,7 @@ describe('plite public accessor + transaction boundary', () => {
     const header = createEditorView(runtime, { root: 'header' });
     const mainNodeKey = main.key([0]);
     const headerEntry = header.read.nodes.get([0]);
-    assert(headerEntry && NodeApi.isDescendant(headerEntry[0]));
+    assert.ok(headerEntry && NodeApi.isDescendant(headerEntry[0]));
     const headerNode = headerEntry[0];
     const canonicalHeaderNodeKey = runtime.key(headerNode);
     const headerNodeKey = header.key([0]);

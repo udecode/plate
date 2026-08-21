@@ -1,8 +1,15 @@
 #!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
 
 const root = process.cwd();
 const TEST_FILE_RE = /\.(?:spec|test)\.[cm]?[tj]sx?$/;
@@ -83,7 +90,7 @@ const getTestBatchLabel = (fileCount, batchSize) =>
 
 const packageTestTargets = packageSlugs.map((slug) => {
   const dir = join(root, 'packages', slug);
-  const { name } = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
+  const { name } = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8'));
 
   return {
     name,
@@ -133,7 +140,7 @@ const readGenericTypeConfig = (repoRoot, configPath) => {
   let config;
 
   try {
-    config = JSON.parse(readFileSync(configPath, 'utf8'));
+    config = JSON.parse(readFileSync(configPath, 'utf-8'));
   } catch (error) {
     throw new Error(`Invalid generic type config ${relativeConfigPath}.`, {
       cause: error,
@@ -186,7 +193,7 @@ const readGenericTypeConfig = (repoRoot, configPath) => {
     );
   }
 
-  const { name } = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+  const { name } = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
   if (typeof name !== 'string' || name.length === 0) {
     throw new Error(
@@ -231,7 +238,7 @@ const isTestFile = (fileName) =>
   TEST_FILE_RE.test(fileName) || CONTRACT_FILE_RE.test(fileName);
 
 const hasModuleMock = (file) =>
-  readFileSync(file, 'utf8').includes('mock.module(');
+  readFileSync(file, 'utf-8').includes('mock.module(');
 
 const collectTestFiles = (dir) => {
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -252,7 +259,7 @@ const collectTestFiles = (dir) => {
     files.push(path);
   }
 
-  return files.sort();
+  return files.sort(compareStrings);
 };
 
 export const collectPackageTestFiles = (target, genericTypeFiles = new Set()) =>
@@ -261,7 +268,7 @@ export const collectPackageTestFiles = (target, genericTypeFiles = new Set()) =>
     .filter((file) => {
       if (genericTypeFiles.has(file)) return false;
 
-      if (TOP_LEVEL_AMBIENT_VALUE_RE.test(readFileSync(file, 'utf8'))) {
+      if (TOP_LEVEL_AMBIENT_VALUE_RE.test(readFileSync(file, 'utf-8'))) {
         throw new Error(
           `Runtime test contract ${toPosixPath(relative(root, file))} contains a top-level ambient value declaration. Declare it in the owning package's test/tsconfig.generic-types.json files array.`
         );

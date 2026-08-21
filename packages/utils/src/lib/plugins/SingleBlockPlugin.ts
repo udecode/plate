@@ -41,7 +41,6 @@ export const SingleBlockPlugin = defineBasePlugin(PLUGINS.singleBlock, {
             });
           }
           tx.text.insert('\n', { at: firstBlockEnd });
-          return;
         }
       },
     },

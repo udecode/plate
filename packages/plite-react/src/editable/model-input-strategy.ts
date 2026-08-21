@@ -1,6 +1,7 @@
-import type { InputEvent as ReactInputEvent, RefObject } from 'react';
 import { type Range, RangeApi } from '@platejs/plite';
 import { getSelection, isDOMElement, isDOMText } from '@platejs/plite-dom';
+import type { InputEvent as ReactInputEvent, RefObject } from 'react';
+
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';

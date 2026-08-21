@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+
 import type {
   Descendant,
   Element,
@@ -531,14 +532,14 @@ export const runCollaborativeHistoryTrace = (
               observePeer(
                 peerFor(peers, clientId),
                 options.observeExtension,
-                identityReaders[clientId]!
+                identityReaders[clientId]
               ),
             ])
           ),
           step,
           stepIndex,
         };
-        const allowedFallbacks = new Set(options.allowedFallbacks ?? []);
+        const allowedFallbacks = new Set(options.allowedFallbacks);
 
         for (const [peerId, peer] of Object.entries(observation.peers)) {
           assert.deepEqual(

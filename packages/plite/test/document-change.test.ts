@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  type Descendant,
-  type Editor,
-  type Element,
-  type SnapshotIndex,
+
+import type {
+  Descendant,
+  Editor,
+  Element,
+  SnapshotIndex,
 } from '@platejs/plite';
 
 import {
@@ -597,7 +598,7 @@ describe('JSON document change algebra', () => {
     const prepared = prepareInsert(parent);
     const adopted = parent.adopt(prepared);
 
-    assert(adopted);
+    assert.ok(adopted);
     assert.equal(
       parent.classify(),
       adopted.change,
@@ -649,7 +650,7 @@ describe('JSON document change algebra', () => {
     const prepared = producer.prepare();
     const receiver = createBuilder(value);
 
-    assert(receiver.adopt(prepared));
+    assert.ok(receiver.adopt(prepared));
     assert.deepEqual(receiver.value, {
       children: asJsonNodes([paragraph('a!')]),
     });
@@ -771,6 +772,30 @@ describe('JSON document change algebra', () => {
       replacements: 2,
       usedTokenFallback: false,
     });
+  });
+
+  it('applies far-apart property changes through one indexed tree rewrite', () => {
+    const children = Array.from({ length: 10_000 }, (_, index) =>
+      paragraph(String(index))
+    );
+    const document = DocumentIndex.fromValue(asJsonNodes(children));
+    const targets = [1000, 9000];
+    const change = RootChange.create(
+      document,
+      targets.map((index) => ({
+        from: document.nodeRange([index]).from,
+        properties: { set: { type: 'heading' } },
+      }))
+    );
+    const applied = change.apply(document);
+    const stats = getRootChangeApplyStats(change);
+
+    assert.equal((applied.node([1000]) as { type?: string }).type, 'heading');
+    assert.equal((applied.node([9000]) as { type?: string }).type, 'heading');
+    assert.equal(applied.value[0], document.value[0]);
+    assert.equal(applied.value.at(-1), document.value.at(-1));
+    assert.equal(stats?.propertyChanges, 2);
+    assert.equal(stats?.usedTokenFallback, false);
   });
 
   it('matches token application for randomized disjoint local replacements', () => {
@@ -922,7 +947,7 @@ describe('JSON document change algebra', () => {
       const index = buildSnapshotIndex(owner, children);
       const nodeKey = index.keyAt([5000, 0]);
 
-      assert(nodeKey);
+      assert.ok(nodeKey);
       assert.deepEqual(index.pathOf(nodeKey), [5000, 0]);
       assert.equal(
         profiledIds.filter((id) => id === 'runtime-index-full-build').length,
@@ -955,7 +980,7 @@ describe('JSON document change algebra', () => {
         document.value as unknown as readonly Descendant[]
       );
 
-      assert(index.keyAt([...firstPath]));
+      assert.ok(index.keyAt([...firstPath]));
 
       return index
         .entries()
@@ -979,8 +1004,8 @@ describe('JSON document change algebra', () => {
     const firstKey = firstIndex.keyAt([0]);
     const secondKey = secondIndex.keyAt([0]);
 
-    assert(firstKey);
-    assert(secondKey);
+    assert.ok(firstKey);
+    assert.ok(secondKey);
     assert.notEqual(firstKey, secondKey);
     assert.deepEqual(firstIndex.pathOf(firstKey), [0]);
     assert.equal(secondIndex.pathOf(firstKey), null);
@@ -1347,8 +1372,8 @@ describe('JSON document change algebra', () => {
 
     assert.equal(structuralIndex.keyAt([0]), blockId);
     assert.equal(structuralIndex.keyAt([0, 0]), textId);
-    assert(structuralIndex.keyAt([1]));
-    assert(structuralIndex.keyAt([1, 0]));
+    assert.ok(structuralIndex.keyAt([1]));
+    assert.ok(structuralIndex.keyAt([1, 0]));
   });
 
   it('coalesces path-stable provenance without composing token changes', () => {
@@ -1472,44 +1497,48 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(index.pathOf(retainedNodeKey!), [0]);
   });
 
-  it('bounds retained wide-document mapping storage by binary segment count', {
-    // This is a storage-shape law, not a wall-time budget. Keep enough headroom
-    // for shared CI hosts; registered benchmarks own performance thresholds.
-    timeout: 20_000,
-  }, () => {
-    const owner = {} as Editor;
-    let document = DocumentIndex.fromValue(
-      asJsonNodes(
-        Array.from({ length: 50_000 }, (_, index) => paragraph(String(index)))
-      )
-    );
-    let index: SnapshotIndex = buildSnapshotIndex(
-      owner,
-      document.value as unknown as readonly Element[]
-    );
-
-    for (let edit = 0; edit < 63; edit += 1) {
-      const change = replaceChildrenChange(document, [], 0, 1, []);
-      const next = change.apply(document);
-
-      index = mapSnapshotIndexThroughChange(
-        document,
-        next,
-        change,
-        index,
-        owner
+  it(
+    'bounds retained wide-document mapping storage by binary segment count',
+    {
+      // This is a storage-shape law, not a wall-time budget. Keep enough headroom
+      // for shared CI hosts; registered benchmarks own performance thresholds.
+      timeout: 20_000,
+    },
+    () => {
+      const owner = {} as Editor;
+      let document = DocumentIndex.fromValue(
+        asJsonNodes(
+          Array.from({ length: 50_000 }, (_, index) => paragraph(String(index)))
+        )
       );
-      document = next;
+      let index: SnapshotIndex = buildSnapshotIndex(
+        owner,
+        document.value as unknown as readonly Element[]
+      );
+
+      for (let edit = 0; edit < 63; edit += 1) {
+        const change = replaceChildrenChange(document, [], 0, 1, []);
+        const next = change.apply(document);
+
+        index = mapSnapshotIndexThroughChange(
+          document,
+          next,
+          change,
+          index,
+          owner
+        );
+        document = next;
+      }
+
+      const stats = getSnapshotIndexMappingStats(index);
+
+      assert.equal(stats.mappedChanges, 63);
+      assert.equal(stats.segments, 6);
+      assert.equal(stats.retainedDocuments, stats.segments + 1);
+      assert.ok(stats.retainedTopLevelReferenceBytes < 2_800_000);
+      assert.ok(stats.retainedTokenUnits < 4_000_000);
     }
-
-    const stats = getSnapshotIndexMappingStats(index);
-
-    assert.equal(stats.mappedChanges, 63);
-    assert.equal(stats.segments, 6);
-    assert.equal(stats.retainedDocuments, stats.segments + 1);
-    assert.ok(stats.retainedTopLevelReferenceBytes < 2_800_000);
-    assert.ok(stats.retainedTokenUnits < 4_000_000);
-  });
+  );
 
   it('rejects non-sequential lazy structural mappings', () => {
     const owner = {} as Editor;

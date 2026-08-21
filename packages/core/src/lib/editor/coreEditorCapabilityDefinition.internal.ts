@@ -1,5 +1,5 @@
-import type { HistoryStateApi, HistoryTxApi } from '@platejs/plite-history';
 import type { Value } from '@platejs/plite';
+import type { HistoryStateApi, HistoryTxApi } from '@platejs/plite-history';
 
 import type { AffinityPluginUpdate } from '../plugins/affinity/AffinityPlugin';
 import type { DebugApi } from '../plugins/debug/DebugPlugin';

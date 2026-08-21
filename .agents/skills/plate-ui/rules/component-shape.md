@@ -15,13 +15,12 @@
 For node renderers already inside Plate element context:
 
 - use `useElement()` when you need the current element object
-- use the incoming `PlateElementProps.path` when rendered output genuinely
-  depends on the current path
+- element component and node-wrapper props do not expose `path`; position is
+  live runtime state, not a stable render input
 - when a path is needed only inside an event handler or command, keep the
   element and resolve `editor.read.nodes.path(element)` at interaction time
 - treat `usePath()` as a reactive dependency: keep it only when a descendant
-  must rerender or resynchronize as its element moves and no path prop is
-  already available
+  must rerender or resynchronize as its element moves
 - do not add `usePath()` merely to replace an event-time path lookup; that
   converts cold interaction work into a dependency in every mounted node
 - do **not** reach for `useNodePath()` for dynamic validity state that must

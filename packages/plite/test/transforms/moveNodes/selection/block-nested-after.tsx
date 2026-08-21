@@ -1,11 +1,10 @@
-import { isBlock as editorIsBlock } from '@platejs/plite/internal';
+import { ElementApi } from '@platejs/plite';
 /** @jsx jsx */
+import { isBlock as editorIsBlock } from '@platejs/plite/internal';
 
 import { jsx } from '../../..';
 
 jsx;
-
-import { ElementApi } from '@platejs/plite';
 
 export const run = (editor) => {
   editor.nodes.move({

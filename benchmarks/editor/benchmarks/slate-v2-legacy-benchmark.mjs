@@ -39,7 +39,7 @@ if (args.check) {
 }
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, JSON.stringify(payload, null, 2) + '\n');
+fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`);
 console.log(JSON.stringify(payload, null, 2));
 
 function parseArgs(argv) {

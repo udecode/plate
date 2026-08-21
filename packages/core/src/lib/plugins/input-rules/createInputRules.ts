@@ -1,5 +1,10 @@
 import { ElementApi, type Point } from '@platejs/plite';
 
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+} from '../../../internal/plugin/compilePlateModel';
+import { defineInputRule } from './defineInputRule';
 import type {
   BlockFenceInputRuleConfig,
   BlockFenceInputRuleMatch,
@@ -16,12 +21,6 @@ import type {
   TextSubstitutionMatch,
   TextSubstitutionPattern,
 } from './types';
-
-import { defineInputRule } from './defineInputRule';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-} from '../../../internal/plugin/compilePlateModel';
 
 const NON_WHITESPACE = /\S+/;
 

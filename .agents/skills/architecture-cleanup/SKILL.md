@@ -42,10 +42,11 @@ keep.
 - The task is public call-shape design/review: use `best-api`. For an accepted
   target needing runtime/product adoption, use `major-task`, `plite-plan`, or
   `plate-plan`.
-- The task is measured Slate optimization state: use `slate-ar`.
-- The task is internal Plate/Slate quality/perf/browser/API supervision:
-  use `auto`, which may invoke this skill when architecture cleanup is
-  the right packet.
+- The task is performance measurement, profiling, comparison, or iterative
+  optimization: use `benchmark`, which may invoke this skill after proving an
+  architecture/code-shape owner.
+- The task is internal Plate/Slate quality/browser/API supervision: use `auto`,
+  which may invoke this skill when architecture cleanup is the right packet.
 - The task is post-merge/current-tree until-clean closure: use
   `autoclosure`, which may invoke this skill for source-shape findings.
 - The task is public queue selection: use `maintainer`.
@@ -243,8 +244,10 @@ more files.
 
 - User explicitly asks architecture cleanup / deslop / simplify: use this
   skill first.
-- `auto`: may invoke this when repeated Plate/Slate quality/perf/test/docs work
+- `auto`: may invoke this when repeated Plate/Slate quality/test/docs work
   proves architecture or cleanup friction.
+- `benchmark`: may invoke this when measured evidence proves architecture or
+  code-shape friction at one hot owner.
 - `autoclosure`: may invoke this when already-applied work has source-shape,
   over-split, fake-wrapper, or agent-navigation findings during closure.
 - `major-task`: owns broad decision, rollout, and implementation plan when the

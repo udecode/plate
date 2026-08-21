@@ -720,10 +720,10 @@ export const waitForSelectionSync = async (
             : element.ownerDocument.getSelection();
         const nativeSelectionInRoot = Boolean(
           selection?.rangeCount &&
-            selection.anchorNode &&
-            selection.focusNode &&
-            element.contains(selection.anchorNode) &&
-            element.contains(selection.focusNode)
+          selection.anchorNode &&
+          selection.focusNode &&
+          element.contains(selection.anchorNode) &&
+          element.contains(selection.focusNode)
         );
         const getNativeSelectionSnapshot = () => {
           if (
@@ -890,21 +890,21 @@ export const waitForSelectionSync = async (
                 selectionsEqual(projectedSelection, expectedSelection))));
         const synced = missingNativeSelectionAccepted
           ? true
-            : expectedSelection
-              ? handle?.getSelection
-                ? selectionsEqual(handleSelection, expectedSelection) &&
-                  (modelBackedSelection ||
-                    selectionsEqual(nativeSelection, expectedSelection)) &&
-                  (!modelBackedSelection ||
-                    selectionsEqual(projectedSelection, expectedSelection))
-                : selectionsEqual(nativeSelection, expectedSelection)
-              : handle?.getSelection
-                ? modelBackedSelection
-                  ? selectionsEqual(handleSelection, projectedSelection)
-                  : nativeSelection
-                    ? selectionsEqual(handleSelection, nativeSelection)
-                    : handleSelection === null && !nativeSelectionInRoot
-                : nativeSelection !== null;
+          : expectedSelection
+            ? handle?.getSelection
+              ? selectionsEqual(handleSelection, expectedSelection) &&
+                (modelBackedSelection ||
+                  selectionsEqual(nativeSelection, expectedSelection)) &&
+                (!modelBackedSelection ||
+                  selectionsEqual(projectedSelection, expectedSelection))
+              : selectionsEqual(nativeSelection, expectedSelection)
+            : handle?.getSelection
+              ? modelBackedSelection
+                ? selectionsEqual(handleSelection, projectedSelection)
+                : nativeSelection
+                  ? selectionsEqual(handleSelection, nativeSelection)
+                  : handleSelection === null && !nativeSelectionInRoot
+              : nativeSelection !== null;
 
         return {
           expectedSelection,

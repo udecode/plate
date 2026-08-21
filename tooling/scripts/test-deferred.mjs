@@ -124,7 +124,7 @@ const result = spawnSync(
   ['test', ...bunArgs, ...explicitPaths],
   {
     cwd: process.cwd(),
-    encoding: 'utf8',
+    encoding: 'utf-8',
   }
 );
 

@@ -1,6 +1,7 @@
 /** @jsx jsx */
 
 import { deleteFragment as editorDeleteFragment } from '@platejs/plite/internal';
+
 import { jsx } from '../..';
 
 void jsx;

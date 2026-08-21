@@ -7,9 +7,7 @@ import type { SchemaTextInNode } from './schema';
 type Simplify<T> = { [K in keyof T]: T[K] } & {};
 
 type UnionToIntersection<U> = (
-  U extends unknown
-    ? (value: U) => void
-    : never
+  U extends unknown ? (value: U) => void : never
 ) extends (value: infer I) => void
   ? I
   : never;
@@ -147,8 +145,9 @@ const isTextValueEqual = (value: unknown, other: unknown): boolean => {
     return true;
   }
 
-  if (!isObject(value) || !isObject(other) || Array.isArray(other))
+  if (!isObject(value) || !isObject(other) || Array.isArray(other)) {
     return false;
+  }
 
   for (const key in value) {
     if (!Object.hasOwn(value, key)) continue;
@@ -170,7 +169,6 @@ const isTextValueEqual = (value: unknown, other: unknown): boolean => {
   return true;
 };
 
-// eslint-disable-next-line no-redeclare
 export const TextApi: Readonly<TextInterface> = Object.freeze({
   equals(text: Text, another: Text, options: TextEqualsOptions = {}): boolean {
     const { loose = false } = options;

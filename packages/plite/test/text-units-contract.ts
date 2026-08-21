@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { getSnapshot as editorGetSnapshot } from '@platejs/plite/internal';
 
 import { createEditor, type Element, NodeApi } from '@platejs/plite';
+import { getSnapshot as editorGetSnapshot } from '@platejs/plite/internal';
+
 import { getCharacterDistance, getWordDistance } from '../src/text-units';
 import { getWordDistances } from '../src/utils/string';
 
@@ -48,7 +49,7 @@ const lexical7163GraphemeCases: readonly LexicalGraphemeCase[] = [
     backwardDistances: [2],
     description: 'Arabic text with accent',
     forwardDistances: [2],
-    text: '\u0647\u064e',
+    text: '\u0647\u064E',
   },
   {
     backwardDistances: [2],
@@ -60,19 +61,19 @@ const lexical7163GraphemeCases: readonly LexicalGraphemeCase[] = [
     backwardDistances: [2],
     description: 'BMP emoji with variation selector',
     forwardDistances: [2],
-    text: '\u2764\ufe0f',
+    text: '\u2764\uFE0F',
   },
   {
     backwardDistances: [3],
     description: 'keycap emoji sequence',
     forwardDistances: [3],
-    text: '#\ufe0f\u20e3',
+    text: '#\uFE0F\u20E3',
   },
   {
     backwardDistances: [1, 2, 2, 2, 1],
     description: 'Hindi word',
     forwardDistances: [1, 2, 2, 2, 1],
-    text: '\u0905\u0928\u0941\u091a\u094d\u091b\u0947\u0926',
+    text: '\u0905\u0928\u0941\u091A\u094D\u091B\u0947\u0926',
   },
   {
     backwardDistances: [2, 2],
@@ -84,25 +85,25 @@ const lexical7163GraphemeCases: readonly LexicalGraphemeCase[] = [
     backwardDistances: [2, 2, 2, 2, 2],
     description: 'multiple emoji outside the BMP',
     forwardDistances: [2, 2, 2, 2, 2],
-    text: '\ud83c\udf37\ud83c\udf81\ud83d\udca9\ud83d\ude1c\ud83d\udc4d',
+    text: '\uD83C\uDF37\uD83C\uDF81\uD83D\uDCA9\uD83D\uDE1C\uD83D\uDC4D',
   },
   {
     backwardDistances: [19],
     description: 'ZWJ emoji cluster with skin tones',
     forwardDistances: [19],
-    text: '\ud83d\udc69\ud83c\udffd\u200d\ud83d\udc68\ud83c\udffd\u200d\ud83d\udc76\ud83c\udffd\u200d\ud83d\udc66\ud83c\udffd',
+    text: '\uD83D\uDC69\uD83C\uDFFD\u200D\uD83D\uDC68\uD83C\uDFFD\u200D\uD83D\uDC76\uD83C\uDFFD\u200D\uD83D\uDC66\uD83C\uDFFD',
   },
   {
     backwardDistances: [6],
     description: 'rainbow flag emoji with variation selector',
     forwardDistances: [6],
-    text: '\ud83c\udff3\ufe0f\u200d\ud83c\udf08',
+    text: '\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08',
   },
   {
     backwardDistances: [2],
     description: 'surrogate-pair CJK extension character',
     forwardDistances: [2],
-    text: '\ud862\udf4e',
+    text: '\uD862\uDF4E',
   },
 ];
 

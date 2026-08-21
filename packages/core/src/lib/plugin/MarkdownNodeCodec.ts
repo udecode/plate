@@ -1,15 +1,4 @@
 import type {
-  AnyBasePluginDefinition,
-  PluginAuthorSchemaView,
-  PluginReference,
-} from './PluginDefinition';
-import type {
-  InferExactPluginSchemaContribution,
-  InferPluginDocumentType,
-  InferPluginWritablePropertyEntries,
-} from './pluginSchemaModel.internal';
-import type { ElementWith, TextWith } from './pluginNodeTypes';
-import type {
   Descendant,
   Element,
   SchemaElementShapeFor,
@@ -51,6 +40,18 @@ import type {
   MdxJsxTextElement,
 } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
+
+import type {
+  AnyBasePluginDefinition,
+  PluginAuthorSchemaView,
+  PluginReference,
+} from './PluginDefinition';
+import type { ElementWith, TextWith } from './pluginNodeTypes';
+import type {
+  InferExactPluginSchemaContribution,
+  InferPluginDocumentType,
+  InferPluginWritablePropertyEntries,
+} from './pluginSchemaModel.internal';
 
 type Contribution<D extends AnyBasePluginDefinition> =
   InferExactPluginSchemaContribution<D>;

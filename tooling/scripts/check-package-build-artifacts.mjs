@@ -52,7 +52,7 @@ export function getPackageBuildArtifacts(packageJson) {
 
 export function assertPackageBuildArtifacts(packageRoot = process.cwd()) {
   const packageJson = JSON.parse(
-    readFileSync(join(packageRoot, 'package.json'), 'utf8')
+    readFileSync(join(packageRoot, 'package.json'), 'utf-8')
   );
   const artifacts = getPackageBuildArtifacts(packageJson);
   const missing = artifacts.filter(
@@ -66,7 +66,7 @@ export function assertPackageBuildArtifacts(packageRoot = process.cwd()) {
   const erasedPlugins = artifacts
     .filter((artifact) => artifact.endsWith('.d.ts'))
     .flatMap((artifact) => {
-      const source = readFileSync(join(packageRoot, artifact), 'utf8');
+      const source = readFileSync(join(packageRoot, artifact), 'utf-8');
 
       return [...source.matchAll(anyPluginDeclarationPattern)].map(
         (match) => `${artifact}: ${match[0]}`
@@ -84,7 +84,7 @@ export function assertPackageBuildArtifacts(packageRoot = process.cwd()) {
   const incompleteReadonlyAliases = artifacts
     .filter((artifact) => artifact.endsWith('.d.ts'))
     .flatMap((artifact) => {
-      const source = readFileSync(join(packageRoot, artifact), 'utf8');
+      const source = readFileSync(join(packageRoot, artifact), 'utf-8');
 
       return [...source.matchAll(incompleteReadonlyAliasPattern)].map(
         (match) => `${artifact}: ${match[0]}`

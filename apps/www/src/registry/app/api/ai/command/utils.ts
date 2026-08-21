@@ -1,10 +1,10 @@
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
-import type { UIMessage } from 'ai';
-
 import type { MarkdownEditor } from '@platejs/markdown';
 import { BaseTableCellPlugin, BaseTablePlugin } from '@platejs/table';
+import type { UIMessage } from 'ai';
 import dedent from 'dedent';
 import { ElementApi, type BaseEditor, type Element, RangeApi } from 'platejs';
+
+import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 /**
  * Tag content split by newlines

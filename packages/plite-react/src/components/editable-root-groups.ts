@@ -1,9 +1,9 @@
-import React from 'react';
 import type { Path, NodeKey, Range as PliteRange } from '@platejs/plite';
 import {
   DOMCoverage,
   type DOMCoverageBoundary,
 } from '@platejs/plite-dom/internal';
+import React from 'react';
 
 import type { VirtualizedTopLevelItem } from '../dom-strategy/use-virtualized-root-plan';
 import { useEditor } from '../hooks/use-editor';
@@ -47,7 +47,7 @@ export type EditableRootGroupRecord = ReturnType<
 export const getRootGroupPlanKey = (
   nodeKeys: readonly NodeKey[],
   documentEpoch: number
-) => `${documentEpoch}:${nodeKeys.join('\u001f')}`;
+) => `${documentEpoch}:${nodeKeys.join('\u001F')}`;
 
 export const getActiveRootGroupIds = (
   groups: readonly EditableRootGroupRecord[] | null,

@@ -4,8 +4,7 @@
 
 ### Major Changes
 
-- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Keep `Backspace` at the start of a non-empty first code line inside the code block.
-  Merge an empty inner code line into the previous code line instead of unwrapping the block.
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Keep `Backspace` at the start of a non-empty first code line inside the code block. Merge an empty inner code line into the previous code line instead of unwrapping the block.
 
 ## 52.3.16
 
@@ -93,7 +92,7 @@
   - `CodeBlockPlugin`: remove `prism` option. Use `lowlight` option instead:
 
   ```tsx
-  import { all, createLowlight } from "lowlight";
+  import { all, createLowlight } from 'lowlight';
 
   const lowlight = createLowlight(all);
 
@@ -192,11 +191,11 @@
 
   ```ts
   // Import Prism with your supported languages
-  import Prism from "prismjs";
+  import Prism from 'prismjs';
 
-  import "prismjs/components/prism-antlr4.js";
-  import "prismjs/components/prism-bash.js";
-  import "prismjs/components/prism-c.js";
+  import 'prismjs/components/prism-antlr4.js';
+  import 'prismjs/components/prism-bash.js';
+  import 'prismjs/components/prism-c.js';
   // ...
 
   const plugins = createPlugins([
@@ -731,8 +730,7 @@
 
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
@@ -740,8 +738,7 @@ occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Patch Changes
 

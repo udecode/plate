@@ -1,4 +1,3 @@
-import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type {
   EditorCommit,
   EditorStateView,
@@ -6,8 +5,10 @@ import type {
   NodeKey,
   ValueOf,
 } from '@platejs/plite';
-import { recordPliteReactRender } from '../render-profiler';
+import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
+
 import type { ReactEditorContextValue } from '../plugin/with-react';
+import { recordPliteReactRender } from '../render-profiler';
 import { useEditor } from './use-editor';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -62,7 +63,7 @@ const scheduleMicrotask =
   typeof queueMicrotask === 'function'
     ? queueMicrotask
     : (callback: () => void) => {
-        Promise.resolve().then(callback);
+        void Promise.resolve().then(callback);
       };
 
 const queueDeferredCallback = (
@@ -231,9 +232,9 @@ export function useEditorSelectorContext() {
       const affectedPathNodeKeys = change?.changed.nodeKeysAll('path') ?? [];
       const syncedTextOnlyChange = Boolean(
         change?.changed.hasAny('text') &&
-          !change.tags.includes('historic') &&
-          !change.changed.hasAny('structure') &&
-          !change.changed.hasAny('properties')
+        !change.tags.includes('historic') &&
+        !change.changed.hasAny('structure') &&
+        !change.changed.hasAny('properties')
       );
       const shouldRouteRenderRuntimeListeners = Boolean(
         !change || !syncedTextOnlyChange

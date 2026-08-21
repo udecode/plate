@@ -1,4 +1,5 @@
 import {
+  applyBuiltDocumentChange,
   getCurrentSelection,
   runEditorTransaction,
 } from '../core/public-state';
@@ -25,12 +26,10 @@ import type {
   NodeUnwrapNodesOptions,
 } from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
-import { liftNodes } from './lift-nodes';
-import { mergeNodes } from './merge-nodes';
-import { moveNodes } from './move-nodes';
-import { removeNodes } from './remove-nodes';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
+import { liftNodes } from './lift-nodes';
+import { mergeNodes } from './merge-nodes';
 
 const getChildren = (editor: Editor, node: Ancestor): readonly Descendant[] =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
@@ -107,20 +106,19 @@ export const unwrapNodes = ((
       return;
     }
 
-    const childCount = getChildren(editor, node).length;
+    const children = getChildren(editor, node);
 
-    for (let moved = 0; moved < childCount; moved += 1) {
-      const wrapperIndex = index + moved;
-
-      moveNodes(editor, {
-        at: [...parentPath, wrapperIndex, 0],
-        to: [...parentPath, wrapperIndex],
-      });
-    }
-
-    removeNodes(editor, {
-      at: [...parentPath, index + childCount],
-    });
+    applyBuiltDocumentChange(
+      editor,
+      (builder, root) =>
+        builder.replaceChildren(root, parentPath, index, 1, children),
+      {
+        nodeKeyTransfers: children.map((child, offset) => ({
+          path: [...parentPath, index + offset],
+          source: child,
+        })),
+      }
+    );
   };
 
   runEditorTransaction(editor, (tx) => {

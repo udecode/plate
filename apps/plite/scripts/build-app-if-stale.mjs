@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.mjs';
 import {
   appBuildEntries,
   appRoot,
@@ -13,13 +14,12 @@ import {
   repoRoot,
   snapshotEnvironmentByPrefix,
 } from './plite-proof-inputs.mjs';
-import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.mjs';
 
 const registryPath = path.join(
   repoRoot,
   'apps/www/src/app/(app)/examples/plite/plite-example-registry.ts'
 );
-const registrySource = fs.readFileSync(registryPath, 'utf8');
+const registrySource = fs.readFileSync(registryPath, 'utf-8');
 const definitionsSource = registrySource.match(
   /export const EXAMPLE_NAMES_AND_PATHS = \[(?<definitions>[\s\S]*?)\] as const/
 )?.groups?.definitions;

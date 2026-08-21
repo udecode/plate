@@ -2,21 +2,21 @@
 
 import { describe, expect, it } from 'bun:test';
 
-import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
 import {
   createEditor,
   createEditorView,
   schema,
   type Value,
 } from '@platejs/plite';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@platejs/table';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 jsxt;
 

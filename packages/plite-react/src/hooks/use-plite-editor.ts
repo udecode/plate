@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import type {
   EditorExtensionsFromOptions,
   EditorValueFromOptions,
   Value,
 } from '@platejs/plite';
+import { useState } from 'react';
 
 import {
   type CreateReactEditorOptions,

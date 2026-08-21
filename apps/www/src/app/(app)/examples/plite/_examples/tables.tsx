@@ -12,6 +12,7 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+
 import type { CustomValue } from './custom-types.d';
 
 const initialValue: CustomValue = [

@@ -1,8 +1,6 @@
-import React from 'react';
-
-import { property } from 'platejs';
-import { createBaseEditor, defineBasePlugin } from 'platejs';
+import { property, createBaseEditor, defineBasePlugin } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
+import React from 'react';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 

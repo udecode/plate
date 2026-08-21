@@ -81,7 +81,7 @@ const parsePathname = (requestURL) => {
 
     return pathname;
   } catch {
-    return;
+    // Invalid request URLs do not map to a static pathname.
   }
 };
 

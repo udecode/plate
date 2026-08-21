@@ -1,7 +1,6 @@
-import type { Shortcuts } from '../plugin';
-
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createPlateEditor } from '../editor';
+import type { Shortcuts } from '../plugin';
 import { dispatchPlateShortcut } from './dispatchPlateShortcut';
 
 const createEditor = (shortcuts: Shortcuts) => createPlateEditor({ shortcuts });

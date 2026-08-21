@@ -3,9 +3,9 @@
  */
 
 export * from './BasePlugin';
-export * from './HandlerReturnType';
-export * from './MarkdownNodeCodec';
-export * from './PluginDefinition';
+export type * from './HandlerReturnType';
+export type * from './MarkdownNodeCodec';
+export type * from './PluginDefinition';
 export * from './defineBasePlugin';
 export * from './pluginAuthoringContext';
-export * from './pluginNodeTypes';
+export type * from './pluginNodeTypes';

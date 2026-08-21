@@ -5,9 +5,12 @@ import React, {
   useContext,
   useState,
 } from 'react';
+
 import BoundHotkeysProxyProviderProvider from './BoundHotkeysProxyProvider';
 import deepEqual from './deepEqual';
 import type { Hotkey } from './types';
+
+const DEFAULT_ACTIVE_SCOPES = ['*'];
 
 export type HotkeysContextType = {
   activeScopes: string[];
@@ -30,7 +33,7 @@ export const useHotkeysContext = () => useContext(HotkeysContext);
 
 export const HotkeysProvider = ({
   children,
-  initiallyActiveScopes = ['*'],
+  initiallyActiveScopes = DEFAULT_ACTIVE_SCOPES,
 }: {
   children: ReactNode;
   initiallyActiveScopes?: string[];

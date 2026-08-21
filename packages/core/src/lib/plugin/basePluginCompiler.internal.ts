@@ -151,9 +151,9 @@ type BasePluginDependencyDefinitionOf<TDependency> = [
 type CompactBasePluginDependencyReferences<TDependencies> =
   TDependencies extends readonly unknown[]
     ? {
-        readonly [TIndex in keyof TDependencies]: TDependencies[TIndex] extends PluginReference<
-          infer TName
-        >
+        readonly [
+          TIndex in keyof TDependencies
+        ]: TDependencies[TIndex] extends PluginReference<infer TName>
           ? PluginReference<TName> &
               PluginDependency<
                 CompactBasePluginDependencyDefinition<
@@ -332,9 +332,9 @@ type InputDependencies<TInput> = TInput extends {
   )[];
 }
   ? {
-      readonly [TIndex in keyof TDependencies]: TDependencies[TIndex] extends PluginReference<
-        infer TName
-      >
+      readonly [
+        TIndex in keyof TDependencies
+      ]: TDependencies[TIndex] extends PluginReference<infer TName>
         ? PluginReference<TName> &
             BasePluginDependencyReferenceFor<TDependencies[TIndex]>
         : TDependencies[TIndex] extends EditorExtensionReference
@@ -350,9 +350,9 @@ type InputConflicts<TInput> = TInput extends {
   )[];
 }
   ? {
-      readonly [TIndex in keyof TConflicts]: TConflicts[TIndex] extends PluginReference<
-        infer TName
-      >
+      readonly [
+        TIndex in keyof TConflicts
+      ]: TConflicts[TIndex] extends PluginReference<infer TName>
         ? PluginReference<TName> &
             EditorExtensionDependencyReferenceFor<TConflicts[TIndex]>
         : TConflicts[TIndex] extends EditorExtensionReference
@@ -381,9 +381,10 @@ type BasePluginPresenceField =
   | 'prepareDocument'
   | 'useHooks';
 
-type NormalizedBasePluginField<TInput, TKey extends keyof TInput> = TKey extends
-  | 'key'
-  | 'type'
+type NormalizedBasePluginField<
+  TInput,
+  TKey extends keyof TInput,
+> = TKey extends 'key' | 'type'
   ? TInput[TKey]
   : TKey extends 'api'
     ? InputApi<TInput>
@@ -419,10 +420,12 @@ export type NormalizeBasePluginInput<
   TInput,
   TFallbackName extends string = string,
 > = Readonly<{
-  [TKey in keyof TInput as TKey extends keyof BasePluginDefinition
-    ? TKey extends 'name'
-      ? never
-      : TKey
-    : never]: NormalizedBasePluginField<TInput, TKey>;
+  [
+    TKey in keyof TInput as TKey extends keyof BasePluginDefinition
+      ? TKey extends 'name'
+        ? never
+        : TKey
+      : never
+  ]: NormalizedBasePluginField<TInput, TKey>;
 }> &
   Readonly<{ name: InputName<TInput, TFallbackName> }>;

@@ -1,14 +1,12 @@
-import type {
-  ContentSlice,
-  DescendantIn,
-  EditorCoreStateView,
-  EditorMarks,
-  Element,
-  Editor,
-  SchemaProperty,
-  Value,
-} from '@platejs/plite';
 import {
+  type ContentSlice,
+  type DescendantIn,
+  type EditorCoreStateView,
+  type EditorMarks,
+  type Element,
+  type Editor,
+  type SchemaProperty,
+  type Value,
   ContentSlice as ContentSliceApi,
   defineExtension,
   defineExtensionPoint,
@@ -247,16 +245,13 @@ const createPlainTextInlineSlice = <V extends Value>(
   }
 
   const textNode = Object.freeze({ ...(activeMarks ?? {}), text });
-  const child = inlineSpine.reduceRight<DescendantIn<V>>(
-    (nested, [inline]) => {
-      const { children: _children, type, ...properties } = inline;
-      const wrapper = state.schema.create(type, properties);
-      const children = Object.freeze([nested]);
+  const child = inlineSpine.reduceRight<DescendantIn<V>>((nested, [inline]) => {
+    const { children: _children, type, ...properties } = inline;
+    const wrapper = state.schema.create(type, properties);
+    const children = Object.freeze([nested]);
 
-      return Object.freeze({ ...wrapper, children }) as DescendantIn<V>;
-    },
-    textNode as DescendantIn<V>
-  );
+    return Object.freeze({ ...wrapper, children }) as DescendantIn<V>;
+  }, textNode as DescendantIn<V>);
   const content = Object.freeze([child]);
 
   return createDetachedContentSlice<V>(

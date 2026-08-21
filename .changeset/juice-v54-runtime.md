@@ -1,5 +1,5 @@
 ---
-"@platejs/juice": major
+'@platejs/juice': major
 ---
 
 - Move `JuicePlugin` to the Base plugin API

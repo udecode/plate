@@ -1,19 +1,18 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import { property, schema, target } from '@platejs/plite';
 import { render } from '@testing-library/react';
+import React from 'react';
 
+import {
+  attachPlateModelPublication,
+  getPlateModelPublication,
+} from '../../internal/plugin/compilePlateModel';
 import {
   BaseParagraphPlugin,
   defineBasePlugin,
   ElementIdPlugin,
 } from '../../lib';
-import {
-  attachPlateModelPublication,
-  getPlateModelPublication,
-} from '../../internal/plugin/compilePlateModel';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import {
   PlateElement,
@@ -305,7 +304,6 @@ describe('pipeRenderElement', () => {
         defineBasePlugin('inactiveBelow', {
           render: {
             belowNodes: ({ element }: any) => {
-              // eslint-disable-next-line react-hooks/rules-of-hooks
               usePath();
 
               return element.type === 'quote'
@@ -365,9 +363,8 @@ describe('pipeRenderElement', () => {
               nodeKey: 'markerStyle',
               query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               transformProps: ({ props }) => {
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const element = useElement();
-                // eslint-disable-next-line react-hooks/rules-of-hooks
+
                 const path = usePath();
 
                 return {
@@ -407,7 +404,6 @@ describe('pipeRenderElement', () => {
               nodeKey: 'markerStyle',
               query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
               transformProps: ({ props }) => {
-                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const type = useElementSelector(([element]) => element.type);
 
                 return {
@@ -506,7 +502,6 @@ describe('pipeRenderElement', () => {
         defineBasePlugin('activeBelow', {
           render: {
             belowNodes: ({ element }: any) => {
-              // eslint-disable-next-line react-hooks/rules-of-hooks
               const path = usePath();
 
               return element.type === 'paragraph'

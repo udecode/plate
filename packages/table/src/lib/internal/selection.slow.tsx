@@ -1,15 +1,16 @@
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
+
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import type { TableElement, TableRowElement } from '../BaseTablePlugin';
-import { BaseTableCellPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from '../__tests__/getTestTablePlugins';
 import type { TableCellElementWithId } from '../__tests__/tableTestTypes';
+import type { TableElement, TableRowElement } from '../BaseTablePlugin';
+import { BaseTableCellPlugin, BaseTablePlugin } from '../BaseTablePlugin';
 import { createDetachedTableContext } from './context';
 import {
   getTableSelectionExpansion,
@@ -171,12 +172,10 @@ const createGeneratedSpanTable = (seed: number): TableElement => {
   }
 
   return {
-    children: rows.map(
-      (children): TableRowElement => ({
-        children,
-        type: 'tableRow',
-      })
-    ),
+    children: rows.map((children): TableRowElement => ({
+      children,
+      type: 'tableRow',
+    })),
     type: 'table',
   };
 };

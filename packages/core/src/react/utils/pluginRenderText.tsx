@@ -1,18 +1,15 @@
+import { useEditorReadOnly } from '@platejs/plite-react';
 import React from 'react';
 
-import { useEditorReadOnly } from '@platejs/plite-react';
-
-import type { AnyBasePlugin } from '../../lib';
-import type { RenderTextProps } from '../../lib';
-import type { PlateEditor } from '../editor/PlateEditor';
-
-import { getPluginNodeClass } from '../../lib';
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
   getCompiledPlateModelBinding,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import type { AnyBasePlugin, RenderTextProps } from '../../lib';
+import { getPluginNodeClass } from '../../lib';
 import { type PlateNodeProps, PlateText } from '../components/plate-nodes';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 type PlateTextRenderProps = PlateNodeProps & RenderTextProps;
@@ -42,7 +39,6 @@ export const pluginRenderText = (
   plugin: AnyBasePlugin
 ): RenderText =>
   function render(nodeProps) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const readOnly = useEditorReadOnly();
     const {
       render: { node },

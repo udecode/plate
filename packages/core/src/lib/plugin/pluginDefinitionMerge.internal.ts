@@ -1,5 +1,6 @@
 import type { EditorExtensionReference } from '@platejs/plite';
 
+import type { NormalizeBasePluginInput } from './basePluginCompiler.internal';
 import type {
   AnyBasePluginDefinition,
   InferApi,
@@ -12,7 +13,6 @@ import type {
   NormalizePluginState,
   PluginReference,
 } from './PluginDefinition';
-import type { NormalizeBasePluginInput } from './basePluginCompiler.internal';
 
 type Materialize<TObject extends object> = Readonly<{
   [TKey in keyof TObject]: TObject[TKey];

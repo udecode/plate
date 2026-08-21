@@ -1,11 +1,5 @@
 'use client';
 
-import * as React from 'react';
-import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import { Tweet } from 'react-tweet';
-
-import type { PlateElementProps } from 'platejs/react';
-
 import {
   parseMediaUrl,
   parseTwitterUrl,
@@ -13,6 +7,7 @@ import {
   VIDEO_PROVIDERS,
 } from '@platejs/media';
 import { MediaEmbedPlugin } from '@platejs/media/react';
+import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
   useEditor,
@@ -20,6 +15,9 @@ import {
   useEditorReadOnly,
   useElementSelected,
 } from 'platejs/react';
+import * as React from 'react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
 

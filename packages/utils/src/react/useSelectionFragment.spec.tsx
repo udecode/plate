@@ -1,11 +1,10 @@
-import React from 'react';
-
 import {
   createPlateEditor,
   Plate,
   type PlateEditorReference,
 } from '@platejs/core/react';
 import { renderHook } from '@testing-library/react';
+import React from 'react';
 
 import { useSelectionFragmentProp } from './useSelectionFragment';
 

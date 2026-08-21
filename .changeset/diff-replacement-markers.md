@@ -1,13 +1,10 @@
 ---
-"@platejs/diff": major
+'@platejs/diff': major
 ---
 
-Keep inserted and deleted replacement markers on their exact text ranges.
-Preserve exact formatting boundaries and JSON-compatible property removals in
-derived diff spans.
+Keep inserted and deleted replacement markers on their exact text ranges. Preserve exact formatting boundaries and JSON-compatible property removals in derived diff spans.
 
-Use `excludeDiffFromFragment` for direct fragment cleanup. `BaseDiffPlugin`
-registers copied-fragment cleanup through its root `readMiddleware`.
+Use `excludeDiffFromFragment` for direct fragment cleanup. `BaseDiffPlugin` registers copied-fragment cleanup through its root `readMiddleware`.
 
 Install the behavior through the plugin:
 

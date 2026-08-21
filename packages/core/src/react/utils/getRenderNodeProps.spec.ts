@@ -1,7 +1,7 @@
 import { property, schema, target } from '@platejs/plite';
 
-import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
+import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor/withPlate';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { getRenderNodeProps } from './getRenderNodeProps';

@@ -1,12 +1,13 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 describe('table navigation', () => {
   {

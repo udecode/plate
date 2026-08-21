@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-20-improve-editor-control-accessibility",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-20-improve-editor-control-accessibility.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Improve editor control accessibility and iframe security",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/aria/editor/toolbar.tsx",
+        "apps/www/src/registry/bases/base/editor/toolbar.tsx",
+        "apps/www/src/registry/components/editor/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder",
+      "files": [
+        "apps/www/src/registry/components/editor/media-placeholder.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed",
+      "files": ["apps/www/src/registry/components/editor/media-embed.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-embed-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "potion-iframe-demo",
+      "files": ["apps/www/src/registry/examples/potion-iframe-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "pro-iframe-demo",
+      "files": ["apps/www/src/registry/examples/pro-iframe-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-20-toolbar-improve-editor-control-accessibility-4fcdb176",
+      "kind": "fix",
+      "summary": "Use native, keyboard-accessible controls for split toolbars, media upload, and image preview actions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar", "media-preview-dialog", "media-placeholder"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-20",
+          "entry": "2026-08-20-improve-editor-control-accessibility",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-20-improve-editor-control-accessibility-2",
+      "kind": "behavior",
+      "summary": "Restrict embedded content with explicit sandbox and referrer policies.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "media-embed",
+        "media-embed-static",
+        "potion-iframe-demo",
+        "pro-iframe-demo"
+      ],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-20",
+          "entry": "2026-08-20-improve-editor-control-accessibility",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

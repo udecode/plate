@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import {
   createEditor,
   createEditorView,
@@ -22,6 +23,7 @@ import {
   valueCodecs,
 } from '@platejs/plite';
 import * as Y from 'yjs';
+
 import { setYjsAttribute } from '../src/core/attributes';
 import { lowerDocumentChangeToYjs } from '../src/core/change-bridge';
 import {
@@ -32,7 +34,6 @@ import {
 } from '../src/core/document';
 import { YjsUpdatePolicy } from '../src/core/editor-adapter';
 import { yjs } from '../src/core/extension';
-
 import {
   clearYjsTrace,
   connectYjsPeerAndSync,
@@ -305,7 +306,7 @@ describe('@platejs/yjs remote import contract', () => {
 
     const [effect] = received;
 
-    assert(effect);
+    assert.ok(effect);
     assert.equal(effect.type, nested);
     assert.equal(effect.value.nested.count, 1);
     assert.equal(Object.isFrozen(effect.value), true);
@@ -700,7 +701,7 @@ describe('@platejs/yjs remote import contract', () => {
       collabReplay: 'live',
       collabTransport: {
         decode(value, context) {
-          if (typeof value !== 'object' || value === null) return;
+          if (typeof value !== 'object' || value === null) return undefined;
 
           const point = context.point((value as Record<string, unknown>).point);
           const range = context.range((value as Record<string, unknown>).range);
@@ -789,8 +790,8 @@ describe('@platejs/yjs remote import contract', () => {
       numericClientIds: { source: 101, target: 202 },
     });
 
-    assert(source);
-    assert(target);
+    assert.ok(source);
+    assert.ok(target);
 
     const remoteImportCommits = recordRemoteImportCommits(target.editor);
 
@@ -825,7 +826,7 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['peer'],
     });
 
-    assert(peer);
+    assert.ok(peer);
 
     const root = peer.editor.read.yjs.root();
     const sibling = root.toArray()[1];
@@ -874,7 +875,7 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['peer'],
     });
 
-    assert(peer);
+    assert.ok(peer);
 
     const root = peer.editor.read.yjs.root();
     const element = getYjsNode(root, [0]);
@@ -1261,8 +1262,8 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['source', 'target'],
     });
 
-    assert(source);
-    assert(target);
+    assert.ok(source);
+    assert.ok(target);
 
     source.editor.update.text.insert('!', {
       at: { path: [0, 0], offset: 3 },
@@ -1298,8 +1299,8 @@ describe('@platejs/yjs remote import contract', () => {
       numericClientIds: { source: 101, target: 202 },
     });
 
-    assert(source);
-    assert(target);
+    assert.ok(source);
+    assert.ok(target);
 
     clearYjsTrace(target);
     source.editor.update((tx) => {
@@ -1350,15 +1351,15 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['source', 'target'],
     });
 
-    assert(source);
-    assert(target);
+    assert.ok(source);
+    assert.ok(target);
 
     const root = source.editor.read.yjs.root();
     const sectionNode = getYjsNode(root, [0]);
     const text = getYjsNode(root, [0, 0, 0]);
 
-    assert(sectionNode instanceof Y.XmlElement);
-    assert(text instanceof Y.XmlText);
+    assert.ok(sectionNode instanceof Y.XmlElement);
+    assert.ok(text instanceof Y.XmlText);
 
     clearYjsTrace(target);
     source.doc.transact(() => {
@@ -1405,12 +1406,12 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['peer'],
     });
 
-    assert(peer);
+    assert.ok(peer);
 
     const root = peer.editor.read.yjs.root();
     const paragraphNode = getYjsNode(root, [96]);
 
-    assert(paragraphNode instanceof Y.XmlElement);
+    assert.ok(paragraphNode instanceof Y.XmlElement);
 
     clearYjsTrace(peer);
     peer.doc.transact(() => {
@@ -1436,12 +1437,12 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['peer'],
     });
 
-    assert(peer);
+    assert.ok(peer);
 
     const root = peer.editor.read.yjs.root();
     const paragraphNode = getYjsNode(root, [0]);
 
-    assert(paragraphNode instanceof Y.XmlElement);
+    assert.ok(paragraphNode instanceof Y.XmlElement);
 
     clearYjsTrace(peer);
     peer.doc.transact(() => {
@@ -1469,7 +1470,7 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['peer'],
     });
 
-    assert(peer);
+    assert.ok(peer);
 
     clearYjsTrace(peer);
     peer.editor.read.yjs.root().setAttribute('provider:metadata', 'opaque');
@@ -1491,8 +1492,8 @@ describe('@platejs/yjs remote import contract', () => {
       clientIds: ['source', 'target'],
     });
 
-    assert(source);
-    assert(target);
+    assert.ok(source);
+    assert.ok(target);
 
     disconnectYjsPeer(target);
     source.editor.update.text.insert('!', {

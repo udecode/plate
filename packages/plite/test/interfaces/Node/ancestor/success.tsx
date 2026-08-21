@@ -1,7 +1,7 @@
 /** @jsx jsx  */
 
-import { cloneDeep } from 'lodash';
 import { NodeApi } from '@platejs/plite';
+import { cloneDeep } from 'lodash';
 
 export const input = (
   <editor>

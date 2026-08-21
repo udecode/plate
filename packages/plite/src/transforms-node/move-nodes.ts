@@ -30,6 +30,7 @@ export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
     if (match == null) {
       if (LocationApi.isPath(at)) {
         if (at.length !== 0) {
+          const movingNode = getNode(editor, at)[0];
           const sameParentForwardMove =
             at.length === to.length &&
             at.at(-1) != null &&
@@ -54,7 +55,13 @@ export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
             : to;
 
           applyBuiltDocumentChange(editor, (builder, root) =>
-            builder.moveNode(root, at, effectiveTo)
+            builder.moveNode(root, at, effectiveTo, {
+              preservesRepresentation:
+                at.length === effectiveTo.length &&
+                PathApi.equals(at.slice(0, -1), effectiveTo.slice(0, -1)) &&
+                NodeApi.isElement(movingNode) &&
+                editorIsBlock(editor, movingNode),
+            })
           );
         }
 

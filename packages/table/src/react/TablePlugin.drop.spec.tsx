@@ -1,19 +1,18 @@
 /** @jsx jsxt */
 
-import type React from 'react';
-
+import { type BasePluginDefinition, DebugPlugin } from '@platejs/core';
 import { definePlatePlugin } from '@platejs/core/react';
 import {
   createPluginContext,
   type InternalPlateEditorWithInstalledPlugins,
 } from '@platejs/core/react/internal';
-import { type BasePluginDefinition, DebugPlugin } from '@platejs/core';
 import type { Element, Location, Range, Value } from '@platejs/plite';
 import { NodeApi, schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+import type React from 'react';
 
-import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
@@ -468,32 +467,32 @@ describe('TablePlugin table drag/drop', () => {
     expect(readTable(editor, 0)).toEqual([['', 'A', 'B']]);
   });
 
-  it.each([
-    'primary-to-named',
-    'named-to-primary',
-  ] as const)('moves selected cells %s in one root-aware commit', (direction) => {
-    const { editor, sourceRoot, target, targetRoot } =
-      createRootMoveEditor(direction);
-    const { commits } = dragSelectedCells(editor, {
-      target,
-      trackCommits: true,
-    });
+  it.each(['primary-to-named', 'named-to-primary'] as const)(
+    'moves selected cells %s in one root-aware commit',
+    (direction) => {
+      const { editor, sourceRoot, target, targetRoot } =
+        createRootMoveEditor(direction);
+      const { commits } = dragSelectedCells(editor, {
+        target,
+        trackCommits: true,
+      });
 
-    expect(readRootTable(editor, sourceRoot)).toEqual([['', '']]);
-    expect(readRootTable(editor, targetRoot)).toEqual([['A', 'B']]);
-    expect(commits).toHaveLength(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: {
-        path: [0, 0, 0, 0, 0],
-        ...(targetRoot === undefined ? {} : { root: targetRoot }),
-      },
-      focus: {
-        path: [0, 0, 1, 0, 0],
-        ...(targetRoot === undefined ? {} : { root: targetRoot }),
-      },
-      kind: 'table-cell',
-    });
-  });
+      expect(readRootTable(editor, sourceRoot)).toEqual([['', '']]);
+      expect(readRootTable(editor, targetRoot)).toEqual([['A', 'B']]);
+      expect(commits).toHaveLength(1);
+      expect(editor.read.selection()).toMatchObject({
+        anchor: {
+          path: [0, 0, 0, 0, 0],
+          ...(targetRoot === undefined ? {} : { root: targetRoot }),
+        },
+        focus: {
+          path: [0, 0, 1, 0, 0],
+          ...(targetRoot === undefined ? {} : { root: targetRoot }),
+        },
+        kind: 'table-cell',
+      });
+    }
+  );
 
   it('does not apply a stale capture to an unmarked drop', () => {
     const editor = createCrossTableEditor();

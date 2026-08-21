@@ -1,6 +1,5 @@
-import { subscribeCommit } from '@platejs/plite/internal';
 import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
-
+import { subscribeCommit } from '@platejs/plite/internal';
 import { act, fireEvent, render } from '@testing-library/react';
 import { parseHotkey } from 'is-hotkey';
 import React from 'react';
@@ -94,7 +93,6 @@ export const createPlateTestEditor = async <
 
   if (debug) {
     subscribeCommit(editor, (commit) => {
-      // eslint-disable-next-line no-console
       console.log('EDITOR COMMIT', JSON.stringify(commit, null, 2));
     });
   }

@@ -8,7 +8,7 @@ type ScheduledTask = {
 
 const waitForMutations = () =>
   new Promise<void>((resolve) => {
-    setTimeout(resolve);
+    setTimeout(resolve, 0);
   });
 
 const createHarness = ({

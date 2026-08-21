@@ -1,16 +1,18 @@
 'use client';
 
-import * as React from 'react';
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { AppState, ExcalidrawProps } from '@excalidraw/excalidraw/types';
+import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
 import {
   type PlateElementProps,
   PlateElement,
   useEditor,
   useEditorReadOnly,
 } from 'platejs/react';
-import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
+
 import '@excalidraw/excalidraw/index.css';
 
 export function ExcalidrawElement(
@@ -18,7 +20,7 @@ export function ExcalidrawElement(
 ) {
   const { children, element } = props;
   const [Excalidraw, setExcalidraw] = React.useState<
-    typeof import('@excalidraw/excalidraw')['Excalidraw'] | null
+    (typeof import('@excalidraw/excalidraw'))['Excalidraw'] | null
   >(null);
   const editor = useEditor();
   const readOnly = useEditorReadOnly();

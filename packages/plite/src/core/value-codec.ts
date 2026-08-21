@@ -35,7 +35,11 @@ const isArrayPrototype = (prototype: object | null) =>
   hasIntrinsicConstructor(prototype, arrayConstructorSource) &&
   isObjectPrototype(Object.getPrototypeOf(prototype));
 
-/** @internal Read one strict JSON array without traversing its values. */
+/**
+ * Read one strict JSON array without traversing its values.
+ *
+ * @internal
+ */
 export const getEditorJsonArrayItems = (
   value: unknown
 ): readonly unknown[] | null => {
@@ -65,7 +69,11 @@ export const getEditorJsonArrayItems = (
   return items;
 };
 
-/** @internal Read one strict JSON record without traversing its values. */
+/**
+ * Read one strict JSON record without traversing its values.
+ *
+ * @internal
+ */
 export const getEditorJsonRecordEntries = (
   value: unknown
 ): readonly (readonly [string, unknown])[] | null => {
@@ -231,7 +239,11 @@ export const cloneEditorJsonValue = <T>(value: T): T => {
   return value;
 };
 
-/** @internal Validate, detach, and freeze JSON-compatible data in one pass. */
+/**
+ * Validate, detach, and freeze JSON-compatible data in one pass.
+ *
+ * @internal
+ */
 export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
   const invalid = (): never => {
     throw new Error(`${label} must encode to JSON-compatible data.`);

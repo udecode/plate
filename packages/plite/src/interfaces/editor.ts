@@ -16,11 +16,12 @@ import type {
   Span,
   Text,
 } from '..';
+import type { Anchor, AnchorOptions, AnchorValue } from '../core/anchor';
+import type { DocumentChange } from '../core/change/document-change';
 import { defineCommand as defineEditorCommand } from '../core/command-definition';
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
-import type { Anchor, AnchorOptions, AnchorValue } from '../core/anchor';
-import type { DocumentChange } from '../core/change/document-change';
+import { isEditorNodeSelectable } from '../core/editor-read-execution';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -36,7 +37,8 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
-import { isEditorNodeSelectable } from '../core/editor-read-execution';
+import type { EditorSchemaSource } from '../core/schema-source.internal';
+import type { TxOnlyMethod, TxReadMethod } from '../core/tx-only';
 import { addMark as executeAddMarkCommand } from '../editor/add-mark';
 import { deleteBackward as executeDeleteBackwardCommand } from '../editor/delete-backward';
 import { deleteForward as executeDeleteForwardCommand } from '../editor/delete-forward';
@@ -47,7 +49,7 @@ import { insertText as executeInsertTextCommand } from '../editor/insert-text';
 import { isEditor as isEditorValue } from '../editor/is-editor';
 import { removeMark as executeRemoveMarkCommand } from '../editor/remove-mark';
 import { toggleMark as executeToggleMarkCommand } from '../editor/toggle-mark';
-import { move as executeMoveCommand } from '../transforms-selection/move';
+import { getLocationRoot } from '../internal/root-location';
 import {
   liftNodes as executeLiftNodes,
   mergeNodes as executeMergeNodes,
@@ -62,8 +64,8 @@ import {
   deselect as executeDeselect,
   setPoint as executeSetPoint,
 } from '../transforms-selection';
+import { move as executeMoveCommand } from '../transforms-selection/move';
 import { deleteText as executeDeleteText } from '../transforms-text/delete-text';
-import { getLocationRoot } from '../internal/root-location';
 import type {
   LeafEdge,
   MaximizeMode,
@@ -73,7 +75,24 @@ import type {
   TextUnit,
   TextUnitAdjustment,
 } from '../types/types';
-import type { TxOnlyMethod, TxReadMethod } from '../core/tx-only';
+import type { NodeMatch, NodeTypeSelector } from './node';
+import type {
+  EditorSchemaDeclaration,
+  EditorSchemaDelta,
+  EditorSchemaElement,
+  EditorSchemaIdentity,
+  EditorSchemaExtensionProvider,
+  EditorSchemaProperty,
+  EditorSchemaPropertyQuery,
+  SchemaElementConstructionPropertiesFor,
+  SchemaElementFor,
+  SchemaElementHandle,
+  SchemaElementTypes,
+  SchemaPropertyHandle,
+  SchemaDescendantInValue,
+  SchemaValueFromExtensions,
+} from './schema';
+import type { EditorSelection, Selection, SelectionValue } from './selection';
 import type {
   BlockDuplicateOptions,
   NodeInsertNodesOptions,
@@ -102,25 +121,6 @@ import type {
   TextInsertTextOptions,
   TextMutationMethods,
 } from './transforms/text';
-import type { NodeMatch, NodeTypeSelector } from './node';
-import type { EditorSelection, Selection, SelectionValue } from './selection';
-import type {
-  EditorSchemaDeclaration,
-  EditorSchemaDelta,
-  EditorSchemaElement,
-  EditorSchemaIdentity,
-  EditorSchemaExtensionProvider,
-  EditorSchemaProperty,
-  EditorSchemaPropertyQuery,
-  SchemaElementConstructionPropertiesFor,
-  SchemaElementFor,
-  SchemaElementHandle,
-  SchemaElementTypes,
-  SchemaPropertyHandle,
-  SchemaDescendantInValue,
-  SchemaValueFromExtensions,
-} from './schema';
-import type { EditorSchemaSource } from '../core/schema-source.internal';
 
 export type { Selection } from './selection';
 
@@ -535,7 +535,11 @@ type BivariantFunction<TFn> = TFn extends (
 
 declare const editorGenericMethod: unique symbol;
 
-/** @internal Preserve a generic extension method through editor projections. */
+/**
+ * Preserve a generic extension method through editor projections.
+ *
+ * @internal
+ */
 export type EditorGenericMethod<TMethod extends (...args: any[]) => any> =
   TMethod & Readonly<{ [editorGenericMethod]: true }>;
 
@@ -1468,7 +1472,11 @@ type EditorSelectionCapability<TSelection extends SelectionValue> =
   SelectionValue extends TSelection
     ? {}
     : Readonly<{
-        /** @internal Keep concrete installed selection capabilities invariant. */
+        /**
+         * Keep concrete installed selection capabilities invariant.
+         *
+         * @internal
+         */
         [editorSelectionCapability]?: (selection: TSelection) => TSelection;
       }>;
 
@@ -1601,11 +1609,13 @@ export type EditorRead<
   EditorReadMethods<V, TExtensions>;
 
 type EditorBivariantMethods<T> = {
-  [K in keyof T as T[K] extends
-    | TxOnlyMethod<(...args: any[]) => any>
-    | TxReadMethod<(...args: any[]) => any>
-    ? never
-    : K]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
+  [
+    K in keyof T as T[K] extends
+      | TxOnlyMethod<(...args: any[]) => any>
+      | TxReadMethod<(...args: any[]) => any>
+      ? never
+      : K
+  ]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
     ? T[K]
     : T[K] extends (...args: any[]) => any
       ? BivariantFunction<T[K]>
@@ -1675,9 +1685,11 @@ type EditorExtensionUpdateMethods<TGroups> = {
 };
 
 type EditorSpecBivariantMethods<T> = {
-  [K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
-    ? never
-    : K]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
+  [
+    K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
+      ? never
+      : K
+  ]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
     ? T[K]
     : T[K] extends (...args: any[]) => any
       ? BivariantFunction<T[K]>
@@ -1795,7 +1807,11 @@ export type Editor<
   TExtensions extends readonly unknown[] = readonly [],
 > = BaseEditor<V, TExtensions>;
 
-/** @internal Existential editor boundary for runtime registries. */
+/**
+ * Existential editor boundary for runtime registries.
+ *
+ * @internal
+ */
 export type AnyEditor<
   V extends Value = any,
   TExtensions extends readonly unknown[] = any,
@@ -1832,7 +1848,11 @@ type IsAny<T> = 0 extends 1 & T ? true : false;
 declare const EDITOR_VALUE_TYPE: unique symbol;
 declare const EDITOR_NODE_TYPES: unique symbol;
 
-/** @internal Deferred exact-node witness for hosts with a broad runtime editor. */
+/**
+ * Deferred exact-node witness for hosts with a broad runtime editor.
+ *
+ * @internal
+ */
 export interface EditorNodeTypeProvider<
   TElementFactory extends () => Element = () => Element,
   TTextFactory extends () => Text = () => Text,
@@ -1843,7 +1863,11 @@ export interface EditorNodeTypeProvider<
   }>;
 }
 
-/** @internal Deferred exact-value witness for hosts with a broad runtime editor. */
+/**
+ * Deferred exact-value witness for hosts with a broad runtime editor.
+ *
+ * @internal
+ */
 export interface EditorValueTypeProvider<
   TValueFactory extends () => Value = () => Value,
 > {
@@ -1961,7 +1985,11 @@ export type EditorTargetRuntime = {
 declare const TRANSACTION_SPEC_TYPE: unique symbol;
 
 export interface TransactionSpec<TRoot extends RootKey = RootKey> {
-  /** @internal Opaque proof that this spec was built by the owning editor. */
+  /**
+   * Opaque proof that this spec was built by the owning editor.
+   *
+   * @internal
+   */
   readonly [TRANSACTION_SPEC_TYPE]: true;
   readonly annotations: readonly Readonly<{
     type: EditorUpdateAnnotation<unknown>;
@@ -1983,12 +2011,20 @@ export type EditorCommandResult = false | TransactionSpec;
 /** @internal */
 export declare const editorStateViewTypes: unique symbol;
 
-/** @internal Deferred state-view carrier for editor layers with richer transactions. */
+/**
+ * Deferred state-view carrier for editor layers with richer transactions.
+ *
+ * @internal
+ */
 export interface EditorStateViewProvider<TStateFactory extends () => unknown> {
   readonly [editorStateViewTypes]: TStateFactory;
 }
 
-/** @internal Deferred update-transaction carrier for layered editor types. */
+/**
+ * Deferred update-transaction carrier for layered editor types.
+ *
+ * @internal
+ */
 /** @internal */
 export declare const editorUpdateTransactionTypes: unique symbol;
 
@@ -1998,7 +2034,11 @@ export interface EditorUpdateTransactionProvider<
   readonly [editorUpdateTransactionTypes]: TTransactionFactory;
 }
 
-/** @internal Resolve a layered editor's exact live update transaction. */
+/**
+ * Resolve a layered editor's exact live update transaction.
+ *
+ * @internal
+ */
 export type EditorUpdateTransactionOf<TEditor> =
   TEditor extends EditorUpdateTransactionProvider<infer TTransactionFactory>
     ? ReturnType<TTransactionFactory>
@@ -2211,7 +2251,11 @@ export type EditorCommandDescriptor = Readonly<{
 export type EditorCommandInput<TCommand extends EditorCommandDescriptor> =
   TCommand extends PrivateEditorCommandTypes<infer Input, any> ? Input : never;
 
-/** @internal Editor capability required by one semantic command descriptor. */
+/**
+ * Editor capability required by one semantic command descriptor.
+ *
+ * @internal
+ */
 export type EditorCommandRequiredEditor<
   TCommand extends EditorCommandDescriptor,
 > =
@@ -2219,7 +2263,11 @@ export type EditorCommandRequiredEditor<
     ? TEditor
     : never;
 
-/** @internal Pure capabilities visible while building a semantic command. */
+/**
+ * Pure capabilities visible while building a semantic command.
+ *
+ * @internal
+ */
 export type EditorCommandCapabilities<TEditor> =
   TEditor extends BaseEditor<
     infer V extends Value,
@@ -2337,7 +2385,11 @@ export type EditorExtensionUpdateFactory<
   TResult
 >;
 
-/** @internal Runtime storage keyed by the owning extension name. */
+/**
+ * Runtime storage keyed by the owning extension name.
+ *
+ * @internal
+ */
 export type EditorExtensionApiMap = Record<string, unknown>;
 
 export type EditorExtensionCandidateEditor<
@@ -2357,7 +2409,11 @@ export type EditorExtensionPoint<TValue> = Readonly<{
 export type EditorExtensionContributionInput<TRequiredEditor = unknown> =
   Readonly<{
     point: Readonly<{ id: string }>;
-    /** @internal Contravariant proof of the editor capabilities this value needs. */
+    /**
+     * Contravariant proof of the editor capabilities this value needs.
+     *
+     * @internal
+     */
     [EDITOR_EXTENSION_REQUIRED_EDITOR]?: (editor: TRequiredEditor) => void;
   }>;
 
@@ -2680,8 +2736,7 @@ type EditorExtensionCapabilityDefinition<TDefinition> =
       : Readonly<Record<never, never>>);
 
 /** Shallow public reference to an extension dependency. */
-export interface EditorExtensionDependencyReference
-  extends PrivateEditorExtensionReferenceBrand {
+export interface EditorExtensionDependencyReference extends PrivateEditorExtensionReferenceBrand {
   readonly enabled?: boolean;
   readonly name: string;
 }
@@ -2695,10 +2750,16 @@ declare class PrivateEditorExtensionDependencyWitness<TContract> {
   protected readonly dependencyContract: TContract;
 }
 
-/** @internal Named declaration carrier for one finite dependency contract. */
+/**
+ * Named declaration carrier for one finite dependency contract.
+ *
+ * @internal
+ */
 export interface InternalEditorExtensionDependencyReference<
   in out TContract extends EditorExtensionDependencyContract,
-> extends EditorExtensionDependencyReference,
+>
+  extends
+    EditorExtensionDependencyReference,
     PrivateEditorExtensionDependencyWitness<TContract> {}
 
 type EditorExtensionDependencyContractOf<TReference> =
@@ -2805,7 +2866,11 @@ type EditorSchemaExtensionProviderOf<TExtension> = TExtension extends unknown
     : Readonly<Record<never, never>>
   : never;
 
-/** @internal Preserve only one extension's finite type-provider projection. */
+/**
+ * Preserve only one extension's finite type-provider projection.
+ *
+ * @internal
+ */
 export type InternalEditorExtensionTypeProviderOf<TExtension> =
   EditorExtensionTypeProviderOf<TExtension>;
 
@@ -2851,7 +2916,11 @@ type EditorExtensionDependencyContractFor<TExtension> =
       : EditorExtensionDependencyContractOf<TExtension>
     : never;
 
-/** @internal Compact install contract for one direct dependency. */
+/**
+ * Compact install contract for one direct dependency.
+ *
+ * @internal
+ */
 export type EditorExtensionDependencyReferenceFor<TExtension> =
   TExtension extends unknown
     ? InternalEditorExtensionDependencyReference<
@@ -2859,7 +2928,11 @@ export type EditorExtensionDependencyReferenceFor<TExtension> =
       >
     : never;
 
-/** @internal Finite installed capability carried by one dependency reference. */
+/**
+ * Finite installed capability carried by one dependency reference.
+ *
+ * @internal
+ */
 export type InternalEditorExtensionInstalledCapabilitiesOf<TReference> =
   EditorExtensionDependencyContractOf<TReference> extends infer TContract
     ? TContract extends Readonly<{ installed: infer TInstalled }>
@@ -2885,7 +2958,11 @@ type EditorExtensionRuntimeField<
     ? TDefinition[TKey]
     : unknown;
 
-/** @internal Exact type witness without public runtime descriptor fields. */
+/**
+ * Exact type witness without public runtime descriptor fields.
+ *
+ * @internal
+ */
 export type InternalEditorExtensionWitnessFor<
   TDefinition extends EditorExtensionDefinition,
 > = PrivateEditorExtensionWitness<{
@@ -3030,9 +3107,7 @@ export declare class EditorExtensionTypeProvider<
 }
 
 type UnionToIntersection<T> = (
-  T extends unknown
-    ? (value: T) => void
-    : never
+  T extends unknown ? (value: T) => void : never
 ) extends (value: infer TIntersection) => void
   ? TIntersection
   : never;

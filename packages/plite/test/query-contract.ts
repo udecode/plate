@@ -1,6 +1,19 @@
 import assert from 'node:assert/strict';
 
 import {
+  createEditor as createPliteEditor,
+  type Descendant,
+  type Element,
+  defineEditorSchema,
+  type Node,
+  NodeApi,
+  type Path,
+  PathApi,
+  type Point,
+  property,
+  schema,
+} from '@platejs/plite';
+import {
   above as editorAbove,
   after as editorAfter,
   before as editorBefore,
@@ -39,19 +52,6 @@ import {
   string as editorString,
   unhangRange as editorUnhangRange,
 } from '@platejs/plite/internal';
-import {
-  createEditor as createPliteEditor,
-  type Descendant,
-  type Element,
-  defineEditorSchema,
-  type Node,
-  NodeApi,
-  type Path,
-  PathApi,
-  type Point,
-  property,
-  schema,
-} from '@platejs/plite';
 
 type LegacySnapshotInput = Omit<
   Parameters<typeof editorReplaceBase>[1],
@@ -2396,7 +2396,7 @@ it('moves from a text block into a selectable block void before the following bl
     offset: 0,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
@@ -2409,7 +2409,7 @@ it('moves from a text block into a selectable block void before the following bl
     focus: { path: [1, 0], offset: 0 },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorMove(editor);
   });
   assert.deepEqual(editorGetSelection(editor), {
@@ -2931,7 +2931,7 @@ it('supports editorAfter across top-level block boundaries inside an outer trans
 
   let point: { path: readonly number[]; offset: number } | undefined;
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -2957,7 +2957,7 @@ it('supports move helper calls across supported top-level block boundaries', () 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
@@ -3076,7 +3076,7 @@ it('supports editorAfter with a top-level block path inside an outer transaction
 
   let point: { path: readonly number[]; offset: number } | undefined;
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -3210,7 +3210,7 @@ it('supports editorAfter inside an outer transaction using the live draft tree',
 
   let point: { path: readonly number[]; offset: number } | undefined;
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 5 },
     });
@@ -3371,7 +3371,7 @@ it('supports editorBefore and editorAfter by skipping non-selectable inline desc
 
   let point: { path: readonly number[]; offset: number } | undefined;
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorReplace(editor, {
       children: createLeadingNonSelectableInlineChildren(),
       selection: null,
@@ -3386,7 +3386,7 @@ it('supports editorBefore and editorAfter by skipping non-selectable inline desc
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorReplace(editor, {
       children: createTrailingNonSelectableInlineChildren(),
       selection: null,

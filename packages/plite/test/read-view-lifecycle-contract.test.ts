@@ -8,6 +8,7 @@ import {
   type EditorStateView,
 } from '@platejs/plite';
 import { setEditorStateViewTransform, txRead } from '@platejs/plite/internal';
+
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string) => ({

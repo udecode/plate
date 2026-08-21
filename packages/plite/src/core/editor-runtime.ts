@@ -38,8 +38,8 @@ import type {
   SnapshotListener,
   Value,
 } from '../interfaces/editor';
-import type { InternalEditorSchemaApi } from './editor-schema';
 import type { DocumentChange } from './change/document-change';
+import type { InternalEditorSchemaApi } from './editor-schema';
 import type { InternalEditorUpdateOptions } from './update-policy';
 
 type BindEditorMethod<T> = T extends (

@@ -1,4 +1,15 @@
 import { faker } from '@faker-js/faker';
+import type { Editor, Value } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
+import {
+  createReactEditor,
+  Editable,
+  type EditableDOMStrategyMetrics,
+  type EditableProps,
+  type RenderElementProps,
+  Plite,
+  useElementSelected,
+} from '@platejs/plite-react';
 import {
   parseAsBoolean,
   parseAsString,
@@ -14,17 +25,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { Editor, Value } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
-import {
-  createReactEditor,
-  Editable,
-  type EditableDOMStrategyMetrics,
-  type EditableProps,
-  type RenderElementProps,
-  Plite,
-  useElementSelected,
-} from '@platejs/plite-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -39,6 +39,7 @@ import {
   NativeSelectOption,
 } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
+
 import { parseAsBoundedInteger, replaceQueryOptions } from './query-controls';
 
 const SUPPORTS_EVENT_TIMING =
@@ -268,7 +269,7 @@ const HugeDocumentExample = () => {
         setIsRendering(false);
         setEditor(createEditor(newConfig, nextInitialValue));
         setEditorVersion((n) => n + 1);
-      });
+      }, 0);
     },
     [config, setQueryConfig]
   );
@@ -296,8 +297,8 @@ const HugeDocumentExample = () => {
         setIsRendering(false);
         setEditor(createEditor(config, nextInitialValue));
         setEditorVersion((n) => n + 1);
-      });
-    });
+      }, 0);
+    }, 0);
 
     return () => {
       clearTimeout(renderTimeout);
@@ -360,6 +361,7 @@ const HugeDocumentExample = () => {
 };
 
 const Heading = ({
+  children,
   style: styleProp,
   showSelectedHeadings = false,
   ref,
@@ -372,10 +374,15 @@ const Heading = ({
     return <SelectedHeading ref={ref} style={styleProp} {...props} />;
   }
 
-  return <h1 ref={ref} {...props} style={styleProp} />;
+  return (
+    <h1 ref={ref} {...props} style={styleProp}>
+      {children}
+    </h1>
+  );
 };
 
 const SelectedHeading = ({
+  children,
   style: styleProp,
   ref,
   ...props
@@ -384,7 +391,11 @@ const SelectedHeading = ({
 }) => {
   const selected = useElementSelected();
   const style = { ...styleProp, color: selected ? 'green' : undefined };
-  return <h1 ref={ref} {...props} style={style} />;
+  return (
+    <h1 ref={ref} {...props} style={style}>
+      {children}
+    </h1>
+  );
 };
 
 const Paragraph = 'p';

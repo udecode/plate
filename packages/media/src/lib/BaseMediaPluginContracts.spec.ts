@@ -11,7 +11,6 @@ import {
   schema,
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
-import type { ImageElement } from './image/BaseImagePlugin';
 
 import {
   type AlignedMediaInsertInput,
@@ -21,10 +20,11 @@ import {
   type FileInsertInput,
   type ImageInsertInput,
   type ProviderMediaInsertInput,
+  mediaElementProperties,
 } from './BaseMediaPlugin';
+import type { ImageElement } from './image/BaseImagePlugin';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
-import { mediaElementProperties } from './BaseMediaPlugin';
 import { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
 
 const TestInlinePlugin = defineBasePlugin('testInline', {

@@ -65,7 +65,7 @@ export const NavigationFeedbackPlugin = definePlatePlugin(
             'data-nav-pulse': String(activeTarget.pulse),
             'data-nav-target': 'true',
             style: {
-              ...(props.style ?? {}),
+              ...props.style,
               '--plate-nav-feedback-duration': `${activeTarget.duration}ms`,
             },
           };

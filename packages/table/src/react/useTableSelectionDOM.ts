@@ -1,8 +1,7 @@
-import React from 'react';
-
 import { useEditorSelector } from '@platejs/core/react';
 import type { NodeKey } from '@platejs/plite';
 import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
+import React from 'react';
 
 import { TablePlugin } from './TablePlugin';
 

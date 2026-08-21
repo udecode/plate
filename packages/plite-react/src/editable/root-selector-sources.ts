@@ -1,12 +1,13 @@
-import { type ReactNode, useCallback, useMemo, useRef } from 'react';
 import type { EditorCommit, Path, NodeKey } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
-import { toInternalRoot } from './runtime-editor-api';
-import { toPublicRootOption } from '../root-key';
+import { type ReactNode, useCallback, useMemo, useRef } from 'react';
+
 import { useEditor } from '../hooks/use-editor';
 import { useEditorSelector } from '../hooks/use-editor-selector';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
+import { toPublicRootOption } from '../root-key';
+import { toInternalRoot } from './runtime-editor-api';
 
 export type DOMStrategyRootConfig = {
   overscan: number;
@@ -198,7 +199,7 @@ export const useRootNodeKeys = () => {
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => selectRootNodeKeys(editor),
-    [root]
+    []
   );
   const shouldUpdate = useCallback(
     (change?: EditorCommit) => shouldUpdateRootNodeKeys(root, change),

@@ -9,9 +9,12 @@ Load this reference whenever the `regression` skill runs.
 - [Start Contract](#start-contract)
 - [Current Source And Proof-Host Readiness](#current-source-and-proof-host-readiness)
 - [Atomic Executable Cases](#atomic-executable-cases)
+- [Reporter Oracle Matrix](#reporter-oracle-matrix)
 - [Proof Selection](#proof-selection)
 - [Probe Before Scale](#probe-before-scale)
 - [Packet Lifecycle](#packet-lifecycle)
+- [Failed-Fix Interrupt](#failed-fix-interrupt)
+- [Proof Receipts And Affected Corpus](#proof-receipts-and-affected-corpus)
 - [Corpus Work Without A Registry](#corpus-work-without-a-registry)
 - [Master And Durable Children](#master-and-durable-children)
 - [Canonical Autogoal Gates](#canonical-autogoal-gates)
@@ -25,14 +28,14 @@ implementation worker. Executable tests are the permanent behavior record.
 
 ```txt
 current source and proof host ready
--> atomic executable case
+-> reporter-complete atomic executable case
 -> smallest high-value probe
 -> exact reproduction and classification
 -> failing test on the violated invariant
 -> one-case patch delegation
 -> focused green proof
--> fresh-host stability
--> keep, revert, or quarantine
+-> fresh-host proof receipt and affected-corpus stability
+-> keep, revert, quarantine, or failed-fix interrupt
 -> methodology delta
 -> next executable case or honest stop
 ```
@@ -58,9 +61,11 @@ registry. It duplicates tests and status, drifts, and makes “coverage” mean 
 row exists instead of a behavior failing CI.
 
 For dirty local proof, record the tested base ref and issue-owned file
-fingerprints in the active plan or handoff. For fixed/completed claims, prefer a
-clean checkout at the exact pushed ref; the commit identifies the complete
-tree.
+fingerprints in the active plan or handoff. A Regression run is `completed`
+when its final local source and every required executable, fresh-host,
+stability, review, methodology, and plan gate pass. Commit and push are not
+local completion gates. Exact pushed refs, CI, and integration replay own only
+the broader integrated, shipped, released, and public-status claims.
 
 ## Start Contract
 
@@ -73,6 +78,17 @@ For non-trivial work, create or continue one Autogoal with
 - exact ref or dirty-state boundary;
 - route/proof host and freshness method;
 - claim width, stability count, and stop rules.
+
+Fill the semantic tables before implementation, then run:
+
+```bash
+node .agents/skills/regression/scripts/validate-regression-plan.mjs \
+  docs/plans/<plan>.md
+```
+
+Before local completion, rerun with `--complete`. Autogoal's checker validates
+plan closure mechanics; only the Regression validator checks this lane's
+oracle, failed-fix, architecture, receipt, and affected-corpus semantics.
 
 The goal plan is transient execution state. It may contain a compact case table
 for the current run, but that table does not survive as another product
@@ -93,8 +109,10 @@ Before a behavior claim:
    configuration changed. Never trust an unexplained existing server.
 5. For dirty proof, capture fingerprints for every issue-owned production,
    fixture, test, harness, and host-input file in the plan or handoff.
-6. For fixed/completed proof, use a clean checkout at the final pushed ref with
-   zero issue-owned differences.
+6. For local completion, prove the final local source bytes on a fresh host and
+   record the base ref plus dirty fingerprints when applicable. For integration,
+   shipment, release, or public-status claims, use the exact pushed ref and its
+   owning CI/runtime evidence.
 7. If the real route cannot render without a stub, alias, bypass, or generated
    edit, keep the case blocked or quarantined and repair the proof host.
 
@@ -127,6 +145,33 @@ registry row.
 
 Treat prior behavior, older releases, upstream Slate, and recordings as
 evidence. Current accepted product/editor law decides the oracle.
+
+## Reporter Oracle Matrix
+
+Translate every reporter sentence and observed state into the active plan
+before Patch receives the case. For each case, fill exactly one row for every
+observation:
+
+| Observation | Question |
+|---|---|
+| `model` | What editor state must exist, and what wrong state must not? |
+| `dom-native` | What rendered/native selection, caret, clipboard, or DOM state must exist and must not coexist? |
+| `focus` | Which element owns focus, and which owner is forbidden? |
+| `popup` | Which toolbar, menu, overlay, or dialog is visible/hidden, including after release/close? |
+| `geometry-paint` | What layout or painted pixels must match, and what stale/duplicate paint is forbidden? |
+| `runtime-errors` | What error/overlay/console state is forbidden? |
+| `follow-up-input` | What next edit proves the editor remains usable, and what corruption/lost selection is forbidden? |
+
+Mark a row `yes` only with a positive assertion, a distinct forbidden state,
+an executable proof layer, a `test: <path>#<title>` anchor, and its result.
+Mark it `no` only with an N/A reason in every proof cell. “Moved,” “rendered,”
+or “did not crash” never implies selection shape, focus, popup exclusion,
+paint, performance, or follow-up usability.
+
+When the report names Chrome, Blink, a compositor, or browser-native behavior,
+record `exact-chrome: <environment>` and use exact Chrome for the full final
+replay. Playwright Chromium remains useful diagnosis but cannot certify that
+claim.
 
 ## Proof Selection
 
@@ -205,8 +250,32 @@ Use repeated retry-free warm runs for flaky, native, lifecycle, compositor,
 focus, selection, DnD, or device risks. Default to five. One failure keeps the
 case open.
 
-Nothing issue-owned may change after final replay. Commit, rebase, generation,
-or push invalidates dirty proof; replay on the final ref.
+Nothing issue-owned may change after final replay. If commit, rebase,
+generation, or push changes any proved bytes or runtime inputs, replay before
+carrying the completed status to that new tree.
+
+Generate the final receipt by running the exact proof command through:
+
+```bash
+node .agents/skills/regression/scripts/capture-proof-receipt.mjs \
+  --case-id <case-id> \
+  --attempt <number> \
+  --claim completed \
+  --input <production-or-test-path> \
+  --host "none: <package-only reason>" \
+  --retries 0 \
+  -- <exact command and arguments>
+```
+
+For a managed route, replace `--host` with `--host-pid`, `--base-url`, and
+`--browser`. Repeat `--case-id` for one combined corpus command and `--input`
+for every production, test, fixture, harness, config, generated, or route-host
+input that owns the claim. Paste the emitted Markdown rows into `Proof
+receipts`. The helper records the ref, input digest/count, latest input mtime,
+exact input paths, host process start, proof timestamps, retries, and a
+tamper-evident receipt ID. Completion validation recomputes the digest from
+those current paths. The helper refuses a failed command or inputs that change
+during proof.
 
 ### Decide
 
@@ -219,8 +288,67 @@ or push invalidates dirty proof; replay on the final ref.
 - `block`: name the missing authority/environment/evidence and why no safe
   move remains.
 
+A kept case is `completed` locally when all applicable proof and plan gates
+pass. A run is `completed` when every selected case has a terminal decision,
+every required kept case is completed, no required runnable case remains, and
+the canonical Autogoal gates pass. Commit and push are not local completion
+gates.
+
 Deferred, blocked, reverted, and quarantined selected cases do not become goal
 success through prose.
+
+## Failed-Fix Interrupt
+
+A failed fix is not the expected red test. It is an attempted fix already
+claimed `candidate-local`, `kept`, or `completed` that fails exact replay/final
+verification, or a fresh reporter contradiction.
+
+That event immediately interrupts product work:
+
+1. Revoke the prior green, receipt, local completion, and public completion
+   authority. Record the failure under `Failed fix history`; the public
+   coordinator must correct stale comments or labels before another public
+   claim.
+2. Automatically run
+   `regression repair <case-id>: <missed invariant or proof failure>`. Do not
+   wait for the user and do not send another Patch packet first.
+3. Change the smallest durable Regression source owner and add an executable
+   workflow test that rejects the failed packet. A failed fix always records
+   `repair-now`; `no-change` and `defer` cannot resume it.
+4. Run focused workflow proof, `pnpm install`, source/generated parity, and
+   agent-native review.
+5. Restart the reporter case from exact reproduction with attempt N+1. The new
+   proof receipt must use that attempt number; an old receipt cannot carry
+   forward.
+
+On attempt 2, or immediately when any architecture trigger applies, stop Patch
+and run `best-api` plus `plite-plan`, `plate-plan`, or both:
+
+- `cross-layer-compensation`;
+- `duplicated-live-identity`;
+- `per-node-hot-work`;
+- `timer-focus-correctness`;
+- `ui-repairs-substrate`;
+- `second-failed-fix`.
+
+The architecture row must record the accepted target and layer plan before a
+new implementation attempt.
+
+## Proof Receipts And Affected Corpus
+
+The receipt proves one command ran against unchanged named inputs. It does not
+become a permanent registry. Keep it only in the active plan/handoff.
+
+Map every changed owner to every selected case whose production, fixture,
+harness, config, host, or behavior depends on it. After the last edit to that
+owner, rerun those cases together when they share state or could invalidate one
+another. Record the owner, affected case IDs, last edit time, combined command,
+matching receipt input digest, and passing result under `Affected corpus
+replay`.
+
+A separate green from before the final shared-owner edit is stale. A receipt
+whose proof starts before the latest named input edit is invalid. A nonzero
+retry count cannot certify stability.
 
 ## Corpus Work Without A Registry
 
@@ -269,6 +397,10 @@ Supporting case tables cannot close the plan. Run `check-complete.mjs` only
 after every selected executable case passes its required red/green, fresh-host,
 stability, review, and methodology-delta gates.
 
+Run `validate-regression-plan.mjs --complete` first. A structurally complete
+Autogoal plan with an incomplete reporter oracle is still an open Regression
+run.
+
 ## Mandatory Methodology Delta
 
 Every case ends with one:
@@ -283,6 +415,9 @@ bad commands, stale servers, generated drift, missing proof layers,
 false-green gates, noisy output, redundant broad checks, or shared-host
 conflicts.
 
+When a claimed fix itself failed, repair is automatic and must be `repair-now`
+with executable workflow proof before another product attempt.
+
 Do not optimize away the authoritative executable test.
 
 ## Honest Claims And Stops
@@ -291,16 +426,24 @@ Claim only what evidence proves:
 
 - `reproduced`: exact current case is red;
 - `candidate-local`: local changes make the exact executable case green;
-- `verified-local`: final local source and stability gates pass;
 - `kept`: Regression accepted the local patch after executable proof/review;
-- `fixed`, `shipped`, or `completed`: only the coordinator/release owner
-  may use these after final pushed/integration/release evidence.
+- `completed`: final local source, exact executable cases, fresh-host replay,
+  stability, review, methodology, and canonical plan gates pass. State the
+  local/uncommitted/unpushed scope when applicable;
+- `integrated`, `shipped`, `released`, or public issue completion/labels`: only
+  the coordinator or release owner may use these with their owning evidence
+  and authority.
 
-Stop a case when kept, reverted, quarantined, deferred with owner, or blocked
-with no safe move. Complete the goal only when every selected executable case
-passes, no required runnable case remains, methodology deltas resolve,
-canonical Autogoal gates pass, and the requested time/batch policy is
-satisfied.
+A fresh reporter contradiction invalidates every narrower green/completion
+claim and receipt immediately. Never leave `completed` or a public completed
+label authoritative while treating the contradiction as a separate optional
+follow-up.
+
+Stop a case when completed, reverted, quarantined, deferred with owner, or
+blocked with no safe move. Complete the goal locally when every selected
+executable case has a valid terminal decision, every kept case is completed,
+no required runnable case remains, methodology deltas resolve, canonical
+Autogoal gates pass, and the requested time/batch policy is satisfied.
 
 Do not freeze one run's cases, refs, blockers, metrics, or conclusions into
 reusable methodology.

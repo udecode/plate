@@ -46,8 +46,8 @@ const flattenItems = (items: SidebarNavItem[]): SidebarNavItem[] => {
 const filterItems = (
   items: SidebarNavItem[],
   filter: string
-): SidebarNavItem[] => {
-  return items.reduce<SidebarNavItem[]>((acc, item) => {
+): SidebarNavItem[] =>
+  items.reduce<SidebarNavItem[]>((acc, item) => {
     const itemMatches =
       item.title?.toLowerCase().includes(filter) ||
       item.titleCn?.toLowerCase().includes(filter) ||
@@ -74,7 +74,6 @@ const filterItems = (
 
     return acc;
   }, []);
-};
 
 export function NavItemCard({
   category,
@@ -158,8 +157,8 @@ export function NavItemsGrid({
         )}
       </div>
       <div className="space-y-16">
-        {filteredItems.map((group, index) => (
-          <div key={index}>
+        {filteredItems.map((group) => (
+          <div key={group.title ?? group.items?.[0]?.href}>
             {group.title && (
               <div className="group relative">
                 <H3

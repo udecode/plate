@@ -1,7 +1,8 @@
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import type { Emoji, EmojiMartData } from '@emoji-mart/data';
 import { fireEvent, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import React from 'react';
 
 import type { EmojiSettingsType } from './emoji-picker';

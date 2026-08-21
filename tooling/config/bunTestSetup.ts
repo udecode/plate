@@ -1,8 +1,9 @@
-import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import { afterEach, expect, mock, spyOn } from 'bun:test';
+import { TextEncoder } from 'node:util';
+
+import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup } from '@testing-library/react';
-import { TextEncoder } from 'node:util';
 
 // Make mock and spyOn globally available to avoid needing to import from bun:test
 (globalThis as any).mock = mock;
@@ -10,7 +11,6 @@ import { TextEncoder } from 'node:util';
 
 const VIMEO_UNAUTHORIZED_RE =
   /^GET https:\/\/player\.vimeo\.com\/video\/.+ 401/;
-const UNREACHABLE_CODE_RE = /^Unreachable code: /;
 
 const shouldIgnoreHappyDomResourceError = (value: unknown): boolean => {
   const message =
@@ -43,7 +43,8 @@ globalThis.console.error = (...args: unknown[]) => {
 globalThis.console.warn = (...args: unknown[]) => {
   if (
     args.some(
-      (value) => typeof value === 'string' && UNREACHABLE_CODE_RE.test(value)
+      (value) =>
+        typeof value === 'string' && value.startsWith('Unreachable code: ')
     )
   ) {
     return;
@@ -55,9 +56,9 @@ globalThis.console.warn = (...args: unknown[]) => {
 // Register DOM globals FIRST - this must happen before any code that uses document/window
 GlobalRegistrator.register({
   settings: {
-    disableIframePageLoading: true,
     disableJavaScriptFileLoading: true,
     handleDisabledFileLoadingAsSuccess: true,
+    navigation: { disableChildFrameNavigation: true },
   },
 });
 
@@ -109,7 +110,7 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
     enumerable: true,
     get() {
       // Check if we have a custom value set
-      const customValue = (this as any)._customIsContentEditable;
+      const customValue = this._customIsContentEditable;
       if (customValue !== undefined) {
         return customValue;
       }
@@ -118,7 +119,7 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
     },
     set(value: boolean) {
       // Store custom value
-      (this as any)._customIsContentEditable = value;
+      this._customIsContentEditable = value;
     },
   });
 }
@@ -132,7 +133,7 @@ afterEach(() => {
 });
 
 // TextEncoder global (for Node compatibility)
-global.TextEncoder = TextEncoder as any;
+global.TextEncoder = TextEncoder;
 
 // Mock MessageChannel (Bun compatible)
 global.MessageChannel = class MessageChannel {

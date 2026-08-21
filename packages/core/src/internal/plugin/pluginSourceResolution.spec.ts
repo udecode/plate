@@ -161,16 +161,19 @@ describe('plugin source resolution', () => {
   it.each([
     ['enabled then disabled', false],
     ['disabled then enabled', true],
-  ])('lets a literal-disabled user descriptor suppress the same explicit name regardless of order: %s', (_name, disabledFirst) => {
-    const Enabled = defineBasePlugin('suppressed', {});
-    const Disabled = Enabled.configure({ enabled: false });
+  ])(
+    'lets a literal-disabled user descriptor suppress the same explicit name regardless of order: %s',
+    (_name, disabledFirst) => {
+      const Enabled = defineBasePlugin('suppressed', {});
+      const Disabled = Enabled.configure({ enabled: false });
 
-    expect(
-      resolveSourceNames({
-        user: disabledFirst ? [Disabled, Enabled] : [Enabled, Disabled],
-      })
-    ).toEqual([]);
-  });
+      expect(
+        resolveSourceNames({
+          user: disabledFirst ? [Disabled, Enabled] : [Enabled, Disabled],
+        })
+      ).toEqual([]);
+    }
+  );
 
   it('rejects a disabled descriptor required by an enabled owner', () => {
     const Required = defineBasePlugin('required', {});

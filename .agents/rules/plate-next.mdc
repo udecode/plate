@@ -9,7 +9,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `100`.
+Current doctrine version: `105`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -134,7 +134,7 @@ are reported but never queued.
    source, run every `migrationChecks` row after its applied version plus the
    normal focused proof. Any source-fingerprint mismatch forces a full current
    package review.
-5. After package proof and package-local P2 autoreview close, run
+5. After package proof and package-local P1 autoreview close, run
    `fingerprint <package>`. Patch that package entry with the latest version,
    exact digest, local verification date, and evidence plan. Never pre-attest a
    package or copy another package's digest.

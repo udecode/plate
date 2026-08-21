@@ -5,6 +5,7 @@ import {
   type NodeKey,
   type Editor as EditorType,
 } from '@platejs/plite';
+
 import type {
   PliteAnnotationStore,
   PliteResolvedAnnotation,
@@ -186,7 +187,11 @@ const getEditorChangeWidgetIds = <T extends Record<string, unknown>>(
   });
 };
 
-/** @internal Commit-activated widget store used by React ownership hooks. */
+/**
+ * Commit-activated widget store used by React ownership hooks.
+ *
+ * @internal
+ */
 export type ActivatablePliteWidgetStore<
   T extends Record<string, unknown> = Record<string, never>,
   TAnnotation extends Record<string, unknown> = Record<string, never>,
@@ -458,7 +463,11 @@ export const createPliteWidgetStore = <
     false
   );
 
-/** @internal Create an inert candidate for commit-owned React activation. */
+/**
+ * Create an inert candidate for commit-owned React activation.
+ *
+ * @internal
+ */
 export const createDormantPliteWidgetStore = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,

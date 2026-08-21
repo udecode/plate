@@ -1,8 +1,6 @@
-import React from 'react';
-
-import type { JotaiStore } from 'jotai-x';
-
 import { type Atom, atom } from 'jotai';
+import type { JotaiStore } from 'jotai-x';
+import React from 'react';
 
 import { createAtomStore, useStoreAtomValue } from '../../libs';
 

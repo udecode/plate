@@ -1,12 +1,11 @@
-import React from 'react';
-
 import {
   type EditorRuntimeStateSelectorOptions,
   useEditorRuntimeState,
 } from '@platejs/plite-react';
+import React from 'react';
 
-import { useEditor } from './createPlateStore';
 import type { PlateEditor } from '../../editor';
+import { useEditor } from './createPlateStore';
 import type { PlateEditorWithStore } from './createPlateStore';
 
 export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<

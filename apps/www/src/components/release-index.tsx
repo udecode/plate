@@ -1,9 +1,9 @@
 'use client';
 
-import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
-
-import { useRef, useState } from 'react';
 import { ChevronDown, FileJsonIcon, GitPullRequestIcon } from 'lucide-react';
+import Link from 'next/link';
+import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -123,11 +123,11 @@ export function ReleaseIndex({
           className
         )}
       >
-        <p className="m-0 text-muted-foreground text-sm">
+        <p className="m-0 text-sm text-muted-foreground">
           No generated release entries yet.
         </p>
         <a
-          className="mt-4 inline-flex font-mono text-muted-foreground text-xs underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground"
+          className="mt-4 inline-flex font-mono text-xs text-muted-foreground underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground"
           href={githubReleasesUrl}
           rel="noreferrer"
           target="_blank"
@@ -190,10 +190,10 @@ function ReleaseMajorSection({
           className="scroll-mt-24 pt-10 pb-1"
           id={getReleaseMajorAnchor(group.major)}
         >
-          <h2 className="font-heading font-semibold text-2xl tracking-tight">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
             v{group.major}
           </h2>
-          <p className="mt-1 text-muted-foreground text-sm">
+          <p className="mt-1 text-sm text-muted-foreground">
             {group.releases.length}{' '}
             {group.releases.length === 1 ? 'release' : 'releases'}
           </p>
@@ -242,7 +242,7 @@ function ReleaseRow({
     >
       <header className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
         <a
-          className="font-heading font-medium text-2xl text-foreground tracking-tight transition-colors hover:text-foreground/75"
+          className="font-heading text-2xl font-medium tracking-tight text-foreground transition-colors hover:text-foreground/75"
           href={release.url}
           rel="noreferrer"
           target="_blank"
@@ -250,12 +250,12 @@ function ReleaseRow({
           {release.title}
         </a>
         {release.title !== release.tag ? (
-          <span className="rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-muted-foreground text-xs">
+          <span className="rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
             {release.tag}
           </span>
         ) : null}
         {release.date ? (
-          <time className="font-mono text-muted-foreground text-xs">
+          <time className="font-mono text-xs text-muted-foreground">
             {release.date}
           </time>
         ) : null}
@@ -312,7 +312,7 @@ function ReleaseExpandButton({
 
   return (
     <button
-      className="mt-4 inline-flex items-center gap-1.5 font-mono text-muted-foreground text-xs transition-colors hover:text-foreground"
+      className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground"
       onClick={onClick}
       type="button"
     >
@@ -367,7 +367,7 @@ function PlateUiReleaseChangeItem({
     <article className="rounded-md border bg-surface/40 p-4" ref={articleRef}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="font-heading font-semibold text-base tracking-tight">
+          <h3 className="font-heading text-base font-semibold tracking-tight">
             Plate UI
             {change.release.status === 'latest' ? (
               <Badge className="ml-2 align-middle" variant="outline">
@@ -377,7 +377,7 @@ function PlateUiReleaseChangeItem({
           </h3>
           <Button
             asChild
-            className="mt-2 h-auto max-w-full justify-start whitespace-normal px-2.5 py-1.5 text-left text-sm leading-5"
+            className="mt-2 h-auto max-w-full justify-start px-2.5 py-1.5 text-left text-sm leading-5 whitespace-normal"
             size="sm"
             variant="secondary"
           >
@@ -400,9 +400,9 @@ function PlateUiReleaseChangeItem({
         <div className="flex flex-wrap items-center justify-end gap-2">
           {showSyncGuide ? (
             <Button asChild size="sm" variant="secondary">
-              <a href="/docs/installation/plate-ui#sync-copied-files">
+              <Link href="/docs/installation/plate-ui#sync-copied-files">
                 Sync guide
-              </a>
+              </Link>
             </Button>
           ) : null}
           <Button asChild size="sm" variant="ghost">
@@ -425,7 +425,7 @@ function PlateUiReleaseChangeItem({
             <div key={entry.id}>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline">{entry.kind}</Badge>
-                <div className="flex flex-wrap gap-x-1.5 gap-y-1 font-mono text-muted-foreground text-xs">
+                <div className="flex flex-wrap gap-x-1.5 gap-y-1 font-mono text-xs text-muted-foreground">
                   {entry.targets.map((target) => (
                     <PlateUiEntryTarget
                       change={change}
@@ -435,11 +435,11 @@ function PlateUiReleaseChangeItem({
                   ))}
                 </div>
               </div>
-              <p className="mt-1 text-muted-foreground text-sm leading-6">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 {entry.summary}
               </p>
               {entry.migrationNotes.length > 0 ? (
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground text-xs leading-5">
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-muted-foreground">
                   {entry.migrationNotes.map((note) => (
                     <li key={note}>{note}</li>
                   ))}
@@ -586,14 +586,16 @@ function MarkdownContent({ content }: { content: string }) {
             </code>
           );
         },
-        h2: ({ className, ...props }) => (
+        h2: ({ children, className, ...props }) => (
           <h2
             className={cn(
               'mt-6 mb-3 font-semibold text-2xl text-foreground tracking-tight **:[code]:text-xl',
               className
             )}
             {...props}
-          />
+          >
+            {children}
+          </h2>
         ),
         h3: ({ children, className, ...props }) => (
           <h3

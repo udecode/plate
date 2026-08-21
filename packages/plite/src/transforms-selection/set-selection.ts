@@ -5,8 +5,8 @@ import {
   setCurrentSelection,
   syncImplicitTargetToCurrentSelection,
 } from '../core/public-state';
-import { PointApi } from '../interfaces/point';
 import type { AnyEditor as Editor, Value } from '../interfaces/editor';
+import { PointApi } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import type { Selection } from '../interfaces/selection';
 import { SelectionApi } from '../interfaces/selection';

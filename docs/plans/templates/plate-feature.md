@@ -21,7 +21,7 @@ Flow mode:
 Completion threshold:
 - Every applicable Feature Manifest row is complete with evidence.
 - Every excluded row has an explicit N/A reason.
-- Selected packs, Plate Next attestation, P2 review, feature checker, and goal
+- Selected packs, Plate Next attestation, P1 review, feature checker, and goal
   checker are closed.
 
 Verification surface:
@@ -98,7 +98,7 @@ Work Checklist:
 - [ ] Write current-state docs and classify release artifacts.
 - [ ] Run selected package, app, registry, docs, browser, and stale-surface proof.
 - [ ] Reuse this manifest for Plate Next attestation without mass-attesting packages.
-- [ ] Run P2 autoreview and close accepted findings before goal completion.
+- [ ] Run P1 autoreview and close accepted findings before goal completion.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
@@ -109,7 +109,7 @@ Completion Gates:
 | Registry/browser proof | pending | Verify runnable copied UI or record N/A | pending |
 | Docs/release proof | pending | Verify docs and release classification | pending |
 | Plate Next attestation | pending | Validate reviewed package version/evidence or record N/A | pending |
-| P2 autoreview | yes | Run P2 autoreview and close accepted findings | pending |
+| P1 autoreview | yes | Run P1 autoreview and close accepted findings | pending |
 | Goal plan complete | yes | Run the autogoal completion checker after autoreview | pending |
 
 Findings:

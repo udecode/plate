@@ -1,10 +1,10 @@
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { AIChatRequestRefs } from '@platejs/ai/react';
 import type { MarkdownEditor } from '@platejs/markdown';
-
 import { BaseTablePlugin, type TableCellElement } from '@platejs/table';
-import { ElementApi } from 'platejs';
 import dedent from 'dedent';
+import { ElementApi } from 'platejs';
+
+import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 import {
   buildStructuredPrompt,

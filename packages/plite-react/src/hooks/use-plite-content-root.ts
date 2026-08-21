@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
 import type { Element, NamedRootKey } from '@platejs/plite';
+import { useMemo } from 'react';
+
 import { useEditor } from './use-editor';
 import { useOptionalElement } from './use-element';
 import { usePliteChildRoot } from './use-plite-child-root';

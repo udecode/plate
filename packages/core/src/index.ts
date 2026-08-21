@@ -63,7 +63,7 @@ export type {
   TransformOptions,
 } from './lib/plugin/BasePlugin';
 export type { HandlerReturnType } from './lib/plugin/HandlerReturnType';
-export * from './lib/plugin/MarkdownNodeCodec';
+export type * from './lib/plugin/MarkdownNodeCodec';
 export type {
   BaseInjectProps,
   BasePluginDefinition,
@@ -135,6 +135,6 @@ export * from './lib/plugins/input-rules/index';
 export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/override/index';
 export * from './lib/plugins/paragraph/index';
-export * from './lib/types/index';
+export type * from './lib/types/index';
 export * from './lib/utils/index';
 export type { PliteElementProps } from './static/components/plite-nodes';

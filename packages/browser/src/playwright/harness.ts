@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
 import {
@@ -130,8 +131,7 @@ export const createEditorHarness = (
         surface.locator(selector).first()
       ),
     get: {
-      modelText: async () =>
-        evaluateHarnessHandle(root, 'getText'),
+      modelText: async () => evaluateHarnessHandle(root, 'getText'),
       modelBlockText: async (index) =>
         evaluateHarnessHandle(
           root,

@@ -1,3 +1,7 @@
+import type {
+  EditorTransactionTopLevelRange,
+  TopLevelRuntimeRange,
+} from '../../interfaces/editor';
 import type { DocumentIndex } from './document-index';
 import type { RootChange } from './root-change';
 import {
@@ -7,10 +11,6 @@ import {
   nodeProps,
   pathKey,
 } from './tokens';
-import type {
-  EditorTransactionTopLevelRange,
-  TopLevelRuntimeRange,
-} from '../../interfaces/editor';
 
 export type DocumentChangeRootClassification = Readonly<{
   paths: readonly (readonly number[])[];
@@ -19,7 +19,11 @@ export type DocumentChangeRootClassification = Readonly<{
   text: boolean;
 }>;
 
-/** @internal Final-coordinate node candidate for node key publication. */
+/**
+ * Final-coordinate node candidate for node key publication.
+ *
+ * @internal
+ */
 export type DocumentChangeRuntimeCandidate = Readonly<{
   node: JsonNode;
   path: readonly number[];
@@ -113,7 +117,7 @@ export const classifyRootChangeWithRuntimeCandidates = (
   let positionBefore = 0;
   let positionAfter = 0;
 
-  for (let index = 0; index < change.sections.length; ) {
+  for (let index = 0; index < change.sections.length;) {
     const length = change.sections[index++]!;
     const inserted = change.sections[index++]!;
     const fromBefore = positionBefore;
@@ -224,7 +228,11 @@ export const classifyRootChange = (
 ): DocumentChangeRootClassification =>
   classifyRootChangeWithRuntimeCandidates(change, before, after).classification;
 
-/** @internal Classify one root without publishing classification metadata. */
+/**
+ * Classify one root without publishing classification metadata.
+ *
+ * @internal
+ */
 export const classifyDocumentChangeRoot = (
   change: RootChange,
   before: DocumentIndex,
@@ -265,8 +273,10 @@ export const getTopLevelRange = (
 };
 
 /**
- * @internal Final-coordinate paths at or inside one root change. Removed-only
+ * Final-coordinate paths at or inside one root change. Removed-only
  * ranges resolve to their surviving boundary; an empty result means the root.
+ *
+ * @internal
  */
 export const getDocumentChangeAfterPaths = (
   change: RootChange,
@@ -283,7 +293,11 @@ export const getDocumentChangeAfterPaths = (
   return Object.freeze([...paths.values()]);
 };
 
-/** @internal Bounded top-level windows for each changed root range. */
+/**
+ * Bounded top-level windows for each changed root range.
+ *
+ * @internal
+ */
 export const getDocumentChangeTopLevelRanges = (
   change: RootChange,
   before: DocumentIndex,

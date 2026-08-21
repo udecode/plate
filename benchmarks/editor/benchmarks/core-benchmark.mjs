@@ -34,7 +34,7 @@ const payload = {
 normalizeBenchmarkResult(payload);
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, JSON.stringify(payload, null, 2) + '\n');
+fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`);
 console.log(JSON.stringify(payload, null, 2));
 
 function measureNormalization() {
@@ -48,7 +48,7 @@ function measureNormalization() {
     for (let i = 0; i < iterations; i++) {
       normalizeBenchmarkRow({
         category: 'typing',
-        fixture: 'type-middle-' + (i % 10),
+        fixture: `type-middle-${i % 10}`,
         library: i % 2 === 0 ? 'slate-v2' : 'slate',
         status: 'ok',
         medianUs: 120 + i,

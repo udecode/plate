@@ -14,11 +14,11 @@ import {
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
 import isEqual from 'lodash/isEqual.js';
 
-import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 import {
   getCompiledPlatePluginByKey,
   getCompiledPlatePluginByType,
 } from '../../../internal/plugin/compilePlateModel';
+import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 
 export type AffinityEdgeNodes =
   | [NodeEntry<Element | Text>, NodeEntry<Element | Text>]
@@ -126,8 +126,9 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
     if (
       !isAffinityInlineElement &&
       (!currentNode || !NodeApi.isDescendant(currentNode))
-    )
+    ) {
       return null;
+    }
 
     const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
       ? [parent!, PathApi.parent(cursor.path)]

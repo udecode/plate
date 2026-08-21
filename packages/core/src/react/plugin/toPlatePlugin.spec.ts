@@ -1,6 +1,5 @@
-import type { NodeComponent } from '../../lib';
-
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
+import type { NodeComponent } from '../../lib';
 import { createBaseEditor, defineBasePlugin } from '../../lib';
 import { toPlatePlugin } from './toPlatePlugin';
 

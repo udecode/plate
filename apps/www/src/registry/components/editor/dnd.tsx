@@ -1,10 +1,10 @@
 'use client';
 
-import * as React from 'react';
-import type { NodeKey, Element as PliteElement } from '@platejs/plite';
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { BaseColumnItemPlugin } from '@platejs/layout';
 import { ListPlugin } from '@platejs/list/react';
+import { PlaceholderPlugin } from '@platejs/media/react';
+import type { NodeKey, Element as PliteElement } from '@platejs/plite';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   BaseTableCellPlugin,
@@ -25,6 +25,10 @@ import {
   usePluginStore,
   useElementSelected,
 } from 'platejs/react';
+import * as React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -32,9 +36,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { PlaceholderPlugin } from '@platejs/media/react';
 
 const UNDRAGGABLE_PLUGINS = [
   BaseColumnItemPlugin,
@@ -128,14 +129,12 @@ function Draggable(props: RenderNodeWrapperProps) {
     if (!isDragging) {
       resetPreview();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   React.useEffect(() => {
     if (isAboutToDrag) {
       previewRef.current?.classList.remove('opacity-0');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAboutToDrag]);
 
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
@@ -171,7 +170,7 @@ function Draggable(props: RenderNodeWrapperProps) {
               <Button
                 ref={handleRef}
                 variant="ghost"
-                className="-left-0 absolute h-6 w-full p-0"
+                className="absolute -left-0 h-6 w-full p-0"
                 style={{ top: `${dragButtonTop + 3}px` }}
                 aria-label="Drag block"
                 data-plate-prevent-deselect

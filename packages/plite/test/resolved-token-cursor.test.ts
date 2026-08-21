@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import fc from 'fast-check';
 
 import { DocumentIndex } from '../src/core/change/document-index';
@@ -137,7 +138,7 @@ const pointAt = (
     };
   }
 
-  const before = texts.filter((entry) => entry.contentTo < position).at(-1);
+  const before = texts.findLast((entry) => entry.contentTo < position);
   const after = texts.find((entry) => entry.contentFrom > position);
   const entry = assoc < 0 ? (before ?? after) : (after ?? before);
 

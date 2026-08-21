@@ -1,8 +1,8 @@
-import * as React from 'react';
-
-import { render } from '@testing-library/react';
 import { afterAll, describe, expect, it, mock } from 'bun:test';
+
 import type { CodeDrawingElement } from '@platejs/code-drawing';
+import { render } from '@testing-library/react';
+import * as React from 'react';
 
 mock.module('platejs/static', () => ({
   PliteElement: ({ children }: React.ComponentProps<'div'>) => (

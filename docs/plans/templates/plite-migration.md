@@ -157,7 +157,7 @@ Work Checklist:
       skills/workflow, and reverted/quarantined packets.
 - [ ] Needs-your-attention list is ranked and capped at five items.
 - [ ] Stopping checkpoints are queued or marked none.
-- [ ] P2 autoreview/review gate is run for non-trivial implementation diffs or
+- [ ] P1 autoreview/review gate is run for non-trivial implementation diffs or
       marked N/A with reason.
 - [ ] Output budget discipline is followed: broad scans are capped or written
       to artifacts instead of streamed.
@@ -177,7 +177,7 @@ Completion Gates:
 | Skill/rule sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
 | Changed list / review attention / stopping checkpoints | pending | Fill final handoff ledgers from packet evidence | pending |
 | Workflow slowdown review | pending | Log slow steps and repair avoidable repeats, otherwise N/A | pending |
-| P2 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P2`, and close accepted findings; use P3 only when explicitly requested, or N/A | pending |
+| P1 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P1`, and close accepted findings; use P2 or P3 only when explicitly requested, or N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

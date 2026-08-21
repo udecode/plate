@@ -24,6 +24,7 @@ export function mergeProps(
   }: MergePropsOptions = {}
 ) {
   const handlersByKey = new Map<string, ((...args: unknown[]) => void)[]>();
+  const handlerKeySet = handlerKeys ? new Set(handlerKeys) : null;
   const mergedProps: Record<string, unknown> = {};
 
   const addProps = (_props?: object) => {
@@ -31,7 +32,7 @@ export function mergeProps(
 
     for (const [key, value] of Object.entries(_props)) {
       if (
-        (!handlerKeys || handlerKeys.includes(key)) &&
+        (!handlerKeySet || handlerKeySet.has(key)) &&
         (!handlerQuery || handlerQuery(key)) &&
         typeof value === 'function'
       ) {

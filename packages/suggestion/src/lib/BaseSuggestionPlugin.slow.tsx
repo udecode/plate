@@ -12,8 +12,8 @@ import {
   property,
   schema,
 } from '@platejs/plite';
-import { PLUGINS } from '@platejs/utils';
 import { jsxt } from '@platejs/test-utils';
+import { PLUGINS } from '@platejs/utils';
 
 import {
   BaseSuggestionPlugin,
@@ -136,28 +136,31 @@ describe('BaseSuggestionPlugin behavior', () => {
   it.each([
     ['collapsed', 1],
     ['expanded', 2],
-  ] as const)('preserves open slice boundaries for a %s selection', (_, focus) => {
-    const editor = createBaseEditor({
-      plugins: [suggestionPlugin],
-      selection: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: focus, path: [0, 0] },
-        kind: 'text',
-      },
-      initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
-    });
-    const slice = ContentSlice.fromJSON({
-      content: [{ children: [{ text: 'X' }], type: 'paragraph' }],
-      openEnd: 1,
-      openStart: 1,
-    });
+  ] as const)(
+    'preserves open slice boundaries for a %s selection',
+    (_, focus) => {
+      const editor = createBaseEditor({
+        plugins: [suggestionPlugin],
+        selection: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: focus, path: [0, 0] },
+          kind: 'text',
+        },
+        initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
+      });
+      const slice = ContentSlice.fromJSON({
+        content: [{ children: [{ text: 'X' }], type: 'paragraph' }],
+        openEnd: 1,
+        openStart: 1,
+      });
 
-    editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
-    editor.update.slice.replace(slice);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
+      editor.update.slice.replace(slice);
 
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.text.string([])).toBe('aXbc');
-  });
+      expect(editor.read.children()).toHaveLength(1);
+      expect(editor.read.text.string([])).toBe('aXbc');
+    }
+  );
 
   it('toggles structurally equal JSON marks as active values', () => {
     const editor = createBaseEditor({

@@ -1,4 +1,3 @@
-import type { PointerEvent } from 'react';
 import { defineExtension, schema } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -12,6 +11,7 @@ import {
   usePliteEditor,
   usePliteRootChrome,
 } from '@platejs/plite-react';
+import type { PointerEvent } from 'react';
 
 import { Button, Icon, Toolbar } from './components';
 import type {
@@ -22,6 +22,7 @@ import type {
   EditableVoidElement,
   ParagraphElement as ParagraphElementType,
 } from './custom-types.d';
+
 let editableVoidId = 0;
 
 const paragraph = (text: string): ParagraphElementType => ({

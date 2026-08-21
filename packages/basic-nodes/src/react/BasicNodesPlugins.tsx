@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { PlateLeaf, toPlatePlugin } from '@platejs/core/react';
 import { Key } from '@udecode/react-hotkeys';
+import React from 'react';
 
 import {
   BaseBlockquotePlugin,

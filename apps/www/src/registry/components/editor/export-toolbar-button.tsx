@@ -1,15 +1,13 @@
 'use client';
 
-import * as React from 'react';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 import { exportToDocx } from '@platejs/docx-export';
 import { MarkdownPlugin } from '@platejs/markdown';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createBaseEditor } from 'platejs';
 import { useEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -18,8 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { DocxExportKit } from '@/registry/components/editor/docx-export';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';

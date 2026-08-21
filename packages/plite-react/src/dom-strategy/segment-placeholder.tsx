@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react';
-import React, { useCallback } from 'react';
 import type {
   Descendant,
   EditorCommit,
@@ -13,12 +11,14 @@ import type {
   DOMCoverageSelectionPolicy,
 } from '@platejs/plite-dom/internal';
 import { DOMCoverage, IS_COMPOSING } from '@platejs/plite-dom/internal';
+import type { CSSProperties } from 'react';
+import React, { useCallback } from 'react';
+
 import {
   getSnapshot as editorGetSnapshot,
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
-
 import { readRuntimeNode } from '../editable/runtime-live-state';
 import { useEditor } from '../hooks/use-editor';
 import { useEditorSelector } from '../hooks/use-editor-selector';
@@ -324,3 +324,5 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     prev.previewChars === next.previewChars &&
     sameNodeKeys(prev.nodeKeys, next.nodeKeys)
 );
+
+DOMStrategySegmentPlaceholder.displayName = 'DOMStrategySegmentPlaceholder';

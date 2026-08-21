@@ -1,5 +1,5 @@
-import { useInsertionEffect, useMemo, useRef } from 'react';
 import type { Editor } from '@platejs/plite';
+import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import {
   createDormantPliteAnnotationStore,

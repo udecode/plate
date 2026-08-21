@@ -5,10 +5,6 @@ import {
   schema,
   type RootKey,
 } from '@platejs/plite';
-import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
 import { dom } from '@platejs/plite-dom';
 import {
   EDITOR_TO_ELEMENT,
@@ -17,6 +13,16 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
+
+import {
+  EditableDOMRuntime,
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from '../src/editable/editable-dom-runtime';
 import {
   isInteractiveInternalTarget,
   isNestedEditableDOMTarget,
@@ -41,11 +47,14 @@ import {
   shouldSuppressCollapsedSelectionMoveDOMRange,
   syncEditableDOMSelectionToEditor as syncRuntimeDOMSelectionToEditor,
 } from '../src/editable/selection-controller';
+import { ReactEditor } from '../src/plugin/react-editor';
+import { createReactEditor, react } from '../src/plugin/with-react';
+import { createPliteProjectionGraph } from '../src/projection-graph';
 import {
-  EditableDOMRuntime,
-  findMountedEditableDOMRuntime,
-  getMountedEditableDOMRuntime,
-} from '../src/editable/editable-dom-runtime';
+  createPliteViewSelection,
+  readPliteViewSelection,
+  writePliteViewSelection,
+} from '../src/view-selection';
 
 const testRuntimes = new Set<EditableDOMRuntime>();
 const syncEditableDOMSelectionToEditor = (
@@ -80,14 +89,6 @@ afterEach(() => {
   for (const runtime of testRuntimes) runtime.destroy();
   testRuntimes.clear();
 });
-import { ReactEditor } from '../src/plugin/react-editor';
-import { createReactEditor, react } from '../src/plugin/with-react';
-import { createPliteProjectionGraph } from '../src/projection-graph';
-import {
-  createPliteViewSelection,
-  readPliteViewSelection,
-  writePliteViewSelection,
-} from '../src/view-selection';
 
 const PROJECTED_SELECTION_ROOT: RootKey = 'selection-controller:projected-root';
 

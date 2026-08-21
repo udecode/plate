@@ -46,46 +46,77 @@ const readDOMSelection = (page: Page) =>
 test('floating Bold applies the mark without losing the selection', async ({
   page,
 }) => {
-  const runtimeErrors = recordRuntimeErrors(page);
   const editor = getEditor(page);
+  const expectedSelection = 'Experience a modern';
+
+  await page.goto('/blocks/playground');
+  await expect(editor).toHaveCount(1);
+
+  const target = page.getByText(
+    'Experience a modern rich-text editor built with',
+    { exact: true }
+  );
+  const targetRange = await target.evaluate((element, textLength) => {
+    const textNode = element.firstChild;
+
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      throw new Error('Expected a plain intro text node');
+    }
+
+    const range = document.createRange();
+
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, textLength);
+
+    const rect = range.getBoundingClientRect();
+
+    return {
+      bottom: rect.bottom,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+    };
+  }, expectedSelection.length);
+  const y = (targetRange.top + targetRange.bottom) / 2;
+
+  await page.mouse.move(targetRange.left + 1, y);
+  await page.mouse.down();
+  await page.mouse.move(targetRange.right - 1, y, { steps: 10 });
+  await page.mouse.up();
+
+  const floatingToolbar = page.getByRole('toolbar').filter({
+    has: page.getByRole('button', { exact: true, name: 'Ask AI' }),
+  });
+
+  await expect(floatingToolbar).toBeVisible();
+
+  await expect
+    .poll(() => readDOMSelection(page))
+    .toEqual({
+      activeInEditor: true,
+      bold: false,
+      collapsed: false,
+      insideEditor: true,
+      text: expectedSelection,
+    });
+
+  const boldButton = floatingToolbar.locator('button').filter({
+    has: page.locator('svg.lucide-bold'),
+  });
+
+  await expect(boldButton).toHaveCount(1);
+
+  const boldButtonBox = await boldButton.boundingBox();
+
+  if (!boldButtonBox) throw new Error('Expected visible floating Bold');
+
+  const runtimeErrors = recordRuntimeErrors(page);
 
   try {
-    await page.goto('/blocks/playground');
-    await expect(editor).toHaveCount(1);
-
-    const target = page.getByText(
-      'Experience a modern rich-text editor built with',
-      { exact: true }
+    await page.mouse.click(
+      boldButtonBox.x + boldButtonBox.width / 2,
+      boldButtonBox.y + boldButtonBox.height / 2
     );
-    const targetBox = await target.boundingBox();
-
-    if (!targetBox) throw new Error('Expected visible playground intro text');
-
-    const y = targetBox.y + targetBox.height / 2;
-
-    await page.mouse.move(targetBox.x + 2, y);
-    await page.mouse.down();
-    await page.mouse.move(targetBox.x + Math.min(targetBox.width - 2, 180), y, {
-      steps: 10,
-    });
-    await page.mouse.up();
-
-    const floatingToolbar = page.getByRole('toolbar').filter({
-      has: page.getByRole('button', { exact: true, name: 'Ask AI' }),
-    });
-
-    await expect(floatingToolbar).toBeVisible();
-
-    const selectedText = (await readDOMSelection(page)).text;
-
-    expect(selectedText).not.toBe('');
-
-    const boldButton = floatingToolbar.locator('button').filter({
-      has: page.locator('svg.lucide-bold'),
-    });
-
-    await expect(boldButton).toHaveCount(1);
-    await boldButton.click();
 
     await expect
       .poll(() => readDOMSelection(page))
@@ -94,9 +125,10 @@ test('floating Bold applies the mark without losing the selection', async ({
         bold: true,
         collapsed: false,
         insideEditor: true,
-        text: selectedText,
+        text: expectedSelection,
       });
-    await expect(boldButton).toHaveAttribute('aria-checked', 'true');
+    await expect(floatingToolbar).toBeVisible();
+    await expect(boldButton).toHaveAttribute('aria-pressed', 'true');
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

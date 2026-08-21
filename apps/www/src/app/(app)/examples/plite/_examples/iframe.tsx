@@ -1,6 +1,3 @@
-import type React from 'react';
-import { type PointerEvent, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { isHotkey } from '@platejs/plite-dom';
 import {
   Editable,
@@ -11,6 +8,9 @@ import {
   useEditorSelector,
   usePliteEditor,
 } from '@platejs/plite-react';
+import type React from 'react';
+import { type PointerEvent, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { Button, Icon, Toolbar } from './components';
 import type {
@@ -161,7 +161,13 @@ const IFrame = ({ children, ...props }: IFrameProps) => {
     setIframeBody(iframe.contentDocument.body);
   };
   return (
-    <iframe srcDoc={'<!DOCTYPE html>'} {...props} onLoad={handleLoad}>
+    <iframe
+      title="Embedded Plate editor"
+      sandbox="allow-same-origin"
+      srcDoc="<!DOCTYPE html>"
+      {...props}
+      onLoad={handleLoad}
+    >
       {iframeBody && createPortal(children, iframeBody)}
     </iframe>
   );

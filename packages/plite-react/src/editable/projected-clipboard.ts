@@ -11,13 +11,13 @@ import {
   writeDOMHostFragmentData,
 } from '@platejs/plite-dom/internal';
 
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { resolvePliteViewBoundarySegmentEndpoint } from '../view-boundary-graph';
 import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   type PliteViewSelection,
 } from '../view-selection';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   type Editor as RuntimeEditor,
   getEditorRuntimeOwner,

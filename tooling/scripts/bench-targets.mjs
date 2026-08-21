@@ -63,10 +63,12 @@ function resolveAutoresearchScript({ required = true } = {}) {
   fail(
     'Missing Codex Autoresearch script. Set CODEX_AUTORESEARCH_SCRIPT or clone codex-autoresearch next to this repo.'
   );
+
+  return undefined;
 }
 
 function readJson(file) {
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
+  return JSON.parse(fs.readFileSync(file, 'utf-8'));
 }
 
 function readJsonIfExists(file) {
@@ -77,7 +79,7 @@ function readJsonIfExists(file) {
 function readHeadJson(repoPath) {
   const result = spawnSync('git', ['show', `HEAD:${repoPath}`], {
     cwd: root,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     stdio: 'pipe',
   });
 
@@ -247,8 +249,9 @@ function validateRegistry(registry) {
     if (path.isAbsolute(target.cwd ?? '')) {
       errors.push(`${prefix}: cwd must be repo-relative`);
     }
-    if (!target.metrics?.primary)
+    if (!target.metrics?.primary) {
       errors.push(`${prefix}: missing metrics.primary`);
+    }
     if (!['lower', 'higher'].includes(target.metrics?.direction)) {
       errors.push(`${prefix}: metrics.direction must be lower or higher`);
     }
@@ -502,7 +505,7 @@ function assertFileEquals(filePath, expected) {
   let current;
 
   try {
-    current = fs.readFileSync(filePath, 'utf8');
+    current = fs.readFileSync(filePath, 'utf-8');
   } catch {
     throw new Error(`missing generated file: ${path.relative(root, filePath)}`);
   }
@@ -743,7 +746,7 @@ function dryRun(id = 'react-active-typing-breakdown') {
     [script, ...autoresearchSetupArgs(target, 'setup-plan')],
     {
       cwd: root,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: 'pipe',
     }
   );

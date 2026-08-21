@@ -53,7 +53,7 @@ if (isPlite) {
   } catch {}
 }
 
-const { createEditor } = Slate;
+const { ContentSlice, createEditor } = Slate;
 const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
 const NodeApi = Slate.NodeApi ?? Slate.Node ?? SlateInternal.NodeApi ?? SlateInternal.Node;
 const legacyTransforms = Slate.Transforms;
@@ -212,6 +212,14 @@ const getSelection = (editor) =>
       ? editor.getSelection()
       : getSnapshot(editor).selection;
 
+const getEndPoint = (editor, path) => {
+  if (typeof editor.read === 'function') {
+    return editor.read((state) => state.points.end(path));
+  }
+
+  return Editor.end(editor, path);
+};
+
 const getTextLength = (editor, path) => {
   try {
     return Editor.string(editor, path).length;
@@ -313,7 +321,7 @@ const deleteBackward = (editor) => {
 const insertFragment = (editor, fragment) => {
   if (typeof editor.update === 'function') {
     update(editor, (tx) => {
-      tx.fragment.insert(fragment);
+      tx.slice.replace(ContentSlice.closed(fragment));
     });
     return;
   }
@@ -425,7 +433,7 @@ const richRange = (editor, count = selectionBlocks) => {
 
   return {
     anchor: textPointAt(0, 0),
-    focus: textPointAt(lastBlock, getTextLength(editor, [lastBlock])),
+    focus: getEndPoint(editor, [lastBlock]),
   };
 };
 
@@ -649,7 +657,7 @@ const selectAllMs = measureLane(createEditorWithChildren, (editor) => {
 
   select(editor, {
     anchor: textPointAt(0, 0),
-    focus: textPointAt(lastBlock, getTextLength(editor, [lastBlock])),
+    focus: getEndPoint(editor, [lastBlock]),
   });
 
   assert.deepEqual(getSelection(editor)?.anchor, textPointAt(0, 0));

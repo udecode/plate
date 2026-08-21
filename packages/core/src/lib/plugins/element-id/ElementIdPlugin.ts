@@ -12,11 +12,11 @@ import {
   target,
   type Value,
 } from '@platejs/plite';
-import { nanoid } from 'nanoid';
 import {
   getEditorCommitSnapshot,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
+import { nanoid } from 'nanoid';
 
 import { defineBasePlugin } from '../../plugin/defineBasePlugin';
 

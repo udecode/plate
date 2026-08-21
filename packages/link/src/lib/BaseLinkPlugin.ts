@@ -116,7 +116,7 @@ const validateUrlWithOptions = (
 
   return Boolean(
     dangerouslySkipSanitization ||
-      sanitizeUrl(url, { allowedSchemes, permitInvalid: true })
+    sanitizeUrl(url, { allowedSchemes, permitInvalid: true })
   );
 };
 

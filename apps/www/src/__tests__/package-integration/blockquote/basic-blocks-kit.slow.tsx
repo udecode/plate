@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createBaseEditor } from 'platejs';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 

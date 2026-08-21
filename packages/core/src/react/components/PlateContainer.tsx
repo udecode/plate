@@ -1,16 +1,16 @@
-import React, { type HTMLAttributes } from 'react';
 import {
   useEditorViewState,
   useEditorScrollElementRef,
   useOptionalEditorReadOnly,
 } from '@platejs/plite-react';
 import { useComposedRef } from '@udecode/react-utils';
+import React, { type HTMLAttributes } from 'react';
 
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor, usePlateValue } from '../stores';
 

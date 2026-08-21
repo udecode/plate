@@ -23,11 +23,11 @@ Plate
 
 You can choose one of the following templates to get started:
 
-| Option                                                                            | Plate | Plugins | AI  | Backend |
-| --------------------------------------------------------------------------------- | ----- | ------- | --- | ------- |
-| [Notion-like template](https://pro.platejs.org/docs/templates/potion)             | ✅    | ✅      | ✅  | ✅      |
-| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅    | ✅      | ✅  |         |
-| [Plate minimal template](https://github.com/udecode/plate-template)               | ✅    |         |     |         |
+| Option | Plate | Plugins | AI | Backend |
+| --- | --- | --- | --- | --- |
+| [Notion-like template](https://pro.platejs.org/docs/templates/potion) | ✅ | ✅ | ✅ | ✅ |
+| [Plate playground template](https://github.com/udecode/plate-playground-template) | ✅ | ✅ | ✅ |  |
+| [Plate minimal template](https://github.com/udecode/plate-template) | ✅ |  |  |  |
 
 ## Documentation
 

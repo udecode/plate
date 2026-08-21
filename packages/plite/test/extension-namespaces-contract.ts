@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, defineExtension } from '@platejs/plite';
 import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-
-import { createEditor, defineExtension } from '@platejs/plite';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

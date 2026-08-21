@@ -70,8 +70,6 @@ export const getLocationRoot = (
   if ('anchor' in location && 'focus' in location) {
     return getExplicitRangeLocationRoot(location) ?? undefined;
   }
-
-  return;
 };
 
 const getExplicitRangeLocationRoot = (

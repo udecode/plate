@@ -11,8 +11,10 @@ const inlineVoidType = 'inline-void';
 
 const inlineElementType = 'inline-element';
 
-interface ComputeDiffFixture
-  extends Pick<ComputeDiffOptions, 'elementsAreRelated' | 'lineBreakChar'> {
+interface ComputeDiffFixture extends Pick<
+  ComputeDiffOptions,
+  'elementsAreRelated' | 'lineBreakChar'
+> {
   expected: Value;
   input1: Value;
   input2: Value;

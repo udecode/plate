@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type {
   EditorCommitContext,
   EditorDocumentValue,
@@ -12,12 +10,12 @@ import type {
 } from '@platejs/plite';
 import { EditorReadOnlyProvider } from '@platejs/plite-react';
 import isEqual from 'lodash/isEqual.js';
-
-import type { EditableProps } from '../../lib/types/EditableProps';
-import type { PlateEditor } from '../editor/PlateEditor';
+import React from 'react';
 
 import { usePlateInstancesWarn } from '../../internal/hooks/usePlateInstancesWarn';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
+import type { EditableProps } from '../../lib/types/EditableProps';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { PlateStoreProvider } from '../stores';
 
@@ -107,7 +105,9 @@ function PlateInner({
     onSelectionChange,
     onValueChange,
   });
-  const lastDocumentValueRef = React.useRef(editor?.read.value());
+  const [lastDocumentValueRef] = React.useState(() => ({
+    current: editor?.read.value(),
+  }));
 
   React.useInsertionEffect(() => {
     observersRef.current = {

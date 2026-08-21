@@ -2,7 +2,6 @@
 
 import { Plate, PlateContent, definePlatePlugin } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
-
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';

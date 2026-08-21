@@ -1,6 +1,12 @@
-import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import React from 'react';
 import type { Descendant } from '@platejs/plite';
+import {
+  DOMCoverage,
+  EDITOR_TO_ELEMENT,
+  EDITOR_TO_WINDOW,
+  ELEMENT_TO_NODE,
+  IS_COMPOSING,
+  NODE_TO_ELEMENT,
+} from '@platejs/plite-dom/internal';
 import { history } from '@platejs/plite-history';
 import {
   getNodeKey as editorGetNodeKey,
@@ -10,15 +16,10 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import {
-  DOMCoverage,
-  EDITOR_TO_ELEMENT,
-  EDITOR_TO_WINDOW,
-  ELEMENT_TO_NODE,
-  IS_COMPOSING,
-  NODE_TO_ELEMENT,
-} from '@platejs/plite-dom/internal';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import React from 'react';
 import { vi } from 'vitest';
+
 import {
   createReactEditor,
   Editable,
@@ -26,8 +27,8 @@ import {
   Plite,
 } from '../src';
 import { createDecorationSource } from '../src/decoration-source';
-import { setDOMTextSyncRendererCapability } from '../src/dom-text-sync';
 import { createLayoutVirtualizerSizeMap } from '../src/dom-strategy/use-virtualized-root-plan';
+import { setDOMTextSyncRendererCapability } from '../src/dom-text-sync';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { syncEditableDOMSelectionToEditor } from '../src/editable/selection-controller';
 import {
@@ -1097,7 +1098,9 @@ test('Editable auto keeps large documents DOM-bounded instead of staged backgrou
   ).toBeGreaterThan(0);
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 750));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 750);
+    });
   });
 
   expect(
@@ -2030,7 +2033,9 @@ test('Editable staged full-document replacement removes stale far DOM immediatel
   ).toBe(null);
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 750));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 750);
+    });
   });
 
   expect(rendered.container.textContent).not.toContain('line 1000');
@@ -2083,7 +2088,9 @@ test('Editable staged full-document replacement resets staged coverage without s
   );
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 750));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 750);
+    });
   });
 
   expect(rendered.container.textContent).not.toContain('old line 1000');
@@ -2167,7 +2174,9 @@ test('Editable staged stages far root groups without partial-DOM placeholders', 
   ).toBe(1);
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 750));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 750);
+    });
   });
 
   expect(rendered.container.textContent).not.toContain('line 1000');
@@ -2213,7 +2222,9 @@ test('Editable staged registers pending root groups as DOM coverage boundaries',
   ]);
 
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 750));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 750);
+    });
   });
 
   expect(DOMCoverage.getBoundaries(editor)).toHaveLength(1);
@@ -2505,7 +2516,9 @@ test('Editable domStrategy mounts only the target partial-DOM segment during the
   });
 
   await act(async () => {
-    await new Promise<void>((resolve) => window.setTimeout(resolve, 150));
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 150);
+    });
   });
 
   expect(

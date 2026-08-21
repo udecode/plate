@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
 import type { Editor as EditorType, Value } from '@platejs/plite';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   createDecorationSource,

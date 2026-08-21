@@ -2,7 +2,6 @@
 
 import { defineBasePlugin } from '@platejs/core';
 import { schema } from '@platejs/plite';
-
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import {
@@ -132,89 +131,89 @@ describe('BaseTablePlugin deletion', () => {
   // https://github.com/udecode/editor-protocol/issues/21
   // https://github.com/udecode/editor-protocol/issues/25
   describe('Delete when selecting cells', () => {
-    describe.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('with disableMerge: $disableMerge', ({ disableMerge }) => {
-      let editor: ReturnType<typeof createCellSelectionEditor>;
-      let output: TestEditor;
+    describe.each([{ disableMerge: true }, { disableMerge: false }])(
+      'with disableMerge: $disableMerge',
+      ({ disableMerge }) => {
+        let editor: ReturnType<typeof createCellSelectionEditor>;
+        let output: TestEditor;
 
-      beforeEach(() => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <anchor />
-                    11
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    21
-                    <focus />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
+        beforeEach(() => {
+          const input = (
+            <editor>
+              <htable>
+                <htr>
+                  <htd>
+                    <hp>
+                      <anchor />
+                      11
+                    </hp>
+                  </htd>
+                  <htd>
+                    <hp>12</hp>
+                  </htd>
+                </htr>
+                <htr>
+                  <htd>
+                    <hp>
+                      21
+                      <focus />
+                    </hp>
+                  </htd>
+                  <htd>
+                    <hp>22</hp>
+                  </htd>
+                </htr>
+              </htable>
+            </editor>
+          ) as TestEditor;
 
-        output = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext />
-                    <anchor />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext />
-                    <focus />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
+          output = (
+            <editor>
+              <htable>
+                <htr>
+                  <htd>
+                    <hp>
+                      <htext />
+                      <anchor />
+                    </hp>
+                  </htd>
+                  <htd>
+                    <hp>12</hp>
+                  </htd>
+                </htr>
+                <htr>
+                  <htd>
+                    <hp>
+                      <htext />
+                      <focus />
+                    </hp>
+                  </htd>
+                  <htd>
+                    <hp>22</hp>
+                  </htd>
+                </htr>
+              </htable>
+            </editor>
+          ) as TestEditor;
 
-        editor = createCellSelectionEditor(input, disableMerge);
+          editor = createCellSelectionEditor(input, disableMerge);
 
-        editor.update.fragment.delete();
-      });
-
-      it('remove the cells content', () => {
-        expect(editor.read.children()).toMatchObject(output.children!);
-      });
-
-      it('preserves the structural cell selection', () => {
-        expect(editor.read.selection()).toMatchObject({
-          ...output.selection!,
-          kind: 'table-cell',
+          editor.update.fragment.delete();
         });
-        expect(editor.read.selection.ranges()).toHaveLength(2);
-      });
-    });
+
+        it('remove the cells content', () => {
+          expect(editor.read.children()).toMatchObject(output.children!);
+        });
+
+        it('preserves the structural cell selection', () => {
+          expect(editor.read.selection()).toMatchObject({
+            ...output.selection!,
+            kind: 'table-cell',
+          });
+          expect(editor.read.selection.ranges()).toHaveLength(2);
+        });
+      }
+    );
   });
 
   it('keeps normal fragment deletion outside tables', () => {

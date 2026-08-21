@@ -8,16 +8,15 @@ import {
   type Element,
 } from '@platejs/plite';
 
-import type { AnyBasePlugin } from '../../plugin/BasePlugin';
-import type { DefinitionOf, MatchRules } from '../../plugin/PluginDefinition';
-
-import { defineBasePlugin } from '../../plugin/defineBasePlugin';
-import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginByType,
   getPlateRuntime,
 } from '../../../internal/plugin/compilePlateModel';
+import type { AnyBasePlugin } from '../../plugin/BasePlugin';
+import { createPluginContext } from '../../plugin/createPluginContext.internal';
+import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+import type { DefinitionOf, MatchRules } from '../../plugin/PluginDefinition';
 
 export type OverridePluginUpdate = {
   executeBreakRuleAction: (
@@ -479,7 +478,6 @@ export const OverridePlugin = defineBasePlugin('override', {
 
           if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
             tx.nodes.remove({ at: path });
-            return;
           }
         },
       },

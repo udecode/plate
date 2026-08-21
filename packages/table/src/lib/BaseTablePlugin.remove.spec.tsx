@@ -1,13 +1,15 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
+
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
 import { BaseTablePlugin } from './BaseTablePlugin';
-import assert from 'node:assert/strict';
 
 describe('table removal', () => {
   {
@@ -70,242 +72,240 @@ describe('table removal', () => {
   jsxt;
 
   describe('when 2x2', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('deletes a column (disableMerge: $disableMerge)', ({ disableMerge }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>
-                  22
-                  <cursor />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'deletes a column (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    22
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.table.removeColumn();
+        editor.update.table.removeColumn();
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 12', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('deletes cell 12 (disableMerge: $disableMerge)', ({ disableMerge }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>
-                  12
-                  <cursor />
-                </hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'deletes cell 12 (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.table.removeColumn();
+        editor.update.table.removeColumn();
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 11', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('deletes cell 11 (disableMerge: $disableMerge)', ({ disableMerge }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  11
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd colSpan={2}>
-                <hp>21</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'deletes cell 11 (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd colSpan={2}>
+                  <hp>21</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.table.removeColumn();
+        editor.update.table.removeColumn();
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 21', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('keeps the table unchanged when no second-column match exists (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  21
-                  <cursor />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'keeps the table unchanged when no second-column match exists (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    21
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  21
-                  <cursor />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    21
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.table.removeColumn();
+        editor.update.table.removeColumn();
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   it('shrinks table columnWidths when deleting a column', () => {

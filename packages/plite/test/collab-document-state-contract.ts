@@ -1,11 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getCollabEffects as editorGetCollabEffects,
-  getLastCommit as editorGetLastCommit,
-} from '@platejs/plite/internal';
-
-import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
@@ -15,6 +9,11 @@ import {
   type EditorUpdatePolicy,
   valueCodecs,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
+import {
+  getCollabEffects as editorGetCollabEffects,
+  getLastCommit as editorGetLastCommit,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -83,7 +82,7 @@ describe('collab document meta contract', () => {
     });
 
     const sourceCommit = editorGetLastCommit(source);
-    assert(sourceCommit);
+    assert.ok(sourceCommit);
     assert.equal(sourceCommit.changes.empty, true);
     assert.deepEqual(sourceCommit.effects, [
       {
@@ -101,7 +100,7 @@ describe('collab document meta contract', () => {
     });
 
     const remoteCommit = editorGetLastCommit(remote);
-    assert(remoteCommit);
+    assert.ok(remoteCommit);
     assert.equal(readTitle(remote), 'Q3 Plan');
     assert.equal(remoteCommit.changes.empty, true);
     assert.deepEqual(remoteCommit.effects, sourceCommit.effects);
@@ -122,7 +121,7 @@ describe('collab document meta contract', () => {
     });
 
     const sourceCommit = editorGetLastCommit(source);
-    assert(sourceCommit);
+    assert.ok(sourceCommit);
     assert.deepEqual(sourceCommit.effects, [
       {
         type: documentTitle.effect,

@@ -63,7 +63,7 @@ describe('document state effect contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(editor.read.getField(documentTitle), 'Q3 Plan');
     assert.deepEqual(commit.effects, [
       {
@@ -151,7 +151,7 @@ describe('document state effect contract', () => {
 
     const commit = editorGetLastCommit(source);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(commit.effects, [{ type: increment, value: 2 }]);
     assert.equal(JSON.stringify(commit.effects).includes('xxxxx'), false);
 
@@ -225,7 +225,7 @@ describe('document state effect contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
 
     const emitted = commit.effects[0] as EditorEffect<Payload>;
     const mapped = mapEffect(emitted, DocumentChange.empty);
@@ -241,7 +241,7 @@ describe('document state effect contract', () => {
     assert.equal(inverted.value.nested.count, -1);
     assert.equal(decoded.value.nested.count, 3);
     for (const candidate of [emitted, mapped, inverted, decoded]) {
-      assert(candidate);
+      assert.ok(candidate);
       assert.equal(Object.isFrozen(candidate.value), true);
       assert.equal(Object.isFrozen(candidate.value.nested), true);
     }

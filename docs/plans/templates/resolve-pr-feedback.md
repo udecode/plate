@@ -30,14 +30,14 @@ First checkpoint:
 Completion threshold:
 - TODO: Define the exact PR feedback closure state.
 - Closure is legal only when every new actionable feedback item has a verdict,
-  valid code changes are verified, P2 `autoreview` is clean after the last
+  valid code changes are verified, P1 `autoreview` is clean after the last
   material fix, replies/resolution are posted when authorized, remaining
   pending or needs-human items are named, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 
 Verification surface:
-- TODO: Name fetch command, focused proof commands, P2 `autoreview`, commit/push
+- TODO: Name fetch command, focused proof commands, P1 `autoreview`, commit/push
   proof when applicable, reply/resolve proof, and final re-fetch command.
 
 Constraints:
@@ -126,11 +126,11 @@ Work Checklist:
 - [ ] `review-sweep` is used when feedback implies a clear diff-wide rule, or
       marked N/A with reason.
 - [ ] Focused proof is run after valid code changes, or marked N/A with reason.
-- [ ] P2 `autoreview` target mode is selected from actual diff/branch state.
-- [ ] `autoreview --max-priority P2` runs after validation and before commit/push/reply/resolve; P3 is opt-in only.
-- [ ] Every accepted P2 `autoreview` finding is fixed or rejected with
+- [ ] P1 `autoreview` target mode is selected from actual diff/branch state.
+- [ ] `autoreview --max-priority P1` runs after validation and before commit/push/reply/resolve; P2/P3 are opt-in only.
+- [ ] Every accepted P1 `autoreview` finding is fixed or rejected with
       source-backed reason.
-- [ ] Focused proof and P2 `autoreview` are rerun after material review fixes.
+- [ ] Focused proof and P1 `autoreview` are rerun after material review fixes.
 - [ ] Commit/push action is completed when authorized, or marked N/A/blocker.
 - [ ] Thread replies quote only the relevant reviewer passage.
 - [ ] Review threads are resolved when authorized, except needs-human/pending.
@@ -158,7 +158,7 @@ Completion Gates:
 | Browser proof | pending | Capture Browser/route proof or record N/A/blocker | pending |
 | Package/API proof | pending | Run package/type/export/source audit or record N/A | pending |
 | Agent/rule/generated sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
-| P2 autoreview | yes | Load `autoreview`, pass `--max-priority P2` in the selected target mode after validation and before public mutation, fix/reject accepted findings, and rerun after material fixes until clean; P3 is opt-in only | pending |
+| P1 autoreview | yes | Load `autoreview`, pass `--max-priority P1` in the selected target mode after validation and before public mutation, fix/reject accepted findings, and rerun after material fixes within the hard cap of three helper invocations for one unchanged scope; stop and report any remaining findings after invocation 3; P2/P3 are opt-in only | pending |
 | Commit / push | pending | Commit and push changed files when authorized, or record N/A/blocker | pending |
 | Reply / resolve | pending | Post replies and resolve review threads when authorized, or record N/A/blocker | pending |
 | Final re-fetch | pending | Re-run feedback fetch and record remaining unresolved review threads | pending |
@@ -172,8 +172,8 @@ Phase / pass table:
 | Fetch feedback | pending | | triage |
 | Triage | pending | | fix/reply |
 | Fix / reply decisions | pending | | focused proof |
-| Focused proof | pending | | P2 autoreview |
-| P2 autoreview and finding verification | pending | | commit/push |
+| Focused proof | pending | | P1 autoreview |
+| P1 autoreview and finding verification | pending | | commit/push |
 | Commit / push | pending | | reply/resolve |
 | Reply / resolve | pending | | final re-fetch |
 | Final re-fetch | pending | | final handoff |
@@ -215,7 +215,7 @@ Final handoff contract:
 - Threads resolved: pending
 - Pending / needs-human: pending
 - Proof commands: pending
-- P2 autoreview result: pending
+- P1 autoreview result: pending
 - Commit / push: pending
 - Remaining unresolved count: pending
 - Changed files: pending
@@ -228,6 +228,6 @@ Reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | Checkpoint zero and requirement extraction |
-| Where am I going? | Fetch feedback, triage, fix/reply, proof, P2 autoreview, commit/push, reply/resolve, final re-fetch |
+| Where am I going? | Fetch feedback, triage, fix/reply, proof, P1 autoreview, commit/push, reply/resolve, final re-fetch |
 | What is the goal? | TODO: Fill from Objective |
 | What have I learned? | See Findings |

@@ -12,26 +12,25 @@ import { PathApi, type Path } from '../interfaces/path';
 import { PointApi, type Point } from '../interfaces/point';
 import { RangeApi, type Range } from '../interfaces/range';
 import type { Text } from '../interfaces/text';
-
-import {
-  DocumentChange,
-  getInternalDocumentRootChange,
-} from './change/document-change';
-import { DocumentIndex } from './change/document-index';
-import type { JsonEditorValue, JsonNode } from './change/tokens';
-import type { TrackMode } from './change/root-change';
 import {
   type AnchorChangeContext,
   getAnchorStateValue,
   subscribeAnchorState,
 } from './anchor-state';
+import {
+  DocumentChange,
+  getInternalDocumentRootChange,
+} from './change/document-change';
+import { DocumentIndex } from './change/document-index';
+import type { TrackMode } from './change/root-change';
+import type { JsonEditorValue, JsonNode } from './change/tokens';
 import { getEditorRuntime } from './editor-runtime';
+import { toPublicRoot } from './public-root';
 import {
   getEditorDocumentValue,
   getEditorUpdateRoot,
   withEditorRootChildren,
 } from './public-state';
-import { toPublicRoot } from './public-root';
 
 export type AnchorValue = Path | Point | Range;
 export type AnchorAssociation = 'backward' | 'forward';

@@ -9,11 +9,11 @@ import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest
 import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { toPlatePlugin } from '../../react/plugin/toPlatePlugin';
 import { createBaseEditor } from '../editor';
+import type { PlateNodeInsertOptions } from '../editor/pluginRuntimeTypes';
 import { createRuleFactory } from '../plugins/input-rules/createRuleFactory';
 import type { BasePluginOverride } from './BasePlugin';
 import { defineBasePlugin } from './defineBasePlugin';
 import type { DefinitionOf, NodeComponent } from './PluginDefinition';
-import type { PlateNodeInsertOptions } from '../editor/pluginRuntimeTypes';
 
 const assertTypedSchemaContributions = () => {
   defineBasePlugin('validSchema', {

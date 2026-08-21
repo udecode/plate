@@ -1,5 +1,4 @@
 import { createEditor, type Editor, type Value } from '@platejs/plite';
-import type { CorePluginDefinition, CorePlugins } from '../../lib/plugins';
 
 import {
   type BasePluginInput,
@@ -12,6 +11,7 @@ import {
   type MergeInstalledPluginDefinitions,
   createBaseEditor,
 } from '../../lib/editor';
+import type { CorePluginDefinition, CorePlugins } from '../../lib/plugins';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
 
 type StaticPluginTuple<P extends readonly unknown[]> = readonly [

@@ -40,7 +40,7 @@ describe('ContentSlice value benchmark authority', () => {
   });
 
   it('keeps one registered benchmark and metric owner', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string }>;
         command: string;
@@ -51,7 +51,7 @@ describe('ContentSlice value benchmark authority', () => {
     const targets = registry.targets.filter(
       ({ id }) => id === 'plite-content-slice-value'
     );
-    const source = readFileSync(benchmarkPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.equal(targets.length, 1);
     assert.match(

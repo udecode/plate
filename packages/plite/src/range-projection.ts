@@ -179,13 +179,10 @@ const getRangeProjectionIndex = (
 
   const textEntries = Object.freeze(collectTextEntries(snapshot));
   const textIndexByPath = Object.freeze(
-    textEntries.reduce(
-      (acc, entry, index) => {
-        acc[pathKey(entry.path)] = index;
-        return acc;
-      },
-      Object.create(null) as Record<string, number>
-    )
+    textEntries.reduce<Record<string, number>>((acc, entry, index) => {
+      acc[pathKey(entry.path)] = index;
+      return acc;
+    }, Object.create(null))
   );
   const index = Object.freeze({
     textEntries,

@@ -1,20 +1,19 @@
 'use client';
 
-import * as React from 'react';
-
 import { IndentPlugin } from '@platejs/indent/react';
 import { ListPlugin as BlockListPlugin } from '@platejs/list/react';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
-import { EditorKit } from '@/registry/components/editor/plugins';
 import { AutoformatKit } from '@/registry/components/editor/autoformat-classic';
-import { FixedToolbarKit } from '@/registry/components/editor/fixed-toolbar-classic';
-import { FixedToolbarPlugin } from '@/registry/components/editor/fixed-toolbar';
-import { FloatingToolbarKit } from '@/registry/components/editor/floating-toolbar-classic';
-import { FloatingToolbarPlugin } from '@/registry/components/editor/floating-toolbar';
-import { ListKit } from '@/registry/components/editor/list-classic';
-import { listValue } from '@/registry/examples/values/list-classic-value';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { FixedToolbarPlugin } from '@/registry/components/editor/fixed-toolbar';
+import { FixedToolbarKit } from '@/registry/components/editor/fixed-toolbar-classic';
+import { FloatingToolbarPlugin } from '@/registry/components/editor/floating-toolbar';
+import { FloatingToolbarKit } from '@/registry/components/editor/floating-toolbar-classic';
+import { ListKit } from '@/registry/components/editor/list-classic';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { listValue } from '@/registry/examples/values/list-classic-value';
 
 export default function ListClassicDemo() {
   const editor = usePlateEditor({

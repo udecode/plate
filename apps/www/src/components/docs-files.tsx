@@ -1,6 +1,5 @@
-import type { HTMLAttributes, ReactNode } from 'react';
-
 import { ChevronRight, FileIcon, FolderIcon } from 'lucide-react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -59,12 +58,12 @@ export function Folder({
       open={defaultOpen || undefined}
       {...props}
     >
-      <summary className="flex min-h-7 cursor-pointer list-none items-center gap-2 px-3 text-foreground outline-none transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-7 cursor-pointer list-none items-center gap-2 px-3 text-foreground transition-colors outline-none hover:bg-muted/60 focus-visible:bg-muted/60 [&::-webkit-details-marker]:hidden">
         <ChevronRight className="size-3.5 shrink-0 text-muted-foreground transition-transform group-open/details:rotate-90" />
         <FolderIcon className="size-3.5 shrink-0 text-muted-foreground" />
         <span className="truncate">{name}</span>
       </summary>
-      <div className="ml-5 border-border/70 border-l pl-1">{children}</div>
+      <div className="ml-5 border-l border-border/70 pl-1">{children}</div>
     </details>
   );
 }

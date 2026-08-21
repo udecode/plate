@@ -51,7 +51,6 @@ const usableStateRoot = (path: string, device: number) => {
 
     return path;
   } catch {
-    return;
   } finally {
     if (descriptor !== undefined) {
       closeSync(descriptor);

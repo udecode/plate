@@ -6,4 +6,4 @@ export * from './InputRulesPlugin';
 export * from './createInputRules';
 export * from './createRuleFactory';
 export * from './defineInputRule';
-export * from './types';
+export type * from './types';

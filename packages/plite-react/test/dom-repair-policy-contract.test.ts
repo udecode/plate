@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { afterEach } from 'vitest';
-import { replace as editorReplace } from '@platejs/plite/internal';
+
 import {
   createDOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
@@ -8,6 +7,9 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
+import { afterEach } from 'vitest';
+
 import { createReactEditor } from '../src';
 import {
   beginDOMRepairFrame,
@@ -63,7 +65,7 @@ const mountEditorRoot = (editor: ReturnType<typeof createReactEditor>) => {
 };
 
 test('DOM repair exposes focused profiler buckets for huge-document attribution', () => {
-  const source = readFileSync('src/editable/dom-repair-queue.ts', 'utf8');
+  const source = readFileSync('src/editable/dom-repair-queue.ts', 'utf-8');
 
   expect(source).toContain("'collapsed-selection'");
   expect(source).toContain("'lookup-text-host'");

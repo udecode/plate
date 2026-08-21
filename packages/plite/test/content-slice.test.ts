@@ -10,13 +10,14 @@ import {
   ElementApi,
   type Value,
 } from '@platejs/plite';
+
+import { DocumentIndex } from '../src/core/change/document-index';
+import { RootChange } from '../src/core/change/root-change';
+import { PreparedTokenSlice } from '../src/core/change/tokens';
 import {
   encodeContentSlice,
   prepareContentSliceVariant,
 } from '../src/core/content-slice';
-import { DocumentIndex } from '../src/core/change/document-index';
-import { RootChange } from '../src/core/change/root-change';
-import { PreparedTokenSlice } from '../src/core/change/tokens';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -220,7 +221,7 @@ describe('ContentSlice', () => {
     const first = editor.read.children()[0] as Element;
     const firstNodeKey = editor.key([0]);
 
-    assert(firstNodeKey);
+    assert.ok(firstNodeKey);
     assert.equal(editor.update.slice.replace(slice, { at: [1] }), true);
 
     const second = editor.read.children()[1] as Element;
@@ -229,7 +230,7 @@ describe('ContentSlice', () => {
     assert.equal(commits, 2);
     assert.notEqual(second, first);
     assert.notEqual(second.children[0], first.children[0]);
-    assert(secondNodeKey);
+    assert.ok(secondNodeKey);
     assert.notEqual(secondNodeKey, firstNodeKey);
   });
 

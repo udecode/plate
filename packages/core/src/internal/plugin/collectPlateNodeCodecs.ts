@@ -104,7 +104,11 @@ const collect = (editor: object) => {
   );
 };
 
-/** @internal Read schema-bound product codecs without importing format ASTs. */
+/**
+ * Read schema-bound product codecs without importing format ASTs.
+ *
+ * @internal
+ */
 export const getPlateNodeCodecContributions = (
   editor: object,
   format: string

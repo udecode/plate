@@ -5,6 +5,7 @@ import {
   type Selection,
   type SelectionValue,
 } from '@platejs/plite';
+
 import type { EditableInputController } from './input-state';
 import { setEditableModelSelectionPreference } from './selection-controller';
 
@@ -61,11 +62,11 @@ export const isTextInputSelectionHandledByCaretRepair = (
 ) =>
   Boolean(
     inputController.state.activeIntent === 'text-insert' &&
-      !inputController.state.isComposing &&
-      commit?.changed.hasAny('document') &&
-      commit.selectionChanged &&
-      !commit.changed.hasAny('structure') &&
-      !commit.changed.hasAny('root-order')
+    !inputController.state.isComposing &&
+    commit?.changed.hasAny('document') &&
+    commit.selectionChanged &&
+    !commit.changed.hasAny('structure') &&
+    !commit.changed.hasAny('root-order')
   );
 
 const isSyncedTextOnlySelectionCommit = (
@@ -108,8 +109,8 @@ export const shouldSyncModelSelectionAfterCommit = (
 
   return Boolean(
     commit?.selectionChanged ||
-      commit?.changed.hasAny('structure') ||
-      commit?.changed.hasAny('root-order')
+    commit?.changed.hasAny('structure') ||
+    commit?.changed.hasAny('root-order')
   );
 };
 

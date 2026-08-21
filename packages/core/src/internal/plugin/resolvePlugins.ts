@@ -22,8 +22,18 @@ import type {
   NodeComponents,
 } from '../../lib';
 import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
-
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import {
+  createBlockFenceInputRule,
+  createBlockStartInputRule,
+  createMarkInputRule,
+} from '../../lib/plugins/input-rules/createInputRules';
+import { defineInputRule } from '../../lib/plugins/input-rules/defineInputRule';
+import type {
+  InputRule,
+  InputRuleBuilder,
+  ResolvedInputRule,
+} from '../../lib/plugins/input-rules/types';
 import {
   brandPluginDescriptor,
   getPluginDescriptorMetadata,
@@ -44,6 +54,12 @@ import {
   setCompiledPlatePluginCandidate,
   withCompiledPlatePluginCandidate,
 } from './compilePlateModel';
+import { compilePlateShortcuts } from './compilePlateShortcuts';
+import { mergePluginCapabilities } from './mergePluginCapabilities';
+import {
+  setPlateRuntimeCandidate,
+  type PlatePluginCache,
+} from './plateRuntime';
 import {
   clearPluginStores,
   createPluginStore,
@@ -51,12 +67,6 @@ import {
   snapshotPluginState,
   setPluginStore,
 } from './pluginStore';
-import { compilePlateShortcuts } from './compilePlateShortcuts';
-import { mergePluginCapabilities } from './mergePluginCapabilities';
-import {
-  setPlateRuntimeCandidate,
-  type PlatePluginCache,
-} from './plateRuntime';
 import {
   getResolvedPluginCapabilities,
   inheritResolvedPluginCapabilities,
@@ -65,17 +75,6 @@ import {
   type ResolvedPluginConfiguration,
   resolvePluginWithConfigurations,
 } from './resolvePlugin';
-import type {
-  InputRule,
-  InputRuleBuilder,
-  ResolvedInputRule,
-} from '../../lib/plugins/input-rules/types';
-import {
-  createBlockFenceInputRule,
-  createBlockStartInputRule,
-  createMarkInputRule,
-} from '../../lib/plugins/input-rules/createInputRules';
-import { defineInputRule } from '../../lib/plugins/input-rules/defineInputRule';
 
 type PlateRuntimeExtensionBinding = Readonly<{
   extension: EditorExtensionReference;
@@ -512,8 +511,8 @@ const publishPlatePluginDescriptors = (
     }
   });
 
-  const publishedPluginList = pluginList.map(
-    (plugin) => publishedByName.get(plugin.name)!
+  const publishedPluginList = pluginList.map((plugin) =>
+    publishedByName.get(plugin.name)!
   );
 
   publishedPluginList.forEach(Object.freeze);
@@ -737,7 +736,7 @@ export const createPlateModelPublication = (
   const publishedUpdateMethods = Object.freeze(
     Object.fromEntries(
       publishedPluginList.map((plugin) => {
-        const methods = new Set(updateMethods[plugin.name] ?? []);
+        const methods = new Set(updateMethods[plugin.name]);
         const elementType = publishedModel.byName[plugin.name]?.elementType;
 
         if (
@@ -948,6 +947,7 @@ const inspectPluginUpdateMethods = (
   pluginList: readonly AnyBasePlugin[],
   model: CompiledPlateModel
 ) => {
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let probe: unknown;
 
   probe = new Proxy(() => probe, {

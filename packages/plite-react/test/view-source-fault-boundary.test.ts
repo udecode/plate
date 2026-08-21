@@ -3,8 +3,8 @@ import { getNodeKey, replace } from '@platejs/plite/internal';
 
 import { createPliteAnnotationStore } from '../src/annotation-store';
 import { createDecorationSource } from '../src/decoration-source';
-import { createPliteWidgetStore } from '../src/widget-store';
 import type { PliteViewSourceError } from '../src/view-source';
+import { createPliteWidgetStore } from '../src/widget-store';
 
 const range: Range = {
   anchor: { path: [0, 0], offset: 0 },

@@ -1,8 +1,6 @@
-import * as React from 'react';
-
 import type { Element } from 'platejs';
-
 import { NodeApi } from 'platejs';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 

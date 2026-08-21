@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
@@ -11,6 +7,7 @@ import {
   BaseVideoPlugin,
 } from '@platejs/media';
 import { PlaceholderPlugin } from '@platejs/media/react';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   AudioLinesIcon,
   FileUpIcon,
@@ -20,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PLUGINS, isUrl } from 'platejs';
 import { useEditor } from 'platejs/react';
+import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
@@ -222,7 +220,7 @@ function MediaUrlDialogContent({
 
       <AlertDialogDescription className="group relative w-full">
         <label
-          className="-translate-y-1/2 absolute top-1/2 block cursor-text px-1 text-muted-foreground/70 text-sm transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:font-medium group-focus-within:text-foreground group-focus-within:text-xs has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground has-[+input:not(:placeholder-shown)]:text-xs"
+          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
           htmlFor="url"
         >
           <span className="inline-flex bg-background px-2">URL</span>

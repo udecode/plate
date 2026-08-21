@@ -1,7 +1,7 @@
 import type { Text } from '@platejs/plite';
 
-import type { MdMark, SerializeMdContext } from '../types';
 import type { MdRootContent } from '../mdast';
+import type { MdMark, SerializeMdContext } from '../types';
 
 // inlineCode should be last because of the spec in mdast
 // https://github.com/inokawa/remark-slate-transformer/issues/145

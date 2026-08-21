@@ -1,19 +1,18 @@
 'use client';
 
-import * as React from 'react';
-
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { Separator } from '@/components/ui/separator';
 import { AlignKit } from '@/registry/components/editor/align';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
 import { MediaKit } from '@/registry/components/editor/media';
+import { TurnIntoToolbarButton } from '@/registry/components/editor/turn-into-toolbar-button';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { imageValue } from '@/registry/examples/values/media-value';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
-import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
-import { TurnIntoToolbarButton } from '@/registry/components/editor/turn-into-toolbar-button';
 
 export default function MultipleEditorsDemo() {
   const editor = usePlateEditor({

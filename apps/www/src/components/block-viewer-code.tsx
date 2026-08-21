@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { FileTree } from '@/lib/rehype-utils';
-
 import {
   Check,
   ChevronRight,
@@ -12,6 +8,7 @@ import {
   Folder,
   Package,
 } from 'lucide-react';
+import * as React from 'react';
 
 import { CopyNpmCommandButton } from '@/components/copy-button';
 import { getIconForLanguageExtension } from '@/components/icons';
@@ -34,6 +31,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import type { FileTree } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 
 import { useBlockViewer } from './block-viewer';
@@ -112,7 +110,7 @@ function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
     <div className={cn('w-72 shrink-0', size === 'sm' && 'w-60')}>
       <SidebarProvider className="flex min-h-full! flex-col border-r">
         <Sidebar
-          className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden"
+          className="min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto"
           collapsible="none"
         >
           <SidebarGroupLabel className="h-12 rounded-none border-b px-4 text-sm">
@@ -121,8 +119,8 @@ function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
               <SidebarMenu className="translate-x-0 gap-1.5">
-                {tree.map((file, index) => (
-                  <Tree key={index} index={1} item={file} />
+                {tree.map((file) => (
+                  <Tree key={file.path} index={1} item={file} />
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>

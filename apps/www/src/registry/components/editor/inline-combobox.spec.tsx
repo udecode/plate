@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import type { EditorUpdateTransaction, Point } from '@platejs/plite';
 import { fireEvent, render } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 const pointAnchorReleaseMock = mock();
 const insertTextMock = mock();

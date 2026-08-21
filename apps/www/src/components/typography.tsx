@@ -1,15 +1,15 @@
 import * as React from 'react';
 
-import type { Event } from '@/lib/events';
-import type { NpmCommands } from '@/types/unist';
-
 import { CodeBlockCommand } from '@/components/code-block-command';
+import type { Event } from '@/lib/events';
 import { getNpmCommands } from '@/lib/npm-command';
 import { cn } from '@/lib/utils';
+import type { NpmCommands } from '@/types/unist';
 
 import { CopyButton } from './copy-button';
 
 export const H1 = ({
+  children,
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -19,10 +19,13 @@ export const H1 = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h1>
 );
 
 export const H2 = ({
+  children,
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -32,10 +35,13 @@ export const H2 = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h2>
 );
 
 export const H3 = ({
+  children,
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -45,10 +51,13 @@ export const H3 = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h3>
 );
 
 export const H4 = ({
+  children,
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -58,10 +67,13 @@ export const H4 = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h4>
 );
 
 export const H5 = ({
+  children,
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -71,10 +83,13 @@ export const H5 = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h5>
 );
 
 export const H6 = ({
+  children,
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -84,7 +99,9 @@ export const H6 = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h6>
 );
 
 export const P = ({
@@ -303,7 +320,11 @@ export const Pre = ({
   );
 };
 
-export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
+export const Step = ({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<'h3'>) => (
   <h3
     className={cn(
       'mt-8 scroll-m-20 font-heading font-semibold text-xl tracking-tight',
@@ -311,7 +332,9 @@ export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h3>
 );
 
 export const Steps = ({ ...props }) => (

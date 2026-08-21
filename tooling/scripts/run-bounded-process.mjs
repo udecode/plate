@@ -1,23 +1,30 @@
 import { spawn } from 'node:child_process';
 
-const waitForExit = (child, timeoutMs) =>
-  new Promise((resolve) => {
-    if (child.exitCode !== null || child.signalCode !== null) {
-      resolve(true);
-      return;
-    }
+const waitForExit = async (child, timeoutMs) => {
+  if (child.exitCode !== null || child.signalCode !== null) {
+    return true;
+  }
 
-    const timeout = setTimeout(() => {
-      child.off('exit', onExit);
-      resolve(false);
-    }, timeoutMs);
-    const onExit = () => {
-      clearTimeout(timeout);
+  let onExit;
+  const exitPromise = new Promise((resolve) => {
+    onExit = () => {
       resolve(true);
     };
-
     child.once('exit', onExit);
   });
+  let timeout;
+  const timeoutPromise = new Promise((resolve) => {
+    timeout = setTimeout(() => {
+      resolve(false);
+    }, timeoutMs);
+  });
+  const exited = await Promise.race([exitPromise, timeoutPromise]);
+
+  clearTimeout(timeout);
+  child.off('exit', onExit);
+
+  return exited;
+};
 
 const signalProcessGroup = (child, pid, signal) => {
   try {
@@ -133,6 +140,14 @@ export const runBoundedProcess = async ({
       }
       onProcessEnd?.(child);
     };
+    let settled = false;
+    const settle = (callback, value) => {
+      if (settled) return;
+
+      settled = true;
+      cleanup();
+      callback(value);
+    };
 
     const timeout = setTimeout(() => {
       timedOut = true;
@@ -160,15 +175,13 @@ export const runBoundedProcess = async ({
     child.stderr?.on('data', capture('stderr'));
 
     child.once('error', (error) => {
-      cleanup();
-      reject(error);
+      settle(reject, error);
     });
     child.once('close', (status, signal) => {
       void (async () => {
         try {
           await terminationPromise;
-          cleanup();
-          resolve({
+          settle(resolve, {
             error: processError,
             signal: interruptedSignal ?? signal,
             status: timedOut
@@ -180,13 +193,12 @@ export const runBoundedProcess = async ({
                   : interruptedSignal === 'SIGTERM'
                     ? 143
                     : (status ?? 1),
-            stderr: Buffer.concat(captured.stderr).toString('utf8'),
-            stdout: Buffer.concat(captured.stdout).toString('utf8'),
+            stderr: Buffer.concat(captured.stderr).toString('utf-8'),
+            stdout: Buffer.concat(captured.stdout).toString('utf-8'),
             timedOut,
           });
         } catch (error) {
-          cleanup();
-          reject(error);
+          settle(reject, error);
         }
       })();
     });

@@ -1,11 +1,10 @@
-import { previous as editorPrevious } from '@platejs/plite/internal';
+import { TextApi } from '@platejs/plite';
 /** @jsx jsx */
+import { previous as editorPrevious } from '@platejs/plite/internal';
 
 import { jsx } from '../../..';
 
 jsx;
-
-import { TextApi } from '@platejs/plite';
 
 export const input = (
   <editor>

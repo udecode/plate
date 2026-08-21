@@ -1,11 +1,6 @@
-import { MarkdownPlugin } from '@platejs/markdown';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@platejs/selection/react';
-import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
+import { MarkdownPlugin } from '@platejs/markdown';
 import {
   createEditor as createPliteEditor,
   type Element,
@@ -14,7 +9,12 @@ import {
   type TextSelection,
   type Value,
 } from '@platejs/plite';
-import { createPlateEditor } from '@platejs/core/react';
+import {
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@platejs/selection/react';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';

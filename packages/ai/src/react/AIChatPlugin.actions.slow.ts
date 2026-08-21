@@ -1,10 +1,10 @@
+import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
+import { createEditor, schema, type Value } from '@platejs/plite';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { PLUGINS } from '@platejs/utils';
-import { createEditor, schema, type Value } from '@platejs/plite';
-import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
-import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';

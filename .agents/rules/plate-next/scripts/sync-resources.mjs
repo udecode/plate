@@ -14,12 +14,40 @@ const scriptPath = fileURLToPath(import.meta.url);
 const root = resolve(dirname(scriptPath), '../../../..');
 export const resourcePairs = [
   [
+    '.agents/rules/benchmark/references/methodology.md',
+    '.agents/skills/benchmark/references/methodology.md',
+  ],
+  [
+    '.agents/rules/benchmark/scripts/benchmark-contract.test.mjs',
+    '.agents/skills/benchmark/scripts/benchmark-contract.test.mjs',
+  ],
+  [
+    '.agents/rules/benchmark/scripts/validate-benchmark-plan.mjs',
+    '.agents/skills/benchmark/scripts/validate-benchmark-plan.mjs',
+  ],
+  [
     '.agents/rules/regression/references/methodology.md',
     '.agents/skills/regression/references/methodology.md',
   ],
   [
     '.agents/rules/regression/scripts/test-first-contract.test.mjs',
     '.agents/skills/regression/scripts/test-first-contract.test.mjs',
+  ],
+  [
+    '.agents/rules/regression/scripts/capture-proof-receipt.mjs',
+    '.agents/skills/regression/scripts/capture-proof-receipt.mjs',
+  ],
+  [
+    '.agents/rules/regression/scripts/proof-receipt-contract.mjs',
+    '.agents/skills/regression/scripts/proof-receipt-contract.mjs',
+  ],
+  [
+    '.agents/rules/regression/scripts/validate-regression-plan.mjs',
+    '.agents/skills/regression/scripts/validate-regression-plan.mjs',
+  ],
+  [
+    '.agents/rules/regression/scripts/validate-regression-plan.test.mjs',
+    '.agents/skills/regression/scripts/validate-regression-plan.test.mjs',
   ],
   [
     '.agents/rules/performance/rules/effect-subscription-budget.md',

@@ -286,7 +286,7 @@ export function assertNoPrivatePlateDeclarationBrands(
 
   const files = walkDeclarationFiles(distRoot).map((path) => ({
     path: toPosixPath(relative(packageRoot, path)),
-    source: readFileSync(path, 'utf8'),
+    source: readFileSync(path, 'utf-8'),
   }));
   const errors = auditPrivatePlateDeclarationBrands(files);
 

@@ -11,6 +11,7 @@ import {
   TextApi,
   type Value,
 } from '@platejs/plite';
+
 import {
   V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,

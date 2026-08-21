@@ -1,7 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { createReactEditor } from '@platejs/plite-react';
-
 import { act, render } from '@testing-library/react';
 import React from 'react';
 

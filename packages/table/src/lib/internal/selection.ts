@@ -9,8 +9,8 @@ import type {
   NodeKey,
 } from '@platejs/plite';
 import { ElementApi, PathApi, PointApi, RangeApi } from '@platejs/plite';
-import type { TableCellElement } from '../BaseTablePlugin';
 
+import type { TableCellElement } from '../BaseTablePlugin';
 import { createTableContext, type TableContext } from './context';
 import type { TableGrid, TableGridAnchor } from './grid';
 
@@ -291,12 +291,10 @@ export const readTableSelection = (
       ? closeBoundsOverSpans(context, endpointBounds)
       : endpointBounds;
   const { anchors, complete } = getAnchorsWithinBounds(context, bounds);
-  const cellEntries = anchors.map(
-    (cell): ElementEntry<TableCellElement> => [
-      cell.cell,
-      tablePath.concat(cell.path),
-    ]
-  );
+  const cellEntries = anchors.map((cell): ElementEntry<TableCellElement> => [
+    cell.cell,
+    tablePath.concat(cell.path),
+  ]);
   const cellKeys = Object.freeze(anchors.map(({ cell }) => state.key(cell)));
   const cellKeySet = new Set(cellKeys);
 

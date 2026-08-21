@@ -135,10 +135,11 @@ schema law, and application typing remain outside this skill.
   reactive path dependency, not the default way to obtain a path.
 - In repeated node renderers, do not subscribe with `usePath()` when a path is
   needed only inside an event handler or command. Resolve
-  `editor.read.nodes.path(element)` at interaction time. Use the existing
-  `PlateElementProps.path` when rendered output genuinely depends on the path.
+  `editor.read.nodes.path(element)` at interaction time. Element component and
+  node-wrapper props never expose `path`: a normal prop cannot be both stable
+  for sibling edits and live for later callbacks.
 - Keep `usePath()` only when a descendant must rerender or resynchronize as its
-  element moves and no path prop is already available. Account for that
+  element moves. Account for that
   dependency in the repeated-unit subscription budget.
 - Prefer direct `editor.api.<name>` / `editor.update.<group>` when concrete
   host-owned app code infers that surface from its local editor construction.

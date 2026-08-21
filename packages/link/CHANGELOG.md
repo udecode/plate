@@ -224,8 +224,7 @@
 
 ### Minor Changes
 
-- [#3389](https://github.com/udecode/plate/pull/3389) by [@georeith](https://github.com/georeith) – feat:`LinkPlugin` new option `transformInput: (url: string) => string | undefined;` that optionally transform's the
-  submitted URL provided by the user to the URL input before validation.
+- [#3389](https://github.com/udecode/plate/pull/3389) by [@georeith](https://github.com/georeith) – feat:`LinkPlugin` new option `transformInput: (url: string) => string | undefined;` that optionally transform's the submitted URL provided by the user to the URL input before validation.
 
 ## 36.0.0
 
@@ -958,8 +957,7 @@
 
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
@@ -967,8 +965,7 @@ occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Patch Changes
 

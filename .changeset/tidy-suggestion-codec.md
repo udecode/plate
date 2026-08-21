@@ -1,5 +1,5 @@
 ---
-"@platejs/suggestion": patch
+'@platejs/suggestion': patch
 ---
 
 Define suggestion mark Markdown conversion on the suggestion plugin.

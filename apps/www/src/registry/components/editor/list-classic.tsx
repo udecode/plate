@@ -1,14 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { ElementWith } from 'platejs';
-import {
-  type PlateElementProps,
-  PlateElement,
-  useEditor,
-  useEditorReadOnly,
-} from 'platejs/react';
 import {
   type BaseListPlugin,
   BulletedListRules,
@@ -24,6 +15,15 @@ import {
   TaskListPlugin,
 } from '@platejs/list-classic/react';
 import { type VariantProps, cva } from 'class-variance-authority';
+import type { ElementWith } from 'platejs';
+import {
+  type PlateElementProps,
+  PlateElement,
+  useEditor,
+  useEditorReadOnly,
+} from 'platejs/react';
+import * as React from 'react';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
@@ -126,7 +126,7 @@ export function TaskListItemElement(props: ListItemElementProps) {
         )}
       >
         <div
-          className="-ms-5 me-1.5 flex w-fit select-none items-start justify-center pt-[0.275em]"
+          className="-ms-5 me-1.5 flex w-fit items-start justify-center pt-[0.275em] select-none"
           contentEditable={false}
         >
           <Checkbox

@@ -1,8 +1,6 @@
-import React from 'react';
-
 import type { Range } from '@platejs/plite';
-
 import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import { createPlateEditor } from '../../editor';
 import {

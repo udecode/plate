@@ -1,6 +1,5 @@
-import * as React from 'react';
-
 import { useEditorReadOnly } from '@platejs/plite-react';
+import * as React from 'react';
 
 import {
   type ResizeDirection,
@@ -55,19 +54,23 @@ export function Resizable({
   width: nodeWidth = '100%',
   ...props
 }: ResizableProps) {
-  const [width, setWidth] = React.useState<ResizeLength>(nodeWidth);
+  const [widthState, setWidthState] = React.useState(() => ({
+    source: nodeWidth,
+    value: nodeWidth,
+  }));
+  const width = widthState.source === nodeWidth ? widthState.value : nodeWidth;
   const wrapperRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    setWidth(nodeWidth);
-  }, [nodeWidth]);
+  const setWidth = React.useCallback(
+    (value: ResizeLength) => setWidthState({ source: nodeWidth, value }),
+    [nodeWidth]
+  );
 
   const commitWidth = React.useCallback(
     (nextWidth: ResizeLength) => {
       setWidth(nextWidth);
       onResizeEnd?.(nextWidth);
     },
-    [onResizeEnd]
+    [onResizeEnd, setWidth]
   );
   const nudgeWidth = React.useCallback(
     (delta: number) => {
@@ -111,7 +114,7 @@ export function Resizable({
         setWidth(nextWidth);
       }
     },
-    [align, commitWidth, maxWidth, minWidth]
+    [align, commitWidth, maxWidth, minWidth, setWidth]
   );
   const context = React.useMemo(
     () => ({ maxWidth, minWidth, nudgeWidth, onResize, width }),
@@ -167,6 +170,10 @@ export function ResizeHandle({
   const [initialSizeState, setInitialSize] = React.useState(0);
   const initialSize = initialSizeProp ?? initialSizeState;
   const isHorizontal = direction === 'left' || direction === 'right';
+  const publishHoverEnd = React.useEffectEvent(() => onHoverEnd?.());
+  const publishResize = React.useEffectEvent((event: ResizeEvent) =>
+    onResize(event)
+  );
 
   React.useEffect(() => {
     if (!isResizing) return;
@@ -182,7 +189,7 @@ export function ResizeHandle({
 
       if (!point) return;
 
-      onResize({
+      publishResize({
         delta: (isHorizontal ? point.clientX : point.clientY) - initialPosition,
         direction,
         finished,
@@ -194,13 +201,13 @@ export function ResizeHandle({
     };
     const handleEnd = (event: MouseEvent | TouchEvent) => {
       setIsResizing(false);
-      onHoverEnd?.();
+      publishHoverEnd();
       sendResizeEvent(event, true);
     };
 
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleEnd);
-    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchmove', handleMove, { passive: true });
     window.addEventListener('touchend', handleEnd);
 
     return () => {
@@ -209,15 +216,7 @@ export function ResizeHandle({
       window.removeEventListener('touchmove', handleMove);
       window.removeEventListener('touchend', handleEnd);
     };
-  }, [
-    direction,
-    initialPosition,
-    initialSize,
-    isHorizontal,
-    isResizing,
-    onHoverEnd,
-    onResize,
-  ]);
+  }, [direction, initialPosition, initialSize, isHorizontal, isResizing]);
 
   if (readOnly) return null;
 
@@ -289,6 +288,10 @@ export function ResizeHandle({
         onHover?.();
         onMouseOver?.(event);
       }}
+      onBlur={() => {
+        if (!isResizing) onHoverEnd?.();
+      }}
+      onFocus={() => onHover?.()}
       onTouchEnd={(event) => {
         if (!isResizing) onHoverEnd?.();
         onTouchEnd?.(event);

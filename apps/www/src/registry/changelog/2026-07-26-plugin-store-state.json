@@ -504,7 +504,7 @@
         "toc-kit"
       ],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-07-26",
@@ -544,7 +544,7 @@
         "use-chat"
       ],
       "source": {
-        "line": 13,
+        "line": 15,
         "row": 2,
         "legacyRelease": {
           "date": "2026-07-26",
@@ -561,7 +561,7 @@
       "migrationNotes": [],
       "targets": ["collaboration-demo", "markdown-streaming-demo"],
       "source": {
-        "line": 14,
+        "line": 16,
         "row": 3,
         "legacyRelease": {
           "date": "2026-07-26",

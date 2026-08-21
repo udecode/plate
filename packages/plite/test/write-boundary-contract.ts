@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, DocumentChange } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-
-import { createEditor, DocumentChange } from '@platejs/plite';
 
 describe('editor write boundary', () => {
   const createSeededEditor = () => {
@@ -63,7 +63,7 @@ describe('editor write boundary', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(editorString(editor, []), 'one!');
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changes.empty, false);

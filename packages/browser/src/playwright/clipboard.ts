@@ -141,8 +141,7 @@ export const requiresSyntheticHtmlPasteTransport = ({
   maxTouchPoints: number;
   userAgent: string;
 }) => {
-  const isMobileEmulation =
-    maxTouchPoints > 0 && userAgent.includes('Mobile');
+  const isMobileEmulation = maxTouchPoints > 0 && userAgent.includes('Mobile');
   const isWebKit =
     userAgent.includes('AppleWebKit') &&
     !['Chrome', 'Chromium', 'Edg/'].some((token) => userAgent.includes(token));

@@ -35,7 +35,7 @@ const getPageTitle = async (page: PlateLLMPage) => {
   return (
     page.data.title?.trim() ||
     frontmatterData.title?.trim() ||
-    page.url.split('/').filter(Boolean).at(-1) ||
+    page.url.split('/').findLast(Boolean) ||
     'Docs'
   );
 };

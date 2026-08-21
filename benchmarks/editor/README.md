@@ -2,8 +2,7 @@
 
 This directory is an Evidence Kit lab for editor framework benchmark research.
 
-It replaces the old standalone Next/Vite benchmark app. The default owner is
-now evidence artifacts, not browser app scaffolding.
+It replaces the old standalone Next/Vite benchmark app. The default owner is now evidence artifacts, not browser app scaffolding.
 
 ## Commands
 
@@ -42,10 +41,7 @@ Primary benchmark registry:
 
 ## Active Benchmark Matrix
 
-`benchmarks/results/rich-text-editors-latest.json` is the broad benchmark
-matrix. It imports active artifacts from `research/benchmark-registry.json`.
-Old one-off benchmark JSON files do not count unless they are registered there.
-The active scope is Slate v2 vs Slate only.
+`benchmarks/results/rich-text-editors-latest.json` is the broad benchmark matrix. It imports active artifacts from `research/benchmark-registry.json`. Old one-off benchmark JSON files do not count unless they are registered there. The active scope is Slate v2 vs Slate only.
 
 Measured Slate v2 families:
 
@@ -54,12 +50,9 @@ Measured Slate v2 families:
 - React huge-document overlays
 - React huge-document browser trace
 - React active typing breakdown
-- Core normalization, query/ref observation, node transforms, text/selection,
-  editor store, and refs/projection
-- Core huge-document, normalization, observation, and history compares against
-  Slate
-- Clipboard large payload, collab readiness, and issue #6038 transaction
-  execution rows
+- Core normalization, query/ref observation, node transforms, text/selection, editor store, and refs/projection
+- Core huge-document, normalization, observation, and history compares against Slate
+- Clipboard large payload, collab readiness, and issue #6038 transaction execution rows
 
 Local source targets:
 
@@ -68,8 +61,7 @@ Local source targets:
 
 Slate baseline rule:
 
-- Use Slate chunk-on as the baseline. Do not emit chunk-off rows in active
-  comparison output.
+- Use Slate chunk-on as the baseline. Do not emit chunk-off rows in active comparison output.
 
 The first direct runtime comparison still lives in:
 
@@ -85,6 +77,4 @@ The health and next-action report lives in:
 
 ## Rule
 
-Do not restore the old app/template lab by default. Do not promote random
-historical tmp JSON. Add a registry entry, target-owned adapter, fuzzer, corpus
-case, benchmark row, or source-pass note when a comparison needs new evidence.
+Do not restore the old app/template lab by default. Do not promote random historical tmp JSON. Add a registry entry, target-owned adapter, fuzzer, corpus case, benchmark row, or source-pass note when a comparison needs new evidence.

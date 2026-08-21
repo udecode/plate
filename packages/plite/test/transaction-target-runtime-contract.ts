@@ -1,10 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getChildren as editorGetChildren,
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -13,8 +8,12 @@ import {
   editorCommands,
   NodeApi,
 } from '@platejs/plite';
-
-import { setEditorTargetRuntime } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  setEditorTargetRuntime,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
   ({
@@ -39,7 +38,7 @@ const setupEditor = () => {
 };
 
 const getElementType = (node: Descendant) => {
-  assert(NodeApi.isElement(node));
+  assert.ok(NodeApi.isElement(node));
 
   return node.type;
 };

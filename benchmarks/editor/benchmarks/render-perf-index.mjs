@@ -244,12 +244,12 @@ function escapeHtml(value) {
 
 function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
 function readIfExists(filePath) {
   if (!fs.existsSync(filePath)) return null;
-  return fs.readFileSync(filePath, 'utf8');
+  return fs.readFileSync(filePath, 'utf-8');
 }
 
 function isGeneratedLandingIndex(html) {
@@ -259,7 +259,7 @@ function isGeneratedLandingIndex(html) {
 function assertFileEquals(filePath, expected) {
   let current;
   try {
-    current = fs.readFileSync(filePath, 'utf8');
+    current = fs.readFileSync(filePath, 'utf-8');
   } catch {
     throw new Error(`missing generated file: ${filePath}`);
   }

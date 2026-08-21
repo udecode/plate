@@ -1,4 +1,5 @@
 import { createEditor } from '@platejs/plite';
+
 import {
   beginEditableEditingEpoch,
   beginOrJoinEditableEditingEpoch,

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {

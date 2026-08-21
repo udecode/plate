@@ -1,11 +1,9 @@
-import React from 'react';
-
-import type { WritableAtom } from 'jotai/vanilla/atom';
-
+import { useEditorFocused } from '@platejs/plite-react';
 import { useStableFn } from '@udecode/react-utils';
 import { focusAtom } from 'jotai-optics';
 import { type JotaiStore, useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
-import { useEditorFocused } from '@platejs/plite-react';
+import type { WritableAtom } from 'jotai/vanilla/atom';
+import React from 'react';
 
 import {
   plateControllerStore,

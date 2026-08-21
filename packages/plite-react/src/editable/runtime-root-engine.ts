@@ -1,11 +1,12 @@
+import type { DOMRange } from '@platejs/plite-dom';
+import { IS_READ_ONLY } from '@platejs/plite-dom/internal';
 import {
   type ComponentPropsWithRef,
   type ForwardedRef,
   useEffect,
   useMemo,
 } from 'react';
-import type { DOMRange } from '@platejs/plite-dom';
-import { IS_READ_ONLY } from '@platejs/plite-dom/internal';
+
 import type {
   EditableDOMBeforeInputHandler,
   EditableDOMStrategyRuntime,
@@ -19,10 +20,10 @@ import { useEditableRootRef } from './input-router';
 import { useProjectionDOMRepairBridge } from './projection-repair-bridge';
 import { useEditableRootCommitWakeup } from './root-selector-sources';
 import { useRuntimeAndroidEngine } from './runtime-android-engine';
+import { setEditorReadOnly } from './runtime-editor-api';
 import { useEditableEventRuntime } from './runtime-event-engine';
 import { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
 import { useRuntimeRepairEngine } from './runtime-repair-engine';
-import { setEditorReadOnly } from './runtime-editor-api';
 import { useEditableRootGlobalLifecycle } from './runtime-root-lifecycle';
 import { useEditableRootSelectionExport } from './runtime-root-selection-export';
 import { useEditableRootSelectionImport } from './runtime-root-selection-import';

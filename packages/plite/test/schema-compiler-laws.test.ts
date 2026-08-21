@@ -101,9 +101,9 @@ const canonicalSet = (values: readonly number[]) =>
     JSON.stringify(left).localeCompare(JSON.stringify(right))
   );
 
-describe('compiled schema generated laws', () => {
-  it('is deterministic under contribution and registration-order permutations', () => {
-    assertLaw(
+void describe('compiled schema generated laws', () => {
+  void it('is deterministic under contribution and registration-order permutations', () => {
+    void assertLaw(
       fc.property(
         fc.uniqueArray(fc.integer({ max: 200, min: 0 }), {
           maxLength: 12,
@@ -133,8 +133,8 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('rejects every generated exact key captured by a prefix on an overlapping target', () => {
-    assertLaw(
+  void it('rejects every generated exact key captured by a prefix on an overlapping target', () => {
+    void assertLaw(
       fc.property(fc.nat({ max: 1_000_000 }), (id) => {
         const prefix = `namespace_${id}:`;
         const exactKey = `exact_${id}`;
@@ -204,8 +204,8 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('does not invent an unknown-type overlap for closed schema targets', () => {
-    assertLaw(
+  void it('does not invent an unknown-type overlap for closed schema targets', () => {
+    void assertLaw(
       fc.property(fc.nat({ max: 1_000_000 }), (id) => {
         const create = (unknown: 'preserve' | 'reject') =>
           defineEditorSchema(`schema:closed-target-${id}`, {
@@ -245,8 +245,8 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('bounds preserved-unknown wrapper plans while keeping declared lookups warm', () => {
-    assertLaw(
+  void it('bounds preserved-unknown wrapper plans while keeping declared lookups warm', () => {
+    void assertLaw(
       fc.property(
         fc.uniqueArray(
           fc.nat({ max: 1_000_000_000 }).map((id) => `hostile-${id}`),
@@ -299,8 +299,8 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('canonicalizes set defaults and preserves explicit omission semantics', () => {
-    assertLaw(
+  void it('canonicalizes set defaults and preserves explicit omission semantics', () => {
+    void assertLaw(
       fc.property(
         fc.array(fc.string({ maxLength: 8 }), { maxLength: 16 }),
         (values) => {
@@ -345,8 +345,8 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('compiles generated text and element lifecycle policies into lookup tables', () => {
-    assertLaw(
+  void it('compiles generated text and element lifecycle policies into lookup tables', () => {
+    void assertLaw(
       fc.property(
         fc.boolean(),
         fc.constantFrom<'drop' | 'preserve'>('drop', 'preserve'),
@@ -434,8 +434,8 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('maps scalar replacement and JSON-set declarations to convergent change algebra', () => {
-    assertLaw(
+  void it('maps scalar replacement and JSON-set declarations to convergent change algebra', () => {
+    void assertLaw(
       fc.property(
         fc.array(fc.integer({ max: 20, min: 0 }), { maxLength: 8 }),
         fc.array(fc.integer({ max: 20, min: 0 }), { maxLength: 8 }),
@@ -540,7 +540,7 @@ describe('compiled schema generated laws', () => {
     );
   });
 
-  it('rejects malformed raw value descriptors at the compiler boundary', () => {
+  void it('rejects malformed raw value descriptors at the compiler boundary', () => {
     const cases: Array<{
       code: string;
       descriptor: Readonly<Record<string, unknown>>;

@@ -20,7 +20,11 @@ type PliteBrowserHarnessHandle = {
 
 type PliteBrowserHarnessHandleMethod = keyof PliteBrowserHarnessHandle;
 
-/** @internal Typed evaluator used only behind the curated editor harness. */
+/**
+ * Typed evaluator used only behind the curated editor harness.
+ *
+ * @internal
+ */
 export const evaluateHarnessHandle = async <
   TMethod extends PliteBrowserHarnessHandleMethod,
 >(

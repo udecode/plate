@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, type Element } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getLastCommit as editorGetLastCommit,
   replace as editorReplace,
+  setEditorTargetRuntime,
 } from '@platejs/plite/internal';
-
-import { createEditor, type Element } from '@platejs/plite';
-import { setEditorTargetRuntime } from '@platejs/plite/internal';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -182,7 +182,7 @@ describe('editor methods', () => {
     ]);
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.changes.empty, false);
     assert.equal(commit.changed.has('structure'), false);
     assert.equal(commit.changed.has('text'), true);
@@ -210,7 +210,7 @@ describe('editor methods', () => {
     ]);
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.changes.empty, false);
     assert.equal(commit.changed.has('root-order'), true);
     assert.deepEqual(commit.selectionAfter, selection);

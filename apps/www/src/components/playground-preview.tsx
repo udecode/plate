@@ -1,10 +1,5 @@
 'use client';
 
-import type { ComponentProps } from 'react';
-import * as React from 'react';
-
-import type { PlaygroundPreviewData } from '@/lib/playground-preview-data';
-
 import {
   Check,
   Fullscreen,
@@ -16,6 +11,8 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import type { ComponentProps } from 'react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -23,6 +20,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { useLocale } from '@/hooks/useLocale';
+import type { PlaygroundPreviewData } from '@/lib/playground-preview-data';
 import {
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
@@ -48,7 +46,7 @@ const LazyPlaygroundDemo = dynamic(
     loading: () => (
       <div
         aria-hidden
-        className="pointer-events-none size-full select-none bg-background"
+        className="pointer-events-none size-full bg-background select-none"
         data-home-playground-placeholder
       />
     ),
@@ -94,7 +92,7 @@ function HomePlaygroundToolbar({
       <Separator orientation="vertical" className="mx-2 hidden h-4! sm:flex" />
 
       <Link
-        className="font-medium text-sm underline-offset-2 hover:underline"
+        className="text-sm font-medium underline-offset-2 hover:underline"
         href={previewUrl}
         target="_blank"
       >

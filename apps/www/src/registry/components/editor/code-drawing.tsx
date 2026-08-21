@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   type CodeDrawingLanguage,
   type CodeDrawingView,
@@ -13,6 +12,7 @@ import {
   renderCodeDrawing,
 } from '@platejs/code-drawing';
 import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
+import { DownloadIcon, Trash2 } from 'lucide-react';
 import {
   type PlateElementProps,
   PlateElement,
@@ -24,9 +24,9 @@ import {
   useFocusedLast,
   usePath,
 } from 'platejs/react';
-import { DownloadIcon, Trash2 } from 'lucide-react';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Popover,
   PopoverAnchor,
@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const languageLabels: Record<CodeDrawingLanguage, string> = {
   flowchart: 'Flowchart',

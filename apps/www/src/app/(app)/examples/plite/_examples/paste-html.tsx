@@ -1,5 +1,4 @@
-import type React from 'react';
-import { useMemo } from 'react';
+/* oxlint-disable nextjs/no-img-element -- This image consumes a user or runtime URL and editor-owned dimensions that Next Image cannot statically authorize or preserve. */
 import type { Element as PliteElement } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -13,6 +12,8 @@ import {
   useElementSelected,
   usePliteEditor,
 } from '@platejs/plite-react';
+import type React from 'react';
+import { useMemo } from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -185,7 +186,7 @@ const getElementStyle = (
     : undefined;
 };
 
-const allowedSchemes = ['http:', 'https:', 'mailto:', 'tel:'];
+const allowedSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
 interface SafeLinkProps {
   attributes: Record<string, unknown>;
@@ -198,8 +199,10 @@ const SafeLink = ({ children, href, attributes }: SafeLinkProps) => {
     let parsedUrl: URL | null = null;
     try {
       parsedUrl = new URL(href);
-    } catch {}
-    if (parsedUrl && allowedSchemes.includes(parsedUrl.protocol)) {
+    } catch {
+      // Invalid links remain untrusted and are discarded below.
+    }
+    if (parsedUrl && allowedSchemes.has(parsedUrl.protocol)) {
       return parsedUrl.href;
     }
     return 'about:blank';

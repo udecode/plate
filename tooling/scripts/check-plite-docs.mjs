@@ -2,6 +2,13 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const repoRoot = resolve(import.meta.dirname, '../..');
 const docsRoots = [
   join(repoRoot, 'content/docs/plite'),
@@ -312,7 +319,7 @@ const collectMarkdown = (dir) =>
 
       return path.endsWith('.md') || path.endsWith('.mdx') ? [path] : [];
     })
-    .sort();
+    .sort(compareStrings);
 
 const inCodeFenceByLine = (lines) => {
   const codeLines = new Set();
@@ -336,14 +343,14 @@ const collectAgentTextFiles = (path) => {
   if (statSync(path).isDirectory()) {
     return readdirSync(path)
       .flatMap((entry) => collectAgentTextFiles(join(path, entry)))
-      .sort();
+      .sort(compareStrings);
   }
 
   return agentTextFilePattern.test(path) ? [path] : [];
 };
 
 const readLedgerRows = (path) => {
-  const source = readFileSync(path, 'utf8').trimEnd();
+  const source = readFileSync(path, 'utf-8').trimEnd();
 
   if (source.length === 0) {
     return { header: [], rows: [] };
@@ -404,7 +411,7 @@ function auditSlateV2Docs() {
   let contract = '';
 
   try {
-    contract = readFileSync(contractPath, 'utf8');
+    contract = readFileSync(contractPath, 'utf-8');
   } catch {
     failures.push(
       `${relative(repoRoot, contractPath).replaceAll(
@@ -427,7 +434,7 @@ function auditSlateV2Docs() {
 
   const agentStartSource = readFileSync(
     join(repoRoot, 'docs/plite/agent-start.md'),
-    'utf8'
+    'utf-8'
   );
 
   for (const signal of requiredAgentStartManualSoakSignals) {
@@ -439,7 +446,7 @@ function auditSlateV2Docs() {
   }
 
   const yjsPackageJson = JSON.parse(
-    readFileSync(join(repoRoot, 'packages/yjs/package.json'), 'utf8')
+    readFileSync(join(repoRoot, 'packages/yjs/package.json'), 'utf-8')
   );
   const yjsScripts = yjsPackageJson.scripts ?? {};
 
@@ -467,7 +474,7 @@ function auditSlateV2Docs() {
     ...collectAgentTextFiles(join(repoRoot, '.agents/skills')),
   ]) {
     const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
-    const source = readFileSync(path, 'utf8');
+    const source = readFileSync(path, 'utf-8');
 
     for (const signal of manualYjsSoakRunnerSignals) {
       if (source.includes(signal)) {
@@ -531,7 +538,7 @@ function auditSlateV2Docs() {
 
   for (const path of currentReleaseNotes) {
     const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
-    const source = readFileSync(path, 'utf8');
+    const source = readFileSync(path, 'utf-8');
     const match = removedRootMutationFacadePattern.exec(source);
 
     if (match?.index !== undefined) {
@@ -578,9 +585,9 @@ function auditSlateV2Docs() {
     }
   }
 
-  for (const path of [...schemaAdoptionDocs].sort()) {
+  for (const path of [...schemaAdoptionDocs].sort(compareStrings)) {
     const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
-    const source = readFileSync(path, 'utf8');
+    const source = readFileSync(path, 'utf-8');
     const lines = source.split('\n');
     const schemaMatch = removedPlateSchemaFlagsPattern.exec(source);
 
@@ -622,9 +629,9 @@ function auditSlateV2Docs() {
     }
   }
 
-  for (const path of [...auditedDocs].sort()) {
+  for (const path of [...auditedDocs].sort(compareStrings)) {
     const relativePath = relative(repoRoot, path).replaceAll('\\', '/');
-    const source = readFileSync(path, 'utf8');
+    const source = readFileSync(path, 'utf-8');
     const lines = source.split('\n');
     const codeLines = inCodeFenceByLine(lines);
 

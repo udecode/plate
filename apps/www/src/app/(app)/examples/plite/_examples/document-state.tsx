@@ -1,4 +1,3 @@
-import { type ChangeEvent, type KeyboardEvent, useRef } from 'react';
 import {
   defineExtension,
   defineStateField,
@@ -16,6 +15,8 @@ import {
   usePliteEditor,
   useStateFieldValue,
 } from '@platejs/plite-react';
+import { type ChangeEvent, type KeyboardEvent, useRef } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

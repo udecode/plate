@@ -1,5 +1,6 @@
 import type { Editor, EditorSnapshot, Range, NodeKey } from '@platejs/plite';
 import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
+
 import { point as editorPoint } from '../editable/runtime-editor-api';
 
 export type MountedTopLevelRange = {

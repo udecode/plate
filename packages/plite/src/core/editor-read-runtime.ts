@@ -317,7 +317,7 @@ export const createEditorReadRuntime = <V extends Value>(
       return withQueryRootGenerator(
         editor,
         [options?.at],
-        function* () {
+        function* readPositions() {
           for (const point of positions(editor, options)) {
             yield withExplicitPointRoot(point, root);
           }

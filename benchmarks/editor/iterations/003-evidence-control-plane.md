@@ -18,9 +18,7 @@ Evidence Kit is the active control plane:
 - ranked next actions
 - generated docs/dashboard
 
-Benchmark runners still live with their owners. Slate v2 owns Slate v2
-measurement commands. Evidence Kit owns whether the output counts as current
-evidence.
+Benchmark runners still live with their owners. Slate v2 owns Slate v2 measurement commands. Evidence Kit owns whether the output counts as current evidence.
 
 ## Implemented
 
@@ -35,8 +33,7 @@ evidence.
 
 Old benchmark JSON is discarded unless it is registered.
 
-That does not mean source-owned benchmark runners are deleted. It means random
-historical `tmp/*benchmark*.json` no longer counts as active evidence.
+That does not mean source-owned benchmark runners are deleted. It means random historical `tmp/*benchmark*.json` no longer counts as active evidence.
 
 ## Verification
 

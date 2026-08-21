@@ -1,4 +1,3 @@
-import React from 'react';
 import { render } from '@testing-library/react';
 import type { Value } from 'platejs';
 import {
@@ -6,6 +5,7 @@ import {
   definePlatePlugin,
   usePlateEditor,
 } from 'platejs/react';
+import React from 'react';
 
 describe('usePlateEditor Plite runtime route', () => {
   it('exposes inferred plugin tx groups from public app imports', () => {

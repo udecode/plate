@@ -17,6 +17,7 @@ import {
   type Text,
   type Value,
 } from '@platejs/plite';
+
 import { defineTestSchema } from './support/schema';
 
 type PropMode = 'all' | 'block' | 'text';

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import type { Element } from '@platejs/plite';
 import { type SuggestionData, BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
@@ -20,7 +19,10 @@ import {
   useEditorPlugin,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
+
 import {
   discussionPlugin,
   getDiscussionBlockClickTarget,

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 
 import { CodeBlockKit } from '@/registry/components/editor/code-block';
 

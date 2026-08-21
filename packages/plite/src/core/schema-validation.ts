@@ -5,7 +5,11 @@ import type {
   EditorSchemaValidationPropertyContext,
 } from '../interfaces/schema-validation';
 
-/** @internal Location carried by runtime schema walkers. */
+/**
+ * Location carried by runtime schema walkers.
+ *
+ * @internal
+ */
 export type EditorSchemaValidationLocation = Readonly<{
   ancestorTypes?: readonly string[];
   nodeType?: string;
@@ -14,14 +18,22 @@ export type EditorSchemaValidationLocation = Readonly<{
   root: string | null;
 }>;
 
-/** @internal Minimal compiled property provenance required by diagnostics. */
+/**
+ * Minimal compiled property provenance required by diagnostics.
+ *
+ * @internal
+ */
 export type EditorSchemaValidationPropertyCandidate = Readonly<{
   id: string;
   owner: string;
   target: SchemaTarget | null;
 }>;
 
-/** @internal Property context carried by runtime schema walkers. */
+/**
+ * Property context carried by runtime schema walkers.
+ *
+ * @internal
+ */
 export type EditorSchemaValidationPropertyInput = Readonly<{
   candidates: readonly EditorSchemaValidationPropertyCandidate[];
   key: string;
@@ -120,7 +132,11 @@ export class EditorSchemaValidationError extends Error {
   }
 }
 
-/** @internal Build one deterministic path-aware runtime schema error. */
+/**
+ * Build one deterministic path-aware runtime schema error.
+ *
+ * @internal
+ */
 export const createEditorSchemaValidationError = (
   code: EditorSchemaValidationCode,
   message: string,

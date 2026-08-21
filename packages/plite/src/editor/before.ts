@@ -1,5 +1,5 @@
-import { getEditorSchema } from '../core/editor-runtime';
 import { isEditorNodeSelectable } from '../core/editor-read-execution';
+import { getEditorSchema } from '../core/editor-runtime';
 import {
   above as editorAbove,
   point as editorPoint,
@@ -86,9 +86,7 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
   const initialPoint = (() => {
     try {
       return editorPoint(editor, at, { edge: 'end' });
-    } catch {
-      return;
-    }
+    } catch {}
   })();
 
   if (!initialPoint) return;
@@ -99,6 +97,7 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
       NodeApi.isElement(node) && getEditorSchema(editor).isBlock(node),
   });
 
+  // oxlint-disable-next-line array-callback-return -- The infinite scan returns on every exit; a sentinel return is unreachable.
   matchStrings.some((currentMatchString) => {
     let beforeAt = at;
     let previousBeforePoint = initialPoint;
@@ -202,8 +201,6 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
         return false;
       }
     }
-
-    return false;
   });
 
   return point;

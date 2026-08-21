@@ -1,3 +1,17 @@
+import type { NodeKey } from '../../interfaces/editor';
+import {
+  preparedNodeKeyAt,
+  preparedNodeKeyOffset,
+  type PreparedNodeKeyRange,
+  reservePreparedNodeKeyRange,
+} from '../../utils/node-keys';
+import {
+  createTreeIndex,
+  ResolvedTokenCursor,
+  type TreeIndexChildren,
+} from '../resolved-token-cursor';
+import { assertEditorJsonValue } from '../value-codec';
+
 export type JsonRecord = Record<string, unknown>;
 
 export type JsonNode = JsonRecord &
@@ -87,8 +101,14 @@ export type JsonTokenData =
       text: string;
     };
 
-/** @internal A token slice cannot form a balanced JSON node tree here. */
-export class PreparedTokenSliceStructureError extends Error {}
+/**
+ * A token slice cannot form a balanced JSON node tree here.
+ *
+ * @internal
+ */
+export class PreparedTokenSliceStructureError extends Error {
+  override name = 'PreparedTokenSliceStructureError';
+}
 
 export const isRecord = (value: unknown): value is JsonRecord =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -353,15 +373,27 @@ const DOCUMENT_SLICE_RUNTIME_NODE_KEYS = new WeakMap<
   ReadonlyMap<number, NodeKey>
 >();
 
-/** @internal Runtime-only identities carried by inserted token content. */
+/**
+ * Runtime-only identities carried by inserted token content.
+ *
+ * @internal
+ */
 export const getDocumentSliceNodeKeys = (slice: PreparedTokenSlice) =>
   DOCUMENT_SLICE_RUNTIME_NODE_KEYS.get(slice) ?? new Map<number, NodeKey>();
 
-/** @internal Read the immutable node/index run behind a prepared slice. */
+/**
+ * Read the immutable node/index run behind a prepared slice.
+ *
+ * @internal
+ */
 export const getPreparedDocumentSlice = (slice: PreparedTokenSlice) =>
   DOCUMENT_SLICE_PREPARED_NODES.get(slice);
 
-/** @internal Resolve one prepared node path without materializing slice tokens. */
+/**
+ * Resolve one prepared node path without materializing slice tokens.
+ *
+ * @internal
+ */
 export const getPreparedDocumentNodeKey = (
   slice: PreparedTokenSlice,
   path: readonly number[]
@@ -394,7 +426,11 @@ export const getPreparedDocumentNodeKey = (
   return null;
 };
 
-/** @internal Resolve one prepared identity without materializing slice tokens. */
+/**
+ * Resolve one prepared identity without materializing slice tokens.
+ *
+ * @internal
+ */
 export const getPreparedDocumentRuntimePath = (
   slice: PreparedTokenSlice,
   nodeKey: NodeKey
@@ -417,11 +453,19 @@ export const getPreparedDocumentRuntimePath = (
   );
 };
 
-/** @internal Report whether a slice has paid the token-materialization cost. */
+/**
+ * Report whether a slice has paid the token-materialization cost.
+ *
+ * @internal
+ */
 export const hasMaterializedDocumentSliceTokens = (slice: PreparedTokenSlice) =>
   DOCUMENT_SLICE_TOKENS.has(slice);
 
-/** @internal Whether a slice is a lazy view over prepared document content. */
+/**
+ * Whether a slice is a lazy view over prepared document content.
+ *
+ * @internal
+ */
 export const isDeferredPreparedDocumentSlice = (slice: PreparedTokenSlice) =>
   DOCUMENT_SLICE_DEFERRED_VIEWS.has(slice);
 
@@ -557,7 +601,11 @@ export class PreparedTokenSlice {
     return encodeNodes(nodes).slice;
   }
 
-  /** @internal Encode already detached, frozen, and shape-validated nodes. */
+  /**
+   * Encode already detached, frozen, and shape-validated nodes.
+   *
+   * @internal
+   */
   static fromPreparedNodes(
     nodes: readonly JsonNode[],
     nodeKeyAt?: (path: readonly number[]) => NodeKey | null
@@ -597,7 +645,11 @@ export class PreparedTokenSlice {
     );
   }
 
-  /** @internal Encode immutable nodes already owned by an indexed document. */
+  /**
+   * Encode immutable nodes already owned by an indexed document.
+   *
+   * @internal
+   */
   static fromIndexedNodes(nodes: readonly JsonNode[]) {
     return new PreparedTokenSlice(encodeTrustedNodes(nodes, false), true);
   }
@@ -612,7 +664,11 @@ export class PreparedTokenSlice {
       : new PreparedTokenSlice([textToken(text)], true);
   }
 
-  /** @internal Concatenate normalized slices with one token/offset pass. */
+  /**
+   * Concatenate normalized slices with one token/offset pass.
+   *
+   * @internal
+   */
   static concat(slices: readonly PreparedTokenSlice[]) {
     const tokens: JsonToken[] = [];
     const runtimeNodeKeys = new Map<number, NodeKey>();
@@ -892,16 +948,3 @@ export const encodeNodes = (nodes: readonly JsonNode[]) => {
     slice: PreparedTokenSlice.fromTokens(tokens),
   };
 };
-import {
-  createTreeIndex,
-  ResolvedTokenCursor,
-  type TreeIndexChildren,
-} from '../resolved-token-cursor';
-import type { NodeKey } from '../../interfaces/editor';
-import { assertEditorJsonValue } from '../value-codec';
-import {
-  preparedNodeKeyAt,
-  preparedNodeKeyOffset,
-  type PreparedNodeKeyRange,
-  reservePreparedNodeKeyRange,
-} from '../../utils/node-keys';

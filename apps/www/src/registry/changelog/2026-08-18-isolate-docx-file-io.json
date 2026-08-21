@@ -51,7 +51,7 @@
       "migrationNotes": [],
       "targets": ["editor-plugins", "fixed-toolbar", "docx-demo"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-08-18",

@@ -1,6 +1,5 @@
-import type React from 'react';
-
 import type { Path, Text } from '@platejs/plite';
+import type React from 'react';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
 export type RenderTextProps<N extends Text = Text> = {

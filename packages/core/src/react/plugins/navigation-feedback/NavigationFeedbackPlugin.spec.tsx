@@ -1,7 +1,6 @@
-import React from 'react';
-
-import { act, render } from '@testing-library/react';
 import { DOMEditor } from '@platejs/plite-dom/internal';
+import { act, render } from '@testing-library/react';
+import React from 'react';
 
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { Plate } from '../../components/Plate';
@@ -84,9 +83,9 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('flashTarget sets and clears the active target', () => {
-    let timeoutCallback: Function | undefined;
+    let timeoutCallback: (() => void) | undefined;
     const setTimeoutSpy = spyOn(globalThis, 'setTimeout').mockImplementation(((
-      callback: Function
+      callback: () => void
     ) => {
       timeoutCallback = callback;
       return 1;
@@ -129,7 +128,7 @@ describe('NavigationFeedbackPlugin', () => {
       'clearTimeout'
     ).mockImplementation(() => {});
     let timeoutId = 0;
-    spyOn(globalThis, 'setTimeout').mockImplementation(((_: Function) => {
+    spyOn(globalThis, 'setTimeout').mockImplementation(((_: () => void) => {
       timeoutId += 1;
       return timeoutId;
     }) as typeof setTimeout);

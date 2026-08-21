@@ -41,7 +41,9 @@ Completion threshold:
 - Closure is legal only when required behavior, visual/native selection, package/API, mobile/raw-device claim width, huge-document, docs/skill repair, changed-list, review-attention, stopping-checkpoint, workflow-slowdown, and final handoff rows are complete, explicitly deferred, or N/A with evidence, and `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
-- TODO: Name the focused package tests, Playwright routes/greps, in-app Browser proof, source audits, benchmark metrics, mobile/raw-device proof, helper API checks, docs audit, skill sync, and final plan check that prove this run.
+- TODO: Name focused package tests, Playwright routes/greps, Browser proof,
+  source audits, delegated Benchmark evidence, mobile/raw-device proof, helper
+  API checks, docs audit, skill sync, and final plan check.
 - Plite package proof uses `pnpm plite:test` and `pnpm plite:typecheck`.
 - Plite daily proof uses `pnpm check:plite`.
 - Plite focused browser proof uses `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`.
@@ -55,7 +57,7 @@ Constraints:
 - Release, PR, and publish work are in scope only when the prompt explicitly asks for them or the active lane requires them.
 - Plite-lane proof runs from the Plate repo root against transplanted Plite packages and routes. Do not use donor-checkout proof.
 - Plate-lane proof runs in the owning Plate package, app, or docs route. Plite runtime proof does not prove Plate docs, registry, plugin, or package DX.
-- Behavior proof beats perf. Native/visual proof beats model-only selection.
+- Behavior proof precedes Benchmark. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
 - No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `plite-plan`.
 - Do not patch Plate when the run is scoped to Plite. Do not patch Plite runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
@@ -112,13 +114,13 @@ Checkpoint supervisor:
 | status | auto | pending | P0 | Read active plan, latest prompt, source status, and current evidence. | Current state recorded. | seed |
 | gap-scan | auto | pending | P0 | Identify behavior, visual, API, test, metric, docs, skill, and workflow gaps. | Gaps routed to packet owners. | seed |
 | closure-handoff | autoclosure | pending | P0 when merged/current-tree work is in scope | Run until-clean closure for already-applied work. | Closure delegated or N/A. | seed |
-| behavior-proof | lane proof owner | pending | P0 | Prove stable editor behavior before perf. | Focused behavior commands pass or failures routed. | seed |
+| behavior-proof | lane proof owner | pending | P0 | Prove stable editor behavior before Benchmark. | Focused behavior commands pass or failures routed. | seed |
 | oracle-repair | lane test owner / tdd | pending | P0 | Add missing native/visual/model oracles for found gaps. | New proof fails before fix or coverage gap is explicit. | seed |
 | visual-proof | Browser / Playwright | pending | P0 | Prove visible editor behavior and native selection. | Browser/screenshot/geometry evidence recorded. | seed |
 | browser-helper-promotion | lane proof harness | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
 | mobile-claim-width | auto | pending | P1 | Separate raw-device proof from viewport proof. | Raw proof command passes or scoped blocker recorded. | seed |
 | huge-document-smoke | lane proof owner | pending | P1 | Smoke huge-doc correctness without broad architecture work when in scope. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded or N/A. | seed |
-| perf-packet | lane perf owner | pending | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | seed |
+| benchmark-handoff | benchmark | pending | P2 | Route measured work only after correctness is green. | Benchmark plan/packet reports cause, fix/rerun, resumed breadth, or N/A. | seed |
 | supervision-mode | auto | pending | P0 when timed runtime remains | If backlog looks empty before minimum runtime, predict next useful checkpoint from vision and evidence. | New checkpoint added/run, or hard blocker recorded. | seed |
 | consolidation | auto | pending | P1 | Move accepted reusable decisions to durable docs/rules. | Durable owner updated or N/A. | seed |
 | final-handoff | auto | pending | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff rows complete. | seed |
@@ -171,7 +173,8 @@ Work Checklist:
 - [ ] Repeated browser proof patterns are promoted to `@platejs/browser` or queued with reason.
 - [ ] Mobile/raw-device proof is run or the claim width is explicitly limited; Playwright viewport proof is not recorded as raw-device proof.
 - [ ] Huge-document correctness smoke is run or deferred with owner and reason.
-- [ ] Perf packet runs only after correctness is green, or is marked N/A for this run.
+- [ ] Measured work is delegated to `benchmark` only after correctness is green,
+      or marked N/A for this run; Auto does not run a competing perf loop.
 - [ ] Package/API hard cuts, aliases, exports, and docs/API consistency are audited when in scope.
 - [ ] Docs/vision/rule consolidation is applied when a reusable decision is accepted, or marked N/A.
 - [ ] Workflow slowdowns are logged and avoidable repeats are repaired in the owner skill/script/gate.
@@ -179,7 +182,7 @@ Work Checklist:
 - [ ] Changed list is current and includes only this run.
 - [ ] Needs-your-attention list is ranked and capped at five items.
 - [ ] Stopping checkpoints are queued or marked none.
-- [ ] P2 autoreview/review gate is run for non-trivial implementation diffs or marked N/A with reason.
+- [ ] P1 autoreview/review gate is run for non-trivial implementation diffs or marked N/A with reason.
 - [ ] Agent-native review is run for `.agents/**`, commands, skills, hooks, or prompt/tooling changes, or marked N/A with reason.
 - [ ] Output budget discipline is followed: broad scans are capped or written to artifacts instead of streamed.
 
@@ -196,6 +199,7 @@ Completion Gates:
 | `@platejs/browser` promotion | pending | Add/verify helper/API or record queue/defer reason | pending |
 | Mobile/raw-device claim width | pending | Run raw-device proof or record that only scoped viewport/browser proof is available | pending |
 | Huge-document correctness smoke | pending | Run focused huge-document behavior smoke or record owner defer | pending |
+| Benchmark handoff | pending | Route measured work to `benchmark` and record its current plan/packet result, otherwise N/A | pending |
 | Package/API proof | pending | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | pending |
 | Autoclosure handoff | pending | Delegate post-merge/current-tree until-clean work to `autoclosure`, otherwise N/A | pending |
 | Skill/rule sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
@@ -203,7 +207,7 @@ Completion Gates:
 | Final lint/check | pending | Run scoped lint/check or record why no code changed | pending |
 | Workflow slowdown review | pending | Log slow steps and repair avoidable recurring slowdown, otherwise N/A | pending |
 | Agent-native review for agent/tooling changes | pending | Load `agent-native-reviewer` and close accepted findings, or N/A | pending |
-| P2 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P2`, and close accepted/actionable findings; use P3 only when explicitly requested, or N/A for no implementation diff | pending |
+| P1 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P1`, and close accepted/actionable findings; use P2 or P3 only when explicitly requested, or N/A for no implementation diff | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
@@ -217,8 +221,8 @@ Phase / pass table:
 | Visual/native proof | pending | | browser helper promotion |
 | Browser helper promotion | pending | | mobile claim width |
 | Mobile/raw-device claim width | pending | | huge-document smoke |
-| Huge-document correctness smoke | pending | | perf/API/docs as needed |
-| Perf/API/docs/skill packets as needed | pending | | consolidation |
+| Huge-document correctness smoke | pending | | Benchmark/API/docs as needed |
+| Benchmark handoff / API / docs / skill packets as needed | pending | | consolidation |
 | Consolidation and review | pending | | final handoff |
 | Final handoff and goal-plan check | pending | | final response |
 

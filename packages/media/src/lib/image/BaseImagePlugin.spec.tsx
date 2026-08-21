@@ -212,22 +212,22 @@ describe('BaseImagePlugin clipboard behavior', () => {
     ]);
   });
 
-  it.each([
-    '//google.com',
-    'hello',
-  ])('leaves non-image text to the next clipboard handler: %s', (text) => {
-    const editor = createEditor();
-    const data = {
-      files: [],
-      getData: () => text,
-    };
+  it.each(['//google.com', 'hello'])(
+    'leaves non-image text to the next clipboard handler: %s',
+    (text) => {
+      const editor = createEditor();
+      const data = {
+        files: [],
+        getData: () => text,
+      };
 
-    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: `test${text}` }], type: 'paragraph' },
-    ]);
-  });
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: `test${text}` }], type: 'paragraph' },
+      ]);
+    }
+  );
 
   it('leaves non-image files to the next clipboard handler', () => {
     suppressInsertDataOverrideWarning();

@@ -1,4 +1,3 @@
-import { JSDOM } from 'jsdom';
 import {
   ContentSlice,
   createEditor,
@@ -15,6 +14,7 @@ import {
   SelectionApi,
   ElementApi as PliteElement,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
@@ -24,7 +24,7 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { history } from '@platejs/plite-history';
+import { JSDOM } from 'jsdom';
 
 import {
   clipboardHandler,

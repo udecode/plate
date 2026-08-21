@@ -46,6 +46,29 @@ test('Regression corpus work derives coordination from executable sources', () =
   assert.match(template, /No duplicate registry/);
 });
 
+test('Regression completes fully proved local work without requiring a push', () => {
+  const rule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(rule, /Commit and push are not local completion gates/);
+  assert.match(
+    methodology,
+    /A Regression run is `completed`[\s\S]*Commit and push are not\s+local completion gates/
+  );
+  assert.match(template, /Local completion status/);
+  assert.match(
+    template,
+    /Do not widen that\s+status into integrated, shipped, released, or public issue completion/
+  );
+  assert.doesNotMatch(
+    rule,
+    /Never call a run fixed, shipped, completed, or clean beyond/
+  );
+});
+
 test('Patch receives an executable red case instead of duplicate state', () => {
   const patchRule = read('.agents/rules/patch.mdc');
 
@@ -55,6 +78,40 @@ test('Patch receives an executable red case instead of duplicate state', () => {
     patchRule,
     /return the executable test path and command, exact red\s+and green results/
   );
+});
+
+test('failed claimed fixes interrupt Patch and automatically repair Regression', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const patchRule = read('.agents/rules/patch.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+
+  assert.match(
+    regressionRule,
+    /Every failed claimed bug fix automatically repairs Regression/
+  );
+  assert.match(
+    regressionRule,
+    /regression repair <case-id>: <missed invariant or proof failure>/
+  );
+  assert.match(patchRule, /automatically route\s+`regression repair/);
+  assert.match(methodology, /A failed fix always records\s+`repair-now`/);
+  assert.match(methodology, /On attempt 2[\s\S]*run `best-api`/);
+});
+
+test('Regression routes semantic completion through executable helpers', () => {
+  const rule = read('.agents/rules/regression.mdc');
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(rule, /validate-regression-plan\.mjs/);
+  assert.match(rule, /capture-proof-receipt\.mjs/);
+  assert.match(template, /Reporter oracle matrix:/);
+  assert.match(template, /Failed fix history:/);
+  assert.match(template, /Architecture pressure:/);
+  assert.match(template, /Proof receipts:/);
+  assert.match(template, /Affected corpus replay:/);
+  assert.match(template, /Regression semantic plan/);
 });
 
 test('generated Regression and Patch skills match their source rules', () => {

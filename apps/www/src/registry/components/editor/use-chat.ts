@@ -1,8 +1,6 @@
 'use client';
 
-/* eslint-disable react-hooks/refs -- Fake stream abort control is imperative transport state. */
-
-import * as React from 'react';
+// Fake stream abort control is imperative transport state.
 
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
@@ -13,9 +11,6 @@ import {
 } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { BaseTableCellPlugin } from '@platejs/table';
-import { TablePlugin } from '@platejs/table/react';
 import {
   type Range,
   type Value,
@@ -23,9 +18,13 @@ import {
   NodeApi,
   TextApi,
 } from '@platejs/plite';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { BaseTableCellPlugin } from '@platejs/table';
+import { TablePlugin } from '@platejs/table/react';
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { PLUGINS, nanoid } from 'platejs';
 import { type PlateEditor, useEditor, usePluginStore } from 'platejs/react';
+import * as React from 'react';
 
 import { discussionPlugin } from './discussion';
 
@@ -338,7 +337,6 @@ export const useChat = () => {
 
   React.useEffect(() => {
     editor.plugin(AIChatPlugin).store.set({ chat: createAIChatAdapter(chat) });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.status, chat.messages, chat.error, _abortFakeStream]);
 
   return chat;

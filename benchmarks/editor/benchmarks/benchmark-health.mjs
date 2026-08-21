@@ -24,7 +24,7 @@ if (args.check) {
 }
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, JSON.stringify(health, null, 2) + '\n');
+fs.writeFileSync(outPath, `${JSON.stringify(health, null, 2)}\n`);
 console.log(`wrote ${outPath}`);
 console.log(
   `benchmark health active=${health.registry.activeArtifacts} rows=${health.result.rowCount} nextActions=${health.nextActions.length}`
@@ -224,10 +224,9 @@ function assertHealth(health) {
   }
   if (health.registry.missingRequiredArtifacts.length > 0) {
     throw new Error(
-      'missing required active artifacts: ' +
-        health.registry.missingRequiredArtifacts
-          .map((artifact) => artifact.id)
-          .join(', ')
+      `missing required active artifacts: ${health.registry.missingRequiredArtifacts
+        .map((artifact) => artifact.id)
+        .join(', ')}`
     );
   }
   if (health.result.rowCount < 250) {
@@ -284,7 +283,7 @@ function walkFiles(root) {
 
 function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
 function parseArgs(argv) {

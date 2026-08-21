@@ -1,4 +1,3 @@
-import type { RefObject } from 'react';
 import {
   PathApi,
   PointApi,
@@ -24,18 +23,20 @@ import {
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
+import type { RefObject } from 'react';
+
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
+import {
+  getPliteRootBoundaryPoint,
+  rootPlitePoint,
+} from '../view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import {
-  getPliteRootBoundaryPoint,
-  rootPlitePoint,
-} from '../view-boundary-graph';
 import {
   type ContentRootOwner,
   createContentRootProjectionGraph,
@@ -162,8 +163,8 @@ const isNestedEditableDOMTarget = (
 
   return Boolean(
     targetEditor &&
-      targetEditor !== editorElement &&
-      editorElement.contains(targetEditor)
+    targetEditor !== editorElement &&
+    editorElement.contains(targetEditor)
   );
 };
 

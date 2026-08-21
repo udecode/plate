@@ -117,7 +117,7 @@ type HistoryExtensionDefinition<TEnabled extends boolean | undefined> = {
 export type HistoryExtensionTypeProvider =
   EditorExtensionTypeProvider<HistoryExtensionTypeProvider.Contract>;
 
-// biome-ignore lint/style/noNamespace: declaration merging keeps the HKT contract nameable through package declarations without exporting a second root symbol
+// declaration merging keeps the HKT contract nameable through package declarations without exporting a second root symbol.
 export declare namespace HistoryExtensionTypeProvider {
   interface Contract {
     readonly input: Value;

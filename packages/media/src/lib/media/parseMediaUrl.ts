@@ -110,9 +110,7 @@ const parseUrl = (url: string) => {
 
   try {
     return new URL(url);
-  } catch {
-    return;
-  }
+  } catch {}
 };
 
 const getPathSegments = (url: URL) => url.pathname.split('/').filter(Boolean);

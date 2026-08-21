@@ -1,8 +1,3 @@
-import type { Root } from 'mdast';
-import remarkParse from 'remark-parse';
-import remarkStringify from 'remark-stringify';
-import { type Plugin, unified } from 'unified';
-
 import {
   type BaseEditor,
   ElementIdPlugin,
@@ -18,12 +13,16 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
+import type { Root } from 'mdast';
+import remarkParse from 'remark-parse';
+import remarkStringify from 'remark-stringify';
+import { type Plugin, unified } from 'unified';
 
-import type { MarkdownPluginState } from '../MarkdownPlugin';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
 import { htmlToJsx } from '../deserializer/utils/htmlToJsx';
 import { splitIncompleteMdx } from '../deserializer/utils/splitIncompleteMdx';
 import { stripMarkdownBlocks } from '../deserializer/utils/stripMarkdown';
+import type { MarkdownPluginState } from '../MarkdownPlugin';
 import type { MdRoot } from '../mdast';
 import { intrinsicRules } from '../rules/intrinsicRules';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
@@ -32,21 +31,22 @@ import type {
   MarkdownConversionContext,
   MarkdownNodeName,
   SerializeMdContext,
+  DeserializeMdOptions,
+  SerializeMdOptions,
 } from '../types';
 import {
   getRemarkPluginsWithoutMdx,
   materializeMarkdownSettings,
   materializeRemarkPlugins,
 } from '../utils/getRemarkPluginsWithoutMdx';
-import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
-import {
-  MarkdownBlockIdError,
-  type MarkdownSerializeDocumentValue,
-} from './markdownDocument';
 import {
   type CompiledMarkdownCodecs,
   compileMarkdownCodecs,
 } from './markdownCodecs';
+import {
+  MarkdownBlockIdError,
+  type MarkdownSerializeDocumentValue,
+} from './markdownDocument';
 
 export type MarkdownRuntimeState = NormalizePluginState<MarkdownPluginState>;
 

@@ -1,6 +1,5 @@
 ---
-"@platejs/toggle": patch
+'@platejs/toggle': patch
 ---
 
 Detect flat lists through listType.
-

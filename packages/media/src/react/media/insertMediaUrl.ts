@@ -2,9 +2,9 @@ import type { BaseEditor, PlateNodeInsertOptions } from '@platejs/core';
 import { PathApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
+import type { MediaInsertInput } from '../../lib/BaseMediaPlugin';
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
-import type { MediaInsertInput } from '../../lib/BaseMediaPlugin';
 
 export interface InsertMediaUrlOptions extends PlateNodeInsertOptions {
   /** Resolve a URL without showing the default browser prompt. */
@@ -53,7 +53,7 @@ export const insertMediaUrl = async (
   try {
     const url = getUrl
       ? await getUrl()
-      : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
+      : // intentional user input for media URL
         window.prompt(
           `Enter the URL of the ${isImage ? PLUGINS.image : PLUGINS.mediaEmbed}`
         );

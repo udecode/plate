@@ -11,23 +11,28 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/basic-nodes"
   },
-  "license": "MIT",
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "plate-pkg p:brl",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -39,19 +44,6 @@
     "test:watch": "plate-pkg p:test:watch",
     "typecheck": "plate-pkg p:typecheck"
   },
-  "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "@platejs/test-utils": "workspace:^"
-  },
-  "peerDependencies": {
-    "react": ">=19.2.0",
-    "react-dom": ">=19.2.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "module": "./dist/index.js",
   "dependencies": {
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
@@ -59,5 +51,13 @@
     "@udecode/react-hotkeys": "workspace:*",
     "@udecode/utils": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
+  },
+  "devDependencies": {
+    "@plate/scripts": "workspace:*",
+    "@platejs/test-utils": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   }
 }

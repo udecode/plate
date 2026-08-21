@@ -1,17 +1,16 @@
 'use client';
 
-import * as React from 'react';
-
 import { remarkMdx, remarkMention } from '@platejs/markdown';
 import { NodeApi } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { useDebounce } from '@/registry/hooks/use-debounce';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const initialMarkdown = `## Basic Markdown
 

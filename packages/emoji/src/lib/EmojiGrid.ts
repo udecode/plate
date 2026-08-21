@@ -34,9 +34,10 @@ export interface IGridSection<R, T> {
   updateElements: (elements: SectionElements) => this;
 }
 
-export abstract class AGridSection<R, T = SectionId>
-  implements IGridSection<R, T>
-{
+export abstract class AGridSection<R, T = SectionId> implements IGridSection<
+  R,
+  T
+> {
   protected _id: T;
   protected _indexRowStart = 0;
   protected _root!: R;

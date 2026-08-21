@@ -1,7 +1,7 @@
 'use client';
 
-import type { ComponentType } from 'react';
 import dynamic from 'next/dynamic';
+import type { ComponentType } from 'react';
 
 const createPliteExampleLoader = (
   loader: () => Promise<{ default: ComponentType }>

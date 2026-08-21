@@ -1,24 +1,11 @@
 'use client';
 
-import type { SidebarNavItem } from '@/types/nav';
-
 import castArray from 'lodash/castArray.js';
 import { ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 
-import { useLocale } from '@/hooks/useLocale';
-import {
-  getLocalizedNavTitle,
-  normalizeDocsHref,
-} from '@/lib/docs-nav-metadata';
-import {
-  getDocsRootFromPathname,
-  getSidebarNavForDocsRoot,
-} from '@/lib/docs-root-nav';
-import { cn } from '@/lib/utils';
-import { hrefWithLocale } from '@/lib/withLocale';
 import {
   Collapsible,
   CollapsibleContent,
@@ -34,6 +21,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useLocale } from '@/hooks/useLocale';
+import {
+  getLocalizedNavTitle,
+  normalizeDocsHref,
+} from '@/lib/docs-nav-metadata';
+import {
+  getDocsRootFromPathname,
+  getSidebarNavForDocsRoot,
+} from '@/lib/docs-root-nav';
+import { cn } from '@/lib/utils';
+import { hrefWithLocale } from '@/lib/withLocale';
+import type { SidebarNavItem } from '@/types/nav';
 
 function getLabelValues(label: SidebarNavItem['label']) {
   return castArray(label).filter(Boolean);
@@ -458,7 +457,7 @@ function DocsNavItemContent({
           {textLabels.map((value) => (
             <span
               key={value}
-              className="rounded-sm bg-muted px-1.5 py-0.5 text-[0.65rem] text-muted-foreground leading-none"
+              className="rounded-sm bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground"
             >
               {value}
             </span>

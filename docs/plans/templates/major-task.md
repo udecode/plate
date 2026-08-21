@@ -39,8 +39,8 @@ Timed checkpoint:
 - final score / loop closure: pending
 
 Completion threshold:
-- TODO: Define the exact decision, proposal, benchmark, architecture, or
-  migration done state.
+- TODO: Define the exact decision, proposal, architecture, performance-
+  architecture, or migration done state.
 - Major-task closure is legal only when the decision criteria are satisfied or
   explicitly narrowed, facts/inference/recommendation are separated, required
   review or pressure passes are recorded, implementation gates are closed when
@@ -49,8 +49,8 @@ Completion threshold:
   passes.
 
 Verification surface:
-- TODO: Name the repo audit, benchmark, external-source audit, review pass,
-  prototype, command, or plan artifact proving the threshold.
+- TODO: Name the repo audit, Benchmark handoff, external-source audit, review
+  pass, prototype, command, or plan artifact proving the threshold.
 
 Constraints:
 - Start from repo evidence before external claims.
@@ -71,7 +71,7 @@ Output budget strategy:
   saved as artifacts before broad exploration.
 
 Blocked condition:
-- TODO: Name the missing source, benchmark, access, design decision, external
+- TODO: Name the missing source, Benchmark evidence, access, design decision, external
   evidence, or user judgment that stops autonomous major-task work.
 
 Major state:
@@ -153,7 +153,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | pending |
+| Named verification threshold | pending | Run the repo audit, consume the Benchmark handoff, or run the review/prototype/artifact check named in this plan | pending |
 | Current-state source audit | pending | Map current owner, boundaries, constraints, and affected surfaces | pending |
 | Decision criteria closure | pending | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | pending |
 | Options / tradeoffs / rejection record | pending | Record viable options, chosen recommendation, and why alternatives lose | pending |

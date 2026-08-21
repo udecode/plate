@@ -1,19 +1,17 @@
-import React from 'react';
-
 import { type Path, PathApi, TextApi } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
+import React from 'react';
 
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
-
-import type { RenderLeafProps } from '../../lib';
-import { getPluginNodeClass } from '../../lib';
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
   getCompiledPlateModelBinding,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import type { RenderLeafProps } from '../../lib';
+import { getPluginNodeClass } from '../../lib';
 import { type PlateNodeProps, PlateLeaf } from '../components/plate-nodes';
+import type { PlateEditor } from '../editor/PlateEditor';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 type PlateLeafRenderProps = PlateNodeProps & RenderLeafProps;
@@ -76,7 +74,6 @@ export const pluginRenderLeaf = (
   plugin: AnyResolvedPlatePlugin
 ): RenderLeaf =>
   function render(props) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const readOnly = useEditorReadOnly();
     const {
       render: { leaf: leafComponent, node },

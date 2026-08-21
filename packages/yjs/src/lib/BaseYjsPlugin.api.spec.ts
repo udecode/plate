@@ -6,9 +6,9 @@ import { createPlateEditor } from '@platejs/core/react';
 import { createEditor } from '@platejs/plite';
 import * as Y from 'yjs';
 
+import { FakeProvider } from '../../test/support/provider';
 import { yjs } from '../core/extension';
 import { YjsPlugin } from '../react/YjsPlugin';
-import { FakeProvider } from '../../test/support/provider';
 import { BaseYjsPlugin } from './BaseYjsPlugin';
 
 const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;

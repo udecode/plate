@@ -11,12 +11,13 @@ import {
   type Value,
 } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+
+import type { LinkDefinition } from '../react/LinkPlugin';
 import {
   BaseLinkPlugin,
   type BaseLinkDefinition,
   type LinkElement,
 } from './BaseLinkPlugin';
-import type { LinkDefinition } from '../react/LinkPlugin';
 
 jsxt;
 
@@ -282,14 +283,14 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
   });
 
   describe('external links', () => {
-    it.each([
-      'http://example.com',
-      'https://example.com',
-    ])('validates %s', (url) => {
-      const editor = createTestEditor();
+    it.each(['http://example.com', 'https://example.com'])(
+      'validates %s',
+      (url) => {
+        const editor = createTestEditor();
 
-      expect(editor.plugin(BaseLinkPlugin).api.validateUrl(url)).toBe(true);
-    });
+        expect(editor.plugin(BaseLinkPlugin).api.validateUrl(url)).toBe(true);
+      }
+    );
 
     it('uses a custom isUrl function', () => {
       const editor = createTestEditor({
@@ -339,14 +340,14 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
       expect(editor.plugin(BaseLinkPlugin).api.validateUrl('#')).toBe(true);
     });
 
-    it.each([
-      '#heading1',
-      '##heading2',
-    ])('validates anchor-like value %s', (value) => {
-      const editor = createTestEditor();
+    it.each(['#heading1', '##heading2'])(
+      'validates anchor-like value %s',
+      (value) => {
+        const editor = createTestEditor();
 
-      expect(editor.plugin(BaseLinkPlugin).api.validateUrl(value)).toBe(true);
-    });
+        expect(editor.plugin(BaseLinkPlugin).api.validateUrl(value)).toBe(true);
+      }
+    );
   });
 
   it('uses configured URL options during HTML parsing', () => {
@@ -675,28 +676,29 @@ describe('editor.update.link.unwrap', () => {
     ]);
   });
 
-  it.each(
-    splitCases
-  )('preserves the linked fragment in split mode', (fixture) => {
-    const editor = createUnwrapEditor(fixture.anchor, fixture.focus);
+  it.each(splitCases)(
+    'preserves the linked fragment in split mode',
+    (fixture) => {
+      const editor = createUnwrapEditor(fixture.anchor, fixture.focus);
 
-    editor.update.link.unwrap({ split: true });
+      editor.update.link.unwrap({ split: true });
 
-    expect(editor.read.children()).toEqual([
-      {
-        children: [
-          { text: 'x' },
-          {
-            children: [{ text: fixture.linked }],
-            type: 'link',
-            url: 'https://example.com',
-          },
-          { text: fixture.plain },
-        ],
-        type: 'paragraph',
-      },
-    ]);
-  });
+      expect(editor.read.children()).toEqual([
+        {
+          children: [
+            { text: 'x' },
+            {
+              children: [{ text: fixture.linked }],
+              type: 'link',
+              url: 'https://example.com',
+            },
+            { text: fixture.plain },
+          ],
+          type: 'paragraph',
+        },
+      ]);
+    }
+  );
 
   it('unwraps only the selected middle fragment in split mode', () => {
     const editor = createUnwrapEditor(

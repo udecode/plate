@@ -27,7 +27,7 @@ jobs:
 
           # Continue even if some cache deletions fail
           set +e
-          
+
           if [ -z "$cacheKeys" ]; then
             echo "No caches found to delete"
             exit 0
@@ -38,5 +38,5 @@ jobs:
             echo "Deleting cache: $cacheKey"
             gh actions-cache delete "$cacheKey" -R $REPO -B $BRANCH --confirm
           done
-          
+
           echo "Cache cleanup completed"

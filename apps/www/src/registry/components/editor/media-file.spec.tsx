@@ -1,7 +1,7 @@
-import * as React from 'react';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
-import { afterAll, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 mock.module('platejs/react', () => ({
   PlateElement: ({

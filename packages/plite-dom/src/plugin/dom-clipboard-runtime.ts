@@ -1,4 +1,3 @@
-import { dispatchCommand, void as editorVoid } from '@platejs/plite/internal';
 import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
@@ -16,6 +15,8 @@ import {
   SelectionApi,
   type Value,
 } from '@platejs/plite';
+import { dispatchCommand, void as editorVoid } from '@platejs/plite/internal';
+
 import {
   getPlainText,
   getPliteFragmentAttribute,
@@ -66,9 +67,8 @@ export const DOM_CLIPBOARD_HANDLERS: EditorExtensionPoint<
 /** Contribute one DOM clipboard ingress handler from an editor extension. */
 export const clipboardHandler = <
   TEditor extends Editor<any> = Editor,
-  const TInsertData extends (
-    ...args: any[]
-  ) => boolean = DOMClipboardHandler<TEditor>['insertData'],
+  const TInsertData extends (...args: any[]) => boolean =
+    DOMClipboardHandler<TEditor>['insertData'],
 >(
   handler: DOMClipboardHandler<TEditor> & Readonly<{ insertData: TInsertData }>
 ): EditorExtensionContribution<
@@ -78,7 +78,11 @@ export const clipboardHandler = <
     : TEditor
 > => DOM_CLIPBOARD_HANDLERS.of(handler);
 
-/** @internal Run the DOM-owned clipboard chain inside an existing transaction. */
+/**
+ * Run the DOM-owned clipboard chain inside an existing transaction.
+ *
+ * @internal
+ */
 export const dispatchDOMClipboardHandlers = <
   V extends Value,
   TExtensions extends readonly unknown[],

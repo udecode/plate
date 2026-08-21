@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { act, renderHook } from '@testing-library/react';
+import React from 'react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
@@ -21,7 +20,7 @@ describe('useEditorPlugin', () => {
       wrapper,
     });
 
-    act(() => result.current.update.duplicate());
+    void act(() => result.current.update.duplicate());
 
     expect(duplicate).toHaveBeenCalledTimes(1);
   });

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import {
   createEditor,
   type Element,
@@ -18,6 +19,7 @@ import {
   isEditor as editorIsEditor,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import { isExplicitCutFixture } from './fixture-claim-overrides.js';
 import { createFixtureTransactionApi, withTest } from './support/with-test.js';
@@ -63,7 +65,7 @@ const runFixtureTree = (
       if (fixtureFilter && !fixturePath.includes(fixtureFilter)) continue;
 
       const name = getFixtureName(file);
-      const source = readFileSync(fixturePath, 'utf8');
+      const source = readFileSync(fixturePath, 'utf-8');
       const fixturePathFromTestRoot = relative(
         testsDir,
         fixturePath
@@ -91,7 +93,8 @@ const getExpectedSnapshot = (output: any) =>
 
 describe('@platejs/plite', () => {
   runFixtureTree(resolve(testsDir, 'interfaces'), (module, fixturePath) => {
-    let { input, test, output } = module;
+    const { output, test } = module;
+    let { input } = module;
 
     if (editorIsEditor(input)) {
       input = withTest(input);
@@ -184,7 +187,8 @@ describe('@platejs/plite', () => {
   runFixtureTree(
     resolve(testsDir, 'utils/deep-equal'),
     (module, fixturePath) => {
-      let { input, test, output } = module;
+      const { output, test } = module;
+      let { input } = module;
 
       if (editorIsEditor(input)) {
         input = withTest(input);
@@ -208,7 +212,7 @@ describe('@platejs/plite', () => {
       const editor2 = createEditor();
 
       editorInsertNodes(editor1, shared, { at: [0] });
-      assert(editorGetNodeKey(editor1, [0]));
+      assert.ok(editorGetNodeKey(editor1, [0]));
 
       editorInsertNodes(editor2, shared, { at: [0] });
       editorInsertNodes(editor2, other, { at: [1] });
@@ -217,7 +221,7 @@ describe('@platejs/plite', () => {
       const nodeKeys = paths.map((path) => {
         const nodeKey = editorGetNodeKey(editor2, path);
 
-        assert(nodeKey);
+        assert.ok(nodeKey);
         assert.deepEqual(editorGetPathByNodeKey(editor2, nodeKey), path);
 
         return nodeKey;

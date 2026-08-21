@@ -31,16 +31,26 @@ export type DocContentDoc = {
   toc?: boolean;
 };
 
+type DocLink = NonNullable<DocContentDoc['docs']>[number];
+type DocNeighbours = {
+  next: { href?: string; title?: string; titleCn?: string } | null;
+  previous: { href?: string; title?: string; titleCn?: string } | null;
+};
+
+const defaultDocNeighbours: DocNeighbours = { next: null, previous: null };
+
 // import { formatBytes, getPackageData } from '@/lib/bundlephobia';
 
-const getItemVariant = (item: any) => {
+const getItemVariant = (item: DocLink) => {
   const allowedHosts = ['pro.platejs.org'];
 
   try {
+    if (!item.route) return 'outline';
+
     const url = new URL(item.route);
 
     if (allowedHosts.includes(url.hostname)) return 'plus';
-  } catch (_error) {
+  } catch {
     // console.error('Invalid URL:', item.route, error);
   }
 
@@ -62,17 +72,14 @@ export function DocContent({
   category,
   children,
   doc,
-  neighbours = { next: null, previous: null },
+  neighbours = defaultDocNeighbours,
   toc,
   ...file
 }: {
   category: 'api' | 'component' | 'example' | 'guide' | 'plugin';
   children: React.ReactNode;
   doc: DocContentDoc;
-  neighbours?: {
-    next: { href?: string; title?: string; titleCn?: string } | null;
-    previous: { href?: string; title?: string; titleCn?: string } | null;
-  };
+  neighbours?: DocNeighbours;
   toc?: TocItem[];
 } & Partial<RegistryItem>) {
   const title = doc?.title ?? getRegistryTitle(file);
@@ -210,21 +217,22 @@ export function DocContent({
                     <ExternalLinkIcon className="size-3" />
                   </Link>
                 )}
-                {doc?.docs?.map((item: any) => (
-                  <Link
-                    key={item.route}
-                    className={cn(
-                      badgeVariants({
-                        variant: getItemVariant(item),
-                      })
-                    )}
-                    href={item.route as any}
-                    // rel={item.route?.includes('https') ? 'noreferrer' : undefined}
-                    // target={item.route?.includes('https') ? '_blank' : undefined}
-                  >
-                    {getDocTitle(item)}
-                  </Link>
-                ))}
+                {doc?.docs?.map(
+                  (item) =>
+                    item.route && (
+                      <Link
+                        key={item.route}
+                        className={cn(
+                          badgeVariants({
+                            variant: getItemVariant(item),
+                          })
+                        )}
+                        href={item.route}
+                      >
+                        {getDocTitle(item)}
+                      </Link>
+                    )
+                )}
               </div>
             ) : null}
           </div>

@@ -5,6 +5,7 @@ import type {
   NodeKey,
   Editor as EditorType,
 } from '@platejs/plite';
+
 import {
   projectRange as editorProjectRange,
   subscribeCommit as editorSubscribeCommit,
@@ -24,8 +25,10 @@ import type {
   PliteViewSourceStatus,
 } from './view-source';
 
-export interface PliteAnnotationAnchor
-  extends Pick<Anchor<Range>, 'release' | 'resolve'> {
+export interface PliteAnnotationAnchor extends Pick<
+  Anchor<Range>,
+  'release' | 'resolve'
+> {
   /** Resolve the annotation against the current committed editor snapshot. */
   resolve: () => Range | null;
 }
@@ -161,7 +164,7 @@ const createAnnotationProjectionData = <
   annotation: PliteResolvedAnnotation<unknown, TProjection>
 ) => {
   const data = {
-    ...(annotation.projection ?? {}),
+    ...annotation.projection,
     annotationId: annotation.id,
   } as PliteAnnotationProjectionData<TProjection>;
 
@@ -191,10 +194,10 @@ const areAnnotationProjectionDataEqual = (left: unknown, right: unknown) => {
   if (leftSource || rightSource) {
     return Boolean(
       leftSource &&
-        rightSource &&
-        (left as PliteAnnotationProjectionData | undefined)?.annotationId ===
-          (right as PliteAnnotationProjectionData | undefined)?.annotationId &&
-        Object.is(leftSource.source, rightSource.source)
+      rightSource &&
+      (left as PliteAnnotationProjectionData | undefined)?.annotationId ===
+        (right as PliteAnnotationProjectionData | undefined)?.annotationId &&
+      Object.is(leftSource.source, rightSource.source)
     );
   }
 
@@ -254,7 +257,11 @@ const areAnnotationProjectionEntriesEqual = (
   left.end === right.end &&
   areAnnotationProjectionDataEqual(left.data, right.data);
 
-/** @internal Commit-activated annotation store used by React ownership hooks. */
+/**
+ * Commit-activated annotation store used by React ownership hooks.
+ *
+ * @internal
+ */
 export type ActivatablePliteAnnotationStore<
   TData = unknown,
   TProjection extends Record<string, unknown> = Record<string, unknown>,
@@ -565,7 +572,11 @@ export function createPliteAnnotationStore<
   return createPliteAnnotationStoreInternal(editor, source, options, false);
 }
 
-/** @internal Create an inert candidate for commit-owned React activation. */
+/**
+ * Create an inert candidate for commit-owned React activation.
+ *
+ * @internal
+ */
 export const createDormantPliteAnnotationStore = <
   TData = unknown,
   TProjection extends Record<string, unknown> = Record<string, unknown>,

@@ -289,8 +289,8 @@ const Command = (props: CommandProps) => {
     schedule(6, scrollSelectedIntoView);
   }, []);
 
-  const store: Store = React.useMemo(() => {
-    return {
+  const store: Store = React.useMemo(
+    () => ({
       emit: () => {
         for (const l of listeners.current) {
           l();
@@ -329,8 +329,9 @@ const Command = (props: CommandProps) => {
 
         return () => listeners.current.delete(cb);
       },
-    };
-  }, []);
+    }),
+    []
+  );
 
   const context: Context = React.useMemo(
     () => ({

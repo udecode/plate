@@ -1,10 +1,10 @@
 import type { Element } from '@platejs/plite';
-import type { TableCellElement } from '../BaseTablePlugin';
+
 import type {
   TableCellElementWithId,
   TableRowElementWithId,
 } from '../__tests__/tableTestTypes';
-
+import type { TableCellElement } from '../BaseTablePlugin';
 import type { TableContext } from './context';
 import { compileTableGrid, TABLE_CELL_OPERATION_KEY } from './grid';
 import {
@@ -29,13 +29,11 @@ const cell = <TType extends string = 'tableCell'>(
   }) as TableCellElementWithId<TType>;
 
 const table = (rows: readonly (readonly TableCellElement[])[]): Element => ({
-  children: rows.map(
-    (children, index): TableRowElementWithId => ({
-      children: [...children],
-      id: `row-${index}`,
-      type: 'tableRow',
-    })
-  ),
+  children: rows.map((children, index): TableRowElementWithId => ({
+    children: [...children],
+    id: `row-${index}`,
+    type: 'tableRow',
+  })),
   id: 'table',
   type: 'table',
 });

@@ -1,11 +1,11 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import * as actualBasicStyles from '@platejs/basic-styles';
 import { BoldPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
+import * as actualBasicStyles from '@platejs/basic-styles';
+import { FontColorPlugin, FontSizePlugin } from '@platejs/basic-styles/react';
 import * as actualCore from '@platejs/core';
 import * as actualCoreReact from '@platejs/core/react';
 import * as actualMedia from '@platejs/media';
-import { FontColorPlugin, FontSizePlugin } from '@platejs/basic-styles/react';
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
@@ -14,9 +14,9 @@ import {
 } from '@platejs/media';
 import * as actualPlite from '@platejs/plite';
 import * as actualUtils from '@platejs/utils';
-import * as actualUdecodeUtils from '@udecode/utils';
 import { act, fireEvent, render, within } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as actualUdecodeUtils from '@udecode/utils';
+import * as React from 'react';
 
 const focusMock = mock();
 const clearMock = mock();

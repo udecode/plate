@@ -7,7 +7,7 @@ const args = parseArgs(process.argv.slice(2));
 const runs = readInt(args.runs, 7);
 const outPath = args.out || 'benchmarks/results/startup-import-latest.json';
 const check = Boolean(args.check);
-const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 const entries = discoverEntries(packageJson);
 const rows = entries.map((entry) => measureEntry(entry, runs));
 const payload = {
@@ -19,8 +19,8 @@ const payload = {
 };
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, JSON.stringify(payload, null, 2) + '\n');
-console.log('wrote ' + outPath);
+fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`);
+console.log(`wrote ${outPath}`);
 for (const row of rows) {
   console.log(
     `${row.fixture} median=${row.medianMs.toFixed(3)}ms p95=${row.p95Ms.toFixed(3)}ms exports=${row.exportCount} status=${row.status}`
@@ -35,7 +35,7 @@ if (check) {
       row.exportCount > row.budgetExports
   );
   if (failures.length > 0) {
-    for (const row of failures) console.error(row.fixture + ': ' + row.problem);
+    for (const row of failures) console.error(`${row.fixture}: ${row.problem}`);
     process.exit(1);
   }
 }
@@ -47,12 +47,12 @@ function discoverEntries(packageJson) {
       const specifier =
         exportName === '.'
           ? packageJson.name
-          : packageJson.name + '/' + exportName.replace(/^\.\//, '');
+          : `${packageJson.name}/${exportName.replace(/^\.\//, '')}`;
       entries.push({
         fixture:
           exportName === '.'
             ? 'package-root'
-            : 'package-' + exportName.replace(/[^a-z0-9]+/gi, '-'),
+            : `package-${exportName.replace(/[^a-z0-9]+/gi, '-')}`,
         specifier,
       });
     }
@@ -92,7 +92,7 @@ function measureEntry(entry, runs) {
       ],
       {
         cwd: process.cwd(),
-        encoding: 'utf8',
+        encoding: 'utf-8',
       }
     );
     if (child.status !== 0) {
@@ -116,10 +116,12 @@ function measureEntry(entry, runs) {
   const medianMs = percentile(ms, 0.5);
   const p95Ms = percentile(ms, 0.95);
   const problems = [];
-  if (p95Ms > entry.budgetP95Ms)
-    problems.push('p95 exceeds ' + entry.budgetP95Ms + 'ms');
-  if (exportCount > entry.budgetExports)
-    problems.push('exports exceed ' + entry.budgetExports);
+  if (p95Ms > entry.budgetP95Ms) {
+    problems.push(`p95 exceeds ${entry.budgetP95Ms}ms`);
+  }
+  if (exportCount > entry.budgetExports) {
+    problems.push(`exports exceed ${entry.budgetExports}`);
+  }
   return {
     category: 'startup',
     fixture: entry.fixture,

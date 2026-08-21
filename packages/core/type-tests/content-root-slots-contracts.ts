@@ -1,9 +1,9 @@
-import { schema } from '@platejs/plite';
 import {
   createPlateEditor,
   definePlatePlugin,
   type PlateElementProps,
 } from '@platejs/core/react';
+import { schema } from '@platejs/plite';
 
 const FigurePlugin = definePlatePlugin('typedFigure', {
   schema: {
@@ -24,10 +24,10 @@ const FigurePlugin = definePlatePlugin('typedFigure', {
 
 declare const figureProps: PlateElementProps<typeof FigurePlugin>;
 
-figureProps.slots.contentRoot('caption');
+void figureProps.slots.contentRoot('caption');
 
 // @ts-expect-error Content-root slot names are inferred from the element schema.
-figureProps.slots.contentRoot('notes');
+void figureProps.slots.contentRoot('notes');
 
 const editor = createPlateEditor({
   plugins: [FigurePlugin],

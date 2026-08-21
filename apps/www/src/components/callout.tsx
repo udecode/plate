@@ -1,8 +1,8 @@
-import { cn } from '@/lib/utils';
 import {
   type CalloutVariant,
   getCalloutVariantClassName,
 } from '@/lib/callout-variants';
+import { cn } from '@/lib/utils';
 
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 

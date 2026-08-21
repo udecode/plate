@@ -1,7 +1,7 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render, waitFor } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 let isFocused = false;
 let isSelected = false;

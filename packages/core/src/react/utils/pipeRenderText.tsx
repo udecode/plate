@@ -1,18 +1,16 @@
-import React from 'react';
-
 import { setDOMTextSyncRendererCapability } from '@platejs/plite-react/internal';
 import clsx from 'clsx';
+import React from 'react';
 
-import type { AnyBasePlugin, EditableProps } from '../../lib';
-import type { PlateEditor } from '../editor/PlateEditor';
-
-import { getPluginNodeClass } from '../../lib';
 import {
   getCompiledPlateModelBinding,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import type { AnyBasePlugin, EditableProps } from '../../lib';
+import { getPluginNodeClass } from '../../lib';
 import { PlateText } from '../components/plate-nodes';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderText, pluginRenderText } from './pluginRenderText';
 
@@ -115,9 +113,9 @@ export const pipeRenderText = (
     }
 
     return setDOMTextSyncRendererCapability(
-      function render({ attributes, ...props }) {
-        return <span {...attributes}>{props.children}</span>;
-      },
+      ({ attributes, ...props }) => (
+        <span {...attributes}>{props.children}</span>
+      ),
       () => true
     );
   }
@@ -126,7 +124,7 @@ export const pipeRenderText = (
     !hasInjectNodeProps && !renderTextProp && textPropsEntries.length === 0;
 
   return setDOMTextSyncRendererCapability(
-    function render({ attributes, ...props }) {
+    ({ attributes, ...props }) => {
       const readOnly = editor.read.view.isReadOnly();
       const text = props.text as Record<string, unknown>;
       let hasActiveSimpleRenderText = false;

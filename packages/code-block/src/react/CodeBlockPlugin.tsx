@@ -1,12 +1,12 @@
 import { toPlatePlugin } from '@platejs/core/react';
 import { PLUGINS } from '@platejs/utils';
 
-import { findCodeBlockLanguageChange } from '../lib/codeHighlight.internal';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from '../lib/BaseCodeBlockPlugin';
+import { findCodeBlockLanguageChange } from '../lib/codeHighlight.internal';
 
 export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);
 

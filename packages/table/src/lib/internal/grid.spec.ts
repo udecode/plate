@@ -1,10 +1,9 @@
+import type { TableCellElementWithId } from '../__tests__/tableTestTypes';
 import type {
   TableCellElement,
   TableElement,
   TableRowElement,
 } from '../BaseTablePlugin';
-import type { TableCellElementWithId } from '../__tests__/tableTestTypes';
-
 import {
   compileTableGrid,
   readTableGridCompilerMetrics,
@@ -26,12 +25,10 @@ const cell = (
 const table = (
   rows: readonly (readonly TableCellElement[])[]
 ): TableElement => ({
-  children: rows.map(
-    (children): TableRowElement => ({
-      children: [...children],
-      type: 'tableRow',
-    })
-  ),
+  children: rows.map((children): TableRowElement => ({
+    children: [...children],
+    type: 'tableRow',
+  })),
   type: 'table',
 });
 

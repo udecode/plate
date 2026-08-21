@@ -1,5 +1,6 @@
-import { useCallback, useContext, useSyncExternalStore } from 'react';
 import type { NodeKey } from '@platejs/plite';
+import { useCallback, useContext, useSyncExternalStore } from 'react';
+
 import { ProjectionContext } from '../projection-context';
 import type { PliteProjectionRefreshResult } from '../projection-store';
 

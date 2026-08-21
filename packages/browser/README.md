@@ -2,10 +2,7 @@
 
 Browser proof harness for Plite editor behavior.
 
-`@platejs/browser` is the first-party Plite test harness for browser-visible
-editing behavior. Use it in Playwright, CI, generated stress replay, and release
-proof. Do not ship it in the editor runtime bundle; product code belongs in
-`plite`, `plite-dom`, `plite-react`, and application extensions.
+`@platejs/browser` is the first-party Plite test harness for browser-visible editing behavior. Use it in Playwright, CI, generated stress replay, and release proof. Do not ship it in the editor runtime bundle; product code belongs in `plite`, `plite-dom`, `plite-react`, and application extensions.
 
 ## Install
 
@@ -13,8 +10,7 @@ proof. Do not ship it in the editor runtime bundle; product code belongs in
 npm install -D @platejs/browser @playwright/test
 ```
 
-Use the matching command for pnpm, Yarn, or Bun when your project uses another
-package manager.
+Use the matching command for pnpm, Yarn, or Bun when your project uses another package manager.
 
 The package is subpath-only. Import exactly the layer you need:
 
@@ -22,20 +18,13 @@ The package is subpath-only. Import exactly the layer you need:
 
 - `@platejs/browser/core`
   - pure selection helpers: `serializePoint`, `serializeRange`, `isCollapsed`
-  - IME and placeholder proof classifiers: `evaluateImeInput`,
-    `evaluatePlaceholderInput`
-  - release-proof helpers: `assertPliteBrowserReleaseProof`,
-    `validatePliteBrowserReleaseProof`, `createReleaseDisciplineProofArtifact`,
-    `createBrowserMobileReleaseProofArtifact`,
-    `createPersistentBrowserSoakProofArtifact`
-  - first-party parity contracts:
-    `assertPliteBrowserFirstPartyParityContracts`
-  - feature proof contracts: `definePliteBrowserFeatureContract`,
-    `createPliteBrowserFeatureContractRegistry`
+  - IME and placeholder proof classifiers: `evaluateImeInput`, `evaluatePlaceholderInput`
+  - release-proof helpers: `assertPliteBrowserReleaseProof`, `validatePliteBrowserReleaseProof`, `createReleaseDisciplineProofArtifact`, `createBrowserMobileReleaseProofArtifact`, `createPersistentBrowserSoakProofArtifact`
+  - first-party parity contracts: `assertPliteBrowserFirstPartyParityContracts`
+  - feature proof contracts: `definePliteBrowserFeatureContract`, `createPliteBrowserFeatureContractRegistry`
   - debug snapshot parsers for agent-browser and Appium proof artifacts
 - `@platejs/browser/browser`
-  - DOM selection snapshots: `takeDOMSelectionSnapshot`,
-    `takeEditorSelectionSnapshot`
+  - DOM selection snapshots: `takeDOMSelectionSnapshot`, `takeEditorSelectionSnapshot`
   - zero-width placeholder inspection: `inspectZeroWidthPlaceholder`
 - `@platejs/browser/playwright`
   - start here for browser proof work
@@ -49,10 +38,8 @@ The package is subpath-only. Import exactly the layer you need:
   - displayed-selection getter for native and projected selection proof
   - screenshot attachment helper for visual proof artifacts
   - file-backed JSON attachment helper for replayable proof artifacts
-  - native event trace helpers for `selectionchange`, `beforeinput`, `input`,
-    composition, target ranges, DOM deltas, and anomaly labels
-  - trusted typing timing and long-task capture through
-    `measurePliteTrustedTyping(...)`
+  - native event trace helpers for `selectionchange`, `beforeinput`, `input`, composition, target ranges, DOM deltas, and anomaly labels
+  - trusted typing timing and long-task capture through `measurePliteTrustedTyping(...)`
   - block-text getter and assertion helpers
   - snapshot helper for aggregated editor state
   - selection namespace for semantic selection actions and setup
@@ -62,122 +49,55 @@ The package is subpath-only. Import exactly the layer you need:
   - double-highlight selection assertion
   - normalized html equality assertions
   - iframe and scoped-surface support
-  - block/text locator helpers: `getPliteBrowserEditable`,
-    `locatePliteBrowserBlock`, `locatePliteBrowserText`
-  - replayable scenario steps, including direct DOM text mutation import for
-    contenteditable repair proof
-  - replayable selection-contract assertions for model, native selected text,
-    DOM endpoints, visible selection, and double-highlight proof
-  - helper types: `ReadyOptions`, `EditorSurfaceOptions`, selection and
-    clipboard snapshot types, native event trace snapshot and anomaly types
+  - block/text locator helpers: `getPliteBrowserEditable`, `locatePliteBrowserBlock`, `locatePliteBrowserText`
+  - replayable scenario steps, including direct DOM text mutation import for contenteditable repair proof
+  - replayable selection-contract assertions for model, native selected text, DOM endpoints, visible selection, and double-highlight proof
+  - helper types: `ReadyOptions`, `EditorSurfaceOptions`, selection and clipboard snapshot types, native event trace snapshot and anomaly types
   - `withExclusiveClipboardAccess(...)`
 
 ## Boundaries
 
 - `@platejs/browser` is public test infrastructure, not the editor runtime API.
-- The root module is intentionally unavailable. Use `@platejs/browser/core`,
-  `@platejs/browser/browser`, or `@platejs/browser/playwright`.
-- `@platejs/browser/playwright` owns browser tests. It may depend on Playwright
-  types and test fixtures.
-- `@platejs/browser/core` and `@platejs/browser/browser` stay small enough for
-  pure assertions, capability classifiers, and DOM snapshots.
-- Raw-device identity belongs to the executable device runner. Automated
-  device-browser input or IME proof closes only when that gate runs and records
-  the resolved device, OS, and capability scope. Proxy browser evidence does
-  not claim native mobile clipboard, human soft-keyboard, glide typing, or
-  voice input proof.
+- The root module is intentionally unavailable. Use `@platejs/browser/core`, `@platejs/browser/browser`, or `@platejs/browser/playwright`.
+- `@platejs/browser/playwright` owns browser tests. It may depend on Playwright types and test fixtures.
+- `@platejs/browser/core` and `@platejs/browser/browser` stay small enough for pure assertions, capability classifiers, and DOM snapshots.
+- Raw-device identity belongs to the executable device runner. Automated device-browser input or IME proof closes only when that gate runs and records the resolved device, OS, and capability scope. Proxy browser evidence does not claim native mobile clipboard, human soft-keyboard, glide typing, or voice input proof.
 
 ## Raw Mobile Device Proof
 
-Run the raw gate only in a direct-Appium lane connected to a real Android
-device running Chrome and a real iOS device running Safari:
+Run the raw gate only in a direct-Appium lane connected to a real Android device running Chrome and a real iOS device running Safari:
 
 ```bash
 bun test:mobile-device-proof:raw
 ```
 
-The runner reads
-`test-results/release-proof/mobile-device-proof.json`. The schema requires one
-receipt for every scenario on both platforms: tap, double tap, long press,
-forward and backward selection handles, cross-inline and cross-block
-selection, selection auto-scroll, collapsed and expanded swipes, inline-void
-boundaries, Enter, Backspace, autocapitalization, composition/IME, and native
-clipboard.
+The runner reads `test-results/release-proof/mobile-device-proof.json`. The schema requires one receipt for every scenario on both platforms: tap, double tap, long press, forward and backward selection handles, cross-inline and cross-block selection, selection auto-scroll, collapsed and expanded swipes, inline-void boundaries, Enter, Backspace, autocapitalization, composition/IME, and native clipboard.
 
-Every receipt records real device, OS, browser, build, replay steps, native and
-semantic selection, model and DOM text, semantic update count, event trace,
-screenshots, video, and SHA-256 digests. The command independently reads every
-artifact back and verifies its digest. An incomplete matrix, viewport
-emulation, agent-browser proxy, or Appium descriptor without those artifacts
-fails closed and proves no raw-mobile claim.
+Every receipt records real device, OS, browser, build, replay steps, native and semantic selection, model and DOM text, semantic update count, event trace, screenshots, video, and SHA-256 digests. The command independently reads every artifact back and verifies its digest. An incomplete matrix, viewport emulation, agent-browser proxy, or Appium descriptor without those artifacts fails closed and proves no raw-mobile claim.
 
 ## First Playwright Test
 
 ```ts
-import { expect, test } from "@playwright/test";
-import { openExample } from "@platejs/browser/playwright";
+import { expect, test } from '@playwright/test';
+import { openExample } from '@platejs/browser/playwright';
 
-test("types through the Plite browser path", async ({ page }) => {
-  const editor = await openExample(page, "plaintext", {
-    ready: { editor: "visible" },
+test('types through the Plite browser path', async ({ page }) => {
+  const editor = await openExample(page, 'plaintext', {
+    ready: { editor: 'visible' },
   });
 
   await editor.focus();
-  await editor.type("Hello from @platejs/browser");
+  await editor.type('Hello from @platejs/browser');
 
-  await editor.assert.text("Hello from @platejs/browser");
+  await editor.assert.text('Hello from @platejs/browser');
   await editor.assert.noDoubleSelectionHighlight();
-  expect(await editor.get.selectedText()).toBe("");
+  expect(await editor.get.selectedText()).toBe('');
 });
 ```
 
 ## Proof Style
 
-Use the `ready` contract for maintained callsites and examples.
-For editor surfaces, do not use Playwright `locator.fill()` as proof. Plite
-owns model input through `beforeinput`, selection import, and editor commands;
-`fill()` can bypass or mis-model that path, especially in Firefox. Use
-`editor.type(...)` or `page.keyboard.type(...)` when the claim is real keyboard
-behavior: typing, selected-text replacement, undoable key input, focus/caret
-routing, Enter follow-up text, or visual caret proof. Use
-`page.keyboard.insertText(...)` only when the row deliberately bypasses keydown:
-native `beforeinput` / `targetRange` traces, IME or CDP input, Unicode/layout
-insertion that Playwright cannot key-dispatch consistently, direct browser DOM
-mutation import, undo grouping as one text insertion, or model-latency probes.
-Every remaining `insertText` call in non-pagination example specs is classified
-by `packages/browser/test/core/keyboard-oracle-audit.test.ts`.
-Then assert model text, native selection, and native event trace when the
-behavior depends on browser input.
-Use `measurePliteTrustedTyping({ page, root, text })` after explicit editor
-readiness, selection, focus, and warmup when a route needs exact per-key DOM
-target/model readiness, a post-readiness paint boundary, trusted input, an
-unthrottled burst budget, and fail-closed long-task coverage. Pair it with an
-exact final model assertion for the whole measured text. Model-owned input
-binds to the runtime's recorded event selection; native input also requires its
-DOM target range to resolve to that same path and offset.
-Native event traces are browser contracts, not one-size-fits-all strings:
-Chromium/WebKit `insertText` may produce only `beforeinput`, while Firefox can
-report `insertCompositionText` and a trailing `input` event for the same
-Playwright call.
-Clipboard helpers prove delivery path and editor ownership, not feature
-semantics by themselves. `editor.clipboard.pasteHtml(...)` writes a rich
-clipboard payload and triggers the browser paste path; the route-specific test
-must still assert the expected parser behavior. Do not treat it as proof that a
-surface supports every rich HTML mark, element, sanitizer, or table policy.
-Use replayable scenario steps for generated stress. For direct browser DOM
-mutation/import proof, use `mutateTextDOM` so the artifact stays replayable;
-use `editor.scenario.runImperative(...)` for arbitrary browser work. Imperative
-scenario results are explicitly non-replayable, non-reducible, and ineligible
-for release proof.
-Generated stress artifacts carry reduction candidates. Replay the full artifact
-with `STRESS_REPLAY=<artifact> bun test:stress:replay:<project>`. Replay one
-candidate with
-`STRESS_REPLAY=<artifact> STRESS_REDUCTION=<label> bun test:stress:replay:<project>`.
-Reduced replays write a separate `.reduction-<label>.result.json` trace beside
-the full replay result.
-Decode imported JSON with `decodeScenarioReplay(...)`; never cast replay values
-into scenario steps. The decoder rejects unknown steps, stale metadata,
-non-JSON payloads, and assertion shapes that cannot prove anything.
+Use the `ready` contract for maintained callsites and examples. For editor surfaces, do not use Playwright `locator.fill()` as proof. Plite owns model input through `beforeinput`, selection import, and editor commands; `fill()` can bypass or mis-model that path, especially in Firefox. Use `editor.type(...)` or `page.keyboard.type(...)` when the claim is real keyboard behavior: typing, selected-text replacement, undoable key input, focus/caret routing, Enter follow-up text, or visual caret proof. Use `page.keyboard.insertText(...)` only when the row deliberately bypasses keydown: native `beforeinput` / `targetRange` traces, IME or CDP input, Unicode/layout insertion that Playwright cannot key-dispatch consistently, direct browser DOM mutation import, undo grouping as one text insertion, or model-latency probes. Every remaining `insertText` call in non-pagination example specs is classified by `packages/browser/test/core/keyboard-oracle-audit.test.ts`. Then assert model text, native selection, and native event trace when the behavior depends on browser input. Use `measurePliteTrustedTyping({ page, root, text })` after explicit editor readiness, selection, focus, and warmup when a route needs exact per-key DOM target/model readiness, a post-readiness paint boundary, trusted input, an unthrottled burst budget, and fail-closed long-task coverage. Pair it with an exact final model assertion for the whole measured text. Model-owned input binds to the runtime's recorded event selection; native input also requires its DOM target range to resolve to that same path and offset. Native event traces are browser contracts, not one-size-fits-all strings: Chromium/WebKit `insertText` may produce only `beforeinput`, while Firefox can report `insertCompositionText` and a trailing `input` event for the same Playwright call. Clipboard helpers prove delivery path and editor ownership, not feature semantics by themselves. `editor.clipboard.pasteHtml(...)` writes a rich clipboard payload and triggers the browser paste path; the route-specific test must still assert the expected parser behavior. Do not treat it as proof that a surface supports every rich HTML mark, element, sanitizer, or table policy. Use replayable scenario steps for generated stress. For direct browser DOM mutation/import proof, use `mutateTextDOM` so the artifact stays replayable; use `editor.scenario.runImperative(...)` for arbitrary browser work. Imperative scenario results are explicitly non-replayable, non-reducible, and ineligible for release proof. Generated stress artifacts carry reduction candidates. Replay the full artifact with `STRESS_REPLAY=<artifact> bun test:stress:replay:<project>`. Replay one candidate with `STRESS_REPLAY=<artifact> STRESS_REDUCTION=<label> bun test:stress:replay:<project>`. Reduced replays write a separate `.reduction-<label>.result.json` trace beside the full replay result. Decode imported JSON with `decodeScenarioReplay(...)`; never cast replay values into scenario steps. The decoder rejects unknown steps, stale metadata, non-JSON payloads, and assertion shapes that cannot prove anything.
 
 Example:
 
@@ -189,17 +109,17 @@ import {
   startPliteBrowserNativeEventTrace,
   stopPliteBrowserNativeEventTrace,
   takePliteBrowserNativeEventTrace,
-} from "@platejs/browser/playwright";
+} from '@platejs/browser/playwright';
 
-const editor = await openExample(page, "placeholder", {
+const editor = await openExample(page, 'placeholder', {
   ready: {
-    editor: "visible",
-    placeholder: "visible",
+    editor: 'visible',
+    placeholder: 'visible',
   },
 });
 
 await editor.focus();
-await editor.type("Hello Plite Browser");
+await editor.type('Hello Plite Browser');
 await editor.selection.select({
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 5 },
@@ -207,18 +127,18 @@ await editor.selection.select({
 await editor.dom.waitForTextPath([0, 0]);
 await editor.dom.collapseAtTextPath({ path: [0, 0], offset: 5 });
 
-await editor.assert.text("Hello Plite Browser");
-await editor.assert.blockTexts(["Hello Plite Browser"]);
-expect(await editor.get.selectedText()).toBe("Hello");
-expect((await editor.selection.displayed()).source).toBe("native");
+await editor.assert.text('Hello Plite Browser');
+await editor.assert.blockTexts(['Hello Plite Browser']);
+expect(await editor.get.selectedText()).toBe('Hello');
+expect((await editor.selection.displayed()).source).toBe('native');
 await editor.assert.noDoubleSelectionHighlight();
-await attachPageScreenshot(page, testInfo, "selection-proof.png");
+await attachPageScreenshot(page, testInfo, 'selection-proof.png');
 
 await startPliteBrowserNativeEventTrace(editor.root);
-await editor.type("!");
+await editor.type('!');
 const nativeTrace = await takePliteBrowserNativeEventTrace(editor.root);
-expect(nativeTrace.entries.some((entry) => entry.type === "beforeinput")).toBe(
-  true,
+expect(nativeTrace.entries.some((entry) => entry.type === 'beforeinput')).toBe(
+  true
 );
 await stopPliteBrowserNativeEventTrace(editor.root);
 
@@ -230,64 +150,62 @@ await editor.assert.selection({
 await editor.assert.collapsedModelDOMSelection({
   offset: [4, 5],
   path: [0, 0],
-  text: "Hello Plite Browser",
+  text: 'Hello Plite Browser',
 });
 await editor.assert.htmlEquals(
   '<div data-plite-node="element"><span data-plite-node="text"><span data-plite-leaf="true"><span data-plite-string="true">Hello Plite Browser</span></span></span></div>',
-  { ignoreClasses: true, ignoreInlineStyles: true, ignoreDir: true },
+  { ignoreClasses: true, ignoreInlineStyles: true, ignoreDir: true }
 );
 
 const snapshot = await editor.snapshot();
 expect(snapshot.selection).not.toBeNull();
 await attachPliteBrowserJsonArtifact(
   testInfo,
-  "editor-snapshot-proof",
-  snapshot,
+  'editor-snapshot-proof',
+  snapshot
 );
 
 const secondBlock = editor.locator.block([1]);
 await secondBlock.click({ clickCount: 3 });
 await editor.selection.doubleClickDragTextRange({
-  doubleClickOffset: "This is edit".length,
-  endOffset: "This is editable plain".length,
-  text: "This is editable plain text, just like a <textarea>!",
+  doubleClickOffset: 'This is edit'.length,
+  endOffset: 'This is editable plain'.length,
+  text: 'This is editable plain text, just like a <textarea>!',
 });
 await editor.selection.dragTextRange({
   endOffset: 5,
-  endText: " text, ",
+  endText: ' text, ',
   startOffset: 8,
-  text: "This is editable ",
+  text: 'This is editable ',
 });
 await editor.selection.dragTextRange({
-  direction: "backward",
-  endOffset: "hyperlink".length,
+  direction: 'backward',
+  endOffset: 'hyperlink'.length,
   startOffset: 0,
-  text: "hyperlink",
+  text: 'hyperlink',
 });
 await editor.scenario.run([
   {
     expectation: {
       domSelection: {
-        anchorNodeText: "This is editable ",
+        anchorNodeText: 'This is editable ',
         anchorOffset: 8,
-        focusNodeText: " text, ",
+        focusNodeText: ' text, ',
         focusOffset: 5,
       },
       noDoubleSelectionHighlight: true,
-      selectedText: "editable rich text",
+      selectedText: 'editable rich text',
     },
-    kind: "assertSelectionContract",
+    kind: 'assertSelectionContract',
   },
 ]);
 
-await editor.clipboard.pasteText("more");
+await editor.clipboard.pasteText('more');
 await editor.clipboard.copy();
-expect(await editor.clipboard.readText()).toContain("more");
+expect(await editor.clipboard.readText()).toContain('more');
 ```
 
-For Tab-away or blur proof, use `editor.assert.noVisibleCaretInRoot()` after
-focus leaves the editor. It asserts the editor no longer owns a paintable
-focused caret even if the browser keeps a stale DOM range.
+For Tab-away or blur proof, use `editor.assert.noVisibleCaretInRoot()` after focus leaves the editor. It asserts the editor no longer owns a paintable focused caret even if the browser keeps a stale DOM range.
 
 Package commands:
 
@@ -302,5 +220,4 @@ The package-local `test` script covers:
 - `test:core`
 - `test:dom`
 
-Run `test:selection` separately when you need the focused browser-selection
-lane.
+Run `test:selection` separately when you need the focused browser-selection lane.

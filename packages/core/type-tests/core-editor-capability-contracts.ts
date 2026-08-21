@@ -1,6 +1,5 @@
 import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 
-import type { CorePluginDefinition } from '../src/lib/plugins/getCorePlugins';
 import type {
   CoreEditorApi,
   CoreEditorCapabilityDefinition,
@@ -8,11 +7,10 @@ import type {
   CoreEditorTransaction,
   CoreEditorUpdate,
 } from '../src/lib/editor/coreEditorCapabilityDefinition.internal';
+import type { CorePluginDefinition } from '../src/lib/plugins/getCorePlugins';
 
 type UnionToIntersection<T> = (
-  T extends unknown
-    ? (value: T) => void
-    : never
+  T extends unknown ? (value: T) => void : never
 ) extends (value: infer TIntersection) => void
   ? TIntersection
   : never;

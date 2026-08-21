@@ -136,7 +136,7 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
                   tx.value.replace({
                     ...before,
                     roots: {
-                      ...(before.roots ?? {}),
+                      ...before.roots,
                       [root]: children,
                     },
                     selection: state.selection(),

@@ -1,4 +1,5 @@
 import type { Locator } from '@playwright/test';
+
 import { getPliteReactRenderProfilerSnapshot } from './render-profiler';
 import type {
   SelectionPoint,

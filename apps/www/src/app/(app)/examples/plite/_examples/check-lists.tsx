@@ -1,4 +1,3 @@
-import type { ChangeEvent } from 'react';
 import {
   defineExtension,
   editorCommands,
@@ -15,6 +14,7 @@ import {
   useEditorReadOnly,
   usePliteEditor,
 } from '@platejs/plite-react';
+import type { ChangeEvent } from 'react';
 
 import { cn } from '@/utils/cn';
 

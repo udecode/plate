@@ -1,4 +1,5 @@
 import type { Point, Range } from '@platejs/plite';
+
 import {
   createPliteViewBoundaryRootMap,
   createPliteViewBoundarySelectionTarget,

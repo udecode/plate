@@ -1,7 +1,5 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import { defineBasePlugin, ElementIdPlugin } from '@platejs/core';
 import { createPlateEditor, ParagraphPlugin } from '@platejs/core/react';
 import type { InternalPlateEditorWithInstalledPlugins } from '@platejs/core/react/internal';
@@ -16,6 +14,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import { render, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import {
   BlockPlaceholderPlugin,

@@ -3,6 +3,7 @@ import {
   createEditorFixture,
   createHyperscript,
 } from '@platejs/plite-hyperscript';
+
 import { createElement } from '../packages/plite-hyperscript/src/creators.ts';
 import {
   initializeEditorSchemaDocument,

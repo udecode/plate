@@ -4,6 +4,7 @@ import {
   type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
 

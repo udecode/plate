@@ -1,6 +1,7 @@
-import * as React from 'react';
 import { BaseDatePlugin, getDateDisplayLabel } from '@platejs/date';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 

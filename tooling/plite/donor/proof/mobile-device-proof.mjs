@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-// biome-ignore-all lint/suspicious/noConsole: CLI reports proof scope and artifact paths.
+// CLI reports proof scope and artifact paths.
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';

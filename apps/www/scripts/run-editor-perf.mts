@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-return -- This benchmark bridge consumes Puppeteer page-evaluation payloads whose cross-realm values cannot carry static runtime types. */
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -78,7 +79,9 @@ function parseBenchmarks(value?: string): BenchmarkName[] {
 }
 
 function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function isRecoverablePageError(error: unknown) {
@@ -89,6 +92,7 @@ function isRecoverablePageError(error: unknown) {
     message.includes('Runtime.callFunctionOn timed out') ||
     message.includes('Execution context was destroyed') ||
     message.includes('Cannot find context with specified id') ||
+    message.includes('Editor perf harness not available on window') ||
     message.includes('Target closed') ||
     message.includes('Session closed')
   );
@@ -329,6 +333,7 @@ async function runBenchmark(
   timeoutMs: number
 ) {
   let timedOut = false;
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
 
   const runPromise = page
     .evaluate(
@@ -349,7 +354,7 @@ async function runBenchmark(
       },
       { benchmark }
     )
-    .catch((error) => {
+    .catch((error: unknown) => {
       if (timedOut) return;
 
       throw error;
@@ -358,14 +363,17 @@ async function runBenchmark(
   try {
     await Promise.race([
       runPromise,
-      sleep(timeoutMs).then(() => {
-        timedOut = true;
-        throw new Error(
-          `Benchmark timed out after ${timeoutMs}ms: ${benchmark}`
-        );
+      new Promise<never>((_resolve, reject) => {
+        timeoutHandle = setTimeout(() => {
+          timedOut = true;
+          reject(
+            new Error(`Benchmark timed out after ${timeoutMs}ms: ${benchmark}`)
+          );
+        }, timeoutMs);
       }),
     ]);
   } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
     void runPromise.catch(() => {});
   }
 

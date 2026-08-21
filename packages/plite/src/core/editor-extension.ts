@@ -33,19 +33,22 @@ import type {
   EditorSelectionSpec,
   ValueOf,
 } from '../interfaces/editor';
-import type { SelectionValue } from '../interfaces/selection';
 import type {
   EditorSchemaDeclaration,
   EditorSchemaDefinition,
 } from '../interfaces/schema';
+import type { SelectionValue } from '../interfaces/selection';
 import { ChangeDraft } from './change/builder';
 import { DocumentChange } from './change/document-change';
 import type { JsonEditorValue } from './change/tokens';
-import { getEditorCommitSnapshot } from './commit';
-import { registerCommandInRegistry } from './command-registry';
 import { createCommandRegistration } from './command-definition';
-import { createReadRegistration } from './read-definition';
-import { registerReadInRegistry } from './read-registry';
+import { registerCommandInRegistry } from './command-registry';
+import { getEditorCommitSnapshot } from './commit';
+import {
+  getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
+  type InternalEditorExtensionPublicationEntry,
+} from './editor-runtime';
 import {
   createEditorSchema,
   type InternalEditorSchemaApi,
@@ -75,6 +78,20 @@ import {
   registerTxGroupInRegistry,
   validateConfiguredExtensionRegistry,
 } from './extension-registry';
+import { getEditorExtensionSlotInput } from './extension-slot';
+import { reportEditorLifecycleError } from './lifecycle-error';
+import { toPublicRoot } from './public-root';
+import {
+  activateStateField,
+  getEditorDocumentValue,
+  runTrustedUpdate,
+  stageEditorExtensionCandidate,
+  withTransactionSpecDraftRead,
+} from './public-state';
+import { createReadRegistration } from './read-definition';
+import { registerReadInRegistry } from './read-registry';
+import { constructCanonicalDocumentChange } from './representation';
+import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
 import { registerSchemaContribution } from './schema-contribution-registry';
 import {
   type EditorSchemaDefinitionInput,
@@ -82,7 +99,7 @@ import {
   normalizeEditorSchemaDeclaration,
   normalizeEditorSchemaDefinition,
 } from './schema-definition';
-import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
+import { EditorSchemaValidationError } from './schema-validation';
 
 const EDITOR_EXTENSION_CONTRIBUTION_VALUES = new WeakMap<object, unknown>();
 
@@ -239,22 +256,6 @@ const getEditorExtensionContributionValue = (
 
   return EDITOR_EXTENSION_CONTRIBUTION_VALUES.get(contribution);
 };
-import { EditorSchemaValidationError } from './schema-validation';
-import { toPublicRoot } from './public-root';
-import { constructCanonicalDocumentChange } from './representation';
-import {
-  activateStateField,
-  getEditorDocumentValue,
-  runTrustedUpdate,
-  stageEditorExtensionCandidate,
-  withTransactionSpecDraftRead,
-} from './public-state';
-import { getEditorExtensionSlotInput } from './extension-slot';
-import {
-  getEditorRuntimeOwner,
-  getEditorRuntimeRoot,
-  type InternalEditorExtensionPublicationEntry,
-} from './editor-runtime';
 
 type ExtensionRecord = {
   activation: ExtensionActivation | null;
@@ -292,7 +293,11 @@ const CANDIDATE_EDITOR_EXTENSION_APIS = new WeakMap<
 >();
 let nextDynamicExtensionPublication = 0;
 
-/** @internal Test nominal descriptor identity without structural guessing. */
+/**
+ * Test nominal descriptor identity without structural guessing.
+ *
+ * @internal
+ */
 export const isEditorExtension = (
   value: unknown
 ): value is EditorExtensionReference =>
@@ -305,8 +310,6 @@ const getEditorExtensionRuntimeFields = <
 >(
   extension: EditorExtensionReference
 ) => extension as unknown as EditorExtensionDefinitionInput<TEditor>;
-
-import { reportEditorLifecycleError } from './lifecycle-error';
 
 export {
   reportEditorLifecycleError,
@@ -662,9 +665,9 @@ type EditorExtensionAuthorEditor<
 type NormalizedEditorExtensionReferences<TInput> =
   TInput extends readonly unknown[]
     ? {
-        readonly [TIndex in keyof TInput]: EditorExtensionDependencyReferenceFor<
-          TInput[TIndex]
-        >;
+        readonly [
+          TIndex in keyof TInput
+        ]: EditorExtensionDependencyReferenceFor<TInput[TIndex]>;
       }
     : never;
 
@@ -672,9 +675,11 @@ type NormalizeEditorExtensionDefinition<
   TInput extends EditorExtensionInputSeed,
   N extends string,
 > = Readonly<{
-  [TKey in keyof TInput as TKey extends keyof EditorExtensionDefinition
-    ? TKey
-    : never]: TKey extends 'api'
+  [
+    TKey in keyof TInput as TKey extends keyof EditorExtensionDefinition
+      ? TKey
+      : never
+  ]: TKey extends 'api'
     ? NormalizedEditorExtensionApi<TInput>
     : TKey extends 'conflicts' | 'dependencies'
       ? NormalizedEditorExtensionReferences<TInput[TKey]>
@@ -855,14 +860,22 @@ export const resolveInstalledEditorExtension = (
   return installed === canonical ? installed : undefined;
 };
 
-/** @internal Read the resolved API map for one installed extension name. */
+/**
+ * Read the resolved API map for one installed extension name.
+ *
+ * @internal
+ */
 export const getInstalledEditorExtensionApi = (
   editor: Editor,
   name: string
 ): EditorExtensionApiMap | undefined =>
   getExtensionState(editor).records.get(name)?.api ?? undefined;
 
-/** @internal Read an API map while a detached candidate is compiling. */
+/**
+ * Read an API map while a detached candidate is compiling.
+ *
+ * @internal
+ */
 export const getCandidateEditorExtensionApi = (
   editor: Editor,
   extension: EditorExtensionReference
@@ -878,7 +891,11 @@ export const getCandidateEditorExtensionApi = (
     : undefined;
 };
 
-/** @internal Read one API group resolved earlier in the active candidate. */
+/**
+ * Read one API group resolved earlier in the active candidate.
+ *
+ * @internal
+ */
 export const getCandidateEditorApiValue = (
   editor: Editor,
   name: string
@@ -893,7 +910,11 @@ export const getCandidateEditorApiValue = (
   }
 };
 
-/** @internal Read ordered values from one published extension point. */
+/**
+ * Read ordered values from one published extension point.
+ *
+ * @internal
+ */
 export const getEditorExtensionContributions = <TValue>(
   editor: Editor,
   point: EditorExtensionPoint<TValue>
@@ -904,7 +925,11 @@ export const getEditorExtensionContributions = <TValue>(
     )
   );
 
-/** @internal Read the exact descriptor installed for one extension name. */
+/**
+ * Read the exact descriptor installed for one extension name.
+ *
+ * @internal
+ */
 export const getInstalledEditorExtension = (
   editor: Editor,
   name: string
@@ -1470,7 +1495,11 @@ const resolveEditorApiCapability = (capabilities: readonly unknown[]) => {
   return capabilities.at(-1);
 };
 
-/** @internal Resolve extension APIs against a root-scoped editor view. */
+/**
+ * Resolve extension APIs against a root-scoped editor view.
+ *
+ * @internal
+ */
 export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
   editor: TEditor,
   source: Editor
@@ -1785,6 +1814,7 @@ const classifyCandidatePublicationDocument = (
     assertCanonical: (candidate, accumulated) => {
       if (
         !constructCanonicalDocumentChange(editor, candidate, accumulated, {
+          before: current as JsonEditorValue,
           schema,
         }).empty
       ) {
@@ -2493,10 +2523,10 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
 
       return Boolean(
         previous &&
-          next &&
-          previous.editor === next.editor &&
-          previous.explicit === next.explicit &&
-          previous.extension === next.extension
+        next &&
+        previous.editor === next.editor &&
+        previous.explicit === next.explicit &&
+        previous.extension === next.extension
       );
     });
 
@@ -2513,10 +2543,11 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
     latest.entries.map((entry) => [entry.extension.name, entry])
   );
   const nextRecords = new Map(previousRecords);
+  const replacedNameSet = new Set(replacedNames);
 
   for (const name of replacedNames) nextRecords.delete(name);
   for (const name of disabledNames) {
-    if (replacedNames.includes(name)) continue;
+    if (replacedNameSet.has(name)) continue;
     const retained = nextRecords.get(name);
 
     if (retained) {
@@ -2533,7 +2564,7 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
     if (
       previous &&
       previous.extension !== extension &&
-      !replacedNames.includes(extension.name)
+      !replacedNameSet.has(extension.name)
     ) {
       throw new Error(
         `Editor extension "${extension.name}" has multiple descriptor identities in the same configuration.`
@@ -2605,8 +2636,8 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
     }
   }
   for (const [name, record] of nextRecords) {
-    const dependencyOwners = new Set(requiredBy.get(name) ?? []);
-    const currentSlotOwners = new Set(slotOwners.get(name) ?? []);
+    const dependencyOwners = new Set(requiredBy.get(name));
+    const currentSlotOwners = new Set(slotOwners.get(name));
 
     if (
       areEqualExtensionOwnerSets(record.requiredBy, dependencyOwners) &&
@@ -2657,7 +2688,11 @@ export const prepareEditorExtensionPublication = <TEditor extends Editor>(
     )
   );
 
-/** @internal Initial construction is the only publication allowed to fill root defaults. */
+/**
+ * Initial construction is the only publication allowed to fill root defaults.
+ *
+ * @internal
+ */
 export const prepareInitialEditorExtensionPublication = <
   TEditor extends Editor,
 >(

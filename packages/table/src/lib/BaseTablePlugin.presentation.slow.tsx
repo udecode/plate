@@ -1,15 +1,17 @@
 /** @jsx jsxt */
 
-import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import assert from 'node:assert/strict';
+
+import type { Value } from '@platejs/plite';
+import { jsx, jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import type { Value } from '@platejs/plite';
-import { jsx, jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import type { TableCellElement } from './BaseTablePlugin';
-import assert from 'node:assert/strict';
 
 describe('table presentation slow contracts', () => {
   jsxt;

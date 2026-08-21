@@ -1,15 +1,17 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import assert from 'node:assert/strict';
+
+import { NodeApi } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { NodeApi } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTablePlugin } from './BaseTablePlugin';
 import type { TableRowElement } from './BaseTablePlugin';
-import assert from 'node:assert/strict';
 
 describe('table merge', () => {
   describe('removeRow with expanded selections', () => {

@@ -500,8 +500,8 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
 - Do not mechanically replace `editor.read.nodes.path(node)` with `usePath()`.
   `usePath()` is a reactive element-context dependency. In a repeated node
   renderer, keep event-only path resolution inside the handler or command.
-  Use an incoming renderer `path` prop when render output depends on it, and
-  keep `usePath()` only when a descendant must react to path changes. Every
+  Element component and node-wrapper props never expose `path`; keep
+  `usePath()` only when a descendant must react to path changes. Every
   newly introduced `usePath()` in migrated code requires that classification.
 - Use `type: FooPlugin` for Plate element selection and a persisted string or
   schema handle in raw Plite. Arrays select a union. `match` is function-only

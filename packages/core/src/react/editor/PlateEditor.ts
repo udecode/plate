@@ -2,6 +2,10 @@ import type { Value } from '@platejs/plite';
 import type { ReactApi } from '@platejs/plite-react';
 
 import type {
+  GeneratedEditorMutations,
+  GeneratedEditorValue,
+} from '../../internal/editor/generatedEditorTypes';
+import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
   AnyPluginBase,
@@ -18,10 +22,6 @@ import type {
   PluginReference,
 } from '../../lib';
 import type { CoreEditorApi } from '../../lib/editor/coreEditorCapabilityDefinition.internal';
-import type {
-  GeneratedEditorMutations,
-  GeneratedEditorValue,
-} from '../../internal/editor/generatedEditorTypes';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type {
   AnyResolvedPlatePlugin,
@@ -82,7 +82,11 @@ type MergePlateEditorSchemaPlugins<D> = MergeInstalledPluginDefinitions<
   D
 >;
 
-/** @internal Lower a configured plugin input into the installed Plate graph. */
+/**
+ * Lower a configured plugin input into the installed Plate graph.
+ *
+ * @internal
+ */
 export type InferPlateEditorPlugins<TPlugins> =
   NormalizePlatePluginInput<TPlugins>[number] extends never
     ? PlateInstalledRuntimeCorePlugin
@@ -90,7 +94,11 @@ export type InferPlateEditorPlugins<TPlugins> =
         InferEditorRuntimePlugins<NormalizePlatePluginInput<TPlugins>>
       >;
 
-/** @internal Lower schema definitions separately from runtime capabilities. */
+/**
+ * Lower schema definitions separately from runtime capabilities.
+ *
+ * @internal
+ */
 export type InferPlateEditorSchemaPlugins<TPlugins> =
   NormalizePlatePluginInput<TPlugins>[number] extends never
     ? PlateInstalledSchemaCorePlugin
@@ -106,7 +114,11 @@ export type InternalPlateEditorMutationProvider<
   ? InternalInstalledSchemaMutationProvider<TRuntime, TSchema>
   : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
-/** @internal React editor whose plugin definition union is already lowered. */
+/**
+ * React editor whose plugin definition union is already lowered.
+ *
+ * @internal
+ */
 export type InternalPlateEditorWithInstalledPlugins<
   V extends Value,
   D,

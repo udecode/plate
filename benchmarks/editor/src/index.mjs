@@ -431,7 +431,7 @@ export function findStaleSurfaces(rootDir = process.cwd()) {
 }
 
 export function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
 function requireString(value, name) {
@@ -460,8 +460,9 @@ function normalizeRegistryArtifact(artifact) {
     required: artifact.required !== false,
   };
 
-  if (artifact.library !== undefined)
+  if (artifact.library !== undefined) {
     normalized.library = String(artifact.library);
+  }
   if (artifact.surfaceLibraries !== undefined) {
     normalized.surfaceLibraries = artifact.surfaceLibraries;
   }
@@ -529,8 +530,9 @@ function normalizeCompareArtifactRows(
 
   for (const side of ['current', 'legacy']) {
     const bucket = payload[side];
-    if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket))
+    if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) {
       continue;
+    }
 
     const library = side === 'current' ? 'slate-v2:current' : 'slate:baseline';
     const repo = side === 'current' ? currentRepo : legacyRepo;
@@ -644,7 +646,7 @@ function collectMetricStatsRows(
   if (!value || typeof value !== 'object') return;
 
   if (isMetricStatsObject(value)) {
-    const metricName = pathParts[pathParts.length - 1] || 'metric';
+    const metricName = pathParts.at(-1) || 'metric';
     rows.push(
       normalizeMetricStatsRow(value, {
         artifactPath,
@@ -692,12 +694,18 @@ function collectThresholdRows(payload, spec, { artifactPath, rows }) {
     !thresholds ||
     typeof thresholds !== 'object' ||
     Array.isArray(thresholds)
-  )
+  ) {
     return;
+  }
 
   for (const [name, threshold] of Object.entries(thresholds).sort()) {
-    if (!threshold || typeof threshold !== 'object' || Array.isArray(threshold))
+    if (
+      !threshold ||
+      typeof threshold !== 'object' ||
+      Array.isArray(threshold)
+    ) {
       continue;
+    }
 
     const actualMs = Number(threshold.actualMs);
     const actual = Number(threshold.actual);
@@ -731,8 +739,9 @@ function collectInvariantRows(payload, spec, { artifactPath, rows }) {
       !invariants ||
       typeof invariants !== 'object' ||
       Array.isArray(invariants)
-    )
+    ) {
       continue;
+    }
 
     for (const [name, passed] of Object.entries(invariants).sort()) {
       rows.push(
@@ -823,9 +832,7 @@ function readWorkloadCoverageStatus(
   );
   if (runtimeAdapter) {
     return {
-      note:
-        `measured by runtime adapter ${runtimeAdapter.artifactIds.join(', ')}; ` +
-        runtimeAdapter.decision,
+      note: `measured by runtime adapter ${runtimeAdapter.artifactIds.join(', ')}; ${runtimeAdapter.decision}`,
       score: 1,
       status: 'ok',
     };
@@ -861,15 +868,15 @@ function createRuntimeAdapterCoverageMap({ measuredArtifacts, registry }) {
 function isMetricStatsObject(value) {
   return Boolean(
     value &&
-      typeof value === 'object' &&
-      !Array.isArray(value) &&
-      (Array.isArray(value.samples) ||
-        Number.isFinite(Number(value.median)) ||
-        Number.isFinite(Number(value.p50)) ||
-        Number.isFinite(Number(value.mean))) &&
-      (Number.isFinite(Number(value.median)) ||
-        Number.isFinite(Number(value.p50)) ||
-        Number.isFinite(Number(value.mean)))
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    (Array.isArray(value.samples) ||
+      Number.isFinite(Number(value.median)) ||
+      Number.isFinite(Number(value.p50)) ||
+      Number.isFinite(Number(value.mean))) &&
+    (Number.isFinite(Number(value.median)) ||
+      Number.isFinite(Number(value.p50)) ||
+      Number.isFinite(Number(value.mean)))
   );
 }
 
@@ -900,7 +907,7 @@ function isByteMetric(metricName, stats) {
 }
 
 function readByteMetricValue(metricName, value) {
-  return /MB$/.test(metricName) ? value * 1024 * 1024 : value;
+  return metricName.endsWith('MB') ? value * 1024 * 1024 : value;
 }
 
 function readStatsMedian(stats) {

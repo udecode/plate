@@ -12,13 +12,13 @@ import type {
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
-import { getEditorRuntimeOwner } from './editor-runtime';
-import { getExtensionRegistry } from './extension-registry';
-import { buildSnapshotIndex } from './snapshot-index';
-import type { RootChange } from './change/root-change';
 import { getInternalDocumentChangeEntries } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
+import type { RootChange } from './change/root-change';
+import { getEditorRuntimeOwner } from './editor-runtime';
+import { getExtensionRegistry } from './extension-registry';
 import { toPublicRoot } from './public-root';
+import { buildSnapshotIndex } from './snapshot-index';
 
 const rootChildren = (
   value: EditorDocumentValue,

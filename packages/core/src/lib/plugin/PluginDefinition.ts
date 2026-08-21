@@ -29,6 +29,7 @@ import type {
 } from '@platejs/plite/internal';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
+
 import type {
   InferPluginAdditionalSchemaPropertyHandles,
   InferPluginElementType,
@@ -345,7 +346,11 @@ export type PluginBase<
 declare const pluginReference: unique symbol;
 
 export interface PluginReference<TName extends string = string> {
-  /** @internal Nominal descriptor identity. */
+  /**
+   * Nominal descriptor identity.
+   *
+   * @internal
+   */
   readonly [pluginReference]: true;
   readonly name: TName;
 }
@@ -354,24 +359,34 @@ declare const pluginDependency: unique symbol;
 
 /** Exact source carried by an inferred Plate dependency without expanding it. */
 export interface PluginDependency<in out TPlugin> {
-  /** @internal Nominal dependency source. */
+  /**
+   * Nominal dependency source.
+   *
+   * @internal
+   */
   readonly [pluginDependency]: (plugin: TPlugin) => TPlugin;
 }
 
-/** @internal Recover the exact source behind one compact Plate dependency. */
+/**
+ * Recover the exact source behind one compact Plate dependency.
+ *
+ * @internal
+ */
 export type PluginDependencySource<P> =
   P extends PluginDependency<infer TPlugin> ? TPlugin : never;
 
 type NormalizePliteDefinition<TDefinition> =
   TDefinition extends EditorExtensionDefinition
     ? Readonly<{
-        [TKey in keyof TDefinition as TKey extends
-          | 'schema'
-          | keyof BasePluginDefinition
-          ? TKey extends 'schema'
-            ? never
-            : TKey
-          : never]: TDefinition[TKey];
+        [
+          TKey in keyof TDefinition as TKey extends
+            | 'schema'
+            | keyof BasePluginDefinition
+            ? TKey extends 'schema'
+              ? never
+              : TKey
+            : never
+        ]: TDefinition[TKey];
       }> &
         Readonly<{ name: TDefinition['name'] }>
     : never;

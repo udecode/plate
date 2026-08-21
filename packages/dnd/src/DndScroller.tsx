@@ -1,7 +1,6 @@
-import React from 'react';
-
 import throttle from 'lodash/throttle.js';
 import raf from 'raf';
+import React from 'react';
 
 import { useDndPluginStore } from './internal/DndStore';
 
@@ -140,7 +139,7 @@ export function ScrollArea({
   if (!enabled) return null;
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: drag and drop functionality requires these event handlers
+    // drag and drop functionality requires these event handlers.
     <div
       {...scrollAreaProps}
       ref={ref}

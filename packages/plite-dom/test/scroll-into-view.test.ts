@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, expect, mock, test } from 'bun:test';
+
 import type { Point } from '@platejs/plite';
 
 import type { DOMRange } from '../src';

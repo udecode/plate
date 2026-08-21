@@ -1,5 +1,3 @@
-import type { HTMLAttributes, ReactNode } from 'react';
-
 import {
   BoldIcon,
   CodeIcon,
@@ -15,6 +13,7 @@ import {
   UnderlineIcon,
 } from 'lucide-react';
 import Link from 'next/link';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -84,12 +83,12 @@ export function Card({ description, icon, title, ...props }: CardProps) {
           {IconComponent}
         </div>
       ) : null}
-      <h3 className="mb-1 font-medium text-sm">{title}</h3>
+      <h3 className="mb-1 text-sm font-medium">{title}</h3>
       {description ? (
-        <p className="!my-0 text-muted-foreground text-sm">{description}</p>
+        <p className="!my-0 text-sm text-muted-foreground">{description}</p>
       ) : null}
       {props.children ? (
-        <div className="text-muted-foreground text-sm **:leading-normal">
+        <div className="text-sm text-muted-foreground **:leading-normal">
           {props.children}
         </div>
       ) : null}

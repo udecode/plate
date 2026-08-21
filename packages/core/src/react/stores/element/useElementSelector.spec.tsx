@@ -1,12 +1,11 @@
-import React from 'react';
-
-import { act, renderHook } from '@testing-library/react';
 import type { Element, NodeEntry } from '@platejs/plite';
+import { act, renderHook } from '@testing-library/react';
+import React from 'react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
-import { ElementProvider } from './useElementStore';
 import { useElementSelector } from './useElementSelector';
+import { ElementProvider } from './useElementStore';
 
 describe('useElementSelector', () => {
   it('prefers the nearest matching scoped provider and otherwise falls back to the nearest provider', () => {

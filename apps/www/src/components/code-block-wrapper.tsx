@@ -43,7 +43,7 @@ export function CodeBlockWrapper({
   if (full) {
     return (
       <div className={cn('md:-mx-1 relative', className)} {...props}>
-        <div className="[&>figure]:mt-0 [&>figure]:md:mx-0! [&>pre]:my-0 [&_pre]:my-0">
+        <div className="[&_pre]:my-0 [&>figure]:mt-0 [&>figure]:md:mx-0! [&>pre]:my-0">
           {children}
         </div>
       </div>

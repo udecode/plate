@@ -3375,8 +3375,8 @@ export const createPlitePageLayout = <
 
       const textOnlyChange = Boolean(
         change.changed.hasAny('text') &&
-          !change.changed.hasAny('state') &&
-          !change.changed.hasAny('structure')
+        !change.changed.hasAny('state') &&
+        !change.changed.hasAny('structure')
       );
       const textChangeRefresh = getTextChangeRefreshOptions(
         currentOptions.textChangeRefresh

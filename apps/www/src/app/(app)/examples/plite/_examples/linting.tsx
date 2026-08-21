@@ -1,5 +1,4 @@
-import { cva } from 'class-variance-authority';
-import { useState } from 'react';
+/* oxlint-disable typescript/no-unsafe-argument -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { type EditorSnapshot, NodeApi, type Range } from '@platejs/plite';
 import {
   Editable,
@@ -10,8 +9,12 @@ import {
   usePliteEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
+import { cva } from 'class-variance-authority';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
+
 import { Instruction } from './components';
 
 type LintSeverity = 'error' | 'info' | 'warning';

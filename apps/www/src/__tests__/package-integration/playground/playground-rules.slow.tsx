@@ -1,9 +1,4 @@
 import {
-  BaseParagraphPlugin,
-  TrailingBlockPlugin,
-  createBaseEditor,
-} from 'platejs';
-import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -28,16 +23,21 @@ import {
 import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseLinkPlugin, LinkRules } from '@platejs/link';
 import {
-  BaseEquationPlugin,
-  BaseInlineEquationPlugin,
-  MathRules,
-} from '@platejs/math';
-import {
   BaseListPlugin,
   BulletedListRules,
   OrderedListRules,
   TaskListRules,
 } from '@platejs/list';
+import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+  MathRules,
+} from '@platejs/math';
+import {
+  BaseParagraphPlugin,
+  TrailingBlockPlugin,
+  createBaseEditor,
+} from 'platejs';
 
 const createEditor = ({
   offset,

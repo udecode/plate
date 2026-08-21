@@ -1,8 +1,9 @@
-import * as React from 'react';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
 import { BaseTocPlugin, type Heading } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
 import type { BaseEditor } from 'platejs';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 
 const headingItemVariants = cva(
@@ -40,7 +41,7 @@ export function TocElementStatic(
             </Button>
           ))
         ) : (
-          <div className="text-gray-500 text-sm">
+          <div className="text-sm text-gray-500">
             Create a heading to display the table of contents.
           </div>
         )}

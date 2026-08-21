@@ -1,6 +1,6 @@
 name: Bug report
 description: Report defects, including regressions, crashes, and behavior bugs.
-title: "[Bug]: "
+title: '[Bug]: '
 labels:
   - bug
 body:
@@ -31,11 +31,10 @@ body:
     attributes:
       label: Browser surface
       description: >
-        Choose `Yes` only if this bug lives on a real browser/UI/editor flow that should be
-        verified in a browser during maintainer `task` execution.
+        Choose `Yes` only if this bug lives on a real browser/UI/editor flow that should be verified in a browser during maintainer `task` execution.
       options:
-        - "No"
-        - "Yes"
+        - 'No'
+        - 'Yes'
     validations:
       required: true
   - type: dropdown
@@ -167,7 +166,7 @@ body:
     attributes:
       label: Affected packages or entry points
       description: List the packages, plugins, examples, or routes involved.
-      placeholder: "@platejs/table, @platejs/selection, apps/www example"
+      placeholder: '@platejs/table, @platejs/selection, apps/www example'
     validations:
       required: true
   - type: textarea

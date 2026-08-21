@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+
+import { encodeContentSlice } from '../../../packages/plite/src/core/content-slice';
 import {
   ContentSlice,
   type Descendant,
   ElementApi,
 } from '../../../packages/plite/src/index';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
-import { encodeContentSlice } from '../../../packages/plite/src/core/content-slice';
 
 const iterationsArgument = process.argv.find((argument) =>
   argument.startsWith('--iterations=')

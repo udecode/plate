@@ -1,12 +1,14 @@
-import * as React from 'react';
-import '@platejs/math/katex.css';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
   getEquationHtml,
 } from '@platejs/math';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+
+import '@platejs/math/katex.css';
 import { RadicalIcon } from 'lucide-react';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
@@ -45,7 +47,7 @@ export function EquationElementStatic(
             }}
           />
         ) : (
-          <div className="flex h-7 w-full items-center gap-2 whitespace-nowrap text-muted-foreground text-sm">
+          <div className="flex h-7 w-full items-center gap-2 text-sm whitespace-nowrap text-muted-foreground">
             <RadicalIcon className="size-6 text-muted-foreground/80" />
             <div>Add a Tex equation</div>
           </div>
@@ -77,7 +79,7 @@ export function InlineEquationElementStatic(
   return (
     <PliteElement
       {...props}
-      className="inline-block select-none rounded-sm [&_.katex-display]:my-0"
+      className="inline-block rounded-sm select-none [&_.katex-display]:my-0"
     >
       <div
         className={cn(

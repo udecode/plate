@@ -1,10 +1,10 @@
 import { type Descendant, TextApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import type { MdParagraph } from '../mdast';
-import type { MdRules } from '../types';
 import { convertChildrenDeserialize } from '../deserializer';
+import type { MdParagraph } from '../mdast';
 import { convertNodesSerialize } from '../serializer';
+import type { MdRules } from '../types';
 
 const LEADING_NEWLINE_REGEX = /^\n/;
 

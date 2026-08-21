@@ -1,11 +1,3 @@
-import type {
-  ClipboardEvent as ReactClipboardEvent,
-  CompositionEvent as ReactCompositionEvent,
-  DragEvent as ReactDragEvent,
-  FocusEvent as ReactFocusEvent,
-  KeyboardEvent as ReactKeyboardEvent,
-  MouseEvent as ReactMouseEvent,
-} from 'react';
 import {
   type Range,
   RangeApi,
@@ -14,9 +6,18 @@ import {
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
 import { DOMRootRuntime } from '@platejs/plite-dom/internal';
+import type {
+  ClipboardEvent as ReactClipboardEvent,
+  CompositionEvent as ReactCompositionEvent,
+  DragEvent as ReactDragEvent,
+  FocusEvent as ReactFocusEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react';
+
+import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
-import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import { getInputEventData, isDataTransferInput } from './dom-input-event';
 import type { EditableCommand } from './editable-command-types';
 import {
@@ -40,11 +41,11 @@ import type {
   SelectionSource,
 } from './input-state';
 import type { EditableRepairRequest } from './mutation-controller';
+import { type AnyEditor, toInternalRoot } from './runtime-editor-api';
 import {
   readLiveSelection,
   readRuntimeSelection,
 } from './runtime-selection-state';
-import { type AnyEditor, toInternalRoot } from './runtime-editor-api';
 
 export type EditableBrowserEventFamily =
   | 'beforeinput'

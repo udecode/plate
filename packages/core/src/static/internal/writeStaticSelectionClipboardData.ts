@@ -2,10 +2,10 @@ import { ContentSlice } from '@platejs/plite';
 import { writeDOMFragmentData } from '@platejs/plite-dom';
 
 import type { BaseEditor } from '../../lib/editor';
-import { getPlainText } from './getPlainText';
 import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
 import { getSelectedDomNode } from '../utils/getSelectedDomNode';
 import { isSelectOutside } from '../utils/isSelectOutside';
+import { getPlainText } from './getPlainText';
 
 export const writeStaticSelectionClipboardData = (
   editor: BaseEditor,

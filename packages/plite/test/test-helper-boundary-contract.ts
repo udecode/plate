@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import * as Plite from '@platejs/plite';
 import { createEditor, type Element } from '@platejs/plite';
+
 import { getTestEditorSnapshot, replaceEditorValue } from './support/snapshot';
 
 const repoRoot = resolve(import.meta.dir, '../../..');
@@ -41,7 +42,7 @@ describe('test helper snapshot boundary', () => {
   it('implements the helper through the runtime snapshot state group', () => {
     const helperSource = readFileSync(
       resolve(repoRoot, 'packages/plite/test/support/snapshot.ts'),
-      'utf8'
+      'utf-8'
     );
 
     assert.match(helperSource, /state\.runtime\.snapshot\(\)/);
@@ -67,7 +68,7 @@ describe('test helper snapshot boundary', () => {
 
     const helperSource = readFileSync(
       resolve(repoRoot, 'packages/plite/test/support/snapshot.ts'),
-      'utf8'
+      'utf-8'
     );
 
     assert.match(helperSource, /tx\.value\.replace\(input\)/);

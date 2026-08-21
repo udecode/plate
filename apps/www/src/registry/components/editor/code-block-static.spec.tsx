@@ -1,8 +1,8 @@
-import * as React from 'react';
-
-import { render } from '@testing-library/react';
 import { afterAll, describe, expect, it, mock } from 'bun:test';
+
 import type { CodeBlockElement } from '@platejs/code-block';
+import { render } from '@testing-library/react';
+import * as React from 'react';
 
 const element = {
   children: [{ text: '' }],

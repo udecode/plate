@@ -1,5 +1,3 @@
-import type { DebouncedFunc } from 'lodash';
-import type { RefObject } from 'react';
 import {
   LocationApi,
   NodeApi,
@@ -36,6 +34,9 @@ import {
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
+import type { DebouncedFunc } from 'lodash';
+import type { RefObject } from 'react';
+
 import {
   getInputEventData,
   getInputEventTargetRanges,
@@ -710,7 +711,7 @@ export function createAndroidInputManager({
       });
     }
 
-    targetRange = targetRange ?? readRuntimeSelection(editor);
+    targetRange ??= readRuntimeSelection(editor);
     if (!targetRange) {
       return;
     }
@@ -999,8 +1000,7 @@ export function createAndroidInputManager({
         }
 
         if (PathApi.equals(targetRange.anchor.path, targetRange.focus.path)) {
-          canStoreDiff =
-            canStoreDiff && canStoreDOMTextDiffAtRange(targetRange);
+          canStoreDiff &&= canStoreDOMTextDiffAtRange(targetRange);
           if (!canStoreDiff && event.cancelable) {
             event.preventDefault();
           }
@@ -1126,7 +1126,6 @@ export function createAndroidInputManager({
             ),
           }
         );
-        return;
       }
     }
   };

@@ -19,8 +19,8 @@ type TestDocumentChangeInput = Readonly<{
 export const createTestDocumentChange = (
   input: TestDocumentChangeInput = {}
 ) => {
-  const changes = new Map(input.roots ?? []);
-  const classifications = new Map(input.rootClassifications ?? []);
+  const changes = new Map(input.roots);
+  const classifications = new Map(input.rootClassifications);
 
   if (input.primary && !input.primary.empty) {
     changes.set('main', input.primary);

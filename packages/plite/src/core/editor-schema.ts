@@ -15,6 +15,7 @@ import type {
   Node,
   Path,
   RootKey,
+  Selection,
   Text,
   Value,
 } from '../interfaces';
@@ -33,6 +34,7 @@ import {
 import { DocumentIndex } from './change/document-index';
 import type { RootChange, DocumentPropertyContext } from './change/root-change';
 import type { JsonNode } from './change/tokens';
+import { cloneFrozen } from './clone';
 import {
   ensureElementOwnedRootIndex,
   getDirtyElementOwnedRootIssues,
@@ -51,8 +53,7 @@ import {
   getExtensionRegistry,
   type ExtensionRegistry,
 } from './extension-registry';
-import { cloneFrozen } from './clone';
-import { assertEditorJsonValue, snapshotEditorJsonValue } from './value-codec';
+import { profileCoreDuration } from './profiling';
 import type {
   CompiledEditorSchema,
   CompiledSchemaContentProgram,
@@ -64,22 +65,37 @@ import {
   resolveCompiledSchemaProperty,
 } from './schema-compiler';
 import {
-  createCompiledSliceFitterDelegate,
-  type InternalSliceFitOptions,
-  type SliceFitRuntimeTargetOptions,
-} from './slice-fit/compiled-slice-fitter';
-import {
   createEditorSchemaValidationError,
   EditorSchemaValidationError,
   type EditorSchemaValidationLocation,
 } from './schema-validation';
-import { profileCoreDuration } from './profiling';
+import {
+  createCompiledSliceFitterDelegate,
+  type InternalSliceFitOptions,
+  type SliceFitRuntimeTargetOptions,
+} from './slice-fit/compiled-slice-fitter';
+import { assertEditorJsonValue, snapshotEditorJsonValue } from './value-codec';
 
-/** @internal Schema implementation used only by the slice transaction owner. */
+/**
+ * Schema implementation used only by the slice transaction owner.
+ *
+ * @internal
+ */
 export type InternalEditorSchemaApi<V extends Value = Value> =
   EditorStateSchemaApi<V> & {
     /** Register one trusted immutable document installed by the runtime owner. */
     adoptDocumentBaseline: (value: EditorDocumentValue) => void;
+    /** Fit an external document and preserve one explicit selection through it. */
+    fitDocumentWithSelection: <TValue extends Value>(
+      value: EditorDocumentValue<TValue>,
+      options: Readonly<{
+        root: RootKey;
+        selection: NonNullable<Selection>;
+      }>
+    ) => Readonly<{
+      document: EditorDocumentValue<V>;
+      selection: NonNullable<Selection>;
+    }>;
     canonicalizeTextPropertiesAt: (
       properties: Readonly<Record<string, unknown>>,
       path: Path,
@@ -512,7 +528,11 @@ const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(
   Object.freeze([]) as readonly JsonNode[]
 );
 
-/** @internal Resolve the exact compiled artifact behind a candidate schema API. */
+/**
+ * Resolve the exact compiled artifact behind a candidate schema API.
+ *
+ * @internal
+ */
 export const getCompiledEditorSchemaFromApi = (
   schemaApi: EditorStateSchemaApi<any>
 ) => COMPILED_SCHEMA_BY_API.get(schemaApi)?.() ?? null;
@@ -693,7 +713,7 @@ export const createEditorSchema = <V extends Value = Value>(
     Object.freeze(
       Object.entries({
         main: value.children,
-        ...(value.roots ?? {}),
+        ...value.roots,
       }).map(([root, children]) => ({
         index: ensureElementOwnedRootIndex(
           schema,
@@ -992,11 +1012,11 @@ export const createEditorSchema = <V extends Value = Value>(
 
       const beforeRoots: Readonly<Record<string, readonly Descendant[]>> = {
         main: before.children,
-        ...(before.roots ?? {}),
+        ...before.roots,
       };
       const afterRoots: Readonly<Record<string, readonly Descendant[]>> = {
         main: after.children,
-        ...(after.roots ?? {}),
+        ...after.roots,
       };
       const beforeIndexes = new Map(
         getDocumentOwnershipIndexes(schema, before).map(({ index, root }) => [
@@ -1491,6 +1511,8 @@ export const createEditorSchema = <V extends Value = Value>(
   const fitDocument = <TValue extends Value>(
     input: EditorDocumentValue<TValue>
   ): EditorDocumentValue<V> => sliceFitter.fitDocument(input);
+  const fitDocumentWithSelection: InternalEditorSchemaApi<V>['fitDocumentWithSelection'] =
+    (input, options) => sliceFitter.fitDocumentWithSelection(input, options);
   const findWrapping: InternalEditorSchemaApi<V>['findWrapping'] =
     sliceFitter.findWrapping;
 
@@ -2092,11 +2114,11 @@ export const createEditorSchema = <V extends Value = Value>(
 
     return Boolean(
       schema &&
-        resolveCompiledSchemaProperty(schema, context.placement, key, {
-          ancestors: context.ancestors,
-          root: context.root,
-          type: context.type,
-        })?.merge === 'set'
+      resolveCompiledSchemaProperty(schema, context.placement, key, {
+        ancestors: context.ancestors,
+        root: context.root,
+        type: context.type,
+      })?.merge === 'set'
     );
   };
 
@@ -2146,7 +2168,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
     return Boolean(
       options.parent &&
-        textPropertyAppliesToContext(options.parent, key, options)
+      textPropertyAppliesToContext(options.parent, key, options)
     );
   };
 
@@ -2976,7 +2998,7 @@ export const createEditorSchema = <V extends Value = Value>(
     }
     const roots: Record<string, readonly Descendant[]> = {
       main: value.children,
-      ...(value.roots ?? {}),
+      ...value.roots,
     };
     const ownershipIndexes = getDocumentOwnershipIndexes(schema, value);
     const projectedRoots = new Map<
@@ -3065,7 +3087,7 @@ export const createEditorSchema = <V extends Value = Value>(
     value: EditorDocumentValue
   ): Readonly<Record<string, readonly Descendant[]>> => ({
     main: value.children,
-    ...(value.roots ?? {}),
+    ...value.roots,
   });
   const isDeepFrozenNode = (node: Descendant): boolean =>
     Object.isFrozen(node) &&
@@ -3679,6 +3701,7 @@ export const createEditorSchema = <V extends Value = Value>(
     fit,
     fitContent,
     fitDocument,
+    fitDocumentWithSelection,
     findWrapping,
     getElementBehavior,
     getElementContent,

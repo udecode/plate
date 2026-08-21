@@ -1,4 +1,30 @@
 import type {
+  EditorExtensionReference,
+  EditorReadMethodRecord,
+  EditorReadMethodTree,
+  EditorSelectionSpec,
+  EditorUpdateContext,
+  SelectionValue,
+} from '@platejs/plite';
+
+import {
+  allowPrivateRenderContribution,
+  isPrivateRenderContribution,
+} from '../../internal/plugin/privateRenderContribution';
+import { isFunction } from '../../internal/utils/isFunction';
+import {
+  brandPluginDescriptor,
+  freezePluginDescriptorValue,
+  getPluginDescriptorMetadata,
+  isConfiguredPluginDescriptor,
+  mergePlugins,
+  setPluginDescriptorMetadata,
+} from '../../internal/utils/mergePlugins';
+import type {
+  PlatePluginReadState,
+  PlatePluginTransaction,
+} from '../editor/pluginRuntimeTypes';
+import type {
   AnyBasePlugin,
   AnyBasePluginContext,
   BasePluginContext,
@@ -8,6 +34,7 @@ import type {
   EditorShortcut,
   PluginCodecMapDeclaration,
 } from './BasePlugin';
+import type { BasePluginDependencyReferences } from './basePluginCompiler.internal';
 import type {
   PluginSchemaContext,
   PluginSchemaDeclaration,
@@ -17,33 +44,6 @@ import type {
   NormalizePluginSelectors,
   NormalizePluginState,
 } from './PluginDefinition';
-import type {
-  EditorExtensionReference,
-  EditorReadMethodRecord,
-  EditorReadMethodTree,
-  EditorSelectionSpec,
-  EditorUpdateContext,
-  SelectionValue,
-} from '@platejs/plite';
-
-import { isFunction } from '../../internal/utils/isFunction';
-import {
-  allowPrivateRenderContribution,
-  isPrivateRenderContribution,
-} from '../../internal/plugin/privateRenderContribution';
-import type {
-  PlatePluginReadState,
-  PlatePluginTransaction,
-} from '../editor/pluginRuntimeTypes';
-import type { BasePluginDependencyReferences } from './basePluginCompiler.internal';
-import {
-  brandPluginDescriptor,
-  freezePluginDescriptorValue,
-  getPluginDescriptorMetadata,
-  isConfiguredPluginDescriptor,
-  mergePlugins,
-  setPluginDescriptorMetadata,
-} from '../../internal/utils/mergePlugins';
 
 const PLUGIN_NAME_PATTERN = /^[a-z][A-Za-z0-9]*$/;
 
@@ -175,30 +175,31 @@ const assertNoPublicRenderNode = (value: object) => {
   }
 };
 
-const assertBaseDefinition: (value: unknown) => asserts value is PluginRecord =
-  (value) => {
-    if (!isObjectRecord(value)) {
-      throw new Error('Plate plugin definitions must be objects.');
-    }
-    if (typeof value.name !== 'string' || value.name.length === 0) {
-      throw new Error('Plate plugins require a non-empty `name`.');
-    }
-    if (Object.hasOwn(value, 'key') || Object.hasOwn(value, 'type')) {
-      throw new Error(
-        'Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`.'
-      );
-    }
+const assertBaseDefinition: (
+  value: unknown
+) => asserts value is PluginRecord = (value) => {
+  if (!isObjectRecord(value)) {
+    throw new Error('Plate plugin definitions must be objects.');
+  }
+  if (typeof value.name !== 'string' || value.name.length === 0) {
+    throw new Error('Plate plugins require a non-empty `name`.');
+  }
+  if (Object.hasOwn(value, 'key') || Object.hasOwn(value, 'type')) {
+    throw new Error(
+      'Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`.'
+    );
+  }
 
-    assertNoPublicRenderNode(value);
-    if (Object.hasOwn(value, 'node')) {
-      throw new Error(
-        'Plate plugin `node` is unsupported. Use top-level `schema` and `render`.'
-      );
-    }
-    if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
-      throw new Error('Plate plugin `api` must be a context factory.');
-    }
-  };
+  assertNoPublicRenderNode(value);
+  if (Object.hasOwn(value, 'node')) {
+    throw new Error(
+      'Plate plugin `node` is unsupported. Use top-level `schema` and `render`.'
+    );
+  }
+  if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
+    throw new Error('Plate plugin `api` must be a context factory.');
+  }
+};
 
 const assertExtendObject = (value: object) => {
   assertNoPublicRenderNode(value);
@@ -612,16 +613,12 @@ export function defineBasePlugin<
     ? Extract<ConstructorFactoryResult<TInitialStateInput>, object>
     : {},
   const TConflicts extends BasePluginDependencies = readonly [],
-  const TTargetPlugins extends readonly (
-    | PluginReference
-    | string
-  )[] = readonly [],
-  const TRead extends BasePluginConstructorRead<
-    TKeys,
-    TSchema
-  > = BasePluginConstructorRead<TKeys, TSchema>,
-  const TSelectionKinds extends
-    readonly EditorSelectionSpec<any>[] = readonly [],
+  const TTargetPlugins extends readonly (PluginReference | string)[] =
+    readonly [],
+  const TRead extends BasePluginConstructorRead<TKeys, TSchema> =
+    BasePluginConstructorRead<TKeys, TSchema>,
+  const TSelectionKinds extends readonly EditorSelectionSpec<any>[] =
+    readonly [],
   const TSelectors extends PluginSelectors<S> = {},
   const TEnabled extends boolean = boolean,
   const TShortcuts extends BasePluginShortcutRecord = {},
@@ -742,10 +739,12 @@ export function defineBasePlugin<
     }>
 ): BasePlugin<
   Readonly<{
-    [P in Extract<
-      keyof Readonly<Record<TKeys, unknown>>,
-      BasePluginConstructorPresenceKey
-    >]: true;
+    [
+      P in Extract<
+        keyof Readonly<Record<TKeys, unknown>>,
+        BasePluginConstructorPresenceKey
+      >
+    ]: true;
   }> &
     Readonly<{ name: N }> &
     ('dependencies' extends TKeys

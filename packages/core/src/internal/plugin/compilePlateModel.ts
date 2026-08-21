@@ -119,7 +119,11 @@ const evaluatePluginSchemaIdentity = (
   }
 };
 
-/** @internal Resolve the authored element default without fabricating identity. */
+/**
+ * Resolve the authored element default without fabricating identity.
+ *
+ * @internal
+ */
 export const resolvePluginElementType = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
@@ -136,7 +140,11 @@ export const resolvePluginElementType = (
     : plugin.name;
 };
 
-/** @internal Resolve the authored mark key without fabricating identity. */
+/**
+ * Resolve the authored mark key without fabricating identity.
+ *
+ * @internal
+ */
 export const resolvePluginPropertyKey = (
   editor: BaseEditor,
   plugin: AnyBasePlugin
@@ -196,7 +204,11 @@ type PendingReference = Readonly<{
   target: string;
 }>;
 
-/** @internal Final element identity visible while schema-aware plugin stages resolve. */
+/**
+ * Final element identity visible while schema-aware plugin stages resolve.
+ *
+ * @internal
+ */
 export const getCandidateApplicationElementType = (
   editor: object,
   plugin: PluginReference | string
@@ -205,7 +217,11 @@ export const getCandidateApplicationElementType = (
     typeof plugin === 'string' ? plugin : plugin.name
   ];
 
-/** @internal Publish closed-editor element remaps before plugin callbacks capture them. */
+/**
+ * Publish closed-editor element remaps before plugin callbacks capture them.
+ *
+ * @internal
+ */
 export const withEditorApplicationSchemaCandidate = <T>(
   editor: object,
   policy: EditorApplicationSchema | undefined,
@@ -353,7 +369,11 @@ export const getResolvedPluginTargetBinding = (
   return cached ?? compileResolvedPluginTargetBinding(editor, plugin);
 };
 
-/** @internal Resolve the installed document types owned by one target binding. */
+/**
+ * Resolve the installed document types owned by one target binding.
+ *
+ * @internal
+ */
 export const getResolvedPluginTargetTypes = (
   editor: BaseEditor,
   plugin: Pick<AnyBasePlugin, 'name' | 'targetPlugins'>
@@ -414,7 +434,11 @@ const isPluginSchemaDeclaration = (
 ): value is PluginSchemaDeclaration =>
   typeof value === 'object' && value !== null;
 
-/** @internal Evaluate one plugin schema against the current editor candidate. */
+/**
+ * Evaluate one plugin schema against the current editor candidate.
+ *
+ * @internal
+ */
 export const evaluatePluginSchemaDeclaration = (
   editor: BaseEditor,
   plugin: AnyBasePlugin,
@@ -490,7 +514,11 @@ const compileMark = (key: string, mark: PluginSchemaMark): SchemaProperty => {
   });
 };
 
-/** @internal Resolve one exact authored property before schema publication. */
+/**
+ * Resolve one exact authored property before schema publication.
+ *
+ * @internal
+ */
 export const getAuthoredPluginPropertyHandle = (
   editor: BaseEditor,
   plugin: AnyBasePlugin,
@@ -1333,7 +1361,11 @@ const lowerApplicationTarget = (
   }
 };
 
-/** @internal Lower one closed editor policy against the authored plugin model. */
+/**
+ * Lower one closed editor policy against the authored plugin model.
+ *
+ * @internal
+ */
 export const compileEditorApplicationSchema = (
   model: CompiledPlateModel,
   policy: EditorApplicationSchema | undefined
@@ -1430,7 +1462,11 @@ export const compileEditorApplicationSchema = (
   });
 };
 
-/** @internal Materialize final element handles without rewriting authored contributions. */
+/**
+ * Materialize final element handles without rewriting authored contributions.
+ *
+ * @internal
+ */
 export const applyEditorApplicationSchema = (
   model: CompiledPlateModel,
   applicationSchema: EditorSchemaContribution | undefined
@@ -1524,7 +1560,11 @@ export const clearPlateModelPublication = (editor: object) => {
 export const getPlateModelPublication = (editor: object) =>
   PLATE_MODEL_PUBLICATIONS.get(getPlateOwner(editor));
 
-/** @internal Runtime projection compiled from the installed Plate model. */
+/**
+ * Runtime projection compiled from the installed Plate model.
+ *
+ * @internal
+ */
 export const getPlateRuntime = (editor: object): PlateRuntime => {
   const publication = getPlateModelPublication(editor);
 
@@ -1535,7 +1575,11 @@ export const getPlateRuntime = (editor: object): PlateRuntime => {
   throw new Error('Plate runtime is not installed.');
 };
 
-/** @internal Whether the editor owns an installed or compiling Plate runtime. */
+/**
+ * Whether the editor owns an installed or compiling Plate runtime.
+ *
+ * @internal
+ */
 export const hasPlateRuntime = (editor: object) =>
   getPlateRuntimeCandidate(editor) !== undefined ||
   getPlateModelPublication(editor) !== undefined;
@@ -1579,7 +1623,11 @@ export function getCompiledPlatePlugin(
     : getPlateRuntime(editor).plugins[name];
 }
 
-/** @internal Resolve an installed element owner from persisted node identity. */
+/**
+ * Resolve an installed element owner from persisted node identity.
+ *
+ * @internal
+ */
 export const getCompiledPlatePluginByType = (
   editor: object,
   type: string
@@ -1589,7 +1637,11 @@ export const getCompiledPlatePluginByType = (
   return binding ? getCompiledPlatePlugin(editor, binding.name) : undefined;
 };
 
-/** @internal Resolve an installed mark owner from persisted property identity. */
+/**
+ * Resolve an installed mark owner from persisted property identity.
+ *
+ * @internal
+ */
 export const getCompiledPlatePluginByKey = (
   editor: object,
   key: string

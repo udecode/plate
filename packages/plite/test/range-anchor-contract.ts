@@ -1,9 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getChildren as editorGetChildren,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -12,6 +8,11 @@ import {
   type Element,
   type Range,
 } from '@platejs/plite';
+import {
+  getChildren as editorGetChildren,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
+
 import { createRangeAnchor } from './support/anchor';
 
 const createChildren = (): Element[] => [
@@ -268,7 +269,7 @@ describe('plite range anchor contract', () => {
     const mainEditor = createEditorView(runtime);
     let anchor: Anchor<Range> | undefined;
 
-    headerEditor.update((tx) => {
+    headerEditor.update((_tx) => {
       anchor = createRangeAnchor(headerEditor, {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },

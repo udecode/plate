@@ -48,7 +48,8 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
     return inputRange;
   }
 
-  let [start, end] = RangeApi.edges(range);
+  const [start, initialEnd] = RangeApi.edges(range);
+  let end = initialEnd;
 
   // PERF: exit early if we can guarantee that the range isn't hanging.
   if (

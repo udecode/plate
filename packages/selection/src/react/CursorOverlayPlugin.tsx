@@ -1,7 +1,6 @@
 import type { DefinitionOf } from '@platejs/core';
-
-import type { CursorData, CursorState } from '@platejs/cursor';
 import { definePlatePlugin } from '@platejs/core/react';
+import type { CursorData, CursorState } from '@platejs/cursor';
 import { PLUGINS } from '@platejs/utils';
 
 import { useCursorOverlayPlugin } from './useCursorOverlay.internal';

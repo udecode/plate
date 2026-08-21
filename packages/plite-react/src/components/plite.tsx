@@ -1,11 +1,3 @@
-import React, {
-  useCallback,
-  useInsertionEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import ReactDOM from 'react-dom';
 import {
   createEditorView,
   type Editor,
@@ -22,6 +14,15 @@ import {
   type Value,
 } from '@platejs/plite';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '@platejs/plite-dom/internal';
+import React, {
+  useCallback,
+  useInsertionEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import ReactDOM from 'react-dom';
+
 import type { PliteAnnotationStore } from '../annotation-store';
 import {
   composeDecorationSources,
@@ -64,12 +65,12 @@ import type {
   ReactEditorContextValue,
   ReactEditor as ReactEditorType,
 } from '../plugin/with-react';
-import { EditorAnnouncementLiveRegion } from './editor-announcement-live-region';
 import { ProjectionContext } from '../projection-context';
 import { recordPliteReactRender } from '../render-profiler';
+import { toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { setPliteViewSelectionStoreKey } from '../view-selection';
-import { toPublicRootOption } from '../root-key';
+import { EditorAnnouncementLiveRegion } from './editor-announcement-live-region';
 
 const now = () => globalThis.performance?.now?.() ?? Date.now();
 
@@ -424,7 +425,9 @@ const usePliteChangeCallbacks = <
     }),
     [editor]
   );
-  const lastSnapshotRef = useRef(editorGetSnapshot(editor));
+  const [lastSnapshotRef] = useState(() => ({
+    current: editorGetSnapshot(editor),
+  }));
   const [commitPublicationQueue] = useState(() =>
     createEditorCommitPublicationQueue<V>(editorBaseline.commitVersion)
   );
@@ -567,7 +570,7 @@ const PliteSingleEditor = <
   );
   const [viewEffectQueue] = useState(createPliteViewEffectQueue);
   const [viewEffectVersion, setViewEffectVersion] = useState(0);
-  const lastSelectionCacheRef = useRef(createRootSelectionCache());
+  const [lastSelectionCache] = useState(createRootSelectionCache);
 
   const runtime = useMemo(
     () =>
@@ -706,8 +709,8 @@ const PliteSingleEditor = <
       : null;
   }, []);
   const getLastSelectionForRoot = useCallback(
-    (root: RootKey) => lastSelectionCacheRef.current.get(root),
-    []
+    (root: RootKey) => lastSelectionCache.get(root),
+    [lastSelectionCache]
   );
   const registerViewEffect = useCallback(
     (effect: () => void) => {
@@ -786,7 +789,7 @@ const PliteSingleEditor = <
   }, []);
   const handleCommittedEditorChange = useCallback(
     (commit: EditorCommit, snapshot: EditorSnapshot<V>) => {
-      lastSelectionCacheRef.current.record(
+      lastSelectionCache.record(
         commit.selectionAfter,
         commit.selectionAfterRoot
       );
@@ -881,6 +884,7 @@ const PliteSingleEditor = <
       editor,
       changeCallbacksCell,
       handleSelectorChange,
+      lastSelectionCache,
       reactEditor,
       refreshFocused,
       syncMountedRootChangesToDOM,

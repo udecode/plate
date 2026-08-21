@@ -1,5 +1,5 @@
-import React, { type ReactNode, type Ref } from 'react';
 import type { Path, NodeKey } from '@platejs/plite';
+import React, { type ReactNode, type Ref } from 'react';
 
 import { usePliteNodeKeyDOMValue } from '../hooks/use-plite-node-ref';
 import { recordPliteReactRender } from '../render-profiler';

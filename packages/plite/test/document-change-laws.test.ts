@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import fc from 'fast-check';
 
 import { DocumentChange } from '../src/core/change/document-change';
@@ -452,9 +453,9 @@ const propertyDeltaArbitrary: fc.Arbitrary<NodePropertyDelta> = fc.oneof(
     .map((values) => ({ remove: { tags: values } }))
 );
 
-describe('DocumentChange generated laws', () => {
-  it('matches a nested structural/property reference model and algebra', () => {
-    assertLaw(
+void describe('DocumentChange generated laws', () => {
+  void it('matches a nested structural/property reference model and algebra', () => {
+    void assertLaw(
       fc.property(
         fc.array(rawActionArbitrary, { maxLength: 24, minLength: 1 }),
         (rawActions) => {
@@ -493,8 +494,8 @@ describe('DocumentChange generated laws', () => {
     );
   });
 
-  it('keeps generated atomic multi-root edits and root lifecycle invertible', () => {
-    assertLaw(
+  void it('keeps generated atomic multi-root edits and root lifecycle invertible', () => {
+    void assertLaw(
       fc.property(
         fc.array(fc.tuple(rawActionArbitrary, rawActionArbitrary), {
           maxLength: 12,
@@ -565,8 +566,8 @@ describe('DocumentChange generated laws', () => {
     );
   });
 
-  it('composes generated root lifecycle cycles relative to the original document', () => {
-    assertLaw(
+  void it('composes generated root lifecycle cycles relative to the original document', () => {
+    void assertLaw(
       fc.property(
         fc.constantFrom('caption', 'footer', 'sidebar'),
         fc.string({ maxLength: 16 }),
@@ -613,8 +614,8 @@ describe('DocumentChange generated laws', () => {
     );
   });
 
-  it('composes generated corrections into serializable canonical changes', () => {
-    assertLaw(
+  void it('composes generated corrections into serializable canonical changes', () => {
+    void assertLaw(
       fc.property(fc.boolean(), rawActionArbitrary, (header, raw) => {
         const before = documentValue('correction', true);
         const root = header ? 'header' : null;
@@ -652,8 +653,8 @@ describe('DocumentChange generated laws', () => {
     );
   });
 
-  it('converges generated structural/property pair transforms including moves', () => {
-    assertLaw(
+  void it('converges generated structural/property pair transforms including moves', () => {
+    void assertLaw(
       fc.property(
         fc.tuple(
           fc.boolean(),
@@ -683,8 +684,8 @@ describe('DocumentChange generated laws', () => {
     );
   });
 
-  it('preserves generated scalar and set-valued property deltas through the full algebra', () => {
-    assertLaw(
+  void it('preserves generated scalar and set-valued property deltas through the full algebra', () => {
+    void assertLaw(
       fc.property(
         fc.boolean(),
         propertyDeltaArbitrary,
@@ -772,8 +773,8 @@ describe('DocumentChange generated laws', () => {
     );
   });
 
-  it('composes generated sequential changes associatively', () => {
-    assertLaw(
+  void it('composes generated sequential changes associatively', () => {
+    void assertLaw(
       fc.property(
         fc.tuple(rawActionArbitrary, rawActionArbitrary, rawActionArbitrary),
         ([rawA, rawB, rawC]) => {

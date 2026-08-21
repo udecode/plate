@@ -1,12 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type {
-  MainNavItem,
-  NavItemWithChildren,
-  SidebarNavItem,
-} from '@/types/nav';
 import type { DialogProps } from '@radix-ui/react-dialog';
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import {
@@ -19,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import * as React from 'react';
 
 import { copyToClipboardWithMeta } from '@/components/copy-button';
 import {
@@ -51,6 +45,11 @@ import {
 } from '@/lib/search-result-groups';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
+import type {
+  MainNavItem,
+  NavItemWithChildren,
+  SidebarNavItem,
+} from '@/types/nav';
 
 const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
@@ -188,7 +187,7 @@ function getCommandMenuRegistryName(href: string) {
     .split('#')[0]
     .split('?')[0]
     .replace(CN_DOCS_PREFIX_REGEX, '');
-  const slug = normalizedPath.split('/').filter(Boolean).at(-1);
+  const slug = normalizedPath.split('/').findLast(Boolean);
 
   if (!slug) return;
 
@@ -231,7 +230,7 @@ function CommandItems({
   runCommand: (command: () => unknown) => void;
   parentTitle?: string;
 }) {
-  const { push } = useRouter();
+  const router = useRouter();
   const title = getNavTitle(item, locale);
   const keywords = getItemKeywords(item, parentTitle);
   const copyCommand = item.href
@@ -252,7 +251,10 @@ function CommandItems({
           }
           onSelect={() => {
             runCommand(() =>
-              navigateToHref(push, hrefWithLocale(item.href!, locale))
+              navigateToHref(
+                (href) => router.push(href),
+                hrefWithLocale(item.href!, locale)
+              )
             );
           }}
           keywords={keywords}
@@ -331,7 +333,7 @@ function SearchResults({
   onHighlight: HighlightCommand;
   setOpen: (open: boolean) => void;
 }) {
-  const { push } = useRouter();
+  const router = useRouter();
 
   const uniqueResults = React.useMemo(() => {
     if (!query.data || !Array.isArray(query.data)) {
@@ -405,7 +407,7 @@ function SearchResults({
                   )
                 }
                 onSelect={() => {
-                  push(hrefWithLocale(item.url, locale));
+                  router.push(hrefWithLocale(item.url, locale));
                   setOpen(false);
                 }}
                 keywords={[item.content, ...(item.breadcrumbs ?? []), search]}
@@ -493,7 +495,7 @@ export function CommandMenuDialog({
   open: boolean;
   sidebarNav: SidebarNavItem[];
 }) {
-  const { push } = useRouter();
+  const router = useRouter();
   const locale = useLocale();
   const content = i18n[locale as keyof typeof i18n];
   const [renderDelayedGroups, setRenderDelayedGroups] = React.useState(false);
@@ -610,12 +612,13 @@ export function CommandMenuDialog({
     },
     [updateOpen]
   );
+  const runCommandFromEffect = React.useEffectEvent(runCommand);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'c' && (e.metaKey || e.ctrlKey) && copyPayload) {
         e.preventDefault();
-        runCommand(() => {
+        runCommandFromEffect(() => {
           void copyToClipboardWithMeta(copyPayload, {
             name: 'copy_npm_command',
             properties: {
@@ -629,7 +632,7 @@ export function CommandMenuDialog({
     document.addEventListener('keydown', down);
 
     return () => document.removeEventListener('keydown', down);
-  }, [copyPayload, runCommand]);
+  }, [copyPayload]);
 
   React.useEffect(
     () => () => {
@@ -687,7 +690,7 @@ export function CommandMenuDialog({
   return (
     <Dialog open={open} onOpenChange={updateOpen}>
       <DialogContent
-        className="top-[15%]! max-w-[calc(100%-2rem)] !duration-0 translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 data-[state=closed]:!animate-none data-[state=open]:!animate-none sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden"
+        className="top-[15%]! max-w-[calc(100%-2rem)] translate-y-0! overflow-hidden rounded-xl border-none bg-clip-padding p-2 pb-11 shadow-2xl ring-4 ring-neutral-200/80 !duration-0 data-[state=closed]:!animate-none data-[state=open]:!animate-none sm:max-w-lg dark:bg-neutral-900 dark:ring-neutral-800 [&>button]:hidden"
         overlayClassName="data-[state=closed]:!animate-none data-[state=open]:!animate-none"
       >
         <DialogHeader className="sr-only">
@@ -695,7 +698,7 @@ export function CommandMenuDialog({
           <DialogDescription>{content.searchDescription}</DialogDescription>
         </DialogHeader>
         <Command
-          className="rounded-none bg-transparent **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50 **:data-[slot=command-input]:py-0 [&_[cmdk-item]_svg]:size-5"
+          className="rounded-none bg-transparent **:data-[slot=command-input]:h-9! **:data-[slot=command-input]:py-0 **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50 [&_[cmdk-item]_svg]:size-5"
           filter={commandFilter}
           value={selectedCommandValue}
           onValueChange={setSelectedCommandValue}
@@ -706,12 +709,12 @@ export function CommandMenuDialog({
               placeholder={content.searchDocumentation}
             />
             {docsSearchState.isPending && (
-              <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 flex items-center justify-center">
+              <div className="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center">
                 <Spinner />
               </div>
             )}
           </div>
-          <CommandEmpty className="py-12 text-center text-muted-foreground text-sm">
+          <CommandEmpty className="py-12 text-center text-sm text-muted-foreground">
             {docsSearchState.isPending ? content.searching : content.noResults}
           </CommandEmpty>
           <CommandList
@@ -736,7 +739,7 @@ export function CommandMenuDialog({
                       onSelect={() => {
                         runCommand(() =>
                           navigateToHref(
-                            push,
+                            (href) => router.push(href),
                             hrefWithLocale(navItem.href!, locale)
                           )
                         );
@@ -832,7 +835,7 @@ export function CommandMenuDialog({
             />
           </CommandList>
         </Command>
-        <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t border-t-neutral-100 bg-neutral-50 px-4 font-medium text-muted-foreground text-xs dark:border-t-neutral-700 dark:bg-neutral-800">
+        <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t border-t-neutral-100 bg-neutral-50 px-4 text-xs font-medium text-muted-foreground dark:border-t-neutral-700 dark:bg-neutral-800">
           <CommandMenuKbd>
             <CornerDownLeft />
           </CommandMenuKbd>

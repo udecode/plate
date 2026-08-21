@@ -1,5 +1,5 @@
 ---
-"@platejs/math": patch
+'@platejs/math': patch
 ---
 
 Return focus to the editor when arrow navigation exits an inline equation.

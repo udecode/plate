@@ -19,7 +19,7 @@ import {
   type UpdateSuggestionData,
 } from './BaseSuggestionPlugin';
 
-// biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
+// keeps each merged test source isolated.
 {
   describe('BaseSuggestionPlugin.read.activeDescriptions', () => {
     it('builds replacement and insertion descriptions from real editor data', () => {
@@ -237,7 +237,7 @@ import {
   });
 }
 
-// biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
+// keeps each merged test source isolated.
 {
   describe('BaseSuggestionPlugin.read.findIdentity', () => {
     const MentionPlugin = defineBasePlugin(PLUGINS.mention, {
@@ -502,7 +502,7 @@ import {
   });
 }
 
-// biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
+// keeps each merged test source isolated.
 {
   describe('BaseSuggestionPlugin.api.keys', () => {
     it('finds suggestion keys and resolves real user ids from suggestion data', () => {
@@ -534,7 +534,7 @@ import {
   });
 }
 
-// biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
+// keeps each merged test source isolated.
 {
   describe('BaseSuggestionPlugin.read.nodeEntries', () => {
     it('finds all text nodes for the given suggestion id and respects extra match filters', () => {
@@ -1462,7 +1462,7 @@ import {
   });
 }
 
-// biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
+// keeps each merged test source isolated.
 {
   describe('editor.update.suggestion.removeNodes', () => {
     it('does nothing for an empty node list', () => {

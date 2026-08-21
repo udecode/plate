@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+import { replace as editorReplace } from '@platejs/plite/internal';
 import { render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { replace as editorReplace } from '@platejs/plite/internal';
 
 import {
   createReactEditor,
@@ -82,7 +83,7 @@ const createSplitTableVirtualizedLayout = () => ({
 test('Editable virtualized strategy owns deferred native text repair', () => {
   const editableSource = readFileSync(
     resolve(process.cwd(), 'src/components/editable-text-blocks.tsx'),
-    'utf8'
+    'utf-8'
   );
 
   expect(editableSource).toMatch(
@@ -374,7 +375,9 @@ test('Editable domStrategy metrics do not re-emit unchanged virtualized metrics 
       'virtualized'
     )
   );
-  await new Promise((resolve) => setTimeout(resolve, 25));
+  await new Promise((resolve) => {
+    setTimeout(resolve, 25);
+  });
 
   expect(metrics).toHaveLength(1);
 });

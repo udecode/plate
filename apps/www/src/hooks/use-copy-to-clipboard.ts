@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-
 import { type ExternalToast, toast } from 'sonner';
 
 export const useCopyPathnameToClipboard = () => {

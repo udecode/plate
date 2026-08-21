@@ -1,5 +1,4 @@
 import type { Descendant } from '@platejs/plite';
-
 import merge from 'lodash/merge.js';
 
 import {

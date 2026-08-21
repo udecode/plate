@@ -59,6 +59,7 @@ export default function RSCPage() {
       TrailingBlockPlugin,
       DocxPastePlugin,
     ],
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- Registry values are generated copied-code fixtures whose declarations are unavailable before the CI-owned registry build.
     initialValue: [...basicBlocksValue, ...basicMarksValue],
   });
 

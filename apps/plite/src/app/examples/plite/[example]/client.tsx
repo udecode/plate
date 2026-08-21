@@ -24,7 +24,7 @@ export function PliteExampleClient({
 
   return (
     <main
-      className="mx-auto flex min-w-0 max-w-5xl flex-col gap-6 px-6 py-8"
+      className="mx-auto flex max-w-5xl min-w-0 flex-col gap-6 px-6 py-8"
       data-plite-example={exampleId}
       data-plite-scope="proof-route"
     >

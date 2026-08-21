@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   const title = searchParams.get('title');
   const description = searchParams.get('description');
 
-  const [fonts] = await Promise.all([loadAssets()]);
+  const fonts = await loadAssets();
 
   return new ImageResponse(
     <div

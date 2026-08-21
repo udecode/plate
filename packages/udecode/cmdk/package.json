@@ -7,22 +7,27 @@
   "bugs": {
     "url": "https://github.com/pacocoursey/cmdk/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/udecode/plate.git",
     "directory": "packages/udecode/cmdk"
   },
-  "license": "MIT",
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "plate-pkg p:brl",
     "build": "plate-pkg p:build",
@@ -48,10 +53,5 @@
   "peerDependencies": {
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "module": "./dist/index.js"
+  }
 }

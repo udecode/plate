@@ -62,7 +62,7 @@ describe('fitContent locality benchmark authority', () => {
   });
 
   it('keeps one registered width-locality owner and exact corpus labels', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string; required: boolean }>;
         command: string;
@@ -73,7 +73,7 @@ describe('fitContent locality benchmark authority', () => {
     const targets = registry.targets.filter(
       ({ id }) => id === 'plite-fit-content-locality'
     );
-    const source = readFileSync(benchmarkPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.equal(targets.length, 1);
     assert.match(

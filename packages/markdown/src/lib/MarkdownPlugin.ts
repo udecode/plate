@@ -1,5 +1,3 @@
-import type { Options as RemarkStringifyOptions } from 'remark-stringify';
-import type { Pluggable } from 'unified';
 import {
   type BaseEditor,
   type DefinitionOf,
@@ -13,13 +11,8 @@ import type {
 import { ContentSlice } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
-
-import type {
-  AllowNodeConfig,
-  DeserializeMdOptions,
-  MarkdownNodeName,
-  SerializeMdOptions,
-} from './types';
+import type { Options as RemarkStringifyOptions } from 'remark-stringify';
+import type { Pluggable } from 'unified';
 
 import {
   createMarkdownRuntime,
@@ -28,6 +21,12 @@ import {
   serializeMdWithRuntime,
   withMarkdownRuntime,
 } from './internal/markdownConversion';
+import type {
+  AllowNodeConfig,
+  DeserializeMdOptions,
+  MarkdownNodeName,
+  SerializeMdOptions,
+} from './types';
 
 export type MarkdownPluginState = {
   /** Allowed node types. Cannot be combined with `disallowedNodes`. */

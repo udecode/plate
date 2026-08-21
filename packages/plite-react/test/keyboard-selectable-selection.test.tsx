@@ -1,10 +1,11 @@
-import { act, fireEvent, render } from '@testing-library/react';
 import {
   defineEditorSchema,
   type Descendant,
   schema,
   SelectionApi,
 } from '@platejs/plite';
+import { act, fireEvent, render } from '@testing-library/react';
+
 import {
   createReactEditor,
   Editable,

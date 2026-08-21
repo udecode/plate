@@ -1,11 +1,16 @@
 #!/usr/bin/env node
+/* oxlint-disable no-loop-func -- These callbacks close over the current block-scoped iteration binding; there is no shared var binding whose value can drift. */
 
-import { createHash } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
+import {
+  runBoundedProcess,
+  stopProcessTree,
+} from '../../../tooling/scripts/run-bounded-process.mjs';
 import { buildAppIfStale } from './build-app-if-stale.mjs';
 import {
   applyWorkerCap,
@@ -46,10 +51,6 @@ import {
   snapshotEnvironment,
   snapshotFileIdentity,
 } from './plite-proof-inputs.mjs';
-import {
-  runBoundedProcess,
-  stopProcessTree,
-} from '../../../tooling/scripts/run-bounded-process.mjs';
 
 const mode = process.argv[2] ?? 'matrix';
 const passthroughArgs = process.argv.slice(3);
@@ -59,7 +60,7 @@ const playwrightPackage = require(playwrightPackagePath);
 const playwrightRuntime = require('@playwright/test');
 const playwrightCli = path.join(path.dirname(playwrightPackagePath), 'cli.js');
 const requiredNodeVersion = fs
-  .readFileSync(path.join(repoRoot, '.nvmrc'), 'utf8')
+  .readFileSync(path.join(repoRoot, '.nvmrc'), 'utf-8')
   .trim();
 
 assertBrowserNodeVersion(process.version, requiredNodeVersion);
@@ -222,9 +223,9 @@ const runCaptured = async (
 
 const readJson = (file) => {
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
+    return JSON.parse(fs.readFileSync(file, 'utf-8'));
   } catch {
-    return;
+    // Missing or malformed result files have no recorded payload.
   }
 };
 
@@ -279,7 +280,9 @@ const waitForServer = async (projectRun) => {
       lastError = error;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 250);
+    });
   }
 
   console.error(
@@ -541,7 +544,7 @@ const customExecutableIdentity = () => {
 
   const resolved = path.resolve(executable);
   const version = spawnSync(resolved, ['--version'], {
-    encoding: 'utf8',
+    encoding: 'utf-8',
     maxBuffer: 64 * 1024,
     timeout: 5000,
   });

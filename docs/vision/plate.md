@@ -168,6 +168,9 @@ Current priorities:
   descriptor for component props, avoiding a self-referential configured
   descriptor; consumer-local capabilities remain available through scoped
   hooks.
+- Element component and node-wrapper props carry stable node identity but never
+  a live `path`. Resolve position from the element at interaction time, or call
+  `usePath()` only when rendered output must react as that element moves.
 - Feature state uses Plite `NodeKey` values for live node identity and names
   those fields `key` or `keys`, never `id`. Optional durable element identity
   belongs to `ElementIdPlugin` under the canonical schema property `id`.
@@ -594,6 +597,7 @@ Owner map:
 | public GitHub issue/PR/security queue control plane  | `maintainer`                            |
 | local Plate/Plite behavior-bug or regression repair  | `patch`                                 |
 | internal Plate/Plite long quality loops              | `auto`                                  |
+| performance measurement, diagnosis, and fix/rerun    | `benchmark`                             |
 | post-merge/current-tree until-clean closure          | `autoclosure`                           |
 | reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md` |
 | durable public API doctrine                          | root `VISION.md` and `docs/vision/*.md` |

@@ -38,9 +38,9 @@ import type {
   SchemaTextPropertyOptions,
   SchemaTextBlockOptions,
 } from '../interfaces/schema';
-import type { EditorSchemaSource } from './schema-source.internal';
 import { cloneFrozen } from './clone';
 import { getCompiledSchemaPropertyId } from './schema-compiler';
+import type { EditorSchemaSource } from './schema-source.internal';
 
 const RESERVED_PRIMARY_ROOT = 'main';
 
@@ -255,8 +255,9 @@ const cloneDescriptorValue = (
 ): unknown => {
   switch (descriptor.kind) {
     case 'boolean': {
-      if (typeof value !== 'boolean')
+      if (typeof value !== 'boolean') {
         throw new Error(`${owner} must be boolean.`);
+      }
       break;
     }
     case 'enum': {
@@ -275,8 +276,9 @@ const cloneDescriptorValue = (
       break;
     }
     case 'string': {
-      if (typeof value !== 'string')
+      if (typeof value !== 'string') {
         throw new Error(`${owner} must be a string.`);
+      }
       break;
     }
     case 'json': {
@@ -417,9 +419,8 @@ const defineValue = <
 
 const defineSet = <
   TItemDescriptor extends PropertyValueDescriptor,
-  const TOptions extends PropertySetOptions<
-    PropertyValueOf<TItemDescriptor>
-  > = {},
+  const TOptions extends PropertySetOptions<PropertyValueOf<TItemDescriptor>> =
+    {},
 >(
   item: TItemDescriptor,
   options: PropertySetOptions<PropertyValueOf<TItemDescriptor>> &
@@ -618,9 +619,9 @@ type PropertyJsonOptionsWithoutValidation = Readonly<{
 
 type JsonValueGuard = (value: unknown) => value is PropertyJsonValue;
 
-type GuardedJsonValue<TGuard extends JsonValueGuard> = TGuard extends (
+type GuardedJsonValue<TGuard extends JsonValueGuard> = TGuard extends ((
   value: unknown
-) => value is infer TValue
+) => value is infer TValue)
   ? TValue
   : never;
 
@@ -756,7 +757,11 @@ const attachElementSourceReference = <T extends object>(
   return value;
 };
 
-/** @internal Recover the nominal source retained by element relationship builders. */
+/**
+ * Recover the nominal source retained by element relationship builders.
+ *
+ * @internal
+ */
 export const getSchemaElementSourceReference = (value: unknown): unknown => {
   if (!value || typeof value !== 'object') return;
 
@@ -1604,7 +1609,11 @@ export const schema: SchemaDefinitionApi = Object.freeze({
 
 const NORMALIZED_SCHEMA_DECLARATIONS = new WeakSet<object>();
 
-/** @internal Clone and freeze one public declaration exactly once. */
+/**
+ * Clone and freeze one public declaration exactly once.
+ *
+ * @internal
+ */
 export const normalizeEditorSchemaDeclaration = <
   const TDeclaration extends EditorSchemaDeclaration,
 >(
@@ -1665,7 +1674,11 @@ export type EditorSchemaDefinitionInput<TInput extends EditorSchemaDefinition> =
     > &
     WithoutReservedPrimaryRoot<TInput>;
 
-/** @internal Normalize complete schema grammar before extension compilation. */
+/**
+ * Normalize complete schema grammar before extension compilation.
+ *
+ * @internal
+ */
 export const normalizeEditorSchemaDefinition = <
   const TInput extends EditorSchemaDefinition,
 >(

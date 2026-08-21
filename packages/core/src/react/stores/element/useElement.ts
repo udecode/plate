@@ -2,7 +2,6 @@ import type { Element, ElementOf } from '@platejs/plite';
 import type { EditorSchemaSource } from '@platejs/plite/internal';
 
 import type { PluginReference } from '../../../lib';
-
 import { useElementContext } from './useElementStore';
 
 export type PlateElementDescriptor = EditorSchemaSource & PluginReference;

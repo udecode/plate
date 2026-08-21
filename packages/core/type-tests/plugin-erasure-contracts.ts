@@ -6,10 +6,6 @@ import {
   DOMPlugin,
   type InferDependencies,
 } from '@platejs/core';
-import type {
-  NormalizePluginState,
-  PluginDependencySource,
-} from '../src/lib/plugin/PluginDefinition';
 import {
   createPlateEditor,
   type PlateEditor,
@@ -17,6 +13,11 @@ import {
 } from '@platejs/core/react';
 import { schema } from '@platejs/plite';
 import type { InternalEditorExtensionInstalledCapabilitiesOf } from '@platejs/plite/internal';
+
+import type {
+  NormalizePluginState,
+  PluginDependencySource,
+} from '../src/lib/plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../src/lib/plugin/pluginDefinitionLookup.internal';
 
 type Equal<TLeft, TRight> = [TLeft] extends [TRight]

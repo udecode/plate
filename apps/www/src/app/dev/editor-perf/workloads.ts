@@ -1,5 +1,5 @@
-import { migrateElementIds, type Descendant, type Value } from 'platejs';
 import type { Element } from '@platejs/plite';
+import { migrateElementIds, type Descendant, type Value } from 'platejs';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 
@@ -439,7 +439,7 @@ function buildDenseInlinePropsValue(blocks: number): Value {
   const value = Array.from({ length: blocks }, (_, blockIndex) => ({
     children: DENSE_TEXT_SEGMENTS.map((segment, segmentIndex) => ({
       commentId: `comment-${blockIndex}-${segmentIndex}`,
-      search: segmentIndex % 2 === 0 ? 'hit' : undefined,
+      ...(segmentIndex % 2 === 0 ? { search: 'hit' } : {}),
       text: `${segment} ${blockIndex}-${segmentIndex} `,
       tokenCount: segment.length,
     })),
@@ -510,7 +510,7 @@ export function getEditorPerfWorkloadValue({
       return buildDenseInlinePropsValue(blocks);
     case 'huge-paragraph-fallback':
       return buildFallbackParagraphValue(blocks);
-    default:
+    case 'huge-mixed-block':
       return buildMixedBlockValue(blocks);
   }
 }

@@ -5,6 +5,7 @@ import React, {
   type ReactNode,
   type Ref,
 } from 'react';
+
 import { useEditableDOMHostFact } from '../hooks/use-claim-editable-dom-commit';
 
 type VoidIntrinsicTag =

@@ -1,4 +1,5 @@
 import type { Descendant } from '@platejs/plite';
+
 import type { TableCellBorder, TableCellBorders } from '../BaseTablePlugin';
 
 type TableCellSpan = {

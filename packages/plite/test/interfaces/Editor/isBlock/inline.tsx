@@ -1,14 +1,13 @@
+import { ElementApi } from '@platejs/plite';
+/** @jsx jsx */
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
 } from '@platejs/plite/internal';
-/** @jsx jsx */
 
 import { jsx } from '../../..';
 
 jsx;
-
-import { ElementApi } from '@platejs/plite';
 
 export const input = (
   <editor>

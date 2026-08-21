@@ -1,7 +1,7 @@
 import { BaseParagraphPlugin, createRuleFactory } from '@platejs/core';
 import type { BlockFenceInputRuleMatch, PluginReference } from '@platejs/core';
-import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
-import { BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+
+import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
 const createCodeBlockRule = createRuleFactory(BaseCodeBlockPlugin);
 

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
+
 import { isRecord } from '../src/core/record';
 
 type JsonRecord = Readonly<Record<string, unknown>>;
@@ -34,7 +35,7 @@ type TsConfigJson = {
 
 const readJsonRecord = (path: string): JsonRecord => {
   const value = JSON.parse(
-    readFileSync(new URL(path, import.meta.url), 'utf8')
+    readFileSync(new URL(path, import.meta.url), 'utf-8')
   );
 
   if (!isRecord(value)) {
@@ -51,7 +52,7 @@ const readOptionalRecord = (
   const value = record[key];
 
   if (value === undefined) {
-    return;
+    return undefined;
   }
 
   if (!isRecord(value)) {
@@ -81,7 +82,7 @@ const readDependencyMap = (
   const dependencies = readOptionalRecord(record, key);
 
   if (dependencies === undefined) {
-    return;
+    return undefined;
   }
 
   const map: Record<string, string> = {};
@@ -101,7 +102,7 @@ const readPackageExports = (record: JsonRecord): PackageExports | undefined => {
   const rawExports = readOptionalRecord(record, 'exports');
 
   if (rawExports === undefined) {
-    return;
+    return undefined;
   }
 
   const exports: Record<string, PackageExport> = {};
@@ -233,7 +234,7 @@ describe('@platejs/yjs package config contract', () => {
   it('documents only executable Yjs proof owners', () => {
     const docs = readFileSync(
       new URL(publicYjsDocsPath, import.meta.url),
-      'utf8'
+      'utf-8'
     );
     const pliteApp = readPackageJson('../../../apps/plite/package.json');
     const yjsPackage = readPackageJson('../package.json');
@@ -320,7 +321,7 @@ describe('@platejs/yjs package config contract', () => {
       return;
     }
 
-    const benchmarkSource = readFileSync(benchmarkUrl, 'utf8');
+    const benchmarkSource = readFileSync(benchmarkUrl, 'utf-8');
     const requiredMetricNames = [
       'yjs_collaboration_worst_p95_ms',
       'yjs_collaboration_worst_work_p95_ms',
@@ -365,8 +366,8 @@ describe('@platejs/yjs package config contract', () => {
       return;
     }
 
-    const benchmarkSource = readFileSync(benchmarkUrl, 'utf8');
-    const statsSource = readFileSync(statsUrl, 'utf8');
+    const benchmarkSource = readFileSync(benchmarkUrl, 'utf-8');
+    const statsSource = readFileSync(statsUrl, 'utf-8');
     const requiredSummaryFields = [
       'samples',
       'mean',

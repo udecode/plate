@@ -1,3 +1,5 @@
+/* oxlint-disable no-loop-func -- These callbacks close over the current block-scoped iteration binding; there is no shared var binding whose value can drift. */
+/* oxlint-disable no-unmodified-loop-condition -- This loop intentionally delegates condition mutation or exits after the first iterator result; rewriting it would obscure the iterator protocol. */
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
@@ -291,6 +293,7 @@ export const runProjectPool = async ({
     Array.from({ length: boundedConcurrency }, () => runNext())
   );
 
+  // oxlint-disable-next-line typescript/only-throw-error -- [P1 error-identity] Preserve the first worker rejection unchanged.
   if (firstError) throw firstError;
 
   return failedStatus;

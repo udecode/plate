@@ -1,4 +1,3 @@
-import { useCallback, useContext } from 'react';
 import {
   type EditorCommit,
   type Path,
@@ -6,6 +5,8 @@ import {
   RangeApi,
   SelectionApi,
 } from '@platejs/plite';
+import { useCallback, useContext } from 'react';
+
 import { ElementPathContext, NodeKeyContext } from '../context';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -55,8 +56,9 @@ export const useElementSelected = ({
           PathApi.equals(selection.path, selectedPath)
         );
       }
-      if (mode === 'collapsed' && !RangeApi.isCollapsed(selection))
+      if (mode === 'collapsed' && !RangeApi.isCollapsed(selection)) {
         return false;
+      }
 
       const range = editorRange(editor, selectedPath);
       return !!RangeApi.intersection(range, selection);

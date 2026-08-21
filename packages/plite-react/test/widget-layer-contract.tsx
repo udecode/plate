@@ -1,13 +1,13 @@
 import { runInNewContext } from 'node:vm';
 
-import { act, render } from '@testing-library/react';
-import React, { startTransition, Suspense, useLayoutEffect } from 'react';
 import { createEditor } from '@platejs/plite';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { act, render } from '@testing-library/react';
+import React, { startTransition, Suspense, useLayoutEffect } from 'react';
 
 import {
   Plite,

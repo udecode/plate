@@ -1,18 +1,15 @@
-import React from 'react';
-
+import type { Path } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
+import React from 'react';
 
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
-
-import type { Path } from '@platejs/plite';
-
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { RenderElementProps } from '../../lib';
 import { type PlateNodeProps, PlateElement } from '../components';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 import { useEditor } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';

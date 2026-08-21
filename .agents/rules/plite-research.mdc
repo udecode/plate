@@ -13,10 +13,9 @@ browser/native-selection/IME/paste proof ideas, pagination/virtualization
 research, huge-document behavior/perf research, TypeScript/API/DX discovery, or
 large OSS repo scans before patching.
 
-This is not `slate-ar` and does not run Codex Autoresearch packets. It discovers
-and synthesizes research, then promotes accepted leads to the right execution
-owner. `slate-ar` modes run measured loops; `plite-research` decides what
-evidence-backed loops, oracles, plans, docs, and fixes should exist.
+This is not `slate-ar` or `benchmark` and does not run measured packets. It
+discovers and synthesizes research, then promotes accepted leads to the right
+execution owner.
 
 ## Core Take
 
@@ -44,12 +43,12 @@ answers if the search is managed like engineering work.
   ledgers, source reading, dedupe, evidence grades, scoring, and promotion.
 - `editor-audit`: exhaustive source comparison of selected local editor
   repositories, verified commit cursors, and incremental architecture sync.
-- `slate-ar`: execution wrapper. Owns Plite defaults for measured
-  `codex-autoresearch` packet loops in `Plate repo root`.
+- `slate-ar`: owns Plite Autoresearch session/status, quality-gap, proof-gate,
+  recipe, stabilization, and readiness mechanics in `Plate repo root`.
 - `slate-ar quality`: executes an accepted quality-gap checklist through
   Codex Autoresearch. It does not own broad OSS discovery.
 - `slate-ar gate`: repeats existing proof gates once a command/oracle exists.
-- `slate-ar perf`: optimizes benchmark-backed performance targets.
+- `benchmark`: owns benchmark-backed performance diagnosis and optimization.
 - `patch`: fixes concrete bugs or missing oracles.
 - `best-api`: decides public call shape from the gathered evidence.
 - `plite-plan`: decides substrate architecture, adoption, and proof.
@@ -63,7 +62,7 @@ auto
       -> editor-audit      # exhaustively audit selected local repositories
       -> slate-ar quality  # execute accepted quality_gap checklist
       -> slate-ar gate     # repeat existing proof
-      -> slate-ar perf     # optimize benchmark target
+      -> benchmark         # diagnose and optimize benchmark target
       -> patch             # bug/oracle fix
       -> best-api          # public API decision
       -> plite-plan        # substrate architecture/adoption
@@ -96,9 +95,9 @@ first belongs here; execution after promotion belongs to the target owner.
 - The user wants one narrow local bug fix with a live repro. Use `patch`.
 - The next safe move is a public API decision. Use `best-api`; use
   `plite-plan` for accepted runtime/adoption planning.
-- The work is a measured packet loop with known target/checklist/command. Use
-  the matching `slate-ar` mode.
-- The only work left is measured perf packet execution. Use `slate-ar perf`.
+- The work is a measured performance packet loop with a known target/command.
+  Use `benchmark`.
+- The only work left is measured perf packet execution. Use `benchmark`.
 - The user supplied one or more local editor repositories and wants exhaustive
   architecture comparison or commit-aware re-audit. Use `editor-audit`.
 
@@ -283,9 +282,9 @@ Do not patch Plite directly from research. A lead must first become one of:
 - `docs-packet`: accepted durable research note or current-state decision;
 - `no-code-decision`: rejected/quarantined with reason and reopen condition.
 
-If a research packet finds a likely fix, convert it into a normal patch, perf,
-oracle, or plan packet with baseline, proof gate, and keep/revert/quarantine
-decision.
+If a research packet finds a likely fix, convert it into a normal patch,
+Benchmark, oracle, or plan packet with baseline, proof gate, and
+keep/revert/quarantine decision.
 
 If research finds no usable lead, keep the artifact with rejected leads and the
 next search angle. A clean negative result prevents repeated wandering.

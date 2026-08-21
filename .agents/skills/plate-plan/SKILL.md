@@ -28,8 +28,8 @@ Choose one mode from the arguments. Default to `--standard`.
   or uncertain runtime behavior.
 - `--standard`: create or continue one Plate Plan goal and plan. Run the three
   phases continuously in the current activation unless interrupted or blocked.
-- `--deep`: use the standard workflow and add only the research, benchmarks,
-  or red-team work justified by the named risk. Do not add more lifecycle
+- `--deep`: use the standard workflow and add only the research, Benchmark
+  evidence/packet, or red-team work justified by the named risk. Do not add more lifecycle
   phases or generic research. Use `editor-audit` first when source-level
   comparison against one or more editor architectures is required.
 
@@ -45,7 +45,8 @@ their full ownership tables in the plan.
 `editor-audit` owns exhaustive external editor architecture comparison.
 `best-api` owns the ideal public call surface. Plate Plan consumes those targets
 and owns Plate/Plite boundaries, adoption, execution slices, and proof. If a
-plan discovers a better call shape, run the `best-api` lens inside the same
+performance decision lacks a measured causal owner, request a scoped
+`benchmark` packet instead of designing from intuition. If a plan discovers a better call shape, run the `best-api` lens inside the same
 plan and repair the target before continuing.
 
 An accepted API change carries its doctrine repair with it. Add the affected

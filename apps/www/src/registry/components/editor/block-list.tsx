@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 import { isOrderedList, ListType } from '@platejs/list';
 import { ListPlugin } from '@platejs/list/react';
 import {
@@ -9,6 +7,7 @@ import {
   useEditor,
   useEditorReadOnly,
 } from 'platejs/react';
+import React from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';

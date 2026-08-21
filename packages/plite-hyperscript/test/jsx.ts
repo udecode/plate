@@ -1,4 +1,4 @@
-// biome-ignore-all lint/style/noNamespace: Global JSX augmentation requires the JSX namespace.
+// Global JSX augmentation requires the JSX namespace.
 import { jsx as baseJsx } from '../src';
 
 export const jsx = baseJsx;

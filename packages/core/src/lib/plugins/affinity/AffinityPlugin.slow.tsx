@@ -1,12 +1,11 @@
 /** @jsx jsxt */
 
-import type { BaseEditor } from '../../editor';
-import type { TestEditor } from '@platejs/test-utils';
-
 import { schema, property } from '@platejs/plite';
 import { deleteBackward, insertText, move } from '@platejs/plite/internal';
+import type { TestEditor } from '@platejs/test-utils';
 import { jsxt } from '@platejs/test-utils';
 
+import type { BaseEditor } from '../../editor';
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 import { AffinityPlugin } from './AffinityPlugin';

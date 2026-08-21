@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+
 import {
   createEditor,
   defineExtension,

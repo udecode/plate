@@ -1,7 +1,8 @@
-import { act, fireEvent, render } from '@testing-library/react';
 import { TextApi } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
+import { act, fireEvent, render } from '@testing-library/react';
 import { createRef } from 'react';
+
 import {
   createReactEditor,
   defaultScrollSelectionIntoView,

@@ -3,14 +3,13 @@ import { PLUGINS } from '@platejs/utils';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
-import type { MdRootContent } from '../mdast';
-import type { DeserializeMdContext, MdDecoration } from '../types';
-
+import { runMarkdownDecodeCodecs } from '../internal/markdownCodecs';
 import {
   MarkdownBlockIdError,
   serializeUnknownMdxNode,
 } from '../internal/markdownDocument';
-import { runMarkdownDecodeCodecs } from '../internal/markdownCodecs';
+import type { MdRootContent } from '../mdast';
+import type { DeserializeMdContext, MdDecoration } from '../types';
 import { mdastToRule } from '../types';
 
 export const convertNodesDeserialize = (

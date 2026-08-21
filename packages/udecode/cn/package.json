@@ -8,22 +8,27 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/udecode/cn"
   },
-  "license": "MIT",
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "plate-pkg p:brl",
     "build": "plate-pkg p:build",
@@ -39,18 +44,13 @@
     "@udecode/react-utils": "workspace:*",
     "react-compiler-runtime": "^1.0.0"
   },
+  "devDependencies": {
+    "@plate/scripts": "workspace:*"
+  },
   "peerDependencies": {
     "class-variance-authority": ">=0.7.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
     "tailwind-merge": ">=2.2.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "module": "./dist/index.js",
-  "devDependencies": {
-    "@plate/scripts": "workspace:*"
   }
 }

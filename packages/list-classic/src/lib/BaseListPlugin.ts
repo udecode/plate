@@ -2692,7 +2692,6 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
                 if (previousNode?.[0].type === node.type) {
                   mergeAdjacentList([node, path], previousNode);
-                  return;
                 }
               }
             }

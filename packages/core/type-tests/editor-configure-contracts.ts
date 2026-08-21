@@ -1,6 +1,6 @@
-import type { ValueOf } from '@platejs/plite';
 import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor, definePlatePlugin } from '@platejs/core/react';
+import type { ValueOf } from '@platejs/plite';
 
 const childInitialState: { level: 1 | 2 } = {
   level: 1,

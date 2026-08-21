@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import fc from 'fast-check';
-
 import {
   ContentSlice,
   createEditor,
@@ -15,6 +13,7 @@ import {
   type Descendant,
   type Element,
 } from '@platejs/plite';
+import fc from 'fast-check';
 
 const paragraph = (
   text = '',

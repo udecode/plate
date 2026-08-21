@@ -236,7 +236,7 @@ function scorePr(pr) {
     intake: 'PR body must be read',
     owner: labels.some((label) => label.includes('security'))
       ? 'security-triage'
-      : 'P2 autoreview or resolve-pr-feedback',
+      : 'P1 autoreview or resolve-pr-feedback',
     proof: 'read PR body/files/reviews/checks before action',
     rankReason: reasons.join(', ') || 'open PR',
     score,

@@ -1,4 +1,5 @@
 import { expect, mock, test } from 'bun:test';
+
 import type { Editor } from '@platejs/plite';
 
 import {

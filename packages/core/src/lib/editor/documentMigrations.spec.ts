@@ -1,11 +1,11 @@
 import { type EditorDocumentValue, NodeApi } from '@platejs/plite';
 
+import { defineBasePlugin } from '../plugin';
 import {
   defineDocumentMigrations,
   migrateDocument,
 } from './documentMigrations';
 import { createBaseEditor } from './withPlite';
-import { defineBasePlugin } from '../plugin';
 
 const EditorSchema = { id: 'migration-contract', version: 55 } as const;
 

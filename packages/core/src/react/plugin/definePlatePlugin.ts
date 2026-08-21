@@ -28,7 +28,6 @@ import type {
   ValidatedPlateShortcuts,
 } from './PlatePlugin';
 import type { NormalizePlatePluginInput } from './platePluginCompiler.internal';
-
 import { toPlatePlugin } from './toPlatePlugin';
 
 type PlatePluginDependencies = readonly (
@@ -113,23 +112,25 @@ type PlatePluginConstructorResultInput<
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
 > = Readonly<{
-  [TKey in Exclude<
-    TKeys,
-    | 'api'
-    | 'conflicts'
-    | 'dependencies'
-    | 'decorate'
-    | 'enabled'
-    | 'initialState'
-    | 'key'
-    | 'name'
-    | 'read'
-    | 'schema'
-    | 'selectors'
-    | 'targetPlugins'
-    | 'type'
-    | 'update'
-  >]: true;
+  [
+    TKey in Exclude<
+      TKeys,
+      | 'api'
+      | 'conflicts'
+      | 'dependencies'
+      | 'decorate'
+      | 'enabled'
+      | 'initialState'
+      | 'key'
+      | 'name'
+      | 'read'
+      | 'schema'
+      | 'selectors'
+      | 'targetPlugins'
+      | 'type'
+      | 'update'
+    >
+  ]: true;
 }> &
   Readonly<{ name: N }> &
   ('dependencies' extends TKeys
@@ -179,10 +180,9 @@ type PlatePluginConstructorRestInput<
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends readonly (PluginReference | string)[],
 > = Readonly<{
-  [TKey in Extract<
-    TKeys,
-    PlatePluginConstructorRestKey
-  >]: PlatePluginConstructorRestFieldInput<
+  [
+    TKey in Extract<TKeys, PlatePluginConstructorRestKey>
+  ]: PlatePluginConstructorRestFieldInput<
     NoInfer<
       PlatePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >,
@@ -387,10 +387,8 @@ export function definePlatePlugin<
   const TSchema extends PluginSchemaDeclaration = never,
   const D extends PlatePluginDependencies = readonly [],
   const TConflicts extends PlatePluginDependencies = readonly [],
-  const TTargetPlugins extends readonly (
-    | PluginReference
-    | string
-  )[] = readonly [],
+  const TTargetPlugins extends readonly (PluginReference | string)[] =
+    readonly [],
   const TRead extends object = {},
   const TSelectors extends PluginSelectors<
     PlatePluginConstructorState<TKeys, TInitialStateInput>

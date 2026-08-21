@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { Anchor, Element, Point } from '@platejs/plite';
-
 import {
   Combobox,
   ComboboxGroup,
@@ -16,6 +12,7 @@ import {
   useComboboxStore,
 } from '@ariakit/react';
 import { filterWords } from '@platejs/combobox';
+import type { Anchor, Element, Point } from '@platejs/plite';
 import { cva } from 'class-variance-authority';
 import { Hotkeys, isHotkey } from 'platejs';
 import {
@@ -24,6 +21,7 @@ import {
   useElementSelected,
   usePath,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 

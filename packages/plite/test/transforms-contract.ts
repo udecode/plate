@@ -1,13 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getSnapshot as editorGetSnapshot,
-  insertNodes as editorInsertNodes,
-  removeNodes as editorRemoveNodes,
-  replace as editorReplace,
-  runTrustedUpdate,
-  splitNodes as editorSplitNodes,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -22,6 +14,15 @@ import {
   schema,
   TextApi,
 } from '@platejs/plite';
+import {
+  getSnapshot as editorGetSnapshot,
+  insertNodes as editorInsertNodes,
+  removeNodes as editorRemoveNodes,
+  replace as editorReplace,
+  runTrustedUpdate,
+  splitNodes as editorSplitNodes,
+} from '@platejs/plite/internal';
+
 import { defineTestSchema } from './support/schema';
 
 const collapsedSelection = (path: number[], offset: number) => ({
@@ -43,7 +44,7 @@ const getNodeEntry = <T extends Descendant>(
   const entry = editor.read.nodes.get(path, {
     match: (node): node is T => NodeApi.isDescendant(node) && match(node),
   });
-  assert(entry);
+  assert.ok(entry);
 
   return entry;
 };
@@ -280,7 +281,7 @@ describe('plite transforms contract', () => {
 
     editor.update((tx) => {
       const entry = tx.nodes.get([0]);
-      assert(entry && NodeApi.isElement(entry[0]));
+      assert.ok(entry && NodeApi.isElement(entry[0]));
       tx.nodes.duplicate([entry as NodeEntry<Element>]);
     });
 

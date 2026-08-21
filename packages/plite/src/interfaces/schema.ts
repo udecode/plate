@@ -86,9 +86,8 @@ export interface PropertyBooleanDescriptor<
 > extends PropertyValueDescriptor<boolean, 'boolean', TOptions> {}
 export interface PropertyEnumDescriptor<
   TValues extends readonly string[] = readonly string[],
-  TOptions extends
-    | PropertyValueOptions<TValues[number]>
-    | undefined = undefined,
+  TOptions extends PropertyValueOptions<TValues[number]> | undefined =
+    undefined,
 > extends PropertyValueDescriptor<TValues[number], 'enum', TOptions> {
   readonly values: TValues;
 }
@@ -109,10 +108,10 @@ export interface PropertySetDescriptor<
     | PropertySetOptions<PropertyValueOf<TItemDescriptor>>
     | undefined = undefined,
 > extends PropertyValueDescriptor<
-    readonly PropertyValueOf<TItemDescriptor>[],
-    'set',
-    TOptions
-  > {
+  readonly PropertyValueOf<TItemDescriptor>[],
+  'set',
+  TOptions
+> {
   readonly item: TItemDescriptor;
 }
 
@@ -269,7 +268,11 @@ export type SchemaContentOptions = Readonly<{
 }>;
 
 type SchemaContentRuleWitness<TAllowed extends SchemaContentRule> = Readonly<{
-  /** @internal Exact rule witness; absent from runtime values. */
+  /**
+   * Exact rule witness; absent from runtime values.
+   *
+   * @internal
+   */
   '~schema.content.rule'?: TAllowed;
 }>;
 
@@ -533,8 +536,8 @@ export type EditorSchemaContribution<
   TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
     Record<string, SchemaContent>
   >,
-  TContentRoots extends
-    readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
+  TContentRoots extends readonly SchemaContentRootContribution[] =
+    readonly SchemaContentRootContribution[],
 > = Readonly<{
   /** Element-owned root slots projected onto matching element types. */
   contentRoots?: TContentRoots;
@@ -583,8 +586,8 @@ export type EditorSchemaDerivedDefinition<
   TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
     Record<string, SchemaContent>
   >,
-  TContentRoots extends
-    readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
+  TContentRoots extends readonly SchemaContentRootContribution[] =
+    readonly SchemaContentRootContribution[],
 > = EditorSchemaDefinitionBase<
   TElements,
   TProperties,
@@ -610,8 +613,8 @@ export type EditorSchemaNamedDefinition<
   TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
     Record<string, SchemaContent>
   >,
-  TContentRoots extends
-    readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
+  TContentRoots extends readonly SchemaContentRootContribution[] =
+    readonly SchemaContentRootContribution[],
 > = EditorSchemaDefinitionBase<
   TElements,
   TProperties,
@@ -637,8 +640,8 @@ export type EditorSchemaDefinition<
   TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
     Record<string, SchemaContent>
   >,
-  TContentRoots extends
-    readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
+  TContentRoots extends readonly SchemaContentRootContribution[] =
+    readonly SchemaContentRootContribution[],
 > =
   | EditorSchemaDerivedDefinition<
       TElements,
@@ -1334,10 +1337,9 @@ type SchemaPropertiesFromEntries<TEntry> = Readonly<
   {
     [TKey in SchemaEntryRequiredKey<TEntry>]: SchemaEntryValue<TEntry, TKey>;
   } & {
-    [TKey in Exclude<
-      SchemaEntryKey<TEntry>,
-      SchemaEntryRequiredKey<TEntry>
-    >]?: SchemaEntryValue<TEntry, TKey>;
+    [
+      TKey in Exclude<SchemaEntryKey<TEntry>, SchemaEntryRequiredKey<TEntry>>
+    ]?: SchemaEntryValue<TEntry, TKey>;
   }
 >;
 
@@ -1348,10 +1350,12 @@ type SchemaConstructionPropertiesFromEntries<TEntry> = Readonly<
       TKey
     >;
   } & {
-    [TKey in Exclude<
-      SchemaEntryKey<TEntry>,
-      SchemaEntryConstructionRequiredKey<TEntry>
-    >]?: SchemaEntryValue<TEntry, TKey>;
+    [
+      TKey in Exclude<
+        SchemaEntryKey<TEntry>,
+        SchemaEntryConstructionRequiredKey<TEntry>
+      >
+    ]?: SchemaEntryValue<TEntry, TKey>;
   }
 >;
 
@@ -1409,7 +1413,11 @@ export type SchemaPropertyHandle<
   key: TKey;
   kind: 'schema-property';
   placement: TPlacement;
-  /** @internal Covariant value witness; absent from runtime values. */
+  /**
+   * Covariant value witness; absent from runtime values.
+   *
+   * @internal
+   */
   readonly [schemaPropertyHandleValue]?: TValue;
 }>;
 
@@ -1476,9 +1484,9 @@ type SchemaAllElementPropertyEntry<
     : never;
 
 type PreservedSchemaElementProperties<TSchema extends EditorSchemaSource> = {
-  readonly [TKey in SchemaEntryKey<
-    SchemaAllElementPropertyEntry<TSchema>
-  >]?: SchemaEntryValue<SchemaAllElementPropertyEntry<TSchema>, TKey>;
+  readonly [
+    TKey in SchemaEntryKey<SchemaAllElementPropertyEntry<TSchema>>
+  ]?: SchemaEntryValue<SchemaAllElementPropertyEntry<TSchema>, TKey>;
 };
 
 type PreservedSchemaElement<TSchema extends EditorSchemaSource> = {
@@ -1502,7 +1510,11 @@ type SchemaNodeElementFor<
           SchemaElementContentRootsFor<TSchema, TType>
       : never;
 
-/** @internal Compact schema-node inference witness. */
+/**
+ * Compact schema-node inference witness.
+ *
+ * @internal
+ */
 export interface SchemaNodeTypeProvider<
   TElement extends BaseElement = BaseElement,
   TText extends BaseText = BaseText,
@@ -1562,7 +1574,11 @@ export type SchemaDescendant<TSchema extends EditorSchemaSource> =
     ? BaseElement | BaseText
     : SchemaElementFor<TSchema> | SchemaText<TSchema>;
 
-/** @internal Exact schema elements reachable from one schema-owned node. */
+/**
+ * Exact schema elements reachable from one schema-owned node.
+ *
+ * @internal
+ */
 export type SchemaElementInNode<TNode> = '~schema.node' extends keyof TNode
   ? NonNullable<TNode[Extract<'~schema.node', keyof TNode>]> extends Readonly<{
       element: infer TElement;
@@ -1574,7 +1590,11 @@ export type SchemaElementInNode<TNode> = '~schema.node' extends keyof TNode
     : never
   : never;
 
-/** @internal Exact schema text variants reachable from one schema-owned node. */
+/**
+ * Exact schema text variants reachable from one schema-owned node.
+ *
+ * @internal
+ */
 export type SchemaTextInNode<TNode> = '~schema.node' extends keyof TNode
   ? NonNullable<TNode[Extract<'~schema.node', keyof TNode>]> extends Readonly<{
       text: infer TText;
@@ -1606,7 +1626,11 @@ export type SchemaValue<TSchema extends EditorSchemaExtension> =
             : never))[] &
     SchemaValueBrand<TSchema>;
 
-/** @internal Non-recursive schema descendant lookup for editor API generics. */
+/**
+ * Non-recursive schema descendant lookup for editor API generics.
+ *
+ * @internal
+ */
 export type SchemaDescendantInValue<V extends readonly unknown[]> =
   SchemaIsAny<V> extends true
     ? never
@@ -1627,7 +1651,11 @@ export type SchemaDescendantInValue<V extends readonly unknown[]> =
         : never
       : never;
 
-/** @internal Type-only schema forwarding for extension slots. */
+/**
+ * Type-only schema forwarding for extension slots.
+ *
+ * @internal
+ */
 export interface EditorSchemaExtensionProvider<
   TSchema extends EditorSchemaExtension = EditorSchemaExtension,
 > {
@@ -1649,9 +1677,7 @@ type SchemaDeclarationOf<TInput> = TInput extends readonly unknown[]
       : never;
 
 type SchemaUnionToIntersection<TValue> = (
-  TValue extends unknown
-    ? (value: TValue) => void
-    : never
+  TValue extends unknown ? (value: TValue) => void : never
 ) extends (value: infer TIntersection) => void
   ? TIntersection
   : never;

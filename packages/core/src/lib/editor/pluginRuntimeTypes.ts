@@ -70,13 +70,13 @@ import type {
   TransactionSpec,
   Value,
 } from '@platejs/plite';
-import type { UnionToIntersection } from '@udecode/utils';
 import type {
   EditorGenericMethod,
   EditorSchemaSourceProvider,
   EditorExtensionDependencyReferenceFor,
   InternalEditorExtensionInstalledCapabilitiesOf,
 } from '@platejs/plite/internal';
+import type { UnionToIntersection } from '@udecode/utils';
 
 import type { AnyBasePlugin } from '../plugin/BasePlugin';
 import type {
@@ -100,13 +100,13 @@ import type {
   InferPluginMarkValue,
   InferPluginWritablePropertyEntries,
 } from '../plugin/pluginSchemaModel.internal';
+import type { CorePluginDefinition } from '../plugins/getCorePlugins';
 import type {
   CoreEditorApi,
   CoreEditorRead,
   CoreEditorTransaction,
   CoreEditorUpdate,
 } from './coreEditorCapabilityDefinition.internal';
-import type { CorePluginDefinition } from '../plugins/getCorePlugins';
 
 export type BasePluginInput = AnyBasePlugin | AnyBasePluginDefinition;
 
@@ -1018,18 +1018,19 @@ type SchemaPropertyRecord<TProperty> = Readonly<
       TKey
     >;
   } & {
-    [TKey in Exclude<
-      ExactSchemaPropertyKey<TProperty>,
-      RequiredSchemaPropertyKey<TProperty>
-    >]?: SchemaPropertyValueFor<TProperty, TKey>;
+    [
+      TKey in Exclude<
+        ExactSchemaPropertyKey<TProperty>,
+        RequiredSchemaPropertyKey<TProperty>
+      >
+    ]?: SchemaPropertyValueFor<TProperty, TKey>;
   }
 >;
 
 type RequiredDescriptorKey<TProperties> = {
-  [TKey in Extract<
-    keyof TProperties,
-    string
-  >]: TProperties[TKey] extends Readonly<{
+  [
+    TKey in Extract<keyof TProperties, string>
+  ]: TProperties[TKey] extends Readonly<{
     required: true;
   }>
     ? TKey
@@ -1048,10 +1049,12 @@ type SchemaDescriptorRecord<TProperties> =
             TProperties[TKey]
           >;
         } & {
-          [TKey in Exclude<
-            Extract<keyof TProperties, string>,
-            RequiredDescriptorKey<TProperties>
-          >]?: PropertyValueOf<TProperties[TKey]>;
+          [
+            TKey in Exclude<
+              Extract<keyof TProperties, string>,
+              RequiredDescriptorKey<TProperties>
+            >
+          ]?: PropertyValueOf<TProperties[TKey]>;
         }
       >
     : Readonly<Record<never, never>>;
@@ -1182,14 +1185,20 @@ type PlateSchemaExtension<D> = EditorSchemaExtension<
 
 type PlateDependencySchemaProviders<TDependencies extends readonly unknown[]> =
   {
-    readonly [TIndex in keyof TDependencies]: TDependencies[TIndex] extends EditorSchemaExtensionProvider<
+    readonly [
+      TIndex in keyof TDependencies
+    ]: TDependencies[TIndex] extends EditorSchemaExtensionProvider<
       infer TSchema
     >
       ? EditorSchemaExtensionProvider<TSchema>
       : never;
   };
 
-/** @internal Complete installed schema carried by one concrete descriptor. */
+/**
+ * Complete installed schema carried by one concrete descriptor.
+ *
+ * @internal
+ */
 export type InternalPlateSchemaExtensionForPlugin<
   P extends AnyBasePluginDefinition,
 > = SchemaExtensionsOf<
@@ -1207,7 +1216,11 @@ export type PlateSchemaSource<P> = PlateSchemaSourceForInstalledDefinitions<
   InstalledPluginDefinition<P>
 >;
 
-/** @internal Property-only projection used by the offline declaration emitter. */
+/**
+ * Property-only projection used by the offline declaration emitter.
+ *
+ * @internal
+ */
 export type InternalEditorDefinitionElementProperties<
   TPlugins extends readonly unknown[],
   TName extends string,
@@ -1229,7 +1242,11 @@ export type InternalEditorDefinitionElementProperties<
     : Readonly<Record<never, never>>
   : Readonly<Record<never, never>>;
 
-/** @internal Property types declared by one plugin, independent of runtime targets. */
+/**
+ * Property types declared by one plugin, independent of runtime targets.
+ *
+ * @internal
+ */
 type ExplicitEditorDefinitionPlugin<
   TPlugins extends readonly unknown[],
   TName extends string,
@@ -1277,7 +1294,11 @@ export type InternalEditorDefinitionOwnedElementProperties<
     : Readonly<Record<never, never>>
   : Readonly<Record<never, never>>;
 
-/** @internal Text-property projection used by the offline declaration emitter. */
+/**
+ * Text-property projection used by the offline declaration emitter.
+ *
+ * @internal
+ */
 export type InternalEditorDefinitionTextProperties<
   TPlugins extends readonly unknown[],
 > = SchemaTextProperties<
@@ -1344,7 +1365,11 @@ type EditorDefinitionMutationsFromDefinitions<TDefinitions> = Materialize<
   >
 >;
 
-/** @internal Descriptor-local mutation types for an authored raw editor kit. */
+/**
+ * Descriptor-local mutation types for an authored raw editor kit.
+ *
+ * @internal
+ */
 export type InternalEditorDefinitionMutations<
   TPlugins extends readonly unknown[],
   TDefinitions = MergeInstalledPluginDefinitions<
@@ -1383,14 +1408,22 @@ type RawElementPluginGuard<TPlugin> = [
   ? never
   : unknown;
 
-/** @internal Lazy installed-schema witness for compact editor projections. */
+/**
+ * Lazy installed-schema witness for compact editor projections.
+ *
+ * @internal
+ */
 export interface InternalInstalledSchemaDefinitionsProvider<D> {
   readonly definitions: () => D;
 }
 
 declare const editorApplicationSchemaProvider: unique symbol;
 
-/** @internal Application schema policy needs generated mutations for exact generic commands. */
+/**
+ * Application schema policy needs generated mutations for exact generic commands.
+ *
+ * @internal
+ */
 export interface InternalEditorApplicationSchemaProvider {
   readonly [editorApplicationSchemaProvider]: true;
 }
@@ -1406,14 +1439,22 @@ type ApplicationSchemaMemberHasPolicy<TSchema> = TSchema extends undefined
 type HasApplicationSchemaPolicy<TSchema> =
   true extends ApplicationSchemaMemberHasPolicy<TSchema> ? true : false;
 
-/** @internal Keep raw generic commands conservative when application policy can rewrite them. */
+/**
+ * Keep raw generic commands conservative when application policy can rewrite them.
+ *
+ * @internal
+ */
 export type InternalInstalledSchemaMutationProvider<D, TSchema> =
   InternalInstalledSchemaDefinitionsProvider<D> &
     (HasApplicationSchemaPolicy<TSchema> extends true
       ? InternalEditorApplicationSchemaProvider
       : {});
 
-/** @internal Descriptor-bound mutation projection for raw and generated kits. */
+/**
+ * Descriptor-bound mutation projection for raw and generated kits.
+ *
+ * @internal
+ */
 export interface InternalEditorMutationProvider<TMutations> {
   readonly mutations: () => TMutations;
 }
@@ -2065,10 +2106,9 @@ type PluginForbiddenWritablePropertyKey<D> = PluginAliasedLocalPropertyKey<D>;
 type InvalidPluginWritablePropertyKey<D, TProps> =
   | Extract<PluginForbiddenWritablePropertyKey<D>, keyof TProps>
   | {
-      [TKey in Extract<
-        PluginExactWritablePropertyKey<D>,
-        keyof TProps
-      >]: TProps[TKey] extends PluginWritablePropertyPatchValue<D, TKey>
+      [
+        TKey in Extract<PluginExactWritablePropertyKey<D>, keyof TProps>
+      ]: TProps[TKey] extends PluginWritablePropertyPatchValue<D, TKey>
         ? never
         : TKey;
     }[Extract<PluginExactWritablePropertyKey<D>, keyof TProps>];
@@ -2111,10 +2151,9 @@ type ValidatePluginWritablePropertyPatch<D, TProps> = [
   : never;
 
 type PluginWritablePropertyPatch<D> = {
-  [TKey in PluginExactWritablePropertyKey<D>]?: PluginWritablePropertyPatchValue<
-    D,
-    TKey
-  >;
+  [
+    TKey in PluginExactWritablePropertyKey<D>
+  ]?: PluginWritablePropertyPatchValue<D, TKey>;
 };
 
 type PluginForbiddenWritablePropertyPatch<D> = {
@@ -2562,7 +2601,11 @@ export type PlatePluginExtensionEditor<P extends AnyBasePluginDefinition> =
     InstalledRuntimePluginDefinitions<P>
   >;
 
-/** @internal Exact document value compiled from an installed Plate graph. */
+/**
+ * Exact document value compiled from an installed Plate graph.
+ *
+ * @internal
+ */
 export type InternalPlateValueWithInstalledDefinitions<D> =
   true extends IsBroadPluginDefinition<InstalledSchemaDefinitionsOf<D>>
     ? Value
@@ -2572,7 +2615,11 @@ export type InternalPlateValueWithInstalledDefinitions<D> =
         ]
       >;
 
-/** @internal Exact element vocabulary compiled from an installed Plate graph. */
+/**
+ * Exact element vocabulary compiled from an installed Plate graph.
+ *
+ * @internal
+ */
 export type InternalPlateElementWithInstalledDefinitions<D> =
   true extends IsBroadPluginDefinition<InstalledSchemaDefinitionsOf<D>>
     ? Element
@@ -2585,7 +2632,11 @@ export type InternalPlateElementWithInstalledDefinitions<D> =
         Element
       >;
 
-/** @internal Exact text vocabulary compiled from an installed Plate graph. */
+/**
+ * Exact text vocabulary compiled from an installed Plate graph.
+ *
+ * @internal
+ */
 export type InternalPlateTextWithInstalledDefinitions<D> =
   true extends IsBroadPluginDefinition<InstalledSchemaDefinitionsOf<D>>
     ? import('@platejs/plite').Text
@@ -2666,7 +2717,11 @@ export type PlatePluginOwnUpdate<P extends AnyBasePluginDefinition> =
       readonly [PlateOwnInstalledExtension<P>]
     >['update'];
 
-/** @internal Editor projection for definitions already lowered by `InferPlugins`. */
+/**
+ * Editor projection for definitions already lowered by `InferPlugins`.
+ *
+ * @internal
+ */
 export type InternalPliteEditorWithInstalledPlateDefinitions<
   V extends Value,
   D,

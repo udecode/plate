@@ -10,16 +10,17 @@ import {
 import type { Descendant } from '@platejs/plite';
 import type { Node as UnistNode } from 'unist';
 
-import { buildSlateNode } from '../deserializer/convertNodesDeserialize';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
-import { convertNodesDeserialize } from '../deserializer/convertNodesDeserialize';
-import { convertTextsDeserialize } from '../deserializer/convertTextsDeserialize';
 import {
-  readPlainMarkdownInlineContent,
-  serializeUnknownMdxNode,
-  toMarkdownCaptionContent,
-} from './markdownDocument';
+  buildSlateNode,
+  convertNodesDeserialize,
+} from '../deserializer/convertNodesDeserialize';
+import { convertTextsDeserialize } from '../deserializer/convertTextsDeserialize';
 import type { MdRootContent } from '../mdast';
+import {
+  parseAttributes,
+  propsToAttributes,
+} from '../rules/utils/parseAttributes';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import {
   isMdFlowContent,
@@ -33,9 +34,10 @@ import type {
   SerializeMdContext,
 } from '../types';
 import {
-  parseAttributes,
-  propsToAttributes,
-} from '../rules/utils/parseAttributes';
+  readPlainMarkdownInlineContent,
+  serializeUnknownMdxNode,
+  toMarkdownCaptionContent,
+} from './markdownDocument';
 
 type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
   bivarianceHack(...args: TArgs): TResult;
@@ -272,16 +274,15 @@ export const compileMarkdownCodecs = <E extends BaseEditor>(
   if (cached) return cached;
 
   const contributions = getPlateNodeCodecContributions(editor, 'text/markdown')
-    .map(
-      (contribution): CompiledMarkdownNodeCodec =>
-        Object.freeze({
-          codec: validateCodec(contribution.owner, contribution.declaration),
-          owner: contribution.owner,
-          schema: contribution.schema,
-          targetKey: contribution.targetKey,
-          targetPlugin: contribution.targetPlugin,
-          targetType: contribution.targetType,
-        })
+    .map((contribution): CompiledMarkdownNodeCodec =>
+      Object.freeze({
+        codec: validateCodec(contribution.owner, contribution.declaration),
+        owner: contribution.owner,
+        schema: contribution.schema,
+        targetKey: contribution.targetKey,
+        targetPlugin: contribution.targetPlugin,
+        targetType: contribution.targetType,
+      })
     )
     .sort(compareCodecs);
   const decodeBySource = new Map<string, CompiledMarkdownNodeCodec[]>();

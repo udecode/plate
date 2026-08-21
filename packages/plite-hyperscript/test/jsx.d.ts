@@ -33,7 +33,7 @@ export declare const jsx: <
   } & {})[S]
 >;
 declare global {
-  // biome-ignore lint/style/noNamespace: JSX ambient declarations require a namespace.
+  // JSX ambient declarations require a namespace.
   namespace JSX {
     interface IntrinsicElements {
       [elemName: string]: any;

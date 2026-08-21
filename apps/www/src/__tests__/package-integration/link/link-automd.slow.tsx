@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 
-import { LinkKit } from '@/registry/components/editor/link';
 import { AutoformatKit } from '@/registry/components/editor/autoformat';
+import { LinkKit } from '@/registry/components/editor/link';
 
 jsxt;
 
@@ -25,9 +25,7 @@ const createEditor = (value: any) =>
   } as any);
 
 const insertText = (
-  editor:
-    | ReturnType<typeof createPlainEditor>
-    | ReturnType<typeof createEditor>,
+  editor: ReturnType<typeof createPlainEditor>,
   text: string
 ) => {
   editor.update.text.insert(text);

@@ -1,4 +1,5 @@
 import type { RootKey } from '@platejs/plite';
+
 import {
   type Editor as RuntimeEditor,
   withEditorUpdateRootScope,

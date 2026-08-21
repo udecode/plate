@@ -4,7 +4,6 @@ import {
   defineExtension,
 } from '../../../packages/plite/src/index';
 import { getExtensionRegistry } from '../../../packages/plite/src/internal';
-
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>

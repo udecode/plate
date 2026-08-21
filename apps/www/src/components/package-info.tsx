@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-
 import Link from 'next/link';
+import React from 'react';
 
 import { Separator } from '@/components/ui/separator';
 import { usePackageInfo } from '@/hooks/use-package-info';
@@ -11,7 +10,7 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
   const [packageInfo] = usePackageInfo();
 
   return (
-    <div className="not-first:mt-12 flex flex-col flex-nowrap items-stretch justify-start md:flex-row md:gap-16">
+    <div className="flex flex-col flex-nowrap items-stretch justify-start not-first:mt-12 md:flex-row md:gap-16">
       <div className="md:flex-1">{children}</div>
 
       <Separator className="mb-4 md:hidden" />

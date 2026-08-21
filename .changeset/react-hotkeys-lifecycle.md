@@ -1,5 +1,5 @@
 ---
-"@udecode/react-hotkeys": major
+'@udecode/react-hotkeys': major
 ---
 
 Require React and React DOM 19.2 or newer.

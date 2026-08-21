@@ -57,10 +57,10 @@ Constraints:
 - A packet that breaks selection, input ordering, IME, copy, paste, undo,
   focus, cursor placement, or follow-up typing is `checks_failed` or `discard`,
   not `keep`.
-- Perf/pagination/virtualization optimization uses `slate-ar` perf mode.
+- Performance, pagination, and virtualization benchmarking uses `benchmark`.
 - Broad external discovery routes to `plite-research`.
 - Architecture/API redesign routes to `plite-plan`.
-- Concrete correctness failures or missing oracles route to `plite-patch`.
+- Concrete correctness failures or missing oracles route to `patch`.
 - Do not create branches, commits, pushes, PRs, or review branches unless the
   user explicitly asks.
 
@@ -95,14 +95,13 @@ Mode matrix:
 | status / dashboard | pending | slate-ar | Read-only AR state, operator checklist, and dashboard/export decision recorded. |
 | continue / resume | pending | slate-ar | Existing session resumed or stale/missing session routed. |
 | next | pending | slate-ar | Exactly one safe next step chosen and result recorded. |
-| gate | pending | slate-ar | Existing command repeated/logged; repeated valid failure routes to `plite-patch`. |
-| stabilize | pending | slate-ar + plite-patch | Behavior surface narrowed, oracle/gate/fix loop recorded, perf blocked until green. |
+| gate | pending | slate-ar | Existing command repeated/logged; repeated valid failure routes to `patch`. |
+| stabilize | pending | slate-ar + patch | Behavior surface narrowed, oracle/gate/fix loop recorded, Benchmark blocked until green. |
 | quality | pending | slate-ar | Accepted checklist slug executed or broad discovery routed to `plite-research`. |
 | recipe | pending | slate-ar | Read-only recipe/setup-plan result recorded, or packet start explicitly accepted. |
-| perfect | pending | slate-ar | Status, research/gap, behavior, oracle, perf, and final no-regression rows closed. |
-| perf | pending | slate-ar perf | Routed to `slate-ar` perf mode with target/correctness contract. |
+| perfect | pending | slate-ar | Status, research/gap, behavior, oracle, Benchmark handoff when applicable, and final no-regression rows closed. |
 | finalize preview | pending | slate-ar | Preview-only finalization/current-tree readiness recorded; no branches. |
-| ship readiness | pending | slate-ar + P2 autoreview | Review unit, gates, timing rows, P2 autoreview, and approval boundary recorded. |
+| ship readiness | pending | slate-ar + P1 autoreview | Review unit, gates, timing rows, P1 autoreview, and approval boundary recorded. |
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -133,16 +132,16 @@ Work Checklist:
       state could be stale.
 - [ ] Existing gates are repeated only when the command exists or is obvious.
 - [ ] Missing oracles and repeated correctness failures are routed to
-      `plite-patch` or `tdd`, not spun in AR forever.
+      `patch` or `tdd`, not spun in AR forever.
 - [ ] Quality-gap execution starts from an accepted checklist; broad discovery
       is routed to `plite-research`.
 - [ ] Recipe mode stays read-only unless packet execution was explicitly
       requested.
-- [ ] Perf work is routed to `slate-ar` perf mode and has correctness proof before a
-      keep call.
+- [ ] Performance work is routed to `benchmark` and has correctness proof before
+      a keep call.
 - [ ] Finalization is preview-only unless review branches are explicitly
       requested in the current turn.
-- [ ] Ship readiness records review unit, slow steps, gates, P2 autoreview, and
+- [ ] Ship readiness records review unit, slow steps, gates, P1 autoreview, and
       mutation approval boundary.
 - [ ] Every packet has a keep/revert/quarantine/checks-failed decision with
       evidence.
@@ -155,16 +154,16 @@ Completion Gates:
 | Named verification threshold | pending | Run or record the proof named in this plan | pending |
 | AR state/status proof | pending | Run read-only state/operator-checklist commands or N/A | pending |
 | Gate repeatability proof | pending | Run focused gate command(s), log pass/fail, or route failure | pending |
-| Behavior correctness proof | pending | Record native/editor behavior proof or `plite-patch` route | pending |
+| Behavior correctness proof | pending | Record native/editor behavior proof or `patch` route | pending |
 | Quality-gap proof | pending | Run quality-gap commands for accepted checklist or N/A | pending |
 | Recipe/setup proof | pending | Record read-only recipe/setup-plan result or N/A | pending |
-| Perf routing proof | pending | Route to `slate-ar` perf mode with target/correctness contract or N/A | pending |
-| Finalization/readiness proof | pending | Run preview/readiness/P2 autoreview proof or N/A | pending |
+| Benchmark routing proof | pending | Route performance work to `benchmark` with scope and correctness contract or N/A | pending |
+| Finalization/readiness proof | pending | Run preview/readiness/P1 autoreview proof or N/A | pending |
 | Packet decision ledger | pending | Record keep/revert/quarantine/checks-failed rows | pending |
 | Workspace authority proof | pending | Record cwd/tool for each command | pending |
 | Skill/rule sync | pending | Run `pnpm install` when `.agents/rules/**` changed, otherwise N/A | pending |
 | Agent-native review for agent/tooling changes | pending | Load `agent-native-reviewer` and close accepted findings, or N/A | pending |
-| P2 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P2`, and close accepted findings; use P3 only when explicitly requested, or N/A | pending |
+| P1 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P1`, and close accepted findings; use P2 or P3 only when explicitly requested, or N/A | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish current loop cleanly; otherwise N/A | pending |
 | Final handoff contract | pending | Fill final handoff rows from current evidence | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
@@ -234,7 +233,7 @@ Final handoff contract:
 - Mode and surface: pending
 - Target cwd/control cwd: pending
 - AR state/dashboard: pending
-- Packets/gates/quality/perf/readiness actions: pending
+- Packets/gates/quality/Benchmark/readiness actions: pending
 - Metrics baseline/latest/best: pending
 - Keep/revert/quarantine decisions: pending
 - Changed list: pending

@@ -1,108 +1,105 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import { ContentSlice, defineExtension, editorReads } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { ContentSlice, defineExtension, editorReads } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 describe('table clipboard', () => {
   jsxt;
 
   describe('when copying cells 11-21', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('copies a table 2x1 with 11-21 cells (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  11
-                  <anchor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  21
-                  <focus />
-                </hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'copies a table 2x1 with 11-21 cells (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <anchor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    21
+                    <focus />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      const fragment = editor.read.slice.export().content;
+        const fragment = editor.read.slice.export().content;
 
-      expect(fragment).toMatchObject([
-        editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0],
-      ]);
-    });
+        expect(fragment).toMatchObject([
+          editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0],
+        ]);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/63
   describe('when copying a single cell with 2 blocks', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('copies only the 2 blocks (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const blocks = (
-        <fragment>
-          <hp>
-            <anchor />
-            11
-          </hp>
-          <hp>
-            12
-            <focus />
-          </hp>
-        </fragment>
-      );
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'copies only the 2 blocks (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const blocks = (
+          <fragment>
+            <hp>
+              <anchor />
+              11
+            </hp>
+            <hp>
+              12
+              <focus />
+            </hp>
+          </fragment>
+        );
 
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>{blocks}</htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>{blocks}</htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      const fragment = editor.read.slice.export().content;
+        const fragment = editor.read.slice.export().content;
 
-      expect(fragment).toMatchObject(blocks);
-    });
+        expect(fragment).toMatchObject(blocks);
+      }
+    );
   });
 
   it('preserves a table inside an ordinary document range', () => {
@@ -144,73 +141,71 @@ describe('table clipboard', () => {
   jsxt;
 
   describe('typing over a multi-cell selection', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('clears the selected cells and inserts into the focus cell (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <anchor />a
-                </hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  c<focus />
-                </hp>
-              </htd>
-              <htd>
-                <hp>d</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'clears the selected cells and inserts into the focus cell (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />a
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    c<focus />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>d</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>e</hp>
-              </htd>
-              <htd>
-                <hp>d</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>e</hp>
+                </htd>
+                <htd>
+                  <hp>d</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.text.insert('e');
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        editor.update.text.insert('e');
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   {

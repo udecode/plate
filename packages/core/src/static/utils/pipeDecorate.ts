@@ -1,10 +1,10 @@
 import type { NodeEntry, Range } from '@platejs/plite';
 
-import type { BaseEditor, EditableProps } from '../../lib';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import type { BaseEditor, EditableProps } from '../../lib';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 
 /**
@@ -20,8 +20,9 @@ export const pipeDecorate = (
   if (
     getPlateRuntime(editor).pluginCache.decorate.length === 0 &&
     !decorateProp
-  )
+  ) {
     return;
+  }
 
   const pluginDecorators = getPlateRuntime(editor).pluginCache.decorate.flatMap(
     (name) => {

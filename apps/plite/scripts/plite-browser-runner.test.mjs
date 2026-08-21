@@ -6,7 +6,6 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { stopProcessTree } from '../../../tooling/scripts/run-bounded-process.mjs';
-
 import {
   applyWorkerCap,
   assertBrowserNodeVersion,
@@ -504,7 +503,9 @@ test('hard-caps every browser worker input at eight', async () => {
     runProject: async () => {
       active++;
       maximumActive = Math.max(maximumActive, active);
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
       active--;
 
       return 0;
@@ -552,7 +553,9 @@ test('project pool executes every project exactly once', async () => {
     runProject: async (project) => {
       active++;
       maximumActive = Math.max(maximumActive, active);
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1);
+      });
       completed.push(project);
       active--;
 
@@ -591,20 +594,28 @@ test('project waves release one engine generation before starting the next', asy
     runProject: (project) => {
       started.push(project);
 
-      return new Promise((resolve) => completions.set(project, resolve));
+      return new Promise((resolve) => {
+        completions.set(project, resolve);
+      });
     },
     stopSiblings: () => {},
   });
 
-  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => {
+    setImmediate(resolve);
+  });
   assert.deepEqual(started, ['chromium', 'firefox']);
 
   completions.get('chromium')(0);
-  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => {
+    setImmediate(resolve);
+  });
   assert.deepEqual(started, ['chromium', 'firefox']);
 
   completions.get('firefox')(0);
-  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => {
+    setImmediate(resolve);
+  });
   assert.deepEqual(started, ['chromium', 'firefox', 'mobile', 'webkit']);
 
   completions.get('mobile')(0);
@@ -612,43 +623,49 @@ test('project waves release one engine generation before starting the next', asy
   assert.equal(await run, 0);
 });
 
-test('project pool fail-fast terminates a live sibling process', {
-  timeout: 5000,
-}, async () => {
-  let sibling;
+test(
+  'project pool fail-fast terminates a live sibling process',
+  {
+    timeout: 5000,
+  },
+  async () => {
+    let sibling;
 
-  try {
-    const status = await runProjectPool({
-      concurrency: 2,
-      projects: ['chromium', 'firefox', 'mobile'],
-      runProject: async (project) => {
-        if (project === 'chromium') {
-          await new Promise((resolve) => setTimeout(resolve, 10));
-          return 9;
-        }
-
-        sibling = spawn(
-          process.execPath,
-          ['--eval', 'setInterval(() => {}, 1000)'],
-          {
-            detached: process.platform !== 'win32',
-            stdio: 'ignore',
+    try {
+      const status = await runProjectPool({
+        concurrency: 2,
+        projects: ['chromium', 'firefox', 'mobile'],
+        runProject: async (project) => {
+          if (project === 'chromium') {
+            await new Promise((resolve) => {
+              setTimeout(resolve, 10);
+            });
+            return 9;
           }
-        );
 
-        return new Promise((resolve) => {
-          sibling.once('close', () => resolve(143));
-        });
-      },
-      stopSiblings: () => stopProcessTree(sibling),
-    });
+          sibling = spawn(
+            process.execPath,
+            ['--eval', 'setInterval(() => {}, 1000)'],
+            {
+              detached: process.platform !== 'win32',
+              stdio: 'ignore',
+            }
+          );
 
-    assert.equal(status, 9);
-    assert.ok(sibling.exitCode !== null || sibling.signalCode !== null);
-  } finally {
-    await stopProcessTree(sibling);
+          return new Promise((resolve) => {
+            sibling.once('close', () => resolve(143));
+          });
+        },
+        stopSiblings: () => stopProcessTree(sibling),
+      });
+
+      assert.equal(status, 9);
+      assert.ok(sibling.exitCode !== null || sibling.signalCode !== null);
+    } finally {
+      await stopProcessTree(sibling);
+    }
   }
-});
+);
 
 test('project pool stops siblings before propagating a project rejection', async () => {
   const expected = new Error('discovery exploded');
@@ -996,10 +1013,10 @@ test('requires serial Playwright files to declare the serial workload policy', (
       } else if (
         entry.name.endsWith('.ts') &&
         fs
-          .readFileSync(entryPath, 'utf8')
+          .readFileSync(entryPath, 'utf-8')
           .includes("test.describe.configure({ mode: 'serial' })")
       ) {
-        const source = fs.readFileSync(entryPath, 'utf8');
+        const source = fs.readFileSync(entryPath, 'utf-8');
 
         if (
           !source.includes("type: 'plite-browser-profile'") ||
@@ -1021,15 +1038,15 @@ test('requires serial Playwright files to declare the serial workload policy', (
 test('keeps raw and managed Playwright proof retry-free and worker-bounded', () => {
   const configSource = fs.readFileSync(
     path.join(appRoot, 'playwright.config.ts'),
-    'utf8'
+    'utf-8'
   );
   const runnerSource = fs.readFileSync(
     path.join(appRoot, 'scripts/run-plite-browser.mjs'),
-    'utf8'
+    'utf-8'
   );
   const workflowSource = fs.readFileSync(
     path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
 
   assert.deepEqual(assertRetryFreeBrowserArgs(['--project=chromium']), [
@@ -1059,15 +1076,15 @@ test('keeps raw and managed Playwright proof retry-free and worker-bounded', () 
 test('bounds discovery and local build setup subprocesses', () => {
   const runnerSource = fs.readFileSync(
     path.join(appRoot, 'scripts/run-plite-browser.mjs'),
-    'utf8'
+    'utf-8'
   );
   const appBuildSource = fs.readFileSync(
     path.join(appRoot, 'scripts/build-app-if-stale.mjs'),
-    'utf8'
+    'utf-8'
   );
   const browserBuildSource = fs.readFileSync(
     path.join(appRoot, 'scripts/build-browser-if-stale.mjs'),
-    'utf8'
+    'utf-8'
   );
 
   assert.equal(resolveTimeoutMs(undefined, 60_000, 'timeout'), 60_000);
@@ -1137,11 +1154,11 @@ test('bounds discovery and local build setup subprocesses', () => {
 test('parallel local matrix isolates artifacts and keeps a serial override', () => {
   const configSource = fs.readFileSync(
     path.join(appRoot, 'playwright.config.ts'),
-    'utf8'
+    'utf-8'
   );
   const runnerSource = fs.readFileSync(
     path.join(appRoot, 'scripts/run-plite-browser.mjs'),
-    'utf8'
+    'utf-8'
   );
 
   assert.match(runnerSource, /PLITE_BROWSER_PROJECT_CONCURRENCY/u);
@@ -1153,10 +1170,10 @@ test('parallel local matrix isolates artifacts and keeps a serial override', () 
 test('fans CI proof into independent project jobs with one build owner', () => {
   const workflow = fs.readFileSync(
     path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
   const { dependencies } = JSON.parse(
-    fs.readFileSync(path.join(appRoot, 'package.json'), 'utf8')
+    fs.readFileSync(path.join(appRoot, 'package.json'), 'utf-8')
   );
   const playwrightVersion = dependencies['@playwright/test'];
 
@@ -1471,25 +1488,23 @@ test('emits machine-readable coverage, timing, profiles, and failure phases', ()
   assert.equal(summary.unitTimeoutFloorMs, 1000);
 
   const failed = createBrowserRunSummary({
-    ...{
-      completedUnits: [],
-      durationMs: 5,
-      failure: { phase: 'browser-launch' },
-      job: { index: 1, total: 1 },
-      maxTestsPerProcess: 8,
-      plan: {
-        excludedTests: [],
-        planFingerprint: 'plan',
-        tests: unit.testIds.map((id) => ({ id })),
-      },
-      project: 'chromium',
-      proofFingerprint: 'proof',
-      scope: 'scope',
-      selectedUnits: [unit],
-      status: 'failed',
-      unitTimeoutFloorMs: 1000,
-      unitWorkers: 2,
+    completedUnits: [],
+    durationMs: 5,
+    failure: { phase: 'browser-launch' },
+    job: { index: 1, total: 1 },
+    maxTestsPerProcess: 8,
+    plan: {
+      excludedTests: [],
+      planFingerprint: 'plan',
+      tests: unit.testIds.map((id) => ({ id })),
     },
+    project: 'chromium',
+    proofFingerprint: 'proof',
+    scope: 'scope',
+    selectedUnits: [unit],
+    status: 'failed',
+    unitTimeoutFloorMs: 1000,
+    unitWorkers: 2,
   });
 
   assert.equal(failed.failurePhase, 'browser-launch');

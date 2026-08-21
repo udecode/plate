@@ -1,9 +1,8 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { property } from '@platejs/plite';
-import React from 'react';
-
 import { render } from '@testing-library/react';
+import React from 'react';
 
 import { defineBasePlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';

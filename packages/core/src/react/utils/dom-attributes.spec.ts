@@ -1,5 +1,4 @@
 import type { DOMHandlerProp } from '../plugin/DOMHandlers';
-
 import { DOM_HANDLERS } from './dom-attributes';
 
 type ListedDOMHandler = (typeof DOM_HANDLERS)[number];

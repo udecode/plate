@@ -1,13 +1,14 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
+import type { Element } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import type { Element } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 describe('table navigation slow contracts', () => {
   jsxt;

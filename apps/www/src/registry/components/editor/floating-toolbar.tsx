@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -8,6 +8,16 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
+import {
+  type UseVirtualFloatingOptions,
+  flip,
+  getSelectionBoundingClientRect,
+  offset,
+  useVirtualFloating,
+} from '@platejs/floating';
+import { useComposedRef } from '@udecode/cn';
+import { useOnClickOutside } from '@udecode/react-utils';
+import { mergeProps } from '@udecode/utils';
 import {
   BoldIcon,
   Code2Icon,
@@ -25,28 +35,20 @@ import {
   useEventEditorValue,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
+
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { InlineEquationToolbarButton } from './equation-toolbar-button';
+import { linkPlugin } from './link';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MoreToolbarButton } from './more-toolbar-button';
 import { SuggestionToolbarButton } from './suggestion-toolbar-button';
 import { ToolbarGroup, Toolbar } from './toolbar';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
-import {
-  type UseVirtualFloatingOptions,
-  flip,
-  getSelectionBoundingClientRect,
-  offset,
-  useVirtualFloating,
-} from '@platejs/floating';
-import { AIChatPlugin } from '@platejs/ai/react';
-import { useComposedRef } from '@udecode/cn';
-import { useOnClickOutside } from '@udecode/react-utils';
-import { mergeProps } from '@udecode/utils';
-import { cn } from '@/lib/utils';
-import { linkPlugin } from './link';
 
 export function FloatingToolbarButtons() {
   const readOnly = useEditorReadOnly();

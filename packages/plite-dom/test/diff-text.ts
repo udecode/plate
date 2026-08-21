@@ -5,6 +5,7 @@ import {
   DocumentChange,
   type EditorDocumentValue,
 } from '@platejs/plite';
+
 import { mergeStringDiffs, normalizeStringDiff, type StringDiff } from '../src';
 import { EDITOR_TO_PENDING_DIFFS } from '../src/internal';
 import {

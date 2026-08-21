@@ -8,11 +8,11 @@ import type {
   Text,
 } from '@platejs/plite';
 import { ElementApi } from '@platejs/plite';
-import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { createDetachedTableContext, type TableContext } from './context';
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import { getColSpan, getRowSpan, setSpan } from './codec';
+import { createDetachedTableContext, type TableContext } from './context';
 import {
   compileTableGrid,
   getTableColumnSizes,
@@ -460,8 +460,6 @@ const firstTextPoint = (
 
       if (point) return point;
     }
-
-    return;
   };
 
   return visit(cell.children, [...cellPath]);

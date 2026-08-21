@@ -1,14 +1,12 @@
 import type { Element, Path, Text } from '@platejs/plite';
-
 import { isDefined } from '@udecode/utils';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-
 import type {
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
 } from '../../lib/plugin';
+import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 import { getCompiledPlateModelBinding } from './compilePlateModel';

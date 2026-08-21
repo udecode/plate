@@ -1,19 +1,3 @@
-import { CalloutElementDocx } from '@/registry/components/editor/callout-static';
-import {
-  CodeBlockElementDocx,
-  CodeLineElementDocx,
-  CodeSyntaxLeafDocx,
-} from '@/registry/components/editor/code-block-static';
-import {
-  ColumnElementDocx,
-  ColumnGroupElementDocx,
-} from '@/registry/components/editor/column-static';
-import {
-  EquationElementDocx,
-  InlineEquationElementDocx,
-} from '@/registry/components/editor/math-static';
-import { HeadingElementDocx } from '@/registry/components/editor/heading-static';
-import { TocElementDocx } from '@/registry/components/editor/toc-static';
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { BaseCalloutPlugin } from '@platejs/callout';
 import {
@@ -24,6 +8,23 @@ import {
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BaseTocPlugin } from '@platejs/toc';
+
+import { CalloutElementDocx } from '@/registry/components/editor/callout-static';
+import {
+  CodeBlockElementDocx,
+  CodeLineElementDocx,
+  CodeSyntaxLeafDocx,
+} from '@/registry/components/editor/code-block-static';
+import {
+  ColumnElementDocx,
+  ColumnGroupElementDocx,
+} from '@/registry/components/editor/column-static';
+import { HeadingElementDocx } from '@/registry/components/editor/heading-static';
+import {
+  EquationElementDocx,
+  InlineEquationElementDocx,
+} from '@/registry/components/editor/math-static';
+import { TocElementDocx } from '@/registry/components/editor/toc-static';
 
 /**
  * Editor kit for DOCX export.

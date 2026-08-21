@@ -1,10 +1,7 @@
+import type { ClientRectObject } from '@floating-ui/core';
+import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
 import React from 'react';
 
-import type { ClientRectObject } from '@floating-ui/core';
-
-import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
-
-import { createVirtualElement, getDefaultBoundingClientRect } from './geometry';
 import {
   type UseFloatingOptions,
   type UseFloatingReturn,
@@ -12,14 +9,14 @@ import {
   autoUpdate,
   useFloating,
 } from './floating-ui';
+import { createVirtualElement, getDefaultBoundingClientRect } from './geometry';
 
 export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
   open?: boolean;
   getBoundingClientRect?: () => ClientRectObject;
 }
 
-export interface UseVirtualFloatingReturn
-  extends UseFloatingReturn<VirtualElement> {
+export interface UseVirtualFloatingReturn extends UseFloatingReturn<VirtualElement> {
   style: React.CSSProperties;
   virtualElementRef: React.MutableRefObject<VirtualElement>;
 }

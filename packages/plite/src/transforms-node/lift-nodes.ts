@@ -16,10 +16,10 @@ import type {
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
 import { deselect, select } from '../transforms-selection';
-import { moveNodes } from './move-nodes';
-import { removeNodes } from './remove-nodes';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
+import { moveNodes } from './move-nodes';
+import { removeNodes } from './remove-nodes';
 
 const getChildren = (editor: Editor, node: Ancestor) =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;

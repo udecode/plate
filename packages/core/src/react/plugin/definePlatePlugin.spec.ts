@@ -1,7 +1,7 @@
-import type { NodeComponent } from '../../lib';
 import { schema } from '@platejs/plite';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
+import type { NodeComponent } from '../../lib';
 import { createBaseEditor } from '../../lib';
 import { definePlatePlugin } from './definePlatePlugin';
 

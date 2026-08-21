@@ -13,7 +13,9 @@ const receipt = (
   platform: 'android-chrome' | 'ios-safari',
   scenario: (typeof PLITE_RAW_MOBILE_SCENARIOS)[number]
 ): PliteRawMobileReceipt => ({
-  artifacts: { video: { path: `${platform}-${scenario.id}.mp4`, sha256: hash } },
+  artifacts: {
+    video: { path: `${platform}-${scenario.id}.mp4`, sha256: hash },
+  },
   browser: {
     name: platform === 'android-chrome' ? 'Chrome' : 'Safari',
     version: '1',
@@ -49,9 +51,7 @@ const receipt = (
 });
 
 const completeBundle = () => ({
-  receipts: (
-    ['android-chrome', 'ios-safari'] as const
-  ).flatMap((platform) =>
+  receipts: (['android-chrome', 'ios-safari'] as const).flatMap((platform) =>
     PLITE_RAW_MOBILE_SCENARIOS.map((scenario) => receipt(platform, scenario))
   ),
   schemaVersion: 1 as const,
@@ -98,7 +98,9 @@ describe('raw mobile proof receipts', () => {
     expect(result.issues).toContain(
       'android-chrome/tap expected 0 semantic updates, got 9'
     );
-    expect(result.issues).toContain('Duplicate raw mobile receipt android-chrome/tap');
+    expect(result.issues).toContain(
+      'Duplicate raw mobile receipt android-chrome/tap'
+    );
     expect(result.issues).toContain(
       'Missing raw mobile receipt ios-safari/native-clipboard'
     );

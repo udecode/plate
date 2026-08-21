@@ -1,12 +1,12 @@
-import { ElementApi, property, schema } from '@platejs/plite';
-import { createBaseEditor, defineBasePlugin } from 'platejs';
 import { BaseCalloutPlugin } from '@platejs/callout';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@platejs/media';
+import { ElementApi, property, schema } from '@platejs/plite';
 import type { Root } from 'mdast';
+import { createBaseEditor, defineBasePlugin } from 'platejs';
 
-import { createTestEditor } from './createTestEditor';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import { remarkMdx } from '../../../../../../packages/markdown/src/lib/plugins';
+import { createTestEditor } from './createTestEditor';
 
 const inlineContent = schema.content.any(
   [schema.content.text(), schema.content.group('inline')],

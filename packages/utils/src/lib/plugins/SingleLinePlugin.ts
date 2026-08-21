@@ -34,7 +34,6 @@ export const SingleLinePlugin = defineBasePlugin(PLUGINS.singleLine, {
             at: [1],
             match: (_, path) => path.length === 1,
           });
-          return;
         }
       },
     },
@@ -57,7 +56,6 @@ export const SingleLinePlugin = defineBasePlugin(PLUGINS.singleLine, {
             if (filteredText.length > 0) {
               tx.text.insert(filteredText, { at: { offset: 0, path } });
             }
-            return;
           }
         }
       },

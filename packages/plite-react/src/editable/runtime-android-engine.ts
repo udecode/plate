@@ -1,6 +1,6 @@
+import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { useAndroidInputManager } from '../hooks/android-input-manager/use-android-input-manager';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { RuntimeSelectionChangeHandler } from './runtime-selection-engine';
 

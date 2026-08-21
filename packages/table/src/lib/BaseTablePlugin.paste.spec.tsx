@@ -7,13 +7,13 @@ import { type PlateEditorReference } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import type { Element, Value } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import type { TableElement } from './BaseTablePlugin';
 import { BaseYjsPlugin } from '@platejs/yjs';
 
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import type { TableElement } from './BaseTablePlugin';
 import { BaseTablePlugin } from './BaseTablePlugin';
 import { compileTableGrid } from './internal/grid';
 
@@ -154,43 +154,43 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(commits).toHaveLength(1);
   });
 
-  it.each([
-    'embedded metadata',
-    'fragment MIME',
-  ] as const)('consumes corrupt exact %s without using valid fallback payloads', (format) => {
-    const editor = createTarget();
-    const before = editor.read.value();
-    const data = new DataTransfer();
+  it.each(['embedded metadata', 'fragment MIME'] as const)(
+    'consumes corrupt exact %s without using valid fallback payloads',
+    (format) => {
+      const editor = createTarget();
+      const before = editor.read.value();
+      const data = new DataTransfer();
 
-    if (format === 'fragment MIME') {
-      data.setData('application/x-plite-fragment', 'not-valid-base64');
-      data.setData(
-        'text/html',
-        '<table><tbody><tr><td>html fallback</td></tr></tbody></table>'
+      if (format === 'fragment MIME') {
+        data.setData('application/x-plite-fragment', 'not-valid-base64');
+        data.setData(
+          'text/html',
+          '<table><tbody><tr><td>html fallback</td></tr></tbody></table>'
+        );
+      } else {
+        data.setData(
+          'text/html',
+          '<table data-plite-fragment="not-valid-base64" data-plite-fragment-format="x-plite-fragment"><tbody><tr><td>html fallback</td></tr></tbody></table>'
+        );
+      }
+      data.setData('text/plain', 'plain fallback');
+
+      const commits: unknown[] = [];
+      const unsubscribe = editor.subscribeCommit((commit) =>
+        commits.push(commit)
       );
-    } else {
-      data.setData(
-        'text/html',
-        '<table data-plite-fragment="not-valid-base64" data-plite-fragment-format="x-plite-fragment"><tbody><tr><td>html fallback</td></tr></tbody></table>'
-      );
+
+      expect(
+        editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
+      ).toBeGreaterThan(1);
+      expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
+      unsubscribe();
+
+      expect(editor.read.value()).toEqual(before);
+      expect(editor.read.history.undos()).toHaveLength(0);
+      expect(commits).toHaveLength(0);
     }
-    data.setData('text/plain', 'plain fallback');
-
-    const commits: unknown[] = [];
-    const unsubscribe = editor.subscribeCommit((commit) =>
-      commits.push(commit)
-    );
-
-    expect(
-      editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
-    ).toBeGreaterThan(1);
-    expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
-    unsubscribe();
-
-    expect(editor.read.value()).toEqual(before);
-    expect(editor.read.history.undos()).toHaveLength(0);
-    expect(commits).toHaveLength(0);
-  });
+  );
 
   it('keeps generic plain-text fallback for corrupt exact data at a caret', () => {
     const input = (

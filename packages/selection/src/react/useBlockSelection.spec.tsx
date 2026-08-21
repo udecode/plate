@@ -1,6 +1,6 @@
-import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 import type { NodeKey } from '@platejs/plite';
+import { renderHook } from '@testing-library/react';
 
 const useEditorMock = mock();
 const useElementContextMock = mock();

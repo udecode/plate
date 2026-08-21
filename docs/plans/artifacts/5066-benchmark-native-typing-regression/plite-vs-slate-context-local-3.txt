@@ -1,0 +1,506 @@
+{
+  "lane": "core-rich-text-operations-compare-local",
+  "currentRepo": "/Users/zbeyens/git/plate-2",
+  "legacyRepo": "/Users/zbeyens/git/slate",
+  "iterations": 3,
+  "config": {
+    "blockCount": 1000,
+    "navigationSteps": 200,
+    "selectionBlocks": 32,
+    "typeOps": 40
+  },
+  "current": {
+    "insertTextCollapsedMs": {
+      "samples": [
+        13.06,
+        11.22,
+        10.58
+      ],
+      "mean": 11.62,
+      "median": 11.22,
+      "p75": 13.06,
+      "p95": 13.06,
+      "p99": 13.06,
+      "min": 10.58,
+      "max": 13.06
+    },
+    "deleteBackwardMarkedTextMs": {
+      "samples": [
+        18.36,
+        15.34,
+        28.99
+      ],
+      "mean": 20.9,
+      "median": 18.36,
+      "p75": 28.99,
+      "p95": 28.99,
+      "p99": 28.99,
+      "min": 15.34,
+      "max": 28.99
+    },
+    "deleteExpandedRangeMs": {
+      "samples": [
+        3.61,
+        2.63,
+        2.64
+      ],
+      "mean": 2.96,
+      "median": 2.64,
+      "p75": 3.61,
+      "p95": 3.61,
+      "p99": 3.61,
+      "min": 2.63,
+      "max": 3.61
+    },
+    "insertFragmentMixedBlocksMs": {
+      "samples": [
+        12.57,
+        10.99,
+        11.3
+      ],
+      "mean": 11.62,
+      "median": 11.3,
+      "p75": 12.57,
+      "p95": 12.57,
+      "p99": 12.57,
+      "min": 10.99,
+      "max": 12.57
+    },
+    "insertNodesBatchMs": {
+      "samples": [
+        3.92,
+        3.97,
+        3.61
+      ],
+      "mean": 3.83,
+      "median": 3.92,
+      "p75": 3.97,
+      "p95": 3.97,
+      "p99": 3.97,
+      "min": 3.61,
+      "max": 3.97
+    },
+    "setNodesSelectedBlocksMs": {
+      "samples": [
+        9.6,
+        8.79,
+        8.8
+      ],
+      "mean": 9.06,
+      "median": 8.8,
+      "p75": 9.6,
+      "p95": 9.6,
+      "p99": 9.6,
+      "min": 8.79,
+      "max": 9.6
+    },
+    "moveNodesWindowMs": {
+      "samples": [
+        40.09,
+        38.4,
+        37.1
+      ],
+      "mean": 38.53,
+      "median": 38.4,
+      "p75": 40.09,
+      "p95": 40.09,
+      "p99": 40.09,
+      "min": 37.1,
+      "max": 40.09
+    },
+    "splitBlocksMs": {
+      "samples": [
+        36.55,
+        39.01,
+        35.9
+      ],
+      "mean": 37.15,
+      "median": 36.55,
+      "p75": 39.01,
+      "p95": 39.01,
+      "p99": 39.01,
+      "min": 35.9,
+      "max": 39.01
+    },
+    "removeNodesWindowMs": {
+      "samples": [
+        31.28,
+        27,
+        28.94
+      ],
+      "mean": 29.08,
+      "median": 28.94,
+      "p75": 31.28,
+      "p95": 31.28,
+      "p99": 31.28,
+      "min": 27,
+      "max": 31.28
+    },
+    "wrapUnwrapBlocksMs": {
+      "samples": [
+        33.28,
+        39.74,
+        28.97
+      ],
+      "mean": 34,
+      "median": 33.28,
+      "p75": 39.74,
+      "p95": 39.74,
+      "p99": 39.74,
+      "min": 28.97,
+      "max": 39.74
+    },
+    "positionsCharacterFullDocumentMs": {
+      "samples": [
+        29.65,
+        17.98,
+        16.85
+      ],
+      "mean": 21.49,
+      "median": 17.98,
+      "p75": 29.65,
+      "p95": 29.65,
+      "p99": 29.65,
+      "min": 16.85,
+      "max": 29.65
+    },
+    "nodesTextScanMs": {
+      "samples": [
+        1.6,
+        1.15,
+        1.14
+      ],
+      "mean": 1.3,
+      "median": 1.15,
+      "p75": 1.6,
+      "p95": 1.6,
+      "p99": 1.6,
+      "min": 1.14,
+      "max": 1.6
+    },
+    "beforeAfterWalkMs": {
+      "samples": [
+        0.66,
+        0.74,
+        0.71
+      ],
+      "mean": 0.7,
+      "median": 0.71,
+      "p75": 0.74,
+      "p95": 0.74,
+      "p99": 0.74,
+      "min": 0.66,
+      "max": 0.74
+    },
+    "unhangRangeMs": {
+      "samples": [
+        0.16,
+        0.14,
+        0.15
+      ],
+      "mean": 0.15,
+      "median": 0.15,
+      "p75": 0.16,
+      "p95": 0.16,
+      "p99": 0.16,
+      "min": 0.14,
+      "max": 0.16
+    },
+    "selectAllMs": {
+      "samples": [
+        0.19,
+        0.26,
+        0.19
+      ],
+      "mean": 0.22,
+      "median": 0.19,
+      "p75": 0.26,
+      "p95": 0.26,
+      "p99": 0.26,
+      "min": 0.19,
+      "max": 0.26
+    }
+  },
+  "legacy": {
+    "insertTextCollapsedMs": {
+      "samples": [
+        2.58,
+        2.35,
+        2.18
+      ],
+      "mean": 2.37,
+      "median": 2.35,
+      "p75": 2.58,
+      "p95": 2.58,
+      "p99": 2.58,
+      "min": 2.18,
+      "max": 2.58
+    },
+    "deleteBackwardMarkedTextMs": {
+      "samples": [
+        3.63,
+        3.19,
+        2.3
+      ],
+      "mean": 3.04,
+      "median": 3.19,
+      "p75": 3.63,
+      "p95": 3.63,
+      "p99": 3.63,
+      "min": 2.3,
+      "max": 3.63
+    },
+    "deleteExpandedRangeMs": {
+      "samples": [
+        1.44,
+        1.23,
+        1.52
+      ],
+      "mean": 1.4,
+      "median": 1.44,
+      "p75": 1.52,
+      "p95": 1.52,
+      "p99": 1.52,
+      "min": 1.23,
+      "max": 1.52
+    },
+    "insertFragmentMixedBlocksMs": {
+      "samples": [
+        0.27,
+        0.35,
+        0.3
+      ],
+      "mean": 0.31,
+      "median": 0.3,
+      "p75": 0.35,
+      "p95": 0.35,
+      "p99": 0.35,
+      "min": 0.27,
+      "max": 0.35
+    },
+    "insertNodesBatchMs": {
+      "samples": [
+        0.27,
+        1.47,
+        0.29
+      ],
+      "mean": 0.68,
+      "median": 0.29,
+      "p75": 1.47,
+      "p95": 1.47,
+      "p99": 1.47,
+      "min": 0.27,
+      "max": 1.47
+    },
+    "setNodesSelectedBlocksMs": {
+      "samples": [
+        0.4,
+        0.42,
+        0.38
+      ],
+      "mean": 0.4,
+      "median": 0.4,
+      "p75": 0.42,
+      "p95": 0.42,
+      "p99": 0.42,
+      "min": 0.38,
+      "max": 0.42
+    },
+    "moveNodesWindowMs": {
+      "samples": [
+        2.36,
+        1.52,
+        1.58
+      ],
+      "mean": 1.82,
+      "median": 1.58,
+      "p75": 2.36,
+      "p95": 2.36,
+      "p99": 2.36,
+      "min": 1.52,
+      "max": 2.36
+    },
+    "splitBlocksMs": {
+      "samples": [
+        1.3,
+        2.44,
+        1.06
+      ],
+      "mean": 1.6,
+      "median": 1.3,
+      "p75": 2.44,
+      "p95": 2.44,
+      "p99": 2.44,
+      "min": 1.06,
+      "max": 2.44
+    },
+    "removeNodesWindowMs": {
+      "samples": [
+        1.19,
+        1.15,
+        0.51
+      ],
+      "mean": 0.95,
+      "median": 1.15,
+      "p75": 1.19,
+      "p95": 1.19,
+      "p99": 1.19,
+      "min": 0.51,
+      "max": 1.19
+    },
+    "wrapUnwrapBlocksMs": {
+      "samples": [
+        6.94,
+        2.89,
+        2.63
+      ],
+      "mean": 4.15,
+      "median": 2.89,
+      "p75": 6.94,
+      "p95": 6.94,
+      "p99": 6.94,
+      "min": 2.63,
+      "max": 6.94
+    },
+    "positionsCharacterFullDocumentMs": {
+      "samples": [
+        40.39,
+        40.6,
+        40.1
+      ],
+      "mean": 40.37,
+      "median": 40.39,
+      "p75": 40.6,
+      "p95": 40.6,
+      "p99": 40.6,
+      "min": 40.1,
+      "max": 40.6
+    },
+    "nodesTextScanMs": {
+      "samples": [
+        1.28,
+        1.16,
+        1.02
+      ],
+      "mean": 1.15,
+      "median": 1.16,
+      "p75": 1.28,
+      "p95": 1.28,
+      "p99": 1.28,
+      "min": 1.02,
+      "max": 1.28
+    },
+    "beforeAfterWalkMs": {
+      "samples": [
+        2.13,
+        2.83,
+        2.12
+      ],
+      "mean": 2.36,
+      "median": 2.13,
+      "p75": 2.83,
+      "p95": 2.83,
+      "p99": 2.83,
+      "min": 2.12,
+      "max": 2.83
+    },
+    "unhangRangeMs": {
+      "samples": [
+        0.02,
+        0.01,
+        0.11
+      ],
+      "mean": 0.04,
+      "median": 0.02,
+      "p75": 0.11,
+      "p95": 0.11,
+      "p99": 0.11,
+      "min": 0.01,
+      "max": 0.11
+    },
+    "selectAllMs": {
+      "samples": [
+        0.01,
+        0.01,
+        0.02
+      ],
+      "mean": 0.02,
+      "median": 0.01,
+      "p75": 0.02,
+      "p95": 0.02,
+      "p99": 0.02,
+      "min": 0.01,
+      "max": 0.02
+    }
+  },
+  "deltaMeanMs": {
+    "beforeAfterWalkMs": -1.66,
+    "deleteBackwardMarkedTextMs": 17.86,
+    "deleteExpandedRangeMs": 1.56,
+    "insertFragmentMixedBlocksMs": 11.31,
+    "insertNodesBatchMs": 3.15,
+    "insertTextCollapsedMs": 9.25,
+    "moveNodesWindowMs": 36.71,
+    "nodesTextScanMs": 0.15,
+    "positionsCharacterFullDocumentMs": -18.88,
+    "removeNodesWindowMs": 28.13,
+    "selectAllMs": 0.2,
+    "setNodesSelectedBlocksMs": 8.66,
+    "splitBlocksMs": 35.55,
+    "unhangRangeMs": 0.11,
+    "wrapUnwrapBlocksMs": 29.85
+  },
+  "structuralComposite": {
+    "p95Ms": 40.09,
+    "worstMeanLane": "insertFragmentMixedBlocksMs",
+    "worstMeanRatio": 37.48,
+    "worstP95Lane": "insertFragmentMixedBlocksMs",
+    "worstP95Ratio": 35.91
+  },
+  "structuralOps": {
+    "beforeAfterWalkMs": {
+      "currentMeanMs": 0.7,
+      "currentP95Ms": 0.74,
+      "legacyMeanMs": 2.36,
+      "legacyP95Ms": 2.83,
+      "meanRatio": 0.3,
+      "p95Ratio": 0.26
+    },
+    "removeNodesWindowMs": {
+      "currentMeanMs": 29.08,
+      "currentP95Ms": 31.28,
+      "legacyMeanMs": 0.95,
+      "legacyP95Ms": 1.19,
+      "meanRatio": 30.61,
+      "p95Ratio": 26.29
+    },
+    "moveNodesWindowMs": {
+      "currentMeanMs": 38.53,
+      "currentP95Ms": 40.09,
+      "legacyMeanMs": 1.82,
+      "legacyP95Ms": 2.36,
+      "meanRatio": 21.17,
+      "p95Ratio": 16.99
+    },
+    "insertFragmentMixedBlocksMs": {
+      "currentMeanMs": 11.62,
+      "currentP95Ms": 12.57,
+      "legacyMeanMs": 0.31,
+      "legacyP95Ms": 0.35,
+      "meanRatio": 37.48,
+      "p95Ratio": 35.91
+    },
+    "setNodesSelectedBlocksMs": {
+      "currentMeanMs": 9.06,
+      "currentP95Ms": 9.6,
+      "legacyMeanMs": 0.4,
+      "legacyP95Ms": 0.42,
+      "meanRatio": 22.65,
+      "p95Ratio": 22.86
+    }
+  }
+}
+METRIC rich_text_structural_ops_p95_ms=40.09
+METRIC rich_text_structural_ops_worst_ratio=35.91
+METRIC rich_text_structural_ops_worst_mean_ratio=37.48
+rich-text structural worst p95 lane=insertFragmentMixedBlocksMs worst mean lane=insertFragmentMixedBlocksMs

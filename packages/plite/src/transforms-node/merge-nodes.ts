@@ -32,10 +32,10 @@ import type {
 } from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
+import { formatDebugValue } from '../utils/format-debug-value';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { moveNodes } from './move-nodes';
 import { removeNodes } from './remove-nodes';
-import { formatDebugValue } from '../utils/format-debug-value';
 
 const readAbove = (editor: Editor, options?: EditorAboveOptions<Ancestor>) =>
   editorAbove(editor, options) as readonly [Ancestor, Path] | undefined;
@@ -169,16 +169,18 @@ export const mergeNodes = ((
     const newPath = PathApi.next(prevPath);
     const commonPath = PathApi.common(path, prevPath);
     const isPreviousSibling = PathApi.isSibling(path, prevPath);
-    const levels = Array.from(readLevels(editor, { at: path }), ([n]) => n)
-      .slice(commonPath.length)
-      .slice(0, -1);
+    const levels = new Set(
+      Array.from(readLevels(editor, { at: path }), ([n]) => n)
+        .slice(commonPath.length)
+        .slice(0, -1)
+    );
 
     // Determine if the merge will leave an ancestor of the path empty as a
     // result, in which case we'll want to remove it after merging.
     const emptyAncestor = readAbove(editor, {
       at: path,
       mode: 'highest',
-      match: (n) => levels.includes(n) && hasSingleChildNest(editor, n),
+      match: (n) => levels.has(n) && hasSingleChildNest(editor, n),
     });
 
     const emptyAnchor = emptyAncestor

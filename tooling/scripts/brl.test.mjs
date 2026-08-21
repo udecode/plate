@@ -40,11 +40,11 @@ test('keeps migrations in their opt-in barrel', (t) => {
 
   const rootBarrel = readFileSync(
     path.join(packageRoot, 'src/index.ts'),
-    'utf8'
+    'utf-8'
   );
   const migrationBarrel = readFileSync(
     path.join(packageRoot, 'src/migrations/index.ts'),
-    'utf8'
+    'utf-8'
   );
 
   assert.match(rootBarrel, /export \* from '\.\/lib\/index';/);

@@ -1278,7 +1278,7 @@
           "name": "EditorExtensionContributionInput",
           "route": null,
           "runtime": false,
-          "signature": "type EditorExtensionContributionInput<TRequiredEditor = unknown> = Readonly<{\n  point: Readonly<{\n    id: string;\n  }>;\n  /** @internal Contravariant proof of the editor capabilities this value needs. */\n  [EDITOR_EXTENSION_REQUIRED_EDITOR]?: (editor: TRequiredEditor) => void;\n}>;",
+          "signature": "type EditorExtensionContributionInput<TRequiredEditor = unknown> = Readonly<{\n  point: Readonly<{\n    id: string;\n  }>;\n  /**\n   * Contravariant proof of the editor capabilities this value needs.\n   *\n   * @internal\n   */\n  [EDITOR_EXTENSION_REQUIRED_EDITOR]?: (editor: TRequiredEditor) => void;\n}>;",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TRequiredEditor = unknown"
@@ -1902,7 +1902,7 @@
         },
         "@platejs/plite:EditorNodeTypeProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Deferred exact-node witness for hosts with a broad runtime editor.",
           "entrypoint": "@platejs/plite",
           "kind": "interface",
           "name": "EditorNodeTypeProvider",
@@ -2392,7 +2392,7 @@
         },
         "@platejs/plite:EditorSchemaExtensionProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Type-only schema forwarding for extension slots.",
           "entrypoint": "@platejs/plite",
           "kind": "interface",
           "name": "EditorSchemaExtensionProvider",
@@ -2897,7 +2897,7 @@
         },
         "@platejs/plite:EditorStateViewProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Deferred state-view carrier for editor layers with richer transactions.",
           "entrypoint": "@platejs/plite",
           "kind": "interface",
           "name": "EditorStateViewProvider",
@@ -3401,7 +3401,7 @@
         },
         "@platejs/plite:EditorUpdateTransactionOf": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Resolve a layered editor's exact live update transaction.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
           "name": "EditorUpdateTransactionOf",
@@ -3471,7 +3471,7 @@
         },
         "@platejs/plite:EditorValueTypeProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Deferred exact-value witness for hosts with a broad runtime editor.",
           "entrypoint": "@platejs/plite",
           "kind": "interface",
           "name": "EditorValueTypeProvider",
@@ -5237,7 +5237,7 @@
         },
         "@platejs/plite:SchemaDescendantInValue": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Non-recursive schema descendant lookup for editor API generics.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
           "name": "SchemaDescendantInValue",
@@ -5310,7 +5310,7 @@
         },
         "@platejs/plite:SchemaElementInNode": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Exact schema elements reachable from one schema-owned node.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
           "name": "SchemaElementInNode",
@@ -5558,7 +5558,7 @@
         },
         "@platejs/plite:SchemaNodeTypeProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Compact schema-node inference witness.",
           "entrypoint": "@platejs/plite",
           "kind": "interface",
           "name": "SchemaNodeTypeProvider",
@@ -5629,7 +5629,7 @@
           "name": "SchemaPropertyHandle",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaPropertyHandle<TKey extends SchemaPropertyKey = SchemaPropertyKey, TValue = unknown, TPlacement extends 'element' | 'text' = 'element' | 'text'> = Readonly<{\n  id: string;\n  key: TKey;\n  kind: 'schema-property';\n  placement: TPlacement;\n  /** @internal Covariant value witness; absent from runtime values. */\n  readonly [schemaPropertyHandleValue]?: TValue;\n}>;",
+          "signature": "type SchemaPropertyHandle<TKey extends SchemaPropertyKey = SchemaPropertyKey, TValue = unknown, TPlacement extends 'element' | 'text' = 'element' | 'text'> = Readonly<{\n  id: string;\n  key: TKey;\n  kind: 'schema-property';\n  placement: TPlacement;\n  /**\n   * Covariant value witness; absent from runtime values.\n   *\n   * @internal\n   */\n  readonly [schemaPropertyHandleValue]?: TValue;\n}>;",
           "source": "packages/plite/src/interfaces/schema.ts",
           "typeParameters": [
             "TKey extends SchemaPropertyKey = SchemaPropertyKey",
@@ -5767,7 +5767,7 @@
         },
         "@platejs/plite:SchemaTextInNode": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Exact schema text variants reachable from one schema-owned node.",
           "entrypoint": "@platejs/plite",
           "kind": "type",
           "name": "SchemaTextInNode",
@@ -6560,7 +6560,7 @@
           "name": "TransactionSpec",
           "route": null,
           "runtime": false,
-          "signature": "interface TransactionSpec<TRoot extends RootKey = RootKey> {\n  /** @internal Opaque proof that this spec was built by the owning editor. */\n  readonly [TRANSACTION_SPEC_TYPE]: true;\n  readonly annotations: readonly Readonly<{\n    type: EditorUpdateAnnotation<unknown>;\n    value: unknown;\n  }>[];\n  readonly changes: DocumentChange;\n  readonly effects: readonly EditorEffect[];\n  readonly kind: 'transaction';\n  readonly selection?: Readonly<{\n    /** Named selection root. Omitted for the primary document. */\n    root?: NamedRootKey<TRoot>;\n    value: Selection;\n  }>;\n  readonly tags: readonly EditorUpdateTag[];\n}",
+          "signature": "interface TransactionSpec<TRoot extends RootKey = RootKey> {\n  /**\n   * Opaque proof that this spec was built by the owning editor.\n   *\n   * @internal\n   */\n  readonly [TRANSACTION_SPEC_TYPE]: true;\n  readonly annotations: readonly Readonly<{\n    type: EditorUpdateAnnotation<unknown>;\n    value: unknown;\n  }>[];\n  readonly changes: DocumentChange;\n  readonly effects: readonly EditorEffect[];\n  readonly kind: 'transaction';\n  readonly selection?: Readonly<{\n    /** Named selection root. Omitted for the primary document. */\n    root?: NamedRootKey<TRoot>;\n    value: Selection;\n  }>;\n  readonly tags: readonly EditorUpdateTag[];\n}",
           "source": "packages/plite/src/interfaces/editor.ts",
           "typeParameters": [
             "TRoot extends RootKey = RootKey"
@@ -6668,7 +6668,7 @@
         },
         "@platejs/plite/internal:AnyEditor": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Existential editor boundary for runtime registries.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "AnyEditor",
@@ -6707,7 +6707,7 @@
         },
         "@platejs/plite/internal:areEditorSchemaIdentitiesEqual": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Exact equality for schema identities, including absent metadata.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "areEditorSchemaIdentitiesEqual",
@@ -6902,7 +6902,7 @@
         },
         "@platejs/plite/internal:createDetachedContentSlice": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Trust freshly owned, deeply frozen, shape-validated nodes.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "createDetachedContentSlice",
@@ -6926,7 +6926,7 @@
         },
         "@platejs/plite/internal:createInternalRootChangeFromSections": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Build one sparse root change without exposing the compact root\nalgebra to sibling packages.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "createInternalRootChangeFromSections",
@@ -7062,7 +7062,7 @@
         },
         "@platejs/plite/internal:dispatchCommand": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Imperatively dispatch a pure command at a host boundary.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "dispatchCommand",
@@ -7164,7 +7164,7 @@
         },
         "@platejs/plite/internal:EditorExtensionDependencyReferenceFor": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Compact install contract for one direct dependency.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "EditorExtensionDependencyReferenceFor",
@@ -7204,7 +7204,7 @@
         },
         "@platejs/plite/internal:EditorGenericMethod": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Preserve a generic extension method through editor projections.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "EditorGenericMethod",
@@ -7254,7 +7254,7 @@
         },
         "@platejs/plite/internal:EditorSchemaSource": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Descriptor shape accepted by schema inference utilities.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "EditorSchemaSource",
@@ -7266,7 +7266,7 @@
         },
         "@platejs/plite/internal:EditorSchemaSourceProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Exact schema declaration witness carried by host descriptors.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "interface",
           "name": "EditorSchemaSourceProvider",
@@ -7280,7 +7280,7 @@
         },
         "@platejs/plite/internal:EditorStateViewProvider": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Deferred state-view carrier for editor layers with richer transactions.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "interface",
           "name": "EditorStateViewProvider",
@@ -7294,7 +7294,7 @@
         },
         "@platejs/plite/internal:EditorUpdateTransactionOf": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Resolve a layered editor's exact live update transaction.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "EditorUpdateTransactionOf",
@@ -7384,7 +7384,7 @@
         },
         "@platejs/plite/internal:evaluateCommand": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Evaluate one pure command without publishing its transaction.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "evaluateCommand",
@@ -7456,7 +7456,7 @@
         },
         "@platejs/plite/internal:getCandidateEditorExtensionApi": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read an API map while a detached candidate is compiling.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getCandidateEditorExtensionApi",
@@ -7528,7 +7528,7 @@
         },
         "@platejs/plite/internal:getCompiledEditorSchemaFromApi": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Resolve the exact compiled artifact behind a candidate schema API.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getCompiledEditorSchemaFromApi",
@@ -7564,7 +7564,7 @@
         },
         "@platejs/plite/internal:getDocumentChangeRelocations": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Derive maximal unique unchanged-subtree relocations.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getDocumentChangeRelocations",
@@ -7576,7 +7576,7 @@
         },
         "@platejs/plite/internal:getEditorCommitSnapshot": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Return the immutable post-commit snapshot for one document root.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getEditorCommitSnapshot",
@@ -7602,7 +7602,7 @@
         },
         "@platejs/plite/internal:getEditorExtensionContributions": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read ordered values from one published extension point.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getEditorExtensionContributions",
@@ -7706,7 +7706,7 @@
         },
         "@platejs/plite/internal:getEditorRuntimeElementEntries": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Query runtime-backed element entries in one explicit root.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getEditorRuntimeElementEntries",
@@ -7730,7 +7730,7 @@
         },
         "@platejs/plite/internal:getEditorRuntimeRootKeys": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read current root keys without traversing document content.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getEditorRuntimeRootKeys",
@@ -7756,7 +7756,7 @@
         },
         "@platejs/plite/internal:getEditorStateView": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read the full state view without suspending an active draft.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getEditorStateView",
@@ -7780,7 +7780,7 @@
         },
         "@platejs/plite/internal:getExactDocumentChangeRelocation": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read one exact move without exposing the private root algebra.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getExactDocumentChangeRelocation",
@@ -7792,7 +7792,7 @@
         },
         "@platejs/plite/internal:getExactDocumentChangeRelocations": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read exact canonical moves without reconstructing the after value.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getExactDocumentChangeRelocations",
@@ -7828,7 +7828,7 @@
         },
         "@platejs/plite/internal:getInstalledEditorExtension": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read the exact descriptor installed for one extension name.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getInstalledEditorExtension",
@@ -7840,7 +7840,7 @@
         },
         "@platejs/plite/internal:getInstalledEditorExtensionApi": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read the resolved API map for one installed extension name.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getInstalledEditorExtensionApi",
@@ -7852,7 +7852,7 @@
         },
         "@platejs/plite/internal:getInternalDocumentChangeClassification": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read one classification through the private primary-root sentinel.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getInternalDocumentChangeClassification",
@@ -7864,7 +7864,7 @@
         },
         "@platejs/plite/internal:getInternalDocumentChangeClassificationEntries": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Iterate classifications through the private primary-root sentinel.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "function",
           "name": "getInternalDocumentChangeClassificationEntries",
@@ -7876,7 +7876,7 @@
         },
         "@platejs/plite/internal:getInternalDocumentChangeRanges": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Read changed token ranges without exposing compact sections.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getInternalDocumentChangeRanges",
@@ -7888,7 +7888,7 @@
         },
         "@platejs/plite/internal:getInternalDocumentChangeRootKeys": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "List changed roots without exposing their compact changes.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getInternalDocumentChangeRootKeys",
@@ -7924,7 +7924,7 @@
         },
         "@platejs/plite/internal:getNodeKeyDOMValue": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Return the deterministic editor-local token rendered during SSR.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getNodeKeyDOMValue",
@@ -7960,7 +7960,7 @@
         },
         "@platejs/plite/internal:getSchemaElementSourceReference": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Recover the nominal source retained by element relationship builders.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "getSchemaElementSourceReference",
@@ -8080,7 +8080,7 @@
         },
         "@platejs/plite/internal:hasInternalDocumentChangeRoot": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Test whether one internal root has a compact change.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "hasInternalDocumentChangeRoot",
@@ -8130,13 +8130,13 @@
         },
         "@platejs/plite/internal:initializeEditorExtensions": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Replace the derived base schema on one unchanged raw editor.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "initializeEditorExtensions",
           "route": null,
           "runtime": true,
-          "signature": "initializeEditorExtensions: <TEditor extends AnyEditor>(editor: TEditor, input: EditorExtensionInput, options?: Readonly<{\n  initialize?: (transaction: EditorTransactionSpecBuilder<ValueOf<TEditor>, ExtensionsOf<TEditor>>) => void;\n}>) => void",
+          "signature": "initializeEditorExtensions: <TEditor extends AnyEditor>(editor: TEditor, input: EditorExtensionInput, options?: Readonly<{\n  initialize?: (transaction: EditorTransactionSpecBuilder<ValueOf<TEditor>, ExtensionsOf<TEditor>>) => void;\n  /** Resolve one post-publication initial value for direct schema adoption. */\n  initialValue?: () => SnapshotInput<ValueOf<TEditor>>;\n}>) => void",
           "source": "packages/plite/src/create-editor.ts",
           "typeParameters": []
         },
@@ -8214,7 +8214,7 @@
         },
         "@platejs/plite/internal:InternalEditorExtensionDependencyReference": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Named declaration carrier for one finite dependency contract.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "interface",
           "name": "InternalEditorExtensionDependencyReference",
@@ -8228,7 +8228,7 @@
         },
         "@platejs/plite/internal:InternalEditorExtensionInstalledCapabilitiesOf": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Finite installed capability carried by one dependency reference.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "InternalEditorExtensionInstalledCapabilitiesOf",
@@ -8242,7 +8242,7 @@
         },
         "@platejs/plite/internal:InternalEditorExtensionTypeProviderOf": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Preserve only one extension's finite type-provider projection.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "InternalEditorExtensionTypeProviderOf",
@@ -8256,7 +8256,7 @@
         },
         "@platejs/plite/internal:InternalEditorExtensionWitnessFor": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Exact type witness without public runtime descriptor fields.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "type",
           "name": "InternalEditorExtensionWitnessFor",
@@ -8318,7 +8318,7 @@
         },
         "@platejs/plite/internal:isEditorExtension": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Test nominal descriptor identity without structural guessing.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "isEditorExtension",
@@ -8486,7 +8486,7 @@
         },
         "@platejs/plite/internal:mapInternalDocumentChangePoint": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Map one JSON point between transaction snapshots.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "mapInternalDocumentChangePoint",
@@ -8498,7 +8498,7 @@
         },
         "@platejs/plite/internal:mapInternalDocumentChangePosition": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Map through an internal sentinel-keyed root.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "mapInternalDocumentChangePosition",
@@ -8522,7 +8522,7 @@
         },
         "@platejs/plite/internal:mapSemanticUpdateMethodArguments": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Map one update method's arguments without bypassing its command lowering.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "mapSemanticUpdateMethodArguments",
@@ -8642,7 +8642,7 @@
         },
         "@platejs/plite/internal:preserveCompiledSchemaPropertyIdentity": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Preserve one authored property's semantic identity after lowering.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "preserveCompiledSchemaPropertyIdentity",
@@ -8666,7 +8666,7 @@
         },
         "@platejs/plite/internal:probeCommandNativeEquivalent": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Probe whether installed handlers preserve the default command unchanged.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "probeCommandNativeEquivalent",
@@ -8726,7 +8726,7 @@
         },
         "@platejs/plite/internal:readEditorSchemaIdentity": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Strict decoder for persisted editor schema identities.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "readEditorSchemaIdentity",
@@ -8972,7 +8972,7 @@
         },
         "@platejs/plite/internal:setEditorSnapshotInputTransform": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Install one host-owned transform before external snapshot fitting.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "setEditorSnapshotInputTransform",
@@ -8984,7 +8984,7 @@
         },
         "@platejs/plite/internal:setEditorStateViewTransform": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Install one host-owned projection before a state view freezes.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "setEditorStateViewTransform",
@@ -9010,7 +9010,7 @@
         },
         "@platejs/plite/internal:setEditorTransactionViewTransform": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Install one host-owned projection before a transaction view freezes.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "setEditorTransactionViewTransform",
@@ -9142,7 +9142,7 @@
         },
         "@platejs/plite/internal:toEditorCoreStateView": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Remove transaction and extension groups from a public state view.",
           "entrypoint": "@platejs/plite/internal",
           "kind": "const",
           "name": "toEditorCoreStateView",

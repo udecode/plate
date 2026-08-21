@@ -48,7 +48,6 @@
 - [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Enhanced comment plugin to support AI-generated comments.
 
   ### Changes:
-
   - Added a `transient` option to `tf.unsetMark` to allow removing all AI comments at once.
 
 ## 49.0.0

@@ -1,12 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getExtensionRegistry as editorGetExtensionRegistry,
-  getSnapshot as editorGetSnapshot,
-  isEditor as editorIsEditor,
-  replace as editorReplace,
-  setEditorChildren,
-} from '@platejs/plite/internal';
+
 import {
   createEditor,
   defineExtension,
@@ -20,12 +14,19 @@ import {
   TextApi,
   type Value,
 } from '@platejs/plite';
-import { defineTestSchema } from './support/schema';
+import {
+  getExtensionRegistry as editorGetExtensionRegistry,
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+  setEditorChildren,
+} from '@platejs/plite/internal';
 
 import {
   getActiveTransactionDocumentChange,
   withTransactionDocumentChangeObserver,
 } from '../src/core/public-state';
+import { defineTestSchema } from './support/schema';
 
 describe('plite normalization contract', () => {
   it('repairs an invalid initial value through the maintenance API', () => {
@@ -669,7 +670,6 @@ describe('plite normalization contract', () => {
                   } as Descendant,
                   { at: [1] }
                 );
-                return;
               }
             },
           },

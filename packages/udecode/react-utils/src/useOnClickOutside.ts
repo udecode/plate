@@ -6,8 +6,9 @@ const canUsePassiveEvents = (): boolean => {
   if (
     typeof window === 'undefined' ||
     typeof window.addEventListener !== 'function'
-  )
+  ) {
     return false;
+  }
 
   let passive = false;
   const options = Object.defineProperty({}, 'passive', {
@@ -98,6 +99,8 @@ export const useOnClickOutside = (
   React.useEffect(() => {
     if (!refsOpt?.length && !element) return;
 
+    const pendingBlurChecks = new Set<ReturnType<typeof setTimeout>>();
+
     const getEls = () => {
       if (!refsOpt) return element ? [element] : [];
 
@@ -132,9 +135,10 @@ export const useOnClickOutside = (
       }
     };
 
-    const blurHandler = (event: FocusEvent) =>
+    const blurHandler = (event: FocusEvent) => {
       // Firefox updates document.activeElement in the next event loop.
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
+        pendingBlurChecks.delete(timeout);
         const { activeElement } = document;
 
         if (
@@ -145,6 +149,8 @@ export const useOnClickOutside = (
           callbackRef.current(event);
         }
       }, 0);
+      pendingBlurChecks.add(timeout);
+    };
 
     if (disabled) return;
 
@@ -161,6 +167,7 @@ export const useOnClickOutside = (
       }
 
       if (detectIFrame) window.removeEventListener('blur', blurHandler);
+      pendingBlurChecks.forEach(clearTimeout);
     };
   }, [
     detectIFrame,

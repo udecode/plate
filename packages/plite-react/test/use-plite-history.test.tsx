@@ -1,3 +1,5 @@
+import type { Descendant } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   act,
   fireEvent,
@@ -7,8 +9,6 @@ import {
   waitFor,
 } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import type { Descendant } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
 
 import {
   createReactEditor,

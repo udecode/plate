@@ -3,9 +3,9 @@ import { describe, expect, it, spyOn } from 'bun:test';
 import { ContentSlice, property, schema, type ValueOf } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 
+import { getPlateNodeCodecContributions } from '../../internal';
 import { createBaseEditor } from '../editor';
 import { defineBasePlugin } from '../plugin';
-import { getPlateNodeCodecContributions } from '../../internal';
 
 const createParagraph = (text: string) => ({
   children: [{ text }],

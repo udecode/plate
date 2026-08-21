@@ -25,7 +25,6 @@ import {
   setEditorTransactionViewTransform,
 } from '@platejs/plite/internal';
 
-import type { NoInfer } from '../../internal/types';
 import { compilePlateCodecs } from '../../internal/plugin/compilePlateCodecs';
 import {
   attachPlateModelPublication,
@@ -42,42 +41,13 @@ import {
   withCompiledPlateModelCandidate,
   withCompiledPlatePluginCandidate,
 } from '../../internal/plugin/compilePlateModel';
+import {
+  mapDocumentSelection,
+  prepareDocument,
+} from '../../internal/plugin/pipePrepareDocument';
+import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
 import { clearPluginStores } from '../../internal/plugin/pluginStore';
-import {
-  getPluginSchemaFamily,
-  isNominalPluginDescriptor,
-  isNominalPluginReference,
-} from '../../internal/utils/mergePlugins';
-import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
-import type {
-  AnyBasePluginDefinition,
-  NodeComponents,
-  PluginReference,
-} from '../plugin/PluginDefinition';
-import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
-import type {
-  AnyBasePlugin,
-  BasePluginPortal,
-  BasePluginDefinitionInput,
-  DynamicBasePluginPortal,
-} from '../plugin/BasePlugin';
-import type {
-  InferPlugins,
-  InferRuntimePlugins,
-  BaseEditor,
-  BasePluginInput,
-  InternalBaseEditorMutationProvider,
-  InternalBaseEditorWithInstalledPlugins,
-  MergeInstalledPluginDefinitions,
-} from './BaseEditor';
-import {
-  type EditorApplicationSchema,
-  type EditorSchemaIdentity,
-  getEditorSchemaIdentity,
-} from './editorApplicationSchema';
-import { type DocumentMigrations, migrateDocument } from './documentMigrations';
-
 import {
   collectPlatePluginSourceCandidates,
   createPlateModelPublication,
@@ -88,23 +58,52 @@ import {
   restorePlateRuntimeExtensionBindings,
   snapshotPlatePluginSources,
 } from '../../internal/plugin/resolvePlugins';
+import type { NoInfer } from '../../internal/types';
 import {
-  mapDocumentSelection,
-  prepareDocument,
-} from '../../internal/plugin/pipePrepareDocument';
+  getPluginSchemaFamily,
+  isNominalPluginDescriptor,
+  isNominalPluginReference,
+} from '../../internal/utils/mergePlugins';
+import type {
+  AnyBasePlugin,
+  BasePluginPortal,
+  BasePluginDefinitionInput,
+  DynamicBasePluginPortal,
+} from '../plugin/BasePlugin';
+import { createPluginPortal } from '../plugin/createPluginContext.internal';
+import { defineBasePlugin } from '../plugin/defineBasePlugin';
+import type {
+  AnyBasePluginDefinition,
+  NodeComponents,
+  PluginReference,
+} from '../plugin/PluginDefinition';
+import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
+import {
+  type CorePluginDefinition,
+  type CorePlugins,
+  getCorePlugins,
+} from '../plugins/getCorePlugins';
+import type {
+  InferPlugins,
+  InferRuntimePlugins,
+  BaseEditor,
+  BasePluginInput,
+  InternalBaseEditorMutationProvider,
+  InternalBaseEditorWithInstalledPlugins,
+  MergeInstalledPluginDefinitions,
+} from './BaseEditor';
+import { type DocumentMigrations, migrateDocument } from './documentMigrations';
+import {
+  type EditorApplicationSchema,
+  type EditorSchemaIdentity,
+  getEditorSchemaIdentity,
+} from './editorApplicationSchema';
 
 type ProjectInjectedEditor<TEditor, TProjection> = Omit<
   TEditor,
   keyof TProjection
 > &
   TProjection;
-import { defineBasePlugin } from '../plugin/defineBasePlugin';
-import { createPluginPortal } from '../plugin/createPluginContext.internal';
-import {
-  type CorePluginDefinition,
-  type CorePlugins,
-  getCorePlugins,
-} from '../plugins/getCorePlugins';
 
 type PluginLookupInput = AnyBasePlugin | PluginReference | string;
 type PluginContextLookupInput = PluginLookupInput;
@@ -375,15 +374,13 @@ const normalizeBaseInitialValue = <V extends Value>(
   };
 };
 
-const initializeBaseEditor = <V extends Value>(
+const resolveBaseInitialValue = <V extends Value>(
   editor: BaseEditor,
-  tx: EditorTransactionSpecBuilder<Value, any>,
   {
     autoSelect,
     implicitDocumentIsCurrent,
     initialValue,
     selection,
-    shouldNormalizeEditor,
   }: {
     autoSelect?: boolean | 'end' | 'start';
     implicitDocumentIsCurrent: boolean;
@@ -391,7 +388,6 @@ const initializeBaseEditor = <V extends Value>(
       | ((context: { editor: BaseEditor }) => EditorValueInput<V>)
       | EditorValueInput<V>;
     selection?: Selection;
-    shouldNormalizeEditor?: boolean;
   }
 ) => {
   const nextValue = normalizeBaseInitialValue<V>(
@@ -413,17 +409,20 @@ const initializeBaseEditor = <V extends Value>(
     ('document' in nextValue ? nextValue.selection : undefined) ??
     null;
 
-  const wasInitializing = editor.runtime.isNormalizing;
+  return {
+    ...nextValue,
+    selection: selectionInput,
+  };
+};
+
+const normalizeBaseEditor = (editor: BaseEditor) => {
+  const wasNormalizing = editor.runtime.isNormalizing;
 
   editor.runtime.isNormalizing = true;
   try {
-    tx.value.replace({
-      ...nextValue,
-      selection: selectionInput,
-    });
-    if (shouldNormalizeEditor) repairEditorValue(editor);
+    repairEditorValue(editor);
   } finally {
-    editor.runtime.isNormalizing = wasInitializing;
+    editor.runtime.isNormalizing = wasNormalizing;
   }
 };
 
@@ -659,7 +658,10 @@ const installPlateExtensionPortal = (editor: BaseEditor) => {
 const installPlateEditorExtensions = (
   editor: BaseEditor,
   identity: EditorSchemaIdentity | undefined,
-  initialize?: (tx: EditorTransactionSpecBuilder<Value, any>) => void,
+  initialization?: Readonly<{
+    initialize?: (tx: EditorTransactionSpecBuilder<Value, any>) => void;
+    initialValue?: () => SnapshotInput;
+  }>,
   schema?: EditorApplicationSchema
 ) => {
   const previousBindings = getPlateRuntimeExtensionBindings(editor);
@@ -676,10 +678,17 @@ const installPlateEditorExtensions = (
 
     withCompiledPlateModelCandidate(editor, configuration.model, () =>
       initializeEditorExtensions<AnyEditor>(editor, configuration.extensions, {
-        initialize: initialize
+        initialize: initialization?.initialize
           ? (tx) => {
-              restoreModelAccessors = installPlateModelAccessors(editor);
-              initialize(tx);
+              restoreModelAccessors ??= installPlateModelAccessors(editor);
+              initialization.initialize!(tx);
+            }
+          : undefined,
+        initialValue: initialization?.initialValue
+          ? () => {
+              restoreModelAccessors ??= installPlateModelAccessors(editor);
+
+              return initialization.initialValue!();
             }
           : undefined,
       })
@@ -691,7 +700,7 @@ const installPlateEditorExtensions = (
     throw error;
   }
 
-  if (!initialize) installPlateModelAccessors(editor);
+  if (!restoreModelAccessors) installPlateModelAccessors(editor);
 };
 
 export type BaseEditorOptions<
@@ -837,7 +846,7 @@ const applyBaseEditor = <
   const identity = getEditorSchemaIdentity(schema);
   const editor = e as unknown as BaseEditor;
 
-  editor.runtime = editor.runtime ?? ({} as BaseEditor['runtime']);
+  editor.runtime ??= {} as BaseEditor['runtime'];
   editor.runtime.userId = userId;
   if (readOnly !== undefined) {
     setEditorReadOnly(editor, readOnly);
@@ -1096,25 +1105,29 @@ const applyBaseEditor = <
             : undefined,
           skipInitialization
             ? undefined
-            : (tx) =>
-                initializeBaseEditor(editor, tx, {
-                  autoSelect,
-                  implicitDocumentIsCurrent,
-                  initialValue:
-                    typeof initialValue === 'function'
-                      ? () =>
-                          initialValue({
-                            editor:
-                              editor as unknown as InternalBaseEditorWithInstalledPlugins<
-                                V,
-                                InferBaseEditorPlugins<P[]>,
-                                InferBaseEditorSchemaPlugins<P[]>
-                              >,
-                          })
-                      : initialValue,
-                  selection,
-                  shouldNormalizeEditor,
-                }),
+            : {
+                initialize: shouldNormalizeEditor
+                  ? () => normalizeBaseEditor(editor)
+                  : undefined,
+                initialValue: () =>
+                  resolveBaseInitialValue(editor, {
+                    autoSelect,
+                    implicitDocumentIsCurrent,
+                    initialValue:
+                      typeof initialValue === 'function'
+                        ? () =>
+                            initialValue({
+                              editor:
+                                editor as unknown as InternalBaseEditorWithInstalledPlugins<
+                                  V,
+                                  InferBaseEditorPlugins<P[]>,
+                                  InferBaseEditorSchemaPlugins<P[]>
+                                >,
+                            })
+                        : initialValue,
+                    selection,
+                  }),
+              },
           schema
         )
     );

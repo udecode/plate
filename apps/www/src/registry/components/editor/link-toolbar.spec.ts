@@ -45,12 +45,12 @@ describe('LinkPlugin.api.encodeUrl', () => {
     );
   });
 
-  it.each([
-    'https://example.com/%',
-    '',
-  ])('preserves malformed or empty input %j', (url) => {
-    expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(url);
-  });
+  it.each(['https://example.com/%', ''])(
+    'preserves malformed or empty input %j',
+    (url) => {
+      expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(url);
+    }
+  );
 
   it('encodes a non-URI string', () => {
     const url = 'Just a random string without URI format';

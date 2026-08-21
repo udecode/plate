@@ -6,10 +6,9 @@ import {
 } from '@platejs/plite';
 
 import type { BaseEditor } from '../editor';
-
 import { createBaseEditor } from '../editor';
-import { defineBasePlugin } from './defineBasePlugin';
 import { createPluginContext } from './createPluginContext.internal';
+import { defineBasePlugin } from './defineBasePlugin';
 
 describe('createPluginContext', () => {
   const TestPlugin = defineBasePlugin('test', {

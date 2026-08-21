@@ -40,7 +40,7 @@ const declarationSuffixPattern = /\.d\.ts$/;
 const configPath = join(appRoot, 'api-reference.config.json');
 const outputPath = join(appRoot, 'src/generated/api-reference-manifest.json');
 const args = new Set(process.argv.slice(2));
-const config = JSON.parse(readFileSync(configPath, 'utf8')) as ReferenceConfig;
+const config = JSON.parse(readFileSync(configPath, 'utf-8')) as ReferenceConfig;
 
 const symbolKind = (symbol: ts.Symbol) => {
   const flags = symbol.flags;
@@ -78,7 +78,9 @@ const findSource = (
         '\\',
         '/'
       );
-    } catch {}
+    } catch {
+      // Skip malformed source links while scanning API references.
+    }
   }
 
   return relative(repoRoot, join(packageDirectory, candidates[0])).replaceAll(
@@ -225,7 +227,7 @@ const main = async () => {
       const packOutput = execFileSync(
         'pnpm',
         ['pack', '--pack-destination', tempRoot, '--json'],
-        { cwd: packageDirectory, encoding: 'utf8' }
+        { cwd: packageDirectory, encoding: 'utf-8' }
       );
       const packResult = JSON.parse(packOutput) as {
         filename: string;
@@ -235,7 +237,7 @@ const main = async () => {
 
       const packageRoot = join(tempRoot, 'package');
       const packageJson = JSON.parse(
-        readFileSync(join(packageRoot, 'package.json'), 'utf8')
+        readFileSync(join(packageRoot, 'package.json'), 'utf-8')
       ) as {
         exports: Record<
           string,
@@ -319,7 +321,7 @@ const main = async () => {
   }
 
   if (args.has('--check')) {
-    const current = readFileSync(outputPath, 'utf8');
+    const current = readFileSync(outputPath, 'utf-8');
 
     if (current !== manifest) {
       throw new Error(

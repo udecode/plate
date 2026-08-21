@@ -1,13 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getLastCommit as editorGetLastCommit,
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
-
-import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
@@ -17,6 +9,13 @@ import {
   type EditorUpdatePolicy,
   type TextSelection,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
+import {
+  getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -67,7 +66,7 @@ const importRemote = (
 ) => {
   const spec = editor.read((state) => state.transaction(build));
 
-  assert(spec);
+  assert.ok(spec);
   const change = DocumentChange.fromJSON(clone(spec.changes.toJSON()));
 
   editor.update(remoteCollabPolicy, (tx) => {
@@ -103,7 +102,7 @@ const assertLastRemoteCommit = (
 ) => {
   const commit = editorGetLastCommit(editor);
 
-  assert(commit);
+  assert.ok(commit);
   assert.deepEqual(commit.tags, remoteCollabTags);
 };
 
@@ -152,12 +151,12 @@ describe('collab remote selection stress contract', () => {
 
     const selectionAfterRemote = editorGetSnapshot(editor).selection;
 
-    assert(selectionAfterRemote);
+    assert.ok(selectionAfterRemote);
     insertLocal(editor, '!');
 
     const localCommit = editorGetLastCommit(editor);
 
-    assert(localCommit);
+    assert.ok(localCommit);
     assert.deepEqual(localCommit.selectionBefore, selectionAfterRemote);
     assert.equal(editorString(editor, [0]), 'oCBA!ne');
   });

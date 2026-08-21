@@ -1,10 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -12,6 +7,11 @@ import {
   defineExtension,
   type EditorCommitHandler,
 } from '@platejs/plite';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -332,7 +332,7 @@ describe('editor.update afterCommit', () => {
       register = context.afterCommit;
     });
 
-    assert(register);
+    assert.ok(register);
     assert.throws(
       () =>
         register?.(() => {
@@ -351,7 +351,7 @@ describe('editor.update afterCommit', () => {
       register = context.afterCommit;
     });
 
-    assert(register);
+    assert.ok(register);
 
     editor.update((tx) => {
       assert.throws(

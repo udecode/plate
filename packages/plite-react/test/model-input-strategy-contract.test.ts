@@ -1,4 +1,5 @@
 import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
+import { IS_COMPOSING } from '@platejs/plite-dom/internal';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
@@ -6,19 +7,18 @@ import {
   select as editorSelect,
   string as editorString,
 } from '@platejs/plite/internal';
-import { IS_COMPOSING } from '@platejs/plite-dom/internal';
 import { describe, expect, it, vi } from 'vitest';
-import type { ReactEditor } from '../src';
 
+import type { ReactEditor } from '../src';
+import {
+  createEditableInputController,
+  createEditableInputControllerState,
+} from '../src/editable/input-state';
 import {
   applyEditableInput,
   applyModelOwnedBeforeInputMutation,
   applyModelOwnedNativeHistoryEvent,
 } from '../src/editable/model-input-strategy';
-import {
-  createEditableInputController,
-  createEditableInputControllerState,
-} from '../src/editable/input-state';
 import { applyModelOwnedDataTransferInput } from '../src/editable/mutation-controller';
 
 const createTextEditor = (text = '', offset = 0, type = 'paragraph') => {
@@ -803,48 +803,48 @@ describe('model input strategy', () => {
     });
   });
 
-  it.each([
-    'deleteByCut',
-    'deleteByDrag',
-  ] as const)('deletes the selected fragment from %s beforeinput', (inputType) => {
-    const editor = createEditor();
+  it.each(['deleteByCut', 'deleteByDrag'] as const)(
+    'deletes the selected fragment from %s beforeinput',
+    (inputType) => {
+      const editor = createEditor();
 
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
-      selection: {
+      editorReplace(editor, {
+        children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 3 },
+        },
+      });
+
+      const repair = applyModelOwnedBeforeInputMutation({
+        data: null,
+        deferredMutations: { current: [] },
+        editor: editor as ReactEditor,
+        inputType,
+        native: false,
+        selection: editorGetSelection(editor),
+        setComposing: () => {},
+      });
+
+      expect(editorString(editor, [])).toBe('ad');
+      expect(editorGetSelection(editor)).toEqual({
         kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 3 },
-      },
-    });
-
-    const repair = applyModelOwnedBeforeInputMutation({
-      data: null,
-      deferredMutations: { current: [] },
-      editor: editor as ReactEditor,
-      inputType,
-      native: false,
-      selection: editorGetSelection(editor),
-      setComposing: () => {},
-    });
-
-    expect(editorString(editor, [])).toBe('ad');
-    expect(editorGetSelection(editor)).toEqual({
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 1 },
-    });
-    expect(repair).toEqual({
-      focus: true,
-      forceRender: true,
-      kind: 'repair-caret',
-      selectionSourceTransition: {
-        preferModelSelection: true,
-        reason: 'model-command',
-        selectionSource: 'model-owned',
-      },
-    });
-  });
+        focus: { path: [0, 0], offset: 1 },
+      });
+      expect(repair).toEqual({
+        focus: true,
+        forceRender: true,
+        kind: 'repair-caret',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
+    }
+  );
 
   it('deletes the current hard line backward without touching the previous block', () => {
     const editor = createTwoBlockTextEditor('foobar', 'baz');

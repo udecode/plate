@@ -62,22 +62,25 @@ const runRepeatedProjectionStress = (projectionCount: number) => {
 };
 
 describe('projection stress budgets', () => {
-  it.each([
-    20, 100,
-  ])('keeps %i repeated projections bounded by visible nodes and projection segments', (projectionCount) => {
-    const { graph, segments } = runRepeatedProjectionStress(projectionCount);
+  it.each([20, 100])(
+    'keeps %i repeated projections bounded by visible nodes and projection segments',
+    (projectionCount) => {
+      const { graph, segments } = runRepeatedProjectionStress(projectionCount);
 
-    expect(graph.nodes).toHaveLength(1 + projectionCount * 3);
-    expect(segments.parts.length).toBeLessThanOrEqual(graph.nodes.length);
-    expect(
-      segments.parts.filter((part) => part.root === SHARED_ROOT)
-    ).toHaveLength(projectionCount);
-    expect(
-      new Set(
-        segments.parts.filter((part) => part.owner).map((part) => part.ownerKey)
-      ).size
-    ).toBe(projectionCount);
-  });
+      expect(graph.nodes).toHaveLength(1 + projectionCount * 3);
+      expect(segments.parts.length).toBeLessThanOrEqual(graph.nodes.length);
+      expect(
+        segments.parts.filter((part) => part.root === SHARED_ROOT)
+      ).toHaveLength(projectionCount);
+      expect(
+        new Set(
+          segments.parts
+            .filter((part) => part.owner)
+            .map((part) => part.ownerKey)
+        ).size
+      ).toBe(projectionCount);
+    }
+  );
 
   it('keeps the plain single-root path owner-free and one-segment', () => {
     const graph = createPliteProjectionGraph(

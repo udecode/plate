@@ -1,10 +1,9 @@
 'use client';
 
 import * as React from 'react';
-
 import type { RegistryItem } from 'shadcn/schema';
 
-import { BlockCode } from '@/components/block-viewer';
+import { BlockCode, type BlockViewerContext } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
 import {
   getRegistryClipboardInstallCommand,
@@ -17,6 +16,9 @@ import { ComponentPreview } from './component-preview';
 import { H2, H3, Step, Steps } from './typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
+type RegistryExample = RegistryItem &
+  Partial<Pick<BlockViewerContext, 'highlightedFiles' | 'item' | 'tree'>>;
+
 type ComponentInstallationProps = {
   __dependencies__?: string;
   __highlightedFiles__?: string;
@@ -25,14 +27,16 @@ type ComponentInstallationProps = {
   __previewFiles__?: string;
   __tree__?: string;
   dependencies?: string[];
-  examples?: RegistryItem[];
-  highlightedFiles?: any;
+  examples?: RegistryExample[];
+  highlightedFiles?: BlockViewerContext['highlightedFiles'];
   inline?: boolean;
-  item?: any;
+  item?: BlockViewerContext['item'];
   name?: string;
-  tree?: any;
+  tree?: BlockViewerContext['tree'];
   usage?: string[];
 };
+
+const parseGeneratedProp = <T,>(value: string): T => JSON.parse(value) as T;
 
 export function ComponentInstallation({
   __dependencies__: __registryDependencies__ = '[]',
@@ -48,13 +52,20 @@ export function ComponentInstallation({
   ...props
 }: ComponentInstallationProps) {
   const dependencies =
-    props.dependencies ?? JSON.parse(__registryDependencies__) ?? [];
+    props.dependencies ??
+    parseGeneratedProp<string[]>(__registryDependencies__) ??
+    [];
 
   // Let React Compiler optimize these - no manual memoization needed
-  const item = props.item ?? JSON.parse(__itemProp__);
+  const item =
+    props.item ?? parseGeneratedProp<BlockViewerContext['item']>(__itemProp__);
   const highlightedFiles =
-    props.highlightedFiles ?? JSON.parse(__highlightedFilesProp__);
-  const tree = props.tree ?? JSON.parse(__treeProp__);
+    props.highlightedFiles ??
+    parseGeneratedProp<BlockViewerContext['highlightedFiles']>(
+      __highlightedFilesProp__
+    );
+  const tree =
+    props.tree ?? parseGeneratedProp<BlockViewerContext['tree']>(__treeProp__);
 
   const dependenciesString = dependencies.join(' ');
   const installCommand = getRegistryInstallCommand(name ?? item.name);
@@ -148,12 +159,12 @@ export function ComponentInstallation({
                   name={example.name}
                   key={example.name}
                   dependencies={example.dependencies}
-                  highlightedFiles={(example as any).highlightedFiles}
+                  highlightedFiles={example.highlightedFiles}
                   item={{
-                    ...(example as any).item,
-                    description: getRegistryTitle(example as any),
+                    ...example.item,
+                    description: getRegistryTitle(example),
                   }}
-                  tree={(example as any).tree}
+                  tree={example.tree}
                 />
               );
             })}

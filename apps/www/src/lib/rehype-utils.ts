@@ -1,9 +1,7 @@
-import type { UnistNode } from '@/types/unist';
-import type { z } from 'zod';
-
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+
 import {
   type Registry,
   type RegistryItem,
@@ -11,6 +9,9 @@ import {
   registryItemSchema,
 } from 'shadcn/schema';
 import { Project, ScriptKind } from 'ts-morph';
+import type { z } from 'zod';
+
+import type { UnistNode } from '@/types/unist';
 
 import registryShadcnData from '../../registry-shadcn.json';
 import { registry } from '../registry/registry';
@@ -382,7 +383,7 @@ async function getAllItemFiles(
 
   if (!item) return [];
 
-  let allFiles = [...(item.files ?? [])].map((file) => {
+  const allFiles = [...(item.files ?? [])].map((file) => {
     const filePath = typeof file === 'string' ? file : file.path;
     // Ensure path starts with src/registry/
     const normalizedPath = filePath.startsWith('src/registry/')
@@ -410,7 +411,7 @@ async function getAllItemFiles(
     );
 
     if (depFiles.length > 0) {
-      allFiles = [...allFiles, ...depFiles];
+      allFiles.push(...depFiles);
     }
   }
 
@@ -435,9 +436,9 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   // Try each path until we find one that exists
   for (const filePath of possiblePaths) {
     try {
-      raw = await fs.readFile(filePath, 'utf8');
+      raw = await fs.readFile(filePath, 'utf-8');
       break;
-    } catch (_error) {}
+    } catch {}
   }
 
   if (!raw) {

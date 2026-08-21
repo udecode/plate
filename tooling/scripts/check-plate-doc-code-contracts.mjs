@@ -5,6 +5,13 @@ import { pathToFileURL } from 'node:url';
 
 import { parse } from '@babel/parser';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const repoRoot = resolve(import.meta.dirname, '../..');
 const editorConstructorNames = new Set([
   'createBaseEditor',
@@ -122,7 +129,7 @@ const getPropertyName = (node) => {
   if (node?.type === 'Identifier') return node.name;
   if (node?.type === 'StringLiteral') return node.value;
 
-  return;
+  return undefined;
 };
 
 const getObjectProperty = (node, name) =>
@@ -224,7 +231,7 @@ export const extractJavaScriptCodeFences = (source) => {
 };
 
 const readSchemaIdentity = (schemaProperty) => {
-  if (!schemaProperty) return;
+  if (!schemaProperty) return undefined;
   if (schemaProperty.shorthand) return { complete: true };
 
   const value = schemaProperty.value;
@@ -286,11 +293,13 @@ const readCallChainRootName = (node) => {
   while (current?.type === 'CallExpression') {
     if (current.callee.type === 'Identifier') return current.callee.name;
     if (current.callee.type !== 'MemberExpression' || current.callee.computed) {
-      return;
+      return undefined;
     }
 
     current = unwrapTypedExpression(current.callee.object);
   }
+
+  return undefined;
 };
 
 const isForeignStoreSelectorExtension = (node) =>
@@ -309,10 +318,12 @@ const getCapabilityFactoryParameterCount = (property) => {
   if (property?.type === 'ObjectProperty' && isFunction(property.value)) {
     return property.value.params.length;
   }
+
+  return undefined;
 };
 
 const getStaticFunctionResult = (node) => {
-  if (!isFunction(node)) return;
+  if (!isFunction(node)) return undefined;
 
   const body = unwrapTypedExpression(node.body);
 
@@ -334,7 +345,7 @@ const getStaticExpressionPath = (node) => {
     value?.type !== 'MemberExpression' &&
     value?.type !== 'OptionalMemberExpression'
   ) {
-    return;
+    return undefined;
   }
 
   const object = getStaticExpressionPath(value.object);
@@ -686,7 +697,7 @@ const isPromiseExpression = (node) =>
     getPropertyName(node.callee.object) === 'Promise');
 
 const readInvalidInitialValueReason = (property) => {
-  if (!property) return;
+  if (!property) return undefined;
   const value =
     property.type === 'ObjectMethod'
       ? property
@@ -722,6 +733,8 @@ const readInvalidInitialValueReason = (property) => {
   ) {
     return 'editor initialValue must be a document value or synchronous callback';
   }
+
+  return undefined;
 };
 
 const inspectContextualConfigure = (callback) => {
@@ -819,19 +832,19 @@ const getStaticPliteElementMap = (node) => {
     (node.callee.name !== 'defineEditorSchema' &&
       !pliteExtensionNamePattern.test(node.callee.name))
   ) {
-    return;
+    return undefined;
   }
 
   const declaration = node.arguments[1];
 
-  if (declaration?.type !== 'ObjectExpression') return;
+  if (declaration?.type !== 'ObjectExpression') return undefined;
 
   const schema =
     node.callee.name === 'defineEditorSchema'
       ? declaration
       : getObjectProperty(declaration, 'schema')?.value;
 
-  if (schema?.type !== 'ObjectExpression') return;
+  if (schema?.type !== 'ObjectExpression') return undefined;
 
   const elements = getObjectProperty(schema, 'elements')?.value;
 
@@ -1726,7 +1739,7 @@ const collectMarkdownFiles = (root) => {
 
       return markdownFilePattern.test(path) ? [path] : [];
     })
-    .sort();
+    .sort(compareStrings);
 };
 
 const collectCurrentDocs = () => [
@@ -1742,7 +1755,7 @@ export function auditPlateDocCodeContracts() {
   const issues = files.flatMap((path) => {
     const file = toPosixPath(relative(repoRoot, path));
 
-    return auditPlateDocCode(readFileSync(path, 'utf8'), file);
+    return auditPlateDocCode(readFileSync(path, 'utf-8'), file);
   });
 
   return { fileCount: files.length, issues };

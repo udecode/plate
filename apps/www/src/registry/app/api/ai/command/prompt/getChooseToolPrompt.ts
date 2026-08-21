@@ -1,6 +1,6 @@
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
-
 import dedent from 'dedent';
+
+import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 import {
   buildStructuredPrompt,

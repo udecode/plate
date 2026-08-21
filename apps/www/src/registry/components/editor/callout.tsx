@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { CalloutPlugin } from '@platejs/callout/react';
 import {
   type PlateElementProps,
@@ -9,7 +7,10 @@ import {
   useEditor,
   useEditorReadOnly,
 } from 'platejs/react';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
+
 import { EmojiPicker, EmojiPickerTrigger } from './emoji-picker';
 
 const CALLOUT_STORAGE_KEY = 'plate-storage-callout';
@@ -47,7 +48,7 @@ export function CalloutElement(props: PlateElementProps<typeof CalloutPlugin>) {
             <Button
               disabled={readOnly}
               variant="ghost"
-              className="size-6 select-none p-1 text-[18px] hover:bg-muted-foreground/15"
+              className="size-6 p-1 text-[18px] select-none hover:bg-muted-foreground/15"
               style={{
                 fontFamily:
                   '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',

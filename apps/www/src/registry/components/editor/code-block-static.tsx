@@ -1,16 +1,16 @@
-import * as React from 'react';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from '@platejs/code-block';
+import { all, createLowlight } from 'lowlight';
 import {
   type PliteElementProps,
   type PliteLeafProps,
   PliteElement,
   PliteLeaf,
 } from 'platejs/static';
-import { all, createLowlight } from 'lowlight';
+import * as React from 'react';
 
 type CodeBlockElementStaticProps = PliteElementProps<
   typeof BaseCodeBlockPlugin
@@ -135,7 +135,7 @@ export function CodeBlockElementStatic({
       <div className="relative rounded-md bg-muted/50">
         {showLanguageLabel && languageLabel && (
           <div
-            className="absolute top-1 right-1 z-10 flex h-6 select-none items-center px-2 text-muted-foreground text-xs"
+            className="absolute top-1 right-1 z-10 flex h-6 items-center px-2 text-xs text-muted-foreground select-none"
             contentEditable={false}
           >
             {languageLabel}

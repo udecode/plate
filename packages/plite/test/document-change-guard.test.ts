@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { runInNewContext } from 'node:vm';
+
 import type { Element } from '@platejs/plite';
 
-import { DocumentChange } from '../src/core/change/document-change';
 import type { DocumentChangeRootClassification } from '../src/core/change/classification';
+import { DocumentChange } from '../src/core/change/document-change';
 import type { JsonNode } from '../src/core/change/tokens';
 import {
   createTestDocumentChange,

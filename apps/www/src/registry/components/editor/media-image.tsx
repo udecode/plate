@@ -1,11 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
-import type { PlateElementProps } from 'platejs/react';
-
 import { useDraggable } from '@platejs/dnd';
 import { ImagePlugin } from '@platejs/media/react';
+import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
   useEditor,
@@ -13,6 +10,7 @@ import {
   useElementSelected,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 

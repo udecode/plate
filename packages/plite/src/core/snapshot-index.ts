@@ -12,6 +12,9 @@ import {
   setNodeKey,
 } from '../utils/node-keys';
 import type { DocumentChangeRuntimeCandidate } from './change/classification';
+import type { DocumentIndex } from './change/document-index';
+import { getRootChangeRelocations } from './change/mapping';
+import type { RootChange } from './change/root-change';
 import {
   PreparedTokenSlice,
   getDocumentSliceNodeKeys,
@@ -21,9 +24,6 @@ import {
   isDeferredPreparedDocumentSlice,
   type JsonNode,
 } from './change/tokens';
-import { getRootChangeRelocations } from './change/mapping';
-import type { RootChange } from './change/root-change';
-import type { DocumentIndex } from './change/document-index';
 import { profileCoreDuration } from './profiling';
 
 const EMPTY_ENTRIES = Object.freeze([]) as readonly (readonly [
@@ -58,7 +58,11 @@ export const EMPTY_RUNTIME_INDEX: SnapshotIndex = Object.freeze({
 
 SNAPSHOT_ELEMENT_ENTRIES.set(EMPTY_RUNTIME_INDEX, () => EMPTY_ELEMENT_ENTRIES);
 
-/** @internal Query element types through the snapshot index lifecycle. */
+/**
+ * Query element types through the snapshot index lifecycle.
+ *
+ * @internal
+ */
 export const getSnapshotIndexElementEntries = (
   index: SnapshotIndex,
   types: readonly string[]
@@ -279,11 +283,19 @@ type SnapshotIndexMappingSegment =
   | PathStableSnapshotIndexMappingSegment
   | StructuralSnapshotIndexMappingSegment;
 
-/** @internal Canonical, compacted path history shared by sparse indexes. */
+/**
+ * Canonical, compacted path history shared by sparse indexes.
+ *
+ * @internal
+ */
 export type CanonicalDocumentPathMapping =
   readonly SnapshotIndexMappingSegment[];
 
-/** @internal Empty canonical path history for a newly indexed document. */
+/**
+ * Empty canonical path history for a newly indexed document.
+ *
+ * @internal
+ */
 export const EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING = Object.freeze(
   []
 ) as CanonicalDocumentPathMapping;
@@ -319,7 +331,11 @@ const MAPPED_ELEMENT_INDEXES = new WeakMap<
   MappedElementIndexDescriptor
 >();
 
-/** @internal Capture lazy provenance so an aborted editor draft can restore it. */
+/**
+ * Capture lazy provenance so an aborted editor draft can restore it.
+ *
+ * @internal
+ */
 export const captureSnapshotIndexMapping = (index: SnapshotIndex) => {
   const descriptor = MAPPED_SNAPSHOT_INDEXES.get(index);
   const elementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
@@ -609,7 +625,11 @@ const mapPathBackward = (
   return mapPathForward(inverse, path);
 };
 
-/** @internal Append one root change using the snapshot index's binary compaction. */
+/**
+ * Append one root change using the snapshot index's binary compaction.
+ *
+ * @internal
+ */
 export const appendCanonicalDocumentPathMapping = (
   mapping: CanonicalDocumentPathMapping,
   before: DocumentIndex,
@@ -618,7 +638,11 @@ export const appendCanonicalDocumentPathMapping = (
 ): CanonicalDocumentPathMapping =>
   compactMappingSegments(mapping, createMappingSegment(before, after, change));
 
-/** @internal Map one stable node path through a compacted canonical history. */
+/**
+ * Map one stable node path through a compacted canonical history.
+ *
+ * @internal
+ */
 export const mapCanonicalDocumentPath = (
   mapping: CanonicalDocumentPathMapping,
   source: readonly number[],
@@ -654,7 +678,11 @@ export const mapCanonicalDocumentPath = (
   return path;
 };
 
-/** @internal Test-only structural bound for shared canonical path histories. */
+/**
+ * Test-only structural bound for shared canonical path histories.
+ *
+ * @internal
+ */
 export const getCanonicalDocumentPathMappingStats = (
   mapping: CanonicalDocumentPathMapping
 ) => {
@@ -1155,7 +1183,11 @@ const mapChangedNodeKeys = (
   return Object.freeze(assignments);
 };
 
-/** @internal Test-only visibility into retained lazy mapping state. */
+/**
+ * Test-only visibility into retained lazy mapping state.
+ *
+ * @internal
+ */
 export const getSnapshotIndexMappingStats = (index: SnapshotIndex) => {
   const descriptor = MAPPED_SNAPSHOT_INDEXES.get(index);
 
@@ -1375,6 +1407,7 @@ export const mapSnapshotIndexThroughChange = (
   let activeSegments: readonly SnapshotIndexMappingSegment[] | null = segments;
   let currentDocument: DocumentIndex | null = segments.at(-1)!.after;
   let materializedEntries: readonly (readonly [NodeKey, Path])[] | undefined;
+  // oxlint-disable-next-line prefer-const -- Index helpers close over the frozen index assigned after construction.
   let mappedIndex: SnapshotIndex;
 
   const nodeAt = (path: Path) => {

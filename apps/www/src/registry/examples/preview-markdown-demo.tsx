@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import type { DecoratedRange } from '@platejs/plite';
 import { property, TextApi } from 'platejs';
 import {
@@ -12,11 +10,12 @@ import {
   usePlateEditor,
 } from 'platejs/react';
 import Prism, { type TokenStream } from 'prismjs';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
-import { previewMdValue } from '@/registry/examples/values/preview-md-value';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { previewMdValue } from '@/registry/examples/values/preview-md-value';
 
 import 'prismjs/components/prism-markdown.js';
 

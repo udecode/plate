@@ -1,10 +1,9 @@
+import { ElementApi } from '@platejs/plite';
+/** @jsx jsx */
 import {
   above as editorAbove,
   isBlock as editorIsBlock,
 } from '@platejs/plite/internal';
-/** @jsx jsx */
-
-import { ElementApi } from '@platejs/plite';
 
 // `above` can never return the location passed into it, and shouldnt care if it exists, only if its parent exists.
 

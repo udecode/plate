@@ -1,9 +1,9 @@
-import { expect, test } from '@playwright/test';
 import {
   createPliteBrowserEditorHarness,
   measurePliteTrustedTyping,
   recordPliteBrowserRuntimeErrors,
 } from '@platejs/browser/playwright';
+import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
 const FRAME_BUDGET_MS = 16.67;

@@ -1,11 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  decodeEditorSelection,
-  encodeEditorSelection,
-  getChildren as editorGetChildren,
-  getSnapshot,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -23,6 +17,12 @@ import {
   target,
   type Value,
 } from '@platejs/plite';
+import {
+  decodeEditorSelection,
+  encodeEditorSelection,
+  getChildren as editorGetChildren,
+  getSnapshot,
+} from '@platejs/plite/internal';
 
 type CellSelection = Range &
   Readonly<{
@@ -542,7 +542,7 @@ describe('extensible selection protocol', () => {
 
     const encoded = encodeEditorSelection(editor, cellSelection());
 
-    assert(encoded);
+    assert.ok(encoded);
     assert.throws(
       () =>
         decodeEditorSelection(editor, {

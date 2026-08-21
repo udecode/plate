@@ -1,5 +1,3 @@
-import { act, type RenderResult, render } from '@testing-library/react';
-import { createContext, type ReactNode, useContext } from 'react';
 import {
   createEditorView,
   createEditor as createBaseEditor,
@@ -16,6 +14,9 @@ import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { act, type RenderResult, render } from '@testing-library/react';
+import { createContext, type ReactNode, useContext } from 'react';
+
 import {
   createReactEditor,
   Editable,
@@ -27,8 +28,8 @@ import {
   useDecorationSelector,
   usePliteProjectionEntries,
 } from '../src';
-import { toPliteRangeDecorations } from '../src/decoration-source';
 import {
+  toPliteRangeDecorations,
   createDecorationSource,
   createRangeDecorationSource,
 } from '../src/decoration-source';

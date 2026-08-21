@@ -99,28 +99,28 @@ describe('commonmark package surfaces', () => {
       caption: 'Same text',
       title: 'textually equal alt and caption',
     },
-  ])('round-trips $title without conflating their semantics', ({
-    alt,
-    caption,
-  }) => {
-    const editor = createTestEditor();
-    const value = {
-      children: [
-        {
-          alt,
-          children: [{ text: caption }],
-          type: 'image',
-          url: '/image.png',
-        },
-      ],
-    };
-    const markdown = editor.api.markdown.serialize({ value });
+  ])(
+    'round-trips $title without conflating their semantics',
+    ({ alt, caption }) => {
+      const editor = createTestEditor();
+      const value = {
+        children: [
+          {
+            alt,
+            children: [{ text: caption }],
+            type: 'image',
+            url: '/image.png',
+          },
+        ],
+      };
+      const markdown = editor.api.markdown.serialize({ value });
 
-    expect(markdown).toContain('<figure>');
-    expect(markdown).toContain(`<img alt="${alt}" src="/image.png" />`);
-    expect(markdown).toContain('<figcaption>');
-    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
-  });
+      expect(markdown).toContain('<figure>');
+      expect(markdown).toContain(`<img alt="${alt}" src="/image.png" />`);
+      expect(markdown).toContain('<figcaption>');
+      expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
+    }
+  );
 
   it.each([
     {

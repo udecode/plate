@@ -62,19 +62,15 @@ const inlineChildArbitrary = fc.oneof(
       bold: fc.boolean(),
       text: fc.string({ maxLength: 6 }),
     })
-    .map(
-      ({ bold, text }): Descendant => ({
-        ...(bold ? { bold: true } : {}),
-        text,
-      })
-    ),
-  fc.string({ maxLength: 4, minLength: 1 }).map(
-    (character): Descendant => ({
-      character,
-      children: [{ text: '' }],
-      type: 'mention',
-    })
-  )
+    .map(({ bold, text }): Descendant => ({
+      ...(bold ? { bold: true } : {}),
+      text,
+    })),
+  fc.string({ maxLength: 4, minLength: 1 }).map((character): Descendant => ({
+    character,
+    children: [{ text: '' }],
+    type: 'mention',
+  }))
 );
 const fitChildArbitrary = fc.oneof(
   textArbitrary.map((text) => ({ text }) as Descendant),

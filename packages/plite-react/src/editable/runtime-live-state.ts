@@ -6,6 +6,7 @@ import {
   type Text as PliteText,
   TextApi,
 } from '@platejs/plite';
+
 import {
   type Editor,
   getEditorLiveNode,

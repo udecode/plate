@@ -1,13 +1,3 @@
-import { cva } from 'class-variance-authority';
-import {
-  type Dispatch,
-  type PointerEvent,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
 import type { Anchor, Range, Value } from '@platejs/plite';
 import {
   Editable,
@@ -21,6 +11,16 @@ import {
   usePliteWidgetStore,
   usePliteWidgets,
 } from '@platejs/plite-react';
+import { cva } from 'class-variance-authority';
+import {
+  type Dispatch,
+  type PointerEvent,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';

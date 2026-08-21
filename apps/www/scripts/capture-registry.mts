@@ -1,5 +1,7 @@
+/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+
 import puppeteer from 'puppeteer';
 
 import { getAllBlocks } from '../src/lib/blocks';
@@ -49,7 +51,9 @@ async function captureScreenshots() {
       await page.reload({ waitUntil: 'networkidle2' });
       // Wait for animations to complete
       if (block.startsWith('chart')) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500);
+        });
       }
       // Hide Tailwind indicator
       await page.evaluate(() => {

@@ -1,10 +1,9 @@
-import React from 'react';
-
 import {
   type PlateElementProps,
   useEditor,
   usePluginStore,
 } from '@platejs/core/react';
+import React from 'react';
 
 import type { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 import { TogglePlugin } from './TogglePlugin';

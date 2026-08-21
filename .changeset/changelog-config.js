@@ -1,3 +1,4 @@
+// oxlint-disable unicorn/prefer-module -- [P1 compatibility] Changesets loads this hook through CommonJS.
 const { config } = require('dotenv');
 const { getInfo } = require('@changesets/get-github-info');
 

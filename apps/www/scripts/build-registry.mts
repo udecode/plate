@@ -1,18 +1,20 @@
 import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+
 import { rimraf } from 'rimraf';
+import { PRESET_BASES, PRESET_STYLES } from 'shadcn/preset';
 import {
   type RegistryItem,
   registrySchema,
   type Registry,
 } from 'shadcn/schema';
-import { PRESET_BASES, PRESET_STYLES } from 'shadcn/preset';
 
 import {
   createPlateRegistry,
   type PlateRegistryBase,
 } from '@/registry/registry';
+
 import { buildDocsRegistry } from './build-docs-registry.mts';
 import { toPublicRegistryDependencySpecifier } from './registry-dependencies.mts';
 

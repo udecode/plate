@@ -1,11 +1,12 @@
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import {
   type InputEvent as ReactInputEvent,
   type RefObject,
   useCallback,
   useRef,
 } from 'react';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableInputKernel } from './editing-kernel';
 import { isSelectionInEditorView } from './input-controller';
@@ -231,6 +232,7 @@ export const useRuntimeInputEvents = ({
       onInput,
       readOnly,
       repair,
+      rootRef,
       trace,
       syncDOMSelectionToEditor,
     ]

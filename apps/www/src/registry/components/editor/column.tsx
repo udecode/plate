@@ -1,6 +1,12 @@
 'use client';
 
-import * as React from 'react';
+import { useDraggable, useDropLine } from '@platejs/dnd';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
+import { ColumnItemPlugin, ColumnPlugin } from '@platejs/layout/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { useComposedRef } from '@udecode/cn';
+import { type LucideProps, Trash2Icon, GripHorizontal } from 'lucide-react';
+import { PathApi } from 'platejs';
 import {
   type PlateElementProps,
   PlateElement,
@@ -12,13 +18,8 @@ import {
   useFocusedLast,
   usePluginStore,
 } from 'platejs/react';
-import { useDraggable, useDropLine } from '@platejs/dnd';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
-import { ColumnItemPlugin, ColumnPlugin } from '@platejs/layout/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { useComposedRef } from '@udecode/cn';
-import { type LucideProps, Trash2Icon, GripHorizontal } from 'lucide-react';
-import { PathApi } from 'platejs';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -102,7 +103,7 @@ const ColumnDragHandle = React.memo(function ColumnDragHandle() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" className="!px-1 h-5">
+          <Button variant="ghost" className="h-5 !px-1">
             <GripHorizontal
               className="text-muted-foreground"
               onClick={(event) => {

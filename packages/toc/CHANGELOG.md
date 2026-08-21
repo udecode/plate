@@ -186,12 +186,10 @@
   - Type the heading levels props
 
   ### Details
-
   - The `createHeadingPlugin` function has been updated to accept an array of specific heading levels to enable, allowing for granular selection of heading levels. This provides more flexibility in choosing which heading levels to support within the editor.
   - The function now supports retaining the old behavior of generating plugins for all heading levels up to a maximum level if desired. This ensures backward compatibility with existing implementations that rely on the previous behavior.
 
   ### How to Use
-
   - To use the granular selection feature, pass an array of heading levels to the `createHeadingPlugin` function when initializing it. For example:
 
   ```ts
@@ -571,8 +569,7 @@
 
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
@@ -580,8 +577,7 @@ occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Patch Changes
 

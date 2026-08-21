@@ -12,8 +12,8 @@ import {
   before as editorBefore,
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
+  getSnapshotVersion,
 } from '@platejs/plite/internal';
-import { getSnapshotVersion } from '@platejs/plite/internal';
 
 import {
   type DOMElement,

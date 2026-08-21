@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import type {
   YjsAwarenessChange,
   YjsAwarenessState,
@@ -17,6 +15,7 @@ import {
 } from '@platejs/yjs/react';
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
 import { createPlateEditor, Plate, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 import * as Y from 'yjs';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -549,7 +548,7 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
   if (!runtime) {
     return (
       <div
-        className="flex min-h-96 items-center justify-center text-muted-foreground text-sm"
+        className="flex min-h-96 items-center justify-center text-sm text-muted-foreground"
         role="status"
       >
         Starting a local collaboration room…

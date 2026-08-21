@@ -2,8 +2,8 @@ import { type Node, type Value, RangeApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 
-import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
+import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import {
   type Editor,
   getSelectionPrimaryRange,

@@ -42,15 +42,13 @@ type StrictBenchmarkResult = {
 const serialize = (result: StrictBenchmarkResult) =>
   `${JSON.stringify(result, null, 2)}\n`;
 
-export const validateAndWriteStrictBenchmarkArtifact = <
-  TResult extends StrictBenchmarkResult,
->({
+export const validateAndWriteStrictBenchmarkArtifact = ({
   outputPath,
   result,
   validate,
 }: {
   outputPath?: string;
-  result: TResult;
+  result: StrictBenchmarkResult;
   validate: () => void;
 }) => {
   result.strictValidation.status = 'measured';

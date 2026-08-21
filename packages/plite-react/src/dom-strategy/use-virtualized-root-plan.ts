@@ -1,3 +1,4 @@
+import type { Path, NodeKey } from '@platejs/plite';
 import {
   defaultRangeExtractor,
   useVirtualizer,
@@ -6,7 +7,6 @@ import {
 } from '@tanstack/react-virtual';
 import React from 'react';
 import { flushSync } from 'react-dom';
-import type { Path, NodeKey } from '@platejs/plite';
 
 import type {
   VirtualizedPageLayoutItem,

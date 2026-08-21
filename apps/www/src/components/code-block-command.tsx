@@ -1,16 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
-import type { NpmCommands } from '@/types/unist';
-
 import { CheckIcon, ClipboardIcon, TerminalIcon } from 'lucide-react';
+import * as React from 'react';
 
 import { copyToClipboardWithMeta } from '@/components/copy-button';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
+import type { NpmCommands } from '@/types/unist';
 
 type CodeBlockCommandProps = React.HTMLAttributes<HTMLDivElement> &
   NpmCommands & {
@@ -76,7 +74,7 @@ export function CodeBlockCommand({
           });
         }}
       >
-        <div className="flex items-center gap-2 border-border/50 border-b px-3 py-1">
+        <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1">
           <div className="flex size-4 items-center justify-center rounded-[1px] bg-foreground opacity-70">
             <TerminalIcon className="size-3 text-code" />
           </div>
@@ -84,7 +82,7 @@ export function CodeBlockCommand({
             {Object.entries(tabs).map(([key]) => (
               <TabsTrigger
                 key={key}
-                className="data-[state=active]:!bg-background h-7 border border-transparent pt-0.5 shadow-none data-[state=active]:border-input data-[state=active]:shadow-none"
+                className="h-7 border border-transparent pt-0.5 shadow-none data-[state=active]:border-input data-[state=active]:!bg-background data-[state=active]:shadow-none"
                 value={key}
               >
                 {key}

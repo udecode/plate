@@ -1,8 +1,7 @@
 {
   "recommendations": [
     "unional.vscode-sort-package-json",
-    "biomejs.biome",
-    "dbaeumer.vscode-eslint",
+    "oxc.oxc-vscode",
     "Anthropic.claude-code",
     "bradlc.vscode-tailwindcss",
     "oven.bun-vscode"

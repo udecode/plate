@@ -46,7 +46,7 @@ const markdownTableSplitPattern = /\s+\|\s+/;
 const relatedIssueRowPattern = /^\| #\d+ \|/;
 const rowsPattern = /^Rows:\s*(\d+)\s+open issues\./m;
 
-const read = (path) => readFileSync(path, 'utf8');
+const read = (path) => readFileSync(path, 'utf-8');
 
 const issueNumber = (value) => value.match(issueNumberPattern)?.[1];
 

@@ -13,7 +13,7 @@ const packagePath = resolve(root, 'package.json');
 
 describe('command dispatch benchmark authority', () => {
   it('registers one strict current target and its generated artifact', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string; required: boolean }>;
         command: string;
@@ -59,7 +59,7 @@ describe('command dispatch benchmark authority', () => {
   });
 
   it('keeps the matrix, baseline honesty, and allocation proof explicit', () => {
-    const source = readFileSync(benchmarkPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.match(source, /HANDLER_DEPTHS = \[0, 1, 8, 32\]/u);
     assert.match(source, /DOCUMENT_BLOCKS = \[100, 20_000\]/u);
@@ -78,7 +78,7 @@ describe('command dispatch benchmark authority', () => {
   });
 
   it('runs the authority check in the strict Plite contract gate', () => {
-    const packageJson = JSON.parse(readFileSync(packagePath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
 

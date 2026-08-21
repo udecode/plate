@@ -13,7 +13,6 @@ import {
   type Node,
   NodeApi,
   type NodeTypeSelector,
-  type Path,
   PathApi,
   RangeApi,
 } from '../interfaces';
@@ -30,11 +29,11 @@ import type {
   NodeInsertNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
-import { getDefaultInsertLocation } from '../utils';
-import { normalizeNodeMatch } from '../utils/node-match';
-import { getNodeKeyForNode, seedNodeKeys } from '../utils/node-keys';
 import { select as selectSelection } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
+import { getDefaultInsertLocation } from '../utils';
+import { getNodeKeyForNode, seedNodeKeys } from '../utils/node-keys';
+import { normalizeNodeMatch } from '../utils/node-match';
 import { splitNodes } from './split-nodes';
 
 const insertNodesRuntime = (
@@ -156,9 +155,9 @@ const insertNodesRuntime = (
       return;
     }
 
-    for (const child of nextNodes) {
-      const path = parentPath.concat(index);
-      const owner = getEditorRuntimeOwner(editor);
+    const owner = getEditorRuntimeOwner(editor);
+    const nodeKeyTransfers = nextNodes.flatMap((child, offset) => {
+      const path = parentPath.concat(index + offset);
       const nodeKey = getNodeKeyForNode(child, owner);
       const inheritIdentity =
         nodeKey === null || getPathByNodeKey(editor, nodeKey) === null;
@@ -166,21 +165,18 @@ const insertNodesRuntime = (
       if (inheritIdentity && !isBuildingTransactionSpec(editor)) {
         seedNodeKeys([child], owner);
       }
-      index++;
 
-      applyBuiltDocumentChange(
-        editor,
-        (builder, root) => builder.insertNode(root, path, child),
-        {
-          nodeKeyTransfers: inheritIdentity
-            ? [{ path, source: child }]
-            : undefined,
-        }
-      );
-      at = PathApi.next(at as Path);
-    }
+      return inheritIdentity ? [{ path, source: child }] : [];
+    });
 
-    at = PathApi.previous(at);
+    applyBuiltDocumentChange(
+      editor,
+      (builder, root) =>
+        builder.replaceChildren(root, parentPath, index, 0, nextNodes),
+      { nodeKeyTransfers }
+    );
+    index += nextNodes.length;
+    at = parentPath.concat(index - 1);
 
     if (select) {
       const point = editorPoint(editor, at, { edge: 'end' });

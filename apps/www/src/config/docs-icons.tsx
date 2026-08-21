@@ -1,5 +1,3 @@
-import type { SidebarNavItem } from '@/types/nav';
-
 import {
   AlignCenterIcon,
   ArrowDownToLineIcon,
@@ -93,6 +91,8 @@ import {
   UserIcon,
   UsersIcon,
 } from 'lucide-react';
+
+import type { SidebarNavItem } from '@/types/nav';
 
 export const DocIcons = {
   ai: SparklesIcon,

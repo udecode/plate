@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+
 import {
   assertPliteBrowserFirstPartyParityContracts,
   PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
@@ -728,10 +729,11 @@ describe('scenario helpers', () => {
       ])
     ).toThrow(/editor\.scenario\.runImperative/);
 
-    expect(createScenarioReplay([{ kind: 'settle', timeoutMs: undefined }]))
-      .toMatchObject({
-        steps: [{ value: { kind: 'settle' } }],
-      });
+    expect(
+      createScenarioReplay([{ kind: 'settle', timeoutMs: undefined }])
+    ).toMatchObject({
+      steps: [{ value: { kind: 'settle' } }],
+    });
   });
 
   test('rejects sparse payload arrays instead of serializing holes as null', () => {
@@ -1151,24 +1153,22 @@ describe('scenario helpers', () => {
   test('uses semantic undo for mobile scenarios', async () => {
     const actions: string[] = [];
     const snapshot = { text: 'after undo' } as EditorSnapshot;
-    const harness: Pick<
-      PliteBrowserEditorHarness,
-      'press' | 'trace' | 'undo'
-    > = {
-      press: async (key) => {
-        actions.push(key);
-      },
-      trace: {
-        snapshot: async (label, stepIndex = null) => ({
-          label,
-          snapshot,
-          stepIndex,
-        }),
-      },
-      undo: async () => {
-        actions.push('undo');
-      },
-    };
+    const harness: Pick<PliteBrowserEditorHarness, 'press' | 'trace' | 'undo'> =
+      {
+        press: async (key) => {
+          actions.push(key);
+        },
+        trace: {
+          snapshot: async (label, stepIndex = null) => ({
+            label,
+            snapshot,
+            stepIndex,
+          }),
+        },
+        undo: async () => {
+          actions.push('undo');
+        },
+      };
     const scenario = createEditorHarnessScenario({
       getHarness: () => harness as PliteBrowserEditorHarness,
       page: {} as never,

@@ -197,6 +197,7 @@ const immutableCollectionMutation = () => {
 
 const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   const map = new Map(source);
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let immutable!: Map<TKey, TValue>;
 
   immutable = new Proxy(map, {
@@ -225,6 +226,7 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
 
 const freezeSet = <TValue>(source: ReadonlySet<TValue>) => {
   const set = new Set(source);
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let immutable!: Set<TValue>;
 
   immutable = new Proxy(set, {

@@ -41,9 +41,9 @@ export function isHotkeyEnabledOnTag(
   if (isReadonlyArray(enabledOnTags)) {
     return Boolean(
       targetTagName &&
-        enabledOnTags?.some(
-          (tag) => tag.toLowerCase() === targetTagName.toLowerCase()
-        )
+      enabledOnTags?.some(
+        (tag) => tag.toLowerCase() === targetTagName.toLowerCase()
+      )
     );
   }
 
@@ -64,9 +64,10 @@ export function isScopeActive(
   if (!scopes) {
     return true;
   }
+  const scopeSet = new Set(scopes);
 
   return (
-    activeScopes.some((scope) => scopes.includes(scope)) ||
+    activeScopes.some((scope) => scopeSet.has(scope)) ||
     activeScopes.includes('*')
   );
 }

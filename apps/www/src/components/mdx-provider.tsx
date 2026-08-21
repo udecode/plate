@@ -1,11 +1,9 @@
 'use client';
 
+import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
 
-import { Provider } from 'jotai';
-
 import type { PackageInfoType } from '@/hooks/use-package-info';
-
 import { packageInfoAtom } from '@/hooks/use-package-info';
 
 import { HydrateAtoms } from './context/hydrate-atoms';

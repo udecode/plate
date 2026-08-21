@@ -3,12 +3,12 @@
   "version": "54.0.0-beta.0",
   "description": "Canonical change history for Plite editors.",
   "keywords": [
+    "@platejs/plite",
+    "change",
     "editor",
     "history",
-    "change",
     "redo",
     "save",
-    "@platejs/plite",
     "stack",
     "undo"
   ],
@@ -16,14 +16,20 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/plite-history"
   },
-  "license": "MIT",
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -32,12 +38,9 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -48,14 +51,11 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "devDependencies": {
-    "lodash": "^4.17.21",
+    "@plate/scripts": "workspace:*",
     "@platejs/plite": "workspace:^",
-    "@plate/scripts": "workspace:*"
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "@platejs/plite": ">=54.0.0-beta.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

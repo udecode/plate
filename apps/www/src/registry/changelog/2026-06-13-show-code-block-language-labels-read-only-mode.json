@@ -69,7 +69,7 @@
       ],
       "targets": ["code-block-node", "code-block-node-static"],
       "source": {
-        "line": 13,
+        "line": 46,
         "row": 1,
         "legacyRelease": {
           "date": "2026-06-03",

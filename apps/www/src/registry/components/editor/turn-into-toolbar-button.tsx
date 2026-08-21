@@ -1,11 +1,7 @@
 'use client';
-import { PLUGINS } from '@platejs/utils';
-
-import * as React from 'react';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ElementApi } from '@platejs/plite';
-
+import { PLUGINS } from '@platejs/utils';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import {
   CheckIcon,
@@ -25,8 +21,8 @@ import {
   QuoteIcon,
   SquareIcon,
 } from 'lucide-react';
-
 import { useEditor, useSelectionFragmentProp } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,

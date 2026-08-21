@@ -194,8 +194,7 @@
 
 ### Patch Changes
 
-- [#3070](https://github.com/udecode/plate/pull/3070) by [@zbeyens](https://github.com/zbeyens) – Fixes #3069
-  Fixes #2397
+- [#3070](https://github.com/udecode/plate/pull/3070) by [@zbeyens](https://github.com/zbeyens) – Fixes #3069 Fixes #2397
 
 ## 31.0.0
 
@@ -559,9 +558,7 @@
 
 ### Patch Changes
 
-- [#1336](https://github.com/udecode/plate/pull/1336) by [@fondation451](https://github.com/fondation451) – Copy/paste inside a list now works properly with pasting text:
-  The text was not pasted at all.
-  For other kind of nodes like "p", there were pasted but inside the same bullet.
+- [#1336](https://github.com/udecode/plate/pull/1336) by [@fondation451](https://github.com/fondation451) – Copy/paste inside a list now works properly with pasting text: The text was not pasted at all. For other kind of nodes like "p", there were pasted but inside the same bullet.
 
 ## 9.0.0
 
@@ -766,8 +763,7 @@
 
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
@@ -775,8 +771,7 @@ occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Patch Changes
 

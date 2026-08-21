@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import { cloneDeep } from 'lodash';
+
 import { jsx } from '../..';
 
 void jsx;
-
-import { cloneDeep } from 'lodash';
 
 export const run = (editor) => {
   editor.update(() => {

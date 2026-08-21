@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
 import { useTheme } from 'next-themes';
+import React from 'react';
 import { type SyntaxHighlighterProps, Prism } from 'react-syntax-highlighter';
 import {
   coldarkDark,

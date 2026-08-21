@@ -264,7 +264,7 @@ describe('clipboard large-payload benchmark authority', () => {
         ],
         {
           cwd: root,
-          encoding: 'utf8',
+          encoding: 'utf-8',
           env: {
             ...process.env,
             PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS: '20',
@@ -282,187 +282,213 @@ describe('clipboard large-payload benchmark authority', () => {
     }
   });
 
-  it('runs the live encode, decode, HostCodec, fit, and commit boundaries on a bounded corpus', {
-    timeout: 30_000,
-  }, () => {
-    const result = spawnSync(
-      process.execPath,
-      [
-        '--expose-gc',
-        '--preload',
-        './config/plite-source-aliases.ts',
-        benchmarkPath,
-        '--output=tmp/slate-clipboard-large-payload-benchmark-bounded.json',
-      ],
-      {
-        cwd: root,
-        encoding: 'utf8',
-        env: {
-          ...process.env,
-          PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS: '20',
-          PLITE_CLIPBOARD_BENCH_HUGE_CUT_ITERATIONS: '1',
-          PLITE_CLIPBOARD_BENCH_ISOLATE: '1',
-          PLITE_CLIPBOARD_BENCH_ISSUE_ITERATIONS: '1',
-          PLITE_CLIPBOARD_BENCH_ISSUE_STRESS_LINES: '20',
-          PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS: '1',
-          PLITE_CLIPBOARD_BENCH_ITERATIONS: '1',
-          PLITE_CLIPBOARD_BENCH_STRESS_ITERATIONS: '1',
-          PLITE_CLIPBOARD_BENCH_STRESS_LINES: '20',
-        },
-        maxBuffer: 10 * 1024 * 1024,
-        timeout: 25_000,
-      }
-    );
+  it(
+    'runs the live encode, decode, HostCodec, fit, and commit boundaries on a bounded corpus',
+    {
+      timeout: 30_000,
+    },
+    () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          '--expose-gc',
+          '--preload',
+          './config/plite-source-aliases.ts',
+          benchmarkPath,
+          '--output=tmp/slate-clipboard-large-payload-benchmark-bounded.json',
+        ],
+        {
+          cwd: root,
+          encoding: 'utf-8',
+          env: {
+            ...process.env,
+            PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS: '20',
+            PLITE_CLIPBOARD_BENCH_HUGE_CUT_ITERATIONS: '1',
+            PLITE_CLIPBOARD_BENCH_ISOLATE: '1',
+            PLITE_CLIPBOARD_BENCH_ISSUE_ITERATIONS: '1',
+            PLITE_CLIPBOARD_BENCH_ISSUE_STRESS_LINES: '20',
+            PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS: '1',
+            PLITE_CLIPBOARD_BENCH_ITERATIONS: '1',
+            PLITE_CLIPBOARD_BENCH_STRESS_ITERATIONS: '1',
+            PLITE_CLIPBOARD_BENCH_STRESS_LINES: '20',
+          },
+          maxBuffer: 10 * 1024 * 1024,
+          timeout: 25_000,
+        }
+      );
 
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.match(result.stdout, /METRIC plite_clipboard_worst_issue_p95_ms=/u);
-    assert.match(
-      result.stdout,
-      /METRIC plite_clipboard_correctness_failures=0/u
-    );
+      assert.equal(
+        result.status,
+        0,
+        `${result.stderr}\n${result.stdout}`.trim()
+      );
+      assert.match(
+        result.stdout,
+        /METRIC plite_clipboard_worst_issue_p95_ms=/u
+      );
+      assert.match(
+        result.stdout,
+        /METRIC plite_clipboard_correctness_failures=0/u
+      );
 
-    const summary = JSON.parse(
-      readFileSync(boundedArtifactPath, 'utf8')
-    ) as BenchmarkSummary;
+      const summary = JSON.parse(
+        readFileSync(boundedArtifactPath, 'utf-8')
+      ) as BenchmarkSummary;
 
-    assert.notEqual(boundedArtifactPath, authorityArtifactPath);
-    assert.deepEqual(summary.correctnessFailures, []);
-    assert.equal(summary.config.authorityArtifact, false);
-    assert.equal(summary.config.hugeCutBlocks, 20);
-    assert.equal(summary.config.issueTargetIterations, 1);
-    assert.equal(summary.config.issueTargetStressLines, 20);
-    assert.equal(summary.config.issueTargetsEnabled, true);
-    assert.equal(summary.config.processIsolation, 'support-cut-issue');
-    assert.equal(
-      new Set(Object.values(summary.config.workerPids ?? {})).size,
-      3
-    );
-    assert.equal(summary.metrics.plite_clipboard_correctness_failures, 0);
-    assert.equal(summary.metrics.plite_clipboard_gc_available, 1);
-    assert.equal(summary.thresholdPolicy.releaseGate, false);
-    assert.equal(summary.cohorts.stress.sliceFitMs.metadata.fitted, true);
-    assert.equal(
-      summary.cohorts.stress.sliceFitMs.metadata.publishedCommits,
-      0
-    );
-    assert.equal(summary.cohorts.stress.sliceCommitMs.metadata.commitCount, 1);
-    assert.ok(summary.cohorts.stress.sliceCommitMs.inspectionMs.p95 >= 0);
-    assert.ok(summary.cohorts.stress.sliceCommitMs.setupMs.p95 >= 0);
-    assert.equal(
-      summary.cohorts.stress.hostCodecInsertMs.metadata.commitCount,
-      1
-    );
-    assert.ok(
-      (summary.cohorts.stress.hostCodecInsertMs.metadata.hostParseMs ?? -1) >= 0
-    );
-    assert.ok(
-      summary.cohorts.stress.sliceCommitMs.retainedHeapDeltaBytes !== null
-    );
-    assert.equal(Object.keys(summary.issueTargets).length, 3);
-    assert.equal(
-      summary.plateCodecs.compilationMs.metadata.compilationCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.configurationCommitCount,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.configurationDirtyCommits,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.configurationRevisionDelta,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata
-        .initialCompilationCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.initialDecodeCallbacks,
-      0
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.initialEncodeCallbacks,
-      0
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.initialQueryCallbacks,
-      0
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata
-        .replacementCompilationCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.replacementDecodeCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.replacementEncodeCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.reconfigurationMs.metadata.replacementQueryCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.parseInsert10000Ms.metadata.compilationCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.parseInsert10000Ms.metadata.queryCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.parseInsert10000Ms.metadata.decodeCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.parseInsert10000Ms.metadata.encodeCallbacks,
-      0
-    );
-    assert.equal(
-      summary.plateCodecs.parseInsert10000Ms.metadata.commitCount,
-      1
-    );
-    assert.equal(summary.plateCodecs.parseInsert10000Ms.metadata.lineCount, 20);
-    assert.equal(
-      summary.plateCodecs.serialize10000Ms.metadata.compilationCallbacks,
-      1
-    );
-    assert.equal(
-      summary.plateCodecs.serialize10000Ms.metadata.decodeCallbacks,
-      0
-    );
-    assert.equal(
-      summary.plateCodecs.serialize10000Ms.metadata.encodeCallbacks,
-      1
-    );
-    assert.equal(summary.plateCodecs.serialize10000Ms.metadata.lineCount, 20);
-    assert.ok(
-      (summary.plateCodecs.parseInsert10000Ms.metadata.decodeMs ?? -1) >= 0
-    );
-    assert.ok(
-      (summary.plateCodecs.serialize10000Ms.metadata.encodeMs ?? -1) >= 0
-    );
-    assert.ok(summary.metrics.plite_clipboard_plate_codec_compile_p95_ms >= 0);
-    assert.ok(
-      summary.metrics.plite_clipboard_plate_codec_reconfigure_p95_ms >= 0
-    );
-    assert.ok(
-      summary.metrics.plite_clipboard_plate_codec_parse_insert_10000_p95_ms >= 0
-    );
-    assert.ok(
-      summary.metrics.plite_clipboard_plate_codec_serialize_10000_p95_ms >= 0
-    );
-  });
+      assert.notEqual(boundedArtifactPath, authorityArtifactPath);
+      assert.deepEqual(summary.correctnessFailures, []);
+      assert.equal(summary.config.authorityArtifact, false);
+      assert.equal(summary.config.hugeCutBlocks, 20);
+      assert.equal(summary.config.issueTargetIterations, 1);
+      assert.equal(summary.config.issueTargetStressLines, 20);
+      assert.equal(summary.config.issueTargetsEnabled, true);
+      assert.equal(summary.config.processIsolation, 'support-cut-issue');
+      assert.equal(
+        new Set(Object.values(summary.config.workerPids ?? {})).size,
+        3
+      );
+      assert.equal(summary.metrics.plite_clipboard_correctness_failures, 0);
+      assert.equal(summary.metrics.plite_clipboard_gc_available, 1);
+      assert.equal(summary.thresholdPolicy.releaseGate, false);
+      assert.equal(summary.cohorts.stress.sliceFitMs.metadata.fitted, true);
+      assert.equal(
+        summary.cohorts.stress.sliceFitMs.metadata.publishedCommits,
+        0
+      );
+      assert.equal(
+        summary.cohorts.stress.sliceCommitMs.metadata.commitCount,
+        1
+      );
+      assert.ok(summary.cohorts.stress.sliceCommitMs.inspectionMs.p95 >= 0);
+      assert.ok(summary.cohorts.stress.sliceCommitMs.setupMs.p95 >= 0);
+      assert.equal(
+        summary.cohorts.stress.hostCodecInsertMs.metadata.commitCount,
+        1
+      );
+      assert.ok(
+        (summary.cohorts.stress.hostCodecInsertMs.metadata.hostParseMs ?? -1) >=
+          0
+      );
+      assert.ok(
+        summary.cohorts.stress.sliceCommitMs.retainedHeapDeltaBytes !== null
+      );
+      assert.equal(Object.keys(summary.issueTargets).length, 3);
+      assert.equal(
+        summary.plateCodecs.compilationMs.metadata.compilationCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata.configurationCommitCount,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .configurationDirtyCommits,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .configurationRevisionDelta,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .initialCompilationCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata.initialDecodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata.initialEncodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata.initialQueryCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .replacementCompilationCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .replacementDecodeCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .replacementEncodeCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.reconfigurationMs.metadata
+          .replacementQueryCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.parseInsert10000Ms.metadata.compilationCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.parseInsert10000Ms.metadata.queryCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.parseInsert10000Ms.metadata.decodeCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.parseInsert10000Ms.metadata.encodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateCodecs.parseInsert10000Ms.metadata.commitCount,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.parseInsert10000Ms.metadata.lineCount,
+        20
+      );
+      assert.equal(
+        summary.plateCodecs.serialize10000Ms.metadata.compilationCallbacks,
+        1
+      );
+      assert.equal(
+        summary.plateCodecs.serialize10000Ms.metadata.decodeCallbacks,
+        0
+      );
+      assert.equal(
+        summary.plateCodecs.serialize10000Ms.metadata.encodeCallbacks,
+        1
+      );
+      assert.equal(summary.plateCodecs.serialize10000Ms.metadata.lineCount, 20);
+      assert.ok(
+        (summary.plateCodecs.parseInsert10000Ms.metadata.decodeMs ?? -1) >= 0
+      );
+      assert.ok(
+        (summary.plateCodecs.serialize10000Ms.metadata.encodeMs ?? -1) >= 0
+      );
+      assert.ok(
+        summary.metrics.plite_clipboard_plate_codec_compile_p95_ms >= 0
+      );
+      assert.ok(
+        summary.metrics.plite_clipboard_plate_codec_reconfigure_p95_ms >= 0
+      );
+      assert.ok(
+        summary.metrics.plite_clipboard_plate_codec_parse_insert_10000_p95_ms >=
+          0
+      );
+      assert.ok(
+        summary.metrics.plite_clipboard_plate_codec_serialize_10000_p95_ms >= 0
+      );
+    }
+  );
 
   it('keeps one issue-sized target with native metrics and bounded correctness', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string; required: boolean }>;
         command: string;
@@ -474,7 +500,7 @@ describe('clipboard large-payload benchmark authority', () => {
     const targets = registry.targets.filter(
       ({ id }) => id === 'clipboard-large-payload'
     );
-    const source = readFileSync(benchmarkPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.equal(targets.length, 1);
     assert.match(targets[0]!.command, /HUGE_CUT_BLOCKS=50000/u);

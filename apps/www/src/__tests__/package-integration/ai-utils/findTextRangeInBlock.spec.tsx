@@ -1,6 +1,4 @@
 import { BaseAIPlugin } from '@platejs/ai';
-import { BaseCommentPlugin } from '@platejs/comment';
-import { BaseLinkPlugin } from '@platejs/link';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -9,6 +7,8 @@ import {
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
+import { BaseCommentPlugin } from '@platejs/comment';
+import { BaseLinkPlugin } from '@platejs/link';
 import { BaseParagraphPlugin, createBaseEditor, type Value } from 'platejs';
 
 const plugins = [

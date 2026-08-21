@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, type Descendant, type Element } from '@platejs/plite';
 import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { createEditor, type Descendant, type Element } from '@platejs/plite';
+
 import { createRangeAnchor } from './support/anchor';
 import { extendTestSchema } from './support/schema';
 

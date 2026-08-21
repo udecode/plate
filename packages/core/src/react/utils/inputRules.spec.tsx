@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import { editorCommands, property, schema } from '@platejs/plite';
 import {
   insertBreak,
@@ -8,18 +7,19 @@ import {
   probeCommandNativeEquivalent,
   string as editorString,
 } from '@platejs/plite/internal';
-import { BaseParagraphPlugin } from '../../lib/plugins';
+import { jsxt } from '@platejs/test-utils';
+
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-
-import { createPlateEditor } from '../editor';
-import { definePlatePlugin } from '../plugin';
+import { BaseParagraphPlugin } from '../../lib/plugins';
 import {
   createRuleFactory,
   defineInputRule,
 } from '../../lib/plugins/input-rules';
+import { createPlateEditor } from '../editor';
+import { definePlatePlugin } from '../plugin';
 
 jsxt;
 

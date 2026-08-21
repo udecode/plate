@@ -2,8 +2,8 @@
 import { createEditor, type Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
-import { defineBasePlugin, DOMPlugin } from '../../lib';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { defineBasePlugin, DOMPlugin } from '../../lib';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 

@@ -146,9 +146,7 @@
 
 ### Minor Changes
 
-- [#3753](https://github.com/udecode/plate/pull/3753) by [@felixfeng33](https://github.com/felixfeng33) – PlaceholderPlugin:
-  New `updateUploadHistory` `withHistoryMark` `isHistoryMarking` to fix undo to the loading state.
-  `editor.insert.insertMedia` add options
+- [#3753](https://github.com/udecode/plate/pull/3753) by [@felixfeng33](https://github.com/felixfeng33) – PlaceholderPlugin: New `updateUploadHistory` `withHistoryMark` `isHistoryMarking` to fix undo to the loading state. `editor.insert.insertMedia` add options
 
   New option `disableEmptyPlaceholder` to hidden empty placeholder.
 
@@ -373,8 +371,7 @@
 
 ### Major Changes
 
-- [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size.
-  Update the following components:
+- [#2537](https://github.com/udecode/plate/pull/2537) by [@haydencarlson](https://github.com/haydencarlson) – `MediaEmbedElement` is now more headless with a smaller bundle size. Update the following components:
 
   - `npx @udecode/plate-ui@latest add media-embed-element`
     - now uses `react-lite-youtube-embed` for YouTube videos.
@@ -393,7 +390,7 @@
   - Caption is now a separate plugin. Install `@udecode/plate-caption` and add it to your plugins:
 
   ```ts
-  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from "@udecode/plate-media";
+  import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
   createCaptionPlugin({
     options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },

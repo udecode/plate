@@ -1,12 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { createFileTreeForRegistryItemFiles } from '@/lib/rehype-utils';
-import type { ImperativePanelHandle } from 'react-resizable-panels';
-import type { registryItemFileSchema, registryItemSchema } from 'shadcn/schema';
-import type { z } from 'zod';
-
 import {
   Check,
   Fullscreen,
@@ -18,6 +11,10 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import * as React from 'react';
+import type { ImperativePanelHandle } from 'react-resizable-panels';
+import type { registryItemFileSchema, registryItemSchema } from 'shadcn/schema';
+import type { z } from 'zod';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -34,6 +31,7 @@ import {
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
 } from '@/lib/registry-install';
+import type { createFileTreeForRegistryItemFiles } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 
 export type BlockViewerContext = {
@@ -72,13 +70,23 @@ async function fetchRegistryFiles(itemName: string) {
   const response = await fetch(
     `/api/registry-source/${encodeURIComponent(itemName)}`
   );
-  const data = await response.json();
+  const data: unknown = await response.json();
 
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to fetch files');
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('Registry source returned an invalid response');
   }
 
-  return data.files as BlockViewerContext['highlightedFiles'];
+  if (!response.ok) {
+    throw new Error(
+      'error' in data && typeof data.error === 'string'
+        ? data.error
+        : 'Failed to fetch files'
+    );
+  }
+
+  return 'files' in data
+    ? (data.files as BlockViewerContext['highlightedFiles'])
+    : null;
 }
 
 export function useBlockViewer() {
@@ -138,6 +146,7 @@ export function BlockViewerProvider({
   const isSettledRef = React.useRef(false);
 
   React.useEffect(() => {
+    let cancelled = false;
     const hasMissingFiles = files.some(
       (file) =>
         typeof file.content !== 'string' ||
@@ -158,7 +167,7 @@ export function BlockViewerProvider({
         try {
           const files = await fetchRegistryFiles(item.name);
 
-          if (files) {
+          if (files && !cancelled) {
             setHighlightedFiles(files);
 
             if (!activeFileState && files.length) {
@@ -166,15 +175,22 @@ export function BlockViewerProvider({
             }
           }
         } catch (error) {
+          if (cancelled) return;
           console.error('Failed to load files:', error);
           hasErrorRef.current = true;
         } finally {
-          setIsLoading(false);
-          isSettledRef.current = true;
+          if (!cancelled) {
+            setIsLoading(false);
+            isSettledRef.current = true;
+          }
         }
       };
       void loadFiles();
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeFileState, files, isLoading, item.name, view]);
 
   return (
@@ -249,7 +265,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
 
       {block && (
         <Link
-          className="font-medium text-sm underline-offset-2 hover:underline"
+          className="text-sm font-medium underline-offset-2 hover:underline"
           href={description}
           target={description.startsWith('/') ? '_self' : '_blank'}
         >
@@ -352,7 +368,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
                 'dark:bg-muted dark:text-foreground',
                 'hover:ring-2 hover:ring-primary hover:ring-offset-2',
-                'transition-all duration-300 ease-out',
+                'transition-shadow duration-300 ease-out',
                 'h-[26px] px-2 text-xs'
               )}
               href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
@@ -362,7 +378,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 className={cn(
                   '-mt-12 absolute right-0 h-32 w-8 translate-x-12 rotate-12',
                   'bg-white opacity-10',
-                  'transition-all duration-1000 ease-out'
+                  'transition-transform duration-1000 ease-out'
                 )}
               />
               Get the code
@@ -449,7 +465,7 @@ function BlockViewerView({
               </div>
             )}
           </ResizablePanel>
-          <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 md:block" />
+          <ResizableHandle className="relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-[height] hover:after:h-10 md:block" />
           <ResizablePanel defaultSize={0} minSize={0} />
         </ResizablePanelGroup>
       </div>

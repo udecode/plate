@@ -1,4 +1,3 @@
-import { type MouseEvent, type PointerEvent, useEffect, useRef } from 'react';
 import { RangeApi } from '@platejs/plite';
 import {
   Editable,
@@ -10,6 +9,7 @@ import {
   useEditorSelector,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { type MouseEvent, type PointerEvent, useEffect, useRef } from 'react';
 
 import { Button, Icon, Menu, Portal } from './components';
 import type { CustomTextKey, CustomValue } from './custom-types.d';

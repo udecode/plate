@@ -238,9 +238,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeLiftNodesOptions<
-        NodeIn<TValue>
-      > = NodeLiftNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeLiftNodesOptions<NodeIn<TValue>> =
+        NodeLiftNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       options?: OptionalSelectorOptions<TOptions>
@@ -265,9 +264,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeMergeNodesOptions<
-        NodeIn<TValue>
-      > = NodeMergeNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeMergeNodesOptions<NodeIn<TValue>> =
+        NodeMergeNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       options?: OptionalSelectorOptions<TOptions>
@@ -291,9 +289,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeMoveNodesOptions<
-        NodeIn<TValue>
-      > = NodeMoveNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeMoveNodesOptions<NodeIn<TValue>> =
+        NodeMoveNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       options: OptionalSelectorOptions<TOptions>
@@ -317,9 +314,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeRemoveNodesOptions<
-        NodeIn<TValue>
-      > = NodeRemoveNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeRemoveNodesOptions<NodeIn<TValue>> =
+        NodeRemoveNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       options?: OptionalSelectorOptions<TOptions>
@@ -355,9 +351,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeSetNodesOptions<
-        NodeIn<TValue>
-      > = NodeSetNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeSetNodesOptions<NodeIn<TValue>> =
+        NodeSetNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       props: Partial<NodeProps<NodeIn<TValue>>>,
@@ -382,9 +377,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeSplitNodesOptions<
-        NodeIn<TValue>
-      > = NodeSplitNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeSplitNodesOptions<NodeIn<TValue>> =
+        NodeSplitNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       options?: OptionalSelectorOptions<TOptions>
@@ -409,9 +403,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeUnsetNodesOptions<
-        NodeIn<TValue>
-      > = NodeUnsetNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeUnsetNodesOptions<NodeIn<TValue>> =
+        NodeUnsetNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       props: string | readonly string[],
@@ -437,9 +430,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeUnwrapNodesOptions<
-        NodeIn<TValue>
-      > = NodeUnwrapNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeUnwrapNodesOptions<NodeIn<TValue>> =
+        NodeUnwrapNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       options?: OptionalSelectorOptions<TOptions>
@@ -465,9 +457,8 @@ export interface NodeMutationMethods<V extends Value = Value> {
     <
       TValue extends V,
       TExtensions extends readonly unknown[],
-      const TOptions extends NodeWrapNodesOptions<
-        NodeIn<TValue>
-      > = NodeWrapNodesOptions<NodeIn<TValue>>,
+      const TOptions extends NodeWrapNodesOptions<NodeIn<TValue>> =
+        NodeWrapNodesOptions<NodeIn<TValue>>,
     >(
       editor: Editor<TValue, TExtensions>,
       element: ElementIn<TValue>,

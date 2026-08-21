@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { replace as editorReplace } from '@platejs/plite/internal';
-import { PliteReactUpdatePolicy } from '../src';
 
+import { replace as editorReplace } from '@platejs/plite/internal';
+
+import { PliteReactUpdatePolicy } from '../src';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { createEditableInputController } from '../src/editable/input-state';
 import { applyEditableRepairRequest } from '../src/editable/mutation-controller';
@@ -22,7 +23,7 @@ test('selection preservation policy is deeply frozen', () => {
 });
 
 test('editable repair request exposes focused profiler buckets', () => {
-  const source = readFileSync('src/editable/mutation-controller.ts', 'utf8');
+  const source = readFileSync('src/editable/mutation-controller.ts', 'utf-8');
 
   expect(source).toMatch(
     /profileEditableMutationDuration\(\s*'repair\.selection-source-transition'/

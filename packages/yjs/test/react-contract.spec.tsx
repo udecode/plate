@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { after, describe, it } from 'node:test';
+
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import React, { act, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import type { Descendant, Range } from '@platejs/plite';
-import { setEditorFocused } from '@platejs/plite/internal';
 import type { PliteDecorationSource, ReactEditor } from '@platejs/plite-react';
+import { setEditorFocused } from '@platejs/plite/internal';
+import React, { act, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import type { YjsRemoteCursorDecorationData } from '../src';
 import {
@@ -40,7 +41,7 @@ if (shouldUnregisterHappyDOM) {
 
 after(() => {
   if (shouldUnregisterHappyDOM) {
-    GlobalRegistrator.unregister();
+    void GlobalRegistrator.unregister();
   }
 });
 
@@ -107,8 +108,8 @@ const sendRemoteSelection = (
   });
 };
 
-describe('@platejs/yjs react contract', () => {
-  it('rerenders provider status hooks from provider lifecycle events', () => {
+void describe('@platejs/yjs react contract', () => {
+  void it('rerenders provider status hooks from provider lifecycle events', () => {
     const provider = new FakeProvider({
       awarenessClientId: 7,
       status: 'connecting',
@@ -150,7 +151,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('rerenders provider status after a Plate update portal disconnect', () => {
+  void it('rerenders provider status after a Plate update portal disconnect', () => {
     const provider = new FakeProvider({
       awarenessClientId: 7,
       status: 'connected',
@@ -185,7 +186,7 @@ describe('@platejs/yjs react contract', () => {
     view.unmount();
   });
 
-  it('exposes remote cursors as a DOM-neutral decoration source', () => {
+  void it('exposes remote cursors as a DOM-neutral decoration source', () => {
     const awareness = new FakeAwareness(2);
     const peer = createYjsReactPeer({
       awareness,
@@ -240,7 +241,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('refreshes remote cursor decorations when their revision changes', () => {
+  void it('refreshes remote cursor decorations when their revision changes', () => {
     const awareness = new FakeAwareness(4);
     const peer = createYjsReactPeer({
       awareness,
@@ -293,7 +294,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('resolves remote cursor overlay rectangles through the editor DOM API', () => {
+  void it('resolves remote cursor overlay rectangles through the editor DOM API', () => {
     const awareness = new FakeAwareness(3);
     const peer = createYjsReactPeer({
       awareness,
@@ -338,7 +339,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('keeps overlay positions stable across unrelated editor updates', () => {
+  void it('keeps overlay positions stable across unrelated editor updates', () => {
     const awareness = new FakeAwareness(8);
     const peer = createYjsReactPeer({
       awareness,
@@ -378,7 +379,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('refreshes overlay positions when a remote cursor selection changes', () => {
+  void it('refreshes overlay positions when a remote cursor selection changes', () => {
     const awareness = new FakeAwareness(10);
     const peer = createYjsReactPeer({
       awareness,
@@ -418,7 +419,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('refreshes remote cursor overlay data when its revision changes', () => {
+  void it('refreshes remote cursor overlay data when its revision changes', () => {
     const awareness = new FakeAwareness(5);
     const peer = createYjsReactPeer({
       awareness,
@@ -462,7 +463,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('refreshes custom overlay data when it has a cursor-named object', () => {
+  void it('refreshes custom overlay data when it has a cursor-named object', () => {
     const awareness = new FakeAwareness(9);
     const peer = createYjsReactPeer({
       awareness,
@@ -508,7 +509,7 @@ describe('@platejs/yjs react contract', () => {
     peer.cleanup();
   });
 
-  it('keeps custom cursor-named overlay data stable across unrelated editor updates', () => {
+  void it('keeps custom cursor-named overlay data stable across unrelated editor updates', () => {
     const awareness = new FakeAwareness(11);
     const peer = createYjsReactPeer({
       awareness,

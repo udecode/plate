@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { type Descendant, type Range } from '@platejs/plite';
+
+import type { Descendant, Range } from '@platejs/plite';
 
 import {
   assertCanonicalYjsTrace,

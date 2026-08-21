@@ -1,12 +1,11 @@
-import type { BaseEditor } from '../../lib/editor';
-import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import type {
   EditorExtensionReference,
   EditorReadMethodTree,
 } from '@platejs/plite';
-
 import { isEditorExtension } from '@platejs/plite/internal';
 
+import type { BaseEditor } from '../../lib/editor';
+import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';

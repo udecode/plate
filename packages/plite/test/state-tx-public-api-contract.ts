@@ -2,14 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  getChildren as editorGetChildren,
-  getLastCommit as editorGetLastCommit,
-  getSelection as editorGetSelection,
-  getSnapshot as editorGetSnapshot,
-  string as editorString,
-} from '@platejs/plite/internal';
-
-import {
   createEditor,
   createEditorView,
   type Descendant,
@@ -17,6 +9,14 @@ import {
   NodeApi,
   type NodeKey,
 } from '@platejs/plite';
+import {
+  getChildren as editorGetChildren,
+  getLastCommit as editorGetLastCommit,
+  getSelection as editorGetSelection,
+  getSnapshot as editorGetSnapshot,
+  string as editorString,
+} from '@platejs/plite/internal';
+
 import { defineTestSchema } from './support/schema';
 import { replaceEditorValue } from './support/snapshot';
 
@@ -506,7 +506,7 @@ describe('state/tx public API contract', () => {
   it('exposes complete read-only state groups for document, runtime, and commit metadata', () => {
     const editor = createSeededEditor();
     const firstText = editor.read.nodes.get([0, 0])![0];
-    assert(NodeApi.isDescendant(firstText));
+    assert.ok(NodeApi.isDescendant(firstText));
     const firstTextNodeKey = editor.read((state) => state.key(firstText));
 
     assert.equal(typeof firstTextNodeKey, 'string');
@@ -541,7 +541,7 @@ describe('state/tx public API contract', () => {
   it('targets a moved node by node key', () => {
     const editor = createSeededEditor();
     const firstBlock = editor.read.nodes.get([0])![0];
-    assert(NodeApi.isDescendant(firstBlock));
+    assert.ok(NodeApi.isDescendant(firstBlock));
     const nodeKey = editor.key(firstBlock);
 
     editor.update.nodes.move({ at: nodeKey, to: [2] });

@@ -1,4 +1,5 @@
 import { isDOMText } from '@platejs/plite-dom';
+
 import { getNativeTextInsertDelta } from './native-text-input-delta';
 
 export const applyTextInsert = (

@@ -3,27 +3,33 @@
   "version": "54.0.0-beta.0",
   "description": "A hyperscript helper for creating Plite documents.",
   "keywords": [
+    "@platejs/plite",
     "deserialize",
     "h",
     "html",
     "hyperscript",
     "jsx",
     "serialize",
-    "@platejs/plite",
     "xml"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/plite-hyperscript"
   },
-  "license": "MIT",
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -32,12 +38,9 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -48,13 +51,10 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "devDependencies": {
-    "@platejs/plite": "workspace:^",
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "@platejs/plite": "workspace:^"
   },
   "peerDependencies": {
     "@platejs/plite": ">=54.0.0-beta.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

@@ -1,5 +1,4 @@
 import { defaultFont, defaultFontSize, defaultLang } from '../constants';
-
 import generateStylesXML from './styles';
 
 describe('generateStylesXML', () => {

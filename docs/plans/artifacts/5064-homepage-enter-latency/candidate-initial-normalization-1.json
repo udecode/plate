@@ -1,0 +1,1374 @@
+{
+  "action": "enter",
+  "browserHandleAvailable": true,
+  "budget": {
+    "maxLongTasks": 0,
+    "maxMutationP95": 16,
+    "maxSecondPaintP95": 32
+  },
+  "commandBlockers": [],
+  "commitDelta": 20,
+  "diagnose": true,
+  "domSelection": {
+    "anchor": {
+      "path": [
+        0,
+        0
+      ],
+      "offset": 32
+    },
+    "focus": {
+      "path": [
+        0,
+        0
+      ],
+      "offset": 32
+    }
+  },
+  "beforeInput": null,
+  "finalText": "Welcome to the Plate Playground!",
+  "focusPreserved": true,
+  "firstPaint": {
+    "max": 131.9280000029803,
+    "mean": 110.95040000186259,
+    "p50": 115.16199999851051,
+    "p75": 126.62800000446987,
+    "p95": 130.62800000446987,
+    "samples": [
+      92.59600000447062,
+      130.22800000000007,
+      112.36200000148983,
+      131.9280000029803,
+      111.06200000447097,
+      126.62800000446987,
+      115.26199999850905,
+      127.92800000297939,
+      98.19600000447099,
+      130.62800000446987,
+      111.56199999851015,
+      -0.20000000149047992,
+      115.16199999851051,
+      124.8280000044706,
+      98.79600000149003,
+      126.82799999850977,
+      115.96200000447061,
+      110.16200000297977,
+      113.26200000298013,
+      125.82799999850977
+    ]
+  },
+  "inputMutation": null,
+  "inputState": {
+    "activeIntent": "history",
+    "modelOwnedTextInputGuard": 0,
+    "modelSelectionPreference": {
+      "preferModelSelection": true,
+      "reason": "model-command",
+      "selectionSource": "model-owned"
+    },
+    "pendingNativeTextInputRepairOffset": null,
+    "pendingNativeTextInputRepairPathKey": null,
+    "preferModelSelection": true,
+    "recentTextInputRepairEcho": null,
+    "selectionChangeOrigin": "programmatic-export",
+    "selectionSource": "model-owned"
+  },
+  "ignoredHostErrors": [
+    {
+      "message": "net::ERR_CONNECTION_REFUSED",
+      "type": "requestfailed",
+      "url": "http://localhost:3000/site.webmanifest"
+    },
+    {
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "type": "console",
+      "url": "http://localhost:3000/site.webmanifest"
+    }
+  ],
+  "longTasks": {
+    "count": 0,
+    "max": 0,
+    "samples": []
+  },
+  "nativeBlockers": [],
+  "profileDurations": {
+    "runtime-time:react:playground:update": 2337.899999946356,
+    "plate-element:react:plate-element:paragraph:mount": 800.8000000044703,
+    "runtime-time:keydown.apply-editable-keydown": 704.900000013411,
+    "core-time:command-break.insert-around": 436.899999961257,
+    "core-time:notify-listeners": 318.2999999895692,
+    "plate-element:react:plate-element:paragraph:update": 285.7999998778105,
+    "core-time:notify-commit-listeners": 265.9999999925494,
+    "plate-element:react:plate-element:codeBlock:update": 265.6000000089407,
+    "plate-element:react:plate-element:codeLine:update": 254.20000000298023,
+    "core-time:command-break.insert-dispatch": 249.79999995231628,
+    "core-time:transaction-spec-callback": 234.99999998509884,
+    "runtime-time:react:playground:nested-update": 215.00000002980232,
+    "plate-element:react:plate-element:link:mount": 163.90000004321337,
+    "plate-element:react:plate-element:table:update": 150.10000000149012,
+    "plate-element:react:plate-element:tableRow:update": 127.19999999552965,
+    "core-time:command-break.insert-default": 112.89999998360872,
+    "core-time:mutation-root": 107.6000000089407,
+    "core-time:transaction-callback": 102.40000005811453,
+    "core-time:split-nodes-transaction": 90.59999999403954,
+    "core-time:split-nodes-levels-loop": 80.80000001937151,
+    "core-time:document-change-build": 75.30000001937151,
+    "plate-element:react:plate-element:toc:update": 64.20000002533197,
+    "plate-element:react:plate-element:tableCell:update": 63.799999952316284,
+    "core-time:command-history.undo-dispatch": 50.49999999254942,
+    "core-time:command-history.undo-default": 50.29999998956919,
+    "plate-element:react:plate-element:heading:mount": 48.00000001490116,
+    "runtime-time:dom-path-sync": 35.09999996423721,
+    "core-time:notify-source-listeners": 34.20000001043081,
+    "core-time:notify-source-listeners:commit": 31.399999998509884,
+    "runtime-time:projection-store.source-read:editable-decorate": 26.100000016391277
+  },
+  "renderCounts": {
+    "plate-element:react:plate-element:tableCell:update": 1200,
+    "plate-element:react:plate-element:tableRow:update": 400,
+    "plate-element:react:plate-element:paragraph:update": 350,
+    "plate-element:react:plate-element:paragraph:nested-update": 275,
+    "root-plan:dom-strategy-root-sources": 100,
+    "editable:anonymous": 100,
+    "plate-element:react:plate-element:link:mount": 100,
+    "plate-element:react:plate-element:blockquote:update": 100,
+    "plate-element:react:plate-element:column:update": 100,
+    "plate-element:react:plate-element:link:nested-update": 100,
+    "plate-element:react:plate-element:paragraph:mount": 75,
+    "plate-element:react:plate-element:codeLine:update": 75,
+    "plate-element:react:plate-element:codeLine:nested-update": 75,
+    "plate-element:react:plate-element:toc:update": 52,
+    "plate-element:react:plate-element:heading:mount": 50,
+    "plate-element:react:plate-element:codeBlock:update": 50,
+    "plate-element:react:plate-element:table:update": 50,
+    "plate-element:react:plate-element:columnGroup:update": 50,
+    "plate-element:react:plate-element:heading:nested-update": 50,
+    "plate-element:react:plate-element:toc:nested-update": 49,
+    "plate-element:react:plate-element:mention:update": 25,
+    "plate-element:react:plate-element:horizontalRule:update": 25,
+    "plate-element:react:plate-element:date:update": 25,
+    "plate-element:react:plate-element:inlineEquation:update": 25,
+    "plate-element:react:plate-element:equation:update": 25,
+    "plate-element:react:plate-element:codeDrawing:update": 25,
+    "plate-element:react:plate-element:codeBlock:nested-update": 25,
+    "plate-element:react:plate-element:mention:nested-update": 25,
+    "plate-element:react:plate-element:horizontalRule:nested-update": 25,
+    "plate-element:react:plate-element:date:nested-update": 25,
+    "plate-element:react:plate-element:inlineEquation:nested-update": 25,
+    "plate-element:react:plate-element:equation:nested-update": 25,
+    "plate-element:react:plate-element:codeDrawing:nested-update": 25
+  },
+  "selectorCounts": {
+    "selector-element-selected-check:global": 2325,
+    "selector-element-selected-notify:global": 2325,
+    "selector-global-check:global": 200,
+    "selector-global-notify:global": 200,
+    "selector-subscription-runtime:r2:n264": 200,
+    "selector-subscription-runtime:r2:n265": 200,
+    "selector-subscription-runtime:r2:n267": 200,
+    "selector-subscription-runtime:r2:n270": 200,
+    "selector-subscription-runtime:r2:n271": 200,
+    "selector-subscription-runtime:r2:n273": 200,
+    "selector-top-level-selection-index-check:global": 150,
+    "selector-subscription-runtime:r2:n262": 100,
+    "selector-subscription-runtime:r2:n263": 100,
+    "selector-subscription-runtime:r2:n266": 100,
+    "selector-subscription-runtime:r2:n268": 100,
+    "selector-subscription-runtime:r2:n269": 100,
+    "selector-subscription-runtime:r2:n272": 100,
+    "selector-subscription-runtime:r2:n274": 100,
+    "selector-subscription-runtime:r2:n276": 100,
+    "selector-editable-root-commit-check:global": 50,
+    "selector-editable-root-commit-notify:global": 50,
+    "selector-selection-dom-export-check:global": 50,
+    "selector-selection-dom-export-notify:global": 50,
+    "selector-root-node-keys-check:global": 50,
+    "selector-root-node-keys-notify:global": 50,
+    "selector-selection-paths-check:global": 50,
+    "selector-root-document-epoch-check:global": 50,
+    "selector-placeholder-check:global": 50,
+    "selector-placeholder-notify:global": 50,
+    "selector-runtime-node-check:r2:n249": 50,
+    "selector-runtime-node-notify:r2:n249": 50,
+    "selector-runtime-node-check:r2:n250": 50,
+    "selector-runtime-node-notify:r2:n250": 50,
+    "selector-subscription-deferred:global": 50,
+    "selector-runtime-node-check:r2:n282": 50,
+    "selector-runtime-node-notify:r2:n282": 50,
+    "selector-runtime-node-check:r2:n284": 50,
+    "selector-runtime-node-notify:r2:n284": 50,
+    "selector-runtime-node-check:r2:n314": 50,
+    "selector-runtime-node-notify:r2:n314": 50,
+    "selector-runtime-node-check:r2:n322": 50,
+    "selector-runtime-node-notify:r2:n322": 50,
+    "selector-runtime-node-check:r2:n324": 50,
+    "selector-runtime-node-notify:r2:n324": 50,
+    "selector-runtime-node-check:r2:n338": 50,
+    "selector-runtime-node-notify:r2:n338": 50,
+    "selector-runtime-node-check:r2:n340": 50,
+    "selector-runtime-node-notify:r2:n340": 50,
+    "selector-runtime-node-check:r2:n342": 50,
+    "selector-runtime-node-notify:r2:n342": 50,
+    "selector-runtime-node-check:r2:n352": 50,
+    "selector-runtime-node-notify:r2:n352": 50,
+    "selector-runtime-node-check:r2:n464": 50,
+    "selector-runtime-node-notify:r2:n464": 50,
+    "selector-runtime-node-check:r2:n466": 50,
+    "selector-runtime-node-notify:r2:n466": 50,
+    "selector-runtime-node-check:r2:n472": 50,
+    "selector-runtime-node-notify:r2:n472": 50,
+    "selector-runtime-node-check:r2:n475": 50,
+    "selector-runtime-node-notify:r2:n475": 50,
+    "selector-runtime-node-check:r2:n478": 50,
+    "selector-runtime-node-notify:r2:n478": 50,
+    "selector-runtime-node-check:r2:n493": 50,
+    "selector-runtime-node-notify:r2:n493": 50,
+    "selector-runtime-node-check:r2:n495": 50,
+    "selector-runtime-node-notify:r2:n495": 50,
+    "selector-runtime-node-check:r2:n497": 50,
+    "selector-runtime-node-notify:r2:n497": 50,
+    "selector-runtime-node-check:r2:n264": 50,
+    "selector-runtime-node-notify:r2:n264": 50,
+    "selector-runtime-node-check:r2:n265": 50,
+    "selector-runtime-node-notify:r2:n265": 50,
+    "selector-runtime-node-check:r2:n267": 50,
+    "selector-runtime-node-notify:r2:n267": 50,
+    "selector-runtime-node-check:r2:n270": 50,
+    "selector-runtime-node-notify:r2:n270": 50,
+    "selector-runtime-node-check:r2:n271": 50,
+    "selector-runtime-node-notify:r2:n271": 50,
+    "selector-runtime-node-check:r2:n273": 50,
+    "selector-runtime-node-notify:r2:n273": 50,
+    "selector-subscription-runtime:r2:n282": 50,
+    "selector-subscription-runtime:r2:n284": 50,
+    "selector-subscription-runtime:r2:n314": 50,
+    "selector-subscription-runtime:r2:n322": 50,
+    "selector-subscription-runtime:r2:n324": 50,
+    "selector-subscription-runtime:r2:n338": 50,
+    "selector-subscription-runtime:r2:n340": 50,
+    "selector-subscription-runtime:r2:n342": 50,
+    "selector-subscription-runtime:r2:n352": 50,
+    "selector-subscription-runtime:r2:n464": 50,
+    "selector-subscription-runtime:r2:n466": 50,
+    "selector-subscription-runtime:r2:n472": 50,
+    "selector-subscription-runtime:r2:n475": 50,
+    "selector-subscription-runtime:r2:n478": 50,
+    "selector-subscription-runtime:r2:n493": 50,
+    "selector-subscription-runtime:r2:n495": 50,
+    "selector-subscription-runtime:r2:n497": 50,
+    "selector-subscription-runtime:r2:n499": 4,
+    "selector-subscription-runtime:r2:n501": 4,
+    "selector-subscription-runtime:r2:n503": 4
+  },
+  "syncStates": [
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    }
+  ],
+  "measuredSamples": 20,
+  "measuredInput": "",
+  "measuredStartState": {
+    "commitVersion": 11,
+    "modelSelection": {
+      "anchor": {
+        "offset": 32,
+        "path": [
+          0,
+          0
+        ]
+      },
+      "focus": {
+        "offset": 32,
+        "path": [
+          0,
+          0
+        ]
+      },
+      "kind": "text"
+    },
+    "modelText": "Welcome to the Plate Playground!"
+  },
+  "enterSamples": [
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 12,
+      "commitBefore": 11,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 14,
+      "commitBefore": 13,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 16,
+      "commitBefore": 15,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 18,
+      "commitBefore": 17,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 20,
+      "commitBefore": 19,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 22,
+      "commitBefore": 21,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 24,
+      "commitBefore": 23,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 26,
+      "commitBefore": 25,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 28,
+      "commitBefore": 27,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 30,
+      "commitBefore": 29,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 32,
+      "commitBefore": 31,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 34,
+      "commitBefore": 33,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 36,
+      "commitBefore": 35,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 38,
+      "commitBefore": 37,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 40,
+      "commitBefore": 39,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 42,
+      "commitBefore": 41,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 44,
+      "commitBefore": 43,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 46,
+      "commitBefore": 45,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 48,
+      "commitBefore": 47,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": 50,
+      "commitBefore": 49,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    }
+  ],
+  "mutation": {
+    "max": 140.5,
+    "mean": 124.07500000074506,
+    "p50": 121,
+    "p75": 137,
+    "p95": 138,
+    "samples": [
+      106,
+      135.89999999850988,
+      118.60000000149012,
+      138,
+      118.20000000298023,
+      126.5,
+      117,
+      137.5,
+      108,
+      140.5,
+      121,
+      126.89999999850988,
+      117,
+      137.80000000447035,
+      101.5,
+      137.39999999850988,
+      117.90000000596046,
+      122.80000000447035,
+      116,
+      137
+    ]
+  },
+  "nativeInputSamples": 0,
+  "trustedActionSamples": 20,
+  "modelSelection": {
+    "anchor": {
+      "offset": 32,
+      "path": [
+        0,
+        0
+      ]
+    },
+    "focus": {
+      "offset": 32,
+      "path": [
+        0,
+        0
+      ]
+    },
+    "kind": "text"
+  },
+  "modelText": "Welcome to the Plate Playground!",
+  "nativeSelectedText": "",
+  "runtimeErrors": [],
+  "secondPaint": {
+    "max": 174.9000000044707,
+    "mean": 157.11000000186255,
+    "p50": 154.00000000148975,
+    "p75": 168.49999999851025,
+    "p95": 173.60000000297987,
+    "samples": [
+      142.60000000447053,
+      171.89999999999964,
+      154.00000000148975,
+      173.60000000297987,
+      152.70000000446998,
+      159.4000000044707,
+      147.89999999850988,
+      169.60000000297987,
+      139.9000000044707,
+      171.60000000446962,
+      153.29999999850952,
+      158.19999999850916,
+      148.49999999851025,
+      174.9000000044707,
+      132.10000000149012,
+      168.49999999851025,
+      149.30000000447035,
+      160.10000000297987,
+      146.60000000297987,
+      167.49999999851025
+    ]
+  },
+  "targetPath": "0",
+  "targetText": "Welcome to the Plate Playground!",
+  "url": "http://localhost:3027",
+  "warmupSamples": 5
+}

@@ -4,8 +4,8 @@ import {
   type Element,
   type Path,
 } from '@platejs/plite';
-import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import { getColSpan, getRowSpan } from './codec';
 
 export type TableGridProblem =

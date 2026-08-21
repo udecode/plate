@@ -15,8 +15,20 @@
     "status": "unresolved"
   },
   "kind": "fix",
-  "summary": "Keep font-size selection highlighting aligned",
+  "summary": "Apply font marks and keep resized selections aligned",
   "targets": [
+    {
+      "name": "font",
+      "files": ["apps/www/src/registry/components/editor/font.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-static",
+      "files": ["apps/www/src/registry/components/editor/font-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
     {
       "name": "font-size-toolbar-button",
       "files": [
@@ -30,12 +42,12 @@
     {
       "id": "2026-08-12-font-size-toolbar-fix-selection-highlighting-0415264b",
       "kind": "fix",
-      "summary": "Keep selection highlighting aligned after changing font size.",
+      "summary": "Apply font marks to text and keep selection highlighting aligned after changing font size.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["font-size-toolbar-button"],
+      "targets": ["font", "font-static", "font-size-toolbar-button"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-08-12",

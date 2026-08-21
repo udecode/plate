@@ -1,5 +1,4 @@
 import type { CommentText } from './BaseCommentPlugin';
-
 import { getCommentCount, getCommentKeys } from './commentMarks';
 
 const comment = {

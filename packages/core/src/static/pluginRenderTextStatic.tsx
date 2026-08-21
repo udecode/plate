@@ -1,7 +1,11 @@
+import clsx from 'clsx';
 import React from 'react';
 
-import clsx from 'clsx';
-
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
 import type { BaseEditor } from '../lib/editor/BaseEditor';
 import type {
   AnyBasePlugin,
@@ -9,12 +13,6 @@ import type {
   AnyPluginBase,
 } from '../lib/plugin/BasePlugin';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../internal/plugin/compilePlateModel';
-
 import { PliteText } from './components';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 

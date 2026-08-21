@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
+
+import {
+  createEditor,
+  type Element,
+  schema,
+  SelectionApi,
+} from '@platejs/plite';
 import {
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
@@ -13,12 +20,6 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import {
-  createEditor,
-  type Element,
-  schema,
-  SelectionApi,
-} from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (text: string) => ({
@@ -232,7 +233,7 @@ describe('plite delete contract', () => {
         '../src/transforms-text/delete-text-whole-blocks.ts',
         import.meta.url
       ),
-      'utf8'
+      'utf-8'
     );
     assert.match(wholeBlockSource, /delete-whole-range-edge-check/);
     assert.match(wholeBlockSource, /delete-whole-range-block-scan/);

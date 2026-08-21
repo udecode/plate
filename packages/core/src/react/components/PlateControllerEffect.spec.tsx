@@ -1,10 +1,9 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
+import * as pliteReactModule from '@platejs/plite-react';
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
-import * as pliteReactModule from '@platejs/plite-react';
+import React from 'react';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';

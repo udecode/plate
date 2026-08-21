@@ -8,15 +8,14 @@ import {
 } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
 
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { defineBasePlugin } from '../../plugin';
 import type {
   InsertBreakInputRuleContext,
   InsertDataInputRuleContext,
   InsertTextInputRuleContext,
   SelectionInputRuleContext,
 } from './types';
-
-import { defineBasePlugin } from '../../plugin';
-import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 
 export const InputRulesPlugin = defineBasePlugin('inputRules', {
   editOnly: true,
@@ -120,6 +119,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
       clipboardHandler({
         insertData(data, { next, tx }) {
           const text = data.getData('text/plain') || null;
+          const dataTypes = new Set(data.types);
           const selectionContext = createSelectionContext({ state: tx });
           let handled = false;
 
@@ -147,7 +147,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
               rule.mimeTypes?.length &&
               !rule.mimeTypes.some((type) => {
                 if (type === 'Files') return (data.files?.length ?? 0) > 0;
-                if (Array.from(data.types ?? []).includes(type)) return true;
+                if (dataTypes.has(type)) return true;
 
                 try {
                   return !!data.getData(type);

@@ -1,12 +1,11 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import { property, schema, target, type Element } from '@platejs/plite';
 import { render } from '@testing-library/react';
+import React from 'react';
 
-import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
+import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateRoot } from '../components/PlateRoot';
 import type { PlateEditor } from '../editor/PlateEditor';

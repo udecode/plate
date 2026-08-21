@@ -1,5 +1,3 @@
-import type React from 'react';
-import type { MouseEvent, PointerEvent } from 'react';
 import {
   defineExtension,
   defineEditorSchema,
@@ -38,6 +36,9 @@ import {
   useEditorSelector,
   usePliteEditor,
 } from '@platejs/plite-react';
+import type React from 'react';
+import type { MouseEvent, PointerEvent } from 'react';
+
 import { Button, Icon, Toolbar } from './components';
 import { deserialize, isPlainTextClipboardHtml } from './paste-html-import';
 

@@ -24,8 +24,8 @@ Choose one mode from the arguments. Default to `--standard`.
   owners, public breaks, or uncertain browser/runtime behavior.
 - `--standard`: create or continue one Plite Plan goal and plan. Run the three
   phases continuously in the current activation unless interrupted or blocked.
-- `--deep`: use the standard workflow and add only the research, benchmarks,
-  browser stress, or red-team work justified by the named risk. Do not add more
+- `--deep`: use the standard workflow and add only the research, Benchmark
+  evidence/packet, browser stress, or red-team work justified by the named risk. Do not add more
   lifecycle phases or generic editor comparison. Use `editor-audit` first when
   source-level comparison against one or more editor architectures is required.
 
@@ -41,7 +41,8 @@ their full ownership tables in the plan.
 `editor-audit` owns exhaustive external editor architecture comparison.
 `best-api` owns the ideal public call surface. Plite Plan consumes those targets
 and owns substrate law, Plate/collaboration adoption, execution slices, and
-proof. If a plan discovers a better call shape, run the `best-api` lens inside
+proof. `benchmark` owns measurement, causal diagnosis, and iterative
+optimization; this plan consumes its evidence or requests a scoped packet. If a plan discovers a better call shape, run the `best-api` lens inside
 the same plan and repair the target before continuing.
 
 - Plite owns the editor model, operations, reads, updates, transactions,
@@ -175,11 +176,11 @@ Add only what the scope triggers:
   device-specific, or release-ready claim. Otherwise keep the raw-device runner
   fail-closed, record that physical receipts are deferred, and do not block an
   unrelated source or API handoff on unavailable hardware.
-- Benchmarks: include only when claiming performance or choosing a hot-path
-  architecture. Extremal proof must stay inside an end-to-end supported input
-  domain; one helper does not earn permanent machinery for a limit that
-  adjacent validation, construction, serialization, storage, or callers cannot
-  carry.
+- Performance: consume a `benchmark` handoff when claiming performance or
+  choosing a hot-path architecture. If the causal owner is not measured, route
+  a scoped Benchmark packet first. Extremal proof must stay inside an
+  end-to-end supported input domain; one helper does not earn permanent
+  machinery for a limit adjacent owners cannot carry.
 - Fast-path architecture: derive eligibility from evaluated material behavior,
   keep capability declarations with the owning runtime, fail closed for
   unknown behavior, and prove native/model parity without app-owned safety

@@ -1,4 +1,3 @@
-import { type CompositionEvent, type RefObject, useEffect } from 'react';
 import {
   type EditorMarks,
   NodeApi,
@@ -16,6 +15,8 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '@platejs/plite-dom/internal';
+import { type CompositionEvent, type RefObject, useEffect } from 'react';
+
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {

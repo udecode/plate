@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import { Check, Terminal } from 'lucide-react';
 import { isDefined } from 'platejs';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
@@ -46,7 +45,7 @@ export function ComponentSource({
           <Button
             size="sm"
             variant="ghost"
-            className="mb-0.5 w-fit select-auto px-4 py-1 font-medium text-foreground text-sm"
+            className="mb-0.5 w-fit px-4 py-1 text-sm font-medium text-foreground select-auto"
             onClick={() => {
               copyToClipboard(displaySrc, {
                 tooltip: 'Copied to clipboard',

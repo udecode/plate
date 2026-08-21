@@ -591,7 +591,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
   });
 }
 
-// biome-ignore lint/complexity/noUselessLoneBlockStatements: isolates the merged behavior family.
+// isolates the merged behavior family.
 {
   describe('removeAINodes', () => {
     it('removes only text nodes marked with ai', () => {

@@ -1,6 +1,5 @@
-import type React from 'react';
-import type { CSSProperties } from 'react';
-
+import type { BaseEditor, DefinitionOf } from '@platejs/core';
+import { definePlatePlugin } from '@platejs/core/react';
 import type {
   Element,
   NodeProps,
@@ -9,9 +8,6 @@ import type {
   NodeKey,
   Text,
 } from '@platejs/plite';
-import type { BaseEditor } from '@platejs/core';
-import { PLUGINS } from '@platejs/utils';
-
 import {
   ContentSlice,
   ElementApi,
@@ -24,14 +20,14 @@ import {
   writeDOMFragmentData,
   writeDOMRangeData,
 } from '@platejs/plite-dom';
-import type { DefinitionOf } from '@platejs/core';
-import { definePlatePlugin } from '@platejs/core/react';
-
+import { PLUGINS } from '@platejs/utils';
 import copyToClipboard from 'copy-to-clipboard';
+import type React from 'react';
+import type { CSSProperties } from 'react';
 
 import type { PartialSelectionAreaOptions } from '../SelectionArea';
-import { BlockSelectionAfterEditable } from './BlockSelection.internal';
 import { BlockMenuPlugin } from './BlockMenuPlugin';
+import { BlockSelectionAfterEditable } from './BlockSelection.internal';
 
 const BLOCK_SELECTION_PRESERVE_TAG = 'block-selection-preserve';
 const BLOCK_SELECTION_DESELECT_TAG = 'block-selection-deselect';

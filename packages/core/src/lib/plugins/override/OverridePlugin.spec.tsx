@@ -1,9 +1,9 @@
+import { createEditor, schema, property, type Value } from '@platejs/plite';
 import {
   deleteBackward,
   deleteForward,
   insertBreak,
 } from '@platejs/plite/internal';
-import { createEditor, schema, property, type Value } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';

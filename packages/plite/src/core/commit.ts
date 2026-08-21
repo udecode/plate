@@ -17,6 +17,7 @@ import type { Descendant } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
+import { getDocumentChangeAfterPaths } from './change/classification';
 import {
   bindDocumentChangeNodeKeys,
   type DocumentChange,
@@ -24,12 +25,11 @@ import {
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
 } from './change/document-change';
-import { getDocumentChangeAfterPaths } from './change/classification';
 import { DocumentIndex } from './change/document-index';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
-import { buildSnapshotIndex, pathKey } from './snapshot-index';
 import { toInternalRoot, toPublicRoot } from './public-root';
+import { buildSnapshotIndex, pathKey } from './snapshot-index';
 import { cloneFrozenEditorJsonValue } from './value-codec';
 
 type RootChangeDetails = {
@@ -93,7 +93,11 @@ const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   Map<RootKey, EditorSnapshot>
 >();
 
-/** @internal Return the immutable post-commit snapshot for one document root. */
+/**
+ * Return the immutable post-commit snapshot for one document root.
+ *
+ * @internal
+ */
 export const getEditorCommitSnapshot = <V extends Value>(
   commit: EditorCommit<V>,
   root: RootKey = 'main'
@@ -228,13 +232,11 @@ const getTopLevelRanges = (
   let end = start;
 
   for (const index of indexes.slice(1)) {
-    if (index === end + 1) {
-      end = index;
-    } else {
+    if (index !== end + 1) {
       ranges.push(Object.freeze([start, end]));
       start = index;
-      end = index;
     }
+    end = index;
   }
 
   ranges.push(Object.freeze([start, end]));

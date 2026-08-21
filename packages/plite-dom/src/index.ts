@@ -35,7 +35,10 @@ export type {
   DOMExtension,
   DOMExtensionTypes,
 } from './plugin/with-dom';
-export { PliteDOMResolutionError } from './plugin/dom-editor';
+export {
+  isTrackedMutation,
+  PliteDOMResolutionError,
+} from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';
 export { dom } from './plugin/with-dom';
 export type {
@@ -102,7 +105,6 @@ export {
   isDOMSelection,
   isDOMText,
   isPlainTextOnlyPaste,
-  isTrackedMutation,
   normalizeDOMPoint,
 } from './utils/dom';
 
@@ -113,10 +115,7 @@ export type {
   HotkeySpec,
   KeyboardEventLike,
 } from './utils/hotkeys';
-export {
-  Hotkeys,
-  isHotkey,
-} from './utils/hotkeys';
+export { Hotkeys, isHotkey } from './utils/hotkeys';
 
 export { Key } from './utils/key';
 

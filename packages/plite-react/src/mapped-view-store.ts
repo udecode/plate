@@ -1,5 +1,4 @@
 import { areEditorJsonValuesEqual } from './editable/runtime-editor-api';
-
 import type {
   PliteViewSourceErrorSink,
   PliteViewSourceOptions,

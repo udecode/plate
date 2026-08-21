@@ -1,9 +1,3 @@
-import React, {
-  useCallback,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-} from 'react';
 import {
   NodeApi,
   type Path,
@@ -16,6 +10,13 @@ import {
   createDOMGeometryKernel,
   DOMCoverage,
 } from '@platejs/plite-dom/internal';
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
+
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import type {
   EditableRepairRequest,

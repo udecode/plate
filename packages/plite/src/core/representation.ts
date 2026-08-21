@@ -1,4 +1,15 @@
 import {
+  type ContentSlice,
+  type Descendant,
+  type Element,
+  ElementApi,
+  type Path,
+  type Point,
+  TextApi,
+} from '../interfaces';
+import type { AnyEditor as Editor } from '../interfaces/editor';
+import { inheritNodeKey } from '../utils/node-keys';
+import {
   createInternalDocumentChange,
   type DocumentChange,
   getInternalDocumentChangeEntries,
@@ -13,20 +24,9 @@ import type {
   PreparedTokenSlice,
 } from './change/tokens';
 import {
-  type ContentSlice,
-  type Descendant,
-  type Element,
-  ElementApi,
-  type Path,
-  type Point,
-  TextApi,
-} from '../interfaces';
-import {
   ContentSlice as ContentSliceValue,
   getContentSliceCanonicalAuthority,
 } from './content-slice';
-import type { AnyEditor as Editor } from '../interfaces/editor';
-import { inheritNodeKey } from '../utils/node-keys';
 import { getEditorSchema } from './editor-runtime';
 import { profileCoreDuration } from './profiling';
 import { areEditorJsonValuesEqual } from './value-codec';
@@ -283,7 +283,11 @@ const canonicalizeNode = (
   return canonical;
 };
 
-/** @internal Canonicalize detached children against one concrete parent. */
+/**
+ * Canonicalize detached children against one concrete parent.
+ *
+ * @internal
+ */
 export const canonicalizeElementChildren = (
   editor: Editor,
   parent: Element,
@@ -355,7 +359,11 @@ const getDescendant = (
   return node;
 };
 
-/** @internal Resolve inline nodes whose adjacent spacers carry selection. */
+/**
+ * Resolve inline nodes whose adjacent spacers carry selection.
+ *
+ * @internal
+ */
 export const getProtectedInlineSpacerEntries = (
   editor: Editor,
   children: readonly Descendant[],
@@ -499,7 +507,11 @@ const getPointAtTextOffset = (
   return visit(ancestor.children, ancestorPath) ?? previous;
 };
 
-/** @internal Preserve one logical text point through canonical representation. */
+/**
+ * Preserve one logical text point through canonical representation.
+ *
+ * @internal
+ */
 export const mapCanonicalRepresentationPoint = (
   editor: Editor,
   beforeDocument: DocumentIndex,
@@ -598,7 +610,11 @@ type CanonicalRootDraft = {
 
 declare const CANONICAL_FIT_PREPARATION: unique symbol;
 
-/** @internal Opaque proof that closed slice interiors match one schema revision. */
+/**
+ * Opaque proof that closed slice interiors match one schema revision.
+ *
+ * @internal
+ */
 export type CanonicalFitPreparation = Readonly<{
   [CANONICAL_FIT_PREPARATION]: true;
 }>;
@@ -617,7 +633,11 @@ const CANONICAL_FIT_PREPARATIONS = new WeakMap<
   CanonicalFitPreparationDescriptor
 >();
 
-/** @internal Canonicalize and brand only fully closed slice subtrees. */
+/**
+ * Canonicalize and brand only fully closed slice subtrees.
+ *
+ * @internal
+ */
 export const prepareCanonicalFitSlice = (
   editor: Editor,
   schema: object | null,
@@ -707,7 +727,11 @@ export const prepareCanonicalFitSlice = (
   return Object.freeze({ preparation, slice: preparedSlice });
 };
 
-/** @internal Force canonical construction of one externally fitted root. */
+/**
+ * Force canonical construction of one externally fitted root.
+ *
+ * @internal
+ */
 export const prepareCanonicalRootFit = (
   schema: object | null,
   currentSchema: () => object | null,
@@ -733,7 +757,11 @@ export const prepareCanonicalRootFit = (
   return preparation;
 };
 
-/** @internal Bind a canonical slice proof to the exact lowerer insertion. */
+/**
+ * Bind a canonical slice proof to the exact lowerer insertion.
+ *
+ * @internal
+ */
 export const bindCanonicalFitPreparation = (
   preparation: CanonicalFitPreparation,
   insert: PreparedTokenSlice
@@ -961,7 +989,10 @@ export const constructCanonicalDocumentChange = (
   after: JsonEditorValue,
   change: DocumentChange,
   options: Readonly<{
+    before?: JsonEditorValue;
     fitPreparation?: object;
+    indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+    indexedBefore?: ReadonlyMap<string, DocumentIndex>;
     preserveInlineSpacersAdjacentTo?: (
       root: string
     ) => ReadonlySet<Descendant> | undefined;
@@ -1025,12 +1056,49 @@ export const constructCanonicalDocumentChange = (
     if (change.deleteRoots.has(root)) continue;
 
     const current = getRootChildren(after, root);
-    const document = DocumentIndex.fromValue(current);
+    const document =
+      options.indexedAfter?.get(root) ?? DocumentIndex.fromValue(current);
     const draft: CanonicalRootDraft = {
       change: RootChange.empty(document.length),
       document,
     };
     const rootChange = getInternalDocumentRootChange(change, root);
+    const move =
+      options.before && rootChange
+        ? rootChange.movedNode(
+            options.indexedBefore?.get(root) ??
+              DocumentIndex.fromValue(getRootChildren(options.before, root))
+          )
+        : null;
+    const movedNode = move ? document.node(move.targetPath) : undefined;
+    const moveParent = move?.path.slice(0, -1);
+    const targetParent = move?.targetPath.slice(0, -1);
+    const localBlockMove =
+      move &&
+      moveParent &&
+      targetParent &&
+      moveParent.length === targetParent.length &&
+      moveParent.every((part, index) => part === targetParent[index]) &&
+      movedNode &&
+      ElementApi.isElement(movedNode) &&
+      !schema.isInline(movedNode)
+        ? [
+            {
+              path: moveParent,
+              window: {
+                from: move.path.at(-1)!,
+                to: move.path.at(-1)! + 1,
+              },
+            },
+            {
+              path: targetParent,
+              window: {
+                from: move.targetPath.at(-1)!,
+                to: move.targetPath.at(-1)! + 1,
+              },
+            },
+          ]
+        : null;
     const windows = new Map<
       string,
       { path: readonly number[]; window: ChildWindow }
@@ -1082,7 +1150,9 @@ export const constructCanonicalDocumentChange = (
       continue;
     }
 
-    if (rootChange) {
+    if (localBlockMove) {
+      profileCoreDuration('representation-move-locality-hit', () => undefined);
+    } else if (rootChange) {
       profileCoreDuration('representation-window-discovery', () =>
         rootChange.iterChangedRanges(
           (_fromBefore, _toBefore, fromAfter, toAfter) => {
@@ -1142,7 +1212,10 @@ export const constructCanonicalDocumentChange = (
     }
 
     profileCoreDuration('representation-window-apply', () => {
-      for (const { path, window } of [...windows.values()].sort((left, right) =>
+      for (const { path, window } of [
+        ...(localBlockMove ?? []),
+        ...windows.values(),
+      ].sort((left, right) =>
         comparePathsDeepestFirst(left.path, right.path)
       )) {
         replaceCanonicalChildWindow(

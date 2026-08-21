@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 
-import { createEditor, type Element } from '../../../packages/plite/src/index';
 import { history } from '../../../packages/plite-history/src/index';
+import { createEditor, type Element } from '../../../packages/plite/src/index';
 
 const outputArgument = process.argv.find((argument) =>
   argument.startsWith('--output=')

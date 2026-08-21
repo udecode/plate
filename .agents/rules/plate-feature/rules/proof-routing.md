@@ -27,4 +27,4 @@ Before completion, audit:
 - copied registry metadata and examples;
 - docs and release classification;
 - Plate Next version/status and package fingerprint when attesting;
-- accepted P2 review findings.
+- accepted P1 review findings.

@@ -65,7 +65,7 @@ export class FakeAwareness implements YjsAwarenessLike {
 
   setLocalStateField(field: string, value: unknown): void {
     this.localState = {
-      ...(this.localState ?? {}),
+      ...this.localState,
       [field]: value,
     };
     this.states.set(this.clientID, this.localState);
@@ -135,7 +135,7 @@ export class FakeProvider implements YjsProviderLike {
     this.calls.push('destroy');
   }
 
-  disconnect(): void {
+  disconnect(): Promise<void> | void {
     this.calls.push('disconnect');
     this.emitStatus('disconnected');
   }

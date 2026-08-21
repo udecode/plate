@@ -12,6 +12,13 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
 export const mainToNextSyncCommitMessage = 'chore: sync main to next';
@@ -138,7 +145,7 @@ export function formatMainToNextSyncResolutionReport(report) {
 function run(command, args, { allowFailure = false, capture = false } = {}) {
   const result = spawnSync(command, args, {
     cwd: repoRoot,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
   });
 
@@ -200,7 +207,7 @@ function runPnpm(args, { dryRun = false } = {}) {
 function runGitProcess(args) {
   const result = spawnSync('git', args, {
     cwd: repoRoot,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
@@ -233,7 +240,7 @@ function writeRepoFile(file, content) {
 }
 
 function readRepoJson(file) {
-  return JSON.parse(readFileSync(path.join(repoRoot, file), 'utf8'));
+  return JSON.parse(readFileSync(path.join(repoRoot, file), 'utf-8'));
 }
 
 function readRepoJsonIfExists(file) {
@@ -241,7 +248,7 @@ function readRepoJsonIfExists(file) {
 
   if (!existsSync(absolutePath)) return null;
 
-  return JSON.parse(readFileSync(absolutePath, 'utf8'));
+  return JSON.parse(readFileSync(absolutePath, 'utf-8'));
 }
 
 function normalizeText(content) {
@@ -356,7 +363,7 @@ export function getMainToNextChangedPackages(files) {
     packageNames.add(packageJson.name);
   }
 
-  return [...packageNames].sort();
+  return [...packageNames].sort(compareStrings);
 }
 
 export function createMainToNextBetaPreState() {
@@ -878,7 +885,7 @@ export function getMainToNextSyncMetadataFiles({
         isMainToNextMetadataFile
       )
     ),
-  ].sort();
+  ].sort(compareStrings);
 }
 
 export function getMainToNextSyncCommitMessage({ changesets = [] } = {}) {

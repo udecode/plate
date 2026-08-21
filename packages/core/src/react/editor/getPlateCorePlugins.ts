@@ -1,11 +1,12 @@
+import type { ReactExtension } from '@platejs/plite-react';
+
+import { plateReactExtension } from '../../internal/plugin/plateNativeExtensions';
 import {
   defineBasePlugin,
   DOMPlugin,
   type CorePluginDefinition,
   type DefinitionOf,
 } from '../../lib';
-import { plateReactExtension } from '../../internal/plugin/plateNativeExtensions';
-import type { ReactExtension } from '@platejs/plite-react';
 import { toPlatePlugin } from '../plugin/toPlatePlugin';
 import { ParagraphPlugin } from '../plugins';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';

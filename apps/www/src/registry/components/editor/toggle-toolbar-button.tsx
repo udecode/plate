@@ -1,11 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
 import { BaseTogglePlugin } from '@platejs/toggle';
+import { ListCollapseIcon } from 'lucide-react';
 import { ElementApi } from 'platejs';
 import { useEditor, useEditorSelector } from 'platejs/react';
-import { ListCollapseIcon } from 'lucide-react';
+import * as React from 'react';
 
 import { ToolbarButton } from './toolbar';
 

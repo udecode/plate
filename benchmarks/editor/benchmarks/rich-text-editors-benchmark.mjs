@@ -68,28 +68,27 @@ if (args.check) {
   }
   if (unexpectedLibraries.length > 0) {
     throw new Error(
-      'unexpected non-Slate libraries in rich-text rows: ' +
-        [...new Set(unexpectedLibraries.map((row) => row.library))].join(', ')
+      `unexpected non-Slate libraries in rich-text rows: ${[...new Set(unexpectedLibraries.map((row) => row.library))].join(', ')}`
     );
   }
   if (unexpectedScopeLabels.length > 0) {
     throw new Error(
-      'unexpected out-of-scope labels in rich-text rows: ' +
-        [...new Set(unexpectedScopeLabels.map((row) => row.fixture))]
-          .slice(0, 10)
-          .join(', ')
+      `unexpected out-of-scope labels in rich-text rows: ${[
+        ...new Set(unexpectedScopeLabels.map((row) => row.fixture)),
+      ]
+        .slice(0, 10)
+        .join(', ')}`
     );
   }
   if (missingRequiredRows.length > 0) {
     throw new Error(
-      'missing required Slate v2 artifacts: ' +
-        missingRequiredRows.map((row) => row.fixture).join(', ')
+      `missing required Slate v2 artifacts: ${missingRequiredRows.map((row) => row.fixture).join(', ')}`
     );
   }
 }
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, JSON.stringify(payload, null, 2) + '\n');
+fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`);
 console.log(`wrote ${outPath} rows=${rows.length}`);
 
 function parseArgs(argv) {

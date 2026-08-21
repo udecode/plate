@@ -1,4 +1,3 @@
-import { expect, test } from 'vitest';
 import {
   createEditor,
   defineEditorSchema,
@@ -11,6 +10,7 @@ import {
   getEditorRuntimeElementEntries,
   getNodeKey,
 } from '@platejs/plite/internal';
+import { expect, test } from 'vitest';
 
 import { getSchemaInvalidatedNodeKeys } from '../src/editable/schema-runtime-invalidation';
 

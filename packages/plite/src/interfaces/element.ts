@@ -133,7 +133,6 @@ const isElement = (
   return isChildrenValid;
 };
 
-// eslint-disable-next-line no-redeclare
 export const ElementApi: Readonly<ElementInterface> = Object.freeze({
   isAncestor<T extends Ancestor = Ancestor>(
     value: unknown,

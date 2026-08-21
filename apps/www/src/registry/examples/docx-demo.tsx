@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { DocxKit } from '@/registry/components/editor/docx';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';

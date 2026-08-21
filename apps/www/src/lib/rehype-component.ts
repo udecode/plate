@@ -1,9 +1,10 @@
-import type { UnistNode, UnistTree } from '@/types/unist';
-
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
+
+import type { UnistNode, UnistTree } from '@/types/unist';
 
 import { registryExamples } from '../registry/registry-examples';
 import { proExamples } from '../registry/registry-pro';
@@ -151,7 +152,7 @@ export function rehypeComponent() {
 
               const file = normalizeRegistryFilePath(sourcePath);
 
-              let source = fs.readFileSync(file, 'utf8');
+              let source = fs.readFileSync(file, 'utf-8');
               source = fixImport(source);
 
               // Add code as children so that rehype can take over at build time.

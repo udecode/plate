@@ -119,26 +119,22 @@ const isPath = (value: unknown): value is number[] =>
 const isPathOrNull: ValueValidator = (value) => value === null || isPath(value);
 const isStringOrStringArray: ValueValidator = (value) =>
   isString(value) || isStringArray(value);
-const isOneOf = (...values: readonly string[]): ValueValidator =>
-  (value) => typeof value === 'string' && values.includes(value);
+const isOneOf =
+  (...values: readonly string[]): ValueValidator =>
+  (value) =>
+    typeof value === 'string' && values.includes(value);
 const isOffsetExpectation: ValueValidator = (value) =>
   isNonnegativeInteger(value) ||
   (Array.isArray(value) &&
     value.length === 2 &&
     value.every((entry) => isNonnegativeInteger(entry)) &&
     value[0] <= value[1]);
-const isSelectionPoint = (
-  value: unknown,
-  validateOffset: ValueValidator
-) =>
+const isSelectionPoint = (value: unknown, validateOffset: ValueValidator) =>
   isRecord(value) &&
   isPath(value.path) &&
   validateOffset(value.offset) &&
   Object.keys(value).every((key) => key === 'offset' || key === 'path');
-const isSelection = (
-  value: unknown,
-  validateOffset: ValueValidator
-): boolean =>
+const isSelection = (value: unknown, validateOffset: ValueValidator): boolean =>
   isRecord(value) &&
   value.kind === 'text' &&
   isSelectionPoint(value.anchor, validateOffset) &&
@@ -157,12 +153,9 @@ const isDOMSelectionExpectation: ValueValidator = (value) =>
   (value.focusNodeText === null || isString(value.focusNodeText)) &&
   isOffsetExpectation(value.focusOffset) &&
   Object.keys(value).every((key) =>
-    [
-      'anchorNodeText',
-      'anchorOffset',
-      'focusNodeText',
-      'focusOffset',
-    ].includes(key)
+    ['anchorNodeText', 'anchorOffset', 'focusNodeText', 'focusOffset'].includes(
+      key
+    )
   );
 const isCaretExpectation: ValueValidator = (value) =>
   isRecord(value) &&
@@ -190,8 +183,10 @@ const hasOrderedNumberBounds = (value: Record<string, unknown>) =>
   !Object.hasOwn(value, 'max') ||
   (isNumber(value.min) && isNumber(value.max) && value.min <= value.max);
 
-const isNullable = (validate: ValueValidator): ValueValidator => (value) =>
-  value === null || validate(value);
+const isNullable =
+  (validate: ValueValidator): ValueValidator =>
+  (value) =>
+    value === null || validate(value);
 const isDOMSelectionLocationExpectation: ValueValidator = (value) =>
   isValidatedRecord(
     value,
@@ -228,9 +223,7 @@ const isNumberBudget: ValueValidator = (value) => {
   const hasExact = Object.hasOwn(value, 'exact');
   const hasRange = Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min');
 
-  return hasExact
-    ? !hasRange
-    : hasRange && hasOrderedNumberBounds(value);
+  return hasExact ? !hasRange : hasRange && hasOrderedNumberBounds(value);
 };
 const renderKinds = [
   'core-time',
@@ -439,7 +432,7 @@ const isKernelTraceExpectation: ValueValidator = (value) =>
         'internal-control',
         'model-owned',
         'partial-dom-backed',
-        'repairing',
+        'repairing'
       ),
       stateBefore: isOneOf(
         'app-owned',
@@ -451,7 +444,7 @@ const isKernelTraceExpectation: ValueValidator = (value) =>
         'internal-control',
         'model-owned',
         'partial-dom-backed',
-        'repairing',
+        'repairing'
       ),
       targetOwner: isOneOf(
         'app-owned',
@@ -529,9 +522,7 @@ const scenarioStepShapes = {
       const hasRange =
         Object.hasOwn(value, 'max') || Object.hasOwn(value, 'min');
 
-      return hasCount
-        ? !hasRange
-        : hasRange && hasOrderedNumberBounds(value);
+      return hasCount ? !hasRange : hasRange && hasOrderedNumberBounds(value);
     },
   },
   assertLocatorCss: {
@@ -679,7 +670,11 @@ const decodeScenarioStep = (
   const shape: ScenarioStepShape = scenarioStepShapes[kind];
   const required = shape.required ?? {};
   const optional = { ...commonScenarioStepFields, ...shape.optional };
-  const allowedKeys = new Set(['kind', ...Object.keys(required), ...Object.keys(optional)]);
+  const allowedKeys = new Set([
+    'kind',
+    ...Object.keys(required),
+    ...Object.keys(optional),
+  ]);
 
   for (const key of Object.keys(value)) {
     if (!allowedKeys.has(key)) {
@@ -1069,9 +1064,7 @@ export const decodeScenarioReplay = (
   if (
     value.replayable !== true ||
     !Array.isArray(value.steps) ||
-    Object.keys(value).some(
-      (key) => key !== 'replayable' && key !== 'steps'
-    )
+    Object.keys(value).some((key) => key !== 'replayable' && key !== 'steps')
   ) {
     throw new TypeError('Scenario replay has an unsupported shape.');
   }

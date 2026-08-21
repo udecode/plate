@@ -12,16 +12,16 @@ const args = parseArgs(process.argv.slice(2));
 const cases = readInt(args.cases, 200);
 const seed = readInt(args.seed, 0x5e_ed);
 const corpusPath = path.resolve(args.corpus || 'test/fixtures/corpus.json');
-const corpus = JSON.parse(fs.readFileSync(corpusPath, 'utf8'));
+const corpus = JSON.parse(fs.readFileSync(corpusPath, 'utf-8'));
 const rng = mulberry32(seed);
 let executed = 0;
 
 for (const seedCase of corpus.cases || []) {
-  runCase(seedCase, 'corpus:' + seedCase.name);
+  runCase(seedCase, `corpus:${seedCase.name}`);
 }
 
 for (let i = 0; i < cases; i++) {
-  runCase(buildGeneratedCase(i, rng), 'generated:' + i);
+  runCase(buildGeneratedCase(i, rng), `generated:${i}`);
 }
 
 const readinessRows = createEvidenceReadinessRows();
@@ -53,19 +53,14 @@ if (
 }
 
 console.log(
-  'editor evidence fuzz passed executed=' +
-    executed +
-    ' generated=' +
-    cases +
-    ' seed=' +
-    seed
+  `editor evidence fuzz passed executed=${executed} generated=${cases} seed=${seed}`
 );
 
 function runCase(testCase, id) {
   try {
     const actual = normalizeBenchmarkRow(testCase.input);
     if (!isDeepStrictEqual(actual, testCase.expected)) {
-      throw new Error('case mismatch ' + id);
+      throw new Error(`case mismatch ${id}`);
     }
     executed++;
   } catch (error) {
@@ -89,10 +84,10 @@ function buildGeneratedCase(index, rng) {
   const p95Us = Math.round((medianUs + rng() * 5000) * 100) / 100;
 
   return {
-    name: 'generated-row-' + index,
+    name: `generated-row-${index}`,
     input: {
       category,
-      fixture: category + '-' + index,
+      fixture: `${category}-${index}`,
       library,
       status,
       medianUs,
@@ -102,7 +97,7 @@ function buildGeneratedCase(index, rng) {
     },
     expected: {
       category,
-      fixture: category + '-' + index,
+      fixture: `${category}-${index}`,
       library,
       status,
       medianUs,
@@ -144,7 +139,7 @@ function writeRepro(outPath, testCase, id, error) {
   fs.mkdirSync(path.dirname(resolved), { recursive: true });
   fs.writeFileSync(
     resolved,
-    JSON.stringify(
+    `${JSON.stringify(
       {
         id,
         error: error && error.stack ? error.stack : String(error),
@@ -152,7 +147,7 @@ function writeRepro(outPath, testCase, id, error) {
       },
       null,
       2
-    ) + '\n'
+    )}\n`
   );
 }
 

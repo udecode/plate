@@ -3,7 +3,6 @@ import {
   type RenderStaticNodeWrapper,
   type RenderStaticNodeWrapperProps,
 } from '@platejs/core';
-import { property } from '@platejs/plite';
 import {
   definePlatePlugin,
   type RenderNodeWrapper,
@@ -11,6 +10,7 @@ import {
   toPlatePlugin,
   useElementSelector,
 } from '@platejs/core/react';
+import { property } from '@platejs/plite';
 
 const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
   schema: {
@@ -63,8 +63,6 @@ const exactStaticWrapper: RenderStaticNodeWrapper<
   const exactTone: string | undefined = element.staticTone;
 
   void exactTone;
-
-  return;
 };
 
 const exactStaticRootNode = ({
@@ -110,8 +108,6 @@ const adaptedWrapper: RenderNodeWrapper<typeof AdaptedWrapperPlugin> = ({
 
   void adaptedTone;
   void dependencyResult;
-
-  return;
 };
 
 AdaptedWrapperPlugin.configure({
@@ -134,8 +130,6 @@ const exactWrapper: RenderNodeWrapper<typeof WrapperBoundaryPlugin> = ({
 
   void exactValue;
   void exactTone;
-
-  return;
 };
 
 const exactRootNode = ({

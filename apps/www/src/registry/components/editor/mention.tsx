@@ -1,6 +1,7 @@
 'use client';
 
-import * as React from 'react';
+import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
+import { IS_APPLE } from 'platejs';
 import {
   type PlateElementProps,
   PlateElement,
@@ -8,11 +9,12 @@ import {
   useEditorReadOnly,
   useElementSelected,
 } from 'platejs/react';
-import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
-import { IS_APPLE } from 'platejs';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
+
 import {
   InlineCombobox,
   InlineComboboxContent,

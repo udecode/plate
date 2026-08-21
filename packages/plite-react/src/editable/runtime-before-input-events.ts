@@ -1,7 +1,8 @@
-import { type FormEvent, type RefObject, useCallback } from 'react';
 import { PathApi, type Range, RangeApi, SelectionApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
+import { type FormEvent, type RefObject, useCallback } from 'react';
+
 import type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,

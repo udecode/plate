@@ -1,10 +1,20 @@
+import type { EditorExtensionReference } from '@platejs/plite';
+
+import { allowPrivateRenderContribution } from '../../internal/plugin/privateRenderContribution';
+import {
+  brandPluginDescriptor,
+  freezePluginDescriptorValue,
+  isNominalPluginDescriptor,
+} from '../../internal/utils/mergePlugins';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
   ConfiguredPluginDescriptor,
   PluginReference,
 } from '../../lib';
-import type { EditorExtensionReference } from '@platejs/plite';
+import type { PluginDefinitionWitness } from '../../lib/plugin/PluginDefinition';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
 import type {
   ConfiguredPlatePlugin,
   PlatePlugin,
@@ -13,16 +23,6 @@ import type {
   PlatePluginExtendInput,
 } from './PlatePlugin';
 import type { NormalizePlatePluginInput } from './platePluginCompiler.internal';
-import type { PluginDefinitionWitness } from '../../lib/plugin/PluginDefinition';
-import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
-import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
-
-import {
-  brandPluginDescriptor,
-  freezePluginDescriptorValue,
-  isNominalPluginDescriptor,
-} from '../../internal/utils/mergePlugins';
-import { allowPrivateRenderContribution } from '../../internal/plugin/privateRenderContribution';
 
 type PlateAdapterContribution<C extends AnyBasePluginDefinition> = Exclude<
   PlatePluginExtendInput<C>,

@@ -1,10 +1,11 @@
-import * as React from 'react';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@platejs/table';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
 export function TableElementStatic({

@@ -1,5 +1,7 @@
-import { type KeyboardEvent, useCallback } from 'react';
 import type { Point, Range, NodeKey } from '@platejs/plite';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import { type KeyboardEvent, useCallback } from 'react';
+
 import type { EditableKeyDownHandler } from '../components/editable';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
@@ -8,16 +10,15 @@ import { recordPliteReactRender } from '../render-profiler';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
 import { getKeyboardSelectableVerticalNavigationTarget } from './caret-engine';
+import { resolveUsableRangeRect } from './content-root-coordinate-navigation';
 import {
   getContentRootNavigationTarget,
   shouldModelOwnContentRootVerticalSelection,
 } from './content-root-navigation';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import {
   isMountedPlainVerticalLargeDocumentMovement,
   shouldModelOwnPlainVerticalLargeDocumentExtension,
 } from './dom-coverage-vertical-selection';
-import { resolveUsableRangeRect } from './content-root-coordinate-navigation';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
 import { useEditableKeyboardHandler } from './input-router';
@@ -592,6 +593,7 @@ export const useRuntimeKeyboardEvents = ({
       });
     },
     [
+      domPhaseScheduler,
       editor,
       flushPendingNativeTextInput,
       inputController,

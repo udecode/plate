@@ -10,6 +10,7 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+
 import type {
   CustomElement,
   CustomElementType,
@@ -68,7 +69,6 @@ const forcedLayout = () =>
             second.type !== ('paragraph' satisfies CustomElementType)
           ) {
             tx.nodes.set(setType('paragraph'), { at: [1] });
-            return;
           }
         },
       },
@@ -81,6 +81,8 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
       return <Title {...(props as RenderElementProps<TitleElement>)} />;
     case 'paragraph':
       return <Paragraph {...(props as RenderElementProps<ParagraphElement>)} />;
+    default:
+      return null;
   }
 };
 

@@ -3,12 +3,14 @@ id: 2026-08-14-author-editor-runtime
 date: 2026-08-14
 status: draft
 kind: wiring
-summary: "Keep optional editor features explicit"
-change: {"type":"source","date":"2026-08-14","commits":[]}
-release: {"status":"unresolved"}
+summary: 'Keep optional editor features explicit'
+change: { 'type': 'source', 'date': '2026-08-14', 'commits': [] }
+release: { 'status': 'unresolved' }
 diagnostics: []
 ---
+
 <!-- entry: {"id":"2026-08-14-editor-use-authored-runtime-inputs-2d78f04b","kind":"wiring","migrationNotes":["Import the primary editor composition directly outside the Copilot demo. Append CopilotKit only in copilot-demo.","Install ElementIdPlugin explicitly when persisted element IDs or Markdown withBlockId are required.","Install CodeDrawingPlugin or ExcalidrawPlugin explicitly in editors that use those specialized nodes.","Remove schema: EditorSchema from copied editor setup. Add an application-owned schema id and version only for persisted schema lineage, migrations, history serialization, or collaboration."]} -->
+
 - **`editor-kit`**, **`editor-ai`**, **`copilot-demo`**, **`markdown-streaming-demo`**, **`playground-demo`**: Reuse the primary editor composition directly, compose Copilot only in its demo, and install `ElementIdPlugin` only when persisted IDs are required.
 - **`editor-kit`**, **`code-drawing-demo`**, **`excalidraw-demo`**, **`playground-demo`**: Keep code drawing and Excalidraw explicit in the demos that use them.
 - **`editor-kit`**: Derive schema identity from the installed plugin composition instead of publishing application lineage from copied registry code.

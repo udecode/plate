@@ -3,6 +3,36 @@ import { Buffer } from 'node:buffer';
 import { resolve } from 'node:path';
 
 import {
+  createBaseEditor,
+  defineBasePlugin,
+} from '../../../packages/core/src/index';
+import {
+  getDOMClipboardFormatKey,
+  writeDOMHostFragmentData,
+} from '../../../packages/plite-dom/src/internal/index';
+import {
+  decodeProjectedClipboardFragment,
+  getProjectedViewSelectionFragment,
+  writeProjectedViewSelectionClipboardData,
+} from '../../../packages/plite-react/src/editable/projected-clipboard';
+import { getEditorRuntimeOwner } from '../../../packages/plite-react/src/editable/runtime-editor-api';
+import { getSchemaInvalidatedRuntimeIds } from '../../../packages/plite-react/src/editable/schema-runtime-invalidation';
+import type { ReactRuntimeEditor } from '../../../packages/plite-react/src/plugin/react-editor';
+import {
+  createPliteProjectionGraph,
+  type PliteProjectionOwner,
+} from '../../../packages/plite-react/src/projection-graph';
+import {
+  createPliteViewSelection,
+  writePliteViewSelection,
+} from '../../../packages/plite-react/src/view-selection';
+import { resolveCompiledSchemaWrapperPlan } from '../../../packages/plite/src/core/schema-compiler';
+import {
+  createSchemaContributionRegistry,
+  mergeSchemaContributionRegistries,
+  registerSchemaContribution,
+} from '../../../packages/plite/src/core/schema-contribution-registry';
+import {
   createEditor,
   createEditorView,
   defineEditorSchema,
@@ -24,36 +54,11 @@ import {
   type CompiledEditorSchema,
   type EditorSchemaContributionRecord,
 } from '../../../packages/plite/src/internal/index';
-import { resolveCompiledSchemaWrapperPlan } from '../../../packages/plite/src/core/schema-compiler';
+import { writeBenchmarkArtifact } from './benchmark-artifact';
 import {
-  createSchemaContributionRegistry,
-  mergeSchemaContributionRegistries,
-  registerSchemaContribution,
-} from '../../../packages/plite/src/core/schema-contribution-registry';
-import {
-  getDOMClipboardFormatKey,
-  writeDOMHostFragmentData,
-} from '../../../packages/plite-dom/src/internal/index';
-import {
-  createBaseEditor,
-  defineBasePlugin,
-} from '../../../packages/core/src/index';
-import { getSchemaInvalidatedRuntimeIds } from '../../../packages/plite-react/src/editable/schema-runtime-invalidation';
-import {
-  decodeProjectedClipboardFragment,
-  getProjectedViewSelectionFragment,
-  writeProjectedViewSelectionClipboardData,
-} from '../../../packages/plite-react/src/editable/projected-clipboard';
-import type { ReactRuntimeEditor } from '../../../packages/plite-react/src/plugin/react-editor';
-import { getEditorRuntimeOwner } from '../../../packages/plite-react/src/editable/runtime-editor-api';
-import {
-  createPliteProjectionGraph,
-  type PliteProjectionOwner,
-} from '../../../packages/plite-react/src/projection-graph';
-import {
-  createPliteViewSelection,
-  writePliteViewSelection,
-} from '../../../packages/plite-react/src/view-selection';
+  measureCohortsRoundRobin,
+  validateAndWriteStrictBenchmarkArtifact,
+} from './plite-schema-architecture-benchmark-authority';
 import {
   createSchemaArchitectureCorpus,
   createSchemaArchitectureValue,
@@ -65,11 +70,6 @@ import {
   schemaTextPrefix,
 } from './plite-schema-architecture-corpus';
 import { runSchemaTypecheckBudget } from './plite-schema-typecheck-budget.mjs';
-import { writeBenchmarkArtifact } from './benchmark-artifact';
-import {
-  measureCohortsRoundRobin,
-  validateAndWriteStrictBenchmarkArtifact,
-} from './plite-schema-architecture-benchmark-authority';
 
 const LEGACY_BASELINE = Object.freeze({
   artifact:
@@ -979,8 +979,9 @@ const previousLocalityProfiler =
 
 for (const key of Object.keys(
   localityVisits
-) as (keyof typeof localityVisits)[])
+) as (keyof typeof localityVisits)[]) {
   localityVisits[key] = 0;
+}
 localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
   record: ({ id }) => localityProfilerEvents.push(id),
 };
@@ -1486,9 +1487,9 @@ const equivalentReconfigurationCompileCount = profilerEvents.filter(
 const equivalentReconfigurationIdentityReused =
   beforeReconfiguration === afterReconfiguration;
 
-if (previousProfiler)
+if (previousProfiler) {
   profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
-else profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = undefined;
+} else profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = undefined;
 
 const compiledRepresentation = (schemaValue: CompiledEditorSchema) => ({
   elements: [...schemaValue.elements.byType].map(([type, value]) => ({

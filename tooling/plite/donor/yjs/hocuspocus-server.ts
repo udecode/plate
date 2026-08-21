@@ -1,4 +1,4 @@
-// biome-ignore-all lint/suspicious/noConsole: Server process reports bind and failure state.
+// Server process reports bind and failure state.
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 

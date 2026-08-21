@@ -1,7 +1,7 @@
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { MarkdownEditor } from '@platejs/markdown';
-
 import dedent from 'dedent';
+
+import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 import {
   addSelection,

@@ -1,7 +1,7 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { act, render } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 const floatingUpdate = mock();
 const setFloating = mock();

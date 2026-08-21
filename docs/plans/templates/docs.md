@@ -158,7 +158,7 @@ Work Checklist:
       comments, no TODOs, no dead anchors, no redundant summary section.
 - [ ] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed docs.
-- [ ] Review/P2 autoreview target selected for non-trivial docs work, or marked
+- [ ] Review/P1 autoreview target selected for non-trivial docs work, or marked
       N/A with reason.
 
 Lane-Specific Shape Proof:
@@ -187,7 +187,7 @@ Completion Gates:
 | Browser/render surface changed | pending | Capture Browser proof for normal rendered surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
 | Package/API behavior changed | pending | Add changeset or record N/A | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| P2 autoreview for non-trivial docs changes | pending | Load `.agents/skills/autoreview/SKILL.md` and run the right target with `--max-priority P2`; use P3 only when explicitly requested, or record N/A for tiny/no-local-patch work | pending |
+| P1 autoreview for non-trivial docs changes | pending | Load `.agents/skills/autoreview/SKILL.md` and run the right target with `--max-priority P1`; use P2 or P3 only when explicitly requested, or record N/A for tiny/no-local-patch work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |

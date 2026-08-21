@@ -10,15 +10,13 @@
 
 ### Patch Changes
 
-- [#6000](https://github.com/ianstormtaylor/slate/pull/6000) [`8d9bf305`](https://github.com/ianstormtaylor/slate/commit/8d9bf30595a6fad62ff15e302ab489ff46a2515a) Thanks [@nabbydude](https://github.com/nabbydude)! - Added `Location.isPath`, `Location.isPoint`, `Location.isRange`, and `Location.isSpan` functions, as efficient type discriminators.
-  Use these instead of `Path.isPath`, `Point.isPoint`, `Range.isRange`, and `Span.isSpan` whenever possible.
+- [#6000](https://github.com/ianstormtaylor/slate/pull/6000) [`8d9bf305`](https://github.com/ianstormtaylor/slate/commit/8d9bf30595a6fad62ff15e302ab489ff46a2515a) Thanks [@nabbydude](https://github.com/nabbydude)! - Added `Location.isPath`, `Location.isPoint`, `Location.isRange`, and `Location.isSpan` functions, as efficient type discriminators. Use these instead of `Path.isPath`, `Point.isPoint`, `Range.isRange`, and `Span.isSpan` whenever possible.
 
 ## 0.121.0
 
 ### Patch Changes
 
-- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node.
-  Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
+- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node. Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
   ===
 
 ## 0.120.2
@@ -274,9 +272,7 @@
 
 ### Minor Changes
 
-- [#5527](https://github.com/ianstormtaylor/slate/pull/5527) [`fc081816`](https://github.com/ianstormtaylor/slate/commit/fc081816e08ade6838d05a96f84088de9f2734ce) Thanks [@skogsmaskin](https://github.com/skogsmaskin)! - Fixes a bug with `ReactEditor.focus` where it would throw an error if the editor was in the middle of applying pending operations.
-  With this change, setting focus will be retried until the editor no longer has any pending operations.
-  Calling `ReactEditor.focus` on a editor without a current selection, will now make a selection in the top of the document.
+- [#5527](https://github.com/ianstormtaylor/slate/pull/5527) [`fc081816`](https://github.com/ianstormtaylor/slate/commit/fc081816e08ade6838d05a96f84088de9f2734ce) Thanks [@skogsmaskin](https://github.com/skogsmaskin)! - Fixes a bug with `ReactEditor.focus` where it would throw an error if the editor was in the middle of applying pending operations. With this change, setting focus will be retried until the editor no longer has any pending operations. Calling `ReactEditor.focus` on a editor without a current selection, will now make a selection in the top of the document.
 
 ### Patch Changes
 
@@ -619,8 +615,7 @@
 
 ### Minor Changes
 
-- [#4999](https://github.com/ianstormtaylor/slate/pull/4999) [`fe13a8f9`](https://github.com/ianstormtaylor/slate/commit/fe13a8f9e750569342ee004951e34233ab6614bf) Thanks [@alexandercampbell](https://github.com/alexandercampbell)! - Add new Plite.Scrubber interface to allow scrubbing end user data from exception
-  text. The default behavior remains unchanged.
+- [#4999](https://github.com/ianstormtaylor/slate/pull/4999) [`fe13a8f9`](https://github.com/ianstormtaylor/slate/commit/fe13a8f9e750569342ee004951e34233ab6614bf) Thanks [@alexandercampbell](https://github.com/alexandercampbell)! - Add new Plite.Scrubber interface to allow scrubbing end user data from exception text. The default behavior remains unchanged.
 
 ## 0.80.0
 
@@ -822,10 +817,7 @@
 
 ### Minor Changes
 
-- [#4682](https://github.com/ianstormtaylor/slate/pull/4682) [`e5380655`](https://github.com/ianstormtaylor/slate/commit/e53806557217b08bce6217b7d871cd5ae7dad31c) Thanks [@matthewkeil](https://github.com/matthewkeil)! - Support SSR for autoCorrect, spellCheck and autoCapitalize.
-  Fixes prop mismatch between server and client.
-  Removes the need to add
-  <Editable
+- [#4682](https://github.com/ianstormtaylor/slate/pull/4682) [`e5380655`](https://github.com/ianstormtaylor/slate/commit/e53806557217b08bce6217b7d871cd5ae7dad31c) Thanks [@matthewkeil](https://github.com/matthewkeil)! - Support SSR for autoCorrect, spellCheck and autoCapitalize. Fixes prop mismatch between server and client. Removes the need to add <Editable
     spellCheck={false}
     autoCorrect="false"
     autoCapitalize="false"
@@ -1005,10 +997,7 @@
 
 ### Patch Changes
 
-- [#4324](https://github.com/ianstormtaylor/slate/pull/4324) [`61171a23`](https://github.com/ianstormtaylor/slate/commit/61171a23821b882116deabceec15f7e2649d271c) Thanks [@clauderic](https://github.com/clauderic)! - Fix backward typing bug in Safari by ensuring the selection is always removed on blur.
-  Safari doesn't always remove the selection, even if the contenteditable element no longer has focus.
-  In this scenario, we need to forcefully remove the selection on blur.
-  Refer to https://stackoverflow.com/questions/12353247/force-contenteditable-div-to-stop-accepting-input-after-it-loses-focus-under-web
+- [#4324](https://github.com/ianstormtaylor/slate/pull/4324) [`61171a23`](https://github.com/ianstormtaylor/slate/commit/61171a23821b882116deabceec15f7e2649d271c) Thanks [@clauderic](https://github.com/clauderic)! - Fix backward typing bug in Safari by ensuring the selection is always removed on blur. Safari doesn't always remove the selection, even if the contenteditable element no longer has focus. In this scenario, we need to forcefully remove the selection on blur. Refer to https://stackoverflow.com/questions/12353247/force-contenteditable-div-to-stop-accepting-input-after-it-loses-focus-under-web
 
 ## 0.65.0
 

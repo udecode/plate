@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { Value } from 'platejs';
-
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -11,7 +7,9 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
+import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { BlockquoteElement } from '@/registry/components/editor/blockquote';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';

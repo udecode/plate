@@ -1,13 +1,13 @@
-import { HistoryPlugin } from './HistoryPlugin';
-import { OverridePlugin } from './override/OverridePlugin';
+import type { DefinitionOf } from '../plugin';
+import { AffinityPlugin } from './affinity';
 import { DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { ElementStatePlugin } from './element-state';
+import { HistoryPlugin } from './HistoryPlugin';
 import { HtmlPlugin } from './html';
 import { InputRulesPlugin } from './input-rules/InputRulesPlugin';
-import { AffinityPlugin } from './affinity';
+import { OverridePlugin } from './override/OverridePlugin';
 import { BaseParagraphPlugin } from './paragraph';
-import type { DefinitionOf } from '../plugin';
 
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */

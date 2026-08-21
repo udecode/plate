@@ -1,7 +1,8 @@
 import type { EditorUpdateTag, EditorUpdateTransaction } from '@platejs/plite';
+
+import { profileEditableMutationDuration } from './mutation-profiler';
 import type { Editor } from './runtime-editor-api';
 import { getEditorRuntime } from './runtime-editor-api';
-import { profileEditableMutationDuration } from './mutation-profiler';
 
 type NativeTextInputLocation = {
   path: readonly number[];

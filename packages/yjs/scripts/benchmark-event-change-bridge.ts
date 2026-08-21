@@ -93,8 +93,8 @@ const [source, target] = createSeededYjsPeers({
   },
 });
 
-assert(source);
-assert(target);
+assert.ok(source);
+assert.ok(target);
 
 const seedMs = performance.now() - seedStartedAt;
 const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;

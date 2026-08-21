@@ -22,6 +22,7 @@ import {
   resolveCompiledSchemaProperty,
   type EditorSchemaContributionRecord,
 } from '@platejs/plite/internal';
+
 import { hashSchemaIdentityString } from '../src/core/schema-compiler';
 
 const legacyHashSchemaIdentityString = (value: string) => {
@@ -640,12 +641,12 @@ describe('schema compiler', () => {
       '',
       '\0',
       'plain ASCII',
-      '\u0000\u0001\u00ff\u0100\u7fff\u8000\ufffe\uffff',
-      '\ud800',
-      '\udfff',
+      '\u0000\u0001\u00FF\u0100\u7FFF\u8000\uFFFE\uFFFF',
+      '\uD800',
+      '\uDFFF',
       '😀🧑🏽‍💻',
       'a'.repeat(4096),
-      '\uffff'.repeat(4096),
+      '\uFFFF'.repeat(4096),
     ];
 
     for (const input of boundaryInputs) {

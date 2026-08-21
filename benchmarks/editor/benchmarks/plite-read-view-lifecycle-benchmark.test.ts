@@ -13,7 +13,7 @@ const packagePath = resolve(root, 'package.json');
 
 describe('read-view lifecycle benchmark authority', () => {
   it('registers one strict target and artifact', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string; required: boolean }>;
         command: string;
@@ -46,7 +46,7 @@ describe('read-view lifecycle benchmark authority', () => {
   });
 
   it('locks structural counters, commit stability, and the width budget', () => {
-    const source = readFileSync(benchmarkPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.match(source, /runCohort\(1\)/u);
     assert.match(source, /runCohort\(100\)/u);
@@ -60,7 +60,7 @@ describe('read-view lifecycle benchmark authority', () => {
   });
 
   it('runs the authority check in the strict Plite contract gate', () => {
-    const packageJson = JSON.parse(readFileSync(packagePath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
 

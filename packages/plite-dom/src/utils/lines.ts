@@ -7,6 +7,7 @@ import {
   positions as editorPositions,
   range as editorRange,
 } from '@platejs/plite/internal';
+
 import { DOMEditor } from '../plugin/dom-editor';
 
 const doRectsIntersect = (rect: DOMRect, compareRect: DOMRect) => {

@@ -11,27 +11,32 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/math"
   },
-  "license": "MIT",
+  "files": [
+    "dist/**/*",
+    "katex.css"
+  ],
+  "type": "module",
   "sideEffects": [
     "./katex.css"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./katex.css": "./katex.css",
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*",
-    "katex.css"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "plate-pkg p:brl",
     "build": "plate-pkg p:build",
@@ -59,10 +64,5 @@
   "peerDependencies": {
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "module": "./dist/index.js"
+  }
 }

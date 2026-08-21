@@ -2,14 +2,14 @@
 import VText from 'virtual-dom/vnode/vtext';
 import { fragment } from 'xmlbuilder2';
 
-import * as xmlBuilder from './xml-builder';
-import { buildImage } from './xml-builder';
 import {
   convertVTreeToXML,
   getListTracking,
   resetListTracking,
   setListTracking,
 } from './render-document-file';
+import * as xmlBuilder from './xml-builder';
+import { buildImage } from './xml-builder';
 
 describe('renderDocumentFile', () => {
   it('skips webp images before creating media files', async () => {

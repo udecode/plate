@@ -16,7 +16,9 @@ declare namespace jasmine {
   interface Spy extends AnyTestMock {}
 }
 
-declare var mock: ((implementation?: (...args: any[]) => any) => AnyTestMock) & {
+declare var mock: ((
+  implementation?: (...args: any[]) => any
+) => AnyTestMock) & {
   module(id: string, factory: () => any): void | Promise<void>;
   restore(): void;
 };

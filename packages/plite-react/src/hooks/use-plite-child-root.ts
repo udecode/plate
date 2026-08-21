@@ -1,5 +1,5 @@
-import { useContext, useMemo } from 'react';
 import type { Element, NamedRootKey, RootKey } from '@platejs/plite';
+import { useContext, useMemo } from 'react';
 
 import { NodeKeyContext } from '../context';
 import { useOptionalElement } from './use-element';

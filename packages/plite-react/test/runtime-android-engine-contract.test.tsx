@@ -1,8 +1,9 @@
-import { startTransition, Suspense } from 'react';
 import { act, render } from '@testing-library/react';
-import type { AndroidInputManager } from '../src/hooks/android-input-manager/android-input-manager';
-import { usePublishedAndroidInputManager } from '../src/editable/runtime-android-engine';
+import { startTransition, Suspense } from 'react';
+
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
+import { usePublishedAndroidInputManager } from '../src/editable/runtime-android-engine';
+import type { AndroidInputManager } from '../src/hooks/android-input-manager/android-input-manager';
 import { createReactEditor } from '../src/plugin/with-react';
 
 test('an abandoned render cannot publish its Android input manager', () => {

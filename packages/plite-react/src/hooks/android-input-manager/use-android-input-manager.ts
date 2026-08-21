@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { EDITOR_TO_SCHEDULE_FLUSH } from '@platejs/plite-dom/internal';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
+
 import type { EditableDOMRuntime } from '../../editable/editable-dom-runtime';
 import type { ReactRuntimeEditor } from '../../plugin/react-editor';
 import { useEditor } from '../use-editor';

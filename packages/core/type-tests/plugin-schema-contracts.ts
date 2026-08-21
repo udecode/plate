@@ -1,13 +1,4 @@
 import {
-  type ElementOf,
-  type EditorSchemaProperty,
-  type PropertyJsonValue,
-  type Value,
-  property,
-  schema,
-  target,
-} from '@platejs/plite';
-import {
   type BasePluginContext,
   type BasePluginDefinition,
   createBaseEditor,
@@ -20,10 +11,6 @@ import {
   type PluginReference,
   type TextWith,
 } from '@platejs/core';
-import type { SchemaElement } from '@platejs/plite';
-import type { AnyBasePlugin } from '../src/lib/plugin/BasePlugin';
-import type { NormalizePluginState } from '../src/lib/plugin/PluginDefinition';
-import type { PliteElementProps } from '../src/static/components/plite-nodes';
 import {
   createPlateEditor,
   definePlatePlugin,
@@ -32,6 +19,20 @@ import {
   type PlateEditor,
   toPlatePlugin,
 } from '@platejs/core/react';
+import {
+  type ElementOf,
+  type EditorSchemaProperty,
+  type PropertyJsonValue,
+  type Value,
+  property,
+  schema,
+  target,
+  type SchemaElement,
+} from '@platejs/plite';
+
+import type { AnyBasePlugin } from '../src/lib/plugin/BasePlugin';
+import type { NormalizePluginState } from '../src/lib/plugin/PluginDefinition';
+import type { PliteElementProps } from '../src/static/components/plite-nodes';
 
 const TargetPlugin = defineBasePlugin('schemaTarget', {
   schema: {

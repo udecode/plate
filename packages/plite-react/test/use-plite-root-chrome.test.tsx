@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { Descendant } from '@platejs/plite';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import {
   createReactEditor,

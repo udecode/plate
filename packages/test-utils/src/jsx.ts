@@ -15,10 +15,7 @@ import {
   jsx as pliteJsx,
 } from '@platejs/plite-hyperscript';
 
-export {
-  createEditor,
-  createHyperscript,
-} from '@platejs/plite-hyperscript';
+export { createEditor, createHyperscript } from '@platejs/plite-hyperscript';
 
 export type TestEditorFixture = {
   children: Element[];
@@ -39,7 +36,7 @@ type HyperscriptIntrinsicAttributes = {
 };
 
 declare global {
-  // biome-ignore lint/style/noNamespace: Required for TypeScript JSX typing
+  // Required for TypeScript JSX typing.
   namespace JSX {
     interface IntrinsicElements {
       anchor: HyperscriptIntrinsicAttributes;

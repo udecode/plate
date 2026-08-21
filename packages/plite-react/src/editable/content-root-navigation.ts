@@ -1,4 +1,3 @@
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
   type Descendant,
   NodeApi,
@@ -9,6 +8,8 @@ import {
   RangeApi,
   type RootKey,
 } from '@platejs/plite';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
 import {
@@ -70,6 +71,7 @@ import {
   isPointOnVisualBoundaryLine,
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   after as editorAfter,
   before as editorBefore,
@@ -77,7 +79,6 @@ import {
   editorCommands,
   toInternalRoot,
 } from './runtime-editor-api';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 
 export {
   type ContentRootOwner,

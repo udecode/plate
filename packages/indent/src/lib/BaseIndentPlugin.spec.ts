@@ -4,6 +4,7 @@ import {
   defineBasePlugin,
 } from '@platejs/core';
 import { createPluginContext } from '@platejs/core/internal';
+import { createPlateEditor } from '@platejs/core/react';
 import {
   ContentSlice,
   createEditor,
@@ -14,7 +15,6 @@ import {
   target,
 } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
-import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 

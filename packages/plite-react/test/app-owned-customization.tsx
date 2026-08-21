@@ -1,7 +1,3 @@
-// biome-ignore-all lint/performance/useTopLevelRegex: Test-local source assertion.
-import { act, render } from '@testing-library/react';
-import { StrictMode } from 'react';
-import type React from 'react';
 import {
   type Descendant,
   defineExtension,
@@ -9,6 +5,10 @@ import {
   NodeApi,
 } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
+// Test-local source assertion.
+import { act, render } from '@testing-library/react';
+import { StrictMode } from 'react';
+import type React from 'react';
 
 import {
   createReactEditor,

@@ -31,12 +31,8 @@ export function usePlateViewEditor<
   : TEnabled extends true | undefined
     ? StaticEditor<P>
     : StaticEditor<P> | null {
-  return React.useMemo(
-    (): any => {
-      if (options.enabled === false) return null;
-      return createStaticEditor(options);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [options?.id, options?.enabled, ...deps]
-  );
+  return React.useMemo((): any => {
+    if (options.enabled === false) return null;
+    return createStaticEditor(options);
+  }, [options?.id, options?.enabled, ...deps]);
 }

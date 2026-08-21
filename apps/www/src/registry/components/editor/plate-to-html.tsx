@@ -1,18 +1,17 @@
 'use client';
 
-import * as React from 'react';
-
 import { useTheme } from 'next-themes';
 import type { InitialValue } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { EditorKit } from '@/registry/components/editor/plugins';
 import { Editor, EditorView } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 
-import { BaseEditorKit } from './plugins-static';
 import { FixedToolbarPlugin } from './fixed-toolbar';
 import { FloatingToolbarPlugin } from './floating-toolbar';
+import { BaseEditorKit } from './plugins-static';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -51,7 +50,7 @@ export function ExportHtmlButton({
   React.useEffect(() => {
     const blob = new Blob([themedHtml], { type: 'text/html' });
     const blobUrl = URL.createObjectURL(blob);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Track browser object URL lifecycle for the generated export blob.
+    // Track browser object URL lifecycle for the generated export blob.
     setUrl(blobUrl);
 
     return () => {

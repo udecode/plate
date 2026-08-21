@@ -1,18 +1,17 @@
 import React from 'react';
 
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
 import type {
   AnyBasePluginPortal,
   AnyPluginBase,
   BaseEditor,
   RenderElementProps,
 } from '../lib';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../internal/plugin/compilePlateModel';
 import { createPluginContext } from '../lib/plugin/createPluginContext.internal';
-
 import { PliteElement } from './components/plite-nodes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
@@ -36,7 +35,7 @@ export const pluginRenderElementStatic = (
 
     let { children } = nodeProps;
 
-    // biome-ignore lint/style/noParameterAssign: Intentional props accumulation pattern
+    // Intentional props accumulation pattern.
     nodeProps = getRenderNodeStaticProps({
       editor,
       path: nodeProps.path,

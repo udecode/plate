@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { CalloutPlugin } from '@platejs/callout/react';
 import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
 import { createPlateEditor } from 'platejs/react';

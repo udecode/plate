@@ -1,20 +1,18 @@
 import type { AnyObject } from '@udecode/utils';
+import { clsx } from 'clsx';
 import type React from 'react';
 
-import { clsx } from 'clsx';
-
-import type { PlateEditor } from '../editor';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
-
-import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
   type AnyBasePlugin,
   type GetInjectNodePropsOptions,
   getPluginNodeClass,
 } from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
+import type { PlateEditor } from '../editor';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
 /**
  * Merge explicitly projected plugin props and extend the class name with the

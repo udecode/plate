@@ -27,8 +27,8 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { inheritNodeKeys } from '../../plite/src/utils/node-keys';
 
+import { inheritNodeKeys } from '../../plite/src/utils/node-keys';
 import { type Batch, History, history } from '../src';
 
 const PLITE_IMPORT_RE = /import \{ createEditor \} from "@platejs\/plite"/;

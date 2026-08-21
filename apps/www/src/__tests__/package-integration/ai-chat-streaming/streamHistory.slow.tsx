@@ -1,6 +1,6 @@
-import { ElementApi, PathApi } from 'platejs';
 import { BaseAIPlugin } from '@platejs/ai';
 import { AIChatPlugin } from '@platejs/ai/react';
+import { ElementApi, PathApi } from 'platejs';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 

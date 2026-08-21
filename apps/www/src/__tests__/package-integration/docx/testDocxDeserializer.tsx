@@ -1,7 +1,5 @@
 /** @jsx jsx */
 
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { TextIndentPlugin } from '@platejs/basic-styles/react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -11,12 +9,17 @@ import {
   ScriptPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
+  HorizontalRulePlugin,
 } from '@platejs/basic-nodes/react';
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import {
+  TextAlignPlugin,
+  TextIndentPlugin,
+  LineHeightPlugin,
+} from '@platejs/basic-styles/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { DocxPastePlugin } from '@platejs/docx-paste';
 import { IndentPlugin } from '@platejs/indent/react';
 import { JuicePlugin } from '@platejs/juice';
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list';
 import { ImagePlugin } from '@platejs/media/react';
@@ -24,11 +27,9 @@ import { TablePlugin } from '@platejs/table/react';
 import { jsx } from '@platejs/test-utils';
 import { BaseParagraphPlugin } from 'platejs';
 
-import { DocxPastePlugin } from '@platejs/docx-paste';
-import { readTestFile } from './readTestFile';
 import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
+import { readTestFile } from './readTestFile';
 
-// biome-ignore lint/suspicious/noUnusedExpressions: test
 jsx;
 
 const targetPluginConfig = {

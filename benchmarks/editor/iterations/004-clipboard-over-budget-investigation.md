@@ -32,8 +32,7 @@ The registered command was too weak:
 bun run bench:core:clipboard-large-payload:local
 ```
 
-That default mode runs a 10,000-block cut and does not enable issue target
-thresholds. The red rows came from the issue-shaped 50,000-block mode.
+That default mode runs a 10,000-block cut and does not enable issue target thresholds. The red rows came from the issue-shaped 50,000-block mode.
 
 The correct reproducible command is:
 
@@ -49,9 +48,7 @@ Fresh historical donor-checkout run:
 
 ## Decision
 
-Update `research/benchmark-registry.json` so the active artifact command matches
-the issue-shaped budget claim. The over-budget rows were stale artifact output,
-not a current failing threshold.
+Update `research/benchmark-registry.json` so the active artifact command matches the issue-shaped budget claim. The over-budget rows were stale artifact output, not a current failing threshold.
 
 ## Verification
 

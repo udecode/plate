@@ -1,5 +1,5 @@
-import { createPlateEditor } from '@platejs/core/react';
 import { BaseParagraphPlugin, ElementIdPlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 import { BaseIndentPlugin } from '@platejs/indent';
 
 import { TogglePlugin } from './TogglePlugin';

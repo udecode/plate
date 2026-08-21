@@ -835,10 +835,9 @@ describe('schema declaration builders', () => {
     void validatedSet;
     void validatedString;
     property.json({
-      validate: (value): value is { id: string } => {
+      validate: (value): value is { id: string } =>
         // @ts-expect-error validators must narrow untrusted values first
-        return value.id.length > 0;
-      },
+        value.id.length > 0,
       validationVersion: 1,
     });
     // @ts-expect-error validate requires validationVersion

@@ -1,6 +1,4 @@
-/* biome-ignore-all lint: legacy code */
 import type JSZip from 'jszip';
-
 import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
@@ -23,12 +21,17 @@ import {
   portraitMargins,
   themeType as themeFileType,
 } from './constants';
-import { convertVTreeToXML } from './render-document-file';
+import ListStyleBuilder, {
+  type ListStyleDefaults,
+  type ListStyleType,
+} from './list';
 import namespaces from './namespaces';
-import generateCoreXML from './schemas/core';
+import { convertVTreeToXML } from './render-document-file';
 import contentTypesXMLString from './schemas/content-types';
-import generateDocumentTemplate from './schemas/document.template';
+import generateCoreXML from './schemas/core';
 import documentRelsXMLString from './schemas/document-rels';
+import generateDocumentTemplate from './schemas/document.template';
+import type { DocumentMargins } from './schemas/document.template';
 import fontTableXMLString from './schemas/font-table';
 import genericRelsXMLString from './schemas/generic-rels';
 import generateNumberingXMLTemplate from './schemas/numbering';
@@ -36,11 +39,6 @@ import settingsXMLString from './schemas/settings';
 import generateStylesXML from './schemas/styles';
 import generateThemeXML from './schemas/theme';
 import webSettingsXMLString from './schemas/web-settings';
-import type { DocumentMargins } from './schemas/document.template';
-import ListStyleBuilder, {
-  type ListStyleDefaults,
-  type ListStyleType,
-} from './list';
 
 const QUOTED_FONT_PATTERN = /(["'])(.*?)\1/;
 
@@ -661,12 +659,10 @@ class DocxDocument {
     );
   }
 
-  // eslint-disable-next-line class-methods-use-this
   generateSettingsXML(): string {
     return generateXMLString(settingsXMLString);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   generateWebSettingsXML(): string {
     return generateXMLString(webSettingsXMLString);
   }
@@ -838,7 +834,6 @@ class DocxDocument {
     return numberingXML.toString({ prettyPrint: true });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   appendRelationships(
     xmlFragment: XMLBuilder,
     relationships: RelationshipObject[]
@@ -896,7 +891,6 @@ class DocxDocument {
   }
 
   createMediaFile(base64String: string): MediaFileInfo {
-    // eslint-disable-next-line no-useless-escape
     const matches = base64String.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
 
     if (!matches || matches.length !== 3) {

@@ -6,9 +6,9 @@ import { createPlateEditor } from 'platejs/react';
 import { registryBlocks } from '@/registry/registry-blocks';
 import { registryFeatures } from '@/registry/registry-features';
 
-import { BaseFootnoteKit } from './footnote-static';
-import { FootnoteKit } from './footnote';
 import { BaseCodeDrawingKit } from './code-drawing-static';
+import { FootnoteKit } from './footnote';
+import { BaseFootnoteKit } from './footnote-static';
 import { MarkdownKit } from './markdown';
 
 const footnoteNames = [

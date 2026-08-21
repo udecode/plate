@@ -1,5 +1,3 @@
-import type { TextareaHTMLAttributes } from 'react';
-import React, { type CSSProperties, type ReactNode } from 'react';
 import {
   type Ancestor,
   type Descendant,
@@ -25,6 +23,12 @@ import {
   NODE_TO_INDEX,
   NODE_TO_PARENT,
 } from '@platejs/plite-dom/internal';
+import React, {
+  type TextareaHTMLAttributes,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
+
 import {
   ElementContext,
   ElementPathContext,
@@ -33,13 +37,13 @@ import {
   PliteDOMStrategyVirtualOffsetContext,
   PliteEditableRootContext,
 } from '../context';
+import { registerEditorDecorationRefreshSource } from '../decoration-refresh';
 import {
   composeProjectionSources,
   createDecorationSource,
   type PliteRangeDecoration,
   type PliteOverlayProjectionStore,
 } from '../decoration-source';
-import { registerEditorDecorationRefreshSource } from '../decoration-refresh';
 import type { DOMStrategyOptions } from '../dom-strategy/create-segment-plan';
 import { DOMStrategySegmentPlaceholder } from '../dom-strategy/segment-placeholder';
 import {
@@ -97,11 +101,6 @@ import {
   type EditableKeyDownHandler,
 } from './editable';
 import { readEditableDecorations } from './editable-decorations';
-import { EditableRenderedElement } from './editable-rendered-element';
-import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
-
-export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
-
 import {
   isEditableTextNode,
   readEditableDescendantBinding,
@@ -121,6 +120,7 @@ import {
 } from './editable-dom-strategy-helpers';
 import { EditableElement } from './editable-element';
 import { sameDescendantBinding, sameNodeKeys } from './editable-node-equality';
+import { EditableRenderedElement } from './editable-rendered-element';
 import {
   createRootGroupRenderItems,
   createRootGroups,
@@ -139,6 +139,9 @@ import {
   type RenderTextProps,
 } from './editable-text';
 import { Plite } from './plite';
+import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
+
+export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
 
 export type EditableDOMCoverageBoundaryScope =
   | {

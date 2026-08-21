@@ -46,8 +46,9 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
     ).read.nodes.get(path);
 
     // prevent inline elements like link and table cells.
-    if (!block || !ElementApi.isElement(block[0]) || block[1].length !== 1)
+    if (!block || !ElementApi.isElement(block[0]) || block[1].length !== 1) {
       return;
+    }
 
     /**
      * If the selection don't cover the all first or last block, we need

@@ -1,4 +1,5 @@
 import { expect, type Locator } from '@playwright/test';
+
 import type { PlaceholderShape } from '../browser/zero-width';
 import {
   assertCaretVisibleInScrollableParent,

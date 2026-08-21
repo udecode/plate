@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import {
   createEditor,
   defineExtension,
@@ -50,8 +51,9 @@ describe('@platejs/yjs shared effect compaction', () => {
             commit({ commit }) {
               if (commit.tags.includes('remote-yjs-import')) remoteCommits += 1;
               for (const effect of commit.effects) {
-                if (effect.type === announce)
+                if (effect.type === announce) {
                   received.push(String(effect.value));
+                }
               }
             },
           },
@@ -944,7 +946,7 @@ describe('@platejs/yjs shared effect compaction', () => {
 
     assert.deepEqual(received, [{ nested: { value: 'original' } }]);
     assert.equal(Object.isFrozen(received[0]), true);
-    assert.equal(Object.isFrozen(received[0]!.nested), true);
+    assert.equal(Object.isFrozen(received[0].nested), true);
 
     cleanupEffect();
     cleanupYjs();
@@ -1045,7 +1047,7 @@ describe('@platejs/yjs shared effect compaction', () => {
       effects: Array<{ value: { value: string } }>;
     };
 
-    storedCheckpoint.effects[0]!.value.value = 'tampered';
+    storedCheckpoint.effects[0].value.value = 'tampered';
 
     const cleanupTitle = late.install(state);
 

@@ -3,24 +3,30 @@
   "version": "54.0.0-beta.0",
   "description": "Yjs collaboration bindings for Plate and Plite.",
   "keywords": [
+    "@platejs/plite",
     "collaboration",
     "editor",
     "plate",
-    "@platejs/plite",
     "yjs"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/yjs"
   },
-  "license": "MIT",
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -39,12 +45,9 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -59,22 +62,19 @@
     "diff-match-patch-ts": "^0.6.0"
   },
   "devDependencies": {
-    "@types/node": "24.12.0",
-    "@types/react": "19.2.7",
-    "react": "19.2.4",
+    "@plate/scripts": "workspace:*",
     "@platejs/plite": "workspace:^",
     "@platejs/plite-history": "workspace:^",
     "@platejs/plite-react": "workspace:^",
-    "@plate/scripts": "workspace:*",
+    "@types/node": "24.12.0",
+    "@types/react": "19.2.7",
+    "react": "19.2.4",
     "yjs": "13.6.30"
   },
   "peerDependencies": {
-    "react": ">=19.2.0",
     "@platejs/plite": ">=54.0.0-beta.0",
     "@platejs/plite-react": ">=54.0.0-beta.0",
+    "react": ">=19.2.0",
     "yjs": ">=13.6.30"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

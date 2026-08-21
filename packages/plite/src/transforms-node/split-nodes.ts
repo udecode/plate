@@ -1,6 +1,5 @@
-import { getEditorSchema } from '../core/editor-runtime';
 import type { Anchor } from '../core/anchor';
-import { mapCanonicalRepresentationPoint } from '../core/representation';
+import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   finalizeTransactionRepresentation,
@@ -10,6 +9,7 @@ import {
   profileCoreDuration,
   runEditorTransaction,
 } from '../core/public-state';
+import { mapCanonicalRepresentationPoint } from '../core/representation';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { type Location, LocationApi } from '../interfaces';

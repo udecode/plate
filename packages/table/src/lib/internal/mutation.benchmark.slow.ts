@@ -1,10 +1,9 @@
-import type { TableRowElement } from '../BaseTablePlugin';
 import type {
   TableCellElementWithId,
   TableElementWithId,
   TableRowElementWithId,
 } from '../__tests__/tableTestTypes';
-
+import type { TableRowElement } from '../BaseTablePlugin';
 import { createDetachedTableContext } from './context';
 import {
   compileTableGrid,
@@ -62,48 +61,40 @@ const withOperationKey = <T extends TableCellElementWithId>(
 };
 
 const createDenseTable = (size: number): TableElementWithId => ({
-  children: Array.from(
-    { length: size },
-    (_, row): TableRowElementWithId => ({
-      children: Array.from(
-        { length: size },
-        (_, col): TableCellElementWithId =>
-          withOperationKey(
-            {
-              children: [{ text: `${row}:${col}` }],
-              id: `cell-${row}-${col}`,
-              type: 'tableCell',
-            },
-            `cell-${row}-${col}`
-          )
-      ),
-      id: `row-${row}`,
-      type: 'tableRow',
-    })
-  ),
+  children: Array.from({ length: size }, (_, row): TableRowElementWithId => ({
+    children: Array.from({ length: size }, (_, col): TableCellElementWithId =>
+      withOperationKey(
+        {
+          children: [{ text: `${row}:${col}` }],
+          id: `cell-${row}-${col}`,
+          type: 'tableCell',
+        },
+        `cell-${row}-${col}`
+      )
+    ),
+    id: `row-${row}`,
+    type: 'tableRow',
+  })),
   id: 'table',
   type: 'table',
 });
 
 const createSparseTable = (size: number): TableElementWithId => ({
-  children: Array.from(
-    { length: size },
-    (_, row): TableRowElementWithId => ({
-      children: [
-        withOperationKey(
-          {
-            children: [{ text: `${row}` }],
-            colSpan: size,
-            id: `cell-${row}-0`,
-            type: 'tableCell',
-          },
-          `cell-${row}-0`
-        ),
-      ],
-      id: `row-${row}`,
-      type: 'tableRow',
-    })
-  ),
+  children: Array.from({ length: size }, (_, row): TableRowElementWithId => ({
+    children: [
+      withOperationKey(
+        {
+          children: [{ text: `${row}` }],
+          colSpan: size,
+          id: `cell-${row}-0`,
+          type: 'tableCell',
+        },
+        `cell-${row}-0`
+      ),
+    ],
+    id: `row-${row}`,
+    type: 'tableRow',
+  })),
   id: 'table',
   type: 'table',
 });

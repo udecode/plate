@@ -1,20 +1,18 @@
-import React from 'react';
-
 import { type Path, PathApi, TextApi } from '@platejs/plite';
 import { setDOMTextSyncRendererCapability } from '@platejs/plite-react/internal';
 import clsx from 'clsx';
+import React from 'react';
 
-import type { EditableProps, EditOnlyConfig } from '../../lib';
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import type { EditableProps, EditOnlyConfig } from '../../lib';
+import { PlateLeaf } from '../components';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyResolvedPlatePlugin } from '../plugin';
-
-import { PlateLeaf } from '../components';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';
 
@@ -177,9 +175,9 @@ export const pipeRenderLeaf = (
           key: leafKey,
           requiresModelTextSync: Boolean(
             (plugin as { component?: unknown }).component ||
-              plugin.render.leaf ||
-              plugin.render.node ||
-              plugin.render.nodeProps
+            plugin.render.leaf ||
+            plugin.render.node ||
+            plugin.render.nodeProps
           ),
           renderLeaf: pluginRenderLeaf(editor, plugin as any),
         };
@@ -212,9 +210,9 @@ export const pipeRenderLeaf = (
     }
 
     return setDOMTextSyncRendererCapability(
-      function render({ attributes, ...props }) {
-        return <span {...attributes}>{props.children}</span>;
-      },
+      ({ attributes, ...props }) => (
+        <span {...attributes}>{props.children}</span>
+      ),
       () => true
     );
   }
@@ -223,7 +221,7 @@ export const pipeRenderLeaf = (
     !hasInjectNodeProps && !renderLeafProp && leafPropsEntries.length === 0;
 
   return setDOMTextSyncRendererCapability(
-    function render({ attributes, ...props }) {
+    ({ attributes, ...props }) => {
       const readOnly = editor.read.view.isReadOnly();
       const leaf = getDecoratedLeaf(
         props.leaf as Record<string, unknown>,

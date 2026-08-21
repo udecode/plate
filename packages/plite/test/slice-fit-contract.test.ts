@@ -16,18 +16,6 @@ import {
   type Value,
 } from '@platejs/plite';
 
-import {
-  bindCanonicalFitPreparation,
-  canonicalizeRootChildren,
-  constructCanonicalDocumentChange,
-  prepareCanonicalFitSlice,
-} from '../src/core/representation';
-import {
-  createDetachedContentSlice,
-  encodeContentSlice,
-  encodeContentSliceContent,
-  isDetachedContentSlice,
-} from '../src/core/content-slice';
 import { getInternalDocumentChangeEntries } from '../src/core/change/document-change';
 import { DocumentIndex } from '../src/core/change/document-index';
 import { RootChange } from '../src/core/change/root-change';
@@ -35,6 +23,18 @@ import {
   PreparedTokenSlice,
   hasMaterializedDocumentSliceTokens,
 } from '../src/core/change/tokens';
+import {
+  createDetachedContentSlice,
+  encodeContentSlice,
+  encodeContentSliceContent,
+  isDetachedContentSlice,
+} from '../src/core/content-slice';
+import {
+  bindCanonicalFitPreparation,
+  canonicalizeRootChildren,
+  constructCanonicalDocumentChange,
+  prepareCanonicalFitSlice,
+} from '../src/core/representation';
 import { createTestDocumentChange } from './support/document-change';
 
 const paragraph = (text: string, children?: Descendant[]) => ({
@@ -650,6 +650,52 @@ describe('contextual schema slice fitting', () => {
     assert.equal(children[0], committedBefore[0]);
     assert.equal(children[4], committedBefore[2]);
     assert.equal(commits, 1);
+  });
+
+  it('keeps a closed mixed-block insertion local in a wide document', () => {
+    const blockCount = 1000;
+    const editor = createEditor({
+      initialValue: Array.from({ length: blockCount }, (_, index) =>
+        paragraph(`block-${index}`)
+      ),
+    });
+    const profilerGlobal = globalThis as typeof globalThis & {
+      __PLITE_REACT_RENDER_PROFILER__?: {
+        record: (event: { id: string }) => void;
+      };
+    };
+    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const events: string[] = [];
+
+    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      record: ({ id }) => events.push(id),
+    };
+
+    try {
+      editor.update((tx) => {
+        assert.equal(
+          tx.slice.replace(
+            ContentSlice.closed([
+              paragraph('', [{ bold: true, text: 'heading' }]),
+              paragraph('fragment alpha'),
+              paragraph('', [
+                { text: 'fragment ' },
+                { bold: true, text: 'bold ' },
+                { italic: true, text: 'italic' },
+              ]),
+            ]),
+            { at: { offset: 0, path: [blockCount / 2, 0] } }
+          ),
+          true
+        );
+      });
+    } finally {
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    }
+
+    assert.equal(events.includes('change-set-local-root-window-decode'), true);
+    assert.equal(events.includes('change-set-apply-token-fallback'), false);
+    assert.ok(editor.read.children().length > blockCount);
   });
 
   it('keeps detached fit specs equivalent to transactional replacement', () => {
@@ -2312,100 +2358,120 @@ describe('contextual schema slice fitting', () => {
     assert.ok(maximumChangedSpan < 32, `${maximumChangedSpan} changed tokens`);
   });
 
-  it('keeps canonical construction local inside a wide top-level node', {
-    timeout: 20_000,
-  }, () => {
-    const blockCount = 20_000;
-    const target = Math.floor(blockCount / 2);
-    const editor = createSchemaEditor([
-      {
-        type: 'section',
-        children: Array.from({ length: blockCount }, (_value, index) =>
-          index === target
-            ? paragraph('', [
-                { bold: true, text: 'left' },
-                { bold: false, text: 'right' },
-              ])
-            : paragraph(`line ${index}`)
-        ),
-      },
-    ]);
-    const beforeSection = editor.read.children()[0];
+  it(
+    'keeps canonical construction local inside a wide top-level node',
+    {
+      timeout: 20_000,
+    },
+    () => {
+      const blockCount = 20_000;
+      const target = Math.floor(blockCount / 2);
+      const editor = createSchemaEditor([
+        {
+          type: 'section',
+          children: Array.from({ length: blockCount }, (_value, index) =>
+            index === target
+              ? paragraph('', [
+                  { bold: true, text: 'left' },
+                  { bold: false, text: 'right' },
+                ])
+              : paragraph(`line ${index}`)
+          ),
+        },
+      ]);
+      const beforeSection = editor.read.children()[0];
 
-    assert.ok(ElementApi.isElement(beforeSection));
-    const first = beforeSection.children[0];
-    const last = beforeSection.children.at(-1);
+      assert.ok(ElementApi.isElement(beforeSection));
+      const first = beforeSection.children[0];
+      const last = beforeSection.children.at(-1);
 
-    editor.update.nodes.set({ bold: true }, { at: [0, target, 1] });
+      editor.update.nodes.set({ bold: true }, { at: [0, target, 1] });
 
-    const afterSection = editor.read.children()[0];
-    const commit = editor.read.lastCommit();
-    let maximumChangedSpan = 0;
+      const afterSection = editor.read.children()[0];
+      const commit = editor.read.lastCommit();
+      let maximumChangedSpan = 0;
 
-    assert.ok(ElementApi.isElement(afterSection));
-    commit?.changes.iterChangedRanges(
-      (_root, _fromBefore, _toBefore, fromAfter, toAfter) => {
-        maximumChangedSpan = Math.max(maximumChangedSpan, toAfter - fromAfter);
-      }
-    );
-    assert.equal(afterSection.children[0], first);
-    assert.equal(afterSection.children.at(-1), last);
-    assert.deepEqual(afterSection.children[target], {
-      type: 'paragraph',
-      children: [{ bold: true, text: 'leftright' }],
-    });
-    assert.ok(maximumChangedSpan < 64, `${maximumChangedSpan} changed tokens`);
-    assert.equal(
-      constructCanonicalDocumentChange(
-        editor,
-        { children: editor.read.children() },
-        commit!.changes
-      ).empty,
-      true
-    );
-  });
+      assert.ok(ElementApi.isElement(afterSection));
+      commit?.changes.iterChangedRanges(
+        (_root, _fromBefore, _toBefore, fromAfter, toAfter) => {
+          maximumChangedSpan = Math.max(
+            maximumChangedSpan,
+            toAfter - fromAfter
+          );
+        }
+      );
+      assert.equal(afterSection.children[0], first);
+      assert.equal(afterSection.children.at(-1), last);
+      assert.deepEqual(afterSection.children[target], {
+        type: 'paragraph',
+        children: [{ bold: true, text: 'leftright' }],
+      });
+      assert.ok(
+        maximumChangedSpan < 64,
+        `${maximumChangedSpan} changed tokens`
+      );
+      assert.equal(
+        constructCanonicalDocumentChange(
+          editor,
+          { children: editor.read.children() },
+          commit!.changes
+        ).empty,
+        true
+      );
+    }
+  );
 
-  it('keeps split selection mapping local in a wide root', {
-    timeout: 20_000,
-  }, () => {
-    const blockCount = 20_000;
-    const target = Math.floor(blockCount / 2);
-    const initialValue = Array.from({ length: blockCount }, (_value, index) =>
-      paragraph(`line ${index}`)
-    );
-    const editor = createEditor({
-      extensions: [SliceFitSchema],
-      initialSelection: SelectionApi.text({
-        anchor: { offset: 2, path: [target, 0] },
-        focus: { offset: 2, path: [target, 0] },
-      }),
-      initialValue,
-    });
-    const before = editor.read.children();
-    const first = before[0];
-    const last = before.at(-1);
+  it(
+    'keeps split selection mapping local in a wide root',
+    {
+      timeout: 20_000,
+    },
+    () => {
+      const blockCount = 20_000;
+      const target = Math.floor(blockCount / 2);
+      const initialValue = Array.from({ length: blockCount }, (_value, index) =>
+        paragraph(`line ${index}`)
+      );
+      const editor = createEditor({
+        extensions: [SliceFitSchema],
+        initialSelection: SelectionApi.text({
+          anchor: { offset: 2, path: [target, 0] },
+          focus: { offset: 2, path: [target, 0] },
+        }),
+        initialValue,
+      });
+      const before = editor.read.children();
+      const first = before[0];
+      const last = before.at(-1);
 
-    editor.update((tx) => tx.nodes.split());
+      editor.update((tx) => tx.nodes.split());
 
-    const after = editor.read.children();
-    const commit = editor.read.lastCommit();
-    let maximumChangedSpan = 0;
+      const after = editor.read.children();
+      const commit = editor.read.lastCommit();
+      let maximumChangedSpan = 0;
 
-    commit?.changes.iterChangedRanges(
-      (_root, _fromBefore, _toBefore, fromAfter, toAfter) => {
-        maximumChangedSpan = Math.max(maximumChangedSpan, toAfter - fromAfter);
-      }
-    );
-    assert.equal(after.length, blockCount + 1);
-    assert.equal(after[0], first);
-    assert.equal(after.at(-1), last);
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text({
-        anchor: { offset: 0, path: [target + 1, 0] },
-        focus: { offset: 0, path: [target + 1, 0] },
-      })
-    );
-    assert.ok(maximumChangedSpan < 32, `${maximumChangedSpan} changed tokens`);
-  });
+      commit?.changes.iterChangedRanges(
+        (_root, _fromBefore, _toBefore, fromAfter, toAfter) => {
+          maximumChangedSpan = Math.max(
+            maximumChangedSpan,
+            toAfter - fromAfter
+          );
+        }
+      );
+      assert.equal(after.length, blockCount + 1);
+      assert.equal(after[0], first);
+      assert.equal(after.at(-1), last);
+      assert.deepEqual(
+        editor.read.selection(),
+        SelectionApi.text({
+          anchor: { offset: 0, path: [target + 1, 0] },
+          focus: { offset: 0, path: [target + 1, 0] },
+        })
+      );
+      assert.ok(
+        maximumChangedSpan < 32,
+        `${maximumChangedSpan} changed tokens`
+      );
+    }
+  );
 });

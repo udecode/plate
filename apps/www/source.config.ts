@@ -18,9 +18,9 @@ import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
 import { z } from 'zod';
 
+import { getCodeTitleIconLabel } from './src/lib/code-title-icon';
 import { rehypeComponent } from './src/lib/rehype-component';
 import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
-import { getCodeTitleIconLabel } from './src/lib/code-title-icon';
 
 import 'dotenv/config';
 

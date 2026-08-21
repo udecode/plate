@@ -6,7 +6,6 @@ import type {
   PluginReference,
 } from '../../../lib';
 import type { InternalPluginDefinitionOf } from '../../../lib/plugin/pluginDefinitionLookup.internal';
-
 import type {
   AnyResolvedPlatePlugin,
   AnyPlatePlugin,

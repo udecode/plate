@@ -18,6 +18,10 @@ import * as Y from 'yjs';
 import type { YjsNode } from './attributes';
 import { getYjsAttributes } from './attributes';
 import {
+  applyCanonicalSplitToYjs,
+  findCanonicalSplit,
+} from './canonical-split';
+import {
   createVirtualYjsMovePlaceholder,
   createYjsNode,
   createYjsPropertyContext,
@@ -46,10 +50,6 @@ import {
   canReplaceCompatibleYjsChildren,
   replaceCompatibleYjsChildren,
 } from './replacement';
-import {
-  applyCanonicalSplitToYjs,
-  findCanonicalSplit,
-} from './canonical-split';
 
 type CapturedYjsDeltaPart = Readonly<{
   delete?: number;
@@ -1121,8 +1121,6 @@ class IndexedSequence<TValue extends object> {
         return current.value;
       }
     }
-
-    return;
   }
 
   has(value: TValue): boolean {

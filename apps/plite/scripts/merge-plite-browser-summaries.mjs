@@ -17,7 +17,7 @@ if (files.length === 0) {
 }
 
 const summaries = files.map((file) =>
-  JSON.parse(fs.readFileSync(file, 'utf8'))
+  JSON.parse(fs.readFileSync(file, 'utf-8'))
 );
 const reports = verifyMergedSummaries(summaries, requiredProjects);
 

@@ -36,7 +36,4 @@ export {
   getPlateNodeCodecContributions,
   type PlateNodeCodecContribution,
 } from './plugin/collectPlateNodeCodecs';
-export type {
-  PlatePluginCache,
-  PlateRuntime,
-} from './plugin/plateRuntime';
+export type { PlatePluginCache, PlateRuntime } from './plugin/plateRuntime';

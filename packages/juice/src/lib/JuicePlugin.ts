@@ -1,6 +1,6 @@
-import juice from 'juice';
 import { defineBasePlugin } from '@platejs/core';
 import { PLUGINS } from '@platejs/utils';
+import juice from 'juice';
 
 export const JuicePlugin = defineBasePlugin(PLUGINS.juice, {
   editOnly: true,

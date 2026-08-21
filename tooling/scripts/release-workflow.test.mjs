@@ -39,18 +39,15 @@ const verifyChangesetsWorkflowPath = new URL(
   import.meta.url
 );
 const packageJsonPath = new URL('../../package.json', import.meta.url);
-const releasePackagesPath = new URL('./release-packages.mjs', import.meta.url);
-const releaseBranchPrsPath = new URL(
-  './release-branch-prs.mjs',
-  import.meta.url
-);
+const releasePackagesPath = new URL('release-packages.mjs', import.meta.url);
+const releaseBranchPrsPath = new URL('release-branch-prs.mjs', import.meta.url);
 const nextConfigPath = new URL(
   '../../apps/www/next.config.ts',
   import.meta.url
 );
 
 test('release workflow uses the pruned GitHub Release path', async () => {
-  const workflow = await readFile(releaseWorkflowPath, 'utf8');
+  const workflow = await readFile(releaseWorkflowPath, 'utf-8');
 
   assert.match(workflow, /branches:\s*\n\s*-\s*main\s*\n\s*-\s*next/);
   assert.match(
@@ -135,7 +132,7 @@ test('release workflow uses the pruned GitHub Release path', async () => {
 });
 
 test('promote workflow exits beta mode and creates next to main PR', async () => {
-  const workflow = await readFile(promoteWorkflowPath, 'utf8');
+  const workflow = await readFile(promoteWorkflowPath, 'utf-8');
 
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /dry_run:/);
@@ -247,7 +244,7 @@ test('main to next direct sync creates beta changesets for public package change
 });
 
 test('main to next direct sync versions generated beta changesets before committing', async () => {
-  const source = await readFile(releaseBranchPrsPath, 'utf8');
+  const source = await readFile(releaseBranchPrsPath, 'utf-8');
   const versionIndex = source.indexOf("runPnpm(['ci:version']");
   const commitIndex = source.indexOf("runGit(['commit'");
 
@@ -260,7 +257,7 @@ test('main to next direct sync versions generated beta changesets before committ
 });
 
 test('main to next direct sync guards real pushes from dirty worktrees', async () => {
-  const source = await readFile(releaseBranchPrsPath, 'utf8');
+  const source = await readFile(releaseBranchPrsPath, 'utf-8');
   const guardIndex = source.indexOf('assertCleanWorktreeForDirectSync');
   const checkoutIndex = source.indexOf("runGit(['checkout', '-B', 'next'");
 
@@ -788,14 +785,14 @@ test('auto-retarget workflow is removed', async () => {
   await assert.rejects(
     readFile(
       new URL('../../.github/workflows/auto-retarget.yml', import.meta.url),
-      'utf8'
+      'utf-8'
     ),
     /ENOENT/
   );
 });
 
 test('verify changesets workflow allows minor on main and keeps release branches patch-only', async () => {
-  const workflow = await readFile(verifyChangesetsWorkflowPath, 'utf8');
+  const workflow = await readFile(verifyChangesetsWorkflowPath, 'utf-8');
   const preJsonGuardIndex = workflow.indexOf(
     '.changeset/pre.json must not be committed to main'
   );
@@ -854,7 +851,7 @@ test('verify changesets workflow allows minor on main and keeps release branches
 });
 
 test('package scripts expose CI version and release commands only', async () => {
-  const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+  const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
 
   assert.equal(
     packageJson.scripts['ci:version'],
@@ -885,7 +882,7 @@ test('package scripts expose CI version and release commands only', async () => 
 });
 
 test('beta package release uses an explicit npm beta tag', async () => {
-  const releasePackages = await readFile(releasePackagesPath, 'utf8');
+  const releasePackages = await readFile(releasePackagesPath, 'utf-8');
 
   assert.equal(resolveReleaseChannel({ argv: [], env: {} }), 'latest');
   assert.equal(
@@ -954,7 +951,7 @@ test('beta pre-release guard requires active beta pre mode', () => {
 });
 
 test('release docs keep old migration route redirects', async () => {
-  const nextConfig = await readFile(nextConfigPath, 'utf8');
+  const nextConfig = await readFile(nextConfigPath, 'utf-8');
 
   assert.match(
     nextConfig,

@@ -74,7 +74,7 @@
       "migrationNotes": [],
       "targets": ["huge-document-demo"],
       "source": {
-        "line": 13,
+        "line": 50,
         "row": 1,
         "legacyRelease": {
           "date": "2026-05-31",
@@ -91,7 +91,7 @@
       "migrationNotes": ["Rename to `huge-document-demo`."],
       "targets": ["hundreds-blocks-demo"],
       "source": {
-        "line": 15,
+        "line": 52,
         "row": 2,
         "legacyRelease": {
           "date": "2026-05-31",

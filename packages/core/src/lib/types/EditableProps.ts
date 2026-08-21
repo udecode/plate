@@ -1,8 +1,7 @@
-import type { JSX } from 'react';
-
 import type { NodeEntry, Range } from '@platejs/plite';
 import type { DOMRange } from '@platejs/plite-dom';
 import type { EditableProps as PliteEditableProps } from '@platejs/plite-react';
+import type { JSX } from 'react';
 
 import type { BaseEditor } from '../editor';
 import type { RenderElementFn } from './RenderElementProps';

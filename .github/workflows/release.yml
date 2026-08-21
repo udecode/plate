@@ -17,9 +17,7 @@ jobs:
     name: Release and changelog
     runs-on: ubuntu-latest
     if: >-
-      (github.repository == 'udecode/plate' || vars.RELEASE_VERSION_PR_TEST == 'true') &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') &&
-      !contains(github.event.head_commit.message, '[skip release]')
+      (github.repository == 'udecode/plate' || vars.RELEASE_VERSION_PR_TEST == 'true') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') && !contains(github.event.head_commit.message, '[skip release]')
     permissions:
       contents: write
       pull-requests: write

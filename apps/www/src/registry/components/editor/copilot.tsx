@@ -1,12 +1,11 @@
 'use client';
 
-import * as React from 'react';
-
-import { CopilotPlugin } from '@platejs/ai/react';
-import { useEditor, useElement, usePluginStore } from 'platejs/react';
-import type { Element } from '@platejs/plite';
 import { faker } from '@faker-js/faker';
+import { CopilotPlugin } from '@platejs/ai/react';
 import { stripMarkdown } from '@platejs/markdown';
+import type { Element } from '@platejs/plite';
+import { useEditor, useElement, usePluginStore } from 'platejs/react';
+import * as React from 'react';
 
 export function GhostText() {
   const editor = useEditor();

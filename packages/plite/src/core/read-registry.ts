@@ -9,7 +9,6 @@ import type {
   ExtensionsOf,
   ValueOf,
 } from '../interfaces/editor';
-import { getReadRegistrationRuntime } from './read-definition';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import {
   type CompiledReadPipeline,
@@ -17,6 +16,7 @@ import {
   getExtensionRegistry,
 } from './extension-registry';
 import { enterEditorRead, getEditorStateView } from './public-state';
+import { getReadRegistrationRuntime } from './read-definition';
 
 type RegisteredRead = Readonly<{
   read: Readonly<{ id: string }>;

@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -30,8 +30,8 @@ for (const source of config.sources || []) {
   manifest.sources.push(await fetchSource(source));
 }
 
-fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-console.log('wrote ' + path.relative(process.cwd(), manifestPath));
+fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+console.log(`wrote ${path.relative(process.cwd(), manifestPath)}`);
 for (const source of manifest.sources) {
   console.log(
     `${source.name} ${source.type} ${source.status} ${source.localPath || source.error || ''}`
@@ -39,7 +39,7 @@ for (const source of manifest.sources) {
 }
 if (manifest.sources.length === 0) {
   console.log(
-    'no sources configured in ' + path.relative(process.cwd(), configPath)
+    `no sources configured in ${path.relative(process.cwd(), configPath)}`
   );
 }
 
@@ -58,7 +58,7 @@ async function fetchSource(source) {
       name,
       type,
       status: 'unsupported',
-      error: 'unknown source type: ' + type,
+      error: `unknown source type: ${type}`,
     };
   } catch (error) {
     return {
@@ -107,8 +107,9 @@ function fetchGitSource(source, name) {
 async function fetchUrlSource(source, name) {
   if (!source.url) throw new Error('url source requires url');
   const response = await fetch(source.url);
-  if (!response.ok)
-    throw new Error(source.url + ' returned HTTP ' + response.status);
+  if (!response.ok) {
+    throw new Error(`${source.url} returned HTTP ${response.status}`);
+  }
   const bytes = Buffer.from(await response.arrayBuffer());
   const fileName =
     source.fileName ||
@@ -130,13 +131,13 @@ async function fetchUrlSource(source, name) {
 async function fetchNpmSource(source, name) {
   const packageName = source.package || source.name;
   if (!packageName) throw new Error('npm source requires package');
-  const url = 'https://registry.npmjs.org/' + encodeURIComponent(packageName);
+  const url = `https://registry.npmjs.org/${encodeURIComponent(packageName)}`;
   const response = await fetch(url);
-  if (!response.ok) throw new Error(url + ' returned HTTP ' + response.status);
+  if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
   const text = await response.text();
   const outPath = path.join(
     dataRoot,
-    sanitizeFileName(packageName) + '.npm.json'
+    `${sanitizeFileName(packageName)}.npm.json`
   );
   fs.writeFileSync(outPath, text);
   return {
@@ -174,7 +175,7 @@ function fetchInlineSource(source, name) {
   const text = String(source.text || '');
   const outPath = path.join(
     dataRoot,
-    sanitizeFileName(source.fileName || name + '.txt')
+    sanitizeFileName(source.fileName || `${name}.txt`)
   );
   fs.writeFileSync(outPath, text);
   return {
@@ -190,20 +191,14 @@ function fetchInlineSource(source, name) {
 function run(command, commandArgs, options = {}) {
   const result = spawnSync(command, commandArgs, {
     cwd: options.cwd || process.cwd(),
-    encoding: 'utf8',
+    encoding: 'utf-8',
     stdio: options.capture ? 'pipe' : 'inherit',
     timeout: timeoutMs,
   });
   if (result.error) throw result.error;
   if (result.status !== 0) {
     throw new Error(
-      command +
-        ' ' +
-        commandArgs.join(' ') +
-        ' failed with status ' +
-        result.status +
-        '\n' +
-        (result.stderr || '')
+      `${command} ${commandArgs.join(' ')} failed with status ${result.status}\n${result.stderr || ''}`
     );
   }
   return result;
@@ -211,7 +206,7 @@ function run(command, commandArgs, options = {}) {
 
 function readConfig(file) {
   if (!fs.existsSync(file)) return { version: 1, topic, sources: [] };
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
+  return JSON.parse(fs.readFileSync(file, 'utf-8'));
 }
 
 function inferType(source) {

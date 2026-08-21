@@ -1,12 +1,11 @@
 'use client';
 
-import React, { type ReactNode, createContext, useState } from 'react';
-
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from 'fumadocs-ui/utils/cn';
 import { ChevronDownIcon, PlusIcon } from 'lucide-react';
+import React, { type ReactNode, createContext, useState } from 'react';
 
 type Item = {
   children: ReactNode;
@@ -69,10 +68,10 @@ export function APIItem({ children, name, optional, required, type }: Item) {
     : undefined;
 
   return (
-    <div className="select-text border-none">
+    <div className="border-none select-text">
       <div className="group p-0 hover:no-underline">
         <li id={id} className="scroll-mt-20">
-          <h4 className="!my-0 relative py-2 text-start font-semibold leading-none tracking-tight">
+          <h4 className="relative !my-0 py-2 text-start leading-none font-semibold tracking-tight">
             {id && (
               <a
                 className={cn(
@@ -81,21 +80,21 @@ export function APIItem({ children, name, optional, required, type }: Item) {
                 onClick={(e) => e.stopPropagation()}
                 href={`#${id}`}
               >
-                <div className="-left-5 absolute top-2 pr-1 leading-none">
+                <div className="absolute top-2 -left-5 pr-1 leading-none">
                   <LinkIcon className="size-4 text-muted-foreground" />
                 </div>
               </a>
             )}
-            <span className="font-mono font-semibold text-sm leading-none group-hover:underline">
+            <span className="font-mono text-sm leading-none font-semibold group-hover:underline">
               {name}
             </span>
             {required && (
-              <span className="font-mono text-orange-500 text-xs leading-none">
+              <span className="font-mono text-xs leading-none text-orange-500">
                 {' '}
                 REQUIRED
               </span>
             )}
-            <span className="text-left font-medium font-mono text-muted-foreground text-sm leading-none">
+            <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground">
               {!required && optional && ' optional'} {type}
             </span>
           </h4>
@@ -205,7 +204,7 @@ export function APIList({
             <div className="flex items-center justify-between pb-4">
               <h3
                 id={id}
-                className="group !my-0 relative scroll-mt-20 font-medium text-lg leading-none tracking-tight"
+                className="group relative !my-0 scroll-mt-20 text-lg leading-none font-medium tracking-tight"
               >
                 {id && (
                   <a
@@ -215,7 +214,7 @@ export function APIList({
                     onClick={(e) => e.stopPropagation()}
                     href={`#${id}`}
                   >
-                    <div className="-left-5 absolute top-0 pr-1 leading-none">
+                    <div className="absolute top-0 -left-5 pr-1 leading-none">
                       <LinkIcon className="size-4 text-muted-foreground" />
                     </div>
                   </a>
@@ -240,7 +239,7 @@ export function APIList({
                 </span>
 
                 {type && (
-                  <span className="ml-2 font-medium font-mono text-muted-foreground text-sm">
+                  <span className="ml-2 font-mono text-sm font-medium text-muted-foreground">
                     {type}
                   </span>
                 )}
@@ -255,7 +254,7 @@ export function APIList({
                 {childCount > 0 ? (
                   children
                 ) : (
-                  <div className="py-4 text-muted-foreground text-sm">
+                  <div className="py-4 text-sm text-muted-foreground">
                     No parameters.
                   </div>
                 )}
@@ -305,22 +304,22 @@ export function APISubListItem({
             onClick={(e) => e.stopPropagation()}
             href={`#${id}`}
           >
-            <div className="-left-5 absolute top-2 pr-1 leading-none">
+            <div className="absolute top-2 -left-5 pr-1 leading-none">
               <LinkIcon className="size-4 text-muted-foreground" />
             </div>
           </a>
         )}
-        <span className="font-semibold text-muted-foreground leading-none">
+        <span className="leading-none font-semibold text-muted-foreground">
           {parent}.
         </span>
-        <span className="font-semibold leading-none">{name}</span>
+        <span className="leading-none font-semibold">{name}</span>
         {required && (
-          <span className="ml-1 font-mono text-orange-500 text-xs leading-none">
+          <span className="ml-1 font-mono text-xs leading-none text-orange-500">
             {' '}
             REQUIRED
           </span>
         )}
-        <span className="text-left font-medium font-mono text-muted-foreground text-sm leading-none group-hover:no-underline">
+        <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground group-hover:no-underline">
           {!required && optional && ' optional'} {type}
         </span>
       </h4>
@@ -787,7 +786,7 @@ export const KeyTableItem = ({
 }) => (
   <TableRow>
     <TableCell>
-      <kbd className="inline-flex min-w-[8px] items-center justify-center whitespace-nowrap rounded bg-muted px-2 shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
+      <kbd className="inline-flex min-w-[8px] items-center justify-center rounded bg-muted px-2 whitespace-nowrap shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
         {hotkey}
       </kbd>
     </TableCell>

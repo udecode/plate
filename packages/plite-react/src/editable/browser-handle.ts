@@ -10,6 +10,8 @@ import {
   type NodeKey,
   type TextSelection,
 } from '@platejs/plite';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+
 import type { EditableDOMStrategyScrollAlign } from '../components/editable';
 import {
   didSyncTextPathToDOM,
@@ -33,7 +35,6 @@ import {
   getEditableKernelTrace,
   recordEditableKernelTrace,
 } from './editing-kernel';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableInputController } from './input-state';
 import {
   applyEditableCommand,

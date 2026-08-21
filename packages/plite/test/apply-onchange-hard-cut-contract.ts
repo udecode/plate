@@ -1,10 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  type getLastCommit as editorGetLastCommit,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -12,6 +7,11 @@ import {
   type Element,
   type Editor as EditorType,
 } from '@platejs/plite';
+import {
+  type getLastCommit as editorGetLastCommit,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 type LegacyOnChangeKey = Extract<keyof EditorType, 'onChange'>;
 

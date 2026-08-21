@@ -3,9 +3,22 @@ import { faker } from '@faker-js/faker';
 import { getHugeDocumentBlocks } from '@/registry/examples/values/huge-document-value';
 
 import {
+  EDITOR_PERF_WORKLOADS,
   getDefaultElementIdFragmentBlockCount,
+  getEditorPerfWorkloadValue,
   getElementIdFragmentBenchmarkData,
 } from './workloads';
+
+describe('editor perf workloads', () => {
+  it.each(EDITOR_PERF_WORKLOADS)(
+    'builds JSON-compatible $id initial values',
+    ({ id }) => {
+      const value = getEditorPerfWorkloadValue({ blocks: 2, workloadId: id });
+
+      expect(JSON.parse(JSON.stringify(value))).toEqual(value);
+    }
+  );
+});
 
 describe('getHugeDocumentBlocks', () => {
   it('extends the cache with the same sequence as a fresh larger build', () => {

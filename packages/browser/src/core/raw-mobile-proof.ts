@@ -73,10 +73,7 @@ export type PliteRawMobileReceipt = {
   scenario: PliteRawMobileScenarioId;
   schemaVersion: 1;
   snapshots: readonly PliteRawMobileSnapshot[];
-  transport: Extract<
-    BrowserMobileTransportId,
-    'appium-android' | 'appium-ios'
-  >;
+  transport: Extract<BrowserMobileTransportId, 'appium-android' | 'appium-ios'>;
 };
 
 /** Complete raw-device receipt matrix consumed by the release gate. */
@@ -125,7 +122,8 @@ export const validatePliteRawMobileProof = (
       receipt.platform === 'android-chrome' ? 'appium-android' : 'appium-ios';
     const expectedBrowser =
       receipt.platform === 'android-chrome' ? 'Chrome' : 'Safari';
-    const expectedOs = receipt.platform === 'android-chrome' ? 'Android' : 'iOS';
+    const expectedOs =
+      receipt.platform === 'android-chrome' ? 'Android' : 'iOS';
     const scenario = PLITE_RAW_MOBILE_SCENARIOS.find(
       (candidate) => candidate.id === receipt.scenario
     );
@@ -192,10 +190,17 @@ export const validatePliteRawMobileProof = (
         ) {
           issues.push(`${snapshotLabel} is missing model or selection state`);
         }
-        if (!Number.isInteger(snapshot.updateCount) || snapshot.updateCount < 0) {
+        if (
+          !Number.isInteger(snapshot.updateCount) ||
+          snapshot.updateCount < 0
+        ) {
           issues.push(`${snapshotLabel} has an invalid update count`);
         }
-        validatePointer(issues, `${snapshotLabel} screenshot`, snapshot.screenshot);
+        validatePointer(
+          issues,
+          `${snapshotLabel} screenshot`,
+          snapshot.screenshot
+        );
       });
 
       const finalSnapshot = receipt.snapshots.at(-1)!;

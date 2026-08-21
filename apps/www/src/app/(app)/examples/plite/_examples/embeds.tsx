@@ -1,4 +1,3 @@
-import React, { type ChangeEvent, useMemo } from 'react';
 import { defineExtension } from '@platejs/plite';
 import {
   Editable,
@@ -8,12 +7,16 @@ import {
   useEditor,
   usePliteEditor,
 } from '@platejs/plite-react';
+import React, { type ChangeEvent, useMemo } from 'react';
+
 import { Input } from '@/components/ui/input';
+
 import type {
   CustomElement,
   ParagraphElement as ParagraphElementType,
   VideoElement as VideoElementType,
 } from './custom-types.d';
+
 const EmbedsExample = () => {
   const editor = usePliteEditor({
     extensions: [embed()],
@@ -86,7 +89,7 @@ const ParagraphElement = ({
   <p {...attributes}>{children}</p>
 );
 
-const allowedSchemes = ['http:', 'https:'];
+const allowedSchemes = new Set(['http:', 'https:']);
 
 const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
   const editor = useEditor();
@@ -96,8 +99,10 @@ const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
     let parsedUrl: URL | null = null;
     try {
       parsedUrl = new URL(url);
-    } catch {}
-    if (parsedUrl && allowedSchemes.includes(parsedUrl.protocol)) {
+    } catch {
+      // Invalid embed URLs remain untrusted and are discarded below.
+    }
+    if (parsedUrl && allowedSchemes.has(parsedUrl.protocol)) {
       return parsedUrl.href;
     }
     return 'about:blank';
@@ -108,7 +113,8 @@ const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
       <div className="plite-embeds-video-frame">
         <iframe
           className="plite-embeds-video-iframe"
-          frameBorder="0"
+          referrerPolicy="strict-origin-when-cross-origin"
+          sandbox="allow-scripts allow-presentation"
           src={`${safeUrl}?title=0&byline=0&portrait=0`}
           title="Embedded video"
         />

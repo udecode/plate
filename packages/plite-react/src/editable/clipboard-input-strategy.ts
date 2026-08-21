@@ -1,4 +1,3 @@
-import type { ClipboardEvent, DragEvent } from 'react';
 import {
   NodeApi,
   PathApi,
@@ -21,6 +20,8 @@ import {
   isWebKitDOMHost,
   supportsDOMBeforeInput,
 } from '@platejs/plite-dom/internal';
+import type { ClipboardEvent, DragEvent } from 'react';
+
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {

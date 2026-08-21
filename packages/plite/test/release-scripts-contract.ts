@@ -25,13 +25,13 @@ const releasePackageDirectories = [
 ];
 
 const readRootPackageJson = () =>
-  JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+  JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
     scripts: Record<string, string>;
   };
 
 const readReleasePackageJson = (packageDirectory: string) =>
   JSON.parse(
-    readFileSync(join(packagesPath, packageDirectory, 'package.json'), 'utf8')
+    readFileSync(join(packagesPath, packageDirectory, 'package.json'), 'utf-8')
   ) as {
     bugs?: string | { url?: string };
     dependencies?: Record<string, string>;
@@ -247,7 +247,7 @@ describe('release scripts contract', () => {
     for (const file of readdirSync(changesetsPath).sort()) {
       if (!file.endsWith('.md') || file === 'README.md') continue;
 
-      const source = readFileSync(join(changesetsPath, file), 'utf8');
+      const source = readFileSync(join(changesetsPath, file), 'utf-8');
 
       for (const match of source.matchAll(
         /^"([^"]+)":\s*(major|minor|patch)$/gm

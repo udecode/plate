@@ -9,6 +9,7 @@ import type {
   NodeKey,
   Text,
 } from '@platejs/plite';
+
 import type { TextDiff } from './diff-text';
 import type { Key } from './key';
 

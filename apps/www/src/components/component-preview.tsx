@@ -3,7 +3,10 @@
 import * as React from 'react';
 
 import { Index } from '@/__registry__';
-import { BlockViewer } from '@/components/block-viewer';
+import {
+  BlockViewer,
+  type BlockViewerContext,
+} from '@/components/block-viewer';
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
@@ -12,7 +15,7 @@ import { Icons } from './icons';
 const BlockExamples = new Set(['markdown-streaming-demo']);
 
 const loadingPreview = (
-  <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-muted-foreground text-sm">
+  <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-sm text-muted-foreground">
     <Icons.spinner className="mr-2 size-4 animate-spin" />
     Loading&hellip;
   </div>
@@ -25,18 +28,20 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   __item__?: string;
   __tree__?: string;
   align?: 'center' | 'end' | 'start';
-  dependencies?: any;
+  dependencies?: string[];
   description?: string;
   extractClassname?: boolean;
   extractedClassNames?: string;
   height?: string;
   hideCode?: boolean;
-  highlightedFiles?: any;
-  item?: any;
+  highlightedFiles?: BlockViewerContext['highlightedFiles'];
+  item?: BlockViewerContext['item'];
   padding?: 'md';
-  tree?: any;
+  tree?: BlockViewerContext['tree'];
   type?: 'block' | 'component' | 'example';
 }
+
+const parseGeneratedProp = <T,>(value: string): T => JSON.parse(value) as T;
 
 export function ComponentPreview({
   align = 'start',
@@ -56,7 +61,7 @@ export function ComponentPreview({
   const Preview = Component ? (
     <Component {...props} id={props.id ?? name.replace('-demo', '')} />
   ) : (
-    <p className="text-muted-foreground text-sm">
+    <p className="text-sm text-muted-foreground">
       Component{' '}
       <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
         {name}
@@ -67,7 +72,9 @@ export function ComponentPreview({
 
   const mounted = useMounted();
 
-  let item = props.item ?? JSON.parse(props.__item__ ?? '[]');
+  let item =
+    props.item ??
+    parseGeneratedProp<BlockViewerContext['item']>(props.__item__ ?? '[]');
 
   // Create new object instead of mutating
   if (name === 'potion-iframe-demo') {
@@ -85,12 +92,15 @@ export function ComponentPreview({
       <BlockViewer
         block={BlockExamples.has(item.name)}
         dependencies={
-          props.dependencies ?? JSON.parse(props.__dependencies__ ?? '[]')
+          props.dependencies ??
+          parseGeneratedProp<string[]>(props.__dependencies__ ?? '[]')
         }
         height={height}
         highlightedFiles={
           props.highlightedFiles ??
-          JSON.parse(props.__highlightedFiles__ ?? '[]')
+          parseGeneratedProp<BlockViewerContext['highlightedFiles']>(
+            props.__highlightedFiles__ ?? '[]'
+          )
         }
         item={item}
         preview={
@@ -114,7 +124,10 @@ export function ComponentPreview({
             )}
           </React.Suspense>
         }
-        tree={props.tree ?? JSON.parse(props.__tree__ ?? '[]')}
+        tree={
+          props.tree ??
+          parseGeneratedProp<BlockViewerContext['tree']>(props.__tree__ ?? '[]')
+        }
       />
     </div>
   );

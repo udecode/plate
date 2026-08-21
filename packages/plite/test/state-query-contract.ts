@@ -210,8 +210,8 @@ describe('state query contract', () => {
     });
     const firstEntry = editor.read((state) => state.nodes.get([0]));
     const firstTextEntry = editor.read((state) => state.nodes.get([0, 0]));
-    assert(firstEntry && ElementApi.isElement(firstEntry[0]));
-    assert(firstTextEntry && TextApi.isText(firstTextEntry[0]));
+    assert.ok(firstEntry && ElementApi.isElement(firstEntry[0]));
+    assert.ok(firstTextEntry && TextApi.isText(firstTextEntry[0]));
     const [first] = firstEntry;
     const [firstText] = firstTextEntry;
 
@@ -235,8 +235,8 @@ describe('state query contract', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
     const elementEntry = editor.read.nodes.get([0]);
     const textEntry = editor.read.nodes.get([0, 0]);
-    assert(elementEntry && ElementApi.isElement(elementEntry[0]));
-    assert(textEntry && TextApi.isText(textEntry[0]));
+    assert.ok(elementEntry && ElementApi.isElement(elementEntry[0]));
+    assert.ok(textEntry && TextApi.isText(textEntry[0]));
     const [element] = elementEntry;
     const [text] = textEntry;
 
@@ -268,7 +268,7 @@ describe('state query contract', () => {
   it('invalidates removed node targets without scanning the tree', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
     const entry = editor.read.nodes.get([0]);
-    assert(entry && ElementApi.isElement(entry[0]));
+    assert.ok(entry && ElementApi.isElement(entry[0]));
     const [element] = entry;
 
     editor.update.nodes.remove({ at: element });
@@ -289,7 +289,7 @@ describe('state query contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const headerEntry = headerEditor.read((state) => state.nodes.get([0]));
-    assert(headerEntry && ElementApi.isElement(headerEntry[0]));
+    assert.ok(headerEntry && ElementApi.isElement(headerEntry[0]));
     const [headerNode] = headerEntry;
 
     assert.deepEqual(

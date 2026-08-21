@@ -3,12 +3,12 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "target": "ES2017",
-    "module": "commonjs",
     "outDir": "dist",
     "esModuleInterop": true,
+    "incremental": false,
     "isolatedModules": false,
     "allowImportingTsExtensions": true
   },
-  "include": ["scripts/**/*.{ts,mts}"],
+  "include": ["./**/*.ts", "./**/*.mts"],
   "exclude": ["node_modules"]
 }

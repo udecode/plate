@@ -1,4 +1,5 @@
 import type { Locator } from '@playwright/test';
+
 import { toPlainText } from './clipboard';
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import type { SurfaceTarget } from './surface';

@@ -1,10 +1,10 @@
-import React, { useRef, useState } from 'react';
 import {
   screenReaderAnnouncementEffect,
   type Editor,
   type EditorCommit,
   type Value,
 } from '@platejs/plite';
+import React, { useRef, useState } from 'react';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 

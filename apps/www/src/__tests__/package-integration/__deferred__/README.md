@@ -16,8 +16,7 @@ Do not use it for:
 
 Rules:
 
-- keep specs under domain folders like `clipboard`, `ime`, `mouse-selection`,
-  and `platform-shortcuts`
+- keep specs under domain folders like `clipboard`, `ime`, `mouse-selection`, and `platform-shortcuts`
 - use `*.deferred.spec.ts[x]`
 - reference the future protocol lane or spec ID in the title or file
 - keep the assertions public-interface focused
@@ -31,5 +30,4 @@ Run it explicitly with:
 pnpm test:deferred
 ```
 
-That command expects the suite to stay red. If everything suddenly passes, the
-runner fails so the specs get promoted instead of rotting here.
+That command expects the suite to stay red. If everything suddenly passes, the runner fails so the specs get promoted instead of rotting here.

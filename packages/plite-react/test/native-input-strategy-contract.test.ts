@@ -1,8 +1,9 @@
+import { IS_NODE_MAP_DIRTY } from '@platejs/plite-dom/internal';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
 } from '@platejs/plite/internal';
-import { IS_NODE_MAP_DIRTY } from '@platejs/plite-dom/internal';
+
 import { canUseNativeSingleCharacterInput } from '../src/editable/native-input-strategy';
 import { ReactEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';

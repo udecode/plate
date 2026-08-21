@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { NodeKey } from 'platejs';
-
 import {
   BaseImagePlugin,
   type ImageElement as ImageNode,
@@ -12,8 +8,10 @@ import { ImagePlugin } from '@platejs/media/react';
 import { useComposedRef } from '@udecode/react-utils';
 import { cva } from 'class-variance-authority';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
+import type { NodeKey } from 'platejs';
 import { isHotkey } from 'platejs';
 import { useEditorPlugin, usePluginStore } from 'platejs/react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -295,7 +293,7 @@ export function MediaPreviewDialog() {
             )}
           />
           <div
-            className="-translate-x-1/2 absolute bottom-0 left-1/2 z-40 flex w-fit justify-center gap-4 p-2 text-center text-white"
+            className="absolute bottom-0 left-1/2 z-40 flex w-fit -translate-x-1/2 justify-center gap-4 p-2 text-center text-white"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex gap-1">

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { runInNewContext } from 'node:vm';
-import fc from 'fast-check';
 
 import {
   createEditor,
@@ -10,6 +9,7 @@ import {
   defineStateField,
   defineValueCodec,
 } from '@platejs/plite';
+import fc from 'fast-check';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

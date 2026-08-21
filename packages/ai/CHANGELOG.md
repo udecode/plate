@@ -226,7 +226,6 @@
 - [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Added **AI Comment** functionality to provide AI-powered text feedback and suggestions.And upgrade to AI SDK 5.
 
   ### New Features:
-
   - **AI Comment Integration**: New utilities for AI-generated comments on selected text
 
     - `aiCommentToRange()` - Convert AI comments to text ranges with proper block mapping
@@ -249,14 +248,13 @@
   ```typescript
   // Convert AI comment to text range
   const range = aiCommentToRange(editor, {
-    blockId: "block-1",
-    content: "Selected text",
-    comment: "Consider adding more detail here",
+    blockId: 'block-1',
+    content: 'Selected text',
+    comment: 'Consider adding more detail here',
   });
   ```
 
   ### Breaking Changes:
-
   - `streamInsertChunk` has been moved from `@platejs/ai` to `@platejs/ai/react`.
   - `getEditorPrompt` has been moved from `@platejs/ai/react` to `@platejs/ai`.
   - `getMarkdown` has been moved from `@platejs/ai/react` to `@platejs/ai`.
@@ -349,10 +347,10 @@
         // ... other options
         shortcuts: {
           acceptNextWord: {
-            keys: "mod+right",
+            keys: 'mod+right',
           },
           triggerSuggestion: {
-            keys: "ctrl+space",
+            keys: 'ctrl+space',
           },
         },
       });
@@ -520,8 +518,7 @@
     - Improved single block selection case with full range check
     - Fixed text properties inheritance when replacing selection
     - In block selection mode, select the replaced blocks
-  - Add `useAIChatEditor`: Creates an editor, registers in the AI chat plugin, and deserializes the
-    content into `editor.children` with block-level memoization.
+  - Add `useAIChatEditor`: Creates an editor, registers in the AI chat plugin, and deserializes the content into `editor.children` with block-level memoization.
 
 ## 42.0.2
 

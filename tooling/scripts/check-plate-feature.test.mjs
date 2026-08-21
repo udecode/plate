@@ -5,7 +5,6 @@ import { join } from 'node:path';
 import test, { after } from 'node:test';
 
 import { computePackageFingerprint } from '../../.agents/rules/plate-next/scripts/version.mjs';
-
 import {
   requiredSurfaces,
   validateFeaturePlan,

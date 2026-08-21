@@ -31,9 +31,7 @@ export const captureSelectionAnchorHandle = async (
       const selection = handle.getSelection();
 
       if (!selection) {
-        throw new Error(
-          'Cannot capture a anchor without an editor selection'
-        );
+        throw new Error('Cannot capture a anchor without an editor selection');
       }
 
       return {

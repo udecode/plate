@@ -1,6 +1,5 @@
 ---
-"@platejs/ai": patch
+'@platejs/ai': patch
 ---
 
 Preserve semantic list boundaries during Markdown streaming.
-

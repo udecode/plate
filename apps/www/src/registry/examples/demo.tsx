@@ -1,11 +1,10 @@
 'use client';
 
+import { Plate, usePlateEditor } from 'platejs/react';
 import * as React from 'react';
 
-import { Plate, usePlateEditor } from 'platejs/react';
-
-import { EditorKit } from '@/registry/components/editor/plugins';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
 
 import { createValue } from './values/demo-values';
 

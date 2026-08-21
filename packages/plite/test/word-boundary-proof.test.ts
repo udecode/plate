@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import fc from 'fast-check';
 
 import {
   createEditor,
@@ -12,6 +11,8 @@ import {
   type Value,
   schema,
 } from '@platejs/plite';
+import fc from 'fast-check';
+
 import { getCharacterDistance } from '../src/text-units';
 import { getWordDistances } from '../src/utils/string';
 

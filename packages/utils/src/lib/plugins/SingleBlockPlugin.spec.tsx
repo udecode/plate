@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { createPlateEditor } from '@platejs/core/react';
 import { getPlateRuntime } from '@platejs/core/internal';
+import { createPlateEditor } from '@platejs/core/react';
 import { createEditor, type Value } from '@platejs/plite';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 import { SingleLinePlugin } from './SingleLinePlugin';
@@ -140,17 +140,20 @@ describe('SingleBlockPlugin', () => {
   it.each([
     [SingleBlockPlugin, 'singleBlock'],
     [SingleLinePlugin, 'singleLine'],
-  ] as const)('%s weakly disables trailing blocks regardless of plugin order', (plugin, name) => {
-    for (const plugins of [
-      [plugin, TrailingBlockPlugin],
-      [TrailingBlockPlugin, plugin],
-    ]) {
-      const editor = createPlateEditor({ plugins });
+  ] as const)(
+    '%s weakly disables trailing blocks regardless of plugin order',
+    (plugin, name) => {
+      for (const plugins of [
+        [plugin, TrailingBlockPlugin],
+        [TrailingBlockPlugin, plugin],
+      ]) {
+        const editor = createPlateEditor({ plugins });
 
-      expect(getPlateRuntime(editor).plugins[name]).toBeDefined();
-      expect(
-        getPlateRuntime(editor).plugins[TrailingBlockPlugin.name]
-      ).toBeUndefined();
+        expect(getPlateRuntime(editor).plugins[name]).toBeDefined();
+        expect(
+          getPlateRuntime(editor).plugins[TrailingBlockPlugin.name]
+        ).toBeUndefined();
+      }
     }
-  });
+  );
 });

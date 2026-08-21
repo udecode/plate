@@ -26,10 +26,12 @@ for (const workspacePackageDir of workspacePackageDirs) {
     );
 
     try {
-      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
 
       workspacePackageNames.add(packageJson.name);
-    } catch {}
+    } catch {
+      // Ignore workspace entries without a readable package manifest.
+    }
   }
 }
 
@@ -48,7 +50,7 @@ for (const workspacePackageDir of workspacePackageDirs) {
     let packageJson;
 
     try {
-      packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+      packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
     } catch {
       continue;
     }
@@ -74,7 +76,7 @@ const umbrellaPackageJsonPath = path.join(
   'package.json'
 );
 const umbrellaPackageJson = JSON.parse(
-  await readFile(umbrellaPackageJsonPath, 'utf8')
+  await readFile(umbrellaPackageJsonPath, 'utf-8')
 );
 
 for (const [dependencyName, dependencyRange] of Object.entries(

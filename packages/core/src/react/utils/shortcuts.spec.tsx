@@ -3,11 +3,12 @@
 import { property } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
-jsxt;
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createPlateEditor } from '../editor';
 import { definePlatePlugin } from '../plugin';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { pipeHandler } from './pipeHandler';
+
+jsxt;
 
 const BoldPlugin = definePlatePlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },

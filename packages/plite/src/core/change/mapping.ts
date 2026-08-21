@@ -21,7 +21,11 @@ export type DocumentChangeRelocation = Readonly<{
   targetPath: readonly number[];
 }>;
 
-/** @internal Read one exact move without exposing the private root algebra. */
+/**
+ * Read one exact move without exposing the private root algebra.
+ *
+ * @internal
+ */
 export const getExactDocumentChangeRelocation = (
   change: DocumentChange,
   root: string,
@@ -40,7 +44,11 @@ export const getExactDocumentChangeRelocation = (
     : null;
 };
 
-/** @internal Read exact canonical moves without reconstructing the after value. */
+/**
+ * Read exact canonical moves without reconstructing the after value.
+ *
+ * @internal
+ */
 export const getExactDocumentChangeRelocations = (
   change: DocumentChange,
   before: JsonEditorValue
@@ -314,7 +322,11 @@ export const deriveRootRelocations = (
   return Object.freeze(selected);
 };
 
-/** @internal Derive maximal stable subtree relocations for one root change. */
+/**
+ * Derive maximal stable subtree relocations for one root change.
+ *
+ * @internal
+ */
 export const getRootChangeRelocations = (
   change: RootChange,
   before: DocumentIndex,
@@ -329,7 +341,11 @@ export const getRootChangeRelocations = (
     )
   );
 
-/** @internal Derive maximal unique unchanged-subtree relocations. */
+/**
+ * Derive maximal unique unchanged-subtree relocations.
+ *
+ * @internal
+ */
 export const getDocumentChangeRelocations = (
   change: DocumentChange,
   before: JsonEditorValue

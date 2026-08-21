@@ -1,8 +1,7 @@
-import React from 'react';
-
-import { act, renderHook } from '@testing-library/react';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { Plate, createPlateEditor } from '@platejs/core/react';
+import { act, renderHook } from '@testing-library/react';
+import React from 'react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';

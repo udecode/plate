@@ -10,7 +10,7 @@ describe('Command', () => {
         <Command.Input />
         <Command.List>
           <Command.Item value="alpha">Alpha</Command.Item>
-          <Command.Item value={'beta "value"'}>Beta</Command.Item>
+          <Command.Item value='beta "value"'>Beta</Command.Item>
         </Command.List>
       </Command>
     );

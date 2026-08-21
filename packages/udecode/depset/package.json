@@ -3,31 +3,25 @@
   "version": "0.1.2",
   "description": "Synchronize dependencies in package.json",
   "keywords": [
+    "bun",
     "dependencies",
+    "npm",
     "package.json",
+    "pnpm",
     "sync",
     "upgrade",
     "version",
-    "yarn",
-    "pnpm",
-    "npm",
-    "bun"
+    "yarn"
   ],
   "homepage": "https://github.com/udecode/plate/tree/main/packages/udecode/depset#readme",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/udecode/depset"
-  },
-  "license": "MIT",
-  "sideEffects": false,
-  "type": "module",
-  "exports": {
-    ".": "./dist/index.js",
-    "./package.json": "./package.json"
   },
   "bin": {
     "depset": "./dist/index.js"
@@ -35,6 +29,16 @@
   "files": [
     "dist/**/*"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown --log-level warn && tsc -p tsconfig.build.json",
     "build:watch": "tsdown --watch",
@@ -56,9 +60,5 @@
   "devDependencies": {
     "@plate/scripts": "workspace:*",
     "@types/prompts": "2.4.9"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "types": "./dist/index.d.ts"
+  }
 }

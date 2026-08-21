@@ -42,7 +42,11 @@ export type EditorExtensionSlot<TKey extends string> = Readonly<{
   ) => EditorExtensionSlotValue<TKey, TInput>;
 }>;
 
-/** @internal Read the configured input owned by a nominal slot descriptor. */
+/**
+ * Read the configured input owned by a nominal slot descriptor.
+ *
+ * @internal
+ */
 export const getEditorExtensionSlotInput = (
   extension: EditorExtensionReference
 ): EditorExtensionInput | undefined =>

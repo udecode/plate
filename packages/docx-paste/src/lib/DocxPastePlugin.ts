@@ -1,10 +1,10 @@
 import { defineBasePlugin } from '@platejs/core';
-import { type Descendant, ElementApi } from '@platejs/plite';
 import {
   isHtmlBlockElement,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
 } from '@platejs/core/internal';
+import { type Descendant, ElementApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 import { cleanWordHtml, isWordHtml } from './cleanWordHtml';

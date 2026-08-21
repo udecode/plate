@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import fc from 'fast-check';
 
 import {
   ContentSlice,
@@ -28,6 +27,8 @@ import {
   evaluateCommand,
   probeCommandNativeEquivalent,
 } from '@platejs/plite/internal';
+import fc from 'fast-check';
+
 import { createCommandRegistration } from '../src/core/command-definition';
 import { registerCommandInRegistry } from '../src/core/command-registry';
 import {
@@ -653,7 +654,9 @@ describe('pure command transaction specs', () => {
     const self = defineCommand('test.recursion.self');
     const left = defineCommand('test.recursion.left');
     const right = defineCommand('test.recursion.right');
+    // oxlint-disable-next-line prefer-const -- The recursive handler closes over the editor assigned after handler construction.
     let selfEditor!: ReturnType<typeof createTextEditor>;
+    // oxlint-disable-next-line prefer-const -- The mutually recursive handlers close over the editor assigned after construction.
     let mutualEditor!: ReturnType<typeof createTextEditor>;
 
     selfEditor = createTextEditor(({ handle }) => [
@@ -1006,6 +1009,7 @@ describe('pure command transaction specs', () => {
     const handlerCommand = defineCommand<{ text: string }>(
       'test.guarded-handler'
     );
+    // oxlint-disable-next-line prefer-const -- The guarded handler closes over the editor assigned after handler construction.
     let handlerEditor!: Editor<Value>;
 
     handlerEditor = createTextEditor(({ handle }) => [

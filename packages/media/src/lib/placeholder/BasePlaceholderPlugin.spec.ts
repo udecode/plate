@@ -19,24 +19,22 @@ describe('BasePlaceholderPlugin', () => {
     );
   });
 
-  it.each([
-    'audio',
-    'file',
-    'image',
-    'video',
-  ])('inserts a %s placeholder through the flat scoped update', (mediaType) => {
-    const editor = createBaseEditor({
-      plugins: [BasePlaceholderPlugin],
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
+  it.each(['audio', 'file', 'image', 'video'])(
+    'inserts a %s placeholder through the flat scoped update',
+    (mediaType) => {
+      const editor = createBaseEditor({
+        plugins: [BasePlaceholderPlugin],
+        initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+      });
 
-    editor
-      .plugin(BasePlaceholderPlugin)
-      .update.insert({ mediaType }, { at: [1] });
+      editor
+        .plugin(BasePlaceholderPlugin)
+        .update.insert({ mediaType }, { at: [1] });
 
-    expect(editor.read.children()[1]).toMatchObject({
-      mediaType,
-      type: 'placeholder',
-    });
-  });
+      expect(editor.read.children()[1]).toMatchObject({
+        mediaType,
+        type: 'placeholder',
+      });
+    }
+  );
 });

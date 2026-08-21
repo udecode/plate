@@ -1,6 +1,3 @@
-import { createBaseEditor, type Value } from 'platejs';
-import { BaseParagraphPlugin } from 'platejs';
-
 import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
@@ -14,18 +11,20 @@ import {
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
-import { BaseMentionPlugin } from '@platejs/mention';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from '@platejs/code-block';
 import { BaseListPlugin } from '@platejs/list';
+import { BaseMentionPlugin } from '@platejs/mention';
 import {
   BaseTablePlugin,
   BaseTableRowPlugin,
   BaseTableCellPlugin,
 } from '@platejs/table';
+import { createBaseEditor, type Value, BaseParagraphPlugin } from 'platejs';
+
 import { MarkdownKit } from '@/registry/components/editor/markdown';
 
 const BasePlugins = [

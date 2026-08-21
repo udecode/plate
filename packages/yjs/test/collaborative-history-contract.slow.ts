@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import {
   createEditor,
   defineExtension,
@@ -11,6 +12,7 @@ import {
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 
+import { paragraph } from './support/collaboration';
 import {
   type CanonicalTestOperation,
   type CollaborativeHistoryRun,
@@ -19,7 +21,6 @@ import {
   type CollaborativeYjsIdentityNode,
   runCollaborativeHistoryTrace,
 } from './support/collaborative-history';
-import { paragraph } from './support/collaboration';
 
 const clientIds = ['a', 'b', 'c'] as const;
 const numericClientIds = { a: 101, b: 202, c: 303 } as const;
@@ -50,7 +51,7 @@ const offlineTrace = (
 });
 
 const readChildren = (value: unknown): unknown => {
-  assert(value && typeof value === 'object' && 'children' in value);
+  assert.ok(value && typeof value === 'object' && 'children' in value);
 
   return value.children;
 };
@@ -60,7 +61,7 @@ const assertRunProjectionExact = (run: CollaborativeHistoryRun): void => {
     for (const clientId of clientIds) {
       const peer = observation.peers[clientId];
 
-      assert(peer);
+      assert.ok(peer);
       assert.deepEqual(
         readChildren(peer.yjsProjection),
         readChildren(peer.document),
@@ -79,11 +80,11 @@ const readIdentityAt = (
 
   for (const index of path) {
     node = current[index];
-    assert(node, `Missing Yjs identity at ${path.join('.')}.`);
+    assert.ok(node, `Missing Yjs identity at ${path.join('.')}.`);
     current = node.children ?? [];
   }
 
-  assert(node, 'A Yjs identity path must not be empty.');
+  assert.ok(node, 'A Yjs identity path must not be empty.');
 
   return node.id;
 };
@@ -95,10 +96,10 @@ const assertMinimizedIdentityStable = (
   const identities = paths.map((path, stepIndex) => {
     const observation = run.observations[stepIndex];
 
-    assert(observation);
+    assert.ok(observation);
     const peer = observation.peers.b;
 
-    assert(peer);
+    assert.ok(peer);
 
     return readIdentityAt(peer.yjsIdentities, path);
   });

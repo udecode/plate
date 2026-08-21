@@ -1,7 +1,6 @@
-import { renderHook } from '@testing-library/react';
-import type { Element } from '@platejs/plite';
-
 import * as actualPlatejsReact from '@platejs/core/react';
+import type { Element } from '@platejs/plite';
+import { renderHook } from '@testing-library/react';
 
 const useDragMock = mock(() => {
   throw new Error('useDrag should not run when DOM DnD is unavailable');
@@ -49,7 +48,9 @@ describe('useDraggable', () => {
       globalThis,
       'window'
     );
-    let useDraggable: typeof import('./useDndNode')['useDraggable'] | undefined;
+    let useDraggable:
+      | (typeof import('./useDndNode'))['useDraggable']
+      | undefined;
 
     try {
       Object.defineProperty(globalThis, 'document', {

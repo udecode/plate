@@ -1,4 +1,4 @@
-import type { PointerEvent } from 'react';
+/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { defineExtension, schema } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -10,6 +10,7 @@ import {
   useElementPath,
   usePliteEditor,
 } from '@platejs/plite-react';
+import type { PointerEvent } from 'react';
 
 import { Button, Icon, Toolbar } from './components';
 import type {
@@ -20,6 +21,7 @@ import type {
   ParagraphElement as ParagraphElementType,
   SyncedBlockElement,
 } from './custom-types.d';
+
 let syncedBlockCopyId = 0;
 let syncedBlockRootId = 0;
 

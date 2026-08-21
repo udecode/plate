@@ -1,15 +1,17 @@
 import assert from 'node:assert/strict';
-import { test } from 'vitest';
+
 import { createEditor } from '@platejs/plite';
 import { dom } from '@platejs/plite-dom';
-import {
-  insertText as editorInsertText,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
 import {
   DOMRootRuntime,
   EDITOR_TO_PENDING_SELECTION,
 } from '@platejs/plite-dom/internal';
+import {
+  insertText as editorInsertText,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
+import { test } from 'vitest';
+
 import { react } from '../src/plugin/with-react';
 
 test('react clears pending selection before mounted-root Android insertText bridge calls', () => {

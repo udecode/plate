@@ -1,0 +1,1206 @@
+{
+  "action": "enter",
+  "browserHandleAvailable": true,
+  "budget": {
+    "maxLongTasks": 100,
+    "maxMutationP95": 1000,
+    "maxSecondPaintP95": 1000
+  },
+  "commandBlockers": [],
+  "commitDelta": 20,
+  "diagnose": false,
+  "domSelection": {
+    "anchor": {
+      "path": [
+        0,
+        6
+      ],
+      "offset": 1
+    },
+    "focus": {
+      "path": [
+        0,
+        6
+      ],
+      "offset": 1
+    }
+  },
+  "beforeInput": null,
+  "finalText": "This is editable rich text, much better than a <textarea>!",
+  "focusPreserved": true,
+  "firstPaint": {
+    "max": 5.699999999999818,
+    "mean": 2.4199999988079526,
+    "p50": 2.199999998510066,
+    "p75": 2.899999997019677,
+    "p95": 3.499999997019586,
+    "samples": [
+      1.5999999970199497,
+      1.400000001490298,
+      1.5000000029804141,
+      2.400000001490298,
+      1.5999999970199497,
+      1.0999999970199497,
+      1.7999999985099748,
+      2.199999998510066,
+      3.1999999970198587,
+      2.500000001490207,
+      1.5999999970199497,
+      2.900000000000091,
+      1.999999998509793,
+      2.6999999970198587,
+      5.699999999999818,
+      2.899999997019677,
+      2.499999997019586,
+      2.099999999999909,
+      3.499999997019586,
+      3.199999999999818
+    ]
+  },
+  "inputMutation": null,
+  "inputState": {
+    "activeIntent": "history",
+    "modelOwnedTextInputGuard": 50,
+    "modelSelectionPreference": {
+      "preferModelSelection": true,
+      "reason": "model-command",
+      "selectionSource": "model-owned"
+    },
+    "pendingNativeTextInputRepairOffset": null,
+    "pendingNativeTextInputRepairPathKey": null,
+    "preferModelSelection": true,
+    "recentTextInputRepairEcho": null,
+    "selectionChangeOrigin": "repair-induced",
+    "selectionSource": "model-owned"
+  },
+  "ignoredHostErrors": [
+    {
+      "message": "net::ERR_CONNECTION_REFUSED",
+      "type": "requestfailed",
+      "url": "http://localhost:3000/site.webmanifest"
+    },
+    {
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "type": "console",
+      "url": "http://localhost:3000/site.webmanifest"
+    }
+  ],
+  "longTasks": {
+    "count": 0,
+    "max": 0,
+    "samples": []
+  },
+  "nativeBlockers": [],
+  "profileDurations": {},
+  "syncStates": [
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": "custom-leaf"
+    }
+  ],
+  "measuredSamples": 20,
+  "measuredInput": "",
+  "measuredStartState": {
+    "commitVersion": 11,
+    "modelSelection": {
+      "anchor": {
+        "offset": 1,
+        "path": [
+          0,
+          6
+        ]
+      },
+      "focus": {
+        "offset": 1,
+        "path": [
+          0,
+          6
+        ]
+      },
+      "kind": "text"
+    },
+    "modelText": "This is editable rich text, much better than a <textarea>!"
+  },
+  "enterSamples": [
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 12,
+      "commitBefore": 11,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 14,
+      "commitBefore": 13,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 16,
+      "commitBefore": 15,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 18,
+      "commitBefore": 17,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 20,
+      "commitBefore": 19,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 22,
+      "commitBefore": 21,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 24,
+      "commitBefore": 23,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 26,
+      "commitBefore": 25,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 28,
+      "commitBefore": 27,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 30,
+      "commitBefore": 29,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 32,
+      "commitBefore": 31,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 34,
+      "commitBefore": 33,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 36,
+      "commitBefore": 35,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 38,
+      "commitBefore": 37,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 40,
+      "commitBefore": 39,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 42,
+      "commitBefore": 41,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 44,
+      "commitBefore": 43,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 46,
+      "commitBefore": 45,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 48,
+      "commitBefore": 47,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    },
+    {
+      "blockCountAfter": 5,
+      "blockCountBefore": 4,
+      "commitAfter": 50,
+      "commitBefore": 49,
+      "domSelectionAfter": {
+        "anchor": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "path": [
+            1,
+            0
+          ],
+          "offset": 0
+        }
+      },
+      "focusPreservedAfter": true,
+      "headingTextAfter": "This is editable rich text, much better than a <textarea>!",
+      "keydownTrusted": true,
+      "modelSelectionAfter": {
+        "anchor": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "focus": {
+          "offset": 0,
+          "path": [
+            1,
+            0
+          ]
+        },
+        "kind": "text"
+      },
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 0,
+      "tableCountBefore": 0
+    }
+  ],
+  "mutation": {
+    "max": 8.200000002980232,
+    "mean": 6.85499999858439,
+    "p50": 6.699999995529652,
+    "p75": 7,
+    "p95": 7.5999999940395355,
+    "samples": [
+      7.399999998509884,
+      7.5,
+      8.200000002980232,
+      7.200000002980232,
+      7.5999999940395355,
+      6.899999998509884,
+      6.799999997019768,
+      7,
+      6.5999999940395355,
+      6.800000004470348,
+      6.5999999940395355,
+      6.600000001490116,
+      6.699999995529652,
+      6.299999997019768,
+      6.600000001490116,
+      6.699999995529652,
+      6.399999998509884,
+      6.600000001490116,
+      6.299999997019768,
+      6.299999997019768
+    ]
+  },
+  "nativeInputSamples": 0,
+  "trustedActionSamples": 20,
+  "modelSelection": {
+    "anchor": {
+      "offset": 1,
+      "path": [
+        0,
+        6
+      ]
+    },
+    "focus": {
+      "offset": 1,
+      "path": [
+        0,
+        6
+      ]
+    },
+    "kind": "text"
+  },
+  "modelText": "This is editable rich text, much better than a <textarea>!",
+  "nativeSelectedText": "",
+  "runtimeErrors": [],
+  "secondPaint": {
+    "max": 14,
+    "mean": 10.694999998807816,
+    "p50": 10.700000001490025,
+    "p75": 11.099999998509702,
+    "p95": 11.699999997019859,
+    "samples": [
+      9.999999997019586,
+      9.200000001490025,
+      9.000000002980414,
+      10.800000001489934,
+      9.999999997019586,
+      9.499999997019586,
+      10.099999998509702,
+      10.599999998509702,
+      10.999999997019586,
+      10.700000001490025,
+      9.899999997019677,
+      11.199999999999818,
+      11.099999998509702,
+      10.999999997019586,
+      14,
+      11.299999997019768,
+      10.799999997019768,
+      10.5,
+      11.699999997019859,
+      11.5
+    ]
+  },
+  "targetPath": "0",
+  "targetText": "This is editable rich text, much better than a <textarea>!",
+  "url": "http://localhost:3025/examples/plite/richtext",
+  "warmupSamples": 5
+}

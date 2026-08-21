@@ -1,3 +1,4 @@
+import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getCurrentMarks,
@@ -9,7 +10,6 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
-import { getEditorSchema } from '../core/editor-runtime';
 import { elementReadOnly } from '../editor/element-read-only';
 import {
   LocationApi,
@@ -33,14 +33,14 @@ import type {
   TextInsertTextOptions,
   TextMutationMethods,
 } from '../interfaces/transforms/text';
-import { insertNodes } from '../transforms-node/insert-nodes';
-import { deselect } from '../transforms-selection/deselect';
-import { setSelection } from '../transforms-selection/set-selection';
 import {
   getConsistentRangeTextMarks,
   type TextMarks,
 } from '../internal/range-text-marks';
 import { getLocationRoot } from '../internal/root-location';
+import { insertNodes } from '../transforms-node/insert-nodes';
+import { deselect } from '../transforms-selection/deselect';
+import { setSelection } from '../transforms-selection/set-selection';
 import { getDefaultInsertLocation } from '../utils';
 import { deleteText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
@@ -377,7 +377,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
           insertNodes(
             editor as Editor,
-            { text, ...(marks ?? {}) },
+            { text, ...marks },
             { at, select: !explicitAtPreservesNullSelection, voids }
           );
           setCurrentMarks(editor, null);

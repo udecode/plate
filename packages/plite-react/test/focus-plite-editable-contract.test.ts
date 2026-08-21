@@ -5,21 +5,22 @@ import {
   SelectionApi,
 } from '@platejs/plite';
 import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
-import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import {
   readModelSelectionDOMPreference,
   writeCollapsedModelSelectionDOMPreference,
 } from '../src/editable/model-selection-dom-preference';
-import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import {
   focusPliteEditable,
   focusPliteEditableAfterEventFrame,

@@ -1,10 +1,15 @@
 import type { Element, RootKey } from '../interfaces';
 import { ElementApi } from '../interfaces';
-import type { RootChange } from './change/root-change';
-import { getRootChangeRelocations } from './change/mapping';
+import type { SchemaContentRootOwnership } from '../interfaces/schema';
 import type { DocumentIndex } from './change/document-index';
+import { getRootChangeRelocations } from './change/mapping';
+import type { RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { profileCoreDuration } from './profiling';
+import type {
+  CompiledEditorSchema,
+  CompiledSchemaContentProgram,
+} from './schema-compiler';
 import {
   appendCanonicalDocumentPathMapping,
   type CanonicalDocumentPathMapping,
@@ -12,11 +17,6 @@ import {
   getCanonicalDocumentPathMappingStats,
   mapCanonicalDocumentPath,
 } from './snapshot-index';
-import type {
-  CompiledEditorSchema,
-  CompiledSchemaContentProgram,
-} from './schema-compiler';
-import type { SchemaContentRootOwnership } from '../interfaces/schema';
 
 type PersistentMapNode<T> = Readonly<{
   height: number;
@@ -101,8 +101,6 @@ const persistentMapGet = <T>(
     if (key === current.key) return current.value;
     current = key < current.key ? current.left : current.right;
   }
-
-  return;
 };
 
 const persistentMapSet = <T>(
@@ -255,7 +253,11 @@ export type ElementOwnedRootIssue = Readonly<{
   slot?: string;
 }>;
 
-/** @internal Verify one indexed declaration without scanning for owner identity. */
+/**
+ * Verify one indexed declaration without scanning for owner identity.
+ *
+ * @internal
+ */
 export const matchesElementOwnedRootDeclaration = (
   input: ElementOwnedRootBinding | ElementOwnedRootIssue,
   node: JsonNode
@@ -686,7 +688,11 @@ const changedNodes = (
   return Object.freeze(selected);
 };
 
-/** @internal Inspect changed-owner selection and its prefix-index work. */
+/**
+ * Inspect changed-owner selection and its prefix-index work.
+ *
+ * @internal
+ */
 export const inspectElementOwnedRootChangedNodes = (
   document: DocumentIndex,
   from: number,
@@ -1023,7 +1029,11 @@ export const resolveElementOwnedRootPath = (
     : Object.freeze([...input.path]);
 };
 
-/** @internal Test-only bounds for retained element-owned root path history. */
+/**
+ * Test-only bounds for retained element-owned root path history.
+ *
+ * @internal
+ */
 export const getElementOwnedRootPathMappingStats = (
   index: ElementOwnedRootIndex
 ) => {

@@ -55,7 +55,7 @@
       "migrationNotes": [],
       "targets": ["column-node"],
       "source": {
-        "line": 13,
+        "line": 46,
         "row": 1,
         "legacyRelease": {
           "date": "2026-06-10",

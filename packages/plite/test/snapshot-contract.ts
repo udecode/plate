@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+
 import {
   createEditor as createPliteEditor,
   defineExtension,
@@ -12,10 +13,6 @@ import {
   SelectionApi,
   type TextInsertFragmentOptions,
 } from '@platejs/plite';
-import {
-  applyTransactionSpec,
-  runEditorTransaction as runInternalEditorTransaction,
-} from '../src/core/public-state';
 import {
   addMark as editorAddMark,
   collapse as editorCollapse,
@@ -49,6 +46,11 @@ import {
   unsetNodes as editorUnsetNodes,
   wrapNodes as editorWrapNodes,
 } from '@platejs/plite/internal';
+
+import {
+  applyTransactionSpec,
+  runEditorTransaction as runInternalEditorTransaction,
+} from '../src/core/public-state';
 
 type NestedTextElement = {
   a?: boolean;
@@ -1234,7 +1236,7 @@ it('insertBreak splits the current top-level block and moves selection into the 
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertBreak(editor);
   });
 
@@ -1628,7 +1630,7 @@ it('insertBreak inside a nested block splits the nested block without splitting 
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertBreak(editor);
   });
 
@@ -1771,7 +1773,7 @@ it('insertSoftBreak inserts a newline through its own command', () => {
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertSoftBreak(editor);
   });
 
@@ -1869,7 +1871,7 @@ it('publishes once after a transaction and keeps same-version reads stable', () 
 
   assert.equal(before, beforeAgain);
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', { at: { path: [0, 0], offset: 5 } });
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 6 },
@@ -2143,7 +2145,7 @@ it('publishes selection-only dirtiness without touched node keys', () => {
     }
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
@@ -2458,8 +2460,8 @@ it('publishes replace-level broad invalidation for editorReplace', () => {
   assert.equal(changes[0]?.changed.has('replace'), true);
   assert.equal(changes[0]?.changed.has('document'), true);
   assert.equal(changes[0]?.selectionChanged, false);
-  assert(changes[0]?.changed.nodeKeys('node').length > 0);
-  assert(changes[0]?.changed.nodeKeys('decoration').length > 0);
+  assert.ok(changes[0]?.changed.nodeKeys('node').length > 0);
+  assert.ok(changes[0]?.changed.nodeKeys('decoration').length > 0);
 });
 
 it('publishes marks-only dirtiness without pretending the document paths changed', () => {
@@ -2916,7 +2918,7 @@ it('preserves node keys when moving a node inside the proof subset', () => {
 
   assert.ok(firstId);
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorMoveNodes(editor, {
       at: [0],
       to: [2],
@@ -3043,6 +3045,38 @@ it('canonicalizes adjacent compatible text siblings after move_node', () => {
   ]);
 });
 
+it('skips canonical rebuilding for exact same-parent block moves', () => {
+  const children = Array.from({ length: 1000 }, (_, index) => ({
+    type: 'block',
+    children: [{ text: `block-${index}` }],
+  }));
+  const editor = createEditor({ initialValue: children });
+  const profilerGlobal = globalThis as typeof globalThis & {
+    __PLITE_REACT_RENDER_PROFILER__?: {
+      record: (event: { id: string }) => void;
+    };
+  };
+  const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+  const events: string[] = [];
+
+  profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    record: ({ id }) => events.push(id),
+  };
+
+  try {
+    editorMoveNodes(editor, { at: [0], to: [999] });
+  } finally {
+    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+  }
+
+  assert.equal(
+    events.filter((id) => id === 'representation-move-locality-hit').length,
+    0
+  );
+  assert.equal(editor.read.text.string([999]), 'block-0');
+  assert.equal(editorGetSnapshot(editor).children.length, 1000);
+});
+
 it('supports path-based insertNodes/removeNodes transforms in one outer transaction', () => {
   const editor = createEditor();
 
@@ -3055,7 +3089,7 @@ it('supports path-based insertNodes/removeNodes transforms in one outer transact
   const alphaId = before.index.keyAt([0]);
   const betaId = before.index.keyAt([1]);
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       [
@@ -3133,7 +3167,7 @@ it('supports path-based property removal while keeping node keys stable', () => 
   const blockId = before.index.keyAt([0]);
   const textId = before.index.keyAt([0, 0]);
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorUnsetNodes(editor, 'align', { at: [0] });
     editorUnsetNodes(editor, 'bold', { at: [0, 0] });
   });
@@ -3324,7 +3358,7 @@ it('supports setSelection helper calls once the live transaction selection has b
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 5 },
     });
@@ -3354,7 +3388,7 @@ it('supports deselect helper calls against the live transaction selection', () =
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [1, 0], offset: 4 },
     });
@@ -3374,7 +3408,7 @@ it('supports collapse helper calls to the anchor against the live transaction se
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
@@ -3403,7 +3437,7 @@ it('supports collapse helper calls to the end against the live transaction selec
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [1, 0], offset: 4 },
     });
@@ -3431,7 +3465,7 @@ it('supports setPoint helper calls on the focus edge against the live transactio
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
@@ -3466,7 +3500,7 @@ it('supports setPoint helper calls on the start edge against a backward live sel
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [1, 0], offset: 3 },
       focus: { path: [0, 0], offset: 2 },
@@ -4440,7 +4474,7 @@ it('supports move helper calls inside an outer transaction using the live draft 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
@@ -4511,7 +4545,7 @@ it('supports move helper calls across mixed-inline siblings inside an outer tran
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 6 },
     });
@@ -4565,7 +4599,7 @@ it('supports select helper calls with a point inside an outer transaction', () =
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [1, 0], offset: 4 },
     });
@@ -4611,7 +4645,7 @@ it('supports select helper calls with a path inside an outer transaction using t
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -4846,7 +4880,7 @@ it('supports path-based wrapNodes inside an outer transaction using the live dra
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -5001,7 +5035,7 @@ it('supports selection-based wrapNodes inside an outer transaction using the liv
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -5361,7 +5395,7 @@ it('supports path-based unwrapNodes inside an outer transaction using the live d
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorWrapNodes(
       editor,
       {
@@ -5401,7 +5435,7 @@ it('supports selection-based unwrapNodes inside an outer transaction using the l
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
@@ -5687,7 +5721,7 @@ it('supports path-based liftNodes inside an outer transaction using the live dra
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -5720,7 +5754,7 @@ it('supports selection-based liftNodes inside an outer transaction using the liv
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
@@ -5822,7 +5856,7 @@ it('supports delete helper calls with an exact path inside an outer transaction 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertNodes(
       editor,
       {
@@ -5964,7 +5998,7 @@ it('supports delete helper calls across adjacent nested block boundaries without
   const codeBlockId = before.index.keyAt([0]);
   const firstLineId = before.index.keyAt([0, 0]);
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorDelete(editor, {
       at: { path: [0, 0, 0], offset: 5 },
       distance: 1,
@@ -6003,7 +6037,7 @@ it('supports delete helper calls with an exact point inside an outer transaction
     },
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [1, 0], offset: 4 },
     });
@@ -6641,7 +6675,7 @@ it('supports delete helper calls with the current same-text selection inside an 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 5 },
     });
@@ -6670,7 +6704,7 @@ it('supports delete helper calls with the current non-empty selection across adj
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 6 },
     });
@@ -6703,7 +6737,7 @@ it('supports delete helper calls with the current non-empty selection across a f
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 6 },
     });
@@ -6733,7 +6767,7 @@ it('supports delete helper calls with the current non-empty selection across an 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [1, 0], offset: 4 },
     });
@@ -6763,7 +6797,7 @@ it('supports delete helper calls with the current collapsed selection, reverse, 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [0, 0], offset: 5 },
     });
@@ -6792,7 +6826,7 @@ it('supports delete helper calls with the current collapsed selection across mix
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorSelect(editor, {
       anchor: { path: [0, 2], offset: 0 },
       focus: { path: [0, 2], offset: 0 },
@@ -6821,7 +6855,7 @@ it('supports delete helper calls with the current collapsed selection across an 
     selection: null,
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorInsertText(editor, '!', {
       at: { path: [1, 0], offset: 4 },
     });
@@ -6850,7 +6884,7 @@ it('stages replacement inside the active transaction', () => {
     children: createChildren(),
   });
 
-  editor.update((tx) => {
+  editor.update((_tx) => {
     editorReplace(editor, {
       children: [
         {
@@ -7261,7 +7295,7 @@ it('keeps prepared transaction-spec runtime paths total through reconstruction',
     })
   );
 
-  assert(spec);
+  assert.ok(spec);
   editor.update(() => applyTransactionSpec(editor, spec));
 
   const snapshot = editorGetSnapshot(editor);

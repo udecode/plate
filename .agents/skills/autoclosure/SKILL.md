@@ -1,5 +1,5 @@
 ---
-description: Post-merge and current-tree closure loop for Plate/Slate. Use when the user wants already-landed, teammate, external PR, branch, or dirty current-tree work made cohesive until no accepted actionable findings remain, like P2 autoreview but with safe fixes, proof reruns, docs/API/generated-output audits, and final review attention.
+description: Post-merge and current-tree closure loop for Plate/Slate. Use when the user wants already-landed, teammate, external PR, branch, or dirty current-tree work made cohesive through safe fixes, proof reruns, docs/API/generated-output audits, and at most three P1 autoreview invocations per unchanged scope.
 argument-hint: '[current tree | post-merge | <branch|commit|pr|path>] [until-clean | loop | review]'
 disable-model-invocation: true
 name: autoclosure
@@ -16,12 +16,14 @@ Use this when work already exists and the job is to make it feel native to the
 repo before commit, handoff, or the next task.
 
 This is a closure loop, not a broad quality supervisor. It keeps going like
-P2 `autoreview`, but it is allowed to patch safe issues, rerun proof, invoke
-worker skills, and repeat until no accepted actionable findings remain.
+P1 `autoreview`, but it is allowed to patch safe issues, rerun proof, invoke
+worker skills, and repeat within the hard three-invocation review cap. If the
+third invocation still has accepted actionable findings, stop and hand off the
+target as not clean.
 
 ## Core Take
 
-P2 `autoreview` asks: "What is wrong with this diff?"
+P1 `autoreview` asks: "What is wrong with this diff?"
 
 `autoclosure` asks: "Is this whole already-landed/current-tree change coherent
 enough that we would be comfortable owning it?"
@@ -30,7 +32,7 @@ Loop:
 
 ```txt
 target -> requirements -> changed-surface map -> coherence audit
--> focused proof -> P2 autoreview -> verify findings -> patch/reject
+-> focused proof -> P1 autoreview -> verify findings -> patch/reject
 -> architecture/docs/API/generated-output checks -> rerun proof/review
 -> clean or stop
 ```
@@ -51,10 +53,11 @@ target -> requirements -> changed-surface map -> coherence audit
 
 - The user asks to scan public GitHub issues/PRs/security queue: use
   `maintainer`.
-- The user asks for one structured review pass only: use P2 `autoreview` by
-  passing `--max-priority P2`. Use P3 only when explicitly requested.
-- The user asks for broad internal quality/perf/research over hours: use
-  `auto`.
+- The user asks for one structured review pass only: use P1 `autoreview` by
+  passing `--max-priority P1`. Use P2 or P3 only when explicitly requested.
+- The user asks for performance measurement, profiling, comparison, or timing
+  root-cause work: use `benchmark`.
+- The user asks for broad internal quality/research over hours: use `auto`.
 - The user asks for architecture cleanup as the primary goal: use
   `architecture-cleanup`.
 - The user asks for one local Plate/Plite behavior bug or regression with no
@@ -155,7 +158,7 @@ closure until the changes are actually in this checkout and proof runs here.
 
 ## Closure Loop
 
-Repeat until clean:
+Repeat until clean or the three-invocation P1 autoreview cap is reached:
 
 1. **Requirement checkpoint:** read latest user request, active plan, root
    `VISION.md`, `.agents/AGENTS.md`, and the relevant `docs/vision/*.md`.
@@ -171,9 +174,10 @@ Repeat until clean:
 4. **Focused proof:** run the smallest commands that prove changed behavior,
    package API, docs/build output, browser surface, generated skills, or source
    invariants.
-5. **P2 autoreview:** load `autoreview`, choose the correct target mode, and run
-   it with `--max-priority P2`. Verify every accepted finding against current
-   source before patching. Use P3 only when explicitly requested.
+5. **P1 autoreview:** load `autoreview`, choose the correct target mode, and run
+   it with `--max-priority P1`. Verify every accepted finding against current
+   source before patching. Record this helper invocation in the scope counter.
+   Use P2 or P3 only when explicitly requested.
    When the diff materially changes public API, also run `best-api review` and
    resolve or explicitly reject every P0/P1 finding.
 6. **Patch/reject:** patch safe findings at the right owner. Reject stale,
@@ -183,17 +187,20 @@ Repeat until clean:
    shallow modules, over-splits, fake wrappers, ownership confusion, duplicated
    helpers, or agent-navigation friction.
 8. **Rerun:** after any patch, rerun affected focused proof and rerun
-   P2 `autoreview` when the diff materially changed.
+   P1 `autoreview` when the diff materially changed and fewer than three helper
+   invocations have run for this scope.
 9. **Clean pass:** stop only after the latest pass has zero accepted actionable
    findings and all required proof/generation rows are closed. For risky
    public API, agent-rule, package-boundary, or broad refactor changes, require
-   two consecutive clean closure passes after the last patch.
+   two consecutive clean closure passes after the last patch when they fit
+   within the three-invocation cap. If invocation 3 is not clean, stop with a
+   not-clean handoff and the remaining verified findings.
 
 ## Clean Definition
 
 Clean means:
 
-- zero accepted actionable P2 `autoreview` findings remain;
+- zero accepted actionable P1 `autoreview` findings remain;
 - all accepted architecture-cleanup findings are fixed, rejected, or routed
   with owner and reason;
 - required focused proof after the last patch passes or is explicitly N/A;
@@ -215,6 +222,8 @@ review engine was terse. Clean is a ledger state, not a vibe.
 Stop when:
 
 - clean definition is satisfied;
+- the third P1 autoreview invocation for the unchanged scope finishes; if it is
+  not clean, report the remaining findings and next owner without another run;
 - commit, push, PR, release, publish, merge, external post/send, or destructive
   cleanup requires user authority;
 - `VISION.md` does not cover a taste/product/API decision and no safe alternate
@@ -229,11 +238,13 @@ the answer gates the next safe closure move.
 
 ## Worker Routing
 
-- P2 `autoreview`: mandatory review engine and rerun loop; pass
-  `--max-priority P2`. P3 is opt-in only.
+- P1 `autoreview`: mandatory review engine and rerun loop; pass
+  `--max-priority P1` and stop after at most three helper invocations for the
+  unchanged scope. P2/P3 are opt-in only.
 - `architecture-cleanup`: source-shape/deslop/agent-navigation findings.
-- `auto`: broader internal quality/perf/research loops after closure discovers
-  a bigger lane than "make this diff clean".
+- `benchmark`: measured performance work discovered during closure.
+- `auto`: broader internal quality/research loops after closure discovers a
+  bigger lane than "make this diff clean".
 - `maintainer`: public GitHub issue/PR/security queue decisions or public
   mutations.
 - `best-api`: public call-shape forks and changed-public-API closure review.
@@ -255,7 +266,7 @@ Report:
 - accepted findings fixed;
 - findings rejected with reasons;
 - commands run with cwd;
-- P2 `autoreview` result and rerun count;
+- P1 `autoreview` result and rerun count;
 - architecture-cleanup result when used;
 - needs-your-attention, capped to the few highest-value review items;
 - stopping checkpoints and exact user decisions needed;

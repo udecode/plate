@@ -222,7 +222,11 @@ const resolveDOMSourceFacts = (source: unknown) => {
   return root ? resolveDOMRootFacts(root) : null;
 };
 
-/** @internal Resolve Apple modifier semantics from the event's own realm. */
+/**
+ * Resolve Apple modifier semantics from the event's own realm.
+ *
+ * @internal
+ */
 export const usesAppleDOMHotkeys = (event: unknown) =>
   resolveDOMSourceFacts(event)?.platform === 'apple';
 

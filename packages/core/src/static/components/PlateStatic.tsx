@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   type DecoratedRange,
   type Descendant,
@@ -18,25 +16,28 @@ import {
 } from '@platejs/plite-dom';
 import { MAIN_ROOT_KEY } from '@platejs/plite/internal';
 import clsx from 'clsx';
+import React from 'react';
 
-import type { EditableProps, BaseEditor, RenderElementSlots } from '../../lib';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-import type { PliteRenderElementProps } from '../types';
-
+import type { EditableProps, BaseEditor, RenderElementSlots } from '../../lib';
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
+import type { PliteRenderElementProps } from '../types';
 import { pipeDecorate } from '../utils/pipeDecorate';
+
+const EMPTY_PATH: Path = [];
+const EMPTY_ROOT_STACK: readonly string[] = [];
 
 function BaseElementStatic({
   contentRootValues: _contentRootValues,
   decorate,
   decorations,
   editor,
-  element = { children: [], type: '' },
+  element,
   path,
   rootNodes,
   rootStack,
@@ -117,7 +118,6 @@ function BaseElementStatic({
         style={{
           color: 'transparent',
           height: '0',
-          outline: 'none',
           position: 'absolute',
         }}
         data-plite-spacer
@@ -148,7 +148,7 @@ function BaseLeafStatic({
   decorations,
   editor,
   path,
-  text = { text: '' },
+  text,
 }: {
   decorations: DecoratedRange[];
   editor: BaseEditor;
@@ -185,25 +185,25 @@ function BaseLeafStatic({
   });
 }
 
-export const LeafStatic = React.memo(BaseLeafStatic, (prev, next) => {
-  return (
+export const LeafStatic = React.memo(
+  BaseLeafStatic,
+  (prev, next) =>
     // prev.text === next.text &&
     TextApi.equals(next.text, prev.text) &&
     isTextDecorationsEqual(next.decorations, prev.decorations)
-  );
-});
+);
 
 const defaultDecorate: (entry: NodeEntry) => DecoratedRange[] = () => [];
 
 function Children({
   decorate = defaultDecorate,
-  decorations = [],
+  decorations,
   editor,
   from,
-  nodes = [],
-  parentPath = [],
+  nodes,
+  parentPath = EMPTY_PATH,
   rootNodes = nodes,
-  rootStack = [],
+  rootStack = EMPTY_ROOT_STACK,
   to,
 }: {
   decorate: EditableProps['decorate'];

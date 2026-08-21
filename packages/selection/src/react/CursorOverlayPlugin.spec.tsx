@@ -1,9 +1,7 @@
-import React from 'react';
-
-import { render } from '@testing-library/react';
-
 import { createPlateEditor, Plate, PlateContent } from '@platejs/core/react';
 import type { TextSelection } from '@platejs/plite';
+import { render } from '@testing-library/react';
+import React from 'react';
 
 import { CursorOverlayPlugin } from './CursorOverlayPlugin';
 

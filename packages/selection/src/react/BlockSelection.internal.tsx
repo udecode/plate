@@ -1,6 +1,3 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-
 import { isHotkey } from '@platejs/core';
 import type { NormalizePluginState } from '@platejs/core/internal';
 import {
@@ -11,6 +8,8 @@ import {
 } from '@platejs/core/react';
 import { type Element, ElementApi, type NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import {
   type PartialSelectionAreaOptions,
@@ -253,7 +252,6 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
 
     return () => selection.destroy();
     // The selection engine owns one lifecycle per mounted editor.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionAreaElement]);
 };
 

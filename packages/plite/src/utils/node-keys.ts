@@ -31,7 +31,11 @@ const allocateNodeKey = (editor: Editor): NodeKey => {
   return `${getLiveNodeKeyPrefix(editor)}${next}` as NodeKey;
 };
 
-/** @internal Return the deterministic editor-local token rendered during SSR. */
+/**
+ * Return the deterministic editor-local token rendered during SSR.
+ *
+ * @internal
+ */
 export const getNodeKeyDOMValue = (nodeKey: NodeKey): string => {
   if (!nodeKey.startsWith('r')) return nodeKey;
   const separator = nodeKey.indexOf(':n', 1);
@@ -60,7 +64,11 @@ export const getNodeKeyForNode = (
   return null;
 };
 
-/** @internal Reserve query-order-independent identities for one prepared forest. */
+/**
+ * Reserve query-order-independent identities for one prepared forest.
+ *
+ * @internal
+ */
 export const reservePreparedNodeKeyRange = (
   span: number
 ): PreparedNodeKeyRange => {
@@ -79,7 +87,11 @@ export const reservePreparedNodeKeyRange = (
   return Object.freeze({ from, to });
 };
 
-/** @internal Resolve the opaque identity reserved for one node-open offset. */
+/**
+ * Resolve the opaque identity reserved for one node-open offset.
+ *
+ * @internal
+ */
 export const preparedNodeKeyAt = (
   range: PreparedNodeKeyRange,
   offset: number
@@ -88,7 +100,11 @@ export const preparedNodeKeyAt = (
     ? (`p${range.from + offset}` as NodeKey)
     : null;
 
-/** @internal Resolve a prepared identity back to its node-open offset. */
+/**
+ * Resolve a prepared identity back to its node-open offset.
+ *
+ * @internal
+ */
 export const preparedNodeKeyOffset = (
   range: PreparedNodeKeyRange,
   nodeKey: NodeKey

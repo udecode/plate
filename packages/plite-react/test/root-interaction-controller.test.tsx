@@ -1,16 +1,16 @@
 import {
+  createEditor,
+  defineExtension,
+  type Descendant,
+  type Range as PliteRange,
+} from '@platejs/plite';
+import {
   act,
   fireEvent,
   render,
   renderHook,
   screen,
 } from '@testing-library/react';
-import {
-  createEditor,
-  defineExtension,
-  type Descendant,
-  type Range as PliteRange,
-} from '@platejs/plite';
 import { afterEach, vi } from 'vitest';
 
 import { createReactEditor, Editable, Plite } from '../src';

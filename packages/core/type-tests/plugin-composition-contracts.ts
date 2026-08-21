@@ -1,12 +1,12 @@
 import type { DefinitionOf } from '@platejs/core';
 import { createBaseEditor, defineBasePlugin } from '@platejs/core';
-import { defineStateField, editorCommands } from '@platejs/plite';
 import {
   createPlateEditor,
   definePlatePlugin,
   toPlatePlugin,
   useEditorPlugin,
 } from '@platejs/core/react';
+import { defineStateField, editorCommands } from '@platejs/plite';
 
 export const DeclarationSafeBaseExtensionPlugin = defineBasePlugin(
   'declarationSafeBaseExtension',

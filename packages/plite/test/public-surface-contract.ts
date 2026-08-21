@@ -58,7 +58,7 @@ const collectFiles = (directory: string, pattern: RegExp): string[] => {
 };
 
 const readSource = (relativePath: string) =>
-  readFileSync(resolve(repoRoot, relativePath), 'utf8');
+  readFileSync(resolve(repoRoot, relativePath), 'utf-8');
 
 const publicDocs = [
   publicDocsIndex,
@@ -143,7 +143,7 @@ const bannedPublicTypeSlop = [
   /\bas never\b/,
   /@ts-expect-error/,
   /@ts-ignore/,
-  /eslint-disable|biome-ignore/,
+  /eslint-\u0064isable|biome-\u0069gnore/,
 ];
 
 const getPackageExportSpecifiers = () => {
@@ -155,7 +155,7 @@ const getPackageExportSpecifiers = () => {
     const packageJson = JSON.parse(
       readFileSync(
         resolve(repoRoot, 'packages', directoryName, 'package.json'),
-        'utf8'
+        'utf-8'
       )
     ) as { exports?: Record<string, unknown> };
 

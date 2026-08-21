@@ -1,10 +1,9 @@
+import type { ExcalidrawElement } from '@platejs/excalidraw';
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
 
 jsx;
-
-import type { ExcalidrawElement } from '@platejs/excalidraw';
 
 export const excalidrawInitialData: Partial<
   Pick<ExcalidrawElement, 'data' | 'width'>

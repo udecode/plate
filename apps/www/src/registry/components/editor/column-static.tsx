@@ -1,6 +1,6 @@
-import * as React from 'react';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
 
 export function ColumnElementStatic(
   props: PliteElementProps<typeof BaseColumnItemPlugin>

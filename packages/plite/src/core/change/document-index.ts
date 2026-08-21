@@ -1,4 +1,12 @@
 import {
+  createTreeIndex,
+  createTreeIndexChildren,
+  createTreeIndexNode,
+  ResolvedTokenCursor,
+  type TreeIndexChildren,
+  type TreeIndexNode,
+} from '../resolved-token-cursor';
+import {
   assertNode,
   CLAIMED_PREPARED_SOURCES,
   cloneFrozen,
@@ -22,14 +30,6 @@ import {
   tokensEqual,
 } from './tokens';
 import { transformPathAfterRemove } from './transform';
-import {
-  createTreeIndex,
-  createTreeIndexChildren,
-  createTreeIndexNode,
-  ResolvedTokenCursor,
-  type TreeIndexChildren,
-  type TreeIndexNode,
-} from '../resolved-token-cursor';
 
 export type IndexEntry = {
   contentFrom: number;
@@ -375,6 +375,73 @@ export const updateIndexedNode = (
   });
 };
 
+type IndexedPropertyUpdate = Readonly<{
+  path: readonly number[];
+  props: JsonRecord;
+}>;
+
+type IndexedPropertyUpdateBranch = {
+  children: Map<number, IndexedPropertyUpdateBranch>;
+  props?: JsonRecord;
+};
+
+const updateIndexedNodeProperties = (
+  indexed: IndexedValue,
+  branch: IndexedPropertyUpdateBranch
+): IndexedValue => {
+  const nextValue = [...indexed.value];
+  const nextIndexes = [...indexed.index.children];
+
+  for (const [index, update] of branch.children) {
+    const node = nextValue[index];
+    const nodeIndex = nextIndexes[index];
+
+    if (!node || !nodeIndex) {
+      throw new Error(`Cannot resolve node at child index ${index}.`);
+    }
+
+    let nextNode = node;
+    let nextIndex = nodeIndex;
+
+    if (update.children.size > 0) {
+      if (!isElementNode(nextNode) || !nextIndex.children) {
+        throw new Error(`Cannot descend through text at child index ${index}.`);
+      }
+      const nested = updateIndexedNodeProperties(
+        { index: nextIndex.children, value: nextNode.children },
+        update
+      );
+
+      nextNode = Object.freeze({
+        ...nextNode,
+        children: nested.value,
+      }) as JsonNode;
+      nextIndex = {
+        children: nested.index,
+        kind: 'element',
+        length: nested.index.length + 2,
+      };
+    }
+
+    if (update.props) {
+      nextNode = isTextNode(nextNode)
+        ? cloneFrozen({ ...update.props, text: nextNode.text })
+        : (Object.freeze({
+            ...cloneFrozen(update.props),
+            children: nextNode.children,
+          }) as JsonNode);
+    }
+
+    nextValue[index] = nextNode;
+    nextIndexes[index] = nextIndex;
+  }
+
+  return {
+    index: createTreeIndexChildren(nextIndexes),
+    value: Object.freeze(nextValue),
+  };
+};
+
 export class DocumentIndex {
   private static readonly immutableCache = new WeakMap<object, DocumentIndex>();
 
@@ -504,7 +571,11 @@ export class DocumentIndex {
     return this.cursor().nodeRangesTouching(from, to);
   }
 
-  /** @internal Return the outer-to-inner node stack at one token position. */
+  /**
+   * Return the outer-to-inner node stack at one token position.
+   *
+   * @internal
+   */
   openContextAt(position: number): readonly IndexedNodeRange[] {
     return this.cursor().openContextAt(position);
   }
@@ -558,8 +629,9 @@ export class DocumentIndex {
   withInsertedNode(path: readonly number[], node: JsonNode) {
     const index = path.at(-1);
 
-    if (index === undefined)
+    if (index === undefined) {
       throw new Error('Cannot insert the document root.');
+    }
 
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
@@ -589,7 +661,11 @@ export class DocumentIndex {
     );
   }
 
-  /** @internal Insert nodes already decoded, detached, and frozen by PreparedTokenSlice. */
+  /**
+   * Insert nodes already decoded, detached, and frozen by PreparedTokenSlice.
+   *
+   * @internal
+   */
   withDecodedSplicedNodes(
     parentPath: readonly number[],
     index: number,
@@ -608,7 +684,11 @@ export class DocumentIndex {
     );
   }
 
-  /** @internal Splice a prepared node slice without decoding or reindexing it. */
+  /**
+   * Splice a prepared node slice without decoding or reindexing it.
+   *
+   * @internal
+   */
   withPreparedSplicedNodes(
     parentPath: readonly number[],
     index: number,
@@ -638,6 +718,29 @@ export class DocumentIndex {
             ? ({ ...props, text: node.text } as JsonNode)
             : ({ ...props, children: node.children } as JsonNode)
       )
+    );
+  }
+
+  withExactNodePropertiesBatch(updates: readonly IndexedPropertyUpdate[]) {
+    const root: IndexedPropertyUpdateBranch = { children: new Map() };
+
+    for (const update of updates) {
+      if (update.path.length === 0) {
+        throw new Error('Cannot update the document root properties.');
+      }
+      let branch = root;
+
+      for (const index of update.path) {
+        const child = branch.children.get(index) ?? { children: new Map() };
+
+        branch.children.set(index, child);
+        branch = child;
+      }
+      branch.props = update.props;
+    }
+
+    return DocumentIndex.fromIndexedValue(
+      updateIndexedNodeProperties({ index: this.tree, value: this.value }, root)
     );
   }
 
@@ -730,8 +833,9 @@ export class DocumentIndex {
   withRemovedNode(path: readonly number[]) {
     const index = path.at(-1);
 
-    if (index === undefined)
+    if (index === undefined) {
       throw new Error('Cannot remove the document root.');
+    }
 
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(

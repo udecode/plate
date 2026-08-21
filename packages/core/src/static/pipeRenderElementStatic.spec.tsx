@@ -1,6 +1,6 @@
+import { schema } from '@platejs/plite';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { schema } from '@platejs/plite';
 
 import {
   BaseParagraphPlugin,

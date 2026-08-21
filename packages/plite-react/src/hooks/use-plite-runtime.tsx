@@ -1,14 +1,3 @@
-import React, {
-  type DependencyList,
-  type ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import ReactDOM from 'react-dom';
 import {
   type CompatibleEditorCommand,
   createEditorView,
@@ -34,7 +23,19 @@ import {
   DOM_CLIPBOARD_HANDLERS,
   EDITOR_TO_ROOT_VIEW_EDITORS,
 } from '@platejs/plite-dom/internal';
+import React, {
+  type DependencyList,
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import ReactDOM from 'react-dom';
 
+import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { PliteEditableRootContext } from '../context';
 import { refreshEditorDecorations } from '../decoration-refresh';
 import {
@@ -47,6 +48,7 @@ import {
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
 } from '../editable/runtime-editor-api';
+import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
 import {
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
@@ -59,7 +61,6 @@ import {
 } from '../plugin/with-react';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
-import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { setPliteViewSelectionStoreKey } from '../view-selection';
 import { focusPliteEditable } from './focus-plite-editable';
@@ -67,7 +68,6 @@ import {
   createRootSelectionCache,
   getSelectionRoot,
 } from './root-selection-cache';
-import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
 import {
   type EditorSelectorContextValue,
   useEditorSelectorContext,
@@ -448,7 +448,7 @@ function OwnedPliteRuntime<
   );
   const [viewEffectQueue] = useState(createPliteViewEffectQueue);
   const [viewEffectVersion, setViewEffectVersion] = useState(0);
-  const lastSelectionCacheRef = useRef(createRootSelectionCache());
+  const [lastSelectionCache] = useState(createRootSelectionCache);
   const { focused, focusVersion, refreshFocused } =
     useRuntimeFocusState(reactEditor);
 
@@ -575,8 +575,8 @@ function OwnedPliteRuntime<
       : null;
   }, []);
   const getLastSelectionForRoot = useCallback(
-    (root: RootKey) => lastSelectionCacheRef.current.get(root),
-    []
+    (root: RootKey) => lastSelectionCache.get(root),
+    [lastSelectionCache]
   );
   const registerViewEffect = useCallback(
     (effect: () => void) => {
@@ -663,7 +663,7 @@ function OwnedPliteRuntime<
     const onContextChange: Parameters<typeof runtime.subscribeCommit>[0] = (
       commit
     ) => {
-      lastSelectionCacheRef.current.record(
+      lastSelectionCache.record(
         commit.selectionAfter,
         commit.selectionAfterRoot
       );
@@ -698,6 +698,7 @@ function OwnedPliteRuntime<
     return unsubscribe;
   }, [
     handleSelectorChange,
+    lastSelectionCache,
     reactEditor,
     refreshFocused,
     runtime,

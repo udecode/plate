@@ -1,9 +1,9 @@
-import type { registryItemFileSchema } from 'shadcn/schema';
-import type { z } from 'zod';
-
 import { createHash } from 'node:crypto';
+
 import { LRUCache } from 'lru-cache';
+import type { registryItemFileSchema } from 'shadcn/schema';
 import { codeToHtml } from 'shiki';
+import type { z } from 'zod';
 
 const highlightCache = new LRUCache<string, string>({
   max: 500,

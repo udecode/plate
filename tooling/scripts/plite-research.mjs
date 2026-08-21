@@ -33,7 +33,7 @@ function readJsonIfExists(filePath) {
   if (!existsSync(filePath)) return null;
 
   try {
-    return JSON.parse(readFileSync(filePath, 'utf8'));
+    return JSON.parse(readFileSync(filePath, 'utf-8'));
   } catch (error) {
     return {
       __readError: error instanceof Error ? error.message : String(error),
@@ -339,7 +339,7 @@ function summarizeRuntimeFanout(withChecks) {
         ],
         {
           cwd: path.join(root, 'packages/plite-react'),
-          encoding: 'utf8',
+          encoding: 'utf-8',
           maxBuffer: 16 * 1024 * 1024,
           stdio: 'pipe',
         }
@@ -501,7 +501,7 @@ if (compactFinalizePreview) {
     [autoresearchScript, command, ...cwdArgs, ...forwardedArgs],
     {
       cwd: root,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       maxBuffer: 64 * 1024 * 1024,
       stdio: 'pipe',
     }

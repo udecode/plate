@@ -1,8 +1,6 @@
-import type { CSSProperties } from 'react';
-
-import Link from 'next/link';
-
 import { ArrowLeftIcon, ChevronDownIcon } from 'lucide-react';
+import Link from 'next/link';
+import type { CSSProperties } from 'react';
 
 import {
   Sidebar,
@@ -39,7 +37,7 @@ export function PliteExamplesShell({
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">
       <SidebarProvider
-        className="3xl:fixed:container min-h-min flex-1 items-start 3xl:fixed:px-3 px-0 [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--top-spacing:calc(var(--spacing)*4)]"
+        className="min-h-min flex-1 items-start px-0 [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--top-spacing:calc(var(--spacing)*4)] 3xl:fixed:container 3xl:fixed:px-3"
         style={
           {
             '--sidebar-width': 'calc(var(--spacing) * 72)',
@@ -109,7 +107,7 @@ function PliteExamplesMobileNav({ activeExample }: { activeExample?: string }) {
       className="group rounded-md border bg-background p-2 lg:hidden"
       data-plite-example-mobile-nav
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 font-medium text-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium">
         <span>Examples</span>
         <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
           <span className="truncate">{currentLabel}</span>
@@ -141,7 +139,7 @@ function PliteExamplesNavLinks({
     <>
       <div className="flex flex-col gap-1">
         <Link
-          className="flex h-8 items-center gap-2 rounded-md px-2 font-medium text-muted-foreground text-sm hover:bg-muted hover:text-foreground"
+          className="flex h-8 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
           data-plite-example-back
           href={backHref}
         >

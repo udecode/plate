@@ -7,6 +7,12 @@ import {
   type Range,
   RangeApi,
 } from '@platejs/plite';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import {
+  dispatchDOMClipboardHandlers,
+  DOM_CLIPBOARD_HANDLERS,
+} from '@platejs/plite-dom/internal';
+
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -20,11 +26,6 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
-import {
-  dispatchDOMClipboardHandlers,
-  DOM_CLIPBOARD_HANDLERS,
-} from '@platejs/plite-dom/internal';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import {
   type EditableCommand,

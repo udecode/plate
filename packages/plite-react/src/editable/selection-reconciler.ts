@@ -1,10 +1,4 @@
 import {
-  type FocusEvent,
-  type MouseEvent,
-  type RefObject,
-  useCallback,
-} from 'react';
-import {
   NodeApi,
   PathApi,
   type Range,
@@ -35,6 +29,13 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import {
+  type FocusEvent,
+  type MouseEvent,
+  type RefObject,
+  useCallback,
+} from 'react';
+
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -42,8 +43,8 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
-import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { getInputEventTargetRanges } from './dom-input-event';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { createFastDOMSelectionRange } from './fast-dom-selection-range';
 import {
   type EditableDOMSelectionSyncOptions,
@@ -1293,7 +1294,7 @@ export const useEditableSelectionReconciler = ({
     if (domSelection.rangeCount <= 1) {
       try {
         setDomSelection();
-      } catch (_e) {
+      } catch {
         clearUpdatingSelection();
         return;
       }
@@ -1321,7 +1322,7 @@ export const useEditableSelectionReconciler = ({
               }
 
               setDomSelection(forceChange);
-            } catch (_e) {
+            } catch {
               // Ignore, dom and state might be out of sync
             }
           };
@@ -1370,13 +1371,7 @@ export const useEditableSelectionReconciler = ({
         selectionPolicy: { kind: 'export-model', reason: 'model-owned' },
       });
     },
-    [
-      phaseScheduler,
-      editor,
-      scrollSelectionIntoView,
-      partialDOMBackedSelection,
-      state,
-    ]
+    [editor, scrollSelectionIntoView, partialDOMBackedSelection, state]
   );
 
   return { syncDOMSelectionToEditor };

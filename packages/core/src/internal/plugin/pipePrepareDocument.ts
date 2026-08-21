@@ -1,7 +1,3 @@
-import type {
-  BaseEditor,
-  InternalBaseEditorWithInstalledPlugins,
-} from '../../lib/editor';
 import {
   DocumentChange,
   ElementApi,
@@ -19,6 +15,10 @@ import {
   runTrustedUpdate,
 } from '@platejs/plite/internal';
 
+import type {
+  BaseEditor,
+  InternalBaseEditorWithInstalledPlugins,
+} from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import type { AnyBasePluginDefinition } from '../../lib/plugin/PluginDefinition';
 import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';

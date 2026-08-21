@@ -1,6 +1,5 @@
-/* biome-ignore-all lint/performance/useTopLevelRegex: legacy code */
-/* biome-ignore-all lint/style/noParameterAssign: legacy code */
-/* biome-ignore-all lint/style/useForOf: legacy code */
+// @ts-expect-error - no types available
+import colorNames from 'color-name';
 import { cloneDeep } from 'lodash';
 // @ts-expect-error - no types available
 import mimeTypes from 'mime-types';
@@ -10,13 +9,8 @@ import isVNode from 'virtual-dom/vnode/is-vnode';
 import isVText from 'virtual-dom/vnode/is-vtext';
 // @ts-expect-error - no types available
 import VNode from 'virtual-dom/vnode/vnode';
-import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { fragment } from 'xmlbuilder2';
-
-type XMLBuilderType = XMLBuilder;
-
-// @ts-expect-error - no types available
-import colorNames from 'color-name';
+import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 import {
   colorlessColors,
@@ -47,6 +41,8 @@ import {
   TWIPToEMU,
 } from './unit-conversion';
 import { vNodeHasChildren } from './vnode';
+
+type XMLBuilderType = XMLBuilder;
 
 export const rgbRegex = /rgb\((\d+),\s*([\d.]+),\s*([\d.]+)\)/i;
 export const hslRegex = /hsl\((\d+),\s*([\d.]+)%,\s*([\d.]+)%\)/i;
@@ -336,9 +332,9 @@ export const buildImage = async (
       imageSource &&
       isValidUrl(imageSource)
     ) {
-      const base64String = (await imageToBase64(imageSource).catch(() => {})) as
-        | string
-        | undefined;
+      const base64String = (await imageToBase64(imageSource).catch(
+        () => {}
+      )) as string | undefined;
 
       if (base64String) {
         let mimeType: string | false = mimeTypes.lookup(imageSource);
@@ -859,7 +855,6 @@ const fixupFontSize = (fontSizeString: string): number | undefined => {
       return pixelToHIP(Number.parseFloat(matchedParts[1]));
     }
   }
-  return;
 };
 
 const fixupRowHeight = (rowHeightString: string): number | undefined => {
@@ -889,7 +884,6 @@ const fixupRowHeight = (rowHeightString: string): number | undefined => {
       return inchToTWIP(Number.parseFloat(matchedParts[1]));
     }
   }
-  return;
 };
 
 const fixupColumnWidth = (
@@ -959,7 +953,6 @@ const fixupMargin = (marginString: string): number | undefined => {
       return pixelToTWIP(Number.parseFloat(matchedParts[1]));
     }
   }
-  return;
 };
 
 type ModifiedAttributesBuilderOptions = {
@@ -1897,9 +1890,9 @@ const buildParagraph = async (
             imageSource &&
             isValidUrl(imageSource)
           ) {
-            base64String = (await imageToBase64(imageSource).catch(() => {})) as
-              | string
-              | undefined;
+            base64String = (await imageToBase64(imageSource).catch(
+              () => {}
+            )) as string | undefined;
 
             if (base64String) {
               // Try to get MIME type from URL extension first

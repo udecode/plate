@@ -13,7 +13,10 @@ export function generateStaticParams() {
   }));
 }
 
-export async function GET(_: Request, { params }: any) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ event: string }> }
+) {
   const { event } = await params;
   const changelogEvent = getRegistryChangelogEvent(event);
 

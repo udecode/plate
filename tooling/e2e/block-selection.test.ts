@@ -92,6 +92,13 @@ test('drags from the editor gutter to select whole blocks', async ({
 
     await expect(page.locator('.plite-selection-area')).toBeVisible();
     await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.activeElement?.classList.contains('plite-shadow-input')
+        )
+      )
+      .toBe(true);
+    await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe('');
 

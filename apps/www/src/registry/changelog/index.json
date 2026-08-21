@@ -2,6 +2,68 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-20-demand-driven-dnd",
+      "href": "/registry/changelog/2026-08-20-demand-driven-dnd.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep block drag controls idle during editing",
+      "change": {
+        "type": "source",
+        "date": "2026-08-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-20-improve-editor-control-accessibility",
+      "href": "/registry/changelog/2026-08-20-improve-editor-control-accessibility.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Improve editor control accessibility and iframe security",
+      "change": {
+        "type": "source",
+        "date": "2026-08-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "toolbar",
+        "media-preview-dialog",
+        "media-placeholder",
+        "media-embed",
+        "media-embed-static",
+        "potion-iframe-demo",
+        "pro-iframe-demo"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-19-stabilize-suggestion-popover-anchor",
+      "href": "/registry/changelog/2026-08-19-stabilize-suggestion-popover-anchor.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Accept anchored removal suggestions without crashing the editor",
+      "change": {
+        "type": "source",
+        "date": "2026-08-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-18-align-v55-ast-contracts",
       "href": "/registry/changelog/2026-08-18-align-v55-ast-contracts.json",
       "status": "draft",
@@ -687,7 +749,7 @@
       "href": "/registry/changelog/2026-08-12-fix-font-size-selection-highlight.json",
       "status": "draft",
       "kind": "fix",
-      "summary": "Keep font-size selection highlighting aligned",
+      "summary": "Apply font marks and keep resized selections aligned",
       "change": {
         "type": "source",
         "date": "2026-08-12",
@@ -696,7 +758,7 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["font-size-toolbar-button"],
+      "targets": ["font", "font-static", "font-size-toolbar-button"],
       "entries": 1,
       "diagnostics": []
     },

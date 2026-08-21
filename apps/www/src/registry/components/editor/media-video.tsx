@@ -1,11 +1,5 @@
 'use client';
 
-import * as React from 'react';
-import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import ReactPlayer from 'react-player';
-
-import type { PlateElementProps } from 'platejs/react';
-
 import { useDraggable } from '@platejs/dnd';
 import {
   parseMediaUrl,
@@ -14,12 +8,16 @@ import {
   VIDEO_PROVIDERS,
 } from '@platejs/media';
 import { VideoPlugin } from '@platejs/media/react';
+import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
   useEditor,
   useEditorMounted,
   useElementSelected,
 } from 'platejs/react';
+import * as React from 'react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import ReactPlayer from 'react-player';
 
 import { cn } from '@/lib/utils';
 

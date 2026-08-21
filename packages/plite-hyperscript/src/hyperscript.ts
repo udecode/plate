@@ -1,5 +1,6 @@
 import { type Element, createEditor as makeEditor } from '@platejs/plite';
 import { isObject } from '@platejs/plite/internal';
+
 import {
   createAnchor,
   createCursor,
@@ -78,7 +79,7 @@ const createHyperscript = <
   elements?: TElements;
 }) => {
   const elementCreators = normalizeElements(options?.elements);
-  // biome-ignore lint/style/useObjectSpread: Object.assign preserves generic custom creator keys in the inferred factory type.
+  // Object.assign preserves generic custom creator keys in the inferred factory type.
   const creators = Object.assign(
     {},
     DEFAULT_CREATORS,

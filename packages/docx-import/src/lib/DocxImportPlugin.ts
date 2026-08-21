@@ -9,7 +9,6 @@ import {
   type Point,
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
-
 import mammoth from 'mammoth';
 
 const COMMENT_WHITESPACE_PATTERN = /\s+/g;

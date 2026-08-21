@@ -540,7 +540,7 @@ function getCompareUrl(fromTag, toTag) {
 }
 
 function getPackageReleaseUrl(tag) {
-  if (!tag) return;
+  if (!tag) return undefined;
 
   return `${githubBaseUrl}/releases/tag/${encodeTag(tag)}`;
 }
@@ -548,7 +548,7 @@ function getPackageReleaseUrl(tag) {
 function getPackageChangelogUrl(packageName, commitRef) {
   const directory = getPackageDirectory(packageName);
 
-  if (!directory) return;
+  if (!directory) return undefined;
 
   return `${githubBaseUrl}/blob/${commitRef}/${directory}/CHANGELOG.md`;
 }
@@ -570,6 +570,8 @@ function getPackageDirectory(packageName) {
 
     return `packages/udecode/${name}`;
   }
+
+  return undefined;
 }
 
 function encodeTag(tag) {
@@ -578,7 +580,7 @@ function encodeTag(tag) {
 
 async function readExistingReleases(outputPath) {
   try {
-    return JSON.parse(await readFile(outputPath, 'utf8'));
+    return JSON.parse(await readFile(outputPath, 'utf-8'));
   } catch (error) {
     if (error?.code === 'ENOENT') return [];
     throw error;

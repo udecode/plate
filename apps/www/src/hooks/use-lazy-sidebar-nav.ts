@@ -41,7 +41,7 @@ function loadSidebarNav(locale: string) {
 
       return nav;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       sidebarNavPromises.delete(normalizedLocale);
       throw error;
     });

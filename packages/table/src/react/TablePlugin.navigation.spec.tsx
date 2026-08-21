@@ -2,11 +2,10 @@
 
 import { DOMPlugin, Hotkeys } from '@platejs/core';
 import { pipeHandler } from '@platejs/core/react/internal';
-
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
-import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;

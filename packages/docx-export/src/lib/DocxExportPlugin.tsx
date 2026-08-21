@@ -38,18 +38,16 @@ import type {
   NodeComponents,
 } from '@platejs/core';
 import { createBaseEditor, defineBasePlugin } from '@platejs/core';
-import type { Value } from '@platejs/plite';
 import type {
   PlateStaticProps,
   RenderStaticHtmlOptions,
 } from '@platejs/core/static';
 import { renderStaticHtml } from '@platejs/core/static';
+import type { Value } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
-
 import juice from 'juice';
 
 import type { Margins, PageSize } from './html-to-docx';
-
 import { htmlToDocxBlob } from './html-to-docx';
 
 // =============================================================================

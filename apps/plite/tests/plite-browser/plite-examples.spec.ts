@@ -1,9 +1,9 @@
-import { expect, test } from '@playwright/test';
 import {
   attachPageScreenshot,
   openExample,
   recordPliteBrowserRuntimeErrors,
 } from '@platejs/browser/playwright';
+import { expect, test } from '@playwright/test';
 
 const pliteExampleIds = [
   'plaintext',

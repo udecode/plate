@@ -1,9 +1,9 @@
-import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 import {
   type KeyboardEventLike as PliteKeyboardEventLike,
   type HotkeySpec,
   isHotkey as isDOMHotkey,
 } from '@platejs/plite-dom';
+import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
 
 import type { BaseEditor } from '../editor';

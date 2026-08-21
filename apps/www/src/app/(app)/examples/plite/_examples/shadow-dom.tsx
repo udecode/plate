@@ -1,6 +1,6 @@
+import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
 
 const ShadowDOM = () => {
   const container = useRef<HTMLDivElement>(null);

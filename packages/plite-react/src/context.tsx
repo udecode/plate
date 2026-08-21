@@ -1,5 +1,5 @@
-import { createContext } from 'react';
 import type { Path, RootKey, NodeKey } from '@platejs/plite';
+import { createContext } from 'react';
 
 export { EditorContext } from './hooks/use-editor';
 export { ComposingContext } from './hooks/use-editor-composing';

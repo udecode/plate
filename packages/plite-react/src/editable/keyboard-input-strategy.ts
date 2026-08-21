@@ -1,4 +1,3 @@
-import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
 import {
   NodeApi,
   type Path,
@@ -22,6 +21,9 @@ import {
   usesAppleDOMHotkeys,
   selectDOMInputDefaultActionPhase,
 } from '@platejs/plite-dom/internal';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
+
 import type { EditableKeyDownHandler } from '../components/editable';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
@@ -37,9 +39,8 @@ import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
 } from './content-root-navigation';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { shouldModelOwnPlainVerticalLargeDocumentExtension } from './dom-coverage-vertical-selection';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   isDestructiveEditableCommand,
   isEditableEditingEpochCommand,

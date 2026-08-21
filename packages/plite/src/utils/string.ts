@@ -236,7 +236,7 @@ const consumeContinuations = (text: string, offset: number) => {
 const getWordSegments = (text: string, isRTL: boolean): WordSegment[] => {
   const segments: WordSegment[] = [];
 
-  for (let offset = 0; offset < text.length; ) {
+  for (let offset = 0; offset < text.length;) {
     const emojiLength = getEmojiLength(text, offset);
 
     if (emojiLength > 0) {
@@ -304,7 +304,7 @@ export const getWordDistances = (text: string, isRTL = false): number[] => {
   const distances: number[] = [];
   let pendingDistance = 0;
 
-  for (let index = 0; index < segments.length; ) {
+  for (let index = 0; index < segments.length;) {
     const segment = segments[index]!;
 
     if (segment.kind === 'separator') {
@@ -358,7 +358,7 @@ export const splitByCharacterDistance = (
 ): [string, string] => {
   if (isRTL) {
     const at = str.length - dist;
-    return [str.slice(at, str.length), str.slice(0, at)];
+    return [str.slice(at), str.slice(0, at)];
   }
 
   return [str.slice(0, dist), str.slice(dist)];
@@ -366,6 +366,8 @@ export const splitByCharacterDistance = (
 
 /**
  * Iterate on codepoints from right to left.
+ *
+ * @yields {string} Each Unicode code point from right to left.
  */
 
 export const codepointsIteratorRTL = function* (str: string) {
@@ -537,10 +539,8 @@ function isBoundaryPair(left: CodepointType, right: CodepointType) {
     return true;
   }
 
-  return (
-    NonBoundaryPairs.findIndex(
-      (r) => intersects(left, r[0]) && intersects(right, r[1])
-    ) === -1
+  return !NonBoundaryPairs.some(
+    (r) => intersects(left, r[0]) && intersects(right, r[1])
   );
 }
 

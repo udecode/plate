@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { type VariantProps, cva } from 'class-variance-authority';
 import { type LucideProps, Loader2Icon } from 'lucide-react';
+import React from 'react';
 
 import { cn } from '@/lib/utils';
 

@@ -57,15 +57,15 @@ import {
 } from './provider-lifecycle-adapter';
 import { isRecord } from './record';
 import {
-  type PreparedYjsSharedEffects,
-  YjsSharedEffectLog,
-} from './shared-effect-log';
-import {
   assertYjsSchemaIdentity,
   getYjsSchemaMetadataName,
   readYjsSchemaEnvelope,
   writeYjsSchemaEnvelope,
 } from './schema-metadata';
+import {
+  type PreparedYjsSharedEffects,
+  YjsSharedEffectLog,
+} from './shared-effect-log';
 import type {
   YjsAwarenessChange,
   YjsAwarenessLike,
@@ -1227,7 +1227,7 @@ export class YjsController<
     }
 
     const roots: Record<string, JsonEditorValue['children']> = {
-      ...(before.roots ?? {}),
+      ...before.roots,
     };
 
     for (const root of changed.named) {
@@ -1271,7 +1271,7 @@ export class YjsController<
         : {
             ...document,
             roots: {
-              ...(document.roots ?? {}),
+              ...document.roots,
               [root]: children,
             },
           }

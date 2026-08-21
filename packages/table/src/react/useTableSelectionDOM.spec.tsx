@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
-import React from 'react';
 
-import { act, renderHook, waitFor } from '@testing-library/react';
 import { Plate } from '@platejs/core/react';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { TablePlugin } from './TablePlugin';

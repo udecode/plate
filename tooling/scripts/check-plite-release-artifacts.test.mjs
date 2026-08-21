@@ -60,7 +60,7 @@ const files = [
 
 test('builds every package before packing its release artifact', () => {
   const rootPackageJson = JSON.parse(
-    readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
   );
   const releaseBuild = rootPackageJson.scripts['plite:packages:build'];
 

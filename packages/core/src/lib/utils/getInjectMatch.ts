@@ -1,18 +1,18 @@
 import { type Node, type Path, ElementApi } from '@platejs/plite';
 
-import type { BaseEditor } from '../editor';
-
-import type { AnyBasePlugin } from '../plugin';
 import {
   getCompiledPlatePluginByType,
   getResolvedPluginTargetBinding,
 } from '../../internal/plugin/compilePlateModel';
+import type { BaseEditor } from '../editor';
+import type { AnyBasePlugin } from '../plugin';
 
-export const getInjectMatch = <E extends BaseEditor>(
-  editor: E,
-  plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>
-) => {
-  return (node: Node, path?: Path) => {
+export const getInjectMatch =
+  <E extends BaseEditor>(
+    editor: E,
+    plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>
+  ) =>
+  (node: Node, path?: Path) => {
     const {
       excludeBelowPlugins,
       excludePlugins,
@@ -83,4 +83,3 @@ export const getInjectMatch = <E extends BaseEditor>(
 
     return true;
   };
-};

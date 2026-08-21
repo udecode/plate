@@ -45,7 +45,6 @@ export interface LocationInterface {
   isSpan: (at: Location | Span) => at is Span;
 }
 
-// eslint-disable-next-line no-redeclare
 export const LocationApi: Readonly<LocationInterface> = Object.freeze({
   isLocation(value: unknown): value is Location {
     return (
@@ -86,7 +85,6 @@ export interface SpanInterface {
   isSpan: (value: unknown) => value is Span;
 }
 
-// eslint-disable-next-line no-redeclare
 export const SpanApi: Readonly<SpanInterface> = Object.freeze({
   isSpan(value: unknown): value is Span {
     return (

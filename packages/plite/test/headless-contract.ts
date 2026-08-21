@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import {
   ContentSlice,
   createEditor,
   type Element,
   type Editor as EditorType,
 } from '@platejs/plite';
+import { History, history } from '@platejs/plite-history';
+import { createHyperscript } from '@platejs/plite-hyperscript';
 import {
   deleteForward as editorDeleteForward,
   getChildren as editorGetChildren,
@@ -14,8 +17,6 @@ import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
-import { History, history } from '@platejs/plite-history';
-import { createHyperscript } from '@platejs/plite-hyperscript';
 
 import { jsx } from './index.js';
 

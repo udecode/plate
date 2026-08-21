@@ -1,4 +1,4 @@
-// biome-ignore-all lint/suspicious/noConsole: CLI emits its JSON audit report.
+// CLI emits its JSON audit report.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 

@@ -25,11 +25,11 @@ Plate
 
 您可以选择以下模板之一开始使用：
 
-| 选项                                                                  | Plate | 插件 | AI  | 后端 |
-| --------------------------------------------------------------------- | ----- | ---- | --- | ---- |
-| [类Notion模板](https://pro.platejs.org/docs/templates/potion)         | ✅    | ✅   | ✅  | ✅   |
-| [Plate演示模板](https://github.com/udecode/plate-playground-template) | ✅    | ✅   | ✅  |      |
-| [Plate最小模板](https://github.com/udecode/plate-template)            | ✅    |      |     |      |
+| 选项 | Plate | 插件 | AI | 后端 |
+| --- | --- | --- | --- | --- |
+| [类Notion模板](https://pro.platejs.org/docs/templates/potion) | ✅ | ✅ | ✅ | ✅ |
+| [Plate演示模板](https://github.com/udecode/plate-playground-template) | ✅ | ✅ | ✅ |  |
+| [Plate最小模板](https://github.com/udecode/plate-template) | ✅ |  |  |  |
 
 ## 文档
 

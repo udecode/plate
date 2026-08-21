@@ -2684,11 +2684,11 @@ test('allows only the exact reviewed raw-query count in an owning file', () => {
   expectRejected(`editor.read.schema.getProperty(element, 'colSpan')`);
 
   const htmlOwner = 'packages/core/src/lib/plugins/html/HtmlPlugin.ts';
-  const htmlQueries = new Array(4)
-    .fill(
+  const htmlQueries = Array.from(
+    { length: 4 },
+    () =>
       `state.schema.property({ key: property.key, placement: property.property.placement, type })`
-    )
-    .join(';');
+  ).join(';');
 
   assert.deepEqual(auditPlateSchemaSource(htmlQueries, htmlOwner), []);
   assert.match(

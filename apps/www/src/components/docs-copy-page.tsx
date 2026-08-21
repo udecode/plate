@@ -1,7 +1,5 @@
 'use client';
 
-import type { ComponentPropsWithoutRef, Ref } from 'react';
-
 import {
   Bot,
   Check,
@@ -12,6 +10,7 @@ import {
   Github,
   Sparkles,
 } from 'lucide-react';
+import type { ComponentPropsWithoutRef, Ref } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -202,7 +201,7 @@ export function DocsCopyPage({
               asChild
               size="lg"
               variant="ghost"
-              className="w-full justify-start font-normal text-base *:[svg]:text-muted-foreground"
+              className="w-full justify-start text-base font-normal *:[svg]:text-muted-foreground"
             >
               <DocsCopyPageItem context={context} item={item} />
             </Button>

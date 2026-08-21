@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { act, render } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { PlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 const useEditorPluginMock = mock();
 const useEditorSelectorMock = mock();

@@ -1,4 +1,4 @@
-import type { ResolvedSuggestion as BaseResolvedSuggestion } from '@platejs/suggestion';
+import type { NormalizePluginState } from '@platejs/core/internal';
 import { getDateDisplayLabel, normalizeDateValue } from '@platejs/date';
 import type {
   EditorCommit,
@@ -8,12 +8,11 @@ import type {
   Path,
   Text,
 } from '@platejs/plite';
-
+import type { ResolvedSuggestion as BaseResolvedSuggestion } from '@platejs/suggestion';
 import { ElementApi, NodeApi, PathApi, TextApi } from 'platejs';
-import type { NormalizePluginState } from '@platejs/core/internal';
 
-import type { TDiscussion } from '@/registry/components/editor/discussion';
 import type { TComment } from '@/registry/components/editor/comment';
+import type { TDiscussion } from '@/registry/components/editor/discussion';
 
 export interface ResolvedSuggestion extends BaseResolvedSuggestion {
   comments: TComment[];

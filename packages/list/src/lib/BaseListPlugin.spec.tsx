@@ -766,15 +766,18 @@ describe('BaseListPlugin canonical model', () => {
   it.each([
     ['circle', 'bulleted'],
     ['lower-alpha', 'numbered'],
-  ] as const)('infers %s standalone list items as %s', (listStyle, listType) => {
-    const editor = createEditor({ selection: undefined });
+  ] as const)(
+    'infers %s standalone list items as %s',
+    (listStyle, listType) => {
+      const editor = createEditor({ selection: undefined });
 
-    expect(
-      editor.api.html.deserialize({
-        element: `<li aria-level="2" style="list-style-type: ${listStyle}">Item</li>`,
-      })
-    ).toMatchObject([{ indent: 2, listStyle, listType }]);
-  });
+      expect(
+        editor.api.html.deserialize({
+          element: `<li aria-level="2" style="list-style-type: ${listStyle}">Item</li>`,
+        })
+      ).toMatchObject([{ indent: 2, listStyle, listType }]);
+    }
+  );
 
   it('preserves isolated ordinals without freezing a copied sequence', () => {
     const editor = createEditor({ selection: undefined });

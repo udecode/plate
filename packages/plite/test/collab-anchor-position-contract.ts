@@ -1,14 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getLastCommit as editorGetLastCommit,
-  getPathByNodeKey as editorGetPathByNodeKey,
-  getNodeKey as editorGetNodeKey,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
-
-import { history } from '@platejs/plite-history';
 
 import {
   createEditor,
@@ -18,6 +9,15 @@ import {
   type EditorUpdatePolicy,
   type Range,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
+import {
+  getLastCommit as editorGetLastCommit,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
+
 import { createRangeAnchor } from './support/anchor';
 
 const paragraph = (text: string): Element => ({
@@ -70,7 +70,7 @@ const importRemote = (
 ) => {
   const spec = editor.read((state) => state.transaction(build));
 
-  assert(spec);
+  assert.ok(spec);
   const change = DocumentChange.fromJSON(clone(spec.changes.toJSON()));
 
   editor.update(remoteCollabPolicy, (tx) => {
@@ -83,7 +83,7 @@ const assertLastRemoteCommit = (
 ) => {
   const commit = editorGetLastCommit(editor);
 
-  assert(commit);
+  assert.ok(commit);
   assert.deepEqual(commit.tags, remoteCollabTags);
   assert.equal(
     editor.read((state) => state.history.undos().length),
@@ -177,8 +177,8 @@ describe('collab anchor position contract', () => {
       range({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
 
-    assert(movedBlockNodeKey);
-    assert(movedTextNodeKey);
+    assert.ok(movedBlockNodeKey);
+    assert.ok(movedTextNodeKey);
 
     importRemote(editor, (tx) => {
       tx.nodes.move({ at: [1], to: [0] });

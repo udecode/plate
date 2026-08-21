@@ -1,11 +1,9 @@
-import type { SidebarNavItem } from '@/types/nav';
 import type {
   Item as PageTreeItem,
   Node as PageTreeNode,
 } from 'fumadocs-core/page-tree';
-import type React from 'react';
-
 import { findNeighbour } from 'fumadocs-core/page-tree';
+import type React from 'react';
 
 import {
   getDocsNavMeta,
@@ -13,14 +11,13 @@ import {
   getSidebarCategoryItems,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
-import { hrefWithLocale } from '@/lib/withLocale';
 import { source } from '@/lib/source';
+import { hrefWithLocale } from '@/lib/withLocale';
+import type { SidebarNavItem } from '@/types/nav';
 
 function nodeNameToString(name: React.ReactNode) {
   if (typeof name === 'string') return name;
   if (typeof name === 'number') return String(name);
-
-  return;
 }
 
 function withDocsOverlay(item: SidebarNavItem): SidebarNavItem {

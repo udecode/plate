@@ -1,6 +1,5 @@
 import type { Link, Node, Parent, Text } from 'mdast';
 import type { Plugin } from 'unified';
-
 import { visit } from 'unist-util-visit';
 
 export type MentionNode = Parent & {

@@ -51,15 +51,14 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { MarkdownPlugin } from '../MarkdownPlugin';
-import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
-
-import { withMarkdownRuntime } from '../internal/markdownConversion';
 import {
+  withMarkdownRuntime,
   getMergedOptionsDeserialize,
   getMergedOptionsSerialize,
 } from '../internal/markdownConversion';
+import { MarkdownPlugin } from '../MarkdownPlugin';
 import { remarkMdx, remarkMention } from '../plugins';
+import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
 
 const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseHeadingPlugin,

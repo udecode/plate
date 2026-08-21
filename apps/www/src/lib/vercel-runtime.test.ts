@@ -1,8 +1,7 @@
+import { describe, expect, it } from 'bun:test';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-import { describe, expect, it } from 'bun:test';
 
 const require = createRequire(import.meta.url);
 const appRoot = path.resolve(

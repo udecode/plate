@@ -1,14 +1,12 @@
-import React from 'react';
-
 import { useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
-
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import React from 'react';
 
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 import { useEditor, usePlateStore } from '../stores';
 
 export function EditorRefPluginEffect({

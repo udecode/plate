@@ -60,7 +60,7 @@
   createListPlugin();
 
   // Toggle task list
-  editor.tf.toggle.list({ listType: "taskList" });
+  editor.tf.toggle.list({ listType: 'taskList' });
   ```
 
 ## 49.0.0
@@ -73,10 +73,10 @@
     - Example:
       ```tsx
       BulletedListPlugin.configure({
-        shortcuts: { toggle: { keys: "mod+alt+5" } },
+        shortcuts: { toggle: { keys: 'mod+alt+5' } },
       });
       NumberedListPlugin.configure({
-        shortcuts: { toggle: { keys: "mod+alt+6" } },
+        shortcuts: { toggle: { keys: 'mod+alt+6' } },
       });
       ```
   - Package `@udecode/plate-list` has been moved to `@platejs/list-classic`.

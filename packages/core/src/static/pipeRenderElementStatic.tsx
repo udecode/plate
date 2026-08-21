@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { AnyPluginBase, BaseEditor } from '../lib';
 import {
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getCompiledPlatePluginByType,
   getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
+import type { AnyPluginBase, BaseEditor } from '../lib';
 import { PliteElement } from './components/plite-nodes';
 import {
   type PliteRenderElement,

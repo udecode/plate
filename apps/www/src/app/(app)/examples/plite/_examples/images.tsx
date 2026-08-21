@@ -1,7 +1,4 @@
-import imageExtensions from 'image-extensions';
-import isUrl from 'is-url';
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import type { PointerEvent } from 'react';
+/* oxlint-disable nextjs/no-img-element -- This image consumes a user or runtime URL and editor-owned dimensions that Next Image cannot statically authorize or preserve. */
 import { defineExtension } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
 import {
@@ -14,6 +11,10 @@ import {
   useElementSelected,
   usePliteEditor,
 } from '@platejs/plite-react';
+import imageExtensions from 'image-extensions';
+import isUrl from 'is-url';
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
+import type { PointerEvent } from 'react';
 
 import { cn } from '@/utils/cn';
 

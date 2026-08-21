@@ -20,6 +20,7 @@ import {
   next as editorNext,
   toInternalRoot,
 } from '@platejs/plite/internal';
+
 import { EDITOR_TO_PENDING_DIFFS } from './weak-maps';
 
 export type StringDiff = {

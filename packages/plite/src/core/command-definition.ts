@@ -110,7 +110,11 @@ export const defineCommand = <
   return command;
 };
 
-/** @internal Resolve private descriptor preparation and default behavior. */
+/**
+ * Resolve private descriptor preparation and default behavior.
+ *
+ * @internal
+ */
 export const getCommandRuntime = <Input, TEditor extends BaseEditor<any, any>>(
   command: EditorCommand<Input, TEditor>
 ): CommandRuntime<Input, TEditor> => {
@@ -125,7 +129,11 @@ export const getCommandRuntime = <Input, TEditor extends BaseEditor<any, any>>(
   return runtime as CommandRuntime<Input, TEditor>;
 };
 
-/** @internal Resolve one opaque registration created by an extension factory. */
+/**
+ * Resolve one opaque registration created by an extension factory.
+ *
+ * @internal
+ */
 export const getCommandRegistrationRuntime = <
   TEditor extends BaseEditor<any, any>,
 >(

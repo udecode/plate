@@ -1,6 +1,5 @@
 ---
-"@platejs/date": patch
+'@platejs/date': patch
 ---
 
-Define date MDX conversion on the date plugin and derive its custom tag from
-the resolved application schema type.
+Define date MDX conversion on the date plugin and derive its custom tag from the resolved application schema type.

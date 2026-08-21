@@ -1,14 +1,18 @@
 import { readFileSync } from 'node:fs';
+
 import { createEditor, type Range } from '@platejs/plite';
 import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
+
 import {
   createEditableInputController,
   createEditableInputControllerState,
   setEditableModelSelectionPreference,
 } from '../src/editable/input-controller';
+import type { PendingCompositionInput } from '../src/editable/input-state';
+import { beginEditableCompositionSession } from '../src/editable/input-state';
 import {
   captureCompositionModelInput,
   claimSettledCompositionInput,
@@ -19,8 +23,6 @@ import {
   shouldFlushSelectionChangeBeforeDOMBeforeInput,
   shouldIgnoreDOMBeforeInputWithoutSelection,
 } from '../src/editable/runtime-before-input-events';
-import type { PendingCompositionInput } from '../src/editable/input-state';
-import { beginEditableCompositionSession } from '../src/editable/input-state';
 import type { ReactEditor } from '../src/plugin/react-editor';
 
 const collapsedSelection: Range = {
@@ -38,7 +40,7 @@ const expandedSelection: Range = {
 test('beforeinput trace keeps an outer event handler duration bucket', () => {
   const source = readFileSync(
     'src/editable/runtime-before-input-events.ts',
-    'utf8'
+    'utf-8'
   );
 
   expect(source).toContain("profileBeforeInputDuration('beforeinput-total'");

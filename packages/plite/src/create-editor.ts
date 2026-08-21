@@ -1,4 +1,7 @@
 import { extendEditor, getFragment } from './core';
+import { createAnchor } from './core/anchor';
+import { hasActiveAnchors } from './core/anchor-state';
+import { createCommandDispatch } from './core/command-registry';
 import {
   getCandidateEditorApiValue,
   createEditorExtensionUpdatePortal,
@@ -9,12 +12,11 @@ import {
   resolveInstalledEditorExtension,
   setEditorLifecycleErrorSink,
 } from './core/editor-extension';
-import { createEditorReadRuntime } from './core/editor-read-runtime';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
-import { createCommandDispatch } from './core/command-registry';
+import { createEditorReadRuntime } from './core/editor-read-runtime';
 import {
   type InternalEditorExtensionRuntime,
   type InternalEditorRuntime,
@@ -27,12 +29,6 @@ import {
   createEditorSchema,
   type InternalEditorSchemaApi,
 } from './core/editor-schema';
-import { createAnchor } from './core/anchor';
-import { hasActiveAnchors } from './core/anchor-state';
-import {
-  assertSelectionSupported,
-  mapSelectionThroughChange,
-} from './core/selection-protocol';
 import {
   createExtensionRegistry,
   finalizeExtensionRegistry,
@@ -40,7 +36,11 @@ import {
   initializeBaseExtensionRegistry,
   registerEffectTypeInRegistry,
 } from './core/extension-registry';
-import { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
+import {
+  assertPublicLocationRoot,
+  assertPublicRootKey,
+  MAIN_ROOT_KEY,
+} from './core/public-root';
 import {
   getChildren,
   getCurrentSelectionRoot,
@@ -54,6 +54,7 @@ import {
   applyTransactionSpecToDocument,
   initializeEditorSchemaSelection,
   initializeEditorSchemaDocument,
+  initializeEditorSchemaSnapshot,
   invalidateEditorTransactionSpecs,
   initializePublicState,
   readEditor,
@@ -61,14 +62,16 @@ import {
   subscribe,
   subscribeCommit,
   subscribeSource,
+  transformEditorSnapshotInput,
   updateEditor,
   withEditorRootChildren,
 } from './core/public-state';
+import { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 import {
-  assertPublicLocationRoot,
-  assertPublicRootKey,
-  MAIN_ROOT_KEY,
-} from './core/public-root';
+  assertSelectionSupported,
+  mapSelectionThroughChange,
+} from './core/selection-protocol';
+import type { InternalEditorUpdateOptions } from './core/update-policy';
 import type {
   AnyEditor,
   CreateEditorOptions,
@@ -89,10 +92,10 @@ import type {
   ExtensionsOf,
   SchemaExtensionsOf,
   Location,
+  SnapshotInput,
   ValueOf,
   Value,
 } from './interfaces';
-import type { InternalEditorUpdateOptions } from './core/update-policy';
 
 let nextEditorId = 0;
 const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<AnyEditor>();
@@ -190,12 +193,15 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   editor: TEditor,
   input: EditorExtensionInput,
   explicitInitialDocument: boolean,
-  initialize?: (
-    transaction: EditorTransactionSpecBuilder<
-      ValueOf<TEditor>,
-      ExtensionsOf<TEditor>
-    >
-  ) => void
+  options: Readonly<{
+    initialize?: (
+      transaction: EditorTransactionSpecBuilder<
+        ValueOf<TEditor>,
+        ExtensionsOf<TEditor>
+      >
+    ) => void;
+    initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
+  }> = {}
 ) => {
   if (hasActiveAnchors(editor)) {
     throw new Error(
@@ -239,10 +245,12 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
         initializeEditorSchemaSelection(editor, mapped, initialSelectionRoot);
       }
     }
-    const validatePublishedDocument = () => {
+    const validatePublishedDocument = (
+      requireExplicitDocument = explicitInitialDocument
+    ) => {
       const publishedDocument = getEditorDocumentValue(editor);
 
-      if (explicitInitialDocument && publishedDocument.children.length === 0) {
+      if (requireExplicitDocument && publishedDocument.children.length === 0) {
         throw new Error(
           '[Plite] initialValue is invalid! Expected at least one element.'
         );
@@ -264,8 +272,16 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
 
     validatePublishedDocument();
 
-    if (initialize) {
-      const spec = createTransactionSpec(editor, initialize as never);
+    if (options.initialValue) {
+      initializeEditorSchemaSnapshot(
+        editor,
+        transformEditorSnapshotInput(editor, options.initialValue())
+      );
+      validatePublishedDocument(true);
+    }
+
+    if (options.initialize) {
+      const spec = createTransactionSpec(editor, options.initialize as never);
 
       if (
         spec.effects.length > 0 ||
@@ -290,7 +306,9 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
           spec.selection.root ?? 'main'
         );
       }
-      validatePublishedDocument();
+      validatePublishedDocument(
+        explicitInitialDocument || !!options.initialValue
+      );
     }
     publication.finalize();
     invalidateEditorTransactionSpecs(editor);
@@ -311,7 +329,11 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   }
 };
 
-/** @internal Replace the derived base schema on one unchanged raw editor. */
+/**
+ * Replace the derived base schema on one unchanged raw editor.
+ *
+ * @internal
+ */
 export const initializeEditorExtensions = <TEditor extends AnyEditor>(
   editor: TEditor,
   input: EditorExtensionInput,
@@ -322,6 +344,8 @@ export const initializeEditorExtensions = <TEditor extends AnyEditor>(
         ExtensionsOf<TEditor>
       >
     ) => void;
+    /** Resolve one post-publication initial value for direct schema adoption. */
+    initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
   }> = {}
 ) => {
   if (!PENDING_SCHEMA_BOOTSTRAP.has(editor)) {
@@ -345,12 +369,7 @@ export const initializeEditorExtensions = <TEditor extends AnyEditor>(
     );
   }
 
-  publishInitialEditorExtensions(
-    editor,
-    input,
-    hasDocument,
-    options.initialize
-  );
+  publishInitialEditorExtensions(editor, input, hasDocument, options);
 };
 
 /**
@@ -399,7 +418,11 @@ export function createEditor<
   return createEditorImplementation(options);
 }
 
-/** @internal Generic construction entrypoint for typed runtime wrappers. */
+/**
+ * Generic construction entrypoint for typed runtime wrappers.
+ *
+ * @internal
+ */
 export const createEditorUnchecked = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
@@ -413,6 +436,7 @@ const createEditorImplementation = <
 >(
   options: CreateEditorOptions<V, TExtensions>
 ): Editor<V, TExtensions> => {
+  // oxlint-disable-next-line prefer-const -- Runtime factories close over the editor assigned after base construction.
   let editor!: Editor<V, TExtensions>;
   const runtimeEditor = () => editor;
   const schema: InternalEditorSchemaApi<V> = createEditorSchema(runtimeEditor);

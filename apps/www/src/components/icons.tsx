@@ -1,7 +1,4 @@
-import React from 'react';
-
 import type { IconProps } from '@radix-ui/react-icons/dist/types';
-
 import {
   type LucideIcon,
   type LucideProps,
@@ -99,6 +96,7 @@ import {
   WrapText,
   X,
 } from 'lucide-react';
+import React from 'react';
 
 export type Icon = LucideIcon;
 

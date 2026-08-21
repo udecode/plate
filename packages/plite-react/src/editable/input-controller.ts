@@ -1,20 +1,21 @@
+import type { Editor } from '@platejs/plite';
+import { Hotkeys, isDOMElement, isDOMText } from '@platejs/plite-dom';
+import { DOMRootRuntime, IS_COMPOSING } from '@platejs/plite-dom/internal';
 import type {
   ClipboardEvent as ReactClipboardEvent,
   CompositionEvent as ReactCompositionEvent,
   DragEvent as ReactDragEvent,
   KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import type { Editor } from '@platejs/plite';
-import { Hotkeys, isDOMElement, isDOMText } from '@platejs/plite-dom';
-import { DOMRootRuntime, IS_COMPOSING } from '@platejs/plite-dom/internal';
 
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   shouldModelOwnPlainVerticalDOMCoverageExtension,
   shouldModelOwnPlainVerticalLargeDocumentExtension,
 } from './dom-coverage-vertical-selection';
 import type { EditableInputController, InputIntent } from './input-state';
+import { setEditorComposing } from './runtime-editor-api';
 
 export type {
   EditableInputController,
@@ -58,7 +59,6 @@ export {
   syncEditableDOMSelectionToEditor,
   syncEditorSelectionFromDOM,
 } from './selection-controller';
-import { setEditorComposing } from './runtime-editor-api';
 
 type DocumentBoundaryKeyboardEvent = Pick<
   KeyboardEvent,
@@ -108,8 +108,8 @@ export const isNestedEditableDOMTarget = (
 
   return Boolean(
     targetEditor &&
-      targetEditor !== editorElement &&
-      editorElement.contains(targetEditor)
+    targetEditor !== editorElement &&
+    editorElement.contains(targetEditor)
   );
 };
 

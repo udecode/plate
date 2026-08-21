@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { useEditor } from '@platejs/core/react';
+import React from 'react';
 
 import { DndStorePlugin, type DndPluginState } from './DndStorePlugin';
 

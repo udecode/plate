@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 let extensionFactory: ((context: any) => any) | undefined;
 const imagePlugin = {

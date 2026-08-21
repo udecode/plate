@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react';
 import type { Element } from '@platejs/plite';
+import { createContext, useContext } from 'react';
 
 export const ElementContext = createContext<Element | null>(null);
 

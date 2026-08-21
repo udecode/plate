@@ -10,7 +10,6 @@ import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
 import { ContentSlice, property } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import { TablePlugin } from '@platejs/table/react';
-import { useState } from 'react';
 import {
   definePlatePlugin,
   ParagraphPlugin,
@@ -20,6 +19,7 @@ import {
   useEditorSelector,
   usePlateEditor,
 } from 'platejs/react';
+import { useState } from 'react';
 
 const CODEC_PROOF_FORMAT = 'application/x-plate-codec-proof';
 

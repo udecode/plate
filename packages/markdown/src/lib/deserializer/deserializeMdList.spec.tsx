@@ -3,6 +3,7 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
+
 jsxt;
 
 describe('deserializeMdList - comprehensive coverage', () => {

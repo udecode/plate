@@ -1,15 +1,13 @@
 'use client';
 
-import * as React from 'react';
-
-import type { Value } from 'platejs';
-
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
+import type { Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';

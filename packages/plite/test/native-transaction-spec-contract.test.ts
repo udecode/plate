@@ -7,6 +7,7 @@ import {
   type TransactionSpec,
 } from '@platejs/plite';
 import { getNodeKeyDOMValue } from '@platejs/plite/internal';
+
 import { applyTransactionSpec } from '../src/core/public-state';
 
 const createTextEditor = (text = 'ab') =>
@@ -79,8 +80,8 @@ describe('native transaction spec contract', () => {
     const control = createTextEditor();
 
     for (const editor of [withDiscardedSpec, control]) {
-      assert(editor.key([0]));
-      assert(editor.key([0, 0]));
+      assert.ok(editor.key([0]));
+      assert.ok(editor.key([0, 0]));
     }
 
     withDiscardedSpec.read((state) =>

@@ -3,6 +3,7 @@ import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+
 import {
   readRuntimeNode,
   readNodeByKey,

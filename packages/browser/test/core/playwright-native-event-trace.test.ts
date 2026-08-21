@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 import {

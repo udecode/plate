@@ -1,4 +1,5 @@
 import { getEditorRuntimeRoot, getEditorSchema } from '../core/editor-runtime';
+import { toPublicRoot } from '../core/public-root';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,
@@ -7,9 +8,8 @@ import {
 } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';
 import { PathApi } from '../interfaces/path';
-import { insertNodes } from '../transforms-node/insert-nodes';
 import { RangeApi } from '../interfaces/range';
-import { toPublicRoot } from '../core/public-root';
+import { insertNodes } from '../transforms-node/insert-nodes';
 
 type BreakEditor = Parameters<EditorStaticApi['insertBreak']>[0];
 

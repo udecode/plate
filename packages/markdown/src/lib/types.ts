@@ -1,18 +1,15 @@
-export type * as unistLib from 'unist';
-
-import type { Node as UnistNode } from 'unist';
-
+import type { MarkdownPluginRegistry } from '@platejs/core';
+import type { ListElement } from '@platejs/list';
 import type {
   Descendant,
   EditorDocumentValue,
   Element,
   Text,
 } from '@platejs/plite';
-import type { ListElement } from '@platejs/list';
 import type { Nullable } from '@udecode/utils';
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
-import type { MarkdownPluginRegistry } from '@platejs/core';
+import type { Node as UnistNode } from 'unist';
 
 import type {
   MdBlockquote,
@@ -46,8 +43,9 @@ import type {
   MdYaml,
 } from './mdast';
 import type { MentionNode } from './plugins/remarkMention';
-
 import 'mdast-util-mdx';
+
+export type * as unistLib from 'unist';
 
 export type AllowNodeConfig = {
   /** Custom filter function for nodes during deserialization. */
@@ -94,9 +92,17 @@ export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
   MarkdownConversionContext & {
     /** Whether the optional ElementIdPlugin owns persisted block identity. */
     elementIds?: boolean;
-    /** @internal Compiled feature-owned Markdown node codecs. */
+    /**
+     * Compiled feature-owned Markdown node codecs.
+     *
+     * @internal
+     */
     compiledCodecs?: import('./internal/markdownCodecs').CompiledMarkdownCodecs;
-    /** @internal Operation or configured rules that override compiled codecs. */
+    /**
+     * Operation or configured rules that override compiled codecs.
+     *
+     * @internal
+     */
     ruleOverrides?: MdRules;
   };
 

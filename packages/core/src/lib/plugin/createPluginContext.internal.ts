@@ -5,27 +5,6 @@ import type {
 } from '@platejs/plite';
 import { withTransactionSpecDraftRead } from '@platejs/plite/internal';
 
-import type {
-  BaseEditor,
-  InternalBaseEditorWithInstalledPlugins,
-} from '../editor';
-import type {
-  AnyBasePluginDefinition,
-  PluginReference,
-  PluginSchemaDeclaration,
-  PluginStore,
-} from './PluginDefinition';
-import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
-import type {
-  AnyBasePlugin,
-  AnyBasePluginContext,
-  AnyBasePluginPortal,
-  AnyPluginBase,
-  BasePluginContext,
-  BasePluginPortal,
-  DynamicBasePluginPortal,
-} from './BasePlugin';
-import { createDefinePluginCodecs } from './pluginAuthoringContext';
 import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
@@ -45,6 +24,27 @@ import {
   isNominalPluginDescriptor,
   isResolvedPluginDescriptor,
 } from '../../internal/utils/mergePlugins';
+import type {
+  BaseEditor,
+  InternalBaseEditorWithInstalledPlugins,
+} from '../editor';
+import type {
+  AnyBasePlugin,
+  AnyBasePluginContext,
+  AnyBasePluginPortal,
+  AnyPluginBase,
+  BasePluginContext,
+  BasePluginPortal,
+  DynamicBasePluginPortal,
+} from './BasePlugin';
+import { createDefinePluginCodecs } from './pluginAuthoringContext';
+import type {
+  AnyBasePluginDefinition,
+  PluginReference,
+  PluginSchemaDeclaration,
+  PluginStore,
+} from './PluginDefinition';
+import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
 
 const isPluginBaseDescriptor = (value: unknown): value is AnyBasePlugin =>
   isNominalPluginDescriptor(value) && isResolvedPluginDescriptor(value);

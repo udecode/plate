@@ -1,8 +1,5 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-import ReactDOMServer from 'react-dom/server';
-
 import {
   createEditor as createPliteEditor,
   property,
@@ -11,6 +8,8 @@ import {
   type Value,
 } from '@platejs/plite';
 import { render } from '@testing-library/react';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 import { type BaseEditor, createBaseEditor, defineBasePlugin } from '../../lib';
 import { PlateStatic } from './PlateStatic';

@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import { TextApi } from '@platejs/plite';
+
 import { jsx } from '../../..';
 
 jsx;
-
-import { TextApi } from '@platejs/plite';
 
 export const run = (editor) => {
   editor.nodes.set({ someKey: true }, { match: TextApi.isText });

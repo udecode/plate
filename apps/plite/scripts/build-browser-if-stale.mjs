@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.mjs';
 import {
   browserBuildEntries,
   createBuildManifest,
@@ -10,7 +11,6 @@ import {
   repoRoot,
   snapshotEnvironment,
 } from './plite-proof-inputs.mjs';
-import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.mjs';
 
 const browserRoot = path.join(repoRoot, 'packages/browser');
 

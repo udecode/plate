@@ -8,6 +8,7 @@ import {
   type Editor as EditorType,
 } from '@platejs/plite';
 import { getEditorExtensionContributions } from '@platejs/plite/internal';
+
 import {
   type TextDiff,
   transformPendingPoint,
@@ -33,13 +34,13 @@ import {
   getDOMClipboardFormatKey,
   setDOMClipboardFormatKey,
 } from './dom-clipboard-runtime';
-import { destroyEditorDOMPhaseSchedulerFallback } from './dom-phase-scheduler';
 import {
   createDOMEditorCapability,
   DOMEditor as DOMEditorApi,
   type DOMApi,
   type DOMClipboardApi,
 } from './dom-editor';
+import { destroyEditorDOMPhaseSchedulerFallback } from './dom-phase-scheduler';
 
 const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
 const DOM_ACTIVATION = new WeakMap<EditorType, object>();

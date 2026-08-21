@@ -7,12 +7,17 @@ common doctrine after the lane is selected.
 
 ## Taste
 
-- Prefer the smallest durable architecture that materially fixes the owning
-  problem over a local symptom patch.
+- Prefer the best long-term durable architecture that materially fixes the
+  owning problem over the nearest compatible or local patch.
 - Package/runtime ownership beats example glue when the bug is systemic.
 - Examples should expose the real API and DX at the call site.
 - Breaking changes are acceptable when they produce the better API, behavior,
   or performance shape.
+- Before stability, compatibility, migration convenience, compiler difficulty,
+  and current machinery affect sequencing, not the target. Hard-cut APIs and
+  architecture when that buys materially better lasting value. Preserve only
+  hard correctness, security, serialized-data, native-behavior, or runtime
+  laws.
 - No fake aliases, no fake compatibility, no hidden migration story in docs.
 - Public docs describe the current API only.
 - Conventions are API surface: names, flags, config keys, persisted fields,
@@ -119,16 +124,24 @@ tests for package ownership, API intent, and public teaching surfaces.
 - Standing orders should make Codex less prompt-dependent, not less
   accountable. Every autonomous maintainer action needs a scope, trigger,
   approval gate, escalation rule, verification surface, and short report.
+- `$benchmark` is the sole performance execution owner across Plate and Plite:
+  fair current/main and cross-editor baselines, ordered all-lane discovery,
+  causal diagnosis, metric/harness repair, durable target selection through
+  `best-api` and the correct layer plan when architecture changes, one-owner
+  implementation, exact reruns, and resumed breadth. `$performance` supplies
+  review doctrine only.
 - `$auto` is internal Plate/Plite quality supervision: behavior, visual proof,
-  perf, API cleanup, benchmark/test repair, docs consolidation, and skill
-  repair. It must not become the public GitHub queue brain.
+  API cleanup, test repair, docs consolidation, and skill repair. It routes
+  measured work to `$benchmark` and must not become a second benchmark loop or
+  the public GitHub queue brain.
 - `$auto` may still be the ergonomic user-facing router. `auto PR #123`,
   `auto issue #123`, `auto all PRs/issues`, and `auto security` route to
   `$maintainer`; `auto current tree` and `auto post-merge` route to
-  `$autoclosure`; `auto slate` and `auto plate packages` stay in `$auto`.
-  Routing convenience is not ownership transfer.
+  `$autoclosure`; `auto benchmark`, `auto perf`, and performance comparisons
+  route to `$benchmark`; `auto slate` and `auto plate packages` stay in
+  `$auto`. Routing convenience is not ownership transfer.
 - `$autoclosure` is post-merge/current-tree until-clean closure for already
-  applied work. It loops like P2 `autoreview`, patches safe findings, reruns proof,
+  applied work. It loops like P1 `autoreview`, patches safe findings, reruns proof,
   and stops only when no accepted actionable findings remain or a real boundary
   appears.
 - Source-backed pure improvements may be applied autonomously when they stay
@@ -224,7 +237,7 @@ honest", "all next", "go next", or reports visible editor weirdness.
 
 - runtime bug -> patch owner skill/package;
 - missing oracle -> patch/tdd owner;
-- missing or lying metric -> benchmark target/script repair;
+- missing or lying metric -> `$benchmark` target/script repair;
 - weak visual proof -> Browser, screenshot, Playwright geometry proof, or a
   reusable proof-harness helper when the pattern should become first-class;
 - stale docs/decision memory -> update root `VISION.md` or the relevant

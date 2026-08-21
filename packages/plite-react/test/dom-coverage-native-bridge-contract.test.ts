@@ -1,4 +1,3 @@
-import type { ClipboardEvent, DragEvent } from 'react';
 import {
   defineEditorSchema,
   type Descendant,
@@ -6,18 +5,20 @@ import {
   schema,
 } from '@platejs/plite';
 import {
-  getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
-import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import {
+  getNodeKey as editorGetNodeKey,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
+import type { ClipboardEvent, DragEvent } from 'react';
+
 import { createReactEditor } from '../src';
 import {
   applyEditableCopy,

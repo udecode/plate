@@ -2,11 +2,11 @@ import type { Registry, RegistryItem } from 'shadcn/schema';
 
 import { registryBlocks } from './registry-blocks';
 import { registryComponents } from './registry-components';
+import { registryEditor } from './registry-editor';
 import { registryExamples } from './registry-examples';
 import { registryHooks } from './registry-hooks';
 import { registryLib } from './registry-lib';
 import { registryStyles } from './registry-styles';
-import { registryEditor } from './registry-editor';
 
 const url =
   process.env.NODE_ENV === 'development'

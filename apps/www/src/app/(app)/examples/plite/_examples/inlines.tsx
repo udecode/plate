@@ -1,6 +1,3 @@
-import isUrl from 'is-url';
-import type React from 'react';
-import { type PointerEvent, useMemo } from 'react';
 import {
   defineExtension,
   editorCommands,
@@ -21,6 +18,9 @@ import {
   useElementSelected,
   usePliteEditor,
 } from '@platejs/plite-react';
+import isUrl from 'is-url';
+import type React from 'react';
+import { type PointerEvent, useMemo } from 'react';
 
 import { cn } from '@/utils/cn';
 
@@ -33,6 +33,7 @@ import type {
   LinkElement,
   ParagraphElement,
 } from './custom-types.d';
+
 const InlinesExample = () => {
   const editor = usePliteEditor({
     extensions: [history(), inline()],
@@ -277,12 +278,11 @@ const insertLinkText = (tx: EditorTransactionSpecBuilder, url: string) => {
 
   if (isCollapsed) {
     tx.nodes.insert(link);
-    tx.selection.move({ unit: 'offset' });
   } else {
     tx.nodes.wrap(link, { split: true });
     tx.selection.collapse({ edge: 'end' });
-    tx.selection.move({ unit: 'offset' });
   }
+  tx.selection.move({ unit: 'offset' });
 };
 
 const insertLinkedTextSegments = (
@@ -332,6 +332,8 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
           {...(props as RenderElementProps<ParagraphElement>)}
         />
       );
+    default:
+      return null;
   }
 };
 
@@ -421,7 +423,7 @@ const InlineChromiumBugfix = () => (
   </span>
 );
 
-const allowedSchemes = ['http:', 'https:', 'mailto:', 'tel:'];
+const allowedSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
 const LinkComponent = ({
   attributes,
@@ -433,8 +435,10 @@ const LinkComponent = ({
     let parsedUrl: URL | null = null;
     try {
       parsedUrl = new URL(element.url);
-    } catch {}
-    if (parsedUrl && allowedSchemes.includes(parsedUrl.protocol)) {
+    } catch {
+      // Invalid links remain untrusted and are discarded below.
+    }
+    if (parsedUrl && allowedSchemes.has(parsedUrl.protocol)) {
       return parsedUrl.href;
     }
     return 'about:blank';
@@ -456,9 +460,8 @@ const LinkComponent = ({
 const EditableButtonComponent = ({
   attributes,
   children,
-}: RenderElementProps<ButtonElement>) => {
-  return (
-    /*
+}: RenderElementProps<ButtonElement>) => (
+  /*
       This is a span with button-like CSS rather than a native button.
       Chrome and Safari handle display:inline-block poorly inside
       contenteditable, and CSS cannot override the native button display:
@@ -466,19 +469,25 @@ const EditableButtonComponent = ({
       - https://bugs.chromium.org/p/chromium/issues/detail?id=1088403
       - https://github.com/w3c/csswg-drafts/issues/3226
     */
-    <span
-      {...attributes}
-      // Margin is necessary to clearly show the cursor adjacent to the button
-      className="plite-inlines-editable-button"
-      onClick={(ev) => ev.preventDefault()}
-      role="button"
-    >
-      <InlineChromiumBugfix />
-      {children}
-      <InlineChromiumBugfix />
-    </span>
-  );
-};
+  <span
+    {...attributes}
+    // Margin is necessary to clearly show the cursor adjacent to the button
+    className="plite-inlines-editable-button"
+    onClick={(ev) => ev.preventDefault()}
+    onKeyDown={(event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+      }
+    }}
+    // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- [P0 contenteditable] Native inline buttons have unresolved Chromium/WebKit editing behavior documented above.
+    role="button"
+    tabIndex={0}
+  >
+    <InlineChromiumBugfix />
+    {children}
+    <InlineChromiumBugfix />
+  </span>
+);
 
 const BadgeComponent = ({
   attributes,

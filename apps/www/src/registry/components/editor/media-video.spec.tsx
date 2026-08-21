@@ -1,10 +1,10 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import * as actualCoreReact from '@platejs/core/react';
 import * as actualDnd from '@platejs/dnd';
 import * as actualMedia from '@platejs/media';
 import { render } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 const parseTwitterUrlMock = mock();
 const parseVideoUrlMock = mock();

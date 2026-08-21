@@ -1,4 +1,3 @@
-import { JSDOM } from 'jsdom';
 import {
   createEditor,
   type Descendant,
@@ -11,6 +10,7 @@ import {
   getNodeKey as editorGetNodeKey,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { JSDOM } from 'jsdom';
 
 import { dom } from '../src/index';
 import {

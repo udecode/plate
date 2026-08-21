@@ -1,5 +1,6 @@
 import { type Point, type Range, RangeApi } from '@platejs/plite';
 import { type DOMRange, isDOMText } from '@platejs/plite-dom';
+
 import { getPliteNodeElementByPath } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 

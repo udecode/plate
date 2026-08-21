@@ -1,15 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { setEditorReadOnly } from 'platejs';
 import {
   type DropdownMenuProps,
   DropdownMenuItemIndicator,
 } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
+import { setEditorReadOnly } from 'platejs';
 import { useEditor, useEditorViewState, usePluginStore } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -77,8 +76,6 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
 
             if (newValue === 'editing') {
               editor.api.dom.focus();
-
-              return;
             }
           }}
           value={value}

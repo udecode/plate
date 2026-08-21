@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { cva } from 'class-variance-authority';
 import {
   type ElementWith,
@@ -7,7 +7,8 @@ import {
   TextApi,
 } from 'platejs';
 import { type PliteLeafProps, PliteLeaf } from 'platejs/static';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
 export const voidRemoveSuggestionClass =

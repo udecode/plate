@@ -1,6 +1,6 @@
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { AIChatPlugin } from './AIChatPlugin';
 

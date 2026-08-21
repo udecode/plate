@@ -23,8 +23,9 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '@platejs/plite-dom/internal';
-import type { AnyEditor } from '../editable/runtime-editor-api';
+
 import { refreshEditorDecorations } from '../decoration-refresh';
+import type { AnyEditor } from '../editable/runtime-editor-api';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
 type AnyDOMExtension =

@@ -109,7 +109,7 @@ apps
 
 ### 运行代码检查器
 
-我们使用 [Biome](https://biomejs.dev/) 作为代码检查器。要运行代码检查器，请使用以下命令：
+我们使用 [Ultracite](https://www.ultracite.ai/) 进行代码检查和格式化。运行以下命令：
 
 ```bash
 pnpm lint
@@ -266,8 +266,8 @@ pnpm e2e
 - 在`/src/server.ts`中创建一个新的入口文件，使用以下内容导出：
 
 ```ts
-export * from "./shared/index";
-export * from "./server/index"; // If needed
+export * from './shared/index';
+export * from './server/index'; // If needed
 ```
 
 - （可选）如果需要，在`/src/server/`中创建服务器端版本。例如，`/src/server/withReact`中的`withReact`是`/src/client/withReact`的服务器端版本

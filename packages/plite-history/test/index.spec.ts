@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import { createEditor, createEditorView } from '@platejs/plite';
 import {
   delete as editorDelete,
@@ -16,6 +17,7 @@ import {
   move as editorMove,
   select as editorSelect,
 } from '@platejs/plite/internal';
+
 import * as PliteHistory from '../src';
 import { History, history } from '../src';
 

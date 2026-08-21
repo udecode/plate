@@ -3,10 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "description": "Evidence Kit lab for editor framework benchmark research.",
-  "type": "module",
-  "exports": {
-    ".": "./src/index.mjs"
-  },
   "files": [
     "src",
     "benchmarks",
@@ -16,6 +12,10 @@
     "docs/perf",
     "README.md"
   ],
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
   "scripts": {
     "evidence:inspect": "evidence-kit inspect --json",
     "check": "node --check src/index.mjs && node --check test/fuzz/core-fuzz.mjs && node --check benchmarks/core-benchmark.mjs && node --check benchmarks/slate-v2-legacy-benchmark.mjs && node --check benchmarks/rich-text-editors-benchmark.mjs && node --check benchmarks/benchmark-health.mjs && node --check benchmarks/render-rich-text-viewer.mjs && node --check benchmarks/render-perf-index.mjs && node --check benchmarks/startup-import.mjs && node --check benchmarks/package-boundary-gates.mjs && node --check benchmarks/fetch-editor-frameworks-research.mjs && node --check benchmarks/fetch-source-pass-research.mjs && npm run evidence:full",

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
 import {
   deleteBackward as editorDeleteBackward,
   getExtensionRegistry as editorGetExtensionRegistry,
@@ -9,7 +11,6 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
 import { hasCommandHandler } from '../src/core/command-registry';
 
 describe('extension method hard cut', () => {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { mkdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -62,7 +62,7 @@ const run = spawnSync(process.execPath, command, { stdio: 'inherit' });
 let xml = '';
 
 try {
-  xml = readFileSync(junitFile, 'utf8');
+  xml = readFileSync(junitFile, 'utf-8');
 } catch {
   xml = '';
 }

@@ -1,7 +1,6 @@
 # Plate DOCX
 
-Paste content from Microsoft Word, import `.docx` files, and export Plate
-documents as `.docx` files.
+Paste content from Microsoft Word, import `.docx` files, and export Plate documents as `.docx` files.
 
 Install a focused package when you need one capability:
 

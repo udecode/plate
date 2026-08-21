@@ -1,5 +1,3 @@
-import React, { createElement, type ComponentType } from 'react';
-
 import type {
   Descendant,
   Path,
@@ -7,6 +5,7 @@ import type {
   Text as PliteTextNode,
 } from '@platejs/plite';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
+import React, { createElement, type ComponentType } from 'react';
 
 import { useEditor } from '../hooks/use-editor';
 import { useElementPath } from '../hooks/use-element-path';

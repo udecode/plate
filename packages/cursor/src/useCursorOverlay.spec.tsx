@@ -1,6 +1,6 @@
-import { act, renderHook } from '@testing-library/react';
 import { createBaseEditor } from '@platejs/core';
 import type { Range } from '@platejs/plite';
+import { act, renderHook } from '@testing-library/react';
 
 const useEditorMock = mock();
 const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());

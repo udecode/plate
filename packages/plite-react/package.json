@@ -3,13 +3,14 @@
   "version": "54.0.0-beta.0",
   "description": "Tools for building completely customizable richtext editors with React.",
   "keywords": [
+    "@platejs/plite",
     "canvas",
     "contenteditable",
     "docs",
     "document",
     "edit",
-    "editor",
     "editable",
+    "editor",
     "html",
     "immutable",
     "markdown",
@@ -18,7 +19,6 @@
     "react",
     "rich",
     "richtext",
-    "@platejs/plite",
     "text",
     "wysiwyg",
     "wysiwym"
@@ -27,14 +27,20 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/plite-react"
   },
-  "license": "MIT",
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -48,12 +54,9 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -72,6 +75,10 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
+    "@plate/scripts": "workspace:*",
+    "@platejs/plite": "workspace:^",
+    "@platejs/plite-dom": "workspace:^",
+    "@platejs/plite-hyperscript": "workspace:^",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.3.0",
@@ -82,19 +89,12 @@
     "jsdom": "20.0.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "@platejs/plite": "workspace:^",
-    "@platejs/plite-dom": "workspace:^",
-    "@platejs/plite-hyperscript": "workspace:^",
-    "vitest": "^4.1.0",
-    "@plate/scripts": "workspace:*"
+    "vitest": "^4.1.0"
   },
   "peerDependencies": {
-    "react": ">=19.2.0",
-    "react-dom": ">=19.2.0",
     "@platejs/plite": ">=54.0.0-beta.0",
-    "@platejs/plite-dom": ">=54.0.0-beta.0"
-  },
-  "publishConfig": {
-    "access": "public"
+    "@platejs/plite-dom": ">=54.0.0-beta.0",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   }
 }

@@ -7,6 +7,7 @@ import {
   type Element,
   SelectionApi,
 } from '@platejs/plite';
+
 import { applyTransactionSpec } from '../src/core/public-state';
 
 const paragraph = (text: string): Element => ({

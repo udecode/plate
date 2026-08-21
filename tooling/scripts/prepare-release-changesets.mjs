@@ -13,6 +13,13 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
 const changesetDir = path.join(repoRoot, '.changeset');
@@ -103,15 +110,17 @@ export function getAutoReleasePackages(releases, workspacePackages) {
     ...autoReleasePackageNames,
   ]);
 
-  return [...autoReleasePackageNames].sort().map((packageName) => ({
-    name: packageName,
-    updatedDependencyNames: workspacePackages
-      .get(packageName)
-      ?.runtimeDependencyNames.filter((dependencyName) =>
-        versionedPackageNames.has(dependencyName)
-      )
-      .sort(),
-  }));
+  return [...autoReleasePackageNames]
+    .sort(compareStrings)
+    .map((packageName) => ({
+      name: packageName,
+      updatedDependencyNames: workspacePackages
+        .get(packageName)
+        ?.runtimeDependencyNames.filter((dependencyName) =>
+          versionedPackageNames.has(dependencyName)
+        )
+        .sort(compareStrings),
+    }));
 }
 
 export function createAutoChangesetContent(
@@ -135,7 +144,7 @@ async function getWorkspacePackages() {
       workspacePackageDirectory
     )) {
       const packageJsonPath = path.join(packageDirectory, 'package.json');
-      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
 
       workspacePackages.set(packageJson.name, {
         packageJson,
@@ -188,7 +197,7 @@ async function getManualChangesetPaths() {
 function getChangesetStatus() {
   const result = spawnSync('pnpm', getChangesetStatusArgs(), {
     cwd: repoRoot,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     env: {
       ...process.env,
       CI: process.env.CI || '1',
@@ -287,7 +296,7 @@ async function syncAutoChangesets(autoReleasePackages) {
 
 async function readOptionalFile(filePath) {
   try {
-    return await readFile(filePath, 'utf8');
+    return await readFile(filePath, 'utf-8');
   } catch (error) {
     if (error?.code === 'ENOENT') return null;
     throw error;
@@ -301,5 +310,5 @@ function sanitizePackageName(packageName) {
 export { autoChangesetFilenamePrefix };
 
 function readFileSyncUtf8(filePath) {
-  return readFileSync(filePath, 'utf8');
+  return readFileSync(filePath, 'utf-8');
 }

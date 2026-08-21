@@ -1,7 +1,7 @@
 import type { EditorStateView, Element, NodeEntry, Path } from '@platejs/plite';
 import { ElementApi } from '@platejs/plite';
-import type { TableCellElement } from '../BaseTablePlugin';
 
+import type { TableCellElement } from '../BaseTablePlugin';
 import { compileTableGrid, type TableGrid, type TableGridAnchor } from './grid';
 
 export type TableContext = Readonly<{

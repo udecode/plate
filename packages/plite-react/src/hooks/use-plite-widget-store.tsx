@@ -1,14 +1,14 @@
-import { useInsertionEffect, useMemo, useRef } from 'react';
 import type { Editor } from '@platejs/plite';
+import { useInsertionEffect, useMemo, useRef } from 'react';
 
 import type { PliteAnnotationStore } from '../annotation-store';
+import type { PliteViewSourceErrorSink } from '../view-source';
 import {
   createDormantPliteWidgetStore,
   type PliteWidget,
   type PliteWidgetStore,
 } from '../widget-store';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
-import type { PliteViewSourceErrorSink } from '../view-source';
 
 /** Options for a React-owned widget store. */
 export type UsePliteWidgetStoreOptions<

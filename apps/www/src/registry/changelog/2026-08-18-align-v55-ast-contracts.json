@@ -148,7 +148,7 @@
         "block-discussion"
       ],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-08-18",
@@ -165,7 +165,7 @@
       "migrationNotes": [],
       "targets": ["code-drawing", "code-drawing-static", "math", "math-static"],
       "source": {
-        "line": 14,
+        "line": 16,
         "row": 2,
         "legacyRelease": {
           "date": "2026-08-18",
@@ -189,7 +189,7 @@
         "editor-ai"
       ],
       "source": {
-        "line": 16,
+        "line": 18,
         "row": 3,
         "legacyRelease": {
           "date": "2026-08-18",

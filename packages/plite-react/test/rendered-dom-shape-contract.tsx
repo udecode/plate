@@ -1,5 +1,3 @@
-import { act, render, waitFor } from '@testing-library/react';
-import React from 'react';
 import {
   defineEditorSchema,
   defineExtensionSlot,
@@ -7,6 +5,8 @@ import {
   schema,
 } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
+import { act, render, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import { createReactEditor, Editable, Plite } from '../src';
 
@@ -332,25 +332,26 @@ describe('rendered DOM shape contract', () => {
     const originalGetBoundingClientRect =
       HTMLElement.prototype.getBoundingClientRect;
 
-    HTMLElement.prototype.getBoundingClientRect = function () {
-      if (this.matches('[data-plite-placeholder="true"]')) {
-        return {
-          bottom: 86,
-          height: 86,
-          left: 0,
-          right: 200,
-          top: 0,
-          width: 200,
-          x: 0,
-          y: 0,
-          toJSON() {
-            return this;
-          },
-        } as DOMRect;
-      }
+    HTMLElement.prototype.getBoundingClientRect =
+      function getBoundingClientRect() {
+        if (this.matches('[data-plite-placeholder="true"]')) {
+          return {
+            bottom: 86,
+            height: 86,
+            left: 0,
+            right: 200,
+            top: 0,
+            width: 200,
+            x: 0,
+            y: 0,
+            toJSON() {
+              return this;
+            },
+          } as DOMRect;
+        }
 
-      return originalGetBoundingClientRect.call(this);
-    };
+        return originalGetBoundingClientRect.call(this);
+      };
 
     try {
       editorReplace(editor, {
@@ -395,25 +396,26 @@ describe('rendered DOM shape contract', () => {
     const originalGetBoundingClientRect =
       HTMLElement.prototype.getBoundingClientRect;
 
-    HTMLElement.prototype.getBoundingClientRect = function () {
-      if (this.matches('[data-plite-placeholder="true"]')) {
-        return {
-          bottom: 86,
-          height: 86,
-          left: 0,
-          right: 200,
-          top: 0,
-          width: 200,
-          x: 0,
-          y: 0,
-          toJSON() {
-            return this;
-          },
-        } as DOMRect;
-      }
+    HTMLElement.prototype.getBoundingClientRect =
+      function getBoundingClientRect() {
+        if (this.matches('[data-plite-placeholder="true"]')) {
+          return {
+            bottom: 86,
+            height: 86,
+            left: 0,
+            right: 200,
+            top: 0,
+            width: 200,
+            x: 0,
+            y: 0,
+            toJSON() {
+              return this;
+            },
+          } as DOMRect;
+        }
 
-      return originalGetBoundingClientRect.call(this);
-    };
+        return originalGetBoundingClientRect.call(this);
+      };
 
     try {
       editorReplace(editor, {

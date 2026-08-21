@@ -4,6 +4,7 @@ import { jsxt } from '@platejs/test-utils';
 
 import { testValue } from '../../../../../../packages/markdown/src/lib/__tests__/testValue';
 import { createTestEditor } from './createTestEditor';
+
 const editor = createTestEditor();
 
 jsxt;
@@ -181,54 +182,63 @@ describe('editor.api.markdown.serialize', () => {
       ).toMatchSnapshot();
     });
 
-    it(String.raw`serializes two \n within a block quote as two new lines`, () => {
-      const slateNodes = [
-        {
-          children: [
-            { text: 'Block quote' },
-            { text: '\n' },
-            { text: '\n' },
-            { text: 'with a new line' },
-          ],
-          type: 'blockquote',
-        },
-      ];
+    it(
+      String.raw`serializes two \n within a block quote as two new lines`,
+      () => {
+        const slateNodes = [
+          {
+            children: [
+              { text: 'Block quote' },
+              { text: '\n' },
+              { text: '\n' },
+              { text: 'with a new line' },
+            ],
+            type: 'blockquote',
+          },
+        ];
 
-      expect(
-        editor.api.markdown.serialize({ value: { children: slateNodes } })
-      ).toMatchSnapshot();
-    });
+        expect(
+          editor.api.markdown.serialize({ value: { children: slateNodes } })
+        ).toMatchSnapshot();
+      }
+    );
 
-    it(String.raw`serializes two trailing \n in a block quote as a forced line break and <br />`, () => {
-      const slateNodes = [
-        {
-          children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
-          type: 'blockquote',
-        },
-      ];
+    it(
+      String.raw`serializes two trailing \n in a block quote as a forced line break and <br />`,
+      () => {
+        const slateNodes = [
+          {
+            children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
+            type: 'blockquote',
+          },
+        ];
 
-      expect(
-        editor.api.markdown.serialize({ value: { children: slateNodes } })
-      ).toBe('> Block quote\\ \n> <br />\n');
-    });
+        expect(
+          editor.api.markdown.serialize({ value: { children: slateNodes } })
+        ).toBe('> Block quote\\ \n> <br />\n');
+      }
+    );
 
-    it(String.raw`serializes three trailing \n in a paragraph as a forced line break and <br />`, () => {
-      const slateNodes = [
-        {
-          children: [
-            { text: 'Paragaph with two new Lines' },
-            { text: '\n' },
-            { text: '\n' },
-            { text: '\n' },
-          ],
-          type: 'paragraph',
-        },
-      ];
+    it(
+      String.raw`serializes three trailing \n in a paragraph as a forced line break and <br />`,
+      () => {
+        const slateNodes = [
+          {
+            children: [
+              { text: 'Paragaph with two new Lines' },
+              { text: '\n' },
+              { text: '\n' },
+              { text: '\n' },
+            ],
+            type: 'paragraph',
+          },
+        ];
 
-      expect(
-        editor.api.markdown.serialize({ value: { children: slateNodes } })
-      ).toBe('Paragaph with two new Lines\\\n\\ \n<br />\n');
-    });
+        expect(
+          editor.api.markdown.serialize({ value: { children: slateNodes } })
+        ).toBe('Paragaph with two new Lines\\\n\\ \n<br />\n');
+      }
+    );
   });
 
   it('serializes a trailing break in a paragraph as <br />', () => {

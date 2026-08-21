@@ -1,5 +1,5 @@
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Hotkeys } from '@platejs/plite-dom';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 import type { EditableCommand } from './editable-command-types';
 

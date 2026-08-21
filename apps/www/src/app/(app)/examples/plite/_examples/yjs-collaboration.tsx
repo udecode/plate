@@ -1,7 +1,3 @@
-import { yjs, type YjsAwarenessChange } from '@platejs/yjs';
-import { useYjsRemoteCursors } from '@platejs/yjs/react';
-import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
 import {
   createEditor,
   defineEditorSchema,
@@ -30,6 +26,10 @@ import {
   type ReactEditor,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { yjs, type YjsAwarenessChange } from '@platejs/yjs';
+import { useYjsRemoteCursors } from '@platejs/yjs/react';
+import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as Y from 'yjs';
 
 import { Button } from '@/components/ui/button';
@@ -207,7 +207,7 @@ class ExampleAwareness {
 
   setLocalStateField(field: string, value: unknown) {
     this.localState = {
-      ...(this.localState ?? {}),
+      ...this.localState,
       [field]: value,
     };
     this.states.set(this.clientID, this.localState);

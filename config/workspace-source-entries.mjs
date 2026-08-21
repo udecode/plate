@@ -30,7 +30,7 @@ export const getWorkspaceSourceEntries = (repoRoot) => {
 
   return getPackageRoots(packagesRoot).flatMap((packageRoot) => {
     const manifest = JSON.parse(
-      readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
+      readFileSync(path.join(packageRoot, 'package.json'), 'utf-8')
     );
 
     if (typeof manifest.name !== 'string' || !manifest.exports) return [];

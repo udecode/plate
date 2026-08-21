@@ -1,8 +1,9 @@
-import { act, render, waitFor } from '@testing-library/react';
 import {
   getSelection as editorGetSelection,
   string as editorString,
 } from '@platejs/plite/internal';
+import { act, render, waitFor } from '@testing-library/react';
+
 import {
   createReactEditor,
   Editable,

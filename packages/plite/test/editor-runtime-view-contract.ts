@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { history } from '@platejs/plite-history';
-
 import {
   ContentSlice,
   createEditor,
@@ -16,6 +14,7 @@ import {
   type Path,
   SelectionApi,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   above as editorAbove,
   deleteBackward as editorDeleteBackward,
@@ -28,6 +27,7 @@ import {
   string as editorString,
   setEditorTargetRuntime,
 } from '@platejs/plite/internal';
+
 import { createRangeAnchor } from './support/anchor';
 
 type LegacySnapshotInput = Omit<
@@ -541,7 +541,7 @@ describe('editor runtime/view contract', () => {
     const mainNodeKey = runtime.read((state) => state.key([0]));
     const viewRead = headerEditor.read((state) => {
       const entry = state.nodes.get([0]);
-      assert(entry);
+      assert.ok(entry);
 
       return {
         children: state.nodes.children(),
@@ -580,7 +580,7 @@ describe('editor runtime/view contract', () => {
     };
     const read = runtime.read((state) => {
       const entry = state.nodes.get(headerRange.anchor);
-      assert(entry);
+      assert.ok(entry);
 
       return {
         end: state.points.end(headerRange),
@@ -1267,7 +1267,7 @@ describe('editor runtime/view contract', () => {
     });
     const mainChange = mainSource.read((state) => state.lastCommit()?.changes);
 
-    assert(mainChange);
+    assert.ok(mainChange);
 
     const runtime = createEditor({
       initialValue: {
@@ -1783,7 +1783,7 @@ describe('editor runtime/view contract', () => {
     });
 
     const changes = editorGetLastCommit(source)?.changes;
-    assert(changes);
+    assert.ok(changes);
 
     const target = createEditor({
       initialValue: {

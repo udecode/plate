@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { Plite } from '@platejs/plite-react';
+import React from 'react';
 
 import {
   getCompiledPlatePlugin,

@@ -3,8 +3,8 @@ import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import { property, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { EmojiInputPlugin, EmojiPlugin } from '../react/EmojiPlugin';
+import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 
 describe('BaseEmojiPlugin', () => {
   const fireEmoji: Emoji = {

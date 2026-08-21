@@ -1,0 +1,1782 @@
+{
+  "benchmarks": [
+    "init-dissection"
+  ],
+  "capturedAt": "2026-08-19T10:56:01.101Z",
+  "url": "http://localhost:3102/dev/editor-perf",
+  "config": {
+    "blocks": 1000,
+    "chunkSize": 1000,
+    "chunking": true,
+    "contentVisibility": "chunk",
+    "scenarioWorkload": "huge-paragraph"
+  },
+  "lastCompletedRun": {
+    "benchmark": "init-dissection",
+    "token": 1
+  },
+  "results": {
+    "slate": {
+      "construction": null,
+      "input": null,
+      "mount": null,
+      "prebuiltMount": null
+    },
+    "plate-core": {
+      "construction": null,
+      "input": null,
+      "mount": null,
+      "prebuiltMount": null
+    },
+    "plate-core-nodeid": {
+      "construction": null,
+      "input": null,
+      "mount": null,
+      "prebuiltMount": null
+    },
+    "plate-core-nodeid-seeded": {
+      "construction": null,
+      "input": null,
+      "mount": null,
+      "prebuiltMount": null
+    },
+    "plate-basic": {
+      "construction": null,
+      "input": null,
+      "mount": null,
+      "prebuiltMount": null
+    },
+    "plate-code-only": {
+      "construction": null,
+      "input": null,
+      "mount": null,
+      "prebuiltMount": null
+    }
+  },
+  "dissection": {
+    "cases": [
+      {
+        "description": "Plate core without nodeId. This is the closest thing to base wrapper tax.",
+        "id": "plate-core-nodeid-off",
+        "label": "Plate core, nodeId off",
+        "nodeId": false,
+        "plugins": "none",
+        "seedIds": false
+      },
+      {
+        "description": "Plate core with default nodeId behavior against the raw huge document.",
+        "id": "plate-core-nodeid-raw",
+        "label": "Plate core, nodeId raw",
+        "nodeId": "default",
+        "plugins": "none",
+        "seedIds": false
+      },
+      {
+        "description": "Plate core with nodeId on a document that already has ids everywhere.",
+        "id": "plate-core-nodeid-seeded",
+        "label": "Plate core, nodeId pre-seeded",
+        "nodeId": "default",
+        "plugins": "none",
+        "seedIds": true
+      },
+      {
+        "description": "Plate core with nodeId loaded but initial-value normalization disabled.",
+        "id": "plate-core-nodeid-skip-initial-normalize",
+        "label": "Plate core, nodeId no init normalize",
+        "nodeId": "skip-initial-normalize",
+        "plugins": "none",
+        "seedIds": false
+      },
+      {
+        "description": "Plate basic plugins with nodeId off to expose plugin-count tax without id work.",
+        "id": "plate-basic-nodeid-off",
+        "label": "Plate basic, nodeId off",
+        "nodeId": false,
+        "plugins": "basic",
+        "seedIds": false
+      }
+    ],
+    "results": {
+      "plate-core-nodeid-off": {
+        "constructOnly": {
+          "max": 1.7999999998137355,
+          "mean": 1.4761904762791735,
+          "median": 1.5,
+          "min": 1.2999999998137355,
+          "p95": 1.7000000001862645,
+          "p99": 1.7999999998137355,
+          "stdDev": 0.06098213565831872
+        },
+        "createWithValue": {
+          "max": 2.599999999627471,
+          "mean": 2.2428571428394033,
+          "median": 2.2000000001862645,
+          "min": 2.099999999627471,
+          "p95": 2.400000000372529,
+          "p99": 2.599999999627471,
+          "stdDev": 0.09035079002406364
+        },
+        "idsAssigned": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "initOnly": {
+          "max": 2.2999999998137355,
+          "mean": 0.800000000035479,
+          "median": 0.7999999998137355,
+          "min": 0.6999999992549419,
+          "p95": 0.900000000372529,
+          "p99": 2.2999999998137355,
+          "stdDev": 0.06172133997046614
+        },
+        "nodeLookupCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "nodeLookupTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "pluginCount": 16,
+        "setNodesCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "setNodesTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "staticNormalize": null
+      },
+      "plate-core-nodeid-raw": {
+        "constructOnly": {
+          "max": 3.599999999627471,
+          "mean": 1.5380952381307171,
+          "median": 1.5,
+          "min": 1.3999999994412065,
+          "p95": 3.2000000001862645,
+          "p99": 3.599999999627471,
+          "stdDev": 0.136193806019433
+        },
+        "createWithValue": {
+          "max": 2.7000000001862645,
+          "mean": 2.338095238166196,
+          "median": 2.2999999998137355,
+          "min": 2.1000000005587935,
+          "p95": 2.7000000001862645,
+          "p99": 2.7000000001862645,
+          "stdDev": 0.14301578475634782
+        },
+        "idsAssigned": {
+          "max": 1000,
+          "mean": 1000,
+          "median": 1000,
+          "min": 1000,
+          "p95": 1000,
+          "p99": 1000,
+          "stdDev": 0
+        },
+        "initOnly": {
+          "max": 1,
+          "mean": 0.8285714285891681,
+          "median": 0.7999999998137355,
+          "min": 0.6999999992549419,
+          "p95": 1,
+          "p99": 1,
+          "stdDev": 0.0699854212151344
+        },
+        "nodeLookupCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "nodeLookupTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "pluginCount": 17,
+        "setNodesCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "setNodesTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "staticNormalize": {
+          "max": 1,
+          "mean": 0.8047619046909469,
+          "median": 0.7999999998137355,
+          "min": 0.6999999992549419,
+          "p95": 0.900000000372529,
+          "p99": 1,
+          "stdDev": 0.05753831408876985
+        }
+      },
+      "plate-core-nodeid-seeded": {
+        "constructOnly": {
+          "max": 1.6000000005587935,
+          "mean": 1.4476190475924384,
+          "median": 1.400000000372529,
+          "min": 1.2999999998137355,
+          "p95": 1.6000000005587935,
+          "p99": 1.6000000005587935,
+          "stdDev": 0.06632565837490172
+        },
+        "createWithValue": {
+          "max": 3.7999999998137355,
+          "mean": 2.2904761905027997,
+          "median": 2.2999999998137355,
+          "min": 2.199999999254942,
+          "p95": 2.400000000372529,
+          "p99": 3.7999999998137355,
+          "stdDev": 0.06834619082563576
+        },
+        "idsAssigned": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "initOnly": {
+          "max": 1,
+          "mean": 0.8428571428660125,
+          "median": 0.8000000007450581,
+          "min": 0.7999999998137355,
+          "p95": 1,
+          "p99": 1,
+          "stdDev": 0.04948716579739477
+        },
+        "nodeLookupCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "nodeLookupTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "pluginCount": 17,
+        "setNodesCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "setNodesTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "staticNormalize": {
+          "max": 2.5,
+          "mean": 0.904761904717556,
+          "median": 0.900000000372529,
+          "min": 0.7999999998137355,
+          "p95": 1,
+          "p99": 2.5,
+          "stdDev": 0.03749527561982034
+        }
+      },
+      "plate-core-nodeid-skip-initial-normalize": {
+        "constructOnly": {
+          "max": 1.7999999998137355,
+          "mean": 1.552380952496259,
+          "median": 1.5,
+          "min": 1.3999999994412065,
+          "p95": 1.7999999998137355,
+          "p99": 1.7999999998137355,
+          "stdDev": 0.10519391457748552
+        },
+        "createWithValue": {
+          "max": 3,
+          "mean": 2.2904761905471482,
+          "median": 2.2000000001862645,
+          "min": 2.099999999627471,
+          "p95": 2.7000000001862645,
+          "p99": 3,
+          "stdDev": 0.16302135959650652
+        },
+        "idsAssigned": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "initOnly": {
+          "max": 1.1000000005587935,
+          "mean": 0.7619047619491106,
+          "median": 0.7000000001862645,
+          "min": 0.599999999627471,
+          "p95": 1,
+          "p99": 1.1000000005587935,
+          "stdDev": 0.07853534528266642
+        },
+        "nodeLookupCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "nodeLookupTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "pluginCount": 17,
+        "setNodesCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "setNodesTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "staticNormalize": {
+          "max": 1.8999999994412065,
+          "mean": 0.7904761905027997,
+          "median": 0.7999999998137355,
+          "min": 0.599999999627471,
+          "p95": 1,
+          "p99": 1.8999999994412065,
+          "stdDev": 0.08109231585634079
+        }
+      },
+      "plate-basic-nodeid-off": {
+        "constructOnly": {
+          "max": 3,
+          "mean": 2.314285714401021,
+          "median": 2.2999999998137355,
+          "min": 2.199999999254942,
+          "p95": 2.6000000005587935,
+          "p99": 3,
+          "stdDev": 0.07095078301905795
+        },
+        "createWithValue": {
+          "max": 3.3999999994412065,
+          "mean": 3,
+          "median": 3,
+          "min": 2.8999999994412065,
+          "p95": 3.099999999627471,
+          "p99": 3.3999999994412065,
+          "stdDev": 0.07559289432023995
+        },
+        "idsAssigned": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "initOnly": {
+          "max": 0.900000000372529,
+          "mean": 0.7523809523720827,
+          "median": 0.7999999998137355,
+          "min": 0.599999999627471,
+          "p95": 0.8000000007450581,
+          "p99": 0.900000000372529,
+          "stdDev": 0.04994327838703785
+        },
+        "nodeLookupCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "nodeLookupTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "pluginCount": 32,
+        "setNodesCalls": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "setNodesTime": {
+          "max": 0,
+          "mean": 0,
+          "median": 0,
+          "min": 0,
+          "p95": 0,
+          "p99": 0,
+          "stdDev": 0
+        },
+        "staticNormalize": null
+      }
+    },
+    "runs": {
+      "createWithValue": 25,
+      "constructOnly": 25,
+      "initOnly": 25,
+      "staticNormalize": 25
+    }
+  },
+  "nodeIdFragment": {
+    "cases": [
+      {
+        "description": "Plate core without nodeId, inserting a raw fragment with no ids. This is the baseline insertFragment cost.",
+        "fragmentKind": "raw-import",
+        "id": "plate-core-nodeid-off-raw-import",
+        "label": "NodeId off, raw import",
+        "nodeId": false
+      },
+      {
+        "description": "Plate core with nodeId, inserting a raw fragment with no ids. This isolates id assignment cost during import.",
+        "fragmentKind": "raw-import",
+        "id": "plate-core-nodeid-raw-import",
+        "label": "NodeId on, raw import",
+        "nodeId": "default"
+      },
+      {
+        "description": "Plate core without nodeId, pasting a seeded fragment whose ids already exist in the destination document.",
+        "fragmentKind": "seeded-duplicate-paste",
+        "id": "plate-core-nodeid-off-seeded-duplicate-paste",
+        "label": "NodeId off, duplicate paste",
+        "nodeId": false
+      },
+      {
+        "description": "Plate core with nodeId, pasting a seeded fragment whose ids already exist in the destination document. This is the real duplicate-id paste lane.",
+        "fragmentKind": "seeded-duplicate-paste",
+        "id": "plate-core-nodeid-on-seeded-duplicate-paste",
+        "label": "NodeId on, duplicate paste",
+        "nodeId": "default"
+      }
+    ],
+    "config": {
+      "fragmentBlocks": 40
+    },
+    "results": {
+      "plate-core-nodeid-off-raw-import": {
+        "duplicateScanCalls": null,
+        "duplicateScanTime": null,
+        "fragmentBlocks": null,
+        "idsAssigned": null,
+        "insertFragment": null,
+        "insertNodeOps": null
+      },
+      "plate-core-nodeid-raw-import": {
+        "duplicateScanCalls": null,
+        "duplicateScanTime": null,
+        "fragmentBlocks": null,
+        "idsAssigned": null,
+        "insertFragment": null,
+        "insertNodeOps": null
+      },
+      "plate-core-nodeid-off-seeded-duplicate-paste": {
+        "duplicateScanCalls": null,
+        "duplicateScanTime": null,
+        "fragmentBlocks": null,
+        "idsAssigned": null,
+        "insertFragment": null,
+        "insertNodeOps": null
+      },
+      "plate-core-nodeid-on-seeded-duplicate-paste": {
+        "duplicateScanCalls": null,
+        "duplicateScanTime": null,
+        "fragmentBlocks": null,
+        "idsAssigned": null,
+        "insertFragment": null,
+        "insertNodeOps": null
+      }
+    },
+    "runs": {
+      "insertFragment": 25
+    }
+  },
+  "fanout": {
+    "cases": [
+      {
+        "description": "No extra benchmark subscribers. This is the baseline Plate update path.",
+        "id": "none",
+        "label": "No extra subscribers"
+      },
+      {
+        "description": "Many components reading tracked editor state through useEditorState().",
+        "id": "editor-state",
+        "label": "useEditorState"
+      },
+      {
+        "description": "Many components reading tracked editor value through useEditorValue().",
+        "id": "editor-value",
+        "label": "useEditorValue"
+      },
+      {
+        "description": "Many components reading a derived Jotai selector through useEditorSelector().",
+        "id": "editor-selector",
+        "label": "useEditorSelector"
+      },
+      {
+        "description": "Many components reading a plugin zustand store through usePluginOption().",
+        "id": "plugin-option",
+        "label": "usePluginOption"
+      },
+      {
+        "description": "Each subscriber mixes tracked editor, tracked value, selector, and plugin option reads.",
+        "id": "mixed",
+        "label": "Mixed hook stack"
+      }
+    ],
+    "config": {
+      "subscriberCount": 250
+    },
+    "results": {
+      "none": {
+        "mount": null,
+        "update": null,
+        "updateCommits": null
+      },
+      "editor-state": {
+        "mount": null,
+        "update": null,
+        "updateCommits": null
+      },
+      "editor-value": {
+        "mount": null,
+        "update": null,
+        "updateCommits": null
+      },
+      "editor-selector": {
+        "mount": null,
+        "update": null,
+        "updateCommits": null
+      },
+      "plugin-option": {
+        "mount": null,
+        "update": null,
+        "updateCommits": null
+      },
+      "mixed": {
+        "mount": null,
+        "update": null,
+        "updateCommits": null
+      }
+    },
+    "runs": {
+      "mount": 10,
+      "update": 10
+    }
+  },
+  "coreMount": {
+    "activeCaseId": "provider-only",
+    "activeNodeIdMode": "off",
+    "cases": [
+      {
+        "description": "Plate provider and jotai-x store hydration only. No Slate tree or editable hook work.",
+        "id": "provider-only",
+        "label": "Provider only"
+      },
+      {
+        "description": "Provider plus PlateSlate and useSlateProps. No Editable or editable-props hook.",
+        "id": "slate-only",
+        "label": "PlateSlate only"
+      },
+      {
+        "description": "Provider plus useEditableProps only. This isolates the editable-props hook stack without Slate or Editable mount.",
+        "id": "editable-props-only",
+        "label": "useEditableProps only"
+      },
+      {
+        "description": "Provider plus PlateSlate and Editable with direct static props. No useEditableProps and no PlateContent effect stack.",
+        "id": "editable-static",
+        "label": "Editable static props"
+      },
+      {
+        "description": "Static Editable baseline plus a local PlateElement clone without any data-block-id logic. This isolates the plain wrapper markup.",
+        "id": "editable-element-benchmark-plate-element-no-block-id",
+        "label": "Editable + bench element, no block-id"
+      },
+      {
+        "description": "Static Editable baseline plus a local PlateElement clone that keeps block-id logic but does not subscribe to useEditorMounted. This isolates the per-node plate-store subscription cost.",
+        "id": "editable-element-benchmark-plate-element-no-mounted",
+        "label": "Editable + bench element, no mounted sub"
+      },
+      {
+        "description": "Static Editable baseline plus the old mounted block-id branch. This isolates the useEditorMounted() gate without putting it back on the seeded nodeId fast path.",
+        "id": "editable-element-benchmark-mounted-block-element",
+        "label": "Editable + bench mounted block-id old"
+      },
+      {
+        "description": "The same local element lane, but using real useNodeAttributes() ref/class/style merging without PlateElement or the mounted store. This isolates node-attribute composition cost on id-seeded nodes.",
+        "id": "editable-element-benchmark-plate-element-node-attributes",
+        "label": "Editable + bench element + node attrs"
+      },
+      {
+        "description": "Static Editable baseline plus PlateElement only, without ElementProvider or getRenderNodeProps. This isolates the default PlateElement render cost.",
+        "id": "editable-element-plate-element-no-provider",
+        "label": "Editable + PlateElement, no provider"
+      },
+      {
+        "description": "PlateElement with just the resolved plugin ref and Slate class injection, but no full getEditorPlugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.",
+        "id": "editable-element-plate-element-plugin-only-no-provider",
+        "label": "Editable + PlateElement + plugin"
+      },
+      {
+        "description": "PlateElement with cached plugin context and Slate class injection, but still no ElementProvider or getRenderNodeProps. This isolates plugin-context prop weight without node-prop composition.",
+        "id": "editable-element-plate-element-plugin-context-no-provider",
+        "label": "Editable + PlateElement + plugin ctx"
+      },
+      {
+        "description": "The plain element-pipe fast path, but with a precomputed path map instead of useNodePath. This isolates the remaining path-hook tax after getRenderNodeProps is out of the way.",
+        "id": "editable-element-pipe-plugin-precomputed-path",
+        "label": "Editable + fast pipe (precomputed path)"
+      },
+      {
+        "description": "The same fast element-pipe path, but without BelowRootNodes. This isolates the cost of mounting an empty root-wrapper component on every block.",
+        "id": "editable-element-pipe-plugin-precomputed-no-below-root",
+        "label": "Editable + fast pipe (no belowRootNodes)"
+      },
+      {
+        "description": "A bare plain-element lower bound for paragraph nodes: direct tag output with Slate class and no hook-driven path or readOnly plumbing. This isolates the remaining dispatch tax in the real fast path.",
+        "id": "editable-element-pipe-bare-plain-fast-path",
+        "label": "Editable + bare plain fast path"
+      },
+      {
+        "description": "Static Editable baseline plus one ElementProvider per element, using a precomputed path map and no Plate wrapper logic. This isolates the per-node provider/store tax.",
+        "id": "editable-element-provider-only",
+        "label": "Editable + element provider only"
+      },
+      {
+        "description": "The same provider-only lane, but using a plain React context wrapper instead of ElementProvider. This isolates raw per-node provider overhead without jotai-x hydration.",
+        "id": "editable-element-provider-only-plain-context",
+        "label": "Editable + plain context only"
+      },
+      {
+        "description": "The provider-only lane with a raw Jotai Provider and store, but no jotai-x scope lookup or hydration helpers. This isolates the bare per-node Jotai provider/store tax.",
+        "id": "editable-element-provider-only-jotai-provider",
+        "label": "Editable + raw Jotai provider"
+      },
+      {
+        "description": "The provider-only lane with Jotai Provider plus jotai-x HydrateAtoms initial hydration, but no sync effects. This isolates hydration helper cost without sync churn.",
+        "id": "editable-element-provider-only-jotai-hydrate-only",
+        "label": "Editable + Jotai hydrate only"
+      },
+      {
+        "description": "The provider-only lane with Jotai Provider plus full jotai-x HydrateAtoms hydration and sync behavior, but no scope lookup. This isolates the helper stack without the context map.",
+        "id": "editable-element-provider-only-jotai-hydrate-sync",
+        "label": "Editable + Jotai hydrate + sync"
+      },
+      {
+        "description": "The provider-only lane with a plain React context plus one zustand-x store per node. This isolates whether swapping the atom store for a zustand-x store materially changes the per-node store tax.",
+        "id": "editable-element-provider-only-zustand-provider",
+        "label": "Editable + zustand-x store"
+      },
+      {
+        "description": "The same per-node provider lane, but the first-block effect is gated from props instead of subscribing to path inside every provider. This isolates the provider-effect path lookup tax.",
+        "id": "editable-element-provider-prop-effect",
+        "label": "Editable + provider + prop effect"
+      },
+      {
+        "description": "The direct pluginRenderElement path with a precomputed path map, but reading attributes from props instead of useElement(). This isolates the per-node element-store consumer cost inside ElementContent.",
+        "id": "editable-element-plugin-precomputed-no-element-hook",
+        "label": "Editable + plugin element, no useElement"
+      },
+      {
+        "description": "ElementProvider plus PlateElement on every node, still without getRenderNodeProps. This isolates PlateElement mount work on top of the provider.",
+        "id": "editable-element-provider-plate-element",
+        "label": "Editable + provider + PlateElement"
+      },
+      {
+        "description": "The direct pluginRenderElement path with manual plain-plugin node-prop composition. This isolates getRenderNodeProps tax in the rich plugin lane when the plugin has no node props or allowed attributes.",
+        "id": "editable-element-plugin-precomputed-fast-node-props",
+        "label": "Editable + plugin element, fast node props"
+      },
+      {
+        "description": "A custom node-component lane that actually calls useElement() and usePath() through the real ElementProvider path. This isolates provider-backed hook-consumer cost instead of PlateElement body cost.",
+        "id": "editable-element-plugin-render-node-hooks",
+        "label": "Editable + plugin node hooks"
+      },
+      {
+        "description": "The same custom node-component lane, but using plain React context instead of ElementProvider. This is the lower bound for useElement/usePath-style consumers without atom-store work.",
+        "id": "editable-element-plugin-render-node-hooks-plain-context",
+        "label": "Editable + plugin node hooks, plain context"
+      },
+      {
+        "description": "The same custom node-component lane, but using a raw Jotai Provider/store instead of ElementProvider. This isolates the hook-consumer cost on top of bare per-node Jotai.",
+        "id": "editable-element-plugin-render-node-hooks-jotai-provider",
+        "label": "Editable + plugin node hooks, raw Jotai"
+      },
+      {
+        "description": "The same custom node-component lane, but using Jotai hydration without sync effects. This isolates hydration-only helper cost for hook-heavy consumers.",
+        "id": "editable-element-plugin-render-node-hooks-jotai-hydrate-only",
+        "label": "Editable + plugin node hooks, Jotai hydrate only"
+      },
+      {
+        "description": "The same custom node-component lane, but using full Jotai hydrate plus sync behavior. This isolates the full jotai-x-style helper stack for hook-heavy consumers.",
+        "id": "editable-element-plugin-render-node-hooks-jotai-hydrate-sync",
+        "label": "Editable + plugin node hooks, Jotai hydrate + sync"
+      },
+      {
+        "description": "A custom node-component lane that calls useElementSelector() through the real ElementProvider path. This isolates exported selector-consumer cost instead of simple element/path hooks.",
+        "id": "editable-element-plugin-render-node-selector",
+        "label": "Editable + plugin node selector"
+      },
+      {
+        "description": "The same selector-consumer lane, but using plain React context instead of ElementProvider. This is the lower bound for useElementSelector-style derived reads without atom-store work.",
+        "id": "editable-element-plugin-render-node-selector-plain-context",
+        "label": "Editable + plugin node selector, plain context"
+      },
+      {
+        "description": "The same selector-consumer lane, but using a raw Jotai Provider/store instead of ElementProvider. This isolates selector-consumer cost on top of bare per-node Jotai.",
+        "id": "editable-element-plugin-render-node-selector-jotai-provider",
+        "label": "Editable + plugin node selector, raw Jotai"
+      },
+      {
+        "description": "The same rich fast-node-props lane, but with a plain React context wrapper instead of ElementProvider. This isolates the remaining per-node atom-provider tax in the richer path.",
+        "id": "editable-element-plugin-precomputed-fast-node-props-plain-context",
+        "label": "Editable + plugin element, plain context"
+      },
+      {
+        "description": "The rich fast-node-props lane with a raw Jotai Provider and store, but no jotai-x scope lookup. This isolates how much of the rich lane is just bare per-node Jotai provider cost.",
+        "id": "editable-element-plugin-precomputed-fast-node-props-jotai-provider",
+        "label": "Editable + plugin element, raw Jotai"
+      },
+      {
+        "description": "The rich fast-node-props lane with Jotai Provider plus jotai-x HydrateAtoms initial hydration, but no sync effects. This isolates helper hydration cost without provider scope lookup.",
+        "id": "editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-only",
+        "label": "Editable + plugin element, Jotai hydrate only"
+      },
+      {
+        "description": "The rich fast-node-props lane with Jotai Provider plus full jotai-x HydrateAtoms hydration and sync behavior, but no scope lookup. This isolates helper-stack cost in the richer path.",
+        "id": "editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-sync",
+        "label": "Editable + plugin element, Jotai hydrate + sync"
+      },
+      {
+        "description": "The rich fast-node-props lane with a plain React context plus one zustand-x store per node. This isolates how much the richer path changes if the per-node atom store becomes a zustand-x store.",
+        "id": "editable-element-plugin-precomputed-fast-node-props-zustand-provider",
+        "label": "Editable + plugin element, zustand-x"
+      },
+      {
+        "description": "The render.as-only element lower bound: real basic blockquote plugin, but rendered through the providerless plain fast path shape instead of ElementProvider and PlateElement.",
+        "documentMode": "blockquote-only",
+        "id": "editable-element-render-as-no-provider",
+        "label": "Editable + render.as, no provider",
+        "plugins": "basic"
+      },
+      {
+        "description": "The old render.as-only shape: real basic blockquote plugin rendered through ElementProvider plus PlateElement. This is the branch the fast path is replacing.",
+        "documentMode": "blockquote-only",
+        "id": "editable-element-render-as-provider",
+        "label": "Editable + render.as, provider",
+        "plugins": "basic"
+      },
+      {
+        "description": "The direct pluginRenderElement path with the first-block effect gated from props instead of usePath(). This isolates the remaining provider-effect overhead in the rich plugin path.",
+        "id": "editable-element-plugin-precomputed-prop-effect",
+        "label": "Editable + plugin element + prop effect"
+      },
+      {
+        "description": "Static Editable baseline plus getRenderNodeProps and PlateElement, but no ElementProvider. This isolates node-prop composition from the per-node jotai store.",
+        "id": "editable-element-render-node-props-no-provider",
+        "label": "Editable + render-node props, no provider"
+      },
+      {
+        "description": "Static Editable baseline plus the full default pipeRenderElement path. Paragraph nodes hit the core p plugin; headings fall back.",
+        "id": "editable-element-pipe",
+        "label": "Editable + element pipe"
+      },
+      {
+        "description": "Static Editable baseline plus the full default pipeRenderElement path on a blockquote-only document with basic plugins loaded. This is the real production lane for render.as-only element plugins.",
+        "documentMode": "blockquote-only",
+        "id": "editable-element-pipe-render-as-basic",
+        "label": "Editable + element pipe (render.as)",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderElement on a document where paragraph nodes use an unmapped type. This isolates the fallback renderElement branch without the core p plugin.",
+        "documentMode": "paragraph-fallback",
+        "id": "editable-element-fallback-pipe",
+        "label": "Editable + fallback element pipe"
+      },
+      {
+        "description": "Static Editable baseline plus the core paragraph plugin renderer with a precomputed node->path map. This isolates plugin wrapper cost from dynamic path lookup.",
+        "id": "editable-element-plugin-precomputed-path",
+        "label": "Editable + plugin element (precomputed path)"
+      },
+      {
+        "description": "Static Editable baseline plus direct bold leaf/text renderers on a bold-only document with basic plugins loaded. This is the lowest useful mark-side lower bound.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-direct-renderers",
+        "label": "Editable + bold direct renderers",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus pluginRenderLeaf(bold) directly on a bold-only document with only BoldPlugin loaded. This isolates the active bold plugin path without pipeRenderLeaf outer-wrapper work.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-plugin-leaf-direct",
+        "label": "Editable + bold plugin leaf direct",
+        "plugins": "bold-only"
+      },
+      {
+        "description": "Static Editable baseline plus PlateLeaf rendered directly as strong on a bold-only document with basic plugins loaded. This isolates PlateLeaf body cost without node-prop composition.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-plateleaf-direct",
+        "label": "Editable + bold PlateLeaf direct",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus getRenderNodeProps feeding PlateLeaf as strong on a bold-only document with basic plugins loaded. This isolates node-prop composition from the rest of pipeRenderLeaf.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-leaf-node-props",
+        "label": "Editable + bold leaf node props",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf only on a bold-only document with basic plugins loaded. This isolates mark leaf wrapping from renderText work.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-leaf-pipe",
+        "label": "Editable + bold leaf pipe",
+        "plugins": "basic"
+      },
+      {
+        "description": "The same bold leaf-pipe lane, but with only BoldPlugin loaded instead of the full basic mark stack. This isolates unused mark-plugin fan-out inside pipeRenderLeaf.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-leaf-pipe-bold-only",
+        "label": "Editable + bold leaf pipe (bold only)",
+        "plugins": "bold-only"
+      },
+      {
+        "description": "The same bold-only leaf-pipe lane, but pipeRenderLeaf finishes with a plain span outer renderer instead of PlateLeaf. This isolates the outer fallback wrapper cost.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-leaf-pipe-plain-outer",
+        "label": "Editable + bold leaf pipe (plain outer)",
+        "plugins": "bold-only"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderText only on a bold-only document with basic plugins loaded. This isolates mark text wrapping from renderLeaf work.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-text-pipe",
+        "label": "Editable + bold text pipe",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus direct code leaf/text renderers on a code-only document with basic plugins loaded. This is the hard code mark lower bound.",
+        "documentMode": "code-only",
+        "id": "editable-leaf-text-code-direct-renderers",
+        "label": "Editable + code direct renderers",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus PlateLeaf rendered directly as code on a code-only document with only CodePlugin loaded. This isolates hard-affinity PlateLeaf body cost without node-prop composition.",
+        "documentMode": "code-only",
+        "id": "editable-leaf-text-code-plateleaf-direct",
+        "label": "Editable + code PlateLeaf direct",
+        "plugins": "code-only"
+      },
+      {
+        "description": "Static Editable baseline plus pluginRenderLeaf(code) directly on a code-only document with only CodePlugin loaded. This isolates the active code plugin path without pipeRenderLeaf outer-wrapper work.",
+        "documentMode": "code-only",
+        "id": "editable-leaf-text-code-plugin-leaf-direct",
+        "label": "Editable + code plugin leaf direct",
+        "plugins": "code-only"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf only on a code-only document with the code plugin loaded. This isolates the hard code mark leaf path against the existing plain-renderers control.",
+        "documentMode": "code-only",
+        "id": "editable-leaf-text-code-pipe",
+        "label": "Editable + code leaf pipe",
+        "plugins": "code-only"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf and pipeRenderText on a code-only document with the code plugin loaded. This is the real production lane for the hard code mark path.",
+        "documentMode": "code-only",
+        "id": "editable-leaf-text-code-text-pipe",
+        "label": "Editable + code leaf/text pipes",
+        "plugins": "code-only"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf and pipeRenderText on a bold-only document with basic plugins loaded. This is the real production lane for render.as-only marks.",
+        "documentMode": "bold-only",
+        "id": "editable-leaf-text-bold-pipe",
+        "label": "Editable + bold leaf/text pipes",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus direct underline leaf/text renderers on an underline-only document with basic plugins loaded. This is the underline lower bound.",
+        "documentMode": "underline-only",
+        "id": "editable-leaf-text-underline-direct-renderers",
+        "label": "Editable + underline direct renderers",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus pluginRenderLeaf(underline) directly on an underline-only document with only UnderlinePlugin loaded. This isolates the active underline plugin path without pipeRenderLeaf outer-wrapper work.",
+        "documentMode": "underline-only",
+        "id": "editable-leaf-text-underline-plugin-leaf-direct",
+        "label": "Editable + underline plugin leaf direct",
+        "plugins": "underline-only"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf and pipeRenderText on an underline-only document with basic plugins loaded. This is the real production lane for render.as-only underline marks.",
+        "documentMode": "underline-only",
+        "id": "editable-leaf-text-underline-pipe",
+        "label": "Editable + underline leaf/text pipes",
+        "plugins": "basic"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf and pipeRenderText only. This isolates Plate leaf/text wrapper work.",
+        "id": "editable-leaf-text-pipe",
+        "label": "Editable + leaf/text pipes"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderLeaf and pipeRenderText fed with plain span renderers. This isolates the default PlateLeaf and PlateText body cost.",
+        "id": "editable-leaf-text-plain-renderers",
+        "label": "Editable + leaf/text plain renderers"
+      },
+      {
+        "description": "Static Editable baseline plus pipeRenderElement, pipeRenderLeaf, and pipeRenderText together. This is the render-pipe stack without useEditableProps memo and handler wiring.",
+        "id": "editable-render-pipes",
+        "label": "Editable + render pipes"
+      },
+      {
+        "description": "Provider plus PlateSlate, useSlateProps, useEditableProps, and Editable mount. No PlateContent effect stack.",
+        "id": "minimal-editable",
+        "label": "Minimal editable"
+      },
+      {
+        "description": "Full PlateContent path with EditorStateEffect and the usual effect stack.",
+        "id": "plate-content",
+        "label": "Full PlateContent"
+      }
+    ],
+    "results": {
+      "provider-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "slate-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-props-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-static": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-benchmark-plate-element-no-block-id": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-benchmark-plate-element-no-mounted": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-benchmark-mounted-block-element": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-benchmark-plate-element-node-attributes": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plate-element-no-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plate-element-plugin-only-no-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plate-element-plugin-context-no-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-pipe-plugin-precomputed-path": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-pipe-plugin-precomputed-no-below-root": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-pipe-bare-plain-fast-path": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-only-plain-context": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-only-jotai-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-only-jotai-hydrate-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-only-jotai-hydrate-sync": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-only-zustand-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-prop-effect": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-no-element-hook": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-provider-plate-element": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-fast-node-props": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-hooks": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-hooks-plain-context": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-hooks-jotai-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-hooks-jotai-hydrate-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-hooks-jotai-hydrate-sync": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-selector": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-selector-plain-context": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-render-node-selector-jotai-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-fast-node-props-plain-context": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-fast-node-props-jotai-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-sync": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-fast-node-props-zustand-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-render-as-no-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-render-as-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-prop-effect": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-render-node-props-no-provider": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-pipe-render-as-basic": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-fallback-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-element-plugin-precomputed-path": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-direct-renderers": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-plugin-leaf-direct": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-plateleaf-direct": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-leaf-node-props": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-leaf-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-leaf-pipe-bold-only": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-leaf-pipe-plain-outer": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-text-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-code-direct-renderers": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-code-plateleaf-direct": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-code-plugin-leaf-direct": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-code-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-code-text-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-bold-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-underline-direct-renderers": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-underline-plugin-leaf-direct": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-underline-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-pipe": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-leaf-text-plain-renderers": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "editable-render-pipes": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "minimal-editable": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      },
+      "plate-content": {
+        "mountByNodeIdMode": {
+          "off": null,
+          "seeded": null
+        }
+      }
+    },
+    "runs": {
+      "mount": 10
+    }
+  },
+  "pluginCensus": {
+    "activeEntryId": "all",
+    "entries": [
+      {
+        "activatedWorkload": "huge-blockquote",
+        "description": "Cheap structural renderer. Measures the isolated blockquote element path without the full basic-blocks bundle muddying it.",
+        "id": "blockquote",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "BlockquotePlugin",
+        "performanceClass": "cheap structural renderers",
+        "pluginSet": "blockquote-only",
+        "provisionalMountBudgetMs": 12
+      },
+      {
+        "activatedWorkload": "huge-heading",
+        "description": "Cheap structural renderer. Measures the isolated heading path without blockquote or horizontal-rule fan-out.",
+        "id": "heading",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "HeadingPlugin",
+        "performanceClass": "cheap structural renderers",
+        "pluginSet": "heading-only",
+        "provisionalMountBudgetMs": 12
+      },
+      {
+        "activatedWorkload": "huge-bold",
+        "description": "Cheap mark wrapper. Measures the isolated bold mark path without the full basic-marks bundle.",
+        "id": "bold",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "BoldPlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "bold-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-code",
+        "description": "Affinity-bearing mark. Measures the isolated code mark path without bold/italic sibling fan-out.",
+        "id": "code",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "CodePlugin",
+        "performanceClass": "affinity-bearing marks",
+        "pluginSet": "code-only",
+        "provisionalMountBudgetMs": 12
+      },
+      {
+        "activatedWorkload": "huge-highlight",
+        "description": "Directional mark wrapper. Measures the isolated highlight mark path without bold/italic sibling fan-out.",
+        "id": "highlight",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "HighlightPlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "highlight-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-italic",
+        "description": "Cheap mark wrapper. Measures the isolated italic mark path without the full basic-marks bundle.",
+        "id": "italic",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "ItalicPlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "italic-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-kbd",
+        "description": "Affinity-bearing mark. Measures the isolated kbd mark path without code sibling fan-out.",
+        "id": "kbd",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "KbdPlugin",
+        "performanceClass": "affinity-bearing marks",
+        "pluginSet": "kbd-only",
+        "provisionalMountBudgetMs": 12
+      },
+      {
+        "activatedWorkload": "huge-strikethrough",
+        "description": "Directional mark wrapper. Measures the isolated strikethrough mark path without the full basic-marks bundle.",
+        "id": "strikethrough",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "StrikethroughPlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "strikethrough-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-subscript",
+        "description": "Directional mark wrapper. Measures the isolated subscript mark path without superscript sibling fan-out.",
+        "id": "subscript",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "SubscriptPlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "subscript-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-superscript",
+        "description": "Directional mark wrapper. Measures the isolated superscript mark path without subscript sibling fan-out.",
+        "id": "superscript",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "SuperscriptPlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "superscript-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-underline",
+        "description": "Cheap mark wrapper. Measures the isolated underline mark path without the full basic-marks bundle.",
+        "id": "underline",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "UnderlinePlugin",
+        "performanceClass": "cheap marks/text wrappers",
+        "pluginSet": "underline-only",
+        "provisionalMountBudgetMs": 8
+      },
+      {
+        "activatedWorkload": "huge-hr",
+        "description": "Cheap structural renderer. Measures the isolated horizontal-rule element path without heading or blockquote siblings.",
+        "id": "horizontal-rule",
+        "inactiveWorkload": "huge-paragraph",
+        "label": "HorizontalRulePlugin",
+        "performanceClass": "cheap structural renderers",
+        "pluginSet": "horizontal-rule-only",
+        "provisionalMountBudgetMs": 12
+      }
+    ],
+    "results": {
+      "blockquote": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "heading": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "bold": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "code": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "highlight": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "italic": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "kbd": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "strikethrough": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "subscript": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "superscript": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "underline": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      },
+      "horizontal-rule": {
+        "activated": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        },
+        "inactive": {
+          "plate-core": null,
+          "plugin": null,
+          "slate": null
+        }
+      }
+    },
+    "runs": {
+      "mount": 10
+    }
+  },
+  "runs": {
+    "construction": 50,
+    "input": 20,
+    "mount": 10,
+    "prebuiltMount": 10
+  },
+  "scenarios": [
+    {
+      "description": "Bare Slate React editor with the same document and chunking knobs.",
+      "id": "slate",
+      "kind": "slate",
+      "label": "Slate baseline",
+      "nodeId": null,
+      "plugins": "none",
+      "seedIds": false
+    },
+    {
+      "description": "Plate React wrapper only. No user plugins. Node IDs disabled.",
+      "id": "plate-core",
+      "kind": "plate",
+      "label": "Plate core minimal",
+      "nodeId": false,
+      "plugins": "none",
+      "seedIds": false
+    },
+    {
+      "description": "Plate React wrapper only. No user plugins. Node IDs enabled.",
+      "id": "plate-core-nodeid",
+      "kind": "plate",
+      "label": "Plate core + nodeId",
+      "nodeId": true,
+      "plugins": "none",
+      "seedIds": false
+    },
+    {
+      "description": "Plate React wrapper only. No user plugins. Node IDs enabled on a document that already has ids.",
+      "id": "plate-core-nodeid-seeded",
+      "kind": "plate",
+      "label": "Plate core + nodeId (seeded)",
+      "nodeId": true,
+      "plugins": "none",
+      "seedIds": true
+    },
+    {
+      "description": "Plate plus the first real plugin tax: basic blocks and marks.",
+      "id": "plate-basic",
+      "kind": "plate",
+      "label": "Plate basic plugins",
+      "nodeId": false,
+      "plugins": "basic",
+      "seedIds": false
+    },
+    {
+      "description": "Plate React wrapper plus CodePlugin only. This isolates the hard code mark lane without bold/italic fan-out.",
+      "id": "plate-code-only",
+      "kind": "plate",
+      "label": "Plate code only",
+      "nodeId": false,
+      "plugins": "code-only",
+      "seedIds": false
+    }
+  ]
+}

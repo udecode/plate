@@ -35,13 +35,13 @@ function TypeCell({ item }: { item: TypeNode }) {
       {item.typeDescription ? (
         item.typeDescriptionLink ? (
           <a
-            className="font-mono text-muted-foreground text-xs underline underline-offset-4"
+            className="font-mono text-xs text-muted-foreground underline underline-offset-4"
             href={item.typeDescriptionLink}
           >
             {item.typeDescription}
           </a>
         ) : (
-          <div className="font-mono text-muted-foreground text-xs">
+          <div className="font-mono text-xs text-muted-foreground">
             {item.typeDescription}
           </div>
         )
@@ -55,7 +55,7 @@ function DescriptionCell({ item }: { item: TypeNode }) {
     <div className="space-y-2">
       {item.description ? <div>{item.description}</div> : null}
       {item.default ? (
-        <div className="text-muted-foreground text-xs">
+        <div className="text-xs text-muted-foreground">
           Default: <span className="font-mono">{item.default}</span>
         </div>
       ) : null}
@@ -75,7 +75,7 @@ function DescriptionCell({ item }: { item: TypeNode }) {
         </div>
       ) : null}
       {item.returns ? (
-        <div className="text-muted-foreground text-xs">
+        <div className="text-xs text-muted-foreground">
           Returns: {item.returns}
         </div>
       ) : null}

@@ -1,16 +1,14 @@
-import { PLUGINS } from '@platejs/utils';
-import ReactDOMServer from 'react-dom/server';
-
 import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
-import { schema } from 'platejs';
-import { type BaseEditor, createBaseEditor } from 'platejs';
+import { PLUGINS } from '@platejs/utils';
+import { schema, type BaseEditor, createBaseEditor } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
+import ReactDOMServer from 'react-dom/server';
 
 import { BlockList } from '@/registry/components/editor/block-list';
 import { BlockListStatic } from '@/registry/components/editor/block-list-static';
 
-import { BaseListKit } from './list-static';
 import { ListKit } from './list';
+import { BaseListKit } from './list-static';
 
 const ListTargetSchemaPlugins = [
   PLUGINS.heading,

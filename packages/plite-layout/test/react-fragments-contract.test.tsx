@@ -1,11 +1,12 @@
 import { afterAll, describe, expect, it } from 'bun:test';
+
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import { render } from '@testing-library/react';
 import {
   createReactEditor,
   type RenderElementProps,
   Plite,
 } from '@platejs/plite-react';
+import { render } from '@testing-library/react';
 
 import {
   createEstimatedPageLayoutEngine,

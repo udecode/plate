@@ -3,11 +3,12 @@ import { describe, it } from 'node:test';
 
 import { ContentSlice, type Descendant } from '@platejs/plite';
 import fc from 'fast-check';
+
+import { PreparedTokenSlice, type JsonNode } from '../src/core/change/tokens';
 import {
   encodeContentSlice,
   prepareContentSliceVariant,
 } from '../src/core/content-slice';
-import { PreparedTokenSlice, type JsonNode } from '../src/core/change/tokens';
 
 const lawSeed = Number.parseInt(
   process.env.PLITE_CONTENT_SLICE_LAW_SEED ?? '20260720',
@@ -85,9 +86,9 @@ const assertLaw = (property: Parameters<typeof fc.assert>[0], offset: number) =>
     verbose: true,
   });
 
-describe('ContentSlice generated laws', () => {
-  it('round-trips detached JSON and reuses only trusted values', () => {
-    assertLaw(
+void describe('ContentSlice generated laws', () => {
+  void it('round-trips detached JSON and reuses only trusted values', () => {
+    void assertLaw(
       fc.property(sliceInputArbitrary, (input) => {
         const expected = structuredClone(input);
         const slice = ContentSlice.fromJSON(input);
@@ -110,8 +111,8 @@ describe('ContentSlice generated laws', () => {
     );
   });
 
-  it('preserves valid openness across content rewrites and closes explicitly', () => {
-    assertLaw(
+  void it('preserves valid openness across content rewrites and closes explicitly', () => {
+    void assertLaw(
       fc.property(sliceInputArbitrary, (input) => {
         const slice = ContentSlice.fromJSON(input);
         const replacement = structuredClone(slice.content);
@@ -135,8 +136,8 @@ describe('ContentSlice generated laws', () => {
     );
   });
 
-  it('rejects every generated edge depth beyond the structural spine', () => {
-    assertLaw(
+  void it('rejects every generated edge depth beyond the structural spine', () => {
+    void assertLaw(
       fc.property(sliceInputArbitrary, fc.boolean(), (input, useStart) => {
         assert.throws(() =>
           ContentSlice.fromJSON({
@@ -151,8 +152,8 @@ describe('ContentSlice generated laws', () => {
     );
   });
 
-  it('prepares the same token slice as the canonical document encoder', () => {
-    assertLaw(
+  void it('prepares the same token slice as the canonical document encoder', () => {
+    void assertLaw(
       fc.property(sliceInputArbitrary, (input) => {
         const slice = ContentSlice.fromJSON(input);
         const canonical = PreparedTokenSlice.fromNodes(
@@ -170,8 +171,8 @@ describe('ContentSlice generated laws', () => {
     );
   });
 
-  it('prepares variant openness without cloning trusted content again', () => {
-    assertLaw(
+  void it('prepares variant openness without cloning trusted content again', () => {
+    void assertLaw(
       fc.property(sliceInputArbitrary, (input) => {
         const source = ContentSlice.closed(input.content);
 

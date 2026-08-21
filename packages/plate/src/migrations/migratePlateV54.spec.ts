@@ -1,3 +1,5 @@
+import { BaseHeadingPlugin } from '@platejs/basic-nodes';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import {
   BaseParagraphPlugin,
   createBaseEditor,
@@ -6,15 +8,13 @@ import {
   defineDocumentMigrations,
   migrateDocument,
 } from '@platejs/core';
-import { ElementApi, PathApi, property, schema, target } from '@platejs/plite';
-import { BaseHeadingPlugin } from '@platejs/basic-nodes';
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseListPlugin } from '@platejs/list';
 import {
   BaseFilePlugin,
   BaseImagePlugin,
   BaseVideoPlugin,
 } from '@platejs/media';
+import { ElementApi, PathApi, property, schema, target } from '@platejs/plite';
 import { BaseTableCellPlugin, BaseTablePlugin } from '@platejs/table';
 
 import { migratePlateV54 } from './index';

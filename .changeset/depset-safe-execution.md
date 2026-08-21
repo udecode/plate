@@ -1,5 +1,5 @@
 ---
-"depset": patch
+'depset': patch
 ---
 
 - Run npm lookups without shell interpolation

@@ -110,7 +110,8 @@ describe('package scripts', () => {
     }).toEqual({
       browser: expectedPliteBrowserRuntimeSubpathExports.browser.toSorted(),
       core: expectedPliteBrowserRuntimeSubpathExports.core.toSorted(),
-      playwright: expectedPliteBrowserRuntimeSubpathExports.playwright.toSorted(),
+      playwright:
+        expectedPliteBrowserRuntimeSubpathExports.playwright.toSorted(),
     });
   });
 

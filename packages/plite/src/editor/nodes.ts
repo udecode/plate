@@ -77,8 +77,9 @@ export function* nodes<T extends Node>(
       if (
         !voids &&
         (editorIsVoid(editor, node) || editorIsElementReadOnly(editor, node))
-      )
+      ) {
         return true;
+      }
 
       return false;
     },

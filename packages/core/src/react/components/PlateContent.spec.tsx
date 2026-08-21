@@ -1,7 +1,5 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import {
   ContentSlice,
   defineStateField,
@@ -11,10 +9,10 @@ import {
   target,
   valueCodecs,
 } from '@platejs/plite';
-import { evaluateCommand } from '@platejs/plite/internal';
 import { useEditorViewState } from '@platejs/plite-react';
-
+import { evaluateCommand } from '@platejs/plite/internal';
 import { act, render, waitFor } from '@testing-library/react';
+import React from 'react';
 
 import { defineBasePlugin } from '../../lib';
 import { createPlateEditor } from '../editor';

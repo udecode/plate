@@ -1,8 +1,9 @@
-import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
 import { SelectionApi } from '@platejs/plite';
 import { isDOMNode } from '@platejs/plite-dom';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
+
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { prepareEditableFocusMouseKernel } from './editing-kernel';
 import {
   getNestedEditableDOMSelectionRoot,

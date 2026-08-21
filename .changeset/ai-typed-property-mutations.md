@@ -1,6 +1,5 @@
 ---
-"@platejs/ai": minor
+'@platejs/ai': minor
 ---
 
-Expose semantic AI preview cleanup through the AI plugin update group so
-cross-node cleanup stays owned by the plugin schema.
+Expose semantic AI preview cleanup through the AI plugin update group so cross-node cleanup stays owned by the plugin schema.

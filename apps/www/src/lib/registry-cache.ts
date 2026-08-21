@@ -1,5 +1,4 @@
 import * as React from 'react';
-
 import type { registryItemFileSchema } from 'shadcn/schema';
 import type { z } from 'zod';
 

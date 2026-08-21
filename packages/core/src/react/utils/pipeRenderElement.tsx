@@ -1,22 +1,20 @@
-import React from 'react';
-
 import type { Element, Path } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
+import React from 'react';
 
-import type { PlateEditor } from '../editor/PlateEditor';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
-
-import { type EditableProps, getPluginNodeClass } from '../../lib';
 import {
   getCompiledPlateModelBinding,
   getCompiledPlatePluginByType,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
+import { type EditableProps, getPluginNodeClass } from '../../lib';
 import { isHtmlVoidElementTag, PlateElement } from '../components';
-import { ElementProvider } from '../stores';
+import type { PlateEditor } from '../editor/PlateEditor';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
+import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { BelowRootNodes, pluginRenderElement } from './pluginRenderElement';
 
@@ -85,8 +83,9 @@ function getFastInjectedAttributes({
   path: Path;
   readOnly: boolean;
 }) {
-  if (getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0)
+  if (getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0) {
     return attributes;
+  }
 
   return pipeInjectNodeProps(
     editor,

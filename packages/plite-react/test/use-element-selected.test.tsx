@@ -1,7 +1,8 @@
-import { act, render } from '@testing-library/react';
-import { useEffect } from 'react';
 import { SelectionApi } from '@platejs/plite';
 import { hasPath as editorHasPath } from '@platejs/plite/internal';
+import { act, render } from '@testing-library/react';
+import { useEffect } from 'react';
+
 import {
   createReactEditor,
   Editable,
@@ -43,11 +44,10 @@ describe('useElementSelected', () => {
         attributes,
         children,
       }: RenderElementProps) => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const selected = useElementSelected();
-        // eslint-disable-next-line react-hooks/rules-of-hooks
+
         const collapsedSelected = useElementSelected({ mode: 'collapsed' });
-        // eslint-disable-next-line react-hooks/rules-of-hooks
+
         const nodeSelected = useElementSelected({ mode: 'node' });
         const { id } = element as any;
 

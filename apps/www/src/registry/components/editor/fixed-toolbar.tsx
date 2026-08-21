@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   BoldPlugin,
   CodePlugin,
@@ -31,6 +30,10 @@ import {
   WandSparklesIcon,
 } from 'lucide-react';
 import { useEditorReadOnly, definePlatePlugin } from 'platejs/react';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
+
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -61,7 +64,6 @@ import { TableToolbarButton } from './table-toolbar-button';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { ToolbarGroup, Toolbar } from './toolbar';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
-import { cn } from '@/lib/utils';
 
 export function FixedToolbarButtons({
   children,

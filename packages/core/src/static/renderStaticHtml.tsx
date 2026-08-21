@@ -1,10 +1,8 @@
-import React from 'react';
-
 import { decode } from 'html-entities';
+import React from 'react';
 
 import type { BaseEditor } from '../lib';
 import type { PlateStaticProps } from './components/PlateStatic';
-
 import { PlateStatic } from './components/PlateStatic';
 import { stripHtmlClassNames } from './utils/stripHtmlClassNames';
 import { stripPliteDataAttributes } from './utils/stripPliteDataAttributes';

@@ -1,8 +1,7 @@
 import React from 'react';
 
-import type { PlateEditor } from './PlateEditor';
 import type { BasePluginInput, EditorApplicationSchema } from '../../lib';
-
+import type { PlateEditor } from './PlateEditor';
 import { type CreatePlateEditorOptions, createPlateEditor } from './withPlate';
 
 type UsePlateEditorReturn<TEnabled, TEditor> = TEnabled extends false
@@ -64,13 +63,12 @@ export function usePlateEditor<
 ): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins, TSchema>> {
   const { enabled, ...editorOptions } = options;
 
-  return React.useMemo(
-    () => {
-      if (enabled === false) return null;
+  return React.useMemo(() => {
+    if (enabled === false) return null;
 
-      return createPlateEditor<TPlugins, TSchema>(editorOptions);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editorOptions.id, enabled, ...deps]
-  ) as UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins, TSchema>>;
+    return createPlateEditor<TPlugins, TSchema>(editorOptions);
+  }, [editorOptions.id, enabled, ...deps]) as UsePlateEditorReturn<
+    TEnabled,
+    UsePlateEditorResult<TPlugins, TSchema>
+  >;
 }

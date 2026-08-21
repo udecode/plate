@@ -14,6 +14,7 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { replace as replaceEditor } from '@platejs/plite/internal';
+
 import {
   AnchorToken,
   addAnchorToken,

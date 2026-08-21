@@ -1,10 +1,10 @@
 import { ContentSlice, type Element, NodeApi } from '@platejs/plite';
-import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
+
 import type {
   TableCellElementWithId,
   TableRowElementWithId,
 } from '../__tests__/tableTestTypes';
-
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import { createDetachedTableContext } from './context';
 import { compileTableGrid } from './grid';
 import {

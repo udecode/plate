@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unsafe-call, typescript/no-unsafe-member-access -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 
@@ -169,8 +170,9 @@ function getImportSources(source: string) {
         statement.type === 'ExportAllDeclaration' ||
         statement.type === 'ExportNamedDeclaration') &&
       statement.source
-    )
+    ) {
       imports.add(statement.source.value);
+    }
   }
 
   const visit = (value: unknown) => {
@@ -235,7 +237,7 @@ function getRegistryFileImportSources(filePath: string) {
   return getImportSources(
     readFileSync(
       new URL(`../src/registry/${filePath}`, import.meta.url),
-      'utf8'
+      'utf-8'
     )
   );
 }
@@ -367,7 +369,7 @@ for (const itemName of REMOVED_FAMILY_ITEM_NAMES) {
 }
 
 for (const item of sourceRegistry.items) {
-  if (/-node$/.test(item.name)) {
+  if (item.name.endsWith('-node')) {
     shallowFeatureSplits.push(item.name);
   }
 

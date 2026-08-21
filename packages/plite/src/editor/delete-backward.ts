@@ -4,8 +4,6 @@ import {
   runEditorTransaction,
   withEditorUpdateRootScope,
 } from '../core/public-state';
-import { hasPath } from './has-path';
-import { point } from './point';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
@@ -14,6 +12,8 @@ import { removeNodes } from '../transforms-node/remove-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import type { TextUnit } from '../types/types';
 import type { WithEditorFirstArg } from '../utils/types';
+import { hasPath } from './has-path';
+import { point } from './point';
 
 export const applyDelete = (editor: Editor, command: DeleteCommand) => {
   runEditorTransaction(editor, (tx) => {

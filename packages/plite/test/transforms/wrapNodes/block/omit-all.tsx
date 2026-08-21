@@ -1,10 +1,10 @@
 /** @jsx jsx */
 
+import { NodeApi } from '@platejs/plite';
+
 import { jsx } from '../../..';
 
 jsx;
-
-import { NodeApi } from '@platejs/plite';
 
 export const run = (editor) => {
   editor.nodes.wrap(<block a />, {

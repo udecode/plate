@@ -1,9 +1,8 @@
 import { createEditor, property, schema, target } from '@platejs/plite';
 import { getEditorExtensionRegistry } from '@platejs/plite/internal';
 
-import type { PluginReference } from '../../lib/plugin';
-
 import { createBaseEditor } from '../../lib/editor';
+import type { PluginReference } from '../../lib/plugin';
 import { defineBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import { definePlatePlugin } from '../../react/plugin';

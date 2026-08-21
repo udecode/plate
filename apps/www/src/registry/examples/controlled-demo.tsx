@@ -1,8 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -61,7 +60,7 @@ export default function ControlledEditorDemo() {
       </div>
 
       <hr className="my-8" />
-      <h2 className="mb-2 font-semibold text-lg">Async Controlled Editor</h2>
+      <h2 className="mb-2 text-lg font-semibold">Async Controlled Editor</h2>
       <AsyncControlledEditorDemo />
     </div>
   );

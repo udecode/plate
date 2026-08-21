@@ -163,7 +163,7 @@ Work Checklist:
 - [ ] Next heartbeat recommendation is recorded.
 - [ ] Run artifact is written under `docs/maintainer/runs/*` when it prevents
       duplicate future work, or N/A reason is recorded.
-- [ ] Agent-native/P2 autoreview decision is recorded when skills, prompts,
+- [ ] Agent-native/P1 autoreview decision is recorded when skills, prompts,
       commands, or local workflow files change.
 
 Completion Gates:
@@ -186,7 +186,7 @@ Completion Gates:
 | Next heartbeat | pending | Name the next useful heartbeat slice or say none safe | pending |
 | Run artifact | pending | Write or explicitly skip `docs/maintainer/runs/*` | pending |
 | Agent-native review | pending | Run/review when agent workflow files changed, else N/A | pending |
-| P2 autoreview | pending | Run with `--max-priority P2` for non-trivial implementation diffs; P3 is opt-in only, else N/A | pending |
+| P1 autoreview | pending | Run with `--max-priority P1` for non-trivial implementation diffs; P2/P3 are opt-in only, else N/A | pending |
 | Final handoff contract | pending | Report repo/mode/matrix/owner/proof/mutations/changed/attention/next heartbeat | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

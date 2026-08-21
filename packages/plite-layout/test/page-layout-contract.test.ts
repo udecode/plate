@@ -1,12 +1,13 @@
 import { afterAll, describe, expect, it } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
+
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import { act, renderHook } from '@testing-library/react';
 import {
   createEditor,
   defineExtension,
   defineStateField,
 } from '@platejs/plite';
+import { act, renderHook } from '@testing-library/react';
 import { createElement, type PropsWithChildren, StrictMode } from 'react';
 
 import * as PliteLayout from '../src';

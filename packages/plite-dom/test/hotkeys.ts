@@ -1,5 +1,6 @@
-import { Hotkeys, isHotkey, type KeyboardEventLike } from '../src/index';
 import { JSDOM } from 'jsdom';
+
+import { Hotkeys, isHotkey, type KeyboardEventLike } from '../src/index';
 
 const event = ({
   altKey = false,

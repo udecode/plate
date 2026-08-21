@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import * as actualCoreReact from '@platejs/core/react';
 import { render, waitFor } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 const createPlateEditorMock = mock();
 const overlayPositionsMock = mock();

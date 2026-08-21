@@ -1,4 +1,9 @@
 import {
+  createPlateEditor,
+  definePlatePlugin,
+  type PlateEditor,
+} from '@platejs/core/react';
+import {
   property,
   schema,
   target,
@@ -6,13 +11,9 @@ import {
   type Text,
   type ValueOf,
 } from '@platejs/plite';
-import {
-  createPlateEditor,
-  definePlatePlugin,
-  type PlateEditor,
-} from '@platejs/core/react';
-import type { InferPlateEditorPlugins } from '../src/react/editor/PlateEditor';
+
 import type { GeneratedEditorTypeProvider } from '../src/internal/editor/generatedEditorTypes';
+import type { InferPlateEditorPlugins } from '../src/react/editor/PlateEditor';
 
 type LayoutVariant = 'compact' | 'full';
 type EditorSummary = `${LayoutVariant}:@`;

@@ -1,10 +1,9 @@
-import type { MdHeading, MdRootContent } from '../mdast';
-import type { DeserializeMdContext } from '../types';
-
 import {
   createTestEditor,
   getTestDeserializeOptions,
 } from '../__tests__/createTestEditor';
+import type { MdHeading, MdRootContent } from '../mdast';
+import type { DeserializeMdContext } from '../types';
 import {
   buildSlateNode,
   convertNodesDeserialize,

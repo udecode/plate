@@ -4,6 +4,7 @@ import {
   DOMEditor,
   type DOMEditorInterface,
 } from '@platejs/plite-dom/internal';
+
 import type { ReactApi } from './with-react';
 
 /**

@@ -1,10 +1,10 @@
-import { useCallback, useSyncExternalStore } from 'react';
 import type { Editor, NamedRootKey, RootKey } from '@platejs/plite';
 import type { DOMApi } from '@platejs/plite-dom';
 import {
   setEditorDOMScrollElement,
   subscribeEditorDOMScope,
 } from '@platejs/plite-dom/internal';
+import { useCallback, useSyncExternalStore } from 'react';
 
 type DOMScopeEditor = Editor<any, any> & {
   api: {

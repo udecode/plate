@@ -1,15 +1,14 @@
+import type { ListElement } from '@platejs/list';
 import {
   type Descendant,
   type Element,
   type Text,
   TextApi,
 } from '@platejs/plite';
-import type { ListElement } from '@platejs/list';
 import { PLUGINS } from '@platejs/utils';
 
 import type { MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
-
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { getSerializableListStyle, listToMdastTree } from './listToMdastTree';
 import { wrapWithBlockId } from './wrapWithBlockId';

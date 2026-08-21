@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, type Descendant, type Element } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
@@ -7,7 +9,6 @@ import {
   string as editorString,
 } from '@platejs/plite/internal';
 
-import { createEditor, type Descendant, type Element } from '@platejs/plite';
 import { setSelectionStateSelection } from '../src/core/selection-state';
 import { extendTestSchema } from './support/schema';
 

@@ -423,7 +423,11 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
 ) =>
   applyCommandEvaluation(editor, evaluateCommandChain(editor, command, input));
 
-/** @internal Evaluate one pure command without publishing its transaction. */
+/**
+ * Evaluate one pure command without publishing its transaction.
+ *
+ * @internal
+ */
 export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
   editor: Editor<any, any>,
   command: TCommand,
@@ -437,7 +441,11 @@ export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
     input[0]
   );
 
-/** @internal Probe whether installed handlers preserve the default command unchanged. */
+/**
+ * Probe whether installed handlers preserve the default command unchanged.
+ *
+ * @internal
+ */
 export const probeCommandNativeEquivalent = <
   TCommand extends EditorCommandDescriptor,
 >(
@@ -461,7 +469,11 @@ export const probeCommandNativeEquivalent = <
       });
 };
 
-/** @internal Imperatively dispatch a pure command at a host boundary. */
+/**
+ * Imperatively dispatch a pure command at a host boundary.
+ *
+ * @internal
+ */
 export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
   editor: Editor<any, any>,
   command: TCommand,
@@ -475,7 +487,11 @@ export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
     input[0]
   );
 
-/** @internal Bind typed command dispatch to a runtime editor owner. */
+/**
+ * Bind typed command dispatch to a runtime editor owner.
+ *
+ * @internal
+ */
 export const createCommandDispatch = <TEditor extends Editor>(
   getEditor: () => TEditor
 ): EditorCommandDispatch<TEditor> =>

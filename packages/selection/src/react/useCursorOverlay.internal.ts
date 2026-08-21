@@ -1,6 +1,5 @@
-import { useEffect, useSyncExternalStore } from 'react';
-
 import { useEditorPlugin } from '@platejs/core/react';
+import { useEffect, useSyncExternalStore } from 'react';
 
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 import { CursorOverlayPlugin } from './CursorOverlayPlugin';

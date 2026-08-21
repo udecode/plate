@@ -1,14 +1,15 @@
 /** @jsx jsxt */
 
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
+import { SelectionApi } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+
 import {
   BaseBlockquotePlugin,
   BaseHorizontalRulePlugin,
   BlockquoteRules,
   HorizontalRuleRules,
 } from './BaseBlockPlugins';
-import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
-import { SelectionApi } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
 
 jsxt;
 

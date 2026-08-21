@@ -1,5 +1,4 @@
 import type { Descendant } from '@platejs/plite';
-
 import defaults from 'lodash/defaults.js';
 
 import {

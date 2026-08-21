@@ -8,14 +8,14 @@ import { getLiveSelection } from './public-state';
 
 const unwrapFragmentNodes = (
   nodes: readonly Descendant[],
-  types: readonly string[],
+  types: ReadonlySet<string>,
   result: Descendant[] = []
 ) => {
   for (const node of nodes) {
     if (
       NodeApi.isElement(node) &&
       typeof node.type === 'string' &&
-      types.includes(node.type)
+      types.has(node.type)
     ) {
       unwrapFragmentNodes(node.children, types, result);
     } else {
@@ -36,7 +36,7 @@ export const getFragment = (
     const fragment = NodeApi.fragment(editor, selection);
 
     if (options.unwrap && options.unwrap.length > 0) {
-      return unwrapFragmentNodes(fragment, options.unwrap);
+      return unwrapFragmentNodes(fragment, new Set(options.unwrap));
     }
 
     return fragment;

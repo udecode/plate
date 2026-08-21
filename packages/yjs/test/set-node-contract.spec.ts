@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import { type Descendant, NodeApi } from '@platejs/plite';
 
 import {

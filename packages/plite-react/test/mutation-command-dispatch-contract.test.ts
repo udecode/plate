@@ -1,5 +1,6 @@
 import { defineExtension, editorCommands } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
+
 import {
   applyEditableCommand,
   applyModelOwnedDeleteIntent,

@@ -1,9 +1,8 @@
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-
-import { createPlateEditor } from '../../editor';
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { createPlateEditor } from '../../editor';
 import { useEditorSelector } from './useEditorSelector';
 
 describe('useEditorSelector', () => {

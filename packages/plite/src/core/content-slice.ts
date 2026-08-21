@@ -254,7 +254,11 @@ function closed(content: readonly Descendant[]): ContentSliceValue<Value> {
 
 const empty = closed<never>([]);
 
-/** @internal Trust freshly owned, deeply frozen, shape-validated nodes. */
+/**
+ * Trust freshly owned, deeply frozen, shape-validated nodes.
+ *
+ * @internal
+ */
 export const createDetachedContentSlice = <V extends Value>(
   content: readonly DescendantIn<V>[],
   openStart: number,
@@ -319,11 +323,19 @@ export const createDetachedContentSlice = <V extends Value>(
   return prepare(result, true);
 };
 
-/** @internal Read the schema authority that constructed canonical slice nodes. */
+/**
+ * Read the schema authority that constructed canonical slice nodes.
+ *
+ * @internal
+ */
 export const getContentSliceCanonicalAuthority = (slice: ContentSliceValue) =>
   canonicalContentAuthorities.get(fromJSON(slice).content);
 
-/** @internal Trust frozen nodes read directly from an immutable editor snapshot. */
+/**
+ * Trust frozen nodes read directly from an immutable editor snapshot.
+ *
+ * @internal
+ */
 export const createContentSliceFromFragment = <V extends Value>(
   content: readonly Descendant[],
   openStart: number,
@@ -400,11 +412,19 @@ export const ContentSlice = Object.freeze({
   },
 });
 
-/** @internal Whether a trusted slice owns detached content identities. */
+/**
+ * Whether a trusted slice owns detached content identities.
+ *
+ * @internal
+ */
 export const isDetachedContentSlice = (slice: ContentSliceValue) =>
   trustedSlices.get(fromJSON(slice))!.detached;
 
-/** @internal Encode the complete trusted content behind a slice. */
+/**
+ * Encode the complete trusted content behind a slice.
+ *
+ * @internal
+ */
 export const encodeContentSliceContent = (slice: ContentSliceValue) => {
   const value = fromJSON(slice);
   const prepared = trustedSlices.get(value)!;
@@ -426,7 +446,11 @@ export const encodeContentSliceContent = (slice: ContentSliceValue) => {
   return fullEncoded;
 };
 
-/** @internal Encode a trusted JSON slice while retaining its open edges. */
+/**
+ * Encode a trusted JSON slice while retaining its open edges.
+ *
+ * @internal
+ */
 export const encodeContentSlice = (slice: ContentSliceValue) => {
   const value = fromJSON(slice);
   let encoded = encodedSlices.get(value);
@@ -443,7 +467,11 @@ export const encodeContentSlice = (slice: ContentSliceValue) => {
   return encoded;
 };
 
-/** @internal Reuse one trusted content snapshot with different valid openness. */
+/**
+ * Reuse one trusted content snapshot with different valid openness.
+ *
+ * @internal
+ */
 export const prepareContentSliceVariant = <V extends Value>(
   slice: ContentSliceValue<V>,
   openStart: number,

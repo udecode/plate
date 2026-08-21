@@ -1,14 +1,14 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import { property, schema, target } from '@platejs/plite';
-
-jsxt;
+import { jsxt } from '@platejs/test-utils';
 
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 import { ElementIdPlugin } from '../element-id';
 import { ElementStatePlugin } from './ElementStatePlugin';
+
+jsxt;
 
 describe('ElementStatePlugin', () => {
   it('treats type and the canonical node id as empty element state', () => {

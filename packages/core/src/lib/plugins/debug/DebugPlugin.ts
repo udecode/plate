@@ -1,5 +1,5 @@
-import type { DefinitionOf } from '../../plugin/PluginDefinition';
 import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+import type { DefinitionOf } from '../../plugin/PluginDefinition';
 
 export type DebugErrorType =
   | (string & {})
@@ -40,7 +40,7 @@ const initialState: DebugPluginState = {
     info: (message, type, details) =>
       console.info(`${type ? `[${type}] ` : ''}${message}`, details),
     log: (message, type, details) =>
-      // biome-ignore lint/suspicious/noConsole: lib
+      // lib.
       console.log(`${type ? `[${type}] ` : ''}${message}`, details),
     warn: (message, type, details) =>
       console.warn(`${type ? `[${type}] ` : ''}${message}`, details),

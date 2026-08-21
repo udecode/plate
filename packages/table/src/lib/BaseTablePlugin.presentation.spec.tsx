@@ -1,14 +1,16 @@
 /** @jsx jsxt */
 
-import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import assert from 'node:assert/strict';
+
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import type { TableCellElement, TableElement } from './BaseTablePlugin';
-import assert from 'node:assert/strict';
 
 describe('table presentation', () => {
   {

@@ -1,9 +1,8 @@
-import type { MdList, MdListItem, MdParagraph, MdText } from '../mdast';
-
 import {
   createTestEditor,
   getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
+import type { MdList, MdListItem, MdParagraph, MdText } from '../mdast';
 import { listToMdastTree } from './listToMdastTree';
 
 const editor = createTestEditor();

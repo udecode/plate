@@ -1,5 +1,3 @@
-import cloneDeep from 'lodash/cloneDeep.js';
-
 import {
   ContentSlice,
   type Descendant,
@@ -7,6 +5,7 @@ import {
   editorReads,
   ElementApi,
 } from '@platejs/plite';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 export const excludeDiffFromFragment = (
   fragment: readonly Descendant[]

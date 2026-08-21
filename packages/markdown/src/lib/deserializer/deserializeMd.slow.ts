@@ -1,9 +1,9 @@
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { MarkdownPlugin } from '../MarkdownPlugin';
 import {
   markdownToAstProcessorWithRuntime,
   withMarkdownRuntime,
 } from '../internal/markdownConversion';
+import { MarkdownPlugin } from '../MarkdownPlugin';
 
 describe('editor.api.markdown.deserialize', () => {
   it('falls back to the safe markdown path for incomplete mdx tails', () => {

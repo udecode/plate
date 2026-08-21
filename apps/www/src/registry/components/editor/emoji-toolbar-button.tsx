@@ -1,8 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
 import { SmileIcon } from 'lucide-react';
+import * as React from 'react';
 
 import {
   EmojiPicker,

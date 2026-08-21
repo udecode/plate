@@ -15,8 +15,7 @@ jobs:
     name: Sync auto-release checkbox
     runs-on: ubuntu-latest
     if: >-
-      github.repository == 'udecode/plate' &&
-      (
+      github.repository == 'udecode/plate' && (
         (github.event_name == 'pull_request' &&
           github.event.pull_request.head.repo.full_name == github.repository) ||
         (github.event_name == 'pull_request_target' &&

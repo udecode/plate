@@ -1,15 +1,3 @@
-import type {
-  BorderDirection,
-  BorderStylesDefault,
-  CellIndices,
-  CreateCellOptions,
-  GetEmptyRowNodeOptions,
-  GetEmptyTableNodeOptions,
-  SetBorderWidthOptions,
-  TableBorderStates,
-  TableFindOptions,
-  TableStoreSizeOverrides,
-} from './types';
 import {
   BaseParagraphPlugin,
   defineBasePlugin,
@@ -47,6 +35,7 @@ import {
 } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
 import { PLUGINS } from '@platejs/utils';
+
 import {
   getColSpan,
   getImportedTableCellColSpan,
@@ -90,6 +79,18 @@ import {
   readTableSelection,
   type TableSelectionView,
 } from './internal/selection';
+import type {
+  BorderDirection,
+  BorderStylesDefault,
+  CellIndices,
+  CreateCellOptions,
+  GetEmptyRowNodeOptions,
+  GetEmptyTableNodeOptions,
+  SetBorderWidthOptions,
+  TableBorderStates,
+  TableFindOptions,
+  TableStoreSizeOverrides,
+} from './types';
 
 type GetSelectedCellsBordersOptions = {
   select?: {
@@ -974,7 +975,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       },
     }),
 })
-
   .extend(({ editor }) => ({
     api: () => ({
       createCell: ({
@@ -3130,7 +3130,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                   currentColSizes.some((width) => width === null)
                 ) {
                   tx.nodes.set({ columnWidths }, { at: path });
-                  return;
                 }
               }
             }

@@ -1,5 +1,4 @@
 import { applicationName } from '../constants';
-
 import generateCoreXML from './core';
 
 describe('generateCoreXML', () => {

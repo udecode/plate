@@ -1,8 +1,4 @@
 import { ContentSlice } from '@platejs/plite';
-import {
-  getCompiledSchemaPropertyId,
-  reportEditorLifecycleError,
-} from '@platejs/plite/internal';
 import type {
   HostCodec,
   HostCodecParseContext,
@@ -10,14 +6,18 @@ import type {
   HostCodecSerializeContext,
 } from '@platejs/plite-dom';
 import { hostCodecs } from '@platejs/plite-dom';
+import {
+  getCompiledSchemaPropertyId,
+  reportEditorLifecycleError,
+} from '@platejs/plite/internal';
 
 import type { BaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin';
+import { compilePlateHtmlCodec } from '../../lib/plugins/html/HtmlPlugin';
 import type {
   CompiledPlateModel,
   CompiledPlateModelBinding,
 } from './compilePlateModel';
-import { compilePlateHtmlCodec } from '../../lib/plugins/html/HtmlPlugin';
 
 type CodecDeclaration = Readonly<{
   decode?: (context: HostCodecParseContext) => ContentSlice | null;

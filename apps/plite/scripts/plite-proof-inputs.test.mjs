@@ -46,7 +46,9 @@ const waitForChange = async (monitor, timeoutMs = 1000) => {
     const change = await monitor.checkpoint();
 
     if (change) return change;
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 5);
+    });
   }
 };
 
@@ -500,7 +502,7 @@ test('target monitor ignores its build manifest but freshness does not', async (
   });
 
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
 
     await waitForMonitorReady(monitor);
     fs.writeFileSync(
@@ -581,7 +583,7 @@ test('build manifest rejects any output-tree drift and ignores itself', () => {
     fs.writeFileSync(
       manifestPath,
       `${JSON.stringify({
-        ...JSON.parse(fs.readFileSync(manifestPath, 'utf8')),
+        ...JSON.parse(fs.readFileSync(manifestPath, 'utf-8')),
         note: true,
       })}\n`
     );

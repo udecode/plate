@@ -1,18 +1,19 @@
-import * as React from 'react';
-
-import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+import { cva } from 'class-variance-authority';
 import type { EditorDocumentValue } from 'platejs';
 import { createStaticEditor, renderStaticHtml } from 'platejs/static';
+import * as React from 'react';
 
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import { EditorStatic } from '@/registry/components/editor/editor-static';
 import {
   EditorClient,
   EditorViewClient,
   ExportHtmlButton,
   HtmlIframe,
 } from '@/registry/components/editor/plate-to-html';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { alignValue } from '@/registry/examples/values/align-value';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
@@ -29,7 +30,6 @@ import { mediaValue } from '@/registry/examples/values/media-value';
 import { mentionValue } from '@/registry/examples/values/mention-value';
 import { tableValue } from '@/registry/examples/values/table-value';
 import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
-import { EditorStatic } from '@/registry/components/editor/editor-static';
 
 const getCachedTailwindCss = React.cache(async () => {
   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');

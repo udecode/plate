@@ -1,9 +1,9 @@
 import { DocumentChange } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
 import {
   createDOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import { history } from '@platejs/plite-history';
 
 import {
   attachPliteBrowserHandle as attachRuntimeBrowserHandle,

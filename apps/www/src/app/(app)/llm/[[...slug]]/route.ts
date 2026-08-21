@@ -15,8 +15,8 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug?: string[] }> }
 ) {
+  const source = getPlateLLMSource();
   const { slug } = await params;
-  const source = await getPlateLLMSource();
   const page = source.getPage(stripMarkdownSuffixFromSlug(slug), 'en');
 
   if (!page) {

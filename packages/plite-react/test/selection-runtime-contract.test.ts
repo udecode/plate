@@ -1,4 +1,5 @@
 import type { EditorCommit, Range } from '@platejs/plite';
+
 import {
   createEditableInputController,
   createEditableInputControllerState,

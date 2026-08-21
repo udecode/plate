@@ -1,11 +1,9 @@
-import type { Root } from 'mdast';
-
 import type { Descendant } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
+import type { Root } from 'mdast';
 
 import type { MdRoot } from '../mdast';
 import type { DeserializeMdContext } from '../types';
-
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 export const mdastToSlate = (

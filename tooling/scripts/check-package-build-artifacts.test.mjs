@@ -206,7 +206,7 @@ test('all Plite release packages use one direct tsdown build', async () => {
           `../../packages/${packageDirectory}/package.json`,
           import.meta.url
         ),
-        'utf8'
+        'utf-8'
       )
     );
 

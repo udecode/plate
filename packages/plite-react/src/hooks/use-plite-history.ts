@@ -1,11 +1,12 @@
-import { type KeyboardEvent, useCallback, useMemo } from 'react';
 import type { EditorStateView, NamedRootKey, RootKey } from '@platejs/plite';
+import { type KeyboardEvent, useCallback, useMemo } from 'react';
+
+import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import { resolveHistoryFocusEditor } from '../editable/history-focus';
 import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
-import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   failInvariant,
   getInternalDocumentChangeRootKeys,
@@ -14,6 +15,7 @@ import {
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
+import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
   readPliteViewSelection,
   readPliteViewSelectionHistoryEntry,
@@ -25,7 +27,6 @@ import {
   usePliteRootEditor,
   usePliteRuntimeState,
 } from './use-plite-runtime';
-import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 
 /** Focus behavior after undo or redo commands. */
 export type PliteHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';

@@ -101,7 +101,7 @@ Advance one phase at a time:
 7. wire app-owned kits, static variants, metadata, and examples when needed;
 8. write current-state docs and release artifacts;
 9. run package, type, registry, browser, and stale-surface proof;
-10. reuse the same manifest for Plate Next attestation, P2 review, and handoff.
+10. reuse the same manifest for Plate Next attestation, P1 review, and handoff.
 
 A row may be skipped only as `no` with a concrete N/A reason. Headless and
 registry-only flows are first-class modes, not incomplete full flows.
@@ -115,7 +115,7 @@ node tooling/scripts/check-plate-feature.mjs <plan>
 ```
 
 Then run the proof selected by the manifest, Plate Next version/status checks
-for reviewed packages, and P2 `autoreview`. Never mass-attest packages after a
+for reviewed packages, and P1 `autoreview`. Never mass-attest packages after a
 doctrine bump. A package advances only after its own full current review and
 recorded evidence.
 

@@ -17,8 +17,6 @@ const DOMText = globalThis.Text;
 const DOCUMENT_POSITION_PRECEDING = 2;
 const DOCUMENT_POSITION_FOLLOWING = 4;
 
-import { DOMEditor } from '../plugin/dom-editor';
-
 export type {
   DOMComment,
   DOMElement,
@@ -292,8 +290,6 @@ export const getPliteFragmentAttribute = (
     }
     if (clipboardFormatKey === DEFAULT_CLIPBOARD_FORMAT_KEY) return fragment;
   }
-
-  return;
 };
 
 /**
@@ -333,49 +329,6 @@ export const getSelection = (root: Document | ShadowRoot): Selection | null => {
   }
 
   return document.getSelection();
-};
-
-/**
- * Check whether a mutation originates from a editable element inside the editor.
- */
-
-export const isTrackedMutation = (
-  editor: DOMEditor,
-  mutation: MutationRecord,
-  batch: MutationRecord[]
-): boolean => {
-  const { target } = mutation;
-  if (isDOMElement(target) && target.matches('[contentEditable="false"]')) {
-    return false;
-  }
-
-  const { document } = DOMEditor.getWindow(editor);
-  if (containsShadowAware(document, target)) {
-    return DOMEditor.hasDOMNode(editor, target, { editable: true });
-  }
-
-  const parentMutation = batch.find(({ addedNodes, removedNodes }) => {
-    for (const node of addedNodes) {
-      if (node === target || containsShadowAware(node, target)) {
-        return true;
-      }
-    }
-
-    for (const node of removedNodes) {
-      if (node === target || containsShadowAware(node, target)) {
-        return true;
-      }
-    }
-
-    return false;
-  });
-
-  if (!parentMutation || parentMutation === mutation) {
-    return false;
-  }
-
-  // Target add/remove is tracked. Track the mutation if we track the parent mutation.
-  return isTrackedMutation(editor, parentMutation, batch);
 };
 
 /**

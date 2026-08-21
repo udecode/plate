@@ -57,7 +57,7 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
         voids: true,
       });
     } else {
-      const marks = { ...(tx.marks || {}) };
+      const marks = { ...tx.marks };
       delete marks[<keyof Node>key];
       tx.setMarks(marks);
     }

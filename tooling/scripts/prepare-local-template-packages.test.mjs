@@ -10,6 +10,13 @@ import {
   rewriteTemplatePackageJson,
 } from './prepare-local-template-packages.mjs';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 function createWorkspacePackages(entries) {
   const workspacePackages = new Map(
     Object.entries(entries).map(([packageName, localDependencyNames]) => [
@@ -50,7 +57,7 @@ test('includes affected template-facing packages for transitive changes', () => 
     workspacePackages
   );
 
-  assert.deepEqual([...affectedPackageNames].sort(), [
+  assert.deepEqual([...affectedPackageNames].sort(compareStrings), [
     '@platejs/basic-nodes',
     '@platejs/core',
     'platejs',
@@ -114,7 +121,7 @@ test('writes overrides for prepared local tarballs', async () => {
       ])
     );
 
-    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
 
     assert.equal(
       packageJson.overrides.platejs,

@@ -63,7 +63,7 @@ export function DocBreadcrumb({
   placeholder?: string;
   value?: string;
 }) {
-  const { push } = useRouter();
+  const router = useRouter();
   const locale = useLocale();
   const [open, setOpen] = React.useState(false);
 
@@ -110,9 +110,9 @@ export function DocBreadcrumb({
           )}
           <CommandEmpty>{emptyText}</CommandEmpty>
           <CommandList className={cn('max-h-[70vh]', !combobox && 'min-h-0')}>
-            {items.map((group, index) => (
+            {items.map((group) => (
               <CommandGroup
-                key={group.title ?? index}
+                key={group.title ?? group.items?.[0]?.href}
                 className="px-2"
                 heading={group.title}
               >
@@ -126,7 +126,7 @@ export function DocBreadcrumb({
                         className="flex items-center gap-2"
                         value={item.value ?? item.href}
                         onSelect={() => {
-                          push(hrefWithLocale(item.href!, locale));
+                          router.push(hrefWithLocale(item.href!, locale));
                           setOpen(false);
                         }}
                       >

@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
 import type { Value } from '@platejs/plite';
+import { useCallback, useState } from 'react';
+
 import { subscribeEditableRuntimeFocus } from '../editable/editable-dom-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -10,7 +11,7 @@ export const useRuntimeFocusState = <
 >(
   editor: ReactRuntimeEditor<V, TExtensions>
 ) => {
-  const [focused, setFocused] = useState(ReactEditor.isFocused(editor));
+  const [focused, setFocused] = useState(() => ReactEditor.isFocused(editor));
   const [focusVersion, setFocusVersion] = useState(0);
   const refreshFocused = useCallback(() => {
     setFocused(ReactEditor.isFocused(editor));

@@ -23,8 +23,7 @@
 
 ### Minor Changes
 
-- [#6000](https://github.com/ianstormtaylor/slate/pull/6000) [`8d9bf305`](https://github.com/ianstormtaylor/slate/commit/8d9bf30595a6fad62ff15e302ab489ff46a2515a) Thanks [@nabbydude](https://github.com/nabbydude)! - Added `Location.isPath`, `Location.isPoint`, `Location.isRange`, and `Location.isSpan` functions, as efficient type discriminators.
-  Use these instead of `Path.isPath`, `Point.isPoint`, `Range.isRange`, and `Span.isSpan` whenever possible.
+- [#6000](https://github.com/ianstormtaylor/slate/pull/6000) [`8d9bf305`](https://github.com/ianstormtaylor/slate/commit/8d9bf30595a6fad62ff15e302ab489ff46a2515a) Thanks [@nabbydude](https://github.com/nabbydude)! - Added `Location.isPath`, `Location.isPoint`, `Location.isRange`, and `Location.isSpan` functions, as efficient type discriminators. Use these instead of `Path.isPath`, `Point.isPoint`, `Range.isRange`, and `Span.isSpan` whenever possible.
 
 ## 0.122.0
 
@@ -36,8 +35,7 @@
 
 ### Minor Changes
 
-- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node.
-  Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
+- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node. Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
   ===
 
 ## 0.120.0
@@ -192,8 +190,7 @@
 
 ### Patch Changes
 
-- [#5415](https://github.com/ianstormtaylor/slate/pull/5415) [`01f0210b`](https://github.com/ianstormtaylor/slate/commit/01f0210bccfe2c3a81c252f527bad9ded36a68ff) Thanks [@zbeyens](https://github.com/zbeyens)! - `Editor.insertFragment`, `Editor.insertNode`, `Editor.insertText` now accept `options`.
-  For all insert methods, the default location is now the editor selection if `at` is not defined, or the end of document if `editor.selection` is not defined.
+- [#5415](https://github.com/ianstormtaylor/slate/pull/5415) [`01f0210b`](https://github.com/ianstormtaylor/slate/commit/01f0210bccfe2c3a81c252f527bad9ded36a68ff) Thanks [@zbeyens](https://github.com/zbeyens)! - `Editor.insertFragment`, `Editor.insertNode`, `Editor.insertText` now accept `options`. For all insert methods, the default location is now the editor selection if `at` is not defined, or the end of document if `editor.selection` is not defined.
 
 ## 0.94.0
 
@@ -212,135 +209,135 @@
   export interface BaseEditor {
     // Core state.
 
-    children: Descendant[]
-    selection: Selection
-    operations: Operation[]
-    marks: EditorMarks | null
+    children: Descendant[];
+    selection: Selection;
+    operations: Operation[];
+    marks: EditorMarks | null;
 
     // Overrideable core methods.
 
-    apply: (operation: Operation) => void
-    getDirtyPaths: (operation: Operation) => Path[]
-    getFragment: () => Descendant[]
-    isElementReadOnly: (element: Element) => boolean
-    isSelectable: (element: Element) => boolean
-    markableVoid: (element: Element) => boolean
+    apply: (operation: Operation) => void;
+    getDirtyPaths: (operation: Operation) => Path[];
+    getFragment: () => Descendant[];
+    isElementReadOnly: (element: Element) => boolean;
+    isSelectable: (element: Element) => boolean;
+    markableVoid: (element: Element) => boolean;
     normalizeNode: (
       entry: NodeEntry,
       options?: { operation?: Operation }
-    ) => void
-    onChange: (options?: { operation?: Operation }) => void
+    ) => void;
+    onChange: (options?: { operation?: Operation }) => void;
     shouldNormalize: ({
       iteration,
       dirtyPaths,
       operation,
     }: {
-      iteration: number
-      initialDirtyPathsLength: number
-      dirtyPaths: Path[]
-      operation?: Operation
-    }) => boolean
+      iteration: number;
+      initialDirtyPathsLength: number;
+      dirtyPaths: Path[];
+      operation?: Operation;
+    }) => boolean;
 
     // Overrideable core transforms.
 
-    addMark: OmitFirstArg<typeof Editor.addMark>
-    collapse: OmitFirstArg<typeof Transforms.collapse>
-    delete: OmitFirstArg<typeof Transforms.delete>
-    deleteBackward: (unit: TextUnit) => void
-    deleteForward: (unit: TextUnit) => void
-    deleteFragment: OmitFirstArg<typeof Editor.deleteFragment>
-    deselect: OmitFirstArg<typeof Transforms.deselect>
-    insertBreak: OmitFirstArg<typeof Editor.insertBreak>
-    insertFragment: OmitFirstArg<typeof Transforms.insertFragment>
-    insertNode: OmitFirstArg<typeof Editor.insertNode>
-    insertNodes: OmitFirstArg<typeof Transforms.insertNodes>
-    insertSoftBreak: OmitFirstArg<typeof Editor.insertSoftBreak>
-    insertText: OmitFirstArg<typeof Transforms.insertText>
-    liftNodes: OmitFirstArg<typeof Transforms.liftNodes>
-    mergeNodes: OmitFirstArg<typeof Transforms.mergeNodes>
-    move: OmitFirstArg<typeof Transforms.move>
-    moveNodes: OmitFirstArg<typeof Transforms.moveNodes>
-    normalize: OmitFirstArg<typeof Editor.normalize>
-    removeMark: OmitFirstArg<typeof Editor.removeMark>
-    removeNodes: OmitFirstArg<typeof Transforms.removeNodes>
-    select: OmitFirstArg<typeof Transforms.select>
+    addMark: OmitFirstArg<typeof Editor.addMark>;
+    collapse: OmitFirstArg<typeof Transforms.collapse>;
+    delete: OmitFirstArg<typeof Transforms.delete>;
+    deleteBackward: (unit: TextUnit) => void;
+    deleteForward: (unit: TextUnit) => void;
+    deleteFragment: OmitFirstArg<typeof Editor.deleteFragment>;
+    deselect: OmitFirstArg<typeof Transforms.deselect>;
+    insertBreak: OmitFirstArg<typeof Editor.insertBreak>;
+    insertFragment: OmitFirstArg<typeof Transforms.insertFragment>;
+    insertNode: OmitFirstArg<typeof Editor.insertNode>;
+    insertNodes: OmitFirstArg<typeof Transforms.insertNodes>;
+    insertSoftBreak: OmitFirstArg<typeof Editor.insertSoftBreak>;
+    insertText: OmitFirstArg<typeof Transforms.insertText>;
+    liftNodes: OmitFirstArg<typeof Transforms.liftNodes>;
+    mergeNodes: OmitFirstArg<typeof Transforms.mergeNodes>;
+    move: OmitFirstArg<typeof Transforms.move>;
+    moveNodes: OmitFirstArg<typeof Transforms.moveNodes>;
+    normalize: OmitFirstArg<typeof Editor.normalize>;
+    removeMark: OmitFirstArg<typeof Editor.removeMark>;
+    removeNodes: OmitFirstArg<typeof Transforms.removeNodes>;
+    select: OmitFirstArg<typeof Transforms.select>;
     setNodes: <T extends Node>(
       props: Partial<T>,
       options?: {
-        at?: Location
-        match?: NodeMatch<T>
-        mode?: MaximizeMode
-        hanging?: boolean
-        split?: boolean
-        voids?: boolean
-        compare?: PropsCompare
-        merge?: PropsMerge
+        at?: Location;
+        match?: NodeMatch<T>;
+        mode?: MaximizeMode;
+        hanging?: boolean;
+        split?: boolean;
+        voids?: boolean;
+        compare?: PropsCompare;
+        merge?: PropsMerge;
       }
-    ) => void
-    setNormalizing: OmitFirstArg<typeof Editor.setNormalizing>
-    setPoint: OmitFirstArg<typeof Transforms.setPoint>
-    setSelection: OmitFirstArg<typeof Transforms.setSelection>
-    splitNodes: OmitFirstArg<typeof Transforms.splitNodes>
-    unsetNodes: OmitFirstArg<typeof Transforms.unsetNodes>
-    unwrapNodes: OmitFirstArg<typeof Transforms.unwrapNodes>
-    withoutNormalizing: OmitFirstArg<typeof Editor.withoutNormalizing>
-    wrapNodes: OmitFirstArg<typeof Transforms.wrapNodes>
+    ) => void;
+    setNormalizing: OmitFirstArg<typeof Editor.setNormalizing>;
+    setPoint: OmitFirstArg<typeof Transforms.setPoint>;
+    setSelection: OmitFirstArg<typeof Transforms.setSelection>;
+    splitNodes: OmitFirstArg<typeof Transforms.splitNodes>;
+    unsetNodes: OmitFirstArg<typeof Transforms.unsetNodes>;
+    unwrapNodes: OmitFirstArg<typeof Transforms.unwrapNodes>;
+    withoutNormalizing: OmitFirstArg<typeof Editor.withoutNormalizing>;
+    wrapNodes: OmitFirstArg<typeof Transforms.wrapNodes>;
 
     // Overrideable core queries.
 
     above: <T extends Ancestor>(
       options?: EditorAboveOptions<T>
-    ) => NodeEntry<T> | undefined
-    after: OmitFirstArg<typeof Editor.after>
-    before: OmitFirstArg<typeof Editor.before>
-    edges: OmitFirstArg<typeof Editor.edges>
-    elementReadOnly: OmitFirstArg<typeof Editor.elementReadOnly>
-    end: OmitFirstArg<typeof Editor.end>
-    first: OmitFirstArg<typeof Editor.first>
-    fragment: OmitFirstArg<typeof Editor.fragment>
-    getMarks: OmitFirstArg<typeof Editor.marks>
-    hasBlocks: OmitFirstArg<typeof Editor.hasBlocks>
-    hasInlines: OmitFirstArg<typeof Editor.hasInlines>
-    hasPath: OmitFirstArg<typeof Editor.hasPath>
-    hasTexts: OmitFirstArg<typeof Editor.hasTexts>
-    isBlock: OmitFirstArg<typeof Editor.isBlock>
-    isEdge: OmitFirstArg<typeof Editor.isEdge>
-    isEmpty: OmitFirstArg<typeof Editor.isEmpty>
-    isEnd: OmitFirstArg<typeof Editor.isEnd>
-    isInline: OmitFirstArg<typeof Editor.isInline>
-    isNormalizing: OmitFirstArg<typeof Editor.isNormalizing>
-    isStart: OmitFirstArg<typeof Editor.isStart>
-    isVoid: OmitFirstArg<typeof Editor.isVoid>
-    last: OmitFirstArg<typeof Editor.last>
-    leaf: OmitFirstArg<typeof Editor.leaf>
+    ) => NodeEntry<T> | undefined;
+    after: OmitFirstArg<typeof Editor.after>;
+    before: OmitFirstArg<typeof Editor.before>;
+    edges: OmitFirstArg<typeof Editor.edges>;
+    elementReadOnly: OmitFirstArg<typeof Editor.elementReadOnly>;
+    end: OmitFirstArg<typeof Editor.end>;
+    first: OmitFirstArg<typeof Editor.first>;
+    fragment: OmitFirstArg<typeof Editor.fragment>;
+    getMarks: OmitFirstArg<typeof Editor.marks>;
+    hasBlocks: OmitFirstArg<typeof Editor.hasBlocks>;
+    hasInlines: OmitFirstArg<typeof Editor.hasInlines>;
+    hasPath: OmitFirstArg<typeof Editor.hasPath>;
+    hasTexts: OmitFirstArg<typeof Editor.hasTexts>;
+    isBlock: OmitFirstArg<typeof Editor.isBlock>;
+    isEdge: OmitFirstArg<typeof Editor.isEdge>;
+    isEmpty: OmitFirstArg<typeof Editor.isEmpty>;
+    isEnd: OmitFirstArg<typeof Editor.isEnd>;
+    isInline: OmitFirstArg<typeof Editor.isInline>;
+    isNormalizing: OmitFirstArg<typeof Editor.isNormalizing>;
+    isStart: OmitFirstArg<typeof Editor.isStart>;
+    isVoid: OmitFirstArg<typeof Editor.isVoid>;
+    last: OmitFirstArg<typeof Editor.last>;
+    leaf: OmitFirstArg<typeof Editor.leaf>;
     levels: <T extends Node>(
       options?: EditorLevelsOptions<T>
-    ) => Generator<NodeEntry<T>, void, undefined>
+    ) => Generator<NodeEntry<T>, void, undefined>;
     next: <T extends Descendant>(
       options?: EditorNextOptions<T>
-    ) => NodeEntry<T> | undefined
-    node: OmitFirstArg<typeof Editor.node>
+    ) => NodeEntry<T> | undefined;
+    node: OmitFirstArg<typeof Editor.node>;
     nodes: <T extends Node>(
       options?: EditorNodesOptions<T>
-    ) => Generator<NodeEntry<T>, void, undefined>
-    parent: OmitFirstArg<typeof Editor.parent>
-    path: OmitFirstArg<typeof Editor.path>
-    pathRef: OmitFirstArg<typeof Editor.pathRef>
-    pathRefs: OmitFirstArg<typeof Editor.pathRefs>
-    point: OmitFirstArg<typeof Editor.point>
-    pointRef: OmitFirstArg<typeof Editor.pointRef>
-    pointRefs: OmitFirstArg<typeof Editor.pointRefs>
-    positions: OmitFirstArg<typeof Editor.positions>
+    ) => Generator<NodeEntry<T>, void, undefined>;
+    parent: OmitFirstArg<typeof Editor.parent>;
+    path: OmitFirstArg<typeof Editor.path>;
+    pathRef: OmitFirstArg<typeof Editor.pathRef>;
+    pathRefs: OmitFirstArg<typeof Editor.pathRefs>;
+    point: OmitFirstArg<typeof Editor.point>;
+    pointRef: OmitFirstArg<typeof Editor.pointRef>;
+    pointRefs: OmitFirstArg<typeof Editor.pointRefs>;
+    positions: OmitFirstArg<typeof Editor.positions>;
     previous: <T extends Node>(
       options?: EditorPreviousOptions<T>
-    ) => NodeEntry<T> | undefined
-    range: OmitFirstArg<typeof Editor.range>
-    rangeRef: OmitFirstArg<typeof Editor.rangeRef>
-    rangeRefs: OmitFirstArg<typeof Editor.rangeRefs>
-    start: OmitFirstArg<typeof Editor.start>
-    string: OmitFirstArg<typeof Editor.string>
-    unhangRange: OmitFirstArg<typeof Editor.unhangRange>
-    void: OmitFirstArg<typeof Editor.void>
+    ) => NodeEntry<T> | undefined;
+    range: OmitFirstArg<typeof Editor.range>;
+    rangeRef: OmitFirstArg<typeof Editor.rangeRef>;
+    rangeRefs: OmitFirstArg<typeof Editor.rangeRefs>;
+    start: OmitFirstArg<typeof Editor.start>;
+    string: OmitFirstArg<typeof Editor.string>;
+    unhangRange: OmitFirstArg<typeof Editor.unhangRange>;
+    void: OmitFirstArg<typeof Editor.void>;
   }
   ```
 
@@ -387,10 +384,10 @@
     dirtyPaths,
     operation,
   }: {
-    iteration: number
-    dirtyPaths: Path[]
-    operation?: Operation
-  }) => boolean
+    iteration: number;
+    dirtyPaths: Path[];
+    operation?: Operation;
+  }) => boolean;
   ```
 
   - `editor.onChange` signature change: `(options?: { operation?: Operation }) => void` where `operation` is triggering the function.
@@ -475,15 +472,13 @@
 
 ### Patch Changes
 
-- [#5015](https://github.com/ianstormtaylor/slate/pull/5015) [`9ae37287`](https://github.com/ianstormtaylor/slate/commit/9ae372875df1ee3ef6041f5d6bd2f57ee8291ea0) Thanks [@tithanayut](https://github.com/tithanayut)! - Fix deleteBackward behavior for Thai script where deleting N character(s) backward should delete
-  N code point(s) instead of an entire grapheme cluster
+- [#5015](https://github.com/ianstormtaylor/slate/pull/5015) [`9ae37287`](https://github.com/ianstormtaylor/slate/commit/9ae372875df1ee3ef6041f5d6bd2f57ee8291ea0) Thanks [@tithanayut](https://github.com/tithanayut)! - Fix deleteBackward behavior for Thai script where deleting N character(s) backward should delete N code point(s) instead of an entire grapheme cluster
 
 ## 0.81.0
 
 ### Minor Changes
 
-- [#4999](https://github.com/ianstormtaylor/slate/pull/4999) [`fe13a8f9`](https://github.com/ianstormtaylor/slate/commit/fe13a8f9e750569342ee004951e34233ab6614bf) Thanks [@alexandercampbell](https://github.com/alexandercampbell)! - Add new Plite.Scrubber interface to allow scrubbing end user data from exception
-  text. The default behavior remains unchanged.
+- [#4999](https://github.com/ianstormtaylor/slate/pull/4999) [`fe13a8f9`](https://github.com/ianstormtaylor/slate/commit/fe13a8f9e750569342ee004951e34233ab6614bf) Thanks [@alexandercampbell](https://github.com/alexandercampbell)! - Add new Plite.Scrubber interface to allow scrubbing end user data from exception text. The default behavior remains unchanged.
 
 ## 0.80.0
 

@@ -56,7 +56,7 @@ async function getPackageJson(
     silent: options.silent,
   })?.start();
   try {
-    const fileContent = await fs.readFile(targetPath, 'utf8');
+    const fileContent = await fs.readFile(targetPath, 'utf-8');
     sp?.succeed('Successfully read package.json');
     return PackageJsonSchema.parse(JSON.parse(fileContent));
   } catch (error) {
@@ -229,8 +229,8 @@ async function runSync(options: DepSyncOptions) {
   const currentPackageJson = await getPackageJson(options.cwd, options);
 
   const allDependencies = {
-    ...(currentPackageJson.dependencies ?? {}),
-    ...(currentPackageJson.devDependencies ?? {}),
+    ...currentPackageJson.dependencies,
+    ...currentPackageJson.devDependencies,
   };
 
   const packagesToFetch = Object.keys(allDependencies).filter(packageFilterFn);
@@ -477,4 +477,4 @@ async function main() {
   await program.parseAsync(process.argv);
 }
 
-main();
+void main();

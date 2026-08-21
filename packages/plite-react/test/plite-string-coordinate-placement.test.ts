@@ -693,7 +693,7 @@ describe('plite string coordinate placement', () => {
   });
 
   test('keeps non-breaking spaces as visible text', () => {
-    const { string, textHost } = createTextHost({ text: 'wrap\u00a0' });
+    const { string, textHost } = createTextHost({ text: 'wrap\u00A0' });
     const lineRect = rect({ left: 10, right: 90 });
     const wrappedCaretRect = rect({ left: 10, right: 10, top: 24 });
     const characterRects = [

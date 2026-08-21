@@ -1,4 +1,10 @@
-import Prism from 'prismjs';
+/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
+import {
+  type Descendant,
+  NodeApi,
+  type Point,
+  type Range,
+} from '@platejs/plite';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-jsx';
@@ -8,14 +14,6 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
-import type React from 'react';
-import type { ChangeEvent, PointerEvent } from 'react';
-import {
-  type Descendant,
-  NodeApi,
-  type Point,
-  type Range,
-} from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
 import { history } from '@platejs/plite-history';
 import {
@@ -27,11 +25,16 @@ import {
   usePliteEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
+import Prism from 'prismjs';
+import type React from 'react';
+import type { ChangeEvent, PointerEvent } from 'react';
+
 import {
   NativeSelect,
   NativeSelectOption,
 } from '@/components/ui/native-select';
 import { cn } from '@/utils/cn';
+
 import { Button, Icon, Toolbar } from './components';
 import type {
   CodeBlockElement,
@@ -587,8 +590,10 @@ const isSamePath = (path: readonly number[], another: readonly number[]) =>
   path.length === another.length &&
   path.every((segment, index) => segment === another[index]);
 
-interface LanguageSelectProps
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
+interface LanguageSelectProps extends Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  'size'
+> {
   value?: string;
   onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
 }

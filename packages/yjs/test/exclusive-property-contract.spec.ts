@@ -67,8 +67,8 @@ describe('@platejs/yjs exclusive property contract', () => {
     Y.applyUpdate(a.doc, Y.encodeStateAsUpdate(b.doc));
     Y.applyUpdate(b.doc, Y.encodeStateAsUpdate(a.doc));
 
-    const aText = a.editor.read.children()[0]!.children[0]!;
-    const bText = b.editor.read.children()[0]!.children[0]!;
+    const aText = a.editor.read.children()[0].children[0];
+    const bText = b.editor.read.children()[0].children[0];
     const active = (text: typeof aText) =>
       ['subscript', 'superscript'].filter((key) => Object.hasOwn(text, key));
 

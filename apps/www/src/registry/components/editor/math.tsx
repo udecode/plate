@@ -1,11 +1,11 @@
 'use client';
 
 import '@platejs/math/katex.css';
-import * as React from 'react';
+import { MathRules } from '@platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import katex, { type KatexOptions } from 'katex';
-import TextareaAutosize, {
-  type TextareaAutosizeProps,
-} from 'react-textarea-autosize';
+import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import { isHotkey } from 'platejs';
 import {
   type PlateEditor,
@@ -17,9 +17,11 @@ import {
   useElement,
   useElementSelected,
 } from 'platejs/react';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
+import * as React from 'react';
+import TextareaAutosize, {
+  type TextareaAutosizeProps,
+} from 'react-textarea-autosize';
+
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -28,7 +30,6 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
-import { MathRules } from '@platejs/math';
 
 const getBlockSelectionApi = (editor: PlateEditor) =>
   editor.plugin(BlockSelectionPlugin).api;
@@ -99,7 +100,7 @@ export function EquationElement(
             {props.element.latex.length > 0 ? (
               <span ref={katexRef} />
             ) : (
-              <span className="flex h-7 w-full items-center gap-2 whitespace-nowrap text-muted-foreground text-sm">
+              <span className="flex h-7 w-full items-center gap-2 text-sm whitespace-nowrap text-muted-foreground">
                 <RadicalIcon className="size-6 text-muted-foreground/80" />
                 <span>Add a Tex equation</span>
               </span>
@@ -136,7 +137,7 @@ export function InlineEquationElement(
 
   React.useEffect(() => {
     if (selected && isCollapsed) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Open the inline equation popover when editor selection enters it.
+      // Open the inline equation popover when editor selection enters it.
       setOpen(true);
     } else if (!selected) {
       setOpen(false);

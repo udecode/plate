@@ -1,0 +1,1809 @@
+{
+  "allocationFailures": [],
+  "artifactVersion": 1,
+  "authority": {
+    "preEditBaseline": {
+      "comparisonPermitted": false,
+      "reason": "The command hard cut began before Slice 0 captured an executable same-checkout baseline. No before/after or <=10% regression claim is valid.",
+      "status": "unavailable"
+    },
+    "sameRunReference": {
+      "comparableFor": "Handled result, visit order/count, continuation count, and run-local timing noise.",
+      "notComparableFor": "The removed implementation, TransactionSpec construction, publication, or a historical regression ratio.",
+      "predecessor": false,
+      "status": "synthetic-control"
+    }
+  },
+  "benchmark": "plite-command-dispatch",
+  "benchmarkSink": 848948,
+  "budgetFailures": [
+    "prefix-blocks-20000-handlers-8: budget ratio 1.295 exceeds 1 (p50=67349.792/52000us p95=77802.542/71000us)",
+    "prefix-blocks-20000-handlers-32: budget ratio 1.095 exceeds 1 (p50=201519.083/184000us p95=253443.458/239000us)"
+  ],
+  "config": {
+    "blocks": [
+      100,
+      20000
+    ],
+    "continuationProofDispatches": 3,
+    "handlerDepths": [
+      0,
+      1,
+      8,
+      32
+    ],
+    "laneKinds": [
+      "simple",
+      "prefix"
+    ],
+    "prefixLargeBatch": 1,
+    "prefixSmallBatch": 10,
+    "referenceBatch": 5000,
+    "samples": 21,
+    "simpleBatch": 1000
+  },
+  "correctnessFailures": [],
+  "derived": {
+    "prefixDocumentSize": {
+      "policy": "record-only",
+      "ratios": [
+        {
+          "depth": 0,
+          "p50": 147.639
+        },
+        {
+          "depth": 1,
+          "p50": 159.184
+        },
+        {
+          "depth": 8,
+          "p50": 268.579
+        },
+        {
+          "depth": 32,
+          "p50": 162.894
+        }
+      ],
+      "reason": "Prefix lanes intentionally include generic TransactionSpec construction for every around handler. They have absolute budgets, but do not claim command-only document-size independence."
+    },
+    "simpleDocumentSize": {
+      "p50RatioMax": 2,
+      "ratios": [
+        {
+          "depth": 0,
+          "p50": 0.629
+        },
+        {
+          "depth": 1,
+          "p50": 0.568
+        },
+        {
+          "depth": 8,
+          "p50": 0.912
+        },
+        {
+          "depth": 32,
+          "p50": 0.796
+        }
+      ],
+      "worstP50Ratio": 0.912
+    },
+    "worstBudgetRatio": 1.295
+  },
+  "documentSizeFailures": [],
+  "fairness": {
+    "allocation": "Callable continuation identities are observed directly by handlers in an untimed pass. Heap bytes are intentionally not estimated.",
+    "order": "Actual and same-run reference samples alternate first position within every lane.",
+    "reference": "The reference is a synthetic handler-chain interpreter in this process, not the deleted implementation and not a substitute for a missing pre-edit baseline.",
+    "setup": "Editor and 100/20,000-block document construction, extension compilation, warmup, correctness checks, allocation proof, and forced GC before each large-prefix sample are outside timed samples."
+  },
+  "lanes": [
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 3.14,
+        "min": 0.767,
+        "p50": 1.078,
+        "p95": 1.951,
+        "samplesUs": [
+          1.481,
+          1.368,
+          1.527,
+          1.492,
+          1.059,
+          1.183,
+          3.14,
+          0.839,
+          1.192,
+          0.767,
+          1.047,
+          0.778,
+          0.833,
+          1.129,
+          0.862,
+          1.951,
+          1.044,
+          1.078,
+          0.973,
+          1.207,
+          0.998
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 43.12,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.108,
+        "p95": 0.078,
+        "worst": 0.108
+      },
+      "budgetUs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 0,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 0,
+        "trace": [
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 0,
+      "id": "simple-blocks-100-handlers-0",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.069,
+        "min": 0.012,
+        "p50": 0.025,
+        "p95": 0.04,
+        "samplesUs": [
+          0.069,
+          0.04,
+          0.039,
+          0.031,
+          0.033,
+          0.022,
+          0.013,
+          0.014,
+          0.017,
+          0.012,
+          0.016,
+          0.014,
+          0.025,
+          0.014,
+          0.026,
+          0.034,
+          0.012,
+          0.027,
+          0.026,
+          0.015,
+          0.036
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 2.111,
+        "min": 0.753,
+        "p50": 1.399,
+        "p95": 1.971,
+        "samplesUs": [
+          1.971,
+          1.549,
+          1.656,
+          1.177,
+          1.364,
+          1.543,
+          1.725,
+          1.657,
+          1.202,
+          1.429,
+          1.509,
+          1.823,
+          2.111,
+          1.369,
+          0.805,
+          0.833,
+          0.764,
+          0.761,
+          0.764,
+          1.399,
+          0.753
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 87.438,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.093,
+        "p95": 0.06,
+        "worst": 0.093
+      },
+      "budgetUs": {
+        "p50": 15,
+        "p95": 33
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 1,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 1,
+        "trace": [
+          "handle:0",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 1,
+      "id": "simple-blocks-100-handlers-1",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.344,
+        "min": 0.009,
+        "p50": 0.016,
+        "p95": 0.098,
+        "samplesUs": [
+          0.05,
+          0.016,
+          0.017,
+          0.016,
+          0.016,
+          0.344,
+          0.042,
+          0.019,
+          0.023,
+          0.009,
+          0.011,
+          0.025,
+          0.014,
+          0.014,
+          0.012,
+          0.009,
+          0.009,
+          0.009,
+          0.012,
+          0.098,
+          0.009
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 3.492,
+        "min": 1.83,
+        "p50": 2.275,
+        "p95": 3.086,
+        "samplesUs": [
+          2.198,
+          2.978,
+          1.972,
+          2.419,
+          3.492,
+          2.306,
+          2.571,
+          3.086,
+          1.83,
+          2.052,
+          2.552,
+          2.275,
+          1.852,
+          2.674,
+          2.135,
+          2.099,
+          2.385,
+          2.011,
+          2.959,
+          2.266,
+          2.036
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 206.818,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.045,
+        "p95": 0.035,
+        "worst": 0.045
+      },
+      "budgetUs": {
+        "p50": 50,
+        "p95": 89
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 8,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 8,
+        "trace": [
+          "handle:0",
+          "handle:1",
+          "handle:2",
+          "handle:3",
+          "handle:4",
+          "handle:5",
+          "handle:6",
+          "handle:7",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 8,
+      "id": "simple-blocks-100-handlers-8",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.089,
+        "min": 0.009,
+        "p50": 0.011,
+        "p95": 0.027,
+        "samplesUs": [
+          0.01,
+          0.01,
+          0.01,
+          0.012,
+          0.01,
+          0.01,
+          0.011,
+          0.015,
+          0.013,
+          0.01,
+          0.009,
+          0.013,
+          0.011,
+          0.014,
+          0.027,
+          0.011,
+          0.01,
+          0.011,
+          0.013,
+          0.089,
+          0.013
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 9.25,
+        "min": 5.74,
+        "p50": 7.687,
+        "p95": 9.125,
+        "samplesUs": [
+          6.28,
+          7.391,
+          7.687,
+          8.196,
+          7.33,
+          8.398,
+          8.853,
+          8.318,
+          7.051,
+          7.852,
+          7.63,
+          5.74,
+          6.25,
+          6.419,
+          5.79,
+          5.986,
+          9.125,
+          7.801,
+          7.767,
+          8.143,
+          9.25
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 549.071,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.045,
+        "p95": 0.032,
+        "worst": 0.045
+      },
+      "budgetUs": {
+        "p50": 170,
+        "p95": 281
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 32,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 32,
+        "trace": [
+          "handle:0",
+          "handle:1",
+          "handle:2",
+          "handle:3",
+          "handle:4",
+          "handle:5",
+          "handle:6",
+          "handle:7",
+          "handle:8",
+          "handle:9",
+          "handle:10",
+          "handle:11",
+          "handle:12",
+          "handle:13",
+          "handle:14",
+          "handle:15",
+          "handle:16",
+          "handle:17",
+          "handle:18",
+          "handle:19",
+          "handle:20",
+          "handle:21",
+          "handle:22",
+          "handle:23",
+          "handle:24",
+          "handle:25",
+          "handle:26",
+          "handle:27",
+          "handle:28",
+          "handle:29",
+          "handle:30",
+          "handle:31",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 32,
+      "id": "simple-blocks-100-handlers-32",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.084,
+        "min": 0.011,
+        "p50": 0.014,
+        "p95": 0.028,
+        "samplesUs": [
+          0.012,
+          0.012,
+          0.013,
+          0.016,
+          0.017,
+          0.012,
+          0.014,
+          0.022,
+          0.012,
+          0.014,
+          0.019,
+          0.017,
+          0.084,
+          0.011,
+          0.012,
+          0.012,
+          0.028,
+          0.016,
+          0.012,
+          0.012,
+          0.02
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 0.783,
+        "min": 0.633,
+        "p50": 0.678,
+        "p95": 0.728,
+        "samplesUs": [
+          0.69,
+          0.7,
+          0.665,
+          0.657,
+          0.669,
+          0.721,
+          0.728,
+          0.679,
+          0.671,
+          0.681,
+          0.698,
+          0.639,
+          0.633,
+          0.666,
+          0.641,
+          0.7,
+          0.783,
+          0.718,
+          0.678,
+          0.66,
+          0.643
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 45.2,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 0.068,
+        "p95": 0.029,
+        "worst": 0.068
+      },
+      "budgetUs": {
+        "p50": 10,
+        "p95": 25
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 0,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 0,
+        "trace": [
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 0,
+      "id": "simple-blocks-20000-handlers-0",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.022,
+        "min": 0.012,
+        "p50": 0.015,
+        "p95": 0.017,
+        "samplesUs": [
+          0.014,
+          0.017,
+          0.015,
+          0.017,
+          0.014,
+          0.016,
+          0.016,
+          0.015,
+          0.016,
+          0.015,
+          0.015,
+          0.014,
+          0.022,
+          0.017,
+          0.015,
+          0.016,
+          0.014,
+          0.013,
+          0.012,
+          0.012,
+          0.014
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 6.512,
+        "min": 0.736,
+        "p50": 0.794,
+        "p95": 0.921,
+        "samplesUs": [
+          6.512,
+          0.837,
+          0.819,
+          0.817,
+          0.795,
+          0.772,
+          0.77,
+          0.736,
+          0.739,
+          0.774,
+          0.747,
+          0.78,
+          0.823,
+          0.854,
+          0.921,
+          0.899,
+          0.794,
+          0.752,
+          0.743,
+          0.765,
+          0.843
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 56.714,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 0.053,
+        "p95": 0.028,
+        "worst": 0.053
+      },
+      "budgetUs": {
+        "p50": 15,
+        "p95": 33
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 1,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 1,
+        "trace": [
+          "handle:0",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 1,
+      "id": "simple-blocks-20000-handlers-1",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.02,
+        "min": 0.012,
+        "p50": 0.014,
+        "p95": 0.017,
+        "samplesUs": [
+          0.015,
+          0.014,
+          0.015,
+          0.015,
+          0.014,
+          0.012,
+          0.02,
+          0.017,
+          0.015,
+          0.012,
+          0.013,
+          0.012,
+          0.015,
+          0.013,
+          0.013,
+          0.013,
+          0.014,
+          0.013,
+          0.013,
+          0.013,
+          0.016
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 7.737,
+        "min": 1.863,
+        "p50": 2.075,
+        "p95": 7.539,
+        "samplesUs": [
+          7.737,
+          2.19,
+          2.047,
+          2.11,
+          2.23,
+          2.075,
+          1.874,
+          1.922,
+          2.196,
+          2.328,
+          2.258,
+          2.163,
+          7.539,
+          1.959,
+          1.982,
+          1.863,
+          1.952,
+          2.052,
+          2.198,
+          1.909,
+          1.913
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 138.333,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 0.042,
+        "p95": 0.085,
+        "worst": 0.085
+      },
+      "budgetUs": {
+        "p50": 50,
+        "p95": 89
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 8,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 8,
+        "trace": [
+          "handle:0",
+          "handle:1",
+          "handle:2",
+          "handle:3",
+          "handle:4",
+          "handle:5",
+          "handle:6",
+          "handle:7",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 8,
+      "id": "simple-blocks-20000-handlers-8",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.018,
+        "min": 0.01,
+        "p50": 0.015,
+        "p95": 0.017,
+        "samplesUs": [
+          0.016,
+          0.015,
+          0.016,
+          0.015,
+          0.014,
+          0.015,
+          0.014,
+          0.013,
+          0.016,
+          0.016,
+          0.015,
+          0.017,
+          0.012,
+          0.011,
+          0.01,
+          0.01,
+          0.012,
+          0.012,
+          0.018,
+          0.016,
+          0.014
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 21.423,
+        "min": 5.2,
+        "p50": 6.122,
+        "p95": 18.829,
+        "samplesUs": [
+          6.858,
+          6.483,
+          6.356,
+          6.331,
+          6.755,
+          6.314,
+          21.423,
+          6.304,
+          6.122,
+          5.788,
+          5.757,
+          5.669,
+          5.793,
+          18.829,
+          5.922,
+          5.887,
+          5.697,
+          5.723,
+          5.479,
+          5.2,
+          18.517
+        ]
+      },
+      "actualOperationsPerSample": 1000,
+      "actualToReferenceP50Ratio": 382.625,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 0.036,
+        "p95": 0.067,
+        "worst": 0.067
+      },
+      "budgetUs": {
+        "p50": 170,
+        "p95": 281
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": false,
+        "actualHandlerVisits": 32,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": false,
+        "referenceHandlerVisits": 32,
+        "trace": [
+          "handle:0",
+          "handle:1",
+          "handle:2",
+          "handle:3",
+          "handle:4",
+          "handle:5",
+          "handle:6",
+          "handle:7",
+          "handle:8",
+          "handle:9",
+          "handle:10",
+          "handle:11",
+          "handle:12",
+          "handle:13",
+          "handle:14",
+          "handle:15",
+          "handle:16",
+          "handle:17",
+          "handle:18",
+          "handle:19",
+          "handle:20",
+          "handle:21",
+          "handle:22",
+          "handle:23",
+          "handle:24",
+          "handle:25",
+          "handle:26",
+          "handle:27",
+          "handle:28",
+          "handle:29",
+          "handle:30",
+          "handle:31",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 32,
+      "id": "simple-blocks-20000-handlers-32",
+      "kind": "simple",
+      "referenceLatencyUs": {
+        "max": 0.021,
+        "min": 0.014,
+        "p50": 0.016,
+        "p95": 0.02,
+        "samplesUs": [
+          0.019,
+          0.017,
+          0.021,
+          0.019,
+          0.016,
+          0.015,
+          0.015,
+          0.015,
+          0.018,
+          0.016,
+          0.019,
+          0.019,
+          0.02,
+          0.016,
+          0.015,
+          0.016,
+          0.017,
+          0.019,
+          0.014,
+          0.014,
+          0.015
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 75.108,
+        "min": 34.796,
+        "p50": 38.229,
+        "p95": 72.192,
+        "samplesUs": [
+          75.108,
+          72.192,
+          68.425,
+          42.817,
+          40.221,
+          37.65,
+          38.229,
+          39.521,
+          35.383,
+          57.979,
+          36.533,
+          38.8,
+          34.796,
+          37.096,
+          35.696,
+          47.846,
+          37.092,
+          36.083,
+          36.208,
+          36.45,
+          41.533
+        ]
+      },
+      "actualOperationsPerSample": 10,
+      "actualToReferenceP50Ratio": 2389.313,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.191,
+        "p95": 0.048,
+        "worst": 0.191
+      },
+      "budgetUs": {
+        "p50": 200,
+        "p95": 1500
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 0,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 0,
+        "trace": [
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 0,
+      "id": "prefix-blocks-100-handlers-0",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.221,
+        "min": 0.015,
+        "p50": 0.016,
+        "p95": 0.031,
+        "samplesUs": [
+          0.031,
+          0.021,
+          0.022,
+          0.019,
+          0.016,
+          0.016,
+          0.016,
+          0.016,
+          0.015,
+          0.015,
+          0.016,
+          0.016,
+          0.016,
+          0.016,
+          0.016,
+          0.221,
+          0.015,
+          0.015,
+          0.015,
+          0.017,
+          0.015
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 3,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 3,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 99.708,
+        "min": 63.25,
+        "p50": 68.35,
+        "p95": 98.1,
+        "samplesUs": [
+          75.092,
+          73.325,
+          74.783,
+          70.196,
+          71.962,
+          70.988,
+          67.713,
+          68.35,
+          99.708,
+          98.1,
+          67.446,
+          67.35,
+          64.513,
+          64.662,
+          66.988,
+          65.25,
+          63.25,
+          81.171,
+          65.983,
+          73.275,
+          67.35
+        ]
+      },
+      "actualOperationsPerSample": 10,
+      "actualToReferenceP50Ratio": 3417.5,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.263,
+        "p95": 0.054,
+        "worst": 0.263
+      },
+      "budgetUs": {
+        "p50": 260,
+        "p95": 1800
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 1,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 1,
+        "trace": [
+          "prefix:0",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 1,
+      "id": "prefix-blocks-100-handlers-1",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.308,
+        "min": 0.018,
+        "p50": 0.02,
+        "p95": 0.241,
+        "samplesUs": [
+          0.027,
+          0.026,
+          0.027,
+          0.025,
+          0.02,
+          0.019,
+          0.02,
+          0.02,
+          0.02,
+          0.308,
+          0.019,
+          0.018,
+          0.02,
+          0.018,
+          0.019,
+          0.019,
+          0.02,
+          0.019,
+          0.019,
+          0.019,
+          0.241
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 24,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 24,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 451.617,
+        "min": 236.325,
+        "p50": 250.763,
+        "p95": 351.108,
+        "samplesUs": [
+          267.221,
+          306.408,
+          451.617,
+          256.925,
+          243.767,
+          350.692,
+          249.287,
+          245.846,
+          242.879,
+          254.792,
+          237.396,
+          250.763,
+          252.783,
+          239.871,
+          236.325,
+          351.108,
+          240.925,
+          243.05,
+          253.383,
+          248.879,
+          252.042
+        ]
+      },
+      "actualOperationsPerSample": 10,
+      "actualToReferenceP50Ratio": 4731.377,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.369,
+        "p95": 0.09,
+        "worst": 0.369
+      },
+      "budgetUs": {
+        "p50": 680,
+        "p95": 3900
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 8,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 8,
+        "trace": [
+          "prefix:0",
+          "prefix:1",
+          "prefix:2",
+          "prefix:3",
+          "prefix:4",
+          "prefix:5",
+          "prefix:6",
+          "prefix:7",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 8,
+      "id": "prefix-blocks-100-handlers-8",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.228,
+        "min": 0.049,
+        "p50": 0.053,
+        "p95": 0.227,
+        "samplesUs": [
+          0.052,
+          0.05,
+          0.055,
+          0.051,
+          0.052,
+          0.052,
+          0.053,
+          0.055,
+          0.057,
+          0.228,
+          0.055,
+          0.053,
+          0.227,
+          0.053,
+          0.054,
+          0.055,
+          0.051,
+          0.049,
+          0.054,
+          0.223,
+          0.051
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 96,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 96,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 1563.904,
+        "min": 986.5,
+        "p50": 1237.117,
+        "p95": 1436.6,
+        "samplesUs": [
+          1285.588,
+          1136.279,
+          986.5,
+          1124.733,
+          992.621,
+          1132.967,
+          1370.863,
+          1193.404,
+          1354.788,
+          1278.633,
+          1087.304,
+          1307.183,
+          1253.675,
+          1563.904,
+          1436.6,
+          1142.417,
+          1334.787,
+          1294.717,
+          1097.687,
+          1237.117,
+          1077.746
+        ]
+      },
+      "actualOperationsPerSample": 10,
+      "actualToReferenceP50Ratio": 3585.846,
+      "allocationFailures": [],
+      "blocks": 100,
+      "budgetRatios": {
+        "p50": 0.584,
+        "p95": 0.129,
+        "worst": 0.584
+      },
+      "budgetUs": {
+        "p50": 2120,
+        "p95": 11100
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 32,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 32,
+        "trace": [
+          "prefix:0",
+          "prefix:1",
+          "prefix:2",
+          "prefix:3",
+          "prefix:4",
+          "prefix:5",
+          "prefix:6",
+          "prefix:7",
+          "prefix:8",
+          "prefix:9",
+          "prefix:10",
+          "prefix:11",
+          "prefix:12",
+          "prefix:13",
+          "prefix:14",
+          "prefix:15",
+          "prefix:16",
+          "prefix:17",
+          "prefix:18",
+          "prefix:19",
+          "prefix:20",
+          "prefix:21",
+          "prefix:22",
+          "prefix:23",
+          "prefix:24",
+          "prefix:25",
+          "prefix:26",
+          "prefix:27",
+          "prefix:28",
+          "prefix:29",
+          "prefix:30",
+          "prefix:31",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 32,
+      "id": "prefix-blocks-100-handlers-32",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.743,
+        "min": 0.174,
+        "p50": 0.345,
+        "p95": 0.642,
+        "samplesUs": [
+          0.182,
+          0.345,
+          0.405,
+          0.174,
+          0.443,
+          0.177,
+          0.221,
+          0.432,
+          0.203,
+          0.392,
+          0.449,
+          0.181,
+          0.743,
+          0.238,
+          0.261,
+          0.37,
+          0.192,
+          0.445,
+          0.53,
+          0.211,
+          0.642
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 0,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 0,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 7850.583,
+        "min": 4911.5,
+        "p50": 5644.083,
+        "p95": 6865.542,
+        "samplesUs": [
+          5843.042,
+          5093.959,
+          5050.292,
+          4976.208,
+          5399.833,
+          4911.5,
+          5049.666,
+          5166.459,
+          5139.208,
+          5406.208,
+          6063.459,
+          6716.25,
+          5240.917,
+          5644.083,
+          7850.583,
+          5873.042,
+          6865.542,
+          5805.792,
+          6446.542,
+          6469.917,
+          6068.083
+        ]
+      },
+      "actualOperationsPerSample": 1,
+      "actualToReferenceP50Ratio": 217080.115,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 0.706,
+        "p95": 0.458,
+        "worst": 0.706
+      },
+      "budgetUs": {
+        "p50": 8000,
+        "p95": 15000
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 0,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 0,
+        "trace": [
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 0,
+      "id": "prefix-blocks-20000-handlers-0",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.047,
+        "min": 0.023,
+        "p50": 0.026,
+        "p95": 0.03,
+        "samplesUs": [
+          0.029,
+          0.029,
+          0.024,
+          0.023,
+          0.027,
+          0.027,
+          0.025,
+          0.025,
+          0.024,
+          0.024,
+          0.026,
+          0.025,
+          0.026,
+          0.025,
+          0.027,
+          0.026,
+          0.026,
+          0.027,
+          0.03,
+          0.047,
+          0.029
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 3,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 3,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 18820.667,
+        "min": 9623.625,
+        "p50": 10880.25,
+        "p95": 16631.792,
+        "samplesUs": [
+          11525.917,
+          10786.458,
+          10880.25,
+          10528.792,
+          10463,
+          11282.584,
+          11695.875,
+          10188.25,
+          9623.625,
+          9696.041,
+          10253.875,
+          9639.042,
+          9921.75,
+          11909.583,
+          9908.584,
+          14778.25,
+          16631.792,
+          16034,
+          13483.583,
+          15233.25,
+          18820.667
+        ]
+      },
+      "actualOperationsPerSample": 1,
+      "actualToReferenceP50Ratio": 286322.368,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 0.806,
+        "p95": 0.756,
+        "worst": 0.806
+      },
+      "budgetUs": {
+        "p50": 13500,
+        "p95": 22000
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 1,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 1,
+        "trace": [
+          "prefix:0",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 1,
+      "id": "prefix-blocks-20000-handlers-1",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.047,
+        "min": 0.03,
+        "p50": 0.038,
+        "p95": 0.047,
+        "samplesUs": [
+          0.035,
+          0.032,
+          0.034,
+          0.033,
+          0.031,
+          0.03,
+          0.039,
+          0.037,
+          0.04,
+          0.033,
+          0.039,
+          0.041,
+          0.038,
+          0.044,
+          0.037,
+          0.035,
+          0.047,
+          0.045,
+          0.044,
+          0.042,
+          0.047
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 24,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 24,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 97475.375,
+        "min": 55264.209,
+        "p50": 67349.792,
+        "p95": 77802.542,
+        "samplesUs": [
+          64342.625,
+          55264.209,
+          66193.792,
+          68658.625,
+          67349.792,
+          65602.042,
+          75978.75,
+          73001.542,
+          70313.625,
+          68742.125,
+          73186.709,
+          65548.917,
+          57245.042,
+          56976.375,
+          57955.792,
+          56793.584,
+          97475.375,
+          67361.084,
+          72389.792,
+          60084.292,
+          77802.542
+        ]
+      },
+      "actualOperationsPerSample": 1,
+      "actualToReferenceP50Ratio": 596015.858,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 1.295,
+        "p95": 1.096,
+        "worst": 1.295
+      },
+      "budgetUs": {
+        "p50": 52000,
+        "p95": 71000
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 8,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 8,
+        "trace": [
+          "prefix:0",
+          "prefix:1",
+          "prefix:2",
+          "prefix:3",
+          "prefix:4",
+          "prefix:5",
+          "prefix:6",
+          "prefix:7",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 8,
+      "id": "prefix-blocks-20000-handlers-8",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.156,
+        "min": 0.09,
+        "p50": 0.113,
+        "p95": 0.153,
+        "samplesUs": [
+          0.097,
+          0.09,
+          0.116,
+          0.11,
+          0.129,
+          0.156,
+          0.153,
+          0.128,
+          0.109,
+          0.102,
+          0.112,
+          0.113,
+          0.106,
+          0.108,
+          0.106,
+          0.153,
+          0.116,
+          0.12,
+          0.148,
+          0.108,
+          0.145
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    },
+    {
+      "allocationEvidence": {
+        "dispatches": 3,
+        "expectedContinuationIdentities": 96,
+        "method": "Count unique callable next identities delivered to live around handlers; handle contexts are checked for absence of next. No heap-byte estimate is inferred.",
+        "observedContinuationIdentities": 96,
+        "simpleNextLeaks": 0
+      },
+      "actualLatencyUs": {
+        "max": 265374.459,
+        "min": 155551.375,
+        "p50": 201519.083,
+        "p95": 253443.458,
+        "samplesUs": [
+          265374.459,
+          218903.375,
+          201519.083,
+          180438.292,
+          158747.917,
+          155551.375,
+          160599.333,
+          162286.75,
+          221853.833,
+          205249.209,
+          222925.792,
+          200370.666,
+          209758.875,
+          253443.458,
+          229258,
+          216978.125,
+          191909.791,
+          193302.083,
+          197183.5,
+          182583.959,
+          205696.042
+        ]
+      },
+      "actualOperationsPerSample": 1,
+      "actualToReferenceP50Ratio": 569262.946,
+      "allocationFailures": [],
+      "blocks": 20000,
+      "budgetRatios": {
+        "p50": 1.095,
+        "p95": 1.06,
+        "worst": 1.095
+      },
+      "budgetUs": {
+        "p50": 184000,
+        "p95": 239000
+      },
+      "correctness": {
+        "actualDefaultVisits": 1,
+        "actualHandled": true,
+        "actualHandlerVisits": 32,
+        "referenceDefaultVisits": 1,
+        "referenceHandled": true,
+        "referenceHandlerVisits": 32,
+        "trace": [
+          "prefix:0",
+          "prefix:1",
+          "prefix:2",
+          "prefix:3",
+          "prefix:4",
+          "prefix:5",
+          "prefix:6",
+          "prefix:7",
+          "prefix:8",
+          "prefix:9",
+          "prefix:10",
+          "prefix:11",
+          "prefix:12",
+          "prefix:13",
+          "prefix:14",
+          "prefix:15",
+          "prefix:16",
+          "prefix:17",
+          "prefix:18",
+          "prefix:19",
+          "prefix:20",
+          "prefix:21",
+          "prefix:22",
+          "prefix:23",
+          "prefix:24",
+          "prefix:25",
+          "prefix:26",
+          "prefix:27",
+          "prefix:28",
+          "prefix:29",
+          "prefix:30",
+          "prefix:31",
+          "default"
+        ]
+      },
+      "correctnessFailures": [],
+      "depth": 32,
+      "id": "prefix-blocks-20000-handlers-32",
+      "kind": "prefix",
+      "referenceLatencyUs": {
+        "max": 0.718,
+        "min": 0.303,
+        "p50": 0.354,
+        "p95": 0.408,
+        "samplesUs": [
+          0.313,
+          0.303,
+          0.347,
+          0.408,
+          0.326,
+          0.36,
+          0.323,
+          0.353,
+          0.354,
+          0.718,
+          0.31,
+          0.394,
+          0.377,
+          0.362,
+          0.37,
+          0.377,
+          0.327,
+          0.36,
+          0.33,
+          0.397,
+          0.335
+        ]
+      },
+      "referenceOperationsPerSample": 5000
+    }
+  ],
+  "thresholdPolicy": {
+    "allocation": "Every simple handler context has no next and observes zero callable continuations; every prefix around visit observes one fresh callable continuation identity.",
+    "latency": "Every lane p50 and p95 must stay within its fixed absolute microsecond budget.",
+    "prefixDocumentSize": "Record only. Generic immutable-spec construction is included and owned outside the command evaluator.",
+    "simpleDocumentSize": "For each handler depth, the 20,000-block p50 must stay at or below 2x the 100-block p50.",
+    "source": "Rounded fixed ceilings from three 2026-07-21 same-machine post-cut WIP calibrations, including isolated-GC large-prefix samples. They are current absolute guards, not predecessor measurements."
+  }
+}

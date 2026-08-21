@@ -5,6 +5,8 @@ import {
   isDOMElement,
   isDOMText,
 } from '@platejs/plite-dom';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
@@ -17,7 +19,6 @@ import {
   getTextHostSelectionOffset,
   isInsideVirtualizedDOM,
 } from './dom-repair-text';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableRepairPolicy } from './editing-kernel';
 import {
   getCurrentEditableEventFrame,
@@ -144,6 +145,7 @@ export const createDOMRepairQueue = ({
   syncDOMSelectionToEditor: () => void;
 }): DOMRepairQueue => {
   const frameState = createDOMRepairFrameState();
+  // oxlint-disable-next-line prefer-const -- Queue methods close over the completed queue assigned after method construction.
   let queue: DOMRepairQueue;
   const scheduler = domPhaseScheduler;
   const scheduleRepairAnimationFrame = (callback: () => void) =>
@@ -1010,14 +1012,7 @@ export const createDOMRepairQueue = ({
       }
 
       scheduleRepairMicrotask(() => {
-        const repaired = repairCollapsedSelectionByPath();
-        if (
-          kind === 'repair-caret-after-text-insert' &&
-          repaired &&
-          textInsertRepairCompleted
-        ) {
-          return;
-        }
+        repairCollapsedSelectionByPath();
       });
       scheduleRepairTimeout(() => {
         repairCollapsedSelectionByPath();

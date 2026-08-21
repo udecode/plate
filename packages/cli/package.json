@@ -13,23 +13,26 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/cli"
   },
-  "license": "MIT",
-  "sideEffects": false,
-  "type": "module",
   "bin": {
     "plate": "./dist/bin.js"
-  },
-  "exports": {
-    "./package.json": "./package.json"
   },
   "files": [
     "dist/**/*"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -52,8 +55,5 @@
   "devDependencies": {
     "@plate/scripts": "workspace:*",
     "@types/node": "24.12.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

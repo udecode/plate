@@ -195,7 +195,7 @@
       // import { TImageElement } from '@udecode/plate-media';
 
       // After
-      import { TImageElement } from "platejs";
+      import { TImageElement } from 'platejs';
       ```
 
   - Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `plugin.node.isContainer` from enabled plugins.
@@ -210,9 +210,9 @@
       BlockPlaceholderPlugin.configure({
         options: {
           className:
-            "before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]",
+            'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
           placeholders: {
-            [ParagraphPlugin.key]: "Type something...",
+            [ParagraphPlugin.key]: 'Type something...',
             // ...other placeholders
           },
           query: ({ editor, path }) => {
@@ -236,7 +236,7 @@
     - Example Usage:
 
       ```ts
-      import { KEYS } from "platejs";
+      import { KEYS } from 'platejs';
 
       // Instead of: ParagraphPlugin.key
       // Use: KEYS.p
@@ -342,8 +342,7 @@
 
 ### Patch Changes
 
-- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
-  Remove `relative` className from all components
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style. Remove `relative` className from all components
 
 ## 41.0.5
 
@@ -609,8 +608,7 @@
 ### Major Changes
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dependencies:
-  - `slate-react: >=0.95.0`
-    Removed:
+  - `slate-react: >=0.95.0` Removed:
   - `useElementPrpos`
   - `useWrapElement`
   - `createComponentAs`
@@ -623,25 +621,20 @@
   - `PlateLeaf`: Headless leaf component
   - `Box`: Slot div component
   - `Text`: Slot text component
-  - `PortalBody`
-    New hooks:
+  - `PortalBody` New hooks:
   - `useMarkToolbarButton`
   - `usePlaceholder`
-  - `useRemoveNodeButton`
-    New functions:
+  - `useRemoveNodeButton` New functions:
   - `getRootProps`
   - `createSlotComponent`: Merges its props onto its immediate child. https://www.radix-ui.com/docs/primitives/utilities/slot
-  - `createPrimitiveComponent`: Primitive component factory used by most Plate components. It uses hooks for managing state and props, and forwards references to child components.
-    Component props:
+  - `createPrimitiveComponent`: Primitive component factory used by most Plate components. It uses hooks for managing state and props, and forwards references to child components. Component props:
   - `asChild`: If true, the component will be rendered as a `Slot` {@link https://www.radix-ui.com/docs/primitives/utilities/slot}.
   - `options`: Options passed to the state hook.
   - `state`: Provide your state instead of using the state hook.
-  - `...props`: Props to be passed to the component.
-    Props hook return value:
+  - `...props`: Props to be passed to the component. Props hook return value:
   - `ref`: Reference to be forwarded to the component.
   - `props`: Props to be passed to the component.
-  - `hidden`: If true, the component will not be rendered.
-    Example:
+  - `hidden`: If true, the component will not be rendered. Example:
   ```tsx
   const MyButton = createPrimitiveComponent(Button)({
     stateHook: useButtonState,

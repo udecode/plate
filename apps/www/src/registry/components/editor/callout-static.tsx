@@ -1,6 +1,7 @@
-import * as React from 'react';
 import { BaseCalloutPlugin } from '@platejs/callout';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
 export function CalloutElementStatic({
@@ -17,7 +18,7 @@ export function CalloutElementStatic({
     >
       <div className="flex w-full gap-2 rounded-md">
         <div
-          className="size-6 select-none text-[18px]"
+          className="size-6 text-[18px] select-none"
           style={{
             fontFamily:
               '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',

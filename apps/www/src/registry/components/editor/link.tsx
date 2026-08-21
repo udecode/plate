@@ -1,6 +1,18 @@
 'use client';
 
-import * as React from 'react';
+import {
+  type UseVirtualFloatingOptions,
+  flip,
+  getDOMSelectionBoundingClientRect,
+  offset,
+  useVirtualFloating,
+} from '@platejs/floating';
+import { LinkRules } from '@platejs/link';
+import { LinkPlugin } from '@platejs/link/react';
+import { useHotkeys } from '@udecode/react-hotkeys';
+import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
+import { cva } from 'class-variance-authority';
+import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 import {
   type PlateElementProps,
   PlateElement,
@@ -10,25 +22,14 @@ import {
   useEditorSelection,
   usePluginStore,
 } from 'platejs/react';
-import { LinkPlugin } from '@platejs/link/react';
-import { cn } from '@/lib/utils';
-import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
-import {
-  type UseVirtualFloatingOptions,
-  flip,
-  getDOMSelectionBoundingClientRect,
-  offset,
-  useVirtualFloating,
-} from '@platejs/floating';
-import { LinkRules } from '@platejs/link';
-import { useHotkeys } from '@udecode/react-hotkeys';
-import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
-import { cva } from 'class-variance-authority';
-import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+import * as React from 'react';
+
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { commentPlugin } from '@/registry/components/editor/comment';
 import { suggestionPlugin } from '@/registry/components/editor/suggestion';
+import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
   return (
@@ -337,7 +338,6 @@ export function LinkFloatingToolbar({
     if (store.get().mode === 'edit') api.hide();
     // `update` is stable; depending on the floating result object would rerun
     // this effect on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api, editor, readOnly, selection, store, editFloating.update]);
 
   useHotkeys(
@@ -404,7 +404,6 @@ export function LinkFloatingToolbar({
     } else {
       store.set({ updated: false });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, insertFloating.update]);
 
   const { text, updated } = store.get();
@@ -521,20 +520,16 @@ function LinkOpenButton() {
   const editor = useEditor();
   const selection = useEditorSelection();
 
-  const attributes = React.useMemo(
-    () => {
-      const entry = editor.read.nodes.find({
-        type: linkPlugin,
-      });
-      if (!entry) {
-        return {};
-      }
-      const [element] = entry;
-      return editor.plugin(linkPlugin).api.getAttributes(element);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editor, selection]
-  );
+  const attributes = React.useMemo(() => {
+    const entry = editor.read.nodes.find({
+      type: linkPlugin,
+    });
+    if (!entry) {
+      return {};
+    }
+    const [element] = entry;
+    return editor.plugin(linkPlugin).api.getAttributes(element);
+  }, [editor, selection]);
 
   return (
     <a

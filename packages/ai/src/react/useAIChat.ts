@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-
-import type { Text } from '@platejs/plite';
 import { usePluginStore } from '@platejs/core/react';
+import type { Text } from '@platejs/plite';
+import { useEffect, useRef } from 'react';
 
 import { AIChatPlugin } from './AIChatPlugin';
 

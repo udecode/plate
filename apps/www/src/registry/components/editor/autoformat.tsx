@@ -1,8 +1,7 @@
 'use client';
 
-import type { BaseEditor } from 'platejs';
-
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import type { BaseEditor } from 'platejs';
 import { defineBasePlugin, createTextSubstitutionInputRule } from 'platejs';
 
 const isTextSubstitutionBlocked = (editor: BaseEditor) =>

@@ -103,9 +103,9 @@ const selectionIsExpandedInRoot = (
 ) =>
   Boolean(
     selection &&
-      !RangeApi.isCollapsed(selection) &&
-      (selection.anchor.root ?? fallbackRoot) === root &&
-      (selection.focus.root ?? fallbackRoot) === root
+    !RangeApi.isCollapsed(selection) &&
+    (selection.anchor.root ?? fallbackRoot) === root &&
+    (selection.focus.root ?? fallbackRoot) === root
   );
 
 const getTarget = (
@@ -139,9 +139,9 @@ export const isSameHistoryPath = (
 const samePoint = (left: HistoryPoint | null, right: HistoryPoint | null) =>
   Boolean(
     left &&
-      right &&
-      left.offset === right.offset &&
-      isSameHistoryPath(left.path, right.path)
+    right &&
+    left.offset === right.offset &&
+    isSameHistoryPath(left.path, right.path)
   );
 
 const getChangedSpan = (
@@ -193,11 +193,11 @@ export const createHistoryBatchGroup = (
     : null;
   const structuralReplacementInsertedText = Boolean(
     selectionStart &&
-      afterPoint &&
-      (selectionStart.root ?? commit.selectionBeforeRoot ?? MAIN_ROOT_KEY) ===
-        root &&
-      isSameHistoryPath(selectionStart.path, afterPoint.path) &&
-      afterPoint.offset > selectionStart.offset
+    afterPoint &&
+    (selectionStart.root ?? commit.selectionBeforeRoot ?? MAIN_ROOT_KEY) ===
+      root &&
+    isSameHistoryPath(selectionStart.path, afterPoint.path) &&
+    afterPoint.offset > selectionStart.offset
   );
   const textChanged = commit.changed.has('text', publicRoot);
   const structureChanged = commit.changed.has('structure', publicRoot);

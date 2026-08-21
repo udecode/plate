@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { FindReplacePlugin } from '@platejs/find-replace';
 import {
   Plate,
@@ -10,12 +8,13 @@ import {
   usePlateEditor,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { Input } from '@/components/ui/input';
-import { EditorKit } from '@/registry/components/editor/plugins';
-import { findReplaceValue } from '@/registry/examples/values/find-replace-value';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { findReplaceValue } from '@/registry/examples/values/find-replace-value';
 
 export function FindToolbar() {
   const editor = useEditor();

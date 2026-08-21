@@ -1,5 +1,4 @@
 import type { Element, Path, Text } from '@platejs/plite';
-
 import clsx from 'clsx';
 
 import type { BaseEditor } from '../../lib/editor';
@@ -8,10 +7,9 @@ import type {
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
 } from '../../lib/plugin';
-
+import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
 import { isEditOnly } from './isEditOnlyDisabled';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
-import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
 
 /** Inject plugin props, editor. */
 export const pipeInjectNodeProps = <

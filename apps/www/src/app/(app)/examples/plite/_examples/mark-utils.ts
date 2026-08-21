@@ -1,4 +1,5 @@
 import type { BooleanMarksOf } from '@platejs/plite';
+
 import type { CustomEditor, CustomText, CustomTextKey } from './custom-types.d';
 
 type ActiveMarks = BooleanMarksOf<CustomText>;

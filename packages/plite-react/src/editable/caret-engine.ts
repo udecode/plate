@@ -1,4 +1,3 @@
-import type { KeyboardEvent } from 'react';
 import {
   type EditorUpdatePolicyFor,
   type MoveUnit,
@@ -14,6 +13,8 @@ import {
   DOMCoverage,
   type DOMPhaseScheduler,
 } from '@platejs/plite-dom/internal';
+import type { KeyboardEvent } from 'react';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import {
@@ -22,16 +23,16 @@ import {
   type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  getPathElement,
+  isPointOnVisualBoundaryLine,
+} from './content-root-vertical-geometry';
 import {
   getPlainVerticalDOMCoverageExtension,
   getPlainVerticalLargeDocumentExtension,
   shouldModelOwnPlainVerticalLargeDocumentExtension,
 } from './dom-coverage-vertical-selection';
-import {
-  getPathElement,
-  isPointOnVisualBoundaryLine,
-} from './content-root-vertical-geometry';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { getDocumentBoundaryKeyboardMove } from './input-controller';
 import type { EditableRepairRequest } from './mutation-controller';
 import {
@@ -54,7 +55,7 @@ export type EditableCaretMovementResult = {
 
 type TextDirection = 'ltr' | 'neutral' | 'rtl';
 
-const BIDI_CONTROL_MATCHER = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/u;
+const BIDI_CONTROL_MATCHER = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/u;
 const LETTER_MATCHER = /\p{L}/u;
 const RTL_SCRIPT_MATCHERS = [
   'Adlam',

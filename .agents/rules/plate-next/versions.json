@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 100,
+  "latestVersion": 105,
   "versions": [
     {
       "version": 0,
@@ -1181,6 +1181,67 @@
         "Keep reusable editor-kit source limited to plugin composition and let generated contracts derive current schema types without named persisted identity.",
         "Move named lineage and upgrade policy to the real host persistence owner or a dedicated migration example with an application-specific schema ID.",
         "Delete compatibility reexports and default-example migration wiring, then verify generated contracts, registry metadata, teaching examples, docs, and release artifacts use the selected ownership."
+      ]
+    },
+    {
+      "version": 101,
+      "date": "2026-08-19",
+      "doctrineFingerprint": "sha256:cd53e180a4c1dd4b5bcd1d8cb630c89d5cf94d362ddfced315adeb81fb0b33df",
+      "summary": "Benchmark is the sole ordered Plate and Plite performance diagnosis and execution owner.",
+      "migrationChecks": [
+        "Route benchmarking, profiling, current-versus-main and cross-editor comparison, mount and editing timing, benchmark repair, and measured optimization loops to Benchmark.",
+        "Inventory all applicable lanes by default, pause only after causal evidence proves an owner, fix and rerun the exact lane plus correctness guard, then resume the first pending lane.",
+        "Keep Performance as the review lens, Regression and Patch as correctness owners, and Autoresearch as optional worker machinery; delete competing Slate AR, Auto, Task, Major Task, research, maintainer, migration, cleanup, and plan execution routes.",
+        "Regenerate agent mirrors and shared resources, then prove lane-state behavior, source-to-mirror parity, zero stale perf routes, template fail-closed behavior, agent-native review, and P2 autoreview."
+      ]
+    },
+    {
+      "version": 102,
+      "date": "2026-08-19",
+      "doctrineFingerprint": "sha256:6b760485398f26fb3f648613e60aec565ac66fee9dc613a67b202f2542431dd5",
+      "summary": "Repo-local implementation workflows use P1 autoreview by default.",
+      "migrationChecks": [
+        "Pass --max-priority P1 for every repo-local non-trivial implementation closeout unless the user explicitly requests P2 or P3.",
+        "Update source rules, current goal templates, generated skill mirrors, routing prose, proof packets, and review labels to call the default P1.",
+        "Preserve immutable historical review receipts and priority taxonomies; do not rewrite old version entries or best-api P0-P3 debt rankings.",
+        "Regenerate skills and resources, prove zero stale --max-priority P2 defaults outside immutable history, and close agent-native plus P1 autoreview."
+      ]
+    },
+    {
+      "version": 103,
+      "date": "2026-08-19",
+      "doctrineFingerprint": "sha256:90fbc9e06cc91272c4d4d00ea736a461e095606928a96029a18f93534e773ad2",
+      "summary": "Plate autoreview repair loops stop after three helper invocations per unchanged scope.",
+      "migrationChecks": [
+        "Cap every Plate fix-and-rerun autoreview loop at three helper invocations for one unchanged review scope; count the initial review as invocation 1 and one partitioned or panel helper run as one invocation.",
+        "After invocation 3, stop and report remaining verified findings without claiming clean or renaming the same scope to reset the counter.",
+        "Update central agent policy, Task, Patch, Autoclosure, and affected goal templates while leaving the external Autoreview package untouched because its current upstream contract already defaults to one pass.",
+        "Regenerate agent mirrors, prove stale indefinite-loop wording is absent, verify caller and generated-skill agreement, and close agent-native plus P1 autoreview."
+      ]
+    },
+    {
+      "version": 104,
+      "date": "2026-08-19",
+      "doctrineFingerprint": "sha256:a5c76f20a35e34af2931c9d431a65fb2a0757c1160e4c9abf79816eb71854809",
+      "summary": "Conclusive performance causes select the best long-term durable architecture before implementation.",
+      "migrationChecks": [
+        "Keep later benchmark lanes paused while classifying the fix, selecting the best long-term target, and naming decision, adoption, and implementation owners.",
+        "Route public API and runtime architecture causes through Best API plus Plite Plan or Plate Plan; allow Auto to supervise broad accepted implementation without taking target ownership.",
+        "Before stability, default to a justified hard cut when it buys materially better lasting value; preserve only correctness, security, serialized-data, native-behavior, or runtime law.",
+        "Preserve the durable fix decision in Cause History, rerun the exact red benchmark and correctness guard, then resume the first pending lane.",
+        "Regenerate agent mirrors and shared resources, prove validator and template behavior, audit stale compatible-patch teaching, and close agent-native plus P1 autoreview."
+      ]
+    },
+    {
+      "version": 105,
+      "date": "2026-08-20",
+      "doctrineFingerprint": "sha256:3411896833032e7cc7b4c47bfc4eadf02a07459e2dae1d95d2a4756c571745f6",
+      "summary": "Element render props carry stable node identity, while live position is an explicit reactive dependency.",
+      "migrationChecks": [
+        "Remove path from PlateElementProps and RenderNodeWrapperProps consumers; do not replace it with another implicit positional render prop.",
+        "Resolve editor.read.nodes.path(element) at interaction time when a command or event is the only path consumer.",
+        "Use usePath() only when rendered output must react to movement, and include that subscription in repeated-node performance proof.",
+        "Prove stable custom elements do not rerender for sibling-only path shifts and that explicit usePath consumers still receive live positions."
       ]
     }
   ],

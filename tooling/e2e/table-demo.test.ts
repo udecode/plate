@@ -161,9 +161,7 @@ const pasteClipboardAndReadFormats = async (page: Page) => {
     document.addEventListener(
       'beforeinput',
       (event) => {
-        state.__tablePasteInput?.beforeInputTypes.push(
-          (event as InputEvent).inputType
-        );
+        state.__tablePasteInput?.beforeInputTypes.push(event.inputType);
       },
       { once: true }
     );
@@ -446,8 +444,9 @@ const runTableMenuCommand = async (
   await expect(trigger).toHaveCount(1);
   const triggerId = await trigger.getAttribute('id');
 
-  if (!triggerId)
+  if (!triggerId) {
     throw new Error('Expected the table menu trigger to have an id');
+  }
 
   const rootMenu = page.locator(
     `[data-slot="dropdown-menu-content"][aria-labelledby="${triggerId}"]`
@@ -510,8 +509,9 @@ test.describe('table registry demo', () => {
       await resizeHandle.hover();
       const handleBox = await resizeHandle.boundingBox();
 
-      if (!handleBox)
+      if (!handleBox) {
         throw new Error('Expected a visible column resize handle');
+      }
 
       await page.mouse.down();
       await page.mouse.move(

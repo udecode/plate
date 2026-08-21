@@ -1,8 +1,11 @@
-import { readFileSync } from 'node:fs';
-import { globSync } from 'glob';
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+
 import { defineConfig, type Expression } from 'turbowatch';
 
-const foundPackageJson = globSync('packages/*/package.json');
+const foundPackageJson = readdirSync('packages', { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => path.join('packages', entry.name, 'package.json'));
 const SRC_PATH_REGEX = /\/src\/.*/;
 
 type PathToPackageNameMap = Map<string, string>;
@@ -10,7 +13,7 @@ type PathToPackageNameMap = Map<string, string>;
 const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
   (acc, current) => {
     try {
-      const packageJson = readFileSync(current, 'utf8');
+      const packageJson = readFileSync(current, 'utf-8');
       const packageJsonParsed = JSON.parse(packageJson) as {
         dependencies: Record<string, string>;
         name: string | undefined;
@@ -24,7 +27,9 @@ const allPackages = foundPackageJson.reduce<PathToPackageNameMap>(
 
       acc.set(current, packageName);
       return acc;
-    } catch (_) {}
+    } catch {
+      // Ignore workspace entries without a readable package manifest.
+    }
 
     return acc;
   },
@@ -52,7 +57,7 @@ export default defineConfig({
       ],
       interruptible: true,
       name: 'build',
-      onChange: async ({ spawn, files, abortSignal }) => {
+      onChange: async ({ spawn, files }) => {
         const changedPackages = new Set<string>();
         for (const file of files) {
           const pkgJsonPath = file.name
@@ -73,7 +78,6 @@ export default defineConfig({
         }
 
         await spawn`turbo run build --filter=${[...changedPackages].join(',')}`;
-        if (abortSignal?.aborted) return;
       },
     },
   ],

@@ -1,12 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getSelection as editorGetSelection,
-  hasPath as editorHasPath,
-  isEditor as editorIsEditor,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -20,6 +13,13 @@ import {
   SpanApi,
   TextApi,
 } from '@platejs/plite';
+import {
+  getSelection as editorGetSelection,
+  hasPath as editorHasPath,
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 const typeOnly = (_callback: () => void) => {};
 

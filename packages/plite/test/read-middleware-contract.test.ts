@@ -11,6 +11,7 @@ import {
   SelectionApi,
 } from '@platejs/plite';
 import { dispatchCommand } from '@platejs/plite/internal';
+
 import { defineRead } from '../src/core/read-definition';
 import { executeEditorRead } from '../src/core/read-registry';
 
@@ -180,7 +181,7 @@ describe('descriptor-based extension read middleware', () => {
             around(read, ({ next }) => {
               assert.equal(next(), true);
 
-              // biome-ignore lint/complexity/noUselessUndefined: Explicit undefined is the middleware override under test.
+              // Explicit undefined is the middleware override under test.
               return undefined;
             }),
           ],
@@ -244,7 +245,7 @@ describe('descriptor-based extension read middleware', () => {
         defineExtension('generator-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ editor, next }) =>
-              (function* () {
+              (function* lazyReadMiddleware() {
                 try {
                   yield* next();
                 } finally {
@@ -256,9 +257,14 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const result = executeEditorRead(editor, read, undefined, function* () {
-      yield 1;
-    });
+    const result = executeEditorRead(
+      editor,
+      read,
+      undefined,
+      function* executeGeneratorRead() {
+        yield 1;
+      }
+    );
 
     assert.throws(() => {
       for (const _value of result) break;
@@ -277,7 +283,7 @@ describe('descriptor-based extension read middleware', () => {
         defineExtension('generator-protocol-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) =>
-              (function* () {
+              (function* protocolReadMiddleware() {
                 return yield* next();
               })()
             ),
@@ -285,19 +291,24 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const result = executeEditorRead(editor, read, undefined, function* () {
-      try {
-        yield 1;
-      } catch (error) {
-        assert.equal(error, marker);
-        caught = true;
-        yield 2;
-      } finally {
-        cleaned = true;
-      }
+    const result = executeEditorRead(
+      editor,
+      read,
+      undefined,
+      function* executeProtocolRead() {
+        try {
+          yield 1;
+        } catch (error) {
+          assert.equal(error, marker);
+          caught = true;
+          yield 2;
+        } finally {
+          cleaned = true;
+        }
 
-      return 'done';
-    });
+        return 'done';
+      }
+    );
 
     assert.deepEqual(result.next(), { done: false, value: 1 });
     assert.deepEqual(result.throw(marker), { done: false, value: 2 });

@@ -7,10 +7,11 @@ const isScopeActive = (
 ) => {
   if (!scopes || activeScopes.length === 0) return true;
   const requiredScopes = typeof scopes === 'string' ? [scopes] : scopes;
+  const activeScopeSet = new Set(activeScopes);
 
   return (
-    activeScopes.includes('*') ||
-    requiredScopes.some((scope) => activeScopes.includes(scope))
+    activeScopeSet.has('*') ||
+    requiredScopes.some((scope) => activeScopeSet.has(scope))
   );
 };
 

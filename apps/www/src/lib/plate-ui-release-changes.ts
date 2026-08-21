@@ -11,6 +11,7 @@ import {
   type RegistryChangelogEvent,
   type RegistryChangelogTarget,
 } from '@/lib/registry-changelog';
+
 import { LATEST_PLATE_UI_RELEASE_TAG } from './plate-ui-release-tags';
 
 export function getPlateUiReleaseChangesByTag() {

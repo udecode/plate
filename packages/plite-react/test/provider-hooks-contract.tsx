@@ -1,12 +1,3 @@
-import { act, render, renderHook, waitFor } from '@testing-library/react';
-import _ from 'lodash';
-import {
-  Component,
-  type ReactNode,
-  startTransition,
-  Suspense,
-  useLayoutEffect,
-} from 'react';
 import { type EditorCommit, type NodeKey, TextApi } from '@platejs/plite';
 import {
   getLastCommit as editorGetLastCommit,
@@ -18,6 +9,16 @@ import {
   moveNodes as editorMoveNodes,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { act, render, renderHook, waitFor } from '@testing-library/react';
+import _ from 'lodash';
+import {
+  Component,
+  type ReactNode,
+  startTransition,
+  Suspense,
+  useLayoutEffect,
+} from 'react';
+
 import {
   createReactEditor,
   Editable,
@@ -37,11 +38,11 @@ import {
   useRootNodeKeys,
   useTopLevelSelectionIndex,
 } from '../src/editable/root-selector-sources';
+import { useGenericSelector } from '../src/hooks/use-generic-selector';
 import {
   useMountedNodeRenderSelector,
   useMountedTextRenderSelector,
 } from '../src/hooks/use-node-selector';
-import { useGenericSelector } from '../src/hooks/use-generic-selector';
 import { createPliteReactRenderCounter } from '../src/render-profiler';
 
 const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];

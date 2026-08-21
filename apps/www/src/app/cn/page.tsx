@@ -1,8 +1,6 @@
-import * as React from 'react';
-
 import type { Metadata } from 'next';
-
 import Link from 'next/link';
+import * as React from 'react';
 
 import {
   PageHeader,
@@ -62,10 +60,10 @@ export default async function CNIndexPage() {
       <PageHeader className="md:**:[.container]:pb-8 lg:**:[.container]:pb-12">
         <AnnouncementButton />
 
-        <PageHeaderHeading className="max-w-4xl text-balance font-semibold text-primary xl:text-5xl">
+        <PageHeaderHeading className="max-w-4xl font-semibold text-balance text-primary xl:text-5xl">
           {content.buildYourRichTextEditor}
         </PageHeaderHeading>
-        <PageHeaderDescription className="max-w-4xl font-normal text-base sm:text-lg">
+        <PageHeaderDescription className="max-w-4xl text-base font-normal sm:text-lg">
           {content.description}
         </PageHeaderDescription>
         <PageActions className="justify-center **:data-[slot=button]:shadow-none">
@@ -75,9 +73,9 @@ export default async function CNIndexPage() {
         </PageActions>
       </PageHeader>
 
-      <div className="container-wrapper relative flex-1 overflow-hidden bg-muted pb-6 md:px-0 dark:bg-background">
+      <div className="relative container-wrapper flex-1 overflow-hidden bg-muted pb-6 md:px-0 dark:bg-background">
         <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-120 bg-linear-to-b from-background via-muted to-transparent dark:hidden" />
-        <div className="container relative z-10 max-w-screen-2xl overflow-hidden md:px-0">
+        <div className="relative z-10 container max-w-screen-2xl overflow-hidden md:px-0">
           <section
             className="theme-neutral relative overflow-hidden p-2 pb-0 md:p-6 md:pb-0"
             data-home-preview

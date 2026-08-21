@@ -1,15 +1,13 @@
 /// <reference types="@testing-library/jest-dom" />
 
+import { property, schema, type Element } from '@platejs/plite';
+import { act, render } from '@testing-library/react';
 import React from 'react';
 
-import { property, schema, type Element } from '@platejs/plite';
-
-import { act, render } from '@testing-library/react';
-
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
-import { createPlateEditor } from '../../editor';
 import { defineBasePlugin } from '../../../lib';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
+import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { createPlateEditor } from '../../editor';
 import { useElement, useOptionalElement } from './useElement';
 import {
   ElementProvider,
@@ -355,15 +353,13 @@ describe('ElementProvider', () => {
 
       return <div>Inner type: {element.type}</div>;
     };
-    const InnerProvider = React.memo(function InnerProvider({
-      children,
-    }: {
-      children: React.ReactNode;
-    }) {
-      innerProviderRenders++;
+    const InnerProvider = React.memo(
+      ({ children }: { children: React.ReactNode }) => {
+        innerProviderRenders++;
 
-      return <AgeElementProvider age={20}>{children}</AgeElementProvider>;
-    });
+        return <AgeElementProvider age={20}>{children}</AgeElementProvider>;
+      }
+    );
     const { getByText } = render(
       <PlateWrapper>
         <UpdatingNameElementProvider
@@ -398,21 +394,21 @@ describe('ElementProvider', () => {
     let innerProviderRenders = 0;
     let nameConsumerRenders = 0;
 
-    const ExactNameConsumer = React.memo(function ExactNameConsumer() {
+    const ExactNameConsumer = React.memo(() => {
       nameConsumerRenders++;
 
       const element = useElement(NamePlugin);
 
       return <div>Exact name: {element.name}</div>;
     });
-    const InnerAgeConsumer = React.memo(function InnerAgeConsumer() {
+    const InnerAgeConsumer = React.memo(() => {
       ageConsumerRenders++;
 
       const element = useElement();
 
       return <div>Inner age: {(element as AgeElement).age}</div>;
     });
-    const InnerProvider = React.memo(function InnerProvider() {
+    const InnerProvider = React.memo(() => {
       innerProviderRenders++;
 
       return (
@@ -455,14 +451,14 @@ describe('ElementProvider', () => {
     let innerConsumerRenders = 0;
     let innerProviderRenders = 0;
 
-    const InnerConsumer = React.memo(function InnerConsumer() {
+    const InnerConsumer = React.memo(() => {
       innerConsumerRenders++;
 
       const element = useElement(NamePlugin);
 
       return <div>Shadowed name: {element.name}</div>;
     });
-    const InnerProvider = React.memo(function InnerProvider() {
+    const InnerProvider = React.memo(() => {
       innerProviderRenders++;
 
       return (

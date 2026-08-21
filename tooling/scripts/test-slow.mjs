@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdtempSync,
@@ -7,7 +8,6 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
@@ -135,6 +135,8 @@ const findArgValue = (args, flag) => {
     if (arg === flag) return args[i + 1];
     if (arg.startsWith(`${flag}=`)) return arg.slice(flag.length + 1);
   }
+
+  return undefined;
 };
 
 const hasArg = (args, flag) =>
@@ -174,11 +176,11 @@ const runFiles = (files, args) => {
 };
 
 const resolveLocalImport = (fromFile, specifier) => {
-  if (!specifier.startsWith('.')) return;
+  if (!specifier.startsWith('.')) return undefined;
 
   const sanitizedSpecifier = specifier.split('?')[0]?.split('#')[0];
 
-  if (!sanitizedSpecifier) return;
+  if (!sanitizedSpecifier) return undefined;
 
   const absoluteBase = resolve(dirname(fromFile), sanitizedSpecifier);
   const candidates = [
@@ -207,7 +209,7 @@ const fileUsesMockModule = (file) => {
 
   mockModuleUsageCache.set(file, false);
 
-  const source = readFileSync(file, 'utf8');
+  const source = readFileSync(file, 'utf-8');
 
   if (source.includes(MOCK_MODULE_PATTERN)) {
     mockModuleUsageCache.set(file, true);
@@ -236,7 +238,7 @@ const mergeJunitReports = (files, outfile) => {
   const suites = files
     .map((file) => {
       try {
-        return readFileSync(file, 'utf8')
+        return readFileSync(file, 'utf-8')
           .replace(XML_DECLARATION_RE, '')
           .replace(TESTSUITES_OPEN_RE, '')
           .replace(TESTSUITES_CLOSE_RE, '')

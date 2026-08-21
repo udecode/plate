@@ -1,6 +1,13 @@
 import type { BaseEditor } from '../../editor';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
 import type { PluginReference } from '../../plugin/PluginDefinition';
+import {
+  createBlockFenceInputRule,
+  createBlockStartInputRule,
+  createMarkInputRule,
+  createTextSubstitutionInputRule,
+} from './createInputRules';
+import { defineInputRule } from './defineInputRule';
 import type {
   InputRule,
   InputRuleEditor,
@@ -22,14 +29,6 @@ import type {
   TextSubstitutionInputRuleConfig,
   TransformInputRuleContext,
 } from './types';
-
-import {
-  createBlockFenceInputRule,
-  createBlockStartInputRule,
-  createMarkInputRule,
-  createTextSubstitutionInputRule,
-} from './createInputRules';
-import { defineInputRule } from './defineInputRule';
 
 type FactoryValue<TInput, TValue> = TValue | ((input: TInput) => TValue);
 

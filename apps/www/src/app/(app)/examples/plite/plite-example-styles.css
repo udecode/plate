@@ -1,7 +1,7 @@
 html,
 input:not([data-slot]),
 textarea:not([data-slot]) {
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
   line-height: 1.4;
   background: #eee;
 }
@@ -44,7 +44,7 @@ blockquote {
   font-style: italic;
 }
 
-blockquote[dir="rtl"] {
+blockquote[dir='rtl'] {
   border-left: none;
   padding-left: 0;
   padding-right: 10px;
@@ -60,8 +60,8 @@ td {
   border: 2px solid #ddd;
 }
 
-input[type="text"]:not([data-slot]),
-input[type="search"]:not([data-slot]) {
+input[type='text']:not([data-slot]),
+input[type='search']:not([data-slot]) {
   box-sizing: border-box;
   font-size: 0.85em;
   width: 100%;
@@ -70,8 +70,8 @@ input[type="search"]:not([data-slot]) {
   background: #fafafa;
 }
 
-input[type="text"]:focus:not([data-slot]),
-input[type="search"]:focus:not([data-slot]) {
+input[type='text']:focus:not([data-slot]),
+input[type='search']:focus:not([data-slot]) {
   outline: 0;
   border-color: blue;
 }
@@ -1418,7 +1418,7 @@ details > summary {
   outline: none;
   color: #111827;
   font:
-    400 16px / 24px "Helvetica Neue",
+    400 16px / 24px 'Helvetica Neue',
     Helvetica,
     Arial,
     sans-serif;

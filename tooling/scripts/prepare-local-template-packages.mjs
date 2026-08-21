@@ -5,6 +5,13 @@ import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
 const localPackageOutputDir = path.join(
@@ -43,7 +50,7 @@ async function main() {
   const templateConfigs = await Promise.all(
     templateDirs.map(async (templateDir) => {
       const packageJsonPath = path.join(templateDir, 'package.json');
-      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
       const localDependencies = getLocalDependencies(
         packageJson,
         workspacePackages
@@ -180,12 +187,12 @@ function getPackagesToPrepare({ baseRef, templateConfigs, workspacePackages }) {
     `Changed workspace packages for ${baseRef}...HEAD: ${[
       ...changedPackageNames,
     ]
-      .sort()
+      .sort(compareStrings)
       .join(', ')}`
   );
   console.log(
     `Selected workspace packages for templates: ${selectedPackageNames
-      .toSorted()
+      .toSorted(compareStrings)
       .join(', ')}`
   );
 
@@ -218,7 +225,7 @@ async function getWorkspacePackages() {
       workspacePackageDirectory
     )) {
       const packageJsonPath = path.join(directoryEntry, 'package.json');
-      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
 
       workspacePackagesByName.set(packageJson.name, {
         directory: directoryEntry,
@@ -260,7 +267,9 @@ async function listDirectories(parentDirectory) {
     try {
       await access(path.join(directoryPath, 'package.json'));
       directories.push(directoryPath);
-    } catch {}
+    } catch {
+      // Skip directories that are not package roots.
+    }
   }
 
   return directories;
@@ -272,7 +281,7 @@ function getChangedWorkspacePackageNames(baseRef, workspacePackages) {
     ['diff', '--name-only', `${baseRef}...HEAD`],
     {
       cwd: repoRoot,
-      encoding: 'utf8',
+      encoding: 'utf-8',
     }
   );
 
@@ -360,7 +369,7 @@ function packWorkspacePackage(packageDirectory) {
     ['pack', '--pack-destination', localPackageOutputDir],
     {
       cwd: packageDirectory,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'inherit'],
     }
   );
@@ -426,7 +435,9 @@ function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
   if (missingDependencyNames.length > 0) {
     packageJson.devDependencies ??= {};
 
-    for (const dependencyName of missingDependencyNames.toSorted()) {
+    for (const dependencyName of missingDependencyNames.toSorted(
+      compareStrings
+    )) {
       const tarballPath = tarballsByPackageName.get(dependencyName);
 
       if (!tarballPath) continue;

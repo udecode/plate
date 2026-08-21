@@ -1,14 +1,13 @@
 'use client';
 
-import * as React from 'react';
-
 import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
-import { EditorKit } from '@/registry/components/editor/plugins';
-import { excalidrawValue } from '@/registry/examples/values/excalidraw-value';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { ExcalidrawElement } from '@/registry/components/editor/excalidraw';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { excalidrawValue } from '@/registry/examples/values/excalidraw-value';
 
 export default function ExcalidrawDemo() {
   const editor = usePlateEditor({

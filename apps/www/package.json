@@ -19,9 +19,9 @@
     "dev:plite": "PLATE_WWW_PLITE=1 PLATE_WWW_DEV_SOURCE=1 next dev --webpack",
     "editor:check": "plate generate --check src/registry/components/editor/plugins.ts",
     "editor:generate": "plate generate src/registry/components/editor/plugins.ts",
-    "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine pnpm lint:fix",
-    "lint:fix": "pnpm lint --fix",
+    "lint": "ultracite check .",
+    "lint:debug": "OXC_LOG=debug ultracite check .",
+    "lint:fix": "ultracite fix .",
     "perf:editor": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-editor-perf.mts",
     "perf:editor:public": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-editor-perf.mts --preset public-slate-vs-plate --summary-out .tmp/editor-perf-public-summary.json",
     "perf:homepage-input": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-homepage-input-perf.mts",
@@ -40,18 +40,6 @@
     "test:www-browser:chromium": "playwright test --config playwright.config.ts --project=chromium",
     "typecheck": "pnpm editor:check && pnpm api-reference:check && pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json",
     "typecheck:watch": "pnpm build:source && concurrently \"tsc --noEmit -p tsconfig.json --watch\" \"tsc --noEmit -p tsconfig.package-integration.json --watch\""
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   },
   "dependencies": {
     "@ai-sdk/gateway": "^3.0.0",
@@ -231,12 +219,12 @@
     "html-entities": "^2.6.0",
     "kleur": "4.1.5",
     "listr2": "8.3.3",
-    "react-aria-components": "1.20.0",
     "mammoth": "^1.11.0",
     "mdast-util-toc": "7.1.0",
     "ora": "8.2.0",
     "postcss": "8.5.4",
     "puppeteer": "24.10.0",
+    "react-aria-components": "1.20.0",
     "rehype": "12.0.1",
     "rehype-autolink-headings": "6.1.1",
     "rehype-pretty-code": "0.6.0",
@@ -253,5 +241,17 @@
     "typescript": "6.0.2",
     "unist-builder": "4.0.0",
     "unist-util-visit": "5.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

@@ -1,5 +1,3 @@
-import { parseAsBoolean, useQueryStates } from 'nuqs';
-import React, { useCallback, useMemo, useState } from 'react';
 import { NodeApi, type Element as PliteElement } from '@platejs/plite';
 import { DOMCoverage } from '@platejs/plite-dom';
 import {
@@ -9,7 +7,11 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { parseAsBoolean, useQueryStates } from 'nuqs';
+import React, { useCallback, useMemo, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
+
 import { replaceQueryOptions } from './query-controls';
 
 const hiddenBodyPath = [2, 1, 0];
@@ -136,7 +138,7 @@ const DomCoverageBoundariesExample = () => {
   );
 
   const refreshTrace = useCallback(() => {
-    setTimeout(() => setTraceTick((tick) => tick + 1));
+    setTimeout(() => setTraceTick((tick) => tick + 1), 0);
   }, []);
 
   const updateHiddenBody = useCallback(() => {

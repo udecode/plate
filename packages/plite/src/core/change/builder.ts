@@ -27,6 +27,7 @@ import {
   removeTextChange,
   replaceChildrenChange,
   setNodeChange,
+  setNodesChange,
   splitNodeChange,
 } from './root-change';
 import {
@@ -44,7 +45,11 @@ export type DocumentChangeStep = Readonly<{
   change: DocumentChange;
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   indexedBefore: ReadonlyMap<string, DocumentIndex>;
-  /** @internal Final nodes collected during classification, before publication. */
+  /**
+   * Final nodes collected during classification, before publication.
+   *
+   * @internal
+   */
   runtimeCandidates: ReadonlyMap<
     string,
     readonly DocumentChangeRuntimeCandidate[]
@@ -56,6 +61,8 @@ export type DocumentChangeConstructionPolicy = (
     after: JsonEditorValue;
     before: JsonEditorValue;
     change: DocumentChange;
+    indexedAfter: ReadonlyMap<string, DocumentIndex>;
+    indexedBefore: ReadonlyMap<string, DocumentIndex>;
   }>,
   preparation?: object
 ) => DocumentChange;
@@ -88,6 +95,7 @@ export class ChangeDraft {
     value: JsonEditorValue,
     change: DocumentChange
   ) => void;
+  private readonly adoptCanonicalBaseline?: (value: JsonEditorValue) => void;
   private canonical = true;
   private validationPending = false;
   private readonly construct?: DocumentChangeConstructionPolicy;
@@ -127,6 +135,7 @@ export class ChangeDraft {
   constructor(
     value: JsonEditorValue,
     options: Readonly<{
+      adoptCanonicalBaseline?: (value: JsonEditorValue) => void;
       assertCanonical?: (
         value: JsonEditorValue,
         change: DocumentChange
@@ -157,6 +166,7 @@ export class ChangeDraft {
   ) {
     this.source = value;
     this.current = value;
+    this.adoptCanonicalBaseline = options.adoptCanonicalBaseline;
     this.assertCanonical = options.assertCanonical;
     this.construct = options.construct;
     this.indexConstructedRoot = options.indexConstructedRoot;
@@ -177,7 +187,11 @@ export class ChangeDraft {
     return this.current;
   }
 
-  /** @internal Reuse the builder's canonical indexes for publication. */
+  /**
+   * Reuse the builder's canonical indexes for publication.
+   *
+   * @internal
+   */
   indexedAfter(change: DocumentChange = this.accumulated) {
     const result = new Map<string, DocumentIndex>();
 
@@ -191,10 +205,15 @@ export class ChangeDraft {
     return result;
   }
 
-  /** @internal Fork the current draft while sharing its immutable indexes. */
+  /**
+   * Fork the current draft while sharing its immutable indexes.
+   *
+   * @internal
+   */
   fork(options: Readonly<{ validation?: 'defer-to-parent' | 'inherit' }> = {}) {
     const fork = new ChangeDraft(this.current, {
       assertCanonical: this.assertCanonical,
+      adoptCanonicalBaseline: this.adoptCanonicalBaseline,
       construct: this.construct,
       indexConstructedRoot: this.indexConstructedRoot,
       isSetValued: this.isSetValued,
@@ -217,12 +236,20 @@ export class ChangeDraft {
     return fork;
   }
 
-  /** @internal Require the parent transaction to validate an adopted canonical draft. */
+  /**
+   * Require the parent transaction to validate an adopted canonical draft.
+   *
+   * @internal
+   */
   requireValidation() {
     if (!this.accumulated.empty) this.validationPending = true;
   }
 
-  /** @internal Capture the finalized draft behind an opaque token. */
+  /**
+   * Capture the finalized draft behind an opaque token.
+   *
+   * @internal
+   */
   prepare(
     change: DocumentChange = this.classify(),
     options: Readonly<{ classify?: boolean }> = {}
@@ -267,7 +294,11 @@ export class ChangeDraft {
     return token;
   }
 
-  /** @internal Adopt a trusted prepared fork without replaying its changes. */
+  /**
+   * Adopt a trusted prepared fork without replaying its changes.
+   *
+   * @internal
+   */
   adopt(prepared: object): DocumentChangeStep | null {
     const payload = PREPARED_DOCUMENT_CHANGES.get(prepared);
 
@@ -358,7 +389,10 @@ export class ChangeDraft {
 
   apply(
     change: DocumentChange,
-    options: Readonly<{ classify?: boolean }> = {}
+    options: Readonly<{
+      classify?: boolean;
+      indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+    }> = {}
   ): DocumentChangeStep {
     const before = this.current;
     const classifications = new Map<string, DocumentChangeRootClassification>();
@@ -371,7 +405,14 @@ export class ChangeDraft {
 
     for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
       const beforeRoot = this.getIndex(root);
-      const after = rootChange.apply(beforeRoot);
+      const after =
+        options.indexedAfter?.get(root) ?? rootChange.apply(beforeRoot);
+
+      if (after.length !== rootChange.newLength) {
+        throw new Error(
+          `Indexed result for root "${root}" does not match change length.`
+        );
+      }
 
       this.indexConstructedRoot?.({
         after,
@@ -484,11 +525,13 @@ export class ChangeDraft {
   }
 
   /**
-   * @internal Apply a schema-fitted canonical change without revalidation.
+   * Apply a schema-fitted canonical change without revalidation.
    *
    * A fitter that already constructed the exact immutable target indexes may
    * supply them to avoid replaying the same change. Length and root lifecycle
    * checks still bind every supplied index to this builder's current draft.
+   *
+   * @internal
    */
   applyTrustedCanonical(
     change: DocumentChange,
@@ -670,6 +713,7 @@ export class ChangeDraft {
     }
     this.canonical = true;
     this.current = current;
+    this.adoptCanonicalBaseline?.(current);
 
     return Object.freeze({
       after: current,
@@ -693,16 +737,36 @@ export class ChangeDraft {
     if (this.canonical && !this.validationPending) return null;
 
     const before = this.current;
-    const constructionChange = this.canonical
-      ? undefined
-      : this.construct?.(
-          {
-            after: before,
-            before: this.source,
-            change: this.accumulated,
-          },
-          preparation
-        );
+    let constructionChange: DocumentChange | undefined;
+
+    if (!this.canonical && this.construct) {
+      const indexedAfter = new Map<string, DocumentIndex>();
+      const indexedBefore = new Map<string, DocumentIndex>();
+      const touchedRoots = new Set([
+        ...[...getInternalDocumentChangeEntries(this.accumulated)].map(
+          ([root]) => root
+        ),
+        ...this.accumulated.createRoots,
+      ]);
+
+      for (const root of touchedRoots) {
+        if (!this.accumulated.deleteRoots.has(root)) {
+          indexedAfter.set(root, this.getIndex(root));
+        }
+        indexedBefore.set(root, this.getSourceIndex(root));
+      }
+
+      constructionChange = this.construct(
+        {
+          after: before,
+          before: this.source,
+          change: this.accumulated,
+          indexedAfter,
+          indexedBefore,
+        },
+        preparation
+      );
+    }
     const step =
       constructionChange && !constructionChange.empty
         ? this.apply(constructionChange, options)
@@ -826,9 +890,12 @@ export class ChangeDraft {
   }
 
   insertNode(root: string, path: readonly number[], node: JsonNode) {
+    const document = this.getIndex(root);
+
     return this.applyRoot(
       root,
-      insertNodeChange(this.getIndex(root), path, node)
+      insertNodeChange(document, path, node),
+      document.withInsertedNode(path, node)
     );
   }
 
@@ -838,9 +905,12 @@ export class ChangeDraft {
     offset: number,
     text: string
   ) {
+    const document = this.getIndex(root);
+
     return this.applyRoot(
       root,
-      insertTextChange(this.getIndex(root), path, offset, text)
+      insertTextChange(document, path, offset, text),
+      document.withText(path, offset, offset, text)
     );
   }
 
@@ -848,15 +918,32 @@ export class ChangeDraft {
     return this.applyRoot(root, mergeNodeChange(this.getIndex(root), path));
   }
 
-  moveNode(root: string, path: readonly number[], newPath: readonly number[]) {
-    return this.applyRoot(
-      root,
-      moveNodeChange(this.getIndex(root), path, newPath)
-    );
+  moveNode(
+    root: string,
+    path: readonly number[],
+    newPath: readonly number[],
+    options: Readonly<{ preservesRepresentation?: boolean }> = {}
+  ) {
+    const document = this.getIndex(root);
+    const wasCanonical = this.canonical;
+    const step = this.applyRoot(root, moveNodeChange(document, path, newPath));
+
+    if (wasCanonical && options.preservesRepresentation) {
+      this.canonical = true;
+      this.validationPending = true;
+    }
+
+    return step;
   }
 
   removeNode(root: string, path: readonly number[]) {
-    return this.applyRoot(root, removeNodeChange(this.getIndex(root), path));
+    const document = this.getIndex(root);
+
+    return this.applyRoot(
+      root,
+      removeNodeChange(document, path),
+      document.withRemovedNode(path)
+    );
   }
 
   removeText(
@@ -885,15 +972,12 @@ export class ChangeDraft {
     removeCount: number,
     children: readonly JsonNode[]
   ) {
+    const document = this.getIndex(root);
+
     return this.applyRoot(
       root,
-      replaceChildrenChange(
-        this.getIndex(root),
-        path,
-        index,
-        removeCount,
-        children
-      )
+      replaceChildrenChange(document, path, index, removeCount, children),
+      document.withSplicedNodes(path, index, removeCount, children)
     );
   }
 
@@ -954,6 +1038,25 @@ export class ChangeDraft {
     );
   }
 
+  setNodes(
+    root: string,
+    updates: readonly Readonly<{
+      newProperties: JsonRecord;
+      path: readonly number[];
+      properties: JsonRecord;
+    }>[]
+  ) {
+    return this.applyRoot(
+      root,
+      setNodesChange(
+        this.getIndex(root),
+        updates,
+        this.isSetValued,
+        root === 'main' ? null : root
+      )
+    );
+  }
+
   splitNode(
     root: string,
     path: readonly number[],
@@ -966,16 +1069,24 @@ export class ChangeDraft {
     );
   }
 
-  private applyRoot(root: string, change: RootChange) {
+  private applyRoot(
+    root: string,
+    change: RootChange,
+    indexedAfter?: DocumentIndex
+  ) {
     return this.applyConstructed(
       createInternalDocumentChange(
         change.empty ? new Map() : new Map([[root, change]])
-      )
+      ),
+      indexedAfter ? new Map([[root, indexedAfter]]) : undefined
     );
   }
 
-  private applyConstructed(change: DocumentChange): DocumentChangeStep {
-    return this.apply(change);
+  private applyConstructed(
+    change: DocumentChange,
+    indexedAfter?: ReadonlyMap<string, DocumentIndex>
+  ): DocumentChangeStep {
+    return this.apply(change, { indexedAfter });
   }
 
   private getIndex(root: string) {

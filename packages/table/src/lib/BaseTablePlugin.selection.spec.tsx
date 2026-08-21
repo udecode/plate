@@ -1,16 +1,18 @@
 /** @jsx jsxt */
 
-import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import assert from 'node:assert/strict';
+
+import { createPlateEditor } from '@platejs/core/react';
+import type { Range } from '@platejs/plite';
+import { jsx, jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { createPlateEditor } from '@platejs/core/react';
-import { jsx, jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import type { TableElement } from './BaseTablePlugin';
-import type { Range } from '@platejs/plite';
-import assert from 'node:assert/strict';
 
 const assertTableSelectionInference = () => {
   const range = {

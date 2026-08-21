@@ -116,9 +116,9 @@ Prefer:
 - local derived booleans instead of raw state objects
 
 React context dependencies count as subscriptions for repeated-unit budgeting
-when provider values change with editor state. `usePath()` reads element
-context, so path shifts can invalidate its consumers even though it does not
-create a Jotai store subscription.
+when provider values change with editor state. `usePath()` subscribes to the
+nearest rendered element's live node-key path, so path shifts invalidate only
+components that explicitly request position.
 
 ---
 

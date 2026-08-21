@@ -213,8 +213,7 @@
 
 🎉 The **Plite Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `plite-plugins` to `plate`
 - `SlatePlugins` to `Plate`

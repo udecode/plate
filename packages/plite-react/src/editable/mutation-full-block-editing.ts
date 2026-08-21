@@ -1,4 +1,5 @@
 import { type Node, NodeApi, PathApi, type Range } from '@platejs/plite';
+
 import { profileEditableMutationDuration } from './mutation-profiler';
 import {
   failInvariant,

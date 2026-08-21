@@ -1,11 +1,10 @@
-import React from 'react';
-
 import {
   useEditorReadOnly,
   useEditor,
   usePluginStore,
 } from '@platejs/core/react';
 import { PathApi } from '@platejs/plite';
+import React from 'react';
 import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';

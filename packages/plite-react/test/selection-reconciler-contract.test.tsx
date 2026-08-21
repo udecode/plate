@@ -1,15 +1,9 @@
-import { act, render } from '@testing-library/react';
 import {
   defineExtension,
   defineValueCodec,
   type Range,
   SelectionApi,
 } from '@platejs/plite';
-import {
-  getNodeKey as editorGetNodeKey,
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -19,6 +13,13 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import {
+  getNodeKey as editorGetNodeKey,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
+import { act, render } from '@testing-library/react';
+
 import { applyDOMCoverageSelectionPolicy } from '../src/editable/dom-coverage-selection';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import {

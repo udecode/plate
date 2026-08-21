@@ -1,4 +1,3 @@
-import { useCallback, useContext, useRef, useSyncExternalStore } from 'react';
 import type {
   Descendant,
   Editor as PliteEditor,
@@ -15,8 +14,9 @@ import {
   NODE_TO_ELEMENT,
   NODE_TO_RUNTIME_ID,
 } from '@platejs/plite-dom/internal';
+import { useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+
 import { EditorContext } from '../context';
-import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
 import {
   type Editor,
   getEditorRuntimeOwner,
@@ -25,6 +25,7 @@ import {
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
+import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 const EDITOR_TO_PATH_TO_ELEMENT = new WeakMap<
@@ -897,7 +898,11 @@ export const usePliteNodeRef = (
   );
 };
 
-/** @internal Publish hydration-safe local tokens only until React mounts. */
+/**
+ * Publish hydration-safe local tokens only until React mounts.
+ *
+ * @internal
+ */
 export const usePliteNodeKeyDOMValue = (nodeKey: NodeKey | null) => {
   const isMounted = useSyncExternalStore(
     subscribeToHydration,

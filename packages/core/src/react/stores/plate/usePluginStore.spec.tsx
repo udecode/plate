@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { act, renderHook } from '@testing-library/react';
+import React from 'react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';

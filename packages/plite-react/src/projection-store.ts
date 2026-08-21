@@ -10,18 +10,19 @@ import type {
   NodeKey,
 } from '@platejs/plite';
 import { NodeApi, RangeApi } from '@platejs/plite';
+
 import {
   type Editor,
   projectRangeInSnapshot,
   getSnapshot as editorGetSnapshot,
   subscribeSource as editorSubscribeSource,
 } from './editable/runtime-editor-api';
-import { recordPliteReactRender } from './render-profiler';
 import {
   areMappedViewDataEqual,
   createMappedViewStoreKernel,
   createViewSourceFaultBoundary,
 } from './mapped-view-store';
+import { recordPliteReactRender } from './render-profiler';
 import { createStableIdMappedSource } from './stable-id-mapped-source';
 import type {
   PliteViewSourceErrorSink,

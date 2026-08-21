@@ -1,4 +1,5 @@
 import { type DragEvent, useCallback } from 'react';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   applyEditableDragEnd,

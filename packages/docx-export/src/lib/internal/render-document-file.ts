@@ -1,7 +1,5 @@
-/* biome-ignore-all lint/complexity/useOptionalChain: legacy code */
-/* biome-ignore-all lint/style/useForOf: legacy code */
 // @ts-expect-error - no types available
-import { default as HTMLToVDOM } from 'html-to-vdom';
+import HTMLToVDOM from 'html-to-vdom';
 // @ts-expect-error - no types available
 import isVNode from 'virtual-dom/vnode/is-vnode';
 // @ts-expect-error - no types available
@@ -10,10 +8,8 @@ import isVText from 'virtual-dom/vnode/is-vtext';
 import VNode from 'virtual-dom/vnode/vnode';
 // @ts-expect-error - no types available
 import VText from 'virtual-dom/vnode/vtext';
-import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { fragment } from 'xmlbuilder2';
-
-type XMLBuilderType = XMLBuilder;
+import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 import namespaces from './namespaces';
 import { vNodeHasChildren } from './vnode';
@@ -23,6 +19,8 @@ import {
   buildParagraph,
   buildTable,
 } from './xml-builder';
+
+type XMLBuilderType = XMLBuilder;
 
 // Types for Virtual DOM
 type VNodeProperties = {

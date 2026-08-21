@@ -1,11 +1,10 @@
 import { createTestEditor } from '../../__tests__/createTestEditor';
-import { MarkdownPlugin } from '../../MarkdownPlugin';
-import type { DeserializeMdOptions } from '../../types';
-
 import {
   markdownToSlateNodesSafelyWithRuntime,
   withMarkdownRuntime,
 } from '../../internal/markdownConversion';
+import { MarkdownPlugin } from '../../MarkdownPlugin';
+import type { DeserializeMdOptions } from '../../types';
 
 const parseSafely = (
   editor: ReturnType<typeof createTestEditor>,

@@ -214,12 +214,13 @@ donor checkout as proof after the transplant.
 
 ```txt
 status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
--> benchmark -> patch one hot lane -> verify -> keep/revert -> log -> reassess
+-> Benchmark ordered diagnosis -> fix one proven owner -> exact rerun
+-> resume breadth -> keep/revert -> log -> reassess
 ```
 
 - Behavior before perf.
 - Visual proof before green visible-UI claims.
-- Keep perf packets only when correctness stays green.
+- Keep Benchmark packets only when correctness stays green.
 - After two or three local fixes around one owner, escalate to deeper owner.
 - Fix suspect metrics before code.
 - Fix unfair benchmarks before gates.
@@ -256,7 +257,11 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   merged Plate + Plite repo; routes work to narrower owners and stops at
   authority boundaries.
 - `auto`: internal Plate/Plite overnight supervisor and checkpoint cadence; use
-  the Plite lane for Plite package/runtime/browser/proof work.
+  the Plite lane for Plite package/runtime/browser/proof work and route measured
+  work to `benchmark`.
+- `benchmark`: sole ordered performance diagnosis/execution owner for Plite,
+  Plate, current/main, pinned Slate, mount/editing, example breadth, and stress;
+  pauses at a causal owner, fixes/reruns, then resumes remaining lanes.
 - `autoclosure`: post-merge/current-tree until-clean closure after Plite work is
   already applied.
 - `plite-research`: external discovery, OSS/GitHub source synthesis, durable
@@ -269,7 +274,7 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   integration/release state.
 - `patch`: sole local Plate/Plite behavior-bug and regression owner; the Plite
   lane provides reproduction, class-level behavior coverage, durable substrate
-  repair, architecture pressure, proof, and P2 autoreview without public
+  repair, architecture pressure, proof, and P1 autoreview without public
   GitHub mutation.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
   ranking.

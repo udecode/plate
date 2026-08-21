@@ -104,7 +104,7 @@
       ],
       "targets": ["suggestion-kit", "suggestion-node", "block-discussion"],
       "source": {
-        "line": 13,
+        "line": 50,
         "row": 1,
         "legacyRelease": {
           "date": "2025-10-21",
@@ -121,7 +121,7 @@
       "migrationNotes": [],
       "targets": ["ai-api"],
       "source": {
-        "line": 15,
+        "line": 52,
         "row": 2,
         "legacyRelease": {
           "date": "2025-10-21",

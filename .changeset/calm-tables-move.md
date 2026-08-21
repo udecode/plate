@@ -1,5 +1,5 @@
 ---
-"@platejs/table": patch
+'@platejs/table': patch
 ---
 
 Fix plain vertical arrow navigation to move directly between table cells without painting an intermediate caret.

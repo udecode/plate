@@ -2,12 +2,11 @@
 
 JSX fixture helpers for Plite documents and tests.
 
-Use `plite-hyperscript` when nested editor state is easier to read as markup
-than as raw JSON.
+Use `plite-hyperscript` when nested editor state is easier to read as markup than as raw JSON.
 
 ```tsx
 /** @jsx jsx */
-import { jsx } from '@platejs/plite-hyperscript'
+import { jsx } from '@platejs/plite-hyperscript';
 
 const editor = (
   <editor>
@@ -16,7 +15,7 @@ const editor = (
       <cursor />
     </element>
   </editor>
-)
+);
 ```
 
 The built-in tags create normal Plite objects:
@@ -32,21 +31,17 @@ The built-in tags create normal Plite objects:
 Define domain tags with `createHyperscript`.
 
 ```tsx
-import { createHyperscript } from '@platejs/plite-hyperscript'
+import { createHyperscript } from '@platejs/plite-hyperscript';
 
 const h = createHyperscript({
   elements: {
     paragraph: { type: 'paragraph' },
   },
-})
+});
 
-const paragraph = h('paragraph', {}, 'hello')
+const paragraph = h('paragraph', {}, 'hello');
 ```
 
-`createEditor` and `createText` are low-level creators for custom factories.
-Use `createEditorFixture` as the `editor` creator when a test needs a plain
-`HyperscriptEditorFixture` without editor normalization. `HyperscriptCreators`
-and `HyperscriptShorthands` are TypeScript helper types for custom factories.
+`createEditor` and `createText` are low-level creators for custom factories. Use `createEditorFixture` as the `editor` creator when a test needs a plain `HyperscriptEditorFixture` without editor normalization. `HyperscriptCreators` and `HyperscriptShorthands` are TypeScript helper types for custom factories.
 
-Keep hyperscript in tests and fixtures. Runtime editor code should use normal
-Plite node values.
+Keep hyperscript in tests and fixtures. Runtime editor code should use normal Plite node values.

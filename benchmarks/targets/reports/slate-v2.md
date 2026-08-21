@@ -2,9 +2,7 @@
 
 This report is generated from `benchmarks/targets/slate-v2.json`.
 
-Evidence Kit is legacy input during migration. Active benchmark decisions should
-use target ids from this registry, then feed those targets into benchmark
-runners, Autoresearch, and report generation.
+Evidence Kit is legacy input during migration. Active benchmark decisions should use target ids from this registry, then feed those targets into benchmark runners, Autoresearch, and report generation.
 
 ## Summary
 
@@ -18,7 +16,7 @@ runners, Autoresearch, and report generation.
 ## Targets
 
 | Target | Family | Metric | Status | Artifacts | Metric output |
-|--------|--------|--------|--------|-----------|---------------|
+| --- | --- | --- | --- | --- | --- |
 | browser-rich-text-replay-coverage | browser-rich-text | replay_seconds | ok | 1/1 | wrapped |
 | clipboard-large-payload | clipboard | plite_clipboard_worst_issue_p95_ms | ok | 1/1 | yes |
 | collab-readiness | collaboration | benchmark_seconds | ok | 1/1 | wrapped |

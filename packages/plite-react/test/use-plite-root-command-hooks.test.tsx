@@ -1,6 +1,6 @@
+import { editorCommands, NodeApi } from '@platejs/plite';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useLayoutEffect } from 'react';
-import { editorCommands, NodeApi } from '@platejs/plite';
 
 import {
   createReactEditor,

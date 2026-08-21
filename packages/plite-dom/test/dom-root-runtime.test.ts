@@ -1,6 +1,7 @@
 import { expect, mock, test } from 'bun:test';
-import { JSDOM } from 'jsdom';
+
 import { createEditor } from '@platejs/plite';
+import { JSDOM } from 'jsdom';
 
 import {
   DOMRootRuntime,

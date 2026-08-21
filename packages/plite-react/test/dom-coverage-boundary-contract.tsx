@@ -1,12 +1,13 @@
-// biome-ignore-all lint/performance/useTopLevelRegex: Test-local source assertion.
-import { act, render, waitFor } from '@testing-library/react';
-import React from 'react';
 import { type Descendant, NodeApi } from '@platejs/plite';
+import { DOMCoverage } from '@platejs/plite-dom/internal';
 import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { DOMCoverage } from '@platejs/plite-dom/internal';
+// Test-local source assertion.
+import { act, render, waitFor } from '@testing-library/react';
+import React from 'react';
+
 import { createReactEditor, Editable, EditableElement, Plite } from '../src';
 import {
   DOMCoverageBoundaryRange,
@@ -386,7 +387,7 @@ describe('DOM coverage private boundary harness', () => {
     let boundaryId = '';
 
     await waitFor(() => {
-      const [boundary] = DOMCoverage.getBoundaries(editor).filter(
+      const boundary = DOMCoverage.getBoundaries(editor).find(
         (candidate) =>
           candidate.ownerPath.length === 1 && candidate.ownerPath[0] === 0
       );

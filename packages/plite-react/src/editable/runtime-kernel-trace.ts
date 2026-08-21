@@ -1,6 +1,7 @@
-import { useCallback, useRef } from 'react';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import { useCallback, useRef } from 'react';
+
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMInputRepair, DOMRepairQueue } from './dom-repair-queue';
 import {
   beginEditableEditingEpoch,

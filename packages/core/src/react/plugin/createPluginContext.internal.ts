@@ -1,15 +1,5 @@
 import type { Value } from '@platejs/plite';
 
-import type { InternalPlateEditorWithInstalledPlugins } from '../editor/PlateEditor';
-import type {
-  AnyResolvedPlatePlugin,
-  AnyPlatePlugin,
-  AnyPlatePluginContext,
-  AnyPlatePluginPortal,
-  PlatePluginContext,
-  PlatePluginPortal,
-} from './PlatePlugin';
-
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
@@ -21,6 +11,15 @@ import {
   createPluginPortal as createBasePortal,
 } from '../../lib/plugin/createPluginContext.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import type { InternalPlateEditorWithInstalledPlugins } from '../editor/PlateEditor';
+import type {
+  AnyResolvedPlatePlugin,
+  AnyPlatePlugin,
+  AnyPlatePluginContext,
+  AnyPlatePluginPortal,
+  PlatePluginContext,
+  PlatePluginPortal,
+} from './PlatePlugin';
 
 export function createPluginContext<
   V extends Value,

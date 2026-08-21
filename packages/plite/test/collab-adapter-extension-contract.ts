@@ -1,10 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getLastCommit as editorGetLastCommit,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -15,6 +10,11 @@ import {
   type EditorUpdatePolicy,
   type EditorUpdateTransaction,
 } from '@platejs/plite';
+import {
+  getLastCommit as editorGetLastCommit,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -153,7 +153,7 @@ const createFakeCollabAdapterExtension = () => {
         listenerEvents.push(`commit:${commit.tags.join(',')}`);
 
         const adapterState = runtimeStates.get(editor);
-        assert(adapterState);
+        assert.ok(adapterState);
         const state = adapterState.get();
 
         if (!state.connected || state.paused) return;
@@ -170,7 +170,7 @@ const createFakeCollabAdapterExtension = () => {
 
   return {
     controller() {
-      assert(controller);
+      assert.ok(controller);
 
       return controller;
     },
@@ -217,7 +217,7 @@ describe('collab adapter extension contract', () => {
       })
     );
 
-    assert(remoteSpec);
+    assert.ok(remoteSpec);
     adapter.importRemote(remoteSpec.changes.toJSON());
 
     assert.equal(editorString(editor, []), 'one!?');

@@ -1,5 +1,5 @@
 ---
-description: Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, lane-specific proof, and P2 autoreview.
+description: Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, lane-specific proof, and P1 autoreview.
 argument-hint: '[repair <expectation> | <one bug report, route, failing test, or observable regression case>]'
 disable-model-invocation: true
 name: patch
@@ -20,7 +20,7 @@ regression:
 
 ```txt
 reproduce -> classify -> red proof -> fix durable owner
--> architecture pressure -> verify -> P2 autoreview -> handoff
+-> architecture pressure -> verify -> P1 autoreview -> handoff
 ```
 
 It owns local code and proof only. It does not read or mutate public issue/PR
@@ -109,8 +109,15 @@ Plite owns only editor-agnostic substrate behavior.
   verification.
 - Add a changeset when published packages change.
 - Use Browser proof for visible behavior.
-- End non-trivial implementation work with P2 `autoreview` by passing
-  `--max-priority P2`. Use P3 only when explicitly requested.
+- End non-trivial implementation work with P1 `autoreview` by passing
+  `--max-priority P1`. Use P2 or P3 only when explicitly requested.
+- A claimed `candidate-local`, `kept`, or `completed` fix that later fails its
+  exact replay/final verification, or receives a reporter contradiction, is a
+  failed fix. Stop product edits and automatically route
+  `regression repair <case-id>: <missed invariant or proof failure>` before any
+  retry. Expected red-before-green is not a failed fix. On the second failed
+  fix, or on an architecture trigger named by Regression, require `best-api`
+  and the owning Plite/Plate plan before another Patch attempt.
 
 ## Repair Command
 
@@ -145,7 +152,7 @@ Use `autogoal` for non-trivial work.
 
 ```txt
 Fix <Plate or Plite> behavior bug or regression <one observable case>; done when
-reproduction, durable behavior coverage, focused owning-lane proof, and P2
+reproduction, durable behavior coverage, focused owning-lane proof, and P1
 autoreview pass in the current Plate checkout.
 ```
 
@@ -301,7 +308,7 @@ pnpm check:plite:browser-matrix
 # Plate package examples; replace placeholders with the exact owner
 pnpm --filter <package> test
 pnpm turbo typecheck --filter=./packages/<owner>
-pnpm exec biome check <changed-paths>
+pnpm exec ultracite check <changed-paths>
 ```
 
 Run Browser proof for changed visible behavior on the owning route. `apps/plite`
@@ -349,19 +356,21 @@ the reporter environment, stop with `methodology-repair` or `needs-repro`.
 Package tests, DOM reads, screenshots, autoreview, and green proxy routes cannot
 upgrade that blocker into a behavior claim.
 
-### 7. P2 Autoreview
+### 7. P1 Autoreview
 
 For non-trivial diffs:
 
-1. Load `.agents/skills/autoreview/SKILL.md` for the P2 review contract.
+1. Load `.agents/skills/autoreview/SKILL.md` for the P1 review contract.
 2. Review the actual current-checkout diff with a strict file boundary and
-   `--max-priority P2`. Use P3 only when explicitly requested.
+   `--max-priority P1`. Use P2 or P3 only when explicitly requested.
 3. Reject stale, out-of-scope, non-matching, or unsupported-domain findings.
    Review is advisory and cannot silently add a product requirement.
 4. Fix valid findings only after the supported-domain and architecture-pressure
    gates pass.
-5. Rerun focused proof and P2 autoreview until no accepted actionable findings
-   remain.
+5. Rerun focused proof and P1 autoreview as needed, with at most three helper
+   invocations for the unchanged review scope. The initial review counts as 1.
+   If invocation 3 still has an accepted actionable finding, stop and return it
+   as unresolved instead of claiming the patch clean.
 
 ## Coordinator Handoff
 
@@ -377,7 +386,7 @@ return a compact evidence packet:
 - Browser/device proof or explicit limitation;
 - architecture-pressure verdict;
 - changeset status;
-- P2 autoreview result;
+- P1 autoreview result;
 - unresolved caveat.
 
 For `regression`, also return the executable test path and command, exact red
@@ -400,5 +409,5 @@ Keep it short:
 - root cause and durable owner;
 - architecture-pressure verdict;
 - tests and Browser proof;
-- changeset and P2 autoreview status;
+- changeset and P1 autoreview status;
 - unresolved gate or next owner.

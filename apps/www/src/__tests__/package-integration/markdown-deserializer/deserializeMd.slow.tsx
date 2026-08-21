@@ -7,6 +7,7 @@ import { createBaseEditor } from 'platejs';
 import { createTestEditor } from '../../../../../../packages/markdown/src/lib/__tests__/createTestEditor';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
 import type { DeserializeMdOptions } from '../../../../../../packages/markdown/src/lib/types';
+
 jsxt;
 
 const editor = createTestEditor();

@@ -1,10 +1,12 @@
-// biome-ignore-all lint/performance/noDynamicNamespaceImportAccess: Export-contract tests intentionally inspect namespace keys.
-// biome-ignore-all lint/performance/useTopLevelRegex: Source-contract assertions keep patterns next to their claims.
+// Export-contract tests intentionally inspect namespace keys.
+// Source-contract assertions keep patterns next to their claims.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
+
 import { defineEditorSchema, schema } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
 import { type ComponentProps, useEffect } from 'react';
+
 import * as PliteReact from '../src';
 import {
   createReactEditor,
@@ -72,7 +74,7 @@ const inlineVoidSchema = defineEditorSchema(
 const readRepoFileIfExists = (file: string) => {
   const absolutePath = resolve(repoRoot, file);
 
-  return existsSync(absolutePath) ? readFileSync(absolutePath, 'utf8') : null;
+  return existsSync(absolutePath) ? readFileSync(absolutePath, 'utf-8') : null;
 };
 
 const allRepoFilesExist = (files: readonly string[]) =>
@@ -210,7 +212,7 @@ const readPackageJson = (packageName: string) =>
         packageDirectoryByName.get(packageName) ?? packageName,
         'package.json'
       ),
-      'utf8'
+      'utf-8'
     )
   ) as {
     peerDependencies?: Record<string, string>;
@@ -419,7 +421,7 @@ const expectSurfaceInventory = (
   const actual = Object.fromEntries(
     listSourceFiles(roots)
       .map((absolutePath) => {
-        const contents = readFileSync(absolutePath, 'utf8');
+        const contents = readFileSync(absolutePath, 'utf-8');
         const matches = contents.match(pattern);
 
         return [
@@ -449,7 +451,7 @@ const expectSurfaceInventory = (
 const getRootTypeExports = () => {
   const packageIndex = readFileSync(
     resolve(packageRoot, 'src/index.ts'),
-    'utf8'
+    'utf-8'
   );
   const typeExports = new Set<string>();
   const exportBlockPattern = /export\s*(type)?\s*\{([\s\S]*?)\}\s*from/g;
@@ -519,7 +521,7 @@ describe('plite-react surface contract', () => {
     ];
     const stalePublicOptionViolations = listSourceFiles(publicRoots).flatMap(
       (absolutePath) => {
-        const contents = readFileSync(absolutePath, 'utf8');
+        const contents = readFileSync(absolutePath, 'utf-8');
 
         return contents.includes('skipSyncedTextIntents')
           ? [relative(repoRoot, absolutePath)]
@@ -528,7 +530,7 @@ describe('plite-react surface contract', () => {
     );
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
 
     expect(stalePublicOptionViolations).toEqual([]);
@@ -538,7 +540,7 @@ describe('plite-react surface contract', () => {
   test('core live reads stay behind plite-react runtime facade modules', () => {
     const violations = listSourceFiles(['packages/plite-react/src']).flatMap(
       (absolutePath) => {
-        const contents = readFileSync(absolutePath, 'utf8');
+        const contents = readFileSync(absolutePath, 'utf-8');
         const relativePath = relative(repoRoot, absolutePath);
 
         return contents.includes("from '@platejs/plite/internal'") &&
@@ -554,7 +556,7 @@ describe('plite-react surface contract', () => {
   test('projection store uses the source snapshot when projecting ranges', () => {
     const contents = readFileSync(
       resolve(repoRoot, 'packages/plite-react/src/projection-store.ts'),
-      'utf8'
+      'utf-8'
     );
 
     expect(contents).toMatch(/projectRangeInSnapshot\(snapshot,/);
@@ -568,7 +570,7 @@ describe('plite-react surface contract', () => {
       'packages/plite-react/src/editable/runtime-repair-engine.ts',
       'packages/plite-react/src/hooks/use-plite-runtime.tsx',
     ]
-      .map((file) => readFileSync(resolve(repoRoot, file), 'utf8'))
+      .map((file) => readFileSync(resolve(repoRoot, file), 'utf-8'))
       .join('\n');
 
     expect(runtimeSources).toContain("from '@platejs/plite/internal'");
@@ -587,7 +589,7 @@ describe('plite-react surface contract', () => {
   test('runtime lodash subpath imports stay resolvable from built ESM', () => {
     const runtimeSelectionEngine = readFileSync(
       resolve(packageRoot, 'src/editable/runtime-selection-engine.ts'),
-      'utf8'
+      'utf-8'
     );
 
     expect(runtimeSelectionEngine).toContain("from 'lodash/debounce.js'");
@@ -603,7 +605,7 @@ describe('plite-react surface contract', () => {
         repoRoot,
         'packages/plite-react/src/hooks/use-generic-selector.tsx'
       ),
-      'utf8'
+      'utf-8'
     );
 
     expect(contents).toMatch(/\buseSyncExternalStore\b/);
@@ -664,11 +666,11 @@ describe('plite-react surface contract', () => {
   test('void authoring helpers stay out of the public surface and examples', () => {
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const exampleViolations = listSourceFiles(['site/examples/ts']).flatMap(
       (absolutePath) => {
-        const contents = readFileSync(absolutePath, 'utf8');
+        const contents = readFileSync(absolutePath, 'utf-8');
 
         return /\b(?:VoidElement|InlineVoidElement)\b/.test(contents)
           ? [relative(repoRoot, absolutePath)]
@@ -685,7 +687,7 @@ describe('plite-react surface contract', () => {
   test('public host authoring uses installed DOM capabilities', () => {
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const publicHostStaticCalls = listSourceFiles([
       'docs/api',
@@ -694,7 +696,7 @@ describe('plite-react surface contract', () => {
       'docs/walkthroughs',
       'site/examples/ts',
     ]).flatMap((absolutePath) => {
-      const contents = readFileSync(absolutePath, 'utf8');
+      const contents = readFileSync(absolutePath, 'utf-8');
 
       return /\b(?:ReactEditor|DOMEditor)\./.test(contents)
         ? [relative(repoRoot, absolutePath)]
@@ -709,7 +711,7 @@ describe('plite-react surface contract', () => {
     const exampleFiles = listSourceFiles(['site/examples/ts']);
     const providerInitialValueViolations = exampleFiles.flatMap(
       (absolutePath) => {
-        const contents = readFileSync(absolutePath, 'utf8');
+        const contents = readFileSync(absolutePath, 'utf-8');
 
         return /\binitialValue=/.test(contents)
           ? [relative(repoRoot, absolutePath)]
@@ -719,7 +721,7 @@ describe('plite-react surface contract', () => {
     const valueReplaceInventory = Object.fromEntries(
       exampleFiles
         .map((absolutePath) => {
-          const contents = readFileSync(absolutePath, 'utf8');
+          const contents = readFileSync(absolutePath, 'utf-8');
           const matches = contents.match(/\btx\.value\.replace\(/g);
 
           return [
@@ -775,11 +777,11 @@ describe('plite-react surface contract', () => {
     if (!allRepoFilesExist(docFiles)) {
       const packageReadme = readFileSync(
         resolve(packageRoot, 'Readme.md'),
-        'utf8'
+        'utf-8'
       );
       const packageIndex = readFileSync(
         resolve(packageRoot, 'src/index.ts'),
-        'utf8'
+        'utf-8'
       );
 
       expect(packageReadme).toContain('Decoration sources, annotation stores');
@@ -800,22 +802,22 @@ describe('plite-react surface contract', () => {
           repoRoot,
           'content/docs/plite/libraries/plite-react/annotations.mdx'
         ),
-        'utf8'
+        'utf-8'
       ),
       editable: readFileSync(
         resolve(
           repoRoot,
           'content/docs/plite/libraries/plite-react/editable.mdx'
         ),
-        'utf8'
+        'utf-8'
       ),
       hooks: readFileSync(
         resolve(repoRoot, 'content/docs/plite/libraries/plite-react/hooks.mdx'),
-        'utf8'
+        'utf-8'
       ),
       plite: readFileSync(
         resolve(repoRoot, 'content/docs/plite/libraries/plite-react/plite.mdx'),
-        'utf8'
+        'utf-8'
       ),
     };
     const joinedDocs = Object.values(docs).join('\n');
@@ -862,7 +864,7 @@ describe('plite-react surface contract', () => {
     if (docs.length === 0) {
       const packageReadme = readFileSync(
         resolve(packageRoot, 'Readme.md'),
-        'utf8'
+        'utf-8'
       );
 
       expect(packageReadme).toMatch(/\brenderElement\b/);
@@ -885,7 +887,7 @@ describe('plite-react surface contract', () => {
     if (docs === null) {
       const genericContract = readFileSync(
         resolve(packageRoot, 'test/generic-react-editor-contract.tsx'),
-        'utf8'
+        'utf-8'
       );
 
       expect(genericContract).toMatch(/\bReactEditor<CustomValue>/);
@@ -1046,7 +1048,7 @@ describe('plite-react surface contract', () => {
     const hooks =
       readRepoFileIfExists(
         'content/docs/plite/libraries/plite-react/hooks.mdx'
-      ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf8');
+      ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf-8');
 
     if (
       readRepoFileIfExists(
@@ -1083,7 +1085,7 @@ describe('plite-react surface contract', () => {
   });
 
   test('package README names the current runtime and root hook family', () => {
-    const readme = readFileSync(resolve(packageRoot, 'Readme.md'), 'utf8');
+    const readme = readFileSync(resolve(packageRoot, 'Readme.md'), 'utf-8');
 
     expect(readme).toContain(
       'Start with `usePliteEditor`, `Plite`, and `Editable`.'
@@ -1110,19 +1112,19 @@ describe('plite-react surface contract', () => {
     const hookSources = {
       editor: readFileSync(
         resolve(packageRoot, 'src/hooks/use-plite-editor.ts'),
-        'utf8'
+        'utf-8'
       ),
       history: readFileSync(
         resolve(packageRoot, 'src/hooks/use-plite-history.ts'),
-        'utf8'
+        'utf-8'
       ),
       runtime: readFileSync(
         resolve(packageRoot, 'src/hooks/use-plite-runtime.tsx'),
-        'utf8'
+        'utf-8'
       ),
       stateField: readFileSync(
         resolve(packageRoot, 'src/hooks/use-state-field.ts'),
-        'utf8'
+        'utf-8'
       ),
     };
 
@@ -1144,7 +1146,7 @@ describe('plite-react surface contract', () => {
   test('all public hook exports carry source JSDoc', () => {
     const indexSource = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const exportPattern = /export \{([^}]+)\} from '([^']+)'/g;
     const missing: string[] = [];
@@ -1165,7 +1167,7 @@ describe('plite-react surface contract', () => {
       const sourcePath = existsSync(`${sourceBase}.tsx`)
         ? `${sourceBase}.tsx`
         : `${sourceBase}.ts`;
-      const source = readFileSync(sourcePath, 'utf8');
+      const source = readFileSync(sourcePath, 'utf-8');
 
       for (const hookName of hookNames) {
         const declaration = new RegExp(
@@ -1200,7 +1202,7 @@ describe('plite-react surface contract', () => {
   test('public component value exports carry source JSDoc', () => {
     const indexSource = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const exportPattern = /export \{([^}]+)\} from '([^']+)'/g;
     const missing: string[] = [];
@@ -1221,7 +1223,7 @@ describe('plite-react surface contract', () => {
       const sourcePath = existsSync(`${sourceBase}.tsx`)
         ? `${sourceBase}.tsx`
         : `${sourceBase}.ts`;
-      const source = readFileSync(sourcePath, 'utf8');
+      const source = readFileSync(sourcePath, 'utf-8');
 
       for (const valueName of valueNames) {
         const declaration = new RegExp(
@@ -1255,7 +1257,7 @@ describe('plite-react surface contract', () => {
   test('public type exports carry source JSDoc', () => {
     const indexSource = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const exportPattern = /export \{([^}]+)\} from '([^']+)'/g;
     const missing: string[] = [];
@@ -1277,7 +1279,7 @@ describe('plite-react surface contract', () => {
       const sourcePath = existsSync(`${sourceBase}.tsx`)
         ? `${sourceBase}.tsx`
         : `${sourceBase}.ts`;
-      const source = readFileSync(sourcePath, 'utf8');
+      const source = readFileSync(sourcePath, 'utf-8');
 
       for (const typeName of typeNames) {
         const declaration = new RegExp(
@@ -1313,7 +1315,7 @@ describe('plite-react surface contract', () => {
     const readme =
       readRepoFileIfExists(
         'content/docs/plite/libraries/plite-react/README.md'
-      ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf8');
+      ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf-8');
 
     if (
       readRepoFileIfExists(
@@ -1336,11 +1338,11 @@ describe('plite-react surface contract', () => {
   test('plite-react docs name public render primitives and advanced helper hooks', () => {
     const packageReadme = readFileSync(
       resolve(packageRoot, 'Readme.md'),
-      'utf8'
+      'utf-8'
     );
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const libraryReadme =
       readRepoFileIfExists(
@@ -1387,7 +1389,7 @@ describe('plite-react surface contract', () => {
       'content/docs/plite/libraries/plite-react',
     ]);
     const docs = [...docsFiles, resolve(packageRoot, 'Readme.md')]
-      .map((absolutePath) => readFileSync(absolutePath, 'utf8'))
+      .map((absolutePath) => readFileSync(absolutePath, 'utf-8'))
       .join('\n');
     const undocumentedTypeExports = getRootTypeExports().filter((name) => {
       const pattern = new RegExp(`\\b${name}\\b`);
@@ -1408,11 +1410,11 @@ describe('plite-react surface contract', () => {
   test('public root exports canonical Editable and render prop names without aliases', () => {
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const editableRootSource = readFileSync(
       resolve(packageRoot, 'src/components/editable.tsx'),
-      'utf8'
+      'utf-8'
     );
 
     expect(packageIndex).not.toMatch(
@@ -1450,23 +1452,23 @@ describe('plite-react surface contract', () => {
   test('public/internal runtime aliases stay hard-cut', () => {
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const annotationStoreSource = readFileSync(
       resolve(packageRoot, 'src/annotation-store.ts'),
-      'utf8'
+      'utf-8'
     );
     const runtimeAndroidSource = readFileSync(
       resolve(packageRoot, 'src/editable/runtime-android-engine.ts'),
-      'utf8'
+      'utf-8'
     );
     const runtimeHooksSource = readFileSync(
       resolve(packageRoot, 'src/hooks/use-plite-runtime.tsx'),
-      'utf8'
+      'utf-8'
     );
     const domCoverageBoundarySource = readFileSync(
       resolve(packageRoot, 'src/components/dom-coverage-boundary.tsx'),
-      'utf8'
+      'utf-8'
     );
 
     expect(packageIndex).not.toContain('PliteAnnotationStoreRefreshOptions');
@@ -1488,7 +1490,7 @@ describe('plite-react surface contract', () => {
   test('renderElement slots expose contentBoundary without unstable aliases', () => {
     const editableSource = readFileSync(
       resolve(packageRoot, 'src/components/editable-text-blocks.tsx'),
-      'utf8'
+      'utf-8'
     );
     const domCoverageExample = readRepoFileIfExists(
       'site/examples/ts/dom-coverage-boundaries.tsx'
@@ -1506,11 +1508,11 @@ describe('plite-react surface contract', () => {
   test('virtualized DOM strategy stays object-only and experimental', () => {
     const segmentPlanSource = readFileSync(
       resolve(packageRoot, 'src/dom-strategy/create-segment-plan.ts'),
-      'utf8'
+      'utf-8'
     );
     const editableSource = readFileSync(
       resolve(packageRoot, 'src/components/editable-text-blocks.tsx'),
-      'utf8'
+      'utf-8'
     );
 
     const domStrategyType = segmentPlanSource.match(
@@ -1528,15 +1530,15 @@ describe('plite-react surface contract', () => {
   test('Editable public DOM strategy naming does not expose DOM strategy props', () => {
     const editableSource = readFileSync(
       resolve(packageRoot, 'src/components/editable-text-blocks.tsx'),
-      'utf8'
+      'utf-8'
     );
     const editableRootSource = readFileSync(
       resolve(packageRoot, 'src/components/editable.tsx'),
-      'utf8'
+      'utf-8'
     );
     const packageIndex = readFileSync(
       resolve(packageRoot, 'src/index.ts'),
-      'utf8'
+      'utf-8'
     );
     const effectiveStrategyType = editableRootSource.match(
       /export type EditableDOMStrategyEffectiveType =([\s\S]*?)export type EditableDOMStrategyDegradationMode =/
@@ -1572,7 +1574,7 @@ describe('plite-react surface contract', () => {
       ) ??
       readFileSync(
         resolve(packageRoot, 'src/components/editable-text-blocks.tsx'),
-        'utf8'
+        'utf-8'
       );
 
     expect(docs).toContain('decorateDirtiness?: PliteSourceDirtiness');
@@ -1598,7 +1600,7 @@ describe('plite-react surface contract', () => {
   test('Editable DOM strategy option objects normalize through primitive fields', () => {
     const editableSource = readFileSync(
       resolve(packageRoot, 'src/components/editable-text-blocks.tsx'),
-      'utf8'
+      'utf-8'
     );
 
     expect(editableSource).toMatch(/\bdomStrategyVirtualizedOverscan\b/);
@@ -1618,7 +1620,7 @@ describe('plite-react surface contract', () => {
     if (docs === null) {
       const editorHook = readFileSync(
         resolve(packageRoot, 'src/hooks/use-plite-editor.ts'),
-        'utf8'
+        'utf-8'
       );
 
       expect(editorHook).toContain('`initialValue` seeds the editor once');
@@ -1671,7 +1673,7 @@ describe('plite-react surface contract', () => {
     ) {
       const projectedCommandContract = readFileSync(
         resolve(packageRoot, 'test/projected-command-contract.test.ts'),
-        'utf8'
+        'utf-8'
       );
 
       expect(projectedCommandContract).toMatch(/\bdefineExtension\b/);
@@ -1711,7 +1713,7 @@ describe('plite-react surface contract', () => {
   test('examples infer editable behavior callback types inline', () => {
     const violations = listSourceFiles(['site/examples/ts']).flatMap(
       (absolutePath) => {
-        const source = readFileSync(absolutePath, 'utf8');
+        const source = readFileSync(absolutePath, 'utf-8');
         const relativePath = relative(repoRoot, absolutePath);
         const patterns = [
           /\bconst\s+\w+\s*:\s*Editable(?:CommandHandler|InputRule|KeyCommand)\b/,
@@ -1948,7 +1950,6 @@ describe('plite-react surface contract', () => {
       attributes,
       children,
     }: RenderElementProps) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       const selected = useElementSelected();
       const { id } = element as { id: string };
       latestElementSelected[id] = selected;
@@ -1972,7 +1973,7 @@ describe('plite-react surface contract', () => {
     );
 
     Object.values(elementSelectedRenders).forEach((selectedRenders) => {
-      selectedRenders?.splice(0, selectedRenders.length);
+      selectedRenders?.splice(0);
     });
 
     await act(async () => {
@@ -1991,7 +1992,7 @@ describe('plite-react surface contract', () => {
     });
 
     Object.values(elementSelectedRenders).forEach((selectedRenders) => {
-      selectedRenders?.splice(0, selectedRenders.length);
+      selectedRenders?.splice(0);
     });
 
     await act(async () => {

@@ -198,7 +198,7 @@ const createFixture = () => {
 
 const readInvocations = (file) =>
   fs
-    .readFileSync(file, 'utf8')
+    .readFileSync(file, 'utf-8')
     .trim()
     .split('\n')
     .filter(Boolean)
@@ -211,7 +211,7 @@ const readSingleJson = (directory, prefix) => {
 
   assert.equal(files.length, 1, `expected one ${prefix} JSON file`);
 
-  return JSON.parse(fs.readFileSync(path.join(directory, files[0]), 'utf8'));
+  return JSON.parse(fs.readFileSync(path.join(directory, files[0]), 'utf-8'));
 };
 
 const runnerControlEnvironmentNames = [
@@ -275,172 +275,185 @@ const createFixtureRunner = (fixture, overrides = {}) => {
   };
 };
 
-test('orchestrates bounded units, resume, outputs, manifest drift, and sticky invalidation', {
-  timeout: 30_000,
-}, async (context) => {
-  const fixture = createFixture();
+test(
+  'orchestrates bounded units, resume, outputs, manifest drift, and sticky invalidation',
+  {
+    timeout: 30_000,
+  },
+  async (context) => {
+    const fixture = createFixture();
 
-  context.after(() =>
-    fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
-  );
+    context.after(() =>
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
+    );
 
-  const { environment, run } = createFixtureRunner(fixture);
-  const writeControl = (value) =>
-    writeFile(fixture.controlFile, `${JSON.stringify(value)}\n`);
-  const stateDirectory = path.join(
-    fixture.appRoot,
-    '.tmp/plite-browser-runner'
-  );
-  const summaryDirectory = path.join(
-    fixture.appRoot,
-    'test-results/plite-browser-runner'
-  );
+    const { environment, run } = createFixtureRunner(fixture);
+    const writeControl = (value) =>
+      writeFile(fixture.controlFile, `${JSON.stringify(value)}\n`);
+    const stateDirectory = path.join(
+      fixture.appRoot,
+      '.tmp/plite-browser-runner'
+    );
+    const summaryDirectory = path.join(
+      fixture.appRoot,
+      'test-results/plite-browser-runner'
+    );
 
-  writeControl({ failOnUnitOrdinal: 2, unitOrdinal: 0 });
-  const interrupted = await run();
+    writeControl({ failOnUnitOrdinal: 2, unitOrdinal: 0 });
+    const interrupted = await run();
 
-  assert.equal(interrupted.status, 1);
-  assert.match(
-    interrupted.stderr,
-    /successful bounded batches remain resumable/
-  );
-  const interruptedState = readSingleJson(stateDirectory, 'state-chromium-');
+    assert.equal(interrupted.status, 1);
+    assert.match(
+      interrupted.stderr,
+      /successful bounded batches remain resumable/
+    );
+    const interruptedState = readSingleJson(stateDirectory, 'state-chromium-');
 
-  assert.equal(interruptedState.status, 'in_progress');
-  assert.equal(Object.keys(interruptedState.completed).length, 1);
+    assert.equal(interruptedState.status, 'in_progress');
+    assert.equal(Object.keys(interruptedState.completed).length, 1);
 
-  writeControl({ unitOrdinal: 0 });
-  const resumed = await run();
+    writeControl({ unitOrdinal: 0 });
+    const resumed = await run();
 
-  assert.equal(resumed.status, 0, resumed.stderr);
-  assert.match(
-    resumed.stdout,
-    /Resuming chromium: 1 bounded batches already passed/
-  );
-  const resumedSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
+    assert.equal(resumed.status, 0, resumed.stderr);
+    assert.match(
+      resumed.stdout,
+      /Resuming chromium: 1 bounded batches already passed/
+    );
+    const resumedSummary = readSingleJson(
+      summaryDirectory,
+      'summary-chromium-'
+    );
 
-  assert.equal(resumedSummary.status, 'passed');
-  assert.equal(resumedSummary.coverage.executed, 5);
-  assert.equal(resumedSummary.units.filter(({ reused }) => reused).length, 1);
-  assert.equal(resumedSummary.selectedUnits, 3);
+    assert.equal(resumedSummary.status, 'passed');
+    assert.equal(resumedSummary.coverage.executed, 5);
+    assert.equal(resumedSummary.units.filter(({ reused }) => reused).length, 1);
+    assert.equal(resumedSummary.selectedUnits, 3);
 
-  const beforeCompleteReuse = readInvocations(fixture.logFile).length;
-  const reused = await run();
+    const beforeCompleteReuse = readInvocations(fixture.logFile).length;
+    const reused = await run();
 
-  assert.equal(reused.status, 0, reused.stderr);
-  assert.match(reused.stdout, /reused 5 passed/);
-  assert.equal(readInvocations(fixture.logFile).length, beforeCompleteReuse);
-  const reusedSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
+    assert.equal(reused.status, 0, reused.stderr);
+    assert.match(reused.stdout, /reused 5 passed/);
+    assert.equal(readInvocations(fixture.logFile).length, beforeCompleteReuse);
+    const reusedSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
 
-  assert.equal(reusedSummary.reused, true);
-  assert.equal(reusedSummary.timing.executedBatchMs, 0);
+    assert.equal(reusedSummary.reused, true);
+    assert.equal(reusedSummary.timing.executedBatchMs, 0);
 
-  fs.appendFileSync(fixture.testFile, '// persistent source change\n');
-  writeControl({ unitOrdinal: 0 });
-  const invalidatedByDigest = await run();
+    fs.appendFileSync(fixture.testFile, '// persistent source change\n');
+    writeControl({ unitOrdinal: 0 });
+    const invalidatedByDigest = await run();
 
-  assert.equal(invalidatedByDigest.status, 0, invalidatedByDigest.stderr);
-  const digestSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
+    assert.equal(invalidatedByDigest.status, 0, invalidatedByDigest.stderr);
+    const digestSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
 
-  assert.equal(
-    digestSummary.units.every(({ reused: value }) => !value),
-    true
-  );
+    assert.equal(
+      digestSummary.units.every(({ reused: value }) => !value),
+      true
+    );
 
-  const manifestSource = fs.readFileSync(fixture.manifestFile, 'utf8');
+    const manifestSource = fs.readFileSync(fixture.manifestFile, 'utf-8');
 
-  writeControl({ mutateManifestOnUnitOrdinal: 1, unitOrdinal: 0 });
-  environment.PLITE_BROWSER_FORCE_PROOF = '1';
-  const invalidatedByManifest = await run();
-  delete environment.PLITE_BROWSER_FORCE_PROOF;
+    writeControl({ mutateManifestOnUnitOrdinal: 1, unitOrdinal: 0 });
+    environment.PLITE_BROWSER_FORCE_PROOF = '1';
+    const invalidatedByManifest = await run();
+    delete environment.PLITE_BROWSER_FORCE_PROOF;
 
-  assert.equal(invalidatedByManifest.status, 1);
-  assert.match(invalidatedByManifest.stderr, /source-changed.*invalidated/s);
-  assert.equal(
-    JSON.parse(fs.readFileSync(fixture.controlFile, 'utf8')).unitOrdinal,
-    3,
-    'an ignored manifest watch event must still fail the final run digest'
-  );
-  assert.equal(
-    readSingleJson(stateDirectory, 'state-chromium-').status,
-    'invalid'
-  );
-  fs.writeFileSync(fixture.manifestFile, manifestSource);
+    assert.equal(invalidatedByManifest.status, 1);
+    assert.match(invalidatedByManifest.stderr, /source-changed.*invalidated/s);
+    assert.equal(
+      JSON.parse(fs.readFileSync(fixture.controlFile, 'utf-8')).unitOrdinal,
+      3,
+      'an ignored manifest watch event must still fail the final run digest'
+    );
+    assert.equal(
+      readSingleJson(stateDirectory, 'state-chromium-').status,
+      'invalid'
+    );
+    fs.writeFileSync(fixture.manifestFile, manifestSource);
 
-  writeControl({ mutateOnUnitOrdinal: 1, unitOrdinal: 0 });
-  const invalidatedInFlight = await run();
+    writeControl({ mutateOnUnitOrdinal: 1, unitOrdinal: 0 });
+    const invalidatedInFlight = await run();
 
-  assert.equal(invalidatedInFlight.status, 1);
-  assert.match(invalidatedInFlight.stderr, /source-changed.*invalidated/s);
-  const invalidState = readSingleJson(stateDirectory, 'state-chromium-');
+    assert.equal(invalidatedInFlight.status, 1);
+    assert.match(invalidatedInFlight.stderr, /source-changed.*invalidated/s);
+    const invalidState = readSingleJson(stateDirectory, 'state-chromium-');
 
-  assert.equal(invalidState.status, 'invalid');
-  assert.deepEqual(invalidState.completed, {});
+    assert.equal(invalidState.status, 'invalid');
+    assert.deepEqual(invalidState.completed, {});
 
-  writeControl({ unitOrdinal: 0 });
-  const afterInvalidation = await run();
+    writeControl({ unitOrdinal: 0 });
+    const afterInvalidation = await run();
 
-  assert.equal(afterInvalidation.status, 0, afterInvalidation.stderr);
-  const finalSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
-  const invocations = readInvocations(fixture.logFile);
-  const discoveries = invocations.filter(({ kind }) => kind === 'discovery');
-  const units = invocations.filter(({ kind }) => kind === 'unit');
+    assert.equal(afterInvalidation.status, 0, afterInvalidation.stderr);
+    const finalSummary = readSingleJson(summaryDirectory, 'summary-chromium-');
+    const invocations = readInvocations(fixture.logFile);
+    const discoveries = invocations.filter(({ kind }) => kind === 'discovery');
+    const units = invocations.filter(({ kind }) => kind === 'unit');
 
-  assert.equal(
-    finalSummary.units.every(({ reused: value }) => !value),
-    true
-  );
-  assert.equal(discoveries.length, 2);
-  assert.equal(
-    units.every(
-      ({ args, selected }) =>
-        selected.length > 0 &&
-        selected.length <= 2 &&
-        args.includes('--retries=0') &&
-        Number(
-          args.find((argument) => argument.startsWith('--workers='))?.slice(10)
-        ) <= 2
-    ),
-    true
-  );
-});
+    assert.equal(
+      finalSummary.units.every(({ reused: value }) => !value),
+      true
+    );
+    assert.equal(discoveries.length, 2);
+    assert.equal(
+      units.every(
+        ({ args, selected }) =>
+          selected.length > 0 &&
+          selected.length <= 2 &&
+          args.includes('--retries=0') &&
+          Number(
+            args
+              .find((argument) => argument.startsWith('--workers='))
+              ?.slice(10)
+          ) <= 2
+      ),
+      true
+    );
+  }
+);
 
-test('forced proof reruns every bounded batch instead of resuming', {
-  timeout: 15_000,
-}, async (context) => {
-  const fixture = createFixture();
+test(
+  'forced proof reruns every bounded batch instead of resuming',
+  {
+    timeout: 15_000,
+  },
+  async (context) => {
+    const fixture = createFixture();
 
-  context.after(() =>
-    fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
-  );
+    context.after(() =>
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
+    );
 
-  const { environment, run } = createFixtureRunner(fixture);
-  const initial = await run();
+    const { environment, run } = createFixtureRunner(fixture);
+    const initial = await run();
 
-  assert.equal(initial.status, 0, initial.stderr);
-  const beforeForcedRun = readInvocations(fixture.logFile).filter(
-    ({ kind }) => kind === 'unit'
-  ).length;
+    assert.equal(initial.status, 0, initial.stderr);
+    const beforeForcedRun = readInvocations(fixture.logFile).filter(
+      ({ kind }) => kind === 'unit'
+    ).length;
 
-  environment.PLITE_BROWSER_FORCE_PROOF = '1';
-  writeFile(fixture.controlFile, '{"unitOrdinal":0}\n');
-  const forced = await run();
+    environment.PLITE_BROWSER_FORCE_PROOF = '1';
+    writeFile(fixture.controlFile, '{"unitOrdinal":0}\n');
+    const forced = await run();
 
-  assert.equal(forced.status, 0, forced.stderr);
-  assert.doesNotMatch(forced.stdout, /Resuming|reused/);
-  assert.equal(
-    readInvocations(fixture.logFile).filter(({ kind }) => kind === 'unit')
-      .length - beforeForcedRun,
-    3
-  );
-  const forcedSummary = readSingleJson(
-    path.join(fixture.appRoot, 'test-results/plite-browser-runner'),
-    'summary-chromium-'
-  );
+    assert.equal(forced.status, 0, forced.stderr);
+    assert.doesNotMatch(forced.stdout, /Resuming|reused/);
+    assert.equal(
+      readInvocations(fixture.logFile).filter(({ kind }) => kind === 'unit')
+        .length - beforeForcedRun,
+      3
+    );
+    const forcedSummary = readSingleJson(
+      path.join(fixture.appRoot, 'test-results/plite-browser-runner'),
+      'summary-chromium-'
+    );
 
-  assert.equal(forcedSummary.selectedUnits, 3);
-  assert.equal(
-    forcedSummary.units.every(({ reused }) => !reused),
-    true
-  );
-});
+    assert.equal(forcedSummary.selectedUnits, 3);
+    assert.equal(
+      forcedSummary.units.every(({ reused }) => !reused),
+      true
+    );
+  }
+);

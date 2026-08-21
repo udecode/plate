@@ -1,4 +1,3 @@
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import type { Value } from '@platejs/plite';
 import {
   Editable,
@@ -6,11 +5,14 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
+
 import { Label } from '@/components/ui/label';
 import {
   NativeSelect,
   NativeSelectOption,
 } from '@/components/ui/native-select';
+
 import { replaceQueryOptions } from './query-controls';
 
 const TEST_CASE_IDS = [

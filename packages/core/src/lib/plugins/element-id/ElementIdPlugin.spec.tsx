@@ -1,12 +1,12 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import {
   type Element,
   ElementApi,
   type NodeEntry,
   schema,
 } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
 
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';

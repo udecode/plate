@@ -1,10 +1,7 @@
 import type { Path } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
-import type React from 'react';
-
 import clsx from 'clsx';
-
-import type { PliteRenderNodeProps } from '../types';
+import type React from 'react';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
@@ -16,6 +13,7 @@ import {
   getPluginNodeClass,
 } from '../../lib';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import type { PliteRenderNodeProps } from '../types';
 
 type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
   GetInjectNodePropsOptions &

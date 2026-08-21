@@ -1,15 +1,17 @@
 'use client';
 
-import * as React from 'react';
 import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
+import { EmojiInlineIndexSearch } from '@platejs/emoji';
+import { EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';
 import {
   type PlateElementProps,
   PlateElement,
   usePluginStore,
 } from 'platejs/react';
-import { EmojiInlineIndexSearch } from '@platejs/emoji';
-import { EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';
+import * as React from 'react';
+
 import { useDebounce } from '@/registry/hooks/use-debounce';
+
 import {
   InlineCombobox,
   InlineComboboxContent,

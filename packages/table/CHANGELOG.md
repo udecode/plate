@@ -776,10 +776,8 @@
   - `getTableCellBorders`
   - `getLeftTableCell`
   - `getTopTableCell`
-  - `isTableBorderHidden`
-    New transforms:
-  - `setBorderSize`
-    `TableCellElementState` new field:
+  - `isTableBorderHidden` New transforms:
+  - `setBorderSize` `TableCellElementState` new field:
   - `borders: BorderStylesDefault`
 
 ## 20.3.2
@@ -1344,8 +1342,7 @@
 
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
@@ -1353,8 +1350,7 @@ occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Patch Changes
 

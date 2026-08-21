@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { MultiSelectPlugin } from '@platejs/tag/react';
 import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
 import { Fzf } from 'fzf';
@@ -14,6 +12,7 @@ import {
   usePlateEditor,
   usePlateValue,
 } from 'platejs/react';
+import * as React from 'react';
 
 import {
   Popover,
@@ -344,7 +343,7 @@ export function SelectEditorCombobox() {
       <PopoverContent
         className="p-0 data-[state=open]:animate-none"
         style={{
-          // eslint-disable-next-line react-hooks/refs -- Reading ref for dynamic width calculation
+          // Reading ref for dynamic width calculation.
           width: (containerRef.current?.offsetWidth ?? 0) + 8,
         }}
         onCloseAutoFocus={(e) => e.preventDefault()}

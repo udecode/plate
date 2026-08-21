@@ -674,8 +674,6 @@ const getYjsVisibleChildSlotAt = (
     visibleIndex++;
     rawIndex++;
   }
-
-  return;
 };
 
 const getYjsVisibleChildAt = (
@@ -871,9 +869,10 @@ const createYjsNodeAttributes = (
   ...excluded: readonly string[]
 ): YjsAttributeRecord => {
   const attributes: YjsAttributeRecord = {};
+  const excludedSet = new Set(excluded);
 
   for (const key in node) {
-    if (!Object.hasOwn(node, key) || excluded.includes(key)) continue;
+    if (!Object.hasOwn(node, key) || excludedSet.has(key)) continue;
 
     assertPublicYjsAttributeCanBeSet(key);
 

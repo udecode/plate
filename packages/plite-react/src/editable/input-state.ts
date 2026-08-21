@@ -1,4 +1,3 @@
-import type { RefObject } from 'react';
 import { type Path, type Range, RangeApi } from '@platejs/plite';
 import type { DOMElement } from '@platejs/plite-dom';
 import {
@@ -7,6 +6,8 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '@platejs/plite-dom/internal';
+import type { RefObject } from 'react';
+
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
 type DOMInputRuntime = DOMRootRuntime<HTMLElement>['domInputRuntime'];

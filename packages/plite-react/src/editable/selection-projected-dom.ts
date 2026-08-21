@@ -13,7 +13,6 @@ import { ELEMENT_TO_NODE } from '@platejs/plite-dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { createPliteViewSelection } from '../view-selection';
-
 import {
   type ContentRootOwner,
   createContentRootProjectionGraph,

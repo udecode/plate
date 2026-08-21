@@ -227,7 +227,7 @@ export const snapshotFileIdentity = (file) => {
 
 export const readManifestFingerprint = (manifestPath) => {
   try {
-    const { fingerprint } = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const { fingerprint } = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
 
     return typeof fingerprint === 'string' ? fingerprint : null;
   } catch {
@@ -510,7 +510,7 @@ export const isBuildManifestFresh = ({
   let manifest;
 
   try {
-    manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
   } catch {
     return false;
   }

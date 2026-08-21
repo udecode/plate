@@ -1,20 +1,5 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
-  yjs,
-  type YjsAwarenessLike,
-  type YjsProviderEvent,
-  type YjsProviderEventHandler,
-  type YjsProviderLike,
-  type YjsProviderStatus,
-} from '@platejs/yjs';
-import {
-  useYjsProviderStatus,
-  useYjsProviderSynced,
-  useYjsRemoteCursors,
-} from '@platejs/yjs/react';
-import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
-import { useEffect, useState } from 'react';
-import {
   type Descendant,
   type Editor,
   type EditorUpdateTransaction,
@@ -30,6 +15,21 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+import {
+  yjs,
+  type YjsAwarenessLike,
+  type YjsProviderEvent,
+  type YjsProviderEventHandler,
+  type YjsProviderLike,
+  type YjsProviderStatus,
+} from '@platejs/yjs';
+import {
+  useYjsProviderStatus,
+  useYjsProviderSynced,
+  useYjsRemoteCursors,
+} from '@platejs/yjs/react';
+import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
+import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
 
 import { Button } from '@/components/ui/button';

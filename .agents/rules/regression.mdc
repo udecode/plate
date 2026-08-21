@@ -1,5 +1,5 @@
 ---
-description: Test-first Plate/Plite regression methodology for exact reproduction, executable coverage, one-case Patch delegation, fresh-host verification, stability, corpus replay, and automatic workflow improvement.
+description: Test-first Plate/Plite regression methodology for reporter-complete oracles, exact reproduction, one-case Patch delegation, proof receipts, corpus replay, failed-fix interruption, and automatic workflow repair.
 argument-hint: '[repair <expectation> | <bug|surface|corpus>] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 ---
@@ -14,9 +14,10 @@ goal, test, or child task.
 Regression owns a self-improving test-first loop:
 
 ```txt
-source and proof host ready -> atomic case -> smallest falsifying probe
+source and proof host ready -> reporter oracle -> smallest falsifying probe
 -> exact reproduction -> failing executable test -> one-case patch
--> focused green -> fresh-host stability -> keep/revert/quarantine
+-> focused green -> fresh-host receipt -> affected-corpus stability
+-> keep/revert/quarantine or failed-fix interrupt
 -> methodology delta -> next executable case or honest stop
 ```
 
@@ -42,7 +43,9 @@ method. `patch` remains the only one-case implementation worker.
 - Work is already applied and needs until-clean closure: use `autoclosure`.
 - Public API or runtime architecture is unresolved: use `best-api`,
   `plite-plan`, or `plate-plan` before implementation.
-- Broad non-regression quality/perf/docs supervision is requested: use `auto`.
+- A performance regression, benchmark comparison, or timing root-cause loop is
+  the target: use `benchmark`. Regression may supply the correctness oracle.
+- Broad non-regression quality/docs supervision is requested: use `auto`.
 
 ## Authority
 
@@ -51,13 +54,17 @@ method. `patch` remains the only one-case implementation worker.
 - Exact refs, clean hosts, and CI/runtime receipts own integration claims.
 - Regression owns case selection, current-source readiness, proof width,
   serialization of Patch work, stability, packet decisions, claim width, and
-  methodology deltas.
+  methodology deltas. Its semantic validator, not Autogoal's structural
+  checker, owns Regression completion semantics.
 - The goal plan is transient coordination for non-trivial runs. It is not a
   second behavior database.
 - Patch owns exactly one normalized local repair at a time.
 - Package/runtime owners remain authoritative for implementation.
 - Current checkout source outranks old plans, baselines, recordings, generated
   output, and prior results.
+- Local completion is Regression workflow state, not integration or public
+  issue state. A fully verified run is `completed` even when uncommitted or
+  unpushed.
 - No public mutation, commit, push, PR, release, or generated-output edit is
   authorized unless the user separately asks.
 
@@ -66,8 +73,8 @@ method. `patch` remains the only one-case implementation worker.
 Never create or maintain a sidecar TSV, JSON, database, manifest, or manual
 case registry for Regression.
 
-- One fixed regression must have an executable test that fails on the violated
-  invariant and passes after the fix.
+- One completed regression must have an executable test that fails on the
+  violated invariant and passes after the fix.
 - A corpus is discovered from executable tests, current source, and live issue
   provenance. If coordination is needed, keep a compact temporary case table
   in the active goal plan with case ID, test path, status, tested ref, and next
@@ -93,6 +100,19 @@ Every required runtime condition belongs in canonical `Work Checklist` or
 `Completion Gates` rows. Supporting case tables coordinate work only and
 never replace tests or completion gates.
 
+Run the Regression semantic validator after filling the selected cases and
+again with `--complete` before local completion:
+
+```bash
+node .agents/skills/regression/scripts/validate-regression-plan.mjs \
+  docs/plans/<plan>.md
+node .agents/skills/regression/scripts/validate-regression-plan.mjs \
+  docs/plans/<plan>.md --complete
+```
+
+`check-complete.mjs` remains the generic structural gate. It cannot substitute
+for this semantic gate.
+
 ## Workflow
 
 ### 1. Ground Current Truth
@@ -116,6 +136,13 @@ plan or Patch packet:
 - applicable model, DOM/native, focus, popup, geometry/paint, runtime-error,
   and follow-up-input fields;
 - tested ref, dirty-state boundary when applicable, and required stability.
+
+Before patching, expand every case into the template's reporter oracle matrix.
+For model, DOM/native state, focus, popup/toolbar, geometry/paint, runtime
+errors, and follow-up input, mark the observation applicable or give an N/A
+reason. Every applicable row needs both the positive assertion that must hold
+and the forbidden state that must not survive, plus an executable test anchor.
+Do not reduce a reporter sentence to the easiest neighboring assertion.
 
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
@@ -146,6 +173,14 @@ Use retry-free warm repetitions for native input, lifecycle, selection, focus,
 DnD, compositor, flaky, or device risks. Default to five when those risks
 apply. One failure keeps the case open.
 
+Run final proof through `capture-proof-receipt.mjs`. It executes the command,
+fingerprints every named production/test/fixture/harness/config input before
+and after the run, lists those exact inputs, records the ref and host identity,
+and prints a tamper-evident
+Markdown receipt for the transient plan. After the last edit to any shared
+owner, replay every affected exact case in one combined command and bind the
+affected-corpus row to that receipt.
+
 Decide:
 
 - `keep`: executable red/green proof, fresh final replay, stability, durable
@@ -155,7 +190,42 @@ Decide:
   completion;
 - `defer` or `block`: name the missing owner/evidence and revisit trigger.
 
-### 6. Improve The Method
+A kept case and its run become `completed` when every required local executable
+test, final-source replay, stability, review, methodology, and plan gate passes.
+Commit and push are not local completion gates. Record the tested ref or dirty
+fingerprints and say `local, uncommitted, and unpushed` when that is true.
+
+### 6. Failed-Fix Interrupt
+
+A failed fix is a claimed `candidate-local`, `kept`, or `completed` repair that
+later fails its exact replay or final verification, or is contradicted by a
+fresh reporter result. Expected red-before-green reproduction is not a failed
+fix.
+
+Every failed claimed bug fix automatically repairs Regression. Do not wait for
+the user to ask and do not delegate another product patch first:
+
+1. Mark the attempted green, proof receipt, local completion, and any public
+   completion authority invalid. Tell the public coordinator to correct stale
+   wording or labels; Regression itself still has no public-mutation authority.
+2. Stop product edits for that case and enter
+   `regression repair <case-id>: <missed invariant or proof failure>`.
+3. Patch the smallest durable Regression rule, methodology, template, proof
+   helper, validator, or routing owner. Add an executable workflow test that
+   rejects the failed packet. Prose-only repair is forbidden.
+4. Run focused workflow proof, `pnpm install`, source/generated parity, and
+   agent-native review. A failed-fix methodology decision must be `repair-now`;
+   `no-change` and `defer` cannot resume the product attempt.
+5. Restart from exact reproduction with a new attempt number and a corrected
+   reporter oracle. Never carry the invalidated receipt into the new attempt.
+
+On the second failed fix for one case, or immediately for cross-layer
+compensation, duplicated live identity, per-node hot work, timer/focus/blur
+correctness repair, or UI code repairing a substrate invariant, run `best-api`
+and the owning `plite-plan`, `plate-plan`, or both before another Patch attempt.
+Private-beta compatibility is not a reason to preserve the bad shape.
+
+### 7. Improve The Method
 
 Every case records one methodology decision in the plan:
 
@@ -168,6 +238,9 @@ Repair avoidable command mistakes, irrelevant skill loading, stale servers,
 generated drift, false-green gates, noisy output, and repeated setup in the
 same run when safe. After agent-source changes, run focused proof,
 `pnpm install`, mirror parity, and agent-native review.
+
+This ordinary per-case methodology delta does not weaken Failed-Fix Interrupt.
+Once a claimed fix fails, automatic `repair-now` is mandatory.
 
 ## Orchestration
 
@@ -185,8 +258,9 @@ For `repair <expectation>`, repair this workflow rather than product runtime:
    proof host, generator, or routing owner.
 3. Delete obsolete workflow surface instead of deprecating it.
 4. Add or strengthen executable tests when the miss is mechanical.
-5. Run focused proof, `pnpm install`, source/mirror parity,
-   `agent-native-reviewer`, and P2 review when executable workflow code
+5. Run the semantic validator against the failed packet and a completed fixture.
+6. Run focused proof, `pnpm install`, source/mirror parity,
+   `agent-native-reviewer`, and P1 review when executable workflow code
    changed.
 
 ## Verification
@@ -196,17 +270,19 @@ Minimum workflow proof:
 ```bash
 node --test \
   .agents/rules/regression/scripts/test-first-contract.test.mjs \
+  .agents/rules/regression/scripts/validate-regression-plan.test.mjs \
   .agents/skills/regression/scripts/test-first-contract.test.mjs
 node .agents/rules/plate-next/scripts/sync-resources.mjs --check
 ```
 
-Also source-audit removed tooling/data paths and stale doctrine, prove an
-unfinished Regression plan fails `check-complete.mjs`, and prove a completed
-plan can close from executable test evidence without inventing another
-registry.
+Also prove the four historical reporter-invalidated plans fail
+`validate-regression-plan.mjs --complete`, a failed-fix packet cannot resume
+without an executable `repair-now`, a second failure cannot resume without
+Best API and a layer plan, an evidence-complete fixture passes, an unfinished
+plan fails `check-complete.mjs`, and source/generated resources match.
 
 Run package, DOM, Playwright, Browser, Chrome, or device proof according to the
-claim. End non-trivial implementation packets with P2 autoreview.
+claim. End non-trivial implementation packets with P1 autoreview.
 
 ## Final Handoff
 
@@ -214,10 +290,14 @@ Report:
 
 - plan path and selected executable test cases;
 - exact reproduction, fix, test commands, hosts, refs, and stability;
+- reporter oracle matrix, proof receipt, and affected-corpus replay;
 - keep/revert/quarantine/defer/block decisions;
+- failed-fix invalidation, automatic repair, and architecture escalation when
+  any attempt failed;
 - methodology delta for every case;
 - source/generated sync and review status;
 - residual claim limits and next owner.
 
-Never call a run fixed, shipped, completed, or clean beyond its actual pushed,
-integration, release, and review evidence.
+Call an evidence-complete local run `completed`, including when it is
+uncommitted or unpushed. Reserve `integrated`, `shipped`, `released`, and public
+issue completion or labels for the coordinator and their owning evidence.

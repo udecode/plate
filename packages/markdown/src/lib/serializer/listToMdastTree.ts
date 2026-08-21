@@ -2,10 +2,8 @@ import type { Element } from '@platejs/plite';
 
 import type { MdList, MdListItem, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
-
 import { convertNodesSerialize } from './convertNodesSerialize';
-import { wrapWithBlockId } from './wrapWithBlockId';
-import { isMdPhrasingContent } from './wrapWithBlockId';
+import { wrapWithBlockId, isMdPhrasingContent } from './wrapWithBlockId';
 
 export type MdListFragment = {
   children: MdRootContent[];

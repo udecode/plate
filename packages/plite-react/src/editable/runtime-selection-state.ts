@@ -1,4 +1,5 @@
 import { SelectionApi, type Range, type Selection } from '@platejs/plite';
+
 import {
   type Editor,
   getEditorLiveSelection,

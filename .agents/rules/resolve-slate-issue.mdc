@@ -38,7 +38,7 @@ workflow. It does not authorize merge, publish, or a premature close.
 - Read `CONTRIBUTING.md`, the relevant issue template,
   `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before public mutation.
 - Do not duplicate local reproduction, test design, implementation,
-  architecture pressure, focused proof, or P2 autoreview here. Delegate that
+  architecture pressure, focused proof, or P1 autoreview here. Delegate that
   complete local packet to `patch`.
 - Do not use a sibling Slate checkout as implementation proof.
 - Current-green behavior is `already-accounted` only when Plate `next` contains
@@ -107,7 +107,7 @@ behavior report and issue constraints. Require this evidence packet back:
 - Browser/device proof or explicit limitation;
 - architecture-pressure verdict;
 - changeset status;
-- P2 autoreview result;
+- P1 autoreview result;
 - unresolved caveat.
 
 Reject an incomplete packet. Do not recreate the worker's patch methodology or

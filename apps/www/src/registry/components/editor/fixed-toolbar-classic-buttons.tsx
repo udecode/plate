@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import {
   BoldPlugin,
   CodePlugin,
@@ -33,6 +31,7 @@ import {
 } from 'lucide-react';
 import { PLUGINS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
+import * as React from 'react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';

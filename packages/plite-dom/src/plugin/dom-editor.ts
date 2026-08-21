@@ -15,9 +15,6 @@ import {
   TextApi,
   type Value,
 } from '@platejs/plite';
-import scrollIntoViewIfNeeded, {
-  type StandardBehaviorOptions,
-} from 'scroll-into-view-if-needed';
 import {
   type AnyEditor as EditorType,
   getSelection as editorGetSelection,
@@ -33,8 +30,12 @@ import {
   toInternalRoot,
   unhangRange as editorUnhangRange,
   void as editorVoid,
+  formatDebugValue,
 } from '@platejs/plite/internal';
-import { formatDebugValue } from '@platejs/plite/internal';
+import scrollIntoViewIfNeeded, {
+  type StandardBehaviorOptions,
+} from 'scroll-into-view-if-needed';
+
 import type { TextDiff } from '../utils/diff-text';
 import {
   closestShadowAware,
@@ -55,7 +56,6 @@ import {
   normalizeDOMPoint,
 } from '../utils/dom';
 import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
-
 import { Key } from '../utils/key';
 import {
   EDITOR_TO_ELEMENT,
@@ -95,6 +95,7 @@ import {
   resolveBlockFragmentDropRange,
   resolveVoidEventRange,
 } from './dom-event-range-targets';
+import { createDOMGeometryKernel } from './dom-geometry';
 import {
   findMountedDOMNodeByPath,
   parsePliteDOMPath,
@@ -102,7 +103,6 @@ import {
   resolvePliteNodePath,
   toMountedDOMNodeByPath,
 } from './dom-node-path';
-import { createDOMGeometryKernel } from './dom-geometry';
 import {
   destroyEditorDOMPhaseSchedulerFallbackForRoot,
   scheduleEditorDOMPhase,
@@ -232,8 +232,9 @@ export interface DOMEditorClipboardCapability<V extends Value = Value> {
   ) => void;
 }
 
-export interface DOMClipboardApi<V extends Value = Value>
-  extends DOMEditorClipboardCapability<V> {}
+export interface DOMClipboardApi<
+  V extends Value = Value,
+> extends DOMEditorClipboardCapability<V> {}
 
 export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
 
@@ -896,7 +897,11 @@ export const subscribeEditorDOMScope = (
   };
 };
 
-/** @internal Reuse one DOM key for a node's editor-scoped node key. */
+/**
+ * Reuse one DOM key for a node's editor-scoped node key.
+ *
+ * @internal
+ */
 export const getOrCreateDOMNodeKey = (
   editor: DOMEditor<any>,
   nodeKey: NodeKey,
@@ -917,7 +922,6 @@ export const getOrCreateDOMNodeKey = (
   return key;
 };
 
-// eslint-disable-next-line no-redeclare
 export const DOMEditor: DOMEditorInterface = {
   androidPendingDiffs: (editor) => EDITOR_TO_PENDING_DIFFS.get(editor),
 
@@ -2318,6 +2322,45 @@ export const DOMEditor: DOMEditorInterface = {
       { code: '@platejs/plite-dom/plite-range', details: { domRange } }
     );
   },
+};
+
+/** Check whether a mutation originates from an editable editor element. */
+export const isTrackedMutation = (
+  editor: DOMEditor,
+  mutation: MutationRecord,
+  batch: MutationRecord[]
+): boolean => {
+  const { target } = mutation;
+  if (isDOMElement(target) && target.matches('[contentEditable="false"]')) {
+    return false;
+  }
+
+  const { document } = DOMEditor.getWindow(editor);
+  if (containsShadowAware(document, target)) {
+    return DOMEditor.hasDOMNode(editor, target, { editable: true });
+  }
+
+  const parentMutation = batch.find(({ addedNodes, removedNodes }) => {
+    for (const node of addedNodes) {
+      if (node === target || containsShadowAware(node, target)) {
+        return true;
+      }
+    }
+
+    for (const node of removedNodes) {
+      if (node === target || containsShadowAware(node, target)) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  if (!parentMutation || parentMutation === mutation) {
+    return false;
+  }
+
+  return isTrackedMutation(editor, parentMutation, batch);
 };
 
 export const createDOMEditorCapability = <

@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import type {
   Descendant,
   EditorSnapshot,
@@ -7,6 +6,7 @@ import type {
   RootKey,
 } from '@platejs/plite';
 import { RangeApi } from '@platejs/plite';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 
 import {
   createDecorationSource,
@@ -85,10 +85,10 @@ const isSameOwner = (
   (!left && !right) ||
   Boolean(
     left &&
-      right &&
-      left.childRoot === right.childRoot &&
-      left.ownerRoot === right.ownerRoot &&
-      isSamePath(left.ownerPath, right.ownerPath)
+    right &&
+    left.childRoot === right.childRoot &&
+    left.ownerRoot === right.ownerRoot &&
+    isSamePath(left.ownerPath, right.ownerPath)
   );
 
 const isPliteViewSelectionDecorationData = (

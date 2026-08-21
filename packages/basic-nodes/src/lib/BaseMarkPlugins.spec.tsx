@@ -1,5 +1,9 @@
 /** @jsx jsxt */
 
+import { createBaseEditor } from '@platejs/core';
+import { NodeApi, SelectionApi } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -18,9 +22,6 @@ import {
   StrikethroughRules,
   UnderlineRules,
 } from './index';
-import { createBaseEditor } from '@platejs/core';
-import { NodeApi, SelectionApi } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
 
 jsxt;
 
@@ -127,11 +128,14 @@ describe('BaseMarkPlugins', () => {
       BaseStrikethroughPlugin,
       '<s><span style="text-decoration: none">text</span></s>',
     ],
-  ])('vetoes %s parsing when a descendant resets the style', (_label, plugin, html) => {
-    const hasDecodedMark = getDecodedMarkReader(plugin);
+  ])(
+    'vetoes %s parsing when a descendant resets the style',
+    (_label, plugin, html) => {
+      const hasDecodedMark = getDecodedMarkReader(plugin);
 
-    expect(hasDecodedMark(parseElement(html))).toBe(false);
-  });
+      expect(hasDecodedMark(parseElement(html))).toBe(false);
+    }
+  );
 
   it('skips inline code parsing inside pre blocks and paragraphs styled as code', () => {
     const hasDecodedCode = getDecodedMarkReader(BaseCodePlugin);
@@ -207,42 +211,45 @@ describe('BaseMarkPlugins', () => {
       '<span style="text-decoration: underline">text</span>',
       'u',
     ],
-  ] as const)('decodes and encodes the %s HTML claim', (_label, plugin, markKey, value, input, outputTag) => {
-    const editor = createBaseEditor({
-      plugins: [plugin],
-      initialValue: [
-        {
-          children: [{ [markKey]: value, text: 'text' }],
-          type: 'paragraph',
-        },
-      ],
-    });
-    const decoded = editor.api.html.deserialize({
-      element: `<p>${input}</p>`,
-    });
-    const decodedText = decoded
-      ? Array.from(NodeApi.texts({ children: decoded, type: 'root' }))[0]?.[0]
-      : undefined;
-    const point = { offset: 0, path: [0, 0] };
-    const data = new DataTransfer();
+  ] as const)(
+    'decodes and encodes the %s HTML claim',
+    (_label, plugin, markKey, value, input, outputTag) => {
+      const editor = createBaseEditor({
+        plugins: [plugin],
+        initialValue: [
+          {
+            children: [{ [markKey]: value, text: 'text' }],
+            type: 'paragraph',
+          },
+        ],
+      });
+      const decoded = editor.api.html.deserialize({
+        element: `<p>${input}</p>`,
+      });
+      const decodedText = decoded
+        ? Array.from(NodeApi.texts({ children: decoded, type: 'root' }))[0]?.[0]
+        : undefined;
+      const point = { offset: 0, path: [0, 0] };
+      const data = new DataTransfer();
 
-    expect(decodedText).toMatchObject({
-      [markKey]: value,
-      text: 'text',
-    });
+      expect(decodedText).toMatchObject({
+        [markKey]: value,
+        text: 'text',
+      });
 
-    editor.update.selection.set(
-      SelectionApi.node([0], { anchor: point, focus: point })
-    );
-    editor.api.dom.clipboard.writeSelection(data);
+      editor.update.selection.set(
+        SelectionApi.node([0], { anchor: point, focus: point })
+      );
+      editor.api.dom.clipboard.writeSelection(data);
 
-    const body = new DOMParser().parseFromString(
-      data.getData('text/html'),
-      'text/html'
-    ).body;
+      const body = new DOMParser().parseFromString(
+        data.getData('text/html'),
+        'text/html'
+      ).body;
 
-    expect(body.querySelector(`p > ${outputTag}`)?.textContent).toBe('text');
-  });
+      expect(body.querySelector(`p > ${outputTag}`)?.textContent).toBe('text');
+    }
+  );
 
   it('composes product mark wrappers without losing claims', () => {
     const point = { offset: 0, path: [0, 0] };

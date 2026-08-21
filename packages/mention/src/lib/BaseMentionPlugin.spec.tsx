@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
+
 import { createBaseEditor } from '@platejs/core';
 import { ElementApi, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 import { MentionInputPlugin, MentionPlugin } from '../react/MentionPlugin';
+import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 
 describe('BaseMentionPlugin', () => {
   it('requires a non-empty persisted ref', () => {

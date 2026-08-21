@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-// biome-ignore-all lint/suspicious/noConsole: CLI reports the proof artifact path.
+// CLI reports the proof artifact path.
 
 import { spawn } from 'node:child_process';
 import {

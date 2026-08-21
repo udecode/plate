@@ -1,7 +1,6 @@
-import type React from 'react';
-
 import type { Element, Path } from '@platejs/plite';
 import type { EditableElementSlots } from '@platejs/plite-react';
+import type React from 'react';
 
 type ElementContentRootSlot<N extends Element> = N extends {
   childRoots: infer TRoots extends Readonly<Record<string, string>>;

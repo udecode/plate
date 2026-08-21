@@ -1,10 +1,11 @@
 /** @jsx jsxt */
 
+import { afterEach, describe, expect, it, spyOn, type Mock } from 'bun:test';
+
 import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseMediaEmbedPlugin } from '@platejs/media';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
-import { afterEach, describe, expect, it, spyOn, type Mock } from 'bun:test';
 
 import {
   createBaseEditor,

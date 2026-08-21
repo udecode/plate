@@ -1,11 +1,12 @@
-import { act, render } from '@testing-library/react';
-import React from 'react';
 import type { Element as PliteElementNode } from '@platejs/plite';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   moveNodes as editorMoveNodes,
 } from '@platejs/plite/internal';
+import { act, render } from '@testing-library/react';
+import React from 'react';
+
 import { createReactEditor, PliteElement } from '../src';
 import {
   EditorContext,

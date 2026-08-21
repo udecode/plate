@@ -75,7 +75,7 @@
       "migrationNotes": [],
       "targets": ["discussion-kit", "mention-kit", "tabbable-kit", "toc-kit"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-07-23",

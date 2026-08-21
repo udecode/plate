@@ -1,4 +1,4 @@
-// biome-ignore-all lint/style/useReactFunctionComponents: getSnapshotBeforeUpdate has no function-component equivalent.
+// getSnapshotBeforeUpdate has no function-component equivalent.
 import React, {
   Component,
   type ReactNode,
@@ -6,8 +6,9 @@ import React, {
   useContext,
   useSyncExternalStore,
 } from 'react';
-import { ProjectionContext } from '../projection-context';
+
 import type { EditableDOMRuntime } from '../editable/editable-dom-runtime';
+import { ProjectionContext } from '../projection-context';
 
 type EditableDOMCommitFenceProps = {
   children?: ReactNode;

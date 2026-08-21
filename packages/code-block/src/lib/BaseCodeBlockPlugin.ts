@@ -1,5 +1,3 @@
-import type { createLowlight, LanguageFn } from 'lowlight';
-
 import {
   defineBasePlugin,
   DebugPlugin,
@@ -25,6 +23,7 @@ import {
 } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
 import { PLUGINS } from '@platejs/utils';
+import type { createLowlight, LanguageFn } from 'lowlight';
 
 import { findCodeBlockLanguageChange } from './codeHighlight.internal';
 
@@ -813,7 +812,7 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
   // Adapted from the older Highlight.js Python grammar. The current 11.x
   // grammar uses unicodeRegex + multi-match rules that can generate invalid
   // regex ranges in browser bundles.
-  // biome-ignore-start lint/performance/useTopLevelRegex: The vendored grammar stays lexical to its single plugin owner.
+  // The vendored grammar stays lexical to its single plugin owner.
   const pythonBrowserSafe = (hljs: HighlightJs): HighlightLanguage => {
     const reservedWords = [
       'and',
@@ -1141,7 +1140,7 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
       name: 'Python',
     };
   };
-  // biome-ignore-end lint/performance/useTopLevelRegex: The vendored grammar stays lexical to its single plugin owner.
+  // The vendored grammar stays lexical to its single plugin owner.
   const ensureStablePythonGrammar = (
     lowlight: Lowlight,
     language: string | null | undefined

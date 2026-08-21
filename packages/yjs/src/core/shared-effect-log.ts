@@ -113,9 +113,7 @@ const readSerializedEffect = (
       value: deepFreeze(structuredClone(input.value)),
       version: input.version as number,
     });
-  } catch {
-    return;
-  }
+  } catch {}
 };
 
 const getEventId = (source: string, sequence: number): string =>
@@ -766,7 +764,7 @@ export class YjsSharedEffectLog {
           if (inserted) this.enqueue(inserted);
         }
       }
-      removed = removed || (change.delete ?? 0) > 0;
+      removed ||= (change.delete ?? 0) > 0;
     }
 
     if (removed) {

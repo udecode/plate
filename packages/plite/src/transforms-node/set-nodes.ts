@@ -1,12 +1,12 @@
+import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
-import { getEditorSchema } from '../core/editor-runtime';
+import { end as editorEnd } from '../editor/end';
 import { node as editorNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { end as editorEnd } from '../editor/end';
 import { type Location, LocationApi } from '../interfaces';
 import {
   isBlock as editorIsBlock,
@@ -18,12 +18,13 @@ import {
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor, Value } from '../interfaces/editor';
-import type {
-  Ancestor,
-  NodeEntry,
-  NodeMatchPredicate,
+import {
+  type Ancestor,
+  type NodeEntry,
+  type NodeMatchPredicate,
+  type Node,
+  NodeApi,
 } from '../interfaces/node';
-import { type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { type Range, RangeApi } from '../interfaces/range';
 import type {
@@ -31,20 +32,21 @@ import type {
   NodeSetNodesOptions,
 } from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
-import { splitNodes } from './split-nodes';
-import { normalizeNodeMatch } from '../utils/node-match';
 import { matchPath } from '../utils/match-path';
+import { normalizeNodeMatch } from '../utils/node-match';
+import { splitNodes } from './split-nodes';
+
 type SetNodeUpdate = {
   newProperties: Record<string, unknown>;
   path: Path;
   properties: Record<string, unknown>;
 };
 
-const NON_SETTABLE_NODE_PROPERTIES = [
+const NON_SETTABLE_NODE_PROPERTIES = new Set([
   'children',
   'text',
   ...Object.getOwnPropertyNames(Object.prototype),
-];
+]);
 
 const getParentEntry = (editor: unknown, at: Location) =>
   editorParent(editor as Editor, at) as NodeEntry<Ancestor>;
@@ -130,7 +132,7 @@ export const setNodes = ((
 
       const originalMatch = match;
       const markKeys = Object.keys(props).filter(
-        (key) => !NON_SETTABLE_NODE_PROPERTIES.includes(key)
+        (key) => !NON_SETTABLE_NODE_PROPERTIES.has(key)
       );
 
       const marksMatch: NodeMatchPredicate<Node> = (node, path) => {
@@ -254,7 +256,7 @@ export const setNodes = ((
       let hasChanges = false;
 
       for (const k in props) {
-        if (NON_SETTABLE_NODE_PROPERTIES.includes(k)) {
+        if (NON_SETTABLE_NODE_PROPERTIES.has(k)) {
           continue;
         }
 
@@ -340,14 +342,9 @@ export const setNodes = ((
       }
     }
 
-    for (const update of updates) {
+    if (updates.length > 0) {
       applyBuiltDocumentChange(editor, (builder, root) =>
-        builder.setNode(
-          root,
-          update.path,
-          update.newProperties,
-          update.properties
-        )
+        builder.setNodes(root, updates)
       );
     }
   });

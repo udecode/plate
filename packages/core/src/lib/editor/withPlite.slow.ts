@@ -5,16 +5,16 @@ import {
   target,
   type Value,
 } from '@platejs/plite';
-import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
+
 import {
   getCompiledPlateContainerTypes,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
 import { createPlateEditor } from '../../react/editor/withPlate';
 import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
-import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 import {
   AffinityPlugin,
   type BaseEditor,
@@ -28,6 +28,7 @@ import {
   HtmlPlugin,
   OverridePlugin,
 } from '../index';
+import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 
 const coreNames = [
   'root',

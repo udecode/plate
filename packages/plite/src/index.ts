@@ -296,7 +296,7 @@ export * from './interfaces/text';
 export type * from './interfaces/transforms/node';
 export type * from './interfaces/transforms/selection';
 export type * from './interfaces/transforms/text';
-export * from './types';
+export type * from './types';
 export {
   type DebugValueScrubber,
   setDebugValueScrubber,

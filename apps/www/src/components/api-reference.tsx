@@ -1,5 +1,4 @@
 import manifest from '@/generated/api-reference-manifest.json';
-
 import { cn } from '@/lib/utils';
 
 type ApiReferenceFact = {
@@ -40,13 +39,13 @@ export function APIReference({
   return (
     <section className="my-6 scroll-mt-20 rounded-lg border p-4" id={anchor}>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <a className="font-mono font-semibold text-sm" href={`#${anchor}`}>
+        <a className="font-mono text-sm font-semibold" href={`#${anchor}`}>
           {fact.name}
         </a>
-        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-muted-foreground text-xs">
+        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
           {fact.kind}
         </span>
-        <span className="font-mono text-muted-foreground text-xs">
+        <span className="font-mono text-xs text-muted-foreground">
           {fact.entrypoint}
         </span>
       </div>
@@ -59,13 +58,13 @@ export function APIReference({
         <code>{fact.signature}</code>
       </pre>
       {fact.documentation && (
-        <p className="mt-3 text-muted-foreground text-sm">
+        <p className="mt-3 text-sm text-muted-foreground">
           {fact.documentation}
         </p>
       )}
       {fact.source && (
         <a
-          className="mt-3 inline-block text-muted-foreground text-xs underline"
+          className="mt-3 inline-block text-xs text-muted-foreground underline"
           href={`https://github.com/udecode/plate/blob/main/${fact.source}`}
         >
           Source

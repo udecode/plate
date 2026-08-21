@@ -1,4 +1,3 @@
-import { useCallback, useRef } from 'react';
 import type {
   Editor,
   EditorCommit,
@@ -6,6 +5,7 @@ import type {
   ExtensionsOf,
   ValueOf,
 } from '@platejs/plite';
+import { useCallback, useRef } from 'react';
 
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';

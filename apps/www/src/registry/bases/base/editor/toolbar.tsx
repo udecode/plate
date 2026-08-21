@@ -1,11 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
 import { Toolbar as ToolbarPrimitive } from '@base-ui/react/toolbar';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -223,7 +222,7 @@ export function ToolbarGroup({
       <div className="flex items-center">{children}</div>
 
       <div
-        className="group-last/toolbar-group:hidden! mx-1.5 h-6 w-px bg-border"
+        className="mx-1.5 h-6 w-px bg-border group-last/toolbar-group:hidden!"
         aria-hidden="true"
       />
     </div>
@@ -255,7 +254,7 @@ export function ToolbarMenuGroup({
         )}
       >
         {label && (
-          <div className="select-none px-2 py-1.5 font-semibold text-muted-foreground text-xs">
+          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground select-none">
             {label}
           </div>
         )}

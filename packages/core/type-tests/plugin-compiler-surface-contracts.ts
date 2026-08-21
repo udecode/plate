@@ -4,7 +4,7 @@ type PublicLowerBasePlugin = import('@platejs/core').LowerBasePlugin;
 type PublicBaseNormalizer = import('@platejs/core').NormalizeBasePluginInput;
 // @ts-expect-error compiler-only React normalization aliases are not root-public.
 type PublicPlate = import('@platejs/core/react').NormalizePlatePluginInput;
-// biome-ignore format: keep the expected diagnostic on the following line.
+// oxfmt-ignore
 // @ts-expect-error exact dependency carriers stay behind descriptor portals.
 type PublicPluginDefinitionLookup = import('@platejs/core').InternalPluginDefinitionOf;
 

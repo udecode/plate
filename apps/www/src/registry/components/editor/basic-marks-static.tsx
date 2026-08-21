@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -11,6 +9,7 @@ import {
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
 import { type PliteLeafProps, PliteLeaf } from 'platejs/static';
+import * as React from 'react';
 
 import { CodeLeafStatic } from '@/registry/components/editor/code-static';
 import { HighlightLeafStatic } from '@/registry/components/editor/highlight-static';

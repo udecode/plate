@@ -9,16 +9,17 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
+import { clipboardHandler, dom } from '@platejs/plite-dom';
+import { setDOMClipboardFormatKey } from '@platejs/plite-dom/internal';
+import { history } from '@platejs/plite-history';
 import {
   getLastCommit as editorGetLastCommit,
   getEditorRuntimeOwner,
   getSelection as editorGetSelection,
   string as editorString,
 } from '@platejs/plite/internal';
-import { clipboardHandler, dom } from '@platejs/plite-dom';
-import { setDOMClipboardFormatKey } from '@platejs/plite-dom/internal';
-import { history } from '@platejs/plite-history';
 import { describe, expect, it } from 'vitest';
+
 import {
   applyEditableCommand,
   applyModelOwnedHistoryIntent,

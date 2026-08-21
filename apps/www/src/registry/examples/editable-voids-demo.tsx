@@ -1,22 +1,20 @@
 'use client';
 
-import * as React from 'react';
-
 import type { PlateElementProps } from 'platejs/react';
-
 import {
   definePlatePlugin,
   Plate,
   PlateElement,
   usePlateEditor,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export const EditableVoidPlugin = definePlatePlugin('editableVoid', {
   schema: { element: { void: 'editable-island' } },

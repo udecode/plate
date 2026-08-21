@@ -20,7 +20,7 @@ Work Checklist:
 - [ ] Record the package slug, exact unique source manifest, file count, and
       full fingerprint from `computePackageFingerprint`.
 - [ ] Run the full current package review and focused package proof.
-- [ ] Close P2 package review findings.
+- [ ] Close P1 package review findings.
 - [ ] Update `check-core` enrollment only for a genuinely completed new package.
 - [ ] Advance only the reviewed package after all evidence exists.
 - [ ] Point the package registry entry to this exact plan, latest doctrine

@@ -2,15 +2,15 @@ import { useEffect } from 'react';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
 import {
-  BLUR_EDITOR_EVENT,
-  EventEditorStore,
-  FOCUS_EDITOR_EVENT,
-} from './EventEditorStore';
-import {
   PLATE_SCOPE,
   useEditor,
   usePlateLocalValue,
 } from '../../stores/plate/createPlateStore';
+import {
+  BLUR_EDITOR_EVENT,
+  EventEditorStore,
+  FOCUS_EDITOR_EVENT,
+} from './EventEditorStore';
 
 export const { useValue: useEventEditorValue } = EventEditorStore;
 

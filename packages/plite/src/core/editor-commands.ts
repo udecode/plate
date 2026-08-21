@@ -1,26 +1,25 @@
 import type {
-  Descendant,
   ContentSlice,
-  Element,
-  EditorSelection,
+  EditorCommand,
+  EditorStateView,
+  EditorToggleBlockOptions,
   EditorToggleMarkOptions,
-  Location,
-  Node,
-  NodeTypeSelector,
   NodeTarget,
-  NodeProps,
-  Path,
-  Point,
-  Range,
   Value,
-} from '../interfaces';
+} from '../interfaces/editor';
+import type { Element } from '../interfaces/element';
+import type { Location } from '../interfaces/location';
 import {
+  type Descendant,
+  type Node,
   NodeApi,
-  PathApi,
-  PointApi,
-  RangeApi,
-  SelectionApi,
-} from '../interfaces';
+  type NodeProps,
+  type NodeTypeSelector,
+} from '../interfaces/node';
+import { type Path, PathApi } from '../interfaces/path';
+import { type Point, PointApi } from '../interfaces/point';
+import { type Range, RangeApi } from '../interfaces/range';
+import { type EditorSelection, SelectionApi } from '../interfaces/selection';
 import type {
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
@@ -34,15 +33,10 @@ import type {
   TextInsertFragmentOptions,
   TextInsertTextOptions,
 } from '../interfaces/transforms/text';
-import type { TextUnit } from '../types';
-import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
-import type {
-  EditorCommand,
-  EditorStateView,
-  EditorToggleBlockOptions,
-} from '../interfaces/editor';
+import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
 import { areEditorJsonValuesEqual } from './value-codec';
 
 type CommandStateView = EditorStateView<Value, any>;

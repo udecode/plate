@@ -1,3 +1,15 @@
+import type {
+  Editor,
+  EditorStateViewProvider,
+  Range,
+  Value,
+} from '@platejs/plite';
+import {
+  type PliteDecorationSource,
+  type ReactEditor,
+  usePliteRangeDecorationSource,
+} from '@platejs/plite-react';
+import { getInstalledEditorExtension } from '@platejs/plite/internal';
 import {
   useCallback,
   useEffect,
@@ -6,18 +18,6 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import type {
-  Editor,
-  EditorStateViewProvider,
-  Range,
-  Value,
-} from '@platejs/plite';
-import { getInstalledEditorExtension } from '@platejs/plite/internal';
-import {
-  type PliteDecorationSource,
-  type ReactEditor,
-  usePliteRangeDecorationSource,
-} from '@platejs/plite-react';
 
 import type {
   YjsProviderStatus,

@@ -1,3 +1,5 @@
+import type { NamedRootKey, NodeKey } from '../../interfaces/editor';
+import { assertEditorJsonValue } from '../value-codec';
 import {
   classifyRootChange,
   type DocumentChangeRootClassification,
@@ -18,8 +20,6 @@ import {
   type JsonNode,
   type JsonPoint,
 } from './tokens';
-import type { NamedRootKey, NodeKey } from '../../interfaces/editor';
-import { assertEditorJsonValue } from '../value-codec';
 
 export type DocumentChangedRange = Readonly<{
   fromAfter: number;
@@ -194,6 +194,7 @@ export const freezeReadonlyMap = <K, V>(
 ): ReadonlyMap<K, V> => {
   const source = new Map(entries);
   Object.freeze(source);
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let view!: ReadonlyMap<K, V>;
 
   view = new Proxy(source, {
@@ -234,6 +235,7 @@ export const freezeReadonlyMap = <K, V>(
 export const freezeReadonlySet = <T>(values: Iterable<T>): ReadonlySet<T> => {
   const source = new Set(values);
   Object.freeze(source);
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let view!: ReadonlySet<T>;
 
   view = new Proxy(source, {
@@ -409,7 +411,11 @@ export type DocumentChangeMapPositionOptions<TRoot extends string = string> =
     track?: TrackMode;
   }>;
 
-/** @internal Read one change through the private primary-root sentinel. */
+/**
+ * Read one change through the private primary-root sentinel.
+ *
+ * @internal
+ */
 export const getInternalDocumentRootChange = (
   change: DocumentChange,
   root: string
@@ -419,7 +425,11 @@ export const getInternalDocumentRootChange = (
   return root === 'main' ? (state.primary ?? undefined) : state.roots.get(root);
 };
 
-/** @internal Read one classification through the private primary-root sentinel. */
+/**
+ * Read one classification through the private primary-root sentinel.
+ *
+ * @internal
+ */
 export const getInternalDocumentChangeClassification = (
   change: DocumentChange,
   root: string
@@ -428,7 +438,11 @@ export const getInternalDocumentChangeClassification = (
     ? (change.primaryClassification ?? undefined)
     : change.rootClassifications.get(root);
 
-/** @internal Map through an internal sentinel-keyed root. */
+/**
+ * Map through an internal sentinel-keyed root.
+ *
+ * @internal
+ */
 export const mapInternalDocumentChangePosition = (
   change: DocumentChange,
   root: string,
@@ -442,19 +456,31 @@ export const mapInternalDocumentChangePosition = (
     track,
   });
 
-/** @internal Test whether one internal root has a compact change. */
+/**
+ * Test whether one internal root has a compact change.
+ *
+ * @internal
+ */
 export const hasInternalDocumentChangeRoot = (
   change: DocumentChange,
   root: string
 ) => getInternalDocumentRootChange(change, root) !== undefined;
 
-/** @internal List changed roots without exposing their compact changes. */
+/**
+ * List changed roots without exposing their compact changes.
+ *
+ * @internal
+ */
 export const getInternalDocumentChangeRootKeys = (change: DocumentChange) =>
   Object.freeze(
     [...getInternalDocumentChangeEntries(change)].map(([root]) => root)
   );
 
-/** @internal Read changed token ranges without exposing compact sections. */
+/**
+ * Read changed token ranges without exposing compact sections.
+ *
+ * @internal
+ */
 export const getInternalDocumentChangeRanges = (
   change: DocumentChange,
   root: string
@@ -468,7 +494,11 @@ export const getInternalDocumentChangeRanges = (
   return Object.freeze(ranges);
 };
 
-/** @internal Map one JSON point between transaction snapshots. */
+/**
+ * Map one JSON point between transaction snapshots.
+ *
+ * @internal
+ */
 export const mapInternalDocumentChangePoint = (
   change: DocumentChange,
   before: JsonEditorValue,
@@ -497,7 +527,12 @@ export const mapInternalDocumentChangePoint = (
   }
 };
 
-/** @internal Iterate changes through the private primary-root sentinel. */
+/**
+ * Iterate changes through the private primary-root sentinel.
+ *
+ * @yields {readonly [string, RootChange]} The root identifier and its root change.
+ * @internal
+ */
 export function* getInternalDocumentChangeEntries(
   change: DocumentChange
 ): Generator<readonly [string, RootChange]> {
@@ -507,7 +542,12 @@ export function* getInternalDocumentChangeEntries(
   yield* state.roots;
 }
 
-/** @internal Iterate classifications through the private primary-root sentinel. */
+/**
+ * Iterate classifications through the private primary-root sentinel.
+ *
+ * @yields {readonly [string, DocumentChangeRootClassification]} The root identifier and its classification.
+ * @internal
+ */
 export function* getInternalDocumentChangeClassificationEntries(
   change: DocumentChange
 ): Generator<readonly [string, DocumentChangeRootClassification]> {
@@ -517,7 +557,11 @@ export function* getInternalDocumentChangeClassificationEntries(
   yield* change.rootClassifications;
 }
 
-/** @internal Construct from an internal sentinel-keyed root map. */
+/**
+ * Construct from an internal sentinel-keyed root map.
+ *
+ * @internal
+ */
 export const createInternalDocumentChange = (
   changes: ReadonlyMap<string, RootChange>,
   options: Readonly<{
@@ -527,7 +571,7 @@ export const createInternalDocumentChange = (
   }> = {}
 ) => {
   const roots = new Map(changes);
-  const classifications = new Map(options.classifications ?? []);
+  const classifications = new Map(options.classifications);
   const primary = roots.get('main') ?? null;
   const primaryClassification = classifications.get('main') ?? null;
 
@@ -544,7 +588,11 @@ export const createInternalDocumentChange = (
   });
 };
 
-/** @internal Carry target-document runtime identities inside inserted node slices. */
+/**
+ * Carry target-document runtime identities inside inserted node slices.
+ *
+ * @internal
+ */
 export const bindDocumentChangeNodeKeys = (
   change: DocumentChange,
   target: JsonEditorValue,
@@ -579,8 +627,10 @@ export type InternalRootChangeSection = Readonly<{
 }>;
 
 /**
- * @internal Build one sparse root change without exposing the compact root
+ * Build one sparse root change without exposing the compact root
  * algebra to sibling packages.
+ *
+ * @internal
  */
 export const createInternalRootChangeFromSections = (
   root: string,
@@ -1246,7 +1296,11 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
   return nextValue as T;
 };
 
-/** @internal Apply a change whose indexed results are already immutable. */
+/**
+ * Apply a change whose indexed results are already immutable.
+ *
+ * @internal
+ */
 export const applyDocumentChangeWithIndexes = <T extends JsonEditorValue>(
   change: DocumentChange,
   value: T,

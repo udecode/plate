@@ -32,6 +32,7 @@ import {
 import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
+  encodeNodes,
   getPreparedDocumentSlice,
   type JsonEditorValue,
   type JsonNode,
@@ -126,6 +127,16 @@ export type CompiledSliceFitter<V extends Value = Value> = Readonly<{
   fitDocument: <TValue extends Value>(
     input: EditorDocumentValue<TValue>
   ) => EditorDocumentValue<V>;
+  fitDocumentWithSelection: <TValue extends Value>(
+    input: EditorDocumentValue<TValue>,
+    options: Readonly<{
+      root: RootKey;
+      selection: NonNullable<Selection>;
+    }>
+  ) => Readonly<{
+    document: EditorDocumentValue<V>;
+    selection: NonNullable<Selection>;
+  }>;
   findWrapping: (
     parent: Element,
     child: Descendant
@@ -221,7 +232,11 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
 
 export type SliceFitterDelegate<V extends Value = Value> = Pick<
   CompiledSliceFitter<V>,
-  'fit' | 'fitContent' | 'fitDocument' | 'findWrapping'
+  | 'fit'
+  | 'fitContent'
+  | 'fitDocument'
+  | 'fitDocumentWithSelection'
+  | 'findWrapping'
 >;
 
 export const compileSliceFitter = <V extends Value>(
@@ -337,7 +352,7 @@ export const compileSliceFitter = <V extends Value>(
     options: RuntimeTargetOptions = {}
   ): readonly Descendant[] | null => {
     const created: Element[] = [];
-    let ancestors = options.ancestors ?? [];
+    const ancestors = [...(options.ancestors ?? [])];
 
     for (const type of wrappers) {
       const wrapper = createDeclarativeAndFill(
@@ -352,7 +367,7 @@ export const compileSliceFitter = <V extends Value>(
       );
 
       created.push(wrapper);
-      ancestors = [wrapper, ...ancestors];
+      ancestors.unshift(wrapper);
     }
 
     let children = [...source];
@@ -729,9 +744,15 @@ export const compileSliceFitter = <V extends Value>(
       'Detached slice-fit document'
     );
     const builder = new ChangeDraft(virtualValue, {
-      construct: ({ after, change }, preparation) =>
+      construct: (
+        { after, before, change, indexedAfter, indexedBefore },
+        preparation
+      ) =>
         constructCanonicalDocumentChange(getEditor(), after, change, {
+          before,
           fitPreparation: preparation,
+          indexedAfter,
+          indexedBefore,
           schema: api,
         }),
       indexConstructedRoot,
@@ -1828,13 +1849,11 @@ export const compileSliceFitter = <V extends Value>(
         document
           .openContextAt(position)
           .filter(({ from, to }) => from < position && position < to)
-          .map(({ from }) => {
-            const token = document.slice(from, from + 1).tokens[0];
+          .map(({ path }) => {
+            const token = encodeNodes([document.node(path)]).slice.tokens[0];
 
             if (token?.kind !== 'open') {
-              throw new Error(
-                `Missing open token at document position ${from}.`
-              );
+              throw new Error(`Missing open token at document path [${path}].`);
             }
 
             return token;
@@ -1936,8 +1955,9 @@ export const compileSliceFitter = <V extends Value>(
           !firstSourceBlock ||
           !ElementApi.isElement(firstSourceBlock) ||
           !rootCanContain(firstSourceBlock)
-        )
+        ) {
           return null;
+        }
         const sourceBlocks = variant.content as readonly Element[];
         const targetType = getElementType(targetBlock);
         const targetElementKeys = Object.keys(targetBlock).filter(
@@ -2352,12 +2372,12 @@ export const compileSliceFitter = <V extends Value>(
           inputSlice.openEnd === 0 &&
           Boolean(
             targetText &&
-              NodeApi.isText(targetText) &&
-              (targetText.text
-                ? sourceSharesTargetContent
-                  ? start.offset > 0 || end.offset < targetText.text.length
-                  : start.offset > 0 && end.offset < targetText.text.length
-                : sourceSharesTargetContent && start.path.length > 2)
+            NodeApi.isText(targetText) &&
+            (targetText.text
+              ? sourceSharesTargetContent
+                ? start.offset > 0 || end.offset < targetText.text.length
+                : start.offset > 0 && end.offset < targetText.text.length
+              : sourceSharesTargetContent && start.path.length > 2)
           )));
     const preferOpenVariants =
       !preserveClosedInlineBoundary &&
@@ -2467,8 +2487,8 @@ export const compileSliceFitter = <V extends Value>(
 
       return Boolean(
         fitted &&
-          fitted.length === nextChildren.length &&
-          fitted.every((child, index) => child === nextChildren[index])
+        fitted.length === nextChildren.length &&
+        fitted.every((child, index) => child === nextChildren[index])
       );
     };
     const materializeCandidate = (
@@ -2797,15 +2817,13 @@ export const compileSliceFitter = <V extends Value>(
               selectionOffset: insert.length,
             }))
           : inserts
-      ).map(
-        ({ insert, selectionOffset }): SliceFitCandidate => ({
-          cost,
-          from: boundary.from,
-          insert,
-          selectionOffset,
-          to: boundary.to,
-        })
-      );
+      ).map(({ insert, selectionOffset }): SliceFitCandidate => ({
+        cost,
+        from: boundary.from,
+        insert,
+        selectionOffset,
+        to: boundary.to,
+      }));
     };
 
     const directLocalCandidate =
@@ -2944,9 +2962,7 @@ export const compileSliceFitter = <V extends Value>(
 
     const candidateChange = createInternalDocumentChange(
       rootChange.empty ? new Map() : new Map([[root, rootChange]]),
-      {
-        ...(missingRoot ? { createRoots: [root] } : {}),
-      }
+      missingRoot ? { createRoots: [root] } : {}
     );
     const rootInputMatchesTarget =
       options.target.kind === 'root' &&
@@ -3121,9 +3137,13 @@ export const compileSliceFitter = <V extends Value>(
     return true;
   };
 
-  const fitDocument = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>
-  ): EditorDocumentValue<V> => {
+  const fitDocumentInput = <TValue extends Value>(
+    input: EditorDocumentValue<TValue>,
+    selectionInput?: Readonly<{
+      root: RootKey;
+      selection: NonNullable<Selection>;
+    }>
+  ) => {
     assertEditorJsonValue(input, 'Editor schema document');
 
     const inputRoots = input.roots ?? {};
@@ -3132,9 +3152,15 @@ export const compileSliceFitter = <V extends Value>(
       ...(input.meta !== undefined ? { meta: input.meta } : {}),
     }) as JsonEditorValue;
     const builder = new ChangeDraft(initial, {
-      construct: ({ after, change }, preparation) =>
+      construct: (
+        { after, before, change, indexedAfter, indexedBefore },
+        preparation
+      ) =>
         constructCanonicalDocumentChange(getEditor(), after, change, {
+          before,
           fitPreparation: preparation,
+          indexedAfter,
+          indexedBefore,
           schema: api,
         }),
       indexConstructedRoot,
@@ -3151,8 +3177,9 @@ export const compileSliceFitter = <V extends Value>(
     ]);
 
     for (const root of getVocabulary().rootNames) {
-      if (getRootContent(root, input)?.min)
+      if (getRootContent(root, input)?.min) {
         roots.set(root, inputRoots[root] ?? []);
+      }
     }
 
     const collectProjectedRoots = (children: readonly Descendant[]) => {
@@ -3171,10 +3198,21 @@ export const compileSliceFitter = <V extends Value>(
       collectProjectedRoots(children);
     }
 
+    let mappedSelection: NonNullable<Selection> | undefined;
     const fitRoot = (root: string, children: readonly Descendant[]) => {
+      const mapsSelection = selectionInput?.root === root;
       const fitted = fit(ContentSliceValue.closed(children), {
+        apply: mapsSelection
+          ? (_step, selection) => {
+              mappedSelection = selection;
+            }
+          : undefined,
         builder,
-        target: { kind: 'root', root },
+        target: {
+          kind: 'root',
+          root,
+          ...(mapsSelection ? { selection: selectionInput.selection } : {}),
+        },
       });
 
       if (!fitted) {
@@ -3197,13 +3235,39 @@ export const compileSliceFitter = <V extends Value>(
     const document = builder.value as EditorDocumentValue<V>;
 
     validateDocument(document);
-    return document;
+    if (selectionInput && !mappedSelection) {
+      throw new Error(
+        'Initial selection cannot be mapped through schema fitting.'
+      );
+    }
+
+    return Object.freeze({ document, selection: mappedSelection });
+  };
+
+  const fitDocument = <TValue extends Value>(
+    input: EditorDocumentValue<TValue>
+  ): EditorDocumentValue<V> => fitDocumentInput(input).document;
+
+  const fitDocumentWithSelection = <TValue extends Value>(
+    input: EditorDocumentValue<TValue>,
+    options: Readonly<{
+      root: RootKey;
+      selection: NonNullable<Selection>;
+    }>
+  ) => {
+    const fitted = fitDocumentInput(input, options);
+
+    return Object.freeze({
+      document: fitted.document,
+      selection: fitted.selection!,
+    });
   };
 
   return Object.freeze({
     fit,
     fitContent,
     fitDocument,
+    fitDocumentWithSelection,
     findWrapping,
     revision,
     schema,
@@ -3231,6 +3295,8 @@ export const createCompiledSliceFitterDelegate = <V extends Value>(
     fit: (slice, options) => getCompiled().fit(slice, options),
     fitContent: (slice, options) => getCompiled().fitContent(slice, options),
     fitDocument: (input) => getCompiled().fitDocument(input),
+    fitDocumentWithSelection: (input, options) =>
+      getCompiled().fitDocumentWithSelection(input, options),
     findWrapping: (parent, child) => getCompiled().findWrapping(parent, child),
   });
 };

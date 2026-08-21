@@ -1,9 +1,9 @@
-import * as React from 'react';
-
-import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import type { CodeBlockElement } from '@platejs/code-block';
+import { render } from '@testing-library/react';
 import type { PlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 const useReadOnlyMock = mock(() => true);
 const mockPlugin = (name: string) => ({

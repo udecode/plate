@@ -1,14 +1,13 @@
+import { type Element, type Path, PathApi, type Text } from '@platejs/plite';
 import React from 'react';
 
-import { type Element, type Path, PathApi, type Text } from '@platejs/plite';
-
-import type { NavigationFeedbackActiveTarget } from './types';
-import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 import {
   useEditor,
   useEditorPluginStore,
   useElementContext,
 } from '../../stores';
+import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
+import type { NavigationFeedbackActiveTarget } from './types';
 
 type NavigationHighlightTarget = Path | Element | Text | null | undefined;
 

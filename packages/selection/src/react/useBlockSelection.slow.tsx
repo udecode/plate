@@ -1,7 +1,6 @@
-import React from 'react';
-
-import { render } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
+import { render } from '@testing-library/react';
+import React from 'react';
 
 const useEditorPluginMock = mock();
 const useEditorMock = mock();

@@ -1,9 +1,13 @@
+import { createCommandDispatch } from './core/command-registry';
+import { getEditorCommitSnapshot } from './core/commit';
+import {
+  createEditorViewExtensionApis,
+  extendEditor,
+} from './core/editor-extension';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
-import { createCommandDispatch } from './core/command-registry';
-import { getEditorCommitSnapshot } from './core/commit';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -16,9 +20,10 @@ import {
   inheritExtensionRegistry,
 } from './core/extension-registry';
 import {
-  createEditorViewExtensionApis,
-  extendEditor,
-} from './core/editor-extension';
+  MAIN_ROOT_KEY,
+  toInternalRoot,
+  toPublicRoot,
+} from './core/public-root';
 import {
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -66,18 +71,13 @@ import type {
   SnapshotInput,
   Value,
 } from './interfaces/editor';
+import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { Location } from './interfaces/location';
 import type { Ancestor, NodeEntry } from './interfaces/node';
 import { RangeApi } from './interfaces/range';
-import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeUnsetNodesOptions } from './interfaces/transforms/node';
 import { withImplicitRangeRoot } from './internal/root-location';
-import {
-  MAIN_ROOT_KEY,
-  toInternalRoot,
-  toPublicRoot,
-} from './core/public-root';
 
 type ViewState = {
   composing: boolean;
@@ -339,6 +339,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   state: T,
   viewState: ViewState
 ): T & { view: EditorStateViewApi } => {
+  // oxlint-disable-next-line prefer-const -- View methods close over the frozen state assigned after construction.
   let scopedState!: T & { view: EditorStateViewApi };
   const selection = () =>
     withViewSelection(
@@ -528,7 +529,7 @@ const withViewTransaction = <V extends Value>(
           : {
               ...value,
               roots: {
-                ...(value.roots ?? {}),
+                ...value.roots,
                 [viewState.root]: input.children,
               },
             }),

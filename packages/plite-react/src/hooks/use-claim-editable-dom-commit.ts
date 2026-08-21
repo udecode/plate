@@ -27,8 +27,10 @@ export const useEditableDOMHostFact = <T>(
 /**
  * Claim DOM mutations produced by a nested React commit.
  *
- * @internal Plate render boundaries use this when an external store can update
+ * Plate render boundaries use this when an external store can update
  * a descendant without publishing an editor commit.
+ *
+ * @internal
  */
 export const useClaimEditableDOMCommit = () => {
   const runtime = useContext(EditableDOMRuntimeContext);

@@ -1,6 +1,6 @@
 ---
-description: 'Review performance lanes with GitHub-scale tactics not owned by Vercel React rules: cohort segmentation, repeated-unit budgets, interaction-level INP, memory tagging, degradation contracts, browser trace proof, and production dashboards.'
-argument-hint: '[scope | benchmark | plan path]'
+description: 'Review performance plans with GitHub-scale tactics not owned by Vercel React rules: cohort segmentation, repeated-unit budgets, interaction-level INP, memory tagging, degradation contracts, browser trace proof, and production dashboards. This is a review lens; use benchmark to measure, diagnose, compare, fix, and rerun performance.'
+argument-hint: '[scope | plan path]'
 disable-model-invocation: true
 name: performance
 metadata:
@@ -14,6 +14,11 @@ Handle $ARGUMENTS.
 
 Use this when a Plate plan claims speed, responsiveness, large-document readiness, or production performance. This skill owns the review shape around cohorts, repeated-unit budgets, p95/p99 interactions, memory/DOM tags, degradation contracts, native editor behavior, trace proof, and RUM gaps. It delegates React/Next micro-tactics, effect law, and complexity analysis to the skills that already own them.
 
+This is a review lens only. It does not discover or order benchmark lanes,
+compare refs or editors, execute targets, diagnose a timing cause, optimize
+runtime code, or run fix/rerun loops. Route those jobs to `benchmark`, which
+loads only the relevant rules from this lens.
+
 ## Owner Map
 
 | Source | Owns | Use in this pass |
@@ -21,6 +26,7 @@ Use this when a Plate plan claims speed, responsiveness, large-document readines
 | `vercel-react-best-practices` | React/Next waterfalls, bundles, effects, subscriptions, rerenders, rendering, JS micro-opts, React runtime primitives | Load exact rule files for local micro-tactics. For Plate component shape and public ownership, route to `plate-ui`; do not paste the whole Vercel catalog into the plan. |
 | Chrome DevTools, Lighthouse, web.dev docs | Browser traces, Core Web Vitals, network chains, layout shifts, long tasks | Use when load, hydration, layout, or input latency needs browser proof. |
 | `performance` | Big-O, cache shape, memory pressure, 10x/100x/1000x projections, cohorts, repeated-unit budgets, p95/p99 interactions, memory tags, degradation, native behavior proof, RUM/dashboard gaps | Record the final performance-lane verdict. |
+| `benchmark` | ordered lane discovery, baseline/editor comparison, measurement, causal diagnosis, fix/rerun/resume, and benchmark artifacts | Route execution there; do not copy its loop here. |
 
 Rule: if the plan only says "use React best practices", "avoid O(n)", or "seems fast locally", it is not done.
 

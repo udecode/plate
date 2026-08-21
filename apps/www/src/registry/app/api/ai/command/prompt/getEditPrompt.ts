@@ -1,8 +1,8 @@
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { AIChatRequestRefs } from '@platejs/ai/react';
 import type { MarkdownEditor } from '@platejs/markdown';
-
 import dedent from 'dedent';
+
+import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
 import {
   addSelection,
@@ -14,9 +14,9 @@ import {
   isSelectionInTable,
   isSingleCellSelection,
 } from '../utils';
-
-import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
 import { commonEditRules } from './common';
+import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
+
 function buildEditMultiBlockPrompt(
   editor: MarkdownEditor,
   messages: ChatMessage[]

@@ -43,9 +43,12 @@ export const createTreeIndexChildren = (
   }
 
   return {
-    children: Object.freeze([...children]),
+    // Tree indexes are package-private persistent values. Every caller owns
+    // the array it supplies and copies before editing, so freezing and copying
+    // the same wide index again only adds O(n) publication work.
+    children,
     length,
-    offsets: Object.freeze(offsets),
+    offsets,
   };
 };
 

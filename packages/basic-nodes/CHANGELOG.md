@@ -4,9 +4,7 @@
 
 ### Major Changes
 
-- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Store blockquotes as container blocks with block children.
-  Lift every selected nested quoted block one level on `Shift+Tab`.
-  Reset headings to paragraphs on `Backspace` at block start before any merge.
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Store blockquotes as container blocks with block children. Lift every selected nested quoted block one level on `Shift+Tab`. Reset headings to paragraphs on `Backspace` at block start before any merge.
 
   **Migration:**
 
@@ -79,25 +77,25 @@
     - Configure shortcuts manually via the `shortcuts` field in plugin configuration.
     - Example (Block Plugins):
       ```ts
-      H1Plugin.configure({ shortcuts: { toggle: { keys: "mod+alt+1" } } });
+      H1Plugin.configure({ shortcuts: { toggle: { keys: 'mod+alt+1' } } });
       BlockquotePlugin.configure({
-        shortcuts: { toggle: { keys: "mod+shift+period" } },
+        shortcuts: { toggle: { keys: 'mod+shift+period' } },
       });
       ```
     - Example (Mark Plugins):
       ```ts
-      CodePlugin.configure({ shortcuts: { toggle: { keys: "mod+e" } } });
+      CodePlugin.configure({ shortcuts: { toggle: { keys: 'mod+e' } } });
       StrikethroughPlugin.configure({
-        shortcuts: { toggle: { keys: "mod+shift+x" } },
+        shortcuts: { toggle: { keys: 'mod+shift+x' } },
       });
       SubscriptPlugin.configure({
-        shortcuts: { toggle: { keys: "mod+comma" } },
+        shortcuts: { toggle: { keys: 'mod+comma' } },
       });
       SuperscriptPlugin.configure({
-        shortcuts: { toggle: { keys: "mod+period" } },
+        shortcuts: { toggle: { keys: 'mod+period' } },
       });
       HighlightPlugin.configure({
-        shortcuts: { toggle: { keys: "mod+shift+h" } },
+        shortcuts: { toggle: { keys: 'mod+shift+h' } },
       });
       ```
 

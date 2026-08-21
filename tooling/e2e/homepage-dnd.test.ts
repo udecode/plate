@@ -21,51 +21,73 @@ const recordRuntimeErrors = (page: Page) => {
   };
 };
 
-const getTopLevelBlockIds = (page: Page) =>
-  page.locator('[data-plite-path]').evaluateAll((elements) =>
-    elements
-      .filter((element) => {
-        const path = element.getAttribute('data-plite-path');
-
-        return (
-          !!path &&
-          [...path].every((character) => character >= '0' && character <= '9')
-        );
-      })
-      .map((element) => element.getAttribute('data-block-id'))
-  );
-
 test.describe('homepage block drag', () => {
   test('moves a block without breaking follow-up editing', async ({ page }) => {
     const runtimeErrors = recordRuntimeErrors(page);
     const editor = page.locator(
       '[data-plite-editor="true"][contenteditable="true"]'
     );
-    const welcomeBlock = page.locator('[data-block-id="static-0001"]');
-    const initialIntroBlock = page.locator('[data-plite-path="1"]');
+    const welcomeBlock = editor
+      .locator('[data-plite-node="element"][data-plite-path]:visible')
+      .filter({ hasText: 'Welcome to the Plate Playground!' })
+      .first();
+    const introBlock = editor
+      .locator('[data-plite-node="element"][data-plite-path]:visible')
+      .filter({
+        hasText: 'Experience a modern rich-text editor built with',
+      })
+      .first();
 
     try {
       await page.goto('/');
       await expect(editor).toHaveCount(1);
       await expect(welcomeBlock).toHaveText('Welcome to the Plate Playground!');
-      await expect(initialIntroBlock).toContainText(
+      await expect(introBlock).toContainText(
         'Experience a modern rich-text editor built with'
       );
-      const introBlockId =
-        await initialIntroBlock.getAttribute('data-block-id');
+      await page.waitForLoadState('networkidle');
 
-      expect(introBlockId).not.toBeNull();
-      const introBlock = page.locator(`[data-block-id="${introBlockId}"]`);
-
-      await welcomeBlock.hover();
-      const dragHandle = page
-        .locator('.plite-blockWrapper')
-        .filter({ has: welcomeBlock })
+      const dragHandle = welcomeBlock
         .locator('..')
-        .getByRole('button', { name: 'Drag block' });
+        .locator('..')
+        .locator('..')
+        .locator('[aria-label="Drag block"]');
+
+      await expect(dragHandle).not.toHaveAttribute('draggable', 'true');
+      await welcomeBlock.hover();
+      await expect(dragHandle).toBeVisible();
+      await dragHandle.hover();
+      await expect(dragHandle).toHaveAttribute('draggable', 'true');
+      await welcomeBlock.click();
+
+      const dragHandleBox = await dragHandle.boundingBox();
       const introBox = await introBlock.boundingBox();
 
+      if (!dragHandleBox) throw new Error('Expected a visible drag handle');
       if (!introBox) throw new Error('Expected a visible intro block');
+
+      await page.mouse.move(
+        dragHandleBox.x + dragHandleBox.width / 2,
+        dragHandleBox.y + dragHandleBox.height / 2
+      );
+      await page.mouse.down();
+      try {
+        await expect
+          .poll(() =>
+            editor.evaluate((element) => {
+              const selection = document.getSelection();
+
+              return (
+                !!selection?.isCollapsed &&
+                !!selection.anchorNode &&
+                element.contains(selection.anchorNode)
+              );
+            })
+          )
+          .toBe(false);
+      } finally {
+        await page.mouse.up();
+      }
 
       await dragHandle.dragTo(introBlock, {
         targetPosition: {
@@ -75,8 +97,24 @@ test.describe('homepage block drag', () => {
       });
 
       await expect
-        .poll(async () => (await getTopLevelBlockIds(page)).slice(0, 2))
-        .toEqual([introBlockId, 'static-0001']);
+        .poll(async () => ({
+          intro: await introBlock.getAttribute('data-plite-path'),
+          welcome: await welcomeBlock.getAttribute('data-plite-path'),
+        }))
+        .toEqual({ intro: '0', welcome: '1' });
+      await expect
+        .poll(() =>
+          editor.evaluate((element) => {
+            const selection = document.getSelection();
+
+            return (
+              !!selection?.isCollapsed &&
+              !!selection.anchorNode &&
+              element.contains(selection.anchorNode)
+            );
+          })
+        )
+        .toBe(false);
       runtimeErrors.assertNone();
 
       await welcomeBlock.click();

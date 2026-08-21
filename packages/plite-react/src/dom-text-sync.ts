@@ -1,4 +1,5 @@
 import type { Text } from '@platejs/plite';
+
 import type { PliteProjectionSlice } from './projection-store';
 
 export type DOMTextSyncOptOutReason =
@@ -27,7 +28,11 @@ const DOM_TEXT_SYNC_RENDERER_CAPABILITY = Symbol.for(
   '@platejs/plite-react/dom-text-sync-renderer-capability'
 );
 
-/** @internal Publish renderer-owned DOM text-sync capability. */
+/**
+ * Publish renderer-owned DOM text-sync capability.
+ *
+ * @internal
+ */
 export const setDOMTextSyncRendererCapability = <TRenderer extends object>(
   renderer: TRenderer,
   resolve: (context: DOMTextSyncRendererCapabilityContext) => boolean

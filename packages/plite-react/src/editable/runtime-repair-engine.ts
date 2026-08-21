@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useReducer, useRef } from 'react';
 import { SelectionApi, type Selection } from '@platejs/plite';
 import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
+import { useCallback, useMemo, useReducer, useRef } from 'react';
+
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor } from '../plugin/react-editor';
 import { createDOMRepairQueue } from './dom-repair-queue';

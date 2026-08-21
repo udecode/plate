@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, type Element, NodeApi } from '@platejs/plite';
 import {
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
@@ -13,9 +15,9 @@ import {
   replace as editorReplace,
   runTrustedUpdate,
   string as editorString,
+  setEditorTargetRuntime,
 } from '@platejs/plite/internal';
-import { createEditor, type Element, NodeApi } from '@platejs/plite';
-import { setEditorTargetRuntime } from '@platejs/plite/internal';
+
 import { extendTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({
@@ -698,7 +700,7 @@ describe('primitive method runtime contract', () => {
       },
     });
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertBreak(editor);
     });
 
@@ -726,7 +728,7 @@ describe('primitive method runtime contract', () => {
       },
     });
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorDeleteBackward(editor, { unit: 'character' });
     });
 
@@ -753,7 +755,7 @@ describe('primitive method runtime contract', () => {
       },
     });
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorDeleteForward(editor, { unit: 'character' });
     });
 
@@ -780,7 +782,7 @@ describe('primitive method runtime contract', () => {
       },
     });
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorDeleteFragment(editor);
     });
 

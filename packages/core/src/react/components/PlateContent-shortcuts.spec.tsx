@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { fireEvent, render } from '@testing-library/react';
+import React from 'react';
 
 import { defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';

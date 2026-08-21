@@ -7,7 +7,7 @@ export const revalidate = false;
 export const dynamic = 'force-static';
 
 export async function GET() {
-  const source = await getPlateLLMSource();
+  const source = getPlateLLMSource();
 
   return new NextResponse(
     await getPlateLLMFullMarkdown(source.getPages('en')),

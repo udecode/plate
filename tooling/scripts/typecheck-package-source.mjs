@@ -18,7 +18,7 @@ if (!configArgument) {
 
 const packageConfig = path.resolve(configArgument);
 const packageRoot = path.dirname(packageConfig);
-const packageConfigJson = JSON.parse(readFileSync(packageConfig, 'utf8'));
+const packageConfigJson = JSON.parse(readFileSync(packageConfig, 'utf-8'));
 const cacheDirectory = path.join(
   repoRoot,
   'node_modules/.cache/plate-source-typecheck'
@@ -62,8 +62,10 @@ mkdirSync(cacheDirectory, { recursive: true });
 let currentContents;
 
 try {
-  currentContents = readFileSync(sourceConfig, 'utf8');
-} catch {}
+  currentContents = readFileSync(sourceConfig, 'utf-8');
+} catch {
+  // A missing source config is created from the canonical contents below.
+}
 
 if (currentContents !== configContents) {
   writeFileSync(sourceConfig, configContents);

@@ -320,7 +320,7 @@ export function MobileLabClient() {
 
   return (
     <main
-      className="mx-auto flex min-w-0 max-w-5xl flex-col gap-6 px-4 py-6"
+      className="mx-auto flex max-w-5xl min-w-0 flex-col gap-6 px-4 py-6"
       data-plite-mobile-lab
     >
       <header className="space-y-2">

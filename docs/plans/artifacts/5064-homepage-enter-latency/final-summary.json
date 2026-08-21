@@ -1,0 +1,40 @@
+{
+  "candidate": {
+    "baseRef": "1fb72c581095f23ddba3f597f41e8b10608283ef",
+    "sourceFingerprint": "f8d6e785e7dbb3b9200ec2561bf9abf1262976b031c18bc4c06841486da77735",
+    "mutationMeanMedianMs": 67.12500000149012,
+    "mutationP50MedianMs": 68.29999999701977,
+    "mutationP95MedianMs": 85,
+    "secondPaintMeanMedianMs": 64.79290000581136,
+    "secondPaintP50MedianMs": 63.70000000298023,
+    "secondPaintP95MedianMs": 85.00000000298041,
+    "packets": 5,
+    "samplesPerPacket": 20,
+    "longTasksTotal": 1,
+    "runtimeErrorsTotal": 0
+  },
+  "main": {
+    "ref": "2f87593f95a1ff2e931cd42fcf73f052b1d0db41",
+    "recentMutationMeanMs": 60.125,
+    "recentMutationP50Ms": 56.1,
+    "recentMutationP95Ms": 69.7,
+    "recentSecondPaintMeanMs": 58.85,
+    "recentSecondPaintP50Ms": 55.7,
+    "recentSecondPaintP95Ms": 71.8,
+    "observedLongTasksPerPacket": "5-8",
+    "runtimeErrors": 0
+  },
+  "preFix": {
+    "mutationMeanMs": 330.00500000081956,
+    "mutationP95Ms": 376.29999999701977,
+    "secondPaintMeanMs": 370.2277000020117,
+    "secondPaintP95Ms": 417.20000000148866
+  },
+  "correctness": {
+    "browserRuns": 5,
+    "browserCasesPerRun": 4,
+    "passed": 20,
+    "failed": 0,
+    "retries": 0
+  }
+}

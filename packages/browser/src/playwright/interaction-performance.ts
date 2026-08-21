@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 
 /** One trusted printable-key timing row captured from the editable root. */
@@ -142,9 +143,7 @@ export const measurePliteTrustedTyping = async ({
           path,
         };
       };
-      const schedulePaintBoundary = (
-        row: (typeof rows)[number]
-      ) => {
+      const schedulePaintBoundary = (row: (typeof rows)[number]) => {
         if (row.paintScheduled) return;
 
         row.paintScheduled = true;
@@ -185,8 +184,7 @@ export const measurePliteTrustedTyping = async ({
 
         row.inputOwnership = runtimeEvent?.ownership;
         row.runtimeTargetMatched = runtimeEvent != null;
-        row.domTextInsertionMatched =
-          row.observedDOMText === row.expectedText;
+        row.domTextInsertionMatched = row.observedDOMText === row.expectedText;
         row.modelTextInsertionMatched =
           modelText === row.expectedText &&
           selection?.kind === 'text' &&
@@ -246,8 +244,7 @@ export const measurePliteTrustedTyping = async ({
         const inputEvent = event as InputEvent;
         row.beforeInput = performance.now();
         row.beforeInputDataMatched =
-          inputEvent.inputType === 'insertText' &&
-          inputEvent.data === row.key;
+          inputEvent.inputType === 'insertText' && inputEvent.data === row.key;
         const selection = handle?.getSelection();
 
         row.modelSelectionMatched =
@@ -288,8 +285,7 @@ export const measurePliteTrustedTyping = async ({
         const inputEvent = event as InputEvent;
         row.input = performance.now();
         row.inputDataMatched =
-          inputEvent.inputType === 'insertText' &&
-          inputEvent.data === row.key;
+          inputEvent.inputType === 'insertText' && inputEvent.data === row.key;
         row.trustedInput = event.isTrusted;
       };
       const mutationObserver = new MutationObserver(() => {
@@ -312,9 +308,7 @@ export const measurePliteTrustedTyping = async ({
       ) {
         try {
           longTaskObserver = new PerformanceObserver((list) => {
-            longTasks.push(
-              ...list.getEntries().map((entry) => entry.duration)
-            );
+            longTasks.push(...list.getEntries().map((entry) => entry.duration));
           });
           longTaskObserver.observe({ entryTypes: ['longtask'] });
           longTasksSupported = true;
@@ -359,9 +353,8 @@ export const measurePliteTrustedTyping = async ({
                 return;
               }
               if (performance.now() - startedAt >= 1000) {
-                const renderProfile = (
-                  globalThis as Record<string, unknown>
-                ).__PLITE_REACT_RENDER_PROFILER_SNAPSHOT__ as
+                const renderProfile = (globalThis as Record<string, unknown>)
+                  .__PLITE_REACT_RENDER_PROFILER_SNAPSHOT__ as
                   | (() => unknown)
                   | undefined;
                 const domTextHosts = Array.from(
@@ -468,9 +461,7 @@ export const measurePliteTrustedTyping = async ({
     await root
       .evaluate((_element, traceKey) => {
         const target = globalThis as Record<string, unknown>;
-        const trace = target[traceKey] as
-          | { cleanup(): void }
-          | undefined;
+        const trace = target[traceKey] as { cleanup(): void } | undefined;
 
         trace?.cleanup();
         delete target[traceKey];

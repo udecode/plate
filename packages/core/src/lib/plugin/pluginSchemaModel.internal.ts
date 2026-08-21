@@ -76,10 +76,9 @@ type PluginDeclaredPropertyHandles<TDeclaration> =
         >
       >
       ? Readonly<{
-          [TLocalId in Extract<
-            keyof TProperties,
-            string
-          >]: SchemaPropertyHandle<
+          [
+            TLocalId in Extract<keyof TProperties, string>
+          ]: SchemaPropertyHandle<
             PluginDeclaredPropertyKey<TLocalId, TProperties[TLocalId]>,
             TProperties[TLocalId] extends Readonly<{
               value: infer TDescriptor extends PropertyValueDescriptor;
@@ -143,10 +142,9 @@ type PluginElementWritablePropertyEntries<
     }>;
   }>
     ? {
-        [TLocalId in Extract<
-          keyof TProperties,
-          string
-        >]: PluginWritablePropertyEntry<
+        [
+          TLocalId in Extract<keyof TProperties, string>
+        ]: PluginWritablePropertyEntry<
           C['name'],
           TLocalId,
           TLocalId,
@@ -170,10 +168,9 @@ type PluginDeclaredWritablePropertyEntries<
         >
       >
       ? {
-          [TLocalId in Extract<
-            keyof TProperties,
-            string
-          >]: PluginWritablePropertyEntry<
+          [
+            TLocalId in Extract<keyof TProperties, string>
+          ]: PluginWritablePropertyEntry<
             C['name'],
             TLocalId,
             PluginDeclaredPropertyKey<TLocalId, TProperties[TLocalId]>,
@@ -301,10 +298,9 @@ type PluginDeclarationProperties<TDeclaration> =
         Record<string, SchemaProperty | SchemaPropertyDefinition>
       >
       ? readonly {
-          [TLocalId in Extract<
-            keyof TProperties,
-            string
-          >]: TProperties[TLocalId] extends infer TProperty extends
+          [
+            TLocalId in Extract<keyof TProperties, string>
+          ]: TProperties[TLocalId] extends infer TProperty extends
             | SchemaProperty
             | SchemaPropertyDefinition
             ? TProperty extends SchemaProperty

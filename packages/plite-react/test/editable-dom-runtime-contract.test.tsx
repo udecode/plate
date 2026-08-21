@@ -1,9 +1,5 @@
 import type { Anchor, Point, Range } from '@platejs/plite';
 import {
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
-import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
   isDOMSyncMutation,
@@ -11,8 +7,13 @@ import {
   IS_NODE_MAP_DIRTY,
   markDOMSyncMutationTarget,
 } from '@platejs/plite-dom/internal';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { renderHook } from '@testing-library/react';
 import { type CompositionEvent, type ReactNode, StrictMode } from 'react';
+
 import {
   applyEditableCompositionEnd,
   applyEditableCompositionUpdate,
@@ -246,228 +247,236 @@ test.each([
   ['destroy', 'input-claimed'],
   ['setRoot', 'end-pending'],
   ['setRoot', 'input-claimed'],
-] as const)('%s flushes Plite %s composition work without publishing stale React work', (lifecycle, phase) => {
-  const editor = createReactEditor();
-  const runtime = new EditableDOMRuntime({ editor });
-  const firstRoot = document.createElement('div');
+] as const)(
+  '%s flushes Plite %s composition work without publishing stale React work',
+  (lifecycle, phase) => {
+    const editor = createReactEditor();
+    const runtime = new EditableDOMRuntime({ editor });
+    const firstRoot = document.createElement('div');
 
-  editorReplace(editor, {
-    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
-    selection: {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 3 },
-    },
-  });
-  const compositionSelection = editor.read((state) => state.selection());
-  const event = {
-    currentTarget: firstRoot,
-    data: '文',
-    isDefaultPrevented: () => false,
-    isPropagationStopped: () => false,
-    nativeEvent: { data: '文', isTrusted: true },
-    preventDefault: vi.fn(),
-    stopPropagation: vi.fn(),
-    target: {},
-  } as unknown as CompositionEvent<HTMLDivElement>;
-  const hasSelectableTarget = vi
-    .spyOn(ReactEditor, 'hasSelectableTarget')
-    .mockReturnValue(true);
-
-  runtime.setRoot(firstRoot);
-  runtime.connect();
-  runtime.inputController.state.activeIntent = 'composition';
-  beginEditableCompositionSession(runtime.inputController);
-  runtime.setComposing(true);
-
-  try {
-    applyEditableCompositionEnd({
-      androidInputManagerRef: { current: null },
-      editor,
-      event,
-      inputController: runtime.inputController,
-      runOwnedDOMMutation: (callback) =>
-        runtime.runOwnedDOMMutation('composition', callback),
-      scheduleTask: runtime.domPhaseScheduler.schedule,
-      setComposing: runtime.setComposing,
-    });
-
-    if (phase === 'input-claimed') {
-      if (!compositionSelection) {
-        throw new Error('expected composition selection');
-      }
-      queuePendingCompositionModelInput({
-        command: {
-          inputType: 'insertFromComposition',
-          kind: 'insert-text',
-          text: '文',
-        },
-        data: '文',
-        editor,
-        inputController: runtime.inputController,
-        inputType: 'insertFromComposition',
-        repair: { requestEditableRepair: vi.fn() },
-        selection: compositionSelection,
-        setComposing: runtime.setComposing,
-      });
-    }
-
-    expect(runtime.inputController.state.pendingCompositionEnd).toMatchObject({
-      ownership: 'plite',
-      phase,
-    });
-
-    if (lifecycle === 'destroy') {
-      runtime.destroy();
-    } else {
-      runtime.setRoot(document.createElement('div'));
-    }
-
-    expect(editorString(editor, [])).toBe('a文d');
-    expect(runtime.inputController.state).toMatchObject({
-      activeIntent: null,
-      compositionSession: null,
-      isComposing: false,
-      pendingCompositionEnd: null,
-      selectionSource: 'unknown',
-    });
-  } finally {
-    hasSelectableTarget.mockRestore();
-    if (lifecycle === 'setRoot') runtime.destroy();
-  }
-});
-
-test.each([
-  'destroy',
-  'setRoot',
-] as const)('%s completes teardown after a claimed composition commit throws', (lifecycle) => {
-  const editor = createReactEditor();
-  const runtime = new EditableDOMRuntime({ editor });
-  const firstRoot = document.createElement('div');
-  const secondRoot = document.createElement('div');
-  const modelFailure = new Error('composition model commit failed');
-  const cleanupFailure = new Error('later cleanup failed');
-  const dispose = vi.fn(() => {
-    if (lifecycle === 'destroy') throw cleanupFailure;
-  });
-  const lateDispose = vi.fn();
-  const releaseAnchor = vi.fn();
-  const onInput = vi.fn();
-
-  editorReplace(editor, {
-    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
-    selection: {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 3 },
-    },
-  });
-  const compositionSelection = editor.read((state) => state.selection());
-  const event = {
-    currentTarget: firstRoot,
-    data: '文',
-    isDefaultPrevented: () => false,
-    isPropagationStopped: () => false,
-    nativeEvent: { data: '文', isTrusted: true },
-    preventDefault: vi.fn(),
-    stopPropagation: vi.fn(),
-    target: {},
-  } as unknown as CompositionEvent<HTMLDivElement>;
-  const hasSelectableTarget = vi
-    .spyOn(ReactEditor, 'hasSelectableTarget')
-    .mockReturnValue(true);
-
-  runtime.updateNativeInputHandlers({
-    onDOMBeforeInput: vi.fn(),
-    onDOMInput: onInput,
-  });
-  runtime.setRoot(firstRoot);
-  runtime.connect();
-  runtime.installDisposable('throwing-flush-proof', dispose);
-  runtime.installDisposable('late-cleanup-proof', lateDispose);
-  runtime.browserHandleRangeAnchors.current.set('throwing-flush-proof', {
-    release: releaseAnchor,
-  } as unknown as Anchor<Range>);
-  runtime.inputController.state.activeIntent = 'composition';
-  beginEditableCompositionSession(runtime.inputController);
-  runtime.setComposing(true);
-
-  try {
-    applyEditableCompositionEnd({
-      androidInputManagerRef: { current: null },
-      editor,
-      event,
-      inputController: runtime.inputController,
-      runOwnedDOMMutation: (callback) =>
-        runtime.runOwnedDOMMutation('composition', callback),
-      scheduleTask: runtime.domPhaseScheduler.schedule,
-      setComposing: runtime.setComposing,
-    });
-    const pendingCompositionEnd =
-      runtime.inputController.state.pendingCompositionEnd;
-
-    if (pendingCompositionEnd?.ownership !== 'plite' || !compositionSelection) {
-      throw new Error('expected claimed Plite composition work');
-    }
-    pendingCompositionEnd.replaceWithInput({
-      commit: (fallbackSelection) => {
-        if (!fallbackSelection) return false;
-
-        editor.update((tx) => {
-          tx.text.insert('文', { at: fallbackSelection });
-        });
-        markEditableCompositionModelCommitted(runtime.inputController);
-        throw modelFailure;
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
       },
-      complete: vi.fn(),
-      data: '文',
-      discard: vi.fn(),
-      inputType: 'insertFromComposition',
     });
+    const compositionSelection = editor.read((state) => state.selection());
+    const event = {
+      currentTarget: firstRoot,
+      data: '文',
+      isDefaultPrevented: () => false,
+      isPropagationStopped: () => false,
+      nativeEvent: { data: '文', isTrusted: true },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      target: {},
+    } as unknown as CompositionEvent<HTMLDivElement>;
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
 
-    let thrown: unknown;
+    runtime.setRoot(firstRoot);
+    runtime.connect();
+    runtime.inputController.state.activeIntent = 'composition';
+    beginEditableCompositionSession(runtime.inputController);
+    runtime.setComposing(true);
 
     try {
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event,
+        inputController: runtime.inputController,
+        runOwnedDOMMutation: (callback) =>
+          runtime.runOwnedDOMMutation('composition', callback),
+        scheduleTask: runtime.domPhaseScheduler.schedule,
+        setComposing: runtime.setComposing,
+      });
+
+      if (phase === 'input-claimed') {
+        if (!compositionSelection) {
+          throw new Error('expected composition selection');
+        }
+        queuePendingCompositionModelInput({
+          command: {
+            inputType: 'insertFromComposition',
+            kind: 'insert-text',
+            text: '文',
+          },
+          data: '文',
+          editor,
+          inputController: runtime.inputController,
+          inputType: 'insertFromComposition',
+          repair: { requestEditableRepair: vi.fn() },
+          selection: compositionSelection,
+          setComposing: runtime.setComposing,
+        });
+      }
+
+      expect(runtime.inputController.state.pendingCompositionEnd).toMatchObject(
+        {
+          ownership: 'plite',
+          phase,
+        }
+      );
+
       if (lifecycle === 'destroy') {
         runtime.destroy();
       } else {
-        runtime.setRoot(secondRoot);
+        runtime.setRoot(document.createElement('div'));
       }
-    } catch (error) {
-      thrown = error;
+
+      expect(editorString(editor, [])).toBe('a文d');
+      expect(runtime.inputController.state).toMatchObject({
+        activeIntent: null,
+        compositionSession: null,
+        isComposing: false,
+        pendingCompositionEnd: null,
+        selectionSource: 'unknown',
+      });
+    } finally {
+      hasSelectableTarget.mockRestore();
+      if (lifecycle === 'setRoot') runtime.destroy();
     }
-
-    expect(thrown).toBe(modelFailure);
-    expect(editorString(editor, [])).toBe('a文d');
-    expect(runtime.inputController.state).toMatchObject({
-      activeIntent: null,
-      compositionSession: null,
-      isComposing: false,
-      pendingCompositionEnd: null,
-      selectionSource: 'unknown',
-    });
-    expect(IS_COMPOSING.get(editor)).toBe(false);
-    expect(ReactEditor.isComposing(editor)).toBe(false);
-    expect(runtime.domPhaseScheduler.pending()).toBe(0);
-
-    firstRoot.dispatchEvent(new InputEvent('input'));
-    expect(onInput).not.toHaveBeenCalled();
-
-    if (lifecycle === 'destroy') {
-      expect(dispose).toHaveBeenCalledOnce();
-      expect(lateDispose).toHaveBeenCalledOnce();
-      expect(releaseAnchor).toHaveBeenCalledOnce();
-      expect(runtime.browserHandleRangeAnchors.current.size).toBe(0);
-    } else {
-      expect(runtime.rootRef.current).toBe(secondRoot);
-      secondRoot.dispatchEvent(new InputEvent('input'));
-      expect(onInput).toHaveBeenCalledOnce();
-    }
-  } finally {
-    hasSelectableTarget.mockRestore();
-    if (lifecycle === 'setRoot') runtime.destroy();
   }
-});
+);
+
+test.each(['destroy', 'setRoot'] as const)(
+  '%s completes teardown after a claimed composition commit throws',
+  (lifecycle) => {
+    const editor = createReactEditor();
+    const runtime = new EditableDOMRuntime({ editor });
+    const firstRoot = document.createElement('div');
+    const secondRoot = document.createElement('div');
+    const modelFailure = new Error('composition model commit failed');
+    const cleanupFailure = new Error('later cleanup failed');
+    const dispose = vi.fn(() => {
+      if (lifecycle === 'destroy') throw cleanupFailure;
+    });
+    const lateDispose = vi.fn();
+    const releaseAnchor = vi.fn();
+    const onInput = vi.fn();
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+    const compositionSelection = editor.read((state) => state.selection());
+    const event = {
+      currentTarget: firstRoot,
+      data: '文',
+      isDefaultPrevented: () => false,
+      isPropagationStopped: () => false,
+      nativeEvent: { data: '文', isTrusted: true },
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      target: {},
+    } as unknown as CompositionEvent<HTMLDivElement>;
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    runtime.updateNativeInputHandlers({
+      onDOMBeforeInput: vi.fn(),
+      onDOMInput: onInput,
+    });
+    runtime.setRoot(firstRoot);
+    runtime.connect();
+    runtime.installDisposable('throwing-flush-proof', dispose);
+    runtime.installDisposable('late-cleanup-proof', lateDispose);
+    runtime.browserHandleRangeAnchors.current.set('throwing-flush-proof', {
+      release: releaseAnchor,
+    } as unknown as Anchor<Range>);
+    runtime.inputController.state.activeIntent = 'composition';
+    beginEditableCompositionSession(runtime.inputController);
+    runtime.setComposing(true);
+
+    try {
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event,
+        inputController: runtime.inputController,
+        runOwnedDOMMutation: (callback) =>
+          runtime.runOwnedDOMMutation('composition', callback),
+        scheduleTask: runtime.domPhaseScheduler.schedule,
+        setComposing: runtime.setComposing,
+      });
+      const pendingCompositionEnd =
+        runtime.inputController.state.pendingCompositionEnd;
+
+      if (
+        pendingCompositionEnd?.ownership !== 'plite' ||
+        !compositionSelection
+      ) {
+        throw new Error('expected claimed Plite composition work');
+      }
+      pendingCompositionEnd.replaceWithInput({
+        commit: (fallbackSelection) => {
+          if (!fallbackSelection) return false;
+
+          editor.update((tx) => {
+            tx.text.insert('文', { at: fallbackSelection });
+          });
+          markEditableCompositionModelCommitted(runtime.inputController);
+          throw modelFailure;
+        },
+        complete: vi.fn(),
+        data: '文',
+        discard: vi.fn(),
+        inputType: 'insertFromComposition',
+      });
+
+      let thrown: unknown;
+
+      try {
+        if (lifecycle === 'destroy') {
+          runtime.destroy();
+        } else {
+          runtime.setRoot(secondRoot);
+        }
+      } catch (error) {
+        thrown = error;
+      }
+
+      expect(thrown).toBe(modelFailure);
+      expect(editorString(editor, [])).toBe('a文d');
+      expect(runtime.inputController.state).toMatchObject({
+        activeIntent: null,
+        compositionSession: null,
+        isComposing: false,
+        pendingCompositionEnd: null,
+        selectionSource: 'unknown',
+      });
+      expect(IS_COMPOSING.get(editor)).toBe(false);
+      expect(ReactEditor.isComposing(editor)).toBe(false);
+      expect(runtime.domPhaseScheduler.pending()).toBe(0);
+
+      firstRoot.dispatchEvent(new InputEvent('input'));
+      expect(onInput).not.toHaveBeenCalled();
+
+      if (lifecycle === 'destroy') {
+        expect(dispose).toHaveBeenCalledOnce();
+        expect(lateDispose).toHaveBeenCalledOnce();
+        expect(releaseAnchor).toHaveBeenCalledOnce();
+        expect(runtime.browserHandleRangeAnchors.current.size).toBe(0);
+      } else {
+        expect(runtime.rootRef.current).toBe(secondRoot);
+        secondRoot.dispatchEvent(new InputEvent('input'));
+        expect(onInput).toHaveBeenCalledOnce();
+      }
+    } finally {
+      hasSelectableTarget.mockRestore();
+      if (lifecycle === 'setRoot') runtime.destroy();
+    }
+  }
+);
 
 test('tearing down one composing root preserves a sibling composition owner', () => {
   const editor = createReactEditor();
@@ -506,88 +515,88 @@ test('tearing down one composing root preserves a sibling composition owner', ()
   expect(editor.read((state) => state.marks())).toBeNull();
 });
 
-test.each([
-  'destroy',
-  'setRoot',
-] as const)('%s flushes pending composition without clearing sibling-root marks', (lifecycle) => {
-  const editor = createReactEditor();
-  const firstRuntime = new EditableDOMRuntime({ editor });
-  const secondRuntime = new EditableDOMRuntime({ editor });
-  const firstRoot = document.createElement('div');
-  const pendingMarks = { bold: true };
-  const userMarks = { italic: true };
-  const hasSelectableTarget = vi
-    .spyOn(ReactEditor, 'hasSelectableTarget')
-    .mockReturnValue(true);
+test.each(['destroy', 'setRoot'] as const)(
+  '%s flushes pending composition without clearing sibling-root marks',
+  (lifecycle) => {
+    const editor = createReactEditor();
+    const firstRuntime = new EditableDOMRuntime({ editor });
+    const secondRuntime = new EditableDOMRuntime({ editor });
+    const firstRoot = document.createElement('div');
+    const pendingMarks = { bold: true };
+    const userMarks = { italic: true };
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
 
-  editorReplace(editor, {
-    children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
-    selection: {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [0, 0], offset: 1 },
-    },
-  });
-  firstRoot.textContent = 'a文bcd';
-  firstRuntime.setRoot(firstRoot);
-  secondRuntime.setRoot(document.createElement('div'));
-  firstRuntime.connect();
-  secondRuntime.connect();
-  beginEditableCompositionSession(firstRuntime.inputController);
-  beginEditableCompositionSession(secondRuntime.inputController);
-  firstRuntime.setComposing(true);
-  secondRuntime.setComposing(true);
-  EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, pendingMarks);
-  EDITOR_TO_USER_MARKS.set(editor, userMarks);
-
-  try {
-    applyEditableCompositionEnd({
-      androidInputManagerRef: { current: null },
-      editor,
-      event: {
-        currentTarget: firstRoot,
-        data: '文',
-        isDefaultPrevented: () => false,
-        isPropagationStopped: () => false,
-        nativeEvent: { data: '文', isTrusted: true },
-        preventDefault: vi.fn(),
-        stopPropagation: vi.fn(),
-        target: {},
-      } as unknown as CompositionEvent<HTMLDivElement>,
-      inputController: firstRuntime.inputController,
-      runOwnedDOMMutation: (callback) => callback(),
-      scheduleTask: firstRuntime.domPhaseScheduler.schedule,
-      setComposing: firstRuntime.setComposing,
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      },
     });
-    expect(
-      firstRuntime.inputController.state.pendingCompositionEnd
-    ).toMatchObject({
-      ownership: 'plite',
-      phase: 'end-pending',
-    });
+    firstRoot.textContent = 'a文bcd';
+    firstRuntime.setRoot(firstRoot);
+    secondRuntime.setRoot(document.createElement('div'));
+    firstRuntime.connect();
+    secondRuntime.connect();
+    beginEditableCompositionSession(firstRuntime.inputController);
+    beginEditableCompositionSession(secondRuntime.inputController);
+    firstRuntime.setComposing(true);
+    secondRuntime.setComposing(true);
+    EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, pendingMarks);
+    EDITOR_TO_USER_MARKS.set(editor, userMarks);
 
-    if (lifecycle === 'destroy') {
-      firstRuntime.destroy();
-    } else {
-      firstRuntime.setRoot(document.createElement('div'));
+    try {
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: {
+          currentTarget: firstRoot,
+          data: '文',
+          isDefaultPrevented: () => false,
+          isPropagationStopped: () => false,
+          nativeEvent: { data: '文', isTrusted: true },
+          preventDefault: vi.fn(),
+          stopPropagation: vi.fn(),
+          target: {},
+        } as unknown as CompositionEvent<HTMLDivElement>,
+        inputController: firstRuntime.inputController,
+        runOwnedDOMMutation: (callback) => callback(),
+        scheduleTask: firstRuntime.domPhaseScheduler.schedule,
+        setComposing: firstRuntime.setComposing,
+      });
+      expect(
+        firstRuntime.inputController.state.pendingCompositionEnd
+      ).toMatchObject({
+        ownership: 'plite',
+        phase: 'end-pending',
+      });
+
+      if (lifecycle === 'destroy') {
+        firstRuntime.destroy();
+      } else {
+        firstRuntime.setRoot(document.createElement('div'));
+      }
+
+      expect(editorString(editor, [])).toBe('a文bcd');
+      expect(firstRuntime.inputController.state).toMatchObject({
+        compositionSession: null,
+        isComposing: false,
+        pendingCompositionEnd: null,
+      });
+      expect(secondRuntime.inputController.state.isComposing).toBe(true);
+      expect(ReactEditor.isComposing(editor)).toBe(true);
+      expect(EDITOR_TO_PENDING_INSERTION_MARKS.get(editor)).toBe(pendingMarks);
+      expect(EDITOR_TO_USER_MARKS.get(editor)).toBe(userMarks);
+    } finally {
+      hasSelectableTarget.mockRestore();
+      if (lifecycle === 'setRoot') firstRuntime.destroy();
+      secondRuntime.destroy();
     }
-
-    expect(editorString(editor, [])).toBe('a文bcd');
-    expect(firstRuntime.inputController.state).toMatchObject({
-      compositionSession: null,
-      isComposing: false,
-      pendingCompositionEnd: null,
-    });
-    expect(secondRuntime.inputController.state.isComposing).toBe(true);
-    expect(ReactEditor.isComposing(editor)).toBe(true);
-    expect(EDITOR_TO_PENDING_INSERTION_MARKS.get(editor)).toBe(pendingMarks);
-    expect(EDITOR_TO_USER_MARKS.get(editor)).toBe(userMarks);
-  } finally {
-    hasSelectableTarget.mockRestore();
-    if (lifecycle === 'setRoot') firstRuntime.destroy();
-    secondRuntime.destroy();
   }
-});
+);
 
 test('read-only composition exit preserves sibling-root composition marks', () => {
   const editor = createReactEditor();

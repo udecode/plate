@@ -5,6 +5,8 @@
   "scripts": {
     "build": "next build --webpack",
     "dev:lan": "next dev --webpack --hostname 0.0.0.0",
+    "lint": "ultracite check .",
+    "lint:fix": "ultracite fix .",
     "pretest:plite-browser": "node scripts/build-browser-if-stale.mjs",
     "pretest:plite-browser:chromium": "node scripts/build-browser-if-stale.mjs",
     "pretest:plite-browser:dev": "node scripts/build-browser-if-stale.mjs",

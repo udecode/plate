@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import {
   formatDateValue,
   getDateDisplayLabel,
@@ -13,6 +11,8 @@ import {
   PlateElement,
   useEditorReadOnly,
 } from 'platejs/react';
+import * as React from 'react';
+
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,

@@ -1,16 +1,17 @@
 import { createBaseEditor, defineBasePlugin } from '@platejs/core';
 import {
-  BaseFootnoteDefinitionPlugin,
-  BaseFootnoteInputPlugin,
-  BaseFootnotePlugin,
-} from './BaseFootnotePlugin';
-import {
   DocumentChange,
   createEditor,
   schema,
   type Selection,
   type Value,
 } from '@platejs/plite';
+
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnoteInputPlugin,
+  BaseFootnotePlugin,
+} from './BaseFootnotePlugin';
 
 describe('BaseFootnotePlugins', () => {
   it('requires non-empty refs on references and definitions', () => {

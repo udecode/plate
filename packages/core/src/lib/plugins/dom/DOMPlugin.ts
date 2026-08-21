@@ -9,7 +9,6 @@ import type {
   DOMClipboardApi,
   ScrollIntoViewOptions,
 } from '@platejs/plite-dom';
-
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 

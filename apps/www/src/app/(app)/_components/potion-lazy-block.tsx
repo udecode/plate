@@ -1,11 +1,9 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
-
-import type { RegistryItem } from 'shadcn/schema';
-
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import type { RegistryItem } from 'shadcn/schema';
 
 import { BlockViewer } from '@/components/block-viewer';
 import { Button } from '@/components/ui/button';

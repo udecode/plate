@@ -1,6 +1,8 @@
 import { createEditor } from '@platejs/plite';
-import { replace as editorReplace } from '@platejs/plite/internal';
-import { getEditorRuntime } from '@platejs/plite/internal';
+import {
+  replace as editorReplace,
+  getEditorRuntime,
+} from '@platejs/plite/internal';
 
 export const input = createEditor() as any;
 const runtime = getEditorRuntime(input);

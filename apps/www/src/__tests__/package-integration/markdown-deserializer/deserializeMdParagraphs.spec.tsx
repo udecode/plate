@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import {
   BoldPlugin,
   CodePlugin,
@@ -8,7 +9,6 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt } from '@platejs/test-utils';
 import { createBaseEditor } from 'platejs';

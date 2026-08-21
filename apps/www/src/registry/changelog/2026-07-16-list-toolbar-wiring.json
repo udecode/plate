@@ -35,7 +35,7 @@
       "migrationNotes": [],
       "targets": ["list-toolbar-button"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-07-16",

@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
@@ -17,7 +17,11 @@ const MIGRATION_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
 export type CreateMigrationOptions = Readonly<{
   cwd?: string;
-  /** @internal Test boundary for committed-file reads. */
+  /**
+   * Test boundary for committed-file reads.
+   *
+   * @internal
+   */
   readCommittedFile?: (path: string) => string;
 }>;
 

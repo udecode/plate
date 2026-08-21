@@ -1,5 +1,7 @@
-import type { RefObject } from 'react';
 import type { Anchor, Range } from '@platejs/plite';
+import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import type { RefObject } from 'react';
+
 import type { EditableDOMStrategyScrollAlign } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -7,7 +9,6 @@ import {
   attachPliteBrowserHandle,
   type PliteBrowserHandleElement,
 } from './browser-handle';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableInputController } from './input-state';
 
 export const useRuntimeBrowserHandle = ({

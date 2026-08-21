@@ -9,14 +9,15 @@ import {
   type Range,
   type NodeKey,
   type Value,
+  ElementApi,
+  PathApi,
 } from '@platejs/plite';
-import { ElementApi, PathApi } from '@platejs/plite';
 import type { AnyEditor } from '@platejs/plite/internal';
-import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import { createDetachedTableContext, type TableContext } from './context';
+import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import { getColSpan, getRowSpan, setSpan } from './codec';
+import { createDetachedTableContext, type TableContext } from './context';
 import {
   TABLE_CELL_OPERATION_KEY,
   type TableGrid,

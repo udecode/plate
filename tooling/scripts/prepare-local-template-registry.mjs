@@ -23,7 +23,7 @@ for (const entry of await readdir(sourcePath, { withFileTypes: true })) {
 
   const from = path.join(sourcePath, entry.name);
   const to = path.join(targetPath, entry.name);
-  const content = await readFile(from, 'utf8');
+  const content = await readFile(from, 'utf-8');
   const parsed = JSON.parse(content);
 
   rewriteRegistryDependencies(parsed);

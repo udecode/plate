@@ -30,13 +30,15 @@ export function hasChangesetFile(files) {
 }
 
 export function getChangesetReleaseType(files) {
-  const releaseTypes = files
-    .filter(isChangesetFile)
-    .flatMap((file) => parseChangesetReleaseTypes(getChangesetContent(file)));
+  const releaseTypes = new Set(
+    files
+      .filter(isChangesetFile)
+      .flatMap((file) => parseChangesetReleaseTypes(getChangesetContent(file)))
+  );
 
-  if (releaseTypes.includes('major')) return 'major';
-  if (releaseTypes.includes('minor')) return 'minor';
-  if (releaseTypes.includes('patch')) return 'patch';
+  if (releaseTypes.has('major')) return 'major';
+  if (releaseTypes.has('minor')) return 'minor';
+  if (releaseTypes.has('patch')) return 'patch';
 
   return null;
 }

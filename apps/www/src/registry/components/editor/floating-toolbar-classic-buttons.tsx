@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import {
   BoldPlugin,
   CodePlugin,
@@ -18,6 +16,7 @@ import {
   WandSparklesIcon,
 } from 'lucide-react';
 import { useEditorReadOnly } from 'platejs/react';
+import * as React from 'react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';

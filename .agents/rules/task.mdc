@@ -65,13 +65,15 @@ they earn their keep, and verify before calling the task done.
    - Program or batch work.
    - One local Plate/Plite behavior bug or regression with no public mutation:
      load `patch` and let it own reproduction, repair, proof, and review.
+   - Benchmarking, profiling, performance comparison, or timing root-cause
+     work: load `benchmark` and let it own ordered measurement, causal
+     diagnosis, fix/rerun, and resumed breadth.
    - Ordinary one-shot work: tooling/build bugs, features, refactors, docs,
      reviews, or investigations.
 6. Classify heavyweight work:
    - Heavyweight: architecture or public API redesign, breaking changes, major
-     cross-package refactors, benchmarking, profiling strategy, scalability
-     work, framework comparison, migration analysis, RFCs, proposals, or
-     spec-first major changes.
+     cross-package refactors, framework comparison, migration analysis, RFCs,
+     proposals, or spec-first major changes.
    - Non-heavyweight: ordinary bugs, one-package features, docs-only edits,
      routine test work, small refactors, or normal issue execution.
 7. If heavyweight, load `major-task` immediately and let it own workflow.
@@ -139,10 +141,10 @@ Apply this before implementation when a public tracker item reports a bug, makes
 a user-visible behavior claim, includes a technical diagnosis, or proposes an
 implementation fix.
 
-- Load `.agents/skills/autoreview/SKILL.md` for its P2 review contract and use that
+- Load `.agents/skills/autoreview/SKILL.md` for its P1 review contract and use that
   stance before code: adversarial, source-backed, and willing to reject weak
   claims. This is a pre-solution issue/design review, not a dirty-diff helper
-  invocation. The structured autoreview helper remains the P2 closeout gate
+  invocation. The structured autoreview helper remains the P1 closeout gate
   after a real diff exists.
 - For bug reports and behavior claims, reproduce the user-visible behavior or
   the smallest honest failing surface before treating the issue as valid.
@@ -196,7 +198,7 @@ implementation fix.
 
 ## Bug Diagnosis Loop
 
-For hard bugs, flaky failures, and perf regressions, build the feedback loop
+For hard bugs and flaky correctness failures, build the feedback loop
 before falling in love with a theory. The loop must be:
 
 - red-capable: it drives the user's exact symptom, not just a nearby path;
@@ -212,6 +214,9 @@ boundaries that distinguish those hypotheses, tag temporary logs with a unique
 prefix, and remove them before handoff. If no correct regression surface
 exists, record that as architecture/testability debt and route the follow-up to
 `architecture-cleanup`.
+
+Timing regressions and performance feedback loops belong to `benchmark`; do
+not run a second measurement/fix loop inside Task.
 
 ## Browser Proof
 
@@ -307,7 +312,7 @@ the active task would otherwise miss.
 
 Do not keep repo-local skills for generic lifestyle, app-template, local git
 ops, stale command stubs, or broad CE ceremony when `task`, `major-task`,
-`autogoal`, P2 `autoreview`, or a Plate-specific skill owns the workflow better.
+`autogoal`, P1 `autoreview`, or a Plate-specific skill owns the workflow better.
 
 If a generated skill is gone but `skills-lock.json` still references it, remove
 it through `npx skills remove <skill> -y` first. If the CLI removes the agent
@@ -321,8 +326,10 @@ lock.
   matching `--with <pack>` rows. Review expectations stay in the primary
   template. Do not use root planning files, hooks, `.planning/**`, or
   `docs/goals/**`.
-- `major-task`: heavyweight architecture, framework, migration, benchmark, or
-  proposal work.
+- `major-task`: heavyweight architecture, framework, migration, or proposal
+  work.
+- `benchmark`: performance measurement, profiling, current/main or
+  cross-editor comparison, causal diagnosis, and iterative fix/rerun work.
 - `testing`: tasks primarily about tests, coverage, regression gaps, or suite
   phases.
 - `tdd`: bugs and feature work where behavior-level automated coverage is sane.
@@ -369,13 +376,15 @@ issue ledger, or pass calendar, but it still needs real closeout pressure when
 the patch is risky.
 
 - For public tracker implementation work, the pre-solution issue challenge gate
-  is mandatory before writing code. It is separate from final P2 autoreview: first
+  is mandatory before writing code. It is separate from final P1 autoreview: first
   decide whether the issue deserves a fix and what the long-term boundary is,
-  then implement, then run structured P2 autoreview on the actual diff.
-- P2 autoreview is a hard closeout gate for non-trivial implementation changes.
-  Load `.agents/skills/autoreview/SKILL.md` for P2, pick the target from the actual
-  diff state, pass `--max-priority P2`, and keep going until there are no
-  accepted/actionable findings. Use P3 only when explicitly requested.
+  then implement, then run structured P1 autoreview on the actual diff.
+- P1 autoreview is a hard closeout gate for non-trivial implementation changes.
+  Load `.agents/skills/autoreview/SKILL.md` for P1, pick the target from the actual
+  diff state, and pass `--max-priority P1`. Fix and rerun within the hard maximum
+  of three helper invocations for one unchanged review scope. If invocation 3
+  still reports an accepted/actionable finding, stop with the task not closed
+  and report the finding. Use P2 or P3 only when explicitly requested.
   Use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, and
   committed-slice `--mode commit --commit <ref>`.
 - `agent-native-reviewer` is required when the task changes `.agents/**`,
@@ -473,9 +482,10 @@ Keep verification mandatory and proportional.
 - Close the high-risk note before final handoff when the task changes public
   API, runtime, package boundaries, browser behavior, agent actions, or command
   contracts.
-- For non-trivial implementation changes, run the P2 autoreview gate selected
-  from the actual diff state with `--max-priority P2` and close all
-  accepted/actionable findings before final.
+- For non-trivial implementation changes, run the P1 autoreview gate selected
+  from the actual diff state with `--max-priority P1` and close all
+  accepted/actionable findings before final. Never exceed the three-invocation
+  cap; a remaining finding blocks a clean final handoff.
 - For agent/tooling changes, run the agent-native review gate or record why it
   does not apply.
 - If `pnpm test`, `bun test`, or `pnpm check` fails with local-corruption

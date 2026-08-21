@@ -1,8 +1,8 @@
 import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
+import { PLUGINS } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import { PLUGINS } from 'platejs';
 
 export const MarkdownKit = [
   MarkdownPlugin.configure(({ editor }) => {

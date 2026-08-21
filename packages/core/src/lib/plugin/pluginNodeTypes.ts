@@ -101,9 +101,7 @@ type PresentSchemaPropertyEntryValue<TEntry> =
 type Materialize<T> = { [TKey in keyof T]: T[TKey] };
 
 type UnionToIntersection<T> = (
-  T extends unknown
-    ? (value: T) => void
-    : never
+  T extends unknown ? (value: T) => void : never
 ) extends (value: infer TIntersection) => void
   ? TIntersection
   : never;
@@ -114,10 +112,14 @@ type SchemaPropertyEntryShape<TEntry, TRequired extends string> =
   }>
     ? TLocalId extends TRequired
       ? Readonly<{
-          [TName in SchemaPropertyEntryName<TEntry>]-?: PresentSchemaPropertyEntryValue<TEntry>;
+          [
+            TName in SchemaPropertyEntryName<TEntry>
+          ]-?: PresentSchemaPropertyEntryValue<TEntry>;
         }>
       : Readonly<{
-          [TName in SchemaPropertyEntryName<TEntry>]?: SchemaPropertyEntryValue<TEntry>;
+          [
+            TName in SchemaPropertyEntryName<TEntry>
+          ]?: SchemaPropertyEntryValue<TEntry>;
         }>
     : never;
 

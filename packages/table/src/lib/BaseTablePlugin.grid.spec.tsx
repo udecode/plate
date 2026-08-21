@@ -1,21 +1,23 @@
 /** @jsx jsxt */
 
-import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import assert from 'node:assert/strict';
+
+import { definePlatePlugin } from '@platejs/core/react';
+import { createEditorView, schema, type Value } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
+import type { TestEditor } from '@platejs/test-utils';
+
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
 import type { TableCellElementWithId } from './__tests__/tableTestTypes';
-import { definePlatePlugin } from '@platejs/core/react';
-import { createEditorView, schema, type Value } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import type {
   TableCellElement,
   TableElement,
   TableRowElement,
 } from './BaseTablePlugin';
-import assert from 'node:assert/strict';
 import { createTableContext } from './internal/context';
 
 describe('table grid queries', () => {
@@ -410,13 +412,11 @@ describe('table grid queries', () => {
         const tableNode: TableElement = {
           children: [
             {
-              children: [2, 3, 1].map(
-                (colSpan): TableCellElement => ({
-                  children: [{ text: '' }],
-                  colSpan,
-                  type: 'tableCell',
-                })
-              ),
+              children: [2, 3, 1].map((colSpan): TableCellElement => ({
+                children: [{ text: '' }],
+                colSpan,
+                type: 'tableCell',
+              })),
               type: 'tableRow',
             } satisfies TableRowElement,
           ],
@@ -462,13 +462,10 @@ describe('table grid queries', () => {
         const tableNode: TableElement = {
           children: [
             {
-              children: Array.from(
-                { length: 3 },
-                (): TableCellElement => ({
-                  children: [{ text: '' }],
-                  type: 'tableCell',
-                })
-              ),
+              children: Array.from({ length: 3 }, (): TableCellElement => ({
+                children: [{ text: '' }],
+                type: 'tableCell',
+              })),
               type: 'tableRow',
             } satisfies TableRowElement,
           ],

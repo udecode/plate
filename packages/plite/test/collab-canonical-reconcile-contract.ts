@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import {
+  createEditor,
+  type Element,
+  type EditorUpdatePolicy,
+  type Range,
+  type TextSelection,
+} from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -10,15 +19,6 @@ import {
   subscribe as editorSubscribe,
 } from '@platejs/plite/internal';
 
-import { history } from '@platejs/plite-history';
-
-import {
-  createEditor,
-  type Element,
-  type EditorUpdatePolicy,
-  type Range,
-  type TextSelection,
-} from '@platejs/plite';
 import { createRangeAnchor } from './support/anchor';
 
 const paragraph = (text: string): Element => ({
@@ -81,8 +81,8 @@ describe('collab canonical remote reconcile contract', () => {
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
 
-    assert(oldBlockNodeKey);
-    assert(oldTextNodeKey);
+    assert.ok(oldBlockNodeKey);
+    assert.ok(oldTextNodeKey);
     commits.length = 0;
 
     editor.update(remoteCollabPolicy, (tx) => {
@@ -96,7 +96,7 @@ describe('collab canonical remote reconcile contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commits.length, 1);
     assert.equal(commits[0], commit);
     assert.deepEqual(commit.tags, remoteCollabTags);
@@ -116,8 +116,8 @@ describe('collab canonical remote reconcile contract', () => {
     );
     assert.deepEqual(editorGetPathByNodeKey(editor, oldBlockNodeKey), [0]);
     assert.deepEqual(editorGetPathByNodeKey(editor, oldTextNodeKey), [0, 0]);
-    assert(editorGetNodeKey(editor, [0]));
-    assert(editorGetNodeKey(editor, [0, 0]));
+    assert.ok(editorGetNodeKey(editor, [0]));
+    assert.ok(editorGetNodeKey(editor, [0, 0]));
     assert.deepEqual(
       anchor.resolve(),
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
@@ -141,7 +141,7 @@ describe('collab canonical remote reconcile contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(editorGetSnapshot(editor).selection, null);
     assert.equal(commit.selectionChanged, true);
     assert.deepEqual(commit.tags, remoteCollabTags);

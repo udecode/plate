@@ -1,20 +1,12 @@
 import type { UseChatHelpers } from '@ai-sdk/react';
-import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
-import cloneDeep from 'lodash/cloneDeep.js';
-
 import type { TriggerComboboxPluginState } from '@platejs/combobox';
+import type { DefinitionOf, PlatePluginReadState } from '@platejs/core';
+import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
   type SerializeMdOptions,
 } from '@platejs/markdown';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@platejs/selection/react';
-import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { BaseTablePlugin } from '@platejs/table';
 import {
   type Descendant,
   createEditorView,
@@ -35,9 +27,16 @@ import {
   schema,
   TextApi,
 } from '@platejs/plite';
-import type { DefinitionOf, PlatePluginReadState } from '@platejs/core';
-import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
+import {
+  BlockSelectionPlugin,
+  CursorOverlayPlugin,
+} from '@platejs/selection/react';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { BaseTablePlugin } from '@platejs/table';
 import { PLUGINS } from '@platejs/utils';
+import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 import { AI_PREVIEW_KEY, BaseAIPlugin } from '../lib/BaseAIPlugin';
 

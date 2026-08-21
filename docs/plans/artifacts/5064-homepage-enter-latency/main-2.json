@@ -1,0 +1,586 @@
+{
+  "action": "enter",
+  "browserHandleAvailable": false,
+  "budget": {
+    "maxLongTasks": 100,
+    "maxMutationP95": 1000,
+    "maxSecondPaintP95": 1000
+  },
+  "commandBlockers": [],
+  "commitDelta": 0,
+  "diagnose": false,
+  "domSelection": null,
+  "beforeInput": null,
+  "finalText": "Welcome to the Plate Playground!",
+  "focusPreserved": true,
+  "firstPaint": {
+    "max": 74.49399999850903,
+    "mean": 56.155000001937154,
+    "p50": 52.89000000149099,
+    "p75": 59.42800000447096,
+    "p95": 71.39400000148999,
+    "samples": [
+      52.061999998510146,
+      49.298000001490436,
+      58.22800000298048,
+      71.39400000148999,
+      62.76400000447029,
+      51.46200000447061,
+      52.12800000149036,
+      48.86200000148983,
+      54.261999999999716,
+      51.36199999850942,
+      52.89000000149099,
+      59.42800000447096,
+      63.36400000148933,
+      46.96200000447061,
+      53.96200000447061,
+      54.0620000029794,
+      52.62400000148955,
+      49.19800000000032,
+      74.49399999850903,
+      64.29400000447094
+    ]
+  },
+  "inputMutation": null,
+  "inputState": null,
+  "ignoredHostErrors": [
+    {
+      "message": "net::ERR_CONNECTION_REFUSED",
+      "type": "requestfailed",
+      "url": "http://localhost:3000/site.webmanifest"
+    },
+    {
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "type": "console",
+      "url": "http://localhost:3000/site.webmanifest"
+    }
+  ],
+  "longTasks": {
+    "count": 5,
+    "max": 71,
+    "samples": [
+      {
+        "duration": 57,
+        "startTime": 6988.10000000149
+      },
+      {
+        "duration": 69,
+        "startTime": 7265.29999999702
+      },
+      {
+        "duration": 71,
+        "startTime": 7410.39999999851
+      },
+      {
+        "duration": 66,
+        "startTime": 8455.69999999553
+      },
+      {
+        "duration": 53,
+        "startTime": 8861.19999999553
+      }
+    ]
+  },
+  "nativeBlockers": [],
+  "profileDurations": {},
+  "syncStates": [
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": null,
+      "projected": null,
+      "reason": null
+    }
+  ],
+  "measuredSamples": 20,
+  "measuredInput": "",
+  "measuredStartState": {
+    "commitVersion": null,
+    "modelSelection": null,
+    "modelText": null
+  },
+  "enterSamples": [
+    {
+      "beforeinput": 6988.39999999851,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7132.10000000149,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7265.60000000149,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7410.60000000149,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7560.89999999851,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7688.79999999702,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7821.69999999553,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 7941.60000000149,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8060.19999999553,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8180.69999999553,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8312.60000000149,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8455.79999999702,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8601.19999999553,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8743.39999999851,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8861.5,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 8977.89999999851,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 9096.10000000149,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 9215.69999999553,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 9348.29999999702,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    },
+    {
+      "beforeinput": 9509.39999999851,
+      "blockCountAfter": 35,
+      "blockCountBefore": 34,
+      "commitAfter": null,
+      "commitBefore": null,
+      "domSelectionAfter": null,
+      "focusPreservedAfter": true,
+      "headingTextAfter": "Welcome to the Plate Playground!",
+      "inputType": "insertParagraph",
+      "keydownTrusted": true,
+      "modelSelectionAfter": null,
+      "nativeSelectedTextAfter": "",
+      "tableCountAfter": 1,
+      "tableCountBefore": 1
+    }
+  ],
+  "mutation": {
+    "max": 80.5,
+    "mean": 61.100000001490116,
+    "p50": 56.20000000298023,
+    "p75": 67,
+    "p95": 73.20000000298023,
+    "samples": [
+      57.29999999701977,
+      57.399999998509884,
+      69.60000000149012,
+      71.60000000149012,
+      64.40000000596046,
+      53.900000005960464,
+      56.20000000298023,
+      55.600000001490116,
+      54.5,
+      55.19999999552965,
+      67,
+      66.60000000149012,
+      73.20000000298023,
+      53.70000000298023,
+      53.30000000447035,
+      55.20000000298023,
+      53.70000000298023,
+      54.600000001490116,
+      80.5,
+      68.5
+    ]
+  },
+  "nativeInputSamples": 0,
+  "trustedActionSamples": 20,
+  "modelSelection": null,
+  "modelText": null,
+  "nativeSelectedText": "",
+  "runtimeErrors": [],
+  "secondPaint": {
+    "max": 75.39999999850988,
+    "mean": 60.337100001937145,
+    "p50": 57.100000000000364,
+    "p75": 66.50000000298041,
+    "p95": 72.60000000149012,
+    "samples": [
+      59.49999999851025,
+      58.300000001489934,
+      66.50000000298041,
+      71.39400000148999,
+      62.80000000447035,
+      51.50000000447017,
+      52.20000000149048,
+      56.20000000149048,
+      55.30000000000018,
+      51.36199999850942,
+      69.40000000148939,
+      66.90000000447071,
+      72.60000000149012,
+      55.30000000447035,
+      54.000000004471076,
+      54.0620000029794,
+      52.62400000148955,
+      57.100000000000364,
+      75.39999999850988,
+      64.30000000447035
+    ]
+  },
+  "targetPath": null,
+  "targetText": "Welcome to the Plate Playground!",
+  "url": "http://localhost:3026/",
+  "warmupSamples": 5
+}

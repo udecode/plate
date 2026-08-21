@@ -1,5 +1,5 @@
-import { structure } from 'fumadocs-core/mdx-plugins';
 import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
+import { structure } from 'fumadocs-core/mdx-plugins';
 import { createFromSource } from 'fumadocs-core/search/server';
 
 import { source } from '@/lib/source';
@@ -13,7 +13,7 @@ type SearchPageFrontmatter = {
 type SearchResult = {
   section?: 'docsApi';
   url?: string;
-};
+} & Record<string, unknown>;
 
 const MARKDOWN_CODE_TICK_REGEX = /`/g;
 const MARKDOWN_HEADING_REGEX = /^(#{1,6})\s+(.+?)\s*#*\s*$/;
@@ -89,6 +89,11 @@ const isDocsApiSectionHeading = (heading: string) => {
     API_SECTION_TITLES.has(title.toLowerCase())
   );
 };
+
+const isSearchResult = (value: unknown): value is SearchResult =>
+  typeof value === 'object' &&
+  value !== null &&
+  (!('url' in value) || typeof value.url === 'string');
 
 const searchSource = {
   ...source,
@@ -180,7 +185,11 @@ export async function GET(request: Request) {
   }
 
   const docsApiAnchorUrls = await getDocsApiAnchorUrls();
-  const taggedResults = results.map((item: SearchResult) => {
+  const taggedResults = (results as unknown[]).map((item) => {
+    if (!isSearchResult(item)) {
+      return item;
+    }
+
     if (item.url && docsApiAnchorUrls.has(item.url)) {
       return {
         ...item,

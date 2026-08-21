@@ -1,5 +1,6 @@
 import type { Range as PliteRange, Value } from '@platejs/plite';
 import type { DOMRange } from '@platejs/plite-dom';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   findMountedEditableDOMRuntime,

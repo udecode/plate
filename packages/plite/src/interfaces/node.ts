@@ -20,8 +20,8 @@ import {
   type ElementIn,
   type ElementOf,
 } from './element';
-import type { TextOf } from './text';
 import type { SchemaElementHandle } from './schema';
+import type { TextOf } from './text';
 
 /**
  * The `Node` union type represents all of the different types of nodes that
@@ -605,7 +605,6 @@ const getTextEntryRanges = (
   return ranges;
 };
 
-// eslint-disable-next-line no-redeclare
 function matchesNode<T extends Node>(
   node: Node,
   match: (node: Node, path: Path) => node is T,

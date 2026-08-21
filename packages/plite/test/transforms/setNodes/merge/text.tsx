@@ -1,11 +1,11 @@
 /** @jsx jsx */
 
+import { TextApi } from '@platejs/plite';
+import _ from 'lodash';
+
 import { jsx } from '../../..';
 
 jsx;
-
-import _ from 'lodash';
-import { TextApi } from '@platejs/plite';
 
 export const run = (editor) => {
   editor.nodes.set(

@@ -44,7 +44,7 @@ export const createPliteViewBoundaryRootMap = (value: {
   roots?: Readonly<Record<string, readonly Descendant[]>>;
 }): Readonly<Record<string, readonly Descendant[]>> => ({
   [MAIN_ROOT_KEY]: value.children,
-  ...(value.roots ?? {}),
+  ...value.roots,
 });
 
 export const clonePliteViewBoundaryPath = (path: Path): Path =>

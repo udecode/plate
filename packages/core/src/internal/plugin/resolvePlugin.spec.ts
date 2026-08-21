@@ -1,11 +1,11 @@
 import { createBaseEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
+import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph';
-import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
-import { validatePlugin } from './resolvePlugin';
-import { getPlateRuntime } from './compilePlateModel';
 import { getPluginDescriptorMetadata } from '../utils/mergePlugins';
+import { getPlateRuntime } from './compilePlateModel';
+import { validatePlugin } from './resolvePlugin';
 
 describe('resolvePlugin', () => {
   it('exposes consumer configuration to extensions and keeps it final', () => {

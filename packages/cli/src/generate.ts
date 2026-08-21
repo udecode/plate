@@ -34,6 +34,13 @@ import type {
 import { build } from 'esbuild';
 
 import {
+  artifactStateRoot,
+  canonicalPath,
+  compilerDirectoryPrefix,
+  findProjectRoot,
+  pathFingerprint,
+} from './state';
+import {
   discoverEditorConfigFiles,
   editorSourceImportCandidates,
   findEditorConfig,
@@ -42,13 +49,6 @@ import {
   type EditorTsconfigCache,
   type NativeTypeProperties,
 } from './typescript';
-import {
-  artifactStateRoot,
-  canonicalPath,
-  compilerDirectoryPrefix,
-  findProjectRoot,
-  pathFingerprint,
-} from './state';
 
 export type GenerateEditorOptions = Readonly<{
   check?: boolean;
@@ -546,7 +546,11 @@ const discoverTypeOnlySourceFiles = (
   return [...sources];
 };
 
-/** @internal Discover attempted source dependencies even when generation fails. */
+/**
+ * Discover attempted source dependencies even when generation fails.
+ *
+ * @internal
+ */
 export const discoverEditorSourceFiles = (
   entry: string,
   options: Pick<GenerateEditorOptions, 'cwd'> = {}
@@ -561,7 +565,11 @@ export const discoverEditorSourceFiles = (
   );
 };
 
-/** @internal Include esbuild-only and unresolved local dependencies for watch mode. */
+/**
+ * Include esbuild-only and unresolved local dependencies for watch mode.
+ *
+ * @internal
+ */
 export const discoverEditorWatchFiles = async (
   entry: string,
   options: Pick<GenerateEditorOptions, 'cwd'> = {}
@@ -1214,7 +1222,11 @@ const outputPaths = (entryPath: string) => {
   };
 };
 
-/** @internal Generated artifact paths owned by one editor module. */
+/**
+ * Generated artifact paths owned by one editor module.
+ *
+ * @internal
+ */
 export const editorArtifactPaths = (entryPath: string) =>
   Object.freeze(Object.values(outputPaths(resolve(entryPath))));
 
@@ -1330,11 +1342,19 @@ const watchArtifactOwnerPath = (artifactPath: string) =>
     `${pathFingerprint(artifactPath)}.json`
   );
 
-/** @internal Private ownership records for one watched editor. */
+/**
+ * Private ownership records for one watched editor.
+ *
+ * @internal
+ */
 export const editorWatchOwnershipPaths = (entryPath: string) =>
   Object.freeze(editorArtifactPaths(entryPath).map(watchArtifactOwnerPath));
 
-/** @internal Private state roots excluded from editor source watches. */
+/**
+ * Private state roots excluded from editor source watches.
+ *
+ * @internal
+ */
 export const editorPrivateStateRoots = (entryPaths: readonly string[]) =>
   Object.freeze([
     ...new Set(
@@ -1388,7 +1408,11 @@ const assertNoForeignWatchArtifactOwner = (
   });
 };
 
-/** @internal Hold exclusive generated-artifact ownership for a watch lifetime. */
+/**
+ * Hold exclusive generated-artifact ownership for a watch lifetime.
+ *
+ * @internal
+ */
 export const acquireEditorWatchOwnership = (entryPaths: readonly string[]) => {
   const owned: { path: string; token: string }[] = [];
   const artifactPaths = [
@@ -1866,12 +1890,20 @@ const replaceArtifactsWithResult = (
   }
 };
 
-/** @internal Exported only for atomic rollback proof. */
+/**
+ * Exported only for atomic rollback proof.
+ *
+ * @internal
+ */
 export const replaceArtifacts = (
   ...args: Parameters<typeof replaceArtifactsWithResult>
 ) => replaceArtifactsWithResult(...args).length > 0;
 
-/** @internal Resolve entries and reject overlapping artifact ownership. */
+/**
+ * Resolve entries and reject overlapping artifact ownership.
+ *
+ * @internal
+ */
 export const resolveEditorEntryPaths = (
   entries: readonly string[],
   cwd = process.cwd()
@@ -1906,7 +1938,11 @@ export const resolveEditorEntryPaths = (
   return Object.freeze(entryPaths);
 };
 
-/** @internal Compile editors without mutating generated artifacts. */
+/**
+ * Compile editors without mutating generated artifacts.
+ *
+ * @internal
+ */
 export const compileEditors = async (
   entries: readonly string[],
   options: Pick<GenerateEditorOptions, 'cwd'> = {},
@@ -2009,7 +2045,11 @@ export const compileEditors = async (
   );
 };
 
-/** @internal Compile one editor without mutating generated artifacts. */
+/**
+ * Compile one editor without mutating generated artifacts.
+ *
+ * @internal
+ */
 export const compileEditor = async (
   entry: string,
   options: Pick<GenerateEditorOptions, 'cwd'> = {}

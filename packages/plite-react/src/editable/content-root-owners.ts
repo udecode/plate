@@ -8,6 +8,7 @@ import {
   type RootKey,
 } from '@platejs/plite';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '@platejs/plite-dom/internal';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import {
@@ -198,10 +199,10 @@ export const isSameContentRootOwner = (
   (!left && !right) ||
   Boolean(
     left &&
-      right &&
-      left.childRoot === right.childRoot &&
-      left.ownerRoot === right.ownerRoot &&
-      PathApi.equals(left.ownerPath, right.ownerPath)
+    right &&
+    left.childRoot === right.childRoot &&
+    left.ownerRoot === right.ownerRoot &&
+    PathApi.equals(left.ownerPath, right.ownerPath)
   );
 
 export const getOwnerForCurrentViewEditor = ({

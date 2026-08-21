@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import { createEditor, type Element, NodeApi, TextApi } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-
-import { createEditor, type Element, NodeApi, TextApi } from '@platejs/plite';
 
 const richTextParagraph = (): Element => ({
   type: 'paragraph',
@@ -40,7 +40,7 @@ const setupEditor = () => {
 const getTextChildren = (editor: ReturnType<typeof createEditor>) => {
   const block = editorGetChildren(editor)[0];
 
-  assert(NodeApi.isElement(block));
+  assert.ok(NodeApi.isElement(block));
 
   return block.children.filter(TextApi.isText);
 };

@@ -1,8 +1,8 @@
 import { schema, property } from '@platejs/plite';
 import { createElement } from 'react';
 
-import { BaseParagraphPlugin } from '../lib/plugins';
 import { defineBasePlugin } from '../lib/plugin';
+import { BaseParagraphPlugin } from '../lib/plugins';
 import { createStaticEditor } from './editor/withStatic';
 import { renderStaticHtml } from './renderStaticHtml';
 

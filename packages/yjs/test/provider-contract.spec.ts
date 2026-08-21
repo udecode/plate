@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import {
   createEditor,
   type Descendant,
   type Range,
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import { yjs } from '../src';

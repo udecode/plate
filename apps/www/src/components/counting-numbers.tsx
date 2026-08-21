@@ -1,8 +1,9 @@
 'use client';
 
+import { useInView } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
-import { useInView } from 'framer-motion';
+const numberFormatter = new Intl.NumberFormat();
 
 export const useCounting = ({
   duration,
@@ -46,8 +47,7 @@ export const useCounting = ({
     }
 
     return () => clearInterval(timer); // Cleanup timer
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInView]);
+  }, [end, increment, interval, isInView, reverse]);
 
   return number;
 };
@@ -83,7 +83,7 @@ export function CountingNumbers({
   });
   const number = noAnimation ? value : animatedNumber;
 
-  const formattedNumber = Intl.NumberFormat().format(number);
+  const formattedNumber = numberFormatter.format(number);
 
   return (
     <p ref={ref} className={className}>

@@ -1,7 +1,8 @@
 import type { DefinitionOf } from '@platejs/core';
 import { createPlateEditor, definePlatePlugin } from '@platejs/core/react';
-import { createPluginContext } from '../src/react/plugin/createPluginContext.internal';
 import { ContentSlice } from '@platejs/plite';
+
+import { createPluginContext } from '../src/react/plugin/createPluginContext.internal';
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 type AssertFalse<T extends false> = T;

@@ -80,10 +80,10 @@ export function APIItem({
     : undefined;
 
   return (
-    <AccordionItem className="select-text border-none" value={value ?? name}>
+    <AccordionItem className="border-none select-text" value={value ?? name}>
       <AccordionTrigger className="group p-0 hover:no-underline">
         <li id={id} className="scroll-mt-20">
-          <h4 className="relative py-2 text-start font-semibold leading-none tracking-tight">
+          <h4 className="relative py-2 text-start leading-none font-semibold tracking-tight">
             {id && (
               <a
                 className={cn(
@@ -92,21 +92,21 @@ export function APIItem({
                 onClick={(e) => e.stopPropagation()}
                 href={`#${id}`}
               >
-                <div className="-left-5 absolute top-2 pr-1 leading-none">
+                <div className="absolute top-2 -left-5 pr-1 leading-none">
                   <Icons.pragma className="size-4 text-muted-foreground" />
                 </div>
               </a>
             )}
-            <span className="font-mono font-semibold text-sm leading-none group-hover:underline">
+            <span className="font-mono text-sm leading-none font-semibold group-hover:underline">
               {name}
             </span>
             {required && (
-              <span className="font-mono text-orange-500 text-xs leading-none">
+              <span className="font-mono text-xs leading-none text-orange-500">
                 {' '}
                 REQUIRED
               </span>
             )}
-            <span className="text-left font-medium font-mono text-muted-foreground text-sm leading-none">
+            <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground">
               {!required && optional && ' optional'} {type}
             </span>
           </h4>
@@ -224,7 +224,7 @@ export function APIList({
             <div className="flex items-center justify-between pb-4">
               <h3
                 id={id}
-                className="group relative scroll-mt-20 font-medium text-lg leading-none tracking-tight"
+                className="group relative scroll-mt-20 text-lg leading-none font-medium tracking-tight"
               >
                 {id && (
                   <a
@@ -234,7 +234,7 @@ export function APIList({
                     onClick={(e) => e.stopPropagation()}
                     href={`#${id}`}
                   >
-                    <div className="-left-5 absolute top-0 pr-1 leading-none">
+                    <div className="absolute top-0 -left-5 pr-1 leading-none">
                       <Icons.pragma className="size-4 text-muted-foreground" />
                     </div>
                   </a>
@@ -259,7 +259,7 @@ export function APIList({
                 </span>
 
                 {type && (
-                  <span className="ml-2 font-medium font-mono text-muted-foreground text-sm">
+                  <span className="ml-2 font-mono text-sm font-medium text-muted-foreground">
                     {type}
                   </span>
                 )}
@@ -268,7 +268,7 @@ export function APIList({
               {hasItems && (
                 <button
                   type="button"
-                  className="cursor-pointer select-none text-muted-foreground text-sm"
+                  className="cursor-pointer text-sm text-muted-foreground select-none"
                   onClick={() => {
                     if (values.length === childCount) {
                       setValues([]);
@@ -305,7 +305,7 @@ export function APIList({
               ) : childCount > 0 ? (
                 children
               ) : (
-                <div className="py-4 text-muted-foreground text-sm">
+                <div className="py-4 text-sm text-muted-foreground">
                   No parameters.
                 </div>
               )}
@@ -352,22 +352,22 @@ export function APISubListItem({
             onClick={(e) => e.stopPropagation()}
             href={`#${id}`}
           >
-            <div className="-left-5 absolute top-2 pr-1 leading-none">
+            <div className="absolute top-2 -left-5 pr-1 leading-none">
               <Icons.pragma className="size-4 text-muted-foreground" />
             </div>
           </a>
         )}
-        <span className="font-semibold text-muted-foreground leading-none">
+        <span className="leading-none font-semibold text-muted-foreground">
           {parent}.
         </span>
-        <span className="font-semibold leading-none">{name}</span>
+        <span className="leading-none font-semibold">{name}</span>
         {required && (
-          <span className="ml-1 font-mono text-orange-500 text-xs leading-none">
+          <span className="ml-1 font-mono text-xs leading-none text-orange-500">
             {' '}
             REQUIRED
           </span>
         )}
-        <span className="text-left font-medium font-mono text-muted-foreground text-sm leading-none group-hover:no-underline">
+        <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground group-hover:no-underline">
           {!required && optional && ' optional'} {type}
         </span>
       </h4>

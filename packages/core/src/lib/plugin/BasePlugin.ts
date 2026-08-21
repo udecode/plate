@@ -56,8 +56,14 @@ import type {
   InputRulesConfig,
   InputRulesDefinition,
 } from '../plugins/input-rules/types';
+import type {
+  BasePluginDependencyDescriptors,
+  BasePluginInstalledCapabilityWitness,
+  LowerBasePlugin,
+} from './basePluginCompiler.internal';
+import type { HandlerReturnType } from './HandlerReturnType';
 import type { MarkdownNodeCodecInput } from './MarkdownNodeCodec';
-import type { ElementWith } from './pluginNodeTypes';
+import { pluginCodecMapDeclaration } from './pluginAuthoringContext';
 import type {
   AnyBasePluginDefinition,
   BaseInjectProps,
@@ -96,6 +102,9 @@ import type {
   SelectionRules,
   WithAnyName,
 } from './PluginDefinition';
+import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
+import type { MergePluginDefinitions } from './pluginDefinitionMerge.internal';
+import type { ElementWith } from './pluginNodeTypes';
 import type {
   InferExactPluginSchemaContribution,
   InferPluginDocumentType,
@@ -103,15 +112,6 @@ import type {
   InferPluginSchema,
   InferPluginSchemaContribution,
 } from './pluginSchemaModel.internal';
-import type {
-  BasePluginDependencyDescriptors,
-  BasePluginInstalledCapabilityWitness,
-  LowerBasePlugin,
-} from './basePluginCompiler.internal';
-import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
-import type { MergePluginDefinitions } from './pluginDefinitionMerge.internal';
-import { pluginCodecMapDeclaration } from './pluginAuthoringContext';
-import type { HandlerReturnType } from './HandlerReturnType';
 
 export type AnyInjectNodeProps = BaseInjectProps & {
   query?: unknown;
@@ -458,9 +458,11 @@ type HtmlContributionProperties<C extends AnyBasePluginDefinition> =
 type HtmlPropertyName<TKey> = TKey extends string ? TKey : never;
 
 type HtmlPropertyMap<TProperty> = Readonly<{
-  [TMember in TProperty as TMember extends SchemaProperty
-    ? HtmlPropertyName<TMember['key']>
-    : never]?: TMember extends SchemaProperty
+  [
+    TMember in TProperty as TMember extends SchemaProperty
+      ? HtmlPropertyName<TMember['key']>
+      : never
+  ]?: TMember extends SchemaProperty
     ? PropertyValueOf<TMember['value']>
     : never;
 }>;
@@ -671,8 +673,8 @@ type ForeignHtmlCodecTarget<
 type ForeignCodecDefinition<
   C extends AnyBasePluginDefinition,
   TTarget extends AnyBasePlugin & PluginReference,
-  TTargetDefinition extends
-    AnyBasePluginDefinition = InternalPluginDefinitionOf<TTarget>,
+  TTargetDefinition extends AnyBasePluginDefinition =
+    InternalPluginDefinitionOf<TTarget>,
 > = Omit<C, 'name' | 'schema'> &
   Readonly<{
     name: TTargetDefinition['name'];
@@ -876,7 +878,7 @@ export type PluginCodecMapDeclaration = Readonly<Record<string, unknown>> & {
 
 /** Context-bound codec definition with exact owner and foreign-target typing. */
 export type DefinePluginCodecs<C extends AnyBasePluginDefinition> = {
-  // biome-ignore lint/style/useUnifiedTypeSignatures: Separate overloads preserve exact self-codec inference.
+  // Separate overloads preserve exact self-codec inference.
   bivarianceHack(
     codecs: PluginSelfHtmlProductNodeCodecMap<C>
   ): PluginCodecMapDeclaration;
@@ -1211,22 +1213,26 @@ type BasePluginAuthorFields<
   };
 
 type ProjectBasePluginFields<C extends AnyBasePluginDefinition> = Readonly<{
-  [TKey in Extract<
-    Exclude<
-      keyof C,
-      BasePluginRuntimeField | 'decorate' | 'prepareDocument' | 'useHooks'
-    >,
-    keyof BasePluginAuthorFields<C>
-  >]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
+  [
+    TKey in Extract<
+      Exclude<
+        keyof C,
+        BasePluginRuntimeField | 'decorate' | 'prepareDocument' | 'useHooks'
+      >,
+      keyof BasePluginAuthorFields<C>
+    >
+  ]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
 }>;
 
 type ProjectBasePluginContextualFields<C extends AnyBasePluginDefinition> =
   Readonly<{
-    [TKey in Extract<
-      keyof C,
-      ('decorate' | 'prepareDocument' | 'useHooks') &
-        keyof BasePluginAuthorFields<C>
-    >]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
+    [
+      TKey in Extract<
+        keyof C,
+        ('decorate' | 'prepareDocument' | 'useHooks') &
+          keyof BasePluginAuthorFields<C>
+      >
+    ]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
   }>;
 
 type BasePluginRuntimeField =
@@ -1318,7 +1324,9 @@ type BasePluginRuntime = Omit<
 /** Exact render-capable Plate descriptor built once on a Plite extension. */
 export interface BasePlugin<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> extends BasePluginRuntime,
+>
+  extends
+    BasePluginRuntime,
     BasePluginMethods<C>,
     InternalEditorExtensionWitnessFor<LowerBasePlugin<C>>,
     BasePluginInstalledCapabilityWitness<C>,
@@ -1690,24 +1698,24 @@ interface BasePluginMethods<
     const TConfig extends
       | BasePluginConfiguration<C>
       | ((context: BasePluginContext<C>) => BasePluginConfiguration<C>),
-  >(config: TConfig): ConfiguredBasePlugin<C>;
-  // biome-ignore lint/style/useUnifiedTypeSignatures: Callback overload must precede the raw-extension overload for contextual inference.
+  >(
+    config: TConfig
+  ): ConfiguredBasePlugin<C>;
+  // Callback overload must precede the raw-extension overload for contextual inference.
   extend<
     const TKeys extends keyof BasePluginExtensionObject<C>,
     S extends object = {},
     const TApi extends object = {},
     const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
-    const TSelectionKinds extends
-      readonly EditorSelectionSpec<any>[] = readonly [],
+    const TSelectionKinds extends readonly EditorSelectionSpec<any>[] =
+      readonly [],
     const TUpdate extends object = {},
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[] = readonly [],
+    const TTargetPlugins extends readonly (PluginReference | string)[] =
+      readonly [],
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
     extension: (
@@ -1772,16 +1780,14 @@ interface BasePluginMethods<
     const TApi extends object = {},
     const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
-    const TSelectionKinds extends
-      readonly EditorSelectionSpec<any>[] = readonly [],
+    const TSelectionKinds extends readonly EditorSelectionSpec<any>[] =
+      readonly [],
     const TUpdate extends object = {},
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[] = readonly [],
+    const TTargetPlugins extends readonly (PluginReference | string)[] =
+      readonly [],
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
     extension: BasePluginStageInput<
@@ -1929,9 +1935,9 @@ export type DeclaredPluginShortcutInput<
   C extends AnyBasePluginDefinition,
   TShortcut = EditorShortcut,
 > = Partial<{
-  [K in
-    | PluginShortcutApiKey<C>
-    | PluginShortcutUpdateKey<C>]: PluginShortcutForKey<C, K, TShortcut> | null;
+  [
+    K in PluginShortcutApiKey<C> | PluginShortcutUpdateKey<C>
+  ]: PluginShortcutForKey<C, K, TShortcut> | null;
 }>;
 
 /**

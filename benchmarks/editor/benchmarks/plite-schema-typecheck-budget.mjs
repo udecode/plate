@@ -104,7 +104,7 @@ export const runSchemaTypecheckBudget = (root) => {
       ['--extendedDiagnostics', '--pretty', 'false', '--project', configPath],
       {
         cwd: root,
-        encoding: 'utf8',
+        encoding: 'utf-8',
         maxBuffer: 16 * 1024 * 1024,
       }
     );

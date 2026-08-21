@@ -1079,7 +1079,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const removed: Element[] = [];
 
     // Find newly selected elements
-    // biome-ignore lint/style/useForOf: performance-critical loop
+    // performance-critical loop.
     for (let i = 0; i < _selectables.length; i++) {
       const node = _selectables[i];
 
@@ -1117,7 +1117,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     // Check which elements where removed since last selection
     const keep = overlap === 'keep';
 
-    // biome-ignore lint/style/useForOf: performance-critical loop
+    // performance-critical loop.
     for (let i = 0; i < selected.length; i++) {
       const node = selected[i];
 

@@ -1,8 +1,9 @@
+import { RangeApi } from '@platejs/plite';
+import { getSelection } from '@platejs/plite-dom';
 import debounce from 'lodash/debounce.js';
 import throttle from 'lodash/throttle.js';
 import type { RefObject } from 'react';
-import { RangeApi } from '@platejs/plite';
-import { getSelection } from '@platejs/plite-dom';
+
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMRepairQueue } from './dom-repair-queue';
@@ -159,6 +160,7 @@ export const createRuntimeSelectionChangeHandler = ({
   processing: RefObject<boolean>;
   readOnly: boolean;
 }): RuntimeSelectionChangeHandler => {
+  // oxlint-disable-next-line prefer-const -- The throttled handler closes over itself for cancellation.
   let onDOMSelectionChange: RuntimeSelectionChangeHandler;
 
   onDOMSelectionChange = throttle(() => {

@@ -1,10 +1,7 @@
 /** @jsx jsxt */
 
-import { BaseTablePlugin } from './BaseTablePlugin';
-import {
-  createTestTableEditor,
-  getTestTablePlugins,
-} from './__tests__/getTestTablePlugins';
+import assert from 'node:assert/strict';
+
 import {
   ContentSlice,
   NodeApi,
@@ -14,266 +11,265 @@ import {
 import type { Element } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
-import assert from 'node:assert/strict';
+
+import {
+  createTestTableEditor,
+  getTestTablePlugins,
+} from './__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 describe('table clipboard slow contracts', () => {
   jsxt;
 
   describe('when inserting table 2x1 into cell 11', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('replaces the first table column with the inserted column (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  11
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'replaces the first table column with the inserted column (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Element[];
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Element[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>b</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.fragment.replace(fragment);
+        editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/14
   describe('when inserting table 1x2 into cell 11', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('replaces the first table row with the inserted row (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  11
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'replaces the first table row with the inserted row (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Element[];
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Element[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.fragment.replace(fragment);
+        editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/24
   describe('Insert a table when selecting table cells', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('replace these cells (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <anchor />
-                  11
-                </hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>
-                  22
-                  <focus />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'replace these cells (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    22
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const fragment = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Element[];
+        const fragment = (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Element[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>a</hp>
-              </htd>
-              <htd>
-                <hp>b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>a</hp>
+                </htd>
+                <htd>
+                  <hp>b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.fragment.delete();
-      editor.update.fragment.replace(fragment);
+        editor.update.fragment.delete();
+        editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   // https://github.com/udecode/editor-protocol/issues/20
@@ -860,67 +856,65 @@ describe('table clipboard slow contracts', () => {
 
   // https://github.com/udecode/editor-protocol/issues/64
   describe('when inserting blocks inside a table', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('inserts the blocks without removing the cells (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <anchor />
-                  11
-                </hp>
-              </htd>
-              <htd>
-                <hp>
-                  12
-                  <focus />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'inserts the blocks without removing the cells (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const fragment = (
-        <fragment>
-          <hp>o11a</hp>
-          <hp>o11b</hp>
-        </fragment>
-      ) as Element[];
+        const fragment = (
+          <fragment>
+            <hp>o11a</hp>
+            <hp>o11b</hp>
+          </fragment>
+        ) as Element[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>o11a</hp>
-                <hp>o11b</hp>
-              </htd>
-              <htd>
-                <hp>o11a</hp>
-                <hp>o11b</hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
+        const output = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>o11a</hp>
+                  <hp>o11b</hp>
+                </htd>
+                <htd>
+                  <hp>o11a</hp>
+                  <hp>o11b</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
 
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
-        selection: input.selection,
-        initialValue: input.children,
-      });
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({ disableMerge }),
+          selection: input.selection,
+          initialValue: input.children,
+        });
 
-      editor.update.fragment.replace(fragment);
+        editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
-    });
+        expect(editor.read.children()).toMatchObject(output.children!);
+      }
+    );
   });
 
   describe('BaseTablePlugin insertFragment fitContent', () => {

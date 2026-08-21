@@ -1,6 +1,7 @@
 import { NodeApi, type Range, RangeApi } from '@platejs/plite';
 import type { DOMText } from '@platejs/plite-dom';
 import { IS_NODE_MAP_DIRTY } from '@platejs/plite-dom/internal';
+
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getInputEventData } from './dom-input-event';
 import {

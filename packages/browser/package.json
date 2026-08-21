@@ -3,24 +3,27 @@
   "version": "54.0.0-beta.0",
   "description": "Browser proof harness for Plite editors.",
   "keywords": [
+    "@platejs/plite",
     "browser",
     "editor",
     "playwright",
-    "@platejs/plite",
     "testing"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/browser"
   },
-  "license": "MIT",
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     "./core": {
       "types": "./dist/core/index.d.ts",
@@ -39,9 +42,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
@@ -56,13 +59,13 @@
     "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts"
   },
   "devDependencies": {
+    "@plate/scripts": "workspace:*",
     "@playwright/test": "1.61.0",
     "@types/node": "24.12.0",
     "@vitest/browser-playwright": "^4.1.0",
     "playwright": "^1.58.2",
     "vite": "^7.1.12",
-    "vitest": "^4.1.0",
-    "@plate/scripts": "workspace:*"
+    "vitest": "^4.1.0"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.52.0"
@@ -71,8 +74,5 @@
     "@playwright/test": {
       "optional": true
     }
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

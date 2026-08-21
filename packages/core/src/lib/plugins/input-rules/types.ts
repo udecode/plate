@@ -9,6 +9,7 @@ import type {
   Range,
   TextInsertTextOptions,
 } from '@platejs/plite';
+
 import type { BaseEditor } from '../../editor';
 import type { AnyBasePlugin, PluginReference } from '../../plugin';
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+
 import { createPluginContext } from '@platejs/core/internal';
 import { createBaseEditor } from 'platejs';
 

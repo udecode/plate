@@ -1,6 +1,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+
 import { expect, type Locator, type Page } from '@playwright/test';
+
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import { dropHtml } from './dom-text';
 import { clickTextOffset, mutateTextDOM } from './dom-text-actions';
@@ -84,9 +86,7 @@ export const createEditorHarnessScenario = ({
           }
 
           await action();
-          steps.push(
-            await getHarness().trace.snapshot(label, steps.length)
-          );
+          steps.push(await getHarness().trace.snapshot(label, steps.length));
         },
       })
     );
@@ -406,10 +406,7 @@ export const createEditorHarnessScenario = ({
 
             for (const [kind, expected] of Object.entries(
               step.budget.byKind ?? {}
-            ) as [
-              PliteReactRenderKind,
-              PliteBrowserNumberBudget,
-            ][]) {
+            ) as [PliteReactRenderKind, PliteBrowserNumberBudget][]) {
               assertNumberBudget(
                 snapshot.byKind[kind] ?? 0,
                 expected,

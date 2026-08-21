@@ -4,6 +4,7 @@ import {
   useContext,
   useSyncExternalStore,
 } from 'react';
+
 import type {
   PliteAnnotationSnapshot,
   PliteAnnotationStore,

@@ -39,7 +39,7 @@ export default function EditorsLayout({
     <div className="flex flex-1 flex-col">
       <EditorDescription />
 
-      <div className="container-wrapper section-soft flex-1 md:py-12">
+      <div className="container-wrapper flex-1 section-soft md:py-12">
         <div className="container">
           <section id="blocks" className="scroll-mt-24">
             {children}

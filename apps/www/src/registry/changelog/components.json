@@ -1,6 +1,51 @@
 {
   "schemaVersion": 1,
   "components": {
+    "dnd": ["2026-08-20-demand-driven-dnd", "2026-08-17-flat-editor-registry"],
+    "toolbar": [
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-24-configurable-color-controls",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-preview-dialog": [
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-placeholder": [
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-18-inline-registry-hooks",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-embed": [
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-embed-static": [
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "potion-iframe-demo": ["2026-08-20-improve-editor-control-accessibility"],
+    "pro-iframe-demo": [
+      "2026-08-20-improve-editor-control-accessibility",
+      "2025-11-20-biome-ultracite"
+    ],
+    "block-discussion": [
+      "2026-08-19-stabilize-suggestion-popover-anchor",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-18-inline-registry-hooks",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-05-keep-block-discussion-typing-responsive",
+      "2026-07-26-plugin-store-state",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
     "date": [
       "2026-08-18-align-v55-ast-contracts",
       "2026-08-17-flat-editor-registry"
@@ -25,17 +70,6 @@
     "footnote-static": [
       "2026-08-18-align-v55-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "block-discussion": [
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-18-inline-registry-hooks",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-05-keep-block-discussion-typing-responsive",
-      "2026-07-26-plugin-store-state",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
     ],
     "code-drawing": [
       "2026-08-18-align-v55-ast-contracts",
@@ -99,11 +133,6 @@
     ],
     "find-replace-demo": ["2026-08-18-fix-editor-runtime-interactions"],
     "uploadthing": ["2026-08-18-inline-registry-hooks"],
-    "media-placeholder": [
-      "2026-08-18-inline-registry-hooks",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "emoji-picker": [
       "2026-08-18-inline-registry-hooks",
       "2026-08-17-colocate-editor-component-families"
@@ -250,7 +279,10 @@
     "column-static": ["2026-08-17-flat-editor-registry"],
     "comment-static": ["2026-08-17-flat-editor-registry"],
     "excalidraw": ["2026-08-17-flat-editor-registry"],
-    "font-static": ["2026-08-17-flat-editor-registry"],
+    "font-static": [
+      "2026-08-17-flat-editor-registry",
+      "2026-08-12-fix-font-size-selection-highlight"
+    ],
     "indent-static": ["2026-08-17-flat-editor-registry"],
     "line-height-static": ["2026-08-17-flat-editor-registry"],
     "link-static": ["2026-08-17-flat-editor-registry"],
@@ -278,13 +310,15 @@
       "2025-11-20-biome-ultracite"
     ],
     "discussion": ["2026-08-17-flat-editor-registry"],
-    "dnd": ["2026-08-17-flat-editor-registry"],
     "docx": ["2026-08-17-flat-editor-registry"],
     "docx-export": ["2026-08-17-flat-editor-registry"],
     "exit-break": ["2026-08-17-flat-editor-registry"],
     "fixed-toolbar-classic": ["2026-08-17-flat-editor-registry"],
     "floating-toolbar-classic": ["2026-08-17-flat-editor-registry"],
-    "font": ["2026-08-17-flat-editor-registry"],
+    "font": [
+      "2026-08-17-flat-editor-registry",
+      "2026-08-12-fix-font-size-selection-highlight"
+    ],
     "indent": ["2026-08-17-flat-editor-registry"],
     "line-height": ["2026-08-17-flat-editor-registry"],
     "list-classic": ["2026-08-17-flat-editor-registry"],
@@ -447,12 +481,6 @@
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
     ],
-    "toolbar": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-24-configurable-color-controls",
-      "2025-11-20-biome-ultracite"
-    ],
     "suggestion-toolbar-button": [
       "2026-08-17-flat-editor-registry",
       "2026-07-26-plugin-store-state"
@@ -475,17 +503,10 @@
     "horizontal-rule-static": ["2026-08-17-flat-editor-registry"],
     "media-image": ["2026-08-17-flat-editor-registry"],
     "media-image-static": ["2026-08-17-flat-editor-registry"],
-    "media-preview-dialog": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2025-11-20-biome-ultracite"
-    ],
     "kbd": ["2026-08-17-flat-editor-registry"],
     "kbd-static": ["2026-08-17-flat-editor-registry"],
     "media-audio": ["2026-08-17-flat-editor-registry"],
     "media-audio-static": ["2026-08-17-flat-editor-registry"],
-    "media-embed": ["2026-08-17-flat-editor-registry"],
-    "media-embed-static": ["2026-08-17-flat-editor-registry"],
     "media-file": ["2026-08-17-flat-editor-registry"],
     "media-file-static": ["2026-08-17-flat-editor-registry"],
     "media-video-static": ["2026-08-17-flat-editor-registry"],
@@ -1117,7 +1138,6 @@
     ],
     "controlled-demo": ["2025-11-20-biome-ultracite"],
     "image-pro-demo": ["2025-11-20-biome-ultracite"],
-    "pro-iframe-demo": ["2025-11-20-biome-ultracite"],
     "fumadocs-mdx-components": ["2025-11-20-biome-ultracite"],
     "mdx-plate-components": ["2025-11-20-biome-ultracite"]
   }

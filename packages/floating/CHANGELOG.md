@@ -39,8 +39,7 @@
 
 ### Patch Changes
 
-- [#4646](https://github.com/udecode/plate/pull/4646) by [@narraje](https://github.com/narraje) – Fix: Resolve infinite loop in useFloatingToolbar hook (v2)
-  Problem: The floating toolbar was causing infinite re-renders under certain conditions, leading to performance issues and potential browser hangs. This occurred when users interacted with text selections while the toolbar was visible.
+- [#4646](https://github.com/udecode/plate/pull/4646) by [@narraje](https://github.com/narraje) – Fix: Resolve infinite loop in useFloatingToolbar hook (v2) Problem: The floating toolbar was causing infinite re-renders under certain conditions, leading to performance issues and potential browser hangs. This occurred when users interacted with text selections while the toolbar was visible.
 
   WHY the change was made:
 

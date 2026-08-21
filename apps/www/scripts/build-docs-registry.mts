@@ -1,13 +1,14 @@
+/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+import matter from 'gray-matter';
+import { rimraf } from 'rimraf';
 import {
   type Registry,
   type RegistryItem,
   registrySchema,
 } from 'shadcn/schema';
-
-import matter from 'gray-matter';
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
-import { rimraf } from 'rimraf';
 
 import {
   toPlateRegistryDependencySpecifier,
@@ -74,7 +75,7 @@ function rewriteInstalledDocsContent(content: string) {
 }
 
 async function getDocFile(filePath: string) {
-  const source = await fs.readFile(filePath, 'utf8');
+  const source = await fs.readFile(filePath, 'utf-8');
   const { data } = matter(source);
   return {
     content: rewriteInstalledDocsContent(source),
@@ -125,7 +126,7 @@ function rewriteInstalledDocsMetaValue(value: unknown): unknown {
 }
 
 async function createInstalledDocsMetaContent() {
-  const source = await fs.readFile(path.join(SOURCE_DIR, META_FILE), 'utf8');
+  const source = await fs.readFile(path.join(SOURCE_DIR, META_FILE), 'utf-8');
   const meta = rewriteInstalledDocsMetaValue(JSON.parse(source));
 
   return `${JSON.stringify(meta, null, 2)}\n`;

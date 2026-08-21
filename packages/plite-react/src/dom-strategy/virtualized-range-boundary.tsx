@@ -1,6 +1,6 @@
-import React from 'react';
 import type { Path, NodeKey } from '@platejs/plite';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
+import React from 'react';
 
 import { useEditor } from '../hooks/use-editor';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
@@ -63,3 +63,6 @@ export const DOMStrategyVirtualizedRangeBoundary = React.memo(
     );
   }
 );
+
+DOMStrategyVirtualizedRangeBoundary.displayName =
+  'DOMStrategyVirtualizedRangeBoundary';

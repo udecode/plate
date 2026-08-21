@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { createRequire } from 'node:module';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import {
   basename,
   dirname,
@@ -12,20 +12,6 @@ import {
 } from 'node:path';
 
 import { readTsconfig, resolvePathAlias } from 'get-tsconfig';
-
-import {
-  API,
-  ElementFlags,
-  NodeBuilderFlags,
-  SignatureKind,
-  SymbolFlags,
-  TypeFlags,
-  type Checker,
-  type Diagnostic,
-  type Snapshot,
-  type TimingInfo,
-  type Type,
-} from 'typescript/unstable/async';
 import {
   isArrayTypeNode,
   isIndexSignatureDeclaration,
@@ -46,6 +32,19 @@ import {
   type Node,
   type TypeNode,
 } from 'typescript/unstable/ast';
+import {
+  API,
+  ElementFlags,
+  NodeBuilderFlags,
+  SignatureKind,
+  SymbolFlags,
+  TypeFlags,
+  type Checker,
+  type Diagnostic,
+  type Snapshot,
+  type TimingInfo,
+  type Type,
+} from 'typescript/unstable/async';
 
 export type NativeTypeProperties = Readonly<
   Record<
@@ -171,9 +170,7 @@ const readJsonConfig = (path: string) => {
     return JSON.parse(
       stripJsonComments(source).replace(/,\s*([}\]])/g, '$1')
     ) as Record<string, unknown>;
-  } catch {
-    return;
-  }
+  } catch {}
 };
 
 const resolveConfigPath = (specifier: string, fromPath: string) => {
@@ -288,7 +285,11 @@ const EDITOR_SOURCE_SUBSTITUTIONS: Readonly<Record<string, readonly string[]>> =
     '.mjs': ['.mts', '.d.mts', '.mjs'],
   };
 
-/** @internal Resolve one path with TypeScript's source-substitution order. */
+/**
+ * Resolve one path with TypeScript's source-substitution order.
+ *
+ * @internal
+ */
 export const resolveEditorSourceCandidate = (candidate: string) => {
   const extension = extname(candidate);
   const base = extension ? candidate.slice(0, -extension.length) : candidate;
@@ -394,8 +395,6 @@ const escapeTemplateLiteralText = (value: string) =>
 
 const nodeName = (node: Node) => {
   if ('text' in node && typeof node.text === 'string') return node.text;
-
-  return;
 };
 
 const printedNamedTypes = new WeakMap<Checker, Map<string, string>>();

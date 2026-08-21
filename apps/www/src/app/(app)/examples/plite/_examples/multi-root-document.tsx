@@ -1,4 +1,3 @@
-import type { ChangeEvent } from 'react';
 import {
   defineExtension,
   defineStateField,
@@ -18,6 +17,8 @@ import {
   usePliteRootState,
   useStateFieldValue,
 } from '@platejs/plite-react';
+import type { ChangeEvent } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -106,7 +107,7 @@ const RootStatus = ({
 
   return (
     <Badge
-      className="min-w-0 max-w-full shrink justify-start truncate font-mono"
+      className="max-w-full min-w-0 shrink justify-start truncate font-mono"
       id={id}
       variant="default"
     >
@@ -229,14 +230,14 @@ const MultiRootPanel = () => {
       </div>
       <div className="plite-multi-root-document-status">
         <Badge
-          className="min-w-0 max-w-full shrink justify-start truncate font-mono"
+          className="max-w-full min-w-0 shrink justify-start truncate font-mono"
           id="multi-root-title"
           variant="default"
         >
           title:{title}
         </Badge>
         <Badge
-          className="min-w-0 max-w-full shrink justify-start truncate font-mono"
+          className="max-w-full min-w-0 shrink justify-start truncate font-mono"
           id="multi-root-commit"
           variant="default"
         >

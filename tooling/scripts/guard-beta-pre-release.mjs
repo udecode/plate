@@ -11,10 +11,11 @@ export function readBetaPreState(cwd = repoRoot) {
   const prePath = path.join(cwd, '.changeset/pre.json');
 
   try {
-    return JSON.parse(readFileSync(prePath, 'utf8'));
+    return JSON.parse(readFileSync(prePath, 'utf-8'));
   } catch (error) {
     throw new Error(
-      `next must be in Changesets beta pre-release mode before publishing. Run pnpm changeset pre enter beta on next. (${error.message})`
+      `next must be in Changesets beta pre-release mode before publishing. Run pnpm changeset pre enter beta on next. (${error.message})`,
+      { cause: error }
     );
   }
 }

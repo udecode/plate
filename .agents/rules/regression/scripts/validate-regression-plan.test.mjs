@@ -1,0 +1,549 @@
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import test from 'node:test';
+
+import {
+  createInputDigest,
+  createProofReceiptId,
+  validateRegressionPlan,
+} from './validate-regression-plan.mjs';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const semanticTestPath =
+  '.agents/rules/regression/scripts/validate-regression-plan.test.mjs';
+const semanticTestTitle = 'complete fixture satisfies semantic closure';
+const receiptInputs = [
+  '.agents/rules/regression/scripts/capture-proof-receipt.mjs',
+  '.agents/rules/regression/scripts/validate-regression-plan.mjs',
+  semanticTestPath,
+];
+const digest = createInputDigest(root, receiptInputs);
+const proofTimes = {
+  ended: '2026-08-20T10:02:00.000Z',
+  latestInput: '2026-08-20T10:00:00.000Z',
+  started: '2026-08-20T10:01:00.000Z',
+};
+
+const receiptRow = ({
+  attempt = 1,
+  caseId = 'case-complete',
+  host = 'host:none - deterministic Node workflow',
+  inputDigest = digest,
+} = {}) => {
+  const receipt = {
+    attempt: String(attempt),
+    caseId,
+    claim: 'completed',
+    command: 'node --test validate-regression-plan.test.mjs',
+    host,
+    inputCount: '3',
+    inputDigest,
+    inputs: receiptInputs.join(','),
+    latestInputMtime: proofTimes.latestInput,
+    proofEnded: proofTimes.ended,
+    proofStarted: proofTimes.started,
+    ref: `commit:${'1'.repeat(40)}`,
+    result: 'pass: semantic workflow proof',
+    retries: '0',
+  };
+
+  return `| ${caseId} | ${attempt} | completed | ${receipt.command} | ${receipt.result} | ${receipt.ref} | ${inputDigest} | 3 | ${receipt.inputs} | ${host} | ${proofTimes.latestInput} | ${proofTimes.started} | ${proofTimes.ended} | 0 | ${createProofReceiptId(receipt)} |`;
+};
+
+const oracleRows = ({
+  exactChrome = false,
+  missingForbidden = false,
+} = {}) => {
+  const rows = [
+    {
+      applies: 'yes',
+      forbidden: missingForbidden
+        ? 'pending'
+        : 'an incomplete semantic plan passes',
+      layer: 'package',
+      observation: 'model',
+      positive: 'the complete semantic plan passes',
+      result: 'pass: validator contract',
+    },
+    ...[
+      'dom-native',
+      'focus',
+      'popup',
+      'runtime-errors',
+      'follow-up-input',
+    ].map((observation) => ({
+      applies: 'no',
+      forbidden: 'N/A: deterministic workflow case',
+      layer: 'N/A: deterministic workflow case',
+      observation,
+      positive: 'N/A: deterministic workflow case',
+      result: 'N/A: deterministic workflow case',
+    })),
+    exactChrome
+      ? {
+          applies: 'yes',
+          forbidden: 'stale Blink paint remains visible',
+          layer: 'exact-chrome',
+          observation: 'geometry-paint',
+          positive: 'paint matches final geometry',
+          result: 'pass: exact Chrome pixel oracle',
+        }
+      : {
+          applies: 'no',
+          forbidden: 'N/A: no rendered geometry',
+          layer: 'N/A: no rendered geometry',
+          observation: 'geometry-paint',
+          positive: 'N/A: no rendered geometry',
+          result: 'N/A: no rendered geometry',
+        },
+  ];
+
+  return rows
+    .map(
+      (row) =>
+        `| case-complete | ${row.observation} | ${row.applies} | ${row.positive} | ${row.forbidden} | ${row.layer} | ${
+          row.applies === 'yes'
+            ? `test: ${semanticTestPath}#${semanticTestTitle}`
+            : 'N/A: deterministic workflow case'
+        } | ${row.result} |`
+    )
+    .join('\n');
+};
+
+const noFailedFixRow =
+  '| none | 0 | N/A: no claimed fix failed | N/A: no prior claim | N/A: no repair | N/A: no repair test | no: no failure | N/A: no escalation | N/A: no resume |';
+
+const failedFixRows = ({
+  count = 1,
+  invalidate = true,
+  repair = true,
+} = {}) =>
+  Array.from({ length: count }, (_, index) => {
+    const attempt = index + 1;
+    const architecture =
+      attempt >= 2
+        ? 'best-api: accepted durable API; plate-plan: accepted adoption plan'
+        : 'N/A: first failed fix without architecture pressure';
+
+    return `| case-complete | ${attempt} | reporter contradiction after claimed candidate | ${
+      invalidate ? 'yes: prior green and completion receipt revoked' : 'no'
+    } | ${
+      repair
+        ? 'repair-now: .agents/rules/regression/scripts/validate-regression-plan.mjs'
+        : 'no-change: existing prose looked sufficient'
+    } | pass: workflow rejection test | ${
+      attempt >= 2
+        ? 'yes: second-failed-fix'
+        : 'no: first failure and no structural pressure'
+    } | ${architecture} | reproduced: restart the exact reporter case |`;
+  }).join('\n');
+
+const fixture = ({
+  architectureVerdict = 'patch',
+  exactChrome = false,
+  failedCount = 0,
+  failedRows,
+  inputDigest = digest,
+  missingAffectedCase = false,
+  missingForbidden = false,
+  preImplementation = false,
+  receiptIdOverride,
+} = {}) => {
+  const host = exactChrome
+    ? 'pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:exact-chrome:140'
+    : 'host:none - deterministic Node workflow';
+  let receipt = receiptRow({
+    attempt: failedCount + 1,
+    host,
+    inputDigest,
+  });
+
+  if (receiptIdOverride) {
+    receipt = receipt.replace(/sha256:[a-f0-9]{64} \|$/, `${receiptIdOverride} |`);
+  }
+  if (preImplementation) {
+    receipt =
+      '| pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending |';
+  }
+
+  const escalated = architectureVerdict === 'escalate';
+
+  return `
+Selected executable cases:
+| Case ID | Source reference | Setup / action | Expected outcome | Exact environment | Test file / command | Status | Tested ref | Next owner |
+|---|---|---|---|---|---|---|---|---|
+| case-complete | ${exactChrome ? 'Blink compositor report' : 'local workflow report'} | validate one complete plan | semantic closure is accepted | ${
+    exactChrome
+      ? 'exact-chrome: installed Chrome 140 on the proof host'
+      : 'N/A: deterministic Node workflow'
+  } | ${semanticTestPath}; node --test | ${
+    preImplementation ? 'reproduced' : 'completed'
+  } | commit:${'1'.repeat(40)} | Regression |
+
+Reporter oracle matrix:
+| Case ID | Observation | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
+|---|---|---|---|---|---|---|---|
+${oracleRows({ exactChrome, missingForbidden })}
+
+Proof receipts:
+| Case ID | Attempt | Claim | Command | Result | Ref | Input digest | Input count | Inputs | Host | Latest input mtime | Proof started | Proof ended | Retries | Receipt ID |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+${receipt}
+
+Affected corpus replay:
+| Owner | Affected cases | Last owner edit | Combined command | Receipt input digest | Result |
+|---|---|---|---|---|---|
+${
+  preImplementation
+    ? '| pending | pending | pending | pending | pending | pending |'
+    : `| Regression validator | ${missingAffectedCase ? 'other-case' : 'case-complete'} | ${proofTimes.latestInput} | node --test semantic contracts | ${inputDigest} | pass: affected corpus replayed after final owner edit |`
+}
+
+Failed fix history:
+| Case ID | Attempt | Failure signal | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
+|---|---|---|---|---|---|---|---|---|
+${failedRows ?? (failedCount ? failedFixRows({ count: failedCount }) : noFailedFixRow)}
+
+Architecture pressure:
+| Case ID | Failed fix count | Triggers | Verdict | Best API | Layer plan | Proof |
+|---|---|---|---|---|---|---|
+| case-complete | ${failedCount} | ${
+    failedCount >= 2
+      ? 'second-failed-fix'
+      : 'none: no architecture trigger'
+  } | ${architectureVerdict} | ${
+    escalated ? 'required: best-api accepted target' : 'N/A: local correctness patch'
+  } | ${
+    escalated ? 'plate-plan: accepted adoption proof' : 'N/A: local correctness patch'
+  } | pass: architecture decision recorded before implementation |
+
+Methodology deltas:
+| Case | Miss or owner checked | Decision | Durable owner/change | Focused proof | Trigger/result |
+|---|---|---|---|---|---|
+${
+  preImplementation
+    ? '| pending | pending | pending | pending | pending | pending |'
+    : `| case-complete | ${
+    failedCount ? 'claimed fix failed' : 'semantic workflow owner checked'
+  } | ${failedCount ? 'repair-now' : 'no-change'} | ${
+    failedCount
+      ? '.agents/rules/regression/scripts/validate-regression-plan.mjs'
+      : 'validator already covers the case'
+  } | pass: semantic workflow contract | ${
+    failedCount ? 'failed-fix interrupt completed' : 'no claimed fix failure'
+  } |`
+}
+`;
+};
+
+test(semanticTestTitle, () => {
+  assert.deepEqual(
+    validateRegressionPlan(fixture(), { complete: true, rootDir: root }),
+    []
+  );
+});
+
+test('pre-implementation validation permits final-proof placeholders', () => {
+  assert.deepEqual(
+    validateRegressionPlan(fixture({ preImplementation: true }), {
+      rootDir: root,
+    }),
+    []
+  );
+});
+
+test('the four reporter-invalidated plans fail semantic validation', () => {
+  for (const planPath of [
+    'docs/plans/5091-fix-stale-font-size-selection-highlight.md',
+    'docs/plans/5065-fix-table-tab-navigation.md',
+    'docs/plans/5064-fix-homepage-table-grid-enter-crash.md',
+    'docs/plans/2026-08-06-complete-remaining-felix-issues.md',
+  ]) {
+    const errors = validateRegressionPlan(readFileSync(join(root, planPath)), {
+      complete: true,
+      rootDir: root,
+    });
+
+    assert.match(
+      errors.join('\n'),
+      /missing (?:Selected executable cases|Reporter oracle matrix)/,
+      planPath
+    );
+  }
+});
+
+test('positive assertions cannot omit the forbidden end state', () => {
+  assert.match(
+    validateRegressionPlan(fixture({ missingForbidden: true }), {
+      complete: true,
+      rootDir: root,
+    }).join('\n'),
+    /model requires Forbidden state/
+  );
+});
+
+test('a failed claimed fix requires invalidation and automatic workflow repair', () => {
+  const invalid = fixture({
+    failedCount: 1,
+    failedRows: failedFixRows({ invalidate: false, repair: false }),
+  });
+  const errors = validateRegressionPlan(invalid, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /must invalidate the prior claim/);
+  assert.match(errors, /requires repair-now in a Regression source owner/);
+
+  assert.deepEqual(
+    validateRegressionPlan(fixture({ failedCount: 1 }), {
+      complete: true,
+      rootDir: root,
+    }),
+    []
+  );
+});
+
+test('a second failed fix requires Best API and a layer plan', () => {
+  const errors = validateRegressionPlan(fixture({ failedCount: 2 }), {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires architecture verdict escalate/);
+  assert.match(errors, /requires Best API/);
+  assert.match(errors, /requires a Plite or Plate layer plan/);
+
+  assert.deepEqual(
+    validateRegressionPlan(
+      fixture({ architectureVerdict: 'escalate', failedCount: 2 }),
+      { complete: true, rootDir: root }
+    ),
+    []
+  );
+});
+
+test('browser-specific paint claims require exact Chrome proof', () => {
+  const chromiumOnly = fixture({ exactChrome: true })
+    .replace(
+      'exact-chrome: installed Chrome 140 on the proof host',
+      'browser: Playwright Chromium'
+    )
+    .replace('browser:exact-chrome:140', 'browser:chromium:140');
+  const errors = validateRegressionPlan(chromiumOnly, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires Exact environment exact-chrome/);
+  assert.match(errors, /requires an exact Chrome proof receipt/);
+
+  assert.deepEqual(
+    validateRegressionPlan(fixture({ exactChrome: true }), {
+      complete: true,
+      rootDir: root,
+    }),
+    []
+  );
+});
+
+test('completion requires affected-corpus replay after the last owner edit', () => {
+  assert.match(
+    validateRegressionPlan(fixture({ missingAffectedCase: true }), {
+      complete: true,
+      rootDir: root,
+    }).join('\n'),
+    /case-complete is missing from Affected corpus replay/
+  );
+});
+
+test('proof receipts are tamper-evident', () => {
+  assert.match(
+    validateRegressionPlan(
+      fixture({ receiptIdOverride: `sha256:${'b'.repeat(64)}` }),
+      { complete: true, rootDir: root }
+    ).join('\n'),
+    /has an invalid Receipt ID/
+  );
+});
+
+test('completion recomputes the receipt digest from its exact input paths', () => {
+  assert.match(
+    validateRegressionPlan(
+      fixture({ inputDigest: `sha256:${'b'.repeat(64)}` }),
+      { complete: true, rootDir: root }
+    ).join('\n'),
+    /Input digest does not match current bytes/
+  );
+});
+
+test('capture helper executes proof and prints a valid receipt row', () => {
+  const script = join(
+    root,
+    '.agents/rules/regression/scripts/capture-proof-receipt.mjs'
+  );
+  const result = spawnSync(
+    process.execPath,
+    [
+      script,
+      '--case-id',
+      'capture-case',
+      '--attempt',
+      '1',
+      '--claim',
+      'completed',
+      '--input',
+      semanticTestPath,
+      '--host',
+      'none: deterministic Node workflow',
+      '--retries',
+      '0',
+      '--',
+      process.execPath,
+      '-e',
+      'process.exit(0)',
+    ],
+    { cwd: root, encoding: 'utf8' }
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(
+    result.stdout,
+    /^\| capture-case \| 1 \| completed \| .+ \| pass: exit 0 in \d+ms \| (?:commit|dirty):[a-f0-9]{40} \| sha256:[a-f0-9]{64} \| 1 \| \.agents\/rules\/regression\/scripts\/validate-regression-plan\.test\.mjs \| host:none - deterministic Node workflow \| .+ \| 0 \| sha256:[a-f0-9]{64} \|$/m
+  );
+});
+
+test('capture and validation share canonical mixed-path input ordering', () => {
+  const script = join(
+    root,
+    '.agents/rules/regression/scripts/capture-proof-receipt.mjs'
+  );
+  const mixedInputs = [
+    'AGENTS.md',
+    '.agents/rules/regression/scripts/validate-regression-plan.mjs',
+    semanticTestPath,
+  ];
+  const result = spawnSync(
+    process.execPath,
+    [
+      script,
+      '--case-id',
+      'case-complete',
+      '--attempt',
+      '1',
+      '--claim',
+      'completed',
+      ...mixedInputs.flatMap((input) => ['--input', input]),
+      '--host',
+      'none: deterministic Node workflow',
+      '--retries',
+      '0',
+      '--',
+      process.execPath,
+      '-e',
+      'process.exit(0)',
+    ],
+    { cwd: root, encoding: 'utf8' }
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const receipt = result.stdout.trim();
+  const inputDigest = receipt.match(/ \| (sha256:[a-f0-9]{64}) \| 3 \|/)?.[1];
+
+  assert.ok(inputDigest, receipt);
+  assert.deepEqual(
+    validateRegressionPlan(
+      fixture({ inputDigest }).replace(receiptRow({ inputDigest }), receipt),
+      { complete: true, rootDir: root }
+    ),
+    []
+  );
+});
+
+test('capture helper emits no receipt for a failed proof command', () => {
+  const script = join(
+    root,
+    '.agents/rules/regression/scripts/capture-proof-receipt.mjs'
+  );
+  const result = spawnSync(
+    process.execPath,
+    [
+      script,
+      '--case-id',
+      'capture-case',
+      '--attempt',
+      '1',
+      '--claim',
+      'completed',
+      '--input',
+      semanticTestPath,
+      '--host',
+      'none: deterministic Node workflow',
+      '--retries',
+      '0',
+      '--',
+      process.execPath,
+      '-e',
+      'process.exit(2)',
+    ],
+    { cwd: root, encoding: 'utf8' }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /proof command failed with exit 2/);
+  assert.doesNotMatch(result.stdout, /^\| capture-case/m);
+});
+
+test('capture helper emits no receipt when a proof input changes', () => {
+  const script = join(
+    root,
+    '.agents/rules/regression/scripts/capture-proof-receipt.mjs'
+  );
+  const tmpRoot = join(root, 'tmp');
+  mkdirSync(tmpRoot, { recursive: true });
+  const tmpDir = mkdtempSync(join(tmpRoot, 'regression-proof-'));
+  const inputPath = join(tmpDir, 'input.txt');
+  writeFileSync(inputPath, 'before');
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        script,
+        '--case-id',
+        'capture-case',
+        '--attempt',
+        '1',
+        '--claim',
+        'completed',
+        '--input',
+        relative(root, inputPath),
+        '--host',
+        'none: deterministic Node workflow',
+        '--retries',
+        '0',
+        '--',
+        process.execPath,
+        '-e',
+        `require('node:fs').appendFileSync(${JSON.stringify(inputPath)}, 'after')`,
+      ],
+      { cwd: root, encoding: 'utf8' }
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /proof inputs changed while the command ran/);
+    assert.doesNotMatch(result.stdout, /^\| capture-case/m);
+  } finally {
+    rmSync(tmpDir, { force: true, recursive: true });
+  }
+});

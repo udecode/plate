@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-20-demand-driven-dnd",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-20-demand-driven-dnd.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep block drag controls idle during editing",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-20-dnd-defer-block-drag-controls-47676cd6",
+      "kind": "fix",
+      "summary": "Activate block drag behavior only during pointer and drag interactions while preserving the stable block DOM.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-20",
+          "entry": "2026-08-20-demand-driven-dnd",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

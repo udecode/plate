@@ -1,8 +1,7 @@
 import type { DefinitionOf } from '@platejs/core';
-
 import { definePlatePlugin } from '@platejs/core/react';
-import { PLUGINS } from '@platejs/utils';
 import type { NodeKey } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
 
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 

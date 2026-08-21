@@ -10,7 +10,7 @@ metadata:
 
 # Major Task
 
-Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration, or proposal-grade work where wrong framing is expensive. Be deep, not bloated. Be explicit, not ceremonial.
+Handle $ARGUMENTS. Use this for architectural, comparative, migration, or proposal-grade work where wrong framing is expensive. Be deep, not bloated. Be explicit, not ceremonial.
 
 <task>#$ARGUMENTS</task>
 
@@ -26,8 +26,9 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Do not default to extra review panels, browser proof, PR work, or
   compounding.
 - Use external docs only when repo evidence and local clones are not enough or the task explicitly depends on third-party behavior.
-- If the task turns into code-changing execution, prefer the smallest durable
-  ownership fix with material value over a local patch.
+- If the task turns into code-changing execution, prefer the best long-term
+  durable architecture with material value over the nearest compatible or
+  local patch.
 
 ## Use This For
 
@@ -37,7 +38,8 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Breaking changes or major cross-package refactors.
 - Framework migration or tradeoff analysis. Use `editor-audit` for exhaustive
   source-level comparison of editor architectures.
-- Benchmarking, profiling strategy, scalability work, or performance-at-scale decisions.
+- Performance architecture or scalability decisions after `benchmark` has
+  established a measured hot owner.
 - RFC, proposal, or spec work that needs repo research plus external grounding.
 - Explicit review of a serious plan, spec, or proposal.
 
@@ -49,6 +51,8 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Routine test work.
 - Small refactors.
 - Normal execution work that is merely non-trivial.
+- Benchmarking, profiling, performance comparison, or timing root-cause work:
+  use `benchmark`.
 
 ## Intake
 
@@ -64,7 +68,7 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 4. Restate the decision to make, not just the topic.
 5. Classify the major-work lane:
    - architecture or public API
-   - benchmark or performance
+   - performance architecture after Benchmark evidence
    - framework comparison or migration
    - spec or proposal
    - document review
@@ -102,7 +106,7 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - source type
 - source id
 - exact title
-- decision type: architecture, benchmark, migration, proposal, review, or mixed
+- decision type: architecture, migration, performance architecture, proposal, review, or mixed
 - expected outcome
 - acceptance criteria or decision criteria
 - likely files, packages, or public surfaces affected
@@ -171,13 +175,17 @@ Apply this section only when the task source is a tracker item.
 - `research-wiki`
   Use when prior decisions or reusable research need to be found, maintained,
   or promoted into the compiled research layer.
+- `benchmark`
+  Use when measurement, profiling, baseline/editor comparison, causal
+  diagnosis, or iterative optimization is still required. Return here only if
+  its evidence proves a broader architecture decision.
 - `performance`
-  Use for benchmark design, scalability analysis, hot-path tradeoffs,
-  repeated-unit budgets, and performance validation strategy.
+  Use only as the review lens for scalability, repeated-unit budgets,
+  degradation, native behavior, and performance validation criteria.
 - `grill-with-docs`
   Use for explicit plan/RFC/spec pressure when a decision artifact needs
   adversarial questions grounded in current docs.
-- P2 `autoreview`; pass `--max-priority P2` (P3 only when explicitly requested)
+- P1 `autoreview`; pass `--max-priority P1` (P2/P3 only when explicitly requested)
   Use when major work turns into risky code-changing execution or
   architecture-sensitive diffs.
 - `tdd`
@@ -211,34 +219,20 @@ Apply this section only when the task source is a tracker item.
    only when it wins after the ideal target is selected.
 8. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
 
-### Performance And Optimization
+### Performance Architecture After Benchmark
 
-1. Define the performance question and the decision it should unlock before reading more.
-2. State the workload explicitly:
-   - typing latency
-   - normalization or transform cost
-   - selection or cursor stability under load
-   - React render churn
-   - large-document scaling
-   - bundle or startup cost
-   - pagination or layout composition cost
-3. Capture repo-grounded constraints first:
-   - current architecture
-   - package boundaries
-   - existing perf complaints
-   - editor surface being stressed
-   - whether the problem is runtime, rendering, layout, or architecture
-4. Set explicit criteria up front: latency, throughput, memory, render count, bundle cost, implementation cost, maintenance cost, or similar.
-5. Define benchmark scenarios before implementation. No vague "seems faster" bullshit.
-6. Separate:
-   - measured evidence
-   - benchmark plan
-   - intuition
-7. If the question is comparative, compare equivalent workloads, not vibes or marketing claims.
-8. For source-level editor architecture performance comparisons, use
-   `editor-audit` for mechanism mapping and `performance` for measured workload
-   proof. Do not infer runtime value from architectural elegance.
-9. If no measurement exists yet, say so plainly and provide the smallest honest measurement plan.
+1. Start from a Benchmark handoff with comparable baseline/candidate identity,
+   a conclusive causal owner, exact metrics, correctness proof, and rejected
+   local fixes.
+2. If that evidence does not exist, stop and route to `benchmark`; do not write
+   a performance architecture plan from intuition.
+3. Use `performance` only to pressure-test cohorts, repeated-unit budgets,
+   degradation, native behavior, and production proof requirements.
+4. Decide whether the proven owner needs a runtime/API boundary change,
+   migration, or package rearchitecture. Route public call shape to `best-api`
+   and adoption to the appropriate layer plan.
+5. Return the accepted architecture to `benchmark` for measured execution and
+   exact rerun. Architectural elegance is not a performance result.
 
 ### Framework Comparison Or Migration
 

@@ -138,7 +138,6 @@ export interface PathInterface {
   relative: (path: Path, ancestor: Path) => Path;
 }
 
-// eslint-disable-next-line no-redeclare
 export const PathApi: Readonly<PathInterface> = Object.freeze({
   ancestors(path: Path, options: PathAncestorsOptions = {}): readonly Path[] {
     const { reverse = false } = options;

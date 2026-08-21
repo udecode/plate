@@ -13,9 +13,7 @@ What should reviewers focus on?
 <details>
 <summary>Summary guidance</summary>
 
-Write this for human maintainers first. Maintainers may use local Codex to
-review, reproduce, or continue the PR, but no hosted bot has your private
-context. The PR body is the durable handoff.
+Write this for human maintainers first. Maintainers may use local Codex to review, reproduce, or continue the PR, but no hosted bot has your private context. The PR body is the durable handoff.
 
 Describe intent and outcome. Do not restate the diff.
 
@@ -32,8 +30,7 @@ Was this requested by a maintainer or package owner?
 <details>
 <summary>Linked context guidance</summary>
 
-Link the issue, discussion, maintainer request, package owner request, or docs
-page that explains why this PR should exist.
+Link the issue, discussion, maintainer request, package owner request, or docs page that explains why this PR should exist.
 
 </details>
 
@@ -51,13 +48,9 @@ page that explains why this PR should exist.
 <details>
 <summary>Real behavior proof guidance</summary>
 
-External PRs that change user-visible behavior need proof from a real Plate
-setup, docs route, package consumer, or minimal repro. Screenshots, recordings,
-terminal output, console output, copied live output, linked artifacts, and
-redacted logs all count.
+External PRs that change user-visible behavior need proof from a real Plate setup, docs route, package consumer, or minimal repro. Screenshots, recordings, terminal output, console output, copied live output, linked artifacts, and redacted logs all count.
 
-Unit tests, mocks, snapshots, lint, typechecks, and CI are useful support, but
-they do not prove visible editor behavior by themselves.
+Unit tests, mocks, snapshots, lint, typechecks, and CI are useful support, but they do not prove visible editor behavior by themselves.
 
 Redact private data, secrets, account details, and non-public endpoints.
 
@@ -112,9 +105,7 @@ How is that risk mitigated?
 <details>
 <summary>Risk guidance</summary>
 
-Use this for author judgment that is not obvious from the diff. Reviewers can
-see touched files; they cannot know which behavior you think is risky, why the
-risk is acceptable, or which proof should matter most.
+Use this for author judgment that is not obvious from the diff. Reviewers can see touched files; they cannot know which behavior you think is risky, why the risk is acceptable, or which proof should matter most.
 
 </details>
 
@@ -126,8 +117,7 @@ What is waiting on author, maintainer, CI, external proof, or user decision?
 
 Which bot or reviewer comments were addressed?
 
-Was AI used? (`Yes/No`; if yes, summarize the tool/session and include prompts
-or logs when useful.)
+Was AI used? (`Yes/No`; if yes, summarize the tool/session and include prompts or logs when useful.)
 
 Codex takeover state:
 
@@ -139,8 +129,6 @@ Codex takeover state:
 <details>
 <summary>Review state guidance</summary>
 
-Keep this current. If important state appears in comments, fold the current
-next action or blocker back into the PR body so maintainers do not need to
-reconstruct the thread.
+Keep this current. If important state appears in comments, fold the current next action or blocker back into the PR body so maintainers do not need to reconstruct the thread.
 
 </details>

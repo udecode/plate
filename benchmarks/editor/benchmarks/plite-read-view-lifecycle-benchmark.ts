@@ -3,7 +3,6 @@ import {
   createEditor,
   defineExtension,
 } from '../../../packages/plite/src/index';
-
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>

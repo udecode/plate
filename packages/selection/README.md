@@ -4,8 +4,7 @@ Plugin that allows you to select blocks in the drag area using the mouse or touc
 
 ## Documentation
 
-Check out
-[Block Selection](https://platejs.org/docs/block-selection).
+Check out [Block Selection](https://platejs.org/docs/block-selection).
 
 ## License
 

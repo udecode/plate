@@ -2,8 +2,8 @@ import { createBaseEditor } from '@platejs/core';
 import { schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
-import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
 import { SlashInputPlugin, SlashPlugin } from '../react/SlashPlugin';
+import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
 
 describe('BaseSlashPlugin', () => {
   it('declares the input as an exact required Base and React dependency', () => {

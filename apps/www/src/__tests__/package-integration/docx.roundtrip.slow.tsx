@@ -3,18 +3,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import type { Node as PliteNode } from '@platejs/plite';
-
 import { BaseCodeHighlightPlugin } from '@platejs/code-block';
 import { htmlToDocxBlob } from '@platejs/docx-export';
 import { DocxImportPlugin } from '@platejs/docx-import';
+import type { Node as PliteNode } from '@platejs/plite';
 import { jsx } from '@platejs/test-utils';
 import { createBaseEditor, type Value } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
-import { DocxExportKit } from '@/registry/components/editor/docx-export';
 import { CodeSyntaxLeafDocx } from '@/registry/components/editor/code-block-static';
+import { DocxExportKit } from '@/registry/components/editor/docx-export';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 jsx;
 
@@ -25,7 +24,7 @@ const createTestEditor = (value?: Value) =>
   });
 
 const readDocxFixture = (filename: string): Buffer => {
-  const docxTestDir = path.resolve(__dirname, './docx');
+  const docxTestDir = path.resolve(import.meta.dirname, './docx');
 
   return fs.readFileSync(path.join(docxTestDir, `${filename}.docx`));
 };
@@ -71,20 +70,22 @@ describe('docx roundtrip', () => {
     expect(document.querySelector(href!)).not.toBeNull();
   });
 
-  it.each([
-    'headers',
-    'block_quotes',
-    'tables',
-  ])('preserves data for %s', async (name) => {
-    const editor = createTestEditor();
-    const importedNodes = await importDocxBuffer(editor, readDocxFixture(name));
-    const roundtrippedNodes = await importDocxBuffer(
-      editor,
-      await exportNodesToDocx(importedNodes)
-    );
+  it.each(['headers', 'block_quotes', 'tables'])(
+    'preserves data for %s',
+    async (name) => {
+      const editor = createTestEditor();
+      const importedNodes = await importDocxBuffer(
+        editor,
+        readDocxFixture(name)
+      );
+      const roundtrippedNodes = await importDocxBuffer(
+        editor,
+        await exportNodesToDocx(importedNodes)
+      );
 
-    expect(roundtrippedNodes).toEqual(importedNodes);
-  });
+      expect(roundtrippedNodes).toEqual(importedNodes);
+    }
+  );
 
   it('preserves data for links with URL normalization', async () => {
     const editor = createTestEditor();

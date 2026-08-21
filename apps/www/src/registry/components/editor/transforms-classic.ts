@@ -1,8 +1,4 @@
 'use client';
-import { PLUGINS } from '@platejs/utils';
-
-import type { Element, NodeEntry, Path } from '@platejs/plite';
-import type { PlateEditor } from 'platejs/react';
 import { BaseCalloutPlugin } from '@platejs/callout';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseDatePlugin } from '@platejs/date';
@@ -12,10 +8,14 @@ import { BaseListPlugin } from '@platejs/list-classic';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { insertMediaUrl } from '@platejs/media/react';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTocPlugin } from '@platejs/toc';
+import { PLUGINS } from '@platejs/utils';
 import { ElementApi, PathApi } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
+
 import { linkPlugin } from '@/registry/components/editor/link';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';

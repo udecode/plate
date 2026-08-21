@@ -1,4 +1,4 @@
-// biome-ignore-all lint/suspicious/noConsole: CLI announces the bound test server.
+// CLI announces the bound test server.
 import { createServer } from 'node:http';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import handler from 'serve-handler';

@@ -1,11 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getLastCommit as editorGetLastCommit,
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-} from '@platejs/plite/internal';
-import { history } from '@platejs/plite-history';
 
 import {
   ContentSlice,
@@ -14,6 +8,13 @@ import {
   type Element,
   type TextInsertFragmentOptions,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
+import {
+  getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
+
 import { extendTestSchema } from './support/schema';
 
 const createChildren = (): Element[] => [

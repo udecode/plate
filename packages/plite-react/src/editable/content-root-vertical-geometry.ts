@@ -8,6 +8,7 @@ import {
   type Node as PliteNode,
 } from '@platejs/plite';
 import { createDOMGeometryKernel } from '@platejs/plite-dom/internal';
+
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { rootPlitePoint } from '../view-boundary-graph';
 import {

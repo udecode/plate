@@ -1,11 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
-import type { SidebarNavItem } from '@/types/nav';
-
 import Link, { type LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +16,7 @@ import {
 } from '@/lib/docs-root-nav';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
+import type { SidebarNavItem } from '@/types/nav';
 
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
@@ -68,7 +66,7 @@ function NavLabel({ label }: { label: SidebarNavItem['label'] }) {
   }
 
   return (
-    <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-[#000000] text-xs leading-none no-underline group-hover:no-underline">
+    <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
       {values[0]}
     </span>
   );
@@ -137,20 +135,20 @@ export function MobileNav({
             <div className="relative size-4">
               <span
                 className={cn(
-                  'absolute left-0 block h-0.5 w-4 bg-foreground transition-all duration-100',
+                  'absolute left-0 block h-0.5 w-4 bg-foreground transition-[top,transform] duration-100',
                   open ? '-rotate-45 top-[0.4rem]' : 'top-1'
                 )}
               />
               <span
                 className={cn(
-                  'absolute left-0 block h-0.5 w-4 bg-foreground transition-all duration-100',
+                  'absolute left-0 block h-0.5 w-4 bg-foreground transition-[top,transform] duration-100',
                   open ? 'top-[0.4rem] rotate-45' : 'top-2.5'
                 )}
               />
             </div>
             <span className="sr-only">{content.toggleMenu}</span>
           </div>
-          <span className="flex h-8 items-center font-medium text-lg leading-none">
+          <span className="flex h-8 items-center text-lg leading-none font-medium">
             {content.menu}
           </span>
         </Button>
@@ -164,7 +162,7 @@ export function MobileNav({
       >
         <div className="flex flex-col gap-12 overflow-auto p-6">
           <div className="flex flex-col gap-4">
-            <div className="font-medium text-muted-foreground text-sm">
+            <div className="text-sm font-medium text-muted-foreground">
               {content.menu}
             </div>
             <div className="flex flex-col gap-3">
@@ -176,7 +174,7 @@ export function MobileNav({
           <div className="flex flex-col gap-8">
             {navTree.map((section, sectionIndex) => (
               <div key={sectionIndex} className="flex flex-col gap-4">
-                <div className="font-medium text-muted-foreground text-sm">
+                <div className="text-sm font-medium text-muted-foreground">
                   {getNavTitle(section, locale)}
                 </div>
                 <div className="flex flex-col gap-3">
@@ -200,7 +198,7 @@ export function MobileNav({
                         {item.href ? (
                           renderNavLink(item, item.href)
                         ) : (
-                          <div className="font-medium text-lg">
+                          <div className="text-lg font-medium">
                             {getNavTitle(item, locale)}
                           </div>
                         )}
@@ -228,9 +226,10 @@ export function MobileNav({
   );
 }
 
-interface MobileLinkProps extends LinkProps {
+interface MobileLinkProps extends Omit<LinkProps, 'href'> {
   children: React.ReactNode;
   className?: string;
+  href: string;
   onOpenChange?: (open: boolean) => void;
   rel?: string;
   target?: string;
@@ -243,9 +242,8 @@ function MobileLink({
   onOpenChange,
   ...props
 }: MobileLinkProps) {
-  const { push } = useRouter();
-  const hrefString = href.toString();
-  const external = isExternalHref(hrefString);
+  const router = useRouter();
+  const external = isExternalHref(href);
 
   return (
     <Link
@@ -256,7 +254,7 @@ function MobileLink({
         if (external) return;
 
         event.preventDefault();
-        push(hrefString);
+        router.push(href);
       }}
       href={href}
       {...props}

@@ -86,10 +86,10 @@ switch (command) {
     result = runPnpm('rimraf', ['dist', ...commandArgs]);
     break;
   case 'p:lint':
-    result = runPnpm('biome', ['check', INIT_CWD, ...commandArgs]);
+    result = runPnpm('ultracite', ['check', '.', ...commandArgs]);
     break;
   case 'p:lint:fix':
-    result = runPnpm('biome', ['check', INIT_CWD, '--fix', ...commandArgs]);
+    result = runPnpm('ultracite', ['fix', '.', ...commandArgs]);
     break;
   case 'p:test': {
     const bunTestArgs = createBunTestArgs({

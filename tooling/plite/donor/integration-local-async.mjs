@@ -1,4 +1,4 @@
-// biome-ignore-all lint/suspicious/noConsole: CLI streams run status and pickup instructions.
+// CLI streams run status and pickup instructions.
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';

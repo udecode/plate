@@ -1,11 +1,5 @@
 import { createEditor, defineExtension, editorCommands } from '@platejs/plite';
 import {
-  addMark as editorAddMark,
-  getSnapshot as editorGetSnapshot,
-  select as editorSelect,
-  string as editorString,
-} from '@platejs/plite/internal';
-import {
   createDOMPhaseScheduler,
   type DOMPhaseScheduler,
   EDITOR_TO_PENDING_ACTION,
@@ -16,8 +10,15 @@ import {
   EDITOR_TO_SCHEDULE_FLUSH,
   IS_COMPOSING,
 } from '@platejs/plite-dom/internal';
+import {
+  addMark as editorAddMark,
+  getSnapshot as editorGetSnapshot,
+  select as editorSelect,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import {
   clearExpiredTextInputRepairEcho,
   createEditableInputController,

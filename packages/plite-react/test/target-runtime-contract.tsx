@@ -1,9 +1,10 @@
-import { act, render } from '@testing-library/react';
 import type { Range } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
 } from '@platejs/plite/internal';
+import { act, render } from '@testing-library/react';
+
 import { createReactEditor, Editable, Plite } from '../src';
 import {
   createEditableInputController,

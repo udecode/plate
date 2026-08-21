@@ -1,5 +1,6 @@
-import { useCallback, useContext } from 'react';
 import type { NodeKey } from '@platejs/plite';
+import { useCallback, useContext } from 'react';
+
 import { NodeKeyContext } from '../context';
 import { ProjectionContext } from '../projection-context';
 import { useGenericSelector } from './use-generic-selector';

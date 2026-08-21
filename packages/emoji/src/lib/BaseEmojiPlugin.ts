@@ -1,5 +1,4 @@
 import type { Emoji } from '@emoji-mart/data';
-
 import {
   triggerCombobox,
   type TriggerComboboxPluginState,

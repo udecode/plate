@@ -41,7 +41,11 @@ type AnyGeneratedEditorTypes = GeneratedEditorTypes<
   Readonly<Record<string, unknown>>
 >;
 
-/** @internal Type-only exact contract emitted by `plate generate`. */
+/**
+ * Type-only exact contract emitted by `plate generate`.
+ *
+ * @internal
+ */
 export type GeneratedEditorTypeProvider<
   TTypes extends AnyGeneratedEditorTypes,
 > = EditorNodeTypeProvider<() => TTypes['element'], () => TTypes['text']> &
@@ -60,7 +64,11 @@ type GeneratedTypesFactory<TPlugins> =
     ? TTypesFactory
     : never;
 
-/** @internal Exact generated value, or broad runtime `Value`. */
+/**
+ * Exact generated value, or broad runtime `Value`.
+ *
+ * @internal
+ */
 export type GeneratedEditorValue<TPlugins> =
   GeneratedValueFactory<TPlugins> extends () => infer TValue
     ? TValue extends Value
@@ -68,7 +76,11 @@ export type GeneratedEditorValue<TPlugins> =
       : Value
     : Value;
 
-/** @internal Exact generated mutation map, or `never` for authored plugins. */
+/**
+ * Exact generated mutation map, or `never` for authored plugins.
+ *
+ * @internal
+ */
 export type GeneratedEditorMutations<TPlugins> =
   GeneratedTypesFactory<TPlugins> extends () => infer TTypes
     ? TTypes extends AnyGeneratedEditorTypes

@@ -1,5 +1,6 @@
 import { type DecoratedRange, type Range, RangeApi } from '@platejs/plite';
 import { isEditor as editorIsEditor } from '@platejs/plite/internal';
+
 import { DOMEditor } from '../plugin/dom-editor';
 import { PLACEHOLDER_SYMBOL } from './weak-maps';
 

@@ -121,7 +121,7 @@ function getRegistryChangelogDir() {
 
 function readRegistryChangelogJson<T>(fileName: string): T {
   return JSON.parse(
-    fs.readFileSync(path.join(getRegistryChangelogDir(), fileName), 'utf8')
+    fs.readFileSync(path.join(getRegistryChangelogDir(), fileName), 'utf-8')
   ) as T;
 }
 

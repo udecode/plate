@@ -43,7 +43,10 @@ if (packages.length === 0) {
   process.exit(0);
 }
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 async function isPublished(pkg) {
   try {

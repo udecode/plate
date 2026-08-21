@@ -3,6 +3,7 @@ import {
   type AnyEditor,
   getActiveEditorTransaction,
 } from '@platejs/plite/internal';
+
 import { setEditorMarks, setEditorTargetRuntime } from './runtime-editor-api';
 
 export const writeRuntimeSelection = (

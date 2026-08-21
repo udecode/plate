@@ -1,9 +1,7 @@
-import * as React from 'react';
-
 import type { BaseKbdPlugin } from '@platejs/basic-nodes';
 import type { PliteLeafProps } from 'platejs/static';
-
 import { PliteLeaf } from 'platejs/static';
+import * as React from 'react';
 
 export function KbdLeafStatic(props: PliteLeafProps<typeof BaseKbdPlugin>) {
   return (

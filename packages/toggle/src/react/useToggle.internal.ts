@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
-
 import { useEditorPlugin, useEditorSelector } from '@platejs/core/react';
 import { ElementApi, type NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
+import { useEffect } from 'react';
 
 import { TogglePlugin } from './TogglePlugin';
 

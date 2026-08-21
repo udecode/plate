@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import fc from 'fast-check';
-
 import {
   createEditor,
   defineEditorSchema,
@@ -14,11 +12,17 @@ import {
   schema,
   target,
 } from '@platejs/plite';
+import fc from 'fast-check';
 
 import { ChangeDraft } from '../src/core/change/builder';
 import { DocumentIndex } from '../src/core/change/document-index';
 import { RootChange } from '../src/core/change/root-change';
 import type { JsonEditorValue } from '../src/core/change/tokens';
+import { getEditorSchema } from '../src/core/editor-runtime';
+import {
+  getCompiledEditorSchemaFromApi,
+  type InternalEditorSchemaApi,
+} from '../src/core/editor-schema';
 import {
   ensureElementOwnedRootIndex,
   getElementOwnedRootGrammarBindings,
@@ -27,11 +31,6 @@ import {
   rebaseElementOwnedRootIndex,
   resolveElementOwnedRootPath,
 } from '../src/core/element-owned-root-index';
-import {
-  getCompiledEditorSchemaFromApi,
-  type InternalEditorSchemaApi,
-} from '../src/core/editor-schema';
-import { getEditorSchema } from '../src/core/editor-runtime';
 
 const paragraph = (text: string): Element => ({
   children: [{ text }],

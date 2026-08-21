@@ -17,6 +17,7 @@ import {
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
+
 import type { EditableDOMStrategyRuntime } from '../components/editable';
 import { isSelectionPartialDOMBacked } from '../dom-strategy/dom-strategy-commands';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';

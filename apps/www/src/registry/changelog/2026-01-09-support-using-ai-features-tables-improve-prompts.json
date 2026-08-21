@@ -87,7 +87,7 @@
       "migrationNotes": [],
       "targets": ["ai-api", "ai-menu", "use-chat"],
       "source": {
-        "line": 13,
+        "line": 50,
         "row": 1,
         "legacyRelease": {
           "date": "2026-01-09",
@@ -104,7 +104,7 @@
       "migrationNotes": [],
       "targets": ["cursor-overlay"],
       "source": {
-        "line": 15,
+        "line": 52,
         "row": 2,
         "legacyRelease": {
           "date": "2026-01-09",

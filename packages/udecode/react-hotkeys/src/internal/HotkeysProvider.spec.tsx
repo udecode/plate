@@ -1,11 +1,11 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import { act, render, renderHook } from '@testing-library/react';
+import React from 'react';
 import type { ReactNode } from 'react';
-import useHotkeys from './useHotkeys';
+
 import { HotkeysProvider, useHotkeysContext } from './HotkeysProvider';
+import useHotkeys from './useHotkeys';
 
 const createWrapper =
   (initiallyActiveScopes?: string[]) =>

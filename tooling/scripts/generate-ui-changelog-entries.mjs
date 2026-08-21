@@ -1,11 +1,12 @@
-import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
-import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { parse } from '@babel/parser';
+
+import { parse, parseExpression } from '@babel/parser';
 
 const DEFAULT_SOURCE = 'apps/www/src/registry/changelog/entries';
 const LEGACY_SOURCE = 'tooling/data/plate-ui-changelog.mdx';
@@ -570,20 +571,69 @@ function parseFrontmatterValue(value, filePath, key) {
     trimmed === 'false' ||
     trimmed === 'null' ||
     trimmed.startsWith('"') ||
+    trimmed.startsWith("'") ||
     trimmed.startsWith('{') ||
     trimmed.startsWith('[') ||
     FRONTMATTER_NUMBER_PATTERN.test(trimmed)
   ) {
     try {
       return JSON.parse(trimmed);
-    } catch (error) {
-      throw new Error(
-        `Invalid frontmatter JSON value for ${key} in ${filePath}: ${error.message}`
-      );
+    } catch {
+      try {
+        return frontmatterExpressionToValue(parseExpression(trimmed));
+      } catch (error) {
+        throw new Error(
+          `Invalid frontmatter value for ${key} in ${filePath}: ${error.message}`,
+          { cause: error }
+        );
+      }
     }
   }
 
   return trimmed;
+}
+
+function frontmatterExpressionToValue(node) {
+  if (
+    node.type === 'StringLiteral' ||
+    node.type === 'NumericLiteral' ||
+    node.type === 'BooleanLiteral'
+  ) {
+    return node.value;
+  }
+  if (node.type === 'NullLiteral') return null;
+  if (node.type === 'UnaryExpression' && node.operator === '-') {
+    const value = frontmatterExpressionToValue(node.argument);
+
+    if (typeof value === 'number') return -value;
+  }
+  if (node.type === 'ArrayExpression') {
+    return node.elements.map((element) => {
+      if (!element || element.type === 'SpreadElement') {
+        throw new Error('Frontmatter arrays must contain plain values');
+      }
+
+      return frontmatterExpressionToValue(element);
+    });
+  }
+  if (node.type === 'ObjectExpression') {
+    return Object.fromEntries(
+      node.properties.map((property) => {
+        if (property.type !== 'ObjectProperty' || property.computed) {
+          throw new Error('Frontmatter objects must contain plain properties');
+        }
+
+        const key =
+          property.key.type === 'Identifier'
+            ? property.key.name
+            : frontmatterExpressionToValue(property.key);
+
+        return [key, frontmatterExpressionToValue(property.value)];
+      })
+    );
+  }
+
+  throw new Error(`Unsupported frontmatter value: ${node.type}`);
 }
 
 function parseFrontmatter(content, filePath) {
@@ -599,8 +649,30 @@ function parseFrontmatter(content, filePath) {
     normalizedContent.slice(0, bodyStartIndex).split('\n').length - 1;
   const data = {};
 
+  let currentKey;
+  let currentValue = [];
+
+  const flushValue = () => {
+    if (!currentKey) return;
+
+    data[currentKey] = parseFrontmatterValue(
+      currentValue.join('\n'),
+      filePath,
+      currentKey
+    );
+  };
+
   for (const line of match[1].split('\n')) {
     if (!line.trim()) continue;
+
+    if (/^\s/u.test(line)) {
+      if (!currentKey) {
+        throw new Error(`Invalid frontmatter line in ${filePath}: ${line}`);
+      }
+
+      currentValue.push(line);
+      continue;
+    }
 
     const colonIndex = line.indexOf(':');
 
@@ -608,11 +680,11 @@ function parseFrontmatter(content, filePath) {
       throw new Error(`Invalid frontmatter line in ${filePath}: ${line}`);
     }
 
-    const key = line.slice(0, colonIndex).trim();
-    const value = line.slice(colonIndex + 1);
-
-    data[key] = parseFrontmatterValue(value, filePath, key);
+    flushValue();
+    currentKey = line.slice(0, colonIndex).trim();
+    currentValue = [line.slice(colonIndex + 1)];
   }
+  flushValue();
 
   return { body: match[2], bodyLineOffset, data };
 }
@@ -626,7 +698,8 @@ function parseEntryMetadata(line, filePath) {
     return JSON.parse(raw);
   } catch (error) {
     throw new Error(
-      `Invalid entry metadata JSON in ${filePath}: ${error.message}`
+      `Invalid entry metadata JSON in ${filePath}: ${error.message}`,
+      { cause: error }
     );
   }
 }
@@ -686,7 +759,7 @@ function assertEntrySource(value, filePath, key) {
 }
 
 function parseRegistryChangelogEntryFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, 'utf-8');
   const { body, bodyLineOffset, data } = parseFrontmatter(content, filePath);
   const id = assertEntrySource(data.id, filePath, 'id');
   const date = assertEntrySource(data.date, filePath, 'date');
@@ -756,7 +829,7 @@ Options:
 function readJsonArray(filePath) {
   if (!fs.existsSync(filePath)) return [];
 
-  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
   if (!Array.isArray(parsed)) {
     throw new Error(`${filePath} must contain a JSON array`);
@@ -783,7 +856,7 @@ function readRegistryDefinitions(registryFiles) {
     .filter((filePath) => path.basename(filePath).startsWith('registry-'))
     .filter((filePath) => filePath.endsWith('.ts'))
     .map((filePath) => ({
-      content: fs.readFileSync(filePath, 'utf8'),
+      content: fs.readFileSync(filePath, 'utf-8'),
       path: filePath,
     }));
 }
@@ -1519,7 +1592,7 @@ function getBlameCommitForLine(sourcePath, line) {
     const output = execFileSync(
       'git',
       ['blame', '--porcelain', '-M', '-L', `${line},${line}`, '--', sourcePath],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+      { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }
     );
     const commitOid = output.split('\n')[0]?.split(' ')[0];
 
@@ -1536,7 +1609,7 @@ function getCommitMetadata(commitOid, warnings) {
     const output = execFileSync(
       'git',
       ['show', '-s', '--format=%H%n%h%n%cs%n%cI%n%s%n%an%n%ae', commitOid],
-      { encoding: 'utf8' }
+      { encoding: 'utf-8' }
     );
     const [oid, shortOid, date, committedAt, subject, authorName, authorEmail] =
       output.trimEnd().split('\n');
@@ -1575,7 +1648,7 @@ function getPullRequestForCommit(commitOid, warnings) {
         '--limit',
         '10',
       ],
-      { encoding: 'utf8' }
+      { encoding: 'utf-8' }
     );
     const pullRequests = JSON.parse(output);
 
@@ -1703,7 +1776,7 @@ function getChangeUnitCommitCandidates(changeUnit) {
 function readGitCommitDate(ref) {
   try {
     return execFileSync('git', ['log', '-1', '--format=%cI', ref], {
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
   } catch {
@@ -1815,8 +1888,7 @@ export function writeRegistryChangelogEvents(
       'pnpm',
       [
         'exec',
-        'biome',
-        'format',
+        'oxfmt',
         '--write',
         ...outputs.map((output) => output.targetPath),
       ],
@@ -1872,8 +1944,8 @@ export function checkRegistryChangelogArtifacts(
       continue;
     }
 
-    const actual = fs.readFileSync(actualPath, 'utf8');
-    const expected = fs.readFileSync(expectedPath, 'utf8');
+    const actual = fs.readFileSync(actualPath, 'utf-8');
+    const expected = fs.readFileSync(expectedPath, 'utf-8');
 
     if (actual !== expected) {
       failures.push(`Out of date ${relativePath(actualPath)}`);
@@ -1920,7 +1992,7 @@ function main() {
     : null;
   const source = sourceIsDirectory
     ? null
-    : fs.readFileSync(args.source, 'utf8');
+    : fs.readFileSync(args.source, 'utf-8');
   const rows = source ? parseComponentChangelog(source) : [];
   const selectedRows = args.limit ? rows.slice(0, args.limit) : rows;
   const selectedEntries =

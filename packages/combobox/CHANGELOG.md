@@ -24,14 +24,14 @@
   // Before
   MentionPlugin.configure({
     options: {
-      getUserId: (editor) => "123",
+      getUserId: (editor) => '123',
     },
   });
 
   // After
   const editor = usePlateEditor({
     plugins: [MentionPlugin],
-    userId: "123",
+    userId: '123',
   });
   ```
 
@@ -52,13 +52,13 @@
   ```tsx
   SlashPlugin.configure({
     options: {
-      getUserId: (editor) => editor.getOption(YjsPlugin, "userId"),
+      getUserId: (editor) => editor.getOption(YjsPlugin, 'userId'),
     },
   });
 
   MentionPlugin.configure({
     options: {
-      getUserId: (editor) => editor.getOption(YjsPlugin, "userId"),
+      getUserId: (editor) => editor.getOption(YjsPlugin, 'userId'),
     },
   });
   ```

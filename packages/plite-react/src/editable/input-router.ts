@@ -1,3 +1,13 @@
+import { type Path, type Range, RangeApi } from '@platejs/plite';
+import { getSelection, isDOMElement, isDOMText } from '@platejs/plite-dom';
+import {
+  type DOMPhaseScheduler,
+  EDITOR_TO_ELEMENT,
+  NODE_TO_ELEMENT,
+  setEditorDOMEditableElement,
+  setEditorDOMRootElement,
+  supportsDOMBeforeInput,
+} from '@platejs/plite-dom/internal';
 import {
   type ClipboardEvent,
   type CompositionEvent,
@@ -12,16 +22,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { type Path, type Range, RangeApi } from '@platejs/plite';
-import { getSelection, isDOMElement, isDOMText } from '@platejs/plite-dom';
-import {
-  type DOMPhaseScheduler,
-  EDITOR_TO_ELEMENT,
-  NODE_TO_ELEMENT,
-  setEditorDOMEditableElement,
-  setEditorDOMRootElement,
-  supportsDOMBeforeInput,
-} from '@platejs/plite-dom/internal';
+
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
@@ -1469,7 +1470,6 @@ export const useEditableDOMInputHandler = ({
       inputController,
       claimDOMInput,
       onReadOnlyDOMInput,
-      phaseScheduler,
       readOnly,
       repairDOMInput,
       restoreOwnedDOMText,

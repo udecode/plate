@@ -37,18 +37,14 @@ type ModelTarget =
   | Readonly<{ kind: 'type'; type: string }>;
 
 const modelAtom: fc.Arbitrary<ModelTarget> = fc.oneof(
-  fc.integer({ max: TYPE_COUNT - 1, min: 0 }).map(
-    (index): ModelTarget => ({
-      kind: 'type',
-      type: typeName(index),
-    })
-  ),
-  fc.integer({ max: GROUP_COUNT - 1, min: 0 }).map(
-    (index): ModelTarget => ({
-      group: groupName(index),
-      kind: 'group',
-    })
-  ),
+  fc.integer({ max: TYPE_COUNT - 1, min: 0 }).map((index): ModelTarget => ({
+    kind: 'type',
+    type: typeName(index),
+  })),
+  fc.integer({ max: GROUP_COUNT - 1, min: 0 }).map((index): ModelTarget => ({
+    group: groupName(index),
+    kind: 'group',
+  })),
   fc.constantFrom(...ROOTS).map((root): ModelTarget => ({ kind: 'root', root }))
 );
 
@@ -61,18 +57,18 @@ const unary = (input: fc.Arbitrary<ModelTarget>): fc.Arbitrary<ModelTarget> =>
 const levelOne = unary(modelAtom);
 const targetArbitrary: fc.Arbitrary<ModelTarget> = fc.oneof(
   unary(levelOne),
-  fc.tuple(levelOne, levelOne, fc.option(levelOne, { nil: undefined })).map(
-    ([left, right, third]): ModelTarget => ({
+  fc
+    .tuple(levelOne, levelOne, fc.option(levelOne, { nil: undefined }))
+    .map(([left, right, third]): ModelTarget => ({
       kind: 'and',
       targets: third ? [left, right, third] : [left, right],
-    })
-  ),
-  fc.tuple(levelOne, levelOne, fc.option(levelOne, { nil: undefined })).map(
-    ([left, right, third]): ModelTarget => ({
+    })),
+  fc
+    .tuple(levelOne, levelOne, fc.option(levelOne, { nil: undefined }))
+    .map(([left, right, third]): ModelTarget => ({
       kind: 'or',
       targets: third ? [left, right, third] : [left, right],
-    })
-  )
+    }))
 );
 const contextArbitrary = fc.record({
   ancestors: fc.array(fc.integer({ max: TYPE_COUNT - 1, min: 0 }), {

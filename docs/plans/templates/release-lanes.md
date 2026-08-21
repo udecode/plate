@@ -113,7 +113,7 @@ Completion Gates:
 | Latest release state | pending | Read GitHub release and npm `latest` | pending |
 | Beta release state | pending | Read release workflow and npm `beta` | pending |
 | Stale sync PR cleanup | pending | Close stale sync PRs or record N/A | pending |
-| P2 autoreview | pending | Review the release-lane result with `--max-priority P2` and close accepted findings; P3 is opt-in only | pending |
+| P1 autoreview | pending | Review the release-lane result with `--max-priority P1` and close accepted findings; P2/P3 are opt-in only | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs <this plan>` | pending |
 
 Phase / pass table:

@@ -1,9 +1,7 @@
-import * as React from 'react';
-
-import type { RenderStaticNodeWrapper } from 'platejs';
-
 import { BaseListPlugin, isOrderedList, ListType } from '@platejs/list';
 import { CheckIcon } from 'lucide-react';
+import type { RenderStaticNodeWrapper } from 'platejs';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 

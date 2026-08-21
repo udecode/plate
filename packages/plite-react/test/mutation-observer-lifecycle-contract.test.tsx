@@ -1,5 +1,6 @@
-import { useSyncExternalStore } from 'react';
 import { act, render } from '@testing-library/react';
+import { useSyncExternalStore } from 'react';
+
 import { EditableDOMCommitFence } from '../src/components/editable-dom-commit-fence';
 import {
   EditableDOMRuntime,
@@ -14,7 +15,7 @@ import { createReactEditor } from '../src/plugin/with-react';
 
 const waitForMutations = () =>
   new Promise<void>((resolve) => {
-    setTimeout(resolve);
+    setTimeout(resolve, 0);
   });
 
 const createExternalStore = () => {
@@ -219,13 +220,17 @@ test('read-only root replacement disconnects the old observer and observes only 
   runtime.setRoot(secondRoot);
 
   firstRoot.setAttribute('data-external', 'ignored');
-  await new Promise((resolve) => setTimeout(resolve));
+  await new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
   runtime.domPhaseScheduler.flush();
 
   expect(onRepair).not.toHaveBeenCalled();
 
   secondRoot.setAttribute('data-external', 'repair');
-  await new Promise((resolve) => setTimeout(resolve));
+  await new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
   runtime.domPhaseScheduler.flush();
 
   expect(onRepair).toHaveBeenCalledTimes(1);

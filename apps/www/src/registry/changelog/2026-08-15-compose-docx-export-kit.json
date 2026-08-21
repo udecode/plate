@@ -49,7 +49,7 @@
       ],
       "targets": ["docx-export-kit", "export-toolbar-button"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-08-15",

@@ -1,5 +1,12 @@
-import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
-
+import { type PlateEditor, useEditor, useElement } from '@platejs/core/react';
+import {
+  type Element,
+  ElementApi,
+  type NodeEntry,
+  type Path,
+  PathApi,
+  type NodeKey,
+} from '@platejs/plite';
 import React from 'react';
 import {
   type ConnectDragPreview,
@@ -11,16 +18,8 @@ import {
   useDrag,
   useDrop,
 } from 'react-dnd';
+import { getEmptyImage, NativeTypes } from 'react-dnd-html5-backend';
 
-import { type PlateEditor, useEditor, useElement } from '@platejs/core/react';
-import {
-  type Element,
-  ElementApi,
-  type NodeEntry,
-  type Path,
-  PathApi,
-  type NodeKey,
-} from '@platejs/plite';
 import { useDndPluginStore } from './internal/DndStore';
 import { DndStorePlugin } from './internal/DndStorePlugin';
 
@@ -60,13 +59,19 @@ export type CanDropCallback = (args: {
   editor: PlateEditor;
 }) => boolean;
 
-export interface UseDragNodeOptions
-  extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
+export interface UseDragNodeOptions extends DragSourceHookSpec<
+  DragItemNode,
+  unknown,
+  { isDragging: boolean }
+> {
   element: Element;
 }
 
-export interface UseDropNodeOptions
-  extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
+export interface UseDropNodeOptions extends DropTargetHookSpec<
+  DragItemNode,
+  unknown,
+  { isOver: boolean }
+> {
   element: Element;
   nodeRef: React.RefObject<HTMLElement | null>;
   canDropNode?: CanDropCallback;

@@ -1,12 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
 import type { HeadingPlugin } from '@platejs/basic-nodes/react';
-import type { PlateElementProps } from 'platejs/react';
-
 import { cva } from 'class-variance-authority';
+import type { PlateElementProps } from 'platejs/react';
 import { PlateElement } from 'platejs/react';
+import * as React from 'react';
 
 const headingVariants = cva(
   'relative mb-1 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',

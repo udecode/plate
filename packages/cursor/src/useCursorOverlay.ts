@@ -1,9 +1,8 @@
-import React from 'react';
-
 import { useEditor } from '@platejs/core/react';
 import type { Range } from '@platejs/plite';
 import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
 import type { UnknownObject } from '@udecode/utils';
+import React from 'react';
 
 import {
   FROZEN_EMPTY_ARRAY,

@@ -1,3 +1,5 @@
+import { BaseBoldPlugin } from '@platejs/basic-nodes';
+import { BaseFontColorPlugin } from '@platejs/basic-styles';
 import {
   type BaseEditorOptions,
   type BasePluginInput,
@@ -5,8 +7,6 @@ import {
   createBaseEditor as createTypedBaseEditor,
   ElementIdPlugin,
 } from '@platejs/core';
-import { BaseBoldPlugin } from '@platejs/basic-nodes';
-import { BaseFontColorPlugin } from '@platejs/basic-styles';
 import { BaseListPlugin } from '@platejs/list';
 import {
   ContentSlice,
@@ -18,9 +18,9 @@ import { writeHostFragmentData } from '@platejs/plite-dom';
 import { PLUGINS } from '@platejs/utils';
 import type { Pluggable, Preset, Settings } from 'unified';
 
-import { MarkdownPlugin } from './MarkdownPlugin';
 import { createTestEditor } from './__tests__/createTestEditor';
 import { createMarkdownRuntime } from './internal/markdownConversion';
+import { MarkdownPlugin } from './MarkdownPlugin';
 import { remarkMdx } from './plugins';
 import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
 

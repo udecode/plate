@@ -5,6 +5,7 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
+
 import { readRootChildren } from '../root-key';
 import {
   getPliteBoundaryPoint,

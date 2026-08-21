@@ -9,14 +9,15 @@ import { Hotkeys } from '@platejs/plite-dom';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 import { history } from '@platejs/plite-history';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import { isSelectAllHotkey } from '../src/dom-strategy/dom-strategy-commands';
 import { getTextDirection } from '../src/editable/caret-engine';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { resolveHistoryFocusEditor } from '../src/editable/history-focus';
 import {
   applyEditableKeyDown as applyRuntimeEditableKeyDown,
   shouldDeferBackspaceToNativeInput,
 } from '../src/editable/keyboard-input-strategy';
-import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { applyEditableCommand } from '../src/editable/mutation-controller';
 import { isNativeVerticalKeyFastPathFullyMounted } from '../src/editable/runtime-keyboard-events';
 import { ReactEditor } from '../src/plugin/react-editor';
@@ -163,11 +164,11 @@ it('detects first-strong keyboard text direction for modern RTL scripts', () => 
   expect(getTextDirection(`123 ${String.fromCodePoint(0x1_e9_00)}`)).toBe(
     'rtl'
   );
-  expect(getTextDirection('abc \u05d0')).toBe('ltr');
-  expect(getTextDirection('123 \u05d0')).toBe('rtl');
+  expect(getTextDirection('abc \u05D0')).toBe('ltr');
+  expect(getTextDirection('123 \u05D0')).toBe('rtl');
   expect(getTextDirection('123 456')).toBe('neutral');
   expect(getTextDirection('\u0661\u0662\u0663')).toBe('neutral');
-  expect(getTextDirection('\u06f1\u06f2\u06f3 abc')).toBe('ltr');
+  expect(getTextDirection('\u06F1\u06F2\u06F3 abc')).toBe('ltr');
 });
 
 const domRect = ({

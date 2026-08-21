@@ -181,7 +181,7 @@ Completion Gates:
 | Package manifests, lockfile, or install graph changed | pending | Run target package-manager install/checks when touched; otherwise N/A | pending |
 | User review boundary | pending | In planning mode, stop and ask the user to accept rows; in apply mode, record accepted payload | pending |
 | Output budget discipline | pending | Verify broad output was artifacted/capped, or record accidental output and recovery | pending |
-| P2 autoreview | pending | For non-trivial apply runs, load `.agents/skills/autoreview/SKILL.md`, pass `--max-priority P2`, and close accepted/actionable findings; use P3 only when explicitly requested; for planning-only or no-local-patch runs, record N/A with reason | pending |
+| P1 autoreview | pending | For non-trivial apply runs, load `.agents/skills/autoreview/SKILL.md`, pass `--max-priority P1`, and close accepted/actionable findings; use P2 or P3 only when explicitly requested; for planning-only or no-local-patch runs, record N/A with reason | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

@@ -3,6 +3,7 @@ import {
   applyBuiltDocumentChange,
   runEditorTransaction,
 } from '../core/public-state';
+import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
   type Element,
@@ -203,6 +204,61 @@ export const wrapNodes = ((
         { length: lastChildIndex - firstChildIndex + 1 },
         (_, offset) => [...commonPath, firstChildIndex + offset]
       );
+      const finalWrapperPath = [...commonPath, firstChildIndex];
+
+      if (!split) {
+        const movedChildren = movePaths.flatMap((path) => {
+          const node = getNode(editor, path)[0];
+
+          return NodeApi.isDescendant(node) ? [node] : [];
+        });
+
+        if (movedChildren.length !== movePaths.length) continue;
+
+        if (nextSelection) {
+          const mapPoint = (point: Point) => {
+            const matchIndex = movePaths.findIndex((path) =>
+              PathApi.equals(path, point.path.slice(0, path.length))
+            );
+
+            if (matchIndex < 0) return point;
+            const basePath = movePaths[matchIndex]!;
+
+            return {
+              path: [
+                ...finalWrapperPath,
+                matchIndex,
+                ...point.path.slice(basePath.length),
+              ],
+              offset: point.offset,
+            };
+          };
+
+          nextSelection = {
+            anchor: mapPoint(nextSelection.anchor),
+            focus: mapPoint(nextSelection.focus),
+          };
+        }
+
+        applyBuiltDocumentChange(
+          editor,
+          (builder, root) =>
+            builder.replaceChildren(
+              root,
+              commonPath,
+              firstChildIndex,
+              movePaths.length,
+              [{ ...wrapper, children: movedChildren }]
+            ),
+          {
+            nodeKeyTransfers: movedChildren.map((child, index) => ({
+              path: [...finalWrapperPath, index],
+              source: child,
+            })),
+          }
+        );
+        continue;
+      }
       const pathAnchors = movePaths.map((path) =>
         editor.anchor(path, {
           association: 'forward',

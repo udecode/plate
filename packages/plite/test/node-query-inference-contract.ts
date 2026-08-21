@@ -24,6 +24,7 @@ import {
   unwrapNodes,
   wrapNodes,
 } from '@platejs/plite/internal';
+
 import { nodes as staticNodes } from '../src/editor/nodes';
 
 const ArticleSchema = defineEditorSchema('schema:node-query-inference', {

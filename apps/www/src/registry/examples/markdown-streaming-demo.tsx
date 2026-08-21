@@ -1,15 +1,6 @@
 'use client';
-import { PLUGINS } from '@platejs/utils';
-
-import {
-  type HTMLAttributes,
-  useCallback,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
-
 import { AIChatPlugin } from '@platejs/ai/react';
+import { PLUGINS } from '@platejs/utils';
 import {
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -18,16 +9,23 @@ import {
   RotateCcwIcon,
 } from 'lucide-react';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
+import {
+  type HTMLAttributes,
+  useCallback,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { EditorKit } from '@/registry/components/editor/plugins';
-import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import {
   Editor,
   EditorContainer,
   EditorView,
 } from '@/registry/components/editor/editor';
+import { EditorKit } from '@/registry/components/editor/plugins';
+import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 
 import { BaseEditorKit } from '../components/editor/plugins-static';
 
@@ -459,7 +457,7 @@ export default function MarkdownStreamingDemo() {
       <div className="mb-10 rounded bg-gray-100 p-4">
         {/* Scenario Selection */}
         <div className="mb-4">
-          <span className="mb-2 block font-medium text-sm">Test Scenario:</span>
+          <span className="mb-2 block text-sm font-medium">Test Scenario:</span>
           <select
             className="w-64 rounded border px-3 py-2"
             value={selectedScenario}
@@ -518,7 +516,7 @@ export default function MarkdownStreamingDemo() {
         </div>
 
         <div className="mb-4 flex items-center gap-2">
-          <span className="block font-medium text-sm">Speed:</span>
+          <span className="block text-sm font-medium">Speed:</span>
           <select
             className="rounded border px-2 py-1"
             value={speed ?? 'default'}
@@ -542,7 +540,7 @@ export default function MarkdownStreamingDemo() {
               </option>
             ))}
           </select>
-          <span className="text-muted-foreground text-sm">
+          <span className="text-sm text-muted-foreground">
             The default speed is 10ms, but it adjusts to 100ms when streaming a
             table or code block.
           </span>
@@ -557,7 +555,7 @@ export default function MarkdownStreamingDemo() {
           />
         </div>
 
-        <span className="text-muted-foreground text-sm">
+        <span className="text-sm text-muted-foreground">
           PlateStatic offers more robust and flawless performance.
         </span>
       </div>
@@ -598,7 +596,7 @@ export default function MarkdownStreamingDemo() {
         </div>
       </div>
 
-      <h2 className="mt-8 mb-4 font-semibold text-xl">Raw Token Comparison</h2>
+      <h2 className="mt-8 mb-4 text-xl font-semibold">Raw Token Comparison</h2>
       <div className="my-2 flex gap-10">
         <div className="w-1/2">
           <h3 className="mb-2 font-semibold">Original Chunks</h3>

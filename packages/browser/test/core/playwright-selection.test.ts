@@ -1,12 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 import {
   takeDisplayedSelectionSnapshotForRoot,
   takeSelectionSnapshot,
 } from '../../src/playwright';
-import { waitForSelectionSync } from '../../src/playwright/selection-snapshots';
 import { waitForSelectionRange } from '../../src/playwright/selection-handle';
+import { waitForSelectionSync } from '../../src/playwright/selection-snapshots';
 
 const createPage = () =>
   ({
@@ -203,8 +204,9 @@ describe('playwright selection snapshots', () => {
     `;
 
     const first = document.querySelector<HTMLElement>('[data-editor="first"]')!;
-    const secondText = document.querySelector('[data-editor="second"] span')!
-      .firstChild!;
+    const secondText = document.querySelector(
+      '[data-editor="second"] span'
+    )!.firstChild!;
     const firstText = first.querySelector('span')!.firstChild!;
     const selection = window.getSelection()!;
     const outsideRange = document.createRange();

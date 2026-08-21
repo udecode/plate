@@ -20,7 +20,6 @@ import {
   type Selection,
   type SelectionValue,
 } from '../interfaces/selection';
-
 import {
   type DocumentChange,
   getInternalDocumentRootChange,
@@ -28,14 +27,17 @@ import {
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
 import type { JsonEditorValue } from './change/tokens';
-import { toPublicRoot } from './public-root';
 import { getEditorSchema } from './editor-runtime';
 import {
   type ExtensionRegistry,
   getExtensionRegistry,
 } from './extension-registry';
-import { decodeVersionedValue, encodeVersionedValue } from './value-codec';
-import { assertEditorJsonValue } from './value-codec';
+import { toPublicRoot } from './public-root';
+import {
+  decodeVersionedValue,
+  encodeVersionedValue,
+  assertEditorJsonValue,
+} from './value-codec';
 
 type MappingOptions = {
   association?: 'backward' | 'forward';
@@ -72,8 +74,14 @@ type RuntimeSelectionSpec = Readonly<{
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const hasOnlyKeys = (value: Record<string, unknown>, keys: readonly string[]) =>
-  Object.keys(value).every((key) => keys.includes(key));
+const hasOnlyKeys = (
+  value: Record<string, unknown>,
+  keys: readonly string[]
+) => {
+  const keySet = new Set(keys);
+
+  return Object.keys(value).every((key) => keySet.has(key));
+};
 
 const isStrictPath = (value: unknown): value is Path =>
   Array.isArray(value) &&
@@ -353,8 +361,9 @@ const createMapContext = (
     if (!backward) {
       return publicPoint(forward as Point, targetRoot, includeRoot);
     }
-    if (!forward)
+    if (!forward) {
       return publicPoint(backward as Point, targetRoot, includeRoot);
+    }
 
     const backwardPoint = backward as Point;
     const forwardPoint = forward as Point;

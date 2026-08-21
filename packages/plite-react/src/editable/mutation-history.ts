@@ -1,4 +1,5 @@
 import type { DocumentChange, RootKey } from '@platejs/plite';
+
 import {
   readPliteViewSelection,
   readPliteViewSelectionHistoryEntry,

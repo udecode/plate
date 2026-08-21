@@ -2,9 +2,7 @@
 
 Footnote plugins for Plate.
 
-This package adds dedicated footnote reference and footnote definition nodes,
-plus transforms and queries for inserting, resolving, navigating, and repairing
-footnotes.
+This package adds dedicated footnote reference and footnote definition nodes, plus transforms and queries for inserting, resolving, navigating, and repairing footnotes.
 
 ## Features
 

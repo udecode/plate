@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
+
 import { ElementIdPlugin } from '@platejs/core';
 import { DocumentChange } from '@platejs/plite';
-import { BaseYjsPlugin } from '@platejs/yjs';
-
 import { jsxt, type TestEditor } from '@platejs/test-utils';
+import { BaseYjsPlugin } from '@platejs/yjs';
 
 import {
   createTestTableEditor,

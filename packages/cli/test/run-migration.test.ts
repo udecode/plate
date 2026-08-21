@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, it } from 'bun:test';
 import {
   mkdtempSync,
   readFileSync,
@@ -10,15 +11,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { afterEach, describe, expect, it } from 'bun:test';
-
 import {
   createBaseEditor,
   defineBasePlugin,
   defineDocumentMigrations,
 } from '../../core/src/index';
-import { schema } from '../../plite/src/index';
 import { migratePlateV54 } from '../../plate/src/migrations/index';
+import { schema } from '../../plite/src/index';
 import {
   runEditorMigrationInput,
   runEditorMigrations,

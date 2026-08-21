@@ -1,0 +1,349 @@
+{
+  "budget": {
+    "maxLongTasks": 0,
+    "maxMutationP95": 16,
+    "maxSecondPaintP95": 32
+  },
+  "commandBlockers": [],
+  "commitDelta": 20,
+  "diagnose": false,
+  "domSelection": {
+    "anchor": {
+      "path": [
+        0,
+        0
+      ],
+      "offset": 57
+    },
+    "focus": {
+      "path": [
+        0,
+        0
+      ],
+      "offset": 57
+    }
+  },
+  "beforeInput": {
+    "max": 0.599999999627471,
+    "mean": 0.39500000011175873,
+    "p50": 0.40000000037252903,
+    "p75": 0.40000000037252903,
+    "p95": 0.599999999627471,
+    "samples": [
+      0.40000000037252903,
+      0.599999999627471,
+      0.5,
+      0.599999999627471,
+      0.40000000037252903,
+      0.5,
+      0.40000000037252903,
+      0.5,
+      0.30000000074505806,
+      0.40000000037252903,
+      0.40000000037252903,
+      0.2999999988824129,
+      0.30000000074505806,
+      0.40000000037252903,
+      0.30000000074505806,
+      0.2000000011175871,
+      0.3999999985098839,
+      0.30000000074505806,
+      0.30000000074505806,
+      0.3999999985098839
+    ]
+  },
+  "finalText": "Welcome to the Plate Playground!abcdefghijklmnopqrstuvwxy",
+  "focusPreserved": true,
+  "firstPaint": {
+    "max": 8.600000000372347,
+    "mean": 7.2900000003166046,
+    "p50": 7.400000000372529,
+    "p75": 7.600000000372347,
+    "p95": 7.900000000745422,
+    "samples": [
+      5.400000000745422,
+      6.999999999627107,
+      7.699999999999818,
+      6.700000000744694,
+      7.400000000372529,
+      7.400000001117405,
+      6.800000000372165,
+      8.600000000372347,
+      7.600000000372347,
+      7.700000000744694,
+      7.100000000000364,
+      7.699999999999818,
+      7.000000000372893,
+      7.600000000000364,
+      7.600000000372347,
+      6.60000000074524,
+      7.599999999627471,
+      7.900000000745422,
+      7.400000000372529,
+      6.999999999627107
+    ]
+  },
+  "inputMutation": {
+    "max": 5.099999999627471,
+    "mean": 1.7949999999254942,
+    "p50": 1.599999999627471,
+    "p75": 1.700000001117587,
+    "p95": 1.800000000745058,
+    "samples": [
+      1.800000000745058,
+      1.799999998882413,
+      1.699999999254942,
+      1.700000001117587,
+      1.699999999254942,
+      1.6000000014901161,
+      1.599999999627471,
+      1.599999999627471,
+      1.799999998882413,
+      5.099999999627471,
+      1.5,
+      1.700000001117587,
+      1.5,
+      1.5,
+      1.5,
+      1.599999999627471,
+      1.5,
+      1.699999999254942,
+      1.5,
+      1.5
+    ]
+  },
+  "inputState": {
+    "activeIntent": "text-insert",
+    "modelOwnedTextInputGuard": 0,
+    "modelSelectionPreference": {
+      "preferModelSelection": false,
+      "reason": "native-selection",
+      "selectionSource": "dom-current"
+    },
+    "pendingNativeTextInputRepairOffset": null,
+    "pendingNativeTextInputRepairPathKey": null,
+    "preferModelSelection": false,
+    "recentTextInputRepairEcho": {
+      "expiresAt": 4692.5,
+      "pathKey": "0,0",
+      "selectionOffset": 57,
+      "text": "Welcome to the Plate Playground!abcdefghijklmnopqrstuvwxy"
+    },
+    "selectionChangeOrigin": "programmatic-export",
+    "selectionSource": "dom-current"
+  },
+  "longTasks": {
+    "count": 0,
+    "max": 0,
+    "samples": []
+  },
+  "nativeBlockers": [],
+  "profileDurations": {},
+  "syncStates": [
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    },
+    {
+      "domSync": "true",
+      "projected": null,
+      "reason": null
+    }
+  ],
+  "measuredSamples": 20,
+  "measuredInput": "fghijklmnopqrstuvwxy",
+  "measuredStartState": {
+    "commitVersion": 6,
+    "modelSelection": {
+      "anchor": {
+        "offset": 37,
+        "path": [
+          0,
+          0
+        ]
+      },
+      "focus": {
+        "offset": 37,
+        "path": [
+          0,
+          0
+        ]
+      },
+      "kind": "text"
+    },
+    "modelText": "Welcome to the Plate Playground!abcde"
+  },
+  "mutation": {
+    "max": 5.5,
+    "mean": 2.190000000037253,
+    "p50": 2,
+    "p75": 2.100000001490116,
+    "p95": 2.399999998509884,
+    "samples": [
+      2.200000001117587,
+      2.399999998509884,
+      2.199999999254942,
+      2.300000000745058,
+      2.099999999627471,
+      2.100000001490116,
+      2,
+      2.099999999627471,
+      2.099999999627471,
+      5.5,
+      1.900000000372529,
+      2,
+      1.800000000745058,
+      1.900000000372529,
+      1.800000000745058,
+      1.800000000745058,
+      1.8999999985098839,
+      2,
+      1.800000000745058,
+      1.8999999985098839
+    ]
+  },
+  "nativeInputSamples": 20,
+  "modelSelection": {
+    "anchor": {
+      "offset": 57,
+      "path": [
+        0,
+        0
+      ]
+    },
+    "focus": {
+      "offset": 57,
+      "path": [
+        0,
+        0
+      ]
+    },
+    "kind": "text"
+  },
+  "modelText": "Welcome to the Plate Playground!abcdefghijklmnopqrstuvwxy",
+  "nativeSelectedText": "",
+  "runtimeErrors": [],
+  "secondPaint": {
+    "max": 16.800000000372165,
+    "mean": 15.675000000316505,
+    "p50": 15.800000000372165,
+    "p75": 15.999999999627107,
+    "p95": 16.600000000372347,
+    "samples": [
+      14.10000000074524,
+      15.999999999627107,
+      16.100000000000364,
+      15.000000000744876,
+      15.800000000372165,
+      15.80000000111795,
+      14.300000000372165,
+      16.800000000372165,
+      15.900000000372529,
+      15.700000000744694,
+      15.399999999999636,
+      16,
+      16.100000000372347,
+      15.800000000000182,
+      15.900000000372529,
+      15.000000000744876,
+      15.499999999627107,
+      15.700000000744694,
+      16.600000000372347,
+      15.999999999627107
+    ]
+  },
+  "targetPath": "0",
+  "url": "http://localhost:3000/blocks/playground",
+  "warmupSamples": 5
+}

@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { createBaseEditor } from '@platejs/core';
-import { jsxt } from '@platejs/test-utils';
 import { schema } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
 
 import { BaseDatePlugin } from './BaseDatePlugin';
 

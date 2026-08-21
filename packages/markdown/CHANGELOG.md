@@ -28,11 +28,7 @@
 
 ### Major Changes
 
-- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Round-trip blockquotes as nested block content instead of flat newline-packed text.
-  Serialize image titles from `node.title` instead of copying the caption into the markdown title slot.
-  Preserve MDX media attribute expressions during markdown serialization instead of stringifying them into JSON text.
-  Serialize plain URL links back to bare URL markdown instead of bracket-link form.
-  Round-trip footnote references and definitions as dedicated footnote nodes instead of collapsing them to plain-text fallback.
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Round-trip blockquotes as nested block content instead of flat newline-packed text. Serialize image titles from `node.title` instead of copying the caption into the markdown title slot. Preserve MDX media attribute expressions during markdown serialization instead of stringifying them into JSON text. Serialize plain URL links back to bare URL markdown instead of bracket-link form. Round-trip footnote references and definitions as dedicated footnote nodes instead of collapsing them to plain-text fallback.
 
   **Migration:**
 
@@ -186,7 +182,6 @@
 - [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Added support for preserving block IDs in markdown serialization to enable AI comment tracking.
 
   ### Changes:
-
   - **Enhanced Serialization**: Updated `serializeMd` to support `withBlockId` option for maintaining block references
 
   ### Example:
@@ -482,7 +477,6 @@
   - `splitLineBreaks` deserialize only
 
   ##### Deserialization
-
   - Removed `elementRules` and `textRules` options
     - Use `rules.key.deserialize` instead
     - See [nodes documentation](https://platejs.org/docs/markdown)
@@ -499,13 +493,13 @@
           mark: true,
           deserialize: (mdastNode) => ({
             bold: true,
-            text: node.value || "",
+            text: node.value || '',
           }),
         },
         // For elementRules
         [EquationPlugin.key]: {
           deserialize: (mdastNode, options) => ({
-            children: [{ text: "" }],
+            children: [{ text: '' }],
             texExpression: node.value,
             type: EquationPlugin.key,
           }),
@@ -520,7 +514,6 @@
     - Use `remarkPlugins` instead
 
   ##### Serialization
-
   - Removed `serializeMdNodes`
     - Use `editor.markdown.serialize({ value: nodes })` instead
   - Removed `SerializeMdOptions` due to new serialization process
@@ -550,15 +543,15 @@
               .getApi(SuggestionPlugin)
               .suggestion.suggestionData(node);
 
-            return suggestionData?.type === "insert"
-              ? { type: "text", value: "" }
-              : { type: "text", value: node.text };
+            return suggestionData?.type === 'insert'
+              ? { type: 'text', value: '' }
+              : { type: 'text', value: node.text };
           },
         },
         // For elementRules
         [EquationPlugin.key]: {
           serialize: (slateNode) => ({
-            type: "math",
+            type: 'math',
             value: node.texExpression,
           }),
         },
@@ -1487,8 +1480,7 @@
 
 🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
 
-To migrate, install `@udecode/plate[-x]` then find and replace all
-occurrences of:
+To migrate, install `@udecode/plate[-x]` then find and replace all occurrences of:
 
 - `slate-plugins` to `plate`
 - `SlatePlugins` to `Plate`
@@ -1496,8 +1488,7 @@ occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Major Changes
 

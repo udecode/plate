@@ -1,4 +1,3 @@
-import { useCallback, useContext } from 'react';
 import {
   type EditorCommit,
   type Node,
@@ -7,6 +6,8 @@ import {
   type Text,
   TextApi,
 } from '@platejs/plite';
+import { useCallback, useContext } from 'react';
+
 import { NodeKeyContext } from '../context';
 import { readNodeByKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -111,11 +112,8 @@ const shouldSkipSyncedTextRender = (
       return textPath && isAncestorOrSelfPath(path, textPath) ? [textPath] : [];
     });
 
-  return (
-    relevantTextPaths.length === 0 ||
-    relevantTextPaths.every((textPath) =>
-      didSyncTextPathToDOM(editor, textPath)
-    )
+  return relevantTextPaths.every((textPath) =>
+    didSyncTextPathToDOM(editor, textPath)
   );
 };
 

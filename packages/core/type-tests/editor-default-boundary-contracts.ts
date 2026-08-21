@@ -12,10 +12,11 @@ import {
   createPlateEditor,
   toPlatePlugin,
 } from '@platejs/core/react';
-import type { InternalPlateEditorWithInstalledPlugins } from '../src/react/editor/PlateEditor';
 import { property, schema, type Value } from '@platejs/plite';
 import type { DOMEditor } from '@platejs/plite-dom';
 import type { ReactEditor } from '@platejs/plite-react';
+
+import type { InternalPlateEditorWithInstalledPlugins } from '../src/react/editor/PlateEditor';
 
 const DefaultBoundaryPlugin = defineBasePlugin('defaultBoundary', {
   api: () => ({
@@ -69,9 +70,7 @@ const exactPlateEditor = createPlateEditor({
 const broadPlateEditor: PlateEditor = exactPlateEditor;
 const exactPlateValue: 'exact' = exactPlateEditor.api.defaultBoundary.value();
 declare const defaultPlateBoundary: PlateEditor;
-type ExactPlateDefinitions =
-  | DefinitionOf<typeof DefaultBoundaryPlatePlugin>
-  | DefinitionOf<typeof DefaultBoundarySiblingPlugin>;
+type ExactPlateDefinitions = DefinitionOf<typeof DefaultBoundaryPlatePlugin>;
 type ExactInternalPlateEditor = InternalPlateEditorWithInstalledPlugins<
   Value,
   ExactPlateDefinitions

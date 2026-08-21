@@ -5,6 +5,7 @@ import {
   isDOMNode,
   isDOMText,
 } from '@platejs/plite-dom';
+
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';

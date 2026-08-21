@@ -1,5 +1,3 @@
-import { parseAsBoolean, parseAsStringLiteral, useQueryStates } from 'nuqs';
-import React, { useCallback, useMemo, useState } from 'react';
 import {
   defineExtension,
   NodeApi,
@@ -18,6 +16,9 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { parseAsBoolean, parseAsStringLiteral, useQueryStates } from 'nuqs';
+import React, { useCallback, useMemo, useState } from 'react';
+
 import {
   Accordion,
   AccordionContent,
@@ -40,6 +41,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { replaceQueryOptions } from './query-controls';
 
 type HiddenBlocksState = {

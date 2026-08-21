@@ -1,8 +1,8 @@
-import type { HotkeysEvent } from '@udecode/react-hotkeys';
 import {
   createCompiledHotkeyMatcher,
   usesAppleDOMHotkeys,
 } from '@platejs/plite-dom/internal';
+import type { HotkeysEvent } from '@udecode/react-hotkeys';
 
 import type { EditorShortcut } from '../../lib';
 
@@ -69,10 +69,11 @@ const createHotkeysEvent = (
   shortcut: EditorShortcut
 ): HotkeysEvent => {
   const tokens = spec.toLowerCase().split('+');
+  const tokenSet = new Set(
+    tokens.map((token) => token.replace(OPTIONAL_MODIFIER_SUFFIX_RE, ''))
+  );
   const has = (...values: string[]) =>
-    tokens.some((token) =>
-      values.includes(token.replace(OPTIONAL_MODIFIER_SUFFIX_RE, ''))
-    );
+    values.some((value) => tokenSet.has(value));
 
   return Object.freeze({
     alt: has('alt', 'opt', 'option'),

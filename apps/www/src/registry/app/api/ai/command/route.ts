@@ -1,11 +1,6 @@
-import type {
-  ChatMessage,
-  ToolName,
-} from '@/registry/components/editor/use-chat';
-import type { AIChatRequestRefs } from '@platejs/ai/react';
-import type { NextRequest } from 'next/server';
-
 import { createGateway } from '@ai-sdk/gateway';
+import type { AIChatRequestRefs } from '@platejs/ai/react';
+import type { MarkdownEditor } from '@platejs/markdown';
 import {
   type LanguageModel,
   type UIMessageStreamWriter,
@@ -16,12 +11,16 @@ import {
   streamText,
   tool,
 } from 'ai';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { MarkdownEditor } from '@platejs/markdown';
 import { type Selection, type Value, createBaseEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import type {
+  ChatMessage,
+  ToolName,
+} from '@/registry/components/editor/use-chat';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 import {

@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { type Value, BaseParagraphPlugin, createBaseEditor } from 'platejs';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { jsxt } from '@platejs/test-utils';
+import { type Value, BaseParagraphPlugin, createBaseEditor } from 'platejs';
 
 import { BaseMathKit } from '@/registry/components/editor/math-static';
 

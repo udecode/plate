@@ -1,5 +1,3 @@
-import type { Element, Text } from '@platejs/plite';
-import { property } from '@platejs/plite';
 import { defineBasePlugin } from '@platejs/core';
 import {
   definePlatePlugin,
@@ -17,6 +15,8 @@ import {
   type PliteLeafProps,
   type PliteTextProps,
 } from '@platejs/core/static';
+import type { Element, Text } from '@platejs/plite';
+import { property } from '@platejs/plite';
 
 const BaseTonePlugin = defineBasePlugin('tone', {
   api: () => ({ value: () => 'tone' as const }),

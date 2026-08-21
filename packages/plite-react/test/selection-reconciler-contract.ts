@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'vitest';
 
 import { createEditor } from '@platejs/plite';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { describe, it } from 'vitest';
+
 import { syncSelectionForBeforeInput } from '../src/editable/selection-reconciler';
 import {
   ReactEditor,

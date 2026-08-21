@@ -346,8 +346,7 @@
 
 ### Patch Changes
 
-- [#2082](https://github.com/udecode/plate/pull/2082) by [@bojangles-m](https://github.com/bojangles-m) – Separated search and clear button.
-  Updated component for easier styling.
+- [#2082](https://github.com/udecode/plate/pull/2082) by [@bojangles-m](https://github.com/bojangles-m) – Separated search and clear button. Updated component for easier styling.
 
 ## 18.14.0
 

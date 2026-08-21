@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import { type Value } from '@platejs/plite';
+import { jsxt } from '@platejs/test-utils';
 
 import {
   createTestTableEditor,
@@ -12,304 +12,296 @@ jsxt;
 
 describe('BaseTablePlugin normalization', () => {
   describe('initialTableWidth is defined and columnWidths is not defined', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('sets columnWidths (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <fragment>
-          <htable>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const output = (
-        <fragment>
-          <htable columnWidths={[30, 30, 30]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({
-          disableMerge,
-          initialTableWidth: 90,
-        }),
-        initialValue: input,
-      });
-
-      editor.update.value.repair();
-      expect(editor.read.children()).toMatchObject(output);
-    });
-  });
-
-  describe('initialTableWidth is defined and columnWidths is partially defined', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('sets columnWidths (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <fragment>
-          <htable columnWidths={[null, 40, null]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const output = (
-        <fragment>
-          <htable columnWidths={[30, 40, 30]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({
-          disableMerge,
-          initialTableWidth: 90,
-        }),
-        initialValue: input,
-      });
-
-      editor.update.value.repair();
-      expect(editor.read.children()).toMatchObject(output);
-    });
-  });
-
-  describe('initialTableWidth is defined and columnWidths is fully defined', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('keeps existing columnWidths when every column width is already defined (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const input = (
-        <fragment>
-          <htable columnWidths={[40, 40, 40]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const output = (
-        <fragment>
-          <htable columnWidths={[40, 40, 40]}>
-            <htr>
-              <htd>
-                <hp>
-                  <htext />
-                </hp>
-              </htd>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>
-                  <cursor />
-                </hp>
-              </htd>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>22</hp>
-              </htd>
-            </htr>
-          </htable>
-        </fragment>
-      ) as Value;
-
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({
-          disableMerge,
-          initialTableWidth: 90,
-        }),
-        initialValue: input,
-      });
-
-      editor.update.value.repair();
-      expect(editor.read.children()).toMatchObject(output);
-    });
-  });
-
-  describe('enableUnsetSingleColSize', () => {
-    it.each([
-      { disableMerge: true },
-      { disableMerge: false },
-    ])('unsets columnWidths for single-column tables (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
-      const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({
-          disableMerge,
-          enableUnsetSingleColSize: true,
-        }),
-        initialValue: (
-          <fragment>
-            <htable columnWidths={[120]}>
-              <htr>
-                <htd>
-                  <hp>cell</hp>
-                </htd>
-              </htr>
-            </htable>
-          </fragment>
-        ) as Value,
-      });
-
-      editor.update.value.repair();
-
-      expect(editor.read.children()).toMatchObject(
-        (
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'sets columnWidths (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
           <fragment>
             <htable>
               <htr>
                 <htd>
-                  <hp>cell</hp>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
                 </htd>
               </htr>
             </htable>
           </fragment>
-        ) as Value
-      );
-    });
+        ) as Value;
+
+        const output = (
+          <fragment>
+            <htable columnWidths={[30, 30, 30]}>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value;
+
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({
+            disableMerge,
+            initialTableWidth: 90,
+          }),
+          initialValue: input,
+        });
+
+        editor.update.value.repair();
+        expect(editor.read.children()).toMatchObject(output);
+      }
+    );
+  });
+
+  describe('initialTableWidth is defined and columnWidths is partially defined', () => {
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'sets columnWidths (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <fragment>
+            <htable columnWidths={[null, 40, null]}>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value;
+
+        const output = (
+          <fragment>
+            <htable columnWidths={[30, 40, 30]}>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value;
+
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({
+            disableMerge,
+            initialTableWidth: 90,
+          }),
+          initialValue: input,
+        });
+
+        editor.update.value.repair();
+        expect(editor.read.children()).toMatchObject(output);
+      }
+    );
+  });
+
+  describe('initialTableWidth is defined and columnWidths is fully defined', () => {
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'keeps existing columnWidths when every column width is already defined (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const input = (
+          <fragment>
+            <htable columnWidths={[40, 40, 40]}>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value;
+
+        const output = (
+          <fragment>
+            <htable columnWidths={[40, 40, 40]}>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>11</hp>
+                </htd>
+                <htd>
+                  <hp>12</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>
+                    <cursor />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>21</hp>
+                </htd>
+                <htd>
+                  <hp>22</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as Value;
+
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({
+            disableMerge,
+            initialTableWidth: 90,
+          }),
+          initialValue: input,
+        });
+
+        editor.update.value.repair();
+        expect(editor.read.children()).toMatchObject(output);
+      }
+    );
+  });
+
+  describe('enableUnsetSingleColSize', () => {
+    it.each([{ disableMerge: true }, { disableMerge: false }])(
+      'unsets columnWidths for single-column tables (disableMerge: $disableMerge)',
+      ({ disableMerge }) => {
+        const editor = createTestTableEditor({
+          plugins: getTestTablePlugins({
+            disableMerge,
+            enableUnsetSingleColSize: true,
+          }),
+          initialValue: (
+            <fragment>
+              <htable columnWidths={[120]}>
+                <htr>
+                  <htd>
+                    <hp>cell</hp>
+                  </htd>
+                </htr>
+              </htable>
+            </fragment>
+          ) as Value,
+        });
+
+        editor.update.value.repair();
+
+        expect(editor.read.children()).toMatchObject(
+          (
+            <fragment>
+              <htable>
+                <htr>
+                  <htd>
+                    <hp>cell</hp>
+                  </htd>
+                </htr>
+              </htable>
+            </fragment>
+          ) as Value
+        );
+      }
+    );
   });
 
   describe('rectangular table repair', () => {

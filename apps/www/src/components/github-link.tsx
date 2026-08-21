@@ -10,7 +10,7 @@ export function GitHubLink() {
     <Button asChild size="sm" variant="ghost" className="h-8 shadow-none">
       <Link href={siteConfig.links.github} rel="noreferrer" target="_blank">
         <Icons.gitHub />
-        <span className="w-fit text-muted-foreground text-xs tabular-nums">
+        <span className="w-fit text-xs text-muted-foreground tabular-nums">
           16k
         </span>
         <span className="sr-only">GitHub</span>

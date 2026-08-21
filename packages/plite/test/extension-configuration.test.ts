@@ -31,8 +31,9 @@ import {
   getInstalledEditorExtension,
   initializeEditorExtensions,
 } from '@platejs/plite/internal';
-import { applyTransactionSpec } from '../src/core/public-state';
+
 import { prepareEditorExtensionPublication } from '../src/core/editor-extension';
+import { applyTransactionSpec } from '../src/core/public-state';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -155,6 +156,7 @@ describe('transactional extension configuration', () => {
 
   it('restores a failed schema bootstrap and permits one clean retry', () => {
     let allowPublishedDocument = false;
+    // oxlint-disable-next-line prefer-const -- The schema validator closes over the editor assigned after schema construction.
     let editor: ReturnType<typeof createEditor> | undefined;
     const articleSchema = defineEditorSchema(
       'schema:retryable-schema-bootstrap',
@@ -321,6 +323,59 @@ describe('transactional extension configuration', () => {
       /stale transaction spec/u
     );
     assert.deepEqual(editor.read.children(), [paragraph('a')]);
+  });
+
+  it('adopts one fitted initial snapshot without publishing a live commit', () => {
+    const articleSchema = defineEditorSchema(
+      'schema:direct-initial-snapshot-bootstrap',
+      {
+        elements: {
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'direct-initial-snapshot-bootstrap',
+        root: schema.content.type('paragraph'),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
+    const persisted = defineStateField({
+      key: 'direct-initial-snapshot-field',
+      persist: defineValueCodec<string>({
+        decode: (value) => `decoded:${String(value)}`,
+        encode: (value) => value,
+        version: 1,
+      }),
+    });
+    const stateOwner = defineExtension('direct-initial-snapshot-state', {
+      stateFields: [persisted],
+    });
+    const editor = createEditor();
+    const previousVersion = editor.read.runtime.snapshot().version;
+    let commits = 0;
+
+    editor.subscribeCommit(() => commits++);
+    initializeEditorExtensions(editor, [articleSchema, stateOwner], {
+      initialValue: () => ({
+        children: [{ text: 'wrapped' }],
+        meta: { [persisted.key]: { value: 'stored', version: 1 } },
+        selection: {
+          kind: 'text',
+          anchor: { offset: 3, path: [0] },
+          focus: { offset: 3, path: [0] },
+        },
+      }),
+    });
+
+    assert.deepEqual(editor.read.children(), [paragraph('wrapped')]);
+    assert.deepEqual(editor.read.selection(), {
+      kind: 'text',
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    assert.equal(editor.read.getField(persisted), 'decoded:stored');
+    assert.equal(editor.read.lastCommit(), null);
+    assert.equal(editor.read.runtime.snapshot().version, previousVersion);
+    assert.equal(commits, 0);
   });
 
   it('preserves specs when schema bootstrap rolls back', () => {

@@ -1,13 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getLastCommit as editorGetLastCommit,
-  getPathByNodeKey as editorGetPathByNodeKey,
-  getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
+
 import {
   createEditor,
   DocumentChange,
@@ -16,6 +9,15 @@ import {
   property,
   schema,
 } from '@platejs/plite';
+import {
+  getLastCommit as editorGetLastCommit,
+  getPathByNodeKey as editorGetPathByNodeKey,
+  getNodeKey as editorGetNodeKey,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
+
 import { extendTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({
@@ -202,7 +204,7 @@ describe('editor foundation contract', () => {
 
     const sourceCommit = editorGetLastCommit(source);
 
-    assert(sourceCommit);
+    assert.ok(sourceCommit);
     assert.deepEqual(sourceCommit.tags, ['local-edit', 'collab-export']);
 
     remote.update((tx) => {
@@ -225,7 +227,7 @@ describe('editor foundation contract', () => {
     const targetEditor = createFoundationEditor();
     const removedKey = editorGetNodeKey(targetEditor, [1]);
 
-    assert(removedKey);
+    assert.ok(removedKey);
 
     const before = targetEditor.read.value();
     const removeChange = DocumentChange.between(before, {
@@ -245,7 +247,7 @@ describe('editor foundation contract', () => {
 
     const removeCommit = editorGetLastCommit(targetEditor);
 
-    assert(removeCommit);
+    assert.ok(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
     assert.equal(editorGetPathByNodeKey(targetEditor, removedKey), null);
   });

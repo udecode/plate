@@ -58,7 +58,7 @@
       ],
       "targets": ["uploadthing", "media-placeholder"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-08-18",
@@ -75,7 +75,7 @@
       "migrationNotes": [],
       "targets": ["block-discussion", "emoji-picker"],
       "source": {
-        "line": 15,
+        "line": 18,
         "row": 2,
         "legacyRelease": {
           "date": "2026-08-18",

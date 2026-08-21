@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+/* oxlint-disable typescript/no-unsafe-argument -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import type {
   Anchor,
   createEditor,
@@ -16,6 +16,7 @@ import {
   usePliteWidgetStore,
   usePliteWidgets,
 } from '@platejs/plite-react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 

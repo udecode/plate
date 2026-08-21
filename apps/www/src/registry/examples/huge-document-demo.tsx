@@ -1,7 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-
+import type { Value } from 'platejs';
+import {
+  createPlateEditor,
+  Plate,
+  PlateContent,
+  useElementSelected,
+} from 'platejs/react';
 import React, {
   type CSSProperties,
   type Dispatch,
@@ -13,21 +19,12 @@ import React, {
   useState,
   useSyncExternalStore,
 } from 'react';
-
-import type { Value } from 'platejs';
 import type { Editor } from 'slate';
-
-import {
-  createPlateEditor,
-  Plate,
-  PlateContent,
-  useElementSelected,
-} from 'platejs/react';
 import { createEditor as slateCreateEditor } from 'slate';
 import { Editable as SlateEditable, Slate, withReact } from 'slate-react';
 
-import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 import { Button } from '@/components/ui/button';
+import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 
 const subscribeBrowserPerformanceSupport = () => () => {};
 

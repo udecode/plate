@@ -295,7 +295,7 @@ const getGitHubCodeLineElements = (el: HTMLElement) =>
   Array.from(el.querySelectorAll<HTMLElement>('.blob-code-inner.js-file-line'));
 
 const normalizeCodeText = (text: string) =>
-  text.replaceAll('\u00a0', ' ').replace(/\r\n?/g, '\n').replace(/\n+$/g, '');
+  text.replaceAll('\u00A0', ' ').replace(/\r\n?/g, '\n').replace(/\n+$/g, '');
 
 const isPreservedWhiteSpaceElement = (el: HTMLElement) => {
   if (el.nodeName === 'PRE' || el.nodeName === 'CODE') {

@@ -17,6 +17,13 @@ import { builtinModules } from 'node:module';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDirectory, '..', '..');
 const temporaryRoot = join(repoRoot, '.tmp');
@@ -168,7 +175,7 @@ export function parseRuntimeExportNames(source) {
     names.add(match[1]);
   }
 
-  return [...names].sort();
+  return [...names].sort(compareStrings);
 }
 
 export function collectExternalImports(source) {
@@ -189,7 +196,7 @@ export function collectImportSpecifiers(source) {
     if (specifier) imports.add(specifier);
   }
 
-  return [...imports].sort();
+  return [...imports].sort(compareStrings);
 }
 
 export function auditPackedPackage({
@@ -742,7 +749,7 @@ function packAndInstallPackage({
     return {
       ...packageExport,
       runtimeExportNames: parseRuntimeExportNames(
-        readFileSync(targetPath, 'utf8')
+        readFileSync(targetPath, 'utf-8')
       ),
     };
   });
@@ -764,7 +771,7 @@ function auditInstalledPackage({
     path: relative(packageDirectory, absolutePath).split(sep).join('/'),
     source:
       absolutePath.endsWith('.js') || absolutePath.endsWith('.d.ts')
-        ? readFileSync(absolutePath, 'utf8')
+        ? readFileSync(absolutePath, 'utf-8')
         : '',
   }));
 
@@ -786,7 +793,7 @@ function collectPackedExternalImports(files) {
     }
   }
 
-  return [...imports].sort();
+  return [...imports].sort(compareStrings);
 }
 
 function auditDeclarationImports(files) {
@@ -894,7 +901,7 @@ function getConsumerBundleExternals(packedPackages) {
       if (!file.endsWith('.js')) continue;
 
       for (const specifier of collectExternalImports(
-        readFileSync(file, 'utf8')
+        readFileSync(file, 'utf-8')
       )) {
         if (!packedPackageNames.has(getDependencyName(specifier))) {
           externals.add(specifier);
@@ -903,7 +910,7 @@ function getConsumerBundleExternals(packedPackages) {
     }
   }
 
-  return [...externals].sort();
+  return [...externals].sort(compareStrings);
 }
 
 function auditPackedTarget({ errors, label, packedFiles, target }) {
@@ -1006,7 +1013,7 @@ export function runTypeScriptConsumer(consumerDirectory, configName) {
   const args = ['-p', configName, '--pretty', 'false', '--noErrorTruncation'];
   const result = spawnSync(command, args, {
     cwd: consumerDirectory,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     env: {
       ...process.env,
       CI: 'true',
@@ -1072,7 +1079,7 @@ function bundleConsumerEntry(consumerDirectory, entryName, externals) {
     );
   }
 
-  return readFileSync(outputs[0], 'utf8');
+  return readFileSync(outputs[0], 'utf-8');
 }
 
 function normalizeBundle(source) {
@@ -1104,7 +1111,7 @@ function ensureDirectory(directory) {
 }
 
 function readJson(filePath) {
-  return JSON.parse(readFileSync(filePath, 'utf8'));
+  return JSON.parse(readFileSync(filePath, 'utf-8'));
 }
 
 function writeJson(filePath, value) {
@@ -1114,7 +1121,7 @@ function writeJson(filePath, value) {
 function runCommand(command, args, { cwd }) {
   const result = spawnSync(command, args, {
     cwd,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     env: {
       ...process.env,
       CI: 'true',
@@ -1147,7 +1154,9 @@ function captureProof(errors, label, proof) {
     proof();
     console.log(`Verified ${label}.`);
   } catch (error) {
-    errors.push(`${label}:\n${error instanceof Error ? error.message : error}`);
+    errors.push(
+      `${label}:\n${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 

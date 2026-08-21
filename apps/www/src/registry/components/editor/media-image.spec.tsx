@@ -1,9 +1,9 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import * as actualCoreReact from '@platejs/core/react';
 import * as actualDnd from '@platejs/dnd';
 import { render } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import * as React from 'react';
 
 const selectionMock = mock();
 const useEditorSelectorMock = mock();

@@ -1,9 +1,11 @@
 'use client';
 
-import * as React from 'react';
-import type { NormalizePluginState } from '@platejs/core/internal';
 import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
+import type { NormalizePluginState } from '@platejs/core/internal';
+import {
+  BaseSuggestionPlugin,
+  SUGGESTION_TRANSIENT_KEY,
+} from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   CheckIcon,
@@ -12,30 +14,6 @@ import {
   MessagesSquareIcon,
   PencilLineIcon,
 } from 'lucide-react';
-import {
-  useEditorPlugin,
-  useEditorRuntimeState,
-  usePluginStore,
-  type PlateEditor,
-  type RenderNodeWrapper,
-  type RenderNodeWrapperProps,
-  useEditor,
-  usePath,
-} from 'platejs/react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  type TDiscussion,
-  discussionPlugin,
-} from '@/registry/components/editor/discussion';
-import { Comment, CommentCreateForm, formatCommentDate } from './comment';
-import {
-  BLOCK_SUGGESTION_TOKEN,
-  buildBlockDiscussionIndex,
-  type ResolvedSuggestion,
-  shouldRefreshBlockDiscussionIndex,
-} from '@/registry/lib/block-discussion-index';
-import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import {
   ElementApi,
   type Element,
@@ -46,13 +24,43 @@ import {
   TextApi,
 } from 'platejs';
 import {
+  useEditorPlugin,
+  useEditorRuntimeState,
+  usePluginStore,
+  type PlateEditor,
+  type RenderNodeWrapper,
+  type RenderNodeWrapperProps,
+  useEditor,
+  usePath,
+} from 'platejs/react';
+import * as React from 'react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
   Popover,
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { commentPlugin } from '@/registry/components/editor/comment';
+import {
+  type TDiscussion,
+  discussionPlugin,
+} from '@/registry/components/editor/discussion';
 import { suggestionPlugin } from '@/registry/components/editor/suggestion';
+import {
+  BLOCK_SUGGESTION_TOKEN,
+  buildBlockDiscussionIndex,
+  type ResolvedSuggestion,
+  shouldRefreshBlockDiscussionIndex,
+} from '@/registry/lib/block-discussion-index';
+
+import {
+  Comment,
+  CommentCreateForm,
+  commentPlugin,
+  formatCommentDate,
+} from './comment';
 
 type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 
@@ -220,10 +228,10 @@ export function BlockSuggestionCard({
             <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
             <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
           </Avatar>
-          <h4 className="mx-2 font-semibold text-sm leading-none">
+          <h4 className="mx-2 text-sm leading-none font-semibold">
             {userInfo?.name}
           </h4>
-          <div className="text-muted-foreground/80 text-xs leading-none">
+          <div className="text-xs leading-none text-muted-foreground/80">
             <span className="mr-1">
               {formatCommentDate(new Date(suggestion.createdAt))}
             </span>
@@ -235,7 +243,7 @@ export function BlockSuggestionCard({
             {suggestion.type === 'remove' &&
               getRemoveSummaryItems(suggestion.text!).map((text, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">Delete:</span>
+                  <span className="text-sm text-muted-foreground">Delete:</span>
 
                   <span key={index} className="text-sm">
                     {text}
@@ -246,7 +254,7 @@ export function BlockSuggestionCard({
             {suggestion.type === 'insert' &&
               suggestionText2Array(suggestion.newText!).map((text, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">Add:</span>
+                  <span className="text-sm text-muted-foreground">Add:</span>
 
                   <span key={index} className="text-sm">
                     {text || 'line breaks'}
@@ -273,7 +281,7 @@ export function BlockSuggestionCard({
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
                   <React.Fragment key={index}>
                     <div key={index} className="flex items-start gap-2">
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-sm text-muted-foreground">
                         {index === 0 ? 'Replace:' : 'Delete:'}
                       </span>
                       <span className="text-sm">{text || 'line breaks'}</span>
@@ -285,7 +293,7 @@ export function BlockSuggestionCard({
 
             {suggestion.type === 'update' && (
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">
+                <span className="text-sm text-muted-foreground">
                   {Object.keys(suggestion.properties ?? {}).map((key) => (
                     <span key={key}>Un{key}</span>
                   ))}
@@ -453,7 +461,6 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
     if (!activeNode) return null;
 
     return editor.api.dom.resolveDOMNode(activeNode[0]) as HTMLElement | null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     open,
     activeSuggestion,
@@ -495,7 +502,7 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
         )}
 
         <PopoverContent
-          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] min-w-[130px] max-w-[calc(100vw-24px)] overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           onCloseAutoFocus={(e) => e.preventDefault()}
           onOpenAutoFocus={(e) => e.preventDefault()}
           align="center"
@@ -543,7 +550,7 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
-                className="!px-1.5 mt-1 ml-1 flex h-6 gap-1 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+                className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
                 data-active={open}
                 contentEditable={false}
               >
@@ -559,7 +566,7 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
                   <MessagesSquareIcon className="size-4 shrink-0" />
                 )}
 
-                <span className="font-semibold text-xs">{totalCount}</span>
+                <span className="text-xs font-semibold">{totalCount}</span>
               </Button>
             </PopoverTrigger>
           </div>

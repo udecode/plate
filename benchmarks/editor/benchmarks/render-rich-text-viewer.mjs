@@ -4,7 +4,7 @@ import path from 'node:path';
 const args = parseArgs(process.argv.slice(2));
 const resultPath =
   args.result || 'benchmarks/results/rich-text-editors-latest.json';
-const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+const result = JSON.parse(fs.readFileSync(resultPath, 'utf-8'));
 const slateV2InternalCategories = new Set([
   'slate-6038-transaction-execution',
   'slate-clipboard-large-payload',
@@ -162,8 +162,9 @@ function buildGroups(rows) {
     }
 
     tableRow.cells[row.library] = compactCell(row);
-    if (!group.libraries.includes(row.library))
+    if (!group.libraries.includes(row.library)) {
       group.libraries.push(row.library);
+    }
   }
 
   return Array.from(grouped.values()).map((group) => ({
@@ -689,7 +690,7 @@ function renderHtml({
 function assertFileEquals(filePath, expected) {
   let current;
   try {
-    current = fs.readFileSync(filePath, 'utf8');
+    current = fs.readFileSync(filePath, 'utf-8');
   } catch {
     throw new Error(`missing generated file: ${filePath}`);
   }

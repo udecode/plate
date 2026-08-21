@@ -1,10 +1,7 @@
-/* biome-ignore-all lint: legacy code */
-import type JSZip from 'jszip';
-
 import { decode } from 'html-entities';
-// eslint-disable-next-line import/no-named-default
 // @ts-expect-error - no types available
-import { default as HTMLToVDOM } from 'html-to-vdom';
+import HTMLToVDOM from 'html-to-vdom';
+import type JSZip from 'jszip';
 // @ts-expect-error - no types available
 import VNode from 'virtual-dom/vnode/vnode';
 // @ts-expect-error - no types available
@@ -185,7 +182,6 @@ const normalizeUnits = (
       }
     });
   } else {
-    // eslint-disable-next-line no-param-reassign
     return null;
   }
 
@@ -294,17 +290,15 @@ async function addFilesToContainer(
   let footerHTML = footerHTMLString;
 
   if (documentOptions.header && !headerHTML) {
-    // eslint-disable-next-line no-param-reassign
     headerHTML = defaultHTMLString;
   }
   if (documentOptions.footer && !footerHTML) {
-    // eslint-disable-next-line no-param-reassign
     footerHTML = defaultHTMLString;
   }
   if (documentOptions.decodeUnicode) {
-    headerHTML = decode(headerHTML as string); // eslint-disable-line no-param-reassign
-    contentHTML = decode(contentHTML as string); // eslint-disable-line no-param-reassign
-    footerHTML = decode(footerHTML as string); // eslint-disable-line no-param-reassign
+    headerHTML = decode(headerHTML as string);
+    contentHTML = decode(contentHTML as string);
+    footerHTML = decode(footerHTML as string);
   }
 
   // @ts-expect-error - complex type mismatch between normalized options and DocxDocumentProperties

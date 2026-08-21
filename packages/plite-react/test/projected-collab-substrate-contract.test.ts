@@ -5,8 +5,8 @@ import {
   type EditorUpdatePolicy,
   type Range,
 } from '@platejs/plite';
-import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
+import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
 import { describe, expect, it } from 'vitest';
 
 import {

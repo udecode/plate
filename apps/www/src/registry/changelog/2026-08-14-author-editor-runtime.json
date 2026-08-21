@@ -101,7 +101,7 @@
         "playground-demo"
       ],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-08-14",
@@ -123,7 +123,7 @@
         "playground-demo"
       ],
       "source": {
-        "line": 13,
+        "line": 15,
         "row": 2,
         "legacyRelease": {
           "date": "2026-08-14",
@@ -140,7 +140,7 @@
       "migrationNotes": [],
       "targets": ["editor-kit"],
       "source": {
-        "line": 14,
+        "line": 16,
         "row": 3,
         "legacyRelease": {
           "date": "2026-08-14",

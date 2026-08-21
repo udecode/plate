@@ -138,7 +138,7 @@ describe('element-owned root lifecycle', () => {
     editor.update((tx) => {
       const entry = tx.nodes.get([0]);
 
-      assert(entry && NodeApi.isElement(entry[0]));
+      assert.ok(entry && NodeApi.isElement(entry[0]));
       tx.nodes.duplicate([
         entry as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
       ]);
@@ -185,7 +185,7 @@ describe('element-owned root lifecycle', () => {
       const first = tx.nodes.get([0]);
       const second = tx.nodes.get([1]);
 
-      assert(
+      assert.ok(
         first &&
           second &&
           NodeApi.isElement(first[0]) &&
@@ -308,7 +308,7 @@ describe('element-owned root lifecycle', () => {
       roots: { 'exclusive:detached': [paragraph('caption')] },
     });
 
-    assert(
+    assert.ok(
       editor.read.slice.fit(slice, {
         at: { offset: 0, path: [0, 0] },
       })
@@ -349,7 +349,7 @@ describe('element-owned root lifecycle', () => {
     );
     const at = editor.read.ranges.get([0]);
 
-    assert(at);
+    assert.ok(at);
     const slice = editor.read.slice.get({ at });
 
     editor.update((tx) => tx.nodes.remove({ at: [0] }));

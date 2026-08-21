@@ -1,10 +1,8 @@
-import type React from 'react';
-
 import type { ClientRectObject } from '@floating-ui/core';
 import type { VirtualElement } from '@floating-ui/react';
 import type { PlateEditor } from '@platejs/core/react';
-
 import { type Location, PathApi, type Range, RangeApi } from '@platejs/plite';
+import type React from 'react';
 
 export type VirtualRef = React.RefObject<Pick<
   HTMLElement,

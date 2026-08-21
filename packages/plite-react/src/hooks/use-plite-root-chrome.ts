@@ -1,5 +1,5 @@
-import { type MouseEventHandler, useMemo } from 'react';
 import type { NamedRootKey, RootKey } from '@platejs/plite';
+import { type MouseEventHandler, useMemo } from 'react';
 
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import { MAIN_ROOT_KEY } from '../root-key';

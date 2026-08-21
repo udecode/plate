@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
+import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 

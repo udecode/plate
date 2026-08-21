@@ -1,12 +1,14 @@
-import { useCallback } from 'react';
 import type {
   EditorStateField,
   EditorUpdatePolicy,
   StateFieldValueInput,
 } from '@platejs/plite';
-import { withPliteReactPreservedSelection } from '../update-policy';
-import { PliteReactUpdatePolicy } from '../update-policy';
+import { useCallback } from 'react';
 
+import {
+  withPliteReactPreservedSelection,
+  PliteReactUpdatePolicy,
+} from '../update-policy';
 import { useEditor } from './use-editor';
 import {
   type EditorStateSelectorOptions,

@@ -1,11 +1,9 @@
-import React from 'react';
-
 import type { Element, ElementOf, Path, Text, TextOf } from '@platejs/plite';
 import type { EditorSchemaSource } from '@platejs/plite/internal';
-import type { UnknownObject } from '@udecode/utils';
-
 import { useComposedRef } from '@udecode/react-utils';
+import type { UnknownObject } from '@udecode/utils';
 import { clsx } from 'clsx';
+import React from 'react';
 
 import type {
   AnyBasePluginDefinition,

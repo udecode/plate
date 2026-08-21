@@ -82,10 +82,10 @@ Completion Gates:
 | Binary readiness | pending | Resolve every readiness condition | pending |
 | Fresh source evidence | pending | Recheck decision-changing current claims | pending |
 | Best API review | pending | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | pending |
-| Conditional risk and adoption | pending | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | pending |
+| Conditional risk and adoption | pending | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | pending |
 | Verification recorded | pending | Record fresh planning proof and exact execution gates | pending |
 | Handoff prepared | pending | Prepare concise ownership, breaks, proof, risks, and execution order | pending |
-| P2 autoreview | pending | Run with `--max-priority P2` for implementation changes; P3 is opt-in only, or record planning-only N/A | pending |
+| P1 autoreview | pending | Run with `--max-priority P1` for implementation changes; P2/P3 are opt-in only, or record planning-only N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
@@ -120,7 +120,7 @@ Conditional evidence:
 - High-risk scenarios: TODO or N/A with reason.
 - External research: TODO or N/A with reason.
 - Issue/PR provenance: TODO or N/A with reason.
-- Browser/benchmark/docs/release/behavior-law owners: TODO or N/A with reason.
+- Browser/Benchmark/docs/release/behavior-law owners: TODO or N/A with reason.
 
 Findings:
 - TODO
@@ -142,7 +142,7 @@ Verification evidence:
 Final handoff prepared:
 - Ownership and target API/runtime: pending.
 - Public breaks and Plate/collaboration adoption: pending.
-- Applicable browser/benchmark/docs/provenance decisions: pending.
+- Applicable browser/Benchmark/docs/provenance decisions: pending.
 - Proof and execution risks: pending.
 - Execution order and user attention: pending.
 

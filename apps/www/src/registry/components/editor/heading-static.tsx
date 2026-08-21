@@ -1,10 +1,8 @@
-import * as React from 'react';
-
 import type { BaseHeadingPlugin } from '@platejs/basic-nodes';
-import type { PliteElementProps } from 'platejs/static';
-
 import { cva } from 'class-variance-authority';
+import type { PliteElementProps } from 'platejs/static';
 import { PliteElement } from 'platejs/static';
+import * as React from 'react';
 
 const headingVariants = cva('relative mb-1', {
   variants: {

@@ -6,8 +6,6 @@ import {
   createBaseEditor,
   defineBasePlugin,
 } from '@platejs/core';
-import type { Paragraph as MdParagraph } from 'mdast';
-import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
 import {
   ContentSlice,
   createEditor,
@@ -18,6 +16,9 @@ import {
   target,
 } from '@platejs/plite';
 import { type History, history } from '@platejs/plite-history';
+import type { Paragraph as MdParagraph } from 'mdast';
+
+import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 

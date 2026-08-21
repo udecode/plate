@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
 import type { EditorStateView, ValueOf } from '@platejs/plite';
+import { useCallback } from 'react';
+
 import {
   type AnyEditor,
   subscribeEditorViewState,
 } from '../editable/runtime-editor-api';
-
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 

@@ -13,8 +13,7 @@ import {
   stripImplicitRangeRoots,
 } from '../internal/root-location';
 import { formatDebugValue } from '../utils/format-debug-value';
-import { writeSelection } from './set-selection';
-import { setSelection } from './set-selection';
+import { writeSelection, setSelection } from './set-selection';
 
 const getCommandRangeRootMeta = (
   target: Location,

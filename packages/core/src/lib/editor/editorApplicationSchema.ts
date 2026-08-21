@@ -25,7 +25,11 @@ export type EditorApplicationSchema = Readonly<{
 }> &
   EditorSchemaLineage;
 
-/** @internal Extract schema lineage only when the application declares it. */
+/**
+ * Extract schema lineage only when the application declares it.
+ *
+ * @internal
+ */
 export const getEditorSchemaIdentity = (
   schema: EditorApplicationSchema | undefined
 ): EditorSchemaIdentity | undefined => {

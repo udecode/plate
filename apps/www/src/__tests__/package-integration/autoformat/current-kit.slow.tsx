@@ -2,8 +2,8 @@
 
 import { BaseHighlightPlugin } from '@platejs/basic-nodes';
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
-import { createBaseEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
+import { createBaseEditor } from 'platejs';
 
 import { AutoformatKit } from '@/registry/components/editor/autoformat';
 

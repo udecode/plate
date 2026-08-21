@@ -6,6 +6,7 @@ import {
   type Descendant,
   screenReaderAnnouncementEffect,
 } from '@platejs/plite';
+
 import { history } from '../src';
 
 const paragraph = (text: string): Descendant => ({

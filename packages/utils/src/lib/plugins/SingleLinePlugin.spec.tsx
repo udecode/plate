@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { createPlateEditor } from '@platejs/core/react';
-import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { createEditor, type Value } from '@platejs/plite';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { SingleLinePlugin } from './SingleLinePlugin';
 

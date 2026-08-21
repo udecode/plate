@@ -18,7 +18,7 @@ export async function GET(
 ) {
   const { slug } = await params;
   const pageSlug = stripMarkdownSuffixFromSlug(slug);
-  const source = await getPlateLLMSource();
+  const source = getPlateLLMSource();
   const page = source.getPage(pageSlug, 'cn') ?? source.getPage(pageSlug, 'en');
 
   if (!page) {

@@ -1,4 +1,3 @@
-import type { RefObject } from 'react';
 import {
   containsShadowAware,
   getSelection,
@@ -8,16 +7,17 @@ import {
   type DOMPhaseScheduler,
   IS_FOCUSED,
 } from '@platejs/plite-dom/internal';
+import type { RefObject } from 'react';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   type EditableInputControllerState,
   getEditableInputTimestamp,
 } from './input-controller';
 import { attachEditableGlobalDragLifecycleListeners } from './input-router';
 import { setEditorFocused } from './runtime-editor-api';
-import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { attachEditableSelectionChangeListener } from './selection-reconciler';
 
 export const attachEditableOutsideFocusBoundaryListener = ({

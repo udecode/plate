@@ -160,6 +160,7 @@ describe('Plate model publication', () => {
   });
 
   it('invalidates specs minted before a supplied raw editor is bootstrapped', () => {
+    // oxlint-disable-next-line prefer-const -- The command closes over the spec produced after command construction.
     let spec!: TransactionSpec;
     const applyPreBootstrapSpec = defineCommand(
       'plate.apply-pre-bootstrap-spec',

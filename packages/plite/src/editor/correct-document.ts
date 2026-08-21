@@ -1,12 +1,12 @@
 import {
-  matchesEditorCorrection,
-  runEditorCorrection,
-} from '../core/correction';
-import {
   type DocumentChange,
   getInternalDocumentChangeClassification,
   getInternalDocumentRootChange,
 } from '../core/change/document-change';
+import {
+  matchesEditorCorrection,
+  runEditorCorrection,
+} from '../core/correction';
 import { getExtensionRegistry } from '../core/extension-registry';
 import { toPublicRoot } from '../core/public-root';
 import {

@@ -1,7 +1,5 @@
 'use client';
 
-import React, { useRef } from 'react';
-
 import {
   Editable,
   type EditableProps as PliteEditableProps,
@@ -12,15 +10,15 @@ import { useComposedRef } from '@udecode/react-utils';
 import clsx from 'clsx';
 import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
+import React, { useRef } from 'react';
 import { useDeepCompareMemo } from 'use-deep-compare';
 
-import type { EditableProps } from '../../lib/types/EditableProps';
-
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import type { EditableProps } from '../../lib/types/EditableProps';
 import { pipeDecorate } from '../../static/utils/pipeDecorate';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';

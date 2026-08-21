@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import * as copyToClipboardModule from 'copy-to-clipboard';
-
 import {
   BaseParagraphPlugin,
   type BaseEditor,
@@ -15,17 +13,20 @@ import { createPlateEditor } from '@platejs/core/react';
 import {
   type Element,
   ElementApi,
+  type NodeEntry,
   NodeApi,
   property,
   type NodeKey,
   schema,
   target,
+  type Value,
+  createEditor as createPliteEditor,
 } from '@platejs/plite';
-import { createEditor as createPliteEditor } from '@platejs/plite';
-import type { NodeEntry, Value } from '@platejs/plite';
 import * as PliteDOM from '@platejs/plite-dom';
 import { EDITOR_TO_WINDOW } from '@platejs/plite-dom/internal';
 import { jsxt } from '@platejs/test-utils';
+import * as copyToClipboardModule from 'copy-to-clipboard';
+
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 

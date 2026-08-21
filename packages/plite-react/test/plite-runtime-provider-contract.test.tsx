@@ -1,13 +1,4 @@
 import {
-  act,
-  fireEvent,
-  render,
-  renderHook,
-  screen,
-  waitFor,
-} from '@testing-library/react';
-import { type ReactNode, useLayoutEffect } from 'react';
-import {
   createEditorView,
   type Descendant,
   defineExtension,
@@ -17,13 +8,23 @@ import {
   type Element,
   schema,
 } from '@platejs/plite';
+import { clipboardHandler } from '@platejs/plite-dom';
 import {
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
   EDITOR_TO_PENDING_SELECTION,
   IS_COMPOSING,
 } from '@platejs/plite-dom/internal';
-import { clipboardHandler } from '@platejs/plite-dom';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+import { type ReactNode, useLayoutEffect } from 'react';
+
 import {
   createReactEditor,
   Editable,

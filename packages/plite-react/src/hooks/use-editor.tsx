@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+
 import type { ReactEditorContextValue } from '../plugin/with-react';
 
 /**

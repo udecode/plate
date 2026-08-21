@@ -1,8 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes';
+import * as React from 'react';
 
 function ThemeShortcut() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -47,6 +46,7 @@ export function ThemeProvider({
   React.useEffect(() => {
     // Sync initial theme to cookie
     const theme = localStorage.getItem('theme') || 'system';
+    // oxlint-disable-next-line unicorn/no-document-cookie -- [P0 compatibility] Theme bootstrap needs a synchronous cross-browser cookie write.
     document.cookie = `theme=${theme};path=/;max-age=31536000`;
   }, []);
 

@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { AIChatPlugin } from '@platejs/ai/react';
 import { DndPlugin } from '@platejs/dnd';
 import {
@@ -15,6 +13,7 @@ import {
   useEditor,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
 
 export const blockSelectionVariants = cva(
   'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',

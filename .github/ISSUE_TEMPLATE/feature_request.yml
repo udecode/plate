@@ -1,6 +1,6 @@
 name: Feature request
 description: Propose a new Plate or Plite capability.
-title: "[Feature]: "
+title: '[Feature]: '
 labels:
   - enhancement
 body:
@@ -77,7 +77,7 @@ body:
     attributes:
       label: API / DX impact
       description: Name any public API, docs, package, plugin, component, or example surface this would affect. Use `NOT_ENOUGH_INFO` if unknown.
-      placeholder: "@platejs/table paste plugin, table docs, table example"
+      placeholder: '@platejs/table paste plugin, table docs, table example'
     validations:
       required: true
   - type: textarea

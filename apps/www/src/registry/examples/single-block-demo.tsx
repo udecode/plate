@@ -1,13 +1,12 @@
 'use client';
 
-import * as React from 'react';
-
 import {
   SingleBlockPlugin,
   SingleLinePlugin,
   TrailingBlockPlugin,
 } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';

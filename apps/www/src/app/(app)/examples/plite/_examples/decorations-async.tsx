@@ -1,5 +1,3 @@
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type Ancestor,
   type Descendant,
@@ -15,6 +13,9 @@ import {
   usePliteDecorationSource,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { replaceQueryOptions } from './query-controls';
 
 type AsyncHighlightData = {

@@ -1,6 +1,7 @@
 'use client';
 
-import * as React from 'react';
+import { TocPlugin } from '@platejs/toc/react';
+import { cva } from 'class-variance-authority';
 import type { NodeKey } from 'platejs';
 import {
   type PlateElementProps,
@@ -12,8 +13,8 @@ import {
   useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
-import { TocPlugin } from '@platejs/toc/react';
-import { cva } from 'class-variance-authority';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 
 const headingItemVariants = cva(
@@ -183,7 +184,7 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
             </Button>
           ))
         ) : (
-          <div className="text-gray-500 text-sm">
+          <div className="text-sm text-gray-500">
             Create a heading to display the table of contents.
           </div>
         )}

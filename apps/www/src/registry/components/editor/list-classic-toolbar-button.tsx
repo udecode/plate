@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { ListPlugin } from '@platejs/list-classic/react';
 import {
   IndentIcon,
@@ -12,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PLUGINS, type PluginReference } from 'platejs';
 import { useEditor, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 
 import { ToolbarButton } from './toolbar';
 

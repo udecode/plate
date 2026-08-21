@@ -1,5 +1,6 @@
 import { useStoreWithEqualityFn } from 'zustand/traditional';
 
+import { getPluginStore as getInternalPluginStore } from '../../../internal/plugin/pluginStore';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
@@ -13,8 +14,6 @@ import type {
 } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 import type { AnyResolvedPlatePlugin, AnyPlatePlugin } from '../../plugin';
-
-import { getPluginStore as getInternalPluginStore } from '../../../internal/plugin/pluginStore';
 import { useEditor } from './createPlateStore';
 
 type PluginStoreDescriptor = (

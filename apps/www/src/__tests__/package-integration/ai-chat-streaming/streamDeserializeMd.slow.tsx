@@ -1,9 +1,10 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import { AIChatPlugin } from '@platejs/ai/react';
+import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from './__tests__/createTestEditor';
+
 const { editor } = createTestEditor() as any;
 
 jsxt;

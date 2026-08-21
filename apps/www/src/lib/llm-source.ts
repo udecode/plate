@@ -1,7 +1,6 @@
 import type { LoaderOutput } from 'fumadocs-core/source';
 
 import type { PlateLLMPage } from './llm';
-
 import { source } from './source';
 
 type PlateLLMSource = Omit<LoaderOutput, 'getPage' | 'getPages'> & {

@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
 
-import Link from 'next/link';
 import {
   FileJsonIcon,
   GitPullRequestIcon,
   PackageIcon,
   TerminalIcon,
 } from 'lucide-react';
+import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,10 +71,10 @@ export function PlateUiReleaseUpdates({
       <section className="space-y-6" id="latest-updates">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 className="font-heading font-semibold text-2xl tracking-tight">
+            <h2 className="font-heading text-2xl font-semibold tracking-tight">
               Plate UI updates
             </h2>
-            <p className="mt-2 max-w-2xl text-muted-foreground text-sm">
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Registry component changes for copied Plate UI files. Each entry
               links to the raw JSON agents can use for scoped syncs.
             </p>
@@ -88,8 +88,8 @@ export function PlateUiReleaseUpdates({
         </div>
       </section>
       {olderEvents.length > 0 ? (
-        <section className="border-border border-t pt-8" id="older-updates">
-          <h2 className="font-heading font-semibold text-2xl tracking-tight">
+        <section className="border-t border-border pt-8" id="older-updates">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
             More updates
           </h2>
           <div className="mt-4 grid auto-rows-fr gap-3 sm:grid-cols-2">
@@ -99,10 +99,10 @@ export function PlateUiReleaseUpdates({
                 className="flex flex-col rounded-xl bg-surface px-4 py-3 text-surface-foreground no-underline transition-colors hover:bg-surface/80"
                 href={`#${event.id}`}
               >
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   {formatDate(event.change.date)}
                 </span>
-                <span className="mt-1 font-medium text-sm">
+                <span className="mt-1 text-sm font-medium">
                   {event.summary}
                 </span>
               </Link>
@@ -129,13 +129,13 @@ function AgentSyncSection({ index }: { index: RegistryChangelogIndex }) {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
             <TerminalIcon className="size-4 text-muted-foreground" />
-            <h2 className="font-heading font-semibold text-xl tracking-tight">
+            <h2 className="font-heading text-xl font-semibold tracking-tight">
               Sync with an agent
             </h2>
           </div>
           <JsonActions latestEvent={latestEvent} />
         </div>
-        <p className="max-w-none text-muted-foreground text-sm">
+        <p className="max-w-none text-sm text-muted-foreground">
           Use this when your app copied Plate UI registry files and you want an
           agent to merge only the affected components.
         </p>
@@ -150,7 +150,7 @@ function AgentSyncSection({ index }: { index: RegistryChangelogIndex }) {
           </pre>
 
           <Step>Prompt your agent</Step>
-          <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words rounded-lg border bg-muted/40 px-4 py-3 text-foreground">
+          <pre className="mt-2 overflow-x-auto rounded-lg border bg-muted/40 px-4 py-3 break-words whitespace-pre-wrap text-foreground">
             <code className="font-mono text-sm">{prompt}</code>
           </pre>
         </Steps>
@@ -213,11 +213,11 @@ function ChangelogEventArticle({ event }: { event: RegistryChangelogEvent }) {
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{event.kind}</Badge>
             <ReleaseBadge event={event} />
-            <span className="font-mono text-muted-foreground text-xs">
+            <span className="font-mono text-xs text-muted-foreground">
               {formatDate(event.change.date)}
             </span>
           </div>
-          <h3 className="mt-3 font-heading font-semibold text-xl tracking-tight">
+          <h3 className="mt-3 font-heading text-xl font-semibold tracking-tight">
             <a
               className="underline-offset-4 hover:underline"
               href={getEventTitleHref(event)}
@@ -289,7 +289,7 @@ function ReleaseBadge({ event }: { event: RegistryChangelogEvent }) {
 function TargetList({ event }: { event: RegistryChangelogEvent }) {
   return (
     <div className="mt-6">
-      <div className="mb-2 font-medium text-sm">Affected registry files</div>
+      <div className="mb-2 text-sm font-medium">Affected registry files</div>
       <div className="flex flex-wrap gap-2">
         {event.targets.map((target) => (
           <TargetChip event={event} key={target.name} target={target} />
@@ -309,13 +309,13 @@ function EntryList({ event }: { event: RegistryChangelogEvent }) {
           <div key={entry.id}>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{entry.kind}</Badge>
-              <span className="font-mono text-muted-foreground text-xs">
+              <span className="font-mono text-xs text-muted-foreground">
                 {entry.targets.join(', ')}
               </span>
             </div>
             <p className="mt-2 text-sm leading-6">{entry.summary}</p>
             {migrationNotes.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground text-sm">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                 {migrationNotes.map((note) => (
                   <li key={note}>{note}</li>
                 ))}
@@ -338,11 +338,7 @@ function TargetChip({
   const href = getTargetDiffHref(event, target);
   const className =
     'flex items-center gap-2 rounded-md bg-muted/50 px-2 py-1 text-sm';
-  const content = (
-    <>
-      <code className="font-mono text-xs">{target.name}</code>
-    </>
-  );
+  const content = <code className="font-mono text-xs">{target.name}</code>;
 
   if (!href) {
     return <div className={className}>{content}</div>;

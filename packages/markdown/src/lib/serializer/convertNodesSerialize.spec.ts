@@ -1,12 +1,11 @@
 import type { Descendant } from '@platejs/plite';
 
-import type { MdRootContent } from '../mdast';
-import type { SerializeMdContext } from '../types';
-
 import {
   createTestEditor,
   getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
+import type { MdRootContent } from '../mdast';
+import type { SerializeMdContext } from '../types';
 import { buildMdastNode, convertNodesSerialize } from './convertNodesSerialize';
 
 describe('convertNodesSerialize', () => {

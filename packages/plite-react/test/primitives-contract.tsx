@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import React from 'react';
+
 import {
   EditableElement,
   PliteElement,
@@ -84,7 +85,7 @@ describe('plite-react primitives contract', () => {
 
   test('PlitePlaceholder supports non-void intrinsic tags through as', () => {
     const rendered = render(
-      <PlitePlaceholder as={'label'} style={{ opacity: '0.5' }}>
+      <PlitePlaceholder as="label" style={{ opacity: '0.5' }}>
         <span>placeholder</span>
       </PlitePlaceholder>
     );

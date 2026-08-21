@@ -21,12 +21,13 @@ import {
 } from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
 import { createLowlight } from 'lowlight';
+
+import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
 import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
   CodeLinePlugin,
 } from './CodeBlockPlugin';
-import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
 
 const createBaseEditor = <const P extends readonly BasePluginInput[]>(
   options: Omit<BaseEditorOptions, 'plugins'> & {

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   PlaceholderPlugin,
   UploadErrorCode,
@@ -10,7 +9,9 @@ import {
   VideoPlugin,
 } from '@platejs/media/react';
 import { usePluginStore } from 'platejs/react';
+import * as React from 'react';
 import { toast } from 'sonner';
+
 import { AudioElement } from '@/registry/components/editor/media-audio';
 import { MediaEmbedElement } from '@/registry/components/editor/media-embed';
 import { FileElement } from '@/registry/components/editor/media-file';

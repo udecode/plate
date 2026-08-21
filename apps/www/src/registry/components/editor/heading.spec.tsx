@@ -1,8 +1,8 @@
-import * as React from 'react';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { Element } from 'platejs';
+import * as React from 'react';
 
 const PlateElementMock = mock(
   ({ children, as: Comp = 'div', attributes, className, ...props }: any) => (

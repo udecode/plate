@@ -1,11 +1,11 @@
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
 import {
   defineDocumentMigrations,
   migratePlateV54,
   migratePlateV55,
 } from 'platejs/migrations';
+import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';

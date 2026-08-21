@@ -29,7 +29,11 @@ const getOpenDepth = (editor: Editor, point: Point) => {
   return barrierIndex < 0 ? ancestorPaths.length : barrierIndex;
 };
 
-/** @internal Read one canonical slice without losing its structural edges. */
+/**
+ * Read one canonical slice without losing its structural edges.
+ *
+ * @internal
+ */
 export const getContentSlice = <V extends Value>(
   editor: Editor<V>,
   selection: Range | null

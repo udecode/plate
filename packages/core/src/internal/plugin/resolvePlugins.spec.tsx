@@ -1,9 +1,10 @@
-import React from 'react';
 import { runInNewContext } from 'node:vm';
+
 import { editorCommands, property, schema } from '@platejs/plite';
+import React from 'react';
+
 import { createBaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { createPlateEditor } from '../../react/editor/withPlate';

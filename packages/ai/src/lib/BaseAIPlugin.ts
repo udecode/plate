@@ -1,6 +1,4 @@
-import { distance } from 'fastest-levenshtein';
-import cloneDeep from 'lodash/cloneDeep.js';
-
+import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
 import {
   type Descendant,
   type Element,
@@ -18,9 +16,10 @@ import {
   schema,
   target,
 } from '@platejs/plite';
-import { defineBasePlugin, type DefinitionOf } from '@platejs/core';
-import { PLUGINS } from '@platejs/utils';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
+import { PLUGINS } from '@platejs/utils';
+import { distance } from 'fastest-levenshtein';
+import cloneDeep from 'lodash/cloneDeep.js';
 
 export const AI_PREVIEW_KEY = 'aiPreview';
 

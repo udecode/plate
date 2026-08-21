@@ -99,7 +99,7 @@
       "migrationNotes": [],
       "targets": ["code-drawing-demo", "excalidraw-demo"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-07-29",
@@ -116,7 +116,7 @@
       "migrationNotes": [],
       "targets": ["cursor-overlay", "ghost-text"],
       "source": {
-        "line": 14,
+        "line": 16,
         "row": 2,
         "legacyRelease": {
           "date": "2026-07-29",
@@ -133,7 +133,7 @@
       "migrationNotes": [],
       "targets": ["media-image-node", "media-video-node"],
       "source": {
-        "line": 16,
+        "line": 18,
         "row": 3,
         "legacyRelease": {
           "date": "2026-07-29",
@@ -150,7 +150,7 @@
       "migrationNotes": [],
       "targets": ["table-node"],
       "source": {
-        "line": 18,
+        "line": 20,
         "row": 4,
         "legacyRelease": {
           "date": "2026-07-29",

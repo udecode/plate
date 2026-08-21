@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+
 import {
   createEditor,
   type Descendant,
@@ -6,15 +7,15 @@ import {
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
 import {
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
-import {
   history,
   type HistoryStateApi,
   type HistoryTxApi,
 } from '@platejs/plite-history';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
 import type { YjsNode } from '../../src/core/attributes';

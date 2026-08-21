@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, it } from 'bun:test';
 import {
   chmodSync,
   existsSync,
@@ -11,11 +12,10 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { basename, dirname, join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { afterEach, describe, expect, it } from 'bun:test';
 import { API, type Diagnostic, type Snapshot } from 'typescript/unstable/async';
 
 import {

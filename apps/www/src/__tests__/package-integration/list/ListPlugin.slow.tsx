@@ -9,10 +9,9 @@ import {
   ScriptPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
+  HorizontalRulePlugin,
 } from '@platejs/basic-nodes/react';
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
+import { TextAlignPlugin, LineHeightPlugin } from '@platejs/basic-styles/react';
 import { DocxPastePlugin } from '@platejs/docx-paste';
 import { IndentPlugin } from '@platejs/indent/react';
 import { JuicePlugin } from '@platejs/juice';

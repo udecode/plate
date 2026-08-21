@@ -1,11 +1,5 @@
 'use client';
 
-import * as React from 'react';
-import {
-  type PlateEditor,
-  type PlateElementProps,
-  PlateElement,
-} from 'platejs/react';
 import { AIChatPlugin } from '@platejs/ai/react';
 import { SlashInputPlugin, SlashPlugin } from '@platejs/slash-command/react';
 import {
@@ -31,9 +25,17 @@ import {
 } from 'lucide-react';
 import { PLUGINS } from 'platejs';
 import {
+  type PlateEditor,
+  type PlateElementProps,
+  PlateElement,
+} from 'platejs/react';
+import * as React from 'react';
+
+import {
   insertBlock,
   insertInlineElement,
 } from '@/registry/components/editor/transforms';
+
 import {
   InlineCombobox,
   InlineComboboxContent,

@@ -24,7 +24,7 @@ test('source preload bypasses stale direct and transitive workspace artifacts', 
     ],
     {
       cwd: repoRoot,
-      encoding: 'utf8',
+      encoding: 'utf-8',
     }
   );
 

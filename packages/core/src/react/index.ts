@@ -7,10 +7,7 @@ export * from './components/PlateContent';
 export * from './components/PlateRoot';
 export * from './components/PlateView';
 export * from './components/plate-nodes';
-export type {
-  PlateEditor,
-  PlateEditorReference,
-} from './editor/PlateEditor';
+export type { PlateEditor, PlateEditorReference } from './editor/PlateEditor';
 export {
   getPlateCorePlugins,
   type PlateCorePlugin,

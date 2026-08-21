@@ -1,8 +1,8 @@
 import type { ContentSlice, Element } from '../../interfaces';
-import { prepareContentSliceVariant } from '../content-slice';
-import type { CanonicalFitPreparation } from '../representation';
 import type { PreparedTokenSlice } from '../change/tokens';
+import { prepareContentSliceVariant } from '../content-slice';
 import { profileCoreDuration } from '../profiling';
+import type { CanonicalFitPreparation } from '../representation';
 
 export type SliceBoundaryCandidate = Readonly<{
   cost: number;

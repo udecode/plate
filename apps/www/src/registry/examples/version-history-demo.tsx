@@ -1,16 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
-import type { PropertyJsonValue } from '@platejs/plite';
 import {
   type DiffIntent,
   type DiffUpdate,
   computeDiff,
   excludeDiffFragment,
 } from '@platejs/diff';
-import { property, schema } from 'platejs';
+import type { PropertyJsonValue } from '@platejs/plite';
 import { cloneDeep } from 'lodash';
+import { property, schema } from 'platejs';
 import type { Value } from 'platejs';
 import {
   type PlateElementProps,
@@ -26,6 +24,7 @@ import {
   useElementSelected,
   usePlateEditor,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

@@ -45,7 +45,6 @@ export interface PointInterface {
   isPoint: (value: unknown) => value is Point;
 }
 
-// eslint-disable-next-line no-redeclare
 export const PointApi: Readonly<PointInterface> = Object.freeze({
   compare(point: Point, another: Point): -1 | 0 | 1 {
     const pointRoot = getPointRoot(point).root;

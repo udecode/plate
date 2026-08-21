@@ -1,17 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
-import { PLUGINS } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
-import type { ClientUploadedFileData } from 'uploadthing/types';
-
 import { PlaceholderPlugin } from '@platejs/media/react';
 import { generateReactHelpers } from '@uploadthing/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
-import { toast } from 'sonner';
-import { z } from 'zod';
-
+import { PLUGINS } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
   useEditor,
@@ -19,7 +12,11 @@ import {
   usePath,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
+import { toast } from 'sonner';
+import type { ClientUploadedFileData } from 'uploadthing/types';
 import { useFilePicker } from 'use-file-picker';
+import { z } from 'zod';
 
 import { cn } from '@/lib/utils';
 import type { OurFileRouter } from '@/registry/lib/uploadthing';
@@ -202,7 +199,6 @@ export function PlaceholderElement(
     );
 
     api.removeUploadingFile(nodeKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadedFile, isImage, naturalSize, nodeKey, path]);
 
   /** Paste and drop */
@@ -228,7 +224,7 @@ export function PlaceholderElement(
           <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
             {currentContent.icon}
           </div>
-          <div className="whitespace-nowrap text-muted-foreground text-sm">
+          <div className="text-sm whitespace-nowrap text-muted-foreground">
             <div>{loading ? uploadingFile?.name : currentContent.content}</div>
 
             {loading && !isImage && (
@@ -281,7 +277,7 @@ export function ImageProgress({
 
   React.useEffect(() => {
     const url = URL.createObjectURL(file);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Store the object URL tied to this File and revoke it on cleanup.
+    // Store the object URL tied to this File and revoke it on cleanup.
     setPreview({ file, url });
 
     return () => {
@@ -309,7 +305,7 @@ export function ImageProgress({
       {progress < 100 && (
         <div className="absolute right-1 bottom-1 flex items-center space-x-2 rounded-full bg-black/50 px-1 py-0.5">
           <Loader2Icon className="size-3.5 animate-spin text-muted-foreground" />
-          <span className="font-medium text-white text-xs">
+          <span className="text-xs font-medium text-white">
             {Math.round(progress)}%
           </span>
         </div>

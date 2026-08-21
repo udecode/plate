@@ -16,8 +16,8 @@ Use this when the user wants a full autonomous migration loop for Slate v2,
 especially when migrating Plate code, examples, docs, tests, public APIs, or
 changesets to the current Slate v2 shape.
 
-This is the migration lane. `auto` supervises broad quality/perf loops;
-`slate-migration` owns migration closure: API mapping, stale symbol removal,
+This is the migration lane. `auto` supervises broad quality loops and
+`benchmark` owns measured performance work; `slate-migration` owns migration closure: API mapping, stale symbol removal,
 guide updates, changeset truth, package proof, examples, docs, and missed
 migration workflow repair.
 
@@ -61,8 +61,10 @@ Every discovered migration gap updates the durable owner:
 - The user asks one local Plite bug fix: use `patch`.
 - The user asks one public API decision before migration: use `best-api`; use
   `plite-plan` when the decision is substrate runtime/adoption.
-- The user asks broad behavior/perf automation unrelated to migration closure:
-  use `auto`.
+- The user asks performance measurement or optimization unrelated to migration
+  closure: use `benchmark`.
+- The user asks broad behavior/quality automation unrelated to migration
+  closure: use `auto`.
 - The task is only writing a package changeset for an already-understood diff:
   use `changeset`.
 - The work is only a docs page unrelated to migration: use `docs-creator`.

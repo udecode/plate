@@ -1,16 +1,16 @@
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
-import type { Element } from '@platejs/plite';
 
+import type { Element } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
-import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
-import type { TableCellElement } from './BaseTablePlugin';
 import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import type { TableCellElement } from './BaseTablePlugin';
 
 jsxt;
 

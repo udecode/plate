@@ -17,7 +17,7 @@ const getMatchesByFile = (pattern: RegExp) =>
   Object.fromEntries(
     sourceFiles
       .map((file) => {
-        const source = readFileSync(file, 'utf8');
+        const source = readFileSync(file, 'utf-8');
         const matches = source.match(pattern);
 
         return [
@@ -34,7 +34,7 @@ const getMatchesByRelativeFile = (pattern: RegExp, files: readonly string[]) =>
     files
       .map((file) => {
         const absoluteFile = resolve(pliteReactRoot, file);
-        const source = readFileSync(absoluteFile, 'utf8');
+        const source = readFileSync(absoluteFile, 'utf-8');
         const matches = source.match(pattern);
 
         return [
@@ -64,7 +64,7 @@ const getMatchesByFiles = (pattern: RegExp, files: readonly string[]) =>
   Object.fromEntries(
     files
       .map((file) => {
-        const source = readFileSync(file, 'utf8');
+        const source = readFileSync(file, 'utf-8');
         const matches = source.match(pattern);
 
         return [
@@ -120,7 +120,7 @@ const expectEditableHotPolicyInventory = (
 ) => {
   const editableSource = readFileSync(
     resolve(pliteReactRoot, 'components/editable.tsx'),
-    'utf8'
+    'utf-8'
   );
   const actual = Object.fromEntries(
     Object.entries(inventory).map(([pattern]) => {
@@ -168,7 +168,7 @@ const expectEditableEventRuntimeInventory = (
 ) => {
   const editableSource = readFileSync(
     resolve(pliteReactRoot, 'components/editable.tsx'),
-    'utf8'
+    'utf-8'
   );
   const actual = Object.fromEntries(
     Object.entries(inventory).map(([pattern]) => {

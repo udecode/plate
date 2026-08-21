@@ -1,7 +1,7 @@
 import { defineBasePlugin } from '@platejs/core';
 import { BaseTablePlugin } from '@platejs/table';
-import { TablePlugin } from '@platejs/table/react';
 import type { TableCellElement } from '@platejs/table';
+import { TablePlugin } from '@platejs/table/react';
 
 type AssertFalse<T extends false> = T;
 type IsAny<T> = 0 extends 1 & T ? true : false;

@@ -5,6 +5,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const commandPartPattern = /^[\w./:@=-]+$/;
 const lineBreakPattern = /\r?\n/;
@@ -562,7 +569,7 @@ export const createCheckSteps = (mode, affectedPlan) => {
 const readGitLines = (args) => {
   const result = spawnSync('git', args, {
     cwd: repoRoot,
-    encoding: 'utf8',
+    encoding: 'utf-8',
   });
 
   if (result.status !== 0) return null;
@@ -603,7 +610,7 @@ export const collectChangedFiles = () => {
     for (const file of result) files.add(file);
   }
 
-  return [...files].sort();
+  return [...files].sort(compareStrings);
 };
 
 const formatCommand = ({ args, command }) =>

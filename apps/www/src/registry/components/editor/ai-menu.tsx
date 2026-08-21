@@ -1,20 +1,6 @@
 'use client';
 
-import * as React from 'react';
 import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
-import {
-  useEditorPlugin,
-  useEditorRuntimeState,
-  usePlateEditor,
-  useEditorSelector,
-  useFocusedLast,
-  useHotkeys,
-  usePluginStore,
-  type PlateEditor,
-  useEditor,
-} from 'platejs/react';
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
-import { EditorStatic } from './editor-static';
 import { CommentPlugin } from '@platejs/comment/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
@@ -37,6 +23,19 @@ import {
   X,
 } from 'lucide-react';
 import { ElementApi, isHotkey, NodeApi } from 'platejs';
+import {
+  useEditorPlugin,
+  useEditorRuntimeState,
+  usePlateEditor,
+  useEditorSelector,
+  useFocusedLast,
+  useHotkeys,
+  usePluginStore,
+  type PlateEditor,
+  useEditor,
+} from 'platejs/react';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -50,6 +49,9 @@ import {
   PopoverContent,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+
+import { EditorStatic } from './editor-static';
 
 export const AIChatEditor = React.memo(function AIChatEditor({
   content,
@@ -268,7 +270,7 @@ export function AIMenu() {
             toolName === 'generate' && <AIChatEditor content={content} />}
 
           {isLoading ? (
-            <div className="flex grow select-none items-center gap-2 p-2 text-muted-foreground text-sm">
+            <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
               <Loader2Icon className="size-4 animate-spin" />
               {(messages?.length ?? 0) > 1 ? 'Editing...' : 'Thinking...'}
             </div>

@@ -1,9 +1,8 @@
-import React from 'react';
-
-import { act, render } from '@testing-library/react';
 import { Plate, PlateContent, createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
 import type { NodeKey } from '@platejs/plite';
+import { act, render } from '@testing-library/react';
+import React from 'react';
 
 import { DndPlugin } from './DndPlugin';
 

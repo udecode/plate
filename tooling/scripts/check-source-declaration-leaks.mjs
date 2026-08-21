@@ -3,6 +3,13 @@ import { existsSync, readdirSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const ignoredDirectories = new Set([
   '.git',
   '.tmp',
@@ -51,7 +58,7 @@ export const findSourceDeclarationLeaks = (repoRoot) => {
 
       return existsSync(`${source}.ts`) || existsSync(`${source}.tsx`);
     })
-    .sort();
+    .sort(compareStrings);
 };
 
 export const assertNoSourceDeclarationLeaks = (repoRoot) => {

@@ -10,8 +10,8 @@ import {
 
 import { ZodError } from 'zod';
 
-import { highlighter, logger } from './logger';
 import { handleError } from './handle-error';
+import { highlighter, logger } from './logger';
 
 describe('handleError', () => {
   const exitError = new Error('process.exit');

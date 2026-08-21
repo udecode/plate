@@ -9,8 +9,8 @@ import type {
   EditorStateView,
   Value,
 } from '../interfaces/editor';
-import { getExtensionRegistry } from './extension-registry';
 import { getInternalDocumentChangeEntries } from './change/document-change';
+import { getExtensionRegistry } from './extension-registry';
 import { toInternalRoot } from './public-root';
 import { getInstalledStateField } from './state-fields';
 
@@ -43,7 +43,11 @@ type FacetRuntime = {
   stack: EditorFacet<any, any>[];
 };
 
-/** @internal Isolated facet state for one mutable transaction draft. */
+/**
+ * Isolated facet state for one mutable transaction draft.
+ *
+ * @internal
+ */
 export type EditorFacetDraft = FacetRuntime & {
   revision: number;
 };
@@ -72,7 +76,11 @@ const bumpRevision = (revisions: Map<string, number>, key: string) => {
   revisions.set(key, (revisions.get(key) ?? 0) + 1);
 };
 
-/** @internal Fork committed or parent-draft facet state without sharing writes. */
+/**
+ * Fork committed or parent-draft facet state without sharing writes.
+ *
+ * @internal
+ */
 export const createEditorFacetDraft = (
   editor: Editor,
   revision: number,
@@ -95,7 +103,11 @@ const bumpDraftRevision = (draft: EditorFacetDraft) => {
   draft.revision++;
 };
 
-/** @internal Invalidate document-dependent providers inside one draft. */
+/**
+ * Invalidate document-dependent providers inside one draft.
+ *
+ * @internal
+ */
 export const recordFacetDraftDocumentRoots = (
   draft: EditorFacetDraft,
   roots: Iterable<string>
@@ -112,7 +124,11 @@ export const recordFacetDraftDocumentRoots = (
   }
 };
 
-/** @internal Invalidate roots changed by one canonical document change. */
+/**
+ * Invalidate roots changed by one canonical document change.
+ *
+ * @internal
+ */
 export const recordFacetDraftDocumentChange = (
   draft: EditorFacetDraft,
   change: EditorCommit['changes']
@@ -123,7 +139,11 @@ export const recordFacetDraftDocumentChange = (
     ...change.deleteRoots,
   ]);
 
-/** @internal Invalidate one field dependency inside one draft. */
+/**
+ * Invalidate one field dependency inside one draft.
+ *
+ * @internal
+ */
 export const recordFacetDraftFieldChange = (
   draft: EditorFacetDraft,
   key: string
@@ -132,7 +152,11 @@ export const recordFacetDraftFieldChange = (
   bumpRevision(draft.fieldRevisions, key);
 };
 
-/** @internal Invalidate selection-dependent providers inside one draft. */
+/**
+ * Invalidate selection-dependent providers inside one draft.
+ *
+ * @internal
+ */
 export const recordFacetDraftSelectionChange = (draft: EditorFacetDraft) => {
   bumpDraftRevision(draft);
   draft.selectionRevision++;

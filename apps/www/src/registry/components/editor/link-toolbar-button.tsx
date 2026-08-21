@@ -1,12 +1,11 @@
 'use client';
 
-import * as React from 'react';
-
 import { Link } from 'lucide-react';
 import { useEditor, useEditorPlugin, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 
-import { ToolbarButton } from './toolbar';
 import { linkPlugin } from './link';
+import { ToolbarButton } from './toolbar';
 
 export function LinkToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>

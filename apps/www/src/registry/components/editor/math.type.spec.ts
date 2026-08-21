@@ -1,4 +1,4 @@
-/* biome-ignore-all lint: compile-time type regression file */
+// compile-time type regression file.
 
 import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';

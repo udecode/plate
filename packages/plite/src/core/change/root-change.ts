@@ -1,3 +1,6 @@
+import type { NodeKey } from '../../interfaces/editor';
+import { profileCoreDuration } from '../profiling';
+import { assertEditorJsonValue } from '../value-codec';
 import {
   type ChangedOutputRange,
   decodeNodes,
@@ -34,11 +37,12 @@ import {
   transformPathAfterRemove,
   unsafeNodePropertyKeys,
 } from './transform';
-import { profileCoreDuration } from '../profiling';
-import { assertEditorJsonValue } from '../value-codec';
-import type { NodeKey } from '../../interfaces/editor';
 
-/** @internal Concrete placement used to resolve schema-owned property laws. */
+/**
+ * Concrete placement used to resolve schema-owned property laws.
+ *
+ * @internal
+ */
 export type DocumentPropertyContext = Readonly<{
   /** Element ancestors beyond the text parent, or including the element parent. */
   ancestors: readonly string[];
@@ -51,7 +55,11 @@ export type DocumentPropertyContext = Readonly<{
   type: string;
 }>;
 
-/** @internal Resolve one property merge law at its concrete document location. */
+/**
+ * Resolve one property merge law at its concrete document location.
+ *
+ * @internal
+ */
 export type DocumentSetPropertyResolver = (
   node: JsonNode,
   key: string,
@@ -133,8 +141,9 @@ export const normalizePropertyDelta = (
       const values = entries[key];
 
       reserve(key, 'set');
-      if (!Array.isArray(values))
+      if (!Array.isArray(values)) {
         throw new Error('Invalid node property delta.');
+      }
 
       const normalized = normalizeSetValues(values);
 
@@ -460,7 +469,11 @@ export const CHANGE_SET_APPLY_STATS = new WeakMap<
   }>
 >();
 
-/** @internal Inspect the most recent apply strategy for one immutable change. */
+/**
+ * Inspect the most recent apply strategy for one immutable change.
+ *
+ * @internal
+ */
 export const getRootChangeApplyStats = (change: RootChange) =>
   CHANGE_SET_APPLY_STATS.get(change) ?? null;
 
@@ -1546,7 +1559,11 @@ export class RootChange {
       : new RootChange([length, -1], [null]);
   }
 
-  /** @internal Lift this change from a token window into its parent document. */
+  /**
+   * Lift this change from a token window into its parent document.
+   *
+   * @internal
+   */
   embed(length: number, offset: number) {
     if (
       !Number.isSafeInteger(length) ||
@@ -2008,10 +2025,13 @@ export class RootChange {
         return null;
       }
 
-      let current = document;
+      const updates: Array<{
+        path: readonly number[];
+        props: JsonRecord;
+      }> = [];
 
       for (const propertyChange of propertyChanges) {
-        const entry = current.nodeStartingAt(propertyChange.from);
+        const entry = document.nodeStartingAt(propertyChange.from);
 
         if (!entry || propertyChange.to !== propertyChange.from + 1) {
           work.fallbackReason = 'invalid-property-target';
@@ -2019,19 +2039,19 @@ export class RootChange {
           return null;
         }
 
-        const node = current.node(entry.path);
+        const node = document.node(entry.path);
 
-        current = current.withExactNodeProperties(
-          entry.path,
-          applyPropertyModifications(
+        updates.push({
+          path: entry.path,
+          props: applyPropertyModifications(
             nodeProps(node),
             propertyChange.modifications
-          )
-        );
+          ),
+        });
         work.ancestorPaths.push([...entry.path]);
       }
 
-      return current;
+      return document.withExactNodePropertiesBatch(updates);
     }
 
     if (replacements.length === 2) {
@@ -2294,6 +2314,56 @@ export class RootChange {
 
       if (localized) continue;
 
+      const topLevelRanges = current
+        .nodeRangesTouching(replacement.from, replacement.to)
+        .filter((entry) => entry.path.length === 1);
+      const firstTopLevelIndex = Math.min(
+        ...topLevelRanges.map((entry) => entry.path[0]!)
+      );
+      const lastTopLevelIndex = Math.max(
+        ...topLevelRanges.map((entry) => entry.path[0]!)
+      );
+
+      if (
+        Number.isFinite(firstTopLevelIndex) &&
+        Number.isFinite(lastTopLevelIndex)
+      ) {
+        const firstRange = current.nodeRange([firstTopLevelIndex]);
+        const lastRange = current.nodeRange([lastTopLevelIndex]);
+
+        if (
+          firstRange.from <= replacement.from &&
+          replacement.to <= lastRange.to
+        ) {
+          try {
+            const local = PreparedTokenSlice.concat([
+              current.slice(firstRange.from, replacement.from),
+              replacement.insert,
+              current.slice(replacement.to, lastRange.to),
+            ]);
+            const nodes = profileCoreDuration(
+              'change-set-local-root-window-decode',
+              () => decodeNodes(local).nodes
+            );
+
+            if (!recordLocality([])) return null;
+            current = profileCoreDuration(
+              'change-set-local-root-window-splice',
+              () =>
+                current.withDecodedSplicedNodes(
+                  [],
+                  firstTopLevelIndex,
+                  lastTopLevelIndex - firstTopLevelIndex + 1,
+                  nodes
+                )
+            );
+            continue;
+          } catch {
+            // The replacement needs the complete document token context.
+          }
+        }
+      }
+
       work.fallbackReason = 'unresolved-local-replacement';
 
       return null;
@@ -2306,7 +2376,7 @@ export class RootChange {
     const replacements: Replacement[] = [];
     let position = 0;
 
-    for (let index = 0, dataIndex = 0; index < this.sections.length; ) {
+    for (let index = 0, dataIndex = 0; index < this.sections.length;) {
       const length = this.sections[index++]!;
       const inserted = this.sections[index++]!;
       const data = this.data[dataIndex++]!;
@@ -2329,7 +2399,7 @@ export class RootChange {
     const changes: PropertyChange[] = [];
     let position = 0;
 
-    for (let index = 0, dataIndex = 0; index < this.sections.length; ) {
+    for (let index = 0, dataIndex = 0; index < this.sections.length;) {
       const length = this.sections[index++]!;
       const inserted = this.sections[index++]!;
       const data = this.data[dataIndex++]!;
@@ -2464,6 +2534,11 @@ export class RootChange {
       return indexed;
     }
 
+    profileCoreDuration(
+      `change-set-apply-token-fallback:${work.fallbackReason ?? 'unknown'}`,
+      () => undefined
+    );
+
     return profileCoreDuration('change-set-apply-token-fallback', () => {
       const outputTokens: JsonToken[] = [];
       let position = 0;
@@ -2472,7 +2547,7 @@ export class RootChange {
         for (const token of slice.tokens) outputTokens.push(token);
       };
 
-      for (let index = 0, dataIndex = 0; index < this.sections.length; ) {
+      for (let index = 0, dataIndex = 0; index < this.sections.length;) {
         const length = this.sections[index++]!;
         const inserted = this.sections[index++]!;
         const value = this.data[dataIndex++]!;
@@ -2572,7 +2647,11 @@ export class RootChange {
     return new RootChange(sections, data);
   }
 
-  /** @internal Bind existing runtime identities to whole nodes inserted by this change. */
+  /**
+   * Bind existing runtime identities to whole nodes inserted by this change.
+   *
+   * @internal
+   */
   withInsertedNodeKeys(
     after: DocumentIndex,
     nodeKeyAt: (path: readonly number[]) => NodeKey | null
@@ -2644,7 +2723,7 @@ export class RootChange {
     let positionA = 0;
     let positionB = 0;
 
-    for (let index = 0; index < this.sections.length; ) {
+    for (let index = 0; index < this.sections.length;) {
       let length = this.sections[index++]!;
       let inserted = this.sections[index++]!;
 
@@ -2677,7 +2756,7 @@ export class RootChange {
     let positionA = 0;
     let positionB = 0;
 
-    for (let index = 0; index < this.sections.length; ) {
+    for (let index = 0; index < this.sections.length;) {
       const length = this.sections[index++]!;
       const inserted = this.sections[index++]!;
       const endA = positionA + length;
@@ -2802,6 +2881,56 @@ export const removeNodeChange = (
   return RootChange.create(document, range);
 };
 
+export const setNodesChange = (
+  document: DocumentIndex,
+  updates: readonly Readonly<{
+    newProperties: JsonRecord;
+    path: readonly number[];
+    properties: JsonRecord;
+  }>[],
+  isSetValued: DocumentSetPropertyResolver = () => false,
+  root: string | null = null
+) => {
+  const changes = updates.flatMap(
+    ({ newProperties, path, properties }): RootChangeSection[] => {
+      const node = document.node(path);
+      const context = getDocumentPropertyContext(document, path, root);
+      const next = { ...node } as JsonRecord;
+
+      for (const key of Object.keys(properties)) {
+        if (!Object.hasOwn(newProperties, key)) delete next[key];
+      }
+
+      for (const [key, value] of Object.entries(newProperties)) {
+        if (value === null) {
+          delete next[key];
+        } else {
+          next[key] = value;
+        }
+      }
+
+      const modifications = semanticPropertyModifications(
+        nodeProps(node),
+        nodeProps(next as JsonNode),
+        (key) => isSetValued(node, key, context)
+      );
+
+      if (modifications.length === 0) return [];
+      const range = document.nodeRange(path);
+
+      return [
+        {
+          from: range.from,
+          properties: propertyDeltaFromModifications(modifications),
+          to: range.from + 1,
+        },
+      ];
+    }
+  );
+
+  return RootChange.create(document, changes);
+};
+
 export const setNodeChange = (
   document: DocumentIndex,
   path: readonly number[],
@@ -2809,40 +2938,19 @@ export const setNodeChange = (
   properties: JsonRecord = {},
   isSetValued: DocumentSetPropertyResolver = () => false,
   root: string | null = null
-) => {
-  const node = document.node(path);
-  const context = getDocumentPropertyContext(document, path, root);
-  const next = { ...node } as JsonRecord;
-
-  for (const key of Object.keys(properties)) {
-    if (!Object.hasOwn(newProperties, key)) delete next[key];
-  }
-
-  for (const [key, value] of Object.entries(newProperties)) {
-    if (value === null) {
-      delete next[key];
-    } else {
-      next[key] = value;
-    }
-  }
-
-  const range = document.nodeRange(path);
-  const modifications = semanticPropertyModifications(
-    nodeProps(node),
-    nodeProps(next as JsonNode),
-    (key) => isSetValued(node, key, context)
+) =>
+  setNodesChange(
+    document,
+    [{ newProperties, path, properties }],
+    isSetValued,
+    root
   );
 
-  if (modifications.length === 0) return RootChange.empty(document.length);
-
-  return RootChange.create(document, {
-    from: range.from,
-    properties: propertyDeltaFromModifications(modifications),
-    to: range.from + 1,
-  });
-};
-
-/** @internal Build a path-targeted property section for transform adapters. */
+/**
+ * Build a path-targeted property section for transform adapters.
+ *
+ * @internal
+ */
 export const updateNodePropertiesChange = (
   document: DocumentIndex,
   path: readonly number[],
@@ -2942,7 +3050,11 @@ export const replaceChildrenChange = (
   });
 };
 
-/** @internal Build one canonical child reconciliation without applying it. */
+/**
+ * Build one canonical child reconciliation without applying it.
+ *
+ * @internal
+ */
 export const reconcileChildrenStep = (
   document: DocumentIndex,
   path: readonly number[],

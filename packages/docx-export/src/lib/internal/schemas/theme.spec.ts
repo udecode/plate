@@ -1,5 +1,4 @@
 import { defaultFont } from '../constants';
-
 import generateThemeXML from './theme';
 
 describe('generateThemeXML', () => {

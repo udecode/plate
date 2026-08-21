@@ -1,9 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
-import type { MainNavItem } from '@/types/nav';
 import type { DialogProps } from '@radix-ui/react-dialog';
+import * as React from 'react';
 
 import { CommandMenuDialog } from '@/components/command-menu-dialog';
 import { Button } from '@/components/ui/button';
@@ -13,6 +11,7 @@ import {
 } from '@/hooks/use-lazy-sidebar-nav';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
+import type { MainNavItem } from '@/types/nav';
 
 const i18n = {
   cn: {

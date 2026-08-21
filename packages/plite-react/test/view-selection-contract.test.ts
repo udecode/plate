@@ -73,7 +73,7 @@ describe('plite view selection', () => {
   it('refreshes scoped view-selection decorations when mounted runtime scope changes', () => {
     const source = readFileSync(
       'src/components/editable-text-blocks.tsx',
-      'utf8'
+      'utf-8'
     );
     const scopeEffectStart = source.indexOf(
       'React.useEffect(() => {\n    decorateSource?.refresh({'

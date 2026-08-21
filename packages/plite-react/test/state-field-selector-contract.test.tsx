@@ -1,13 +1,13 @@
-import { act, renderHook } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import {
   type Descendant,
   defineExtension,
   defineStateField,
   valueCodecs,
 } from '@platejs/plite';
-import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
+import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
+import { act, renderHook } from '@testing-library/react';
+import type { ReactNode } from 'react';
 
 import {
   createReactEditor,

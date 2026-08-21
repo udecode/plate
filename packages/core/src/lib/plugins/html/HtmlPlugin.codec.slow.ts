@@ -500,58 +500,12 @@ const countDocumentShape = (document: readonly Descendant[]) => {
 };
 
 describe('compiled HTML codec performance', () => {
-  it('compiles and recompiles configured indexed codecs within explicit budgets', {
-    timeout: 30_000,
-  }, () => {
-    const counters: BenchmarkCounters = {
-      codecFactories: 0,
-      elementDecode: 0,
-      elementEncode: 0,
-      markDecode: 0,
-      markEncode: 0,
-      unrelatedDecode: 0,
-    };
-    const { plugins, reconfiguredPlugins } = createBenchmarkPlugins(counters);
-    const initial = measure(() => createBaseEditor({ plugins }));
-    const initialFactoryCalls = counters.codecFactories;
-    const reconfigured = measure(() =>
-      createBaseEditor({ plugins: reconfiguredPlugins })
-    );
-
-    expect(initial.duration).toBeLessThan(WALL_TIME_BUDGET_MS.compile);
-    expect(reconfigured.duration).toBeLessThan(WALL_TIME_BUDGET_MS.compile);
-    expect(initialFactoryCalls).toBe(plugins.length);
-    expect(counters.codecFactories - initialFactoryCalls).toBe(
-      reconfiguredPlugins.length
-    );
-
-    const document = createMixedDocument(1);
-    const initialOutput = new DataTransfer();
-    const reconfiguredOutput = new DataTransfer();
-
-    writeHostFragmentData(
-      initial.value,
-      initialOutput,
-      ContentSlice.closed(document)
-    );
-    writeHostFragmentData(
-      reconfigured.value,
-      reconfiguredOutput,
-      ContentSlice.closed(document)
-    );
-
-    expect(initialOutput.getData('text/html')).toContain(
-      'data-variant="initial"'
-    );
-    expect(reconfiguredOutput.getData('text/html')).toContain(
-      'data-variant="reconfigured"'
-    );
-  });
-
-  for (const cohort of MIXED_DOCUMENT_COHORTS) {
-    it(`keeps ${cohort.name} mixed HTML parse and serialize callbacks indexed`, {
+  it(
+    'compiles and recompiles configured indexed codecs within explicit budgets',
+    {
       timeout: 30_000,
-    }, () => {
+    },
+    () => {
       const counters: BenchmarkCounters = {
         codecFactories: 0,
         elementDecode: 0,
@@ -560,36 +514,90 @@ describe('compiled HTML codec performance', () => {
         markEncode: 0,
         unrelatedDecode: 0,
       };
-      const { plugins } = createBenchmarkPlugins(counters);
-      const editor = createBaseEditor({ plugins });
-      const document = createMixedDocument(cohort.groups);
-      const shape = countDocumentShape(document);
-      const output = new DataTransfer();
-
-      resetRuntimeCounters(counters);
-
-      const serialized = measure(() =>
-        writeHostFragmentData(editor, output, ContentSlice.closed(document))
+      const { plugins, reconfiguredPlugins } = createBenchmarkPlugins(counters);
+      const initial = measure(() => createBaseEditor({ plugins }));
+      const initialFactoryCalls = counters.codecFactories;
+      const reconfigured = measure(() =>
+        createBaseEditor({ plugins: reconfiguredPlugins })
       );
 
-      expect(serialized.value).toContain('text/html');
-      expect(serialized.duration).toBeLessThan(WALL_TIME_BUDGET_MS.serialize);
-      expect(counters.elementEncode).toBe(shape.elements);
-      expect(counters.markEncode).toBe(shape.texts * MARK_COUNT);
-
-      counters.elementDecode = 0;
-      counters.markDecode = 0;
-      const parsed = measure(() =>
-        editor.api.html.deserialize({
-          element: `<div>${output.getData('text/html')}</div>`,
-        })
+      expect(initial.duration).toBeLessThan(WALL_TIME_BUDGET_MS.compile);
+      expect(reconfigured.duration).toBeLessThan(WALL_TIME_BUDGET_MS.compile);
+      expect(initialFactoryCalls).toBe(plugins.length);
+      expect(counters.codecFactories - initialFactoryCalls).toBe(
+        reconfiguredPlugins.length
       );
 
-      expect(parsed.duration).toBeLessThan(WALL_TIME_BUDGET_MS.parse);
-      expect(parsed.value).toHaveLength(cohort.groups * 4);
-      expect(counters.elementDecode).toBe(shape.elements);
-      expect(counters.markDecode).toBe(shape.texts * MARK_COUNT);
-      expect(counters.unrelatedDecode).toBe(0);
-    });
+      const document = createMixedDocument(1);
+      const initialOutput = new DataTransfer();
+      const reconfiguredOutput = new DataTransfer();
+
+      writeHostFragmentData(
+        initial.value,
+        initialOutput,
+        ContentSlice.closed(document)
+      );
+      writeHostFragmentData(
+        reconfigured.value,
+        reconfiguredOutput,
+        ContentSlice.closed(document)
+      );
+
+      expect(initialOutput.getData('text/html')).toContain(
+        'data-variant="initial"'
+      );
+      expect(reconfiguredOutput.getData('text/html')).toContain(
+        'data-variant="reconfigured"'
+      );
+    }
+  );
+
+  for (const cohort of MIXED_DOCUMENT_COHORTS) {
+    it(
+      `keeps ${cohort.name} mixed HTML parse and serialize callbacks indexed`,
+      {
+        timeout: 30_000,
+      },
+      () => {
+        const counters: BenchmarkCounters = {
+          codecFactories: 0,
+          elementDecode: 0,
+          elementEncode: 0,
+          markDecode: 0,
+          markEncode: 0,
+          unrelatedDecode: 0,
+        };
+        const { plugins } = createBenchmarkPlugins(counters);
+        const editor = createBaseEditor({ plugins });
+        const document = createMixedDocument(cohort.groups);
+        const shape = countDocumentShape(document);
+        const output = new DataTransfer();
+
+        resetRuntimeCounters(counters);
+
+        const serialized = measure(() =>
+          writeHostFragmentData(editor, output, ContentSlice.closed(document))
+        );
+
+        expect(serialized.value).toContain('text/html');
+        expect(serialized.duration).toBeLessThan(WALL_TIME_BUDGET_MS.serialize);
+        expect(counters.elementEncode).toBe(shape.elements);
+        expect(counters.markEncode).toBe(shape.texts * MARK_COUNT);
+
+        counters.elementDecode = 0;
+        counters.markDecode = 0;
+        const parsed = measure(() =>
+          editor.api.html.deserialize({
+            element: `<div>${output.getData('text/html')}</div>`,
+          })
+        );
+
+        expect(parsed.duration).toBeLessThan(WALL_TIME_BUDGET_MS.parse);
+        expect(parsed.value).toHaveLength(cohort.groups * 4);
+        expect(counters.elementDecode).toBe(shape.elements);
+        expect(counters.markDecode).toBe(shape.texts * MARK_COUNT);
+        expect(counters.unrelatedDecode).toBe(0);
+      }
+    );
   }
 });

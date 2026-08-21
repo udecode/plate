@@ -1,13 +1,13 @@
 import type { AnyObject } from '@udecode/utils';
 import type React from 'react';
 
+import type { AnyResolvedPlatePlugin } from '../../react/plugin';
 import type {
   AnyBasePlugin,
   AnyBasePluginPortal,
   AnyPluginBase,
   GetInjectNodePropsOptions,
 } from '../plugin';
-import type { AnyResolvedPlatePlugin } from '../../react/plugin';
 
 export const getPluginNodeProps = <
   TProps extends GetInjectNodePropsOptions & {

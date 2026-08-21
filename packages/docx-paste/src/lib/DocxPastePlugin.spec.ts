@@ -4,8 +4,8 @@ import {
   prepareHtmlRegistry,
 } from '@platejs/core/internal';
 
-import { DocxPastePlugin } from './DocxPastePlugin';
 import { cleanWordHtml } from './cleanWordHtml';
+import { DocxPastePlugin } from './DocxPastePlugin';
 
 describe('DocxPastePlugin', () => {
   const editor = createBaseEditor({

@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test';
+/* oxlint-disable typescript/unbound-method -- Methods in this owner are already bound, invoked with an explicit receiver, or inspected by identity; wrapping them would change the receiver contract. */
 import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { expect, test } from '@playwright/test';
 
 test.describe('mobile input lab', () => {
   test('exports browser events with model, DOM, selection, and device state', async ({

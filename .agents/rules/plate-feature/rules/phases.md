@@ -63,6 +63,6 @@ the attestation input and keep required per-file review rows in the same plan's
 `Package file evidence` section. The Package and Plate Next manifest rows are
 the only cross-layer completion status. Advance only that package's version
 after full current proof, with the registry entry pointing to this exact plan
-and authoritative fingerprint at the latest doctrine version. Run P2
+and authoritative fingerprint at the latest doctrine version. Run P1
 `autoreview`, close accepted findings, then run both the feature checker and
 goal checker.

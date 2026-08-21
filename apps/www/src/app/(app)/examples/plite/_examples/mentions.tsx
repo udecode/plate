@@ -1,11 +1,3 @@
-import { cva } from 'class-variance-authority';
-import {
-  type KeyboardEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
 import {
   defineEditorSchema,
   property,
@@ -27,7 +19,17 @@ import {
   useElementSelected,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { cva } from 'class-variance-authority';
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+
 import { cn } from '@/utils/cn';
+
 import { Portal } from './components';
 
 const MentionSchema = defineEditorSchema('schema:derived', {

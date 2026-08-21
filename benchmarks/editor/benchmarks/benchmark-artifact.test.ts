@@ -14,6 +14,6 @@ test('atomically creates a benchmark artifact in a missing directory', (t) => {
 
   writeBenchmarkArtifact(outputPath, '{"ok":true}\n');
 
-  assert.equal(readFileSync(outputPath, 'utf8'), '{"ok":true}\n');
+  assert.equal(readFileSync(outputPath, 'utf-8'), '{"ok":true}\n');
   assert.deepEqual(readdirSync(dirname(outputPath)), ['result.json']);
 });

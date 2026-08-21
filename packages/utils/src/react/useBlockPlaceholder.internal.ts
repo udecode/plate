@@ -15,8 +15,9 @@ import {
   usePluginStore,
 } from '@platejs/core/react';
 import { type Path, PathApi } from '@platejs/plite';
-import type { PLUGINS } from '../lib';
 import { useEffect } from 'react';
+
+import type { PLUGINS } from '../lib';
 import type { BlockPlaceholderPluginState } from './BlockPlaceholderPlugin';
 
 type BlockPlaceholderHookDefinition = Readonly<{

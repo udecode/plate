@@ -38,7 +38,7 @@ test('workspace source entries cover every public runtime entry exactly once', (
 test('www maps every Plite public runtime entry to its exact source file', () => {
   const appRoot = path.join(repoRoot, 'apps/www');
   const appConfig = JSON.parse(
-    readFileSync(path.join(appRoot, 'tsconfig.json'), 'utf8')
+    readFileSync(path.join(appRoot, 'tsconfig.json'), 'utf-8')
   );
   const paths = appConfig.compilerOptions.paths;
 
@@ -53,11 +53,11 @@ test('www maps every Plite public runtime entry to its exact source file', () =>
 
 test('Plite CI runs the repository Bun version', () => {
   const rootManifest = JSON.parse(
-    readFileSync(path.join(repoRoot, 'package.json'), 'utf8')
+    readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
   );
   const workflow = readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
   const versions = [...workflow.matchAll(/bun-version:\s*(\S+)/g)].map(
     ([, version]) => version
@@ -70,7 +70,7 @@ test('Plite CI runs the repository Bun version', () => {
 test('Core proof does not build workspace artifacts or serialize package lint', () => {
   const source = readFileSync(
     path.join(repoRoot, 'tooling/scripts/check-core.mjs'),
-    'utf8'
+    'utf-8'
   );
 
   assert.doesNotMatch(source, /run\('build /);
@@ -98,12 +98,12 @@ test('ordinary package tests use the root source-first Bun config', () => {
 test('package typecheck gets source paths without exposing them to Bun', () => {
   const packageRunner = readFileSync(
     path.join(repoRoot, 'packages/plate-scripts/run-with-pkg-dir.cjs'),
-    'utf8'
+    'utf-8'
   );
   const baseConfig = JSON.parse(
     readFileSync(
       path.join(repoRoot, 'tooling/config/tsconfig.base.json'),
-      'utf8'
+      'utf-8'
     )
   );
 
@@ -111,7 +111,7 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
   assert.deepEqual(baseConfig.compilerOptions.paths, {});
 
   const rootManifest = JSON.parse(
-    readFileSync(path.join(repoRoot, 'package.json'), 'utf8')
+    readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
   );
 
   assert.match(
@@ -124,7 +124,7 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
 test('every Plite package typechecks against workspace source', () => {
   for (const { root } of plitePackages) {
     const manifest = JSON.parse(
-      readFileSync(path.join(repoRoot, root, 'package.json'), 'utf8')
+      readFileSync(path.join(repoRoot, root, 'package.json'), 'utf-8')
     );
 
     assert.match(
@@ -138,7 +138,7 @@ test('every Plite package typechecks against workspace source', () => {
 test('Playwright containers install Bun prerequisites before setup', () => {
   const workflow = readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
 
   for (const jobName of ['browser-chromium', 'browser-matrix-linux']) {
@@ -163,7 +163,7 @@ test('type-test fixtures resolve the Plite React internal entry from source', ()
   const config = JSON.parse(
     readFileSync(
       path.join(repoRoot, 'tooling/config/tsconfig.type-tests.json'),
-      'utf8'
+      'utf-8'
     )
   );
 

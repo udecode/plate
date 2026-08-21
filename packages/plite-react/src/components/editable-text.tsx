@@ -1,3 +1,4 @@
+import type { Path, NodeKey, Text as PliteTextNode } from '@platejs/plite';
 import React, {
   type CSSProperties,
   type ReactNode,
@@ -6,7 +7,7 @@ import React, {
   useContext,
   useRef,
 } from 'react';
-import type { Path, NodeKey, Text as PliteTextNode } from '@platejs/plite';
+
 import {
   PliteContentRootOwnerContext,
   PliteEditableRootContext,

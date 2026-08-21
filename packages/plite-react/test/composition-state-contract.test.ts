@@ -1,14 +1,14 @@
-import type { CompositionEvent } from 'react';
 import { createEditor } from '@platejs/plite';
+import {
+  EDITOR_TO_PENDING_INSERTION_MARKS,
+  EDITOR_TO_USER_MARKS,
+} from '@platejs/plite-dom/internal';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import {
-  EDITOR_TO_PENDING_INSERTION_MARKS,
-  EDITOR_TO_USER_MARKS,
-} from '@platejs/plite-dom/internal';
+import type { CompositionEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -1741,163 +1741,162 @@ describe('composition state', () => {
     }
   });
 
-  it.each([
-    'end',
-    'start',
-    'update',
-  ] as const)('settles pending Plite composition model-only on a read-only %s event', (eventType) => {
-    const editor = createTextEditor();
-    const compositionEnd = createCompositionEvent('文', 'a文d');
-    const readOnlyEvent = createCompositionEvent('文', 'a文d');
-    const hasSelectableTarget = vi
-      .spyOn(ReactEditor, 'hasSelectableTarget')
-      .mockReturnValue(true);
-    const hasEditableTarget = vi
-      .spyOn(ReactEditor, 'hasEditableTarget')
-      .mockReturnValue(true);
-    const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
-      vi.fn(() => () => {});
-    const inputController = createInputController(scheduleTask);
-    const setIsComposing = vi.fn();
-    const setComposing: EditableCompositionStateSetter = (nextValue) => {
-      setEditableComposingState({
-        editor,
-        inputController,
-        nextValue,
-        setIsComposing,
-      });
-    };
+  it.each(['end', 'start', 'update'] as const)(
+    'settles pending Plite composition model-only on a read-only %s event',
+    (eventType) => {
+      const editor = createTextEditor();
+      const compositionEnd = createCompositionEvent('文', 'a文d');
+      const readOnlyEvent = createCompositionEvent('文', 'a文d');
+      const hasSelectableTarget = vi
+        .spyOn(ReactEditor, 'hasSelectableTarget')
+        .mockReturnValue(true);
+      const hasEditableTarget = vi
+        .spyOn(ReactEditor, 'hasEditableTarget')
+        .mockReturnValue(true);
+      const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
+        vi.fn(() => () => {});
+      const inputController = createInputController(scheduleTask);
+      const setIsComposing = vi.fn();
+      const setComposing: EditableCompositionStateSetter = (nextValue) => {
+        setEditableComposingState({
+          editor,
+          inputController,
+          nextValue,
+          setIsComposing,
+        });
+      };
 
-    beginEditableCompositionSession(inputController);
-    setComposing(true);
-    inputController.state.activeIntent = 'composition';
-    editor.update((tx) => {
-      tx.selection.set({ path: [0, 0], offset: 1 });
-    });
-    EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, { bold: true });
-    EDITOR_TO_USER_MARKS.set(editor, { italic: true });
-
-    try {
-      applyEditableCompositionEnd({
-        androidInputManagerRef: { current: null },
-        editor,
-        event: compositionEnd,
-        inputController,
-        runOwnedDOMMutation: (callback) => callback(),
-        scheduleTask,
-        setComposing,
+      beginEditableCompositionSession(inputController);
+      setComposing(true);
+      inputController.state.activeIntent = 'composition';
+      editor.update((tx) => {
+        tx.selection.set({ path: [0, 0], offset: 1 });
       });
-      expect(inputController.state.pendingCompositionEnd).toMatchObject({
-        ownership: 'plite',
-        phase: 'end-pending',
-      });
+      EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, { bold: true });
+      EDITOR_TO_USER_MARKS.set(editor, { italic: true });
 
-      if (eventType === 'end') {
+      try {
         applyEditableCompositionEnd({
           androidInputManagerRef: { current: null },
           editor,
-          event: readOnlyEvent,
+          event: compositionEnd,
           inputController,
-          readOnly: true,
           runOwnedDOMMutation: (callback) => callback(),
           scheduleTask,
           setComposing,
         });
-      } else if (eventType === 'start') {
-        applyEditableCompositionStart({
-          androidInputManagerRef: { current: null },
-          editor,
-          event: readOnlyEvent,
-          inputController,
-          readOnly: true,
-          setComposing,
+        expect(inputController.state.pendingCompositionEnd).toMatchObject({
+          ownership: 'plite',
+          phase: 'end-pending',
         });
-      } else {
+
+        if (eventType === 'end') {
+          applyEditableCompositionEnd({
+            androidInputManagerRef: { current: null },
+            editor,
+            event: readOnlyEvent,
+            inputController,
+            readOnly: true,
+            runOwnedDOMMutation: (callback) => callback(),
+            scheduleTask,
+            setComposing,
+          });
+        } else if (eventType === 'start') {
+          applyEditableCompositionStart({
+            androidInputManagerRef: { current: null },
+            editor,
+            event: readOnlyEvent,
+            inputController,
+            readOnly: true,
+            setComposing,
+          });
+        } else {
+          applyEditableCompositionUpdate({
+            editor,
+            event: readOnlyEvent,
+            inputController,
+            readOnly: true,
+            setComposing,
+          });
+        }
+
+        expect(readOnlyEvent.preventDefault).toHaveBeenCalledOnce();
+        expect(readOnlyEvent.stopPropagation).toHaveBeenCalledOnce();
+        expect(editorString(editor, [])).toBe('a文bcd');
+        expect(inputController.state).toMatchObject({
+          activeIntent: null,
+          compositionSession: null,
+          isComposing: false,
+          pendingCompositionEnd: null,
+          selectionSource: 'unknown',
+        });
+        expect(ReactEditor.isComposing(editor)).toBe(false);
+        expect(EDITOR_TO_PENDING_INSERTION_MARKS.has(editor)).toBe(false);
+        expect(EDITOR_TO_USER_MARKS.has(editor)).toBe(false);
+      } finally {
+        inputController.state.pendingCompositionEnd?.cancel();
+        if (ReactEditor.isComposing(editor)) setComposing(false);
+        hasEditableTarget.mockRestore();
+        hasSelectableTarget.mockRestore();
+      }
+    }
+  );
+
+  it.each(['external', 'settled'] as const)(
+    'cancels %s composition ownership on a read-only update',
+    (ownership) => {
+      const editor = createTextEditor();
+      const event = createCompositionEvent('ghost');
+      const inputController = createInputController();
+      const cancel = vi.fn(() => {
+        inputController.state.pendingCompositionEnd = null;
+      });
+      const setIsComposing = vi.fn();
+      const setComposing: EditableCompositionStateSetter = (nextValue) => {
+        setEditableComposingState({
+          editor,
+          inputController,
+          nextValue,
+          setIsComposing,
+        });
+      };
+      const hasEditableTarget = vi
+        .spyOn(ReactEditor, 'hasEditableTarget')
+        .mockReturnValue(true);
+
+      beginEditableCompositionSession(inputController);
+      setComposing(true);
+      inputController.state.pendingCompositionEnd =
+        ownership === 'external'
+          ? { cancel, ownership, phase: 'end-pending' }
+          : {
+              cancel,
+              data: 'ghost',
+              inputTypes: ['insertText'],
+              ownership,
+              phase: 'settled',
+            };
+
+      try {
         applyEditableCompositionUpdate({
           editor,
-          event: readOnlyEvent,
+          event,
           inputController,
           readOnly: true,
           setComposing,
         });
+
+        expect(cancel).toHaveBeenCalledOnce();
+        expect(inputController.state).toMatchObject({
+          compositionSession: null,
+          isComposing: false,
+          pendingCompositionEnd: null,
+        });
+      } finally {
+        hasEditableTarget.mockRestore();
       }
-
-      expect(readOnlyEvent.preventDefault).toHaveBeenCalledOnce();
-      expect(readOnlyEvent.stopPropagation).toHaveBeenCalledOnce();
-      expect(editorString(editor, [])).toBe('a文bcd');
-      expect(inputController.state).toMatchObject({
-        activeIntent: null,
-        compositionSession: null,
-        isComposing: false,
-        pendingCompositionEnd: null,
-        selectionSource: 'unknown',
-      });
-      expect(ReactEditor.isComposing(editor)).toBe(false);
-      expect(EDITOR_TO_PENDING_INSERTION_MARKS.has(editor)).toBe(false);
-      expect(EDITOR_TO_USER_MARKS.has(editor)).toBe(false);
-    } finally {
-      inputController.state.pendingCompositionEnd?.cancel();
-      if (ReactEditor.isComposing(editor)) setComposing(false);
-      hasEditableTarget.mockRestore();
-      hasSelectableTarget.mockRestore();
     }
-  });
-
-  it.each([
-    'external',
-    'settled',
-  ] as const)('cancels %s composition ownership on a read-only update', (ownership) => {
-    const editor = createTextEditor();
-    const event = createCompositionEvent('ghost');
-    const inputController = createInputController();
-    const cancel = vi.fn(() => {
-      inputController.state.pendingCompositionEnd = null;
-    });
-    const setIsComposing = vi.fn();
-    const setComposing: EditableCompositionStateSetter = (nextValue) => {
-      setEditableComposingState({
-        editor,
-        inputController,
-        nextValue,
-        setIsComposing,
-      });
-    };
-    const hasEditableTarget = vi
-      .spyOn(ReactEditor, 'hasEditableTarget')
-      .mockReturnValue(true);
-
-    beginEditableCompositionSession(inputController);
-    setComposing(true);
-    inputController.state.pendingCompositionEnd =
-      ownership === 'external'
-        ? { cancel, ownership, phase: 'end-pending' }
-        : {
-            cancel,
-            data: 'ghost',
-            inputTypes: ['insertText'],
-            ownership,
-            phase: 'settled',
-          };
-
-    try {
-      applyEditableCompositionUpdate({
-        editor,
-        event,
-        inputController,
-        readOnly: true,
-        setComposing,
-      });
-
-      expect(cancel).toHaveBeenCalledOnce();
-      expect(inputController.state).toMatchObject({
-        compositionSession: null,
-        isComposing: false,
-        pendingCompositionEnd: null,
-      });
-    } finally {
-      hasEditableTarget.mockRestore();
-    }
-  });
+  );
 
   it('does not predelete expanded selections on read-only compositionstart', () => {
     const editor = createTextEditor();

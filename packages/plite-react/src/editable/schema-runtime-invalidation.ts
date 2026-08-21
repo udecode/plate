@@ -1,11 +1,11 @@
 import type { Editor, EditorCommit, NodeKey, Value } from '@platejs/plite';
 
+import { MAIN_ROOT_KEY } from '../root-key';
 import {
   getEditorRuntimeElementEntries,
   getEditorRuntimeOwner,
   getEditorRuntimeRootKeys,
 } from './runtime-editor-api';
-import { MAIN_ROOT_KEY } from '../root-key';
 
 export const getSchemaInvalidatedNodeKeys = <
   V extends Value,

@@ -33,7 +33,7 @@ const assertLaw = (
   const seed = lawSeed + offset;
 
   try {
-    fc.assert(law, { numRuns: runs, seed, verbose: true });
+    void fc.assert(law, { numRuns: runs, seed, verbose: true });
   } catch (cause) {
     throw new Error(
       `Slice-fit law failed. Replay with PLITE_SLICE_FIT_LAW_SEED=${lawSeed} PLITE_SLICE_FIT_LAW_RUNS=${runs} (law seed ${seed}).`,
@@ -283,8 +283,8 @@ const textAt = (children: readonly Descendant[], path: readonly number[]) => {
   return node;
 };
 
-describe('slice fitter generated model laws', () => {
-  it('fits valid open slices deterministically without publishing preview state', () => {
+void describe('slice fitter generated model laws', () => {
+  void it('fits valid open slices deterministically without publishing preview state', () => {
     assertLaw(
       fc.property(
         schemaVariantArbitrary,
@@ -367,7 +367,7 @@ describe('slice fitter generated model laws', () => {
     );
   });
 
-  it('matches full-root canonicalization for generated open text replacements', () => {
+  void it('matches full-root canonicalization for generated open text replacements', () => {
     assertLaw(
       fc.property(
         schemaVariantArbitrary,
@@ -446,7 +446,7 @@ describe('slice fitter generated model laws', () => {
     );
   });
 
-  it('rejects generated malformed open depths before fitting', () => {
+  void it('rejects generated malformed open depths before fitting', () => {
     assertLaw(
       fc.property(
         validSliceArbitrary,
@@ -486,7 +486,7 @@ describe('slice fitter generated model laws', () => {
     );
   });
 
-  it('publishes nothing when a well-formed generated slice cannot fit', () => {
+  void it('publishes nothing when a well-formed generated slice cannot fit', () => {
     assertLaw(
       fc.property(
         schemaVariantArbitrary,
@@ -541,7 +541,7 @@ describe('slice fitter generated model laws', () => {
     );
   });
 
-  it('converges generated slice-originated changes through transforms', () => {
+  void it('converges generated slice-originated changes through transforms', () => {
     assertLaw(
       fc.property(
         schemaVariantArbitrary,

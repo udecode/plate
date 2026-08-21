@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import {
   FootnotePlugin,
   FootnoteDefinitionPlugin,
@@ -18,6 +17,15 @@ import {
   useElementSelected,
   useNavigationHighlight,
 } from 'platejs/react';
+import * as React from 'react';
+
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import {
   HoverCard,
   HoverCardContent,
@@ -28,14 +36,7 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -181,7 +182,7 @@ export function FootnoteReferenceElement(
         {previewText ? (
           <HoverCardContent className="w-80">
             <div className="space-y-1">
-              <div className="text-muted-foreground text-sm leading-relaxed">
+              <div className="text-sm leading-relaxed text-muted-foreground">
                 {previewText}
               </div>
             </div>
@@ -267,7 +268,7 @@ export function FootnoteDefinitionElement(
     >
       <div contentEditable={false}>
         {isDuplicateDefinition ? (
-          <div className="min-w-3 text-amber-700 text-xs tabular-nums">
+          <div className="min-w-3 text-xs text-amber-700 tabular-nums">
             {ref}
           </div>
         ) : (
@@ -283,7 +284,7 @@ export function FootnoteDefinitionElement(
                 }
                 aria-haspopup={hasMultipleReferences ? 'dialog' : undefined}
                 aria-label={`Back to reference ${ref}`}
-                className="min-w-3 cursor-pointer rounded-xs text-muted-foreground text-xs tabular-nums underline-offset-2 hover:text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                className="min-w-3 cursor-pointer rounded-xs text-xs text-muted-foreground tabular-nums underline-offset-2 hover:text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-1"
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
@@ -330,7 +331,7 @@ export function FootnoteDefinitionElement(
                               });
                             }}
                           >
-                            <span className="font-mono text-muted-foreground text-xs">
+                            <span className="font-mono text-xs text-muted-foreground">
                               {item.index + 1}
                             </span>
                             <span className="truncate">{item.label}</span>

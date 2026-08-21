@@ -6,6 +6,13 @@ import { fileURLToPath } from 'node:url';
 
 import { computePackageFingerprint } from '../../.agents/rules/plate-next/scripts/version.mjs';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const notApplicablePattern = /^N\/A:\s*\S/;
 const unresolvedPattern = /^(?:pending|todo\b|tbd\b)|\{\{/i;
 const flowModePattern = /^Flow mode:[ \t]*(?:\n-[ \t]*)?([^\n]+)$/m;
@@ -191,8 +198,9 @@ export const validateFeaturePlan = (
   const extras = rows
     .map(([surface]) => surface)
     .filter((surface) => !requiredSurfaces.includes(surface));
-  if (extras.length > 0)
+  if (extras.length > 0) {
     errors.push(`Unexpected manifest surfaces: ${extras.join(', ')}`);
+  }
 
   const flowMode = source.match(flowModePattern)?.[1]?.trim();
   const flowContract = flowMode ? flowModes.get(flowMode) : undefined;
@@ -282,8 +290,8 @@ export const validateFeaturePlan = (
         fileRows.length !== reviewLines.length ||
         reviewPaths.length !== manifestPaths.length ||
         hasDuplicateReviewPaths ||
-        [...reviewPaths].sort().join('\0') !==
-          [...manifestPaths].sort().join('\0')
+        [...reviewPaths].sort(compareStrings).join('\0') !==
+          [...manifestPaths].sort(compareStrings).join('\0')
       ) {
         errors.push(
           'Package file evidence needs one valid unique review row per manifest file.'
@@ -320,8 +328,8 @@ export const validateFeaturePlan = (
 
           if (
             current.fileCount !== manifestPaths.length ||
-            [...expectedPaths].sort().join('\0') !==
-              [...manifestPaths].sort().join('\0')
+            [...expectedPaths].sort(compareStrings).join('\0') !==
+              [...manifestPaths].sort(compareStrings).join('\0')
           ) {
             errors.push(
               'Package file evidence does not match the current package source manifest.'
@@ -341,7 +349,7 @@ export const validateFeaturePlan = (
             JSON.parse(
               readFileSync(
                 resolve(root, '.agents/rules/plate-next/versions.json'),
-                'utf8'
+                'utf-8'
               )
             );
           const packageEntry = currentRegistry.packages?.[packageSlug];
@@ -404,7 +412,7 @@ if (isMain) {
   const [planPath] = process.argv.slice(2);
   if (!planPath) throw new Error('Usage: check-plate-feature.mjs <plan>');
   const resolvedPlanPath = resolve(planPath);
-  const errors = validateFeaturePlan(readFileSync(resolvedPlanPath, 'utf8'), {
+  const errors = validateFeaturePlan(readFileSync(resolvedPlanPath, 'utf-8'), {
     planPath: resolvedPlanPath,
   });
   if (errors.length > 0) throw new Error(errors.join('\n'));

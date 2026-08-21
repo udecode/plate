@@ -27,8 +27,14 @@ test('drags the seeded Alice mention across inline text', async ({ page }) => {
     '[data-plite-editor="true"][contenteditable="true"]'
   );
   const mention = editor.locator('[data-plite-value="Alice"]');
-  const paragraph = editor.locator('[data-block-id="static-0037"]');
-  const targetText = paragraph.locator('[data-plite-path="12,6"]');
+  const paragraph = editor
+    .locator('[data-plite-node="element"]:not([data-plite-inline="true"])')
+    .filter({ has: page.locator('[data-plite-value="Alice"]') })
+    .first();
+  const targetText = paragraph
+    .locator('[data-plite-node="text"]')
+    .filter({ hasText: ', or insert ' })
+    .first();
 
   try {
     await page.goto('/');
@@ -59,6 +65,12 @@ test('drags the seeded Alice mention across inline text', async ({ page }) => {
       throw new Error('Expected visible mention drag geometry');
     }
 
+    const targetBox = await getTargetBox();
+
+    if (!targetBox) {
+      throw new Error('Expected visible mention drop geometry');
+    }
+
     const start = {
       x: mentionBox.x + mentionBox.width / 2,
       y: mentionBox.y + mentionBox.height / 2,
@@ -66,12 +78,6 @@ test('drags the seeded Alice mention across inline text', async ({ page }) => {
     await page.mouse.move(start.x, start.y);
     await page.mouse.down();
     await page.mouse.move(start.x + 10, start.y, { steps: 4 });
-
-    const targetBox = await getTargetBox();
-
-    if (!targetBox) {
-      throw new Error('Expected visible mention drop geometry');
-    }
 
     const end = {
       x: targetBox.x + targetBox.width - 2,

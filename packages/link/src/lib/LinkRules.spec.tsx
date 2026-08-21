@@ -6,9 +6,9 @@ import {
   type Value,
 } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
+
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
-import { BaseLinkPlugin } from './BaseLinkPlugin';
-import { LinkRules } from './BaseLinkPlugin';
+import { BaseLinkPlugin, LinkRules } from './BaseLinkPlugin';
 
 const BaseCodeLinePlugin = defineBasePlugin('codeLine', {
   schema: {

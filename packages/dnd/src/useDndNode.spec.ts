@@ -1,17 +1,16 @@
 import assert from 'node:assert/strict';
 
-import { renderHook } from '@testing-library/react';
+import * as actualCoreReact from '@platejs/core/react';
+import { createPlateEditor, type PlateEditor } from '@platejs/core/react';
 import {
   type Element,
   ElementApi,
   NodeApi,
   type NodeKey,
 } from '@platejs/plite';
+import { renderHook } from '@testing-library/react';
 import type { DropTargetHookSpec, DropTargetMonitor } from 'react-dnd';
 import * as actualReactDnd from 'react-dnd';
-import * as actualCoreReact from '@platejs/core/react';
-
-import { createPlateEditor, type PlateEditor } from '@platejs/core/react';
 
 import { DndPlugin } from './DndPlugin';
 import type {

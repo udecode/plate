@@ -1,12 +1,12 @@
-import * as React from 'react';
-
-import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import type { DateElement } from '@platejs/date';
 import type { LinkElement } from '@platejs/link';
 import type { EquationElement } from '@platejs/math';
 import type { MentionElement } from '@platejs/mention';
+import { render } from '@testing-library/react';
 import type { PlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 const useFocusedMock = mock();
 const useReadOnlyMock = mock();

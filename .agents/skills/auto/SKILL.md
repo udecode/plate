@@ -1,6 +1,6 @@
 ---
-description: Plate/Plite ergonomic automation router and internal supervisor. Routes public queue work to maintainer, current-tree closure to autoclosure, regression harness and reproduce-fix-verify loops to the regression skill, one local bug to patch, and runs broader quality automation.
-argument-hint: '[regression <bug|surface|corpus> | PR|issue|queue|plite|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
+description: Plate/Plite ergonomic automation router and internal supervisor. Routes benchmark and performance comparison loops to benchmark, public queue work to maintainer, current-tree closure to autoclosure, regression harness loops to regression, one local bug to patch, and runs broader quality automation.
+argument-hint: '[benchmark <scope> | regression <bug|surface|corpus> | PR|issue|queue|plite|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 name: auto
 metadata:
@@ -16,7 +16,9 @@ Use this as the ergonomic Plate/Plite front door. If the prompt names public
 GitHub queue work, route immediately to `maintainer`. If it names already
 applied/current-tree closure, route immediately to `autoclosure`. Otherwise,
 if it starts with `regression`, remove that routing token and send the remaining
-arguments immediately to `regression`. If it names one narrow
+arguments immediately to `regression`. If it asks to benchmark, compare
+performance, profile a regression, or optimize a measured lane, route the
+preserved scope immediately to `benchmark`. If it names one narrow
 local Plate or Plite behavior bug outside regression mode, route immediately
 to `patch`. Otherwise, run internal Plate/Plite automation until the surface is
 actually good:
@@ -24,7 +26,7 @@ correct, fast, visually stable, well-tested, architecturally clean,
 docs-aligned, and ready for review.
 
 This is a router and supervisor skill. It does not replace `maintainer`,
-`autoclosure`, `regression`, `patch`, `plite-plan`, `plate-plan`, `slate-ar`,
+`autoclosure`, `benchmark`, `regression`, `patch`, `plite-plan`, `plate-plan`, `slate-ar`,
 `slate-migration`, `architecture-cleanup`, or package owners unless evidence
 proves the skill topology itself is wrong. It routes them, repairs missing
 proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
@@ -32,13 +34,15 @@ keeps the loop honest.
 
 ## Core Take
 
-The perfect loop is not "run perf until faster".
+The perfect loop does not reimplement Benchmark.
 
 The perfect loop is:
 
 ```txt
 status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
--> benchmark -> patch one hot lane -> verify -> keep/revert -> log -> reassess
+-> delegate measured work to Benchmark -> consume its proven cause and durable
+target -> implement the accepted owner plan -> consume its exact rerun result
+-> keep/revert -> log -> reassess
 ```
 
 Repeat by checkpoint, not by giant prompt. One Codex prompt has limited output
@@ -50,6 +54,12 @@ scrollback.
 Repeat until the surface has no known P0/P1 regressions, meaningful perf is at
 target or plateau, visual/editor parity is proven, API/test gaps are closed or
 explicitly deferred, decisions are consolidated, and ship readiness is clean.
+
+When Benchmark pauses on a `public-api` or `runtime-architecture` cause, do not
+substitute a cheaper compatible patch. Consume the `best-api` target and
+`plite-plan` / `plate-plan` adoption decision. Auto may supervise broad
+implementation after those owners decide; Benchmark retains the exact rerun
+and breadth-resume gate.
 
 ## Use When
 
@@ -83,7 +93,8 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
   review, or investigation task outside Plate/Plite automation: use `task`.
 - The user asks one architecture/API plan for review: use `plite-plan` or
   `plate-plan` according to lane.
-- The user asks one Slate benchmark target: use `slate-ar perf <target>`.
+- The user asks for a benchmark target, performance comparison, profiling, or
+  timing root-cause loop: use `benchmark`.
 - The user asks whether existing Slate gates pass: use `slate-ar gate`.
 - The user asks to maintain public GitHub issues/PRs/security queue, run a repo
   heartbeat, classify agent-ready queue work, or route across Plate + Slate
@@ -110,7 +121,8 @@ Route these immediately:
 | `auto security`, `auto GHSA...`, `auto CVE...` | `maintainer security` | security authority boundary |
 | `auto current tree`, `auto post-merge`, `auto ready to commit`, `auto teammate branch` | `autoclosure <target>` | already-applied/current-tree closure |
 | `auto regression <bug|surface|corpus>` | `regression <bug|surface|corpus>` | standalone executable case selection, `patch` delegation, stability, packet decision, and methodology repair |
-| `auto plite`, `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Plite lane | broad internal Plite quality loop |
+| `auto benchmark <scope>`, `auto perf <scope>`, `auto compare performance <scope>` | `benchmark <scope>` | ordered all-lane measurement, causal diagnosis, fix/rerun, and resumed breadth |
+| `auto plite`, `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Plite lane | broad internal Plite quality loop when measurement is not the primary request |
 | `auto <one local Plate or Plite behavior bug or regression>` | `patch <bug>` | one local reproduce-test-fix-proof pass |
 | `auto plate`, `auto plate packages`, `auto docs`, `auto registry` | `auto` Plate lane | internal Plate quality loop |
 
@@ -209,12 +221,13 @@ For timed and batch-loop modes:
   workflow slowdowns;
 - do not hand off early just because the first packet closed;
 - do not turn `Needs your attention`, `deferred-with-owner`, or "route to
-  plite-plan/slate-ar perf" into a pause while the timebox is still open and a
+  Benchmark or a layer plan" into a pause while the timebox is still open and a
   reversible experiment, research packet, benchmark packet, or architecture
   spike can be run safely;
 - if a lane is risky but important, use the supervisor's freedom: start a
-  controlled scratchpad experiment, through `slate-ar`/`plite-plan` for Slate
-  lanes or `plate-plan`/the package owner for Plate lanes as the owner demands,
+  controlled scratchpad experiment through `benchmark` for measured work,
+  `plite-plan` for Plite architecture, or `plate-plan`/the package owner for
+  Plate architecture as the owner demands,
   record the hypothesis and proof gate before changing code, then keep, revert,
   or quarantine the packet from evidence;
 - risky architecture/perf packets must be reversible. If code changes are made,
@@ -325,7 +338,8 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Proof checkpoint:** run one behavior/visual/package/browser gate family and
   record pass/fail signatures.
 - **Patch checkpoint:** fix one correctness class or one missing oracle.
-- **Perf checkpoint:** optimize one measured hot lane with correctness green.
+- **Benchmark checkpoint:** route measured work to `benchmark`; consume its
+  conclusive-cause, fix/rerun, and resume evidence.
 - **Architecture checkpoint:** run `best-api` first when public call shape is
   unresolved, `plite-plan` for Plite runtime/adoption boundaries,
   `plate-plan` for Plate behavior/product adoption, and
@@ -337,9 +351,9 @@ Split long work into checkpoints that fit one high-quality prompt:
   sub-mode unless the user explicitly asks `auto` to wrap it.
 - **Architecture-cleanup checkpoint:** when repeated Slate or Plate bugs, weak tests,
   copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
-  over-splits, or perf work expose broader source-layout friction, invoke
+  over-splits, or benchmark evidence expose broader source-layout friction, invoke
   `architecture-cleanup` before choosing `plite-plan`, `plate-plan`,
-  `patch`, `slate-ar`, or a package owner.
+  `patch`, `benchmark`, or a package owner.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
@@ -476,7 +490,7 @@ framework, package, docs, and product-DX research goes through `research-wiki`,
 `docs-creator`, direct source/docs audit, or the package owner.
 
 `auto` owns the checkpoint decision, timebox, final handoff, and promotion back
-into patch/perf/plan/docs work. The delegated research owner owns the research
+into patch/Benchmark/plan/docs work. The delegated research owner owns the research
 loop: artifact layout, repo/query/lead/read ledgers, dedupe keys, shards,
 evidence grades, scoring, context budget, raw-storage policy, and research
 closeout.
@@ -491,11 +505,10 @@ For risky performance or architecture lanes inside a timed run:
 2. run a creative but bounded experiment packet: alternate strategy, owner
    split, benchmark-instrumentation repair, scratch runtime variant, proof
    harness, or quality-gap research;
-3. use `slate-ar` for Slate measured loop state when the work needs packet
-   history, ASI logging, dashboard/status, or quality-gap research;
-4. use `slate-ar` perf mode for Slate target-backed performance experiments,
-   and use `plite-plan`/`plate-plan` only when an API/runtime/product decision
-   must be made explicit before implementation;
+3. use `benchmark` for target choice, packet measurement, causal diagnosis,
+   fix/rerun, and breadth resume; it may use Autoresearch as worker machinery;
+4. use `plite-plan`/`plate-plan` only when an API/runtime/product decision must
+   be made explicit before implementation;
 5. compare baseline/latest/best and record why the packet is `keep`, `revert`,
    or `quarantine`;
 6. if the timebox expires during the lane, fully close the active packet even
@@ -591,7 +604,7 @@ Log a workflow-slowdown row when:
 - a specialist skill spends time on avoidable setup, broad scans, repeated
   finalization, redundant gates, or noisy output;
 - a command has no narrow mode and blocks timed/batch progress;
-- `slate-ar ship`, finalization, P2 `autoreview`, browser proof, docs proof, or
+- `slate-ar ship`, finalization, P1 `autoreview`, browser proof, docs proof, or
   benchmark setup dominates the loop without producing proportional evidence;
 - compaction/output budget pressure is caused by command shape rather than the
   real task.
@@ -613,7 +626,7 @@ Repair repeated or avoidable workflow slowdowns:
 - slow Slate finalization/readiness -> patch `slate-ar`;
 - slow proof gate -> add a focused gate or route through the lane's proof owner;
 - slow browser repetition -> promote reusable proof into `@platejs/browser`;
-- slow benchmark setup -> fix benchmark target/script ergonomics;
+- slow benchmark setup -> route to `benchmark` and fix target/script ergonomics there;
 - slow output -> narrow command output or write artifacts instead of streaming.
 - slow or silent review -> bound the review packet, record the timeout, then
   fall back to deterministic focused gates for the touched surfaces. Do not call
@@ -872,10 +885,6 @@ Rules:
   spec, do not run raw `node` and assume it can import `playwright`. Prefer the
   repo-managed `pnpm --filter plite test:plite-browser:chromium` path for
   Slate proof when the proof should be durable;
-- use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
-  from the current runtime source. If runtime, example, package export, or
-  benchmark-injected browser-handle code changed since the last build, rerun
-  the benchmark without `SKIP_BUILD` once before trusting any pass;
 - do not casually swap in raw `playwright`, or a custom wrapper unless the
   package script and argument forwarding are verified in the plan;
 - if a command fails because of command shape, classify it as a workflow
@@ -1049,7 +1058,7 @@ Allowed topology changes:
 - remove or deprecate a repo-local skill when it adds ceremony without distinct
   ownership;
 - update `argument-hint`, description, routing, stop rules, and handoff shape;
-- update benchmark target policy and proof-gate ownership when needed.
+- route benchmark target policy and proof-gate ownership to `benchmark`.
 
 Topology changes need evidence:
 
@@ -1084,7 +1093,7 @@ Then repair the owning layer:
 
 - runtime bug -> `patch`;
 - missing oracle -> `patch` or `tdd`;
-- missing/lying metric -> benchmark target/script repair;
+- missing/lying metric -> `benchmark` target/script repair;
 - visual proof gap -> Browser/screenshot/Playwright geometry proof;
 - stale docs -> decision consolidation;
 - bad API -> `best-api` design/review, then `plite-plan`, `plate-plan`, or the
@@ -1109,14 +1118,14 @@ Each loop cycle has one primary owner and one packet-ledger decision.
    docs, metric coverage, or owner choice is unclear.
 3. **Quality gap:** run `slate-ar quality` for Slate autoresearch execution, or
    route Plate quality gaps to the package/docs/test owner.
-4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before Slate perf;
+4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before Benchmark;
    run focused Plate behavior/browser/docs proof for Plate lanes.
 5. **Oracle repair:** if proof is missing, use `patch`, `tdd`, or the
    package test owner.
 6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
    for visual/editor parity.
-7. **Perf:** run `slate-ar perf` for Slate only with correctness green; run
-   package/app benchmarks for Plate only after behavior proof is credible.
+7. **Benchmark:** route Slate, Plite, Plate, and cross-ref performance work to
+   `benchmark` after behavior proof is credible.
 8. **Architecture cleanup:** use `architecture-cleanup` when the evidence
    points to shallow modules, split ownership, copied proof helpers, over-splits,
    deslop, or poor test locality rather than one obvious API decision.
@@ -1318,14 +1327,9 @@ The supervisor repairs whatever layer is missing:
   or contract helper that exercises both directions before optimizing or
   claiming coverage. Do not keep stacking one-off smoke scripts when a
   first-party contract helper would make the next loop stronger.
-- **Missing metric:** update `benchmarks/targets/slate-v2.json`, benchmark
-  script, and `METRIC` output before optimizing.
-- **Lying metric:** fix summary/worst-lane math before using it as a gate.
-- **Noisy hot-lane metric:** do not treat p95 from a tiny hot-lane sample set
-  as the whole story. For repeated keyboard, selection, paste, or scroll lanes,
-  benchmark output must expose distribution shape (`median`, `p75`, `p95`,
-  `max`), sample count, raw artifact samples, and the relevant profiler buckets
-  before the supervisor picks a runtime owner or calls a regression closed.
+- **Missing, lying, or noisy metric:** route to `benchmark`. Benchmark owns
+  target/runner repair, sample/distribution truth, causal diagnosis, and the
+  measured fix/rerun/resume loop.
 - **Weak example DX:** improve the example only when it is the API contract
   surface; otherwise fix package/runtime ownership.
 - **Architecture smell:** use `architecture-cleanup` when the smell is spread
@@ -1469,5 +1473,5 @@ Report:
 - `Stopping checkpoints to unblock` section with queued questions, current
   recommendation, and exact anchors;
 - accepted deferrals and residual risks;
-- next owner: continue automation, `plite-plan`, `plate-plan`, `slate-ar`, a
-  package owner, or blocked authority decision.
+- next owner: continue automation, `benchmark`, `plite-plan`, `plate-plan`,
+  `slate-ar`, a package owner, or blocked authority decision.

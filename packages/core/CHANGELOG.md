@@ -44,15 +44,13 @@
 
 ### Minor Changes
 
-- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `lift` as a break and delete rule action for blocks that should leave one ancestor level instead of resetting or exiting.
-  Reset the trailing block to a paragraph when `splitReset` handles selected heading text.
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `lift` as a break and delete rule action for blocks that should leave one ancestor level instead of resetting or exiting. Reset the trailing block to a paragraph when `splitReset` handles selected heading text.
 
 ### Patch Changes
 
 - [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `createRuleFactory` for building input rule families with overridable defaults and required options
 
-- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `useNavigationHighlight(path)` for React node components that need the
-  current navigation-feedback target without reading plugin options directly
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `useNavigationHighlight(path)` for React node components that need the current navigation-feedback target without reading plugin options directly
 
 ## 52.3.21
 
@@ -71,7 +69,7 @@
   - Added `normalizeStaticValue` to **`@platejs/core`** for normalizing example editor values with deterministic node IDs and stable numeric `createdAt` metadata before SSR hydration.
 
     ```ts
-    import { normalizeStaticValue } from "@platejs/core";
+    import { normalizeStaticValue } from '@platejs/core';
 
     const value = normalizeStaticValue(exampleValue);
     ```
@@ -141,14 +139,14 @@
   // Before
   MentionPlugin.configure({
     options: {
-      getUserId: (editor) => "123",
+      getUserId: (editor) => '123',
     },
   });
 
   // After
   const editor = usePlateEditor({
     plugins: [MentionPlugin],
-    userId: "123",
+    userId: '123',
   });
   ```
 
@@ -197,8 +195,7 @@
 
 - [#4695](https://github.com/udecode/plate/pull/4695) by [@felixfeng33](https://github.com/felixfeng33) – Moved static rendering functionality to `@platejs/core/static` / `platejs/static` to make `@platejs/core` / `platejs` React-free.
 
-  **Migration**
-  To migrate, update your imports from `platejs` to `platejs/static` for all static rendering features listed below:
+  **Migration** To migrate, update your imports from `platejs` to `platejs/static` for all static rendering features listed below:
 
   - `createStaticEditor`, `CreateStaticEditorOptions` - Create static editor instance
   - `serializeHtml`, `SerializeHtmlOptions` - Serialize editor content to HTML string
@@ -269,10 +266,10 @@
     // Usage via Plate component
     <Plate
       onNodeChange={({ editor, node, operation, previousNode }) => {
-        console.log("Node changed:", { node, operation, previousNode });
+        console.log('Node changed:', { node, operation, previousNode });
       }}
       onTextChange={({ editor, node, operation, previousText, text }) => {
-        console.log("Text changed:", { text, previousText, operation });
+        console.log('Text changed:', { text, previousText, operation });
       }}
     />;
 
@@ -345,11 +342,11 @@
   - Added `normalizeNodeId` pure function to normalize node IDs in a value without using editor operations.
 
     ```ts
-    import { normalizeNodeId } from "@platejs/core";
+    import { normalizeNodeId } from '@platejs/core';
 
     // Normalize a value without editor operations
     const normalizedValue = normalizeNodeId(value, {
-      idKey: "id",
+      idKey: 'id',
       idCreator: () => nanoid(10),
       filterInline: true,
       filterText: true,
@@ -480,12 +477,12 @@
   ```ts
   const editor = usePlateEditor({
     value: async () => {
-      const response = await fetch("/api/document");
+      const response = await fetch('/api/document');
       const data = await response.json();
       return data.content;
     },
     onReady: ({ editor, value }) => {
-      console.info("Editor ready with value:", value);
+      console.info('Editor ready with value:', value);
     },
   });
   ```
@@ -508,8 +505,7 @@
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
-  - `editor.plugin(Plugin).type` preserves exact descriptor typing; use
-    `editor.plugin(pluginName)` only for a runtime name.
+  - `editor.plugin(Plugin).type` preserves exact descriptor typing; use `editor.plugin(pluginName)` only for a runtime name.
   - Plugins without a `key` property will not be registered into the editor.
   - Passing `disabled: true` prop to `PlateContent` will now also set the editor to `readOnly: true` state internally.
   - Editor DOM state properties have been moved under `editor.dom` namespace:
@@ -540,7 +536,7 @@
         MyPlugin.configure({
           shortcuts: {
             myAction: {
-              keys: "mod+s",
+              keys: 'mod+s',
               preventDefault: false, // Example: Allow browser's default save dialog
             },
           },
@@ -985,7 +981,7 @@
   };
 
   export const InlineVoidPlugin = createSlatePlugin({
-    key: "inlineVoid",
+    key: 'inlineVoid',
     extendEditor: withInlineVoid,
   });
 
@@ -1023,7 +1019,7 @@
   };
 
   export const InlineVoidPlugin = createSlatePlugin({
-    key: "inlineVoid",
+    key: 'inlineVoid',
   }).overrideEditor(withInlineVoid);
   ```
 
@@ -1056,8 +1052,7 @@
 
 ### Patch Changes
 
-- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
-  Remove `relative` className from all components
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style. Remove `relative` className from all components
 
 ## 41.0.2
 
@@ -1075,7 +1070,6 @@
 - [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – ## @udecode/plate-core@40.1.0
 
   ### Minor Changes
-
   - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
     - Add `PlateStatic`, `SlateElement`, `SlateLeaf` components for static rendering and server-side HTML serialization
     - Add `serializeHtml` function to serialize editor content to HTML. Deprecating `@udecode/plate-html` in favor of core serialization.
@@ -1210,11 +1204,11 @@
 
   ```ts
   const ImagePlugin = createPlatePlugin({
-    key: "image",
+    key: 'image',
     node: {
       isElement: true,
       isVoid: true,
-      dangerouslyAllowAttributes: ["alt"],
+      dangerouslyAllowAttributes: ['alt'],
     },
   });
   ```
@@ -1224,7 +1218,7 @@
   ```ts
   const MyImagePlugin = ImagePlugin.extend({
     node: {
-      dangerouslyAllowAttributes: ["alt"],
+      dangerouslyAllowAttributes: ['alt'],
     },
   });
   ```
@@ -1260,7 +1254,7 @@
 
   ```ts
   const plugin = createSlatePlugin({
-    key: "test",
+    key: 'test',
     options: { nested: { a: 1 } },
   }).extend({
     options: { nested: { b: 1 } },
@@ -1273,7 +1267,7 @@
 
   ```ts
   const plugin = createSlatePlugin({
-    key: "test",
+    key: 'test',
     options: { nested: { a: 1 } },
   }).extend(({ getOptions }) => ({
     options: {
@@ -1349,7 +1343,7 @@
 
   ```typescript
   const MyPluginFactory = createPluginFactory({
-    key: "myPlugin",
+    key: 'myPlugin',
     isElement: true,
     component: MyComponent,
   });
@@ -1360,7 +1354,7 @@
 
   ```typescript
   const plugin = createSlatePlugin({
-    key: "myPlugin",
+    key: 'myPlugin',
     node: {
       isElement: true,
       component: MyComponent,
@@ -1382,7 +1376,7 @@
       onKeyDown: onKeyDownToggleElement,
     },
     options: {
-      hotkey: ["mod+opt+0", "mod+shift+0"],
+      hotkey: ['mod+opt+0', 'mod+shift+0'],
     },
   });
   ```
@@ -1474,11 +1468,11 @@
     key: KEY_ALIGN,
     inject: {
       props: {
-        defaultNodeValue: "start",
+        defaultNodeValue: 'start',
         nodeKey: KEY_ALIGN,
-        styleKey: "textAlign",
-        validNodeValues: ["start", "left", "center", "right", "end", "justify"],
-        validTypes: ["p"],
+        styleKey: 'textAlign',
+        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+        validTypes: ['p'],
       },
     },
     then: (_, plugin) =>
@@ -1500,10 +1494,10 @@
   export const AlignPlugin = createSlatePlugin({
     inject: {
       nodeProps: {
-        defaultNodeValue: "start",
-        nodeKey: "align",
-        styleKey: "textAlign",
-        validNodeValues: ["start", "left", "center", "right", "end", "justify"],
+        defaultNodeValue: 'start',
+        nodeKey: 'align',
+        styleKey: 'textAlign',
+        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
       },
       targetPluginToInject: ({ editor, plugin }) => ({
         parsers: {
@@ -1520,7 +1514,7 @@
       }),
       targetPlugins: [ParagraphPlugin.key],
     },
-    key: "align",
+    key: 'align',
   });
   ```
 
@@ -1542,7 +1536,7 @@
   ```typescript
   type LinkConfig = PluginConfig<
     // key
-    "p",
+    'p',
     // options
     { defaultLinkAttributes?: any },
     // api
@@ -1924,8 +1918,7 @@
 
 ### Patch Changes
 
-- [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.**
-  On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
+- [#2729](https://github.com/udecode/plate/pull/2729) by [@12joan](https://github.com/12joan) – **This is a breaking change meant to be part of v25, hence the patch.** On `deserializeHtml`, replace `stripWhitespace` with `collapseWhiteSpace`, defaulting to true. The `collapseWhiteSpace` option aims to parse white space in HTML according to the HTML specification, ensuring greater accuracy when pasting HTML from browsers.
 
 ## 24.4.0
 
@@ -2086,8 +2079,7 @@
     - `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
     - `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
     - `@udecode/plate-common` re-exports the 6 previous packages and is a dependency of all the other packages. It's basically replacing `@udecore/plate-core` as a bundle.
-  - Removed `getPreventDefaultHandler` since it is no longer needed.
-    **Migration**:
+  - Removed `getPreventDefaultHandler` since it is no longer needed. **Migration**:
     - If using `@udecode/plate` or `@udecode/plate-headless`: none
     - Else: find & replace `@udecode/plate-core` by `@udecode/plate-common`
 
@@ -2386,15 +2378,17 @@
   ```tsx
   export interface PlateProviderProps<
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>
-  > extends PlateProviderEffectsProps<V, E>,
-      Partial<Pick<PlateStoreState<V, E>, "id" | "editor">> {
+    E extends PlateEditor<V> = PlateEditor<V>,
+  >
+    extends
+      PlateProviderEffectsProps<V, E>,
+      Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
     /**
      * Initial value of the editor.
      *
      * @default [{ children: [{ text: '' }] }]
      */
-    initialValue?: PlateStoreState<V>["value"];
+    initialValue?: PlateStoreState<V>['value'];
 
     /**
      * When `true`, it will normalize the initial value passed to the `editor`
@@ -2434,8 +2428,7 @@
   }
 
   export interface PlateEditableProps<V extends Value = Value>
-    extends Omit<TEditableProps<V>, "id">,
-      PlateEditableExtendedProps {}
+    extends Omit<TEditableProps<V>, 'id'>, PlateEditableExtendedProps {}
   ```
 
 ### Patch Changes
@@ -2747,7 +2740,7 @@ Those Slate functions should be replaced by the new typed ones:
     P = PluginOptions,
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
-    EE extends E = E
+    EE extends E = E,
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
 
@@ -2858,9 +2851,7 @@ Removing node props types in favor of element types (same props + extends `TElem
 
 ### Patch Changes
 
-- [#1472](https://github.com/udecode/plate/pull/1472) by [@m9rc1n](https://github.com/m9rc1n) – Fix Url encoded HTML nodes on adding an image #1189.
-  Updated function `serializeHtml` to use `decodeURIComponent` per node, instead of complete text.
-  This is fixing problem when combination of image and i.e. paragraph nodes would result in paragraph node not decoded.
+- [#1472](https://github.com/udecode/plate/pull/1472) by [@m9rc1n](https://github.com/m9rc1n) – Fix Url encoded HTML nodes on adding an image #1189. Updated function `serializeHtml` to use `decodeURIComponent` per node, instead of complete text. This is fixing problem when combination of image and i.e. paragraph nodes would result in paragraph node not decoded.
 
 ## 10.5.0
 
@@ -3106,7 +3097,6 @@ Removing node props types in favor of element types (same props + extends `TElem
 - [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Breaking changes:
 
   ### `Plate`
-
   - removed `components` prop:
 
   ```tsx
@@ -3141,7 +3131,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 1: use the plugin factory
   let plugins = [
     createParagraphPlugin({
-      type: "paragraph",
+      type: 'paragraph',
     }),
   ];
 
@@ -3149,7 +3139,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   plugins = createPlugins(plugins, {
     overrideByKey: {
       [ELEMENT_PARAGRAPH]: {
-        type: "paragraph",
+        type: 'paragraph',
       },
     },
   });
@@ -3158,7 +3148,6 @@ Removing node props types in favor of element types (same props + extends `TElem
   ```
 
   ### `PlatePlugin`
-
   - `key`
     - replacing `pluginKey`
     - is now required: each plugin needs a key to be retrieved by key.
@@ -3273,7 +3262,6 @@ Removing node props types in favor of element types (same props + extends `TElem
     - `isVoid` is a boolean that enables void rendering.
 
   ### General
-
   - `plugins` is not a parameter anymore as it can be retrieved in `editor.plugins`
   - `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin fields.
 
@@ -3703,8 +3691,7 @@ To migrate, find and replace all occurrences of:
 
 ## 1.0.0-next.61
 
-> This is the last version of `@udecode/slate-plugins[-x]`, please install
-> `@udecode/plate[-x]`.
+> This is the last version of `@udecode/slate-plugins[-x]`, please install `@udecode/plate[-x]`.
 
 ### Minor Changes
 
@@ -3715,17 +3702,13 @@ To migrate, find and replace all occurrences of:
 
 ### Patch Changes
 
-- [#855](https://github.com/udecode/slate-plugins/pull/855) [`75b39f18`](https://github.com/udecode/slate-plugins/commit/75b39f18901d38f80847573cd3431ece1d1d4b3d) Thanks [@zbeyens](https://github.com/zbeyens)! - Sometimes we want to preventDefault without stopping the handler pipeline, so we remove this check.
-  In summary, to stop the pipeline, a handler has to return `true` or run `event.stopPropagation()`
+- [#855](https://github.com/udecode/slate-plugins/pull/855) [`75b39f18`](https://github.com/udecode/slate-plugins/commit/75b39f18901d38f80847573cd3431ece1d1d4b3d) Thanks [@zbeyens](https://github.com/zbeyens)! - Sometimes we want to preventDefault without stopping the handler pipeline, so we remove this check. In summary, to stop the pipeline, a handler has to return `true` or run `event.stopPropagation()`
 
 ## 1.0.0-next.55
 
 ### Major Changes
 
-- [#853](https://github.com/udecode/slate-plugins/pull/853) [`abaf4a11`](https://github.com/udecode/slate-plugins/commit/abaf4a11d3b69157983b6cf77b023a6008478a79) Thanks [@zbeyens](https://github.com/zbeyens)! - Before, the handlers had to return `false` to prevent the next handlers to be called.
-  Now, we reuse `isEventHandled` internally used by `slate@0.65.0` which has the opposite behavior: a handler has to return `true` to stop the pipeline.
-  Additionally, the pipeline stops if at any moment `event.isDefaultPrevented()` or `event.isPropagationStopped()` returns `true`, except if the handler returns `false`.
-  See the updated docs in "Creating Plugins".
+- [#853](https://github.com/udecode/slate-plugins/pull/853) [`abaf4a11`](https://github.com/udecode/slate-plugins/commit/abaf4a11d3b69157983b6cf77b023a6008478a79) Thanks [@zbeyens](https://github.com/zbeyens)! - Before, the handlers had to return `false` to prevent the next handlers to be called. Now, we reuse `isEventHandled` internally used by `slate@0.65.0` which has the opposite behavior: a handler has to return `true` to stop the pipeline. Additionally, the pipeline stops if at any moment `event.isDefaultPrevented()` or `event.isPropagationStopped()` returns `true`, except if the handler returns `false`. See the updated docs in "Creating Plugins".
 
 ## 1.0.0-next.53
 

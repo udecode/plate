@@ -1,18 +1,17 @@
-import type { TableCellElement } from './BaseTablePlugin';
 import { type Element, ElementApi, SelectionApi } from '@platejs/plite';
 
-import { createTestTableEditor } from './__tests__/getTestTablePlugins';
-
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from './BaseTablePlugin';
 import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
 } from '../react/TablePlugin';
+import { createTestTableEditor } from './__tests__/getTestTablePlugins';
+import type { TableCellElement } from './BaseTablePlugin';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from './BaseTablePlugin';
 import { parseTableCellHtml } from './internal/codec';
 
 describe('BaseTablePlugin', () => {

@@ -43,8 +43,9 @@ export function createDefinePluginCodecs<
         declaration === null ||
         !('kind' in declaration) ||
         declaration.kind !== 'node'
-      )
+      ) {
         return declaration;
+      }
 
       return withTarget(declaration);
     };

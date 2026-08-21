@@ -1,7 +1,4 @@
-import { cva } from 'class-variance-authority';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-markdown';
-import type { ReactNode } from 'react';
+/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { type Descendant, NodeApi } from '@platejs/plite';
 import {
   Editable,
@@ -10,6 +7,11 @@ import {
   usePliteEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
+import 'prismjs/components/prism-markdown';
+import { cva } from 'class-variance-authority';
+import Prism from 'prismjs';
+import type { ReactNode } from 'react';
+
 import { cn } from '@/utils/cn';
 
 const markdownSegmentVariants = cva('plite-markdown-preview-segment', {

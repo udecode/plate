@@ -1,6 +1,6 @@
+import type { Element } from '@platejs/plite';
 import { act, render, renderHook, waitFor } from '@testing-library/react';
 import { useLayoutEffect } from 'react';
-import type { Element } from '@platejs/plite';
 
 import { createReactEditor, useEditorRuntimeState } from '../src';
 

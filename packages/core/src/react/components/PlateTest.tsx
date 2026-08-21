@@ -1,6 +1,5 @@
-import React from 'react';
-
 import type { Editor, Value } from '@platejs/plite';
+import React from 'react';
 
 import { hasPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {

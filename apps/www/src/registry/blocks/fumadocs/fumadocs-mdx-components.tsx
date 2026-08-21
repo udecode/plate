@@ -1,8 +1,7 @@
-import type { MDXComponents } from 'mdx/types';
-
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { MinusIcon, SquareAsteriskIcon } from 'lucide-react';
+import type { MDXComponents } from 'mdx/types';
 
 import {
   API,

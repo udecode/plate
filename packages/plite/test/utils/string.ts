@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+
 import {
   codepointsIteratorRTL,
   getCharacterDistance,
@@ -75,30 +76,30 @@ const tagSequences = [
 // Zero-width joiners (U+200D), which are hard to tell, are also made explicit.
 const sampleStrings = {
   '2': ['a\u0308'],
-  '3': [' \u200d', 'ن'],
-  '4': ['ن\u200d', ' '],
+  '3': [' \u200D', 'ن'],
+  '4': ['ن\u200D', ' '],
   '5': ['ᄀᄀ'],
-  '6': ['가\u11a8', 'ᄀ'],
+  '6': ['가\u11A8', 'ᄀ'],
   '7': ['각ᆨ', 'ᄀ'],
   '8': ['🇦🇧', '🇨', 'b'],
   '9': ['a', '🇦🇧', '🇨', 'b'],
-  '10': ['a', '🇦🇧\u200d', '🇨', 'b'],
-  '11': ['a', '🇦\u200d', '🇧🇨', 'b'],
+  '10': ['a', '🇦🇧\u200D', '🇨', 'b'],
+  '11': ['a', '🇦\u200D', '🇧🇨', 'b'],
   '12': ['a', '🇦🇧', '🇨🇩', 'b'],
-  '13': ['a\u200d'],
+  '13': ['a\u200D'],
   '14': ['a\u0308', 'b'],
   '15': ['aः', 'b'],
   '16': ['a', '؀b'],
   '17': ['👶🏿', '👶'],
   '18': ['a🏿', '👶'],
-  '19': ['a🏿', '👶\u200d🛑'],
-  '20': ['👶🏿̈\u200d👶🏿'],
-  '21': ['🛑\u200d🛑'],
-  '22': ['a\u200d', '🛑'],
+  '19': ['a🏿', '👶\u200D🛑'],
+  '20': ['👶🏿̈\u200D👶🏿'],
+  '21': ['🛑\u200D🛑'],
+  '22': ['a\u200D', '🛑'],
   // Under the current Node/Unicode tables, scissors is not treated as ExtPict,
   // so the ZWJ does not join this into a single grapheme cluster.
-  '23': ['✁\u200d', '✁'],
-  '24': ['a\u200d', '✁'],
+  '23': ['✁\u200D', '✁'],
+  '24': ['a\u200D', '✁'],
 };
 
 const dirs = ['ltr', 'rtl'];

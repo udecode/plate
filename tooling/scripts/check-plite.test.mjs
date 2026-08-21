@@ -12,6 +12,13 @@ import {
   repoRoot,
 } from './check-plite.mjs';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const ids = (steps) => steps.map(({ id }) => id);
 const adopterNames = plateAdopterPackages.map(({ name }) => name);
 const collectFiles = (root) => {
@@ -38,7 +45,7 @@ const benchmarkAuthorityInputs = [
   ),
   ...collectFiles('benchmarks/slate-v2/donor/core/current'),
   ...collectFiles('benchmarks/slate-v2/donor/shared'),
-].sort();
+].sort(compareStrings);
 
 test('strict and package checks compose each proof owner exactly once', () => {
   const strict = createCheckSteps('strict');
@@ -187,7 +194,7 @@ test('reviewed Plate adopters map to package-local source-first proof', () => {
 
     const plan = createAffectedPlan([`${root}/src/index.ts`]);
     const manifest = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, root, 'package.json'), 'utf8')
+      fs.readFileSync(path.join(repoRoot, root, 'package.json'), 'utf-8')
     );
 
     assert.equal(manifest.name, name, root);
@@ -387,31 +394,32 @@ test('shared config fails closed while unrelated docs are a no-op', () => {
 test('Plite CI watches the root Bun config used by affected proof', () => {
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
   const plan = createAffectedPlan(['bunfig.toml']);
 
   assert.equal(plan.contracts, true);
   assert.equal(plan.relevant, true);
-  assert.equal(workflow.match(/^\s+- "bunfig\.toml"$/gmu)?.length, 2);
-  assert.equal(workflow.match(/^\s+- "config\/\*\*"$/gmu)?.length, 2);
+  assert.equal(workflow.match(/^\s+- ['"]bunfig\.toml['"]$/gmu)?.length, 2);
+  assert.equal(workflow.match(/^\s+- ['"]config\/\*\*['"]$/gmu)?.length, 2);
 });
 
 test('Plite CI watches and typechecks the bounded www adopter surface', () => {
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
   const config = JSON.parse(
     fs.readFileSync(
       path.join(repoRoot, 'apps/www/tsconfig.package-integration.json'),
-      'utf8'
+      'utf-8'
     )
   );
 
   assert.equal(
-    workflow.match(/^\s+- "apps\/www\/src\/app\/dev\/editor-perf\/\*\*"$/gmu)
-      ?.length,
+    workflow.match(
+      /^\s+- ['"]apps\/www\/src\/app\/dev\/editor-perf\/\*\*['"]$/gmu
+    )?.length,
     2
   );
   assert.equal(
@@ -434,7 +442,7 @@ test('Plite CI watches and typechecks the bounded www adopter surface', () => {
     assert.equal(
       workflow.match(
         new RegExp(
-          `^\\s+- "${input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')}"$`,
+          `^\\s+- ['"]${input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]$`,
           'gmu'
         )
       )?.length,
@@ -452,7 +460,7 @@ test('Plite CI watches and typechecks the bounded www adopter surface', () => {
 test('Plite CI cache action inputs do not duplicate their exact key', () => {
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
   const restore = workflow.match(
     /- name: Restore Chromium browser proof state(?<block>[\s\S]*?)(?=\n\s+- name:)/u
@@ -465,7 +473,7 @@ test('Plite CI cache action inputs do not duplicate their exact key', () => {
 test('Plite CI watches every benchmark authority root through cheap contracts', () => {
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
 
   for (const input of [
@@ -476,7 +484,7 @@ test('Plite CI watches every benchmark authority root through cheap contracts', 
     const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     assert.equal(
-      workflow.match(new RegExp(`^\\s+- "${escaped}"$`, 'gmu'))?.length,
+      workflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))?.length,
       2,
       input
     );
@@ -505,7 +513,7 @@ test('Plite CI watches every benchmark authority root through cheap contracts', 
     const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     assert.equal(
-      workflow.match(new RegExp(`^\\s+- "${escaped}"$`, 'gmu'))?.length,
+      workflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))?.length,
       2,
       input
     );
@@ -535,11 +543,11 @@ test('Plite runtime uses one source-first adopter typecheck lane', () => {
 
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf8'
+    'utf-8'
   );
   const sourceTypecheck = fs.readFileSync(
     path.join(repoRoot, 'tooling/scripts/typecheck-package-source.mjs'),
-    'utf8'
+    'utf-8'
   );
 
   assert.match(workflow, /^ {2}plite-adopters:$/mu);
@@ -585,7 +593,7 @@ test('Plate Core runtime fans out to all adopters while app dependencies stay bo
 
 test('root scripts keep source-first typecheck and strict browser closure separate', () => {
   const packageJson = JSON.parse(
-    fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8')
+    fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
   );
   const scripts = packageJson.scripts;
 
@@ -658,7 +666,7 @@ test('www package integration inherits the complete source map', () => {
   const config = JSON.parse(
     fs.readFileSync(
       path.join(repoRoot, 'apps/www/tsconfig.package-integration.json'),
-      'utf8'
+      'utf-8'
     )
   );
 
@@ -671,7 +679,7 @@ test('affected dependency graph matches Plite-family package manifests', () => {
 
   for (const { dependencies, root } of plitePackages) {
     const manifest = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, root, 'package.json'), 'utf8')
+      fs.readFileSync(path.join(repoRoot, root, 'package.json'), 'utf-8')
     );
     const actual = new Set(
       Object.keys({
@@ -688,7 +696,7 @@ test('affected dependency graph matches Plite-family package manifests', () => {
 test('every declared Plite-family dependency resolves to source during typecheck', () => {
   for (const { dependencies, root } of plitePackages) {
     const config = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, root, 'tsconfig.json'), 'utf8')
+      fs.readFileSync(path.join(repoRoot, root, 'tsconfig.json'), 'utf-8')
     );
     const aliases = config.compilerOptions?.paths ?? {};
 

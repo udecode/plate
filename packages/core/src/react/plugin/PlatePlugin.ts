@@ -1,5 +1,3 @@
-import type React from 'react';
-
 import type {
   DecoratedRange,
   DefinitionOf as PliteDefinitionOf,
@@ -16,17 +14,19 @@ import type {
   Text,
   Value,
 } from '@platejs/plite';
+import type { EditableProps as PliteEditableProps } from '@platejs/plite-react';
 import type {
   EditorSchemaSourceProvider,
   InternalEditorExtensionTypeProviderOf,
+  InternalEditorExtensionWitnessFor,
 } from '@platejs/plite/internal';
 import type {
   HotkeysEvent,
   HotkeysOptions,
   Keys,
 } from '@udecode/react-hotkeys';
-import type { EditableProps as PliteEditableProps } from '@platejs/plite-react';
 import type { AnyObject, Nullable } from '@udecode/utils';
+import type React from 'react';
 
 import type {
   AnyBasePlugin,
@@ -72,7 +72,14 @@ import type {
   RenderLeafProps,
   WithAnyName,
 } from '../../lib';
+import type {
+  BasePluginDependencyDescriptors,
+  BasePluginInstalledCapabilityWitness,
+  LowerBasePlugin,
+} from '../../lib/plugin/basePluginCompiler.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
+import type { ElementWith } from '../../lib/plugin/pluginNodeTypes';
 import type {
   InferPluginNodeTypeProvider,
   InferPluginSchema,
@@ -84,14 +91,6 @@ import type {
   PlateEditor,
 } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
-import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
-import type { ElementWith } from '../../lib/plugin/pluginNodeTypes';
-import type {
-  BasePluginDependencyDescriptors,
-  BasePluginInstalledCapabilityWitness,
-  LowerBasePlugin,
-} from '../../lib/plugin/basePluginCompiler.internal';
-import type { InternalEditorExtensionWitnessFor } from '@platejs/plite/internal';
 
 export type EditableSiblingComponent = (
   editableProps: PliteEditableProps
@@ -572,8 +571,8 @@ type ProjectPlatePluginContextualFields<C extends AnyBasePluginDefinition> =
   }>;
 
 type PlatePluginRuntimeShell = {
-  inject: AnyBasePlugin['inject'] & AnyPlatePluginRuntime['inject'];
-  on: AnyBasePlugin['on'] & AnyPlatePluginRuntime['on'];
+  inject: AnyBasePlugin['inject'];
+  on: AnyBasePlugin['on'];
   render: AnyBasePlugin['render'] & AnyPlatePluginRuntime['render'];
 };
 
@@ -615,7 +614,9 @@ type PlatePluginRuntime = Omit<
 /** One exact React descriptor layered over one Base/Plite extension. */
 export interface PlatePlugin<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> extends PlatePluginRuntime,
+>
+  extends
+    PlatePluginRuntime,
     PlatePluginMethods<C>,
     InternalEditorExtensionWitnessFor<LowerBasePlugin<C>>,
     BasePluginInstalledCapabilityWitness<C>,
@@ -794,7 +795,7 @@ interface PlatePluginMethods<
       Readonly<{ apply?: never; shortcuts?: never }>
   ): ConfiguredPlatePlugin<C>;
   /** Must precede the raw-extension callback overload to preserve nested contextual typing. */
-  // biome-ignore lint/style/useUnifiedTypeSignatures: Callback overload must precede the raw-extension overload for contextual inference.
+  // Callback overload must precede the raw-extension overload for contextual inference.
   extend<
     const TKeys extends keyof PlatePluginExtensionObject<C>,
     S extends object = {},
@@ -805,10 +806,8 @@ interface PlatePluginMethods<
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[] = readonly [],
+    const TTargetPlugins extends readonly (PluginReference | string)[] =
+      readonly [],
     const TShortcuts extends PlateShortcutRecord = {},
   >(
     extension: (
@@ -875,10 +874,8 @@ interface PlatePluginMethods<
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[] = readonly [],
+    const TTargetPlugins extends readonly (PluginReference | string)[] =
+      readonly [],
     const TShortcuts extends PlateShortcutRecord = {},
   >(
     extension: PlatePluginStageInput<

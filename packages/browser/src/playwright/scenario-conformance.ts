@@ -29,13 +29,11 @@ export const createPliteBrowserMixedEditingConformanceGauntlet = ({
     label: 'select-navigation-start',
     selection: startSelection,
   },
-  ...navigationKeys.map(
-    (key, index): PliteBrowserScenarioStep => ({
-      key,
-      kind: 'press',
-      label: `navigate-${index + 1}-${key}`,
-    })
-  ),
+  ...navigationKeys.map((key, index): PliteBrowserScenarioStep => ({
+    key,
+    kind: 'press',
+    label: `navigate-${index + 1}-${key}`,
+  })),
   {
     kind: 'assertSelection',
     label: 'assert-selection-after-navigation',

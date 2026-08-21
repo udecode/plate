@@ -1,17 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { render, renderHook } from '@testing-library/react';
-import {
-  type ClipboardEvent,
-  type KeyboardEvent,
-  useEffect,
-  useMemo,
-} from 'react';
-import {
-  getSelection as editorGetSelection,
-  insertText as editorInsertText,
-  replace as editorReplace,
-  string as editorString,
-} from '@platejs/plite/internal';
+
 import {
   createDOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
@@ -19,21 +7,33 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '@platejs/plite-dom/internal';
+import {
+  getSelection as editorGetSelection,
+  insertText as editorInsertText,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
+import { render, renderHook } from '@testing-library/react';
+import {
+  type ClipboardEvent,
+  type KeyboardEvent,
+  useEffect,
+  useMemo,
+} from 'react';
 
+import { createDOMRepairQueue } from '../src/editable/dom-repair-queue';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import {
   createEditableInputController,
   createEditableInputControllerState,
 } from '../src/editable/input-controller';
-import { createDOMRepairQueue } from '../src/editable/dom-repair-queue';
-import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
-import { beginEditableCompositionSession } from '../src/editable/input-state';
 import {
   getDOMInputRepairTarget,
   repairPendingNativeTextInputModelSelection,
   useEditableDOMInputHandler as useRuntimeOwnedDOMInputHandler,
   useEditableRootRef,
 } from '../src/editable/input-router';
-import { useEditableRootRuntimeState } from '../src/editable/runtime-root-state';
+import { beginEditableCompositionSession } from '../src/editable/input-state';
 import { applyEditableInput } from '../src/editable/model-input-strategy';
 import { useRuntimeClipboardEvents } from '../src/editable/runtime-clipboard-events';
 import { useRuntimeFocusMouseEvents } from '../src/editable/runtime-focus-mouse-events';
@@ -43,6 +43,7 @@ import {
   shouldFlushPendingNativeTextInputBeforeKeyDown,
   shouldFlushPendingNativeTextInputForKeyDown,
 } from '../src/editable/runtime-keyboard-events';
+import { useEditableRootRuntimeState } from '../src/editable/runtime-root-state';
 import { createReactEditor } from '../src/plugin/with-react';
 
 const DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS = 1;
@@ -91,7 +92,7 @@ const useTestRuntimeFocusMouseEvents = (
 const cancelable = () => ({ cancel: () => {} });
 
 test('DOM input trace keeps an outer event handler duration bucket', () => {
-  const source = readFileSync('src/editable/input-router.ts', 'utf8');
+  const source = readFileSync('src/editable/input-router.ts', 'utf-8');
 
   expect(source).toContain("profileDOMInputDuration('dom-input-total'");
 });

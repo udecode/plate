@@ -1,10 +1,9 @@
+import { ElementApi } from '@platejs/plite';
+/** @jsx jsx */
 import {
   above as editorAbove,
   isInline as editorIsInline,
 } from '@platejs/plite/internal';
-/** @jsx jsx */
-
-import { ElementApi } from '@platejs/plite';
 
 export const input = (
   <editor>

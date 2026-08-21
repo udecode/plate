@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Range } from '@platejs/plite';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import type { EditableDOMStrategyRuntime } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';

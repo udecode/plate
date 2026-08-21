@@ -1,7 +1,10 @@
 import type { ElementWith } from '@platejs/core';
 
-import type { TableElement, TableRowElement } from '../BaseTablePlugin';
-import type { BaseTableCellPlugin } from '../BaseTablePlugin';
+import type {
+  TableElement,
+  TableRowElement,
+  BaseTableCellPlugin,
+} from '../BaseTablePlugin';
 
 export type TableCellElementWithId<TType extends string = 'tableCell'> =
   ElementWith<typeof BaseTableCellPlugin> &

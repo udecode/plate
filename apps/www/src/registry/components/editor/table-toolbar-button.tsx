@@ -1,10 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 import { TablePlugin } from '@platejs/table/react';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   ArrowDown,
   ArrowLeft,
@@ -18,6 +15,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useEditor, useEditorSelector, usePluginStore } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -293,7 +291,7 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
   };
 
   return (
-    <div className="flex! m-0 flex-col p-0">
+    <div className="m-0 flex! flex-col p-0">
       <div
         aria-colcount={TABLE_PICKER_DIMENSION}
         aria-label="Table size"
@@ -345,7 +343,7 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
       <div
         aria-atomic="true"
         aria-live="polite"
-        className="text-center text-current text-xs"
+        className="text-center text-xs text-current"
       >
         {size.rowCount} x {size.colCount}
       </div>

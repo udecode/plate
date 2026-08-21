@@ -6,6 +6,10 @@ import { describe, it } from 'node:test';
 
 import { compileEditorSchemaContributions } from '../../../packages/plite/src/internal/index';
 import {
+  measureCohortsRoundRobin,
+  validateAndWriteStrictBenchmarkArtifact,
+} from './plite-schema-architecture-benchmark-authority';
+import {
   createSchemaArchitectureCorpus,
   SCHEMA_ARCHITECTURE_CORPUS,
   schemaGroupName,
@@ -14,10 +18,6 @@ import {
   createSchemaTypecheckFixture,
   parseTypeScriptExtendedDiagnostics,
 } from './plite-schema-typecheck-budget.mjs';
-import {
-  measureCohortsRoundRobin,
-  validateAndWriteStrictBenchmarkArtifact,
-} from './plite-schema-architecture-benchmark-authority';
 
 const root = resolve(import.meta.dir, '../../..');
 const benchmarkPath = resolve(
@@ -66,7 +66,7 @@ describe('compiled schema architecture benchmark authority', () => {
   });
 
   it('keeps one registered metric owner with explicit non-comparability', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string; required: boolean }>;
         command: string;
@@ -79,8 +79,8 @@ describe('compiled schema architecture benchmark authority', () => {
     const targets = registry.targets.filter(
       ({ id }) => id === 'plite-schema-architecture'
     );
-    const source = readFileSync(benchmarkPath, 'utf8');
-    const authoritySource = readFileSync(benchmarkAuthorityPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
+    const authoritySource = readFileSync(benchmarkAuthorityPath, 'utf-8');
 
     assert.equal(targets.length, 1);
     assert.match(
@@ -410,7 +410,7 @@ Total time:          1.50s
         /budget failure/u
       );
 
-      assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf8')), result);
+      assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf-8')), result);
       assert.equal(result.strictValidation.status, 'measured');
     } finally {
       rmSync(directory, { force: true, recursive: true });
@@ -434,7 +434,7 @@ Total time:          1.50s
       });
 
       assert.equal(
-        JSON.parse(readFileSync(outputPath, 'utf8')).strictValidation.status,
+        JSON.parse(readFileSync(outputPath, 'utf-8')).strictValidation.status,
         'passed'
       );
     } finally {

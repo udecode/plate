@@ -8,7 +8,6 @@ import {
   mediaElementProperties,
   type MediaPluginState,
 } from '../BaseMediaPlugin';
-
 import {
   parseIframeUrl,
   parseMediaUrl,

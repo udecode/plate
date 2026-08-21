@@ -1,14 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import {
-  Provider as JotaiProvider,
-  atom as createJotaiAtom,
-  useAtomValue,
-} from 'jotai';
-import { useHydrateAtoms } from 'jotai/utils';
-import { createStore as createJotaiStore } from 'jotai/vanilla';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -22,9 +13,34 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-import type { Editor, Element as PliteElement } from '@platejs/plite';
-import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
 import { getPlateRuntime } from '@platejs/core/internal';
+import {
+  BelowRootNodes,
+  ElementProvider,
+  createAtomStore,
+  createZustandStore,
+  getRenderNodeProps,
+  pipeRenderElement,
+  pipeRenderLeaf,
+  pipeRenderText,
+  pluginRenderElement,
+  pluginRenderLeaf,
+} from '@platejs/core/react/internal';
+import {
+  defineExtension,
+  property,
+  schema,
+  type Editor,
+  type Element as PliteElement,
+} from '@platejs/plite';
+import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
+import {
+  Provider as JotaiProvider,
+  atom as createJotaiAtom,
+  useAtomValue,
+} from 'jotai';
+import { useHydrateAtoms } from 'jotai/utils';
+import { createStore as createJotaiStore } from 'jotai/vanilla';
 import {
   ElementIdPlugin,
   migrateElementIds,
@@ -53,18 +69,7 @@ import {
   usePluginStore,
   type PlateEditor,
 } from 'platejs/react';
-import { BelowRootNodes } from '@platejs/core/react/internal';
-import {
-  ElementProvider,
-  createAtomStore,
-  createZustandStore,
-  getRenderNodeProps,
-  pipeRenderElement,
-  pipeRenderLeaf,
-  pipeRenderText,
-  pluginRenderElement,
-  pluginRenderLeaf,
-} from '@platejs/core/react/internal';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -1522,7 +1527,7 @@ function buildElementPathMap(value: Value) {
 function parseDataPlitePath(value: unknown): Path | undefined {
   if (typeof value !== 'string' || value.length === 0) return;
 
-  const path = value.split(',').map((part) => Number(part));
+  const path = value.split(',').map(Number);
 
   if (path.some((part) => !Number.isInteger(part) || part < 0)) return;
 
@@ -1549,11 +1554,11 @@ function getDissectionValue(caseItem: DissectionCase, blocks: number) {
     ? getSeededEditorPerfWorkloadValue({
         blocks,
         cacheKey: `dissection:${caseItem.id}:${blocks}`,
-        workloadId: 'huge-mixed-block',
+        workloadId: 'huge-paragraph',
       })
     : getEditorPerfWorkloadValue({
         blocks,
-        workloadId: 'huge-mixed-block',
+        workloadId: 'huge-paragraph',
       });
 }
 
@@ -1588,7 +1593,7 @@ function getCoreMountValue({
             ? 'huge-code'
             : documentMode === 'underline-only'
               ? 'huge-underline'
-              : 'huge-mixed-block';
+              : 'huge-paragraph';
   const value = getEditorPerfWorkloadValue({
     blocks,
     workloadId,
@@ -1724,7 +1729,9 @@ function getPluginCensusValue({
 }
 
 function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function waitForNextPaint() {
@@ -1784,6 +1791,44 @@ function calculateLatencyStats(samples: number[]): LatencyResult {
   };
 }
 
+const BenchmarkDenseInlinePropsSchema = defineExtension(
+  'benchmark-dense-inline-props',
+  {
+    schema: {
+      properties: [
+        schema.textProperty('commentId', property.string()),
+        schema.textProperty('search', property.string()),
+        schema.textProperty('tokenCount', property.number()),
+      ],
+    },
+  }
+);
+
+const BenchmarkDenseInlinePropsPlugin = definePlatePlugin(
+  'benchmarkDenseInlineProps',
+  {
+    schema: {
+      properties: {
+        commentId: schema.textProperty(property.string()),
+        search: schema.textProperty(property.string()),
+        tokenCount: schema.textProperty(property.number()),
+      },
+    },
+  }
+);
+
+function getWorkloadExtensions(workloadId: ScenarioWorkloadId) {
+  return workloadId === 'huge-dense-inline-props'
+    ? [BenchmarkDenseInlinePropsSchema]
+    : [];
+}
+
+function getWorkloadPlugins(workloadId: ScenarioWorkloadId) {
+  return workloadId === 'huge-dense-inline-props'
+    ? [BenchmarkDenseInlinePropsPlugin]
+    : [];
+}
+
 function createScenarioConstructionEditor(scenario: Scenario) {
   if (scenario.kind === 'slate') {
     return createReactEditor() as Editor;
@@ -1798,6 +1843,7 @@ function createScenarioConstructionEditor(scenario: Scenario) {
 }
 
 function createScenarioMountedEditor({
+  config,
   scenario,
   value,
 }: {
@@ -1806,11 +1852,15 @@ function createScenarioMountedEditor({
   value: Value;
 }) {
   if (scenario.kind === 'slate') {
-    return createReactEditor({ initialValue: value }) as Editor;
+    return createReactEditor({
+      extensions: getWorkloadExtensions(config.scenarioWorkload),
+      initialValue: value,
+    }) as unknown as Editor;
   }
 
   return createPlateEditor({
     plugins: [
+      ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ enabled: scenario.elementId }),
       ...getScenarioPlugins(scenario.plugins),
     ],
@@ -1820,6 +1870,7 @@ function createScenarioMountedEditor({
 
 function createPlateDissectionEditor({
   caseItem,
+  config,
   counter,
   value,
 }: {
@@ -1830,6 +1881,7 @@ function createPlateDissectionEditor({
 }) {
   return createPlateEditor({
     plugins: [
+      ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ counter, enabled: caseItem.elementId }),
       ...getScenarioPlugins(caseItem.plugins),
     ],
@@ -1838,18 +1890,23 @@ function createPlateDissectionEditor({
 }
 
 function createFanoutEditor({
+  config,
   value,
 }: {
   config: BenchmarkConfig;
   value: Value;
 }) {
   return createPlateEditor({
-    plugins: [BenchmarkStorePlugin],
+    plugins: [
+      ...getWorkloadPlugins(config.scenarioWorkload),
+      BenchmarkStorePlugin,
+    ],
     initialValue: value,
   });
 }
 
 function createCoreMountEditor({
+  config,
   elementId = false,
   plugins = 'none',
   value,
@@ -1861,6 +1918,7 @@ function createCoreMountEditor({
 }) {
   return createPlateEditor({
     plugins: [
+      ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ enabled: elementId }),
       ...getScenarioPlugins(plugins),
     ],
@@ -1869,6 +1927,7 @@ function createCoreMountEditor({
 }
 
 function createPluginCensusMountedEditor({
+  config,
   plugins = 'none',
   value,
 }: {
@@ -1877,7 +1936,10 @@ function createPluginCensusMountedEditor({
   value: Value;
 }) {
   return createPlateEditor({
-    plugins: getScenarioPlugins(plugins),
+    plugins: [
+      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getScenarioPlugins(plugins),
+    ],
     initialValue: value,
   }) as unknown as Editor;
 }
@@ -1922,7 +1984,7 @@ function BenchmarkElement({
         <h1
           {...attributes}
           style={style}
-          className="mt-6 mb-3 font-semibold text-xl"
+          className="mt-6 mb-3 text-xl font-semibold"
         >
           {children}
         </h1>
@@ -1997,8 +2059,12 @@ function SlateScenarioEditor({
   value: Value;
 }) {
   const editor = React.useMemo(
-    () => createReactEditor({ initialValue: value }) as Editor,
-    [value]
+    () =>
+      createReactEditor({
+        extensions: getWorkloadExtensions(config.scenarioWorkload),
+        initialValue: value,
+      }) as unknown as Editor,
+    [config.scenarioWorkload, value]
   );
 
   React.useImperativeHandle(
@@ -2057,6 +2123,7 @@ function PlateScenarioEditor({
 }) {
   const editor = usePlateEditor({
     plugins: [
+      ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ enabled: scenario.elementId }),
       ...getScenarioPlugins(scenario.plugins),
     ],
@@ -2261,7 +2328,7 @@ function FanoutSubscriber({ caseId }: { caseId: FanoutCaseId }) {
       return <PluginStoreSubscriber />;
     case 'mixed':
       return <MixedSubscriber />;
-    default:
+    case 'none':
       return null;
   }
 }
@@ -2339,7 +2406,9 @@ function FanoutSurface({
 
             break;
           }
-          default: {
+          case 'editor-selector':
+          case 'editor-state':
+          case 'none': {
             insertFanoutParagraph();
           }
         }
@@ -3981,7 +4050,7 @@ function ResultCard({
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-semibold">{label}</h3>
         {isActive ? (
-          <span className="rounded-full bg-primary/10 px-2 py-1 text-primary text-xs">
+          <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
             mounted
           </span>
         ) : null}
@@ -4088,7 +4157,7 @@ function FanoutCard({
   return (
     <div className="rounded-lg border bg-background p-4">
       <h3 className="font-semibold">{label}</h3>
-      <p className="mt-2 text-muted-foreground text-sm">{description}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
 
       <div className="mt-4 space-y-1 font-mono text-sm">
         <div className="flex justify-between">
@@ -4136,7 +4205,7 @@ function CoreMountCard({
   return (
     <div className="rounded-lg border bg-background p-4">
       <h3 className="font-semibold">{label}</h3>
-      <p className="mt-2 text-muted-foreground text-sm">{description}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
 
       <div className="mt-4 space-y-1 font-mono text-sm">
         <div className="flex justify-between">
@@ -4186,7 +4255,7 @@ function PluginCensusCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="font-semibold">{entry.label}</h3>
-          <p className="mt-2 text-muted-foreground text-sm">
+          <p className="mt-2 text-sm text-muted-foreground">
             {entry.description}
           </p>
         </div>
@@ -4230,7 +4299,7 @@ function PluginCensusCard({
                   {metrics[lane].plugin && metrics[lane]['plate-core']
                     ? `${(
                         metrics[lane].plugin.mean -
-                          metrics[lane]['plate-core'].mean
+                        metrics[lane]['plate-core'].mean
                       ).toFixed(2)} ms`
                     : 'No data'}
                 </span>
@@ -4255,7 +4324,7 @@ function DissectionCard({
   return (
     <div className="rounded-lg border bg-background p-4">
       <h3 className="font-semibold">{label}</h3>
-      <p className="mt-2 text-muted-foreground text-sm">{description}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
 
       <div className="mt-4 space-y-1 font-mono text-sm">
         <div className="flex justify-between">
@@ -4319,7 +4388,7 @@ function ElementIdFragmentCard({
   return (
     <div className="rounded-lg border bg-background p-4">
       <h3 className="font-semibold">{label}</h3>
-      <p className="mt-2 text-muted-foreground text-sm">{description}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
 
       <div className="mt-4 space-y-1 font-mono text-sm">
         <div className="flex justify-between">
@@ -5522,26 +5591,35 @@ export default function EditorPerfPage() {
     ]
   );
 
+  const configureRunnerControlsRef = React.useRef(configureRunnerControls);
+  const runRunnerBenchmarkRef = React.useRef(runRunnerBenchmark);
+
+  configureRunnerControlsRef.current = configureRunnerControls;
+  runRunnerBenchmarkRef.current = runRunnerBenchmark;
+
   React.useEffect(() => {
     const runnerWindow = window as Window & {
       __editorPerfHarness?: EditorPerfRunnerHarness;
     };
-
-    runnerWindow.__editorPerfHarness = {
-      configure: configureRunnerControls,
-      runBenchmark: runRunnerBenchmark,
+    const harness: EditorPerfRunnerHarness = {
+      configure: (controls) => configureRunnerControlsRef.current(controls),
+      runBenchmark: (benchmark) => runRunnerBenchmarkRef.current(benchmark),
     };
+
+    runnerWindow.__editorPerfHarness = harness;
 
     return () => {
-      runnerWindow.__editorPerfHarness = undefined;
+      if (runnerWindow.__editorPerfHarness === harness) {
+        runnerWindow.__editorPerfHarness = undefined;
+      }
     };
-  }, [configureRunnerControls, runRunnerBenchmark]);
+  }, []);
 
   React.useEffect(() => {
     const timeout = window.setTimeout(() => {
       setConfig(getInitialHugeDocumentBenchmarkConfig() as BenchmarkConfig);
       setDidLoadSearchParams(true);
-    });
+    }, 0);
 
     return () => {
       window.clearTimeout(timeout);
@@ -5557,12 +5635,12 @@ export default function EditorPerfPage() {
   return (
     <main className="container mx-auto space-y-6 p-8">
       <section className="space-y-3">
-        <h1 className="font-bold text-3xl">Plate vs Plite Editor Perf</h1>
+        <h1 className="text-3xl font-bold">Plate vs Plite Editor Perf</h1>
         <p className="max-w-4xl text-muted-foreground">
           One scenario is mounted at a time. That is intentional. Mounting four
           huge editors at once would make the numbers useless.
         </p>
-        <p className="max-w-4xl text-muted-foreground text-sm">
+        <p className="max-w-4xl text-sm text-muted-foreground">
           The input lane calls the editor API against reduced plugin sets. Run
           <code> pnpm --filter www perf:homepage-input</code> for native
           keyboard latency through the complete homepage editor stack.
@@ -5572,7 +5650,7 @@ export default function EditorPerfPage() {
       <section className="rounded-xl border bg-muted/20 p-5">
         <div className="mb-4 grid gap-4 md:grid-cols-7">
           <label className="space-y-2">
-            <span className="block font-medium text-sm">Blocks</span>
+            <span className="block text-sm font-medium">Blocks</span>
             <select
               aria-label="Blocks"
               className="w-full rounded-md border bg-background px-3 py-2"
@@ -5594,7 +5672,7 @@ export default function EditorPerfPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="block font-medium text-sm">Chunk size</span>
+            <span className="block text-sm font-medium">Chunk size</span>
             <select
               aria-label="Chunk size"
               className="w-full rounded-md border bg-background px-3 py-2"
@@ -5616,7 +5694,7 @@ export default function EditorPerfPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="block font-medium text-sm">Scenario workload</span>
+            <span className="block text-sm font-medium">Scenario workload</span>
             <select
               aria-label="Scenario workload"
               className="w-full rounded-md border bg-background px-3 py-2"
@@ -5638,7 +5716,7 @@ export default function EditorPerfPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="block font-medium text-sm">
+            <span className="block text-sm font-medium">
               Content visibility
             </span>
             <select
@@ -5673,11 +5751,11 @@ export default function EditorPerfPage() {
                 setMountVersion((version) => version + 1);
               }}
             />
-            <span className="font-medium text-sm">Chunking enabled</span>
+            <span className="text-sm font-medium">Chunking enabled</span>
           </label>
 
           <label className="space-y-2">
-            <span className="block font-medium text-sm">
+            <span className="block text-sm font-medium">
               Fan-out subscribers
             </span>
             <select
@@ -5697,7 +5775,7 @@ export default function EditorPerfPage() {
           </label>
 
           <label className="space-y-2">
-            <span className="block font-medium text-sm">
+            <span className="block text-sm font-medium">
               Core plugin census
             </span>
             <select
@@ -5828,7 +5906,7 @@ export default function EditorPerfPage() {
         {runningLabel ? (
           <p
             data-testid="editor-perf-running-label"
-            className="mt-3 text-muted-foreground text-sm"
+            className="mt-3 text-sm text-muted-foreground"
           >
             {runningLabel}
           </p>
@@ -5840,7 +5918,7 @@ export default function EditorPerfPage() {
           <div className="rounded-lg border bg-background p-4">
             <h2 className="mb-2 font-semibold">Active scenario</h2>
             <div className="font-medium">{activeScenario.label}</div>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               {activeScenario.description}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-3 font-mono text-sm">
@@ -5916,7 +5994,7 @@ export default function EditorPerfPage() {
 
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Plate init dissection</h2>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               This lane splits Plate into wrapper construction, value init, pure{' '}
               <code>migrateElementIds</code>, and the mount of a prebuilt
               editor. That is the cleanest way to separate store/plugin tax,
@@ -5937,7 +6015,7 @@ export default function EditorPerfPage() {
 
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">ElementId paste/import dissection</h2>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               This lane times real <code>fragment.replace</code> work against
               raw import data and duplicate-id paste data. That is the only
               honest way to see whether ElementId normalization still has money
@@ -5958,7 +6036,7 @@ export default function EditorPerfPage() {
 
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Plate store fan-out</h2>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               This lane mounts a prebuilt Plate core editor, then fans out extra
               subscribers over one hook path at a time. The delta from{' '}
               <code>No extra subscribers</code> is the real subscription tax.
@@ -5995,7 +6073,7 @@ export default function EditorPerfPage() {
                   />
                 </React.Profiler>
               ) : (
-                <div className="p-4 text-muted-foreground text-sm">
+                <div className="p-4 text-sm text-muted-foreground">
                   The fan-out surface mounts only while this benchmark is
                   running.
                 </div>
@@ -6016,7 +6094,7 @@ export default function EditorPerfPage() {
 
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Plate core mount dissection</h2>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               This lane peels Plate mount cost stage by stage: provider, Plite
               wrapper, editable-props hook stack, minimal editable mount, then
               full <code>PlateContent</code>. If <code>jotai-x</code> were the
@@ -6038,7 +6116,7 @@ export default function EditorPerfPage() {
                   />
                 </React.Profiler>
               ) : (
-                <div className="p-4 text-muted-foreground text-sm">
+                <div className="p-4 text-sm text-muted-foreground">
                   The core mount surface mounts only while this benchmark is
                   running.
                 </div>
@@ -6061,7 +6139,7 @@ export default function EditorPerfPage() {
             </div>
 
             <label className="mt-4 block space-y-2">
-              <span className="block font-medium text-sm">
+              <span className="block text-sm font-medium">
                 Core mount stage
               </span>
               <select
@@ -6083,7 +6161,7 @@ export default function EditorPerfPage() {
             </label>
 
             <label className="mt-4 block space-y-2">
-              <span className="block font-medium text-sm">
+              <span className="block text-sm font-medium">
                 Core mount elementId mode
               </span>
               <select
@@ -6116,7 +6194,7 @@ export default function EditorPerfPage() {
 
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Layer 1 core plugin census</h2>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               This lane adds one core plugin at a time, measures an inactive
               paragraph workload, then measures the plugin on its activated
               workload. The only numbers that matter are the deltas against
@@ -6175,7 +6253,7 @@ export default function EditorPerfPage() {
                   />
                 </React.Profiler>
               ) : (
-                <div className="p-4 text-muted-foreground text-sm">
+                <div className="p-4 text-sm text-muted-foreground">
                   The plugin census surface mounts only while this benchmark is
                   running.
                 </div>
@@ -6190,7 +6268,7 @@ export default function EditorPerfPage() {
             <div data-testid="editor-perf-last-completed-token" hidden>
               {lastCompletedBenchmarkToken}
             </div>
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-sm text-muted-foreground">
               Construction benchmarks isolate editor creation. They
               intentionally ignore DOM-only render knobs like chunking and
               content visibility.

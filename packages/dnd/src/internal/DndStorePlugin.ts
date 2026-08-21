@@ -1,8 +1,7 @@
-import type React from 'react';
-
 import { definePlatePlugin, type PlateEditor } from '@platejs/core/react';
 import type { Path, NodeKey } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
+import type React from 'react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { DndScrollerOptions } from '../DndScroller';

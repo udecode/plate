@@ -14,8 +14,8 @@ import type {
   SelectionValue,
   Value,
 } from '../interfaces';
-import { isTxOnlyMethod, isTxReadMethod } from './tx-only';
 import { getSemanticUpdateLowering } from './semantic-update-method';
+import { isTxOnlyMethod, isTxReadMethod } from './tx-only';
 import {
   compileEditorUpdatePolicy,
   type CompiledEditorUpdatePolicy,
@@ -363,6 +363,7 @@ export const createEditorUpdateApi = <
     object,
     EditorUpdateMethods<V, TExtensions>
   >();
+  // oxlint-disable-next-line prefer-const -- Facade methods close over the default facade assigned after construction.
   let defaultFacade!: EditorUpdate<V, TExtensions>;
 
   const getConfiguredFacade = (

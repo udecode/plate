@@ -13,7 +13,7 @@ const packagePath = resolve(root, 'package.json');
 
 describe('extension graph benchmark authority', () => {
   it('registers one strict current target and artifact', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
       targets: Array<{
         artifacts: Array<{ path: string; required: boolean }>;
         command: string;
@@ -43,7 +43,7 @@ describe('extension graph benchmark authority', () => {
   });
 
   it('keeps cohorts, lifecycle proof, retention, and fixed budgets explicit', () => {
-    const source = readFileSync(benchmarkPath, 'utf8');
+    const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.match(source, /descriptors: 10/u);
     assert.match(source, /descriptors: 100/u);
@@ -58,7 +58,7 @@ describe('extension graph benchmark authority', () => {
   });
 
   it('runs the authority check in the strict Plite contract gate', () => {
-    const packageJson = JSON.parse(readFileSync(packagePath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
 

@@ -1,6 +1,3 @@
-import { SearchIcon } from 'lucide-react';
-import { parseAsString, useQueryState } from 'nuqs';
-import { memo } from 'react';
 import { NodeApi } from '@platejs/plite';
 import {
   Editable,
@@ -11,6 +8,9 @@ import {
   usePliteEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
+import { SearchIcon } from 'lucide-react';
+import { parseAsString, useQueryState } from 'nuqs';
+import { memo } from 'react';
 
 import {
   InputGroup,
@@ -116,6 +116,8 @@ const SearchHighlightingEditor = memo(
     </Plite>
   )
 );
+
+SearchHighlightingEditor.displayName = 'SearchHighlightingEditor';
 
 type HighlightLeaf = Omit<CustomText, 'text'>;
 

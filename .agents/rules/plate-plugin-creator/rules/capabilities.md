@@ -561,8 +561,9 @@ Schema authoring follows the Plite owner exactly:
 - Use current Plite ranges, reads, and updates directly. Do not add compatibility
   aliases or Plate wrappers around them.
 - Do not replace event-only path resolution with a render subscription.
-  `usePath()` is for reactive render dependence; use renderer `path` or resolve
-  inside the event when appropriate.
+  `usePath()` is for reactive render dependence; element components and node
+  wrappers receive no `path` prop, so resolve from the element inside an event
+  when rendered output does not depend on position.
 - Explicit normalization must name a real full-root or dirty-path invariant.
   Do not normalize merely to coalesce leaves, settle a transform, or preserve
   an old fixture shape. Repair the smallest transform/normalizer owner instead.

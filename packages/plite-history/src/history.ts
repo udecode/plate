@@ -96,7 +96,6 @@ const isBatch = (value: unknown): value is Batch =>
   isAdditionalRoot(value.selectionAfterRoot) &&
   isAdditionalRoot(value.selectionBeforeRoot);
 
-// eslint-disable-next-line no-redeclare
 export const History = {
   /** Check whether a value is an in-memory history object. */
   isHistory(value: unknown): value is History {

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import { DocumentChange, type Descendant } from '@platejs/plite';
 
 import {
@@ -89,7 +90,7 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
     const after = peer.editor.read.value();
     const direct = DocumentChange.between(before, after);
 
-    assert(change instanceof DocumentChange);
+    assert.ok(change instanceof DocumentChange);
     assert.deepEqual(change.apply(before), direct.apply(before));
     assert.deepEqual(change.invert(before).apply(after), before);
     assert.deepEqual(

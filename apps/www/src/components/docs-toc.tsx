@@ -1,8 +1,7 @@
 'use client';
 
-import * as React from 'react';
-
 import { IconMenu3 } from '@tabler/icons-react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -35,14 +34,7 @@ function useActiveItem(itemIds: string[]) {
       }
     }
 
-    return () => {
-      for (const id of itemIds ?? []) {
-        const element = document.getElementById(id);
-        if (element) {
-          observer.unobserve(element);
-        }
-      }
-    };
+    return () => observer.disconnect();
   }, [itemIds]);
 
   return activeId;
@@ -105,13 +97,13 @@ export function DocsTableOfContents({
 
   return (
     <div className={cn('flex flex-col gap-2 p-4 pt-0 text-sm', className)}>
-      <p className="sticky top-0 h-6 bg-background font-medium text-muted-foreground text-xs">
+      <p className="sticky top-0 h-6 bg-background text-xs font-medium text-muted-foreground">
         On This Page
       </p>
       {toc.map((item) => (
         <a
           key={item.url}
-          className="text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground data-[depth=3]:pl-4 data-[depth=4]:pl-6 data-[active=true]:font-medium data-[active=true]:text-foreground"
+          className="text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground data-[active=true]:font-medium data-[active=true]:text-foreground data-[depth=3]:pl-4 data-[depth=4]:pl-6"
           data-active={item.url === `#${activeHeading}`}
           data-depth={item.depth}
           href={item.url}

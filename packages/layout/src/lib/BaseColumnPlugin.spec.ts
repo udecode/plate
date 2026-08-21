@@ -1,23 +1,25 @@
+import assert from 'node:assert/strict';
+
 import {
   BaseParagraphPlugin,
   createBaseEditor,
   defineBasePlugin,
 } from '@platejs/core';
-import { PLUGINS } from '@platejs/utils';
-import {
-  BaseColumnItemPlugin,
-  BaseColumnPlugin,
-  type ColumnElement,
-  type ColumnGroupElement,
-} from './BaseColumnPlugin';
-import { ColumnItemPlugin, ColumnPlugin } from '../react/ColumnPlugin';
-import assert from 'node:assert/strict';
 import {
   type Element,
   ElementApi,
   schema,
   type Selection,
 } from '@platejs/plite';
+import { PLUGINS } from '@platejs/utils';
+
+import { ColumnItemPlugin, ColumnPlugin } from '../react/ColumnPlugin';
+import {
+  BaseColumnItemPlugin,
+  BaseColumnPlugin,
+  type ColumnElement,
+  type ColumnGroupElement,
+} from './BaseColumnPlugin';
 
 const columnPlugins = [BaseColumnPlugin] as const;
 const TestColumnHostPlugin = defineBasePlugin('testColumnHost', {

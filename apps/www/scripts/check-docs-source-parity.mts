@@ -1,13 +1,14 @@
-import type { SidebarNavItem } from '@/types/nav';
-
-import matter from 'gray-matter';
+/* oxlint-disable typescript/no-unsafe-return -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+import matter from 'gray-matter';
+
 import { hrefWithLocale } from '@/lib/withLocale';
-import { registryExamples } from '@/registry/registry-examples';
 import { registryEditor } from '@/registry/registry-editor';
+import { registryExamples } from '@/registry/registry-examples';
 import { registryFeatures } from '@/registry/registry-features';
+import type { SidebarNavItem } from '@/types/nav';
 
 import {
   createDocsRegistry,
@@ -140,7 +141,7 @@ async function getGeneratedSourcePaths() {
     let source: string;
 
     try {
-      source = await fs.readFile(sourceFile, 'utf8');
+      source = await fs.readFile(sourceFile, 'utf-8');
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         continue;
@@ -167,7 +168,7 @@ async function getGeneratedSourcePaths() {
 }
 
 async function readDocsMeta() {
-  return JSON.parse(await fs.readFile(META_FILE, 'utf8')) as DocsMeta;
+  return JSON.parse(await fs.readFile(META_FILE, 'utf-8')) as DocsMeta;
 }
 
 function checkDocsMetaOverlay(meta: DocsMeta) {
@@ -239,7 +240,7 @@ function getSourceRoutes(sourcePaths: string[]) {
 }
 
 async function getFrontmatterTitle(filePath: string) {
-  const source = await fs.readFile(path.join(CONTENT_DIR, filePath), 'utf8');
+  const source = await fs.readFile(path.join(CONTENT_DIR, filePath), 'utf-8');
   const { data } = matter(source);
   return data.title;
 }

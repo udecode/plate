@@ -1,9 +1,6 @@
 'use client';
 
-import * as React from 'react';
-
 import type { PlateElementProps } from 'platejs/react';
-
 import {
   definePlatePlugin,
   Plate,
@@ -12,11 +9,12 @@ import {
   usePlateEditor,
   useElementSelected,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const TabbableElementPlugin = definePlatePlugin('tabbableElement', {
   schema: { element: { void: 'block' } },

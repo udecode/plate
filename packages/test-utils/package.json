@@ -11,23 +11,27 @@
   "bugs": {
     "url": "https://github.com/udecode/plate/issues"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
     "directory": "packages/test-utils"
   },
-  "license": "MIT",
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "brl": "plate-pkg p:brl",
     "build": "plate-pkg p:build",
@@ -43,10 +47,6 @@
     "@platejs/plite": "workspace:^",
     "@platejs/plite-hyperscript": "workspace:^"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "module": "./dist/index.js",
   "devDependencies": {
     "@plate/scripts": "workspace:*"
   }

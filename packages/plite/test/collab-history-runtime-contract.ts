@@ -1,5 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import {
+  createEditor,
+  defineExtension,
+  DocumentChange,
+  type EditorTransactionSpecBuilder,
+  type EditorUpdatePolicy,
+  type Element,
+} from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -10,16 +20,6 @@ import {
   subscribe as editorSubscribe,
 } from '@platejs/plite/internal';
 
-import { history } from '@platejs/plite-history';
-
-import {
-  createEditor,
-  defineExtension,
-  DocumentChange,
-  type EditorTransactionSpecBuilder,
-  type EditorUpdatePolicy,
-  type Element,
-} from '@platejs/plite';
 import { createRangeAnchor } from './support/anchor';
 
 const paragraph = (text: string): Element => ({
@@ -64,7 +64,7 @@ type CollabCommit = NonNullable<ReturnType<typeof editorGetLastCommit>>;
 const lastCommit = (editor: CollabEditor): CollabCommit => {
   const commit = editorGetLastCommit(editor);
 
-  assert(commit);
+  assert.ok(commit);
 
   return commit;
 };
@@ -86,7 +86,7 @@ const buildChange = (
 ) => {
   const spec = editor.read((state) => state.transaction(build));
 
-  assert(spec);
+  assert.ok(spec);
 
   return serializeChange(spec.changes);
 };
@@ -136,7 +136,7 @@ describe('collab and history runtime contract', () => {
 
     const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
-    assert(nodeKey);
+    assert.ok(nodeKey);
 
     const subscribedCommits: NonNullable<
       ReturnType<typeof editorGetLastCommit>
@@ -178,7 +178,7 @@ describe('collab and history runtime contract', () => {
     assert.equal(commit.selectionChanged, true);
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changed.has('snapshot'), true);
-    assert(commit.changed.nodeKeys('node').includes(nodeKey));
+    assert.ok(commit.changed.nodeKeys('node').includes(nodeKey));
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
     assert.equal(
       commit.inverseChanges,
@@ -217,7 +217,7 @@ describe('collab and history runtime contract', () => {
 
     const sourceCommit = editorGetLastCommit(source);
 
-    assert(sourceCommit);
+    assert.ok(sourceCommit);
 
     remote.update((tx) => {
       tx.tags.add('remote-import');
@@ -270,7 +270,7 @@ describe('collab and history runtime contract', () => {
 
     const sourceCommit = editorGetLastCommit(source);
 
-    assert(sourceCommit);
+    assert.ok(sourceCommit);
 
     remote.update(remoteReplayPolicy('remote-import'), (tx) => {
       tx.changes.apply(serializeChange(sourceCommit.changes));
@@ -278,7 +278,7 @@ describe('collab and history runtime contract', () => {
 
     const remoteCommit = editorGetLastCommit(remote);
 
-    assert(remoteCommit);
+    assert.ok(remoteCommit);
     assert.deepEqual(remoteCommit.tags, [
       'collaboration',
       'remote-import',
@@ -325,8 +325,8 @@ describe('collab and history runtime contract', () => {
       assert.equal(historyUndoCount(source), 1);
       assert.equal(historyUndoCount(peerB), 0);
       assert.equal(historyUndoCount(peerC), 0);
-      assert(lastCommit(peerB).tags.includes('history-skip'));
-      assert(lastCommit(peerC).tags.includes('history-skip'));
+      assert.ok(lastCommit(peerB).tags.includes('history-skip'));
+      assert.ok(lastCommit(peerC).tags.includes('history-skip'));
     };
 
     assertThreePeerConvergence({
@@ -433,7 +433,7 @@ describe('collab and history runtime contract', () => {
 
     const sourceCommit = editorGetLastCommit(source);
 
-    assert(sourceCommit);
+    assert.ok(sourceCommit);
     assert.equal(sourceCommit.changed.has('document'), true);
     assert.equal(sourceCommit.changed.has('structure'), true);
 
@@ -443,7 +443,7 @@ describe('collab and history runtime contract', () => {
 
     const remoteCommit = editorGetLastCommit(remote);
 
-    assert(remoteCommit);
+    assert.ok(remoteCommit);
     assert.deepEqual(
       remoteCommit.changes.toJSON(),
       sourceCommit.changes.toJSON()
@@ -473,7 +473,7 @@ describe('collab and history runtime contract', () => {
     assert.equal(historyUndoCount(editor), 1);
     const undoChange = firstUndoChange(editor);
 
-    assert(undoChange);
+    assert.ok(undoChange);
     assert.equal(undoChange.empty, false);
     assert.deepEqual(
       undoChange.apply(editor.read.value()).children,
@@ -572,7 +572,7 @@ describe('collab and history runtime contract', () => {
 
     const commit = editorGetLastCommit(remote);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(commit.tags, ['remote-import']);
     assert.deepEqual(anchor.resolve(), {
       anchor: { path: [1, 0], offset: 2 },
@@ -587,8 +587,8 @@ describe('collab and history runtime contract', () => {
     const removeEditor = createCollabEditor();
     const removedBlockKey = editorGetNodeKey(removeEditor, [1]);
     const removedTextKey = editorGetNodeKey(removeEditor, [1, 0]);
-    assert(removedBlockKey);
-    assert(removedTextKey);
+    assert.ok(removedBlockKey);
+    assert.ok(removedTextKey);
 
     const removeChange = buildChange(removeEditor, (tx) => {
       tx.nodes.remove({ at: [1] });
@@ -606,7 +606,7 @@ describe('collab and history runtime contract', () => {
 
     const removeCommit = editorGetLastCommit(removeEditor);
 
-    assert(removeCommit);
+    assert.ok(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
     assert.equal(editorGetPathByNodeKey(removeEditor, removedBlockKey), null);
     assert.equal(editorGetPathByNodeKey(removeEditor, removedTextKey), null);
@@ -614,8 +614,8 @@ describe('collab and history runtime contract', () => {
     const moveEditor = createCollabEditor();
     const movedBlockKey = editorGetNodeKey(moveEditor, [2]);
     const movedTextKey = editorGetNodeKey(moveEditor, [2, 0]);
-    assert(movedBlockKey);
-    assert(movedTextKey);
+    assert.ok(movedBlockKey);
+    assert.ok(movedTextKey);
     const moveChange = buildChange(moveEditor, (tx) => {
       tx.nodes.move({ at: [2], to: [0] });
     });
@@ -632,7 +632,7 @@ describe('collab and history runtime contract', () => {
 
     const moveCommit = editorGetLastCommit(moveEditor);
 
-    assert(moveCommit);
+    assert.ok(moveCommit);
     assert.deepEqual(moveCommit.tags, ['remote-move']);
     assert.deepEqual(editorGetPathByNodeKey(moveEditor, movedBlockKey), [0]);
     assert.deepEqual(editorGetPathByNodeKey(moveEditor, movedTextKey), [0, 0]);

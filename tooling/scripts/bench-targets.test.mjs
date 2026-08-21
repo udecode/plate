@@ -38,7 +38,7 @@ test('keeps normalization benchmark correctness focused', () => {
         import.meta.dirname,
         '../../benchmarks/targets/slate-v2.json'
       ),
-      'utf8'
+      'utf-8'
     )
   );
   const normalization = registry.targets.find(
@@ -158,7 +158,7 @@ test('runs correctness before the benchmark and verifies fresh evidence', async 
 
   assert.equal(result.primaryMetric, 12.5);
   assert.equal(
-    fs.readFileSync(path.join(workspace, 'artifact.json'), 'utf8'),
+    fs.readFileSync(path.join(workspace, 'artifact.json'), 'utf-8'),
     'fresh'
   );
 });

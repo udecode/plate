@@ -1,6 +1,7 @@
-import * as React from 'react';
 import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
+import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
 export function CodeDrawingElementStatic({

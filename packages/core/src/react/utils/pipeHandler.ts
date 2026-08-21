@@ -1,17 +1,16 @@
-import type React from 'react';
 import type { Value } from '@platejs/plite';
+import type React from 'react';
 
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps } from '../../lib';
 import type {
   InternalPlateEditorWithInstalledPlugins,
   PlateEditor,
 } from '../editor/PlateEditor';
 import type { AnyResolvedPlatePlugin } from '../plugin';
-import type { DOMHandlerProp, DOMHandlers } from '../plugin/DOMHandlers';
-
-import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
+import type { DOMHandlerProp, DOMHandlers } from '../plugin/DOMHandlers';
 
 type DOMHandlerName = keyof DOMHandlers & string;
 

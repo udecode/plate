@@ -1,11 +1,11 @@
 import type { AnyEditor } from '@platejs/plite/internal';
 
 import {
-  DOMIntegrityObserver,
-  type DOMIntegrityDiagnostics,
-  type DOMIntegrityMutationOwner,
-  type DOMIntegrityObserverOptions,
-} from './dom-integrity-observer';
+  type DOMRootFactOverrides,
+  type DOMRootQuirk,
+  type ResolvedDOMRootFacts,
+  resolveDOMRootFacts,
+} from '../utils/environment';
 import {
   classifyDOMBeforeInputIntent,
   DOMInputRuntime,
@@ -18,18 +18,18 @@ import {
   resolveDOMInputTransition,
 } from './dom-input-runtime';
 import {
+  DOMIntegrityObserver,
+  type DOMIntegrityDiagnostics,
+  type DOMIntegrityMutationOwner,
+  type DOMIntegrityObserverOptions,
+} from './dom-integrity-observer';
+import {
   createDOMPhaseScheduler,
   type DOMPhaseScheduler,
   type DOMPhaseSchedulerDiagnostics,
   installEditorDOMPhaseScheduler,
 } from './dom-phase-scheduler';
 import { DOMSyncMutationOwnership } from './dom-sync-mutation-ownership';
-import {
-  type DOMRootFactOverrides,
-  type DOMRootQuirk,
-  type ResolvedDOMRootFacts,
-  resolveDOMRootFacts,
-} from '../utils/environment';
 
 type MutableCell<T> = { current: T };
 

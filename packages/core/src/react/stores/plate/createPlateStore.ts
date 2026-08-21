@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   type EditorCommit,
   type EditorStateView,
@@ -12,17 +10,16 @@ import {
   type EditorRuntimeStateSelectorOptions,
   useEditorRuntimeState,
 } from '@platejs/plite-react';
-
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
+import React from 'react';
 
-import type { PlateStoreEditor, PlateStoreState } from './PlateStore';
-
-import { createAtomStore } from '../../libs';
 import { createPlateEditor, type PlateEditor } from '../../editor';
+import { createAtomStore } from '../../libs';
 import {
   usePlateControllerExists,
   usePlateControllerStore,
 } from '../plate-controller';
+import type { PlateStoreEditor, PlateStoreState } from './PlateStore';
 
 export type PlateStore = ReturnType<typeof usePlateStore>;
 export type PlateEditorWithStore<E = PlateEditor> = E & { store: PlateStore };
@@ -127,11 +124,9 @@ export const usePlateStore = (id?: string) => {
   const [localStoreExists] = React.useState(!!localStore.store);
 
   // If no store was found, try to fetch the store from a PlateController
+  const controllerStore = usePlateControllerStore(id);
   const store = (
-    localStoreExists
-      ? localStore
-      : // eslint-disable-next-line react-hooks/rules-of-hooks
-        usePlateControllerStore(id)
+    localStoreExists ? localStore : controllerStore
   ) as typeof localStore;
 
   /**

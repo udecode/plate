@@ -1,5 +1,4 @@
 import type { MaybeReturnType } from '../types';
-
 import { isFunction } from './isFunction';
 
 /**

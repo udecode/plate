@@ -1,11 +1,8 @@
 'use client';
 
-import React from 'react';
-import debounce from 'lodash/debounce.js';
-
-import { type MarkdownEditor, MarkdownPlugin } from '@platejs/markdown';
 import type { DefinitionOf } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
+import { type MarkdownEditor, MarkdownPlugin } from '@platejs/markdown';
 import {
   type Range,
   type NodeKey,
@@ -16,6 +13,8 @@ import {
   NodeApi,
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
+import debounce from 'lodash/debounce.js';
+import React from 'react';
 
 import { AIChatPlugin } from './AIChatPlugin';
 

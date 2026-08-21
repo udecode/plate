@@ -1,9 +1,7 @@
-import React from 'react';
-import { createStore } from 'jotai/vanilla';
-
-import type { Nullable } from '@udecode/utils';
-
 import type { Element, ElementEntry, Path } from '@platejs/plite';
+import type { Nullable } from '@udecode/utils';
+import { createStore } from 'jotai/vanilla';
+import React from 'react';
 
 import { createAtomStore } from '../../libs/jotai';
 

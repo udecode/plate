@@ -1,8 +1,8 @@
-import * as React from 'react';
-
-import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+
 import type { DateElement } from '@platejs/date';
+import { render } from '@testing-library/react';
+import * as React from 'react';
 
 const getDateDisplayLabelMock = mock((value: string) => {
   if (value === '2026-03-23') return 'Today';

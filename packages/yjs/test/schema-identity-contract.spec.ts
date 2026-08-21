@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
 import {
   createEditor,
   defineEditorSchema,
@@ -395,7 +396,7 @@ describe('@platejs/yjs schema identity contract', () => {
     const root = doc.get(rootName, Y.XmlElement);
     const metadata = doc.getMap(getYjsSchemaMetadataName(rootName));
 
-    assert(nextIdentity);
+    assert.ok(nextIdentity);
     assert.throws(
       () =>
         doc.transact(() => {
@@ -449,7 +450,7 @@ describe('@platejs/yjs schema identity contract', () => {
     const nextAction = () => {
       seed = (Math.imul(seed, 1_664_525) + 1_013_904_223) >>> 0;
 
-      return actionKinds[seed % actionKinds.length]!;
+      return actionKinds[seed % actionKinds.length];
     };
     const actions = [...actionKinds, ...Array.from({ length: 58 }, nextAction)];
     let activePolicy = 'policy-0';
@@ -482,7 +483,7 @@ describe('@platejs/yjs schema identity contract', () => {
       history: History.toJSON(editor),
       identity: editor.read.schema.identity(),
       metadata: structuredClone(metadata.get('current')),
-      room: root.toString(),
+      room: root.toJSON(),
       value: structuredClone(editor.read.value()),
     });
     const assertSnapshot = (before: ReturnType<typeof snapshot>) => {
@@ -582,7 +583,7 @@ describe('@platejs/yjs schema identity contract', () => {
 
     const serialized = JSON.stringify({
       history: History.toJSON(editor),
-      room: doc.toJSON(),
+      room: root.toJSON(),
     });
 
     assert.doesNotMatch(

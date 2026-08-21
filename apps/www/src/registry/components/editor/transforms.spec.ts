@@ -1,4 +1,3 @@
-import { PLUGINS } from '@platejs/utils';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { BaseColumnPlugin } from '@platejs/layout';
 import {
@@ -9,8 +8,10 @@ import {
 } from '@platejs/media';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseTocPlugin } from '@platejs/toc';
+import { PLUGINS } from '@platejs/utils';
 import { type Selection, type Value, schema } from 'platejs';
 import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+
 import { linkPlugin } from '@/registry/components/editor/link';
 
 import { BaseBasicBlocksKit } from './basic-blocks-static';
@@ -302,34 +303,33 @@ describe('editor block transforms', () => {
     ]);
   });
 
-  it.each([
-    PLUGINS.audio,
-    PLUGINS.file,
-    PLUGINS.video,
-  ])('inserts a %s placeholder through its plugin owner', (mediaType) => {
-    const editor = createEditor({
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [1, 0] },
-        focus: { offset: 0, path: [1, 0] },
-      },
-      initialValue: [
+  it.each([PLUGINS.audio, PLUGINS.file, PLUGINS.video])(
+    'inserts a %s placeholder through its plugin owner',
+    (mediaType) => {
+      const editor = createEditor({
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 0, path: [1, 0] },
+        },
+        initialValue: [
+          { children: [{ text: 'one' }], type: 'paragraph' },
+          { children: [{ text: '' }], type: 'paragraph' },
+        ],
+      });
+
+      insertBlock(editor, mediaType);
+
+      expect(editor.read.children()).toMatchObject([
         { children: [{ text: 'one' }], type: 'paragraph' },
-        { children: [{ text: '' }], type: 'paragraph' },
-      ],
-    });
-
-    insertBlock(editor, mediaType);
-
-    expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'paragraph' },
-      {
-        children: [{ text: '' }],
-        mediaType,
-        type: 'placeholder',
-      },
-    ]);
-  });
+        {
+          children: [{ text: '' }],
+          mediaType,
+          type: 'placeholder',
+        },
+      ]);
+    }
+  );
 });
 
 describe('classic editor block transforms', () => {

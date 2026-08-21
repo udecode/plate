@@ -1,10 +1,9 @@
-import type { TableElement } from '../BaseTablePlugin';
 import type {
   TableCellElementWithId,
   TableElementWithId,
   TableRowElementWithId,
 } from '../__tests__/tableTestTypes';
-
+import type { TableElement } from '../BaseTablePlugin';
 import { createDetachedTableContext } from './context';
 import type { TableCellFactory } from './mutation';
 import { planPreparedTablePaste, prepareTablePaste } from './paste';
@@ -31,21 +30,18 @@ const createRow = (row: number): TableRowElementWithId => ({
 });
 
 const denseTable = (size: number, prefix: string): TableElementWithId => ({
-  children: Array.from(
-    { length: size },
-    (_, row): TableRowElementWithId => ({
-      children: Array.from(
-        { length: size },
-        (_, col): TableCellElementWithId => ({
-          children: [{ text: `${row}:${col}` }],
-          id: `${prefix}-cell-${row}-${col}`,
-          type: 'tableCell',
-        })
-      ),
-      id: `${prefix}-row-${row}`,
-      type: 'tableRow',
-    })
-  ),
+  children: Array.from({ length: size }, (_, row): TableRowElementWithId => ({
+    children: Array.from(
+      { length: size },
+      (_, col): TableCellElementWithId => ({
+        children: [{ text: `${row}:${col}` }],
+        id: `${prefix}-cell-${row}-${col}`,
+        type: 'tableCell',
+      })
+    ),
+    id: `${prefix}-row-${row}`,
+    type: 'tableRow',
+  })),
   id: `${prefix}-table`,
   type: 'table',
 });
@@ -85,25 +81,22 @@ const collectGarbage = async () => {
 };
 
 describe('PreparedTablePaste benchmark', () => {
-  it.each([
-    ...TABLE_PASTE_COHORTS,
-  ])('prepares a dense $size x $size source within its source-slot budget', ({
-    budgetMs,
-    samples,
-    size,
-  }) => {
-    const durations = Array.from({ length: samples }, (_, sample) => {
-      const source = denseTable(size, `${size}-${sample}`);
+  it.each([...TABLE_PASTE_COHORTS])(
+    'prepares a dense $size x $size source within its source-slot budget',
+    ({ budgetMs, samples, size }) => {
+      const durations = Array.from({ length: samples }, (_, sample) => {
+        const source = denseTable(size, `${size}-${sample}`);
 
-      return measure(() => {
-        const result = prepare(source);
+        return measure(() => {
+          const result = prepare(source);
 
-        expect('kind' in result).toBe(false);
+          expect('kind' in result).toBe(false);
+        });
       });
-    });
 
-    expect(percentile(durations, 0.95)).toBeLessThan(budgetMs);
-  });
+      expect(percentile(durations, 0.95)).toBeLessThan(budgetMs);
+    }
+  );
 
   it('keeps a hot 4 x 4 plan local across 64 and 256 square targets', () => {
     const prepared = prepare(denseTable(4, 'source'));
@@ -199,14 +192,11 @@ describe('PreparedTablePaste benchmark', () => {
           id: 'row-0',
           type: 'tableRow',
         },
-        ...Array.from(
-          { length: 63 },
-          (_, row): TableRowElementWithId => ({
-            children: [],
-            id: `row-${row + 1}`,
-            type: 'tableRow',
-          })
-        ),
+        ...Array.from({ length: 63 }, (_, row): TableRowElementWithId => ({
+          children: [],
+          id: `row-${row + 1}`,
+          type: 'tableRow',
+        })),
       ],
       id: 'target',
       type: 'table',

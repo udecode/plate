@@ -13,20 +13,34 @@ import {
   type Text,
   type Value,
 } from '@platejs/plite';
-import {
-  getCompiledEditorSchemaFromApi,
-  getCompiledSchemaPropertyId,
-  reportEditorLifecycleError,
-  toEditorCoreStateView,
-} from '@platejs/plite/internal';
 import type {
   HostCodec,
   HostCodecParseContext,
   HostCodecSerializeContext,
 } from '@platejs/plite-dom';
 import { parseDOMClipboardHtml } from '@platejs/plite-dom/internal';
+import {
+  getCompiledEditorSchemaFromApi,
+  getCompiledSchemaPropertyId,
+  reportEditorLifecycleError,
+  toEditorCoreStateView,
+} from '@platejs/plite/internal';
 import isEqual from 'lodash/isEqual.js';
 
+import {
+  getCompiledPlateModel,
+  getCompiledPlatePlugin,
+  getCompiledPlatePluginList,
+  hasCompiledPlatePluginCandidate,
+  type CompiledPlateModel,
+  type CompiledPlateModelBinding,
+} from '../../../internal/plugin/compilePlateModel';
+import { getPluginStore } from '../../../internal/plugin/pluginStore';
+import {
+  getHtmlCodecSchemaFamilies,
+  getPluginDescriptorMetadata,
+  getPluginSchemaFamily,
+} from '../../../internal/utils/mergePlugins';
 import type { BaseEditor } from '../../editor';
 import type {
   AnyBasePlugin,
@@ -44,20 +58,6 @@ import type {
 import { defineBasePlugin } from '../../plugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
-import {
-  getCompiledPlateModel,
-  getCompiledPlatePlugin,
-  getCompiledPlatePluginList,
-  hasCompiledPlatePluginCandidate,
-  type CompiledPlateModel,
-  type CompiledPlateModelBinding,
-} from '../../../internal/plugin/compilePlateModel';
-import { getPluginStore } from '../../../internal/plugin/pluginStore';
-import {
-  getHtmlCodecSchemaFamilies,
-  getPluginDescriptorMetadata,
-  getPluginSchemaFamily,
-} from '../../../internal/utils/mergePlugins';
 
 type HtmlRuleDeclaration = Readonly<{
   createsElement?: true;
@@ -1248,9 +1248,9 @@ const matcherConstraintsOverlap = (left: unknown, right: unknown): boolean => {
   if (left === true || right === true) return true;
   if (left === '*' || right === '*') return true;
 
-  return (left as readonly string[]).some((value) =>
-    (right as readonly string[]).includes(value)
-  );
+  const rightSet = new Set(right as readonly string[]);
+
+  return (left as readonly string[]).some((value) => rightSet.has(value));
 };
 
 const matchersOverlap = (left: HtmlMatcher, right: HtmlMatcher) => {
@@ -1469,12 +1469,12 @@ const invokeDecode = <T>(
     return result === undefined ? undefined : normalize(result);
   } catch (cause) {
     reportDecodeError(editor, rule, element, cause);
-
-    return;
   }
 };
 
-class ReportedHtmlEncodeError extends Error {}
+class ReportedHtmlEncodeError extends Error {
+  override name = 'ReportedHtmlEncodeError';
+}
 
 const encodeWithRule = <T>(
   editor: BaseEditor,

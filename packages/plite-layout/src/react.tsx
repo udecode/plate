@@ -1,3 +1,11 @@
+import type { Editor, EditorCommit, Path, Value } from '@platejs/plite';
+import {
+  defaultScrollSelectionIntoView,
+  Editable,
+  type EditableProps,
+  useEditorState,
+  useElementPath,
+} from '@platejs/plite-react';
 import {
   createContext,
   type ReactNode,
@@ -9,14 +17,6 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { flushSync } from 'react-dom';
-import type { Editor, EditorCommit, Path, Value } from '@platejs/plite';
-import {
-  defaultScrollSelectionIntoView,
-  Editable,
-  type EditableProps,
-  useEditorState,
-  useElementPath,
-} from '@platejs/plite-react';
 
 import {
   createPliteLayout,
@@ -38,13 +38,13 @@ import {
   type PlitePageSettingsSource,
 } from './index';
 import {
-  createPagedEditablePageMountPlan,
-  getPagedEditableVisiblePageMountItems,
-} from './page-mount-plan';
-import {
   connectLayoutRuntime,
   deferLayoutRuntimeConnection,
 } from './layout-runtime-lifecycle';
+import {
+  createPagedEditablePageMountPlan,
+  getPagedEditableVisiblePageMountItems,
+} from './page-mount-plan';
 
 type PliteLayoutFragmentContextValue = {
   layout: PlitePageLayout;

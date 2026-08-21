@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import { useYjsRemoteCursorOverlayPositions } from '@platejs/yjs/react';
 import { useEditor, useEditorScrollElement } from 'platejs/react';
+import * as React from 'react';
 
 type CursorData = {
   color?: unknown;
@@ -149,7 +148,7 @@ export function RemoteCursorOverlay() {
               }}
             >
               <span
-                className="absolute top-0 left-0 -translate-y-full whitespace-nowrap rounded-t-sm rounded-br-sm px-1.5 py-0.5 text-white text-xs"
+                className="absolute top-0 left-0 -translate-y-full rounded-t-sm rounded-br-sm px-1.5 py-0.5 text-xs whitespace-nowrap text-white"
                 data-remote-cursor-label=""
                 style={{ backgroundColor: color }}
               >

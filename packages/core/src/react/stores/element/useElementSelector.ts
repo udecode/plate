@@ -1,11 +1,11 @@
-import React from 'react';
 import type { Element, NodeEntry } from '@platejs/plite';
+import React from 'react';
 
-import { useElementStoreContext } from './useElementStore';
 import type {
   PlateElementDescriptor,
   PlateElementForDescriptor,
 } from './useElement';
+import { useElementStoreContext } from './useElementStore';
 
 type UseElementSelectorOptions<T> = {
   equalityFn?: (a: T, b: T) => boolean;

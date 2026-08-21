@@ -1,5 +1,5 @@
-import { act, render, renderHook } from '@testing-library/react';
 import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
+import { act, render, renderHook } from '@testing-library/react';
 
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import {

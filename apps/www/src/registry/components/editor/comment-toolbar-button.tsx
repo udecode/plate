@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import { MessageSquareTextIcon } from 'lucide-react';
 import { useEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { commentPlugin } from '@/registry/components/editor/comment';
 

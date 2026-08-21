@@ -1,5 +1,6 @@
-import { useCallback, useContext } from 'react';
 import type { EditorCommit, Path } from '@platejs/plite';
+import { useCallback, useContext } from 'react';
+
 import { ElementPathContext, NodeKeyContext } from '../context';
 import { readPathByNodeKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';

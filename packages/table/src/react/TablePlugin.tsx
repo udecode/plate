@@ -1,6 +1,6 @@
 import { DebugPlugin, Hotkeys } from '@platejs/core';
 import { type PlateEditor, toPlatePlugin } from '@platejs/core/react';
-import { createEditorView, PathApi, type NodeKey } from '@platejs/plite';
+import { PathApi, type NodeKey } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
 
 import {
@@ -132,9 +132,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       const at = editor.api.dom.resolveEventRange(event);
       const target = at
-        ? createEditorView(editor, {
-            ...(at.anchor.root === undefined ? {} : { root: at.anchor.root }),
-          }).read((state) =>
+        ? editor.read((state) =>
             readTableSelection(state, {
               at,
               cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],

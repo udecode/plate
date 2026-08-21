@@ -5,6 +5,7 @@ import type {
   Path,
   Span,
 } from '@platejs/plite';
+
 import type {
   TableCellBorder,
   TableCellElement,

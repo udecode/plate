@@ -30,7 +30,7 @@ const readPackageJson = (packageName: string) =>
         `../../${publicPackageDirectories[packageName]}/package.json`,
         import.meta.url
       ),
-      'utf8'
+      'utf-8'
     )
   ) as { exports?: Record<string, unknown> };
 

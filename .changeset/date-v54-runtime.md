@@ -1,5 +1,5 @@
 ---
-"@platejs/date": major
+'@platejs/date': major
 ---
 
 Require React and React DOM 19.2 or newer.
@@ -9,10 +9,6 @@ Require React and React DOM 19.2 or newer.
 - Persist one required `value` string for canonical dates or authored date text
 - Remove the standalone `insertDate` and unused `isPointNextToNode` helpers
 
-**Migration:** Replace `insertDate(editor, options)` with
-`editor.update.date.insert(input?, nodeOptions?)` or
-`editor.plugin(BaseDatePlugin).update.insert(input?, nodeOptions?)`. Use Plite point and
-node reads directly for custom adjacency checks.
+**Migration:** Replace `insertDate(editor, options)` with `editor.update.date.insert(input?, nodeOptions?)` or `editor.plugin(BaseDatePlugin).update.insert(input?, nodeOptions?)`. Use Plite point and node reads directly for custom adjacency checks.
 
-Replace Date node `date` / `rawDate` properties with `value` and pass
-`{ value }` to the insert update.
+Replace Date node `date` / `rawDate` properties with `value` and pass `{ value }` to the insert update.

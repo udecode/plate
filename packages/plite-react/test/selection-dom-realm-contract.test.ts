@@ -61,9 +61,8 @@ afterEach(() => {
 });
 
 test('selectionchange listener ignores input targets from the target document realm', async () => {
-  const { attachEditableSelectionChangeListener } = await import(
-    '../src/editable/selection-reconciler'
-  );
+  const { attachEditableSelectionChangeListener } =
+    await import('../src/editable/selection-reconciler');
   const { frame, frameDocument, frameWindow } = createFrameDocument();
   const input = frameDocument.createElement('input');
   const scheduleOnDOMSelectionChange = vi.fn();
@@ -95,9 +94,8 @@ test('selectionchange listener ignores input targets from the target document re
 }, 15_000);
 
 test('selectionchange listener skips repair-induced model-owned history imports', async () => {
-  const { attachEditableSelectionChangeListener } = await import(
-    '../src/editable/selection-reconciler'
-  );
+  const { attachEditableSelectionChangeListener } =
+    await import('../src/editable/selection-reconciler');
   const { frame, frameDocument, frameWindow } = createFrameDocument();
   const scheduleOnDOMSelectionChange = vi.fn();
   const state = createInputController().state;

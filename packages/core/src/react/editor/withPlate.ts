@@ -1,16 +1,6 @@
 import { createEditor, type Editor, type Value } from '@platejs/plite';
 
-import type { Shortcuts } from '../plugin';
-import type {
-  InferPlateEditorPlugins,
-  InferPlateEditorSchemaPlugins,
-  InternalPlateEditorMutationProvider,
-  InternalPlateEditorWithInstalledPlugins,
-  PlateEditor,
-} from './PlateEditor';
 import type { GeneratedEditorValue } from '../../internal/editor/generatedEditorTypes';
-import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
-
 import {
   type BaseEditorOptions,
   type BasePluginInput,
@@ -19,11 +9,19 @@ import {
   type EditorValueInput,
   createBaseEditor,
 } from '../../lib';
-import type { PlatePluginDefinitionInput } from '../plugin';
+import type { Shortcuts, PlatePluginDefinitionInput } from '../plugin';
+import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 import {
   getPlateCorePlugins,
   type PlateCorePlugin,
 } from './getPlateCorePlugins';
+import type {
+  InferPlateEditorPlugins,
+  InferPlateEditorSchemaPlugins,
+  InternalPlateEditorMutationProvider,
+  InternalPlateEditorWithInstalledPlugins,
+  PlateEditor,
+} from './PlateEditor';
 
 export type { PlateCorePlugin } from './getPlateCorePlugins';
 
@@ -202,8 +200,8 @@ export type CreatePlateEditorOptions<
  * @see {@link usePlateEditor} for a memoized version in React components.
  */
 export function createPlateEditor<
-  const TPlugins extends
-    readonly BasePluginInput[] = readonly PlateCorePlugin[],
+  const TPlugins extends readonly BasePluginInput[] =
+    readonly PlateCorePlugin[],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
   options: CreatePlateEditorOptions<TPlugins, TSchema>

@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "Security report"
+  - name: 'Security report'
     url: https://github.com/udecode/plate/security/advisories/new
     about: Report vulnerabilities privately. Do not disclose unpatched security issues in public issues.
-  - name: "💬 Support: Discussions"
+  - name: '💬 Support: Discussions'
     url: https://github.com/udecode/plate/discussions
     about: Share ideas, ask and answer questions in our Discussions.
-  - name: "💬 Support: Discord"
+  - name: '💬 Support: Discord'
     url: https://discord.gg/mAZRuBzGM3
     about: Feels more chatty? Ask quick questions in our Discord.

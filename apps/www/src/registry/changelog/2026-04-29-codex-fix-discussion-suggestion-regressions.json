@@ -269,7 +269,7 @@
       "migrationNotes": [],
       "targets": ["block-discussion", "discussion-kit", "comment-kit"],
       "source": {
-        "line": 13,
+        "line": 50,
         "row": 1,
         "legacyRelease": {
           "date": "2026-04-29",
@@ -291,7 +291,7 @@
         "suggestion-node"
       ],
       "source": {
-        "line": 15,
+        "line": 52,
         "row": 2,
         "legacyRelease": {
           "date": "2026-04-29",
@@ -321,7 +321,7 @@
         "link-node"
       ],
       "source": {
-        "line": 17,
+        "line": 54,
         "row": 3,
         "legacyRelease": {
           "date": "2026-04-29",

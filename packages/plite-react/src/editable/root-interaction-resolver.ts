@@ -1,4 +1,5 @@
 import type { Range } from '@platejs/plite';
+
 import { MAIN_ROOT_KEY } from '../root-key';
 
 const INTERACTIVE_CHROME_TARGET =

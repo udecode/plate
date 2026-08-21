@@ -1,12 +1,10 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import * as React from 'react';
 
-import type { Metadata } from 'next';
-
-import { notFound } from 'next/navigation';
-
 import { getAllBlocks } from '@/lib/blocks';
-import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { getRegistryComponent } from '@/lib/registry-component';
+import { getRegistryInstallCommand } from '@/lib/registry-install';
 import { getRegistryItem } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 

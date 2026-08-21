@@ -1,13 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  getLastCommit as editorGetLastCommit,
-  getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
-  insertBreak as editorInsertBreak,
-  replace as editorReplace,
-  subscribe as editorSubscribe,
-} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -24,6 +16,14 @@ import {
   type SnapshotIndex,
   type Value,
 } from '@platejs/plite';
+import {
+  getLastCommit as editorGetLastCommit,
+  getNodeKey as editorGetNodeKey,
+  getSnapshot as editorGetSnapshot,
+  insertBreak as editorInsertBreak,
+  replace as editorReplace,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
 
 import { createEditorCommit } from '../src/core/commit';
 
@@ -57,8 +57,8 @@ describe('commit metadata contract', () => {
     const blockNodeKey = before.index.keyAt([0]);
     const textNodeKey = before.index.keyAt([0, 0]);
 
-    assert(blockNodeKey);
-    assert(textNodeKey);
+    assert.ok(blockNodeKey);
+    assert.ok(textNodeKey);
 
     editor.update({ tags: ['history-push', 'paste'] }, (tx) => {
       tx.text.insert('!');
@@ -66,7 +66,7 @@ describe('commit metadata contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(commit.tags, ['history-push', 'paste']);
     assert.deepEqual(commit.selectionBefore, {
       kind: 'text',
@@ -175,7 +175,7 @@ describe('commit metadata contract', () => {
 
     const blockNodeKey = editorGetNodeKey(editor, [0]);
 
-    assert(blockNodeKey);
+    assert.ok(blockNodeKey);
 
     editor.update({ tags: ['paste', 'provenance-local'] }, (tx) => {
       tx.setField(localProvenance, {
@@ -187,7 +187,7 @@ describe('commit metadata contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(commit.tags, ['paste', 'provenance-local']);
     assert.deepEqual(
       editor.read((state) => state.getField(localProvenance)),
@@ -236,7 +236,7 @@ describe('commit metadata contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commits.length, 1);
     assert.equal(commits[0], commit);
     assert.equal(commit.changes.empty, false);
@@ -272,7 +272,7 @@ describe('commit metadata contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(commit.effects, [{ type: effect, value: 'saved' }]);
     assert.equal(commit.changed.has('state'), false);
     assert.equal(commit.changed.has('snapshot'), false);
@@ -286,7 +286,7 @@ describe('commit metadata contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.deepEqual(commit.annotations, { [origin.key]: 'keyboard' });
     assert.equal(commit.changed.has('state'), false);
     assert.equal(commit.changed.has('snapshot'), false);
@@ -307,7 +307,7 @@ describe('commit metadata contract', () => {
       snapshot.index.keyAt([0, 0]),
     ];
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.changed.has('document'), true);
     assert.equal(commit.changed.has('replace'), true);
     assert.equal(commit.changed.has('structure'), true);
@@ -417,18 +417,18 @@ describe('commit metadata contract', () => {
     const tableRowNodeKey = before.index.keyAt([1, 0]);
     const unsubscribe = editorSubscribe(editor, () => {});
 
-    assert(tableNodeKey);
-    assert(tableRowNodeKey);
+    assert.ok(tableNodeKey);
+    assert.ok(tableRowNodeKey);
 
     editorInsertBreak(editor);
     unsubscribe();
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.changed.has('root-order'), true);
-    assert(!commit.changed.nodeKeys('node').includes(tableNodeKey));
-    assert(commit.changed.nodeKeys('path').includes(tableNodeKey));
-    assert(!commit.changed.nodeKeys('node').includes(tableRowNodeKey));
+    assert.ok(!commit.changed.nodeKeys('node').includes(tableNodeKey));
+    assert.ok(commit.changed.nodeKeys('path').includes(tableNodeKey));
+    assert.ok(!commit.changed.nodeKeys('node').includes(tableRowNodeKey));
   });
 });

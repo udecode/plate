@@ -1,12 +1,9 @@
 'use client';
 
-import * as React from 'react';
-
 import emojiMartData, {
   type Emoji,
   type EmojiMartData,
 } from '@emoji-mart/data';
-
 import {
   AGridSection,
   EmojiFloatingIndexSearch,
@@ -33,6 +30,8 @@ import {
   StarIcon,
   XIcon,
 } from 'lucide-react';
+import { useEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -46,8 +45,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useEditor } from 'platejs/react';
-
 import { cn } from '@/lib/utils';
 
 const defaultEmojiData = emojiMartData as unknown as EmojiMartData;
@@ -1009,7 +1006,7 @@ function EmojiPickerContent({
               style={{ width: getRowWidth }}
               data-id={categoryId}
             >
-              <div className="-top-px sticky z-1 bg-popover/90 p-1 py-2 font-semibold text-sm backdrop-blur-xs">
+              <div className="sticky -top-px z-1 bg-popover/90 p-1 py-2 text-sm font-semibold backdrop-blur-xs">
                 {i18n.categories[categoryId]}
               </div>
               <div
@@ -1046,7 +1043,7 @@ function EmojiPickerContent({
   const SearchList = React.useCallback(
     () => (
       <div style={{ width: getRowWidth }} data-id="search">
-        <div className="-top-px sticky z-1 bg-popover/90 p-1 py-2 font-semibold text-card-foreground text-sm backdrop-blur-xs">
+        <div className="sticky -top-px z-1 bg-popover/90 p-1 py-2 text-sm font-semibold text-card-foreground backdrop-blur-xs">
           {i18n.searchResult}
         </div>
         <div className="relative flex flex-wrap">
@@ -1146,12 +1143,12 @@ function EmojiPickerSearchAndClear({
 
 function EmojiPreview({ emoji }: Pick<EmojiPickerState, 'emoji'>) {
   return (
-    <div className="flex h-14 max-h-14 min-h-14 items-center border-muted border-t p-2">
+    <div className="flex h-14 max-h-14 min-h-14 items-center border-t border-muted p-2">
       <div className="flex items-center justify-center text-2xl">
         {emoji?.skins[0].native}
       </div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate font-semibold text-sm">{emoji?.name}</div>
+        <div className="truncate text-sm font-semibold">{emoji?.name}</div>
         <div className="truncate text-sm">{`:${emoji?.id}:`}</div>
       </div>
     </div>
@@ -1160,10 +1157,10 @@ function EmojiPreview({ emoji }: Pick<EmojiPickerState, 'emoji'>) {
 
 function NoEmoji({ i18n }: Pick<EmojiPickerState, 'i18n'>) {
   return (
-    <div className="flex h-14 max-h-14 min-h-14 items-center border-muted border-t p-2">
+    <div className="flex h-14 max-h-14 min-h-14 items-center border-t border-muted p-2">
       <div className="flex items-center justify-center text-2xl">😢</div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate font-bold text-sm">
+        <div className="truncate text-sm font-bold">
           {i18n.searchNoResultsTitle}
         </div>
         <div className="truncate text-sm">{i18n.searchNoResultsSubtitle}</div>
@@ -1174,10 +1171,10 @@ function NoEmoji({ i18n }: Pick<EmojiPickerState, 'i18n'>) {
 
 function PickAnEmoji({ i18n }: Pick<EmojiPickerState, 'i18n'>) {
   return (
-    <div className="flex h-14 max-h-14 min-h-14 items-center border-muted border-t p-2">
+    <div className="flex h-14 max-h-14 min-h-14 items-center border-t border-muted p-2">
       <div className="flex items-center justify-center text-2xl">☝️</div>
       <div className="overflow-hidden pl-2">
-        <div className="truncate font-semibold text-sm">{i18n.pick}</div>
+        <div className="truncate text-sm font-semibold">{i18n.pick}</div>
       </div>
     </div>
   );
@@ -1219,7 +1216,7 @@ function EmojiPickerNavigation({
     <TooltipProvider delayDuration={500}>
       <nav
         id="emoji-nav"
-        className="mb-2.5 border-0 border-b border-b-border border-solid p-1.5"
+        className="mb-2.5 border-0 border-b border-solid border-b-border p-1.5"
       >
         <div className="relative flex items-center justify-evenly">
           {emojiLibrary

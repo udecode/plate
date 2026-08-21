@@ -1,12 +1,11 @@
 import type { RegistryItem } from 'shadcn/schema';
 
-import type { FileTree } from './rehype-utils';
-
 import {
   getCachedDependencies,
   getCachedFileTree,
   getCachedRegistryItem,
 } from './registry-cache';
+import type { FileTree } from './rehype-utils';
 
 export type PlaygroundPreviewData = {
   dependencies: string[];

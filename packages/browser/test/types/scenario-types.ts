@@ -1,4 +1,12 @@
 import type {
+  EditableCommand,
+  EditableCommandDefinition,
+  EditableEventFrame,
+  EditableKernelTraceEntry,
+} from '../../../plite-react/src/editable/editing-kernel';
+import type { EditableRepairRequest } from '../../../plite-react/src/editable/mutation-controller';
+import type { PliteBrowserReleaseProofArtifact } from '../../src/core';
+import type {
   PliteBrowserKernelCommand,
   PliteBrowserKernelCommandDefinition,
   PliteBrowserKernelEventFrame,
@@ -8,33 +16,24 @@ import type {
   PliteBrowserScenarioStep,
   PliteBrowserSelectionContractExpectation,
   RenderedDOMShapeExpectation,
+  PliteBrowserImperativeScenarioResult,
 } from '../../src/playwright';
-import type { PliteBrowserImperativeScenarioResult } from '../../src/playwright';
-import type { PliteBrowserReleaseProofArtifact } from '../../src/core';
-import type {
-  EditableCommand,
-  EditableCommandDefinition,
-  EditableEventFrame,
-  EditableKernelTraceEntry,
-} from '../../../plite-react/src/editable/editing-kernel';
-import type { EditableRepairRequest } from '../../../plite-react/src/editable/mutation-controller';
 
 type Equal<Left, Right> =
-  (<Value>() => Value extends Left ? 1 : 2) extends <Value>() =>
-    Value extends Right ? 1 : 2
+  (<Value>() => Value extends Left ? 1 : 2) extends <
+    Value,
+  >() => Value extends Right ? 1 : 2
     ? true
     : false;
 type Expect<T extends true> = T;
-type SerializableEditableCommand<TCommand> =
-  TCommand extends { kind: 'insert-data' }
-    ? { data?: unknown; kind: 'insert-data' }
-    : TCommand;
+type SerializableEditableCommand<TCommand> = TCommand extends {
+  kind: 'insert-data';
+}
+  ? { data?: unknown; kind: 'insert-data' }
+  : TCommand;
 
 type KernelCommandParity = Expect<
-  Equal<
-    PliteBrowserKernelCommand,
-    SerializableEditableCommand<EditableCommand>
-  >
+  Equal<PliteBrowserKernelCommand, SerializableEditableCommand<EditableCommand>>
 >;
 type KernelCommandDefinitionParity = Expect<
   Equal<PliteBrowserKernelCommandDefinition, EditableCommandDefinition>

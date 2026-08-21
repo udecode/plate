@@ -240,8 +240,8 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
       notFound();
     }
 
-    const [tree, highlightedFiles, componentExamples] = await Promise.all([
-      getCachedFileTree(item.files),
+    const tree = getCachedFileTree(item.files);
+    const [highlightedFiles, componentExamples] = await Promise.all([
       getCachedHighlightedFiles(item.files as any),
       file.meta?.examples
         ? Promise.all(
@@ -393,7 +393,9 @@ function getRegistryDocs({
         index === self.findIndex((d) => d.route === doc.route)
     );
 
-  const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce(
+  const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce<
+    Record<string, typeof relatedDocs>
+  >(
     (acc, doc) => {
       if (!doc.route) return acc;
 
@@ -425,10 +427,7 @@ function getRegistryDocs({
 
       return acc;
     },
-    { components: [], docs: [], external: [] } as Record<
-      string,
-      typeof relatedDocs
-    >
+    { components: [], docs: [], external: [] }
   );
 
   const sortDocs = (docs: typeof relatedDocs) =>
@@ -459,11 +458,9 @@ async function getExampleCode(name?: string) {
   let dependencies: string[] = [];
 
   if (item?.files) {
-    [tree, highlightedFiles, dependencies] = await Promise.all([
-      getCachedFileTree(item.files),
-      getCachedHighlightedFiles(item.files),
-      getCachedDependencies(name),
-    ]);
+    tree = getCachedFileTree(item.files);
+    dependencies = getCachedDependencies(name);
+    highlightedFiles = await getCachedHighlightedFiles(item.files);
   }
 
   return {

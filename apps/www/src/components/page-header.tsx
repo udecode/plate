@@ -17,6 +17,7 @@ function PageHeader({
 }
 
 function PageHeaderHeading({
+  children,
   className,
   ...props
 }: React.ComponentProps<'h1'>) {
@@ -27,7 +28,9 @@ function PageHeaderHeading({
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h1>
   );
 }
 

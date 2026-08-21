@@ -1,10 +1,9 @@
-import React from 'react';
-
+/* oxlint-disable react/no-danger -- This sink receives trusted generated, sanitized, encoded, or editor-marker content from its adjacent owner; removing the sink breaks rendering. */
 import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import React from 'react';
 
 import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';

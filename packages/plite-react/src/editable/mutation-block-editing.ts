@@ -8,6 +8,7 @@ import {
   RangeApi,
   type RootKey,
 } from '@platejs/plite';
+
 import {
   type Editor as RuntimeEditor,
   dispatchCommand,

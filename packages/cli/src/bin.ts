@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { relative } from 'node:path';
 
 import { Command } from 'commander';

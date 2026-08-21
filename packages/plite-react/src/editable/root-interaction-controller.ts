@@ -1,11 +1,4 @@
 import {
-  type MouseEvent,
-  type MouseEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
-import {
   PathApi,
   type Point,
   PointApi,
@@ -16,6 +9,19 @@ import {
   SelectionApi,
   TextApi,
 } from '@platejs/plite';
+import type {
+  DOMPhase,
+  DOMPhaseScheduler,
+  DOMPhaseTiming,
+} from '@platejs/plite-dom/internal';
+import {
+  type MouseEvent,
+  type MouseEventHandler,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   type focusPliteEditable,
@@ -42,11 +48,6 @@ import {
   mouseEventTargetToElement,
 } from './content-root-owner-target';
 import { getDragAutoScrollTarget } from './drag-auto-scroll-target';
-import type {
-  DOMPhase,
-  DOMPhaseScheduler,
-  DOMPhaseTiming,
-} from '@platejs/plite-dom/internal';
 import {
   findMountedEditableDOMRuntime,
   getMountedEditableDOMRuntime,
@@ -55,11 +56,13 @@ import {
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
 import { writeCollapsedModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
-  dispatchCommand,
-  editorCommands,
-  failInvariant,
-  toInternalRoot,
-} from './runtime-editor-api';
+  getEditableRootPliteStringCoordinatePlacement,
+  getPliteStringDocumentOffset,
+  getPliteStringEdgeOffset,
+  getPliteStringPlacementDOMPoint,
+  type PliteStringCoordinatePlacement,
+  type PliteStringPlacementDOMPoint,
+} from './plite-string-coordinate-placement';
 import {
   getExpandedDOMSelectionInTarget,
   hasExpandedDOMSelectionInTarget,
@@ -68,9 +71,6 @@ import {
   restoreDOMSelectionInTarget,
   shouldReplayMouseUpDOMSelection,
 } from './root-interaction-dom-selection-replay';
-
-export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
-
 import {
   isRootInteractionEditableFocused,
   type RootInteractionFocusSelection,
@@ -82,13 +82,13 @@ import {
   resolveRootInteractionTarget,
 } from './root-interaction-resolver';
 import {
-  getEditableRootPliteStringCoordinatePlacement,
-  getPliteStringDocumentOffset,
-  getPliteStringEdgeOffset,
-  getPliteStringPlacementDOMPoint,
-  type PliteStringCoordinatePlacement,
-  type PliteStringPlacementDOMPoint,
-} from './plite-string-coordinate-placement';
+  dispatchCommand,
+  editorCommands,
+  failInvariant,
+  toInternalRoot,
+} from './runtime-editor-api';
+
+export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
 type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
@@ -100,10 +100,9 @@ export type RootInteractionEditor = ReactRuntimeEditor &
   PliteFocusableEditor & {
     api: ReactRuntimeEditor['api'] &
       PliteFocusableEditor['api'] & {
-        dom: ReactRuntimeEditor['api']['dom'] &
-          PliteFocusableEditor['api']['dom'] & {
-            resolveEventRange: (event: Event) => Range | null;
-          };
+        dom: ReactRuntimeEditor['api']['dom'] & {
+          resolveEventRange: (event: Event) => Range | null;
+        };
       };
   };
 
@@ -1086,9 +1085,9 @@ export const useRootInteractionController = ({
   selection,
   selectionBridge,
 }: RootInteractionControllerOptions): RootInteractionController => {
-  const pendingInteractionRef = useRef<PendingRootInteraction>(
-    ignoreInteraction()
-  );
+  const [pendingInteractionRef] = useState(() => ({
+    current: ignoreInteraction(),
+  }));
   const interactionEpochRef = useRef(0);
   const pendingDragAutoScrollRef = useRef<PendingDragAutoScroll | null>(null);
   useEffect(
@@ -1316,9 +1315,9 @@ export const useRootInteractionController = ({
           target.kind === 'native-editable' &&
           Boolean(
             target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) ??
-              target.target.closest(
-                '[data-plite-inline="true"][data-plite-node="element"]'
-              )
+            target.target.closest(
+              '[data-plite-inline="true"][data-plite-node="element"]'
+            )
           );
         const nativeEditableMultiClick =
           nativeEditableTextTarget && event.detail > 1;
@@ -1564,6 +1563,7 @@ export const useRootInteractionController = ({
       editor,
       getMountedViewEditor,
       ignoreBlankEditableRootClicks,
+      pendingInteractionRef,
       root,
       scheduleInteractionFrame,
       selection,
@@ -1665,7 +1665,15 @@ export const useRootInteractionController = ({
         stopDragAutoScroll(pendingDragAutoScrollRef);
       }
     },
-    [disabled, editor, getMountedViewEditor, root, rootRuntime, selectionBridge]
+    [
+      disabled,
+      editor,
+      getMountedViewEditor,
+      pendingInteractionRef,
+      root,
+      rootRuntime,
+      selectionBridge,
+    ]
   );
 
   const onMouseUpCapture = useCallback<MouseEventHandler<HTMLElement>>(
@@ -1895,6 +1903,7 @@ export const useRootInteractionController = ({
       disabled,
       editor,
       getMountedViewEditor,
+      pendingInteractionRef,
       root,
       scheduleInteractionFrame,
       selection,

@@ -376,7 +376,7 @@ Work Checklist:
       package review; unchanged later-version packages receive every missing
       doctrine version's `migrationChecks`.
 - [ ] For package review or sync mode, the package ledger is patched only after
-      focused proof and P2 autoreview; final plan closure runs only after package
+      focused proof and P1 autoreview; final plan closure runs only after package
       registry status is `current`.
 - [ ] If a reusable Plate Next rule changes during the run, doctrine version is
       bumped, immutable migration checks are appended, generated skill is
@@ -463,7 +463,7 @@ Completion Gates:
 | Source audit | pending | Run exact audit for removed compatibility names or record N/A | pending |
 | Rename ledger | pending | Update `docs/plans/pre-renaming.md` when a rename is postponed or intentionally kept | pending |
 | Extracted-file inventory | pending | Record untracked/extracted file command, row count, and bucket for every file in scope | pending |
-| P2 autoreview / review | pending | Run autoreview with `--max-priority P2` for non-trivial implementation diffs; P3 is opt-in only, or record N/A | pending |
+| P1 autoreview / review | pending | Run autoreview with `--max-priority P1` for non-trivial implementation diffs; P2/P3 are opt-in only, or record N/A | pending |
 | Final lint/check | pending | Run scoped lint/check or record N/A | pending |
 | Changed list / top drift / needs attention | pending | Fill handoff ledgers | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |

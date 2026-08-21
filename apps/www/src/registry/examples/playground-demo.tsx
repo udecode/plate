@@ -1,18 +1,17 @@
 'use client';
 
-import * as React from 'react';
-
 import { IndentPlugin } from '@platejs/indent/react';
 import { ListPlugin } from '@platejs/list/react';
 import { NormalizeTypesPlugin } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
-import { EditorKit } from '@/registry/components/editor/plugins';
 import { CodeDrawingKit } from '@/registry/components/editor/code-drawing';
-import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
+import { EditorKit } from '@/registry/components/editor/plugins';
 
 export default function PlaygroundDemo({
   id,

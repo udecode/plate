@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
 import {
   type Descendant,
   type EditorNodeChangeContext,
@@ -9,8 +8,7 @@ import {
   schema,
   target,
 } from '@platejs/plite';
-
-jsxt;
+import { jsxt } from '@platejs/test-utils';
 
 import { type BaseEditor, createBaseEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
@@ -18,6 +16,8 @@ import {
   createPlateChangeHandlersExtension,
   subscribePlateChangeCallbacks,
 } from './plateChangeHandlers';
+
+jsxt;
 
 const textNode: Descendant = { text: 'node' };
 const createNodeChange = (

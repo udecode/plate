@@ -1,4 +1,5 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
+
 import type { detect } from '@antfu/ni';
 
 const detectMock = mock<typeof detect>();

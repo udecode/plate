@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
-import { randomUUID } from 'node:crypto';
 
 export const writeBenchmarkArtifact = (filePath: string, contents: string) => {
   const directory = dirname(filePath);

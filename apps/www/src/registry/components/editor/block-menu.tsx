@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
@@ -14,6 +13,8 @@ import {
   useEditorReadOnly,
   usePluginStore,
 } from 'platejs/react';
+import * as React from 'react';
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -25,6 +26,7 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { applyBlockAction } from '@/registry/components/editor/transforms';
+
 import { BlockSelectionKit } from './block-selection';
 
 type Value = 'askAI' | null;

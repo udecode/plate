@@ -6,6 +6,7 @@ import {
   nanoid,
   type TextWith,
 } from '@platejs/core';
+import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import {
   ContentSlice,
   type Descendant,
@@ -35,7 +36,6 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
-import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import isEqual from 'lodash/isEqual.js';
 
 /** Tag applied when an update must bypass suggestion tracking. */
@@ -409,9 +409,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       const key = (id = '0'): `suggestion_${string}` =>
         `${suggestionKey}_${id}`;
       const keyId = (node: InlineSuggestionProperties) =>
-        Object.keys(node)
-          .filter((nodeKey) => nodeKey.startsWith(`${suggestionKey}_`))
-          .at(-1);
+        Object.keys(node).findLast((nodeKey) =>
+          nodeKey.startsWith(`${suggestionKey}_`)
+        );
       const keys = (node: Node) =>
         Object.keys(node).filter((nodeKey) =>
           nodeKey.startsWith(`${suggestionKey}_`)
@@ -1402,7 +1402,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
                 return Boolean(
                   suggestion?.type === 'insert' &&
-                    suggestion.id === description.suggestionId
+                  suggestion.id === description.suggestionId
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
@@ -1447,7 +1447,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
                 return Boolean(
                   suggestion?.type === 'remove' &&
-                    suggestion.id === description.suggestionId
+                  suggestion.id === description.suggestionId
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
@@ -1564,7 +1564,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
               return Boolean(
                 suggestion?.type === 'insert' &&
-                  suggestion.id === description.suggestionId
+                suggestion.id === description.suggestionId
               );
             },
           });
@@ -1594,7 +1594,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
                 return Boolean(
                   suggestion?.type === 'remove' &&
-                    suggestion.id === description.suggestionId
+                  suggestion.id === description.suggestionId
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
@@ -1617,7 +1617,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
                 return Boolean(
                   suggestion?.type === 'insert' &&
-                    suggestion.id === description.suggestionId
+                  suggestion.id === description.suggestionId
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {

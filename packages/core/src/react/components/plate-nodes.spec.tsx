@@ -1,8 +1,7 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import { render } from '@testing-library/react';
+import React from 'react';
 import { renderToString } from 'react-dom/server';
 
 import { ElementIdPlugin } from '../../lib';

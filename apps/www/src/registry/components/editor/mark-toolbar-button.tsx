@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import type { ScriptValue } from '@platejs/basic-nodes';
 import type {
   BoldPlugin,
@@ -13,8 +11,8 @@ import type {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-
 import { useEditor, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 
 import { ToolbarButton } from './toolbar';
 

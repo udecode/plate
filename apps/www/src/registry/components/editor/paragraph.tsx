@@ -1,10 +1,11 @@
 'use client';
 
+import {
+  type PlateElementProps,
+  type ParagraphPlugin,
+  PlateElement,
+} from 'platejs/react';
 import * as React from 'react';
-
-import type { PlateElementProps } from 'platejs/react';
-
-import { type ParagraphPlugin, PlateElement } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

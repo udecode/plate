@@ -103,7 +103,7 @@ async function main(args) {
         ''
     );
     const workspacePackages = await getWorkspacePackages();
-    const content = await readFile(releaseNotesPath, 'utf8');
+    const content = await readFile(releaseNotesPath, 'utf-8');
     const updatedContent = addPackageChangelogLinks(content, {
       commitRef: process.env.GITHUB_SHA || 'main',
       publishedPackages,
@@ -489,8 +489,8 @@ export function validateAiReleaseNotes(raw, final) {
 
 async function validateAiReleaseNotesFiles(rawPath, finalPath) {
   const [raw, final] = await Promise.all([
-    readFile(rawPath, 'utf8'),
-    readFile(finalPath, 'utf8'),
+    readFile(rawPath, 'utf-8'),
+    readFile(finalPath, 'utf-8'),
   ]);
 
   return validateAiReleaseNotes(raw, final);
@@ -623,7 +623,7 @@ function getGitGlobalReleaseTags() {
   try {
     return execFileSync('git', ['tag', '--list', 'v*'], {
       cwd: repoRoot,
-      encoding: 'utf8',
+      encoding: 'utf-8',
     })
       .split('\n')
       .map((tag) => tag.trim())
@@ -656,7 +656,7 @@ function isBeforeVersion(version, referenceVersion) {
 
 async function readOptionalFile(filePath) {
   try {
-    return await readFile(filePath, 'utf8');
+    return await readFile(filePath, 'utf-8');
   } catch (error) {
     if (error?.code === 'ENOENT') return null;
     throw error;

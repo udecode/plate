@@ -1,6 +1,3 @@
-import * as React from 'react';
-
-import { fireEvent, render, waitFor } from '@testing-library/react';
 import {
   afterAll,
   beforeAll,
@@ -10,6 +7,9 @@ import {
   it,
   mock,
 } from 'bun:test';
+
+import { fireEvent, render, waitFor } from '@testing-library/react';
+import * as React from 'react';
 
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>

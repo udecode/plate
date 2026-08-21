@@ -1,4 +1,14 @@
 import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  defineBasePlugin,
+} from '@platejs/core';
+import { createPluginContext } from '@platejs/core/internal';
+import { ContentSlice, createEditor, schema, type Value } from '@platejs/plite';
+import { writeHostFragmentData } from '@platejs/plite-dom';
+import { PLUGINS } from '@platejs/utils';
+
+import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
@@ -9,15 +19,6 @@ import {
   BaseTextIndentPlugin,
   toUnitLess,
 } from './BaseStylePlugins';
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  defineBasePlugin,
-} from '@platejs/core';
-import { createPluginContext } from '@platejs/core/internal';
-import { ContentSlice, createEditor, schema, type Value } from '@platejs/plite';
-import { writeHostFragmentData } from '@platejs/plite-dom';
-import { PLUGINS } from '@platejs/utils';
 
 describe('BaseFontBackgroundColorPlugin', () => {
   it('parses html background-color styles into leaf marks', () => {

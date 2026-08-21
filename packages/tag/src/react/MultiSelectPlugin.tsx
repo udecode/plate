@@ -1,8 +1,8 @@
 import { toPlatePlugin } from '@platejs/core/react';
 import { editorCommands, ElementApi, PathApi, TextApi } from '@platejs/plite';
-import type { TagElement } from '../lib/BaseTagPlugin';
 
 import { BaseTagPlugin } from '../lib';
+import type { TagElement } from '../lib/BaseTagPlugin';
 
 export const MultiSelectPlugin = toPlatePlugin(
   BaseTagPlugin,
@@ -91,7 +91,6 @@ export const MultiSelectPlugin = toPlatePlugin(
               const nextSelection = selectionAnchor?.release();
 
               if (nextSelection) tx.selection.setRange(nextSelection);
-              return;
             }
           }
         },

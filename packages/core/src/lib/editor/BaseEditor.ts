@@ -1,16 +1,21 @@
 import type { Value } from '@platejs/plite';
 
 import type {
-  AnyBasePluginDefinition,
-  PluginReference,
-} from '../plugin/PluginDefinition';
-import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
+  GeneratedEditorMutations,
+  GeneratedEditorValue,
+} from '../../internal/editor/generatedEditorTypes';
 import type {
   AnyBasePlugin,
   AnyPluginBase,
   BasePluginPortal,
   DynamicBasePluginPortal,
 } from '../plugin/BasePlugin';
+import type {
+  AnyBasePluginDefinition,
+  PluginReference,
+} from '../plugin/PluginDefinition';
+import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
+import type { CorePlugins } from '../plugins/getCorePlugins';
 import type {
   BasePluginInput,
   InternalPliteEditorWithInstalledPlateDefinitions,
@@ -20,11 +25,6 @@ import type {
   InternalInstalledSchemaMutationProvider,
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
-import type {
-  GeneratedEditorMutations,
-  GeneratedEditorValue,
-} from '../../internal/editor/generatedEditorTypes';
-import type { CorePlugins } from '../plugins/getCorePlugins';
 
 export type {
   BasePluginInput,
@@ -79,7 +79,11 @@ export type InternalBaseEditorMutationProvider<
   ? InternalInstalledSchemaMutationProvider<TRuntime, TSchema>
   : InternalEditorMutationProvider<GeneratedEditorMutations<TPlugins>>;
 
-/** @internal Base runtime projected from one authored plugin definition. */
+/**
+ * Base runtime projected from one authored plugin definition.
+ *
+ * @internal
+ */
 export type InternalBaseEditorWithPlatePlugins<
   V extends Value,
   P extends AnyBasePluginDefinition,
@@ -103,7 +107,11 @@ export type BaseEditor<TPlugins = never, TSchema = undefined> = [
       >
     : never;
 
-/** @internal Editor whose plugin definition union is already lowered. */
+/**
+ * Editor whose plugin definition union is already lowered.
+ *
+ * @internal
+ */
 export type InternalBaseEditorWithInstalledPlugins<
   V extends Value,
   D,

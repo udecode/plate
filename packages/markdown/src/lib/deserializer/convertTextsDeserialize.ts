@@ -2,7 +2,6 @@ import type { Descendant } from '@platejs/plite';
 
 import type { MdDelete, MdEmphasis, MdStrong } from '../mdast';
 import type { DeserializeMdContext, MdDecoration } from '../types';
-
 import { mdastToRule } from '../types';
 import { buildSlateNode } from './convertNodesDeserialize';
 

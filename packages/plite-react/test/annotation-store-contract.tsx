@@ -1,11 +1,12 @@
-import { act, render } from '@testing-library/react';
-import { startTransition, Suspense, useLayoutEffect } from 'react';
 import { createEditor, type Editor, type Range } from '@platejs/plite';
 import {
   getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { act, render } from '@testing-library/react';
+import { startTransition, Suspense, useLayoutEffect } from 'react';
+
 import {
   createReactEditor,
   Plite,

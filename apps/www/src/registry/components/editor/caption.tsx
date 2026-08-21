@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { cva } from 'class-variance-authority';
 import {
   NodeApi,
@@ -12,6 +10,7 @@ import {
   type RenderElementProps,
 } from 'platejs';
 import { useEditor, useEditorSelector, useElement } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

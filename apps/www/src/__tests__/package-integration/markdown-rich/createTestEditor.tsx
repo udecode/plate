@@ -7,22 +7,20 @@ import {
   BaseScriptPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
-} from '@platejs/basic-nodes';
-import {
   BaseBlockquotePlugin,
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
 } from '@platejs/basic-nodes';
 import {
-  BaseCodeBlockPlugin,
-  BaseCodeHighlightPlugin,
-  BaseCodeLinePlugin,
-} from '@platejs/code-block';
-import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
 } from '@platejs/basic-styles';
 import { BaseCalloutPlugin } from '@platejs/callout';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeHighlightPlugin,
+  BaseCodeLinePlugin,
+} from '@platejs/code-block';
 import { BaseDatePlugin } from '@platejs/date';
 import {
   BaseFootnoteDefinitionPlugin,

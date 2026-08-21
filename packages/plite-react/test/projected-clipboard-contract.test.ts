@@ -1,4 +1,3 @@
-import type { ClipboardEvent } from 'react';
 import {
   createEditor,
   createEditorView,
@@ -8,7 +7,6 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
-import { getEditorRuntimeOwner } from '@platejs/plite/internal';
 import { hostCodecs } from '@platejs/plite-dom';
 import {
   EDITOR_TO_ELEMENT,
@@ -17,6 +15,8 @@ import {
   NODE_TO_ELEMENT,
   setDOMClipboardFormatKey,
 } from '@platejs/plite-dom/internal';
+import { getEditorRuntimeOwner } from '@platejs/plite/internal';
+import type { ClipboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { applyEditableCut } from '../src/editable/clipboard-input-strategy';

@@ -1,9 +1,10 @@
 /** @jsx jsxt */
 
+import { describe, expect, it } from 'bun:test';
+
 import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
-import { describe, expect, it } from 'bun:test';
 import {
   PLUGINS,
   type BaseEditor,
@@ -382,37 +383,36 @@ describe('buildBlockDiscussionIndex', () => {
       name: 'inline equation',
       plugins: [InlineEquationPlugin],
     },
-  ])('keeps one remove suggestion when continuing backward deletion across $name', ({
-    createValue,
-    expectedText,
-    plugins,
-  }) => {
-    const input = createValue() as TestEditorFixture;
+  ])(
+    'keeps one remove suggestion when continuing backward deletion across $name',
+    ({ createValue, expectedText, plugins }) => {
+      const input = createValue() as TestEditorFixture;
 
-    const editor = createBaseEditor({
-      plugins: [
-        BaseSuggestionPlugin.configure({
-          initialState: { currentUserId: 'u1' },
-        }),
-        ...plugins,
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { path: [0, 2], offset: 0 },
-        focus: { path: [0, 2], offset: 0 },
-      },
-      initialValue: input.children,
-    });
+      const editor = createBaseEditor({
+        plugins: [
+          BaseSuggestionPlugin.configure({
+            initialState: { currentUserId: 'u1' },
+          }),
+          ...plugins,
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 2], offset: 0 },
+          focus: { path: [0, 2], offset: 0 },
+        },
+        initialValue: input.children,
+      });
 
-    editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
-    editor.update.text.deleteBackward({ unit: 'character' });
-    editor.update.text.deleteBackward({ unit: 'character' });
+      editor.update.text.deleteBackward({ unit: 'character' });
+      editor.update.text.deleteBackward({ unit: 'character' });
 
-    const suggestions = getResolvedSuggestions(editor);
+      const suggestions = getResolvedSuggestions(editor);
 
-    expect(suggestions).toHaveLength(1);
-    expect(suggestions[0]?.type).toBe('remove');
-    expect(suggestions[0]?.text).toBe(expectedText);
-  });
+      expect(suggestions).toHaveLength(1);
+      expect(suggestions[0]?.type).toBe('remove');
+      expect(suggestions[0]?.text).toBe(expectedText);
+    }
+  );
 });

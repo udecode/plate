@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {
   type PlateEditorReference,
   createPlateEditor,
@@ -7,6 +5,7 @@ import {
 import { PlateTest } from '@platejs/core/react/test';
 import type { TextSelection } from '@platejs/plite';
 import { act, render } from '@testing-library/react';
+import React from 'react';
 
 import {
   createVirtualElement,

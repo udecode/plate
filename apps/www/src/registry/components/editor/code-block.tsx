@@ -1,12 +1,12 @@
 'use client';
 
-import * as React from 'react';
 import { BaseCodeBlockPlugin, CodeBlockRules } from '@platejs/code-block';
 import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
   CodeLinePlugin,
 } from '@platejs/code-block/react';
+import { all, createLowlight } from 'lowlight';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
 import { NodeApi } from 'platejs';
 import {
@@ -18,6 +18,8 @@ import {
   useEditorReadOnly,
   useElement,
 } from 'platejs/react';
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -33,7 +35,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { all, createLowlight } from 'lowlight';
 
 type CodeBlockElementProps = PlateElementProps<typeof CodeBlockPlugin> & {
   showLanguageLabel?: boolean;
@@ -159,7 +160,7 @@ export function CodeBlockElement({
         </pre>
 
         <div
-          className="absolute top-1 right-1 z-10 flex select-none gap-0.5"
+          className="absolute top-1 right-1 z-10 flex gap-0.5 select-none"
           contentEditable={false}
         >
           {element.language === 'json' && (
@@ -181,7 +182,7 @@ export function CodeBlockElement({
           <CopyButton
             size="icon"
             variant="ghost"
-            className="size-6 gap-1 text-muted-foreground text-xs"
+            className="size-6 gap-1 text-xs text-muted-foreground"
             value={() => NodeApi.string(element)}
           />
         </div>
@@ -224,7 +225,8 @@ function CodeBlockCombobox({
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 select-none justify-between gap-1 px-2 text-muted-foreground text-xs"
+          className="h-6 justify-between gap-1 px-2 text-xs text-muted-foreground select-none"
+          aria-controls="code-block-language-options"
           aria-expanded={open}
           role="combobox"
         >
@@ -233,6 +235,7 @@ function CodeBlockCombobox({
       </PopoverTrigger>
       <PopoverContent
         className="w-[200px] p-0"
+        id="code-block-language-options"
         onCloseAutoFocus={() => setSearchValue('')}
       >
         <Command shouldFilter={false}>
@@ -285,7 +288,7 @@ function CodeBlockLanguageLabel({ lang }: { lang?: string | null }) {
   if (!label) return null;
 
   return (
-    <span className="flex h-6 select-none items-center px-2 text-muted-foreground text-xs">
+    <span className="flex h-6 items-center px-2 text-xs text-muted-foreground select-none">
       {label}
     </span>
   );
@@ -301,9 +304,13 @@ function CopyButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    setTimeout(() => {
+    if (!hasCopied) return;
+
+    const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [hasCopied]);
 
   return (

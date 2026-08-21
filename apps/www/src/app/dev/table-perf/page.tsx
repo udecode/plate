@@ -1,22 +1,20 @@
 'use client';
 
-import * as React from 'react';
-
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import type {
   TableCellElement,
   TableElement,
   TableRowElement,
 } from '@platejs/table';
+import { TablePlugin } from '@platejs/table/react';
 import type { Value } from 'platejs';
 import { Plate, type PlateEditor, usePlateEditor } from 'platejs/react';
-
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { TablePlugin } from '@platejs/table/react';
+import * as React from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { DndKit } from '@/registry/components/editor/dnd';
-import { TableKit } from '@/registry/components/editor/table';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { TableKit } from '@/registry/components/editor/table';
 
 import type {
   TablePerfBenchmarkName,
@@ -52,24 +50,18 @@ const EMPTY_SNAPSHOT: TablePerfHarnessSnapshot = {
 };
 
 const createTable = (rows: number, cols: number): TableElement => ({
-  children: Array.from(
-    { length: rows },
-    (_, rowIndex): TableRowElement => ({
-      children: Array.from(
-        { length: cols },
-        (_, colIndex): TableCellElement => ({
-          children: [
-            {
-              children: [{ text: `R${rowIndex}C${colIndex}` }],
-              type: 'paragraph',
-            },
-          ],
-          type: 'tableCell',
-        })
-      ),
-      type: 'tableRow',
-    })
-  ),
+  children: Array.from({ length: rows }, (_, rowIndex): TableRowElement => ({
+    children: Array.from({ length: cols }, (_, colIndex): TableCellElement => ({
+      children: [
+        {
+          children: [{ text: `R${rowIndex}C${colIndex}` }],
+          type: 'paragraph',
+        },
+      ],
+      type: 'tableCell',
+    })),
+    type: 'tableRow',
+  })),
   columnWidths: Array.from({ length: cols }, () => 100),
   type: 'table',
 });
@@ -405,8 +397,8 @@ export default function TablePerfPage() {
 
   return (
     <main className="container mx-auto p-8" data-table-perf-ready="true">
-      <h1 className="mb-2 font-bold text-2xl">Table performance</h1>
-      <p className="mb-4 text-muted-foreground text-sm">
+      <h1 className="mb-2 text-2xl font-bold">Table performance</h1>
+      <p className="mb-4 text-sm text-muted-foreground">
         {config.rows} × {config.cols} table; {selectionSimulation.rows} ×{' '}
         {selectionSimulation.cols} selection
       </p>

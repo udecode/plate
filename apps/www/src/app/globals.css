@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn-prose";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn-prose';
 
 @source "../**/*.{ts,tsx,mdx}";
 
@@ -61,18 +61,18 @@
   --color-highlight: var(--highlight);
 
   --font-heading:
-    "var(--font-heading)", "ui-sans-serif", "-apple-system",
-    "BlinkMacSystemFont", "Segoe UI Variable Display", "Segoe UI", "Helvetica",
-    "Apple Color Emoji", "Arial", "sans-serif", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+    'var(--font-heading)', 'ui-sans-serif', '-apple-system',
+    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
+    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono:
-    "var(--font-mono)", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+    'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
   --font-sans:
-    "var(--font-sans)", "ui-sans-serif", "-apple-system",
-    "BlinkMacSystemFont", "Segoe UI Variable Display", "Segoe UI", "Helvetica",
-    "Apple Color Emoji", "Arial", "sans-serif", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+    'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont',
+    'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji',
+    'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
 }
 
 :root {
@@ -218,7 +218,7 @@
 }
 
 @utility section-soft {
-  @apply from-background to-surface/40 dark:bg-background 3xl:fixed:bg-none bg-gradient-to-b;
+  @apply bg-gradient-to-b from-background to-surface/40 dark:bg-background 3xl:fixed:bg-none;
 }
 
 @utility theme-container {
@@ -226,7 +226,7 @@
 }
 
 @utility container-wrapper {
-  @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2;
+  @apply mx-auto w-full px-2 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)];
 }
 
 @utility container {
@@ -245,7 +245,7 @@
 }
 
 @utility border-ghost {
-  @apply after:border-border relative after:absolute after:inset-0 after:border after:mix-blend-darken dark:after:mix-blend-lighten;
+  @apply relative after:absolute after:inset-0 after:border after:border-border after:mix-blend-darken dark:after:mix-blend-lighten;
 }
 
 @utility step {
@@ -253,7 +253,7 @@
   @apply relative;
 
   &:before {
-    @apply text-muted-foreground right-0 mr-2 hidden size-7 items-center justify-center rounded-full text-center -indent-px font-mono text-sm font-medium md:absolute;
+    @apply right-0 mr-2 hidden size-7 items-center justify-center rounded-full text-center -indent-px font-mono text-sm font-medium text-muted-foreground md:absolute;
     content: counter(step);
   }
 }
@@ -265,35 +265,35 @@
 }
 
 @layer components {
-  [data-rehype-pretty-code-fragment] > :not(code)[data-theme="light"] {
+  [data-rehype-pretty-code-fragment] > :not(code)[data-theme='light'] {
     display: block;
   }
 
-  [data-rehype-pretty-code-fragment] > :not(code)[data-theme="dark"] {
+  [data-rehype-pretty-code-fragment] > :not(code)[data-theme='dark'] {
     display: none;
   }
 
-  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme="light"] {
+  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme='light'] {
     display: none;
   }
 
-  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme="dark"] {
+  .dark [data-rehype-pretty-code-fragment] > :not(code)[data-theme='dark'] {
     display: block;
   }
 
-  [data-rehype-pretty-code-fragment] > code[data-theme="light"] {
+  [data-rehype-pretty-code-fragment] > code[data-theme='light'] {
     display: inline;
   }
 
-  [data-rehype-pretty-code-fragment] > code[data-theme="dark"] {
+  [data-rehype-pretty-code-fragment] > code[data-theme='dark'] {
     display: none;
   }
 
-  .dark [data-rehype-pretty-code-fragment] > code[data-theme="light"] {
+  .dark [data-rehype-pretty-code-fragment] > code[data-theme='light'] {
     display: none;
   }
 
-  .dark [data-rehype-pretty-code-fragment] > code[data-theme="dark"] {
+  .dark [data-rehype-pretty-code-fragment] > code[data-theme='dark'] {
     display: inline;
   }
 
@@ -310,7 +310,7 @@
     outline: none;
     position: relative;
 
-    & [data-slot="copy-button"] {
+    & [data-slot='copy-button'] {
       top: calc(var(--spacing) * 1.5) !important;
     }
   }
@@ -346,7 +346,7 @@
     position: relative;
     @apply md:-mx-4;
 
-    &:has([data-rehype-pretty-code-title]) [data-slot="copy-button"] {
+    &:has([data-rehype-pretty-code-title]) [data-slot='copy-button'] {
       top: calc(var(--spacing) * 1.5) !important;
     }
   }
@@ -365,24 +365,24 @@
   }
 
   [data-rehype-pretty-code-fragment]
-    > [data-rehype-pretty-code-title][data-theme="light"] {
+    > [data-rehype-pretty-code-title][data-theme='light'] {
     display: flex !important;
   }
 
   [data-rehype-pretty-code-fragment]
-    > [data-rehype-pretty-code-title][data-theme="dark"] {
+    > [data-rehype-pretty-code-title][data-theme='dark'] {
     display: none !important;
   }
 
   .dark
     [data-rehype-pretty-code-fragment]
-    > [data-rehype-pretty-code-title][data-theme="light"] {
+    > [data-rehype-pretty-code-title][data-theme='light'] {
     display: none !important;
   }
 
   .dark
     [data-rehype-pretty-code-fragment]
-    > [data-rehype-pretty-code-title][data-theme="dark"] {
+    > [data-rehype-pretty-code-title][data-theme='dark'] {
     display: flex !important;
   }
 
@@ -441,11 +441,11 @@
     display: inline-block;
   }
 
-  [data-line] span[style*="--shiki-light"] {
+  [data-line] span[style*='--shiki-light'] {
     color: var(--shiki-light);
   }
 
-  [data-line] span[style*="--shiki-dark"] {
+  [data-line] span[style*='--shiki-dark'] {
     @variant dark {
       color: var(--shiki-dark) !important;
     }
@@ -464,7 +464,7 @@
       left: 0;
       width: 2px;
       height: 100%;
-      content: "";
+      content: '';
       background-color: color-mix(
         in oklab,
         var(--muted-foreground) 50%,

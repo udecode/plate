@@ -45,9 +45,7 @@ const readEnvelopeProperties = (
     }
 
     return { format: format.value, identity: identity.value };
-  } catch {
-    return;
-  }
+  } catch {}
 };
 
 const freezeIdentity = (

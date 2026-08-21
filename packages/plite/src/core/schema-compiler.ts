@@ -157,7 +157,11 @@ export type EditorSchemaContributionRecord = Readonly<{
   extensionName: string;
 }>;
 
-/** @internal Exact equality for schema identities, including absent metadata. */
+/**
+ * Exact equality for schema identities, including absent metadata.
+ *
+ * @internal
+ */
 export const areEditorSchemaIdentitiesEqual = (
   left: EditorSchemaIdentity | null,
   right: EditorSchemaIdentity | null
@@ -172,7 +176,11 @@ export const areEditorSchemaIdentitiesEqual = (
         left.id === right.id &&
         left.version === right.version)));
 
-/** @internal Strict decoder for persisted editor schema identities. */
+/**
+ * Strict decoder for persisted editor schema identities.
+ *
+ * @internal
+ */
 export const readEditorSchemaIdentity = (
   value: unknown
 ): EditorSchemaIdentity | undefined => {
@@ -236,9 +244,7 @@ export const readEditorSchemaIdentity = (
       kind: 'named',
       version: version.value,
     });
-  } catch {
-    return;
-  }
+  } catch {}
 };
 
 export type EditorSchemaDiagnostic = Readonly<{
@@ -580,6 +586,7 @@ const immutableCollectionMutation = () => {
 
 const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   const map = new Map(source);
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let immutable!: Map<TKey, TValue>;
 
   immutable = new Proxy(map, {
@@ -608,6 +615,7 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
 
 const freezeSet = <TValue>(source: Iterable<TValue>) => {
   const set = new Set(source);
+  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
   let immutable!: Set<TValue>;
 
   immutable = new Proxy(set, {
@@ -772,7 +780,7 @@ const collectSchemaKeyDiagnostics = (
 
     if (!record) return null;
     const supported = new Set(allowed);
-    const supportedNonEnumerable = new Set(options.nonEnumerable ?? []);
+    const supportedNonEnumerable = new Set(options.nonEnumerable);
 
     for (const key of Reflect.ownKeys(record)) {
       const descriptor = Object.getOwnPropertyDescriptor(record, key);
@@ -1297,7 +1305,11 @@ const canonicalJson = (
 const stableStringify = (value: unknown): string =>
   JSON.stringify(canonicalJson(value));
 
-/** @internal Exact 64-bit FNV-1a over JavaScript UTF-16 code units. */
+/**
+ * Exact 64-bit FNV-1a over JavaScript UTF-16 code units.
+ *
+ * @internal
+ */
 export const hashSchemaIdentityString = (value: string) => {
   let high = 0xcb_f2_9c_e4;
   let low = 0x84_22_23_25;
@@ -2912,7 +2924,11 @@ export const getCompiledSchemaPropertyId = (
   )}`;
 };
 
-/** @internal Preserve one authored property's semantic identity after lowering. */
+/**
+ * Preserve one authored property's semantic identity after lowering.
+ *
+ * @internal
+ */
 export const preserveCompiledSchemaPropertyIdentity = <
   TProperty extends Readonly<{
     key: SchemaPropertyKey;
@@ -4414,12 +4430,16 @@ const haveEquivalentRuntimeValidationBindings = (
 
   return Boolean(
     leftItem &&
-      rightItem &&
-      haveEquivalentRuntimeValidationBindings(leftItem, rightItem)
+    rightItem &&
+    haveEquivalentRuntimeValidationBindings(leftItem, rightItem)
   );
 };
 
-/** @internal Compare only live validators; declaration keys own structure. */
+/**
+ * Compare only live validators; declaration keys own structure.
+ *
+ * @internal
+ */
 export const haveEquivalentEditorSchemaRuntimeValidationBindings = (
   leftRecords: readonly EditorSchemaContributionRecord[],
   rightRecords: readonly EditorSchemaContributionRecord[]
@@ -4434,10 +4454,10 @@ export const haveEquivalentEditorSchemaRuntimeValidationBindings = (
 
       return Boolean(
         candidate &&
-          haveEquivalentRuntimeValidationBindings(
-            property.descriptor,
-            candidate.descriptor
-          )
+        haveEquivalentRuntimeValidationBindings(
+          property.descriptor,
+          candidate.descriptor
+        )
       );
     })
   );
@@ -4508,7 +4528,11 @@ const toStructuralPropertyDescriptor = (
   });
 };
 
-/** @internal Cache only structural schema data, never live validator closures. */
+/**
+ * Cache only structural schema data, never live validator closures.
+ *
+ * @internal
+ */
 export const stripCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema
 ): StructuralCompiledEditorSchema => {
@@ -4533,7 +4557,11 @@ export const stripCompiledEditorSchemaRuntimeValidations = (
   });
 };
 
-/** @internal Bind one reused structural schema to the current configuration. */
+/**
+ * Bind one reused structural schema to the current configuration.
+ *
+ * @internal
+ */
 export const rebindCompiledEditorSchemaRuntimeValidations = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
   records: readonly EditorSchemaContributionRecord[],
@@ -4549,10 +4577,10 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
 
       return Boolean(
         runtime &&
-          haveEquivalentRuntimeValidationBindings(
-            property.descriptor,
-            runtime.descriptor
-          )
+        haveEquivalentRuntimeValidationBindings(
+          property.descriptor,
+          runtime.descriptor
+        )
       );
     })
   ) {

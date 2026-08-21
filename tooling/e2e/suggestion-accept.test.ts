@@ -36,7 +36,7 @@ test('accepts the seeded removal suggestion without crashing', async ({
       editor.getByText('mark text for removal', { exact: true })
     ).toBeVisible();
 
-    await page.getByRole('button', { exact: true, name: '5' }).click();
+    await editor.getByText('mark text for removal', { exact: true }).click();
 
     const dialog = page.getByRole('dialog');
     const deleteLabel = dialog.getByText('Delete:', { exact: true });
@@ -50,15 +50,16 @@ test('accepts the seeded removal suggestion without crashing', async ({
     await expect(deleteCard).toHaveClass(/flex flex-col p-4/);
     await deleteCard.hover();
 
-    const actionButtons = deleteCard.locator('button:not(:disabled)');
-
-    await expect(actionButtons).toHaveCount(2);
-    await actionButtons.first().click();
+    await expect(
+      deleteCard.getByRole('button', { name: 'Accept suggestion' })
+    ).toBeVisible();
+    await deleteCard.getByRole('button', { name: 'Accept suggestion' }).click();
 
     await expect(
       editor.getByText('mark text for removal', { exact: true })
     ).toHaveCount(0);
     await expect(dialog.getByText('Delete:', { exact: true })).toHaveCount(0);
+    await expect(editor).toHaveCount(1);
 
     const heading = editor.locator('[data-plite-string="true"]', {
       hasText: 'Collaborative Editing',
@@ -68,6 +69,27 @@ test('accepts the seeded removal suggestion without crashing', async ({
     await page.keyboard.press('End');
     await page.keyboard.type('!');
     await expect(heading).toHaveText('Collaborative Editing!');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('opens the seeded suggestion list from the count trigger', async ({
+  page,
+}) => {
+  const runtimeErrors = recordRuntimeErrors(page);
+  const editor = page.locator(
+    '[data-plite-editor="true"][contenteditable="true"]'
+  );
+
+  try {
+    await page.goto('/');
+    await expect(editor).toHaveCount(1);
+    await page.getByRole('button', { exact: true, name: '5' }).click();
+    await expect(
+      page.getByRole('dialog').getByText('Delete:', { exact: true })
+    ).toBeVisible();
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

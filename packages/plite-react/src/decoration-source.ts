@@ -5,7 +5,6 @@ import type {
   Value,
 } from '@platejs/plite';
 import { RangeApi } from '@platejs/plite';
-import type { PliteViewSourceStatus } from './view-source';
 
 import {
   createPliteProjectionStore,
@@ -18,6 +17,7 @@ import {
   type PliteProjectionStoreOptions,
   type PliteProjectionStoreRefreshOptions,
 } from './projection-store';
+import type { PliteViewSourceStatus } from './view-source';
 
 export type PliteDecoration<T = unknown> = PliteProjection<T>;
 

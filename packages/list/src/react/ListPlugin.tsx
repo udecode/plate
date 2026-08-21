@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { toPlatePlugin } from '@platejs/core/react';
+import React from 'react';
 
 import { BaseListPlugin, isOrderedList, ListType } from '../lib';
 

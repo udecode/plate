@@ -1,5 +1,21 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+
+import {
+  ContentSlice,
+  createEditor,
+  createEditorView,
+  defineExtension,
+  DocumentChange,
+  editorCommands,
+  type Editor,
+  type EditorCommand,
+  type EditorCommandAroundHandler,
+  type Element,
+  type Range,
+  SelectionApi,
+  type Value,
+} from '@platejs/plite';
 import {
   addMark as editorAddMark,
   deleteBackward as editorDeleteBackward,
@@ -22,21 +38,6 @@ import {
   subscribe as editorSubscribe,
 } from '@platejs/plite/internal';
 
-import {
-  ContentSlice,
-  createEditor,
-  createEditorView,
-  defineExtension,
-  DocumentChange,
-  editorCommands,
-  type Editor,
-  type EditorCommand,
-  type EditorCommandAroundHandler,
-  type Element,
-  type Range,
-  SelectionApi,
-  type Value,
-} from '@platejs/plite';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import {
   createTestDocumentChange,
@@ -191,7 +192,7 @@ describe('plite transaction contract', () => {
     ]);
 
     const targetNodeKey = editorGetNodeKey(editor, [1]);
-    assert(targetNodeKey);
+    assert.ok(targetNodeKey);
 
     const unextend = editor.install(
       defineExtension('atomic-replace-correction-spy', {
@@ -216,7 +217,7 @@ describe('plite transaction contract', () => {
       const targetPath = editorGetPathByNodeKey(editor, targetNodeKey);
 
       assert.deepEqual(targetPath, [1]);
-      assert(targetPath);
+      assert.ok(targetPath);
 
       transaction.nodes.remove({ at: targetPath });
 
@@ -241,8 +242,8 @@ describe('plite transaction contract', () => {
     unextend();
 
     assert.equal(publishedStates.length, 1);
-    assert(normalizedPaths.length > 0);
-    assert(commit);
+    assert.ok(normalizedPaths.length > 0);
+    assert.ok(commit);
     assert.equal(commit.changed.has('structure'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[1, 2]]);
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -262,7 +263,7 @@ describe('plite transaction contract', () => {
     ]);
 
     const discardTargetNodeKey = editorGetNodeKey(discardEditor, [1]);
-    assert(discardTargetNodeKey);
+    assert.ok(discardTargetNodeKey);
 
     const discardBefore = getVisibleState(discardEditor);
     const unsubscribeDiscard = editorSubscribe(discardEditor, () => {
@@ -279,7 +280,7 @@ describe('plite transaction contract', () => {
         );
 
         assert.deepEqual(targetPath, [1]);
-        assert(targetPath);
+        assert.ok(targetPath);
 
         transaction.nodes.replace(
           [paragraph('replacement-a'), paragraph('replacement-b')],
@@ -388,7 +389,7 @@ describe('plite transaction contract', () => {
 
     const replaceCommit = editorGetLastCommit(editor);
 
-    assert(replaceCommit);
+    assert.ok(replaceCommit);
     assert.equal(replaceCommit.changed.has('replace'), true);
     assert.equal(replaceCommit.version, 1);
 
@@ -400,7 +401,7 @@ describe('plite transaction contract', () => {
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.previousVersion, 1);
     assert.equal(commit.version, 2);
     assert.equal(commit.changed.has('text'), true);
@@ -717,7 +718,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertText(editor, '?');
     });
     const commit = editorGetLastCommit(editor);
@@ -730,7 +731,7 @@ describe('plite transaction contract', () => {
       text: '?',
     });
     assert.equal(editorString(editor, [0]), 'one!');
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changed.has('structure'), false);
@@ -758,13 +759,13 @@ describe('plite transaction contract', () => {
       });
     });
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertText(editor, '!');
     });
 
     const commit = editorGetLastCommit(editor);
 
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
@@ -792,7 +793,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertBreak(editor);
     });
     const commit = editorGetLastCommit(editor);
@@ -804,7 +805,7 @@ describe('plite transaction contract', () => {
       paragraph('o'),
       paragraph('ne'),
     ]);
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('structure'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 1]]);
@@ -843,7 +844,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertSoftBreak(editor);
     });
     const commit = editorGetLastCommit(editor);
@@ -852,7 +853,7 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(seenCommands, [undefined]);
     assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('o\nne')]);
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
@@ -906,7 +907,7 @@ describe('plite transaction contract', () => {
       },
     ]);
     assert.equal(editorString(backwardEditor, [0]), 'on');
-    assert(backwardCommit);
+    assert.ok(backwardCommit);
     assert.equal(backwardCommit.changed.has('text'), true);
     assert.equal(backwardCommit.changed.has('structure'), false);
 
@@ -936,7 +937,7 @@ describe('plite transaction contract', () => {
       direction: 'backward',
     });
     assert.equal(editorString(fragmentEditor, [0]), 'ho');
-    assert(fragmentCommit);
+    assert.ok(fragmentCommit);
     assert.equal(fragmentCommit.changed.has('text'), true);
     assert.equal(fragmentCommit.changed.has('structure'), false);
   });
@@ -1003,7 +1004,7 @@ describe('plite transaction contract', () => {
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.tags.includes('semantic-command'), false);
     assert.equal(commit.changed.has('selection'), true);
     assert.equal(commit.changed.has('document'), false);
@@ -1078,7 +1079,7 @@ describe('plite transaction contract', () => {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.tags.includes('semantic-command'), true);
     assert.equal(commit.changed.has('selection'), true);
     assert.equal(commit.changes.empty, true);
@@ -1249,7 +1250,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorAddMark(editor, 'bold', true);
     });
     const addCommit = editorGetLastCommit(editor);
@@ -1261,7 +1262,7 @@ describe('plite transaction contract', () => {
       value: true,
     });
     assert.deepEqual(getMarks(editor), { italic: true });
-    assert(addCommit);
+    assert.ok(addCommit);
     assert.equal(addCommit.changed.has('marks'), true);
     assert.equal(SelectionApi.isText(addCommit.selectionBefore), true);
     assert.equal(SelectionApi.isText(addCommit.selectionAfter), true);
@@ -1285,7 +1286,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorRemoveMark(editor, 'bold');
     });
     const removeCommit = editorGetLastCommit(editor);
@@ -1296,7 +1297,7 @@ describe('plite transaction contract', () => {
       key: 'bold',
     });
     assert.deepEqual(getMarks(editor), {});
-    assert(removeCommit);
+    assert.ok(removeCommit);
     assert.equal(removeCommit.changed.has('marks'), true);
     assert.deepEqual(
       SelectionApi.isText(removeCommit.selectionBefore)
@@ -1342,7 +1343,7 @@ describe('plite transaction contract', () => {
       1
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertText(editor, '!');
     });
     unsubscribe();
@@ -1643,7 +1644,7 @@ describe('plite transaction contract', () => {
       },
     ]);
     assert.equal(editorString(editor, [0]), 'one!');
-    assert(commit);
+    assert.ok(commit);
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.changed.has('structure'), false);
     assert.equal(commit.selectionChanged, true);
@@ -1766,7 +1767,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertText(editor, '!');
     });
 
@@ -1779,7 +1780,7 @@ describe('plite transaction contract', () => {
     unextendCommitListener();
     const extensionCommitCount = extensionCommits.length;
 
-    editor.update((tx) => {
+    editor.update((_tx) => {
       editorInsertText(editor, '?');
     });
 

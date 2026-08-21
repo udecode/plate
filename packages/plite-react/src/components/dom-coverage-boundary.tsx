@@ -1,4 +1,3 @@
-import React, { type ReactNode, useContext } from 'react';
 import type { Range as PliteRange } from '@platejs/plite';
 import type {
   DOMCoverageBoundary,
@@ -10,6 +9,7 @@ import type {
   DOMCoverageSelectionPolicy,
 } from '@platejs/plite-dom/internal';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
+import React, { type ReactNode, useContext } from 'react';
 
 import { ElementPathContext, NodeKeyContext } from '../context';
 import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';

@@ -1,18 +1,15 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import React from 'react';
-
 import { property, schema, target, type Value } from '@platejs/plite';
-
 import { render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
+import React from 'react';
 
-import type { PlatePlugins } from '../plugin';
-import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
-
-import { defineBasePlugin } from '../../lib';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { defineBasePlugin } from '../../lib';
+import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor, usePlateEditor } from '../editor';
+import type { PlatePlugins } from '../plugin';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';
 import { ParagraphPlugin } from '../plugins';
 import {
@@ -22,7 +19,7 @@ import {
   useEditorValue,
   usePlateStore,
 } from '../stores';
-import { TestPlate as Plate } from '../__tests__/TestPlate';
+import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 import { PlateContent } from './PlateContent';
 
 describe('Plate', () => {
@@ -329,7 +326,6 @@ describe('Plate', () => {
                 if (path.length && node.path !== path) {
                   fn();
                   tx.nodes.set({ path }, { at: path });
-                  return;
                 }
               },
             },

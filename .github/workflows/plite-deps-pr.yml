@@ -2,7 +2,7 @@ name: PliteDepsSync
 
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -41,20 +41,12 @@ jobs:
 
       - name: ⬆️ Update Plite manifests
         run: >
-          npx npm-check-updates@latest
-          '/^@platejs\/(plite|plite-dom|plite-react|plite-hyperscript)$/'
-          --configFileName .ncurc.yml
-          --configFilePath tooling/config
-          --mergeConfig
-          --packageManager pnpm
-          --root
-          --upgrade
-          --workspaces
+          npx npm-check-updates@latest '/^@platejs\/(plite|plite-dom|plite-react|plite-hyperscript)$/' --configFileName .ncurc.yml --configFilePath tooling/config --mergeConfig --packageManager pnpm --root --upgrade --workspaces
 
       - name: 📦 Install updated deps
         run: pnpm install --no-frozen-lockfile
         env:
-          HUSKY: "0"
+          HUSKY: '0'
 
       - name: 🔍 Detect Plite update changes
         id: plite-changes

@@ -1,4 +1,5 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '@platejs/plite';
+
 import {
   clonePliteViewBoundaryProjectedPoint,
   createPliteViewBoundaryGraph,
