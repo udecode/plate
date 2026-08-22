@@ -69,7 +69,6 @@
   },
   "dependencies": {
     "@juggle/resize-observer": "^3.4.0",
-    "@platejs/plite-history": "workspace:^",
     "@tanstack/react-virtual": "^3.13.25",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
@@ -78,6 +77,7 @@
     "@plate/scripts": "workspace:*",
     "@platejs/plite": "workspace:^",
     "@platejs/plite-dom": "workspace:^",
+    "@platejs/plite-history": "workspace:^",
     "@platejs/plite-hyperscript": "workspace:^",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",

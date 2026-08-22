@@ -47,7 +47,9 @@ function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
             className={inputVariants()}
             value={url}
             placeholder="Paste the embed link..."
-            onChange={(event) => setUrl(event.target.value)}
+            onChange={(event) => {
+              setUrl(event.target.value);
+            }}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
@@ -104,7 +106,9 @@ function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
           editor.update.nodes.remove({ at: element });
           editor.api.dom.focus();
         }}
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
       >
         <Trash2Icon />
       </Button>
@@ -133,7 +137,9 @@ export function MediaToolbar({
 
       <PopoverContent
         className="w-auto p-1"
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
       >
         {open ? <MediaToolbarContent plugin={plugin} /> : null}
       </PopoverContent>

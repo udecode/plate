@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
@@ -77,10 +76,13 @@ function rewriteInstalledDocsContent(content: string) {
 async function getDocFile(filePath: string) {
   const source = await fs.readFile(filePath, 'utf-8');
   const { data } = matter(source);
+  const description: unknown = data.description;
+  const title: unknown = data.title;
+
   return {
     content: rewriteInstalledDocsContent(source),
-    description: data.description,
-    title: data.title,
+    description: typeof description === 'string' ? description : undefined,
+    title: typeof title === 'string' ? title : undefined,
   };
 }
 
@@ -166,7 +168,7 @@ export async function createDocsRegistry(): Promise<Registry> {
         name,
         title: title || pathToTitle(filePath),
         type: 'registry:file',
-      } as RegistryItem;
+      };
     })
   );
 

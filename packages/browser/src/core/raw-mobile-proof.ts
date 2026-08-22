@@ -1,3 +1,4 @@
+import { getDefined } from '../internal/getDefined';
 import type {
   BrowserMobileProofPlatform,
   BrowserMobileTransportId,
@@ -134,14 +135,11 @@ export const validatePliteRawMobileProof = (
     if (receipt.schemaVersion !== 1) {
       issues.push(`${label} must use receipt schemaVersion 1`);
     }
-    if (
-      receipt.directAppium !== true ||
-      receipt.transport !== expectedTransport
-    ) {
+    if (!receipt.directAppium || receipt.transport !== expectedTransport) {
       issues.push(`${label} is not direct ${expectedTransport} proof`);
     }
     if (
-      receipt.device?.realDevice !== true ||
+      !receipt.device?.realDevice ||
       receipt.device?.osName !== expectedOs ||
       !receipt.device?.name ||
       !receipt.device?.model ||
@@ -203,7 +201,7 @@ export const validatePliteRawMobileProof = (
         );
       });
 
-      const finalSnapshot = receipt.snapshots.at(-1)!;
+      const finalSnapshot = getDefined(receipt.snapshots.at(-1));
 
       if (scenario && finalSnapshot.updateCount !== scenario.updateCount) {
         issues.push(

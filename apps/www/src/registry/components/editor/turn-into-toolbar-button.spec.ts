@@ -16,7 +16,9 @@ describe('composed toolbar registry', () => {
   it.each(composedToolbarNames)(
     'ships every relative UI dependency of %s',
     (itemName) => {
-      const item = registryItems.find((item) => item.name === itemName);
+      const item = registryItems.find(
+        (innerItem) => innerItem.name === itemName
+      );
 
       expect(item).toBeDefined();
 
@@ -26,7 +28,7 @@ describe('composed toolbar registry', () => {
       for (const file of item!.files ?? []) {
         const source = readFileSync(
           new URL(`../../${file.path}`, import.meta.url),
-          'utf8'
+          'utf-8'
         );
         const relativeImports = source.matchAll(/from ['"]\.\/([^'"]+)['"]/g);
 
@@ -62,8 +64,8 @@ describe('composed toolbar registry', () => {
     'keeps %s subscribed only to the read-only context',
     (itemName, componentName, endMarker) => {
       const source = readFileSync(
-        new URL(`./${itemName}.tsx`, import.meta.url),
-        'utf8'
+        new URL(`${itemName}.tsx`, import.meta.url),
+        'utf-8'
       );
       const componentSource = source.slice(
         source.indexOf(`export function ${componentName}`),
@@ -82,8 +84,8 @@ describe('composed toolbar registry', () => {
 
   it('keeps turn-into subscribed to the selected block fact', () => {
     const source = readFileSync(
-      new URL('./turn-into-toolbar-button.tsx', import.meta.url),
-      'utf8'
+      new URL('turn-into-toolbar-button.tsx', import.meta.url),
+      'utf-8'
     );
 
     expect(source.match(/\buseSelectionFragmentProp\(/g)).toHaveLength(1);

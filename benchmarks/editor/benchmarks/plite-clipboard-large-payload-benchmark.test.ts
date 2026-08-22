@@ -503,24 +503,24 @@ describe('clipboard large-payload benchmark authority', () => {
     const source = readFileSync(benchmarkPath, 'utf-8');
 
     assert.equal(targets.length, 1);
-    assert.match(targets[0]!.command, /HUGE_CUT_BLOCKS=50000/u);
-    assert.match(targets[0]!.command, /ISSUE_TARGETS=1/u);
+    assert.match(targets[0].command, /HUGE_CUT_BLOCKS=50000/u);
+    assert.match(targets[0].command, /ISSUE_TARGETS=1/u);
     assert.match(
-      targets[0]!.command,
+      targets[0].command,
       /--output=tmp\/slate-clipboard-large-payload-benchmark\.json/u
     );
-    assert.match(targets[0]!.command, /bun --expose-gc --preload/u);
+    assert.match(targets[0].command, /bun --expose-gc --preload/u);
     assert.equal(
-      targets[0]!.correctness.command,
+      targets[0].correctness.command,
       'bun test benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts'
     );
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_clipboard_worst_issue_p95_ms'
     );
-    assert.equal(targets[0]!.metrics.printsMetric, true);
-    assert.equal(targets[0]!.metrics.unit, 'ms');
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.equal(targets[0].metrics.printsMetric, true);
+    assert.equal(targets[0].metrics.unit, 'ms');
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/slate-clipboard-large-payload-benchmark.json',
         required: true,

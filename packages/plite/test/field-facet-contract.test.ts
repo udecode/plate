@@ -52,7 +52,7 @@ describe('field-aware explicit facets', () => {
           facetProviders: [
             doubled.compute(
               (state) => {
-                computes++;
+                computes += 1;
 
                 return state.getField(counter).count * 2;
               },
@@ -63,7 +63,7 @@ describe('field-aware explicit facets', () => {
       ],
     });
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     const initial = editor.read.facet(doubled);
 
@@ -100,7 +100,7 @@ describe('field-aware explicit facets', () => {
           facetProviders: [
             parity.compute(
               (state) => {
-                computes++;
+                computes += 1;
 
                 return state.getField(counter);
               },
@@ -135,7 +135,7 @@ describe('field-aware explicit facets', () => {
           facetProviders: [
             derived.compute(
               (state) => {
-                computes++;
+                computes += 1;
 
                 return state.getField(field);
               },
@@ -248,7 +248,7 @@ describe('field-aware explicit facets', () => {
           facetProviders: [
             mainLength.compute(
               (state) => {
-                mainComputes++;
+                mainComputes += 1;
 
                 return state.text.string([]).length;
               },
@@ -256,9 +256,9 @@ describe('field-aware explicit facets', () => {
             ),
             sidebarLength.compute(
               (state) => {
-                sidebarComputes++;
+                sidebarComputes += 1;
 
-                return NodeApi.string(state.root('sidebar')[0]!).length;
+                return NodeApi.string(state.root('sidebar')[0]).length;
               },
               {
                 dependencies: [{ kind: 'document', root: 'sidebar' }],

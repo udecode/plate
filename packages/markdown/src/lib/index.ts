@@ -3,7 +3,7 @@
  */
 
 export * from './MarkdownPlugin';
-export * from './mdast';
+export type * from './mdast';
 export * from './types';
 export * from './deserializer/index';
 export * from './plugins/index';

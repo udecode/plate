@@ -23,7 +23,7 @@ describe('read view lifecycle', () => {
       extensions: [
         defineExtension('counter', {
           read: ({ state }) => {
-            builds++;
+            builds += 1;
 
             return {
               childCount: () => state.children().length,
@@ -178,7 +178,7 @@ describe('read view lifecycle', () => {
       extensions: [
         defineExtension('draft', {
           read: ({ state }) => {
-            builds++;
+            builds += 1;
 
             return {
               childCount: () => state.children().length,
@@ -227,10 +227,10 @@ describe('read view lifecycle', () => {
     const editor = createEditor({
       extensions: [
         defineExtension('guard', {
-          read: ({ editor }) => ({
+          read: ({ editor: innerEditor }) => ({
             nested: {
               attemptUpdate() {
-                editor.update(() => {});
+                innerEditor.update(() => {});
               },
             },
           }),
@@ -361,10 +361,7 @@ describe('read view lifecycle', () => {
     editor.update.receivers.nested.value();
     editor.update.receivers.nested.inspect();
     assert.equal(updateCalls, 2);
-    const prototypeFacade = Reflect.get(
-      editor.read.receivers as object,
-      '__proto__'
-    );
+    const prototypeFacade = Reflect.get(editor.read.receivers, '__proto__');
     const inheritedMethod = Reflect.get(prototypeFacade, 'hasOwnProperty');
 
     assert.throws(
@@ -492,8 +489,8 @@ describe('read view lifecycle', () => {
     const editor = createEditor({
       extensions: [
         defineExtension('reentrantRead', {
-          read: ({ editor }) => {
-            editor.read.value();
+          read: ({ editor: innerEditor2 }) => {
+            innerEditor2.read.value();
 
             return { ready: () => true };
           },

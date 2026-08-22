@@ -31,12 +31,12 @@ export function ListToolbarButton({
 }) {
   const editor = useEditor();
   const pressed = useEditorSelector(
-    (editor) =>
-      !!editor.read.selection() &&
-      editor.read.nodes.some({
+    (innerEditor) =>
+      !!innerEditor.read.selection() &&
+      innerEditor.read.nodes.some({
         type:
           typeof plugin === 'string'
-            ? editor.plugin(plugin).schema.type
+            ? innerEditor.plugin(plugin).schema.type
             : plugin,
       })
   );
@@ -53,7 +53,9 @@ export function ListToolbarButton({
         });
         editor.api.dom.focus();
       }}
-      onMouseDown={(event) => event.preventDefault()}
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       tooltip={label}
     >
       {icon}

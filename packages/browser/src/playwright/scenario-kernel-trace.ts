@@ -15,7 +15,7 @@ export const getIllegalKernelTransitions = (
     entry.snapshot.kernelTrace.flatMap((kernelEntry) => {
       const { transition } = kernelEntry;
 
-      return transition?.allowed === false
+      return !transition?.allowed
         ? [
             {
               label: entry.label,

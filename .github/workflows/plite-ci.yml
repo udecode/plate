@@ -436,7 +436,7 @@ jobs:
           retention-days: 7
 
   browser-webkit:
-    name: Plite browser webkit ${{ matrix.shard }}/4
+    name: Plite browser ${{ matrix.project }} ${{ matrix.shard }}/${{ matrix.total }}
     needs: browser-build
     runs-on: macos-latest
     if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -444,9 +444,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        include:
+          - project: webkit
+            shard: 1
+            total: 4
+          - project: webkit
+            shard: 2
+            total: 4
+          - project: webkit
+            shard: 3
+            total: 4
+          - project: webkit
+            shard: 4
+            total: 4
+          - project: mobile-webkit
+            shard: 1
+            total: 1
     env:
-      PLITE_BROWSER_JOB: ${{ matrix.shard }}/4
+      PLITE_BROWSER_JOB: ${{ matrix.shard }}/${{ matrix.total }}
       PLITE_BROWSER_UNIT_WORKERS: 2
 
     steps:
@@ -482,14 +497,14 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-${{ matrix.total }}-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
-            plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-
+            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-${{ matrix.total }}-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-
+            plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-${{ matrix.total }}-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Run WebKit browser proof
         id: browser-proof
-        run: pnpm --filter plite test:plite-browser:project -- webkit
+        run: pnpm --filter plite test:plite-browser:project -- "${{ matrix.project }}"
 
       - name: Save WebKit browser proof state
         if: ${{ always() && !cancelled() && steps.browser-proof.outcome != 'skipped' }}
@@ -497,13 +512,13 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: apps/plite/.tmp/plite-browser-runner
-          key: plite-browser-runner-v2-webkit-${{ matrix.shard }}-of-4-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: plite-browser-runner-v2-${{ matrix.project }}-${{ matrix.shard }}-of-${{ matrix.total }}-playwright-${{ hashFiles('apps/plite/package.json') }}-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload WebKit proof summary
         if: ${{ always() && !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: plite-browser-summary-webkit-${{ matrix.shard }}
+          name: plite-browser-summary-${{ matrix.project }}-${{ matrix.shard }}
           path: apps/plite/test-results/plite-browser-runner/summary-*.json
           if-no-files-found: error
           retention-days: 7
@@ -512,7 +527,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: plite-browser-failure-webkit-${{ matrix.shard }}
+          name: plite-browser-failure-${{ matrix.project }}-${{ matrix.shard }}
           path: |
             apps/plite/test-results/plite-browser
             apps/plite/test-results/plite-browser-runner
@@ -538,4 +553,4 @@ jobs:
           merge-multiple: true
 
       - name: Verify exact browser-matrix coverage
-        run: node apps/plite/scripts/merge-plite-browser-summaries.mjs browser-summaries chromium firefox mobile webkit
+        run: node apps/plite/scripts/merge-plite-browser-summaries.mjs browser-summaries chromium firefox mobile webkit mobile-webkit

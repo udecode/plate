@@ -116,7 +116,7 @@ describe('document meta history contract', () => {
 
     const stored = editor.read((state) => state.history.undos()[0]?.effects[0]);
 
-    assert(stored);
+    assert.ok(stored);
     assert.equal(stored.value.nested.count, -3);
     assert.equal(Object.isFrozen(stored.value), true);
     assert.equal(Object.isFrozen(stored.value.nested), true);
@@ -125,7 +125,7 @@ describe('document meta history contract', () => {
 
     const replayed = editorGetLastCommit(editor)?.effects[0];
 
-    assert(replayed);
+    assert.ok(replayed);
     assert.equal(replayed.value.nested.count, -3);
     assert.equal(Object.isFrozen(replayed.value), true);
     assert.equal(Object.isFrozen(replayed.value.nested), true);

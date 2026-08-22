@@ -6,7 +6,8 @@ import type {
   Value,
 } from '../interfaces';
 import { ElementApi } from '../interfaces';
-import { PreparedTokenSlice, type JsonNode } from './change/tokens';
+import { getDefined } from '../internal/get-defined';
+import { PreparedTokenSlice } from './change/tokens';
 import {
   getEditorJsonArrayItems,
   getEditorJsonRecordEntries,
@@ -41,7 +42,7 @@ const assertOpenDepth = (
       );
     }
 
-    children = node.children;
+    ({ children } = node);
   }
 };
 
@@ -115,7 +116,7 @@ const snapshotSliceContent = (
     );
 
     if (hasText) {
-      const text = entries.find(([key]) => key === 'text')![1];
+      const text = getDefined(entries.find(([key]) => key === 'text'))[1];
 
       if (typeof text !== 'string') {
         throw new Error(
@@ -123,10 +124,10 @@ const snapshotSliceContent = (
         );
       }
 
-      return Object.freeze({ ...props, text }) as Descendant;
+      return Object.freeze({ ...props, text });
     }
 
-    const children = entries.find(([key]) => key === 'children')![1];
+    const children = getDefined(entries.find(([key]) => key === 'children'))[1];
 
     return Object.freeze({
       ...props,
@@ -236,15 +237,15 @@ type SliceValueFromContent<TContent extends readonly Descendant[]> = [
   Extract<TContent[number], Element>,
 ] extends [never]
   ? Value
-  : readonly Extract<TContent[number], Element>[];
+  : ReadonlyArray<Extract<TContent[number], Element>>;
 
 function closed<const TContent extends readonly Descendant[]>(
   content: TContent
 ): ContentSliceValue<SliceValueFromContent<TContent>>;
 function closed<V extends Value>(
-  content: readonly DescendantIn<V>[]
+  content: ReadonlyArray<DescendantIn<V>>
 ): ContentSliceValue<V>;
-function closed(content: readonly Descendant[]): ContentSliceValue<Value> {
+function closed(content: readonly Descendant[]): ContentSliceValue {
   return snapshot<Value>({
     content,
     openEnd: 0,
@@ -260,14 +261,14 @@ const empty = closed<never>([]);
  * @internal
  */
 export const createDetachedContentSlice = <V extends Value>(
-  content: readonly DescendantIn<V>[],
+  content: ReadonlyArray<DescendantIn<V>>,
   openStart: number,
   openEnd: number,
   options: Readonly<{
     /** Authority attesting that content is owned, deeply frozen, and canonical. */
     canonicalFor?: object;
     /** Detached secondary roots referenced by the slice content. */
-    roots?: Readonly<Record<string, readonly DescendantIn<V>[]>>;
+    roots?: Readonly<Record<string, ReadonlyArray<DescendantIn<V>>>>;
   }> = {}
 ): ContentSliceValue<V> => {
   assertOpenDepths(openStart, openEnd);
@@ -393,7 +394,7 @@ export const ContentSlice = Object.freeze({
   fromJSON,
   withContent: <V extends Value>(
     slice: ContentSliceValue<V>,
-    content: readonly DescendantIn<V>[],
+    content: ReadonlyArray<DescendantIn<V>>,
     options: Readonly<{ open: 'closed' | 'preserve' }>
   ): ContentSliceValue<V> => {
     if (options.open === 'closed') return closed(content);
@@ -418,7 +419,7 @@ export const ContentSlice = Object.freeze({
  * @internal
  */
 export const isDetachedContentSlice = (slice: ContentSliceValue) =>
-  trustedSlices.get(fromJSON(slice))!.detached;
+  getDefined(trustedSlices.get(fromJSON(slice))).detached;
 
 /**
  * Encode the complete trusted content behind a slice.
@@ -427,18 +428,14 @@ export const isDetachedContentSlice = (slice: ContentSliceValue) =>
  */
 export const encodeContentSliceContent = (slice: ContentSliceValue) => {
   const value = fromJSON(slice);
-  const prepared = trustedSlices.get(value)!;
+  const prepared = getDefined(trustedSlices.get(value));
   let fullEncoded = encodedContent.get(value.content);
 
   if (!fullEncoded) {
     fullEncoded = prepared.detached
-      ? PreparedTokenSlice.fromPreparedNodes(
-          value.content as readonly JsonNode[]
-        )
+      ? PreparedTokenSlice.fromPreparedNodes(value.content)
       : PreparedTokenSlice.fromJSON(
-          PreparedTokenSlice.fromNodes(
-            value.content as readonly JsonNode[]
-          ).toJSON()
+          PreparedTokenSlice.fromNodes(value.content).toJSON()
         );
     encodedContent.set(value.content, fullEncoded);
   }
@@ -480,7 +477,7 @@ export const prepareContentSliceVariant = <V extends Value>(
   assertOpenDepths(openStart, openEnd);
 
   const source = fromJSON(slice);
-  const prepared = trustedSlices.get(source)!;
+  const prepared = getDefined(trustedSlices.get(source));
   const key = variantKey(openStart, openEnd);
   const cached = prepared.variants.get(key);
 

@@ -114,14 +114,14 @@ describe('plite string coordinate placement', () => {
     expect(
       getEditableRootPliteStringCoordinatePlacement({
         editableRoot,
-        event: { clientX: 70, clientY: 8 } as MouseEvent,
+        event: { clientX: 70, clientY: 8 },
       })
     ).toBeNull();
 
     expect(
       getEditableRootPliteStringCoordinatePlacement({
         editableRoot,
-        event: { clientX: 50, clientY: 128 } as MouseEvent,
+        event: { clientX: 50, clientY: 128 },
       })?.string
     ).toBe(outerText.string);
   });
@@ -142,7 +142,7 @@ describe('plite string coordinate placement', () => {
     expect(
       getEditableRootPliteStringCoordinatePlacement({
         editableRoot,
-        event: { clientX: 210, clientY: 16 } as MouseEvent,
+        event: { clientX: 210, clientY: 16 },
         includeInsideString: true,
         target: leftText.string,
       })?.string
@@ -163,7 +163,7 @@ describe('plite string coordinate placement', () => {
 
     const placement = getEditableRootPliteStringCoordinatePlacement({
       editableRoot,
-      event: { clientX: 300, clientY: 110 } as MouseEvent,
+      event: { clientX: 300, clientY: 110 },
     });
 
     expect(placement).toMatchObject({
@@ -189,13 +189,13 @@ describe('plite string coordinate placement', () => {
     expect(
       getEditableRootPliteStringCoordinatePlacement({
         editableRoot,
-        event: { clientX: 260, clientY: 20 } as MouseEvent,
+        event: { clientX: 260, clientY: 20 },
       })?.string
     ).toBe(rightText.string);
     expect(
       getEditableRootPliteStringCoordinatePlacement({
         editableRoot,
-        event: { clientX: 60, clientY: 100 } as MouseEvent,
+        event: { clientX: 60, clientY: 100 },
       })?.string
     ).toBe(leftText.string);
   });
@@ -227,7 +227,7 @@ describe('plite string coordinate placement', () => {
     expect(
       getEditableRootPliteStringCoordinatePlacement({
         editableRoot,
-        event: { clientX: 260, clientY: 180 } as MouseEvent,
+        event: { clientX: 260, clientY: 180 },
       })
     ).toMatchObject({
       edge: 'start',
@@ -389,7 +389,7 @@ describe('plite string coordinate placement', () => {
   });
 
   test('keeps line-edge offsets on grapheme boundaries', () => {
-    const text = `A${'👨‍👩‍👧‍👦'}`;
+    const text = `A👨‍👩‍👧‍👦`;
     const { string, textHost } = createTextHost({ text });
     const lineRect = rect({ left: 10, right: 110 });
     const letterRect = rect({ left: 10, right: 35 });

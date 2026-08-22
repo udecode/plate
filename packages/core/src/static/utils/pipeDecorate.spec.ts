@@ -61,10 +61,10 @@ describe('pipeDecorate', () => {
     decorate(second);
 
     expect(contexts).toHaveLength(2);
-    expect(Object.getPrototypeOf(contexts[0]!)).toBe(
-      Object.getPrototypeOf(contexts[1]!)
+    expect(Object.getPrototypeOf(contexts[0])).toBe(
+      Object.getPrototypeOf(contexts[1])
     );
-    expect(Reflect.get(contexts[0]!, 'entry')).toBe(first);
-    expect(Reflect.get(contexts[1]!, 'entry')).toBe(second);
+    expect(Reflect.get(contexts[0], 'entry')).toBe(first);
+    expect(Reflect.get(contexts[1], 'entry')).toBe(second);
   });
 });

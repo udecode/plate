@@ -30,7 +30,7 @@ const takeCaretVisibilitySnapshot = async (
 ): Promise<CaretVisibilitySnapshot> =>
   root.evaluate((element: HTMLElement) => {
     const selection = element.ownerDocument.getSelection();
-    const activeElement = element.ownerDocument.activeElement;
+    const { activeElement } = element.ownerDocument;
     const anchorInRoot =
       !!selection?.anchorNode && element.contains(selection.anchorNode);
     const focusInRoot =
@@ -146,7 +146,8 @@ export const assertCaretVisibleInScrollableParent = async (root: Locator) => {
         lastSnapshot,
         null,
         2
-      )}`
+      )}`,
+      { cause: error }
     );
   }
 };
@@ -176,7 +177,8 @@ export const assertNoVisibleCaretInRoot = async (root: Locator) => {
         lastSnapshot,
         null,
         2
-      )}`
+      )}`,
+      { cause: error }
     );
   }
 };

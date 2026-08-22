@@ -26,7 +26,7 @@ const UPPER_ALPHA_PATTERN = /^[A-Z]+$/;
 const UPPER_ROMAN_PATTERN = /^[CDILMVX]+$/;
 
 const parseAlphaOrdinal = (value: string) =>
-  [...value.toLowerCase()].reduce(
+  Array.from(value.toLowerCase()).reduce(
     (ordinal, character) =>
       ordinal * 26 + character.charCodeAt(0) - 'a'.charCodeAt(0) + 1,
     0
@@ -42,7 +42,7 @@ const parseRomanOrdinal = (value: string) => {
     v: 5,
     x: 10,
   };
-  const characters = [...value.toLowerCase()];
+  const characters = Array.from(value.toLowerCase());
 
   return characters.reduce((ordinal, character, index) => {
     const current = values[character] ?? 0;
@@ -55,31 +55,45 @@ const parseRomanOrdinal = (value: string) => {
 const parseListOrdinal = (text: string, listStyle: string) => {
   const marker = LIST_MARKER_PATTERN.exec(text)?.[1].split('.').at(-1);
 
-  if (!marker) return;
+  if (!marker) return undefined;
   if (listStyle.startsWith('decimal')) {
     return DECIMAL_COMPONENT_PATTERN.test(marker) ? Number(marker) : undefined;
   }
   if (listStyle.includes('alpha')) return parseAlphaOrdinal(marker);
   if (listStyle.includes('roman')) return parseRomanOrdinal(marker);
+
+  return undefined;
 };
 
 const getListStyleFromDeclaredFormat = (format: string | undefined) => {
   switch (format) {
-    case 'alpha-lower':
+    case 'alpha-lower': {
       return 'lower-alpha';
-    case 'alpha-upper':
+    }
+    case 'alpha-upper': {
       return 'upper-alpha';
-    case 'bullet':
+    }
+    case 'bullet': {
       return 'disc';
-    case 'decimal':
+    }
+    case 'decimal': {
       return 'decimal';
-    case 'decimal-leading-zero':
+    }
+    case 'decimal-leading-zero': {
       return 'decimal-leading-zero';
-    case 'roman-lower':
+    }
+    case 'roman-lower': {
       return 'lower-roman';
-    case 'roman-upper':
+    }
+    case 'roman-upper': {
       return 'upper-roman';
+    }
+    case undefined: {
+      return undefined;
+    }
   }
+
+  return undefined;
 };
 
 const getDeclaredListStyles = (html: string) => {
@@ -314,9 +328,12 @@ export const DocxPastePlugin = defineBasePlugin(PLUGINS.docxPaste, {
               const indent = getIndent(htmlElement, 'marginLeft');
               const textIndent = getIndent(htmlElement, 'textIndent');
 
-              if (indent) htmlElement.dataset.indent = String(indent);
-              if (textIndent)
+              if (indent) {
+                htmlElement.dataset.indent = String(indent);
+              }
+              if (textIndent) {
                 htmlElement.dataset.textIndent = String(textIndent);
+              }
             });
 
           const cleanedDocument = new DOMParser().parseFromString(
@@ -344,9 +361,9 @@ export const DocxPastePlugin = defineBasePlugin(PLUGINS.docxPaste, {
             const children = node.children.map(cleanNode);
 
             if (tableType && node.type === tableType) {
-              const { columnWidths: _columnWidths, ...table } = node;
+              const { columnWidths: _columnWidths, ...innerTable } = node;
 
-              return { ...table, children };
+              return { ...innerTable, children };
             }
 
             if (!tableCellType || node.type !== tableCellType) {

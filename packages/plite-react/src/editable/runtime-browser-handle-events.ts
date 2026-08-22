@@ -5,10 +5,7 @@ import type { RefObject } from 'react';
 import type { EditableDOMStrategyScrollAlign } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import {
-  attachPliteBrowserHandle,
-  type PliteBrowserHandleElement,
-} from './browser-handle';
+import { attachPliteBrowserHandle } from './browser-handle';
 import type { EditableInputController } from './input-state';
 
 export const useRuntimeBrowserHandle = ({
@@ -41,7 +38,7 @@ export const useRuntimeBrowserHandle = ({
 }) => {
   useIsomorphicLayoutEffect(() => {
     if (!rootRef.current) {
-      return;
+      return undefined;
     }
 
     return attachPliteBrowserHandle({
@@ -49,7 +46,7 @@ export const useRuntimeBrowserHandle = ({
       browserHandleRangeAnchors,
       domPhaseScheduler,
       editor,
-      element: rootRef.current as PliteBrowserHandleElement,
+      element: rootRef.current,
       inputController,
       forceRender,
       flushPendingNativeTextInput,

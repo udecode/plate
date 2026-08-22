@@ -19,11 +19,11 @@ export const ExitBreakPlugin = defineBasePlugin(PLUGINS.exitBreak, {
     const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {
       const selection = tx.selection();
 
-      if (!selection || !tx.selection.isCollapsed()) return;
+      if (!selection || !tx.selection.isCollapsed()) return undefined;
 
       const block = tx.nodes.block();
 
-      if (!block) return;
+      if (!block) return undefined;
 
       const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
 

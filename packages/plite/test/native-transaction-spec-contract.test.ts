@@ -30,7 +30,7 @@ const createInsertSpec = (
       assert.equal(editor.read.text.string([]), 'ab');
       assert.equal(tx.text.string([]), `a${text}b`);
     })
-  ) as TransactionSpec;
+  );
 
 describe('native transaction spec contract', () => {
   it('builds against a detached draft while ambient editor reads stay committed', () => {
@@ -45,7 +45,7 @@ describe('native transaction spec contract', () => {
     const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
     let spec: TransactionSpec;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     try {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
@@ -117,7 +117,7 @@ describe('native transaction spec contract', () => {
     const spec = createInsertSpec(editor);
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     assert.throws(
       () =>
         editor.update(() => {
@@ -141,7 +141,7 @@ describe('native transaction spec contract', () => {
       const second = sibling ? createInsertSpec(editor, '?') : first;
       let commits = 0;
 
-      editor.subscribeCommit(() => commits++);
+      editor.subscribeCommit(() => (commits += 1) - 1);
       assert.throws(
         () =>
           editor.update(() => {

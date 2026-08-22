@@ -275,15 +275,15 @@ test('main to next direct sync can restore beta pre mode in the sync commit', ()
   assert.equal(typeof preState.initialVersions['@platejs/core'], 'string');
   assert.equal(typeof preState.initialVersions.platejs, 'string');
   assert.deepEqual(preState.changesets, []);
-  assert.doesNotThrow(() => validateMainToNextBetaPreState(preState));
-  assert.throws(
-    () => validateMainToNextBetaPreState({ mode: 'exit', tag: 'beta' }),
-    /active Changesets pre-release mode/
-  );
-  assert.throws(
-    () => validateMainToNextBetaPreState({ mode: 'pre', tag: 'next' }),
-    /beta pre-release tag/
-  );
+  assert.doesNotThrow(() => {
+    validateMainToNextBetaPreState(preState);
+  });
+  assert.throws(() => {
+    validateMainToNextBetaPreState({ mode: 'exit', tag: 'beta' });
+  }, /active Changesets pre-release mode/);
+  assert.throws(() => {
+    validateMainToNextBetaPreState({ mode: 'pre', tag: 'next' });
+  }, /beta pre-release tag/);
 });
 
 test('main to next sync keeps beta package versions', () => {
@@ -934,20 +934,19 @@ test('beta package release uses an explicit npm beta tag', async () => {
 });
 
 test('beta pre-release guard requires active beta pre mode', () => {
-  assert.doesNotThrow(() => validateBetaPreState({ mode: 'pre', tag: 'beta' }));
+  assert.doesNotThrow(() => {
+    validateBetaPreState({ mode: 'pre', tag: 'beta' });
+  });
 
-  assert.throws(
-    () => validateBetaPreState({ mode: 'exit', tag: 'beta' }),
-    /active Changesets pre-release mode/
-  );
-  assert.throws(
-    () => validateBetaPreState({ mode: 'pre', tag: 'next' }),
-    /beta pre-release tag/
-  );
-  assert.throws(
-    () => validateBetaPreState({ mode: 'pre' }),
-    /beta pre-release tag/
-  );
+  assert.throws(() => {
+    validateBetaPreState({ mode: 'exit', tag: 'beta' });
+  }, /active Changesets pre-release mode/);
+  assert.throws(() => {
+    validateBetaPreState({ mode: 'pre', tag: 'next' });
+  }, /beta pre-release tag/);
+  assert.throws(() => {
+    validateBetaPreState({ mode: 'pre' });
+  }, /beta pre-release tag/);
 });
 
 test('release docs keep old migration route redirects', async () => {

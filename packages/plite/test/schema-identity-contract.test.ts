@@ -129,45 +129,37 @@ describe('schema identity contract', () => {
       schema: editor.read.schema.identity(),
     });
     assert.equal(editor.read.children()[0]?.children[0]?.text, 'after');
-    assert.throws(
-      () =>
-        editor.update.value.replace({
-          document: { ...document, selection: 'end' } as never,
-          schema: editor.read.schema.identity(),
-        }),
-      /Persisted document field "selection" is not supported/
-    );
-    assert.throws(
-      () =>
-        editor.update.value.replace({
-          document,
-          schema: editor.read.schema.identity(),
+    assert.throws(() => {
+      editor.update.value.replace({
+        document: { ...document, selection: 'end' } as never,
+        schema: editor.read.schema.identity(),
+      });
+    }, /Persisted document field "selection" is not supported/);
+    assert.throws(() => {
+      editor.update.value.replace({
+        document,
+        schema: editor.read.schema.identity(),
+        sourceVersion: 2,
+      } as never);
+    }, /Persisted document envelope field "sourceVersion" is not supported/);
+    assert.throws(() => {
+      editor.update.value.replace({
+        document,
+        schema: {
+          ...editor.read.schema.identity(),
           sourceVersion: 2,
-        } as never),
-      /Persisted document envelope field "sourceVersion" is not supported/
-    );
-    assert.throws(
-      () =>
-        editor.update.value.replace({
-          document,
-          schema: {
-            ...editor.read.schema.identity(),
-            sourceVersion: 2,
-          },
-        } as never),
-      /Persisted document schema field "sourceVersion" is not supported/
-    );
-    assert.throws(
-      () =>
-        editor.update.value.replace({
-          document,
-          schema: {
-            ...editor.read.schema.identity(),
-            fingerprint: 'stale',
-          },
-        }),
-      /does not match current schema/
-    );
+        },
+      } as never);
+    }, /Persisted document schema field "sourceVersion" is not supported/);
+    assert.throws(() => {
+      editor.update.value.replace({
+        document,
+        schema: {
+          ...editor.read.schema.identity(),
+          fingerprint: 'stale',
+        },
+      });
+    }, /does not match current schema/);
   });
 
   it('does not confuse direct snapshots with application document metadata', () => {
@@ -184,15 +176,13 @@ describe('schema identity contract', () => {
   it('rejects persisted envelopes with unsupported direct snapshot fields', () => {
     const editor = createEditor();
 
-    assert.throws(
-      () =>
-        editor.update.value.replace({
-          children: [],
-          document: { children: [] },
-          schema: editor.read.schema.identity(),
-        } as never),
-      /Persisted document envelope field "children" is not supported/
-    );
+    assert.throws(() => {
+      editor.update.value.replace({
+        children: [],
+        document: { children: [] },
+        schema: editor.read.schema.identity(),
+      });
+    }, /Persisted document envelope field "children" is not supported/);
   });
 
   it('rejects persisted envelopes from views before host transforms run', () => {
@@ -227,15 +217,11 @@ describe('schema identity contract', () => {
         }) as never
     );
 
-    assert.throws(
-      () =>
-        view.update.value.replace({
-          children: [
-            { children: [{ text: 'transformed' }], type: 'paragraph' },
-          ],
-        }),
-      /can replace only the complete editor/
-    );
+    assert.throws(() => {
+      view.update.value.replace({
+        children: [{ children: [{ text: 'transformed' }], type: 'paragraph' }],
+      });
+    }, /can replace only the complete editor/);
     restoreEnvelopeTransform();
   });
 

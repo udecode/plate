@@ -111,21 +111,20 @@ const transitiveValueEchoEditor = createEditor({
   initialValue,
   extensions: [ValueEchoCarrierExtension] as const,
 });
-const widenedValueEchoExtensions: readonly (
-  | typeof OtherRuntimeHostExtension
-  | typeof ValueEchoExtension
-)[] = [ValueEchoExtension];
+const widenedValueEchoExtensions: ReadonlyArray<
+  typeof OtherRuntimeHostExtension | typeof ValueEchoExtension
+> = [ValueEchoExtension];
 const widenedValueEchoEditor = createEditor({
   initialValue,
   extensions: widenedValueEchoExtensions,
 });
-type InferredCustomValue = readonly {
-  readonly children: readonly {
+type InferredCustomValue = ReadonlyArray<{
+  readonly children: ReadonlyArray<{
     readonly checked?: boolean;
     readonly text: string;
-  }[];
+  }>;
   readonly type: string;
-}[];
+}>;
 const _directValueEcho: InferredCustomValue =
   directValueEchoEditor.read.valueEcho.value();
 const _transitiveValueEcho: InferredCustomValue =
@@ -143,8 +142,8 @@ const TransitiveRuntimeHostExtension = defineExtension(
 );
 
 const TransitiveConsumerExtension = defineExtension('transitiveConsumer', {
-  api({ editor }) {
-    const host = editor.extension(TransitiveRuntimeHostExtension).api;
+  api({ editor: innerEditor }) {
+    const host = innerEditor.extension(TransitiveRuntimeHostExtension).api;
 
     return {
       status: host.status,
@@ -154,9 +153,9 @@ const TransitiveConsumerExtension = defineExtension('transitiveConsumer', {
 });
 
 const TransitiveRootExtension = defineExtension('transitiveRoot', {
-  api({ editor }) {
+  api({ editor: innerEditor2 }) {
     return {
-      status: editor.extension(TransitiveRuntimeHostExtension).api.status,
+      status: innerEditor2.extension(TransitiveRuntimeHostExtension).api.status,
     };
   },
   dependencies: [TransitiveConsumerExtension] as const,
@@ -254,10 +253,10 @@ const DisabledRuntimeHostExtension = defineExtension('runtime-host', {
 const DisabledDependencyConsumerExtension = defineExtension(
   'disabled-dependency-consumer',
   {
-    api({ editor }) {
+    api({ editor: innerEditor3 }) {
       typeOnly(() => {
         // @ts-expect-error disabled dependencies do not provide portals
-        editor.extension(DisabledRuntimeHostExtension);
+        innerEditor3.extension(DisabledRuntimeHostExtension);
       });
 
       return {};

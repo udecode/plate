@@ -7,7 +7,9 @@ export function useMediaQuery(query: string) {
     const result = matchMedia(query);
     result.addEventListener('change', onStoreChange);
 
-    return () => result.removeEventListener('change', onStoreChange);
+    return () => {
+      result.removeEventListener('change', onStoreChange);
+    };
   };
 
   const getSnapshot = () => {

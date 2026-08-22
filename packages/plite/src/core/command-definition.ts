@@ -8,7 +8,6 @@ import type {
   EditorCommandInput,
   EditorCommandRegistration,
   EditorCommandResult,
-  EditorUpdateTag,
   Editor,
 } from '../interfaces/editor';
 
@@ -65,7 +64,7 @@ export const createCommandRegistration = <
     command,
     kind,
     run,
-  } as unknown as CommandRegistrationRuntime<any, BaseEditor<any, any>>);
+  });
 
   return registration;
 };
@@ -92,18 +91,15 @@ export const defineCommand = <
       ...input: [Input] extends [void] ? [] | [input: Input] : [input: Input]
     ) {
       return runtime.build({
-        input: runtime.prepare(input[0] as Input) as Readonly<Input>,
+        input: runtime.prepare(input[0] as Input),
         state,
-        tags: Object.freeze([]) as readonly EditorUpdateTag[],
+        tags: Object.freeze([]),
       });
     },
     id,
   } as unknown as EditorCommand<Input, TEditor>;
 
-  COMMAND_RUNTIMES.set(
-    command,
-    runtime as CommandRuntime<any, BaseEditor<any, any>>
-  );
+  COMMAND_RUNTIMES.set(command, runtime);
 
   Object.freeze(command);
 
@@ -126,7 +122,7 @@ export const getCommandRuntime = <Input, TEditor extends BaseEditor<any, any>>(
     );
   }
 
-  return runtime as CommandRuntime<Input, TEditor>;
+  return runtime;
 };
 
 /**
@@ -147,5 +143,5 @@ export const getCommandRegistrationRuntime = <
     );
   }
 
-  return runtime as unknown as CommandRegistrationRuntime<any, TEditor>;
+  return runtime;
 };

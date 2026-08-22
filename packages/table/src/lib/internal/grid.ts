@@ -45,13 +45,13 @@ export type TableGridAnchor = Readonly<{
 
 export type TableGrid = Readonly<{
   anchors: readonly TableGridAnchor[];
-  anchorsByRow: readonly (readonly TableGridAnchor[])[];
+  anchorsByRow: ReadonlyArray<readonly TableGridAnchor[]>;
   byCell: ReadonlyMap<TableCellElement, TableGridAnchor>;
   byKey: ReadonlyMap<string, TableGridAnchor>;
   byPath: ReadonlyMap<string, TableGridAnchor>;
   height: number;
   problems: readonly TableGridProblem[];
-  slots: readonly (readonly (TableGridAnchor | null)[])[];
+  slots: ReadonlyArray<ReadonlyArray<TableGridAnchor | null>>;
   width: number;
 }>;
 
@@ -74,7 +74,7 @@ const isValidSpan = (value: unknown) =>
 
 export const isTableColumnSizes = (
   value: unknown
-): value is (number | null)[] =>
+): value is Array<number | null> =>
   Array.isArray(value) &&
   value.every(
     (size) =>
@@ -85,8 +85,7 @@ export const isTableColumnSizes = (
 export const getTableColumnSizes = (node: Element) =>
   isTableColumnSizes(node.columnWidths) ? node.columnWidths : undefined;
 
-const freezePath = (path: readonly number[]): Path =>
-  Object.freeze([...path]) as Path;
+const freezePath = (path: readonly number[]): Path => Object.freeze([...path]);
 
 const freezeMap = <K, V>(map: Map<K, V>): ReadonlyMap<K, V> => {
   const view: ReadonlyMap<K, V> = {
@@ -116,15 +115,15 @@ const compileTableElement = (
   const cached = getKey ? undefined : cache.get(table);
 
   if (cached) {
-    cacheHitCount++;
+    cacheHitCount += 1;
 
     return cached;
   }
 
-  compileCount++;
+  compileCount += 1;
 
   const height = table.children.length;
-  const slots: (TableGridAnchor | null)[][] = Array.from(
+  const slots: Array<Array<TableGridAnchor | null>> = Array.from(
     { length: height },
     () => []
   );
@@ -145,7 +144,7 @@ const compileTableElement = (
 
     (tableRow.children as readonly TableCellElement[]).forEach(
       (cell, cellIndex) => {
-        while (slots[row][col]) col++;
+        while (slots[row][col]) col += 1;
 
         const cellPath = freezePath([row, cellIndex]);
         const requestedRowSpan = getRowSpan(cell);

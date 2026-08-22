@@ -123,7 +123,7 @@ const findCanonicalSplitAtLevel = (
     from < after.length &&
     areJsonLikeValuesEqual(before[from], after[from])
   ) {
-    from++;
+    from += 1;
   }
 
   let suffixCount = 0;
@@ -136,7 +136,7 @@ const findCanonicalSplitAtLevel = (
       after.at(-1 - suffixCount)
     )
   ) {
-    suffixCount++;
+    suffixCount += 1;
   }
 
   const beforeChanged = before.slice(from, before.length - suffixCount);
@@ -220,7 +220,7 @@ const createSplitYjsElement = (
       ? properties.type
       : getPliteYjsElementType(original);
   const element = createYjsNode(
-    { ...properties, children: [], type: elementType } as Descendant,
+    { ...properties, children: [], type: elementType },
     isSetValued,
     context
   );

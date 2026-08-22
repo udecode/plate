@@ -38,7 +38,7 @@ export const BaseTogglePlugin = defineBasePlugin(PLUGINS.toggle, {
     lastEnclosedEntry: (toggleKey: NodeKey) => {
       const togglePath = state.nodes.path(toggleKey);
 
-      if (!togglePath || togglePath.length !== 1) return;
+      if (!togglePath || togglePath.length !== 1) return undefined;
       let inside = false;
       let last:
         | readonly [ReturnType<typeof state.children>[number], number[]]

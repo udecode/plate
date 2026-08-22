@@ -20,7 +20,7 @@ export async function getPackageData(name: string) {
 
   // sometimes we get an empty response body
   try {
-    return (await bundlephobiaResponse.json()) as unknown;
+    return await bundlephobiaResponse.json();
   } catch {
     return {};
   }

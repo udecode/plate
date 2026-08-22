@@ -72,7 +72,9 @@ export const didPasteApplyText = async ({
       return true;
     }
 
-    return includesPasteText((await getBlockTexts(root)).join('\n'), text);
+    const blockTexts = await getBlockTexts(root);
+
+    return includesPasteText(blockTexts.join('\n'), text);
   }
 
   return (
@@ -301,13 +303,13 @@ export const clickTextOffset = async (
     { offset, path }
   );
 
-  const clickCount = options.clickCount;
+  const { clickCount } = options;
 
   const readClickPointState = () =>
     root.evaluate(
       (
         element: HTMLElement,
-        point: {
+        innerPoint: {
           x: number;
           y: number;
         }
@@ -326,20 +328,20 @@ export const clickTextOffset = async (
             text: node.textContent?.slice(0, 80) ?? '',
           };
         };
-        const resolvePlitePoint = (node: Node | null, offset: number) => {
+        const resolvePlitePoint = (node: Node | null, innerOffset: number) => {
           const owner =
             node?.nodeType === 1
               ? (node as Element).closest('[data-plite-node="text"]')
               : node?.parentElement?.closest('[data-plite-node="text"]');
-          const path = owner
+          const innerPath = owner
             ?.getAttribute('data-plite-path')
             ?.split(',')
             .map((part) => Number.parseInt(part, 10));
 
           return {
-            offset,
+            offset: innerOffset,
             ownerText: owner?.textContent?.slice(0, 80) ?? null,
-            path: path?.every(Number.isInteger) ? path : null,
+            path: innerPath?.every(Number.isInteger) ? innerPath : null,
           };
         };
         const documentWithCaret = element.ownerDocument as Document & {
@@ -350,18 +352,25 @@ export const clickTextOffset = async (
           caretRangeFromPoint?: (x: number, y: number) => Range | null;
         };
         const caretPosition = documentWithCaret.caretPositionFromPoint?.(
-          point.x,
-          point.y
+          innerPoint.x,
+          innerPoint.y
         );
         const caretRange =
           caretPosition == null
-            ? documentWithCaret.caretRangeFromPoint?.(point.x, point.y)
+            ? documentWithCaret.caretRangeFromPoint?.(
+                innerPoint.x,
+                innerPoint.y
+              )
             : null;
+
         const caretNode =
           caretPosition?.offsetNode ?? caretRange?.startContainer ?? null;
         const caretOffset =
           caretPosition?.offset ?? caretRange?.startOffset ?? null;
-        const hit = element.ownerDocument.elementFromPoint(point.x, point.y);
+        const hit = element.ownerDocument.elementFromPoint(
+          innerPoint.x,
+          innerPoint.y
+        );
 
         return {
           caret:
@@ -369,7 +378,7 @@ export const clickTextOffset = async (
               ? resolvePlitePoint(caretNode, caretOffset)
               : null,
           hit: describeElement(hit),
-          point,
+          point: innerPoint,
         };
       },
       point
@@ -485,10 +494,10 @@ export const clickTextPathRange = async (
     (
       element: HTMLElement,
       {
-        endOffset,
-        path,
-        startOffset,
-        xAffinity,
+        endOffset: innerEndOffset,
+        path: innerPath2,
+        startOffset: innerStartOffset,
+        xAffinity: innerXAffinity,
       }: {
         endOffset: number;
         path: number[];
@@ -503,11 +512,11 @@ export const clickTextPathRange = async (
       ).find(
         (node) =>
           node.closest('[data-plite-editor="true"]') === element &&
-          node.getAttribute('data-plite-path') === path.join(',')
+          node.getAttribute('data-plite-path') === innerPath2.join(',')
       );
 
       if (!textElement) {
-        throw new Error(`Missing DOM text node for ${path.join('.')}`);
+        throw new Error(`Missing DOM text node for ${innerPath2.join('.')}`);
       }
 
       const resolveOffset = (offset: number) => {
@@ -573,8 +582,8 @@ export const clickTextPathRange = async (
       };
 
       const range = element.ownerDocument.createRange();
-      const start = resolveOffset(startOffset);
-      const end = resolveOffset(endOffset);
+      const start = resolveOffset(innerStartOffset);
+      const end = resolveOffset(innerEndOffset);
 
       range.setStart(start.node, start.offset);
       range.setEnd(end.node, end.offset);
@@ -583,15 +592,15 @@ export const clickTextPathRange = async (
 
       if (!rect || rect.width <= 0 || rect.height <= 0) {
         throw new Error(
-          `Text range has no selectable rect: ${path.join('.')} ${startOffset}-${endOffset}`
+          `Text range has no selectable rect: ${innerPath2.join('.')} ${innerStartOffset}-${innerEndOffset}`
         );
       }
 
       return {
         x:
-          xAffinity === 'center'
+          innerXAffinity === 'center'
             ? rect.left + rect.width / 2
-            : xAffinity === 'end'
+            : innerXAffinity === 'end'
               ? Math.max(rect.left + 1, rect.right - 1)
               : rect.left,
         y: rect.top + rect.height / 2,
@@ -637,9 +646,9 @@ export const waitForPendingNativeTextInputRepair = async (
                 | null
                 | undefined;
               const kernelTrace = handle?.getKernelTrace?.() ?? [];
-              const root = element.getRootNode() as Document | ShadowRoot;
+              const innerRoot = element.getRootNode() as Document | ShadowRoot;
               const selection =
-                'getSelection' in root ? root.getSelection() : null;
+                'getSelection' in innerRoot ? innerRoot.getSelection() : null;
 
               return {
                 clearSettled,

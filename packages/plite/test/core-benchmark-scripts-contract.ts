@@ -132,27 +132,27 @@ const summaryNumbers = (summary: BenchmarkSummary) =>
 const extractSummarizeSource = (source: string) => {
   const summarizeStart = source.indexOf('const summarize =');
 
-  assert.ok(summarizeStart >= 0);
+  assert.ok(summarizeStart !== -1);
 
   const percentileStart = source.lastIndexOf(
     'const percentile =',
     summarizeStart
   );
   const extractionStart =
-    percentileStart >= 0 ? percentileStart : summarizeStart;
+    percentileStart !== -1 ? percentileStart : summarizeStart;
   const bodyStart = source.indexOf('{', summarizeStart);
 
-  assert.ok(bodyStart >= 0);
+  assert.ok(bodyStart !== -1);
 
   let depth = 0;
 
   for (let index = bodyStart; index < source.length; index++) {
     if (source[index] === '{') {
-      depth++;
+      depth += 1;
     }
 
     if (source[index] === '}') {
-      depth--;
+      depth -= 1;
 
       if (depth === 0) {
         let end = index + 1;
@@ -179,7 +179,7 @@ const extractConstFunctionSource = (
 ) => {
   const functionStart = source.indexOf(`const ${functionName} =`);
 
-  assert.ok(functionStart >= 0);
+  assert.ok(functionStart !== -1);
 
   const dependencyStart = dependencyName
     ? source.lastIndexOf(`const ${dependencyName} =`, functionStart)
@@ -189,21 +189,21 @@ const extractConstFunctionSource = (
   const bodyStart = source.indexOf('{', functionStart);
   const nextDeclaration = source.indexOf('\nconst ', functionStart + 1);
 
-  if (nextDeclaration >= 0 && nextDeclaration < bodyStart) {
+  if (nextDeclaration !== -1 && nextDeclaration < bodyStart) {
     return source.slice(extractionStart, nextDeclaration).trimEnd();
   }
 
-  assert.ok(bodyStart >= 0);
+  assert.ok(bodyStart !== -1);
 
   let depth = 0;
 
   for (let index = bodyStart; index < source.length; index++) {
     if (source[index] === '{') {
-      depth++;
+      depth += 1;
     }
 
     if (source[index] === '}') {
-      depth--;
+      depth -= 1;
 
       if (depth === 0) {
         let end = index + 1;
@@ -409,7 +409,7 @@ describe('core benchmark scripts contract', () => {
       runIndex
     );
 
-    assert.ok(runIndex >= 0);
+    assert.ok(runIndex !== -1);
     assert.ok(gcAfterIndex > runIndex);
     assert.ok(heapAfterIndex > gcAfterIndex);
     assert.match(measureSource, /postRunGcAvailable/);
@@ -427,7 +427,7 @@ describe('core benchmark scripts contract', () => {
       source.indexOf('const collapseMs')
     );
 
-    assert.ok(setupStart >= 0);
+    assert.ok(setupStart !== -1);
     assert.ok(setupEnd > setupStart);
     assert.match(setupSource, /Editor\.replace\(editor/);
     assert.match(setupSource, /text:\s*'x'\.repeat\(steps \+ 20\)/);
@@ -449,9 +449,9 @@ describe('core benchmark scripts contract', () => {
     const promoteSource = measureSource.slice(promoteStart, elseStart);
     const nonPromoteSource = measureSource.slice(elseStart, disposeStart);
 
-    assert.ok(measureStart >= 0);
+    assert.ok(measureStart !== -1);
     assert.ok(measureEnd > measureStart);
-    assert.ok(promoteStart >= 0);
+    assert.ok(promoteStart !== -1);
     assert.ok(elseStart > promoteStart);
     assert.ok(disposeStart > elseStart);
 
@@ -461,7 +461,7 @@ describe('core benchmark scripts contract', () => {
       );
       const sampleGateIndex = branchSource.indexOf('if (iteration > 0)');
 
-      assert.ok(typingIndex >= 0);
+      assert.ok(typingIndex !== -1);
       assert.ok(sampleGateIndex > typingIndex);
       assert.match(branchSource, /\.\.\.typingMetrics/);
     }
@@ -475,7 +475,7 @@ describe('core benchmark scripts contract', () => {
     const getChildrenSource = source.slice(getChildrenStart, getSelectionStart);
     const getSelectionSource = source.slice(getSelectionStart, selectStart);
 
-    assert.ok(getChildrenStart >= 0);
+    assert.ok(getChildrenStart !== -1);
     assert.ok(getSelectionStart > getChildrenStart);
     assert.ok(selectStart > getSelectionStart);
     assert.ok(
@@ -1156,7 +1156,7 @@ describe('core benchmark scripts contract', () => {
     const insertTextStart = source.indexOf('const insertText =');
     const getChildrenSource = source.slice(getChildrenStart, insertTextStart);
 
-    assert.ok(getChildrenStart >= 0);
+    assert.ok(getChildrenStart !== -1);
     assert.ok(insertTextStart > getChildrenStart);
     assert.ok(
       getChildrenSource.indexOf('Editor.getChildren') <
@@ -1170,7 +1170,7 @@ describe('core benchmark scripts contract', () => {
     const normalizeStart = source.indexOf('const normalizeEditor =');
     const getChildrenSource = source.slice(getChildrenStart, normalizeStart);
 
-    assert.ok(getChildrenStart >= 0);
+    assert.ok(getChildrenStart !== -1);
     assert.ok(normalizeStart > getChildrenStart);
     assert.ok(
       getChildrenSource.indexOf('Editor.getChildren') <

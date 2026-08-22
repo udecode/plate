@@ -150,7 +150,7 @@ describe('AIChatPlugin streaming', () => {
 
   it('preserves closing code and math fences before trailing newlines', () => {
     const editor = createEditor();
-    const read = editor.plugin(AIChatPlugin).read;
+    const { read } = editor.plugin(AIChatPlugin);
 
     expect(
       read.serializeChunk(
@@ -199,7 +199,7 @@ describe('AIChatPlugin streaming', () => {
     });
 
     expect(editor.read.text.string([])).toBe('hello');
-    expect(Reflect.get(editor.read.children()[0]!, AI_PREVIEW_KEY)).toBe(true);
+    expect(Reflect.get(editor.read.children()[0], AI_PREVIEW_KEY)).toBe(true);
   });
 
   it('replaces a streamed heading when its canonical level changes', () => {

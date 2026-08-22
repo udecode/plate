@@ -85,7 +85,7 @@ mock.module('./link', () => ({
 }));
 
 const ButtonStub = ({ children }: React.PropsWithChildren) => (
-  <button>{children}</button>
+  <button type="button">{children}</button>
 );
 
 mock.module('./ai-toolbar-button', () => ({ AIToolbarButton: ButtonStub }));
@@ -110,7 +110,7 @@ mock.module('./turn-into-toolbar-button', () => ({
 mock.module('./toolbar', () => ({
   Toolbar: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
   ToolbarButton: ({ children }: React.PropsWithChildren) => (
-    <button>{children}</button>
+    <button type="button">{children}</button>
   ),
   ToolbarGroup: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>

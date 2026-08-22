@@ -5,6 +5,7 @@ import {
   defineExtension,
   ElementApi,
 } from '../../../packages/plite/src/index';
+import { getDefined } from '../../getDefined';
 
 const iterationsArgument = process.argv.find((argument) =>
   argument.startsWith('--iterations=')
@@ -21,7 +22,7 @@ if (!Number.isInteger(iterations) || iterations < 1) {
 }
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const cohorts = [
   { blocks: 100, name: 'normal' },
@@ -115,11 +116,16 @@ const rows = cohorts.map(({ blocks, name }) => {
 
 const maximumTouchedTargets = Math.max(
   ...rows.map(
-    ({ childrenVisits, contentVisits, iterations, propertyVisits }) =>
-      (childrenVisits + contentVisits + propertyVisits) / iterations
+    ({
+      childrenVisits,
+      contentVisits,
+      iterations: innerIterations,
+      propertyVisits,
+    }) => (childrenVisits + contentVisits + propertyVisits) / innerIterations
   )
 );
-const sizeRatio = rows.at(-1)!.p50Ms / Math.max(rows[0]!.p50Ms, 0.000_001);
+const sizeRatio =
+  getDefined(rows.at(-1)).p50Ms / Math.max(rows[0].p50Ms, 0.000001);
 
 const output = `${JSON.stringify(
   {

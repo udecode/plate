@@ -29,11 +29,11 @@ export const next = ((
   let match = normalizeNodeMatch(options.type, options.match);
 
   if (!at) {
-    return;
+    return undefined;
   }
 
   if (LocationApi.isPath(at) && at.length === 0) {
-    return;
+    return undefined;
   }
 
   let start: Span[0] | undefined;
@@ -57,7 +57,7 @@ export const next = ((
     : editorAfter(editor, at, { voids });
 
   if (!start) {
-    if (!pointAfterLocation) return;
+    if (!pointAfterLocation) return undefined;
 
     start = pointAfterLocation.path;
   }
@@ -65,7 +65,7 @@ export const next = ((
   const lastEntry = editorLast(editor, []);
 
   if (!lastEntry) {
-    return;
+    return undefined;
   }
 
   const [, to] = lastEntry;
@@ -84,6 +84,6 @@ export const next = ((
     }
   }
 
-  const [next] = nodes(editor, { at: span, match, mode, voids });
-  return next as never;
+  const [innerNext] = nodes(editor, { at: span, match, mode, voids });
+  return innerNext as never;
 }) as EditorStaticApi['next'];

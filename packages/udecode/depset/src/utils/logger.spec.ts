@@ -11,16 +11,16 @@ import {
 import { highlighter, logger } from './logger';
 
 describe('logger', () => {
-  const originalLog = console.log;
+  const originalInfo = console.info;
   let logMock: Mock<(...args: unknown[]) => void>;
 
   beforeEach(() => {
     logMock = mock((..._args: unknown[]) => {});
-    console.log = logMock;
+    console.info = logMock;
   });
 
   afterEach(() => {
-    console.log = originalLog;
+    console.info = originalInfo;
   });
 
   it('prints plain joined output for log and a blank line for break', () => {

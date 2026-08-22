@@ -4,6 +4,7 @@
 
 import { type Range, RangeApi } from '@platejs/plite';
 import {
+  failInvariant,
   positions as editorPositions,
   range as editorRange,
 } from '@platejs/plite/internal';
@@ -61,7 +62,11 @@ export const findCurrentLineRange = (
   }
 
   if (positions.length < 2) {
-    return editorRange(editor, positions.at(-1)!, parentRangeBoundary);
+    return editorRange(
+      editor,
+      positions.at(-1) ?? failInvariant('Expected value to be defined'),
+      parentRangeBoundary
+    );
   }
 
   while (middle !== positions.length && middle !== left) {

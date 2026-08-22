@@ -58,11 +58,11 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "workspace:^",
     "diff-match-patch-ts": "^0.6.0"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/plite-history": "workspace:^",
     "@platejs/plite-react": "workspace:^",
@@ -72,9 +72,21 @@
     "yjs": "13.6.30"
   },
   "peerDependencies": {
+    "@platejs/core": ">=54.0.0-beta.1",
     "@platejs/plite": ">=54.0.0-beta.0",
     "@platejs/plite-react": ">=54.0.0-beta.0",
     "react": ">=19.2.0",
     "yjs": ">=13.6.30"
+  },
+  "peerDependenciesMeta": {
+    "@platejs/core": {
+      "optional": true
+    },
+    "@platejs/plite-react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
   }
 }

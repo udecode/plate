@@ -202,7 +202,7 @@ describe('BaseTablePlugin deletion', () => {
         });
 
         it('remove the cells content', () => {
-          expect(editor.read.children()).toMatchObject(output.children!);
+          expect(editor.read.children()).toMatchObject(output.children);
         });
 
         it('preserves the structural cell selection', () => {
@@ -303,7 +303,7 @@ describe('BaseTablePlugin deletion', () => {
       },
     });
 
-    expect(editor.read.children()).toEqual([...input.children!, rootOwner]);
+    expect(editor.read.children()).toEqual([...input.children, rootOwner]);
     expect(editor.read.root(targetRoot)).toEqual([
       { children: [{ text: 'nd' }], type: 'paragraph' },
     ]);

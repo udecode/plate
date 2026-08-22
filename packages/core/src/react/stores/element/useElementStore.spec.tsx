@@ -14,7 +14,6 @@ import {
   useElementStore,
   runElementContext,
 } from './useElementStore';
-import { useOptionalPath } from './usePath';
 
 describe('ElementProvider', () => {
   const PlateWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -180,17 +179,6 @@ describe('ElementProvider', () => {
     return <div>{label + (element?.type ?? 'none')}</div>;
   };
 
-  const PathConsumer = ({
-    label = '',
-    plugin,
-  }: ConsumerProps & {
-    plugin: typeof AgePlugin | typeof MissingPlugin | typeof NamePlugin;
-  }) => {
-    const path = useOptionalPath(plugin);
-
-    return <div>{label + JSON.stringify(path)}</div>;
-  };
-
   const OptionalJsonConsumer = () => {
     const element = useOptionalElement();
 
@@ -215,6 +203,17 @@ describe('ElementProvider', () => {
       [ageElement]
     );
 
+    const ContextConsumer = () => {
+      const matchingName = useElement(NamePlugin);
+      const fallback = useElement();
+
+      return (
+        <div>
+          Name: {matchingName.name}; Fallback: {fallback.type}
+        </div>
+      );
+    };
+
     return runElementContext(
       {
         element: ageElement,
@@ -222,16 +221,7 @@ describe('ElementProvider', () => {
         path: ageEntry[1],
         scope: 'age',
       },
-      () => {
-        const matchingName = useElement(NamePlugin);
-        const fallback = useElement();
-
-        return (
-          <div>
-            Name: {matchingName.name}; Fallback: {fallback.type}
-          </div>
-        );
-      }
+      ContextConsumer
     );
   };
 
@@ -283,26 +273,6 @@ describe('ElementProvider', () => {
     (expect(getByText('Name: John; Fallback: age')) as any).toBeInTheDocument();
   });
 
-  it('returns the nearest matching scoped path without descriptor fallback', () => {
-    const { getByText } = render(
-      <PlateWrapper>
-        <NameElementProvider name="John">
-          <AgeElementProvider age={20}>
-            <NameElementProvider name="Jane">
-              <PathConsumer label="Name path: " plugin={NamePlugin} />
-              <PathConsumer label="Age path: " plugin={AgePlugin} />
-              <PathConsumer label="Missing path: " plugin={MissingPlugin} />
-            </NameElementProvider>
-          </AgeElementProvider>
-        </NameElementProvider>
-      </PlateWrapper>
-    );
-
-    (expect(getByText('Name path: [0]')) as any).toBeInTheDocument();
-    (expect(getByText('Age path: [1]')) as any).toBeInTheDocument();
-    (expect(getByText('Missing path: null')) as any).toBeInTheDocument();
-  });
-
   it('propagates updated elements to consumers', () => {
     const { getByText } = render(
       <PlateWrapper>
@@ -326,17 +296,17 @@ describe('ElementProvider', () => {
     (expect(getByText('Age 1: 20')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 140')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAge1').click());
+    act(() => getByText('updateAge1').click());
 
     (expect(getByText('Age 1: 30')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 140')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAge2').click());
+    act(() => getByText('updateAge2').click());
 
     (expect(getByText('Age 1: 30')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAge1').click());
+    act(() => getByText('updateAge1').click());
 
     (expect(getByText('Age 1: 40')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
@@ -347,7 +317,7 @@ describe('ElementProvider', () => {
     let innerProviderRenders = 0;
 
     const InnerConsumer = () => {
-      innerConsumerRenders++;
+      innerConsumerRenders += 1;
 
       const element = useElement();
 
@@ -355,7 +325,7 @@ describe('ElementProvider', () => {
     };
     const InnerProvider = React.memo(
       ({ children }: { children: React.ReactNode }) => {
-        innerProviderRenders++;
+        innerProviderRenders += 1;
 
         return <AgeElementProvider age={20}>{children}</AgeElementProvider>;
       }
@@ -379,7 +349,7 @@ describe('ElementProvider', () => {
     (expect(getByText('Outer name: John')) as any).toBeInTheDocument();
     (expect(getByText('Inner type: age')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateOuterName').click());
+    act(() => getByText('updateOuterName').click());
 
     (expect(getByText('Outer name: John!')) as any).toBeInTheDocument();
     (expect(getByText('Inner type: age')) as any).toBeInTheDocument();
@@ -395,21 +365,21 @@ describe('ElementProvider', () => {
     let nameConsumerRenders = 0;
 
     const ExactNameConsumer = React.memo(() => {
-      nameConsumerRenders++;
+      nameConsumerRenders += 1;
 
       const element = useElement(NamePlugin);
 
       return <div>Exact name: {element.name}</div>;
     });
     const InnerAgeConsumer = React.memo(() => {
-      ageConsumerRenders++;
+      ageConsumerRenders += 1;
 
       const element = useElement();
 
       return <div>Inner age: {(element as AgeElement).age}</div>;
     });
     const InnerProvider = React.memo(() => {
-      innerProviderRenders++;
+      innerProviderRenders += 1;
 
       return (
         <AgeElementProvider age={20}>
@@ -432,7 +402,7 @@ describe('ElementProvider', () => {
     const initialInnerProviderRenders = innerProviderRenders;
     const initialNameConsumerRenders = nameConsumerRenders;
 
-    void act(() => getByText('updateScopedName').click());
+    act(() => getByText('updateScopedName').click());
 
     (expect(getByText('Exact name: John!')) as any).toBeInTheDocument();
     (expect(getByText('Inner age: 20')) as any).toBeInTheDocument();
@@ -452,14 +422,14 @@ describe('ElementProvider', () => {
     let innerProviderRenders = 0;
 
     const InnerConsumer = React.memo(() => {
-      innerConsumerRenders++;
+      innerConsumerRenders += 1;
 
       const element = useElement(NamePlugin);
 
       return <div>Shadowed name: {element.name}</div>;
     });
     const InnerProvider = React.memo(() => {
-      innerProviderRenders++;
+      innerProviderRenders += 1;
 
       return (
         <NameElementProvider name="Jane">
@@ -480,7 +450,7 @@ describe('ElementProvider', () => {
     const initialInnerConsumerRenders = innerConsumerRenders;
     const initialInnerProviderRenders = innerProviderRenders;
 
-    void act(() => getByText('updateShadowedName').click());
+    act(() => getByText('updateShadowedName').click());
 
     (expect(getByText('Shadowed name: Jane')) as any).toBeInTheDocument();
     expect({ innerConsumerRenders, innerProviderRenders }).toEqual({
@@ -504,7 +474,7 @@ describe('ElementProvider', () => {
 
     (expect(getByText('Age store: 20')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAgeStore').click());
+    act(() => getByText('updateAgeStore').click());
 
     (expect(getByText('Age store: 30')) as any).toBeInTheDocument();
   });

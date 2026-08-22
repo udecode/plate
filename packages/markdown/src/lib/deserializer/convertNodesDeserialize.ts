@@ -1,4 +1,5 @@
 import type { Descendant } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
@@ -16,15 +17,14 @@ export const convertNodesDeserialize = (
   nodes: MdRootContent[],
   deco: MdDecoration,
   options: DeserializeMdContext
-): Descendant[] => {
-  return nodes.reduce<Descendant[]>((acc, node) => {
+): Descendant[] =>
+  nodes.reduce<Descendant[]>((acc, node) => {
     // Only process nodes that pass the filtering
     if (shouldIncludeNode(node, options)) {
       acc.push(...buildSlateNode(node, deco, options));
     }
     return acc;
   }, []);
-};
 
 export const buildSlateNode = (
   mdastNode: MdRootContent | UnistNode,
@@ -39,7 +39,7 @@ export const buildSlateNode = (
   ) => {
     const result = parser?.deserialize?.(mdastNode, deco, options);
 
-    if (result === undefined) return;
+    if (result === undefined) return undefined;
 
     return Array.isArray(result) ? result : [result];
   };
@@ -79,7 +79,7 @@ export const buildSlateNode = (
         options
       );
 
-      if (children.length !== 1 || !('children' in children[0]!)) {
+      if (children.length !== 1 || !('children' in children[0])) {
         throw new MarkdownBlockIdError(
           'Markdown block identity must wrap exactly one block element.'
         );
@@ -95,11 +95,13 @@ export const buildSlateNode = (
 
     if (type) {
       const hasCompiledSource =
-        options.compiledCodecs?.decodeBySource.has(source!) ?? false;
+        options.compiledCodecs?.decodeBySource.has(
+          source ?? failInvariant('Expected value to be defined')
+        ) ?? false;
       const compiled = options.compiledCodecs
         ? runMarkdownDecodeCodecs(
             options.compiledCodecs,
-            source!,
+            source ?? failInvariant('Expected value to be defined'),
             mdastNode,
             deco,
             options,

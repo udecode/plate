@@ -145,16 +145,28 @@ const exactRootNode = ({
   return null;
 };
 
+declare const wrapperProps: RenderNodeWrapperProps<
+  typeof WrapperBoundaryPlugin
+>;
+
+// @ts-expect-error Live position is an explicit usePath subscription, not a wrapper prop.
+void wrapperProps.path;
+void wrapperProps.renderPath;
+
 WrapperBoundaryPlugin.configure({
   render: {
     belowRootNodes: exactRootNode,
   },
 });
 
-const selectedTone = useElementSelector(
-  WrapperBoundaryPlugin,
-  ([element]) => element.wrapperTone
-);
+const useSelectedToneContract = () => {
+  const selectedTone = useElementSelector(
+    WrapperBoundaryPlugin,
+    ([element]) => element.wrapperTone
+  );
+
+  void selectedTone;
+};
 
 const UnrelatedWrapperPlugin = definePlatePlugin('unrelatedWrapper', {});
 
@@ -172,4 +184,4 @@ void adaptedWrapper;
 void exactRootNode;
 void exactStaticWrapper;
 void exactStaticRootNode;
-void selectedTone;
+void useSelectedToneContract;

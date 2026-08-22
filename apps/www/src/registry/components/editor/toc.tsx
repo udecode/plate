@@ -43,8 +43,8 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
   const navigation = useEditorPlugin(NavigationFeedbackPlugin);
   const isScroll = usePluginStore(TocPlugin, 'isScroll');
   const topOffset = usePluginStore(TocPlugin, 'topOffset');
-  const headingList = useEditorSelector((editor) =>
-    editor.plugin(TocPlugin).read.headings()
+  const headingList = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TocPlugin).read.headings()
   );
   const container = useEditorScrollElement(editor);
   const isScrollable =
@@ -109,7 +109,7 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
   }, [container, editor, headingList, isScrollable, status]);
 
   React.useEffect(() => {
-    if (!scrollContainer) return;
+    if (!scrollContainer) return undefined;
 
     const scroll = () => {
       setStatus(Date.now());

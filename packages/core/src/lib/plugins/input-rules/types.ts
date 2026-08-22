@@ -86,7 +86,7 @@ export type BaseInputRule<TContext = SelectionInputRuleContext> = {
 export type MarkInputRuleConfig = BaseInputRule<InsertTextInputRuleContext> & {
   end?: string;
   mark?: PluginReference | string;
-  marks?: readonly (PluginReference | string)[];
+  marks?: ReadonlyArray<PluginReference | string>;
   start: string;
   trim?: 'allow' | 'reject';
   trigger: string;
@@ -327,10 +327,9 @@ export type InputRulesDefinition<TEditor = BaseEditor> =
   | InputRulesConfig<TEditor>
   | ((ctx: InputRulesFactoryContext) => InputRulesConfig<TEditor>);
 
-export type InputRulesConfig<TEditor = BaseEditor> = (
-  | InputRule<any, TEditor>
-  | InputRuleReference
-)[];
+export type InputRulesConfig<TEditor = BaseEditor> = Array<
+  InputRule<any, TEditor> | InputRuleReference
+>;
 
 export type ResolvedInputRule = StoredInputRule & {
   id: string;
@@ -344,8 +343,8 @@ type DeepReadonly<T> = T extends AnyBasePlugin | PluginReference
   ? T
   : T extends (...args: any[]) => unknown
     ? T
-    : T extends readonly (infer TItem)[]
-      ? readonly DeepReadonly<TItem>[]
+    : T extends ReadonlyArray<infer TItem>
+      ? ReadonlyArray<DeepReadonly<TItem>>
       : T extends object
         ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
         : T;
@@ -353,23 +352,22 @@ type DeepReadonly<T> = T extends AnyBasePlugin | PluginReference
 type ReadonlyResolvedInputRule = DeepReadonly<ResolvedInputRule>;
 
 export type ResolvedInputRulesMeta = Readonly<{
-  insertBreak: readonly Extract<
-    ReadonlyResolvedInputRule,
-    { target: 'insertBreak' }
-  >[];
-  insertData: readonly Extract<
-    ReadonlyResolvedInputRule,
-    { target: 'insertData' }
-  >[];
+  insertBreak: ReadonlyArray<
+    Extract<ReadonlyResolvedInputRule, { target: 'insertBreak' }>
+  >;
+  insertData: ReadonlyArray<
+    Extract<ReadonlyResolvedInputRule, { target: 'insertData' }>
+  >;
   insertText: Readonly<{
-    all: readonly Extract<
-      ReadonlyResolvedInputRule,
-      { target: 'insertText' }
-    >[];
+    all: ReadonlyArray<
+      Extract<ReadonlyResolvedInputRule, { target: 'insertText' }>
+    >;
     byTrigger: Readonly<
       Record<
         string,
-        readonly Extract<ReadonlyResolvedInputRule, { target: 'insertText' }>[]
+        ReadonlyArray<
+          Extract<ReadonlyResolvedInputRule, { target: 'insertText' }>
+        >
       >
     >;
   }>;

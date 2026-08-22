@@ -147,7 +147,14 @@ describe('BaseIndentPlugin', () => {
       ],
     });
 
-    expect(editor.plugin(BaseIndentPlugin).targetPlugins.join()).toBe('quote');
+    expect(
+      editor
+        .plugin(BaseIndentPlugin)
+        .targetPlugins.map((innerTarget) =>
+          typeof innerTarget === 'string' ? innerTarget : innerTarget.name
+        )
+        .join(',')
+    ).toBe('quote');
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
       type: 'quote',
@@ -291,7 +298,7 @@ describe('BaseIndentPlugin', () => {
 
     expect(paragraph.dataset.indent).toBe('2');
     expect(paragraph.style.marginLeft).toBe('20em');
-    expect(editor.api.html.deserialize({ element: html! })).toEqual([
+    expect(editor.api.html.deserialize({ element: html })).toEqual([
       ...editor.read.children(),
     ]);
   });

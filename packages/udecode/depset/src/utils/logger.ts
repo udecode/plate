@@ -9,21 +9,21 @@ export const highlighter = {
 
 export const logger = {
   break() {
-    console.log('');
+    console.info('');
   },
   error(...args: unknown[]) {
-    console.log(highlighter.error(args.join(' ')));
+    console.info(highlighter.error(args.join(' ')));
   },
   info(...args: unknown[]) {
-    console.log(highlighter.info(args.join(' ')));
+    console.info(highlighter.info(args.join(' ')));
   },
   log(...args: unknown[]) {
-    console.log(args.join(' '));
+    console.info(args.join(' '));
   },
   success(...args: unknown[]) {
-    console.log(highlighter.success(args.join(' ')));
+    console.info(highlighter.success(args.join(' ')));
   },
   warn(...args: unknown[]) {
-    console.log(highlighter.warn(args.join(' ')));
+    console.info(highlighter.warn(args.join(' ')));
   },
 };

@@ -90,8 +90,13 @@ describe('BaseTablePlugin', () => {
       throw new TypeError('Table cell props must be functions');
     }
 
-    const getProps = (props: Function, element: TableCellElement): unknown =>
-      props({ element });
+    const getProps = (props: unknown, element: TableCellElement): unknown => {
+      if (typeof props !== 'function') {
+        throw new TypeError('Table cell props must be functions');
+      }
+
+      return Reflect.apply(props, undefined, [{ element }]);
+    };
 
     const tdElement: TableCellElement = {
       children: [{ text: '' }],

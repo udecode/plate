@@ -2,7 +2,6 @@ import {
   defineExtension,
   defineEditorSchema,
   editorCommands,
-  type Node,
   NodeApi,
   PathApi,
   PointApi,
@@ -148,7 +147,7 @@ type ListType = (typeof LIST_TYPES)[number];
 type RichTextElementFormat = RichTextElementType | AlignType | ListType;
 
 const MARK_HOTKEYS = Object.entries(HOTKEYS);
-const BLOCK_HOTKEYS: [string, RichTextElementFormat][] = [
+const BLOCK_HOTKEYS: Array<[string, RichTextElementFormat]> = [
   ['mod+alt+0', 'paragraph'],
   ['mod+alt+1', 'heading-one'],
   ['mod+alt+2', 'heading-two'],
@@ -325,11 +324,11 @@ const normalizeRichTextHtmlNode = (node: unknown): RichTextDescendant[] => {
     return [toRichTextLeaf(node)];
   }
 
-  if (!node || typeof node !== 'object' || !NodeApi.isElement(node as Node)) {
+  if (!node || typeof node !== 'object' || !NodeApi.isElement(node)) {
     return [];
   }
 
-  const pliteElement = node as PliteElement;
+  const pliteElement = node;
   const children = normalizeRichTextHtmlChildren(pliteElement.children);
   if (
     !RICH_TEXT_HTML_BLOCK_TYPES.has(pliteElement.type as RichTextElementType)
@@ -340,10 +339,10 @@ const normalizeRichTextHtmlNode = (node: unknown): RichTextDescendant[] => {
   const element: RichTextElement = {
     type: pliteElement.type as RichTextElementType,
     children: children.length > 0 ? children : [{ text: '' }],
-  } as RichTextElement;
+  };
 
   return typeof pliteElement.align === 'string'
-    ? [{ ...element, align: pliteElement.align } as RichTextElement]
+    ? [{ ...element, align: pliteElement.align }]
     : [element];
 };
 
@@ -369,7 +368,7 @@ const normalizeRichTextHtmlFragment = (fragment: unknown): RichTextValue => {
     }
 
     flushInlineChildren();
-    value.push(node as RichTextElement);
+    value.push(node);
   }
 
   flushInlineChildren();
@@ -484,6 +483,8 @@ const handleRichTextKeyDown = (
       return true;
     }
   }
+
+  return undefined;
 };
 
 const isBlockActive = (
@@ -520,56 +521,64 @@ const Element = ({
     style.textAlign = element.align as AlignType;
   }
   switch (element.type) {
-    case 'block-quote':
+    case 'block-quote': {
       return (
         <blockquote style={style} {...attributes}>
           {children}
         </blockquote>
       );
-    case 'bulleted-list':
+    }
+    case 'bulleted-list': {
       return (
         <ul style={style} {...attributes}>
           {children}
         </ul>
       );
-    case 'heading-one':
+    }
+    case 'heading-one': {
       return (
         <h1 style={style} {...attributes}>
           {children}
         </h1>
       );
-    case 'heading-two':
+    }
+    case 'heading-two': {
       return (
         <h2 style={style} {...attributes}>
           {children}
         </h2>
       );
-    case 'list-item':
+    }
+    case 'list-item': {
       return (
         <li style={style} {...attributes}>
           {children}
         </li>
       );
-    case 'numbered-list':
+    }
+    case 'numbered-list': {
       return (
         <ol style={style} {...attributes}>
           {children}
         </ol>
       );
-    default:
+    }
+    default: {
       return (
         <p style={style} {...attributes}>
           {children}
         </p>
       );
+    }
   }
 };
 
 const Leaf = ({
   attributes,
-  children,
+  children: initialChildren,
   leaf,
 }: RenderLeafProps<RichTextText>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -610,18 +619,22 @@ interface BlockButtonProps {
 
 const BlockButton = ({ format, icon }: BlockButtonProps) => {
   const editor = useEditor();
-  const active = useEditorSelector((editor) =>
-    isBlockActive(editor, format, isAlignType(format) ? 'align' : 'type')
+  const active = useEditorSelector((innerEditor) =>
+    isBlockActive(innerEditor, format, isAlignType(format) ? 'align' : 'type')
   );
-  const runCommand = () => toggleBlock(editor, format);
+  const runCommand = () => {
+    toggleBlock(editor, format);
+  };
   return (
     <Button
       active={active}
       data-test-id={`block-button-${format}`}
-      onClick={(event) => handleToolbarButtonClick(event, runCommand)}
-      onPointerDown={(event) =>
-        handleToolbarButtonPointerDown(event, runCommand)
-      }
+      onClick={(event) => {
+        handleToolbarButtonClick(event, runCommand);
+      }}
+      onPointerDown={(event) => {
+        handleToolbarButtonPointerDown(event, runCommand);
+      }}
     >
       <Icon>{icon}</Icon>
     </Button>
@@ -630,15 +643,19 @@ const BlockButton = ({ format, icon }: BlockButtonProps) => {
 
 const ClearFormattingButton = () => {
   const editor = useEditor();
-  const runCommand = () => clearRichTextFormatting(editor);
+  const runCommand = () => {
+    clearRichTextFormatting(editor);
+  };
 
   return (
     <Button
       data-test-id="clear-formatting-button"
-      onClick={(event) => handleToolbarButtonClick(event, runCommand)}
-      onPointerDown={(event) =>
-        handleToolbarButtonPointerDown(event, runCommand)
-      }
+      onClick={(event) => {
+        handleToolbarButtonClick(event, runCommand);
+      }}
+      onPointerDown={(event) => {
+        handleToolbarButtonPointerDown(event, runCommand);
+      }}
     >
       <Icon>format_clear</Icon>
     </Button>
@@ -653,17 +670,21 @@ interface MarkButtonProps {
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
   const editor = useEditor();
   const active = useEditorSelector(
-    (editor) => editor.read.marks()?.[format] === true
+    (innerEditor2) => innerEditor2.read.marks()?.[format] === true
   );
-  const runCommand = () => editor.update.marks.toggle(format);
+  const runCommand = () => {
+    editor.update.marks.toggle(format);
+  };
   return (
     <Button
       active={active}
       data-test-id={`mark-button-${format}`}
-      onClick={(event) => handleToolbarButtonClick(event, runCommand)}
-      onPointerDown={(event) =>
-        handleToolbarButtonPointerDown(event, runCommand)
-      }
+      onClick={(event) => {
+        handleToolbarButtonClick(event, runCommand);
+      }}
+      onPointerDown={(event) => {
+        handleToolbarButtonPointerDown(event, runCommand);
+      }}
     >
       <Icon>{icon}</Icon>
     </Button>

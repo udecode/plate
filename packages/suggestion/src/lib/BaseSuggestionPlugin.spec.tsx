@@ -507,7 +507,7 @@ import {
   describe('BaseSuggestionPlugin.api.keys', () => {
     it('finds suggestion keys and resolves real user ids from suggestion data', () => {
       const editor = createBaseEditor({ plugins: [BaseSuggestionPlugin] });
-      const api = editor.plugin(BaseSuggestionPlugin).api;
+      const { api } = editor.plugin(BaseSuggestionPlugin);
       const node = {
         bold: true,
         suggestion: true,
@@ -1013,7 +1013,7 @@ import {
       const input = (
         <editor>
           <hp>
-            <htext suggestion_1={existingData as any} suggestion>
+            <htext suggestion_1={existingData} suggestion>
               <anchor />
               test
               <focus />
@@ -1434,7 +1434,7 @@ import {
       const input = (
         <editor>
           <hp>
-            <htext bold suggestion_1={existingData as any} suggestion>
+            <htext bold suggestion_1={existingData} suggestion>
               <anchor />
               test
               <focus />
@@ -1576,7 +1576,7 @@ import {
         suggestionId: 's-1',
       });
 
-      const children = editor.read.children()[0].children;
+      const { children } = editor.read.children()[0];
       const markedTextNodes = children.filter(
         (node) =>
           TextApi.isText(node) &&
@@ -1640,7 +1640,7 @@ import {
         suggestionId: 's-1',
       });
 
-      const children = editor.read.children()[0].children;
+      const { children } = editor.read.children()[0];
       const markedTextNode = children.find(
         (node) =>
           editor.plugin(BaseSuggestionPlugin).api.inlineData(node)?.id === 's-1'
@@ -2945,7 +2945,7 @@ import {
 
     it('returns suggestion ids for inline and block nodes', () => {
       const editor = createEditor();
-      const api = editor.plugin(BaseSuggestionPlugin).api;
+      const { api } = editor.plugin(BaseSuggestionPlugin);
 
       expect(api.id(editor.read.children()[0].children[0] as any)).toBe(
         'inline'
@@ -2971,7 +2971,7 @@ import {
 
     it('returns suggestion data', () => {
       const editor = createEditor();
-      const api = editor.plugin(BaseSuggestionPlugin).api;
+      const { api } = editor.plugin(BaseSuggestionPlugin);
 
       expect(
         api.suggestionData(editor.read.children()[0].children[0] as any)
@@ -3172,7 +3172,7 @@ import {
         ]
       );
 
-      const inserted = ((value[0] as any).children[0] as any).children[1];
+      const inserted = (value[0] as any).children[0].children[1];
 
       expect(inserted).toMatchObject({
         suggestion: true,

@@ -7,6 +7,7 @@ import {
   type Path,
   type Element,
 } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 
 import {
   getCompiledPlatePlugin,
@@ -166,23 +167,25 @@ export const OverridePlugin = defineBasePlugin('override', {
     hasRules: (plugin: AnyBasePlugin) => boolean
   ) => {
     for (const name of getPlateRuntime(editor).pluginCache.rules.match) {
-      const plugin = getCompiledPlatePlugin(editor, name)!;
-      const match = plugin?.rules?.match;
+      const innerPlugin =
+        getCompiledPlatePlugin(editor, name) ??
+        failInvariant('Expected value to be defined');
+      const match = innerPlugin?.rules?.match;
 
       if (
-        plugin &&
-        hasRules(plugin) &&
+        innerPlugin &&
+        hasRules(innerPlugin) &&
         typeof match === 'function' &&
         Reflect.apply(match, undefined, [
           {
-            ...createPluginContext(editor, plugin),
+            ...createPluginContext(editor, innerPlugin),
             node,
             path,
             rule,
           },
         ])
       ) {
-        return plugin;
+        return innerPlugin;
       }
     }
 
@@ -193,7 +196,7 @@ export const OverridePlugin = defineBasePlugin('override', {
     blockNode: Element,
     blockPath: Path
   ) => {
-    const plugin = getCompiledPlatePluginByType(editor, blockNode.type);
+    const innerPlugin2 = getCompiledPlatePluginByType(editor, blockNode.type);
     const overridePlugin = getRuleOverridePlugin(
       rule,
       blockNode,
@@ -201,14 +204,14 @@ export const OverridePlugin = defineBasePlugin('override', {
       (candidate) => !!candidate.rules?.break
     );
 
-    return overridePlugin?.rules.break ?? plugin?.rules?.break;
+    return overridePlugin?.rules.break ?? innerPlugin2?.rules?.break;
   };
   const getEffectiveDeleteRules = (
     rule: MatchRules,
     blockNode: Element,
     blockPath: Path
   ) => {
-    const plugin = getCompiledPlatePluginByType(editor, blockNode.type);
+    const innerPlugin3 = getCompiledPlatePluginByType(editor, blockNode.type);
     const overridePlugin = getRuleOverridePlugin(
       rule,
       blockNode,
@@ -216,19 +219,21 @@ export const OverridePlugin = defineBasePlugin('override', {
       (candidate) => !!candidate.rules?.delete
     );
 
-    return overridePlugin?.rules.delete ?? plugin?.rules?.delete;
+    return overridePlugin?.rules.delete ?? innerPlugin3?.rules?.delete;
   };
   const shouldRemoveEmptyMergeTarget = (node: Element, path: Path) => {
     const type = typeof node.type === 'string' ? node.type : undefined;
-    const plugin = type
+    const innerPlugin4 = type
       ? getCompiledPlatePluginByType(editor, type)
       : undefined;
 
-    if (!plugin) return true;
-    if (!plugin.rules?.merge?.removeEmpty) return false;
+    if (!innerPlugin4) return true;
+    if (!innerPlugin4.rules?.merge?.removeEmpty) return false;
 
     for (const name of getPlateRuntime(editor).pluginCache.rules.match) {
-      const overridePlugin = getCompiledPlatePlugin(editor, name)!;
+      const overridePlugin =
+        getCompiledPlatePlugin(editor, name) ??
+        failInvariant('Expected value to be defined');
       const match = overridePlugin?.rules?.match;
 
       if (
@@ -464,8 +469,8 @@ export const OverridePlugin = defineBasePlugin('override', {
             return;
           }
 
-          const plugin = getCompiledPlatePluginByType(editor, node.type);
-          const normalizeRules = plugin?.rules.normalize;
+          const innerPlugin5 = getCompiledPlatePluginByType(editor, node.type);
+          const normalizeRules = innerPlugin5?.rules.normalize;
           const overridePlugin = getRuleOverridePlugin(
             'normalize.removeEmpty',
             node,

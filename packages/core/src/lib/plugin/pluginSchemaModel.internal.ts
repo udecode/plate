@@ -100,7 +100,7 @@ export type InferPluginAdditionalSchemaPropertyHandles<
   C extends AnyBasePluginDefinition,
 > =
   IsAny<C> extends true
-    ? Readonly<Record<string, SchemaPropertyHandle<SchemaPropertyKey>>>
+    ? Readonly<Record<string, SchemaPropertyHandle>>
     : Readonly<
         PluginElementPropertyHandles<InferPluginSchemaDeclaration<C>> &
           PluginDeclaredPropertyHandles<InferPluginSchemaDeclaration<C>>
@@ -297,17 +297,19 @@ type PluginDeclarationProperties<TDeclaration> =
     ? TProperties extends Readonly<
         Record<string, SchemaProperty | SchemaPropertyDefinition>
       >
-      ? readonly {
-          [
-            TLocalId in Extract<keyof TProperties, string>
-          ]: TProperties[TLocalId] extends infer TProperty extends
-            | SchemaProperty
-            | SchemaPropertyDefinition
-            ? TProperty extends SchemaProperty
-              ? TProperty
-              : Readonly<{ key: TLocalId }> & TProperty
-            : never;
-        }[Extract<keyof TProperties, string>][]
+      ? ReadonlyArray<
+          {
+            [
+              TLocalId in Extract<keyof TProperties, string>
+            ]: TProperties[TLocalId] extends infer TProperty extends
+              | SchemaProperty
+              | SchemaPropertyDefinition
+              ? TProperty extends SchemaProperty
+                ? TProperty
+                : Readonly<{ key: TLocalId }> & TProperty
+              : never;
+          }[Extract<keyof TProperties, string>]
+        >
       : readonly []
     : readonly [];
 

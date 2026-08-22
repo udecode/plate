@@ -25,14 +25,14 @@ export function* levels<T extends Node>(
     return;
   }
 
-  const levels: NodeEntry<T>[] = [];
+  const innerLevels: Array<NodeEntry<T>> = [];
   const path = editorPath(editor, at);
 
   for (const [n, p] of NodeApi.levels(editor, path)) {
     const isVoid = !voids && NodeApi.isElement(n) && editorIsVoid(editor, n);
 
     if (match(n, p)) {
-      levels.push([n, p] as unknown as NodeEntry<T>);
+      innerLevels.push([n, p] as unknown as NodeEntry<T>);
     }
 
     if (isVoid) {
@@ -41,8 +41,8 @@ export function* levels<T extends Node>(
   }
 
   if (reverse) {
-    levels.reverse();
+    innerLevels.reverse();
   }
 
-  yield* levels;
+  yield* innerLevels;
 }

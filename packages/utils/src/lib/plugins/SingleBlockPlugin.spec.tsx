@@ -41,7 +41,7 @@ describe('SingleBlockPlugin', () => {
   });
 
   it('convert hard breaks to soft breaks', () => {
-    const input = (
+    const innerInput = (
       <editor>
         <hp>
           test
@@ -52,8 +52,8 @@ describe('SingleBlockPlugin', () => {
     const editor = createPlateEditor({
       editor: createEditor<Value>(),
       plugins: [SingleBlockPlugin],
-      selection: input.selection,
-      initialValue: input.children,
+      selection: innerInput.selection,
+      initialValue: innerInput.children,
     });
 
     editor.update.break.insert();

@@ -51,16 +51,21 @@ const HoveringMenuExample = () => {
       <Editable
         onDOMBeforeInput={(event) => {
           switch (event.inputType) {
-            case 'formatBold':
+            case 'formatBold': {
               toggleMark(editor, 'bold');
               return true;
-            case 'formatItalic':
+            }
+            case 'formatItalic': {
               toggleMark(editor, 'italic');
               return true;
-            case 'formatUnderline':
+            }
+            case 'formatUnderline': {
               toggleMark(editor, 'underline');
               return true;
+            }
           }
+
+          return undefined;
         }}
         placeholder="Enter some text..."
         renderLeaf={Leaf}
@@ -69,7 +74,12 @@ const HoveringMenuExample = () => {
   );
 };
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -165,17 +175,23 @@ const handleToolbarButtonPointerDown = (
 
 const FormatButton = ({ format, icon }: FormatButtonProps) => {
   const editor = useEditor();
-  const active = useEditorSelector((editor) => isMarkActive(editor, format));
-  const runCommand = () => toggleMark(editor, format);
+  const active = useEditorSelector((innerEditor) =>
+    isMarkActive(innerEditor, format)
+  );
+  const runCommand = () => {
+    toggleMark(editor, format);
+  };
 
   return (
     <Button
       active={active}
       data-test-id={`hovering-toolbar-button-${format}`}
-      onClick={(event) => handleToolbarButtonClick(event, runCommand)}
-      onPointerDown={(event) =>
-        handleToolbarButtonPointerDown(event, runCommand)
-      }
+      onClick={(event) => {
+        handleToolbarButtonClick(event, runCommand);
+      }}
+      onPointerDown={(event) => {
+        handleToolbarButtonPointerDown(event, runCommand);
+      }}
       reversed
     >
       <Icon>{icon}</Icon>

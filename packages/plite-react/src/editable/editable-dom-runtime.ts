@@ -61,7 +61,7 @@ const EDITABLE_FOCUS_SUBSCRIBERS_BY_RUNTIME = new WeakMap<
 >();
 const MODEL_SELECTION_DOM_PREFERENCE_TTL_MS = 5000;
 
-const runAllRuntimeSteps = (steps: readonly (() => void)[]) => {
+const runAllRuntimeSteps = (steps: ReadonlyArray<() => void>) => {
   let firstError: unknown;
   let hasError = false;
 
@@ -130,15 +130,24 @@ export const findMountedEditableDOMRuntime = (
 };
 
 /** Resolve the connected runtime for a mounted React editor view. */
+export const getMountedEditableDOMRuntimes = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: ReactRuntimeEditor<V, TExtensions>
+): readonly EditableDOMRuntime[] =>
+  [...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(editor.api) ?? [])].filter(
+    (runtime) => runtime.connected && runtime.rootRef.current !== null
+  );
+
+/** Resolve one connected runtime for a mounted React editor view. */
 export const getMountedEditableDOMRuntime = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
   editor: ReactRuntimeEditor<V, TExtensions>
 ): EditableDOMRuntime | null =>
-  [...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(editor.api) ?? [])].find(
-    (runtime) => runtime.connected && runtime.rootRef.current !== null
-  ) ?? null;
+  getMountedEditableDOMRuntimes(editor)[0] ?? null;
 
 export const hasMountedEditableCompositionOwner = (
   editor: ReactRuntimeEditor,
@@ -273,14 +282,17 @@ export class EditableDOMRuntime {
     this.readOnlyValue = readOnly;
     this.rootRuntime = new DOMRootRuntime({
       adapter: this,
-      afterRootMount: () => this.attachNativeInputListeners(),
-      beforeRootTeardown: () =>
+      afterRootMount: () => {
+        this.attachNativeInputListeners();
+      },
+      beforeRootTeardown: () => {
         runAllRuntimeSteps([
           () => this.androidInputManagerRef.current?.prepareDOMTeardown(),
           () => this.resetSchedulerBackedInputState(),
           () => this.detachNativeInputListeners(),
           () => this.clearModelSelectionDOMPreference(),
-        ]),
+        ]);
+      },
       editor,
       getAndroidMutationHandler: () =>
         this.androidInputManagerRef.current?.handleDomMutations ?? null,
@@ -325,15 +337,22 @@ export class EditableDOMRuntime {
 
         this.browserHandleRangeAnchors.current.clear();
         runAllRuntimeSteps([
-          () =>
+          () => {
             runAllRuntimeSteps(
               rangeAnchors.map((rangeAnchor) => () => rangeAnchor.release())
-            ),
-          () => this.clearVerticalGoal(),
-          () => this.disconnectVerticalGoalOwner(),
+            );
+          },
+          () => {
+            this.clearVerticalGoal();
+          },
+          () => {
+            this.disconnectVerticalGoalOwner();
+          },
         ]);
       },
-      onRepair: (evidence) => this.integrityRepairHandler(evidence),
+      onRepair: (evidence) => {
+        this.integrityRepairHandler(evidence);
+      },
       resolvePath: (mutation) => {
         const targetElement =
           mutation.target.nodeType === ELEMENT_NODE
@@ -590,7 +609,9 @@ export class EditableDOMRuntime {
       throw error;
     }
 
-    return () => this.destroy();
+    return () => {
+      this.destroy();
+    };
   }
 
   destroy() {
@@ -615,7 +636,9 @@ export class EditableDOMRuntime {
   }
 
   requestSelectionExportAfterDOMCommit() {
-    const exportSelection = () => this.selectionExportAfterDOMCommitHandler();
+    const exportSelection = () => {
+      this.selectionExportAfterDOMCommitHandler();
+    };
 
     this.domPhaseScheduler.schedule(
       'selection-repair',
@@ -750,8 +773,7 @@ export class EditableDOMRuntime {
   }
 
   private resetSchedulerBackedInputState() {
-    const pendingCompositionEnd =
-      this.inputController.state.pendingCompositionEnd;
+    const { pendingCompositionEnd } = this.inputController.state;
     const ownedComposition =
       this.inputController.state.isComposing ||
       this.inputController.state.compositionSession !== null ||
@@ -764,7 +786,9 @@ export class EditableDOMRuntime {
     );
 
     runAllRuntimeSteps([
-      () => this.cancelUserInputFrame(),
+      () => {
+        this.cancelUserInputFrame();
+      },
       () => {
         if (pendingCompositionEnd?.ownership === 'plite') {
           pendingCompositionEnd.flush({ publish: false });
@@ -789,18 +813,23 @@ export class EditableDOMRuntime {
       },
       ...(siblingOwnsComposition
         ? [
-            () =>
+            () => {
               restoreEditableCompositionRuntimeMarks(
                 this.editorValue,
                 runtimeMarks
-              ),
+              );
+            },
           ]
         : !ownedComposition
           ? []
           : [
-              () => clearEditableCompositionRuntimeState(this.editorValue),
+              () => {
+                clearEditableCompositionRuntimeState(this.editorValue);
+              },
               () => IS_COMPOSING.set(this.editorValue, false),
-              () => setEditorComposing(this.editorValue, false),
+              () => {
+                setEditorComposing(this.editorValue, false);
+              },
             ]),
     ]);
   }

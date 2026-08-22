@@ -7,7 +7,7 @@ import {
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
-import { createReactEditor, PliteElement } from '../src';
+import { createReactEditor, PliteElement, usePliteNodeRef } from '../src';
 import {
   EditorContext,
   ElementContext,
@@ -17,6 +17,7 @@ import {
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
+  syncPliteNodePathBindingsToDOM,
 } from '../src/hooks/use-plite-node-ref';
 
 const readElement = (
@@ -136,5 +137,52 @@ describe('PliteElement node ref binding', () => {
     element?.setAttribute('data-plite-path', '1');
 
     expect(getPliteNodeElementByPath(editor, [0])).toBe(null);
+  });
+
+  test('repairs a stale declarative path after an external rerender', () => {
+    const editor = createReactEditor({
+      initialValue: [
+        { type: 'block', children: [{ text: 'one' }] },
+        { type: 'block', children: [{ text: 'two' }] },
+      ],
+    });
+    const nodeKey = editorGetNodeKey(editor, [0]);
+    const pliteNode = readElement(editor, [0]);
+
+    if (!nodeKey) {
+      throw new Error('Missing node key at 0');
+    }
+
+    const BoundNode = ({ revision }: { revision: number }) => {
+      const ref = usePliteNodeRef(nodeKey, { path: [0], pliteNode });
+
+      return (
+        <div
+          data-plite-path="0"
+          data-revision={revision}
+          data-testid="bound-node"
+          ref={ref}
+        />
+      );
+    };
+    const renderNode = (revision: number) => (
+      <EditorContext value={editor}>
+        <BoundNode revision={revision} />
+      </EditorContext>
+    );
+    const rendered = render(renderNode(0));
+    const element = rendered.getByTestId('bound-node');
+
+    act(() => {
+      editorMoveNodes(editor, { at: [0], to: [2] });
+      syncPliteNodePathBindingsToDOM(editor, [nodeKey]);
+    });
+
+    expect(element.getAttribute('data-plite-path')).toBe('1');
+    element.setAttribute('data-plite-path', '0');
+    rendered.rerender(renderNode(1));
+
+    expect(element.getAttribute('data-plite-path')).toBe('1');
+    expect(getPliteNodePathFromDOMElement(element)).toEqual([1]);
   });
 });

@@ -318,6 +318,7 @@ const Chunk = ({
 };
 
 const PlateHeading = ({
+  children,
   showSelectedHeadings = false,
   style: styleProp,
   ...props
@@ -334,7 +335,9 @@ const PlateHeading = ({
       {...props}
       data-selected={highlightSelected ? '' : undefined}
       style={style}
-    />
+    >
+      {children}
+    </h1>
   );
 };
 
@@ -361,7 +364,7 @@ const Element = ({
 
   switch (element.type) {
     case 'h1':
-    case 'heading-one':
+    case 'heading-one': {
       if (engine === 'upstream-slate') {
         return (
           <h1 {...attributes} style={style}>
@@ -379,12 +382,14 @@ const Element = ({
           {children}
         </PlateHeading>
       );
-    default:
+    }
+    default: {
       return (
         <Paragraph {...attributes} style={style}>
           {children}
         </Paragraph>
       );
+    }
   }
 };
 
@@ -448,7 +453,7 @@ function EnginePane({
   ]);
 
   useEffect(() => {
-    if (!getBrowserSupportsEventTiming()) return;
+    if (!getBrowserSupportsEventTiming()) return undefined;
 
     const observer = new PerformanceObserver((list) => {
       if (!active) return;
@@ -471,11 +476,13 @@ function EnginePane({
     // @ts-expect-error browser API typing lags the runtime here
     observer.observe({ type: 'event', durationThreshold: 16 });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [active]);
 
   useEffect(() => {
-    if (!getBrowserSupportsLoafTiming()) return;
+    if (!getBrowserSupportsLoafTiming()) return undefined;
 
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
@@ -488,7 +495,9 @@ function EnginePane({
 
     observer.observe({ type: 'long-animation-frame' });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   const renderElement = useCallback(
@@ -533,7 +542,7 @@ function EnginePane({
     </Slate>
   ) : (
     <Plate
-      editor={editor as any}
+      editor={editor}
       onCommit={() => {
         afterChange.current = true;
       }}
@@ -555,7 +564,9 @@ function EnginePane({
 
   return (
     <section
-      onFocusCapture={() => onFocus(engine)}
+      onFocusCapture={() => {
+        onFocus(engine);
+      }}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -629,11 +640,11 @@ function PerformanceControls({
         <label>
           Blocks:{' '}
           <select
-            onChange={(event) =>
+            onChange={(event) => {
               setConfig({
                 blocks: Number.parseInt(event.target.value, 10),
-              })
-            }
+              });
+            }}
             value={config.blocks}
           >
             {HUGE_DOCUMENT_BLOCK_OPTIONS.map((blocks) => (
@@ -649,11 +660,11 @@ function PerformanceControls({
         <label>
           Mounted editors:{' '}
           <select
-            onChange={(event) =>
+            onChange={(event) => {
               setConfig({
                 mountedEngines: event.target.value as Config['mountedEngines'],
-              })
-            }
+              });
+            }}
             value={config.mountedEngines}
           >
             <option value="both">Plate + upstream Slate</option>
@@ -664,7 +675,9 @@ function PerformanceControls({
       </p>
 
       <details
-        onToggle={(event) => setConfigurationOpen(event.currentTarget.open)}
+        onToggle={(event) => {
+          setConfigurationOpen(event.currentTarget.open);
+        }}
         open={configurationOpen}
       >
         <summary>Configuration</summary>
@@ -673,11 +686,11 @@ function PerformanceControls({
           <label>
             <input
               checked={config.chunking}
-              onChange={(event) =>
+              onChange={(event) => {
                 setConfig({
                   chunking: event.target.checked,
-                })
-              }
+                });
+              }}
               type="checkbox"
             />{' '}
             Chunking enabled
@@ -690,11 +703,11 @@ function PerformanceControls({
               <label>
                 <input
                   checked={config.chunkDivs}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setConfig({
                       chunkDivs: event.target.checked,
-                    })
-                  }
+                    });
+                  }}
                   type="checkbox"
                 />{' '}
                 Render each chunk as a separate <code>&lt;div&gt;</code>
@@ -706,11 +719,11 @@ function PerformanceControls({
                 <label>
                   <input
                     checked={config.chunkOutlines}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setConfig({
                         chunkOutlines: event.target.checked,
-                      })
-                    }
+                      });
+                    }}
                     type="checkbox"
                   />{' '}
                   Outline each chunk
@@ -722,11 +735,11 @@ function PerformanceControls({
               <label>
                 Chunk size:{' '}
                 <select
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setConfig({
                       chunkSize: Number.parseInt(event.target.value, 10),
-                    })
-                  }
+                    });
+                  }}
                   value={config.chunkSize}
                 >
                   {HUGE_DOCUMENT_CHUNK_SIZE_OPTIONS.map((chunkSize) => (
@@ -744,12 +757,12 @@ function PerformanceControls({
           <label>
             Set <code>content-visibility: auto</code> on:{' '}
             <select
-              onChange={(event) =>
+              onChange={(event) => {
                 setConfig({
                   contentVisibilityMode: event.target
                     .value as Config['contentVisibilityMode'],
-                })
-              }
+                });
+              }}
               value={config.contentVisibilityMode}
             >
               <option value="none">None</option>
@@ -765,11 +778,11 @@ function PerformanceControls({
           <label>
             <input
               checked={config.showSelectedHeadings}
-              onChange={(event) =>
+              onChange={(event) => {
                 setConfig({
                   showSelectedHeadings: event.target.checked,
-                })
-              }
+                });
+              }}
               type="checkbox"
             />{' '}
             Call <code>useElementSelected</code> in each Plate heading
@@ -780,11 +793,11 @@ function PerformanceControls({
           <label>
             <input
               checked={config.strictMode}
-              onChange={(event) =>
+              onChange={(event) => {
                 setConfig({
                   strictMode: event.target.checked,
-                })
-              }
+                });
+              }}
               type="checkbox"
             />{' '}
             React strict mode (only works in localhost)
@@ -924,7 +937,7 @@ export default function HugeDocumentDemo() {
       setTimeout(() => {
         setRendering(false);
         setPaneVersion((version) => version + 1);
-      });
+      }, 0);
     },
     [activePane, config]
   );

@@ -16,6 +16,7 @@ import {
   useEditorSelector,
   useElementSelected,
   useNavigationHighlight,
+  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -62,7 +63,7 @@ const getNavigationAttributes = (
     : undefined,
   'data-nav-target': navigationHighlight ? 'true' : undefined,
   style: {
-    ...(attributes.style as React.CSSProperties | undefined),
+    ...attributes.style,
     ['--plate-nav-feedback-duration' as const]: navigationHighlight
       ? `${navigationHighlight.duration}ms`
       : undefined,
@@ -102,7 +103,8 @@ const getReferenceContextLabel = (
 export function FootnoteReferenceElement(
   props: PlateElementProps<typeof FootnotePlugin>
 ) {
-  const { element, path } = props;
+  const { element } = props;
+  const path = usePath();
   const { read: footnoteApi, update: footnoteUpdate } =
     useEditorPlugin(FootnotePlugin);
   const ref = element.ref ?? '';
@@ -221,7 +223,8 @@ export function FootnoteReferenceElement(
 export function FootnoteDefinitionElement(
   props: PlateElementProps<typeof FootnoteDefinitionPlugin>
 ) {
-  const { element, path } = props;
+  const { element } = props;
+  const path = usePath();
   const editor = useEditor();
   const { read: footnoteApi, update: footnoteUpdate } =
     useEditorPlugin(FootnotePlugin);
@@ -311,8 +314,12 @@ export function FootnoteDefinitionElement(
                 className="w-72 p-0"
                 align="start"
                 sideOffset={8}
-                onCloseAutoFocus={(event) => event.preventDefault()}
-                onOpenAutoFocus={(event) => event.preventDefault()}
+                onCloseAutoFocus={(event) => {
+                  event.preventDefault();
+                }}
+                onOpenAutoFocus={(event) => {
+                  event.preventDefault();
+                }}
               >
                 <Command>
                   <CommandList>
@@ -322,7 +329,9 @@ export function FootnoteDefinitionElement(
                           <CommandItem
                             key={`${ref}-${item.index}`}
                             className="cursor-pointer gap-2"
-                            onMouseDown={(event) => event.preventDefault()}
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                            }}
                             onSelect={() => {
                               setReferencePickerOpen(false);
                               footnoteUpdate.focusReference({
@@ -438,7 +447,9 @@ export function FootnoteInputElement(
             {showCreateOption && (!query || numericQuery) ? (
               <InlineComboboxItem
                 value={`new-${proposedRef}`}
-                onClick={() => insertSelectedFootnote(proposedRef)}
+                onClick={() => {
+                  insertSelectedFootnote(proposedRef);
+                }}
               >
                 <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
                   <span className="font-mono text-muted-foreground">
@@ -453,7 +464,9 @@ export function FootnoteInputElement(
               <InlineComboboxItem
                 key={ref}
                 value={`footnote-${ref}`}
-                onClick={() => insertSelectedFootnote(ref)}
+                onClick={() => {
+                  insertSelectedFootnote(ref);
+                }}
               >
                 <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
                   <span className="font-mono text-muted-foreground">

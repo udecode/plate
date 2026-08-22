@@ -43,7 +43,7 @@ const args = new Set(process.argv.slice(2));
 const config = JSON.parse(readFileSync(configPath, 'utf-8')) as ReferenceConfig;
 
 const symbolKind = (symbol: ts.Symbol) => {
-  const flags = symbol.flags;
+  const { flags } = symbol;
 
   if (flags & ts.SymbolFlags.Interface) return 'interface';
   if (flags & ts.SymbolFlags.TypeAlias) return 'type';

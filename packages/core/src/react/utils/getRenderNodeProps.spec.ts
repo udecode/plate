@@ -48,11 +48,11 @@ describe('getRenderNodeProps', () => {
     const CustomParagraphPlugin = ParagraphPlugin.extend(() => ({
       render: {
         nodeProps: (({ editor, element }: any) => {
-          const target = element.attributes?.target;
+          const innerTarget = element.attributes?.target;
 
           return {
             'data-has-editor': editor ? 'yes' : 'no',
-            target: typeof target === 'string' ? target : undefined,
+            target: typeof innerTarget === 'string' ? innerTarget : undefined,
             title: undefined,
           };
         }) as any,
@@ -114,7 +114,7 @@ describe('getRenderNodeProps', () => {
       style: { textAlign: 'center' },
       target: '_blank',
     });
-    expect((result.attributes as any)?.ignored).toBeUndefined();
+    expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
     expect(result.attributes?.className).toContain('plite-paragraph');
     expect(result.attributes?.className).toContain('user-class');

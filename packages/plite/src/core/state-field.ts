@@ -3,6 +3,7 @@ import type {
   StateFieldDescriptor,
   StateFieldTransition,
 } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import { cloneFrozen } from './clone';
 import { compileEditorExtension } from './editor-extension';
 import { defineEffect } from './transaction-values';
@@ -58,17 +59,19 @@ export const defineStateField = <TValue>(
           }
 
           return Object.freeze({
-            previousValue: normalizedDescriptor.persist!.decode(
+            previousValue: getDefined(normalizedDescriptor.persist).decode(
               (value as Record<string, unknown>).previousValue
             ),
-            value: normalizedDescriptor.persist!.decode(
+            value: getDefined(normalizedDescriptor.persist).decode(
               (value as Record<string, unknown>).value
             ),
           });
         },
         encode: ({ previousValue, value }) => ({
-          previousValue: normalizedDescriptor.persist!.encode(previousValue),
-          value: normalizedDescriptor.persist!.encode(value),
+          previousValue: getDefined(normalizedDescriptor.persist).encode(
+            previousValue
+          ),
+          value: getDefined(normalizedDescriptor.persist).encode(value),
         }),
         version: normalizedDescriptor.persist.version,
       })
@@ -120,7 +123,7 @@ export const defineStateField = <TValue>(
     },
     effectTypes: Object.freeze([effect]),
     effect,
-    stateFields: [] as readonly EditorStateField<TValue>[],
+    stateFields: [] as ReadonlyArray<EditorStateField<TValue>>,
     name: `state-field:${normalizedDescriptor.key}`,
     reduce(value, nextEffect) {
       if (nextEffect.type === effect) return nextEffect.value.value;

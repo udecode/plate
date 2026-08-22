@@ -26,7 +26,7 @@ const createWidgetStoreOwner = <
   TAnnotation extends Record<string, unknown>,
 >(
   editor: Editor,
-  widgets: readonly PliteWidget<T>[],
+  widgets: ReadonlyArray<PliteWidget<T>>,
   options: UsePliteWidgetStoreOptions<TAnnotation>
 ) => {
   const widgetsCell = { current: widgets };
@@ -55,14 +55,15 @@ export function usePliteWidgetStore<
   TAnnotation extends Record<string, unknown> = Record<string, unknown>,
 >(
   editor: Editor,
-  widgets: readonly PliteWidget<T>[],
+  widgets: ReadonlyArray<PliteWidget<T>>,
   options: UsePliteWidgetStoreOptions<TAnnotation> = {}
 ): PliteWidgetStore<T, TAnnotation> {
-  const annotationStore = options.annotationStore;
+  const { annotationStore } = options;
   const sourceId = options.id;
   // Data and callbacks seed a new owner, then publish only after commit.
   const owner = useMemo(
     () => createWidgetStoreOwner(editor, widgets, options),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor, source id, and annotation store define owner identity; committed effects publish current widgets and callbacks into that owner.
     [annotationStore, editor, sourceId]
   );
   const { optionsCell, store, widgetsCell } = owner;
@@ -81,7 +82,8 @@ export function usePliteWidgetStore<
   }, [options.revision, store, widgets, widgetsCell]);
 
   useIsomorphicLayoutEffect(() => {
-    const effectVersion = ++effectVersionRef.current;
+    effectVersionRef.current += 1;
+    const effectVersion = effectVersionRef.current;
 
     return () => {
       queueMicrotask(() => {

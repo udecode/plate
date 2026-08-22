@@ -1,5 +1,6 @@
 import type { Locator } from '@playwright/test';
 
+import { getDefined } from '../internal/getDefined';
 import type { SurfaceTarget } from './surface';
 import type { EditorSurfaceOptions } from './types';
 
@@ -22,7 +23,7 @@ export const locatePliteBrowserBlock = (root: Locator, path: number[]) => {
 
   let locator = root
     .locator(':scope > [data-plite-node="element"]')
-    .nth(path[0]!);
+    .nth(path[0]);
 
   for (const segment of path.slice(1)) {
     locator = locator
@@ -39,7 +40,7 @@ export const locatePliteBrowserText = (root: Locator, path: number[]) => {
     throw new Error('Text path cannot be empty');
   }
 
-  const textIndex = path.at(-1)!;
+  const textIndex = getDefined(path.at(-1));
   const parentPath = path.slice(0, -1);
   const parent =
     parentPath.length > 0 ? locatePliteBrowserBlock(root, parentPath) : root;

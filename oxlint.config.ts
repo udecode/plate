@@ -54,7 +54,7 @@ export default defineConfig({
   ],
   options: {
     denyWarnings: true,
-    reportUnusedDisableDirectives: 'deny',
+    reportUnusedDisableDirectives: 'error',
     typeAware: true,
   },
   settings: jsPluginSettings,
@@ -66,8 +66,6 @@ export default defineConfig({
         ...nextJsPlugins.rules,
         // [P0 false-positive] Local bindings named module are ordinary lexical values; this rule mistakes them for writes to the CommonJS module global.
         'nextjs/no-assign-module-variable': 'off',
-        // [P0 false-positive] Raw images are required for user/runtime URLs, editor-owned dimensions, copied components, and browser fixtures that Next Image cannot statically authorize or preserve.
-        'nextjs/no-img-element': 'off',
         // [P0 owner-conflict] Interactive, polling, and browser-only data can be deliberately client-owned; a blanket server rewrite changes behavior or duplicates the API boundary.
         'react-doctor/nextjs-no-client-fetch-for-server-data': 'off',
         // [P0 false-positive] Access redirects may depend on hydrated client authorization state while rendering remains withheld; forcing a server read duplicates ownership.
@@ -78,6 +76,13 @@ export default defineConfig({
         'react-doctor/nextjs-no-img-element': 'off',
         // [P0 false-positive] Parent layouts may own Suspense, and Next build already checks unsupported static rendering cases.
         'react-doctor/nextjs-no-use-search-params-without-suspense': 'off',
+      },
+    },
+    {
+      files: ['**/benchmarks/**', '**/editor-perf/**'],
+      rules: {
+        // [P0 benchmark-semantics] Context allocation is the measured subject in raw-provider benchmark modes; memoizing it would invalidate the comparison.
+        'react/jsx-no-constructed-context-values': 'off',
       },
     },
     {
@@ -92,18 +97,15 @@ export default defineConfig({
       rules: {
         // [P0 unchecked-boundary] JavaScript is outside a checkJs program.
         'typescript/no-misused-promises': 'off',
-        // [P0 unchecked-boundary] JavaScript is outside a checkJs program.
-        'typescript/no-unsafe-argument': 'off',
-        // [P0 unchecked-boundary] JavaScript is outside a checkJs program.
-        'typescript/no-unsafe-assignment': 'off',
-        // [P0 unchecked-boundary] JavaScript is outside a checkJs program.
-        'typescript/no-unsafe-call': 'off',
-        // [P0 unchecked-boundary] JavaScript is outside a checkJs program.
-        'typescript/no-unsafe-member-access': 'off',
-        // [P0 unchecked-boundary] JavaScript is outside a checkJs program.
-        'typescript/no-unsafe-return': 'off',
         // [P0 unchecked-boundary] JavaScript cannot express the TypeScript annotation required by this rule.
         'typescript/use-unknown-in-catch-callback-variable': 'off',
+      },
+    },
+    {
+      files: ['**/*.{cts,mts,ts,tsx}'],
+      rules: {
+        // [P0 TypeScript-conflict] Oxlint 1.79 misclassifies valid type/value namespace pairs, imported type aliases, inferred conditional types, and declaration merging as duplicate runtime bindings; TypeScript owns those contracts.
+        'no-redeclare': 'off',
       },
     },
     {
@@ -118,6 +120,10 @@ export default defineConfig({
         '**/src/playwright/**',
       ],
       rules: {
+        // [P0 test-semantics] Module replacement is an intentional isolation boundary in tests; production code must use real dependency ownership.
+        'anti-slop/no-module-mocking': 'off',
+        // [P1 fixture-semantics] Custom JSX pragma keepalives and serialized editor-value expressions are intentionally consumed only by the compiler or fixture reader.
+        'no-unused-expressions': 'off',
         // [P1 test-semantics] Synthetic event hosts intentionally expose handlers without browser interaction semantics.
         'jsx-a11y/no-static-element-interactions': 'off',
         // [P1 test-semantics] Standalone blocks keep fixture lifetimes and repeated setup branches locally scoped.
@@ -128,14 +134,16 @@ export default defineConfig({
         'no-script-url': 'off',
         // [P1 test-semantics] Tests may intentionally evaluate generated source to verify its executable contract.
         'no-new-func': 'off',
-        // [P1 test-semantics] Opt-in debug helpers own test-runner console output.
-        'no-console': 'off',
-        // [P1 test-semantics] Hook contract tests intentionally invoke hooks behind deterministic non-component harnesses.
-        'react-hooks/rules-of-hooks': 'off',
-        // [P1 test-semantics] JSX fixture spelling is asserted as editor data rather than rendered output.
-        'react/jsx-curly-brace-presence': 'off',
         // [P1 test-semantics] Anonymous wrapper components are local test harnesses; duplicate display names add no debugging value.
         'react/display-name': 'off',
+        // [P0 test-harness] Render probes intentionally publish editors, runtimes, counters, and callbacks synchronously to the surrounding harness; moving those writes to effects would change the observation boundary.
+        'react/globals': 'off',
+        // [P1 fixture-semantics] JSX brace spelling is serialized editor data rather than rendered syntax.
+        'react/jsx-curly-brace-presence': 'off',
+        // [P1 test-semantics] Class-component contract fixtures exercise React's state API directly; production code remains subject to the rule.
+        'react/no-set-state': 'off',
+        // [P1 fixture-semantics] Plain ref fields in serialized editor JSX are data, not legacy React string refs.
+        'react/no-string-refs': 'off',
         // [P1 test-semantics] TSX arrays often serialize editor values rather than render React lists.
         'react/jsx-key': 'off',
         // [P0 test-semantics] Local dynamic-import bindings named module are fixture values, not writes to the CommonJS module global.
@@ -144,32 +152,28 @@ export default defineConfig({
         'nextjs/no-img-element': 'off',
         // [P0 test-semantics] Browser fixtures must exercise raw runtime image behavior without introducing Next-owned optimization.
         'react-doctor/nextjs-no-img-element': 'off',
-        // [P1 test-semantics] Top-level fixture expressions construct editor values.
-        'no-unused-expressions': 'off',
         // [P0 test-semantics] Bun's resolves/rejects matcher returns a Promise at runtime but its declaration is not thenable.
         'typescript/await-thenable': 'off',
         // [P1 test-semantics] Fixtures deliberately assert values installed by setup code whose runtime proof is the test itself.
         'typescript/no-non-null-assertion': 'off',
+        // [P1 test-semantics] Spies, method-identity assertions, and DOM doubles intentionally inspect or forward methods without invoking them as ordinary receivers.
+        'typescript/unbound-method': 'off',
         // [P1 test-semantics] Sparse-array contract tests intentionally preserve deleted indexes; splice would change the subject under test.
         'typescript/no-array-delete': 'off',
         // [P1 test-semantics] Type-contract tests spell default generic arguments to assert public inference and specialization.
         'typescript/no-unnecessary-type-arguments': 'off',
+        // [P0 test-type-boundary] Bun's resolves and rejects matcher declarations report void even though the runtime matcher returns a Promise.
+        'typescript/no-confusing-void-expression': 'off',
+        // [P0 test-semantics] React Suspense contract fixtures deliberately throw thenables to model suspension.
+        'typescript/only-throw-error': 'off',
         // [P1 test-semantics] Compatibility tests deliberately exercise deprecated browser and DOM APIs to prove the fallback behavior production still supports.
         'typescript/no-deprecated': 'off',
-        // [P0 upstream-type-hole] Bun declares AsymmetricMatcher as any, so native matcher composition is unavoidably reported as an unsafe argument.
-        'typescript/no-unsafe-argument': 'off',
-        // [P0 upstream-type-hole] Bun declares AsymmetricMatcher as any, so native matcher composition is unavoidably reported as an unsafe assignment.
-        'typescript/no-unsafe-assignment': 'off',
-        // [P0 test-double-type-hole] Bun spies, partial component doubles, and generated fixtures expose callable values as any or error; wrappers would only launder the same test boundary.
-        'typescript/no-unsafe-call': 'off',
-        // [P0 test-double-type-hole] Bun spies, partial component doubles, and generated fixtures expose inspected values as any or error; wrappers would only launder the same test boundary.
-        'typescript/no-unsafe-member-access': 'off',
-        // [P0 test-double-type-hole] Bun spies, partial component doubles, and generated fixtures intentionally return erased values; false domain annotations would weaken the tests.
-        'typescript/no-unsafe-return': 'off',
         // [P1 test-semantics] Synthetic-event fixtures intentionally spread class-backed host values into plain objects.
         'typescript/no-misused-spread': 'off',
         // [P1 test-semantics] Dynamic-source tests intentionally use Function as their evaluator.
         'typescript/no-implied-eval': 'off',
+        // [P1 test-semantics] Async test doubles and rejection fixtures intentionally preserve Promise boundaries even when one branch has no await.
+        'typescript/require-await': 'off',
         // [P1 test-semantics] Browser command fixtures expose fill methods that are unrelated to Array.fill.
         'unicorn/no-array-fill-with-reference-type': 'off',
         // [P1 test-semantics] Settlement fixtures deliberately model thenable values.
@@ -194,16 +198,6 @@ export default defineConfig({
       rules: {
         // [P1 output-owner] CLI and dev tools own their terminal output.
         'no-console': 'off',
-        // [P0 adapter-boundary] Tooling consumes generated, process, and cross-realm values whose command contracts provide the runtime proof; local casts would only launder them.
-        'typescript/no-unsafe-argument': 'off',
-        // [P0 adapter-boundary] Tooling consumes generated, process, and cross-realm values whose command contracts provide the runtime proof; local casts would only launder them.
-        'typescript/no-unsafe-assignment': 'off',
-        // [P0 adapter-boundary] Tooling consumes generated, process, and cross-realm values whose command contracts provide the runtime proof; local casts would only launder them.
-        'typescript/no-unsafe-call': 'off',
-        // [P0 adapter-boundary] Tooling consumes generated, process, and cross-realm values whose command contracts provide the runtime proof; local casts would only launder them.
-        'typescript/no-unsafe-member-access': 'off',
-        // [P0 adapter-boundary] Tooling consumes generated, process, and cross-realm values whose command contracts provide the runtime proof; local casts would only launder them.
-        'typescript/no-unsafe-return': 'off',
       },
     },
     {
@@ -220,8 +214,6 @@ export default defineConfig({
         'unicorn/require-module-specifiers': 'off',
         // [P1 ambient-contract] Declarations intentionally introduce ambient names.
         'no-implicit-globals': 'off',
-        // [P1 ambient-contract] Declaration merging intentionally repeats names.
-        'no-redeclare': 'off',
         // [P1 ambient-contract] Ambient declarations require var syntax.
         'no-var': 'off',
         // [P1 ambient-contract] Ambient vars have no runtime ordering.
@@ -239,14 +231,8 @@ export default defineConfig({
         'no-unused-expressions': 'off',
         // [P1 fixture-data] JSX brace spelling is serialized editor content, not rendered syntax.
         'react/jsx-curly-brace-presence': 'off',
-        // [P0 fixture-boundary] Serialized JSX globals intentionally erase values.
-        'typescript/no-unsafe-argument': 'off',
-        // [P0 fixture-boundary] Serialized JSX globals intentionally erase values.
-        'typescript/no-unsafe-assignment': 'off',
-        // [P0 fixture-boundary] Serialized JSX globals intentionally erase values.
-        'typescript/no-unsafe-member-access': 'off',
-        // [P0 fixture-boundary] Serialized JSX globals intentionally erase values.
-        'typescript/no-unsafe-return': 'off',
+        // [P1 fixture-data] Plain `ref` fields are serialized editor data, not legacy React string refs.
+        'react/no-string-refs': 'off',
       },
     },
   ],
@@ -254,8 +240,6 @@ export default defineConfig({
     // P0: enforcing the rule can change behavior or hide correctness.
     // P1: the rule rejects a valid recurring pattern or compatibility boundary.
     // P2: the rule enforces syntax or naming without a safety benefit.
-    // [P0 inconsistent] This rule bans Jest/Vitest module replacement while ignoring the repository's equivalent Bun mock.module API; production dependency injection solely for tests would worsen runtime APIs.
-    'anti-slop/no-module-mocking': 'off',
     // [P0 laundering] Object spread ignores both empty objects and undefined; this rule is defeated by a behavior-equivalent token swap and generated mass no-op churn.
     'anti-slop/no-conditional-empty-object-spread': 'off',
     // [P0 counterproductive] Explicit broad annotations can intentionally hide implementation literals behind a stable mutable or API contract; this syntax-only rule is trivially bypassed by identity wrappers and therefore generates abstraction sludge.
@@ -278,9 +262,9 @@ export default defineConfig({
     complexity: 'off',
     // [P0 counterproductive] Forced defaults can hide missing cases in otherwise exhaustive switches.
     'default-case': 'off',
-    // [P2 style-only] Declarations and expressions have useful, different hoisting and locality semantics.
+    // [P0 semantic-change] Converting declarations to expressions changes hoisting and temporal availability; function ownership decides the form locally.
     'func-style': 'off',
-    // [P2 style-only] Inline and top-level type imports both serve legitimate readability needs.
+    // [P0 conflict] The configured TypeScript rule owns inline type imports; this preset rule requires top-level type imports and would create contradictory fixes.
     'import/consistent-type-specifier-style': 'off',
     // [P0 conflict] TS7 module resolution owns TypeScript import-shape validation more reliably.
     'import/default': 'off',
@@ -298,23 +282,26 @@ export default defineConfig({
     'oxc/bad-bitwise-operator': 'off',
     // [P1 valid-pattern] value == null intentionally checks null and undefined together.
     'no-eq-null': 'off',
-    // [P2 style-only] Inline comments can be the clearest place to explain one expression or argument.
-    'no-inline-comments': 'off',
-    // [P0 duplicate-false-positive] no-var already removes the shared-binding bug; this rule still rejects closures over safe block-scoped loop bindings.
+    // [P0 false-positive] The rule assumes callbacks created in loops can escape; it flags synchronous map, some, forEach, and transaction callbacks plus deliberately live process handlers whose captured state is intentional.
     'no-loop-func': 'off',
     // [P1 counterproductive] Failure-first branches are often clearest when the exceptional condition is negated.
     'no-negated-condition': 'off',
-    // [P2 style-only] Small expression-local branches can be clearer than expanded control flow.
+    // [P0 type-runtime-conflict] Nested conditionals are used as lazy exhaustive value decoders, literal-union selectors, and JSX dispatch; statement rewrites require mutable temporaries, repeated type annotations, or new call frames, changing inference or runtime structure solely for lint.
     'no-nested-ternary': 'off',
-    // [P2 style-only] Increment and decrement are idiomatic in indexed loops.
-    'no-plusplus': 'off',
+    'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
     // [P0 conflict] TypeScript catches unsafe temporal access while valid declarations can be hoisted.
     'no-use-before-define': 'off',
     // [P1 valid-pattern] void explicitly marks intentionally discarded promises or values.
     'no-void': 'off',
-    // [P2 style-only] Direct property access can preserve locality better than a one-use destructuring declaration.
-    'prefer-destructuring': 'off',
-    // [P2 style-only] Named groups add ceremony to small regexes without adding safety.
+    'prefer-destructuring': [
+      'error',
+      { array: false, object: true },
+      {
+        enforceForDeclarationWithTypeAnnotation: false,
+        enforceForRenamedProperties: false,
+      },
+    ],
+    // [P1 compatibility] Named capture groups change runtime support and backreference or replacement APIs; library regexes choose that contract locally.
     'prefer-named-capture-group': 'off',
     // [P1 compatibility] Promise constructors are required to adapt callback and event APIs.
     'promise/avoid-new': 'off',
@@ -330,8 +317,7 @@ export default defineConfig({
     'promise/prefer-await-to-then': 'off',
     // [P1 valid-pattern] then's rejection callback can intentionally scope error handling.
     'promise/prefer-catch': 'off',
-    // [P1 compatibility] Typed vendor and test Promise extensions may be deliberate.
-    'promise/spec-only': 'off',
+    'promise/spec-only': 'error',
     // [P0 semantic-change] Caching a property outside a loop changes getter timing and mutation visibility; lint cannot prove the access is pure, stable, or hot enough to justify that rewrite.
     'react-doctor/js-cache-property-access': 'off',
     // [P0 owner-conflict] Combining array stages changes callback index, mutation, and allocation behavior while often reducing readability; benchmark evidence, not lint, owns hot-path loop fusion.
@@ -354,50 +340,63 @@ export default defineConfig({
     'react-doctor/prefer-useReducer': 'off',
     // [P0 semantic-change] Manual memoization can provide observable identity to subscriptions, imperative adapters, and third-party hooks; React Compiler optimization does not prove removing each boundary preserves that contract.
     'react-doctor/react-compiler-no-manual-memoization': 'off',
+    // [P0 lifecycle-conflict] Extra effect dependencies can intentionally trigger resubscription or synchronization when an external editor input changes; removing them changes observable lifecycle timing.
+    'react/exhaustive-effect-dependencies': 'off',
+    // [P0 public-API-conflict] Plate plugins expose hook functions as runtime extension values, and isomorphic hook aliases remain stable by construction; the standard rules-of-hooks owner still enforces call order.
+    'react/hooks': 'off',
+    // [P0 compiler-boundary] Plate and Plite hooks return deliberately mutable editor engines, stores, adapters, and ref-backed cells; treating those imperative owners as React state would require false setters or architectural rewrites.
+    'react/immutability': 'off',
+    // [P0 identity-conflict] Extra memo dependencies can deliberately invalidate values when external editor inputs change; removing them changes callback or object identity observed by subscriptions and consumers.
+    'react/memo-dependencies': 'off',
+    // [P0 compiler-policy-conflict] Precise production suppressions encode explicit dependency and ownership invariants; rejecting every React suppression would make the permitted narrow exception policy impossible.
+    'react/rule-suppression': 'off',
+    // [P0 compiler-boundary] Ref-backed editor and DOM state is intentionally read during render without becoming reactive state; forcing state mirrors can stale native selection or add render loops while the compiler can safely skip optimization.
+    'react/refs': 'off',
+    // [P0 external-sync] Effects synchronize React with DOM, editor stores, drag monitors, and mount state; synchronous guarded updates are sometimes the required bridge, and deriving them during render changes lifecycle behavior.
+    'react/set-state-in-effect': 'off',
+    // [P0 compiler-limit] This rule exposes unsupported React Compiler syntax and HIR implementation gaps such as dynamic imports, accessors, logical assignment, and try/finally; source rewrites would change control flow solely for optimization eligibility.
+    'react/todo': 'off',
+    // [P0 laundering] Passing a named factory to useMemo is valid React; requiring a behavior-equivalent inline wrapper adds syntax only so the compiler can inspect it.
+    'react/use-memo': 'off',
     // [P0 owner-conflict] Coordinate rounding mutates canonical vector geometry without a visual tolerance or screenshot proof; SVG minification and compression, not source lint, own measured asset bytes.
     'react-doctor/rendering-svg-precision': 'off',
-    // [P0 counterproductive] React Compiler already skips components it cannot safely optimize; promoting bailouts to correctness errors forces behavior-changing rewrites for optimization eligibility.
-    'react/react-compiler': 'off',
-    // [P2 style-only] Declarations and arrows are both valid; ownership and hoisting decide locally.
+    // [P0 semantic-change] Forcing component arrows changes declaration hoisting and temporal availability; component ownership decides the form locally.
     'react/function-component-definition': 'off',
     // [P0 counterproductive] This syntax-only rule cannot see composite widgets, nested interactive children, or library-injected keyboard semantics; blindly swapping a role-bearing container for a native element can create invalid nested controls and change layout or submission behavior.
     'jsx-a11y/prefer-tag-over-role': 'off',
     // [P1 false-positive] Setter-less useState is the correct lazy per-mount constant primitive; forcing an unused setter or a different hook misstates lifecycle without adding safety.
     'react/hook-use-state': 'off',
-    // [P2 style-only] Handler names are local readability choices with no behavioral effect.
+    // [P0 public-api-conflict] The rule flags valid method references such as api.preview.close and would require pointless wrappers or public API renames.
     'react/jsx-handler-names': 'off',
-    // [P0 conflict] React Compiler handles memoization; forced manual wrappers add churn.
-    'react/jsx-no-constructed-context-values': 'off',
     // [P0 valid-pattern] React.Children is the supported traversal API for opaque children; array coercion or direct iteration does not preserve fragments, keys, or non-array child shapes.
     'react/no-react-children': 'off',
     // [P0 lifecycle-false-positive] Class components remain required for error boundaries and commit lifecycles that have no function-component equivalent.
     'react/prefer-function-component': 'off',
-    // [P2 style-only] Escaping ordinary prose harms source readability without improving safety.
+    // [P0 counterproductive] React already escapes JSX text; entity spelling damages prose and literal editor fixtures without adding an XSS boundary.
     'react/no-unescaped-entities': 'off',
-    // [P1 compatibility] Async signatures may satisfy interfaces even when an implementation has no await.
+    // [P0 duplicate-owner] The type-aware TypeScript rule is more accurate and owns this check for repository TypeScript.
     'require-await': 'off',
     // [P0 counterproductive] The u flag changes regex semantics and can break code-unit-oriented patterns.
     'require-unicode-regexp': 'off',
-    // [P2 style-only] Domain order is more meaningful than alphabetical key churn.
+    // [P0 semantic-change] JavaScript property order is observable in iteration, serialization, schema assembly, and plugin precedence; alphabetical rewrites can change contracts.
     'sort-keys': 'off',
-    // [P2 style-only] Declaration order should follow domain flow, not identifier spelling.
+    // [P0 semantic-change] Reordering declarations can change initializer evaluation, temporal dependencies, and side effects.
     'sort-vars': 'off',
-    // [P2 style-only] Generic placement on a variable or constructor has no safety effect.
-    'typescript/consistent-generic-constructors': 'off',
-    // [P2 style-and-context] Object annotations, `as` assertions, and angle-bracket assertions have different contextual typing and excess-property behavior; one syntax is not universally safer.
-    'typescript/consistent-type-assertions': 'off',
     'typescript/consistent-type-imports': [
       'error',
       { disallowTypeAnnotations: false, fixStyle: 'inline-type-imports' },
     ],
-    // [P2 style-only] `T[]` and `Array<T>` are equivalent, while the generic form is often clearer for unions, intersections, and generated declarations; formatting owns local readability.
-    'typescript/array-type': 'off',
+    'typescript/array-type': ['error', { default: 'array-simple' }],
     // [P0 conflict] Interfaces are open and mergeable while aliases are closed and composable; forcing either changes modeling semantics.
     'typescript/consistent-type-definitions': 'off',
-    // [P2 style-only] Concise void-returning callbacks are idiomatic; braces add no safety.
-    'typescript/no-confusing-void-expression': 'off',
+    // [P0 rule-conflict] This rule requires `!` for nullable assertions while the higher-value no-non-null-assertion rule forbids `!`; both cannot be satisfied at once.
+    'typescript/non-nullable-type-assertion-style': 'off',
     // [P0 robustness] Dynamic deletion is valid for JSON objects, headers, DTOs, and record-shaped external data.
     'typescript/no-dynamic-delete': 'off',
+    'typescript/no-confusing-void-expression': [
+      'error',
+      { ignoreArrowShorthand: true, ignoreVoidOperator: true },
+    ],
     // [P0 library-contract] Plate and Plite use any as the deliberate top type in generic constraints, conditional types, declaration surfaces, and third-party adapters; replacing it with unknown breaks assignability, while runtime input validation remains owned by the actual external boundary.
     'typescript/no-explicit-any': 'off',
     // [P0 wrong-owner] Plate's deliberate existential any contracts propagate through heterogeneous editor, plugin, schema, and adapter APIs; these rules report every typed consumer rather than the declaration or runtime-validation boundary that owns safety, so enforcement produces casts and suppressions without recovering evidence.
@@ -410,24 +409,20 @@ export default defineConfig({
     'typescript/no-unsafe-member-access': 'off',
     // [P0 wrong-owner] Framework adapters preserve caller-defined generic returns across type-erased registries; wrapper annotations would falsely narrow or cast those values instead of making them safer.
     'typescript/no-unsafe-return': 'off',
-    // [P0 type-system-conflict] Plate's public extension algebra uses phantom generic witnesses and conditional extraction to preserve caller inference; this rule cannot observe those downstream type roles and recommends deleting part of the contract.
+    // [P0 type-system-conflict] Plate's public subtype-return hooks, generic type guards, phantom capability carriers, and exact-type equality encoding use a parameter once syntactically but preserve downstream inference or variance; enforcement would break contracts or require pervasive suppressions and fake type uses.
     'typescript/no-unnecessary-type-parameters': 'off',
-    // [P0 error-identity] Plate is framework and adapter code: plugins, hosts, uploads, and providers may use typed non-Error failure values that must cross the framework unchanged; wrapping them changes observable identity and payloads.
-    'typescript/only-throw-error': 'off',
-    // [P0 receiver-contract] Plate APIs deliberately expose bound, receiver-free, and identity-inspected methods as first-class values; the rule cannot prove those contracts and forces wrappers or property rewrites that change identity and assignability.
-    'typescript/unbound-method': 'off',
-    // [P0 false-positive] This heuristic cannot follow cleanup functions returned by subscription APIs or timers drained through collection-owned cleanup; satisfying it duplicates ownership rather than preventing leaks.
+    // [P0 false-positive] Every current report already has real teardown through a returned unsubscribe, a cleared timer set, a destroyed subscription owner, or an unmount cleanup ref; the heuristic cannot follow those cleanup contracts and would require duplicate teardown or suppressions.
     'react-doctor/effect-needs-cleanup': 'off',
-    // [P2 style-only] Static-only or private classes can express ownership and interface shape.
-    'typescript/no-extraneous-class': 'off',
-    // [P2 style-only] Explicit annotations on initialized declarations can document and freeze a public, mutable, or generated contract; removing them provides no safety gain.
+    'typescript/no-extraneous-class': [
+      'error',
+      { allowEmpty: true, allowStaticOnly: true, allowWithDecorator: true },
+    ],
+    // [P1 type-contract] Explicit annotations can freeze a public, mutable, or generated contract against narrower initializer inference.
     'typescript/no-inferrable-types': 'off',
-    // [P2 intent-marker] `void` can deliberately mark ignored completion and fire-and-forget intent even when the current callee returns void; removing it gains no type safety and makes intent depend on a drifting signature.
-    'typescript/no-meaningless-void-operator': 'off',
-    // [P1 declaration-contract] Namespace merging is a unique TypeScript mechanism used by JSX, HKT, and extension declarations; banning it forces less accurate type structure.
-    'typescript/no-namespace': 'off',
-    // [P2 style-only] Explicit boolean comparisons can document expected polarity.
-    'typescript/no-unnecessary-boolean-literal-compare': 'off',
+    'typescript/no-namespace': [
+      'error',
+      { allowDeclarations: true, allowDefinitionFiles: true },
+    ],
     // [P1 robustness] Defensive checks protect against external data that violates declared types.
     'typescript/no-unnecessary-condition': 'off',
     'typescript/restrict-template-expressions': [
@@ -436,26 +431,29 @@ export default defineConfig({
     ],
     // [P0 runtime-robustness] Published TypeScript libraries still receive JavaScript and stale serialized inputs; a destructuring default can intentionally defend runtime callers even when the declared type is non-nullish.
     'typescript/no-useless-default-assignment': 'off',
+    'typescript/only-throw-error': [
+      'error',
+      {
+        allowRethrowing: true,
+        allowThrowingAny: true,
+        allowThrowingUnknown: true,
+      },
+    ],
     // [P1 robustness] Explicit conversion documents normalization at external boundaries.
     'typescript/no-unnecessary-type-conversion': 'off',
     // [P0 counterproductive] This rejects valid typed-route, generic-restoration, branded-value, validated-parser, and test-double boundaries with no usable options; enforcing it drives assertion-laundering helpers while runtime validators and precise boundary types own actual evidence loss.
     'typescript/no-unsafe-type-assertion': 'off',
-    // [P2 style-only] Choosing non-null assertion syntax over as is style, not safety.
-    'typescript/non-nullable-type-assertion-style': 'off',
     // [P0 type-semantic-change] Interface methods are intentionally bivariant while function-valued properties are checked contravariantly under strictFunctionTypes; rewriting between them changes public assignability.
     'typescript/method-signature-style': 'off',
-    // [P2 style-only] Constructor parameter properties are a local readability tradeoff.
-    'typescript/parameter-properties': 'off',
-    // [P1 valid-pattern] Index loops may need stable indices, mutation, or precise iteration control.
-    'typescript/prefer-for-of': 'off',
     // [P1 valid-pattern] Empty string, zero, and false are sometimes intentionally treated as missing.
     'typescript/prefer-nullish-coalescing': 'off',
-    // [P2 style-only] match and exec expose different APIs; neither is universally clearer.
+    // [P0 semantic-change] match and exec differ in lastIndex mutation and return contracts; a blanket rewrite can change stateful regex behavior.
     'typescript/prefer-regexp-exec': 'off',
     'typescript/require-array-sort-compare': [
       'error',
       { ignoreStringArrays: true },
     ],
+    'typescript/require-await': 'error',
     // [P0 counterproductive] Returning an existing promise avoids an unnecessary async wrapper.
     'typescript/promise-function-async': 'off',
     // [P0 counterproductive] Narrowed domain values make idiomatic truthiness safe; this rule adds coercion noise.
@@ -464,10 +462,6 @@ export default defineConfig({
     'typescript/strict-void-return': 'off',
     // [P0 type-semantic-change] Overload order, distinct documentation, generic inference, and correlated parameter/return pairs are observable public API behavior that a union signature can weaken or erase.
     'typescript/unified-signatures': 'off',
-    // [P2 style-only] Error variable names are contextual and have no safety effect.
-    'unicorn/catch-error-name': 'off',
-    // [P2 style-only] Equivalent index checks do not deserve a globally enforced spelling.
-    'unicorn/consistent-existence-index-check': 'off',
     // [P0 counterproductive] Hoisting local helpers outward harms ownership and locality.
     'unicorn/consistent-function-scoping': 'off',
     // [P0 conflict] Oxfmt expands empty catch blocks while this rule demands compact braces, creating a formatter-linter loop with no semantic value.
@@ -486,22 +480,18 @@ export default defineConfig({
     'unicorn/no-array-reverse': 'off',
     // [P1 compatibility] toSorted adds allocation and newer-runtime requirements; owned mutation is valid.
     'unicorn/no-array-sort': 'off',
-    // [P2 style-only] Awaited member access is unambiguous; an intermediate variable adds noise.
-    'unicorn/no-await-expression-member': 'off',
     // [P1 counterproductive] Failure-first branches are often clearest when the exceptional condition is negated.
     'unicorn/no-negated-condition': 'off',
-    // [P2 style-only] Compact expression branches can be clearer; syntax shape is not correctness.
-    'unicorn/no-nested-ternary': 'off',
-    // [P1 valid-pattern] A numeric Array constructor intentionally creates sparse or fixed-size indexed storage; alternatives allocate or change hole semantics.
-    'unicorn/no-new-array': 'off',
     // [P1 valid-pattern] Typed dependency objects make unsafe partial defaults a compile-time concern.
     'unicorn/no-object-as-default-parameter': 'off',
+    // [P1 valid-pattern] A numeric Array constructor intentionally creates sparse or fixed-size indexed storage; alternatives allocate or change hole semantics.
+    'unicorn/no-new-array': 'off',
     // [P0 conflict] Static-only classes can intentionally express a constructless namespace or dependency-injection contract.
     'unicorn/no-static-only-class': 'off',
-    // [P2 style-only] Numeric separator grouping does not change values, and enforcing arbitrary digit groups conflicts with the formatter owning source spelling.
-    'unicorn/numeric-separators-style': 'off',
     // [P1 valid-pattern] Explicit undefined can preserve tuple positions, object shape, and API intent.
     'unicorn/no-useless-undefined': 'off',
+    // [P0 formatter-conflict] Oxlint fixes nested ternaries by adding parentheses that Oxfmt canonically removes, so the rule cannot reach an idempotent formatted state.
+    'unicorn/no-nested-ternary': 'off',
     // [P0 semantic-change] Moving constructor assignments to fields can change initialization order and subclass behavior.
     'unicorn/prefer-class-fields': 'off',
     // [P0 semantic-change] Default parameters treat only undefined as missing; rewrites can change null and falsy behavior.
@@ -512,15 +502,13 @@ export default defineConfig({
     'unicorn/prefer-dom-node-append': 'off',
     // [P0 semantic-change] getAttribute preserves exact data-* names and reports absence as null; dataset camel-cases names and reports absence as undefined, changing observable tests and runtime branches.
     'unicorn/prefer-dom-node-dataset': 'off',
-    // [P0 semantic-change] removeChild validates the expected parent and returns the removed node; remove silently detaches from any parent and returns undefined.
-    'unicorn/prefer-dom-node-remove': 'off',
     // [P0 semantic-change] innerText reads rendered visible text while textContent reads raw hidden content without layout-aware line breaks; browser assertions choose between those contracts explicitly.
     'unicorn/prefer-dom-node-text-content': 'off',
     // [P1 valid-pattern] Importing before export keeps local ownership and transformation points explicit.
     'unicorn/prefer-export-from': 'off',
     // [P1 compatibility] New import.meta properties are not uniformly supported by runtimes and bundlers.
     'unicorn/prefer-import-meta-properties': 'off',
-    // [P2 style-only] Explicit ternaries can communicate result values better than truthiness operators.
+    // [P1 control-flow] Explicit ternaries preserve the tested condition and branch values; logical rewrites can obscure narrowing and returned falsy cases.
     'unicorn/prefer-logical-operator-over-ternary': 'off',
     // [P0 semantic-change] Bitwise truncation intentionally converts through signed 32-bit integer space; Math.trunc preserves larger magnitudes and therefore changes hashes and binary algorithms.
     'unicorn/prefer-math-trunc': 'off',
@@ -538,12 +526,10 @@ export default defineConfig({
     'unicorn/prefer-string-starts-ends-with': 'off',
     // [P0 counterproductive] structuredClone rejects or changes functions, prototypes, and custom values.
     'unicorn/prefer-structured-clone': 'off',
-    // [P2 style-only] Statements are clearer for side effects and multi-step branches.
+    // [P0 counterproductive] Converting statement branches to expressions compresses side effects, harms debugging, and conflicts with the nested-ternary owner.
     'unicorn/prefer-ternary': 'off',
     // [P0 conflict] Error classes are observable domain and telemetry contracts, not syntax choices.
     'unicorn/prefer-type-error': 'off',
-    // [P2 style-only] Case braces are useful for scoped declarations, not as blanket ceremony.
-    'unicorn/switch-case-braces': 'off',
     // [P0 conflict] Generated public barrels are a release and API owner enforced by pnpm brl; banning them contradicts package architecture.
     'oxc/no-barrel-file': 'off',
     // [P0 duplicate-ownership] typescript/no-empty-object-type owns the same declaration concern; declaration merging is handled by a declaration override.
@@ -552,8 +538,6 @@ export default defineConfig({
     'anti-slop/no-reflect-get': 'off',
     // [P0 semantic-change] Plate command, schema, and plugin runtimes require receiver-controlled dynamic invocation; direct calls or wrappers change this semantics or launder the same boundary.
     'anti-slop/no-reflect-apply': 'off',
-    // [P0 counterproductive] Conventional callback and API names such as editor, target, options, and value improve locality throughout Plate; forced renaming adds noise without lexical safety.
-    'no-shadow': 'off',
     // [P0 false-positive] The rule misclassifies typed editor, lifecycle, DOM, and middleware callbacks as Node error-first callbacks; TypeScript owns their return contracts.
     'node/callback-return': 'off',
     // [P0 owner-conflict] The rule reintroduces the rejected no-await-in-loop policy and cannot prove independence, ordering, memory bounds, or side-effect safety.
@@ -566,12 +550,10 @@ export default defineConfig({
     'typescript/no-invalid-void-type': 'off',
     // [P1 valid-pattern] Modern module-scoped declarations may intentionally close over branch-local state; moving them outward widens mutable ownership without fixing a runtime hazard.
     'no-inner-declarations': 'off',
-    // [P0 non-actionable] Recursive editor/plugin graphs and generated public barrels make this rule report every participant instead of the owning edge; typecheck and runtime tests own initialization correctness.
+    // [P0 architecture-conflict] Direct cycles span generated public barrels, the editor transaction hub and its operations, mutually recursive Markdown traversal, and self-referential plugin hooks/components; the rule reports participants instead of an owning defect, while enforcement requires architecture rewrites or a suppression carpet.
     'import/no-cycle': 'off',
-    // [P0 generated-owner] Repository barrels are generator-owned, and the generator cannot classify type-only exports; manual rewrites are regenerated while TypeScript still verifies the export graph.
+    // [P0 generated-owner] Repository barrels are generated by barrelsby, which cannot classify type-only exports; manual rewrites are regenerated while TypeScript already verifies the export graph.
     'typescript/consistent-type-exports': 'off',
-    // [P1 valid-pattern] Capturing this can be the simplest explicit bridge for callback and constructor-double ownership.
-    'typescript/no-this-alias': 'off',
     // [P0 semantic-change] Fixed small arrays, substring checks, and ordered plugin lists are not lookup tables; allocating Set or Map can add work or change matching semantics.
     'react-doctor/js-set-map-lookups': 'off',
     // [P0 semantic-change] Prefix and lineage comparisons intentionally accept different lengths; forcing equal-length checks changes the relation into equality.
@@ -588,16 +570,10 @@ export default defineConfig({
     'react-doctor/zod-v4-no-deprecated-schema-apis': 'off',
     // [P1 valid-pattern] cloneElement is the standard API for preserving a supplied element while injecting owned accessibility, style, or command props.
     'react/no-clone-element': 'off',
-    // [P0 false-positive] Editor and fixture data legitimately use a field named ref; this syntax rule mistakes plain object data for legacy React string refs.
-    'react/no-string-refs': 'off',
-    // [P1 valid-pattern] Retained class components and error boundaries require setState for lifecycle recovery.
-    'react/no-set-state': 'off',
     // [P1 valid-pattern] Class fields are the repository's standard state initialization syntax; forcing constructor assignment is obsolete ceremony.
     'react/state-in-constructor': 'off',
     // [P0 semantic-change] Removing a spread can share object or array identity with later mutation even when the syntax-only rule calls the copy useless.
     'unicorn/no-useless-spread': 'off',
-    // [P0 robustness] typeof is the only safe existence check for a potentially undeclared host global; replacing it with a direct read can throw.
-    'unicorn/no-typeof-undefined': 'off',
     // [P1 valid-pattern] Assigning this to an owned variable is a legitimate callback or constructor-double bridge, not a correctness defect.
     'unicorn/no-this-assignment': 'off',
     // [P0 false-positive] This syntax rule mistakes domain methods named slice for built-in Array or String slicing, where a negative index would change the input contract.

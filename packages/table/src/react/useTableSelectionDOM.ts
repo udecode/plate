@@ -77,9 +77,11 @@ export const useTableSelectionDOM = (
       const nextTableCellElementsByKey = new Map<string, HTMLElement>();
 
       table
-        .querySelectorAll<HTMLElement>('[data-table-cell-key]')
+        .querySelectorAll<HTMLElement>(
+          'td[data-plite-node-key], th[data-plite-node-key]'
+        )
         .forEach((element) => {
-          const cellKey = element.getAttribute('data-table-cell-key');
+          const cellKey = element.getAttribute('data-plite-node-key');
 
           if (cellKey) nextTableCellElementsByKey.set(cellKey, element);
         });
@@ -217,7 +219,7 @@ const getSelectedCellElement = (
     ? globalThis.CSS.escape(cellKey)
     : cellKey.replaceAll('"', '\\"');
   const element = table.querySelector<HTMLElement>(
-    `[data-table-cell-key="${escapedCellKey}"]`
+    `td[data-plite-node-key="${escapedCellKey}"], th[data-plite-node-key="${escapedCellKey}"]`
   );
 
   if (element) {

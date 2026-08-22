@@ -16,7 +16,7 @@ export const useProjectionDOMRepairBridge = ({
 
   useIsomorphicLayoutEffect(() => {
     if (!projectionStore?.subscribeProjectionRefresh) {
-      return;
+      return undefined;
     }
 
     return projectionStore.subscribeProjectionRefresh((result) => {

@@ -75,7 +75,7 @@ test('target runtime imports the current DOM selection for implicit editor comma
       reason: 'implicit-target',
     },
     scheduleSelectionSync(callback) {
-      scheduledSelectionSync++;
+      scheduledSelectionSync += 1;
       callback();
     },
     syncDOMSelectionToEditor() {},

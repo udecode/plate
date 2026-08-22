@@ -31,15 +31,18 @@ console.log(
 );
 
 function buildHealthReport({
-  registry,
-  result,
-  resultPath,
-  rootDir,
-  staleDays,
+  registry: innerRegistry,
+  result: innerResult,
+  resultPath: innerResultPath,
+  rootDir: innerRootDir,
+  staleDays: innerStaleDays,
 }) {
-  const rows = Array.isArray(result?.rows) ? result.rows : [];
-  const registeredArtifacts = registry.artifacts.map((artifact) =>
-    describeArtifact(artifact, { rootDir, staleDays })
+  const rows = Array.isArray(innerResult?.rows) ? innerResult.rows : [];
+  const registeredArtifacts = innerRegistry.artifacts.map((artifact) =>
+    describeArtifact(artifact, {
+      rootDir: innerRootDir,
+      staleDays: innerStaleDays,
+    })
   );
   const missingRequiredArtifacts = registeredArtifacts.filter(
     (artifact) => artifact.required && !artifact.exists
@@ -51,8 +54,8 @@ function buildHealthReport({
     (artifact) => artifact.exists && artifact.stale
   );
   const ignoredUnregisteredArtifacts = findIgnoredUnregisteredArtifacts(
-    registry,
-    { rootDir }
+    innerRegistry,
+    { rootDir: innerRootDir }
   );
   const statusCounts = countBy(rows, (row) => row.status || 'unknown');
   const nextActions = buildNextActions({
@@ -82,7 +85,7 @@ function buildHealthReport({
       optionalArtifacts: registeredArtifacts.filter(
         (artifact) => !artifact.required
       ).length,
-      registeredPath: path.relative(rootDir, registry.path),
+      registeredPath: path.relative(innerRootDir, innerRegistry.path),
       requiredArtifacts: registeredArtifacts.filter(
         (artifact) => artifact.required
       ).length,
@@ -91,15 +94,18 @@ function buildHealthReport({
       ),
     },
     result: {
-      path: resultPath,
+      path: innerResultPath,
       rowCount: rows.length,
       statusCounts,
     },
   };
 }
 
-function describeArtifact(artifact, { rootDir, staleDays }) {
-  const resolvedPath = path.resolve(rootDir, artifact.path);
+function describeArtifact(
+  artifact,
+  { rootDir: innerRootDir2, staleDays: innerStaleDays2 }
+) {
+  const resolvedPath = path.resolve(innerRootDir2, artifact.path);
   const exists = fs.existsSync(resolvedPath);
   const stat = exists ? fs.statSync(resolvedPath) : null;
   const ageDays = stat
@@ -111,25 +117,30 @@ function describeArtifact(artifact, { rootDir, staleDays }) {
     ageDays,
     exists,
     resolvedPath,
-    stale: ageDays !== null && ageDays > staleDays,
+    stale: ageDays !== null && ageDays > innerStaleDays2,
   };
 }
 
-function findIgnoredUnregisteredArtifacts(registry, { rootDir }) {
+function findIgnoredUnregisteredArtifacts(
+  innerRegistry2,
+  { rootDir: innerRootDir3 }
+) {
   const registered = new Set(
-    registry.artifacts.map((artifact) => path.resolve(rootDir, artifact.path))
+    innerRegistry2.artifacts.map((artifact) =>
+      path.resolve(innerRootDir3, artifact.path)
+    )
   );
   const ignored = [];
 
-  for (const entry of registry.discardUnregistered) {
-    const scanRoot = path.resolve(rootDir, entry.root);
+  for (const entry of innerRegistry2.discardUnregistered) {
+    const scanRoot = path.resolve(innerRootDir3, entry.root);
     if (!fs.existsSync(scanRoot)) continue;
 
     for (const filePath of walkFiles(scanRoot)) {
       if (!filePath.endsWith('.json')) continue;
       if (!path.basename(filePath).includes(entry.match)) continue;
       if (registered.has(filePath)) continue;
-      ignored.push(path.relative(rootDir, filePath));
+      ignored.push(path.relative(innerRootDir3, filePath));
     }
   }
 
@@ -216,25 +227,25 @@ function buildNextActions({
   return actions.sort((left, right) => left.priority - right.priority);
 }
 
-function assertHealth(health) {
-  if (health.registry.activeArtifacts < 20) {
+function assertHealth(innerHealth) {
+  if (innerHealth.registry.activeArtifacts < 20) {
     throw new Error(
-      `expected at least 20 active registered artifacts, got ${health.registry.activeArtifacts}`
+      `expected at least 20 active registered artifacts, got ${innerHealth.registry.activeArtifacts}`
     );
   }
-  if (health.registry.missingRequiredArtifacts.length > 0) {
+  if (innerHealth.registry.missingRequiredArtifacts.length > 0) {
     throw new Error(
-      `missing required active artifacts: ${health.registry.missingRequiredArtifacts
+      `missing required active artifacts: ${innerHealth.registry.missingRequiredArtifacts
         .map((artifact) => artifact.id)
         .join(', ')}`
     );
   }
-  if (health.result.rowCount < 250) {
+  if (innerHealth.result.rowCount < 250) {
     throw new Error(
-      `expected rich-text evidence rows before health check, got ${health.result.rowCount}`
+      `expected rich-text evidence rows before health check, got ${innerHealth.result.rowCount}`
     );
   }
-  if (health.nextActions.length === 0) {
+  if (innerHealth.nextActions.length === 0) {
     throw new Error('expected health report to produce next actions');
   }
 }
@@ -292,7 +303,7 @@ function parseArgs(argv) {
 
   while (i < argv.length) {
     const arg = argv[i];
-    i++;
+    i += 1;
     if (!arg.startsWith('--')) continue;
 
     const key = arg.slice(2);
@@ -302,7 +313,7 @@ function parseArgs(argv) {
     }
 
     out[key] = argv[i] || true;
-    i++;
+    i += 1;
   }
 
   return out;

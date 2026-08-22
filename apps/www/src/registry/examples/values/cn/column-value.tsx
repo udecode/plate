@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const columnValue = (
+export const columnValue: Value = (
   <fragment>
     <hheading level={2}>列</hheading>
     <hp>创建列，在查看时边框将被隐藏</hp>

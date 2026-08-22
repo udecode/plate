@@ -40,7 +40,7 @@ export const createMarkInputRule = (
         !selection ||
         !editor.read.selection.isCollapsed()
       ) {
-        return;
+        return undefined;
       }
 
       let beforeEndMatchPoint: Point | undefined = selection.anchor;
@@ -51,7 +51,7 @@ export const createMarkInputRule = (
         });
       }
 
-      if (!beforeEndMatchPoint) return;
+      if (!beforeEndMatchPoint) return undefined;
 
       const afterStartMatchPoint = editor.read.points.before(
         beforeEndMatchPoint,
@@ -69,7 +69,7 @@ export const createMarkInputRule = (
         }
       );
 
-      if (!afterStartMatchPoint || !beforeStartMatchPoint) return;
+      if (!afterStartMatchPoint || !beforeStartMatchPoint) return undefined;
 
       const pointBeforeStart = editor.read.points.before(beforeStartMatchPoint);
       const previousText = pointBeforeStart
@@ -79,7 +79,7 @@ export const createMarkInputRule = (
           })
         : '';
 
-      if (previousText && NON_WHITESPACE.test(previousText)) return;
+      if (previousText && NON_WHITESPACE.test(previousText)) return undefined;
 
       const range = {
         anchor: afterStartMatchPoint,
@@ -87,7 +87,9 @@ export const createMarkInputRule = (
       };
       const matchText = editor.read.text.string(range);
 
-      if (config.trim !== 'allow' && matchText.trim() !== matchText) return;
+      if (config.trim !== 'allow' && matchText.trim() !== matchText) {
+        return undefined;
+      }
 
       return {
         afterStartMatchPoint,
@@ -103,13 +105,13 @@ export const createMarkInputRule = (
       for (const mark of marks) {
         const portal = editor.plugin(mark);
 
-        if (!portal.installed) return;
+        if (!portal.installed) return undefined;
         const resolved = getCompiledPlatePlugin(editor, portal.name);
         const binding = resolved
           ? getCompiledPlateModelBinding(editor, resolved)
           : undefined;
 
-        if (binding?.kind !== 'mark' || !binding.propertyKey) return;
+        if (binding?.kind !== 'mark' || !binding.propertyKey) return undefined;
         markKeys.push(binding.propertyKey);
       }
 
@@ -156,17 +158,17 @@ export const matchBlockStart = <
   context: TContext,
   config: MatchBlockStartOptions<TMatch, TContext>
 ) => {
-  if (!context.isCollapsed) return;
+  if (!context.isCollapsed) return undefined;
 
   const pattern =
     typeof config.match === 'function' ? config.match(context) : config.match;
 
-  if (!pattern) return;
+  if (!pattern) return undefined;
 
   const range = context.getBlockStartRange();
   const blockText = context.getBlockStartText();
 
-  if (!range || blockText === undefined) return;
+  if (!range || blockText === undefined) return undefined;
 
   const baseMatch: BlockStartInputRuleMatch = {
     range,
@@ -174,7 +176,7 @@ export const matchBlockStart = <
   };
 
   if (typeof pattern === 'string') {
-    if (blockText !== pattern) return;
+    if (blockText !== pattern) return undefined;
 
     if (config.resolveMatch) {
       const resolved = config.resolveMatch({
@@ -183,7 +185,7 @@ export const matchBlockStart = <
         text: blockText,
       });
 
-      if (resolved === undefined) return;
+      if (resolved === undefined) return undefined;
 
       return {
         ...baseMatch,
@@ -196,7 +198,7 @@ export const matchBlockStart = <
 
   const regexMatch = blockText.match(pattern);
 
-  if (!regexMatch) return;
+  if (!regexMatch) return undefined;
 
   if (config.resolveMatch) {
     const resolved = config.resolveMatch({
@@ -205,7 +207,7 @@ export const matchBlockStart = <
       text: blockText,
     });
 
-    if (resolved === undefined) return;
+    if (resolved === undefined) return undefined;
 
     return {
       ...baseMatch,
@@ -234,7 +236,7 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       const portal = editor.plugin(target);
 
       if (!portal.installed) return;
-      const type = portal.schema.type;
+      const { type } = portal.schema;
 
       if (config.removeMatchedText !== false) {
         tx.text.delete({ at: defaultMatch.range });
@@ -264,21 +266,18 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
     },
   });
 
-const matchBlockFence = <
-  TMatch = BlockFenceInputRuleMatch,
-  TContext extends SelectionInputRuleContext = SelectionInputRuleContext,
->(
-  context: TContext,
+const matchBlockFence = <TMatch = BlockFenceInputRuleMatch>(
+  context: SelectionInputRuleContext,
   config: MatchBlockFenceOptions<TMatch>
 ) => {
   const { editor } = context;
   const selection = editor.read.selection();
 
-  if (!context.isCollapsed || !selection) return;
+  if (!context.isCollapsed || !selection) return undefined;
 
   const blockEntry = context.getBlockEntry();
 
-  if (!blockEntry) return;
+  if (!blockEntry) return undefined;
 
   const [blockNode, path] = blockEntry;
   const endPoint = editor.read.points.end(path);
@@ -286,18 +285,22 @@ const matchBlockFence = <
   if (config.block) {
     const plugin = editor.plugin(config.block);
 
-    if (!plugin.installed) return;
+    if (!plugin.installed) return undefined;
 
     const blockType = plugin.schema.type;
 
-    if (blockNode.type !== blockType) return;
+    if (blockNode.type !== blockType) return undefined;
   }
-  if (!endPoint || !editor.read.points.isEnd(selection.focus, path)) return;
+  if (!endPoint || !editor.read.points.isEnd(selection.focus, path)) {
+    return undefined;
+  }
 
   const range = context.getBlockStartRange();
   const blockText = context.getBlockStartText();
 
-  if (!range || blockText === undefined || blockText !== config.fence) return;
+  if (!range || blockText === undefined || blockText !== config.fence) {
+    return undefined;
+  }
 
   return config.resolveMatch
     ? config.resolveMatch({
@@ -339,7 +342,7 @@ export function createBlockFenceInputRule<TMatch = BlockFenceInputRuleMatch>(
     enabled: config.enabled,
     trigger,
     resolve: (context) => {
-      if (context.text !== trigger) return;
+      if (context.text !== trigger) return undefined;
 
       return matchBlockFence(context, {
         block: config.block,
@@ -363,12 +366,12 @@ export const matchDelimitedInline = (
     trim = 'reject',
   }: MatchDelimitedInlineOptions
 ): DelimitedInlineInputRuleMatch | undefined => {
-  if (!context.isCollapsed) return;
+  if (!context.isCollapsed) return undefined;
 
   const blockRange = context.getBlockStartRange();
   const textBefore = context.getBlockStartText();
 
-  if (!blockRange || textBefore === undefined) return;
+  if (!blockRange || textBefore === undefined) return undefined;
 
   const openingDelimiter = open;
   const closingDelimiter = close ?? open;
@@ -376,46 +379,48 @@ export const matchDelimitedInline = (
     ? (() => {
         const closeLength = closingDelimiter.length;
 
-        if (textBefore.length < closeLength) return;
-        if (!textBefore.endsWith(closingDelimiter)) return;
+        if (textBefore.length < closeLength) return undefined;
+        if (!textBefore.endsWith(closingDelimiter)) return undefined;
 
         return textBefore.slice(0, -closeLength);
       })()
     : textBefore;
 
-  if (!beforeClose) return;
+  if (!beforeClose) return undefined;
 
   const openIndex = beforeClose.lastIndexOf(openingDelimiter);
 
-  if (openIndex < 0) return;
+  if (openIndex === -1) return undefined;
 
   const prefix = beforeClose.slice(0, openIndex);
   const content = beforeClose.slice(openIndex + openingDelimiter.length);
 
-  if (!content) return;
-  if (trim === 'reject' && content.trim() !== content) return;
+  if (!content) return undefined;
+  if (trim === 'reject' && content.trim() !== content) return undefined;
   if (
     rejectRepeatedOpen &&
     openingDelimiter === closingDelimiter &&
     prefix.endsWith(openingDelimiter)
   ) {
-    return;
+    return undefined;
   }
 
   const previousChar = prefix.at(-1);
 
-  if (previousChar && boundaryRe && !boundaryRe.test(previousChar)) return;
+  if (previousChar && boundaryRe && !boundaryRe.test(previousChar)) {
+    return undefined;
+  }
 
   const nextChar = context.getCharAfter();
 
-  if (nextChar && followRe && !followRe.test(nextChar)) return;
+  if (nextChar && followRe && !followRe.test(nextChar)) return undefined;
 
   const startPoint = {
     offset: blockRange.focus.offset - content.length - openingDelimiter.length,
     path: blockRange.focus.path,
   };
 
-  if (startPoint.offset < 0) return;
+  if (startPoint.offset < 0) return undefined;
 
   return {
     content,
@@ -479,17 +484,17 @@ export const createTextSubstitutionInputRule = ({
     trigger: triggers,
     resolve: ({ editor, text }) => {
       if (!editor.read.selection() || !editor.read.selection.isCollapsed()) {
-        return;
+        return undefined;
       }
 
       const candidates = patternsByTrigger.get(text);
 
-      if (!candidates) return;
+      if (!candidates) return undefined;
 
       for (const { end, pattern, start } of candidates) {
         const selection = editor.read.selection();
 
-        if (!selection) return;
+        if (!selection) return undefined;
 
         let beforeEndMatchPoint: Point | undefined = selection.anchor;
 
@@ -546,6 +551,8 @@ export const createTextSubstitutionInputRule = ({
           },
         };
       }
+
+      return undefined;
     },
     apply: ({ tx }, match: TextSubstitutionMatch) => {
       const selection = tx.selection();

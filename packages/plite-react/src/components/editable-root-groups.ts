@@ -15,12 +15,12 @@ export const createRootGroups = (
   nodeKeys: readonly NodeKey[],
   groupSize = ROOT_GROUP_SIZE
 ) => {
-  const groups: {
+  const groups: Array<{
     endIndex: number;
     groupId: string;
     nodeKeys: readonly NodeKey[];
     startIndex: number;
-  }[] = [];
+  }> = [];
 
   for (
     let startIndex = 0;
@@ -223,9 +223,9 @@ export const useMountedRootGroupIds = ({
 };
 
 export const createRootGroupRenderItems = (
-  groups: readonly (EditableRootGroupRecord & { isMounted: boolean })[]
+  groups: ReadonlyArray<EditableRootGroupRecord & { isMounted: boolean }>
 ) => {
-  const items: (
+  const items: Array<
     | {
         group: EditableRootGroupRecord;
         kind: 'mounted';
@@ -238,7 +238,7 @@ export const createRootGroupRenderItems = (
         kind: 'pending';
         startIndex: number;
       }
-  )[] = [];
+  > = [];
   let pendingStartGroup: EditableRootGroupRecord | null = null;
   let pendingEndGroup: EditableRootGroupRecord | null = null;
 
@@ -366,7 +366,7 @@ export const createVirtualizedTopLevelItemGroups = (
     }
 
     currentGroup.items.push(item);
-    currentGroup.groupId = `virtual-row-group:${currentGroup.items[0]!.index}:${item.index}`;
+    currentGroup.groupId = `virtual-row-group:${currentGroup.items[0].index}:${item.index}`;
   }
 
   return groups;

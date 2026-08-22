@@ -6,6 +6,7 @@ import type { MdMark, SerializeMdContext } from '../types';
 // inlineCode should be last because of the spec in mdast
 // https://github.com/inokawa/remark-slate-transformer/issues/145
 export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
+const basicMarkdownMarkSet = new Set(basicMarkdownMarks);
 
 export const convertTextsSerialize = (
   slateTexts: readonly Text[],
@@ -16,6 +17,7 @@ export const convertTextsSerialize = (
         .filter(([, parser]) => parser?.mark)
         .map(([key]) => key)
     : [];
+  const plainMarkSet = new Set(options.plainMarks);
 
   const mdastTexts: MdMark[] = [];
 
@@ -24,7 +26,7 @@ export const convertTextsSerialize = (
 
   let textTemp = '';
   for (let j = 0; j < slateTexts.length; j++) {
-    const cur = slateTexts[j]!;
+    const cur = slateTexts[j];
     textTemp += cur.text;
 
     const prevStarts = starts.slice();
@@ -37,12 +39,12 @@ export const convertTextsSerialize = (
       [
         ...basicMarkdownMarks,
         // exclude repeated marks
-        ...customLeaf.filter((k) => !basicMarkdownMarks.includes(k)),
+        ...customLeaf.filter((key) => !basicMarkdownMarkSet.has(key)),
       ] as const
     ).forEach((key) => {
       if (cur[key]) {
         // Skip marks that should be treated as plain text
-        if (options.plainMarks?.includes(key)) {
+        if (plainMarkSet.has(key)) {
           return;
         }
 
@@ -55,9 +57,10 @@ export const convertTextsSerialize = (
       }
     });
 
-    const endsToRemove = starts.reduce<{ index: number; key: string }[]>(
+    const endSet = new Set(ends);
+    const endsToRemove = starts.reduce<Array<{ index: number; key: string }>>(
       (acc, key, markIndex) => {
-        if (ends.includes(key)) {
+        if (endSet.has(key)) {
           acc.push({ index: markIndex, key });
         }
         return acc;
@@ -72,7 +75,7 @@ export const convertTextsSerialize = (
         endsToRemove.length === 1 &&
         (prevStarts.toString() !== starts.toString() ||
           // https://github.com/inokawa/remark-slate-transformer/issues/90
-          (prevEnds.includes('italic') && ends.includes('bold'))) &&
+          (prevEnds.some((mark) => mark === 'italic') && endSet.has('bold'))) &&
         starts.length - endsToRemove.length === 0
       ) {
         while (textTemp.startsWith(' ')) {
@@ -169,9 +172,9 @@ export const convertTextsSerialize = (
 
   const mergedTexts = mergeTexts(mdastTexts);
 
-  const flattenedEmptyNodes = mergedTexts.map((node) => {
+  const flattenedEmptyNodes: MdMark[] = mergedTexts.map((node) => {
     if (!hasContent(node)) {
-      return { type: 'text', value: '' } as MdMark;
+      return { type: 'text', value: '' };
     }
     return node;
   });

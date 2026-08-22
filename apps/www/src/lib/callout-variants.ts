@@ -25,30 +25,43 @@ export function getCalloutVariant({
 
   switch (type) {
     case 'destructive':
-    case 'error':
+    case 'error': {
       return 'destructive';
+    }
     case 'info':
-    case 'note':
+    case 'note': {
       return 'info';
-    case 'success':
+    }
+    case 'success': {
       return 'success';
+    }
     case 'warn':
-    case 'warning':
+    case 'warning': {
       return 'warning';
+    }
   }
+
+  throw new Error('Unknown callout type.');
 }
 
 export function getCalloutVariantClassName(variant: CalloutVariant) {
   switch (variant) {
-    case 'destructive':
+    case 'destructive': {
       return 'border-destructive/50 bg-destructive/10 dark:bg-destructive/20';
-    case 'info':
+    }
+    case 'info': {
       return 'border-blue-500/50 bg-blue-50 dark:bg-blue-950/30';
-    case 'success':
+    }
+    case 'success': {
       return 'border-emerald-600 bg-emerald-100 dark:border-emerald-400 dark:bg-emerald-900';
-    case 'warning':
+    }
+    case 'warning': {
       return 'border-orange-500/50 bg-orange-50 dark:bg-orange-950/30';
-    default:
+    }
+    case 'default': {
       return null;
+    }
   }
+
+  throw new Error('Unknown callout variant.');
 }

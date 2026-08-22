@@ -636,6 +636,7 @@ const internalBridgeRuntimeExportExpectations = {
     'markDOMSyncMutationTarget',
     'parseDOMClipboardHtml',
     'readDOMFragmentData',
+    'replaceDOMSelectionRange',
     'scheduleEditorDOMPhase',
     'selectDOMInputDefaultActionPhase',
     'setDOMClipboardFormatKey',
@@ -699,7 +700,9 @@ describe('public package imports', () => {
     try {
       await import(browserRootSpecifier);
       importedRoot = true;
-    } catch {}
+    } catch {
+      // The browser entrypoint must reject this root import.
+    }
 
     expect(importedRoot).toBe(false);
   });

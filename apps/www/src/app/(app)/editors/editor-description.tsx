@@ -24,7 +24,7 @@ const i18n = {
 
 export function EditorDescription() {
   const locale = useLocale();
-  const content = i18n[locale as keyof typeof i18n];
+  const content = i18n[locale];
 
   return (
     <PageHeader>

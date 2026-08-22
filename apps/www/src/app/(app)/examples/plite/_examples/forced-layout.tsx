@@ -77,12 +77,15 @@ const forcedLayout = () =>
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'title':
+    case 'title': {
       return <Title {...(props as RenderElementProps<TitleElement>)} />;
-    case 'paragraph':
+    }
+    case 'paragraph': {
       return <Paragraph {...(props as RenderElementProps<ParagraphElement>)} />;
-    default:
+    }
+    default: {
       return null;
+    }
   }
 };
 

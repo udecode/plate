@@ -60,6 +60,7 @@ import {
 } from './input-controller';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
+  failInvariant,
   isVoid as editorIsVoid,
   isBlock as editorIsBlock,
   above as editorAbove,
@@ -342,7 +343,7 @@ export const applyEditableFocus = ({
     // results in issues with keyboard navigation. (2017/03/30)
     if (isGeckoDOMHost(event) && event.target !== el) {
       el.focus();
-      return;
+      return undefined;
     }
 
     IS_FOCUSED.set(editor, true);
@@ -789,7 +790,7 @@ export const syncSelectionForBeforeInput = ({
         pendingNativeTextInputRepairOffset;
     const pendingNativeTextInputRepairOwnsDifferentPath =
       pendingNativeTextInputRepairOwnsSelection &&
-      !PathApi.equals(range.anchor.path, pendingNativeTextInputRepairPath!);
+      !PathApi.equals(range.anchor.path, pendingNativeTextInputRepairPath);
     const pendingNativeTextInputRepairOwnsDifferentOffset =
       pendingNativeTextInputRepairOwnsSelection &&
       pendingNativeTextInputRepairOffset != null &&
@@ -939,7 +940,11 @@ export const restoreUserSelectionAfterBeforeInput = ({
   if (
     toRestore &&
     (!readRuntimeSelection(editor) ||
-      !RangeApi.equals(readRuntimeSelection(editor)!, toRestore))
+      !RangeApi.equals(
+        readRuntimeSelection(editor) ??
+          failInvariant('Expected value to be defined'),
+        toRestore
+      ))
   ) {
     writePliteViewSelection(editor, null);
     editor.update((tx) => {
@@ -1045,19 +1050,19 @@ export const useEditableSelectionReconciler = ({
     const domSelection = getSelection(root);
 
     if (!isSelectionInEditorView(editor, selection)) {
-      return;
+      return undefined;
     }
 
     if (isEditableOutsideFocusBoundarySettling(state)) {
-      return;
+      return undefined;
     }
 
     if (!domSelection || androidInputManagerRef.current?.hasPendingAction()) {
-      return;
+      return undefined;
     }
 
     if (isInteractiveInternalTarget(editor, root.activeElement)) {
-      return;
+      return undefined;
     }
 
     const editorElementForActiveTarget = EDITOR_TO_ELEMENT.get(editor);
@@ -1070,11 +1075,11 @@ export const useEditableSelectionReconciler = ({
           editorElementForActiveTarget.ownerDocument.documentElement &&
         !containsShadowAware(editorElementForActiveTarget, root.activeElement))
     ) {
-      return;
+      return undefined;
     }
 
     if (shouldSkipDOMSelection(editor)) {
-      return;
+      return undefined;
     }
 
     const selectionHasDOMCoverage =
@@ -1089,12 +1094,12 @@ export const useEditableSelectionReconciler = ({
       ) &&
       containsShadowAware(editorElementForActiveTarget, domSelection.focusNode)
     ) {
-      return;
+      return undefined;
     }
 
     if (partialDOMBackedSelection && selectionHasDOMCoverage) {
       domSelection.removeAllRanges();
-      return;
+      return undefined;
     }
 
     const clearUpdatingSelection = () => {
@@ -1113,11 +1118,11 @@ export const useEditableSelectionReconciler = ({
 
       // If the DOM selection is properly unset, we're done.
       if (!selection && !hasDomSelection) {
-        return;
+        return undefined;
       }
 
       // Get anchorNode and focusNode
-      const focusNode = domSelection.focusNode;
+      const { focusNode } = domSelection;
       let anchorNode: globalThis.Node | null = null;
 
       // COMPAT: In firefox the normal selection way does not work
@@ -1134,11 +1139,13 @@ export const useEditableSelectionReconciler = ({
           anchorNode = firstRange.startContainer;
         }
       } else {
-        anchorNode = domSelection.anchorNode;
+        ({ anchorNode } = domSelection);
       }
 
       // verify that the dom selection is in the editor
-      const editorElement = EDITOR_TO_ELEMENT.get(editor)!;
+      const editorElement =
+        EDITOR_TO_ELEMENT.get(editor) ??
+        failInvariant('Expected value to be defined');
       let hasDomSelectionInEditor = false;
       if (
         containsShadowAware(editorElement, anchorNode) &&
@@ -1175,7 +1182,7 @@ export const useEditableSelectionReconciler = ({
           RangeApi.equals(pliteRange, projectedSelection) &&
           !isCollapsedElementSelection
         ) {
-          return;
+          return undefined;
         }
       }
 
@@ -1194,11 +1201,11 @@ export const useEditableSelectionReconciler = ({
           editor,
           resolvedRange ? SelectionApi.text(resolvedRange) : null
         );
-        return;
+        return undefined;
       }
 
       if (readPliteViewSelection(editor)) {
-        return;
+        return undefined;
       }
 
       if (
@@ -1215,7 +1222,7 @@ export const useEditableSelectionReconciler = ({
           selection,
         })
       ) {
-        return;
+        return undefined;
       }
 
       // Otherwise the DOM selection is out of sync, so update it.
@@ -1258,7 +1265,11 @@ export const useEditableSelectionReconciler = ({
               endOffset
             );
           }
-        } else if (RangeApi.isBackward(projectedSelection!)) {
+        } else if (
+          RangeApi.isBackward(
+            projectedSelection ?? failInvariant('Expected value to be defined')
+          )
+        ) {
           domSelection.setBaseAndExtent(
             endContainer,
             endOffset,
@@ -1296,7 +1307,7 @@ export const useEditableSelectionReconciler = ({
         setDomSelection();
       } catch {
         clearUpdatingSelection();
-        return;
+        return undefined;
       }
     }
 
@@ -1305,7 +1316,7 @@ export const useEditableSelectionReconciler = ({
 
     if (!runtime.isAndroidHost || !ensureSelection) {
       clearUpdatingSelection();
-      return;
+      return undefined;
     }
 
     let cancelTimeout = () => {};

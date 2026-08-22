@@ -6,7 +6,7 @@ import fc from 'fast-check';
 import { DocumentChange } from '../src/core/change/document-change';
 import { DocumentIndex } from '../src/core/change/document-index';
 import {
-  RootChange,
+  type RootChange,
   insertNodeChange,
   insertTextChange,
   moveNodeChange,
@@ -156,23 +156,25 @@ const normalizeAction = (
 ): ModelAction => {
   const sections = rootValue(value, root);
   const sectionIndex = modulo(raw.a, sections.length);
-  const paragraphs = sections[sectionIndex]!.children;
+  const paragraphs = sections[sectionIndex].children;
   const paragraphIndex = modulo(raw.b, paragraphs.length);
-  const text = paragraphs[paragraphIndex]!.children[0].text;
+  const { text } = paragraphs[paragraphIndex].children[0];
   const rank = raw.removeProperty ? null : 1 + modulo(raw.c, 1000);
 
   switch (raw.kind) {
-    case 'insert-section':
+    case 'insert-section': {
       return {
         at: modulo(raw.a, sections.length + 1),
         kind: raw.kind,
         section: section(`generated-${raw.text}-${raw.c}`),
       };
-    case 'remove-section':
+    }
+    case 'remove-section': {
       return sections.length === 1
         ? { at: sectionIndex, kind: 'set-section', rank }
         : { at: sectionIndex, kind: raw.kind };
-    case 'move-section':
+    }
+    case 'move-section': {
       return sections.length === 1
         ? { at: sectionIndex, kind: 'set-section', rank }
         : {
@@ -180,16 +182,19 @@ const normalizeAction = (
             kind: raw.kind,
             to: differentIndex(sectionIndex, raw.b, sections.length),
           };
-    case 'set-section':
+    }
+    case 'set-section': {
       return { at: sectionIndex, kind: raw.kind, rank };
-    case 'insert-paragraph':
+    }
+    case 'insert-paragraph': {
       return {
         at: modulo(raw.b, paragraphs.length + 1),
         kind: raw.kind,
         paragraph: paragraph(`generated-${raw.text}-${raw.c}`),
         section: sectionIndex,
       };
-    case 'remove-paragraph':
+    }
+    case 'remove-paragraph': {
       return paragraphs.length === 1
         ? {
             at: paragraphIndex,
@@ -202,7 +207,8 @@ const normalizeAction = (
             kind: raw.kind,
             section: sectionIndex,
           };
-    case 'move-paragraph':
+    }
+    case 'move-paragraph': {
       return paragraphs.length === 1
         ? {
             at: paragraphIndex,
@@ -216,14 +222,16 @@ const normalizeAction = (
             section: sectionIndex,
             to: differentIndex(paragraphIndex, raw.c, paragraphs.length),
           };
-    case 'set-paragraph':
+    }
+    case 'set-paragraph': {
       return {
         at: paragraphIndex,
         kind: raw.kind,
         rank,
         section: sectionIndex,
       };
-    case 'insert-text':
+    }
+    case 'insert-text': {
       return {
         kind: raw.kind,
         offset: modulo(raw.c, text.length + 1),
@@ -231,6 +239,7 @@ const normalizeAction = (
         section: sectionIndex,
         text: raw.text,
       };
+    }
     case 'remove-text': {
       if (text.length === 0) {
         return {
@@ -249,10 +258,12 @@ const normalizeAction = (
         offset,
         paragraph: paragraphIndex,
         section: sectionIndex,
-        text: text[offset]!,
+        text: text[offset] ?? assert.fail('expected a character at the offset'),
       };
     }
   }
+
+  return assert.fail('unreachable model action kind');
 };
 
 const actionChange = (
@@ -264,41 +275,49 @@ const actionChange = (
   let change: RootChange;
 
   switch (action.kind) {
-    case 'insert-section':
+    case 'insert-section': {
       change = insertNodeChange(document, [action.at], action.section);
       break;
-    case 'remove-section':
+    }
+    case 'remove-section': {
       change = removeNodeChange(document, [action.at]);
       break;
-    case 'move-section':
+    }
+    case 'move-section': {
       change = moveNodeChange(document, [action.from], [action.to]);
       break;
-    case 'set-section':
+    }
+    case 'set-section': {
       change = setNodeChange(document, [action.at], { rank: action.rank });
       break;
-    case 'insert-paragraph':
+    }
+    case 'insert-paragraph': {
       change = insertNodeChange(
         document,
         [action.section, action.at],
         action.paragraph
       );
       break;
-    case 'remove-paragraph':
+    }
+    case 'remove-paragraph': {
       change = removeNodeChange(document, [action.section, action.at]);
       break;
-    case 'move-paragraph':
+    }
+    case 'move-paragraph': {
       change = moveNodeChange(
         document,
         [action.section, action.from],
         [action.section, action.to]
       );
       break;
-    case 'set-paragraph':
+    }
+    case 'set-paragraph': {
       change = setNodeChange(document, [action.section, action.at], {
         rank: action.rank,
       });
       break;
-    case 'insert-text':
+    }
+    case 'insert-text': {
       change = insertTextChange(
         document,
         [action.section, action.paragraph, 0],
@@ -306,7 +325,8 @@ const actionChange = (
         action.text
       );
       break;
-    case 'remove-text':
+    }
+    case 'remove-text': {
       change = removeTextChange(
         document,
         [action.section, action.paragraph, 0],
@@ -314,6 +334,7 @@ const actionChange = (
         action.text
       );
       break;
+    }
   }
 
   return createTestDocumentChange(
@@ -330,37 +351,42 @@ const applyModelAction = (
   const sections = rootValue(next, root);
 
   switch (action.kind) {
-    case 'insert-section':
+    case 'insert-section': {
       sections.splice(action.at, 0, action.section);
       break;
-    case 'remove-section':
+    }
+    case 'remove-section': {
       sections.splice(action.at, 1);
       break;
+    }
     case 'move-section': {
       const [moved] = sections.splice(action.from, 1);
 
-      sections.splice(action.to, 0, moved!);
+      sections.splice(action.to, 0, moved);
       break;
     }
-    case 'set-section':
-      if (action.rank === null) delete sections[action.at]!.rank;
-      else sections[action.at]!.rank = action.rank;
+    case 'set-section': {
+      if (action.rank === null) delete sections[action.at].rank;
+      else sections[action.at].rank = action.rank;
       break;
-    case 'insert-paragraph':
-      sections[action.section]!.children.splice(action.at, 0, action.paragraph);
+    }
+    case 'insert-paragraph': {
+      sections[action.section].children.splice(action.at, 0, action.paragraph);
       break;
-    case 'remove-paragraph':
-      sections[action.section]!.children.splice(action.at, 1);
+    }
+    case 'remove-paragraph': {
+      sections[action.section].children.splice(action.at, 1);
       break;
+    }
     case 'move-paragraph': {
-      const paragraphs = sections[action.section]!.children;
+      const paragraphs = sections[action.section].children;
       const [moved] = paragraphs.splice(action.from, 1);
 
-      paragraphs.splice(action.to, 0, moved!);
+      paragraphs.splice(action.to, 0, moved);
       break;
     }
     case 'set-paragraph': {
-      const target = sections[action.section]!.children[action.at]!;
+      const target = sections[action.section].children[action.at];
 
       if (action.rank === null) delete target.rank;
       else target.rank = action.rank;
@@ -368,14 +394,14 @@ const applyModelAction = (
     }
     case 'insert-text': {
       const target =
-        sections[action.section]!.children[action.paragraph]!.children[0];
+        sections[action.section].children[action.paragraph].children[0];
 
       target.text = `${target.text.slice(0, action.offset)}${action.text}${target.text.slice(action.offset)}`;
       break;
     }
     case 'remove-text': {
       const target =
-        sections[action.section]!.children[action.paragraph]!.children[0];
+        sections[action.section].children[action.paragraph].children[0];
 
       target.text = `${target.text.slice(0, action.offset)}${target.text.slice(action.offset + action.text.length)}`;
       break;
@@ -695,7 +721,7 @@ void describe('DocumentChange generated laws', () => {
           const before = documentValue('property-delta', true);
 
           for (const root of [null, 'header'] as const) {
-            const target = rootValue(before, root)[0]!;
+            const target = rootValue(before, root)[0];
 
             Object.assign(target, {
               align: 0,

@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
@@ -104,7 +105,7 @@ export const createTable = (spanning?: boolean) => {
   );
 };
 
-export const tableValue = (
+export const tableValue: Value = (
   <fragment>
     <hheading level={2} id="table-demo-heading">
       Table

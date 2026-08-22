@@ -18,6 +18,7 @@ import {
   NodeApi,
   TextApi,
 } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { BaseTableCellPlugin } from '@platejs/table';
 import { TablePlugin } from '@platejs/table/react';
@@ -180,7 +181,9 @@ function createChatTransport({
         const abortController = new AbortController();
         abortControllerRef.current = abortController;
 
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
 
         const stream = fakeStreamText({
           editor,
@@ -252,7 +255,8 @@ export const useChat = () => {
           return;
         }
 
-        const cellUpdate = tableData.cellUpdate!;
+        const cellUpdate =
+          tableData.cellUpdate ?? failInvariant('Expected value to be defined');
 
         editor.plugin(AIChatPlugin).update.applyTableCellSuggestion(cellUpdate);
       }
@@ -266,10 +270,14 @@ export const useChat = () => {
           return;
         }
 
-        const aiComment = commentData.comment!;
+        const aiComment =
+          commentData.comment ?? failInvariant('Expected value to be defined');
         const range = editor.plugin(AIChatPlugin).read.commentRange(aiComment);
 
-        if (!range) return console.warn('No range found for AI comment');
+        if (!range) {
+          console.warn('No range found for AI comment');
+          return;
+        }
 
         const discussions =
           editor.plugin(discussionPlugin).store.get('discussions') || [];
@@ -334,9 +342,12 @@ export const useChat = () => {
       _abortFakeStream();
     },
   };
+  const publishChat = React.useEffectEvent(() => {
+    editor.plugin(AIChatPlugin).store.set({ chat: createAIChatAdapter(chat) });
+  });
 
   React.useEffect(() => {
-    editor.plugin(AIChatPlugin).store.set({ chat: createAIChatAdapter(chat) });
+    publishChat();
   }, [chat.status, chat.messages, chat.error, _abortFakeStream]);
 
   return chat;
@@ -408,18 +419,24 @@ const fakeStreamText = ({
       // Generate a unique message ID
       const messageId = `msg_${faker.string.alphanumeric(40)}`;
 
+      controller.enqueue(encoder.encode('data: {"type":"start"}\n\n'));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+
+      controller.enqueue(encoder.encode('data: {"type":"start-step"}\n\n'));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+
       // Handle comment and table data differently (they use data events, not text streams)
       if (sample === 'comment' || sample === 'table') {
-        controller.enqueue(encoder.encode('data: {"type":"start"}\n\n'));
-        await new Promise((resolve) => setTimeout(resolve, 10));
-
-        controller.enqueue(encoder.encode('data: {"type":"start-step"}\n\n'));
-        await new Promise((resolve) => setTimeout(resolve, 10));
-
         // For comments and tables, send data events directly
         for (const block of blocks) {
           for (const chunk of block) {
-            await new Promise((resolve) => setTimeout(resolve, chunk.delay));
+            await new Promise((resolve) => {
+              setTimeout(resolve, chunk.delay);
+            });
 
             if (signal?.aborted) {
               signal?.removeEventListener('abort', abortHandler);
@@ -430,30 +447,24 @@ const fakeStreamText = ({
             controller.enqueue(encoder.encode(`data: ${chunk.texts}\n\n`));
           }
         }
-
-        // Send the final DONE event
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
       } else {
-        // Send initial stream events for text content
-        controller.enqueue(encoder.encode('data: {"type":"start"}\n\n'));
-        await new Promise((resolve) => setTimeout(resolve, 10));
-
-        controller.enqueue(encoder.encode('data: {"type":"start-step"}\n\n'));
-        await new Promise((resolve) => setTimeout(resolve, 10));
-
         controller.enqueue(
           encoder.encode(
             `data: {"type":"text-start","id":"${messageId}","providerMetadata":{"openai":{"itemId":"${messageId}"}}}\n\n`
           )
         );
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
 
         for (let i = 0; i < blocks.length; i++) {
           const block = blocks[i];
 
           // Stream the block content
           for (const chunk of block) {
-            await new Promise((resolve) => setTimeout(resolve, chunk.delay));
+            await new Promise((resolve) => {
+              setTimeout(resolve, chunk.delay);
+            });
 
             if (signal?.aborted) {
               signal?.removeEventListener('abort', abortHandler);
@@ -462,11 +473,16 @@ const fakeStreamText = ({
 
             // Properly escape the text for JSON
             const escapedText = chunk.texts
-              .replace(/\\/g, '\\\\') // Escape backslashes first
-              .replace(/"/g, String.raw`\"`) // Escape quotes
-              .replace(/\n/g, String.raw`\n`) // Escape newlines
-              .replace(/\r/g, String.raw`\r`) // Escape carriage returns
-              .replace(/\t/g, String.raw`\t`); // Escape tabs
+              // Escape backslashes first
+              .replace(/\\/g, '\\\\')
+              // Escape quotes
+              .replace(/"/g, String.raw`\"`)
+              // Escape newlines
+              .replace(/\n/g, String.raw`\n`)
+              // Escape carriage returns
+              .replace(/\r/g, String.raw`\r`)
+              // Escape tabs
+              .replace(/\t/g, String.raw`\t`);
 
             controller.enqueue(
               encoder.encode(
@@ -489,16 +505,22 @@ const fakeStreamText = ({
         controller.enqueue(
           encoder.encode(`data: {"type":"text-end","id":"${messageId}"}\n\n`)
         );
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
 
         controller.enqueue(encoder.encode('data: {"type":"finish-step"}\n\n'));
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
 
         controller.enqueue(encoder.encode('data: {"type":"finish"}\n\n'));
-        await new Promise((resolve) => setTimeout(resolve, 10));
-
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
       }
+
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'));
 
       signal?.removeEventListener('abort', abortHandler);
       controller.close();
@@ -1634,7 +1656,8 @@ const createCommentChunks = (editor: PlateEditor) => {
   const result = new Set<number>();
 
   while (result.size < commentCount) {
-    const num = Math.floor(Math.random() * max); // 0 to max-1 (fixed: was 1 to max)
+    // 0 to max-1 (fixed: was 1 to max)
+    const num = Math.floor(Math.random() * max);
     result.add(num);
   }
 

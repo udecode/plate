@@ -35,7 +35,7 @@ type VNodeProperties = {
 };
 
 type VNodeType = {
-  children?: (VNodeType | VTextType)[];
+  children?: Array<VNodeType | VTextType>;
   properties?: VNodeProperties;
   tagName?: string;
   [key: string]: unknown;
@@ -46,7 +46,7 @@ type VTextType = {
   [key: string]: unknown;
 };
 
-type VTree = VNodeType | VTextType | (VNodeType | VTextType)[];
+type VTree = VNodeType | VTextType | Array<VNodeType | VTextType>;
 
 // Types for DocxDocumentInstance
 type MediaFileResponse = {
@@ -92,7 +92,7 @@ type DocxDocumentInstance = {
 const MARGIN_NUMBER_REGEX = /(\d+)/;
 
 // Inline elements that should be grouped into a single paragraph
-const INLINE_ELEMENTS = [
+const INLINE_ELEMENTS = new Set([
   'span',
   'strong',
   'b',
@@ -108,16 +108,15 @@ const INLINE_ELEMENTS = [
   'mark',
   'a',
   'code',
-];
+]);
 
 // Check if a vNode is an inline element
 const isInlineElement = (node: VNodeType | VTextType): boolean =>
   isVText(node) ||
-  (isVNode(node) &&
-    INLINE_ELEMENTS.includes((node as VNodeType).tagName || ''));
+  (isVNode(node) && INLINE_ELEMENTS.has((node as VNodeType).tagName || ''));
 
 // Elements that need special handling and should not be wrapped in inline grouping
-const SPECIAL_BLOCK_ELEMENTS = [
+const SPECIAL_BLOCK_ELEMENTS = new Set([
   'img',
   'table',
   'figure',
@@ -135,13 +134,13 @@ const SPECIAL_BLOCK_ELEMENTS = [
   'video',
   'audio',
   'iframe',
-];
+]);
 
 // Recursively check if a vNode contains any special block elements
 const containsSpecialElements = (node: VNodeType | VTextType): boolean => {
   if (!isVNode(node)) return false;
   const vNode = node as VNodeType;
-  if (SPECIAL_BLOCK_ELEMENTS.includes(vNode.tagName || '')) return true;
+  if (SPECIAL_BLOCK_ELEMENTS.has(vNode.tagName || '')) return true;
   if (vNodeHasChildren(vNode)) {
     return (vNode.children || []).some((child) =>
       containsSpecialElements(child)
@@ -156,7 +155,7 @@ const convertHTML = HTMLToVDOM({
 });
 
 type ContentGroup = {
-  children?: (VNodeType | VTextType)[];
+  children?: Array<VNodeType | VTextType>;
   node?: VNodeType | VTextType;
   type: 'block' | 'inline';
 };
@@ -271,7 +270,7 @@ async function findXMLEquivalent(
 
       // Handle mixed content: group consecutive inline elements into paragraphs
       const groups: ContentGroup[] = [];
-      let currentInlineGroup: (VNodeType | VTextType)[] = [];
+      let currentInlineGroup: Array<VNodeType | VTextType> = [];
 
       for (const child of vNode.children || []) {
         if (isInlineElement(child)) {
@@ -475,7 +474,7 @@ async function findXMLEquivalent(
       xmlFragment.import(paragraphFragment);
       return;
     }
-    case 'figure':
+    case 'figure': {
       if (vNodeHasChildren(vNode)) {
         // Helper to find and process img elements recursively
         const processImageInNode = async (
@@ -551,6 +550,7 @@ async function findXMLEquivalent(
         }
       }
       return;
+    }
     case 'table': {
       const tableFragment = await buildTable(
         vNode,
@@ -584,7 +584,7 @@ async function findXMLEquivalent(
       } else {
         // Create a new numbering ID for a new list sequence
         numberingId = docxDocumentInstance.createNumbering(
-          vNode.tagName as 'ol' | 'ul',
+          vNode.tagName,
           vNode.properties
         );
       }
@@ -613,8 +613,12 @@ async function findXMLEquivalent(
       xmlFragment.import(linebreakFragment);
       return;
     }
-    case 'head':
+    case 'head': {
       return;
+    }
+    case undefined: {
+      break;
+    }
   }
   if (vNodeHasChildren(vNode)) {
     for (let index = 0; index < (vNode.children || []).length; index++) {
@@ -665,8 +669,7 @@ export async function convertVTreeToXML(
     return '';
   }
   if (Array.isArray(vTree) && vTree.length) {
-    for (let index = 0; index < vTree.length; index++) {
-      const vNode = vTree[index];
+    for (const vNode of vTree) {
       await convertVTreeToXML(docxDocumentInstance, vNode, xmlFragment);
     }
   } else if (isVNode(vTree)) {

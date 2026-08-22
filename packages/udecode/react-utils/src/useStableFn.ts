@@ -22,5 +22,9 @@ export const useStableFn = <A extends unknown[], R>(
     fnRef.current = fn;
   }, [fn]);
 
-  return React.useCallback((...args: A) => fnRef.current(...args), deps);
+  return React.useCallback(
+    (...args: A) => fnRef.current(...args),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The public contract deliberately delegates callback identity to the caller-supplied dependency list while invocation reads the latest function from the ref.
+    deps
+  );
 };

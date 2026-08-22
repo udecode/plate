@@ -1,8 +1,6 @@
 import type {
   BaseEditor,
   AnyEditor as Editor,
-  EditorCommitContext,
-  EditorCorrection,
   EditorExtension,
   EditorExtensionDependencyReferenceFor,
   EditorExtensionReference,
@@ -21,11 +19,7 @@ import type {
   EditorDocumentValue,
   EditorExtensionInput,
   EditorExtensionReconfigureOptions,
-  EditorNodeChangeContext,
   EditorStateField,
-  EditorTextChangeContext,
-  EditorTransactionChangeContext,
-  EditorUpdateContext,
   EditorUpdatePolicy,
   EditorUpdateTransaction,
   EditorValueFromExtensions,
@@ -38,9 +32,9 @@ import type {
   EditorSchemaDefinition,
 } from '../interfaces/schema';
 import type { SelectionValue } from '../interfaces/selection';
+import { getDefined } from '../internal/get-defined';
 import { ChangeDraft } from './change/builder';
 import { DocumentChange } from './change/document-change';
-import type { JsonEditorValue } from './change/tokens';
 import { createCommandRegistration } from './command-definition';
 import { registerCommandInRegistry } from './command-registry';
 import { getEditorCommitSnapshot } from './commit';
@@ -198,7 +192,7 @@ export const createEditorExtensionUpdatePortal = (
       {
         get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-            return;
+            return undefined;
           }
           return createScopedUpdatePath([...path, key], policy);
         },
@@ -210,7 +204,7 @@ export const createEditorExtensionUpdatePortal = (
       {
         get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-            return;
+            return undefined;
           }
 
           return createScopedUpdatePath([key], policy);
@@ -319,12 +313,18 @@ export {
 const reportExtensionLifecycleError = (
   editor: Editor,
   extensionName: string,
-  phase: 'afterPublish' | 'cleanup',
+  phase:
+    | 'afterPublish'
+    | 'cleanup'
+    | 'commit-listener'
+    | 'node-change-listener'
+    | 'text-change-listener',
   cause: unknown
-) =>
+) => {
   reportEditorLifecycleError(
     Object.freeze({ cause, editor, extensionName, phase })
   );
+};
 
 const assertSynchronousLifecycleResult = (result: unknown, label: string) => {
   if (
@@ -424,7 +424,7 @@ const expandExtensionInput = (
     const entry = {
       editor,
       explicit: relation.kind === 'explicit',
-      extension: extension as EditorExtensionReference,
+      extension,
       requiredBy: new Set(
         relation.kind === 'dependency' ? [relation.owner] : []
       ),
@@ -555,8 +555,8 @@ const collectOwnedExtensionNames = (
 
     if (
       !record ||
-      [...record.requiredBy, ...record.slotOwners].every((owner) =>
-        requested.has(owner)
+      [...record.requiredBy, ...record.slotOwners].every((innerOwner) =>
+        requested.has(innerOwner)
       )
     ) {
       names.add(owner);
@@ -569,9 +569,12 @@ const collectOwnedExtensionNames = (
 
     for (const [name, record] of state.records) {
       if (names.has(name) || record.explicit) continue;
-      const owners = new Set([...record.requiredBy, ...record.slotOwners]);
+      const innerOwners = new Set([...record.requiredBy, ...record.slotOwners]);
 
-      if (owners.size > 0 && [...owners].every((owner) => names.has(owner))) {
+      if (
+        innerOwners.size > 0 &&
+        [...innerOwners].every((owner) => names.has(owner))
+      ) {
         names.add(name);
         changed = true;
       }
@@ -703,7 +706,7 @@ type NormalizeEditorExtensionDefinition<
   Readonly<{ name: N }>;
 
 type EditorExtensionSelectionFromInput<TInput> = TInput extends {
-  selectionKinds: readonly EditorSelectionSpec<infer TSelection>[];
+  selectionKinds: ReadonlyArray<EditorSelectionSpec<infer TSelection>>;
 }
   ? TSelection
   : never;
@@ -851,7 +854,7 @@ export const resolveInstalledEditorExtension = (
     ? extension
     : CANONICAL_EDITOR_EXTENSION_BY_INPUT.get(extension);
 
-  if (!canonical) return;
+  if (!canonical) return undefined;
   const installed =
     getExtensionRegistry(editor).extensionsByDescriptor.get(
       canonical
@@ -904,10 +907,12 @@ export const getCandidateEditorApiValue = (
     getEditorRuntimeOwner(editor)
   );
 
-  if (!candidateApis) return;
+  if (!candidateApis) return undefined;
   for (const api of candidateApis.values()) {
     if (Object.hasOwn(api, name)) return api[name];
   }
+
+  return undefined;
 };
 
 /**
@@ -937,11 +942,11 @@ export const getInstalledEditorExtension = (
   getExtensionState(getEditorRuntimeOwner(editor)).records.get(name)?.extension;
 
 const assertNoUnsupportedSlots = (extension: EditorExtensionReference) => {
-  const methods = (extension as unknown as { methods?: unknown }).methods;
-  const commitListeners = (
-    extension as unknown as { commitListeners?: unknown }
-  ).commitListeners;
-  const register = (extension as unknown as { register?: unknown }).register;
+  const { methods } = extension as unknown as { methods?: unknown };
+  const { commitListeners } = extension as unknown as {
+    commitListeners?: unknown;
+  };
+  const { register } = extension as unknown as { register?: unknown };
 
   if (methods !== undefined) {
     throw new Error(
@@ -1087,7 +1092,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
   registry: ExtensionRegistry<TEditor>,
   api: EditorExtensionApiMap | null = record.api
 ) => {
-  const extension = record.extension as EditorExtensionReference;
+  const { extension } = record;
   const cleanups: Array<() => void> = [];
   const registerSlots = (slots: EditorExtensionDefinitionInput<TEditor>) => {
     assertNoUnsupportedSlots(slots as EditorExtensionReference);
@@ -1119,8 +1124,8 @@ const registerExtensionSlots = <TEditor extends Editor>(
     for (const [name, value] of Object.entries(api ?? {})) {
       const values = Array.isArray(value) ? value : [value];
 
-      for (const value of values) {
-        cleanups.push(registerApiGroupInRegistry(registry, name, value));
+      for (const innerValue of values) {
+        cleanups.push(registerApiGroupInRegistry(registry, name, innerValue));
       }
     }
 
@@ -1176,7 +1181,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
         registerCorrectionInRegistry(
           registry,
           getExtensionSlotId(extension.name, `corrections.${index}`),
-          correction as EditorCorrection<TEditor>
+          correction
         )
       );
     }
@@ -1184,37 +1189,64 @@ const registerExtensionSlots = <TEditor extends Editor>(
     if (slots.on?.commit) {
       cleanups.push(
         registerCommitListenerInRegistry(registry, (commit) => {
-          slots.on?.commit?.({
-            commit,
-            editor,
-            snapshot: getEditorCommitSnapshot(
+          try {
+            slots.on?.commit?.({
               commit,
-              getEditorRuntimeRoot(editor)
-            ),
-          } as EditorCommitContext<TEditor>);
+              editor,
+              snapshot: getEditorCommitSnapshot(
+                commit,
+                getEditorRuntimeRoot(editor)
+              ),
+            });
+          } catch (error) {
+            reportExtensionLifecycleError(
+              editor,
+              extension.name,
+              'commit-listener',
+              error
+            );
+          }
         })
       );
     }
 
     if (slots.on?.nodeChange) {
       cleanups.push(
-        registerNodeChangeListenerInRegistry(registry, (context) =>
-          slots.on?.nodeChange?.({
-            ...context,
-            editor,
-          } as EditorNodeChangeContext<TEditor>)
-        )
+        registerNodeChangeListenerInRegistry(registry, (context) => {
+          try {
+            slots.on?.nodeChange?.({
+              ...context,
+              editor,
+            });
+          } catch (error) {
+            reportExtensionLifecycleError(
+              editor,
+              extension.name,
+              'node-change-listener',
+              error
+            );
+          }
+        })
       );
     }
 
     if (slots.on?.textChange) {
       cleanups.push(
-        registerTextChangeListenerInRegistry(registry, (context) =>
-          slots.on?.textChange?.({
-            ...context,
-            editor,
-          } as EditorTextChangeContext<TEditor>)
-        )
+        registerTextChangeListenerInRegistry(registry, (context) => {
+          try {
+            slots.on?.textChange?.({
+              ...context,
+              editor,
+            });
+          } catch (error) {
+            reportExtensionLifecycleError(
+              editor,
+              extension.name,
+              'text-change-listener',
+              error
+            );
+          }
+        })
       );
     }
 
@@ -1224,7 +1256,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
           slots.on?.transactionChange?.({
             ...context,
             editor,
-          } as EditorTransactionChangeContext<TEditor>)
+          })
         )
       );
     }
@@ -1241,7 +1273,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
           registry,
           extension.name,
           extension.name,
-          (state) => slots.read!({ editor, state })
+          (state) => getDefined(slots.read)({ editor, state })
         )
       );
     }
@@ -1253,7 +1285,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
           extension.name,
           extension.name,
           (tx, _runtimeEditor, context) =>
-            slots.update!({
+            getDefined(slots.update)({
               context: Object.freeze({
                 afterCommit(handler) {
                   context.afterCommit(({ commit, snapshot }) => {
@@ -1264,7 +1296,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
                     });
                   });
                 },
-              }) as EditorUpdateContext<TEditor>,
+              }),
               editor,
               tx,
             })
@@ -1292,7 +1324,7 @@ const deactivateExtensionRecord = (
   record: ExtensionRecord,
   reason: EditorExtensionCleanupContext['reason']
 ) => {
-  const activation = record.activation;
+  const { activation } = record;
   const errors: unknown[] = [];
   const cleanupContext = Object.freeze({
     reason,
@@ -1310,6 +1342,7 @@ const deactivateExtensionRecord = (
   for (const cleanup of activation.cleanups.toReversed()) {
     try {
       assertSynchronousLifecycleResult(
+        // oxlint-disable-next-line typescript/no-confusing-void-expression -- Runtime extensions can violate their declared void contract with a Promise; this guard rejects that actual value.
         cleanup(cleanupContext),
         `Editor extension "${record.extension.name}" cleanup`
       );
@@ -1340,7 +1373,7 @@ const activateExtensionRecord = <TEditor extends Editor>(
     published: false,
   };
   record.activation = activation;
-  const extension = record.extension as EditorExtensionReference;
+  const { extension } = record;
   const runtimeFields = getEditorExtensionRuntimeFields<TEditor>(extension);
   const context = Object.freeze({
     editor,
@@ -1393,7 +1426,7 @@ const activateExtensionRecord = <TEditor extends Editor>(
 };
 
 const runExtensionAfterPublish = (editor: Editor, record: ExtensionRecord) => {
-  const activation = record.activation;
+  const { activation } = record;
 
   if (!activation?.active || activation.published) return;
   activation.published = true;
@@ -1401,15 +1434,16 @@ const runExtensionAfterPublish = (editor: Editor, record: ExtensionRecord) => {
   for (const callback of activation.afterPublishCallbacks) {
     try {
       assertSynchronousLifecycleResult(
+        // oxlint-disable-next-line typescript/no-confusing-void-expression -- Runtime extensions can violate their declared void contract with a Promise; this guard rejects that actual value.
         callback(),
         `Editor extension "${record.extension.name}" after-publish callback`
       );
-    } catch (cause) {
+    } catch (error) {
       reportExtensionLifecycleError(
         editor,
         record.extension.name,
         'afterPublish',
-        cause
+        error
       );
     }
   }
@@ -1455,10 +1489,9 @@ const resolveExtensionApi = <TEditor extends Editor>(
   }
 
   if (extension.api === undefined) return Object.freeze({});
-  const api =
-    (extension.api as EditorExtensionDefinitionInput<TEditor>['api'])!(
-      context!
-    );
+  const api = getDefined(
+    extension.api as EditorExtensionDefinitionInput<TEditor>['api']
+  )(getDefined(context));
 
   assertSynchronousLifecycleResult(
     api,
@@ -1500,7 +1533,7 @@ const resolveEditorApiCapability = (capabilities: readonly unknown[]) => {
  *
  * @internal
  */
-export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
+export const createEditorViewExtensionApis = <TEditor extends Editor>(
   editor: TEditor,
   source: Editor
 ): Pick<TEditor, 'api' | 'extension'> => {
@@ -1546,7 +1579,7 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
         if (registry.extensions.get(extension.name)?.descriptor !== extension) {
           continue;
         }
-        const viewExtension = extension as EditorExtensionReference;
+        const viewExtension = extension;
 
         const extensionApi =
           extension.api === undefined
@@ -1657,7 +1690,7 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
   };
   const api = new Proxy(Object.create(null) as Record<string, unknown>, {
     get(_target, property) {
-      if (typeof property !== 'string') return;
+      if (typeof property !== 'string') return undefined;
       const candidateValue = getCandidateEditorApiValue(editor, property);
 
       if (candidateValue !== undefined) return candidateValue;
@@ -1687,10 +1720,7 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
     return createPortal(installed, true);
   }) as unknown as TEditor['extension'];
 
-  return Object.freeze({ api, extension: extensionPortal }) as Pick<
-    TEditor,
-    'api' | 'extension'
-  >;
+  return Object.freeze({ api, extension: extensionPortal });
 };
 
 const createExtensionRecord = (entry: ExtensionEntry, order: number) =>
@@ -1712,7 +1742,7 @@ const getOrderedExtensionRecords = (
   const visited = new Set<string>();
   const visiting = new Set<string>();
   const visit = (record: ExtensionRecord) => {
-    const name = record.extension.name;
+    const { name } = record.extension;
 
     if (visited.has(name)) return;
     if (visiting.has(name)) {
@@ -1743,7 +1773,7 @@ const validateCompleteExtensionGraph = (
   records: ReadonlyMap<string, ExtensionRecord>
 ) => {
   for (const record of records.values()) {
-    const extension = record.extension;
+    const { extension } = record;
 
     for (const dependency of extension.dependencies ?? []) {
       const installed = records.get(dependency.name);
@@ -1810,11 +1840,11 @@ const classifyCandidatePublicationDocument = (
   document: EditorDocumentValue
 ) => {
   const change = DocumentChange.between(current, document);
-  const builder = new ChangeDraft(current as JsonEditorValue, {
+  const builder = new ChangeDraft(current, {
     assertCanonical: (candidate, accumulated) => {
       if (
         !constructCanonicalDocumentChange(editor, candidate, accumulated, {
-          before: current as JsonEditorValue,
+          before: current,
           schema,
         }).empty
       ) {
@@ -1826,8 +1856,9 @@ const classifyCandidatePublicationDocument = (
     indexConstructedRoot: schema.indexConstructedRoot,
     isSetValued: (node, key, context) =>
       schema.isSetValuedProperty(node, key, context),
-    validate: (candidate) =>
-      schema.assertDocument(candidate as EditorDocumentValue),
+    validate: (candidate) => {
+      schema.assertDocument(candidate);
+    },
   });
 
   builder.applyCanonical(change);
@@ -1945,7 +1976,7 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
             });
             const migrated = options.migrate({ document, next: schema });
 
-            if (Object.hasOwn(migrated as object, 'meta')) {
+            if (Object.hasOwn(migrated, 'meta')) {
               throw new Error(
                 'Schema migrations cannot replace editor state-field metadata.'
               );
@@ -2030,12 +2061,13 @@ const validateExtensions = <TEditor extends Editor>(
   schema: InternalEditorSchemaApi<ValueOf<TEditor>>
 ) => {
   for (const record of getOrderedExtensionRecords(records)) {
-    const extension = record.extension as EditorExtensionReference;
+    const { extension } = record;
     const runtimeFields = getEditorExtensionRuntimeFields<TEditor>(extension);
 
     if (!runtimeFields.validate) continue;
 
     assertSynchronousLifecycleResult(
+      // oxlint-disable-next-line typescript/no-confusing-void-expression -- Runtime extensions can violate their declared void contract with a Promise; this guard rejects that actual value.
       runtimeFields.validate(
         createExtensionCandidateContext(
           record.editor as TEditor,
@@ -2136,7 +2168,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
           continue;
         }
 
-        const extension = record.extension as EditorExtensionReference;
+        const { extension } = record;
         const api = resolveExtensionApi(
           extension,
           createExtensionApiFactoryContext(
@@ -2220,7 +2252,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
     return errors;
   };
   const reportRollbackErrors = (
-    errors: readonly { cause: unknown; record: ExtensionRecord }[]
+    errors: ReadonlyArray<{ cause: unknown; record: ExtensionRecord }>
   ) => {
     for (const { cause, record } of errors) {
       reportExtensionLifecycleError(
@@ -2256,7 +2288,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
         runWithCandidateExtensionRegistry(
           editor,
           { configured: candidate, current: mergedCandidate },
-          () =>
+          () => {
             withTransactionSpecDraftRead(editor, () => {
               for (const record of activatedRecords) {
                 try {
@@ -2278,7 +2310,8 @@ const prepareRecordPublication = <TEditor extends Editor>(
                   throw error;
                 }
               }
-            })
+            });
+          }
         );
       } finally {
         CANDIDATE_EDITOR_EXTENSION_APIS.delete(owner);
@@ -2371,7 +2404,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
             name: extension.name,
           })
         );
-        const removalKey = `editor.unextend:${++nextDynamicExtensionPublication}`;
+        const removalKey = `editor.unextend:${(nextDynamicExtensionPublication += 1)}`;
 
         runTrustedUpdate(editor, () => {
           stageEditorExtensionCandidate(
@@ -2555,9 +2588,9 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
     }
   }
 
-  let nextOrder = state.nextOrder;
+  let { nextOrder } = state;
   const installedRecords = orderedExtensions.flatMap((extension) => {
-    const entry = latestByName.get(extension.name)!;
+    const entry = getDefined(latestByName.get(extension.name));
     const previous = previousRecords.get(extension.name);
     const previousOrder = previous?.order;
 
@@ -2600,7 +2633,10 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
 
       return [];
     }
-    const record = createExtensionRecord(entry, previousOrder ?? nextOrder++);
+    const order = previousOrder ?? nextOrder;
+
+    if (previousOrder === undefined) nextOrder += 1;
+    const record = createExtensionRecord(entry, order);
 
     nextRecords.set(extension.name, record);
 
@@ -2677,8 +2713,8 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
   );
 };
 
-export const prepareEditorExtensionPublication = <TEditor extends Editor>(
-  editor: TEditor,
+export const prepareEditorExtensionPublication = (
+  editor: Editor,
   input: EditorExtensionInput
 ): PreparedEditorExtensionPublication =>
   prepareScopedEditorExtensionPublication(
@@ -2693,10 +2729,8 @@ export const prepareEditorExtensionPublication = <TEditor extends Editor>(
  *
  * @internal
  */
-export const prepareInitialEditorExtensionPublication = <
-  TEditor extends Editor,
->(
-  editor: TEditor,
+export const prepareInitialEditorExtensionPublication = (
+  editor: Editor,
   input: EditorExtensionInput,
   initializeDocument: boolean
 ): PreparedEditorExtensionPublication =>
@@ -2708,13 +2742,13 @@ export const prepareInitialEditorExtensionPublication = <
     { initialPublication: true, initializeDocument }
   );
 
-export const extendEditor = <TEditor extends Editor>(
-  editor: TEditor,
+export const extendEditor = (
+  editor: Editor,
   input: EditorExtensionInput,
   options: EditorExtensionReconfigureOptions = {}
 ): (() => void) => {
   let cleanup = () => {};
-  const key = `editor.install:${++nextDynamicExtensionPublication}`;
+  const key = `editor.install:${(nextDynamicExtensionPublication += 1)}`;
 
   runTrustedUpdate(editor, () => {
     stageEditorExtensionCandidate(
@@ -2729,5 +2763,7 @@ export const extendEditor = <TEditor extends Editor>(
     );
   });
 
-  return () => cleanup();
+  return () => {
+    cleanup();
+  };
 };

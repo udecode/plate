@@ -135,17 +135,17 @@ async function fetchPackageVersions(
   return versionMap;
 }
 
-async function preparePackageUpdates(
+function preparePackageUpdates(
   currentPackageJson: PackageJson,
   versionMap: Map<string, { currentVersion: string; version: string }>
-): Promise<{
+): {
   updatedPackages: Array<{
     name: string;
     currentVersion: string;
     newVersion: string;
   }>;
   newPackageJsonString: string;
-}> {
+} {
   const updatedPackages: Array<{
     name: string;
     currentVersion: string;
@@ -160,7 +160,8 @@ async function preparePackageUpdates(
       newPackageJson.dependencies[name].replace(VERSION_PREFIX_REGEX, '') !==
         versions.version
     ) {
-      newPackageJson.dependencies[name] = versions.version; // Or keep prefix if present: `^${versions.version}`
+      // Or keep prefix if present: `^${versions.version}`
+      newPackageJson.dependencies[name] = versions.version;
       changed = true;
     }
     if (
@@ -266,7 +267,7 @@ async function runSync(options: DepSyncOptions) {
     );
     return;
   }
-  const { updatedPackages, newPackageJsonString } = await preparePackageUpdates(
+  const { updatedPackages, newPackageJsonString } = preparePackageUpdates(
     currentPackageJson,
     versionMap
   );
@@ -281,12 +282,15 @@ async function runSync(options: DepSyncOptions) {
 
     let proceed = options.yes;
     if (!options.yes) {
-      const { confirmUpdate } = await prompts({
+      const answer: unknown = await prompts({
         type: 'confirm',
         name: 'confirmUpdate',
         message: 'Apply these changes to package.json?',
         initial: true,
       });
+      const { confirmUpdate } = z
+        .object({ confirmUpdate: z.boolean().optional() })
+        .parse(answer);
       proceed = confirmUpdate === true;
     }
 
@@ -308,13 +312,16 @@ async function runSync(options: DepSyncOptions) {
       // Decide whether to run install
       let shouldRunInstall = options.install;
       if (!options.install && !options.yes) {
-        const { confirmInstall } = await prompts({
+        const answer: unknown = await prompts({
           type: 'confirm',
           name: 'confirmInstall',
           message:
             'Run package manager install command to apply these changes?',
           initial: true,
         });
+        const { confirmInstall } = z
+          .object({ confirmInstall: z.boolean() })
+          .parse(answer);
         shouldRunInstall = z.boolean().parse(confirmInstall);
       }
 
@@ -436,7 +443,8 @@ async function main() {
               .optional()
               .parse(versionResponse.targetVersion || undefined);
           } else if (cliOpts.latest) {
-            targetVer = undefined; // Ensure targetVer is undefined if --latest is used
+            // Ensure targetVer is undefined if --latest is used
+            targetVer = undefined;
           }
 
           // Merge CLI options with defaults from schema for parsing
@@ -467,7 +475,9 @@ async function main() {
 
           if (silent) {
             logger.error = console.error;
-            logger.break = () => console.log('');
+            logger.break = () => {
+              console.info('');
+            };
           }
           handleError(error);
         }

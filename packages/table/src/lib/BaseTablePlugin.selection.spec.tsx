@@ -105,7 +105,7 @@ describe('table selection', () => {
       const entry = editor.read.nodes.get(path, {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };
@@ -266,8 +266,8 @@ describe('table selection', () => {
         const start = editor.read.points.start([0, 1, 1]);
         const end = editor.read.points.end([0, 1, 1]);
 
-        assert(start);
-        assert(end);
+        assert.ok(start);
+        assert.ok(end);
 
         const table = editor.plugin(BaseTablePlugin).read;
 
@@ -286,8 +286,8 @@ describe('table selection', () => {
         const anchor = editor.read.points.start([0, 1, 2]);
         const focus = editor.read.points.end([0, 1, 0]);
 
-        assert(anchor);
-        assert(focus);
+        assert.ok(anchor);
+        assert.ok(focus);
 
         const selection = editor
           .plugin(BaseTablePlugin)
@@ -306,14 +306,14 @@ describe('table selection', () => {
         const anchor = editor.read.points.start([0, 1, 0]);
         const focus = editor.read.points.end([0, 1, 2]);
 
-        assert(anchor);
-        assert(focus);
+        assert.ok(anchor);
+        assert.ok(focus);
 
         const selection = editor
           .plugin(BaseTablePlugin)
           .read.createCellSelection({ anchor, focus });
 
-        assert(selection);
+        assert.ok(selection);
         editor.update.selection.set(selection);
 
         expect(editor.read.selection()).toEqual(selection);
@@ -328,14 +328,14 @@ describe('table selection', () => {
         const anchor = editor.read.points.start([0, 1, 0]);
         const focus = editor.read.points.end([0, 1, 2]);
 
-        assert(anchor);
-        assert(focus);
+        assert.ok(anchor);
+        assert.ok(focus);
 
         const selection = editor
           .plugin(BaseTablePlugin)
           .read.createCellSelection({ anchor, focus });
 
-        assert(selection);
+        assert.ok(selection);
         editor.update.selection.set(selection);
 
         const slice = editor.read.slice.get();

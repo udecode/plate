@@ -18,7 +18,9 @@ export const writeRuntimeSelection = (
   }
 
   // DOM imports bypass command dispatch while preserving correction policy.
-  editor.update((tx) => tx.selection.set(target));
+  editor.update((tx) => {
+    tx.selection.set(target);
+  });
 };
 
 export const writeRuntimeMarks = (

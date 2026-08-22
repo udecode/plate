@@ -372,7 +372,8 @@ describe('plite-history integrity contract', () => {
     const selectionBefore = structuredClone(
       editorGetSnapshot(editor).selection
     );
-    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
+      [];
     const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
       if (commit) {
         commits.push(commit);
@@ -386,7 +387,7 @@ describe('plite-history integrity contract', () => {
 
     assert.equal(commits.length, 1);
 
-    const commit = commits[0]!;
+    const commit = commits[0];
     assert.equal(editorGetLastCommit(editor), commit);
     assert.equal(commit.changed.has('text'), true);
     assert.equal(commit.previousVersion, 1);

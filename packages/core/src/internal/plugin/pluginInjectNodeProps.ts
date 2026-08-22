@@ -42,8 +42,8 @@ export const pluginInjectNodeProps = (
 
   const node = element ?? text;
 
-  if (!node) return;
-  if (!injectNodeProps) return;
+  if (!node) return undefined;
+  if (!injectNodeProps) return undefined;
 
   const {
     classNames,
@@ -88,13 +88,13 @@ export const pluginInjectNodeProps = (
   if (shouldResolvePathForMatch && !path) {
     callTransformPropsWithoutInjecting();
 
-    return;
+    return undefined;
   }
 
   if (!injectMatch(node, path)) {
     callTransformPropsWithoutInjecting();
 
-    return;
+    return undefined;
   }
 
   const queryResult =
@@ -115,7 +115,7 @@ export const pluginInjectNodeProps = (
   if (typeof query === 'function' && !queryResult) {
     callTransformPropsWithoutInjecting();
 
-    return;
+    return undefined;
   }
 
   // early return if there is no reason to inject props
@@ -125,7 +125,7 @@ export const pluginInjectNodeProps = (
       (validNodeValues && !validNodeValues.includes(nodeValue)) ||
       nodeValue === defaultNodeValue)
   ) {
-    return;
+    return undefined;
   }
 
   const value =

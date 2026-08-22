@@ -201,7 +201,7 @@ describe('Plite DOM geometry kernel', () => {
     const dom = new JSDOM('<!doctype html><html><body></body></html>');
     const { document } = dom.window;
     const root = document.createElement('div');
-    const value = `A${'👨‍👩‍👧‍👦'}B`;
+    const value = `A👨‍👩‍👧‍👦B`;
     const rendered = createTextHost(document, value);
     const familyStart = 1;
     const familyEnd = value.length - 1;
@@ -311,7 +311,7 @@ describe('Plite DOM geometry kernel', () => {
     expect(
       geometry.pointInVisualLine({
         host: rendered.host,
-        line: lines[1]!,
+        line: lines[1],
         x: 40,
       })
     ).toEqual([rendered.text, 4]);

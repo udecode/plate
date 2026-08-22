@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const iframeValue = (
+export const iframeValue: Value = (
   <fragment>
     <hp>
       In this example, the document gets rendered into a controlled{' '}

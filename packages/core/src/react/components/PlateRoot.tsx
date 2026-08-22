@@ -1,4 +1,5 @@
 import { Plite } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import React from 'react';
 
 import {
@@ -33,8 +34,11 @@ export function PlateRoot({
   );
 
   getPlateRuntime(editor).pluginCache.render.abovePlite.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
-    const AbovePlite = plugin.render.abovePlite!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
+    const AbovePlite =
+      plugin.render.abovePlite ?? failInvariant('Expected value to be defined');
 
     abovePlite = <AbovePlite>{abovePlite}</AbovePlite>;
   });

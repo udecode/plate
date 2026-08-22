@@ -18,8 +18,8 @@ describe('useComposedRef', () => {
   });
 
   it('handle callback refs', () => {
-    const captured1: (HTMLDivElement | null)[] = [];
-    const captured2: (HTMLDivElement | null)[] = [];
+    const captured1: Array<HTMLDivElement | null> = [];
+    const captured2: Array<HTMLDivElement | null> = [];
 
     const callbackRef1 = (node: HTMLDivElement | null) => {
       captured1.push(node);
@@ -42,7 +42,7 @@ describe('useComposedRef', () => {
 
   it('handle mixed ref types', () => {
     const ref = React.createRef<HTMLDivElement>();
-    const captured: (HTMLDivElement | null)[] = [];
+    const captured: Array<HTMLDivElement | null> = [];
 
     const callbackRef = (node: HTMLDivElement | null) => {
       captured.push(node);
@@ -90,12 +90,16 @@ describe('useComposedRef', () => {
       if (node) {
         return cleanup1;
       }
+
+      return undefined;
     });
 
     const callbackRef2 = mock((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup2;
       }
+
+      return undefined;
     });
 
     const normalRef = React.createRef<HTMLDivElement>();
@@ -122,6 +126,8 @@ describe('useComposedRef', () => {
       if (node) {
         return cleanup;
       }
+
+      return undefined;
     });
 
     const callbackRefWithoutCleanup = mock((_node: HTMLDivElement | null) => {

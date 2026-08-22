@@ -533,8 +533,8 @@ describe('@platejs/yjs shared effect compaction', () => {
     );
     assert.throws(
       () =>
-        runEditorYjsUpdate(first.editor, (yjs) => {
-          yjs.retireSharedEffectPeer(restarted.doc.clientID);
+        runEditorYjsUpdate(first.editor, (innerYjs) => {
+          innerYjs.retireSharedEffectPeer(restarted.doc.clientID);
         }),
       /only the active.*authority may retire/i
     );
@@ -734,8 +734,8 @@ describe('@platejs/yjs shared effect compaction', () => {
     sync(crashed.doc, authority.doc);
     assert.throws(
       () =>
-        runEditorYjsUpdate(crashed.editor, (yjs) => {
-          yjs.retireSharedEffectPeer(authority.doc.clientID);
+        runEditorYjsUpdate(crashed.editor, (innerYjs2) => {
+          innerYjs2.retireSharedEffectPeer(authority.doc.clientID);
         }),
       /only the active.*authority may retire/i
     );
@@ -748,8 +748,8 @@ describe('@platejs/yjs shared effect compaction', () => {
 
     assert.equal(eventLog.length, 1);
 
-    runEditorYjsUpdate(authority.editor, (yjs) => {
-      yjs.retireSharedEffectPeer(crashed.doc.clientID);
+    runEditorYjsUpdate(authority.editor, (innerYjs3) => {
+      innerYjs3.retireSharedEffectPeer(crashed.doc.clientID);
     });
 
     assert.equal(

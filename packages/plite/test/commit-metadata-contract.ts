@@ -210,7 +210,8 @@ describe('commit metadata contract', () => {
 
   it('groups multiple primitive writes inside one update into one commit', () => {
     const editor = createEditor();
-    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
+      [];
 
     replaceSnapshot(editor, {
       children: [paragraph('one')],

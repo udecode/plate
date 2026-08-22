@@ -73,7 +73,7 @@ export function getDocSections() {
     : fallbackDocSections;
 }
 
-export function getDocsCategoryGroups(category: DocsCategory | string) {
+export function getDocsCategoryGroups(category: string) {
   if (!isDocsCategory(category)) return [];
 
   return docsOverlay.categoryGroups?.[category] ?? [];
@@ -113,7 +113,7 @@ function unwrapSingleUntitledGroup(items: SidebarNavItem[]) {
 }
 
 export function getSidebarCategoryItems(title: string | undefined) {
-  if (!title) return;
+  if (!title) return undefined;
 
   const guideSectionTitle = guideSidebarSections[title];
 
@@ -125,7 +125,7 @@ export function getSidebarCategoryItems(title: string | undefined) {
 
   const category = categorySidebarSections[title];
 
-  if (!category) return;
+  if (!category) return undefined;
 
   return unwrapSingleUntitledGroup(
     docsOverlay.categoryGroups?.[category] ?? []

@@ -181,6 +181,30 @@ describe('@platejs/yjs package config contract', () => {
     assert.equal(yjsPackage.peerDependencies?.yjs, '>=13.6.30');
   });
 
+  it('keeps Plate and React adapters optional for core consumers', () => {
+    const packageRecord = readJsonRecord('../package.json');
+    const peerDependenciesMeta = readOptionalRecord(
+      packageRecord,
+      'peerDependenciesMeta'
+    );
+    const yjsPackage = readPackageJson('../package.json');
+
+    assert.equal(yjsPackage.dependencies?.['@platejs/core'], undefined);
+    assert.equal(yjsPackage.devDependencies?.['@platejs/core'], 'workspace:^');
+    assert.equal(
+      yjsPackage.peerDependencies?.['@platejs/core'],
+      '>=54.0.0-beta.1'
+    );
+
+    for (const dependency of [
+      '@platejs/core',
+      '@platejs/plite-react',
+      'react',
+    ]) {
+      assert.deepEqual(peerDependenciesMeta?.[dependency], { optional: true });
+    }
+  });
+
   it('does not resolve site Yjs imports through package-local node_modules', () => {
     const tsconfig = readTsConfigJson('../../../apps/www/tsconfig.json');
     const yjsAlias = tsconfig.compilerOptions?.paths?.yjs;

@@ -20,8 +20,9 @@ import type {
   SchemaProperty,
   SchemaPropertyKey,
   SchemaTarget,
-  SchemaTextProperty,
 } from '../interfaces/schema';
+import { failInvariant } from '../internal/fail-invariant';
+import { getDefined } from '../internal/get-defined';
 import { profileCoreDuration } from './profiling';
 
 const BUILT_IN_GROUPS = [
@@ -185,13 +186,13 @@ export const readEditorSchemaIdentity = (
   value: unknown
 ): EditorSchemaIdentity | undefined => {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return;
+    return undefined;
   }
 
   try {
     const prototype = Object.getPrototypeOf(value);
 
-    if (prototype !== Object.prototype && prototype !== null) return;
+    if (prototype !== Object.prototype && prototype !== null) return undefined;
 
     const kind = Object.getOwnPropertyDescriptor(value, 'kind');
     const fingerprint = Object.getOwnPropertyDescriptor(value, 'fingerprint');
@@ -207,11 +208,11 @@ export const readEditorSchemaIdentity = (
       typeof fingerprint.value !== 'string' ||
       fingerprint.value.length === 0
     ) {
-      return;
+      return undefined;
     }
 
     if (kind.value === 'derived') {
-      if (Reflect.ownKeys(value).length !== 2) return;
+      if (Reflect.ownKeys(value).length !== 2) return undefined;
 
       return Object.freeze({
         fingerprint: fingerprint.value,
@@ -219,7 +220,7 @@ export const readEditorSchemaIdentity = (
       });
     }
 
-    if (Reflect.ownKeys(value).length !== 4) return;
+    if (Reflect.ownKeys(value).length !== 4) return undefined;
     const id = Object.getOwnPropertyDescriptor(value, 'id');
     const version = Object.getOwnPropertyDescriptor(value, 'version');
 
@@ -235,7 +236,7 @@ export const readEditorSchemaIdentity = (
       !Number.isSafeInteger(version.value) ||
       version.value < 1
     ) {
-      return;
+      return undefined;
     }
 
     return Object.freeze({
@@ -244,7 +245,11 @@ export const readEditorSchemaIdentity = (
       kind: 'named',
       version: version.value,
     });
-  } catch {}
+  } catch {
+    // Invalid schema versions are omitted from the compiled metadata.
+  }
+
+  return undefined;
 };
 
 export type EditorSchemaDiagnostic = Readonly<{
@@ -488,7 +493,7 @@ export const resolveCompiledSchemaWrapperPlan = (
     cache = new Map();
     COMPILED_WRAPPER_PLAN_CACHE.set(schema, cache);
   }
-  if (cache.has(key)) return cache.get(key)!;
+  if (cache.has(key)) return cache.get(key) ?? null;
   return profileCoreDuration('schema-wrapper-plan-search', () => {
     const parent = schema.elements.contentPrograms.get(parentProgramId);
 
@@ -586,10 +591,7 @@ const immutableCollectionMutation = () => {
 
 const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   const map = new Map(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let immutable!: Map<TKey, TValue>;
-
-  immutable = new Proxy(map, {
+  const immutable: Map<TKey, TValue> = new Proxy(map, {
     get(target, property) {
       if (property === 'clear' || property === 'delete' || property === 'set') {
         return immutableCollectionMutation;
@@ -598,10 +600,11 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
         return (
           callback: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value, key) => {
             callback.call(thisArg, value, key, immutable);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);
@@ -615,10 +618,7 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
 
 const freezeSet = <TValue>(source: Iterable<TValue>) => {
   const set = new Set(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let immutable!: Set<TValue>;
-
-  immutable = new Proxy(set, {
+  const immutable: Set<TValue> = new Proxy(set, {
     get(target, property) {
       if (property === 'add' || property === 'clear' || property === 'delete') {
         return immutableCollectionMutation;
@@ -627,10 +627,11 @@ const freezeSet = <TValue>(source: Iterable<TValue>) => {
         return (
           callback: (value: TValue, key: TValue, set: Set<TValue>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value) => {
             callback.call(thisArg, value, value, immutable);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);
@@ -656,7 +657,7 @@ const freezeSetMap = (
 const compileFailure = (
   code: string,
   message: string,
-  sources: readonly Source<unknown>[] | readonly string[],
+  sources: ReadonlyArray<Source<unknown>> | readonly string[],
   path: string
 ): never => {
   const extensions = sources.map((source) =>
@@ -1114,10 +1115,10 @@ const collectSchemaKeyDiagnostics = (
               property.exclusive,
               extensionName,
               `${path}.exclusive`
-            )?.forEach((value, groupIndex) => {
+            )?.forEach((innerValue, groupIndex) => {
               const groupPath = `${path}.exclusive.${groupIndex}`;
               const group = check(
-                value,
+                innerValue,
                 ['id', 'kind'],
                 extensionName,
                 groupPath
@@ -1176,7 +1177,7 @@ const collectSchemaOwnershipConflictDiagnostics = (
       contribution: EditorSchemaDeclaration
     ) => Readonly<Record<string, unknown>> | undefined
   ) => {
-    const sources = new Map<string, Source<unknown>[]>();
+    const sources = new Map<string, Array<Source<unknown>>>();
 
     for (const record of records) {
       for (const [key, value] of Object.entries(
@@ -1439,36 +1440,43 @@ const remapSchemaContentRule = (
   renames: ReadonlyMap<string, string>
 ): SchemaContentRule => {
   switch (rule.kind) {
-    case 'type':
+    case 'type': {
       return Object.freeze({
         kind: 'type' as const,
         type: remapSchemaType(rule.type, renames),
       });
-    case 'types':
+    }
+    case 'types': {
       return Object.freeze({
         kind: 'types' as const,
         types: Object.freeze(
           rule.types.map((type) => remapSchemaType(type, renames))
         ),
       });
+    }
     case 'all':
-    case 'any':
+    case 'any': {
       return Object.freeze({
         kind: rule.kind,
         rules: Object.freeze(
           rule.rules.map((child) => remapSchemaContentRule(child, renames))
         ),
       });
-    case 'not':
+    }
+    case 'not': {
       return Object.freeze({
         kind: 'not' as const,
         rule: remapSchemaContentRule(rule.rule, renames),
       });
+    }
     case 'group':
     case 'open':
-    case 'text':
+    case 'text': {
       return rule;
+    }
   }
+
+  return failInvariant('Unexpected schema content rule');
 };
 
 const remapSchemaContent = (
@@ -1492,36 +1500,43 @@ const remapSchemaTarget = (
   renames: ReadonlyMap<string, string>
 ): SchemaTarget => {
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       return Object.freeze({
         kind: 'type' as const,
         type: remapSchemaType(target.type, renames),
       });
-    case 'types':
+    }
+    case 'types': {
       return Object.freeze({
         kind: 'types' as const,
         types: Object.freeze(
           target.types.map((type) => remapSchemaType(type, renames))
         ),
       });
+    }
     case 'and':
-    case 'or':
+    case 'or': {
       return Object.freeze({
         kind: target.kind,
         targets: Object.freeze(
           target.targets.map((child) => remapSchemaTarget(child, renames))
         ),
       });
+    }
     case 'not':
-    case 'parent':
+    case 'parent': {
       return Object.freeze({
         kind: target.kind,
         target: remapSchemaTarget(target.target, renames),
       });
+    }
     case 'group':
-    case 'root':
+    case 'root': {
       return target;
+    }
   }
+
+  return failInvariant('Unexpected schema target');
 };
 
 const remapSchemaContentRootInput = (
@@ -1647,7 +1662,7 @@ const prepareEditorSchemaRecords = (
 
   for (const [ownerKey, patch] of elementPatches) {
     if (patch.type === undefined) continue;
-    const original = elementOwners.get(ownerKey)!;
+    const original = getDefined(elementOwners.get(ownerKey));
     renames.set(original, patch.type);
   }
   const finalTypes = new Map<string, string>();
@@ -1700,7 +1715,7 @@ const prepareEditorSchemaRecords = (
           }
           const finalTarget = remapSchemaTarget(
             propertyPatch && Object.hasOwn(propertyPatch, 'target')
-              ? propertyPatch.target!
+              ? getDefined(propertyPatch.target)
               : originalTarget,
             renames
           );
@@ -2020,18 +2035,20 @@ const compileContentRule = (
   types: Set<string>;
 }> => {
   switch (rule.kind) {
-    case 'open':
+    case 'open': {
       return {
         allowsText: true,
         allowsUnknownElements: unknownPolicy === 'preserve',
         types: new Set(elementTypes),
       };
-    case 'text':
+    }
+    case 'text': {
       return {
         allowsText: true,
         allowsUnknownElements: false,
         types: new Set(),
       };
+    }
     case 'type': {
       if (!elementTypes.has(rule.type)) {
         compileFailure(
@@ -2149,6 +2166,8 @@ const compileContentRule = (
       return { allowsText, allowsUnknownElements, types };
     }
   }
+
+  return failInvariant('Unexpected schema content rule');
 };
 
 const compileContent = (
@@ -2272,7 +2291,7 @@ const cloneTarget = (
   roots: ReadonlySet<string>
 ): SchemaTarget => {
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       if (!elementTypes.has(target.type)) {
         compileFailure(
           'unknown-element-type',
@@ -2282,6 +2301,7 @@ const cloneTarget = (
         );
       }
       return Object.freeze({ kind: 'type', type: target.type });
+    }
     case 'types': {
       const types = sortedStrings(target.types);
 
@@ -2305,7 +2325,7 @@ const cloneTarget = (
       }
       return Object.freeze({ kind: 'types', types: Object.freeze(types) });
     }
-    case 'group':
+    case 'group': {
       if (!groups.has(target.group)) {
         compileFailure(
           'unknown-group',
@@ -2315,7 +2335,8 @@ const cloneTarget = (
         );
       }
       return Object.freeze({ group: target.group, kind: 'group' });
-    case 'root':
+    }
+    case 'root': {
       if (target.root === RESERVED_PRIMARY_ROOT) {
         compileFailure(
           'reserved-primary-root',
@@ -2333,16 +2354,19 @@ const cloneTarget = (
         );
       }
       return Object.freeze({ kind: 'root', root: target.root });
-    case 'parent':
+    }
+    case 'parent': {
       return Object.freeze({
         kind: 'parent',
         target: cloneTarget(target.target, source, elementTypes, groups, roots),
       });
-    case 'not':
+    }
+    case 'not': {
       return Object.freeze({
         kind: 'not',
         target: cloneTarget(target.target, source, elementTypes, groups, roots),
       });
+    }
     case 'and':
     case 'or': {
       if (target.targets.length < 2) {
@@ -2367,6 +2391,8 @@ const cloneTarget = (
       });
     }
   }
+
+  return failInvariant('Unexpected schema target');
 };
 
 const cloneElementTarget = (
@@ -2411,25 +2437,34 @@ const canonicalTarget = (target: SchemaTarget | null): string => {
   if (!target) return 'all';
 
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       return `type:${JSON.stringify(target.type)}`;
-    case 'types':
+    }
+    case 'types': {
       return `types:${JSON.stringify(sortedStrings(target.types))}`;
-    case 'group':
+    }
+    case 'group': {
       return `group:${JSON.stringify(target.group)}`;
-    case 'root':
+    }
+    case 'root': {
       return `root:${JSON.stringify(target.root)}`;
-    case 'parent':
+    }
+    case 'parent': {
       return `parent(${canonicalTarget(target.target)})`;
-    case 'not':
+    }
+    case 'not': {
       return `not(${canonicalTarget(target.target)})`;
+    }
     case 'and':
-    case 'or':
+    case 'or': {
       return `${target.kind}(${target.targets
         .map(canonicalTarget)
         .sort()
         .join(',')})`;
+    }
   }
+
+  return failInvariant('Unexpected schema target');
 };
 
 export const matchesCompiledSchemaTarget = (
@@ -2440,16 +2475,20 @@ export const matchesCompiledSchemaTarget = (
   if (!target) return true;
 
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       return context.type === target.type;
-    case 'types':
+    }
+    case 'types': {
       return target.types.includes(context.type);
-    case 'group':
+    }
+    case 'group': {
       return (
         schema.elements.groups.get(target.group)?.has(context.type) ?? false
       );
-    case 'root':
+    }
+    case 'root': {
       return context.root === target.root;
+    }
     case 'parent': {
       const [parent, ...ancestors] = context.ancestors ?? [];
 
@@ -2461,17 +2500,22 @@ export const matchesCompiledSchemaTarget = (
           })
         : false;
     }
-    case 'not':
+    case 'not': {
       return !matchesCompiledSchemaTarget(schema, target.target, context);
-    case 'and':
+    }
+    case 'and': {
       return target.targets.every((child) =>
         matchesCompiledSchemaTarget(schema, child, context)
       );
-    case 'or':
+    }
+    case 'or': {
       return target.targets.some((child) =>
         matchesCompiledSchemaTarget(schema, child, context)
       );
+    }
   }
+
+  return failInvariant('Unexpected schema target');
 };
 
 const collectTargetAtoms = (
@@ -2482,27 +2526,33 @@ const collectTargetAtoms = (
   if (!target) return;
 
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       types.add(target.type);
       break;
-    case 'types':
+    }
+    case 'types': {
       for (const type of target.types) types.add(type);
       break;
-    case 'group':
+    }
+    case 'group': {
       groups.add(target.group);
       break;
+    }
     case 'parent':
-    case 'not':
+    case 'not': {
       collectTargetAtoms(target.target, types, groups);
       break;
+    }
     case 'and':
-    case 'or':
+    case 'or': {
       for (const child of target.targets) {
         collectTargetAtoms(child, types, groups);
       }
       break;
-    case 'root':
+    }
+    case 'root': {
       break;
+    }
   }
 };
 
@@ -2519,7 +2569,7 @@ const getTargetDepth = (target: SchemaTarget | null): number => {
 
 const representativeTypes = (
   schema: Pick<CompiledEditorSchema, 'elements' | 'unknown'>,
-  targets: readonly (SchemaTarget | null)[]
+  targets: ReadonlyArray<SchemaTarget | null>
 ) => {
   const exactTypes = new Set<string>();
   const groupNames = new Set<string>();
@@ -2551,7 +2601,7 @@ const representativeTypes = (
 
 const targetCombinationIsSatisfiable = (
   schema: Pick<CompiledEditorSchema, 'elements' | 'roots' | 'unknown'>,
-  targets: readonly (SchemaTarget | null)[],
+  targets: ReadonlyArray<SchemaTarget | null>,
   fixedType?: string,
   cache?: Map<string, boolean>
 ) => {
@@ -2646,7 +2696,11 @@ const canonicalizePropertyValue = (
     const items = new Map<string, PropertyJsonValue>();
 
     for (const item of value as readonly unknown[]) {
-      const compiled = canonicalizePropertyValue(itemDescriptor!, item, source);
+      const compiled = canonicalizePropertyValue(
+        getDefined(itemDescriptor),
+        item,
+        source
+      );
 
       items.set(stableStringify(compiled), compiled);
     }
@@ -2798,7 +2852,7 @@ const clonePropertyDescriptor = (
         source.path
       );
     }
-    item = clonePropertyDescriptor(rawItem!, source);
+    item = clonePropertyDescriptor(getDefined(rawItem), source);
   } else if (descriptor.kind === 'enum') {
     const rawValues = (
       descriptor as PropertyValueDescriptor & {
@@ -2821,7 +2875,7 @@ const clonePropertyDescriptor = (
         source.path
       );
     }
-    values = Object.freeze([...rawValues!]);
+    values = Object.freeze([...getDefined(rawValues)]);
   }
 
   const hasDefault = Object.hasOwn(descriptor, 'default');
@@ -2833,7 +2887,7 @@ const clonePropertyDescriptor = (
         ...descriptor,
         ...(item ? { item } : {}),
         ...(values ? { values } : {}),
-      }) as PropertyValueDescriptor,
+      }),
       descriptor.default,
       source
     );
@@ -2905,12 +2959,9 @@ export const getCompiledSchemaPropertyId = (
     target?: SchemaTarget | null;
   }>
 ): string => {
-  const reflected = Reflect.get(
-    declaration as object,
-    compiledSchemaPropertyIdentity
-  );
+  const reflected = Reflect.get(declaration, compiledSchemaPropertyIdentity);
   const overridden =
-    overriddenPropertyIds.get(declaration as object) ??
+    overriddenPropertyIds.get(declaration) ??
     (typeof reflected === 'string' ? reflected : undefined);
 
   if (overridden) return overridden;
@@ -2945,7 +2996,7 @@ export const preserveCompiledSchemaPropertyIdentity = <
     value: getCompiledSchemaPropertyId(authored),
   });
 
-  return Object.freeze(preserved) as TProperty;
+  return Object.freeze(preserved);
 };
 
 const propertySelectorsOverlap = (
@@ -3256,7 +3307,7 @@ const compileEditorSchemaInternal = (
   for (const [group, parents] of groupParents) {
     for (const parent of parents) {
       if (!groupParents.has(parent)) {
-        const source = groupSources.get(group)!;
+        const source = getDefined(groupSources.get(group));
 
         compileFailure(
           'unknown-group',
@@ -3318,7 +3369,7 @@ const compileEditorSchemaInternal = (
       }
       const elementContent = derivesVoidContent
         ? CANONICAL_VOID_CONTENT
-        : input.content!;
+        : getDefined(input.content);
       const directGroups = new Set<string>([
         'all',
         'element',
@@ -3407,14 +3458,14 @@ const compileEditorSchemaInternal = (
 
   const initialMemberships = getMemberships();
   for (const [type, names] of initialMemberships) {
-    const element = mutableElements.get(type)!;
+    const element = getDefined(mutableElements.get(type));
     const invalidClassification =
       names.has('text') ||
       names.has('inline') !== element.behavior.inline ||
       (element.behavior.inline && names.has('block'));
 
     if (invalidClassification) {
-      const source = element.source;
+      const { source } = element;
 
       compileFailure(
         'invalid-built-in-group',
@@ -3630,7 +3681,9 @@ const compileEditorSchemaInternal = (
         `Schema inline element "${element.type}" allows ${blockChildren}, but inline element content can contain only text and inline elements.`,
         [
           source,
-          ...blockChildTypes.map((type) => mutableElements.get(type)!.source),
+          ...blockChildTypes.map(
+            (type) => getDefined(mutableElements.get(type)).source
+          ),
         ],
         source.path
       );
@@ -3679,7 +3732,7 @@ const compileEditorSchemaInternal = (
       };
 
       assertName(slot, 'Schema content root slot', contentSource);
-      const program = compileContent(
+      const innerProgram = compileContent(
         contentSource,
         elementTypes,
         mutableGroups,
@@ -3687,7 +3740,7 @@ const compileEditorSchemaInternal = (
         unknownPolicy
       );
 
-      if (program.allowsText) {
+      if (innerProgram.allowsText) {
         compileFailure(
           'text-in-root-content',
           `Projected root grammar at ${contentSource.path} cannot allow text nodes.`,
@@ -3695,12 +3748,12 @@ const compileEditorSchemaInternal = (
           contentSource.path
         );
       }
-      mutablePrograms.set(`contentRoot:${element.type}:${slot}`, program);
+      mutablePrograms.set(`contentRoot:${element.type}:${slot}`, innerProgram);
     }
   }
 
   const primaryProgram = compileContent(
-    primaryRoot!,
+    primaryRoot,
     elementTypes,
     mutableGroups,
     textGroups,
@@ -3711,8 +3764,8 @@ const compileEditorSchemaInternal = (
     compileFailure(
       'text-in-root-content',
       'The primary root grammar cannot allow text nodes.',
-      [primaryRoot!],
-      primaryRoot!.path
+      [primaryRoot],
+      primaryRoot.path
     );
   }
   mutablePrograms.set('root', primaryProgram);
@@ -3746,7 +3799,7 @@ const compileEditorSchemaInternal = (
 
     if (cycleIndex !== -1) {
       const cycle = [...constructing.slice(cycleIndex), type];
-      const element = mutableElements.get(type)!;
+      const element = getDefined(mutableElements.get(type));
 
       compileFailure(
         'cyclic-content-default',
@@ -3811,7 +3864,7 @@ const compileEditorSchemaInternal = (
     const role = 'value' in raw ? raw.role : 'content';
     const semanticId =
       overriddenPropertyIds.get(raw) ??
-      Reflect.get(raw as object, compiledSchemaPropertyIdentity);
+      Reflect.get(raw, compiledSchemaPropertyIdentity);
     const rawCopy = lifecycle.copy;
 
     if (rawCopy !== undefined && rawCopy !== 'drop' && rawCopy !== 'preserve') {
@@ -3897,7 +3950,7 @@ const compileEditorSchemaInternal = (
       };
 
       if (property.placement === 'element') {
-        const elementProperty = property as SchemaElementProperty;
+        const elementProperty = property;
 
         if (!elementProperty.target) {
           compileFailure(
@@ -3921,7 +3974,7 @@ const compileEditorSchemaInternal = (
           source
         );
       } else if (property.placement === 'text') {
-        const textProperty = property as SchemaTextProperty;
+        const textProperty = property;
 
         addProperty(
           property,
@@ -3951,14 +4004,14 @@ const compileEditorSchemaInternal = (
   const selectorDiagnostics: EditorSchemaDiagnostic[] = [];
 
   for (let leftIndex = 0; leftIndex < mutableProperties.length; leftIndex++) {
-    const left = mutableProperties[leftIndex]!;
+    const left = mutableProperties[leftIndex];
 
     for (
       let rightIndex = leftIndex + 1;
       rightIndex < mutableProperties.length;
       rightIndex++
     ) {
-      const right = mutableProperties[rightIndex]!;
+      const right = mutableProperties[rightIndex];
 
       if (
         left.placement !== right.placement ||
@@ -4062,7 +4115,7 @@ const compileEditorSchemaInternal = (
           targetSatisfiabilityCache
         )
       ) {
-        destination.get(type)!.add(property.id);
+        getDefined(destination.get(type)).add(property.id);
       }
     }
   }
@@ -4094,7 +4147,9 @@ const compileEditorSchemaInternal = (
           .map(([slot, root]) => [
             slot,
             Object.freeze({
-              content: frozenPrograms.get(`contentRoot:${type}:${slot}`)!,
+              content: getDefined(
+                frozenPrograms.get(`contentRoot:${type}:${slot}`)
+              ),
               ownership: root.value.ownership,
             }),
           ])
@@ -4123,7 +4178,7 @@ const compileEditorSchemaInternal = (
       type,
       Object.freeze({
         behavior: element.behavior,
-        content: frozenPrograms.get(`element:${type}`)!,
+        content: getDefined(frozenPrograms.get(`element:${type}`)),
         contentRoots,
         construction: Object.freeze({ materializedPropertyIds, propertyIds }),
         groups: freezeSet(memberships.get(type) ?? new Set<string>()),
@@ -4174,7 +4229,10 @@ const compileEditorSchemaInternal = (
   for (const name of sortedStrings(rootNames)) {
     roots.set(
       name,
-      Object.freeze({ content: frozenPrograms.get(`root:${name}`)!, name })
+      Object.freeze({
+        content: getDefined(frozenPrograms.get(`root:${name}`)),
+        name,
+      })
     );
   }
 
@@ -4297,7 +4355,7 @@ const compileEditorSchemaInternal = (
           version: definition.version,
         }),
     primaryRoot: Object.freeze({
-      content: frozenPrograms.get('root')!,
+      content: getDefined(frozenPrograms.get('root')),
       name: null,
     }),
     properties: Object.freeze({
@@ -4584,7 +4642,7 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
       );
     })
   ) {
-    return schema as CompiledEditorSchema;
+    return schema;
   }
 
   const descriptors = new Map<string, PropertyValueDescriptor>();
@@ -4625,7 +4683,9 @@ export type EditorSchemaContractContentRoot = Readonly<{
 export type EditorSchemaContractElement = Readonly<{
   behavior: CompiledSchemaElementBehavior;
   content: EditorSchemaContractContentProgram | null;
-  contentRoots: readonly EditorSchemaContractEntry<EditorSchemaContractContentRoot>[];
+  contentRoots: ReadonlyArray<
+    EditorSchemaContractEntry<EditorSchemaContractContentRoot>
+  >;
   construction: Readonly<{
     materializedPropertyIds: readonly string[];
     propertyIds: readonly string[];
@@ -4644,14 +4704,20 @@ export type EditorSchemaContractRoot = Readonly<{
 export type EditorSchemaContract = Readonly<{
   diagnostics: readonly EditorSchemaDiagnostic[];
   elements: Readonly<{
-    allowedChildren: readonly EditorSchemaContractEntry<readonly string[]>[];
-    allowedParents: readonly EditorSchemaContractEntry<readonly string[]>[];
+    allowedChildren: ReadonlyArray<
+      EditorSchemaContractEntry<readonly string[]>
+    >;
+    allowedParents: ReadonlyArray<EditorSchemaContractEntry<readonly string[]>>;
     byType: readonly EditorSchemaContractElement[];
-    contentPrograms: readonly EditorSchemaContractEntry<EditorSchemaContractContentProgram>[];
-    defaultPlans: readonly EditorSchemaContractEntry<CompiledSchemaConstructionPlan>[];
-    groups: readonly EditorSchemaContractEntry<readonly string[]>[];
+    contentPrograms: ReadonlyArray<
+      EditorSchemaContractEntry<EditorSchemaContractContentProgram>
+    >;
+    defaultPlans: ReadonlyArray<
+      EditorSchemaContractEntry<CompiledSchemaConstructionPlan>
+    >;
+    groups: ReadonlyArray<EditorSchemaContractEntry<readonly string[]>>;
     textGroups: readonly string[];
-    wrapperPlans: readonly EditorSchemaContractEntry<readonly string[]>[];
+    wrapperPlans: ReadonlyArray<EditorSchemaContractEntry<readonly string[]>>;
   }>;
   fingerprint: string;
   formatVersion: typeof EDITOR_SCHEMA_CONTRACT_FORMAT;
@@ -4659,32 +4725,34 @@ export type EditorSchemaContract = Readonly<{
   primaryRoot: EditorSchemaContractRoot;
   properties: Readonly<{
     byId: readonly StructuralCompiledSchemaProperty[];
-    conflictsByPropertyId: readonly EditorSchemaContractEntry<
-      readonly string[]
-    >[];
-    elementAllowedByType: readonly EditorSchemaContractEntry<
-      readonly string[]
-    >[];
-    lifecycle: readonly EditorSchemaContractEntry<
-      CompiledSchemaProperty['lifecycle']
-    >[];
+    conflictsByPropertyId: ReadonlyArray<
+      EditorSchemaContractEntry<readonly string[]>
+    >;
+    elementAllowedByType: ReadonlyArray<
+      EditorSchemaContractEntry<readonly string[]>
+    >;
+    lifecycle: ReadonlyArray<
+      EditorSchemaContractEntry<CompiledSchemaProperty['lifecycle']>
+    >;
     lookup: Readonly<{
       element: Readonly<{
-        exact: readonly EditorSchemaContractEntry<readonly string[]>[];
+        exact: ReadonlyArray<EditorSchemaContractEntry<readonly string[]>>;
         prefixes: readonly CompiledSchemaPropertyKeyPrefix[];
       }>;
       text: Readonly<{
-        exact: readonly EditorSchemaContractEntry<readonly string[]>[];
+        exact: ReadonlyArray<EditorSchemaContractEntry<readonly string[]>>;
         prefixes: readonly CompiledSchemaPropertyKeyPrefix[];
       }>;
     }>;
-    mergeStrategies: readonly EditorSchemaContractEntry<CompiledSchemaPropertyMergeStrategy>[];
-    membersByExclusiveGroup: readonly EditorSchemaContractEntry<
-      readonly string[]
-    >[];
-    textAllowedByParentType: readonly EditorSchemaContractEntry<
-      readonly string[]
-    >[];
+    mergeStrategies: ReadonlyArray<
+      EditorSchemaContractEntry<CompiledSchemaPropertyMergeStrategy>
+    >;
+    membersByExclusiveGroup: ReadonlyArray<
+      EditorSchemaContractEntry<readonly string[]>
+    >;
+    textAllowedByParentType: ReadonlyArray<
+      EditorSchemaContractEntry<readonly string[]>
+    >;
   }>;
   revision: number;
   roots: readonly EditorSchemaContractRoot[];
@@ -4737,9 +4805,8 @@ const mapEntries = <TValue, TResult>(
   Object.freeze(
     [...source]
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(
-        ([key, value]) =>
-          Object.freeze([key, map(value)]) as readonly [string, TResult]
+      .map(([key, value]): readonly [string, TResult] =>
+        Object.freeze([key, map(value)])
       )
   );
 
@@ -4958,7 +5025,7 @@ const isContractRoot = (value: unknown) =>
 
 const isContractJsonValue = (
   value: unknown,
-  seen: WeakSet<object> = new WeakSet()
+  seen = new WeakSet<object>()
 ): boolean => {
   if (
     value === null ||
@@ -4981,7 +5048,7 @@ const isContractJsonValue = (
 
 const isContractTarget = (
   value: unknown,
-  seen: WeakSet<object> = new WeakSet()
+  seen = new WeakSet<object>()
 ): boolean => {
   if (!isRecord(value) || seen.has(value)) return false;
   seen.add(value);
@@ -4989,29 +5056,36 @@ const isContractTarget = (
 
   switch (value.kind) {
     case 'and':
-    case 'or':
+    case 'or': {
       valid =
         Array.isArray(value.targets) &&
         value.targets.every((item) => isContractTarget(item, seen));
       break;
-    case 'group':
+    }
+    case 'group': {
       valid = typeof value.group === 'string';
       break;
+    }
     case 'not':
-    case 'parent':
+    case 'parent': {
       valid = isContractTarget(value.target, seen);
       break;
-    case 'root':
+    }
+    case 'root': {
       valid = value.root === null || typeof value.root === 'string';
       break;
-    case 'type':
+    }
+    case 'type': {
       valid = typeof value.type === 'string';
       break;
-    case 'types':
+    }
+    case 'types': {
       valid = isStringArray(value.types);
       break;
-    default:
+    }
+    default: {
       return false;
+    }
   }
 
   seen.delete(value);
@@ -5021,7 +5095,7 @@ const isContractTarget = (
 
 const isContractDescriptor = (
   value: unknown,
-  seen: WeakSet<object> = new WeakSet()
+  seen = new WeakSet<object>()
 ): boolean => {
   if (
     !isRecord(value) ||
@@ -5108,8 +5182,8 @@ const isContractVocabulary = (value: unknown) =>
   );
 
 const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
-  const elements = value.elements;
-  const properties = value.properties;
+  const { elements } = value;
+  const { properties } = value;
 
   return (
     Array.isArray(value.diagnostics) &&
@@ -5231,22 +5305,30 @@ const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
 export const readEditorSchemaContract = (
   value: unknown
 ): EditorSchemaContract | undefined => {
-  if (!isRecord(value)) return;
-  if (value.formatVersion !== EDITOR_SCHEMA_CONTRACT_FORMAT) return;
+  if (!isRecord(value)) return undefined;
+  if (value.formatVersion !== EDITOR_SCHEMA_CONTRACT_FORMAT) return undefined;
   if (typeof value.fingerprint !== 'string' || value.fingerprint.length === 0) {
-    return;
+    return undefined;
   }
   const identity = readEditorSchemaIdentity(value.identity);
 
-  if (!identity || identity.fingerprint !== value.fingerprint) return;
-  if (!isRecord(value.elements) || !isRecord(value.properties)) return;
-  if (!isRecord(value.primaryRoot) || !Array.isArray(value.roots)) return;
-  if (!isRecord(value.vocabulary) || !Array.isArray(value.diagnostics)) return;
-  if (!Number.isSafeInteger(value.revision) || (value.revision as number) < 0) {
-    return;
+  if (!identity || identity.fingerprint !== value.fingerprint) return undefined;
+  if (!isRecord(value.elements) || !isRecord(value.properties)) {
+    return undefined;
   }
-  if (value.unknown !== 'preserve' && value.unknown !== 'reject') return;
-  if (!isEditorSchemaContractShape(value)) return;
+  if (!isRecord(value.primaryRoot) || !Array.isArray(value.roots)) {
+    return undefined;
+  }
+  if (!isRecord(value.vocabulary) || !Array.isArray(value.diagnostics)) {
+    return undefined;
+  }
+  if (!Number.isSafeInteger(value.revision) || (value.revision as number) < 0) {
+    return undefined;
+  }
+  if (value.unknown !== 'preserve' && value.unknown !== 'reject') {
+    return undefined;
+  }
+  if (!isEditorSchemaContractShape(value)) return undefined;
   const contract = value as EditorSchemaContract;
 
   return editorSchemaContractFingerprint(contract) === contract.fingerprint
@@ -5302,7 +5384,7 @@ const contractPropertySemanticSignature = (
 };
 
 const contractPropertyRequired = (property: StructuralCompiledSchemaProperty) =>
-  property.descriptor.required === true;
+  property.descriptor.required;
 
 const contractPropertyRequiresMaterialization = (
   property: StructuralCompiledSchemaProperty
@@ -5331,13 +5413,13 @@ const pairContractRenames = <TValue>(
     addedByShape.set(shape, [...(addedByShape.get(shape) ?? []), value]);
   }
 
-  const pairs: [TValue, TValue][] = [];
+  const pairs: Array<[TValue, TValue]> = [];
 
   for (const [shape, previous] of removedByShape) {
     const next = addedByShape.get(shape);
 
     if (previous.length === 1 && next?.length === 1) {
-      pairs.push([previous[0]!, next[0]!]);
+      pairs.push([previous[0], next[0]]);
     }
   }
 
@@ -5652,12 +5734,12 @@ const restoreRoot = (root: EditorSchemaContractRoot): CompiledSchemaRoot =>
   });
 
 const restoreEntries = <TValue, TResult>(
-  entries: readonly EditorSchemaContractEntry<TValue>[],
+  entries: ReadonlyArray<EditorSchemaContractEntry<TValue>>,
   map: (value: TValue) => TResult
 ) => freezeMap(new Map(entries.map(([key, value]) => [key, map(value)])));
 
 const restoreStringSets = (
-  entries: readonly EditorSchemaContractEntry<readonly string[]>[]
+  entries: ReadonlyArray<EditorSchemaContractEntry<readonly string[]>>
 ) => restoreEntries(entries, freezeSet);
 
 const restoreElement = (
@@ -5774,7 +5856,9 @@ export const restoreEditorSchemaContract = (
     }),
     revision: contract.revision,
     roots: freezeMap(
-      new Map(contract.roots.map((root) => [root.name!, restoreRoot(root)]))
+      new Map(
+        contract.roots.map((root) => [getDefined(root.name), restoreRoot(root)])
+      )
     ),
     unknown: contract.unknown,
     vocabulary: contract.vocabulary,
@@ -5988,7 +6072,7 @@ export const createCompiledEditorSchemaDelta = (
       'element'
     ),
   ]);
-  const roots: (string | null)[] = [null, ...rootNames];
+  const roots: Array<string | null> = [null, ...rootNames];
   const changedRoots = unknownPolicyChanged
     ? roots
     : changedKeys(roots, (name) => {

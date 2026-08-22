@@ -246,12 +246,12 @@ export const getTopLevelCleanupRange = (
   plan.effectiveEndBlockPath?.length === 1
     ? {
         end: Math.max(
-          plan.effectiveStartBlockPath[0]!,
-          plan.effectiveEndBlockPath[0]!
+          plan.effectiveStartBlockPath[0],
+          plan.effectiveEndBlockPath[0]
         ),
         start: Math.min(
-          plan.effectiveStartBlockPath[0]!,
-          plan.effectiveEndBlockPath[0]!
+          plan.effectiveStartBlockPath[0],
+          plan.effectiveEndBlockPath[0]
         ),
       }
     : null;
@@ -267,7 +267,7 @@ export const restorePreservedEmptyStartBlock = (
 
   const shouldRestore =
     (editorGetChildren(editor).length === 1 &&
-      NodeApi.string(editorGetChildren(editor)[0]!) !== '') ||
+      NodeApi.string(editorGetChildren(editor)[0]) !== '') ||
     !editorHasPath(editor, preservePath) ||
     NodeApi.string(getCurrentNode(editor, preservePath)) !== '';
 

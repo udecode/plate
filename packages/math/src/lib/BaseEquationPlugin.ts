@@ -1,7 +1,6 @@
 import {
   BaseParagraphPlugin,
   type BaseEditor,
-  type BlockFenceInputRuleMatch,
   defineBasePlugin,
   createRuleFactory,
   matchDelimitedInline,
@@ -109,11 +108,9 @@ type InlineMathMatch = {
 };
 
 export const MathRules = (() => {
-  const block = createRuleFactory(BaseEquationPlugin)<
-    { on: 'break' | 'match' },
-    {},
-    BlockFenceInputRuleMatch
-  >({
+  const block = createRuleFactory(BaseEquationPlugin)<{
+    on: 'break' | 'match';
+  }>({
     type: 'blockFence',
     apply: ({ editor, tx }, match) => {
       tx.nodes.remove({ at: match.path });
@@ -156,7 +153,7 @@ export const MathRules = (() => {
       return true;
     },
     resolve: (context) => {
-      if (context.text !== '$' || context.options?.at) return;
+      if (context.text !== '$' || context.options?.at) return undefined;
 
       const match = matchDelimitedInline(context, {
         boundaryRe: INLINE_EQUATION_BOUNDARY_RE,
@@ -166,7 +163,7 @@ export const MathRules = (() => {
         trim: 'reject',
       });
 
-      if (!match) return;
+      if (!match) return undefined;
 
       return {
         deleteRange: match.deleteRange,
@@ -187,7 +184,7 @@ export const MathRules = (() => {
         const rule = block(ruleOptions);
 
         if (rule.target === 'insertBreak') {
-          const enabled = rule.enabled;
+          const { enabled } = rule;
 
           rule.enabled = (context) =>
             (enabled?.(context) ?? true) &&
@@ -197,7 +194,7 @@ export const MathRules = (() => {
         }
 
         if (rule.target === 'insertText') {
-          const enabled = rule.enabled;
+          const { enabled } = rule;
 
           rule.enabled = (context) =>
             (enabled?.(context) ?? true) &&
@@ -211,7 +208,7 @@ export const MathRules = (() => {
 
       const { variant: _, ...ruleOptions } = options;
       const rule = inline(ruleOptions);
-      const enabled = rule.enabled;
+      const { enabled } = rule;
 
       rule.enabled = (context) =>
         (enabled?.(context) ?? true) &&

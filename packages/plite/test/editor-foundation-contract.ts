@@ -189,8 +189,9 @@ describe('editor foundation contract', () => {
   it('applies serialized canonical changes with commit metadata and local-only runtime targets', () => {
     const source = createFoundationEditor();
     const remote = createFoundationEditor();
-    const remoteCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
-      [];
+    const remoteCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
     const unsubscribe = remote.subscribe((_snapshot, commit) => {
       if (commit) {
         remoteCommits.push(commit);

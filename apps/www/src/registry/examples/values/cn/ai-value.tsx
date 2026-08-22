@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const aiValue = (
+export const aiValue: Value = (
   <fragment>
     <hheading level={2}>AI 菜单</hheading>
     <hp>使用 AI 生成和优化内容。</hp>

@@ -137,8 +137,8 @@ type ReadonlyJson<T> = T extends (...args: any[]) => unknown
       ? number
       : T extends boolean
         ? boolean
-        : T extends readonly (infer TItem)[]
-          ? readonly ReadonlyJson<TItem>[]
+        : T extends ReadonlyArray<infer TItem>
+          ? ReadonlyArray<ReadonlyJson<TItem>>
           : T extends object
             ? { readonly [TKey in keyof T]: ReadonlyJson<T[TKey]> }
             : T;
@@ -168,7 +168,7 @@ export type EditorValueFromOptions<TOptions> = [
   ? InitialValueFromOptions<TOptions>
   : EditorValueFromExtensions<EditorExtensionsFromOptions<TOptions>>;
 
-const createEditorId = () => `plite-editor-${++nextEditorId}`;
+const createEditorId = () => `plite-editor-${(nextEditorId += 1)}`;
 
 const isMergeableApiCapability = (
   capability: unknown
@@ -397,19 +397,16 @@ export function createEditor<
 ): Editor<V, TExtensions>;
 
 export function createEditor<
-  const TOptions extends Omit<
-    CreateEditorOptions<any, readonly []>,
-    'extensions'
-  > & {
+  const TOptions extends Omit<CreateEditorOptions<any>, 'extensions'> & {
     extensions?: never;
   },
->(options: TOptions): Editor<EditorValueFromOptions<TOptions>, readonly []>;
+>(options: TOptions): Editor<EditorValueFromOptions<TOptions>>;
 
 export function createEditor<V extends Value = Value>(
-  options?: Omit<CreateEditorOptions<V, readonly []>, 'extensions'> & {
+  options?: Omit<CreateEditorOptions<V>, 'extensions'> & {
     extensions?: never;
   }
-): Editor<V, readonly []>;
+): Editor<V>;
 
 export function createEditor<
   V extends Value = Value,
@@ -436,7 +433,6 @@ const createEditorImplementation = <
 >(
   options: CreateEditorOptions<V, TExtensions>
 ): Editor<V, TExtensions> => {
-  // oxlint-disable-next-line prefer-const -- Runtime factories close over the editor assigned after base construction.
   let editor!: Editor<V, TExtensions>;
   const runtimeEditor = () => editor;
   const schema: InternalEditorSchemaApi<V> = createEditorSchema(runtimeEditor);
@@ -455,7 +451,7 @@ const createEditorImplementation = <
 
   const snapshotRuntime = {
     getChildren: () => getChildren(editor),
-    getFragment: () => getFragment(editor) as DescendantIn<V>[],
+    getFragment: () => getFragment(editor) as Array<DescendantIn<V>>,
     getLastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,
     getPathByNodeKey: (nodeKey) => getPathByNodeKey(editor, nodeKey),
     getNodeKey: (path) => getNodeKey(editor, path),
@@ -477,8 +473,8 @@ const createEditorImplementation = <
         transaction: EditorUpdateTransaction<V, any>,
         context: EditorUpdateContext<Editor<V, any>>
       ) => void,
-      options?: InternalEditorUpdateOptions
-    ) => updateEditor(runtimeBoundaryEditor(), fn, options),
+      innerOptions?: InternalEditorUpdateOptions
+    ) => updateEditor(runtimeBoundaryEditor(), fn, innerOptions),
   } satisfies InternalEditorTransactionRuntime<V>;
 
   const anchorApi: EditorAnchorApi = (value, anchorOptions) => {
@@ -490,7 +486,7 @@ const createEditorImplementation = <
   const api = new Proxy(Object.create(null) as Record<string, unknown>, {
     get(_target, property) {
       if (typeof property !== 'string') {
-        return;
+        return undefined;
       }
       const candidateValue = getCandidateEditorApiValue(
         editor as AnyEditor,
@@ -503,7 +499,7 @@ const createEditorImplementation = <
       );
 
       if (!apiValues || apiValues.length === 0) {
-        return;
+        return undefined;
       }
 
       return resolveApiCapability(apiValues);
@@ -526,7 +522,7 @@ const createEditorImplementation = <
       requested: EditorExtensionReference,
       enforceIdentity: boolean
     ) => {
-      const name = requested.name;
+      const { name } = requested;
       const update = createEditorExtensionUpdatePortal(
         editor as AnyEditor,
         name,
@@ -616,22 +612,20 @@ const createEditorImplementation = <
       readEditor(editor, (state) => state.key(target as never))
     )) as EditorKeyApi;
   const update = createEditorUpdateApi<V, TExtensions>(
-    (fn, policy) =>
-      updateEditor(
-        editor,
-        fn as (
-          transaction: EditorUpdateTransaction<V, TExtensions>,
-          context: EditorUpdateContext<Editor<V, TExtensions>>
-        ) => void,
-        { tags: policy.tags }
-      ),
+    (fn, policy) => updateEditor(editor, fn, { tags: policy.tags }),
     {
       hasTxGroup: (groupName) =>
         getExtensionRegistry(editor).txGroups.has(groupName),
       repairValue: () =>
-        updateEditor(editor, () => repairEditorValue(editor), {
-          tags: ['history-skip'],
-        }),
+        updateEditor(
+          editor,
+          () => {
+            repairEditorValue(editor);
+          },
+          {
+            tags: ['history-skip'],
+          }
+        ),
     }
   );
 

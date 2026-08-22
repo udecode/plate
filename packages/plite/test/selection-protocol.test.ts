@@ -111,7 +111,7 @@ const cellSelectionKinds = [
     },
     validate: isCellSelection,
   },
-] satisfies readonly EditorSelectionSpec<CellSelection>[];
+] satisfies ReadonlyArray<EditorSelectionSpec<CellSelection>>;
 
 const cellSelectionExtension = defineExtension('cell-selection', {
   selectionKinds: cellSelectionKinds,
@@ -338,7 +338,7 @@ describe('extensible selection protocol', () => {
   it('preserves an explicit null custom DOM range projection', () => {
     const selection = {
       ...cellSelection(),
-      cells: [cellSelection().cells[0]!],
+      cells: [cellSelection().cells[0]],
     };
     const editor = createEditor({
       extensions: [cellSelectionExtension],
@@ -434,7 +434,7 @@ describe('extensible selection protocol', () => {
     );
     assert.equal(Object.isFrozen(specSelection), true);
     assert.equal(Object.isFrozen(specSelection.cells[0]?.focus.path), true);
-    assert.equal(Reflect.set(specSelection.cells[0]!.focus.path, 0, 9), false);
+    assert.equal(Reflect.set(specSelection.cells[0].focus.path, 0, 9), false);
   });
 
   it('replaces a custom selection when setting a plain range', () => {
@@ -497,36 +497,30 @@ describe('extensible selection protocol', () => {
     });
     const point = { offset: 0, path: [0, 0] };
 
-    assert.throws(
-      () =>
-        editor.update((tx) =>
-          tx.selection.set({
-            anchor: point,
-            focus: point,
-            goalColumn: 4,
-            kind: 'text',
-          } as never)
-        ),
-      /Invalid text editor selection/
-    );
-    assert.throws(
-      () =>
-        editor.update((tx) =>
-          tx.selection.set({
-            ...range([0, 0], 0, [0, 0], 1),
-            kind: 'text',
-            marks: { bold: true },
-          } as never)
-        ),
-      /Invalid text editor selection/
-    );
-    assert.throws(
-      () =>
-        editor.update((tx) =>
-          tx.selection.set({ ...cellSelection(), cells: [] } as never)
-        ),
-      /Invalid editor selection "cell" value/
-    );
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: point,
+          focus: point,
+          goalColumn: 4,
+          kind: 'text',
+        } as never);
+      });
+    }, /Invalid text editor selection/);
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.selection.set({
+          ...range([0, 0], 0, [0, 0], 1),
+          kind: 'text',
+          marks: { bold: true },
+        } as never);
+      });
+    }, /Invalid text editor selection/);
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.selection.set({ ...cellSelection(), cells: [] });
+      });
+    }, /Invalid editor selection "cell" value/);
     for (const selection of [
       { ...cellSelection(), marks: { bold: true } },
       {
@@ -534,10 +528,11 @@ describe('extensible selection protocol', () => {
         marks: { bold: true },
       },
     ]) {
-      assert.throws(
-        () => editor.update((tx) => tx.selection.set(selection as never)),
-        /Only collapsed text selections can carry insertion marks/
-      );
+      assert.throws(() => {
+        editor.update((tx) => {
+          tx.selection.set(selection);
+        });
+      }, /Only collapsed text selections can carry insertion marks/);
     }
 
     const encoded = encodeEditorSelection(editor, cellSelection());

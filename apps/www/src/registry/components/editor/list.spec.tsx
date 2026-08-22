@@ -48,7 +48,7 @@ type ListNodePropsContract = {
 };
 
 const getListNodeProps = (editor: BaseEditor) =>
-  editor.plugin(PLUGINS.list).inject!.nodeProps! as ListNodePropsContract;
+  editor.plugin(PLUGINS.list).inject.nodeProps! as ListNodePropsContract;
 
 describe('ListKit unordered list rendering', () => {
   it('decodes configured list items as paragraphs with list properties', () => {
@@ -106,8 +106,8 @@ describe('ListKit unordered list rendering', () => {
     );
 
     for (const nodeProps of [interactiveNodeProps, staticNodeProps]) {
-      const query = nodeProps.query!;
-      const transformProps = nodeProps.transformProps!;
+      const { query } = nodeProps;
+      const { transformProps } = nodeProps;
 
       expect(
         query({

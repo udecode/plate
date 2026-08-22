@@ -449,10 +449,10 @@ describe('compilePlateHtmlCodec', () => {
       )
     ).toContain('text/html');
 
-    const body = new DOMParser().parseFromString(
+    const { body } = new DOMParser().parseFromString(
       output.getData('text/html'),
       'text/html'
-    ).body;
+    );
 
     expect(body.querySelector('p')?.style.textAlign).toBe('center');
     expect(body.querySelector('p > strong')?.textContent).toBe('Hello');
@@ -576,7 +576,7 @@ describe('compilePlateHtmlCodec', () => {
       ['color', 'red\nposition: fixed'],
       ['backgroundImage', 'url("javascript:alert(1)")'],
     ].forEach(([cssName, cssValue]) => {
-      const result = serialize(cssName!, cssValue!);
+      const result = serialize(cssName, cssValue);
 
       expect(result.formats).not.toContain('text/html');
       expect(result.html).toBe('');
@@ -888,10 +888,10 @@ describe('compilePlateHtmlCodec', () => {
       )
     ).toContain('text/html');
 
-    const body = new DOMParser().parseFromString(
+    const { body } = new DOMParser().parseFromString(
       output.getData('text/html'),
       'text/html'
-    ).body;
+    );
     const list = body.querySelector('ol');
     const item = body.querySelector('ol > li') as HTMLElement | null;
 
@@ -1125,10 +1125,11 @@ describe('compilePlateHtmlCodec', () => {
         }),
     });
     const editor = createBaseEditor({ plugins: [ParagraphPlugin] });
-    const safeString = fc.stringOf(
-      fc.constantFrom('a', 'b', '&', '<', '>', '"', "'"),
-      { maxLength: 20, minLength: 1 }
-    );
+    const safeString = fc.string({
+      maxLength: 20,
+      minLength: 1,
+      unit: fc.constantFrom('a', 'b', '&', '<', '>', '"', "'"),
+    });
 
     fc.assert(
       fc.property(safeString, safeString, (label, text) => {
@@ -1177,7 +1178,7 @@ describe('compilePlateHtmlCodec', () => {
           'text/html': {
             priority: 1,
             decode: () => {
-              paragraphCalls++;
+              paragraphCalls += 1;
 
               return {};
             },
@@ -1197,7 +1198,7 @@ describe('compilePlateHtmlCodec', () => {
           defineCodecs({
             'text/html': {
               decode: () => {
-                unrelatedCalls++;
+                unrelatedCalls += 1;
 
                 return {};
               },
@@ -1371,7 +1372,7 @@ describe('compilePlateHtmlCodec', () => {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            lowerMarkCalls++;
+            lowerMarkCalls += 1;
             throw new Error('resolved mark decoder must not run');
           },
           decodeOnly: true,
@@ -1402,7 +1403,7 @@ describe('compilePlateHtmlCodec', () => {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            lowerPropertyCalls++;
+            lowerPropertyCalls += 1;
             throw new Error('resolved element-property decoder must not run');
           },
           decodeOnly: true,
@@ -1592,7 +1593,7 @@ describe('compilePlateHtmlCodec', () => {
           properties: {
             unstable: property.string({
               validate: (value): value is string => {
-                validations++;
+                validations += 1;
 
                 return typeof value === 'string' && validations === 1;
               },

@@ -86,29 +86,41 @@ type PluginPortalEditor = Pick<PlateEditor, 'plugin'>;
 
 function setColor(editor: PlateEditor, plugin: ColorPlugin, value: string) {
   switch (plugin.name) {
-    case FontBackgroundColorPlugin.name:
-      return editor.plugin(plugin).update.set(value);
-    case FontColorPlugin.name:
-      return editor.plugin(plugin).update.set(value);
+    case FontBackgroundColorPlugin.name: {
+      editor.plugin(plugin).update.set(value);
+      break;
+    }
+    case FontColorPlugin.name: {
+      editor.plugin(plugin).update.set(value);
+      break;
+    }
   }
 }
 
 function clearColor(editor: PlateEditor, plugin: ColorPlugin) {
   switch (plugin.name) {
-    case FontBackgroundColorPlugin.name:
-      return editor.plugin(plugin).update.clear();
-    case FontColorPlugin.name:
-      return editor.plugin(plugin).update.clear();
+    case FontBackgroundColorPlugin.name: {
+      editor.plugin(plugin).update.clear();
+      break;
+    }
+    case FontColorPlugin.name: {
+      editor.plugin(plugin).update.clear();
+      break;
+    }
   }
 }
 
 function getColor(editor: PluginPortalEditor, plugin: ColorPlugin) {
   switch (plugin.name) {
-    case FontBackgroundColorPlugin.name:
+    case FontBackgroundColorPlugin.name: {
       return editor.plugin(FontBackgroundColorPlugin).read.value();
-    case FontColorPlugin.name:
+    }
+    case FontColorPlugin.name: {
       return editor.plugin(FontColorPlugin).read.value();
+    }
   }
+
+  return undefined;
 }
 
 export type ColorOption = {
@@ -135,10 +147,12 @@ export function FontColorToolbarButton({
   const editor = useEditor();
 
   const selectionDefined = useEditorSelector(
-    (editor) => !!editor.read.selection()
+    (innerEditor) => !!innerEditor.read.selection()
   );
 
-  const color = useEditorSelector((editor) => getColor(editor, plugin));
+  const color = useEditorSelector((innerEditor2) =>
+    getColor(innerEditor2, plugin)
+  );
 
   const [selectedColor, setSelectedColor] = React.useState<string>();
   const [updatedColor, setUpdatedColor] = React.useState<string>();
@@ -267,7 +281,7 @@ export function FontColorToolbarButton({
 
 function PureColorPicker({
   className,
-  clearColor,
+  clearColor: innerClearColor,
   color,
   colors,
   recentColors,
@@ -307,7 +321,7 @@ function PureColorPicker({
       </ToolbarMenuGroup>
       {color && (
         <ToolbarMenuGroup>
-          <DropdownMenuItem className="p-2" onSelect={clearColor}>
+          <DropdownMenuItem className="p-2" onSelect={innerClearColor}>
             <EraserIcon />
             <span>Clear</span>
           </DropdownMenuItem>
@@ -348,7 +362,8 @@ function ColorCustom({
       !updatedColor ||
       !isValidHexColor(updatedColor) ||
       recentColors.some(
-        ({ value }) => normalizeColor(value) === normalizeColor(updatedColor)
+        ({ value: innerValue }) =>
+          normalizeColor(innerValue) === normalizeColor(updatedColor)
       )
     ) {
       return recentColors;
@@ -365,7 +380,10 @@ function ColorCustom({
   }, [recentColors, updatedColor]);
 
   const updateCustomColorDebounced = React.useMemo(
-    () => debounce((value: string) => updateCustomColor(value), 100),
+    () =>
+      debounce((innerValue2: string) => {
+        updateCustomColor(innerValue2);
+      }, 100),
     [updateCustomColor]
   );
 
@@ -579,24 +597,30 @@ export function ColorDropdownMenuItems({
                     let nextIndex: number | undefined;
 
                     switch (event.key) {
-                      case 'ArrowDown':
+                      case 'ArrowDown': {
                         nextIndex = index + COLOR_GRID_COLUMNS;
                         break;
-                      case 'ArrowLeft':
+                      }
+                      case 'ArrowLeft': {
                         nextIndex = index - 1;
                         break;
-                      case 'ArrowRight':
+                      }
+                      case 'ArrowRight': {
                         nextIndex = index + 1;
                         break;
-                      case 'ArrowUp':
+                      }
+                      case 'ArrowUp': {
                         nextIndex = index - COLOR_GRID_COLUMNS;
                         break;
-                      case 'End':
+                      }
+                      case 'End': {
                         nextIndex = colors.length - 1;
                         break;
-                      case 'Home':
+                      }
+                      case 'Home': {
                         nextIndex = 0;
                         break;
+                      }
                     }
 
                     if (nextIndex === undefined) return;

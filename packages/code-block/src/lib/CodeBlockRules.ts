@@ -1,5 +1,5 @@
 import { BaseParagraphPlugin, createRuleFactory } from '@platejs/core';
-import type { BlockFenceInputRuleMatch, PluginReference } from '@platejs/core';
+import type { PluginReference } from '@platejs/core';
 
 import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 
@@ -8,8 +8,7 @@ const createCodeBlockRule = createRuleFactory(BaseCodeBlockPlugin);
 export const CodeBlockRules = {
   markdown: createCodeBlockRule<
     { on: 'break' | 'match' },
-    { block: PluginReference | string; fence: string },
-    BlockFenceInputRuleMatch
+    { block: PluginReference | string; fence: string }
   >({
     type: 'blockFence',
     fence: '```',

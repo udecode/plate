@@ -39,7 +39,7 @@ describe('cleanWordHtml behavior', () => {
     );
     const document = new DOMParser().parseFromString(result, 'text/html');
 
-    expect(document.querySelector('font')).toBeNull();
+    expect(document.querySelector<HTMLElement>('font')).toBeNull();
     expect(document.querySelector('span')?.textContent).toBe('Hello');
     expect(document.querySelector('a[href="#footnote"]')).toBeNull();
     expect(document.body.textContent).toContain('Jump');

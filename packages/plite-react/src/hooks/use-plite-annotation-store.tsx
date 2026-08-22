@@ -22,7 +22,7 @@ const createAnnotationStoreOwner = <
   TProjection extends Record<string, unknown>,
 >(
   editor: Editor,
-  annotations: readonly PliteAnnotation<TData, TProjection>[],
+  annotations: ReadonlyArray<PliteAnnotation<TData, TProjection>>,
   options: UsePliteAnnotationStoreOptions
 ) => {
   const annotationsCell = { current: annotations };
@@ -50,13 +50,14 @@ export function usePliteAnnotationStore<
   TProjection extends Record<string, unknown> = Record<string, unknown>,
 >(
   editor: Editor,
-  annotations: readonly PliteAnnotation<TData, TProjection>[],
+  annotations: ReadonlyArray<PliteAnnotation<TData, TProjection>>,
   options: UsePliteAnnotationStoreOptions = {}
 ): PliteAnnotationStore<TData, TProjection> {
   const sourceId = options.id;
   // Data and callbacks seed a new owner, then publish only after commit.
   const owner = useMemo(
     () => createAnnotationStoreOwner(editor, annotations, options),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor and source id define owner identity; committed effects publish current annotations and callbacks into that owner.
     [editor, sourceId]
   );
   const { annotationsCell, optionsCell, store } = owner;
@@ -75,7 +76,8 @@ export function usePliteAnnotationStore<
   }, [annotations, annotationsCell, options.revision, store]);
 
   useIsomorphicLayoutEffect(() => {
-    const effectVersion = ++effectVersionRef.current;
+    effectVersionRef.current += 1;
+    const effectVersion = effectVersionRef.current;
 
     return () => {
       queueMicrotask(() => {

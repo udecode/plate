@@ -103,7 +103,7 @@ function parseArgs(args) {
       options.pullRequestNumber = Number(args[index + 1]);
       index += 2;
     } else {
-      index++;
+      index += 1;
     }
   }
 
@@ -445,11 +445,11 @@ function formatChangeLines(body, contributorsByUsername) {
       const continuationLines = [];
 
       while ((lines[index + 1] ?? '').trim() === '') {
-        index++;
+        index += 1;
       }
 
       while (continuationLinePattern.test(lines[index + 1] ?? '')) {
-        index++;
+        index += 1;
         continuationLines.push(formatWrapperContinuationLine(lines[index]));
       }
 
@@ -465,7 +465,7 @@ function formatChangeLines(body, contributorsByUsername) {
     const summaryParts = [match.groups.summary.trim()];
 
     while (continuationLinePattern.test(lines[index + 1] ?? '')) {
-      index++;
+      index += 1;
       summaryParts.push(lines[index].trim());
     }
 

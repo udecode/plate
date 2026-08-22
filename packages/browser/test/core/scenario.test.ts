@@ -205,10 +205,10 @@ describe('scenario helpers', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../../../package.json', import.meta.url)
     );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
-    const scripts = packageJson.scripts;
+    const { scripts } = packageJson;
 
     expect(scripts.check).not.toContain('test:stress');
     expect(scripts.check).not.toContain('test:integration-local');
@@ -232,13 +232,13 @@ describe('scenario helpers', () => {
     const contributingPath = fileURLToPath(
       new URL('../../../../CONTRIBUTING.md', import.meta.url)
     );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
-    const scripts = packageJson.scripts;
+    const { scripts } = packageJson;
     const docs = [
-      readFileSync(readmePath, 'utf8'),
-      readFileSync(contributingPath, 'utf8'),
+      readFileSync(readmePath, 'utf-8'),
+      readFileSync(contributingPath, 'utf-8'),
     ];
 
     expect(scripts.check).not.toContain('plite:browser:test:proof');
@@ -255,10 +255,10 @@ describe('scenario helpers', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../../../package.json', import.meta.url)
     );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
-    const scripts = packageJson.scripts;
+    const { scripts } = packageJson;
 
     if (!scripts.playwright) {
       expect(scripts['plite:packages:build']).toContain('./packages/browser');
@@ -303,7 +303,7 @@ describe('scenario helpers', () => {
           import.meta.url
         )
       ),
-      'utf8'
+      'utf-8'
     );
 
     expect(stressAuditSource).toContain('expectedPerProject === null');
@@ -328,7 +328,7 @@ describe('scenario helpers', () => {
       fileURLToPath(
         new URL('../../../../scripts/stress/project-args.mjs', import.meta.url)
       ),
-      'utf8'
+      'utf-8'
     );
     const stressDesktopProjectsSource = readFileSync(
       fileURLToPath(
@@ -337,7 +337,7 @@ describe('scenario helpers', () => {
           import.meta.url
         )
       ),
-      'utf8'
+      'utf-8'
     );
 
     expect(stressProjectArgsSource).toContain(
@@ -369,14 +369,14 @@ describe('scenario helpers', () => {
     const readmePath = fileURLToPath(
       new URL('../../README.md', import.meta.url)
     );
-    const readme = readFileSync(readmePath, 'utf8');
+    const readme = readFileSync(readmePath, 'utf-8');
 
     if (!existsSync(sourcePath)) {
       expect(readme).toContain('@platejs/browser');
       return;
     }
 
-    const source = readFileSync(sourcePath, 'utf8');
+    const source = readFileSync(sourcePath, 'utf-8');
 
     expect(source).toContain('createScenarioReductionCandidates');
     expect(source).toContain('summarizeScenarioReductionCandidate');
@@ -395,7 +395,7 @@ describe('scenario helpers', () => {
     const sourcePath = fileURLToPath(
       new URL('../../src/playwright/harness-assertions.ts', import.meta.url)
     );
-    const source = readFileSync(sourcePath, 'utf8');
+    const source = readFileSync(sourcePath, 'utf-8');
 
     expect(source).toContain('html: async (');
     expect(source).toContain('expectedHtml: string');
@@ -418,10 +418,10 @@ describe('scenario helpers', () => {
     const readmePath = fileURLToPath(
       new URL('../../README.md', import.meta.url)
     );
-    const source = readFileSync(sourcePath, 'utf8');
-    const caretSource = readFileSync(caretSourcePath, 'utf8');
-    const typeSource = readFileSync(typeSourcePath, 'utf8');
-    const readme = readFileSync(readmePath, 'utf8');
+    const source = readFileSync(sourcePath, 'utf-8');
+    const caretSource = readFileSync(caretSourcePath, 'utf-8');
+    const typeSource = readFileSync(typeSourcePath, 'utf-8');
+    const readme = readFileSync(readmePath, 'utf-8');
 
     expect(typeSource).toContain('noVisibleCaretInRoot: () => Promise<void>');
     expect(caretSource).toContain('assertNoVisibleCaretInRoot');
@@ -925,7 +925,7 @@ describe('scenario helpers', () => {
           {
             budget: { total },
             kind: 'assertRenderBudget',
-          } as PliteBrowserScenarioStep,
+          },
         ])
       ).toThrow();
     }
@@ -946,7 +946,7 @@ describe('scenario helpers', () => {
           {
             budget: { total },
             kind: 'assertRenderBudget',
-          } as PliteBrowserScenarioStep,
+          },
         ])
       ).not.toThrow();
     }
@@ -968,7 +968,7 @@ describe('scenario helpers', () => {
           {
             kind: 'assertRenderedDOMShape',
             shape: { lineBoxCount },
-          } as PliteBrowserScenarioStep,
+          },
         ])
       ).toThrow();
     }

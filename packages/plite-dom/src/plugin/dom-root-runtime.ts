@@ -59,17 +59,14 @@ const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
   }
 );
 
-const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<
-  HTMLElement,
-  DOMRootRuntime<HTMLElement>
->();
+const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<HTMLElement, DOMRootRuntime>();
 const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<
   AnyEditor,
-  Set<DOMRootRuntime<HTMLElement>>
+  Set<DOMRootRuntime>
 >();
 const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<
   AnyEditor,
-  DOMRootRuntime<HTMLElement>
+  DOMRootRuntime
 >();
 const DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR = new WeakMap<
   AnyEditor,
@@ -80,7 +77,7 @@ const ELEMENT_NODE = 1;
 const asElement = (node: Node): Element | null =>
   node.nodeType === ELEMENT_NODE ? (node as Element) : node.parentElement;
 
-const runAllDOMRootRuntimeSteps = (steps: readonly (() => void)[]) => {
+const runAllDOMRootRuntimeSteps = (steps: ReadonlyArray<() => void>) => {
   let firstError: unknown;
 
   for (const step of steps) {
@@ -91,10 +88,11 @@ const runAllDOMRootRuntimeSteps = (steps: readonly (() => void)[]) => {
     }
   }
 
+  // oxlint-disable-next-line typescript/only-throw-error -- Teardown must rethrow the first host-owned failure without changing its identity.
   if (firstError) throw firstError;
 };
 
-const captureDOMRootRuntimeSteps = (steps: readonly (() => void)[]) => {
+const captureDOMRootRuntimeSteps = (steps: ReadonlyArray<() => void>) => {
   try {
     runAllDOMRootRuntimeSteps(steps);
   } catch (error) {
@@ -104,7 +102,7 @@ const captureDOMRootRuntimeSteps = (steps: readonly (() => void)[]) => {
   return null;
 };
 
-const activateDOMRootRuntimeSteps = (steps: readonly (() => void)[]) => {
+const activateDOMRootRuntimeSteps = (steps: ReadonlyArray<() => void>) => {
   for (const step of steps) {
     try {
       step();
@@ -117,9 +115,7 @@ const activateDOMRootRuntimeSteps = (steps: readonly (() => void)[]) => {
 };
 
 /** Resolve the private root runtime that owns a DOM interaction target. */
-export const findDOMRootRuntime = (
-  node: Node
-): DOMRootRuntime<HTMLElement> | null => {
+export const findDOMRootRuntime = (node: Node): DOMRootRuntime | null => {
   let element = asElement(node);
 
   while (element) {
@@ -137,7 +133,7 @@ export const findDOMRootRuntime = (
   return null;
 };
 
-const isRuntimeRootActive = (runtime: DOMRootRuntime<HTMLElement>) => {
+const isRuntimeRootActive = (runtime: DOMRootRuntime) => {
   const root = runtime.rootRef.current;
 
   if (!root) return false;
@@ -156,7 +152,7 @@ const isRuntimeRootActive = (runtime: DOMRootRuntime<HTMLElement>) => {
 /** Resolve the focused private root runtime for an editor. */
 export const findEditorDOMRootRuntime = (
   editor: AnyEditor
-): DOMRootRuntime<HTMLElement> | null => {
+): DOMRootRuntime | null => {
   const activeRuntime = ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(editor);
 
   if (
@@ -302,21 +298,23 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
         ) ?? (() => {}),
     });
     this.domPhaseScheduler = {
-      destroy: () => this.destroyScheduler(),
+      destroy: () => {
+        this.destroyScheduler();
+      },
       diagnostics: () =>
         this.schedulerImplementation?.diagnostics() ??
         EMPTY_SCHEDULER_DIAGNOSTICS,
       flush: () => this.schedulerImplementation?.flush(),
       pending: () => this.schedulerImplementation?.pending() ?? 0,
       schedule: (phase, label, callback, scheduleOptions) => {
-        const generation = this.generation;
+        const { generation } = this;
         const scheduledCallback = (frameTime?: number) => {
           if (generation !== this.generation) return;
 
           if (phase === 'dom-write') {
-            this.domIntegrityObserver.runOwned('scheduler', () =>
-              callback(frameTime)
-            );
+            this.domIntegrityObserver.runOwned('scheduler', () => {
+              callback(frameTime);
+            });
           } else {
             callback(frameTime);
           }
@@ -344,10 +342,18 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
     this.connected = true;
     const activationError = activateDOMRootRuntimeSteps([
-      () => this.installDOMPhaseScheduler(),
-      () => this.registerRootOwner(),
-      () => this.domSyncMutationOwnership.connect(this.rootRef.current),
-      () => this.domIntegrityObserver.connect(this.rootRef.current),
+      () => {
+        this.installDOMPhaseScheduler();
+      },
+      () => {
+        this.registerRootOwner();
+      },
+      () => {
+        this.domSyncMutationOwnership.connect(this.rootRef.current);
+      },
+      () => {
+        this.domIntegrityObserver.connect(this.rootRef.current);
+      },
       () => this.lifecycle.afterRootMount?.(this.rootRef.current),
     ]);
 
@@ -357,12 +363,23 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.generation += 1;
     captureDOMRootRuntimeSteps([
       () => this.lifecycle.beforeRootTeardown?.(this.rootRef.current),
-      () => this.unregisterRootOwner(),
-      () => this.domInputRuntime.reset(),
-      () => this.domIntegrityObserver.destroy(),
-      () => this.domSyncMutationOwnership.destroy(),
-      () => this.destroyScheduler(),
+      () => {
+        this.unregisterRootOwner();
+      },
+      () => {
+        this.domInputRuntime.reset();
+      },
+      () => {
+        this.domIntegrityObserver.destroy();
+      },
+      () => {
+        this.domSyncMutationOwnership.destroy();
+      },
+      () => {
+        this.destroyScheduler();
+      },
     ]);
+    // oxlint-disable-next-line typescript/only-throw-error -- Activation rollback must preserve the host-owned failure value unchanged.
     throw activationError;
   }
 
@@ -377,13 +394,25 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.disposables.clear();
     runAllDOMRootRuntimeSteps([
       () => this.lifecycle.beforeRootTeardown?.(this.rootRef.current),
-      () => this.unregisterRootOwner(),
-      () => this.domInputRuntime.reset(),
-      () => this.domIntegrityObserver.destroy(),
-      () => this.domSyncMutationOwnership.destroy(),
-      () => runAllDOMRootRuntimeSteps(disposables),
+      () => {
+        this.unregisterRootOwner();
+      },
+      () => {
+        this.domInputRuntime.reset();
+      },
+      () => {
+        this.domIntegrityObserver.destroy();
+      },
+      () => {
+        this.domSyncMutationOwnership.destroy();
+      },
+      () => {
+        runAllDOMRootRuntimeSteps(disposables);
+      },
       () => this.lifecycle.onDestroy?.(),
-      () => this.destroyScheduler(),
+      () => {
+        this.destroyScheduler();
+      },
     ]);
   }
 
@@ -480,9 +509,15 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.generation += 1;
     const teardownError = captureDOMRootRuntimeSteps([
       () => this.lifecycle.beforeRootTeardown?.(this.rootRef.current),
-      () => this.domInputRuntime.reset(),
-      () => this.unregisterRootOwner(),
-      () => this.destroyScheduler(),
+      () => {
+        this.domInputRuntime.reset();
+      },
+      () => {
+        this.unregisterRootOwner();
+      },
+      () => {
+        this.destroyScheduler();
+      },
       () => {
         this.rootRef.current = root;
         this.facts = root
@@ -494,35 +529,65 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       },
     ]);
     const activationError = activateDOMRootRuntimeSteps([
-      () => this.installDOMPhaseScheduler(),
-      () => this.registerRootOwner(),
-      () => this.domSyncMutationOwnership.setRoot(root),
-      () => this.domIntegrityObserver.setRoot(root),
+      () => {
+        this.installDOMPhaseScheduler();
+      },
+      () => {
+        this.registerRootOwner();
+      },
+      () => {
+        this.domSyncMutationOwnership.setRoot(root);
+      },
+      () => {
+        this.domIntegrityObserver.setRoot(root);
+      },
       () => this.lifecycle.afterRootMount?.(root),
-      () => this.publishHostFacts(),
+      () => {
+        this.publishHostFacts();
+      },
     ]);
 
     if (activationError) {
       captureDOMRootRuntimeSteps([
         () => this.lifecycle.beforeRootTeardown?.(root),
-        () => this.unregisterRootOwner(),
-        () => this.domIntegrityObserver.setRoot(null),
-        () => this.domSyncMutationOwnership.setRoot(null),
-        () => this.destroyScheduler(),
+        () => {
+          this.unregisterRootOwner();
+        },
+        () => {
+          this.domIntegrityObserver.setRoot(null);
+        },
+        () => {
+          this.domSyncMutationOwnership.setRoot(null);
+        },
+        () => {
+          this.destroyScheduler();
+        },
         () => {
           this.rootRef.current = previousRoot;
           this.facts = previousFacts;
         },
-        () => this.installDOMPhaseScheduler(),
-        () => this.registerRootOwner(),
-        () => this.domSyncMutationOwnership.setRoot(previousRoot),
-        () => this.domIntegrityObserver.setRoot(previousRoot),
+        () => {
+          this.installDOMPhaseScheduler();
+        },
+        () => {
+          this.registerRootOwner();
+        },
+        () => {
+          this.domSyncMutationOwnership.setRoot(previousRoot);
+        },
+        () => {
+          this.domIntegrityObserver.setRoot(previousRoot);
+        },
         () => this.lifecycle.afterRootMount?.(previousRoot),
-        () => this.publishHostFacts(),
+        () => {
+          this.publishHostFacts();
+        },
       ]);
     }
 
+    // oxlint-disable-next-line typescript/only-throw-error -- Root replacement must preserve the captured teardown failure unchanged.
     if (teardownError) throw teardownError;
+    // oxlint-disable-next-line typescript/only-throw-error -- Root replacement must preserve the captured activation failure unchanged.
     if (activationError) throw activationError;
   }
 
@@ -564,7 +629,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     const root = this.rootRef.current;
 
     if (this.connected && root) {
-      const runtime = this as unknown as DOMRootRuntime<HTMLElement>;
+      const runtime = this as unknown as DOMRootRuntime;
       const currentOwner = DOM_ROOT_RUNTIME_BY_ROOT.get(root);
 
       if (currentOwner && currentOwner !== runtime) {
@@ -599,18 +664,17 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
     if (
       root &&
-      DOM_ROOT_RUNTIME_BY_ROOT.get(root) ===
-        (this as unknown as DOMRootRuntime<HTMLElement>)
+      DOM_ROOT_RUNTIME_BY_ROOT.get(root) === (this as unknown as DOMRootRuntime)
     ) {
       DOM_ROOT_RUNTIME_BY_ROOT.delete(root);
     }
 
     const editorRuntimes = DOM_ROOT_RUNTIMES_BY_EDITOR.get(this.editor);
 
-    editorRuntimes?.delete(this as unknown as DOMRootRuntime<HTMLElement>);
+    editorRuntimes?.delete(this as unknown as DOMRootRuntime);
     if (
       ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor) ===
-      (this as unknown as DOMRootRuntime<HTMLElement>)
+      (this as unknown as DOMRootRuntime)
     ) {
       ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(this.editor);
     }

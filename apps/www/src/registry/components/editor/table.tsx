@@ -242,7 +242,7 @@ function useTableResizeController({
     const frozenRowIndices: number[] = [];
 
     Array.from(table.rows).forEach((row, rowIndex) => {
-      const height = row.getBoundingClientRect().height;
+      const { height } = row.getBoundingClientRect();
 
       if (!height) return;
 
@@ -318,7 +318,9 @@ function useTableResizeController({
         { colIndex, width },
         { at: tablePath }
       );
-      setTimeout(() => overrideColSize(colIndex, null), 0);
+      setTimeout(() => {
+        overrideColSize(colIndex, null);
+      }, 0);
     },
     [editor, overrideColSize, tablePath]
   );
@@ -329,7 +331,9 @@ function useTableResizeController({
         { height, rowIndex },
         { at: tablePath }
       );
-      setTimeout(() => overrideRowSize(rowIndex, null), 0);
+      setTimeout(() => {
+        overrideRowSize(rowIndex, null);
+      }, 0);
     },
     [editor, overrideRowSize, tablePath]
   );
@@ -340,7 +344,9 @@ function useTableResizeController({
         { marginLeft: nextMarginLeft },
         { at: tablePath }
       );
-      setTimeout(() => overrideMarginLeft(null), 0);
+      setTimeout(() => {
+        overrideMarginLeft(null);
+      }, 0);
     },
     [editor, overrideMarginLeft, tablePath]
   );
@@ -674,8 +680,8 @@ function TableElementContent({
   const tablePath = useElementSelector(TablePlugin, ([, path]) => path);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const tableNodeKey = props.editor.key(props.element);
-  const dragCellKey = useEditorSelector((editor) => {
-    const view = getTableRead(editor).getSelection();
+  const dragCellKey = useEditorSelector((innerEditor) => {
+    const view = getTableRead(innerEditor).getSelection();
 
     if (
       !view?.complete ||
@@ -700,7 +706,7 @@ function TableElementContent({
         : dragCellKey.replaceAll('"', '\\"');
       nextHost =
         tableRef.current?.querySelector<HTMLElement>(
-          `[data-table-cell-key="${escapedCellKey}"]`
+          `[data-plite-node-key="${escapedCellKey}"]`
         ) ?? null;
     }
 
@@ -744,13 +750,12 @@ function TableElementContent({
     );
   }, [api, columnWidths, props.element]);
   const tableStyle = React.useMemo(
-    () =>
-      ({
-        width: `${
-          resolvedColSizes.reduce((total, colSize) => total + colSize, 0) +
-          controlColumnWidth
-        }px`,
-      }) as React.CSSProperties,
+    () => ({
+      width: `${
+        resolvedColSizes.reduce((total, colSize) => total + colSize, 0) +
+        controlColumnWidth
+      }px`,
+    }),
     [controlColumnWidth, resolvedColSizes]
   );
 
@@ -777,6 +782,7 @@ function TableElementContent({
             className="pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] -translate-x-[1.5px] bg-ring/80"
             contentEditable={false}
           />
+          {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] The table only intercepts pointer propagation from its owned drag handle; it is not an interactive control. */}
           <table
             ref={tableRef}
             className="mr-0 ml-px table h-px table-fixed border-collapse"
@@ -919,10 +925,12 @@ function ExpandedSelectionTableFloatingToolbarContent(
   const editor = useEditor();
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
   const canMerge = useEditorSelector(
-    (editor) => !disableMerge && editor.plugin(TablePlugin).read.canMerge()
+    (innerEditor2) =>
+      !disableMerge && innerEditor2.plugin(TablePlugin).read.canMerge()
   );
   const canSplit = useEditorSelector(
-    (editor) => !disableMerge && editor.plugin(TablePlugin).read.canSplit()
+    (innerEditor3) =>
+      !disableMerge && innerEditor3.plugin(TablePlugin).read.canSplit()
   );
 
   if (!canMerge && !canSplit) return null;
@@ -949,7 +957,8 @@ function CollapsedTableFloatingToolbarContent(
   const element = useElement(TablePlugin);
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
   const canSplit = useEditorSelector(
-    (editor) => !disableMerge && editor.plugin(TablePlugin).read.canSplit()
+    (innerEditor4) =>
+      !disableMerge && innerEditor4.plugin(TablePlugin).read.canSplit()
   );
 
   return (
@@ -1017,7 +1026,9 @@ function TableFloatingToolbarContent({
   return (
     <PopoverContent
       asChild
-      onOpenAutoFocus={(e) => e.preventDefault()}
+      onOpenAutoFocus={(e) => {
+        e.preventDefault();
+      }}
       contentEditable={false}
       {...props}
     >
@@ -1033,7 +1044,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Merge cells"
               onClick={onMerge}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Merge cells"
             >
               <CombineIcon />
@@ -1043,7 +1056,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Split cell"
               onClick={onSplit}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Split cell"
             >
               <SquareSplitHorizontalIcon />
@@ -1067,7 +1082,9 @@ function TableFloatingToolbarContent({
               <ToolbarButton
                 aria-label="Delete table"
                 onClick={onDeleteTable}
-                onMouseDown={(event) => event.preventDefault()}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                }}
                 tooltip="Delete table"
               >
                 <Trash2Icon />
@@ -1081,7 +1098,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert row before"
               onClick={onInsertRowBefore}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Insert row before"
             >
               <ArrowUp />
@@ -1089,7 +1108,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert row after"
               onClick={onInsertRowAfter}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Insert row after"
             >
               <ArrowDown />
@@ -1097,7 +1118,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Delete row"
               onClick={onDeleteRow}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Delete row"
             >
               <XIcon />
@@ -1110,7 +1133,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert column before"
               onClick={onInsertColumnBefore}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Insert column before"
             >
               <ArrowLeft />
@@ -1118,7 +1143,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert column after"
               onClick={onInsertColumnAfter}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Insert column after"
             >
               <ArrowRight />
@@ -1126,7 +1153,9 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Delete column"
               onClick={onDeleteColumn}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+              }}
               tooltip="Delete column"
             >
               <XIcon />
@@ -1142,8 +1171,8 @@ function TableBordersDropdownMenuContent(
   props: React.ComponentProps<typeof DropdownMenuContent>
 ) {
   const editor = useEditor();
-  const borderStates = useEditorSelector((editor) =>
-    getTableRead(editor).getSelectedCellsBorders()
+  const borderStates = useEditorSelector((innerEditor5) =>
+    getTableRead(innerEditor5).getSelectedCellsBorders()
   );
 
   return (
@@ -1161,36 +1190,36 @@ function TableBordersDropdownMenuContent(
       <DropdownMenuGroup>
         <DropdownMenuCheckboxItem
           checked={borderStates.top}
-          onCheckedChange={() =>
-            getTablePlugin(editor).update.toggleBorders({ border: 'top' })
-          }
+          onCheckedChange={() => {
+            getTablePlugin(editor).update.toggleBorders({ border: 'top' });
+          }}
         >
           <BorderTopIcon />
           <div>Top Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={borderStates.right}
-          onCheckedChange={() =>
-            getTablePlugin(editor).update.toggleBorders({ border: 'right' })
-          }
+          onCheckedChange={() => {
+            getTablePlugin(editor).update.toggleBorders({ border: 'right' });
+          }}
         >
           <BorderRightIcon />
           <div>Right Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={borderStates.bottom}
-          onCheckedChange={() =>
-            getTablePlugin(editor).update.toggleBorders({ border: 'bottom' })
-          }
+          onCheckedChange={() => {
+            getTablePlugin(editor).update.toggleBorders({ border: 'bottom' });
+          }}
         >
           <BorderBottomIcon />
           <div>Bottom Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={borderStates.left}
-          onCheckedChange={() =>
-            getTablePlugin(editor).update.toggleBorders({ border: 'left' })
-          }
+          onCheckedChange={() => {
+            getTablePlugin(editor).update.toggleBorders({ border: 'left' });
+          }}
         >
           <BorderLeftIcon />
           <div>Left Border</div>
@@ -1200,18 +1229,18 @@ function TableBordersDropdownMenuContent(
       <DropdownMenuGroup>
         <DropdownMenuCheckboxItem
           checked={borderStates.none}
-          onCheckedChange={() =>
-            getTablePlugin(editor).update.toggleBorders({ border: 'none' })
-          }
+          onCheckedChange={() => {
+            getTablePlugin(editor).update.toggleBorders({ border: 'none' });
+          }}
         >
           <BorderNoneIcon />
           <div>No Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={borderStates.outer}
-          onCheckedChange={() =>
-            getTablePlugin(editor).update.toggleBorders({ border: 'outer' })
-          }
+          onCheckedChange={() => {
+            getTablePlugin(editor).update.toggleBorders({ border: 'outer' });
+          }}
         >
           <BorderAllIcon />
           <div>Outside Borders</div>
@@ -1284,9 +1313,15 @@ export function TableRowElement({
 }: PlateElementProps<typeof TableRowPlugin>) {
   const { element } = props;
   const readOnly = useEditorReadOnly();
-  const rowIndex = useElementSelector(TableRowPlugin, ([, path]) =>
-    path.at(-1)!
-  );
+  const rowIndex = useElementSelector(TableRowPlugin, ([, path]) => {
+    const index = path.at(-1);
+
+    if (index === undefined) {
+      throw new Error('Table row path must include an index.');
+    }
+
+    return index;
+  });
   const rowSize = useElementSelector(TableRowPlugin, ([node]) => node.height);
   const { rowSizeOverrides } = useTableResizeContext();
   const rowMinHeight = rowSizeOverrides.get(rowIndex) ?? rowSize;
@@ -1398,7 +1433,7 @@ export function TableCellElement(
 ) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const element = props.element;
+  const { element } = props;
   const isHeader = element.header === true;
 
   const tableKey = useElementSelector(TablePlugin, ([node]) =>
@@ -1414,7 +1449,8 @@ export function TableCellElement(
     'isSelectionAreaVisible'
   );
   const cellIndices = useEditorSelector(
-    (editor) => editor.plugin(TablePlugin).read.getCellIndices(element),
+    (innerEditor6) =>
+      innerEditor6.plugin(TablePlugin).read.getCellIndices(element),
     {
       equalityFn: (next, previous) =>
         next?.col === previous?.col && next?.row === previous?.row,
@@ -1462,7 +1498,6 @@ export function TableCellElement(
       attributes={{
         ...props.attributes,
         colSpan,
-        'data-table-cell-key': editor.key(element),
         rowSpan,
       }}
     >
@@ -1488,102 +1523,98 @@ export function TableCellElement(
   );
 }
 
-const TableCellResizeControls = React.memo(function TableCellResizeControls({
-  colIndex,
-  rowIndex,
-}: {
-  colIndex: number;
-  rowIndex: number;
-}) {
-  const {
-    clearResizePreview,
-    disableMarginLeft,
-    setResizePreview,
-    startResize,
-  } = useTableResizeContext();
-  const rightHandleKey = `right:${rowIndex}:${colIndex}`;
-  const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
-  const leftHandleKey = `left:${rowIndex}:${colIndex}`;
-  const isLeftHandle = colIndex === 0 && !disableMarginLeft;
+const TableCellResizeControls = React.memo(
+  ({ colIndex, rowIndex }: { colIndex: number; rowIndex: number }) => {
+    const {
+      clearResizePreview,
+      disableMarginLeft,
+      setResizePreview,
+      startResize,
+    } = useTableResizeContext();
+    const rightHandleKey = `right:${rowIndex}:${colIndex}`;
+    const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
+    const leftHandleKey = `left:${rowIndex}:${colIndex}`;
+    const isLeftHandle = colIndex === 0 && !disableMarginLeft;
 
-  return (
-    <div
-      className="group/resize pointer-events-none absolute inset-0 z-30 select-none"
-      contentEditable={false}
-      suppressContentEditableWarning={true}
-    >
+    return (
       <div
-        className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
-        data-table-resize-handle="column-end"
-        onPointerEnter={(event) => {
-          setResizePreview(event, {
-            colIndex,
-            direction: 'right',
-            handleKey: rightHandleKey,
-            rowIndex,
-          });
-        }}
-        onPointerLeave={() => {
-          clearResizePreview(rightHandleKey);
-        }}
-        onPointerDown={(event) => {
-          startResize(event, {
-            colIndex,
-            direction: 'right',
-            handleKey: rightHandleKey,
-            rowIndex,
-          });
-        }}
-      />
-      <div
-        className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
-        onPointerEnter={(event) => {
-          setResizePreview(event, {
-            colIndex,
-            direction: 'bottom',
-            handleKey: bottomHandleKey,
-            rowIndex,
-          });
-        }}
-        onPointerLeave={() => {
-          clearResizePreview(bottomHandleKey);
-        }}
-        onPointerDown={(event) => {
-          startResize(event, {
-            colIndex,
-            direction: 'bottom',
-            handleKey: bottomHandleKey,
-            rowIndex,
-          });
-        }}
-      />
-      {isLeftHandle && (
+        className="group/resize pointer-events-none absolute inset-0 z-30 select-none"
+        contentEditable={false}
+        suppressContentEditableWarning={true}
+      >
         <div
-          className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
+          className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+          data-table-resize-handle="column-end"
           onPointerEnter={(event) => {
             setResizePreview(event, {
               colIndex,
-              direction: 'left',
-              handleKey: leftHandleKey,
+              direction: 'right',
+              handleKey: rightHandleKey,
               rowIndex,
             });
           }}
           onPointerLeave={() => {
-            clearResizePreview(leftHandleKey);
+            clearResizePreview(rightHandleKey);
           }}
           onPointerDown={(event) => {
             startResize(event, {
               colIndex,
-              direction: 'left',
-              handleKey: leftHandleKey,
+              direction: 'right',
+              handleKey: rightHandleKey,
               rowIndex,
             });
           }}
         />
-      )}
-    </div>
-  );
-});
+        <div
+          className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
+          onPointerEnter={(event) => {
+            setResizePreview(event, {
+              colIndex,
+              direction: 'bottom',
+              handleKey: bottomHandleKey,
+              rowIndex,
+            });
+          }}
+          onPointerLeave={() => {
+            clearResizePreview(bottomHandleKey);
+          }}
+          onPointerDown={(event) => {
+            startResize(event, {
+              colIndex,
+              direction: 'bottom',
+              handleKey: bottomHandleKey,
+              rowIndex,
+            });
+          }}
+        />
+        {isLeftHandle && (
+          <div
+            className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
+            onPointerEnter={(event) => {
+              setResizePreview(event, {
+                colIndex,
+                direction: 'left',
+                handleKey: leftHandleKey,
+                rowIndex,
+              });
+            }}
+            onPointerLeave={() => {
+              clearResizePreview(leftHandleKey);
+            }}
+            onPointerDown={(event) => {
+              startResize(event, {
+                colIndex,
+                direction: 'left',
+                handleKey: leftHandleKey,
+                rowIndex,
+              });
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+);
 
 TableCellResizeControls.displayName = 'TableCellResizeControls';
 

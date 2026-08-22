@@ -263,12 +263,5 @@ export function createPlateEditor(options: unknown = {}): unknown {
     EditorApplicationSchema | undefined,
     Editor<Value, any>,
     Value
-  >(
-    baseEditor as Editor<Value, any>,
-    plateEditorOptions as PlateEditorOptions<
-      Value,
-      readonly BasePluginInput[],
-      EditorApplicationSchema | undefined
-    >
-  ) as unknown as PlateEditor;
+  >(baseEditor as Editor<Value, any>, plateEditorOptions);
 }

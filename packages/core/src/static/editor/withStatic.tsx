@@ -107,7 +107,7 @@ export function createStaticEditor<
     editor: editor ?? createEditor({ id }),
     ...options,
     plugins: [...getStaticPlugins(), ...(options.plugins ?? [])],
-  } as unknown as CreateBaseEditorOptions<readonly BasePluginInput[]> & {
+  } as unknown as CreateBaseEditorOptions & {
     editor: ReturnType<typeof createEditor>;
     plugins: readonly BasePluginInput[];
   });

@@ -74,7 +74,7 @@ export const readYjsSetValueAttributes = (
 
     const separator = key.indexOf(':', YJS_SET_VALUE_ATTRIBUTE_PREFIX.length);
 
-    if (separator < 0) continue;
+    if (separator === -1) continue;
 
     try {
       const property = decodeURIComponent(

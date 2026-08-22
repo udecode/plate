@@ -21,7 +21,7 @@ export const pipeDecorate = (
     getPlateRuntime(editor).pluginCache.decorate.length === 0 &&
     !decorateProp
   ) {
-    return;
+    return undefined;
   }
 
   const pluginDecorators = getPlateRuntime(editor).pluginCache.decorate.flatMap(

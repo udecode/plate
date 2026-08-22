@@ -3,7 +3,7 @@ import { describe, expect, it, mock } from 'bun:test';
 const getRegistryItemCalls: boolean[] = [];
 
 mock.module('./highlight-code', () => ({
-  highlightFiles: (files: { content?: string }[]) =>
+  highlightFiles: (files: Array<{ content?: string }>) =>
     files.map((file) => ({
       ...file,
       highlightedContent: file.content ?? '',
@@ -15,7 +15,7 @@ mock.module('./rehype-utils', () => ({
   fixImport: (content: string) => content,
   getAllDependencies: () => [],
   getNodeAttributeByName: (
-    node: { attributes?: { name: string; value: unknown }[] },
+    node: { attributes?: Array<{ name: string; value: unknown }> },
     name: string
   ) => node.attributes?.find((attribute) => attribute.name === name),
   getRegistryDefinition: () => {},
@@ -65,14 +65,17 @@ describe('rehypeComponent', () => {
       type: 'root',
     };
 
-    await rehypeComponent()(tree as any);
+    await rehypeComponent()(tree);
 
     const node = tree.children[0];
-    const highlightedFiles = JSON.parse(
-      node.attributes.find(
-        (attribute) => attribute.name === '__highlightedFiles__'
-      )?.value as string
-    );
+    const highlightedFilesValue = node.attributes.find(
+      (attribute) => attribute.name === '__highlightedFiles__'
+    )?.value;
+
+    if (highlightedFilesValue === undefined) {
+      throw new Error('Expected highlighted files metadata');
+    }
+    const highlightedFiles = JSON.parse(highlightedFilesValue);
 
     expect(getRegistryItemCalls).toEqual([true]);
     expect(highlightedFiles).toHaveLength(2);

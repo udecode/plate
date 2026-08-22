@@ -197,10 +197,7 @@ const immutableCollectionMutation = () => {
 
 const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   const map = new Map(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let immutable!: Map<TKey, TValue>;
-
-  immutable = new Proxy(map, {
+  const immutable: Map<TKey, TValue> = new Proxy(map, {
     get(target, property) {
       if (property === 'clear' || property === 'delete' || property === 'set') {
         return immutableCollectionMutation;
@@ -209,10 +206,11 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
         return (
           callback: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value, key) => {
             callback.call(thisArg, value, key, immutable);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);
@@ -226,10 +224,7 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
 
 const freezeSet = <TValue>(source: ReadonlySet<TValue>) => {
   const set = new Set(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let immutable!: Set<TValue>;
-
-  immutable = new Proxy(set, {
+  const immutable: Set<TValue> = new Proxy(set, {
     get(target, property) {
       if (property === 'add' || property === 'clear' || property === 'delete') {
         return immutableCollectionMutation;
@@ -238,10 +233,11 @@ const freezeSet = <TValue>(source: ReadonlySet<TValue>) => {
         return (
           callback: (value: TValue, key: TValue, set: Set<TValue>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value) => {
             callback.call(thisArg, value, value, immutable);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);
@@ -348,7 +344,7 @@ const assertExtensionPointIdentities = (points: Iterable<object>): void => {
   const pointsById = new Map<string, object>();
 
   for (const point of points) {
-    const id = (point as Readonly<{ id: string }>).id;
+    const { id } = point as Readonly<{ id: string }>;
     const known = pointsById.get(id);
 
     if (known && known !== point) {
@@ -371,7 +367,7 @@ const mergeCommandRegistries = (
     ...configured.byDescriptor.keys(),
     ...base.byDescriptor.keys(),
   ]) {
-    const id = (descriptor as Readonly<{ id: string }>).id;
+    const { id } = descriptor as Readonly<{ id: string }>;
     const known = descriptorsById.get(id);
 
     if (known && known !== descriptor) {
@@ -427,7 +423,7 @@ const mergeReadRegistries = (
     ...configured.byDescriptor.keys(),
     ...base.byDescriptor.keys(),
   ]) {
-    const id = (descriptor as Readonly<{ id: string }>).id;
+    const { id } = descriptor as Readonly<{ id: string }>;
     const known = descriptorsById.get(id);
 
     if (known && known !== descriptor) {
@@ -955,13 +951,7 @@ export const registerSelectionSpecInRegistry = <TEditor extends Editor>(
   };
 };
 
-export const inheritExtensionRegistry = <
-  TEditor extends Editor,
-  TSourceEditor extends Editor,
->(
-  editor: TEditor,
-  source: TSourceEditor
-) => {
+export const inheritExtensionRegistry = (editor: Editor, source: Editor) => {
   EXTENSION_REGISTRIES.set(editor, getExtensionRegistryStore(source));
 };
 
@@ -983,7 +973,7 @@ export const registerApiGroupInRegistry = <TEditor extends Editor>(
     }
 
     const index = current.indexOf(value);
-    if (index >= 0) {
+    if (index !== -1) {
       current.splice(index, 1);
     }
 
@@ -1014,7 +1004,7 @@ export const registerExtensionContributionInRegistry = <TEditor extends Editor>(
         entry.sourceIndex === registration.sourceIndex
     );
 
-    if (index >= 0) current.splice(index, 1);
+    if (index !== -1) current.splice(index, 1);
     if (current.length === 0) registry.contributions.delete(point);
   };
 };
@@ -1045,11 +1035,11 @@ export const registerFacetProviderInRegistry = <TEditor extends Editor>(
   registry.facets.set(provider.facet.key, providers);
 
   return () => {
-    const current = registry.facets.get(provider.facet.key);
+    const innerCurrent = registry.facets.get(provider.facet.key);
 
-    if (!current) return;
+    if (!innerCurrent) return;
 
-    const next = current.filter((candidate) => candidate !== provider);
+    const next = innerCurrent.filter((candidate) => candidate !== provider);
 
     if (next.length === 0) registry.facets.delete(provider.facet.key);
     else registry.facets.set(provider.facet.key, next);

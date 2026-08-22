@@ -5,6 +5,7 @@ import type {
   Element,
   Node,
   NodeEntry,
+  NodeKey,
   Path,
   Text,
 } from '@platejs/plite';
@@ -18,6 +19,27 @@ export interface ResolvedSuggestion extends BaseResolvedSuggestion {
   comments: TComment[];
 }
 
+export type BlockDiscussionSelection = {
+  contentKey: string;
+  hasDraftComment: boolean;
+  isTopLevelBlock: boolean;
+  resolvedDiscussions: readonly TDiscussion[];
+  resolvedSuggestions: readonly ResolvedSuggestion[];
+};
+
+export const sameBlockDiscussionSelection = (
+  previous: BlockDiscussionSelection | null,
+  next: BlockDiscussionSelection
+) => {
+  if (!previous) return false;
+
+  return (
+    previous.contentKey === next.contentKey &&
+    previous.hasDraftComment === next.hasDraftComment &&
+    previous.isTopLevelBlock === next.isTopLevelBlock
+  );
+};
+
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
 type BlockDiscussionEntry = NodeEntry<Element | Text>;
@@ -25,8 +47,13 @@ type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 type SuggestionEntry = NodeEntry<Element | Text>;
 
 type BlockDiscussionIndex = {
+  contentKeyByNodeKey: Map<NodeKey, string>;
   discussionsByBlock: Map<string, TDiscussion[]>;
+  discussionsByNodeKey: Map<NodeKey, TDiscussion[]>;
+  draftCommentNodeKeys: Set<NodeKey>;
   suggestionsByBlock: Map<string, ResolvedSuggestion[]>;
+  suggestionsByNodeKey: Map<NodeKey, ResolvedSuggestion[]>;
+  topLevelNodeKeys: Set<NodeKey>;
 };
 
 type BuildBlockDiscussionIndexOptions = {
@@ -34,6 +61,7 @@ type BuildBlockDiscussionIndexOptions = {
   discussions: readonly DiscussionSnapshot[];
   getCommentId: (node: Text) => string | undefined;
   getBlockLabel?: (node: Element) => string;
+  getBlockNodeKey?: (node: Element) => NodeKey;
   getSuggestionData: (node: Node) =>
     | {
         createdAt: Date | number | string;
@@ -53,6 +81,7 @@ type BuildBlockDiscussionIndexOptions = {
   }>;
   getSuggestionId: (node: Node) => string | undefined;
   getSuggestionKey: (id: string) => string;
+  isDraftComment?: (node: Text) => boolean;
   isDate?: (node: Element) => boolean;
   isInlineEquation?: (node: Element) => boolean;
   isBlockSuggestion: (node: Node) => boolean;
@@ -76,7 +105,7 @@ export const shouldRefreshBlockDiscussionIndex = (change?: EditorCommit) => {
 
     for (const index of path) {
       node = children[index];
-      if (!node) return;
+      if (!node) return undefined;
       children = ElementApi.isElement(node) ? node.children : [];
     }
 
@@ -104,7 +133,7 @@ export const shouldRefreshBlockDiscussionIndex = (change?: EditorCommit) => {
   });
 };
 
-const appendByKey = <T>(map: Map<string, T[]>, key: string, value: T) => {
+const appendByKey = <K, T>(map: Map<K, T[]>, key: K, value: T) => {
   const values = map.get(key);
 
   if (values) {
@@ -174,6 +203,8 @@ const getInlineSuggestionElementText = (
   if (nodeText.length > 0) {
     return nodeText;
   }
+
+  return undefined;
 };
 
 const toResolvedSuggestion = ({
@@ -347,12 +378,14 @@ export const buildBlockDiscussionIndex = ({
   discussions,
   entries,
   getBlockLabel,
+  getBlockNodeKey,
   getCommentId,
   getSuggestionData,
   getSuggestionDataList,
   getSuggestionId,
   getSuggestionKey,
   isBlockSuggestion,
+  isDraftComment = () => false,
   isDate = () => false,
   isInlineEquation = () => false,
 }: BuildBlockDiscussionIndexOptions): BlockDiscussionIndex => {
@@ -360,19 +393,39 @@ export const buildBlockDiscussionIndex = ({
     (discussion) => structuredClone(discussion) as TDiscussion
   );
   const commentOwnerById = new Map<string, Path>();
+  const commentOwnerNodeKeyById = new Map<string, NodeKey>();
   const suggestionOwnerById = new Map<string, Path>();
+  const suggestionOwnerNodeKeyById = new Map<string, NodeKey>();
   const commentIds = new Set<string>();
   const suggestionEntriesById = new Map<string, SuggestionEntry[]>();
   const discussionsById = new Map(
     materializedDiscussions.map((discussion) => [discussion.id, discussion])
   );
+  const topLevelNodeKeyByIndex = new Map<number, NodeKey>();
+
+  if (getBlockNodeKey) {
+    entries.forEach(([node, path]) => {
+      if (path.length === 1 && ElementApi.isElement(node)) {
+        topLevelNodeKeyByIndex.set(path[0], getBlockNodeKey(node));
+      }
+    });
+  }
+  const draftCommentNodeKeys = new Set<NodeKey>();
 
   entries.forEach(([node, path]) => {
     const blockPath = getTopLevelPath(path);
+    const blockNodeKey = topLevelNodeKeyByIndex.get(path[0]);
 
     if (!blockPath) return;
 
     if (TextApi.isText(node)) {
+      if (
+        blockNodeKey &&
+        isDraftComment(node) &&
+        !draftCommentNodeKeys.has(blockNodeKey)
+      ) {
+        draftCommentNodeKeys.add(blockNodeKey);
+      }
       const commentId = getCommentId(node);
 
       if (commentId) {
@@ -380,6 +433,9 @@ export const buildBlockDiscussionIndex = ({
 
         if (!commentOwnerById.has(commentId)) {
           commentOwnerById.set(commentId, blockPath);
+          if (blockNodeKey) {
+            commentOwnerNodeKeyById.set(commentId, blockNodeKey);
+          }
         }
       }
     }
@@ -388,6 +444,9 @@ export const buildBlockDiscussionIndex = ({
       (suggestionId) => {
         if (!suggestionOwnerById.has(suggestionId)) {
           suggestionOwnerById.set(suggestionId, blockPath);
+          if (blockNodeKey) {
+            suggestionOwnerNodeKeyById.set(suggestionId, blockNodeKey);
+          }
         }
 
         appendByKey(suggestionEntriesById, suggestionId, [node, path]);
@@ -396,6 +455,7 @@ export const buildBlockDiscussionIndex = ({
   });
 
   const discussionsByBlock = new Map<string, TDiscussion[]>();
+  const discussionsByNodeKey = new Map<NodeKey, TDiscussion[]>();
 
   materializedDiscussions.forEach((discussion) => {
     const ownerPath = commentOwnerById.get(discussion.id);
@@ -404,13 +464,21 @@ export const buildBlockDiscussionIndex = ({
       return;
     }
 
-    appendByKey(discussionsByBlock, getBlockKey(ownerPath), {
+    const resolvedDiscussion = {
       ...discussion,
       createdAt: new Date(discussion.createdAt),
-    });
+    };
+
+    appendByKey(discussionsByBlock, getBlockKey(ownerPath), resolvedDiscussion);
+    const ownerNodeKey = commentOwnerNodeKeyById.get(discussion.id);
+
+    if (ownerNodeKey) {
+      appendByKey(discussionsByNodeKey, ownerNodeKey, resolvedDiscussion);
+    }
   });
 
   const suggestionsByBlock = new Map<string, ResolvedSuggestion[]>();
+  const suggestionsByNodeKey = new Map<NodeKey, ResolvedSuggestion[]>();
 
   suggestionEntriesById.forEach((suggestionEntries, suggestionId) => {
     const ownerPath = suggestionOwnerById.get(suggestionId);
@@ -433,10 +501,37 @@ export const buildBlockDiscussionIndex = ({
     if (!resolvedSuggestion) return;
 
     appendByKey(suggestionsByBlock, getBlockKey(ownerPath), resolvedSuggestion);
+    const ownerNodeKey = suggestionOwnerNodeKeyById.get(suggestionId);
+
+    if (ownerNodeKey) {
+      appendByKey(suggestionsByNodeKey, ownerNodeKey, resolvedSuggestion);
+    }
+  });
+
+  const contentKeyByNodeKey = new Map<NodeKey, string>();
+
+  topLevelNodeKeyByIndex.forEach((nodeKey) => {
+    const nodeDiscussions = discussionsByNodeKey.get(nodeKey) ?? [];
+    const nodeSuggestions = suggestionsByNodeKey.get(nodeKey) ?? [];
+    const hasDraftComment = draftCommentNodeKeys.has(nodeKey);
+
+    contentKeyByNodeKey.set(
+      nodeKey,
+      hasDraftComment ||
+        nodeDiscussions.length > 0 ||
+        nodeSuggestions.length > 0
+        ? JSON.stringify([hasDraftComment, nodeDiscussions, nodeSuggestions])
+        : ''
+    );
   });
 
   return {
+    contentKeyByNodeKey,
     discussionsByBlock,
+    discussionsByNodeKey,
+    draftCommentNodeKeys,
     suggestionsByBlock,
+    suggestionsByNodeKey,
+    topLevelNodeKeys: new Set(topLevelNodeKeyByIndex.values()),
   };
 };

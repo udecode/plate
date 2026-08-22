@@ -158,12 +158,12 @@ describe('@platejs/yjs collaborative history contract', () => {
     });
   });
 
-  const exactScenarios: readonly {
+  const exactScenarios: ReadonlyArray<{
     readonly allowedFallbacks?: readonly ['remote-event-projected-content'];
     readonly children: readonly Descendant[];
     readonly name: string;
     readonly trace: CollaborativeHistoryTrace;
-  }[] = [
+  }> = [
     {
       children: initialValue(),
       name: 'node properties',
@@ -228,7 +228,7 @@ describe('@platejs/yjs collaborative history contract', () => {
     });
   }
 
-  const structuralBlockers: readonly {
+  const structuralBlockers: ReadonlyArray<{
     readonly allowedFallbacks?: readonly [
       'remote-event-projected-content',
       'remote-event-invalid-delta',
@@ -238,7 +238,7 @@ describe('@platejs/yjs collaborative history contract', () => {
     readonly minimized: CollaborativeHistoryTrace;
     readonly name: string;
     readonly offline: CollaborativeHistoryTrace;
-  }[] = [
+  }> = [
     {
       children: [paragraph('alphabeta'), paragraph('gamma')],
       identityPaths: [[0], [0], [0]],

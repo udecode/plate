@@ -9,10 +9,10 @@ export const ListPlugin = toPlatePlugin(BaseListPlugin, {
     belowNodes: (props) => {
       const { listStyle, listType } = props.element;
 
-      if (!listType) return;
+      if (!listType) return undefined;
 
-      return (props) => {
-        const List = isOrderedList(props.element) ? 'ol' : 'ul';
+      return (innerProps) => {
+        const List = isOrderedList(innerProps.element) ? 'ol' : 'ul';
 
         return (
           <List
@@ -26,11 +26,13 @@ export const ListPlugin = toPlatePlugin(BaseListPlugin, {
             }}
             start={
               listType === ListType.Numbered
-                ? props.editor.plugin(ListPlugin).read.ordinal(props.element)
+                ? innerProps.editor
+                    .plugin(ListPlugin)
+                    .read.ordinal(innerProps.element)
                 : undefined
             }
           >
-            <li>{props.children}</li>
+            <li>{innerProps.children}</li>
           </List>
         );
       };

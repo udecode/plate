@@ -43,7 +43,9 @@ export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
       attributes={{
         ...props.attributes,
         ...props.editor.plugin(LinkPlugin).api.getAttributes(props.element),
-        onMouseOver: (event) => event.stopPropagation(),
+        onMouseOver: (event) => {
+          event.stopPropagation();
+        },
       }}
     >
       {props.children}
@@ -88,7 +90,9 @@ const initialState = {
 
 export const linkPlugin = LinkPlugin.extend({ initialState })
   .extend(({ store }) => {
-    const hide = () => store.set({ ...transientState });
+    const hide = () => {
+      store.set({ ...transientState });
+    };
     const show = (mode: FloatingLinkMode, editorId: string) => {
       store.set({ isEditing: false, mode, openEditorId: editorId });
     };
@@ -135,7 +139,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
   .extend(({ api, editor, store, update }) => ({
     api: () => ({
       submit: () => {
-        if (!editor.read.selection()) return;
+        if (!editor.read.selection()) return undefined;
 
         const {
           forceSubmit,
@@ -148,7 +152,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
           ? (transformInput(inputUrl) ?? '')
           : inputUrl;
 
-        if (!forceSubmit && !api.validateUrl(url)) return;
+        if (!forceSubmit && !api.validateUrl(url)) return undefined;
 
         api.hide();
         update.upsert({
@@ -157,21 +161,23 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
           text,
           url,
         });
-        setTimeout(() => editor.api.dom.focus(), 0);
+        setTimeout(() => {
+          editor.api.dom.focus();
+        }, 0);
 
         return true;
       },
       triggerEdit: () => {
         const selection = editor.read.selection();
 
-        if (!selection) return;
+        if (!selection) return undefined;
 
         const entry = editor.read.nodes.above({
           at: selection,
           type: linkPlugin,
         });
 
-        if (!entry) return;
+        if (!entry) return undefined;
 
         const [link, path] = entry;
         const linkText = editor.read.text.string(path);
@@ -187,13 +193,15 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
         return true;
       },
       triggerInsert: ({ focused }: { focused?: boolean } = {}) => {
-        if (store.get().mode || !focused) return;
-        if (editor.read.selection.isAcrossBlocks()) return;
+        if (store.get().mode || !focused) return undefined;
+        if (editor.read.selection.isAcrossBlocks()) return undefined;
 
         const selection = editor.read.selection();
 
-        if (!selection) return;
-        if (editor.read.nodes.some({ at: selection, type: linkPlugin })) return;
+        if (!selection) return undefined;
+        if (editor.read.nodes.some({ at: selection, type: linkPlugin })) {
+          return undefined;
+        }
 
         store.set({ text: editor.read.text.string() });
         api.show('insert', editor.id);
@@ -205,7 +213,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
   .extend(({ api }) => ({
     api: () => ({
       trigger: (options: { focused?: boolean } = {}) => {
-        if (!options.focused) return;
+        if (!options.focused) return undefined;
 
         return api.triggerEdit() ?? api.triggerInsert(options);
       },
@@ -222,9 +230,9 @@ function FloatingLinkUrlInput({
   const focused = React.useRef(false);
 
   React.useEffect(() => {
-    if (!inputRef.current || !updated) return;
+    if (!inputRef.current || !updated) return undefined;
 
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       const input = inputRef.current;
 
       if (!input || focused.current) return;
@@ -233,15 +241,19 @@ function FloatingLinkUrlInput({
       input.focus();
       input.value = store.get().url ? api.decodeUrl(store.get().url) : '';
     }, 0);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [api, store, updated]);
 
   return (
     <input
       ref={useComposedRef(inputRef, ref)}
       defaultValue={store.get().url}
-      onChange={(event) =>
-        store.set({ url: api.encodeUrl(event.target.value) })
-      }
+      onChange={(event) => {
+        store.set({ url: api.encodeUrl(event.target.value) });
+      }}
       {...props}
     />
   );
@@ -303,19 +315,23 @@ export function LinkFloatingToolbar({
     !readOnly && open && mode === 'edit' && editor.read.selection.isCollapsed();
   const editFloating = useVirtualFloating({
     getBoundingClientRect,
-    onOpenChange: (nextOpen) =>
-      store.set({ openEditorId: nextOpen ? editor.id : null }),
+    onOpenChange: (nextOpen) => {
+      store.set({ openEditorId: nextOpen ? editor.id : null });
+    },
     open: editOpen,
     ...resolvedFloatingOptions,
   });
   const insertFloating = useVirtualFloating({
     getBoundingClientRect: getDOMSelectionBoundingClientRect,
-    onOpenChange: (nextOpen) =>
-      store.set({ openEditorId: nextOpen ? editor.id : null }),
+    onOpenChange: (nextOpen) => {
+      store.set({ openEditorId: nextOpen ? editor.id : null });
+    },
     open: !readOnly && open && mode === 'insert',
     whileElementsMounted: () => () => {},
     ...resolvedFloatingOptions,
   });
+  const updateEditFloating = editFloating.update;
+  const updateInsertFloating = insertFloating.update;
 
   React.useEffect(() => {
     if (readOnly) {
@@ -332,13 +348,13 @@ export function LinkFloatingToolbar({
       editor.read.nodes.some({ at: currentSelection, type: linkPlugin })
     ) {
       api.show('edit', editor.id);
-      editFloating.update();
+      updateEditFloating();
       return;
     }
     if (store.get().mode === 'edit') api.hide();
     // `update` is stable; depending on the floating result object would rerun
     // this effect on every render.
-  }, [api, editor, readOnly, selection, store, editFloating.update]);
+  }, [api, editor, readOnly, selection, store, updateEditFloating]);
 
   useHotkeys(
     triggerHotkeys ?? 'meta+k, ctrl+k',
@@ -399,12 +415,12 @@ export function LinkFloatingToolbar({
 
   React.useEffect(() => {
     if (open) {
-      insertFloating.update();
+      updateInsertFloating();
       store.set({ updated: true });
     } else {
       store.set({ updated: false });
     }
-  }, [open, insertFloating.update]);
+  }, [open, store, updateInsertFloating]);
 
   const { text, updated } = store.get();
   const editButtonProps = { onClick: api.triggerEdit };
@@ -419,8 +435,9 @@ export function LinkFloatingToolbar({
       api.hide();
       editor.api.dom.focus();
     },
-    onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) =>
-      event.preventDefault(),
+    onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+    },
   };
   const insertProps = { style: { ...insertFloating.style, zIndex: 50 } };
   const insertRef = useComposedRef<HTMLDivElement>(
@@ -518,18 +535,11 @@ export function LinkFloatingToolbar({
 
 function LinkOpenButton() {
   const editor = useEditor();
-  const selection = useEditorSelection();
-
-  const attributes = React.useMemo(() => {
-    const entry = editor.read.nodes.find({
-      type: linkPlugin,
-    });
-    if (!entry) {
-      return {};
-    }
-    const [element] = entry;
-    return editor.plugin(linkPlugin).api.getAttributes(element);
-  }, [editor, selection]);
+  useEditorSelection();
+  const entry = editor.read.nodes.find({ type: linkPlugin });
+  const attributes = entry
+    ? editor.plugin(linkPlugin).api.getAttributes(entry[0])
+    : {};
 
   return (
     <a
@@ -539,6 +549,9 @@ function LinkOpenButton() {
         variant: 'ghost',
       })}
       onMouseOver={(e) => {
+        e.stopPropagation();
+      }}
+      onFocus={(e) => {
         e.stopPropagation();
       }}
       aria-label="Open link in a new tab"

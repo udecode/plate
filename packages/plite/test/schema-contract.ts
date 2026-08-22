@@ -54,7 +54,7 @@ const defineContractSchema = (
 
 describe('editor schema', () => {
   it('rejects non-JSON document properties at create and update boundaries', () => {
-    const sparse = Array.from({ length: 1 }) as unknown[];
+    const sparse = Array.from({ length: 1 });
     const circular: Record<string, unknown> = {};
     const accessor = {} as Record<string, unknown>;
     const symbolKey = { value: true } as Record<PropertyKey, unknown>;
@@ -104,7 +104,9 @@ describe('editor schema', () => {
       initialValue: [{ children: [{ text: 'body' }], type: 'paragraph' }],
     });
 
-    for (const value of values.filter((value) => value !== undefined)) {
+    for (const value of values.filter(
+      (innerValue) => innerValue !== undefined
+    )) {
       assert.throws(() =>
         editor.update((tx) => {
           tx.nodes.set({ payload: value }, { at: [0] });
@@ -1321,7 +1323,7 @@ describe('editor schema', () => {
     const selectionBefore = editor.read.selection();
     let commits = 0;
     const unsubscribe = editor.subscribeCommit(() => {
-      commits++;
+      commits += 1;
     });
 
     assert.throws(
@@ -1662,7 +1664,7 @@ describe('editor schema', () => {
           properties: [
             schema.elementProperty(
               'id',
-              property.string({ generate: () => `p${++nextId}` }),
+              property.string({ generate: () => `p${(nextId += 1)}` }),
               {
                 copy: 'drop',
                 split: 'drop',
@@ -2045,7 +2047,7 @@ describe('editor schema', () => {
     const paragraphToneHandle = schema.handle.property(paragraphTone);
     const rankHandle = schema.handle.property(rank);
     const paragraph = { type: 'paragraph', children: [{ text: '' }] };
-    const text = paragraph.children[0]!;
+    const text = paragraph.children[0];
     const heading = {
       type: 'heading',
       children: [{ paragraphTone: 'wrong-target', text: '' }],
@@ -2070,7 +2072,7 @@ describe('editor schema', () => {
       undefined
     );
     assert.equal(
-      editor.read.schema.getProperty(heading.children[0]!, 'nonParagraphTone', {
+      editor.read.schema.getProperty(heading.children[0], 'nonParagraphTone', {
         parent: heading,
       }),
       'other'
@@ -2088,11 +2090,9 @@ describe('editor schema', () => {
       'body'
     );
     assert.equal(
-      editor.read.schema.getProperty(
-        heading.children[0]!,
-        paragraphToneHandle,
-        { parent: heading }
-      ),
+      editor.read.schema.getProperty(heading.children[0], paragraphToneHandle, {
+        parent: heading,
+      }),
       undefined
     );
     assert.equal(

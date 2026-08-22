@@ -19,11 +19,10 @@ import {
   hasPath as editorHasPath,
 } from './runtime-editor-api';
 
-export const createDefaultParagraph = (): Descendant =>
-  ({
-    type: 'paragraph',
-    children: [{ text: '' }],
-  }) as Descendant;
+export const createDefaultParagraph = (): Descendant => ({
+  type: 'paragraph',
+  children: [{ text: '' }],
+});
 
 const isBlockVoid = (editor: RuntimeEditor, node: Node) =>
   NodeApi.isElement(node) &&

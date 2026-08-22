@@ -83,7 +83,7 @@ describe('EmojiPicker', () => {
     const view = render(
       <EmojiPicker data={data} settings={settings}>
         <EmojiPickerTrigger>
-          <button>Open</button>
+          <button type="button">Open</button>
         </EmojiPickerTrigger>
       </EmojiPicker>
     );
@@ -107,7 +107,7 @@ describe('EmojiPicker', () => {
         settings={settings}
       >
         <EmojiPickerTrigger>
-          <button>Open custom</button>
+          <button type="button">Open custom</button>
         </EmojiPickerTrigger>
       </EmojiPicker>
     );

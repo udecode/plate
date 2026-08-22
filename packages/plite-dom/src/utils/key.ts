@@ -13,6 +13,7 @@ export class Key {
   id: string;
 
   constructor() {
-    this.id = `${n++}`;
+    this.id = `${n}`;
+    n += 1;
   }
 }

@@ -302,7 +302,9 @@ describe('BaseImagePlugin clipboard behavior', () => {
       focus: { offset: 5, path: [1, 0] },
     });
     resolveUpload('https://platejs.org/uploaded-image.png');
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
     expect(uploadImage).toHaveBeenCalledWith(
       expect.stringMatching(/^data:image\/png;base64,/)

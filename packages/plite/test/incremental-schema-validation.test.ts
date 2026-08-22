@@ -957,10 +957,10 @@ describe('incremental schema validation', () => {
     const iterations = 10_000;
 
     for (let iteration = 0; iteration < iterations; iteration += 1) {
-      const target = DocumentIndex.fromValue(
-        Object.freeze([document.value[1]!, document.value[0]!])
+      const innerTarget = DocumentIndex.fromValue(
+        Object.freeze([document.value[1], document.value[0]])
       );
-      const change = RootChange.between(document, target);
+      const change = RootChange.between(document, innerTarget);
       const after = change.apply(document);
 
       index = rebaseElementOwnedRootIndex(

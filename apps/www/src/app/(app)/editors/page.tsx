@@ -17,8 +17,8 @@ const potionBlock: RegistryItem = {
   type: 'registry:block',
 };
 
-export default async function BlocksPage() {
-  const blocks = await getAllBlocks();
+export default function BlocksPage() {
+  const blocks = getAllBlocks();
 
   return (
     <div className="flex flex-col gap-12 md:gap-24">

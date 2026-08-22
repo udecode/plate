@@ -2,6 +2,13 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const args = parseArgs(process.argv.slice(2));
 const outPath =
   args.out || 'benchmarks/results/package-boundary-gates-latest.json';
@@ -33,13 +40,16 @@ if (check) {
   }
 }
 
-function discoverEntries(packageJson) {
-  const entries = [];
-  if (packageJson.exports && typeof packageJson.exports === 'object') {
-    for (const exportName of Object.keys(packageJson.exports)) {
-      const target = readExportTarget(packageJson.exports[exportName]);
+function discoverEntries(innerPackageJson) {
+  const innerEntries = [];
+  if (
+    innerPackageJson.exports &&
+    typeof innerPackageJson.exports === 'object'
+  ) {
+    for (const exportName of Object.keys(innerPackageJson.exports)) {
+      const target = readExportTarget(innerPackageJson.exports[exportName]);
       if (target) {
-        entries.push({
+        innerEntries.push({
           fixture:
             exportName === '.'
               ? 'package-root'
@@ -49,13 +59,16 @@ function discoverEntries(packageJson) {
       }
     }
   }
-  if (entries.length === 0 && packageJson.main) {
-    entries.push({ fixture: 'package-main', target: packageJson.main });
+  if (innerEntries.length === 0 && innerPackageJson.main) {
+    innerEntries.push({
+      fixture: 'package-main',
+      target: innerPackageJson.main,
+    });
   }
-  if (entries.length === 0 && fs.existsSync('src/index.mjs')) {
-    entries.push({ fixture: 'source-index', target: 'src/index.mjs' });
+  if (innerEntries.length === 0 && fs.existsSync('src/index.mjs')) {
+    innerEntries.push({ fixture: 'source-index', target: 'src/index.mjs' });
   }
-  return entries;
+  return innerEntries;
 }
 
 function readExportTarget(value) {
@@ -70,7 +83,7 @@ function measureEntry(entry) {
   const target = entry.target.replace(/^\.\//, '');
   const reachable = new Set();
   collectReachable(target, reachable);
-  const files = Array.from(reachable).sort();
+  const files = Array.from(reachable).sort(compareStrings);
   const bytes = files.reduce((sum, file) => sum + fs.statSync(file).size, 0);
   const forbidden = readForbiddenPatterns().filter((pattern) =>
     files.some((file) => file.includes(pattern))
@@ -210,13 +223,13 @@ function parseArgs(argv) {
 
   while (i < argv.length) {
     const arg = argv[i];
-    i++;
+    i += 1;
     if (!arg.startsWith('--')) continue;
     const key = arg.slice(2);
     if (key === 'check') out.check = true;
     else {
       out[key] = argv[i] || true;
-      i++;
+      i += 1;
     }
   }
   return out;

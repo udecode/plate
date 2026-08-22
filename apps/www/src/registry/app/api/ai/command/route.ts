@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
           toolName = selectedToolName;
         }
 
-        const stream = streamText({
+        const innerStream = streamText({
           experimental_transform: markdownJoinerTransform(),
           model: gatewayProvider(model || 'openai/gpt-4o-mini'),
           // Not used
@@ -119,8 +119,9 @@ export async function POST(req: NextRequest) {
               writer,
             }),
           },
-          prepareStep: async (step) => {
+          prepareStep: (step) => {
             if (toolName === 'comment') {
+              // The selection task is more challenging, so use Gemini 2.5 Flash.
               return {
                 ...step,
                 toolChoice: { toolName: 'comment', type: 'tool' },
@@ -147,8 +148,7 @@ export async function POST(req: NextRequest) {
                 activeTools: [],
                 model:
                   editType === 'selection'
-                    ? //The selection task is more challenging, so we chose to use Gemini 2.5 Flash.
-                      gatewayProvider(model || 'google/gemini-2.5-flash')
+                    ? gatewayProvider(model || 'google/gemini-2.5-flash')
                     : gatewayProvider(model || 'openai/gpt-4o-mini'),
                 messages: [
                   {
@@ -177,10 +177,12 @@ export async function POST(req: NextRequest) {
                 model: gatewayProvider(model || 'openai/gpt-4o-mini'),
               };
             }
+
+            return undefined;
           },
         });
 
-        writer.merge(stream.toUIMessageStream({ sendFinish: false }));
+        writer.merge(innerStream.toUIMessageStream({ sendFinish: false }));
       },
     });
 

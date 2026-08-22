@@ -1,4 +1,5 @@
 import type { Element } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 
 import type { MdList, MdListItem, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
@@ -69,13 +70,13 @@ export function listToMdastTree(
   };
 
   // Stack to track parent nodes at different indentation levels
-  const indentStack: {
+  const indentStack: Array<{
     indent: number;
     list: MdList;
     parent: MdListItem | null;
     listStyle: SerializableListElement['listStyle'];
     listType: SerializableListElement['listType'];
-  }[] = [
+  }> = [
     {
       indent: nodes[0].indent ?? 1,
       list: root,
@@ -92,7 +93,8 @@ export function listToMdastTree(
     // Find the appropriate parent list for the current indentation level
     while (
       indentStack.length > 1 &&
-      indentStack.at(-1)!.indent > currentIndent
+      (indentStack.at(-1) ?? failInvariant('Expected value to be defined'))
+        .indent > currentIndent
     ) {
       indentStack.pop();
     }
@@ -124,7 +126,9 @@ export function listToMdastTree(
       };
 
       // Attach sibling list under the same parent item
-      stackTop.parent!.children.push(siblingList);
+      (
+        stackTop.parent ?? failInvariant('Expected value to be defined')
+      ).children.push(siblingList);
 
       indentStack[indentStack.length - 1] = {
         indent: currentIndent,
@@ -134,7 +138,8 @@ export function listToMdastTree(
         listType: node.listType,
       };
 
-      stackTop = indentStack.at(-1)!;
+      stackTop =
+        indentStack.at(-1) ?? failInvariant('Expected value to be defined');
     }
 
     // Create the current list item

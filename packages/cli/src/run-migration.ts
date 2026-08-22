@@ -35,12 +35,14 @@ export type RunEditorMigrationsOptions = Readonly<{
 
 export type EditorMigrationRunResult = Readonly<{
   changed: number;
-  files: readonly Readonly<{
-    applied: readonly number[];
-    changed: boolean;
-    outputText: string;
-    path: string;
-  }>[];
+  files: ReadonlyArray<
+    Readonly<{
+      applied: readonly number[];
+      changed: boolean;
+      outputText: string;
+      path: string;
+    }>
+  >;
 }>;
 
 export type EditorMigrationInputResult = Readonly<{
@@ -61,7 +63,10 @@ const evaluate = (
       [bundlePath, requestPath, resultPath],
       { cwd, maxBuffer: 16 * 1024 * 1024 },
       (error, _stdout, stderr) => {
-        if (!error) return resolvePromise();
+        if (!error) {
+          resolvePromise();
+          return;
+        }
         reject(
           new Error(
             stderr.trim() ||
@@ -187,10 +192,10 @@ writeFileSync(process.argv[3], JSON.stringify(outputs), 'utf8');
 
     if (!output) throw new Error(`Plate could not bundle "${entryPath}".`);
 
-    writeFileSync(bundlePath, output.text, 'utf8');
-    writeFileSync(requestPath, JSON.stringify({ paths }), 'utf8');
+    writeFileSync(bundlePath, output.text, 'utf-8');
+    writeFileSync(requestPath, JSON.stringify({ paths }), 'utf-8');
     await evaluate(bundlePath, requestPath, resultPath, cwd);
-    const evaluated = JSON.parse(readFileSync(resultPath, 'utf8')) as Array<{
+    const evaluated = JSON.parse(readFileSync(resultPath, 'utf-8')) as Array<{
       applied: number[];
       changed: boolean;
       outputText: string;
@@ -232,9 +237,9 @@ export const runEditorMigrationInput = async (
   const path = join(directory, 'document.json');
 
   try {
-    writeFileSync(path, sourceText, 'utf8');
+    writeFileSync(path, sourceText, 'utf-8');
     const result = await runEditorMigrations(entry, [path], options);
-    const file = result.files[0]!;
+    const file = result.files[0];
 
     return Object.freeze({
       applied: file.applied,

@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { cva } from 'class-variance-authority';
+import type { Metadata } from 'next';
 import type { EditorDocumentValue } from 'platejs';
 import { createStaticEditor, renderStaticHtml } from 'platejs/static';
 import * as React from 'react';
@@ -31,10 +32,14 @@ import { mentionValue } from '@/registry/examples/values/mention-value';
 import { tableValue } from '@/registry/examples/values/table-value';
 import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
 
+export const metadata: Metadata = {
+  title: 'Plate to HTML',
+};
+
 const getCachedTailwindCss = React.cache(async () => {
   const cssPath = path.join(process.cwd(), 'public', 'tailwind.css');
 
-  return await fs.readFile(cssPath, 'utf8');
+  return await fs.readFile(cssPath, 'utf-8');
 });
 
 const createHtmlDocument = ({

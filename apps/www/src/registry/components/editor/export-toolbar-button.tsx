@@ -42,17 +42,19 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
     const canvas = await html2canvas(editorElement, {
       onclone: (document: Document) => {
-        const editorElement = document.querySelector(
+        const innerEditorElement = document.querySelector(
           '[contenteditable="true"]'
         );
-        if (editorElement) {
-          Array.from(editorElement.querySelectorAll('*')).forEach((element) => {
-            const existingStyle = element.getAttribute('style') || '';
-            element.setAttribute(
-              'style',
-              `${existingStyle}; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important`
-            );
-          });
+        if (innerEditorElement) {
+          Array.from(innerEditorElement.querySelectorAll('*')).forEach(
+            (element) => {
+              const existingStyle = element.getAttribute('style') || '';
+              element.setAttribute(
+                'style',
+                `${existingStyle}; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important`
+              );
+            }
+          );
         }
       },
     });
@@ -79,9 +81,10 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToPdf = async () => {
-    const canvas = await getCanvas();
-
-    const PDFLib = await import('pdf-lib');
+    const [canvas, PDFLib] = await Promise.all([
+      getCanvas(),
+      import('pdf-lib'),
+    ]);
     const pdfDoc = await PDFLib.PDFDocument.create();
     const page = pdfDoc.addPage([canvas.width, canvas.height]);
     const imageEmbed = await pdfDoc.embedPng(canvas.toDataURL('PNG'));

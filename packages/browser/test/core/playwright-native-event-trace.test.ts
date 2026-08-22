@@ -96,7 +96,7 @@ describe('playwright native event trace', () => {
           endOffset: 5,
           startContainer: text,
           startOffset: 5,
-        } as StaticRange,
+        },
       ],
     });
 
@@ -166,14 +166,14 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    expect(
-      (await takePliteBrowserNativeEventTrace(locator)).entries
-    ).toHaveLength(1);
+    const firstTrace = await takePliteBrowserNativeEventTrace(locator);
+
+    expect(firstTrace.entries).toHaveLength(1);
 
     await resetPliteBrowserNativeEventTrace(locator);
-    expect((await takePliteBrowserNativeEventTrace(locator)).entries).toEqual(
-      []
-    );
+    const resetTrace = await takePliteBrowserNativeEventTrace(locator);
+
+    expect(resetTrace.entries).toEqual([]);
 
     await stopPliteBrowserNativeEventTrace(locator);
     dispatchInputEvent(root, 'beforeinput', {
@@ -181,9 +181,9 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    expect((await takePliteBrowserNativeEventTrace(locator)).entries).toEqual(
-      []
-    );
+    const stoppedTrace = await takePliteBrowserNativeEventTrace(locator);
+
+    expect(stoppedTrace.entries).toEqual([]);
   });
 
   test('requires a positive integer native trace entry limit', async () => {
@@ -220,8 +220,8 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    expect((await takePliteBrowserNativeEventTrace(locator)).entries).toEqual([
-      expect.objectContaining({ type: 'input' }),
-    ]);
+    const trace = await takePliteBrowserNativeEventTrace(locator);
+
+    expect(trace.entries).toEqual([expect.objectContaining({ type: 'input' })]);
   });
 });

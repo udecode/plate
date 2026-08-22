@@ -13,7 +13,7 @@ export const matchesEditorCorrection = (
   correction: EditorCorrection
 ) => {
   const [node, path] = entry;
-  const query = correction.query;
+  const { query } = correction;
 
   if (query === 'root') return path.length === 0;
   if (path.length === 0) return false;

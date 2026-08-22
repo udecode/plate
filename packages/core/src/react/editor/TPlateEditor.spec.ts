@@ -49,7 +49,7 @@ describe('PlateEditor', () => {
       expect(editor.plugin(DebugPlugin).api.info).toBeInstanceOf(Function);
       expect(editor.plugin(DebugPlugin).api.warn).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.plugin(DebugPlugin).api.nonExistentMethod;
     });
 
@@ -62,7 +62,7 @@ describe('PlateEditor', () => {
       expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
       expect(editor.api.image.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.list;
     });
   });
@@ -87,7 +87,7 @@ describe('PlateEditor', () => {
       );
       expect(multiPluginEditor.api.table.insertTable).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       multiPluginEditor.api.nonExistentMethod;
     });
 
@@ -100,7 +100,7 @@ describe('PlateEditor', () => {
       expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
       expect(editor.api.image.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.table;
     });
 
@@ -114,7 +114,7 @@ describe('PlateEditor', () => {
       expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
       expect(editor.api.table.insertTable).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.image;
     });
 
@@ -137,7 +137,7 @@ describe('PlateEditor', () => {
       expect(editor.api.overlapping.bold).toBeInstanceOf(Function);
       expect(editor.api.overlapping.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.nonExistentMethod;
     });
   });

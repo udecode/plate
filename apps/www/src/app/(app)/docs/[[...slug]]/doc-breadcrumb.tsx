@@ -1,5 +1,6 @@
 'use client';
 
+import { failInvariant } from '@platejs/plite/internal';
 import * as React from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
@@ -126,7 +127,7 @@ export function DocBreadcrumb({
                         className="flex items-center gap-2"
                         value={item.value ?? item.href}
                         onSelect={() => {
-                          router.push(hrefWithLocale(item.href!, locale));
+                          router.push(hrefWithLocale((item.href ?? failInvariant('Expected value to be defined')), locale));
                           setOpen(false);
                         }}
                       >

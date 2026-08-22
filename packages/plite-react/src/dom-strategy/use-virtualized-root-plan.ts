@@ -138,7 +138,7 @@ const createRetainedRangeExtractor =
     retainedIndexes,
   }: {
     count: number;
-    retainedIndexes: readonly (number | null)[];
+    retainedIndexes: ReadonlyArray<number | null>;
   }) =>
   (range: VirtualRange) => {
     const indexes = new Set(defaultRangeExtractor(range));
@@ -195,7 +195,7 @@ export const createLayoutVirtualizerSizeMap = (
   );
 
   for (let index = 0; index < sortedItems.length; index++) {
-    const item = sortedItems[index]!;
+    const item = sortedItems[index];
     const nextItem = sortedItems[index + 1];
     const extent =
       nextItem && nextItem.start > item.start
@@ -217,7 +217,7 @@ const createPageVirtualizerSizeMap = (
   );
 
   for (let index = 0; index < sortedItems.length; index++) {
-    const item = sortedItems[index]!;
+    const item = sortedItems[index];
     const nextItem = sortedItems[index + 1];
     const extent =
       nextItem && nextItem.start > item.start
@@ -390,7 +390,7 @@ export const useVirtualizedRootPlan = ({
   ] = React.useState(false);
   React.useEffect(() => {
     if (!scrollElement || hasPageLayoutItems) {
-      return;
+      return undefined;
     }
 
     const activateNativeScrollbarDragOverscan = (event: PointerEvent) => {
@@ -470,6 +470,7 @@ export const useVirtualizedRootPlan = ({
       }),
     [count, retainedVirtualIndexes]
   );
+  // oxlint-disable-next-line react/incompatible-library -- TanStack Virtual deliberately returns imperative measurement functions; the compiler must skip memoizing this hook rather than stale its virtualizer state.
   const virtualizer = useVirtualizer<HTMLElement, HTMLElement>({
     count,
     enabled: Boolean(config && enabled),
@@ -548,7 +549,7 @@ export const useVirtualizedRootPlan = ({
           index,
           key: topLevelNodeKeys[index] ?? index,
           left: layoutItem?.left,
-          nodeKey: topLevelNodeKeys[index]!,
+          nodeKey: topLevelNodeKeys[index],
           size: layoutItem?.size ?? virtualizerItem?.size ?? estimatedBlockSize,
           start:
             layoutItem?.start ??

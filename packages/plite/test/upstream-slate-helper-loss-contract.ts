@@ -178,11 +178,11 @@ const getCurrentRange = (
       const focus = PointApi.isPoint(to) ? to : RangeApi.start(to);
       const block = state.nodes.block({ at: focus });
 
-      if (!block) return;
+      if (!block) return undefined;
 
       const anchor = state.points.start(block[1]);
 
-      if (!anchor) return;
+      if (!anchor) return undefined;
 
       return state.ranges.get(anchor, focus);
     }
@@ -244,7 +244,7 @@ const getSharedProp = ({
         if (value === undefined) {
           value = nodeValue;
         } else if (value !== nodeValue) {
-          return;
+          return undefined;
         }
       } else if (mode === 'block') {
         return defaultValue;
@@ -261,7 +261,7 @@ const getSharedProp = ({
           if (value === undefined) {
             value = nodeValue;
           } else if (value !== nodeValue) {
-            return;
+            return undefined;
           }
         } else if (mode === 'text') {
           return defaultValue;
@@ -525,20 +525,16 @@ describe('old Slate helper behavior through current Plite APIs', () => {
           at: [2],
         })?.[0] as Element | undefined
       )?.id,
-      parent: (
-        state.nodes.previous({
-          at: [1, 0],
-          from: 'parent',
-          match: NodeApi.isElement,
-        })?.[0] as Element | undefined
-      )?.id,
-      parentPrevious: (
-        state.nodes.previous({
-          at: [1, 1],
-          from: 'parent',
-          match: NodeApi.isElement,
-        })?.[0] as Element | undefined
-      )?.id,
+      parent: state.nodes.previous({
+        at: [1, 0],
+        from: 'parent',
+        match: NodeApi.isElement,
+      })?.[0]?.id,
+      parentPrevious: state.nodes.previous({
+        at: [1, 1],
+        from: 'parent',
+        match: NodeApi.isElement,
+      })?.[0]?.id,
       sibling: (
         state.nodes.previous({
           at: [1, 1],
@@ -831,7 +827,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
             { bold: true, text: 'one' },
             { bold: true, italic: true, text: 'two' },
           ],
-        } as Element,
+        },
       ],
       {
         anchor: { path: [0, 0], offset: 0 },

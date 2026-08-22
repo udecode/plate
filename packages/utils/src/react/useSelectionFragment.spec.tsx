@@ -8,7 +8,7 @@ import React from 'react';
 
 import { useSelectionFragmentProp } from './useSelectionFragment';
 
-const createWrapper = <E extends PlateEditorReference>(editor: E) =>
+const createWrapper = (editor: PlateEditorReference) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <Plate editor={editor} suppressInstanceWarning>

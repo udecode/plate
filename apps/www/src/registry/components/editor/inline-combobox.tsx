@@ -10,9 +10,11 @@ import {
   Portal,
   useComboboxContext,
   useComboboxStore,
+  useStoreState,
 } from '@ariakit/react';
 import { filterWords } from '@platejs/combobox';
 import type { Anchor, Element, Point } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import { cva } from 'class-variance-authority';
 import { Hotkeys, isHotkey } from 'platejs';
 import {
@@ -132,11 +134,11 @@ const InlineCombobox = ({
     insertPointAnchor.current?.release();
     insertPointAnchor.current = null;
 
-    if (!path) return;
+    if (!path) return undefined;
 
     const point = editor.read.points.before(path);
 
-    if (!point) return;
+    if (!point) return undefined;
 
     const nextPointAnchor = editor.anchor(point, {
       association: 'forward',
@@ -209,51 +211,57 @@ const InlineCombobox = ({
     previousSelected.current = selected;
   }, [cancelInput, selected]);
 
-  const inputProps: InlineComboboxContextValue['inputProps'] = {
-    onBlur: () => cancelInput('blur'),
-    onKeyDown: (event) => {
-      const {
-        selectionEnd,
-        selectionStart,
-        value: inputValue,
-      } = event.currentTarget;
-      const cursorCollapsed = selectionStart === selectionEnd;
-      const cursorAtStart = cursorCollapsed && selectionStart === 0;
-      const cursorAtEnd = cursorCollapsed && selectionEnd === inputValue.length;
-      const cancelCause = isHotkey('escape')(event)
-        ? 'escape'
-        : cursorAtStart && isHotkey('backspace')(event)
-          ? 'backspace'
-          : cursorAtStart && isHotkey('arrowleft')(event)
-            ? 'arrowLeft'
-            : cursorAtEnd && isHotkey('arrowright')(event)
-              ? 'arrowRight'
-              : null;
+  const inputProps = React.useMemo<InlineComboboxContextValue['inputProps']>(
+    () => ({
+      onBlur: () => {
+        cancelInput('blur');
+      },
+      onKeyDown: (event) => {
+        const {
+          selectionEnd,
+          selectionStart,
+          value: inputValue,
+        } = event.currentTarget;
+        const cursorCollapsed = selectionStart === selectionEnd;
+        const cursorAtStart = cursorCollapsed && selectionStart === 0;
+        const cursorAtEnd =
+          cursorCollapsed && selectionEnd === inputValue.length;
+        const cancelCause = isHotkey('escape')(event)
+          ? 'escape'
+          : cursorAtStart && isHotkey('backspace')(event)
+            ? 'backspace'
+            : cursorAtStart && isHotkey('arrowleft')(event)
+              ? 'arrowLeft'
+              : cursorAtEnd && isHotkey('arrowright')(event)
+                ? 'arrowRight'
+                : null;
 
-      if (cancelCause) {
-        event.preventDefault();
-        event.stopPropagation();
-        cancelInput(cancelCause, true);
+        if (cancelCause) {
+          event.preventDefault();
+          event.stopPropagation();
+          cancelInput(cancelCause, true);
 
-        return;
-      }
+          return;
+        }
 
-      const undo =
-        Hotkeys.isUndo(event) && editor.read.history.undos().length > 0;
-      const redo =
-        Hotkeys.isRedo(event) && editor.read.history.redos().length > 0;
+        const undo =
+          Hotkeys.isUndo(event) && editor.read.history.undos().length > 0;
+        const redo =
+          Hotkeys.isRedo(event) && editor.read.history.redos().length > 0;
 
-      if (undo || redo) {
-        event.preventDefault();
-        editor.update.history[undo ? 'undo' : 'redo']();
-        editor.api.dom.focus();
-      }
-    },
-  };
+        if (undo || redo) {
+          event.preventDefault();
+          editor.update.history[undo ? 'undo' : 'redo']();
+          editor.api.dom.focus();
+        }
+      },
+    }),
+    [cancelInput, editor]
+  );
 
   const [hasEmpty, setHasEmpty] = React.useState(false);
 
-  const contextValue: InlineComboboxContextValue = React.useMemo(
+  const contextValue = React.useMemo<InlineComboboxContextValue>(
     () => ({
       filter,
       inputProps,
@@ -263,23 +271,17 @@ const InlineCombobox = ({
       showTrigger,
       trigger,
     }),
-    [
-      trigger,
-      showTrigger,
-      filter,
-      inputRef,
-      inputProps,
-      removeInput,
-      setHasEmpty,
-    ]
+    [filter, inputProps, inputRef, removeInput, showTrigger, trigger]
   );
 
   const store = useComboboxStore({
     // open: ,
-    setValue: (newValue) => React.startTransition(() => setValue(newValue)),
+    setValue: (newValue) => {
+      React.startTransition(() => setValue(newValue));
+    },
   });
 
-  const items = store.useState('items');
+  const items = useStoreState(store, 'items');
 
   /**
    * If there is no active ID and the list of items changes, select the first
@@ -322,8 +324,9 @@ const InlineComboboxInput = ({
     trigger,
   } = useInlineComboboxContext();
 
-  const store = useComboboxContext()!;
-  const value = store.useState('value');
+  const store =
+    useComboboxContext() ?? failInvariant('Expected value to be defined');
+  const value = useStoreState(store, 'value');
 
   const ref = useComposedRef(propRef, contextRef);
 
@@ -438,14 +441,13 @@ const InlineComboboxItem = ({
 
   const { filter, removeInput } = useInlineComboboxContext();
 
-  const store = useComboboxContext()!;
+  const store =
+    useComboboxContext() ?? failInvariant('Expected value to be defined');
 
-  // Optimization: Do not subscribe to value if filter is false
-  const search = filter && store.useState('value');
+  const search = useStoreState(store, 'value');
 
   const visible = React.useMemo(
-    () =>
-      !filter || filter({ group, keywords, label, value }, search as string),
+    () => !filter || filter({ group, keywords, label, value }, search),
     [filter, group, keywords, label, value, search]
   );
 
@@ -468,8 +470,9 @@ const InlineComboboxEmpty = ({
   className,
 }: React.HTMLAttributes<HTMLDivElement>) => {
   const { setHasEmpty } = useInlineComboboxContext();
-  const store = useComboboxContext()!;
-  const items = store.useState('items');
+  const store =
+    useComboboxContext() ?? failInvariant('Expected value to be defined');
+  const items = useStoreState(store, 'items');
 
   React.useEffect(() => {
     setHasEmpty(true);

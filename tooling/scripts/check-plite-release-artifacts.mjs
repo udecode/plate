@@ -2,6 +2,7 @@
 
 import { spawnSync } from 'node:child_process';
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -10,10 +11,10 @@ import {
   readdirSync,
   rmSync,
   statSync,
-  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { builtinModules } from 'node:module';
+import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -110,6 +111,18 @@ export const PLITE_RELEASE_PACKAGES = [
     name: '@platejs/yjs',
   },
 ];
+
+const PLITE_PACKAGE_BOUNDARY_NAMES = new Set([
+  '@platejs/plite',
+  '@platejs/plite-dom',
+  '@platejs/plite-react',
+  '@platejs/yjs',
+]);
+
+export const getPlitePackageBoundaryContracts = () =>
+  PLITE_RELEASE_PACKAGES.filter(({ name }) =>
+    PLITE_PACKAGE_BOUNDARY_NAMES.has(name)
+  );
 
 export function getPublicExports(packageJson) {
   const packageExports = packageJson.exports;
@@ -405,12 +418,10 @@ function createPliteSchemaConsumerSource({ typed }) {
     '    },',
     '  },',
     "  id: 'release-consumer-schema',",
-    '  root: {',
-    "    content: releaseSchemaApi.content.type('paragraph', {",
+    "  root: releaseSchemaApi.content.type('paragraph', {",
     "      default: { type: 'paragraph' },",
     '      min: 1,',
     '    }),',
-    '  },',
     "  unknown: 'reject',",
     '  version: 1,',
     '});',
@@ -419,6 +430,7 @@ function createPliteSchemaConsumerSource({ typed }) {
     '  initialValue: [',
     '    {',
     "      children: [{ text: 'installed tarball' }],",
+    "      tone: 'body',",
     "      type: 'paragraph',",
     '    },',
     '  ],',
@@ -434,7 +446,7 @@ function createPliteSchemaConsumerSource({ typed }) {
     "  'paragraph'",
     ');',
     'const releaseCanonicalParagraph =',
-    '  releaseEditor.read.schema.createAndFill(releaseParagraphHandle);',
+    '  releaseEditor.read.schema.create(releaseParagraphHandle);',
     typed
       ? "const releaseTypedParagraph: ReleaseSchemaElementFor<typeof ReleaseArtifactSchema, 'paragraph'> = releaseCanonicalParagraph;"
       : 'const releaseTypedParagraph = releaseCanonicalParagraph;',
@@ -468,39 +480,37 @@ function createPlateSchemaConsumerSource({ typed }) {
     "    label: 'draft',",
     "    prefix: 'draft:',",
     '  },',
-    '  schema: ({ initialState }) => ({',
+    '  schema: {',
     '    element: {',
     "      content: releasePlateSchemaApi.content.text({ default: 'text', min: 1 }),",
     '      properties: {',
-    '        tone: releasePlateProperty.string({ default: initialState.label }),',
+    "        tone: releasePlateProperty.string({ default: 'draft' }),",
     '      },',
+    "      type: 'release-artifact-paragraph',",
     '    },',
-    '  }),',
-    "  type: 'release-artifact-paragraph',",
+    '  },',
     '});',
     "const ReleaseMarkPlugin = defineReleaseBasePlugin('releaseArtifactMark', {",
     '  schema: {',
-    '    mark: releasePlateProperty.boolean({',
-    '      default: false,',
-    '      omitDefault: true,',
-    '    }),',
+    '    mark: {',
+    "      key: 'release-artifact-strong',",
+    '      property: releasePlateProperty.boolean({',
+    '        default: false,',
+    '        omitDefault: true,',
+    '      }),',
+    '    },',
     '  },',
-    "  type: 'release-artifact-strong',",
     '});',
     "const ReleaseParentPlugin = defineReleaseBasePlugin('releaseArtifactParent', {",
     '  dependencies: [ReleaseElementPlugin, ReleaseMarkPlugin],',
     '});',
     ...(typed
       ? [
-          "const releaseExactElementType: 'release-artifact-paragraph' = ReleaseElementPlugin.type;",
-          "const releaseExactMarkType: 'release-artifact-strong' = ReleaseMarkPlugin.type;",
           "const releaseNestedElementName: 'releaseArtifactElement' =",
           '  ReleaseParentPlugin.dependencies[0].name;',
           "const releaseNestedMarkName: 'releaseArtifactMark' =",
           '  ReleaseParentPlugin.dependencies[1].name;',
           'const releaseConfiguredLabel: string = ReleaseElementPlugin.initialState.label;',
-          'void releaseExactElementType;',
-          'void releaseExactMarkType;',
           'void releaseNestedElementName;',
           'void releaseNestedMarkName;',
           'void releaseConfiguredLabel;',
@@ -527,7 +537,7 @@ function createPlateSchemaConsumerSource({ typed }) {
     "  throw new Error('Expected a named Plate schema identity.');",
     '}',
     'const releasePlateElementBefore =',
-    '  releasePlateEditor.read.schema.createAndFill(ReleaseElementPlugin);',
+    '  releasePlateEditor.read.schema.create(ReleaseElementPlugin);',
     ...(typed
       ? [
           "const releaseCreatedElementType: 'release-artifact-paragraph' = releasePlateElementBefore.type;",
@@ -543,11 +553,17 @@ function createPlateSchemaConsumerSource({ typed }) {
     "  type: 'release-artifact-paragraph',",
     '});',
     'releasePlateAssertEqual(',
-    '  releasePlateEditor.read.schema.property(ReleaseMarkPlugin)?.key,',
+    '  releasePlateEditor.read.schema.property({',
+    "    key: 'release-artifact-strong',",
+    "    placement: 'text',",
+    '  })?.key,',
     "  'release-artifact-strong'",
     ');',
     'releasePlateAssertEqual(',
-    '  releasePlateEditor.read.schema.property(ReleaseMarkPlugin)?.placement,',
+    '  releasePlateEditor.read.schema.property({',
+    "    key: 'release-artifact-strong',",
+    "    placement: 'text',",
+    '  })?.placement,',
     "  'text'",
     ');',
     'releasePlateAssertEqual(releaseHeldPlugin.api.readConfiguredLabel(), "draft");',
@@ -564,7 +580,7 @@ function createPlateSchemaConsumerSource({ typed }) {
     "  throw new Error('Expected a named Plate schema identity.');",
     '}',
     'const releasePlateElementAfter =',
-    '  releasePlateEditor.read.schema.createAndFill(ReleaseElementPlugin);',
+    '  releasePlateEditor.read.schema.create(ReleaseElementPlugin);',
     'releasePlateAssertDeepEqual(releasePlateElementAfter, {',
     "  children: [{ text: '' }],",
     "  tone: 'draft',",
@@ -576,7 +592,7 @@ function createPlateSchemaConsumerSource({ typed }) {
     '    releasePlateIdentityBefore?.fingerprint,',
     '  true',
     ');',
-    "releasePlateAssertEqual(releaseHeldPlugin.plugin.initialState.label, 'draft');",
+    "releasePlateAssertEqual(ReleaseElementPlugin.initialState.label, 'draft');",
     "releasePlateAssertEqual(releaseHeldPlugin.api.readConfiguredLabel(), 'published');",
     'releasePlateAssertEqual(',
     '  releaseHeldPlugin.api.formatConfiguredLabel(),',
@@ -585,11 +601,17 @@ function createPlateSchemaConsumerSource({ typed }) {
   ].join('\n');
 }
 
-export async function checkPliteReleaseArtifacts({ keep = false } = {}) {
+export function checkPliteReleaseArtifacts({
+  keep = false,
+  packageBoundariesOnly = false,
+} = {}) {
   ensureDirectory(temporaryRoot);
 
   const workDirectory = mkdtempSync(
     join(temporaryRoot, 'plite-release-artifacts-')
+  );
+  const isolatedConsumerRoot = mkdtempSync(
+    join(tmpdir(), 'plite-release-consumers-')
   );
 
   try {
@@ -605,13 +627,44 @@ export async function checkPliteReleaseArtifacts({ keep = false } = {}) {
       type: 'module',
     });
 
-    const packedPackages = PLITE_RELEASE_PACKAGES.map((packageContract) =>
+    const packageContracts = packageBoundariesOnly
+      ? getPlitePackageBoundaryContracts()
+      : PLITE_RELEASE_PACKAGES;
+    const packedPackages = packageContracts.map((packageContract) =>
       packAndInstallPackage({
         consumerDirectory,
         packageContract,
         tarballDirectory,
       })
     );
+    verifyIsolatedPackedConsumer({
+      directory: join(isolatedConsumerRoot, 'plite-react-without-history'),
+      forbiddenPackages: ['@platejs/plite-history'],
+      packageNames: [
+        '@platejs/plite',
+        '@platejs/plite-dom',
+        '@platejs/plite-react',
+      ],
+      packedPackages,
+      specifiers: ['@platejs/plite-react'],
+      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
+    });
+    verifyIsolatedPackedConsumer({
+      directory: join(isolatedConsumerRoot, 'yjs-core-without-plate-react'),
+      forbiddenPackages: ['@platejs/core', '@platejs/plite-react', 'react'],
+      packageNames: ['@platejs/plite', '@platejs/yjs'],
+      packedPackages,
+      specifiers: ['@platejs/yjs/core'],
+      typePackages: ['@types/node'],
+    });
+
+    if (packageBoundariesOnly) {
+      console.log(
+        'Verified isolated packed Plite React without History and Yjs core without Plate/React consumers.'
+      );
+      return;
+    }
+
     linkConsumerDependencies({ consumerDirectory, packedPackages });
     const errors = [];
 
@@ -639,12 +692,12 @@ export async function checkPliteReleaseArtifacts({ keep = false } = {}) {
     writeFileSync(join(consumerDirectory, 'runtime.mjs'), sources.runtime);
     writeTypeScriptConfigs(consumerDirectory);
 
-    captureProof(errors, 'NodeNext declaration consumer', () =>
-      runTypeScriptConsumer(consumerDirectory, 'tsconfig.nodenext.json')
-    );
-    captureProof(errors, 'Bundler declaration consumer', () =>
-      runTypeScriptConsumer(consumerDirectory, 'tsconfig.bundler.json')
-    );
+    captureProof(errors, 'NodeNext declaration consumer', () => {
+      runTypeScriptConsumer(consumerDirectory, 'tsconfig.nodenext.json');
+    });
+    captureProof(errors, 'Bundler declaration consumer', () => {
+      runTypeScriptConsumer(consumerDirectory, 'tsconfig.bundler.json');
+    });
     captureProof(errors, 'Node runtime consumer', () =>
       runCommand(process.execPath, ['runtime.mjs'], { cwd: consumerDirectory })
     );
@@ -685,11 +738,235 @@ export async function checkPliteReleaseArtifacts({ keep = false } = {}) {
     console.log(
       `Verified ${packedPackages.length} packed release packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
     );
+    console.log(
+      'Verified isolated packed Plite React without History and Yjs core without Plate/React consumers.'
+    );
   } finally {
     if (keep) {
       console.log(`Kept release artifact fixture at ${workDirectory}`);
     } else {
       rmSync(workDirectory, { force: true, recursive: true });
+    }
+    rmSync(isolatedConsumerRoot, { force: true, recursive: true });
+  }
+}
+
+function verifyIsolatedPackedConsumer({
+  directory,
+  forbiddenPackages,
+  packageNames,
+  packedPackages,
+  specifiers,
+  typePackages,
+}) {
+  ensureDirectory(join(directory, 'node_modules'));
+  writeJson(join(directory, 'package.json'), {
+    name: 'plite-isolated-release-consumer',
+    private: true,
+    type: 'module',
+  });
+
+  const packedByName = new Map(
+    packedPackages.map((packedPackage) => [
+      packedPackage.packageJson.name,
+      packedPackage,
+    ])
+  );
+  const queue = [...packageNames];
+  const installed = new Set();
+  const dependencyRequests = typePackages.map((name) => ({
+    fromDirectory: repoRoot,
+    name,
+  }));
+
+  while (queue.length > 0) {
+    const packageName = queue.shift();
+
+    if (installed.has(packageName)) continue;
+
+    const packedPackage = packedByName.get(packageName);
+
+    if (!packedPackage) {
+      throw new Error(`Missing packed package ${packageName}.`);
+    }
+
+    const destination = join(
+      directory,
+      'node_modules',
+      ...packageName.split('/')
+    );
+    ensureDirectory(dirname(destination));
+    cpSync(packedPackage.packageDirectory, destination, { recursive: true });
+    installed.add(packageName);
+
+    const optionalPeers = new Set(
+      Object.entries(packedPackage.packageJson.peerDependenciesMeta ?? {})
+        .filter(([, metadata]) => metadata?.optional === true)
+        .map(([name]) => name)
+    );
+    const requiredDependencies = new Set([
+      ...Object.keys(packedPackage.packageJson.dependencies ?? {}),
+      ...Object.keys(packedPackage.packageJson.peerDependencies ?? {}).filter(
+        (name) => !optionalPeers.has(name)
+      ),
+    ]);
+
+    for (const dependencyName of requiredDependencies) {
+      if (packedByName.has(dependencyName)) {
+        queue.push(dependencyName);
+        continue;
+      }
+
+      dependencyRequests.push({
+        fromDirectory: join(repoRoot, packedPackage.packageContract.directory),
+        name: dependencyName,
+      });
+    }
+  }
+
+  materializeResolvedDependencyClosure({
+    destinationNodeModules: join(directory, 'node_modules'),
+    forbiddenPackages,
+    requests: dependencyRequests,
+  });
+
+  const source = specifiers
+    .map(
+      (specifier, index) =>
+        `import * as packageExport${index} from ${JSON.stringify(specifier)}; void packageExport${index};`
+    )
+    .join('\n');
+
+  writeFileSync(join(directory, 'consumer.ts'), `${source}\n`);
+  writeFileSync(join(directory, 'runtime.mjs'), `${source}\n`);
+  writeTypeScriptConfigs(directory);
+  runTypeScriptConsumer(directory, 'tsconfig.nodenext.json');
+  runTypeScriptConsumer(directory, 'tsconfig.bundler.json');
+  runCommand(process.execPath, ['runtime.mjs'], { cwd: directory });
+}
+
+export function materializeResolvedDependencyClosure({
+  destinationNodeModules,
+  forbiddenPackages,
+  requests,
+}) {
+  const forbidden = new Set(forbiddenPackages);
+  const queue = [...requests];
+  const resolvedPackages = new Map();
+
+  while (queue.length > 0) {
+    const request = queue.shift();
+    const source = resolveInstalledDependencyDirectory(
+      request.name,
+      request.fromDirectory
+    );
+
+    if (!source) {
+      if (request.optional) continue;
+
+      throw new Error(
+        `${request.name} is unavailable for isolated dependency proof.`
+      );
+    }
+
+    if (forbidden.has(request.name)) {
+      throw new Error(
+        `${request.name} is reachable through the isolated dependency closure.`
+      );
+    }
+
+    const existingSource = resolvedPackages.get(request.name);
+
+    if (existingSource) {
+      if (existingSource !== source) {
+        throw new Error(
+          `${request.name} resolves to multiple versions in the isolated dependency closure.`
+        );
+      }
+
+      continue;
+    }
+
+    resolvedPackages.set(request.name, source);
+    const packageJson = readJson(join(source, 'package.json'));
+    const optionalPeers = new Set(
+      Object.entries(packageJson.peerDependenciesMeta ?? {})
+        .filter(([, metadata]) => metadata?.optional === true)
+        .map(([name]) => name)
+    );
+
+    for (const name of new Set([
+      ...Object.keys(packageJson.dependencies ?? {}),
+      ...Object.keys(packageJson.peerDependencies ?? {}).filter(
+        (peerName) => !optionalPeers.has(peerName)
+      ),
+    ])) {
+      queue.push({ fromDirectory: source, name });
+    }
+
+    for (const name of Object.keys(packageJson.optionalDependencies ?? {})) {
+      queue.push({ fromDirectory: source, name, optional: true });
+    }
+  }
+
+  for (const [name, source] of resolvedPackages) {
+    const destination = join(destinationNodeModules, ...name.split('/'));
+    ensureDirectory(dirname(destination));
+    cpSync(source, destination, { dereference: true, recursive: true });
+  }
+
+  assertPhysicalDependencyTree(destinationNodeModules, forbidden);
+}
+
+function resolveInstalledDependencyDirectory(packageName, fromDirectory) {
+  let directory = resolve(fromDirectory);
+
+  while (true) {
+    const candidate = join(
+      directory,
+      'node_modules',
+      ...packageName.split('/')
+    );
+
+    if (existsSync(candidate)) return realpathSync(candidate);
+
+    const parent = dirname(directory);
+
+    if (parent === directory) return undefined;
+
+    directory = parent;
+  }
+}
+
+function assertPhysicalDependencyTree(directory, forbiddenPackages) {
+  const queue = [directory];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const absolutePath = join(current, entry.name);
+
+      if (entry.isSymbolicLink()) {
+        throw new Error(
+          `${relative(directory, absolutePath)} links outside the isolated dependency tree.`
+        );
+      }
+
+      if (entry.isDirectory()) {
+        queue.push(absolutePath);
+        continue;
+      }
+
+      if (!entry.isFile() || entry.name !== 'package.json') continue;
+
+      const packageName = readJson(absolutePath).name;
+
+      if (forbiddenPackages.has(packageName)) {
+        throw new Error(
+          `${packageName} is present in the isolated dependency tree.`
+        );
+      }
     }
   }
 }
@@ -1175,10 +1452,13 @@ function isMainModule() {
 }
 
 if (isMainModule()) {
-  checkPliteReleaseArtifacts({ keep: process.argv.includes('--keep') }).catch(
-    (error) => {
-      console.error(error instanceof Error ? error.message : error);
-      process.exit(1);
-    }
-  );
+  try {
+    checkPliteReleaseArtifacts({
+      keep: process.argv.includes('--keep'),
+      packageBoundariesOnly: process.argv.includes('--package-boundaries-only'),
+    });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  }
 }

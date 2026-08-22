@@ -19,10 +19,10 @@ const ExtraExtension = defineExtension('extra', {
 });
 
 type PlainEditor = Editor<Value>;
-type HostOnlyValue = {
+type HostOnlyValue = Array<{
   type: 'host-only';
-  children: { text: string }[];
-}[];
+  children: Array<{ text: string }>;
+}>;
 type SpecialEditor = Editor<Value, readonly [typeof SpecialExtension]>;
 type SpecialExtraEditor = Editor<
   Value,

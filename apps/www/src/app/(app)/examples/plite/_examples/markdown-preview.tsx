@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { type Descendant, NodeApi } from '@platejs/plite';
 import {
   Editable,
@@ -7,12 +6,12 @@ import {
   usePliteEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
-import 'prismjs/components/prism-markdown';
 import { cva } from 'class-variance-authority';
-import Prism from 'prismjs';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/utils/cn';
+
+import { Prism } from './utils/prism-runtime';
 
 const markdownSegmentVariants = cva('plite-markdown-preview-segment', {
   variants: {
@@ -114,8 +113,8 @@ const getTokenLength = (token: string | Prism.Token): number => {
 const collectMarkdownRanges = (
   nodes: readonly Descendant[],
   path: number[] = []
-): PliteRangeDecoration<Record<string, true>>[] => {
-  const ranges: PliteRangeDecoration<Record<string, true>>[] = [];
+): Array<PliteRangeDecoration<Record<string, true>>> => {
+  const ranges: Array<PliteRangeDecoration<Record<string, true>>> = [];
 
   nodes.forEach((node, nodeIndex) => {
     const nodePath = [...path, nodeIndex];

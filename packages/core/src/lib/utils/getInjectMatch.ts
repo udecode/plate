@@ -8,8 +8,8 @@ import type { BaseEditor } from '../editor';
 import type { AnyBasePlugin } from '../plugin';
 
 export const getInjectMatch =
-  <E extends BaseEditor>(
-    editor: E,
+  (
+    editor: BaseEditor,
     plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPlugins'>
   ) =>
   (node: Node, path?: Path) => {

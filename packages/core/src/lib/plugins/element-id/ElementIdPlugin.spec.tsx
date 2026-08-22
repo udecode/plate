@@ -41,7 +41,7 @@ const RootPlugin = defineBasePlugin('elementIdRoot', {
 const createIdFactory = () => {
   let next = 0;
 
-  return () => `element-${++next}`;
+  return () => `element-${(next += 1)}`;
 };
 
 describe('ElementIdPlugin', () => {

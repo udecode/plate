@@ -222,18 +222,18 @@ const createElementSplitChildren = (): Element[] => [
       },
       { text: 'after' },
     ],
-  } as Element,
+  },
 ];
 
 const createVoidBlockPairChildren = (): Element[] => [
   {
     type: 'void-paragraph',
     children: [{ text: 'one' }],
-  } as Element,
+  },
   {
     type: 'void-paragraph',
     children: [{ text: 'two' }],
-  } as Element,
+  },
 ];
 
 const createSelectableVoidBetweenBlocksChildren = (): Element[] => [
@@ -244,7 +244,7 @@ const createSelectableVoidBetweenBlocksChildren = (): Element[] => [
   {
     type: 'video',
     children: [{ text: '' }],
-  } as Element,
+  },
   {
     type: 'paragraph',
     children: [{ text: 'two' }],
@@ -259,7 +259,7 @@ const createNonSelectableBlockChildren = (): Element[] => [
   {
     type: 'non-selectable-block',
     children: [{ text: 'two' }],
-  } as Element,
+  },
   {
     type: 'paragraph',
     children: [{ text: 'three' }],
@@ -270,7 +270,7 @@ const createLeadingNonSelectableBlockChildren = (): Element[] => [
   {
     type: 'non-selectable-block',
     children: [{ text: 'two' }],
-  } as Element,
+  },
   {
     type: 'paragraph',
     children: [{ text: 'three' }],
@@ -285,7 +285,7 @@ const createTrailingNonSelectableBlockChildren = (): Element[] => [
   {
     type: 'non-selectable-block',
     children: [{ text: 'two' }],
-  } as Element,
+  },
 ];
 
 const createNonSelectableInlineChildren = (): Element[] => [
@@ -299,7 +299,7 @@ const createNonSelectableInlineChildren = (): Element[] => [
       },
       { text: 'three' },
     ],
-  } as Element,
+  },
 ];
 
 const createLeadingNonSelectableInlineChildren = (): Element[] => [
@@ -312,7 +312,7 @@ const createLeadingNonSelectableInlineChildren = (): Element[] => [
       },
       { text: 'three' },
     ],
-  } as Element,
+  },
 ];
 
 const createTrailingNonSelectableInlineChildren = (): Element[] => [
@@ -325,7 +325,7 @@ const createTrailingNonSelectableInlineChildren = (): Element[] => [
         children: [{ text: 'two' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createNonSelectableInlineVoidChildren = (): Element[] => [
@@ -339,25 +339,25 @@ const createNonSelectableInlineVoidChildren = (): Element[] => [
       },
       { text: 'three' },
     ],
-  } as Element,
+  },
 ];
 
 const createSingleBlockChildren = (): Element[] => [
   {
     type: 'block',
     children: [{ text: 'one' }],
-  } as Element,
+  },
 ];
 
 const createTwoBlockChildren = (): Element[] => [
   {
     type: 'block',
     children: [{ text: 'one' }],
-  } as Element,
+  },
   {
     type: 'block',
     children: [{ text: 'two' }],
-  } as Element,
+  },
 ];
 
 const createNestedBlockChildren = (): Element[] => [
@@ -369,7 +369,7 @@ const createNestedBlockChildren = (): Element[] => [
         children: [{ text: 'one' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createInlineBlockChildren = (): Element[] => [
@@ -383,7 +383,7 @@ const createInlineBlockChildren = (): Element[] => [
       },
       { text: 'three' },
     ],
-  } as Element,
+  },
 ];
 
 const createNestedInlineChildren = (): Element[] => [
@@ -404,14 +404,14 @@ const createNestedInlineChildren = (): Element[] => [
       },
       { text: 'five' },
     ],
-  } as Element,
+  },
 ];
 
 const createVoidBlockChildren = (): Element[] => [
   {
     type: 'void-block',
     children: [{ text: 'onetwo' }],
-  } as Element,
+  },
 ];
 
 const createVoidInlineChildren = (): Element[] => [
@@ -425,7 +425,7 @@ const createVoidInlineChildren = (): Element[] => [
       },
       { text: 'three' },
     ],
-  } as Element,
+  },
 ];
 
 const createMarkableVoidChildren = (): Element[] => [
@@ -439,7 +439,7 @@ const createMarkableVoidChildren = (): Element[] => [
       },
       { text: '' },
     ],
-  } as Element,
+  },
 ];
 
 it('above exposes the current traversal API', () => {
@@ -462,7 +462,7 @@ it('above exposes the current traversal API', () => {
             ],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -515,7 +515,7 @@ it('mirrors the legacy above/block-lowest.tsx oracle row', () => {
             children: [{ text: 'one ' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -552,7 +552,7 @@ it('mirrors the legacy above/block-highest.tsx oracle row', () => {
             children: [{ text: 'one' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -596,7 +596,7 @@ it('mirrors the legacy above/inline.tsx oracle row', () => {
           },
           { text: 'three' },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -632,7 +632,7 @@ it('mirrors the legacy above/point.tsx oracle row', () => {
             children: [{ text: 'one' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -671,7 +671,7 @@ it('mirrors the legacy above/potential-parent.tsx oracle row', () => {
             children: [{ text: 'two' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -721,7 +721,7 @@ it('mirrors the legacy above/range.tsx oracle row', () => {
             children: [{ text: 'two' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -939,7 +939,7 @@ it('resolves element path edges to nested text points', () => {
           },
           { text: 'd' },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -980,11 +980,11 @@ it('mirrors the legacy string oracle rows', () => {
       {
         type: 'block',
         children: [{ text: 'one' }, { segment: true, text: 'two' }],
-      } as Descendant,
+      },
       {
         type: 'block',
         children: [{ text: 'three' }, { segment: true, text: 'four' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1124,11 +1124,11 @@ it('mirrors the legacy mark-read oracle rows', () => {
           { text: 'bold', bold: true },
           { text: ' plain' },
         ],
-      } as Descendant,
+      },
       {
         type: 'block',
         children: [{ text: 'block two' }],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -1144,15 +1144,15 @@ it('mirrors the legacy mark-read oracle rows', () => {
       {
         type: 'block',
         children: [{ text: 'block one' }],
-      } as Descendant,
+      },
       {
         type: 'block',
         children: [{ text: 'block two', bold: true }],
-      } as Descendant,
+      },
       {
         type: 'block',
         children: [{ text: 'block three', bold: true }],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -1172,11 +1172,11 @@ it('mirrors the legacy mark-read oracle rows', () => {
           { text: 'bold text that isbold', bold: true },
           { text: 'bold italic', bold: true, italic: true },
         ],
-      } as Descendant,
+      },
       {
         type: 'block',
         children: [{ text: 'block two' }],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -1215,7 +1215,7 @@ it('mirrors the legacy mark-read oracle rows', () => {
           { text: 'bold italic', bold: true, italic: true },
           { text: '' },
         ],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -1242,7 +1242,7 @@ it('positions exposes the current point-iteration API across offset, character, 
           },
           { text: 'three' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'four five' }],
@@ -1368,7 +1368,7 @@ it('mirrors the legacy positions/path/inline.tsx oracle row', () => {
           },
           { text: 'three' },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1396,7 +1396,7 @@ it('mirrors the legacy positions/all/inline-fragmentation.tsx oracle row', () =>
           },
           { text: '3' },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1524,7 +1524,7 @@ const unhangOracleCases = [
       {
         type: 'void-block',
         children: [{ text: 'This void paragraph gets skipped over' }],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: '' }],
@@ -1555,7 +1555,7 @@ const unhangOracleCases = [
       {
         type: 'void-block',
         children: [{ text: '' }],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: '' }],
@@ -1586,7 +1586,7 @@ const unhangOracleCases = [
       {
         type: 'void-block',
         children: [{ text: 'This is the third paragraph' }],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: '' }],
@@ -1616,7 +1616,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: '' }],
@@ -1646,7 +1646,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [
@@ -1657,7 +1657,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: '' }],
@@ -1687,7 +1687,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'This is the second paragraph' }],
@@ -1717,7 +1717,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [
@@ -1728,7 +1728,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'This is the third paragraph' }],
@@ -1761,7 +1761,7 @@ const unhangOracleCases = [
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'Another block' }],
@@ -1810,7 +1810,7 @@ it('nodes supports pass and universal on the current traversal contract', () => 
             children: [{ text: 'one' }],
           },
         ],
-      } as Descendant,
+      },
       {
         type: 'section',
         children: [
@@ -1826,7 +1826,7 @@ it('nodes supports pass and universal on the current traversal contract', () => 
             children: [{ text: 'three' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1907,7 +1907,7 @@ it('state node query helpers keep lazy traversal and early-exit first-match chec
       {
         type: 'target',
         children: [{ text: 'one' }],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'two' }],
@@ -1915,7 +1915,7 @@ it('state node query helpers keep lazy traversal and early-exit first-match chec
       {
         type: 'target',
         children: [{ text: 'three' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2005,7 +2005,7 @@ it('nodes covers sibling and range traversal for nested inline documents', () =>
           },
           { text: 'A4' },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'B1' }],
@@ -2195,7 +2195,7 @@ it('resolves nested list ancestry and terminal list-item paths', () => {
             ],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2252,7 +2252,7 @@ it('nodes exposes nested text leaves and text content for element queries', () =
           },
           { text: 'Qux' },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2290,11 +2290,11 @@ it('nodes reverse returns the exact inverse of forward matches', () => {
             children: [{ text: 'd' }],
           },
         ],
-      } as Descendant,
+      },
       {
         type: 'paragraph',
         children: [{ text: 'e' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2325,7 +2325,7 @@ it('positions exposes selectable voids atomically and enters void content only w
       {
         type: 'block-mention',
         children: [{ text: 'onetwothree' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2434,7 +2434,7 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
           },
           { text: ' three' },
         ],
-      } as Descendant,
+      },
       {
         type: 'quote',
         children: [
@@ -2443,7 +2443,7 @@ it('Editor exposes a narrowed static read/query layer for the current public sur
             children: [{ text: 'four' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2627,7 +2627,7 @@ it('mirrors the legacy editorLevels/success.tsx oracle row', () => {
       {
         type: 'element',
         children: [{ text: '' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2653,7 +2653,7 @@ it('mirrors the legacy editorLevels/reverse.tsx oracle row', () => {
       {
         type: 'element',
         children: [{ text: '' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2683,7 +2683,7 @@ it('mirrors the legacy editorLevels/match.tsx oracle row', () => {
         type: 'element',
         a: true,
         children: [{ text: '', a: true }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2717,7 +2717,7 @@ it('mirrors the legacy editorLevels/voids-false.tsx oracle row', () => {
       {
         type: 'void-element',
         children: [{ text: '' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -2742,7 +2742,7 @@ it('mirrors the legacy editorLevels/voids-true.tsx oracle row', () => {
       {
         type: 'void-element',
         children: [{ text: '' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -3286,7 +3286,7 @@ it('supports editorBefore and editorAfter with voids: true on range and split-vo
       {
         type: 'void-paragraph',
         children: [{ text: 'onetwo' }],
-      } as Element,
+      },
     ],
     selection: null,
   });
@@ -3431,7 +3431,7 @@ it('supports character movement around inline voids as atomic boundaries', () =>
           },
           { text: '!' },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });

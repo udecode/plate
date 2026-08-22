@@ -8,12 +8,12 @@ const setDocsSearchMock = mock(() => {});
 let docsSearchMockState: {
   data:
     | 'empty'
-    | {
+    | Array<{
         content: string;
         id: string;
         type: string;
         url: string;
-      }[];
+      }>;
   isLoading: boolean;
   search: string;
 } = {

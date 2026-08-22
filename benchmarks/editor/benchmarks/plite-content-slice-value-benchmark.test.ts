@@ -27,14 +27,14 @@ describe('ContentSlice value benchmark authority', () => {
       openStart: 0,
     });
 
-    source[0]!.children[0] = { text: 'after' };
+    source[0].children[0] = { text: 'after' };
 
     assert.deepEqual(closed.content, [
       { children: [{ text: 'before' }], type: 'paragraph' },
     ]);
     assert.deepEqual(decoded.content, closed.content);
     assert.notEqual(closed.content, source);
-    assert.equal(Object.isFrozen(closed.content[0]!.children[0]), true);
+    assert.equal(Object.isFrozen(closed.content[0].children[0]), true);
     assert.equal(ContentSlice.fromJSON(closed), closed);
     assert.equal(ContentSlice.fromJSON(decoded), decoded);
   });
@@ -55,14 +55,14 @@ describe('ContentSlice value benchmark authority', () => {
 
     assert.equal(targets.length, 1);
     assert.match(
-      targets[0]!.command,
+      targets[0].command,
       /plite-content-slice-value-benchmark\.ts/u
     );
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_content_slice_value_trusted_identity_reuse'
     );
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/plite-content-slice-value-benchmark.json',
         required: true,

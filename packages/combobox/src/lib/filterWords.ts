@@ -33,6 +33,8 @@ export const filterWords = (
           return false;
         }
       }
+
+      return undefined;
     })();
 
     return haystackWords.some((unslicedHaystackWord) => {

@@ -19,6 +19,12 @@ const headingItemVariants = cva(
   }
 );
 
+const DOCX_DEPTH_INDENT: Record<number, string> = {
+  1: '0',
+  2: '24pt',
+  3: '48pt',
+};
+
 export function TocElementStatic(
   props: PliteElementProps<typeof BaseTocPlugin>
 ) {
@@ -65,12 +71,6 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
-  const depthIndent: Record<number, string> = {
-    1: '0',
-    2: '24pt',
-    3: '48pt',
-  };
-
   return (
     <PliteElement {...props}>
       <div
@@ -85,7 +85,7 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
               key={item.key}
               style={{
                 margin: '4pt 0',
-                paddingLeft: depthIndent[item.depth] || '0',
+                paddingLeft: DOCX_DEPTH_INDENT[item.depth] || '0',
               }}
             >
               <a

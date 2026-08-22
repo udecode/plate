@@ -87,7 +87,7 @@ describe('mergeDeepToNodes', () => {
       mergeDeepToNodes({
         node: node as any,
         match: NodeApi.isDescendant,
-        source: () => ({ order: ++calls }),
+        source: () => ({ order: (calls += 1) }),
       });
 
       expect(calls).toBe(5);

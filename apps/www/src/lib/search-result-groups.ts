@@ -3,7 +3,7 @@ import type { SortedResult } from 'fumadocs-core/search';
 const API_DOCS_PATH_REGEX = /^\/(?:cn\/)?docs\/api(?:\/|$)/;
 const DOCS_PATH_REGEX = /^\/(?:cn\/)?docs(?:\/|$)/;
 
-export type SearchResult = SortedResult<string> & {
+export type SearchResult = SortedResult & {
   section?: 'docsApi';
 };
 export type SearchResultGroup =

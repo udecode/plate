@@ -168,7 +168,7 @@ describe('editor value codec contract', () => {
       initial: () => null as unknown,
       persist: jsonCodec,
     });
-    const sparse = Array.from({ length: 1 }) as unknown[];
+    const sparse = Array.from({ length: 1 });
     const subclass = new (class extends Array<unknown> {})();
     const symbolKey = { value: true } as Record<PropertyKey, unknown>;
     const accessor = {} as Record<string, unknown>;

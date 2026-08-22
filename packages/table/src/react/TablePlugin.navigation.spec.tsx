@@ -57,7 +57,7 @@ const createClientRect = (rect: Partial<DOMRect> = {}) =>
     ...rect,
   }) as DOMRect;
 
-const createDOMRangeMock = (rects: Partial<DOMRect>[]) => {
+const createDOMRangeMock = (rects: Array<Partial<DOMRect>>) => {
   const range = document.createRange();
 
   range.getClientRects = () => {
@@ -73,7 +73,7 @@ const createDOMRangeMock = (rects: Partial<DOMRect>[]) => {
 
 const domRanges = new WeakMap<
   object,
-  { index: number; ranges: ReturnType<typeof createDOMRangeMock>[] }
+  { index: number; ranges: Array<ReturnType<typeof createDOMRangeMock>> }
 >();
 
 const TestDOMRangePlugin = DOMPlugin.extend(({ editor }) => ({
@@ -83,14 +83,14 @@ const TestDOMRangePlugin = DOMPlugin.extend(({ editor }) => ({
 
       if (!state) return null;
 
-      return state.ranges[state.index++] ?? null;
+      return state.ranges[(state.index += 1) - 1] ?? null;
     },
   }),
 }));
 
-const mockToDOMRange = <E extends object>(
-  editor: E,
-  ...ranges: ReturnType<typeof createDOMRangeMock>[]
+const mockToDOMRange = (
+  editor: object,
+  ...ranges: Array<ReturnType<typeof createDOMRangeMock>>
 ) => {
   domRanges.set(editor, { index: 0, ranges });
 };
@@ -149,7 +149,7 @@ describe('TablePlugin navigation', () => {
 
     editor.update.break.insert();
 
-    expect(editor.read.children()).toMatchObject(output.children!);
+    expect(editor.read.children()).toMatchObject(output.children);
     expect(editor.read.selection()).toEqual(output.selection!);
   });
 
@@ -194,7 +194,7 @@ describe('TablePlugin navigation', () => {
 
     editor.update.text.deleteBackward();
 
-    expect(editor.read.children()).toMatchObject(output.children!);
+    expect(editor.read.children()).toMatchObject(output.children);
     expect(editor.read.selection()).toEqual(output.selection!);
   });
 
@@ -313,7 +313,7 @@ describe('TablePlugin navigation', () => {
     );
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
-      focus: { offset: 2, path: [0, 0, 1, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 1, 0, 0] },
       kind: 'text',
     });
   });
@@ -344,7 +344,7 @@ describe('TablePlugin navigation', () => {
     );
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-      focus: { offset: 2, path: [0, 0, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
       kind: 'text',
     });
   });

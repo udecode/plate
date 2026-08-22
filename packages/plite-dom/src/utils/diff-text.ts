@@ -35,7 +35,7 @@ export type TextDiff = {
   diff: StringDiff;
 };
 
-const getPendingDiffRoot = (editor?: EditorType<any>) =>
+const getPendingDiffRoot = (editor?: EditorType) =>
   editor?.read((state) => state.view.root()) ?? MAIN_ROOT_KEY;
 
 /**
@@ -43,7 +43,7 @@ const getPendingDiffRoot = (editor?: EditorType<any>) =>
  * recover the pending selection.
  */
 export function verifyDiffState(
-  editor: EditorType<any>,
+  editor: EditorType,
   textDiff: TextDiff
 ): boolean {
   const { path, diff } = textDiff;
@@ -74,8 +74,8 @@ export function verifyDiffState(
 /** Apply one or more string diffs to a text value in order. */
 export function applyStringDiff(text: string, ...diffs: StringDiff[]) {
   return diffs.reduce(
-    (text, diff) =>
-      text.slice(0, diff.start) + diff.text + text.slice(diff.end),
+    (innerText, diff) =>
+      innerText.slice(0, diff.start) + diff.text + innerText.slice(diff.end),
     text
   );
 }
@@ -181,10 +181,7 @@ export function targetRange(textDiff: TextDiff): Range {
  * marks we have to 'walk' the offset from the starting position to ensure we still
  * have a valid point inside the document
  */
-export function normalizePoint(
-  editor: EditorType<any>,
-  point: Point
-): Point | null {
+export function normalizePoint(editor: EditorType, point: Point): Point | null {
   let { path, offset } = point;
   if (!editorHasPath(editor, path)) {
     return null;
@@ -225,10 +222,7 @@ export function normalizePoint(
 /**
  * Normalize a 'pending selection' to ensure it's valid in the current document model.
  */
-export function normalizeRange(
-  editor: EditorType<any>,
-  range: Range
-): Range | null {
+export function normalizeRange(editor: EditorType, range: Range): Range | null {
   const anchor = normalizePoint(editor, range.anchor);
   if (!anchor) {
     return null;
@@ -246,7 +240,7 @@ export function normalizeRange(
   return { anchor, focus };
 }
 
-const getPendingPointRoot = (editor: EditorType<any>, point: Point) =>
+const getPendingPointRoot = (editor: EditorType, point: Point) =>
   toInternalRoot(point.root ?? editor.read((state) => state.view.root()));
 
 const stripImplicitPendingPointRoot = (
@@ -288,7 +282,7 @@ const nodeAt = (
 };
 
 const mapPointThroughChange = (
-  editor: EditorType<any>,
+  editor: EditorType,
   point: Point,
   context: PendingDocumentChange,
   association: -1 | 1
@@ -320,7 +314,7 @@ const mapPointThroughChange = (
 };
 
 export function transformPendingPoint(
-  editor: EditorType<any>,
+  editor: EditorType,
   point: Point,
   context: PendingDocumentChange
 ): Point | null {
@@ -381,7 +375,7 @@ export function transformPendingPoint(
 }
 
 export function transformPendingRange(
-  editor: EditorType<any>,
+  editor: EditorType,
   range: Range,
   context: PendingDocumentChange
 ): Range | null {
@@ -405,7 +399,7 @@ export function transformPendingRange(
 export function transformTextDiff(
   textDiff: TextDiff,
   context: PendingDocumentChange,
-  editor?: EditorType<any>
+  editor?: EditorType
 ): TextDiff | null {
   const { path, diff, id } = textDiff;
   const root = getPendingDiffRoot(editor);

@@ -1,6 +1,7 @@
 import type { Path } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 import { useClaimEditableDOMCommit } from '@platejs/plite-react/internal';
+import { failInvariant } from '@platejs/plite/internal';
 import React from 'react';
 
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
@@ -30,8 +31,9 @@ function ElementContent({
   editor,
   plugin,
   pluginContext,
-  ...props
+  ...initialProps
 }: PlateElementRenderProps & { pluginContext?: Record<string, unknown> }) {
+  let props = initialProps;
   const readOnly = useEditorReadOnly();
 
   useClaimEditableDOMCommit();
@@ -44,47 +46,75 @@ function ElementContent({
 
   props = getRenderNodeProps({
     editor,
-    plugin: plugin as AnyResolvedPlatePlugin,
+    plugin,
     pluginContext,
     props: props as any,
     readOnly,
-  }) as any;
+  });
+  const { path: _path, ...nodeProps } = props;
 
   let children = _children;
 
   getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
     const wrapperContext = createPluginContext(editor, name);
-    const { plugin } = wrapperContext;
-    const renderBelow = plugin.render.belowNodes!;
+    const { plugin: innerPlugin } = wrapperContext;
+    const renderBelow =
+      innerPlugin.render.belowNodes ??
+      failInvariant('Expected value to be defined');
+    const wrapperProps = { ...nodeProps, renderPath: _path };
 
     // belowNodes can have hooks
-    const wrap = renderBelow({ ...props, ...wrapperContext } as any);
+    const wrap = renderBelow({ ...wrapperProps, ...wrapperContext });
 
-    if (wrap && !isEditOnly(readOnly, plugin, 'render')) {
-      children = wrap({ ...props, children } as any);
+    if (wrap && !isEditOnly(readOnly, innerPlugin, 'render')) {
+      children = wrap({ ...wrapperProps, children });
     }
   });
 
   const defaultProps = Component ? {} : { as: plugin.render?.as };
 
   let component: React.ReactNode = (
-    <Element {...defaultProps} {...props}>
+    <Element {...defaultProps} {...nodeProps}>
       {children}
 
-      <BelowRootNodes {...defaultProps} {...props} />
+      <BelowRootNodes {...defaultProps} {...nodeProps} />
     </Element>
   );
 
   getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((name) => {
     const wrapperContext = createPluginContext(editor, name);
-    const { plugin } = wrapperContext;
-    const renderAbove = plugin.render.aboveNodes!;
+    const { plugin: innerPlugin2 } = wrapperContext;
+    const renderAbove =
+      innerPlugin2.render.aboveNodes ??
+      failInvariant('Expected value to be defined');
+    const matchProps = {
+      editor,
+      element: nodeProps.element,
+      renderPath: _path,
+    };
+
+    if (typeof renderAbove !== 'function') {
+      if (renderAbove.match && !renderAbove.match(matchProps)) return;
+      if (isEditOnly(readOnly, innerPlugin2, 'render')) return;
+
+      const wrapperProps = { ...nodeProps, renderPath: _path };
+      const InnerComponent = renderAbove.component;
+
+      component = (
+        <InnerComponent {...wrapperProps} {...(wrapperContext as any)}>
+          {component}
+        </InnerComponent>
+      );
+
+      return;
+    }
+    const wrapperProps = { ...nodeProps, renderPath: _path };
 
     // aboveNodes can have hooks
-    const wrap = renderAbove({ ...props, ...wrapperContext } as any);
+    const wrap = renderAbove({ ...wrapperProps, ...wrapperContext });
 
-    if (wrap && !isEditOnly(readOnly, plugin, 'render')) {
-      component = wrap({ ...props, children: component } as any);
+    if (wrap && !isEditOnly(readOnly, innerPlugin2, 'render')) {
+      component = wrap({ ...wrapperProps, children: component });
     }
   });
 
@@ -103,7 +133,9 @@ export function BelowRootNodes({ ...props }: any) {
 
         if (isEditOnly(readOnly, plugin, 'render')) return null;
 
-        const Component = plugin.render.belowRootNodes!;
+        const Component =
+          plugin.render.belowRootNodes ??
+          failInvariant('Expected value to be defined');
 
         return <Component {...props} {...pluginContext} key={name} />;
       })}
@@ -131,10 +163,10 @@ export const pluginRenderElement = (
         scope={plugin.name}
       >
         <ElementContent
+          {...props}
           editor={editor}
           plugin={plugin}
           pluginContext={pluginContext}
-          {...(props as any)}
         />
       </ElementProvider>
     );

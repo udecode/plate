@@ -97,8 +97,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
 {
   const rangeEditor = createBaseEditor({ plugins: [BaseAIPlugin] });
-  const findTextRangeInBlock =
-    rangeEditor.plugin(BaseAIPlugin).api.findTextRangeInBlock;
+  const { findTextRangeInBlock } = rangeEditor.plugin(BaseAIPlugin).api;
   const block = (children: Descendant[]): NodeEntry => [
     { children, type: 'paragraph' },
     [0],
@@ -440,7 +439,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
       expect(
         editor.plugin(BaseAIPlugin).update.beginPreview({
-          originalBlocks: [structuredClone(initialValue[0]!)],
+          originalBlocks: [structuredClone(initialValue[0])],
         })
       ).toBe(true);
 
@@ -491,7 +490,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
       editor.update.selection.clear();
       editor.plugin(BaseAIPlugin).update.beginPreview({
-        originalBlocks: [structuredClone(editor.read.children()[0]!)],
+        originalBlocks: [structuredClone(editor.read.children()[0])],
       });
       installPreview({
         selection: {
@@ -511,7 +510,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       const initialSelection = structuredClone(editor.read.selection());
 
       editor.plugin(BaseAIPlugin).update.beginPreview({
-        originalBlocks: [structuredClone(initialValue[0]!)],
+        originalBlocks: [structuredClone(initialValue[0])],
       });
       installPreview();
 
@@ -743,7 +742,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
     it('cancels an active preview before touching AI history', () => {
       const editor = createEditor();
-      const original = structuredClone(editor.read.children()[0]!);
+      const original = structuredClone(editor.read.children()[0]);
 
       editor
         .plugin(BaseAIPlugin)

@@ -28,9 +28,9 @@ const editorText = (editor: {
   read: <T>(fn: (state: { nodes: { children: () => Descendant[] } }) => T) => T;
 }) =>
   editor.read((state) => {
-    const [firstBlock] = state.nodes.children() as {
-      children: { text: string }[];
-    }[];
+    const [firstBlock] = state.nodes.children() as Array<{
+      children: Array<{ text: string }>;
+    }>;
 
     return firstBlock?.children[0]?.text ?? '';
   });
@@ -133,7 +133,7 @@ describe('usePliteHistory', () => {
       });
     });
 
-    const events: { id?: string | null }[] = [];
+    const events: Array<{ id?: string | null }> = [];
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
 
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
@@ -168,14 +168,14 @@ describe('usePliteHistory', () => {
     let headerEditor!: ReturnType<typeof usePliteRootEditor>;
 
     const TitleInput = () => {
-      const history = usePliteHistory({
+      const innerHistory = usePliteHistory({
         focusPolicy: 'preserve',
         root: 'header',
       });
       headerEditor = usePliteRootEditor('header');
 
       return (
-        <input aria-label="Document title" onKeyDown={history.onKeyDown} />
+        <input aria-label="Document title" onKeyDown={innerHistory.onKeyDown} />
       );
     };
 
@@ -214,14 +214,14 @@ describe('usePliteHistory', () => {
     let sharedEditor!: ReturnType<typeof usePliteRootEditor>;
 
     const Controls = () => {
-      const history = usePliteHistory({
+      const innerHistory2 = usePliteHistory({
         focusPolicy: 'restore-root',
         root: 'shared',
       });
       sharedEditor = usePliteRootEditor('shared');
 
       return (
-        <button onClick={history.undo} type="button">
+        <button onClick={innerHistory2.undo} type="button">
           Undo shared root
         </button>
       );

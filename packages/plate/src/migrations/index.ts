@@ -2,7 +2,6 @@ import type { DocumentMigration } from '@platejs/core';
 import {
   type Descendant,
   type EditorCoreStateView,
-  type EditorDocumentValue,
   type Element,
   ElementApi,
   type NodeEntry,
@@ -20,6 +19,12 @@ import {
 export { migratePlateV55 } from './migratePlateV55';
 
 const LEGACY_HEADING_TYPE_RE = /^h([1-6])$/;
+
+const formatMigrationValue = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+
+  return JSON.stringify(value) ?? 'unknown';
+};
 
 type MigrationListSiblingState = {
   nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
@@ -209,7 +214,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
       current !== migrated
     ) {
       throw new Error(
-        `Legacy script mark at ${location} conflicts with ${scriptKey} "${String(current)}".`
+        `Legacy script mark at ${location} conflicts with ${scriptKey} "${formatMigrationValue(current)}".`
       );
     }
 
@@ -240,7 +245,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
     }
 
     let changed = false;
-    let type = input.type;
+    let { type } = input;
 
     if (
       (type === 'th' || type === 'tableCellHeader') &&
@@ -296,7 +301,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
       }
       const { align, ...properties } = element;
 
-      element = { ...properties, textAlign: align } as Element;
+      element = { ...properties, textAlign: align };
     }
 
     const legacyHeading = LEGACY_HEADING_TYPE_RE.exec(input.type);
@@ -309,7 +314,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
           `Plate v53 migration collision at ${location}: heading "${input.type}" conflicts with level "${String(element.level)}".`
         );
       }
-      if (element.level !== level) element = { ...element, level } as Element;
+      if (element.level !== level) element = { ...element, level };
     }
 
     if (codeBlockType && element.type === codeBlockType) {
@@ -356,7 +361,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
                 (_, offset) => occupiedRows[column + offset] ?? 0
               ).some((remaining) => remaining > 0)
             ) {
-              column++;
+              column += 1;
             }
             const rowSpan =
               typeof cell.rowSpan === 'number' &&
@@ -408,14 +413,11 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
           (_, index) => widths[index]
         );
 
-        if (
-          normalizedWidths.length > 0 &&
-          normalizedWidths.some((width) => width !== undefined)
-        ) {
+        if (normalizedWidths.some((width) => width !== undefined)) {
           element = {
             ...element,
             columnWidths: normalizedWidths.map((width) => width ?? 0),
-          } as Element;
+          };
         }
       }
     }
@@ -476,7 +478,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
       if (Object.hasOwn(element, 'size') && !ownsTableCellSize) {
         const { size: _size, ...withoutSize } = element;
 
-        element = withoutSize as Element;
+        element = withoutSize;
       }
     }
 
@@ -530,7 +532,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
         element.listStyle !== (listStyle ?? equivalentDefaultStyle)
       ) {
         throw new Error(
-          `Plate v53 migration collision at ${location}: listStyleType "${legacyStyle}" conflicts with listStyle "${String(element.listStyle)}".`
+          `Plate v53 migration collision at ${location}: listStyleType "${legacyStyle}" conflicts with listStyle "${formatMigrationValue(element.listStyle)}".`
         );
       }
 
@@ -607,14 +609,14 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
         (Object.hasOwn(next, 'listRestart') || Object.hasOwn(next, 'listStart'))
       ) {
         const {
-          listRestart: _listRestart,
-          listStart: _listStart,
+          listRestart: inner_listRestart,
+          listStart: inner_listStart,
           ...withoutStart
         } = next;
 
-        element = withoutStart as Element;
+        element = withoutStart;
       } else {
-        element = next as Element;
+        element = next;
       }
     }
 
@@ -661,8 +663,8 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
 
       element =
         isUpload && videoType && element.type === videoType
-          ? ({ ...withoutUpload, provider: 'file' } as Element)
-          : (withoutUpload as Element);
+          ? { ...withoutUpload, provider: 'file' }
+          : withoutUpload;
     }
 
     if (!mediaTypes.has(element.type)) return element;
@@ -684,7 +686,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
       element = {
         ...properties,
         ...(Object.hasOwn(element, 'url') ? {} : { url: '' }),
-      } as Element;
+      };
     }
     if (
       !Object.hasOwn(element, 'caption') ||
@@ -742,7 +744,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
     return {
       ...migratedElement,
       children: nonEmptySources[0] ?? [{ text: '' }],
-    } as Element;
+    };
   };
 
   const normalizeMigratedListChildren = (
@@ -755,7 +757,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
 
       for (const index of path) {
         node = children[index];
-        if (!node) return;
+        if (!node) return undefined;
         children = ElementApi.isElement(node) ? node.children : [];
       }
 
@@ -771,7 +773,9 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
         ) => {
           const node = getNodeAtPath(path);
 
-          if (!node || (options?.match && !options.match(node, path))) return;
+          if (!node || (options?.match && !options.match(node, path))) {
+            return undefined;
+          }
 
           return [node, path];
         }) as EditorCoreStateView['nodes']['get'],
@@ -789,7 +793,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
     const getPreviousEntry =
       configuredListSiblingOptions?.getPreviousEntry ??
       (([, path]: NodeEntry<Element>) => {
-        if (!PathApi.hasPrevious(path)) return;
+        if (!PathApi.hasPrevious(path)) return undefined;
 
         return state.nodes.get(PathApi.previous(path), {
           match: ElementApi.isElement,
@@ -822,15 +826,15 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
             isHeading(previousElement) !== isHeading(element)) ||
           breakQuery?.(previousElement, element)
         ) {
-          return;
+          return undefined;
         }
-        if (breakOnLowerIndent && previousIndent < indent) return;
+        if (breakOnLowerIndent && previousIndent < indent) return undefined;
         if (
           breakOnEqIndentNeqList &&
           previousIndent === indent &&
           !sameSequence
         ) {
-          return;
+          return undefined;
         }
         if (
           sameSequence &&
@@ -843,6 +847,8 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
 
         previous = getPreviousEntry(previous, state);
       }
+
+      return undefined;
     };
     let changed = false;
     const normalizeDescendant = (
@@ -876,7 +882,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
         !Object.hasOwn(element, 'listStart') &&
         getPreviousListEntry([descendant, path]) === undefined
       ) {
-        element = { ...element, listStart: metadata.derivedStart } as Element;
+        element = { ...element, listStart: metadata.derivedStart };
       }
 
       if (element !== descendant) changed = true;
@@ -905,7 +911,7 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
   };
 
   const children = migrateChildren(document.children, 'main');
-  let roots = document.roots;
+  let { roots } = document;
 
   if (roots) {
     let changed = false;
@@ -930,5 +936,5 @@ export const migratePlateV54: DocumentMigration = ({ document, editor }) => {
     ...document,
     children,
     ...(roots ? { roots } : {}),
-  } as EditorDocumentValue;
+  };
 };

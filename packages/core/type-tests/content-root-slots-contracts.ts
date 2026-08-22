@@ -26,6 +26,9 @@ declare const figureProps: PlateElementProps<typeof FigurePlugin>;
 
 void figureProps.slots.contentRoot('caption');
 
+// @ts-expect-error Live position is an explicit usePath subscription, not an element prop.
+void figureProps.path;
+
 // @ts-expect-error Content-root slot names are inferred from the element schema.
 void figureProps.slots.contentRoot('notes');
 

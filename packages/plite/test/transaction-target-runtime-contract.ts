@@ -70,8 +70,8 @@ describe('transaction target runtime', () => {
     });
 
     assert.equal(calls, 1);
-    assert.equal(getElementType(editorGetChildren(editor)[0]!), 'paragraph');
-    assert.equal(getElementType(editorGetChildren(editor)[1]!), 'heading-one');
+    assert.equal(getElementType(editorGetChildren(editor)[0]), 'paragraph');
+    assert.equal(getElementType(editorGetChildren(editor)[1]), 'heading-one');
     assert.deepEqual(editorGetSelection(editor), {
       kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
@@ -95,8 +95,8 @@ describe('transaction target runtime', () => {
     });
 
     assert.equal(calls, 0);
-    assert.equal(getElementType(editorGetChildren(editor)[0]!), 'paragraph');
-    assert.equal(getElementType(editorGetChildren(editor)[1]!), 'heading-one');
+    assert.equal(getElementType(editorGetChildren(editor)[0]), 'paragraph');
+    assert.equal(getElementType(editorGetChildren(editor)[1]), 'heading-one');
   });
 
   it('does not invoke target runtime for explicit primitive targets', () => {
@@ -151,17 +151,24 @@ describe('transaction target runtime', () => {
       },
       {
         name: 'wrapNodes',
-        run: (tx) =>
-          tx.nodes.wrap({ type: 'quote', children: [] } as never, {
-            at: [1],
-          }),
+        run: (tx) => {
+          tx.nodes.wrap(
+            { type: 'quote', children: [] },
+            {
+              at: [1],
+            }
+          );
+        },
       },
       {
         name: 'unwrapNodes',
         run: (tx) => {
-          tx.nodes.wrap({ type: 'quote', children: [] } as never, {
-            at: [1],
-          });
+          tx.nodes.wrap(
+            { type: 'quote', children: [] },
+            {
+              at: [1],
+            }
+          );
           tx.nodes.unwrap({
             at: [1, 0],
             match: (node) => NodeApi.isElement(node) && node.type === 'quote',

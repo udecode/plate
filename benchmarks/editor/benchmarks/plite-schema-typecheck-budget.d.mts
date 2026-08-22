@@ -12,12 +12,14 @@ export declare const parseTypeScriptExtendedDiagnostics: (
 export declare const runSchemaTypecheckBudget: (root: any) => Readonly<{
   checkTimeRatio: number;
   instantiationRatio: number;
-  rows: readonly Readonly<{
-    checkMs: number;
-    instantiations: number;
-    memoryBytes: number;
-    totalMs: number;
-    types: number;
-    plugins: number;
-  }>[];
+  rows: ReadonlyArray<
+    Readonly<{
+      checkMs: number;
+      instantiations: number;
+      memoryBytes: number;
+      totalMs: number;
+      types: number;
+      plugins: number;
+    }>
+  >;
 }>;

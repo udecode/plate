@@ -33,7 +33,7 @@ const isPositiveSafeInteger = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
 
 const readPositiveNumber = (value: null | string) => {
-  if (value === null) return;
+  if (value === null) return undefined;
 
   const parsed = Number(value);
 
@@ -95,11 +95,11 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
           decode: ({ element }) => {
             const image = element.querySelector<HTMLElement>(':scope > img');
 
-            if (!image) return;
+            if (!image) return undefined;
 
             const url = image.getAttribute('src');
 
-            if (!url) return;
+            if (!url) return undefined;
 
             const alt = image.getAttribute('alt');
             return {
@@ -143,11 +143,13 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
         },
         {
           decode: ({ element }) => {
-            if (element.parentElement?.matches('figure.plate-image')) return;
+            if (element.parentElement?.matches('figure.plate-image')) {
+              return undefined;
+            }
 
             const url = element.getAttribute('src');
 
-            if (!url) return;
+            if (!url) return undefined;
 
             const alt = element.getAttribute('alt');
             return {
@@ -288,7 +290,7 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
               figcaption?.type !== 'mdxJsxFlowElement' ||
               figcaption.name !== 'figcaption'
             ) {
-              return;
+              return undefined;
             }
 
             const { src, ...properties } = parseAttributes(image.attributes);
@@ -364,10 +366,10 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
               for (const file of imageFiles) {
                 const reader = new FileReader();
 
-                reader.addEventListener('load', async () => {
+                const insertImage = async () => {
                   if (typeof reader.result !== 'string') return;
 
-                  const uploadImage = store.get().uploadImage;
+                  const { uploadImage } = store.get();
                   const url = uploadImage
                     ? await uploadImage(reader.result)
                     : reader.result;
@@ -383,6 +385,10 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
                       at: blockPath ? PathApi.next(blockPath) : undefined,
                     }
                   );
+                };
+
+                reader.addEventListener('load', () => {
+                  void insertImage();
                 });
                 reader.readAsDataURL(file);
               }

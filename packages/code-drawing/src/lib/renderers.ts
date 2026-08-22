@@ -4,7 +4,12 @@ import type { CodeDrawingLanguage } from './BaseCodeDrawingPlugin';
  * Convert SVG string to data URL
  */
 function svgToDataUrl(svg: string): string {
-  return `data:image/svg+xml;base64,${window.btoa(unescape(encodeURIComponent(svg)))}`;
+  const bytes = new TextEncoder().encode(svg);
+  let binary = '';
+
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+
+  return `data:image/svg+xml;base64,${window.btoa(binary)}`;
 }
 
 /**
@@ -37,12 +42,13 @@ async function renderPlantUml(content: string): Promise<string> {
  */
 async function renderGraphviz(content: string): Promise<string> {
   try {
-    const Viz = (await import('viz.js')).default;
+    const vizModule = await import('viz.js');
+    const Viz = vizModule.default;
     let fullRender: typeof import('viz.js/full.render.js');
 
     try {
       fullRender = await import('viz.js/full.render.js');
-    } catch (_importError) {
+    } catch {
       fullRender = await import('viz.js/full.render');
     }
 
@@ -66,7 +72,8 @@ async function renderGraphviz(content: string): Promise<string> {
 async function renderFlowchart(content: string): Promise<string> {
   try {
     // Dynamic import of flowchart.js
-    const flowchart = (await import('flowchart.js')).default;
+    const flowchartModule = await import('flowchart.js');
+    const flowchart = flowchartModule.default;
 
     const chart = flowchart.parse(content);
     const el = document.createElement('div');
@@ -75,7 +82,7 @@ async function renderFlowchart(content: string): Promise<string> {
 
     chart.drawSVG(el);
     const svg = el.innerHTML;
-    document.body.removeChild(el);
+    el.remove();
 
     return svgToDataUrl(svg);
   } catch (error) {
@@ -128,15 +135,20 @@ export async function renderCodeDrawing(
   }
 
   switch (language) {
-    case 'plantuml':
+    case 'plantuml': {
       return renderPlantUml(content);
-    case 'graphviz':
+    }
+    case 'graphviz': {
       return renderGraphviz(content);
-    case 'flowchart':
+    }
+    case 'flowchart': {
       return renderFlowchart(content);
-    case 'mermaid':
+    }
+    case 'mermaid': {
       return renderMermaid(content);
-    default:
-      throw new Error(`Unsupported drawing language: ${language}`);
+    }
+    default: {
+      throw new Error(`Unsupported drawing language: ${String(language)}`);
+    }
   }
 }

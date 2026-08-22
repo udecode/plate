@@ -40,7 +40,7 @@ export const getEditorSchemaIdentity = (
       );
     }
 
-    return;
+    return undefined;
   }
   if (
     typeof schema.id !== 'string' ||

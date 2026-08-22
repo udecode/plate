@@ -320,7 +320,7 @@ test('plain-text inline wrappers reject undeclared closed-schema properties', ()
   const diagnostics: EditorLifecycleError[] = [];
   let captures = 0;
   const editor = createInlineCodecEditor(
-    () => captures++,
+    () => (captures += 1) - 1,
     (diagnostic) => diagnostics.push(diagnostic)
   );
   const data = new DataTransferStub();
@@ -399,7 +399,7 @@ test('host codec configuration order is deterministic per format', () => {
   const output = new DataTransferStub();
 
   input.setData('text/html', '<p>source</p>');
-  editor.api.dom.clipboard.insertData(input as unknown as DataTransfer);
+  editor.api.dom.clipboard.insertData(input);
   writeHostFragmentData(
     editor,
     output,
@@ -589,7 +589,7 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
   });
   let commits = 0;
 
-  editor.subscribeCommit(() => commits++);
+  editor.subscribeCommit(() => (commits += 1) - 1);
 
   expect(() =>
     editor.update.extensions.reconfigure(slot, articleSchema(2, 'heading'), {
@@ -622,12 +622,11 @@ test('query and parse faults report lifecycle errors then fall through', () => {
       defineHostCodec({
         format: 'text/html',
         key: 'malformed',
-        parse: () =>
-          ({
-            content: [paragraph('invalid')],
-            openEnd: 2,
-            openStart: 2,
-          }) as ContentSlice,
+        parse: () => ({
+          content: [paragraph('invalid')],
+          openEnd: 2,
+          openStart: 2,
+        }),
       }),
       defineHostCodec({
         format: 'text/html',
@@ -695,7 +694,7 @@ test('a failed codec invocation reports once and publishes nothing', () => {
   const data = new DataTransferStub();
   let commits = 0;
 
-  editor.subscribeCommit(() => commits++);
+  editor.subscribeCommit(() => (commits += 1) - 1);
   data.setData('text/html', '<p>invalid</p>');
 
   expect(
@@ -915,7 +914,7 @@ test('host codecs round-trip registered formats', () => {
     serialize,
   });
   const source = createCodecEditor([json]);
-  const target = createCodecEditor([json]);
+  const innerTarget = createCodecEditor([json]);
   const output = new DataTransferStub();
   const value = [
     { children: [{ bold: true, text: 'round trip' }], type: 'paragraph' },
@@ -925,9 +924,9 @@ test('host codecs round-trip registered formats', () => {
   writeHostFragmentData(source, output, ContentSlice.closed(value));
 
   expect(
-    target.api.dom.clipboard.insertData(output as unknown as DataTransfer)
+    innerTarget.api.dom.clipboard.insertData(output as unknown as DataTransfer)
   ).toBe(true);
-  expect(target.read.children()).toEqual(value);
-  expect(NodeApi.string(target.read.children()[0]!)).toBe('round trip');
+  expect(innerTarget.read.children()).toEqual(value);
+  expect(NodeApi.string(innerTarget.read.children()[0])).toBe('round trip');
   expect(serialize).toHaveBeenCalledTimes(1);
 });

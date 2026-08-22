@@ -12,12 +12,12 @@ export function ToggleToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
   const editor = useEditor();
-  const pressed = useEditorSelector((editor) => {
-    const selection = editor.read.selection();
+  const pressed = useEditorSelector((innerEditor) => {
+    const selection = innerEditor.read.selection();
 
     return (
       !!selection &&
-      editor.read.nodes.some({ at: selection, type: BaseTogglePlugin })
+      innerEditor.read.nodes.some({ at: selection, type: BaseTogglePlugin })
     );
   });
 
@@ -35,13 +35,19 @@ export function ToggleToolbarButton(
                 ElementApi.isElement(node) && editor.read.nodes.isBlock(node),
               mode: 'lowest',
             })
-            .map(([, path]) => editor.key(path)!),
+            .flatMap(([, path]) => {
+              const key = editor.key(path);
+
+              return key == null ? [] : [key];
+            }),
           true
         );
         toggle.update.toggle({ collapse: true });
         editor.api.dom.focus();
       }}
-      onMouseDown={(event) => event.preventDefault()}
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       tooltip="Toggle"
     >
       <ListCollapseIcon />

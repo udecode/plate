@@ -25,14 +25,14 @@ const pathKey = (path: Path) => path.join('.');
 const isText = (value: Descendant): value is Text =>
   typeof (value as Text).text === 'string';
 
-const clonePath = (path: Path): Path => Object.freeze([...path]) as Path;
+const clonePath = (path: Path): Path => Object.freeze([...path]);
 
 const comparePaths = (left: Path, right: Path): number => {
   const length = Math.min(left.length, right.length);
 
   for (let index = 0; index < length; index += 1) {
     if (left[index] !== right[index]) {
-      return left[index]! < right[index]! ? -1 : 1;
+      return left[index] < right[index] ? -1 : 1;
     }
   }
 
@@ -117,7 +117,7 @@ const getTextEntryAtPath = (
       continue;
     }
 
-    children = current.children;
+    ({ children } = current);
   }
 
   if (!current || !isText(current)) {
@@ -144,7 +144,7 @@ const getTopLevelBlockTextEntries = (
   const block = snapshot.children[blockIndex];
 
   if (!block) {
-    return Object.freeze([]) as readonly TextEntry[];
+    return Object.freeze([]);
   }
 
   if (isText(block)) {
@@ -156,7 +156,7 @@ const getTopLevelBlockTextEntries = (
 
     return Object.freeze([
       {
-        path: Object.freeze([blockIndex]) as Path,
+        path: Object.freeze([blockIndex]),
         key,
         text: block.text,
       },

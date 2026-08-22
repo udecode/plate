@@ -19,7 +19,7 @@ let createdCellKey = 0;
 
 const createCell: TableCellFactory = ({ header }) => ({
   children: [{ text: '' }],
-  id: `created-${createdCellKey++}`,
+  id: `created-${(createdCellKey += 1) - 1}`,
   type: header ? 'th' : 'td',
 });
 
@@ -33,7 +33,7 @@ const denseTable = (size: number, prefix: string): TableElementWithId => ({
   children: Array.from({ length: size }, (_, row): TableRowElementWithId => ({
     children: Array.from(
       { length: size },
-      (_, col): TableCellElementWithId => ({
+      (innerValue, col): TableCellElementWithId => ({
         children: [{ text: `${row}:${col}` }],
         id: `${prefix}-cell-${row}-${col}`,
         type: 'tableCell',
@@ -76,7 +76,9 @@ const collectGarbage = async () => {
 
   for (let attempt = 0; attempt < 4; attempt++) {
     runtime.Bun?.gc(true);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
   }
 };
 
@@ -152,7 +154,7 @@ describe('PreparedTablePaste benchmark', () => {
       createRow,
       fillBounds: { maxCol: 31, maxRow: 31, minCol: 0, minRow: 0 },
       fitChildren: (_cell, children) => {
-        oneFits++;
+        oneFits += 1;
         return children;
       },
       startCol: 0,
@@ -163,7 +165,7 @@ describe('PreparedTablePaste benchmark', () => {
       createRow,
       fillBounds: { maxCol: 47, maxRow: 47, minCol: 0, minRow: 0 },
       fitChildren: (_cell, children) => {
-        blockFits++;
+        blockFits += 1;
         return children;
       },
       startCol: 0,

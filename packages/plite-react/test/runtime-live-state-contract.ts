@@ -82,7 +82,7 @@ describe('plite-react runtime live state facade', () => {
     let commitCount = 0;
     let lastCommit = editor.read.lastCommit();
     const unsubscribe = editor.subscribeCommit((commit) => {
-      commitCount++;
+      commitCount += 1;
       lastCommit = commit;
     });
 

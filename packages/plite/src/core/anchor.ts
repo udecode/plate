@@ -12,6 +12,7 @@ import { PathApi, type Path } from '../interfaces/path';
 import { PointApi, type Point } from '../interfaces/point';
 import { RangeApi, type Range } from '../interfaces/range';
 import type { Text } from '../interfaces/text';
+import { getDefined } from '../internal/get-defined';
 import {
   type AnchorChangeContext,
   getAnchorStateValue,
@@ -95,7 +96,7 @@ const indexedRoot = (value: JsonEditorValue, root: string) =>
   DocumentIndex.fromValue(rootNodes(value, root));
 
 const readValue = (editor: Editor) =>
-  getEditorDocumentValue(editor) as EditorDocumentValue as JsonEditorValue;
+  getEditorDocumentValue(editor) as JsonEditorValue;
 
 const pointRoot = (point: Point, fallback: RootKey) => point.root ?? fallback;
 
@@ -234,7 +235,7 @@ export function createAnchor<TValue extends AnchorValue>(
         ? indexedRoot(sourceValue, root).nodeRange(pathValue).from
         : indexedRoot(sourceValue, root).childPosition(
             pathValue.slice(0, -1),
-            pathValue.at(-1)!
+            getDefined(pathValue.at(-1))
           )
     : null;
   let pointStates = pointValue
@@ -290,11 +291,7 @@ export function createAnchor<TValue extends AnchorValue>(
       position == null ? null : next.pointAt(position, endpointAssociation);
     const canonicalMapping = canonicalPoint
       ? {
-          point: withPublicPointRoot(
-            canonicalPoint as Point,
-            root,
-            state.includeRoot
-          ),
+          point: withPublicPointRoot(canonicalPoint, root, state.includeRoot),
           runtimeStable:
             runtimePath !== null &&
             PathApi.equals((canonicalPoint as Point).path, runtimePath),
@@ -460,17 +457,14 @@ export function createAnchor<TValue extends AnchorValue>(
           ? nextDocument().nodeRange(nextPath).from
           : nextDocument().childPosition(
               nextPath.slice(0, -1),
-              nextPath.at(-1)!
+              getDefined(nextPath.at(-1))
             )
         : null;
     } else {
       const associations =
         kind === 'point'
           ? ([association === 'backward' ? -1 : 1] as const)
-          : rangeAssociations(
-              current as Range,
-              association as RangeAnchorAssociation
-            );
+          : rangeAssociations(current as Range, association);
 
       const mappedPoints = pointStates.map((state, index) =>
         resolveMappedPoint(
@@ -478,7 +472,7 @@ export function createAnchor<TValue extends AnchorValue>(
           change,
           sourceDocument(),
           nextDocument(),
-          associations[index]!,
+          associations[index],
           context?.replace === true
         )
       );
@@ -486,7 +480,7 @@ export function createAnchor<TValue extends AnchorValue>(
       const nextPointStates = mappedPoints.map((mapped, index) => {
         if (!mapped) return null;
 
-        const previous = pointStates[index]!;
+        const previous = pointStates[index];
         const position = change.mapPosition(previous.position, {
           association: associations[index] === -1 ? 'backward' : 'forward',
           ...(root === 'main' ? {} : { root }),
@@ -521,8 +515,8 @@ export function createAnchor<TValue extends AnchorValue>(
             : null;
       pointStates = current
         ? kind === 'point'
-          ? [nextPointStates[0]!]
-          : [nextPointStates[0]!, nextPointStates[1]!]
+          ? [getDefined(nextPointStates[0])]
+          : [getDefined(nextPointStates[0]), getDefined(nextPointStates[1])]
         : [];
     }
 
@@ -540,25 +534,18 @@ export function createAnchor<TValue extends AnchorValue>(
         });
       },
       change(context) {
-        mapTo(
-          context.after as JsonEditorValue,
-          undefined,
-          context.change,
-          context
-        );
+        mapTo(context.after, undefined, context.change, context);
       },
-      commit(value, commit) {
-        if (value) mapTo(value as JsonEditorValue, commit);
+      commit(innerValue, commit) {
+        if (innerValue) mapTo(innerValue, commit);
         checkpoints.length = 0;
       },
-      discard(value) {
+      discard(innerValue2) {
         const checkpoint = checkpoints.pop();
 
         if (checkpoint) {
-          current = checkpoint.current;
-          pathPosition = checkpoint.pathPosition;
-          pointStates = checkpoint.pointStates;
-          sourceValue = value as JsonEditorValue;
+          ({ current, pathPosition, pointStates } = checkpoint);
+          sourceValue = innerValue2;
           return;
         }
 
@@ -567,7 +554,7 @@ export function createAnchor<TValue extends AnchorValue>(
         current = null;
         pathPosition = null;
         pointStates = [];
-        sourceValue = value as JsonEditorValue;
+        sourceValue = innerValue2;
       },
     },
     () => readValue(runtimeEditor) as unknown as EditorDocumentValue
@@ -591,13 +578,13 @@ export function createAnchor<TValue extends AnchorValue>(
     resolve() {
       if (released) return null;
 
-      const value =
+      const innerValue3 =
         (getAnchorStateValue(runtimeEditor) as JsonEditorValue | undefined) ??
         readValue(runtimeEditor);
 
-      if (value !== sourceValue) {
+      if (innerValue3 !== sourceValue) {
         if (!subscription.isShadowed()) {
-          mapTo(value);
+          mapTo(innerValue3);
         } else {
           const checkpoint = {
             current: cloneAnchorValue(current),
@@ -606,13 +593,10 @@ export function createAnchor<TValue extends AnchorValue>(
             sourceValue,
           };
 
-          mapTo(value);
+          mapTo(innerValue3);
           const resolved = cloneAnchorValue(current);
 
-          current = checkpoint.current;
-          pathPosition = checkpoint.pathPosition;
-          pointStates = checkpoint.pointStates;
-          sourceValue = checkpoint.sourceValue;
+          ({ current, pathPosition, pointStates, sourceValue } = checkpoint);
 
           return resolved as TValue | null;
         }

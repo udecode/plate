@@ -81,7 +81,7 @@ describe('table merge', () => {
       editor.update.table.removeRow();
 
       const table = editor.read.nodes.get([0], { type: BaseTablePlugin });
-      assert(table);
+      assert.ok(table);
 
       expect(table[0].children).toHaveLength(1);
       expect(editor.read.text.string([0])).toBe('3132');
@@ -282,7 +282,7 @@ describe('table merge', () => {
         editor.update.table.insertColumn({ at: [0], select: true });
 
         const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
-        assert(entry);
+        assert.ok(entry);
         const [table] = entry;
         const rows = table.children as TableRowElement[];
 
@@ -389,7 +389,7 @@ describe('table merge', () => {
         editor.update.table.insertRow({ at: [0], select: true });
 
         const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
-        assert(entry);
+        assert.ok(entry);
         expect(entry[0].children).toHaveLength(3);
       });
 

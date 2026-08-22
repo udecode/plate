@@ -241,8 +241,9 @@ const validateReleaseDiscipline = (
     return;
   }
 
+  const completedGuards = new Set(incompleteArtifact.guards);
   const missing = requiredDisciplineGuards.filter(
-    (guard) => !incompleteArtifact.guards.includes(guard)
+    (guard) => !completedGuards.has(guard)
   );
 
   if (missing.length > 0) {
@@ -261,7 +262,7 @@ export const validatePliteBrowserReleaseProof = ({
 
   for (const claim of claims) {
     switch (claim) {
-      case 'android-chrome-device-browser-text-input':
+      case 'android-chrome-device-browser-text-input': {
         validateMobileClaim(
           issues,
           artifacts,
@@ -269,7 +270,8 @@ export const validatePliteBrowserReleaseProof = ({
           'device-browser-text-input'
         );
         break;
-      case 'android-chrome-device-browser-ime-commit':
+      }
+      case 'android-chrome-device-browser-ime-commit': {
         validateMobileClaim(
           issues,
           artifacts,
@@ -277,7 +279,8 @@ export const validatePliteBrowserReleaseProof = ({
           'device-browser-ime-commit'
         );
         break;
-      case 'ios-safari-device-browser-text-input':
+      }
+      case 'ios-safari-device-browser-text-input': {
         validateMobileClaim(
           issues,
           artifacts,
@@ -285,7 +288,8 @@ export const validatePliteBrowserReleaseProof = ({
           'device-browser-text-input'
         );
         break;
-      case 'ios-safari-device-browser-ime-commit':
+      }
+      case 'ios-safari-device-browser-ime-commit': {
         validateMobileClaim(
           issues,
           artifacts,
@@ -293,7 +297,8 @@ export const validatePliteBrowserReleaseProof = ({
           'device-browser-ime-commit'
         );
         break;
-      case 'native-mobile-clipboard':
+      }
+      case 'native-mobile-clipboard': {
         validateMobileClaim(
           issues,
           artifacts,
@@ -307,12 +312,15 @@ export const validatePliteBrowserReleaseProof = ({
           'native-mobile-clipboard'
         );
         break;
-      case 'persistent-browser-caret-soak':
+      }
+      case 'persistent-browser-caret-soak': {
         validatePersistentSoak(issues, artifacts, requiredSoakIterations);
         break;
-      case 'release-discipline-guards':
+      }
+      case 'release-discipline-guards': {
         validateReleaseDiscipline(issues, artifacts, requiredDisciplineGuards);
         break;
+      }
     }
   }
 

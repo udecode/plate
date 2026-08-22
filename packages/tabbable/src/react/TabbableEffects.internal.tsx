@@ -10,6 +10,49 @@ import { tabbable } from 'tabbable';
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
 import { TabbablePlugin } from './TabbablePlugin';
 
+type TabbableDOMNode = ReturnType<typeof tabbable>[number];
+
+export function createTabIndexRestorationQueue() {
+  const pending = new Map<
+    TabbableDOMNode,
+    { oldTabIndex: string | null; timeout: ReturnType<typeof setTimeout> }
+  >();
+  const restore = (domNode: TabbableDOMNode) => {
+    const restoration = pending.get(domNode);
+
+    if (!restoration) return;
+    if (restoration.oldTabIndex !== null) {
+      domNode.setAttribute('tabindex', restoration.oldTabIndex);
+    } else {
+      domNode.removeAttribute('tabindex');
+    }
+    pending.delete(domNode);
+  };
+
+  return {
+    defer(domNode: TabbableDOMNode) {
+      const pendingRestoration = pending.get(domNode);
+      const oldTabIndex = pendingRestoration
+        ? pendingRestoration.oldTabIndex
+        : domNode.getAttribute('tabindex');
+
+      if (pendingRestoration) clearTimeout(pendingRestoration.timeout);
+      domNode.setAttribute('tabindex', '-1');
+
+      const timeout = setTimeout(() => {
+        restore(domNode);
+      }, 0);
+      pending.set(domNode, { oldTabIndex, timeout });
+    },
+    restoreAll() {
+      for (const [domNode, { timeout }] of pending) {
+        clearTimeout(timeout);
+        restore(domNode);
+      }
+    },
+  };
+}
+
 export function TabbableEffects() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
@@ -19,11 +62,13 @@ export function TabbableEffects() {
   );
 
   React.useEffect(() => {
-    if (readOnly) return;
+    if (readOnly) return undefined;
 
     const editorDOMNode = editor.api.dom.editable();
 
-    if (!editorDOMNode) return;
+    if (!editorDOMNode) return undefined;
+
+    const tabIndexRestorationQueue = createTabIndexRestorationQueue();
 
     const handler = (event: KeyboardEvent) => {
       const { insertTabbableEntries, isTabbable, query } = editor
@@ -142,16 +187,7 @@ export function TabbableEffects() {
        * unfocusable. This ensures that the focus exits the editor cleanly.
        */
       tabbableDOMNodes.forEach((domNode) => {
-        const oldTabIndex = domNode.getAttribute('tabindex');
-        domNode.setAttribute('tabindex', '-1');
-
-        setTimeout(() => {
-          if (oldTabIndex) {
-            domNode.setAttribute('tabindex', oldTabIndex);
-          } else {
-            domNode.removeAttribute('tabindex');
-          }
-        }, 0);
+        tabIndexRestorationQueue.defer(domNode);
       });
     };
 
@@ -161,8 +197,10 @@ export function TabbableEffects() {
 
     eventListenerNode.addEventListener('keydown', handler, true);
 
-    return () =>
+    return () => {
       eventListenerNode.removeEventListener('keydown', handler, true);
+      tabIndexRestorationQueue.restoreAll();
+    };
   }, [editor, globalEventListener, readOnly]);
 
   return null;

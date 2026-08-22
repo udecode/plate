@@ -472,12 +472,15 @@ function escapeMarkdownCell(value) {
   return String(value).replaceAll('|', '\\|');
 }
 
-function writeTargetReport({ check = false, dryRun = false } = {}) {
+function writeTargetReport({
+  check = false,
+  dryRun: innerDryRun = false,
+} = {}) {
   const history = buildTargetHistory(loadRegistry());
   const json = `${JSON.stringify(history, null, 2)}\n`;
   const markdown = renderMarkdownReport(history);
 
-  if (dryRun) {
+  if (innerDryRun) {
     console.log(
       `target-report dry-run targets=${history.counts.targets} missingRequired=${history.counts.missingRequiredArtifacts}`
     );
@@ -798,42 +801,52 @@ async function main() {
   const args = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs;
 
   switch (command) {
-    case 'autoresearch-init':
+    case 'autoresearch-init': {
       runAutoresearchInit(args[0]);
       break;
-    case 'autoresearch-setup':
+    }
+    case 'autoresearch-setup': {
       runAutoresearchSetupPlan(args[0]);
       break;
-    case 'autoresearch-setup-plan':
+    }
+    case 'autoresearch-setup-plan': {
       runAutoresearchSetupPlan(args[0]);
       break;
-    case 'check':
+    }
+    case 'check': {
       checkTargets();
       break;
-    case 'dry-run':
+    }
+    case 'dry-run': {
       dryRun(args[0]);
       break;
-    case 'import-evidence-kit':
+    }
+    case 'import-evidence-kit': {
       if (args.includes('--write')) {
         writeImportedRegistry();
       } else {
         console.log(JSON.stringify(importEvidenceKit(), null, 2));
       }
       break;
-    case 'list':
+    }
+    case 'list': {
       listTargets();
       break;
-    case 'report':
+    }
+    case 'report': {
       writeTargetReport({
         check: args.includes('--check'),
         dryRun: args.includes('--dry-run'),
       });
       break;
-    case 'run':
+    }
+    case 'run': {
       await runTarget(args[0]);
       break;
-    default:
+    }
+    default: {
       fail(usage);
+    }
   }
 }
 
@@ -841,9 +854,9 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-  main().catch((error) =>
-    fail(error?.stack ?? String(error), error?.exitCode ?? 1)
-  );
+  main().catch((error) => {
+    fail(error?.stack ?? String(error), error?.exitCode ?? 1);
+  });
 }
 
 export {

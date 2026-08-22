@@ -48,13 +48,11 @@ export function ListElement({
   variant,
   ...props
 }: PlateElementProps<typeof BulletedListPlugin> &
-  VariantProps<typeof listVariants>) {
+  VariantProps<typeof listVariants> & {
+    variant: NonNullable<VariantProps<typeof listVariants>['variant']>;
+  }) {
   return (
-    <PlateElement
-      as={variant!}
-      className={listVariants({ variant })}
-      {...props}
-    >
+    <PlateElement as={variant} className={listVariants({ variant })} {...props}>
       {props.children}
     </PlateElement>
   );
@@ -160,24 +158,27 @@ export const ListKit = [
     ],
     shortcuts: {
       toggleBulleted: {
-        handler: ({ editor }) =>
+        handler: ({ editor }) => {
           editor.plugin(ListPlugin).update.toggle({
             type: editor.plugin(BulletedListPlugin).schema.type,
-          }),
+          });
+        },
         keys: 'mod+alt+5',
       },
       toggleNumbered: {
-        handler: ({ editor }) =>
+        handler: ({ editor }) => {
           editor.plugin(ListPlugin).update.toggle({
             type: editor.plugin(NumberedListPlugin).schema.type,
-          }),
+          });
+        },
         keys: 'mod+alt+6',
       },
       toggleTask: {
-        handler: ({ editor }) =>
+        handler: ({ editor }) => {
           editor.plugin(ListPlugin).update.toggle({
             type: editor.plugin(TaskListPlugin).schema.type,
-          }),
+          });
+        },
         keys: 'mod+alt+7',
       },
     },

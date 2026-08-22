@@ -1,3 +1,4 @@
+import { failInvariant } from '@platejs/plite/internal';
 import { decode } from 'html-entities';
 // @ts-expect-error - no types available
 import HTMLToVDOM from 'html-to-vdom';
@@ -100,11 +101,6 @@ const convertHTML = HTMLToVDOM({
   VText,
 });
 
-const mergeOptions = <T extends object>(options: T, patch: Partial<T>): T => ({
-  ...options,
-  ...patch,
-});
-
 const fixupFontSize = (
   fontSize: number | string | null | undefined
 ): number | null => {
@@ -133,7 +129,7 @@ const normalizeUnits = (
   dimensioningObject: Margins | PageSize | null | undefined,
   defaultDimensionsProperty: NormalizedMargins | NormalizedPageSize
 ): NormalizedMargins | NormalizedPageSize | null => {
-  let normalizedUnitResult: Record<string, number> = {};
+  const normalizedUnitResult: Record<string, number> = {};
 
   if (typeof dimensioningObject === 'object' && dimensioningObject !== null) {
     Object.keys(dimensioningObject).forEach((key) => {
@@ -185,7 +181,7 @@ const normalizeUnits = (
     return null;
   }
 
-  return normalizedUnitResult as NormalizedMargins | NormalizedPageSize;
+  return normalizedUnitResult;
 };
 
 const normalizeDocumentOptions = (
@@ -197,47 +193,67 @@ const normalizeDocumentOptions = (
   if (documentOptions.allowRemoteImages !== undefined) {
     result.allowRemoteImages = documentOptions.allowRemoteImages;
   }
-  if (documentOptions.createdAt !== undefined)
+  if (documentOptions.createdAt !== undefined) {
     result.createdAt = documentOptions.createdAt;
-  if (documentOptions.creator !== undefined)
+  }
+  if (documentOptions.creator !== undefined) {
     result.creator = documentOptions.creator;
-  if (documentOptions.decodeUnicode !== undefined)
+  }
+  if (documentOptions.decodeUnicode !== undefined) {
     result.decodeUnicode = documentOptions.decodeUnicode;
-  if (documentOptions.defaultLang !== undefined)
+  }
+  if (documentOptions.defaultLang !== undefined) {
     result.defaultLang = documentOptions.defaultLang;
-  if (documentOptions.description !== undefined)
+  }
+  if (documentOptions.description !== undefined) {
     result.description = documentOptions.description;
+  }
   if (documentOptions.font !== undefined) result.font = documentOptions.font;
-  if (documentOptions.footer !== undefined)
+  if (documentOptions.footer !== undefined) {
     result.footer = documentOptions.footer;
-  if (documentOptions.footerType !== undefined)
+  }
+  if (documentOptions.footerType !== undefined) {
     result.footerType = documentOptions.footerType;
-  if (documentOptions.header !== undefined)
+  }
+  if (documentOptions.header !== undefined) {
     result.header = documentOptions.header;
-  if (documentOptions.headerType !== undefined)
+  }
+  if (documentOptions.headerType !== undefined) {
     result.headerType = documentOptions.headerType;
-  if (documentOptions.keywords !== undefined)
+  }
+  if (documentOptions.keywords !== undefined) {
     result.keywords = documentOptions.keywords;
-  if (documentOptions.lastModifiedBy !== undefined)
+  }
+  if (documentOptions.lastModifiedBy !== undefined) {
     result.lastModifiedBy = documentOptions.lastModifiedBy;
-  if (documentOptions.lineNumber !== undefined)
+  }
+  if (documentOptions.lineNumber !== undefined) {
     result.lineNumber = documentOptions.lineNumber;
-  if (documentOptions.lineNumberOptions !== undefined)
+  }
+  if (documentOptions.lineNumberOptions !== undefined) {
     result.lineNumberOptions = documentOptions.lineNumberOptions;
-  if (documentOptions.modifiedAt !== undefined)
+  }
+  if (documentOptions.modifiedAt !== undefined) {
     result.modifiedAt = documentOptions.modifiedAt;
-  if (documentOptions.numbering !== undefined)
+  }
+  if (documentOptions.numbering !== undefined) {
     result.numbering = documentOptions.numbering;
-  if (documentOptions.orientation !== undefined)
+  }
+  if (documentOptions.orientation !== undefined) {
     result.orientation = documentOptions.orientation;
-  if (documentOptions.pageNumber !== undefined)
+  }
+  if (documentOptions.pageNumber !== undefined) {
     result.pageNumber = documentOptions.pageNumber;
-  if (documentOptions.revision !== undefined)
+  }
+  if (documentOptions.revision !== undefined) {
     result.revision = documentOptions.revision;
-  if (documentOptions.skipFirstHeaderFooter !== undefined)
+  }
+  if (documentOptions.skipFirstHeaderFooter !== undefined) {
     result.skipFirstHeaderFooter = documentOptions.skipFirstHeaderFooter;
-  if (documentOptions.subject !== undefined)
+  }
+  if (documentOptions.subject !== undefined) {
     result.subject = documentOptions.subject;
+  }
   if (documentOptions.table !== undefined) result.table = documentOptions.table;
   if (documentOptions.title !== undefined) result.title = documentOptions.title;
 
@@ -245,13 +261,13 @@ const normalizeDocumentOptions = (
   if (documentOptions.pageSize !== undefined) {
     result.pageSize = normalizeUnits(
       documentOptions.pageSize,
-      defaultDocumentOptions.pageSize as NormalizedPageSize
+      defaultDocumentOptions.pageSize
     ) as NormalizedPageSize | null;
   }
   if (documentOptions.margins !== undefined) {
     result.margins = normalizeUnits(
       documentOptions.margins,
-      defaultDocumentOptions.margins as NormalizedMargins
+      defaultDocumentOptions.margins
     ) as NormalizedMargins | null;
   }
 
@@ -296,9 +312,9 @@ async function addFilesToContainer(
     footerHTML = defaultHTMLString;
   }
   if (documentOptions.decodeUnicode) {
-    headerHTML = decode(headerHTML as string);
-    contentHTML = decode(contentHTML as string);
-    footerHTML = decode(footerHTML as string);
+    headerHTML = decode(headerHTML);
+    contentHTML = decode(contentHTML);
+    footerHTML = decode(footerHTML);
   }
 
   // @ts-expect-error - complex type mismatch between normalized options and DocxDocumentProperties
@@ -311,15 +327,19 @@ async function addFilesToContainer(
   // @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations
   docxDocument.documentXML = await renderDocumentFile(docxDocument);
 
-  zip.folder(relsFolderName)!.file(
+  (
+    zip.folder(relsFolderName) ?? failInvariant('Expected value to be defined')
+  ).file(
     '.rels',
-    create({ encoding: 'UTF-8', standalone: true }, relsXML).toString({
+    create({ encoding: 'utf-8', standalone: true }, relsXML).toString({
       prettyPrint: true,
     }),
     { createFolders: false }
   );
 
-  zip.folder('docProps')!.file('core.xml', docxDocument.generateCoreXML(), {
+  (
+    zip.folder('docProps') ?? failInvariant('Expected value to be defined')
+  ).file('core.xml', docxDocument.generateCoreXML(), {
     createFolders: false,
   });
 
@@ -338,11 +358,11 @@ async function addFilesToContainer(
       internalRelationship
     );
 
-    zip
-      .folder(wordFolder)!
-      .file(fileNameWithExt, headerXML.toString({ prettyPrint: true }), {
-        createFolders: false,
-      });
+    (
+      zip.folder(wordFolder) ?? failInvariant('Expected value to be defined')
+    ).file(fileNameWithExt, headerXML.toString({ prettyPrint: true }), {
+      createFolders: false,
+    });
 
     docxDocument.headerObjects.push({
       headerId,
@@ -365,11 +385,11 @@ async function addFilesToContainer(
       internalRelationship
     );
 
-    zip
-      .folder(wordFolder)!
-      .file(fileNameWithExt, footerXML.toString({ prettyPrint: true }), {
-        createFolders: false,
-      });
+    (
+      zip.folder(wordFolder) ?? failInvariant('Expected value to be defined')
+    ).file(fileNameWithExt, footerXML.toString({ prettyPrint: true }), {
+      createFolders: false,
+    });
 
     docxDocument.footerObjects.push({
       footerId,
@@ -385,15 +405,15 @@ async function addFilesToContainer(
     `${themeFolder}/${themeFileNameWithExt}`,
     internalRelationship
   );
-  zip
-    .folder(wordFolder)!
-    .folder(themeFolder)!
-    .file(themeFileNameWithExt, docxDocument.generateThemeXML(), {
-      createFolders: false,
-    });
+  (
+    (
+      zip.folder(wordFolder) ?? failInvariant('Expected value to be defined')
+    ).folder(themeFolder) ?? failInvariant('Expected value to be defined')
+  ).file(themeFileNameWithExt, docxDocument.generateThemeXML(), {
+    createFolders: false,
+  });
 
-  zip
-    .folder(wordFolder)!
+  (zip.folder(wordFolder) ?? failInvariant('Expected value to be defined'))
     .file('document.xml', docxDocument.generateDocumentXML(), {
       createFolders: false,
     })
@@ -417,12 +437,15 @@ async function addFilesToContainer(
 
   if (relationshipXMLs && Array.isArray(relationshipXMLs)) {
     relationshipXMLs.forEach(({ fileName, xmlString }) => {
-      zip
-        .folder(wordFolder)!
-        .folder(relsFolderName)!
-        .file(`${fileName}.xml.rels`, xmlString, {
-          createFolders: false,
-        });
+      (
+        (
+          zip.folder(wordFolder) ??
+          failInvariant('Expected value to be defined')
+        ).folder(relsFolderName) ??
+        failInvariant('Expected value to be defined')
+      ).file(`${fileName}.xml.rels`, xmlString, {
+        createFolders: false,
+      });
     });
   }
 

@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const basicMarksValue = (
+export const basicMarksValue: Value = (
   <fragment>
     <hheading level={2}>标记</hheading>
     <hp>使用标记插件为你的文本添加样式和强调，它提供了多种格式化选项。</hp>

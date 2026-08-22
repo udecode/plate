@@ -45,13 +45,13 @@ describe('ContentSlice', () => {
     const content = [paragraph('before')];
     const slice = ContentSlice.closed(content);
 
-    content[0]!.children[0] = { text: 'after' };
+    content[0].children[0] = { text: 'after' };
 
     assert.deepEqual(slice.content, [paragraph('before')]);
     assert.equal(Object.isFrozen(slice), true);
     assert.equal(Object.isFrozen(slice.content), true);
     assert.equal(Object.isFrozen(slice.content[0]), true);
-    assert.equal(Object.isFrozen(slice.content[0]!.children[0]), true);
+    assert.equal(Object.isFrozen(slice.content[0].children[0]), true);
     assert.equal(slice.openEnd, 0);
     assert.equal(slice.openStart, 0);
   });
@@ -67,7 +67,7 @@ describe('ContentSlice', () => {
     assert.notEqual(slice, input);
     assert.equal(ContentSlice.fromJSON(slice), slice);
 
-    const inputParagraph = input.content[0]!.children[0];
+    const inputParagraph = input.content[0].children[0];
 
     assert.equal(ElementApi.isElement(inputParagraph), true);
     inputParagraph.children[0] = { text: 'changed' };
@@ -92,13 +92,13 @@ describe('ContentSlice', () => {
     };
     const slice = ContentSlice.fromJSON(input);
 
-    input.roots['caption:1'][0]!.children[0] = { text: 'mutated' };
+    input.roots['caption:1'][0].children[0] = { text: 'mutated' };
 
     assert.deepEqual(slice.roots, {
       'caption:1': [paragraph('caption')],
     });
     assert.equal(Object.isFrozen(slice.roots), true);
-    assert.equal(Object.isFrozen(slice.roots!['caption:1']), true);
+    assert.equal(Object.isFrozen(slice.roots['caption:1']), true);
     assert.throws(
       () =>
         ContentSlice.fromJSON({
@@ -164,7 +164,7 @@ describe('ContentSlice', () => {
     assert.deepEqual(slice.content, [paragraph('efor')]);
     assert.notEqual(slice.content[0], source[0]);
     assert.equal(Object.isFrozen(slice.content[0]), true);
-    assert.equal(Object.isFrozen(slice.content[0]!.children[0]), true);
+    assert.equal(Object.isFrozen(slice.content[0].children[0]), true);
   });
 
   it('retains detached prepared node identity only for an exact insertion', () => {
@@ -214,17 +214,17 @@ describe('ContentSlice', () => {
     });
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     assert.equal(editor.update.slice.replace(slice, { at: [0] }), true);
 
-    const first = editor.read.children()[0] as Element;
+    const first = editor.read.children()[0];
     const firstNodeKey = editor.key([0]);
 
     assert.ok(firstNodeKey);
     assert.equal(editor.update.slice.replace(slice, { at: [1] }), true);
 
-    const second = editor.read.children()[1] as Element;
+    const second = editor.read.children()[1];
     const secondNodeKey = editor.key([1]);
 
     assert.equal(commits, 2);
@@ -306,7 +306,7 @@ describe('ContentSlice', () => {
       open: 'closed',
     });
 
-    const replacementParagraph = replacement[0]!.children[0];
+    const replacementParagraph = replacement[0].children[0];
 
     assert.equal(ElementApi.isElement(replacementParagraph), true);
     replacementParagraph.children[0] = { text: 'mutated' };
@@ -372,6 +372,6 @@ describe('ContentSlice', () => {
     assert.deepEqual(slice.content, [paragraph('foreign')]);
     assert.equal(Object.getPrototypeOf(slice), Object.prototype);
     assert.equal(Object.getPrototypeOf(slice.content), Array.prototype);
-    assert.equal(Object.isFrozen(slice.content[0]!.children[0]), true);
+    assert.equal(Object.isFrozen(slice.content[0].children[0]), true);
   });
 });

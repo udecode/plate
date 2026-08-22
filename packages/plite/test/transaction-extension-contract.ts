@@ -49,13 +49,13 @@ describe('transaction extension values', () => {
 
     assert.equal(editor.read.getField(counter), 5);
     assert.deepEqual(
-      commits[0]!.effects.map((effect) => [effect.type.key, effect.value]),
+      commits[0].effects.map((effect) => [effect.type.key, effect.value]),
       [
         ['counter.increment', 2],
         ['counter.increment', 3],
       ]
     );
-    assert.equal(increment.map(2, commits[0]!.changes!), 2);
+    assert.equal(increment.map(2, commits[0].changes), 2);
     assert.equal(increment.invert(2), -2);
   });
 
@@ -75,8 +75,8 @@ describe('transaction extension values', () => {
       tx.annotations.set(origin, 'paste');
     });
 
-    assert.equal(commits[0]!.annotations.origin, 'keyboard+paste');
-    assert.equal(commits[0]!.changed.has('snapshot'), false);
+    assert.equal(commits[0].annotations.origin, 'keyboard+paste');
+    assert.equal(commits[0].changed.has('snapshot'), false);
   });
 
   it('combines static and computed facet providers with stable outputs', () => {
@@ -88,7 +88,7 @@ describe('transaction extension values', () => {
           facetProviders: [
             labels.of('static'),
             labels.compute(() => {
-              computeCount++;
+              computeCount += 1;
               return 'computed';
             }),
           ],
@@ -119,14 +119,14 @@ describe('transaction extension values', () => {
           facetProviders: [
             documentLength.compute(
               (state) => {
-                documentComputes++;
+                documentComputes += 1;
                 return state.children().length;
               },
               { dependencies: ['document'] }
             ),
             selectionOffset.compute(
               (state) => {
-                selectionComputes++;
+                selectionComputes += 1;
                 return state.selection()?.anchor.offset ?? -1;
               },
               { dependencies: ['selection'] }
@@ -197,14 +197,14 @@ describe('transaction extension values', () => {
           facetProviders: [
             derived.compute(
               (state) => {
-                derivedComputes++;
+                derivedComputes += 1;
                 return state.facet(source).join('').length;
               },
               { dependencies: [source] }
             ),
             schemaKind.compute(
               (state) => {
-                schemaComputes++;
+                schemaComputes += 1;
                 return (
                   state.schema.element('quote')?.behavior.voidKind ?? 'regular'
                 );

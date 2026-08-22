@@ -25,12 +25,12 @@ export const useFocusEditorEvents = ({
 }) => {
   useEffect(() => {
     const onFocusEditor = (event: Event) => {
-      const id = (event as CustomEvent<{ id: string }>).detail.id;
+      const { id } = (event as CustomEvent<{ id: string }>).detail;
 
       if (onEditorFocus && editorRef?.id === id) onEditorFocus();
     };
     const onBlurEditor = (event: Event) => {
-      const id = (event as CustomEvent<{ id: string }>).detail.id;
+      const { id } = (event as CustomEvent<{ id: string }>).detail;
 
       if (onEditorBlur && editorRef?.id === id) onEditorBlur();
     };

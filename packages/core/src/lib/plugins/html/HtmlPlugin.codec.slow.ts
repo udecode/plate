@@ -58,18 +58,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs, store }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             return {};
           },
           encode: ({ content }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return {
               attributes: { 'data-variant': store.get().variant },
@@ -94,18 +94,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: ({ element }) => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             return { url: element.getAttribute('href') || undefined };
           },
           encode: ({ content, node }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return {
               attributes: { href: node.url },
@@ -130,18 +130,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             return {};
           },
           encode: ({ content }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return { children: content, tag: 'li' };
           },
@@ -161,18 +161,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             return {};
           },
           encode: ({ content }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return { children: content, tag: 'ul' };
           },
@@ -194,20 +194,20 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: ({ element }) => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             const width = Number.parseFloat(element.style.width);
 
             return Number.isFinite(width) ? { width } : {};
           },
           encode: ({ content, node }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return {
               children: content,
@@ -234,18 +234,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             return {};
           },
           encode: ({ content }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return { children: content, tag: 'tr' };
           },
@@ -265,18 +265,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: () => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             return {};
           },
           encode: ({ content }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return {
               children: [{ children: content, tag: 'tbody' }],
@@ -298,13 +298,13 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
   }).extend(({ defineCodecs }) => {
-    counters.codecFactories++;
+    counters.codecFactories += 1;
 
     return {
       codecs: defineCodecs({
         'text/html': {
           decode: ({ element }) => {
-            counters.elementDecode++;
+            counters.elementDecode += 1;
 
             const image = element.querySelector<HTMLElement>(':scope > img');
             const width = Number.parseFloat(image?.style.width ?? '');
@@ -315,7 +315,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
             };
           },
           encode: ({ content, node }) => {
-            counters.elementEncode++;
+            counters.elementEncode += 1;
 
             return {
               attributes: { class: 'benchmark-media' },
@@ -344,18 +344,18 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     }).extend(({ defineCodecs }) => {
-      counters.codecFactories++;
+      counters.codecFactories += 1;
 
       return {
         codecs: defineCodecs({
           'text/html': {
             decode: () => {
-              counters.markDecode++;
+              counters.markDecode += 1;
 
               return true;
             },
             encode: ({ value }) => {
-              counters.markEncode++;
+              counters.markEncode += 1;
 
               return value
                 ? {
@@ -385,13 +385,13 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
           },
         },
       }).extend(({ defineCodecs }) => {
-        counters.codecFactories++;
+        counters.codecFactories += 1;
 
         return {
           codecs: defineCodecs({
             'text/html': {
               decode: () => {
-                counters.unrelatedDecode++;
+                counters.unrelatedDecode += 1;
 
                 return {};
               },
@@ -454,15 +454,15 @@ const createMixedDocument = (groups: number): Descendant[] =>
       type: 'benchmark-paragraph',
     },
     {
-      children: Array.from({ length: 3 }, (_, item) => ({
+      children: Array.from({ length: 3 }, (innerValue, item) => ({
         children: [createParagraph(`list-${group}-${item}`)],
         type: 'benchmark-list-item',
       })),
       type: 'benchmark-list',
     },
     {
-      children: Array.from({ length: 3 }, (_, row) => ({
-        children: Array.from({ length: 3 }, (_, column) => ({
+      children: Array.from({ length: 3 }, (innerValue2, row) => ({
+        children: Array.from({ length: 3 }, (innerValue3, column) => ({
           children: [createParagraph(`cell-${group}-${row}-${column}`)],
           type: 'benchmark-table-cell',
           width: 120 + column,
@@ -477,20 +477,20 @@ const createMixedDocument = (groups: number): Descendant[] =>
       url: `https://example.com/image-${group}.png`,
       width: 320,
     },
-  ]).flat() as Descendant[];
+  ]).flat();
 
 const countDocumentShape = (document: readonly Descendant[]) => {
   let elements = 0;
   let texts = 0;
   const visit = (node: Descendant) => {
     if (TextApi.isText(node)) {
-      texts++;
+      texts += 1;
 
       return;
     }
     if (!ElementApi.isElement(node)) return;
 
-    elements++;
+    elements += 1;
     node.children.forEach(visit);
   };
 

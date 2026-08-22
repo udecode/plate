@@ -20,9 +20,9 @@ const setRef = <T>(ref: PossibleRef<T>, value: T | null) => {
  * React.RefObject(s)
  */
 export const composeRefs =
-  <T>(...refs: PossibleRef<T>[]) =>
+  <T>(...refs: Array<PossibleRef<T>>) =>
   (node: T | null) => {
-    const cleanups: ((() => void) | undefined)[] = [];
+    const cleanups: Array<(() => void) | undefined> = [];
 
     refs.forEach((ref) => {
       const cleanup = setRef(ref, node);
@@ -39,13 +39,16 @@ export const composeRefs =
         }
       };
     }
+
+    return undefined;
   };
 
 /**
  * A custom hook that composes multiple refs Accepts callback refs and
  * React.RefObject(s)
  */
-export const useComposedRef = <T>(...refs: PossibleRef<T>[]) =>
+export const useComposedRef = <T>(...refs: Array<PossibleRef<T>>) =>
   // The callback identity must change with the supplied refs so React detaches
   // replaced refs and runs their cleanup functions.
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Each variadic ref is itself the dependency; expanding the array would change neither identity nor cleanup semantics.
   React.useCallback(composeRefs(...refs), refs);

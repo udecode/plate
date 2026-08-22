@@ -1,5 +1,7 @@
 'use client';
 
+import { failInvariant } from '@platejs/plite/internal';
+
 export type Intersection = 'center' | 'cover' | 'touch';
 
 export type SelectionAreaBehaviour = {
@@ -88,23 +90,22 @@ type EventMap<Events> = {
 class EventTarget<Events extends EventMap<Events>> {
   private readonly listeners = new Map<keyof Events, Set<EventCallback>>();
 
-  emit = this.dispatchEvent;
-  off = this.removeEventListener;
-  on = this.addEventListener;
-
-  addEventListener<K extends keyof Events>(event: K, callback: Events[K]) {
+  addEventListener = <K extends keyof Events>(
+    event: K,
+    callback: Events[K]
+  ) => {
     const listeners = this.listeners.get(event) ?? new Set();
 
     this.listeners.set(event, listeners);
     listeners.add(callback);
 
     return this;
-  }
+  };
 
-  dispatchEvent<K extends keyof Events>(
+  dispatchEvent = <K extends keyof Events>(
     event: K,
     ...data: Parameters<Events[K]>
-  ) {
+  ) => {
     let accepted = true;
 
     for (const callback of this.listeners.get(event) ?? []) {
@@ -112,13 +113,20 @@ class EventTarget<Events extends EventMap<Events>> {
     }
 
     return accepted;
-  }
+  };
 
-  removeEventListener<K extends keyof Events>(event: K, callback: Events[K]) {
+  removeEventListener = <K extends keyof Events>(
+    event: K,
+    callback: Events[K]
+  ) => {
     this.listeners.get(event)?.delete(callback);
 
     return this;
-  }
+  };
+
+  emit = this.dispatchEvent;
+  off = this.removeEventListener;
+  on = this.addEventListener;
 
   unbindAllListeners() {
     this.listeners.clear();
@@ -200,7 +208,7 @@ const frames = (callback: FrameCallback): Frames => {
 type EventBindingArgs = [
   (
     | (globalThis.EventTarget | undefined)
-    | (globalThis.EventTarget | undefined)[]
+    | Array<globalThis.EventTarget | undefined>
     | HTMLCollection
     | NodeList
   ),
@@ -214,7 +222,7 @@ const eventListener =
   (
     items:
       | (globalThis.EventTarget | undefined)
-      | (globalThis.EventTarget | undefined)[]
+      | Array<globalThis.EventTarget | undefined>
       | HTMLCollection
       | NodeList,
     events: string[] | string,
@@ -275,7 +283,7 @@ function css(
   }
 }
 
-type SelectAllSelectors = Element | readonly (Element | string)[] | string;
+type SelectAllSelectors = Element | ReadonlyArray<Element | string> | string;
 
 const selectAll = (
   selector: SelectAllSelectors,
@@ -349,6 +357,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   private readonly _ownsArea: boolean;
   private _initScrollDelta: Coordinates = { x: 0, y: 0 };
   private _latestElement?: Element;
+  private _nativeSelectionGuard?: Array<{
+    element: HTMLElement;
+    userSelect: string;
+  }>;
+  private _nativeSelectionReleaseFrame?: number;
   // Options
   private readonly _options: SelectionAreaOptions;
 
@@ -366,8 +379,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   // Selection store
   private _selection: SelectionStore = {
     changed: {
-      added: [], // Added elements since last selection
-      removed: [], // Removed elements since last selection
+      // Added elements since last selection
+      added: [],
+      // Removed elements since last selection
+      removed: [],
     },
     selected: [],
     stored: [],
@@ -378,9 +393,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   private _singleClick = true;
   private wheelTimer: ReturnType<typeof setTimeout> | null = null;
 
-  disable = this._bindStartEvents.bind(this, false);
+  disable = () => this._bindStartEvents(false);
 
-  enable = this._bindStartEvents;
+  enable = () => this._bindStartEvents();
 
   constructor(opt: PartialSelectionAreaOptions) {
     super();
@@ -474,25 +489,27 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this.enable();
   }
 
-  _bindStartEvents(activate = true): void {
+  _bindStartEvents = (activate = true): void => {
     const { document, features } = this._options;
     const fn = activate ? on : off;
 
-    fn(document, 'mousedown', this._onTapStart);
+    fn(document, 'mousedown', this._onTapStart, { capture: true });
 
     if (features.touch) {
       fn(document, 'touchstart', this._onTapStart, {
+        capture: true,
         passive: false,
       });
     }
-  }
+  };
 
-  _delayedTapMove(evt: MouseEvent | TouchEvent): void {
+  _delayedTapMove = (evt: MouseEvent | TouchEvent): void => {
     const {
       behaviour: { startThreshold },
       document,
     } = this._options;
-    const { x1, y1 } = this._areaLocation; // Coordinates of first "tap"
+    // Coordinates of first "tap"
+    const { x1, y1 } = this._areaLocation;
     const { x1: clientX, y1: clientY } = this._areaClientLocation;
     const { x, y } = simplifyEvent(evt);
 
@@ -514,17 +531,20 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       }
 
       evt.preventDefault();
-      document.getSelection()?.removeAllRanges();
+      this._startNativeSelectionGuard();
 
       on(document, ['mousemove', 'touchmove'], this._onTapMove, {
         passive: false,
       });
-      on(document, 'selectionchange', this._onNativeSelectionChange);
 
       // Make area element visible
       css(this._area, 'display', 'block');
 
-      if (this._ownsArea) this._container!.append(this._area);
+      if (this._ownsArea) {
+        (
+          this._container ?? failInvariant('Expected value to be defined')
+        ).append(this._area);
+      }
 
       this.resolveSelectables();
 
@@ -540,7 +560,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
 
     this._handleMoveEvent(evt);
-  }
+  };
 
   _emitEvent(
     name: keyof SelectionEvents,
@@ -565,20 +585,25 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       (features.touch && isTouchDevice()) ||
       (this._scrollAvailable && isSafariBrowser())
     ) {
-      evt.preventDefault(); // Prevent swipe-down refresh
+      // Prevent swipe-down refresh
+      evt.preventDefault();
     }
   }
 
   _keepSelection(): void {
     const { _options, _selection } = this;
     const { changed, selected, stored, touched } = _selection;
-    const addedElements = selected.filter((el) => !stored.includes(el));
+    const removedSet = new Set(changed.removed);
+    const storedSet = new Set(stored);
+    const touchedSet = new Set(touched);
+    const addedElements = selected.filter((el) => !storedSet.has(el));
 
     switch (_options.behaviour.overlap) {
       case 'drop': {
         _selection.stored = [
           ...addedElements,
-          ...stored.filter((el) => !touched.includes(el)), // Elements not touched
+          // Elements not touched
+          ...stored.filter((el) => !touchedSet.has(el)),
         ];
 
         break;
@@ -586,7 +611,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       case 'invert': {
         _selection.stored = [
           ...addedElements,
-          ...stored.filter((el) => !changed.removed.includes(el)), // Elements not removed from selection
+          // Elements not removed from selection
+          ...stored.filter((el) => !removedSet.has(el)),
         ];
 
         break;
@@ -594,7 +620,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       case 'keep': {
         _selection.stored = [
           ...stored,
-          ...selected.filter((el) => !stored.includes(el)), // Newly added
+          // Newly added
+          ...selected.filter((el) => !storedSet.has(el)),
         ];
 
         break;
@@ -602,7 +629,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
   }
 
-  _manualScroll(evt: ScrollEvent): void {
+  _manualScroll = (evt: ScrollEvent): void => {
     if (this.wheelTimer) {
       clearTimeout(this.wheelTimer);
     }
@@ -613,15 +640,27 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       this._areaClientLocation.x2 = x;
       this._areaClientLocation.y2 = y;
 
-      const Ry = y - this._containerRect!.top;
-      const Rx = x - this._containerRect!.left;
-      this._areaLocation.x2 = Rx + this._container!.scrollLeft;
-      this._areaLocation.y2 = Ry + this._container!.scrollTop;
+      const Ry =
+        y -
+        (this._containerRect ?? failInvariant('Expected value to be defined'))
+          .top;
+      const Rx =
+        x -
+        (this._containerRect ?? failInvariant('Expected value to be defined'))
+          .left;
+      this._areaLocation.x2 =
+        Rx +
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollLeft;
+      this._areaLocation.y2 =
+        Ry +
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollTop;
       this._frame.next(null);
     }, 100);
-  }
+  };
 
-  _onScroll(evt: ScrollEvent): void {
+  _onScroll = (evt: ScrollEvent): void => {
     const { document } = this._options;
 
     if (this.wheelTimer) {
@@ -636,28 +675,44 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
       const deltaY =
         y -
-        this._containerRect!.top +
-        this._container!.scrollTop +
-        document.scrollingElement!.scrollTop -
+        (this._containerRect ?? failInvariant('Expected value to be defined'))
+          .top +
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollTop +
+        (
+          document.scrollingElement ??
+          failInvariant('Expected value to be defined')
+        ).scrollTop -
         this._initScrollDelta.y;
 
       const deltaX =
         x -
-        this._containerRect!.left +
-        this._container!.scrollLeft +
-        document.scrollingElement!.scrollLeft;
+        (this._containerRect ?? failInvariant('Expected value to be defined'))
+          .left +
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollLeft +
+        (
+          document.scrollingElement ??
+          failInvariant('Expected value to be defined')
+        ).scrollLeft;
 
       this._scrollDelta.y =
-        document.scrollingElement!.scrollTop - this._initScrollDelta.y;
+        (
+          document.scrollingElement ??
+          failInvariant('Expected value to be defined')
+        ).scrollTop - this._initScrollDelta.y;
 
       this._scrollDelta.x =
-        document.scrollingElement!.scrollLeft - this._initScrollDelta.x;
+        (
+          document.scrollingElement ??
+          failInvariant('Expected value to be defined')
+        ).scrollLeft - this._initScrollDelta.x;
 
       this._areaLocation.y2 = deltaY;
       this._areaLocation.x2 = deltaX;
       this._frame.next(null);
     }, 100);
-  }
+  };
 
   _onSingleTap(evt: MouseEvent | TouchEvent): void {
     const {
@@ -689,9 +744,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
      * range-selection gets performed.
      */
     this.resolveSelectables();
+    const selectableSet = new Set(this._selectables);
 
     // Traverse dom upwards to check if target is selectable
-    while (!this._selectables.includes(target)) {
+    while (!selectableSet.has(target)) {
       if (!target.parentElement) {
         return;
       }
@@ -702,6 +758,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     // Grab current store first in case it gets set back
     const { stored } = this._selection;
     this._emitEvent('start', evt);
+    const currentStoredSet = new Set(this._selection.stored);
+    const storedSet = new Set(stored);
 
     if (evt.shiftKey && range && this._latestElement) {
       const reference = this._latestElement;
@@ -723,12 +781,13 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       ];
 
       this.select(rangeItems);
-      this._latestElement = reference; // latestElement is by default cleared in .select()
+      // latestElement is by default cleared in .select()
+      this._latestElement = reference;
     } else if (
-      stored.includes(target) &&
+      storedSet.has(target) &&
       (stored.length === 1 ||
         evt.ctrlKey ||
-        stored.every((v) => this._selection.stored.includes(v)))
+        stored.every((value) => currentStoredSet.has(value)))
     ) {
       this.deselect(target);
     } else {
@@ -737,7 +796,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
   }
 
-  _onTapMove(evt: MouseEvent | TouchEvent): void {
+  _onTapMove = (evt: MouseEvent | TouchEvent): void => {
     evt.preventDefault();
 
     const { x, y } = simplifyEvent(evt);
@@ -750,8 +809,14 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       _scrollSpeed,
     } = this;
     const { speedDivider } = _options.behaviour.scrolling;
-    const Ry = y - this._containerRect!.top;
-    const Rx = x - this._containerRect!.left;
+    const Ry =
+      y -
+      (this._containerRect ?? failInvariant('Expected value to be defined'))
+        .top;
+    const Rx =
+      x -
+      (this._containerRect ?? failInvariant('Expected value to be defined'))
+        .left;
 
     if (
       this._scrollAvailable &&
@@ -769,11 +834,15 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
         }
         // Reduce velocity, use ceil in both directions to scroll at least 1px per frame
         if (_scrollSpeed.y) {
-          this._container!.scrollTop += ceil(_scrollSpeed.y / speedDivider);
+          (
+            this._container ?? failInvariant('Expected value to be defined')
+          ).scrollTop += ceil(_scrollSpeed.y / speedDivider);
           _areaLocation.y2 = Ry;
         }
         if (_scrollSpeed.x) {
-          this._container!.scrollLeft += ceil(_scrollSpeed.x / speedDivider);
+          (
+            this._container ?? failInvariant('Expected value to be defined')
+          ).scrollLeft += ceil(_scrollSpeed.x / speedDivider);
           _areaLocation.x2 = Rx;
         }
 
@@ -790,8 +859,16 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
       requestAnimationFrame(scroll);
     } else {
-      _areaLocation.x2 = Rx + this._container!.scrollLeft + this._scrollDelta.x;
-      _areaLocation.y2 = Ry + this._container!.scrollTop + this._scrollDelta.y;
+      _areaLocation.x2 =
+        Rx +
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollLeft +
+        this._scrollDelta.x;
+      _areaLocation.y2 =
+        Ry +
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollTop +
+        this._scrollDelta.y;
 
       _areaClientLocation.x2 = x;
       _areaClientLocation.y2 = y;
@@ -804,15 +881,65 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
 
     this._handleMoveEvent(evt);
-  }
+  };
 
-  _onNativeSelectionChange(): void {
+  _onNativeSelectionChange = (): void => {
     const selection = this._options.document.getSelection();
 
     if (selection?.rangeCount) selection.removeAllRanges();
+  };
+
+  _releaseNativeSelectionGuard(): void {
+    const { document } = this._options;
+    const view = document.defaultView;
+
+    if (this._nativeSelectionReleaseFrame !== undefined) {
+      view?.cancelAnimationFrame(this._nativeSelectionReleaseFrame);
+      this._nativeSelectionReleaseFrame = undefined;
+    }
+
+    document.getSelection()?.removeAllRanges();
+    off(document, 'selectionchange', this._onNativeSelectionChange);
+
+    if (this._nativeSelectionGuard) {
+      this._nativeSelectionGuard.forEach(({ element, userSelect }) => {
+        element.style.userSelect = userSelect;
+      });
+      this._nativeSelectionGuard = undefined;
+    }
   }
 
-  _onTapStart(evt: MouseEvent | TouchEvent, silent = false): void {
+  _startNativeSelectionGuard(): void {
+    const { document } = this._options;
+    const view = document.defaultView;
+
+    if (this._nativeSelectionReleaseFrame !== undefined) {
+      view?.cancelAnimationFrame(this._nativeSelectionReleaseFrame);
+      this._nativeSelectionReleaseFrame = undefined;
+    }
+
+    if (!this._nativeSelectionGuard) {
+      const boundaries = selectAll(this._options.boundaries, document).filter(
+        (element): element is HTMLElement => element instanceof HTMLElement
+      );
+      const targets = new Set(boundaries);
+
+      if (this._container) targets.add(this._container);
+
+      this._nativeSelectionGuard = [...targets].map((element) => ({
+        element,
+        userSelect: element.style.userSelect,
+      }));
+      this._nativeSelectionGuard.forEach(({ element }) => {
+        element.style.userSelect = 'none';
+      });
+    }
+
+    document.getSelection()?.removeAllRanges();
+    on(document, 'selectionchange', this._onNativeSelectionChange);
+  }
+
+  _onTapStart = (evt: MouseEvent | TouchEvent, silent = false): void => {
     const { container, document } = this._options;
     const { target, x, y } = simplifyEvent(evt);
 
@@ -825,8 +952,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       this._container.contains(target) &&
       target.dataset.pliteEditor !== 'true' &&
       target.dataset.plateSelectable !== 'true'
-    )
+    ) {
       return;
+    }
 
     this._containerRect = this._container.getBoundingClientRect();
 
@@ -850,17 +978,25 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     );
 
     // Check if area starts in one of the start areas / boundaries
-    const evtPath = evt.composedPath();
+    const evtPathSet = new Set(evt.composedPath());
 
     if (
       !this._container ||
-      !startAreas.find((el) => evtPath.includes(el)) ||
-      !resolvedBoundaries.find((el) => evtPath.includes(el))
+      !startAreas.some((el) => evtPathSet.has(el)) ||
+      !resolvedBoundaries.some((el) => evtPathSet.has(el))
     ) {
       return;
     }
+    const ownsNativePointerSelection =
+      evt instanceof MouseEvent && target.dataset.plateSelectable === 'true';
+
     if (!silent && this._emitEvent('beforestart', evt) === false) {
       return;
+    }
+    if (ownsNativePointerSelection) {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this._startNativeSelectionGuard();
     }
 
     this._areaLocation = { x1: Rx, x2: 0, y1: Ry, y2: 0 };
@@ -882,32 +1018,28 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     });
     on(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
     on(document, 'wheel', this._onScroll, { passive: false });
-  }
+  };
 
-  _onTapStop(evt: MouseEvent | TouchEvent | null, silent: boolean): void {
+  _onTapStop = (evt: MouseEvent | TouchEvent | null, silent: boolean): void => {
     const { document, features } = this._options;
     const { _singleClick } = this;
-    const clearNativeSelection = () =>
-      document.getSelection()?.removeAllRanges();
-    const releaseNativeSelectionGuard = () =>
-      off(document, 'selectionchange', this._onNativeSelectionChange);
 
     if (!_singleClick) {
       evt?.preventDefault();
-      clearNativeSelection();
+      document.getSelection()?.removeAllRanges();
 
       const view = document.defaultView;
 
-      if (view && typeof view.requestAnimationFrame === 'function') {
-        view.requestAnimationFrame(() => {
-          clearNativeSelection();
-          releaseNativeSelectionGuard();
+      if (evt && view && typeof view.requestAnimationFrame === 'function') {
+        this._nativeSelectionReleaseFrame = view.requestAnimationFrame(() => {
+          this._nativeSelectionReleaseFrame = undefined;
+          this._releaseNativeSelectionGuard();
         });
       } else {
-        releaseNativeSelectionGuard();
+        this._releaseNativeSelectionGuard();
       }
     } else {
-      releaseNativeSelectionGuard();
+      this._releaseNativeSelectionGuard();
     }
 
     // Remove event handlers
@@ -942,7 +1074,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Hide selection area
     css(this._area, 'display', 'none');
-  }
+  };
 
   _recalculateSelectionAreaRect(): void {
     const {
@@ -975,23 +1107,30 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     if (
       _areaClientLocation.x2 + this._scrollDelta.x <
-      _containerRect!.left + startScrollMargins.x
+      _containerRect.left + startScrollMargins.x
     ) {
       _scrollSpeed.x = scrollLeft
         ? -abs(
-            _containerRect!.left - _areaClientLocation.x2 - this._scrollDelta.x
+            _containerRect.left - _areaClientLocation.x2 - this._scrollDelta.x
           )
         : 0;
-      x2 = max(x2, this._container!.scrollLeft);
+      x2 = max(
+        x2,
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollLeft
+      );
     } else if (
       _areaClientLocation.x2 + this._scrollDelta.x >
-      _containerRect!.right - startScrollMargins.x
+      _containerRect.right - startScrollMargins.x
     ) {
       _scrollSpeed.x =
         scrollWidth - scrollLeft - clientWidth
           ? abs(
-              _containerRect!.left +
-                this._container!.clientWidth -
+              _containerRect.left +
+                (
+                  this._container ??
+                  failInvariant('Expected value to be defined')
+                ).clientWidth -
                 _areaClientLocation.x2 -
                 this._scrollDelta.x
             )
@@ -1002,28 +1141,35 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
     if (
       _areaClientLocation.y2 + this._scrollDelta.y <
-      _containerRect!.top + startScrollMargins.y
+      _containerRect.top + startScrollMargins.y
     ) {
       _scrollSpeed.y = scrollTop
         ? -abs(
-            _containerRect!.top -
+            _containerRect.top -
               _areaClientLocation.y2 -
               this._scrollDelta.y +
               startScrollMargins.y
           )
         : 0;
-      y2 = max(y2, this._container!.scrollTop);
+      y2 = max(
+        y2,
+        (this._container ?? failInvariant('Expected value to be defined'))
+          .scrollTop
+      );
     } else if (
       _areaClientLocation.y2 + this._scrollDelta.y >
-      _containerRect!.bottom - startScrollMargins.y
+      _containerRect.bottom - startScrollMargins.y
     ) {
       _scrollSpeed.y =
         scrollHeight - scrollTop - clientHeight
           ? abs(
               _areaClientLocation.y2 +
                 this._scrollDelta.y -
-                (_containerRect!.top +
-                  this._container!.clientHeight -
+                (_containerRect.top +
+                  (
+                    this._container ??
+                    failInvariant('Expected value to be defined')
+                  ).clientHeight -
                   startScrollMargins.y)
             )
           : 0;
@@ -1075,14 +1221,15 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     const invert = overlap === 'invert';
     const newlyTouched: Element[] = [];
+    const newlyTouchedSet = new Set<Element>();
     const added: Element[] = [];
     const removed: Element[] = [];
+    const selectedSet = new Set(selected);
+    const storedSet = new Set(stored);
+    const touchedSet = new Set(touched);
 
     // Find newly selected elements
-    // performance-critical loop.
-    for (let i = 0; i < _selectables.length; i++) {
-      const node = _selectables[i];
-
+    for (const node of _selectables) {
       // Check if area intersects element
       if (
         intersectsScroll(
@@ -1093,40 +1240,39 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
         )
       ) {
         // Check if the element wasn't present in the last selection.
-        if (!selected.includes(node)) {
+        if (!selectedSet.has(node)) {
           // Check if user wants to invert the selection for already selected elements
-          if (invert && stored.includes(node)) {
+          if (invert && storedSet.has(node)) {
             removed.push(node);
 
             continue;
           }
           added.push(node);
-        } else if (stored.includes(node) && !touched.includes(node)) {
+        } else if (storedSet.has(node) && !touchedSet.has(node)) {
           touched.push(node);
+          touchedSet.add(node);
         }
 
         newlyTouched.push(node);
+        newlyTouchedSet.add(node);
       }
     }
 
     // Re-select elements which were previously stored
     if (invert) {
-      added.push(...stored.filter((v) => !selected.includes(v)));
+      added.push(...stored.filter((value) => !selectedSet.has(value)));
     }
 
     // Check which elements where removed since last selection
     const keep = overlap === 'keep';
 
-    // performance-critical loop.
-    for (let i = 0; i < selected.length; i++) {
-      const node = selected[i];
-
+    for (const node of selected) {
       if (
-        !newlyTouched.includes(node) &&
+        !newlyTouchedSet.has(node) &&
         !(
           // Check if user wants to keep previously selected elements, e.g.
           // not make them part of the current selection as soon as they're touched.
-          (keep && stored.includes(node))
+          keep && storedSet.has(node)
         )
       ) {
         removed.push(node);
@@ -1184,20 +1330,24 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
    */
   deselect(query: SelectAllSelectors, quiet = false) {
     const { changed, selected, stored } = this._selection;
+    const selectedSet = new Set(selected);
+    const storedSet = new Set(stored);
 
     const elements = selectAll(query, this._options.document).filter(
-      (el) => selected.includes(el) || stored.includes(el)
+      (el) => selectedSet.has(el) || storedSet.has(el)
     );
 
     if (elements.length === 0) {
       return;
     }
 
-    this._selection.stored = stored.filter((el) => !elements.includes(el));
-    this._selection.selected = selected.filter((el) => !elements.includes(el));
+    const elementSet = new Set(elements);
+    const removedSet = new Set(changed.removed);
+    this._selection.stored = stored.filter((el) => !elementSet.has(el));
+    this._selection.selected = selected.filter((el) => !elementSet.has(el));
     this._selection.changed.added = [];
     this._selection.changed.removed.push(
-      ...elements.filter((el) => !changed.removed.includes(el))
+      ...elements.filter((el) => !removedSet.has(el))
     );
 
     // We don't know which element was "selected" first so clear it
@@ -1245,8 +1395,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
    */
   select(query: SelectAllSelectors, quiet = false): Element[] {
     const { changed, selected, stored } = this._selection;
+    const selectedSet = new Set(selected);
+    const storedSet = new Set(stored);
     const elements = selectAll(query, this._options.document).filter(
-      (el) => !selected.includes(el) && !stored.includes(el)
+      (el) => !selectedSet.has(el) && !storedSet.has(el)
     );
 
     // Update element lists

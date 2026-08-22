@@ -12,6 +12,7 @@ import {
   schema,
 } from '@platejs/plite';
 import {
+  failInvariant,
   getCompiledSchemaPropertyId,
   getSchemaElementSourceReference,
   preserveCompiledSchemaPropertyIdentity,
@@ -23,7 +24,6 @@ import type {
   EditorSchemaIdentity,
 } from '../../lib/editor/editorApplicationSchema';
 import type {
-  AnyBasePluginDefinition,
   AnyBasePlugin,
   BasePlugin,
   DefinitionOf,
@@ -108,13 +108,13 @@ const evaluatePluginSchemaIdentity = (
     resolving = new Set();
     resolvingSchemaIdentities.set(owner, resolving);
   }
-  if (resolving.has(plugin as object)) return null;
+  if (resolving.has(plugin)) return null;
 
-  resolving.add(plugin as object);
+  resolving.add(plugin);
   try {
     return evaluatePluginSchemaDeclaration(editor, plugin);
   } finally {
-    resolving.delete(plugin as object);
+    resolving.delete(plugin);
     if (resolving.size === 0) resolvingSchemaIdentities.delete(owner);
   }
 };
@@ -352,7 +352,7 @@ const compileResolvedPluginTargetBinding = (
     ),
   });
 
-  editorBindings.set(plugin as object, binding);
+  editorBindings.set(plugin, binding);
 
   return binding;
 };
@@ -362,9 +362,7 @@ export const getResolvedPluginTargetBinding = (
   editor: BaseEditor,
   plugin: Pick<AnyBasePlugin, 'name' | 'targetPlugins'>
 ): ResolvedPluginTargetBinding => {
-  const cached = resolvedTargetBindings
-    .get(getPlateOwner(editor))
-    ?.get(plugin as object);
+  const cached = resolvedTargetBindings.get(getPlateOwner(editor))?.get(plugin);
 
   return cached ?? compileResolvedPluginTargetBinding(editor, plugin);
 };
@@ -466,12 +464,7 @@ export const evaluatePluginSchemaDeclaration = (
         typeof defaultValue === 'object' &&
         'name' in defaultValue
           ? {
-              type: resolveReference(
-                editor,
-                plugin,
-                defaultValue as PluginReference,
-                references
-              ),
+              type: resolveReference(editor, plugin, defaultValue, references),
             }
           : defaultValue;
 
@@ -481,7 +474,7 @@ export const evaluatePluginSchemaDeclaration = (
       });
     },
   });
-  const context: PluginSchemaContext<AnyBasePluginDefinition> = Object.freeze({
+  const context: PluginSchemaContext = Object.freeze({
     initialState: plugin.initialState,
     name: plugin.name,
     plugins,
@@ -526,7 +519,7 @@ export const getAuthoredPluginPropertyHandle = (
 ): SchemaPropertyHandle | undefined => {
   const declaration = evaluatePluginSchemaDeclaration(editor, plugin);
 
-  if (!declaration) return;
+  if (!declaration) return undefined;
 
   const elementProperty = declaration.element?.properties?.[localId];
 
@@ -543,7 +536,7 @@ export const getAuthoredPluginPropertyHandle = (
 
   const property = declaration.properties?.[localId];
 
-  if (!property) return;
+  if (!property) return undefined;
 
   return schema.handle.property(
     'key' in property ? property : Object.freeze({ ...property, key: localId })
@@ -605,7 +598,7 @@ const lowerPluginContentRule = (
   references: PendingReference[]
 ): SchemaContentRule => {
   switch (rule.kind) {
-    case 'type':
+    case 'type': {
       return 'source' in rule && typeof rule.source === 'string'
         ? Object.freeze({
             kind: 'type' as const,
@@ -618,8 +611,9 @@ const lowerPluginContentRule = (
             ),
           })
         : rule;
+    }
     case 'all':
-    case 'any':
+    case 'any': {
       return Object.freeze({
         ...rule,
         rules: Object.freeze(
@@ -628,7 +622,8 @@ const lowerPluginContentRule = (
           )
         ),
       });
-    case 'not':
+    }
+    case 'not': {
       return Object.freeze({
         ...rule,
         rule: lowerPluginContentRule(
@@ -638,8 +633,10 @@ const lowerPluginContentRule = (
           references
         ),
       });
-    default:
+    }
+    default: {
       return rule;
+    }
   }
 };
 
@@ -679,7 +676,7 @@ const lowerPluginTarget = (
   references: PendingReference[]
 ): SchemaTarget => {
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       return 'source' in target && typeof target.source === 'string'
         ? Object.freeze({
             kind: 'type' as const,
@@ -692,7 +689,8 @@ const lowerPluginTarget = (
             ),
           })
         : target;
-    case 'types':
+    }
+    case 'types': {
       if ('sources' in target && Array.isArray(target.sources)) {
         const authoredSources = getSchemaElementSourceReference(target);
 
@@ -721,8 +719,9 @@ const lowerPluginTarget = (
       }
 
       return target;
+    }
     case 'and':
-    case 'or':
+    case 'or': {
       return Object.freeze({
         ...target,
         targets: Object.freeze(
@@ -731,8 +730,9 @@ const lowerPluginTarget = (
           )
         ),
       });
+    }
     case 'not':
-    case 'parent':
+    case 'parent': {
       return Object.freeze({
         ...target,
         target: lowerPluginTarget(
@@ -742,8 +742,10 @@ const lowerPluginTarget = (
           references
         ),
       });
-    default:
+    }
+    default: {
       return target;
+    }
   }
 };
 
@@ -756,7 +758,7 @@ const lowerPluginProperty = <
   references: PendingReference[]
 ): TProperty =>
   property.target
-    ? (Object.freeze({
+    ? Object.freeze({
         ...property,
         target: lowerPluginTarget(
           property.target,
@@ -764,7 +766,7 @@ const lowerPluginProperty = <
           elementTypes,
           references
         ),
-      }) as TProperty)
+      })
     : property;
 
 const lowerPluginSchemaDeclaration = (
@@ -775,7 +777,7 @@ const lowerPluginSchemaDeclaration = (
 ): PluginSchemaDeclaration => {
   const element = 'element' in declaration ? declaration.element : undefined;
   const mark = 'mark' in declaration ? declaration.mark : undefined;
-  const properties = declaration.properties;
+  const { properties } = declaration;
   const nextElement = element
     ? Object.freeze({
         ...element,
@@ -894,7 +896,10 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     authoredElementTypes.set(
       name,
       Object.freeze({
-        family: getPluginSchemaFamily(pluginsByName.get(name)!),
+        family: getPluginSchemaFamily(
+          pluginsByName.get(name) ??
+            failInvariant('Expected value to be defined')
+        ),
         type:
           declaration && 'element' in declaration && declaration.element
             ? (declaration.element.type ?? name)
@@ -1039,7 +1044,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
     }
     const propertyEntries = Object.freeze([
       ...elementProperties.map((property) =>
-        Object.freeze({ localId: property.key as string, property })
+        Object.freeze({ localId: property.key, property })
       ),
       ...declaredPropertyEntries,
       ...(textProperty
@@ -1065,7 +1070,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
         propertyEntries.flatMap(({ localId }) =>
           textProperty && localId === propertyKey
             ? []
-            : [[localId, propertyHandles[localId]!]]
+            : [[localId, propertyHandles[localId]]]
         )
       )
     );
@@ -1086,7 +1091,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       ...(element
         ? {
             elements: Object.freeze({
-              [elementType]: elements[elementType]!,
+              [elementType]: elements[elementType],
             }),
           }
         : {}),
@@ -1250,7 +1255,7 @@ const lowerApplicationContentRule = (
   rule: SchemaContentRule
 ): SchemaContentRule => {
   switch (rule.kind) {
-    case 'type':
+    case 'type': {
       return 'source' in rule
         ? Object.freeze({
             kind: 'type' as const,
@@ -1260,21 +1265,25 @@ const lowerApplicationContentRule = (
             ),
           })
         : rule;
+    }
     case 'all':
-    case 'any':
+    case 'any': {
       return Object.freeze({
         ...rule,
         rules: Object.freeze(
           rule.rules.map((child) => lowerApplicationContentRule(model, child))
         ),
       });
-    case 'not':
+    }
+    case 'not': {
       return Object.freeze({
         ...rule,
         rule: lowerApplicationContentRule(model, rule.rule),
       });
-    default:
+    }
+    default: {
       return rule;
+    }
   }
 };
 
@@ -1305,7 +1314,7 @@ const lowerApplicationTarget = (
   target: SchemaTarget
 ): SchemaTarget => {
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       return 'source' in target
         ? Object.freeze({
             kind: 'type' as const,
@@ -1315,7 +1324,8 @@ const lowerApplicationTarget = (
             ),
           })
         : target;
-    case 'types':
+    }
+    case 'types': {
       if ('sources' in target && Array.isArray(target.sources)) {
         const authoredSources = getSchemaElementSourceReference(target);
 
@@ -1342,22 +1352,26 @@ const lowerApplicationTarget = (
       }
 
       return target;
+    }
     case 'and':
-    case 'or':
+    case 'or': {
       return Object.freeze({
         ...target,
         targets: Object.freeze(
           target.targets.map((child) => lowerApplicationTarget(model, child))
         ),
       });
+    }
     case 'not':
-    case 'parent':
+    case 'parent': {
       return Object.freeze({
         ...target,
         target: lowerApplicationTarget(model, target.target),
       });
-    default:
+    }
+    default: {
       return target;
+    }
   }
 };
 
@@ -1370,12 +1384,12 @@ export const compileEditorApplicationSchema = (
   model: CompiledPlateModel,
   policy: EditorApplicationSchema | undefined
 ): EditorSchemaContribution | undefined => {
-  if (!policy) return;
+  if (!policy) return undefined;
 
   const overrides: EditorSchemaOverride[] = [];
 
   for (const input of policy.overrides ?? []) {
-    const source = input.source;
+    const { source } = input;
     const binding = model.byName[source];
 
     if (!binding) {
@@ -1477,7 +1491,7 @@ export const applyEditorApplicationSchema = (
   for (const override of applicationSchema.overrides) {
     if (override.kind === 'property') continue;
     if (!override.type) continue;
-    const source = override.source;
+    const { source } = override;
 
     if (finalTypes.has(source)) {
       throw new Error(
@@ -1489,8 +1503,8 @@ export const applyEditorApplicationSchema = (
 
   const bindings = model.bindings.map((binding) => {
     const type = finalTypes.get(binding.name);
-    const propertyHandles = binding.propertyHandles;
-    const propertyKey = binding.propertyKey;
+    const { propertyHandles } = binding;
+    const { propertyKey } = binding;
 
     if (type && (!binding.elementType || !binding.schema.type)) {
       throw new Error(
@@ -1505,7 +1519,11 @@ export const applyEditorApplicationSchema = (
       propertyKey,
       schema: Object.freeze({
         ...binding.schema,
-        ...(binding.kind === 'mark' ? { key: propertyKey! } : {}),
+        ...(binding.kind === 'mark'
+          ? {
+              key: propertyKey ?? failInvariant('Expected value to be defined'),
+            }
+          : {}),
         properties: Object.freeze(
           Object.fromEntries(
             Object.keys(binding.schema.properties).map((localId) => [
@@ -1619,7 +1637,10 @@ export function getCompiledPlatePlugin(
   const name = typeof plugin === 'string' ? plugin : plugin.name;
 
   return candidatePluginSets.has(owner)
-    ? candidatePluginSets.get(owner)!.byName[name]
+    ? (
+        candidatePluginSets.get(owner) ??
+        failInvariant('Expected value to be defined')
+      ).byName[name]
     : getPlateRuntime(editor).plugins[name];
 }
 
@@ -1662,7 +1683,8 @@ export const getCompiledPlatePluginApi = (
   const name = typeof plugin === 'string' ? plugin : plugin.name;
 
   return candidatePluginApis.has(owner)
-    ? candidatePluginApis.get(owner)![name]
+    ? (candidatePluginApis.get(owner) ??
+        failInvariant('Expected value to be defined'))[name]
     : getPlateModelPublication(editor)?.apiByPlugin[name];
 };
 

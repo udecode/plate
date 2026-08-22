@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant, type Element } from '@platejs/plite';
+import { createEditor, type Element } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
@@ -105,7 +105,7 @@ describe('selection rebase contract', () => {
             },
             { text: '' },
           ],
-        } as Descendant,
+        },
       ],
       selection: {
         kind: 'text' as const,

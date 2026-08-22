@@ -12,11 +12,12 @@ export function LinkToolbarButton(
 ) {
   const editor = useEditor();
   const { api } = useEditorPlugin(linkPlugin);
-  const pressed = useEditorSelector((editor) => {
-    const selection = editor.read.selection();
+  const pressed = useEditorSelector((innerEditor) => {
+    const selection = innerEditor.read.selection();
 
     return (
-      !!selection && editor.read.nodes.some({ at: selection, type: linkPlugin })
+      !!selection &&
+      innerEditor.read.nodes.some({ at: selection, type: linkPlugin })
     );
   });
 
@@ -45,7 +46,9 @@ export function LinkToolbarButton(
           api.trigger({ focused: true });
         }
       }}
-      onMouseDown={(event) => event.preventDefault()}
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       data-plate-focus
       tooltip="Link"
     >

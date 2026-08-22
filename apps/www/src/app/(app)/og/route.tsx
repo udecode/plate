@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 async function loadAssets(): Promise<
-  { data: Buffer; name: string; style: 'normal'; weight: 400 | 600 }[]
+  Array<{ data: Buffer; name: string; style: 'normal'; weight: 400 | 600 }>
 > {
   const [
     { base64Font: normal },

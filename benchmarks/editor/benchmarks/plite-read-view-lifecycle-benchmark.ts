@@ -13,7 +13,7 @@ const sampleCount = 30;
 const readsPerSample = 5000;
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const summarize = (values: readonly number[]) => {
   const sorted = [...values].sort((left, right) => left - right);
@@ -33,7 +33,7 @@ const runCohort = (extensionCount: number) => {
     extensions.push(
       defineExtension(`read-view-${extensionCount}-${index}`, {
         read: ({ state }) => {
-          factoryCalls++;
+          factoryCalls += 1;
 
           return { childCount: () => state.children().length };
         },
@@ -89,7 +89,7 @@ const runCohort = (extensionCount: number) => {
 };
 
 const rows = [runCohort(1), runCohort(100)];
-const widthRatio = rows[1]!.timingMs.p95 / rows[0]!.timingMs.p95;
+const widthRatio = rows[1].timingMs.p95 / rows[0].timingMs.p95;
 const structuralFailures = rows.filter(
   (row) =>
     row.initialFactoryCalls !== row.extensionCount ||

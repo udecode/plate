@@ -44,7 +44,7 @@ if (registeredDom) {
 
 afterAll(() => {
   if (registeredDom) {
-    GlobalRegistrator.unregister();
+    void GlobalRegistrator.unregister();
   }
 });
 
@@ -53,7 +53,7 @@ class TestCanvasRenderingContext2D {
 
   measureText(text: string): { width: number } {
     const fontSize = Number(this.font.match(/(\d+(?:\.\d+)?)px/)?.[1] ?? 16);
-    const textWidth = /700/.test(this.font)
+    const textWidth = this.font.includes('700')
       ? fontSize * 0.65
       : /Menlo|monospace/.test(this.font)
         ? fontSize * 0.7
@@ -74,7 +74,10 @@ class TestOffscreenCanvas {
   }
 }
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const wait = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const StrictModeWrapper = ({ children }: PropsWithChildren) =>
   createElement(StrictMode, null, children);
@@ -135,14 +138,14 @@ describe('plite-layout public docs', () => {
   it('keeps package and library docs beta-ready and proof-gated', () => {
     const packageReadme = readFileSync(
       new URL('../README.md', import.meta.url),
-      'utf8'
+      'utf-8'
     );
     const libraryReadmeUrl = new URL(
       '../../../docs/libraries/plite-layout/README.md',
       import.meta.url
     );
     const libraryReadme = existsSync(libraryReadmeUrl)
-      ? readFileSync(libraryReadmeUrl, 'utf8')
+      ? readFileSync(libraryReadmeUrl, 'utf-8')
       : packageReadme;
 
     expect(packageReadme).toContain('Page layout helpers');
@@ -175,16 +178,16 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const subscribeCommit = editor.subscribeCommit;
+    const { subscribeCommit } = editor;
     let subscriptions = 0;
     let unsubscriptions = 0;
 
     editor.subscribeCommit = (listener) => {
-      subscriptions++;
+      subscriptions += 1;
       const unsubscribe = subscribeCommit(listener);
 
       return () => {
-        unsubscriptions++;
+        unsubscriptions += 1;
         unsubscribe();
       };
     };
@@ -221,16 +224,16 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const subscribeCommit = editor.subscribeCommit;
+    const { subscribeCommit } = editor;
     let subscriptions = 0;
     let unsubscriptions = 0;
 
     editor.subscribeCommit = (listener) => {
-      subscriptions++;
+      subscriptions += 1;
       const unsubscribe = subscribeCommit(listener);
 
       return () => {
-        unsubscriptions++;
+        unsubscriptions += 1;
         unsubscribe();
       };
     };
@@ -278,7 +281,7 @@ describe('createPlitePageLayout', () => {
     const layout = result.current;
 
     await act(async () => {});
-    const composeCount = layout.getMetrics().composeCount;
+    const { composeCount } = layout.getMetrics();
 
     await act(async () => {
       rerender({ page: createPage(72) });
@@ -323,7 +326,7 @@ describe('createPlitePageLayout', () => {
       version: 1,
     });
 
-    expect(output.fragments[0]!.lines[0]).toMatchObject({
+    expect(output.fragments[0].lines[0]).toMatchObject({
       end: 'Text   '.length,
       start: 0,
       text: 'Text   ',
@@ -391,11 +394,11 @@ describe('createPlitePageLayout', () => {
       settings,
       version: 1,
     });
-    const lines = output.fragments[0]!.lines;
+    const { lines } = output.fragments[0];
 
     expect(lines).toHaveLength(2);
-    expect(lines[0]!.text).toBe('alpha beta');
-    expect(lines[0]!.runs).toEqual([
+    expect(lines[0].text).toBe('alpha beta');
+    expect(lines[0].runs).toEqual([
       expect.objectContaining({
         leafRange: { end: 5, start: 0 },
         left: 0,
@@ -417,12 +420,12 @@ describe('createPlitePageLayout', () => {
         text: 'beta',
       }),
     ]);
-    expect(lines[0]!.runs![0]!.width).toBeCloseTo(48);
-    expect(lines[0]!.runs![1]!.width).toBeCloseTo(5.28);
-    expect(lines[0]!.runs![2]!.left).toBeCloseTo(53.28);
+    expect(lines[0].runs![0].width).toBeCloseTo(48);
+    expect(lines[0].runs![1].width).toBeCloseTo(5.28);
+    expect(lines[0].runs![2].left).toBeCloseTo(53.28);
 
-    expect(lines[1]!.text).toBe('code');
-    expect(lines[1]!.runs).toEqual([
+    expect(lines[1].text).toBe('code');
+    expect(lines[1].runs).toEqual([
       expect.objectContaining({
         leafRange: { end: 5, start: 1 },
         left: 0,
@@ -472,10 +475,10 @@ describe('createPlitePageLayout', () => {
       settings,
       version: 1,
     });
-    const line = output.fragments[0]!.lines[0]!;
+    const line = output.fragments[0].lines[0];
 
     expect(line.width).toBe(80);
-    expect(line.runs![0]!.width).toBe(80);
+    expect(line.runs![0].width).toBe(80);
   });
 
   it('keeps hard line breaks when estimating cold Pretext blocks', () => {
@@ -518,7 +521,7 @@ describe('createPlitePageLayout', () => {
       version: 1,
     });
 
-    expect(output.fragments[0]!.lines.map((line) => line.text)).toEqual([
+    expect(output.fragments[0].lines.map((line) => line.text)).toEqual([
       'alpha',
       'beta',
       'gamma',
@@ -547,7 +550,7 @@ describe('createPlitePageLayout', () => {
     });
 
     expect(rects).toHaveLength(1);
-    expect(rects[0]!.width).toBeGreaterThan(0);
+    expect(rects[0].width).toBeGreaterThan(0);
 
     layout.destroy();
   });
@@ -569,7 +572,7 @@ describe('createPlitePageLayout', () => {
 
     expect(snapshot.settings).toEqual({ margins: 72, preset: 'letter' });
     expect(snapshot.page.width).toBe(816);
-    expect(snapshot.blocks[0]!.text).toBe('Generic layout call site.');
+    expect(snapshot.blocks[0].text).toBe('Generic layout call site.');
 
     layout.destroy();
   });
@@ -646,9 +649,7 @@ describe('createPlitePageLayout', () => {
     const snapshot = layout.getSnapshot();
 
     expect(snapshot.measurementProfile.engine.id).toBe('estimated');
-    expect(snapshot.blocks[0]!.text).toBe(
-      'Estimated generic layout call site.'
-    );
+    expect(snapshot.blocks[0].text).toBe('Estimated generic layout call site.');
 
     layout.destroy();
   });
@@ -665,10 +666,10 @@ describe('createPlitePageLayout', () => {
     const layout = createPliteLayout(editor, {
       page: { margins: 72, preset: 'letter' },
     });
-    const composeCount = layout.getMetrics().composeCount;
+    const { composeCount } = layout.getMetrics();
     let wakeCount = 0;
     const unsubscribe = layout.subscribe(() => {
-      wakeCount++;
+      wakeCount += 1;
     });
 
     layout.reconfigure({ page: { margins: 96, preset: 'a4' } });
@@ -736,12 +737,10 @@ describe('createPlitePageLayout', () => {
       phase: 'notify',
       reason: 'settings',
     });
-    expect(errors[0]!.cause).toBeInstanceOf(Error);
-    expect((errors[0]!.cause as Error).message).toBe(
-      'broken layout subscriber'
-    );
+    expect(errors[0].cause).toBeInstanceOf(Error);
+    expect((errors[0].cause as Error).message).toBe('broken layout subscriber');
 
-    const composeCount = layout.getMetrics().composeCount;
+    const { composeCount } = layout.getMetrics();
 
     expect(() => layout.refresh('settings')).not.toThrow();
     expect(layout.getMetrics().composeCount).toBe(composeCount + 1);
@@ -775,7 +774,7 @@ describe('createPlitePageLayout', () => {
       const snapshot = layout.getSnapshot();
 
       expect(snapshot.settings).toEqual({ margins: 72, preset: 'letter' });
-      expect(snapshot.blocks[0]!.text).toBe('Headless layout call site.');
+      expect(snapshot.blocks[0].text).toBe('Headless layout call site.');
       expect(layout.getMetrics().pageCount).toBe(1);
 
       layout.destroy();
@@ -937,15 +936,15 @@ describe('createPlitePageLayout', () => {
       { ...snapshot, writerId: '' },
       {
         ...snapshot,
-        breaks: [{ ...snapshot.breaks[0]!, blockIndex: -1 }],
+        breaks: [{ ...snapshot.breaks[0], blockIndex: -1 }],
       },
       {
         ...snapshot,
-        breaks: [{ ...snapshot.breaks[0]!, fragmentId: '' }],
+        breaks: [{ ...snapshot.breaks[0], fragmentId: '' }],
       },
       {
         ...snapshot,
-        breaks: [{ ...snapshot.breaks[0]!, pageIndex: -1 }],
+        breaks: [{ ...snapshot.breaks[0], pageIndex: -1 }],
       },
       {
         ...snapshot,
@@ -982,7 +981,7 @@ describe('createPlitePageLayout', () => {
     });
     let wakeCount = 0;
     const unsubscribe = layout.subscribe(() => {
-      wakeCount++;
+      wakeCount += 1;
     });
 
     editor.update((tx) => {
@@ -1016,7 +1015,7 @@ describe('createPlitePageLayout', () => {
       page: pageSettings,
       textChangeRefresh: 'deferred',
     });
-    const composeCount = layout.getMetrics().composeCount;
+    const { composeCount } = layout.getMetrics();
 
     for (const text of ['a', 'b', 'c', 'd']) {
       editor.update((tx) => {
@@ -1050,7 +1049,7 @@ describe('createPlitePageLayout', () => {
       page: pageSettings,
       textChangeRefresh: { delayMs: 25, maxDelayMs: 100, mode: 'deferred' },
     });
-    const composeCount = layout.getMetrics().composeCount;
+    const { composeCount } = layout.getMetrics();
 
     for (const text of ['a', 'b', 'c', 'd']) {
       editor.update((tx) => {
@@ -1103,7 +1102,7 @@ describe('createPlitePageLayout', () => {
 
     expect(layout.getSnapshot().root).toBe('header');
     expect(layout.getSnapshot().blocks).toHaveLength(1);
-    expect(layout.getSnapshot().blocks[0]!.text).toBe(headerText);
+    expect(layout.getSnapshot().blocks[0].text).toBe(headerText);
     expect(
       layout.projectRange({
         kind: 'text',
@@ -1172,19 +1171,19 @@ describe('createPlitePageLayout', () => {
       { pageGap: 24, pageLayoutMode: 'spread' }
     );
     const firstSingleSecondPageRect = singleRects.find(
-      (rect) => rect.top >= snapshot.pages[0]!.height
+      (rect) => rect.top >= snapshot.pages[0].height
     );
     const firstSpreadSecondPageRect = spreadRects.find(
-      (rect) => rect.left >= snapshot.pages[0]!.width
+      (rect) => rect.left >= snapshot.pages[0].width
     );
 
     expect(firstSingleSecondPageRect?.top).toBe(
-      snapshot.pages[0]!.height + 24 + snapshot.pages[1]!.content.top
+      snapshot.pages[0].height + 24 + snapshot.pages[1].content.top
     );
     expect(firstSpreadSecondPageRect?.left).toBe(
-      snapshot.pages[0]!.width + 24 + snapshot.pages[1]!.content.left
+      snapshot.pages[0].width + 24 + snapshot.pages[1].content.left
     );
-    expect(firstSpreadSecondPageRect?.top).toBe(snapshot.pages[1]!.content.top);
+    expect(firstSpreadSecondPageRect?.top).toBe(snapshot.pages[1].content.top);
 
     layout.destroy();
   });
@@ -1216,15 +1215,15 @@ describe('createPlitePageLayout', () => {
     });
 
     expect(partialRects).toHaveLength(1);
-    expect(partialRects[0]!.left).toBe(
-      layout.getSnapshot().pages[0]!.content.left
+    expect(partialRects[0].left).toBe(
+      layout.getSnapshot().pages[0].content.left
     );
-    expect(partialRects[0]!.width).toBe(40);
+    expect(partialRects[0].width).toBe(40);
     expect(caretRects).toEqual([
       {
-        height: layout.getSnapshot().blocks[0]!.lineHeight,
-        left: layout.getSnapshot().pages[0]!.content.left + 40,
-        top: layout.getSnapshot().pages[0]!.content.top,
+        height: layout.getSnapshot().blocks[0].lineHeight,
+        left: layout.getSnapshot().pages[0].content.left + 40,
+        top: layout.getSnapshot().pages[0].content.top,
         width: 0,
       },
     ]);
@@ -1262,7 +1261,7 @@ describe('createPlitePageLayout', () => {
 
     expect(rects).toHaveLength(2);
     expect(rects.map((rect) => rect.width)).toEqual([40, 48]);
-    expect(rects[1]!.top).toBeGreaterThan(rects[0]!.top);
+    expect(rects[1].top).toBeGreaterThan(rects[0].top);
 
     layout.destroy();
   });
@@ -1298,7 +1297,7 @@ describe('createPlitePageLayout', () => {
       },
     });
     const snapshot = layout.getSnapshot();
-    const block = snapshot.blocks[0]!;
+    const block = snapshot.blocks[0];
     const projection = getPlitePageLayoutProjection(snapshot);
 
     expect(block.text).toBe('Bold code');
@@ -1324,7 +1323,7 @@ describe('createPlitePageLayout', () => {
       },
     ]);
     expect(
-      projection.lines[0]!.runs.map((run) => ({
+      projection.lines[0].runs.map((run) => ({
         left: run.left,
         path: run.path,
         range: run.range,
@@ -1632,7 +1631,7 @@ describe('createPlitePageLayout', () => {
           expect.objectContaining({
             path: [0, 2],
             rect: expect.objectContaining({
-              top: snapshot.pages[1]!.content.top,
+              top: snapshot.pages[1].content.top,
             }),
           }),
         ],
@@ -1669,7 +1668,7 @@ describe('createPlitePageLayout', () => {
   it('does not recursively extract text or default cell boxes for provider-owned unit blocks', () => {
     const rows = Array.from({ length: 500 }, (_, rowIndex) => ({
       type: 'table-row',
-      children: Array.from({ length: 3 }, (_, cellIndex) => ({
+      children: Array.from({ length: 3 }, (innerValue, cellIndex) => ({
         type: 'table-cell',
         children: [{ text: `Row ${rowIndex + 1} cell ${cellIndex + 1}` }],
       })),
@@ -1686,12 +1685,12 @@ describe('createPlitePageLayout', () => {
     const page = { margins: 96, preset: 'a4' } as const;
     const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
-      nodeLayout({ element, path, pageSettings }) {
+      nodeLayout({ element, path, pageSettings: innerPageSettings }) {
         if (element.type !== 'table') {
           return { type: 'text' };
         }
 
-        const pageRect = createPlitePage(pageSettings);
+        const pageRect = createPlitePage(innerPageSettings);
 
         return {
           boxes: [
@@ -1725,13 +1724,13 @@ describe('createPlitePageLayout', () => {
       page,
       typography: {
         text() {
-          textStyleCalls++;
+          textStyleCalls += 1;
 
           return {};
         },
       },
     });
-    const block = layout.getSnapshot().blocks[0]!;
+    const block = layout.getSnapshot().blocks[0];
 
     expect(textStyleCalls).toBeLessThanOrEqual(1);
     expect(block.runs).toEqual([]);
@@ -1776,12 +1775,17 @@ describe('createPlitePageLayout', () => {
     const createLayout = (mode: 'read' | 'write') =>
       createPlitePageLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
-        nodeLayout({ defaults, element, path, pageSettings }) {
+        nodeLayout({
+          defaults,
+          element,
+          path,
+          pageSettings: innerPageSettings2,
+        }) {
           if (element.type !== 'table') {
             return { boxes: defaults.boxes, type: 'text' };
           }
 
-          const page = createPlitePage(pageSettings);
+          const page = createPlitePage(innerPageSettings2);
 
           return {
             boxes: defaults.boxes,
@@ -1812,7 +1816,7 @@ describe('createPlitePageLayout', () => {
     expect(storedSnapshot?.writerId).toBe('writer-units');
     expect(storedSnapshot?.breaks).toEqual([
       expect.objectContaining({
-        fragmentId: writer.getSnapshot().fragments[1]!.id,
+        fragmentId: writer.getSnapshot().fragments[1].id,
         pageIndex: 1,
         path: [0],
       }),
@@ -1844,12 +1848,17 @@ describe('createPlitePageLayout', () => {
     });
     const layout = createPlitePageLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
-      nodeLayout({ defaults, element, path, pageSettings }) {
+      nodeLayout({
+        defaults,
+        element,
+        path,
+        pageSettings: innerPageSettings3,
+      }) {
         if (element.type !== 'image') {
           return { boxes: defaults.boxes, type: 'text' };
         }
 
-        const page = createPlitePage(pageSettings);
+        const page = createPlitePage(innerPageSettings3);
 
         return {
           box: {
@@ -1875,7 +1884,7 @@ describe('createPlitePageLayout', () => {
       [0],
       [1],
     ]);
-    expect(snapshot.fragments[0]!.units).toEqual([
+    expect(snapshot.fragments[0].units).toEqual([
       expect.objectContaining({
         kind: 'image',
         path: [0],
@@ -1885,7 +1894,7 @@ describe('createPlitePageLayout', () => {
         }),
       }),
     ]);
-    expect(snapshot.fragments[1]!.top).toBe(snapshot.pages[1]!.content.top);
+    expect(snapshot.fragments[1].top).toBe(snapshot.pages[1].content.top);
 
     layout.destroy();
   });
@@ -1924,9 +1933,9 @@ describe('paginatePlitePageLayoutBlocks', () => {
     expect(output.fragments.map((fragment) => fragment.pageIndex)).toEqual([
       0, 1,
     ]);
-    expect(output.fragments[1]!.top).toBe(page.content.top);
-    expect(output.fragments[0]!.lines[0]!.top).toBe(page.content.top);
-    expect(output.fragments[1]!.lines[0]!.top).toBe(page.content.top);
+    expect(output.fragments[1].top).toBe(page.content.top);
+    expect(output.fragments[0].lines[0].top).toBe(page.content.top);
+    expect(output.fragments[1].lines[0].top).toBe(page.content.top);
   });
 
   it('moves avoid-split structured blocks to the next page when they do not fit', () => {
@@ -1993,7 +2002,7 @@ describe('paginatePlitePageLayoutBlocks', () => {
     expect(output.fragments.map((fragment) => fragment.pageIndex)).toEqual([
       0, 1,
     ]);
-    expect(output.fragments[1]!).toMatchObject({
+    expect(output.fragments[1]).toMatchObject({
       blockIndex: 1,
       lineCount: 2,
       pageIndex: 1,
@@ -2048,19 +2057,19 @@ describe('getPlitePageLayoutProjection', () => {
       { hitTesting: { inlineInset: 2 } }
     );
 
-    expect(projection.lines[0]!.textRect).toEqual({
+    expect(projection.lines[0].textRect).toEqual({
       height: 24,
       left: page.content.left + 2,
       top: page.content.top,
       width: 16,
     });
-    expect(projection.lines[0]!.hitRect).toEqual({
+    expect(projection.lines[0].hitRect).toEqual({
       height: 36,
       left: page.content.left + 2,
       top: page.content.top,
       width: page.content.width - 2,
     });
-    expect(projection.lines[1]!.hitRect).toEqual({
+    expect(projection.lines[1].hitRect).toEqual({
       height: 24,
       left: page.content.left + 2,
       top: page.content.top + 36,
@@ -2128,7 +2137,7 @@ describe('getPlitePageLayoutProjection', () => {
                 },
               },
             },
-            key: `plite-layout:${projection.lines[0]!.fragmentId}:0:0.0:0-5`,
+            key: `plite-layout:${projection.lines[0].fragmentId}:0:0.0:0-5`,
             range: {
               anchor: { path: [0, 0], offset: 0 },
               focus: { path: [0, 0], offset: 5 },
@@ -2146,7 +2155,7 @@ describe('getPlitePageLayoutProjection', () => {
                   height: 24,
                   left: 42,
                   top: 0,
-                  width: projection.blocks[0]!.width - 42,
+                  width: projection.blocks[0].width - 42,
                 },
                 textRect: {
                   height: 24,
@@ -2156,7 +2165,7 @@ describe('getPlitePageLayoutProjection', () => {
                 },
               },
             },
-            key: `plite-layout:${projection.lines[0]!.fragmentId}:0:0.1:0-4`,
+            key: `plite-layout:${projection.lines[0].fragmentId}:0:0.1:0-4`,
             range: {
               anchor: { path: [0, 1], offset: 0 },
               focus: { path: [0, 1], offset: 4 },
@@ -2255,11 +2264,11 @@ describe('getPlitePageLayoutGeometry', () => {
       pageLayoutMode: 'single',
     });
 
-    expect(geometry.width).toBe(pages[0]!.width);
-    expect(geometry.height).toBe(pages[0]!.height * 2 + 24);
+    expect(geometry.width).toBe(pages[0].width);
+    expect(geometry.height).toBe(pages[0].height * 2 + 24);
     expect(geometry.pagePlacements).toEqual([
       { left: 0, top: 0 },
-      { left: 0, top: pages[0]!.height + 24 },
+      { left: 0, top: pages[0].height + 24 },
     ]);
   });
 
@@ -2275,12 +2284,12 @@ describe('getPlitePageLayoutGeometry', () => {
       pageLayoutMode: 'spread',
     });
 
-    expect(geometry.width).toBe(pages[0]!.width * 2 + 24);
-    expect(geometry.height).toBe(pages[0]!.height * 2 + 24);
+    expect(geometry.width).toBe(pages[0].width * 2 + 24);
+    expect(geometry.height).toBe(pages[0].height * 2 + 24);
     expect(geometry.pagePlacements).toEqual([
       { left: 0, top: 0 },
-      { left: pages[0]!.width + 24, top: 0 },
-      { left: 0, top: pages[0]!.height + 24 },
+      { left: pages[0].width + 24, top: 0 },
+      { left: 0, top: pages[0].height + 24 },
     ]);
   });
 });
@@ -2314,7 +2323,7 @@ describe('PagedEditable page mount plan', () => {
         fragmentPaths: [[0]],
         key: 'page-mount:0',
         pageIndexes: [0],
-        size: pages[0]!.height,
+        size: pages[0].height,
         start: 0,
         topLevelIndexes: [0],
         unitPaths: [],
@@ -2324,8 +2333,8 @@ describe('PagedEditable page mount plan', () => {
         fragmentPaths: [[1]],
         key: 'page-mount:1',
         pageIndexes: [1],
-        size: pages[1]!.height,
-        start: pages[0]!.height + 24,
+        size: pages[1].height,
+        start: pages[0].height + 24,
         topLevelIndexes: [1],
         unitPaths: [],
       },
@@ -2334,8 +2343,8 @@ describe('PagedEditable page mount plan', () => {
         fragmentPaths: [[2]],
         key: 'page-mount:2',
         pageIndexes: [2],
-        size: pages[2]!.height,
-        start: (pages[0]!.height + 24) * 2,
+        size: pages[2].height,
+        start: (pages[0].height + 24) * 2,
         topLevelIndexes: [2],
         unitPaths: [],
       },
@@ -2376,7 +2385,7 @@ describe('PagedEditable page mount plan', () => {
         fragmentPaths: [[0], [1]],
         key: 'page-mount:0-1',
         pageIndexes: [0, 1],
-        size: pages[0]!.height,
+        size: pages[0].height,
         start: 0,
         topLevelIndexes: [0, 1],
         unitPaths: [],
@@ -2386,8 +2395,8 @@ describe('PagedEditable page mount plan', () => {
         fragmentPaths: [[2], [3]],
         key: 'page-mount:2',
         pageIndexes: [2],
-        size: pages[2]!.height,
-        start: pages[0]!.height + 24,
+        size: pages[2].height,
+        start: pages[0].height + 24,
         topLevelIndexes: [2, 3],
         unitPaths: [],
       },
@@ -2441,7 +2450,7 @@ describe('PagedEditable page mount plan', () => {
         overscan: 0,
         pages,
         virtualizes: true,
-        viewport: { bottom: pages[0]!.height / 2, top: 0 },
+        viewport: { bottom: pages[0].height / 2, top: 0 },
       }).map((item) => item.index)
     ).toEqual([0]);
   });

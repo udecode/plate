@@ -146,6 +146,65 @@ describe('SelectionArea', () => {
     selection.destroy();
   });
 
+  it('owns native pointer selection immediately when the gesture starts in a selectable gutter', () => {
+    const { container, selectable, selection } = createSelectionHarness();
+    const startEvent = createMouseEvent({
+      clientX: 30,
+      clientY: 40,
+      path: [selectable, container, document.body, document.documentElement],
+      target: selectable,
+    });
+
+    (selection as any)._onTapStart(startEvent);
+
+    expect(startEvent.defaultPrevented).toBe(true);
+    expect(container.style.userSelect).toBe('none');
+
+    selection.destroy();
+  });
+
+  it('claims selectable gutter pointer defaults before editor bubble handlers', () => {
+    const { selectable, selection } = createSelectionHarness();
+    const bubbleHandler = mock();
+
+    selectable.addEventListener('mousedown', bubbleHandler);
+    const event = new MouseEvent('mousedown', {
+      bubbles: true,
+      button: 0,
+      cancelable: true,
+      clientX: 30,
+      clientY: 40,
+    });
+    selectable.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(bubbleHandler).not.toHaveBeenCalled();
+
+    selection.destroy();
+  });
+
+  it('leaves a rejected selectable gutter pointer event unclaimed', () => {
+    const { container, selectable, selection } = createSelectionHarness();
+    const bubbleHandler = mock();
+
+    (selection as any)._emitEvent = mock(() => false);
+    selectable.addEventListener('mousedown', bubbleHandler);
+    const event = new MouseEvent('mousedown', {
+      bubbles: true,
+      button: 0,
+      cancelable: true,
+      clientX: 30,
+      clientY: 40,
+    });
+    selectable.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(bubbleHandler).toHaveBeenCalledTimes(1);
+    expect(container.style.userSelect).toBe('');
+
+    selection.destroy();
+  });
+
   it('clears native ranges while area selection is active', () => {
     const { selectable, selection } = createSelectionHarness();
     const nativeSelection = document.getSelection()!;
@@ -180,6 +239,51 @@ describe('SelectionArea', () => {
     expect(stopEvent.defaultPrevented).toBe(true);
 
     selection.destroy();
+  });
+
+  it('suppresses native text selection through the completed drag gesture', () => {
+    const { container, selection } = createSelectionHarness();
+    const originalRequestAnimationFrame = window.requestAnimationFrame;
+    let release: FrameRequestCallback | undefined;
+
+    container.style.userSelect = 'text';
+    window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      release = callback;
+
+      return 1;
+    };
+    (selection as any)._onTapMove = mock();
+    (selection as any)._setupSelectionArea = mock();
+
+    const startEvent = createMouseEvent({
+      clientX: 30,
+      clientY: 40,
+      path: [container, document.body, document.documentElement],
+      target: container,
+    });
+    const moveEvent = createMouseEvent({
+      clientX: 45,
+      clientY: 55,
+      path: [container, document.body, document.documentElement],
+      target: container,
+    });
+    const stopEvent = new MouseEvent('mouseup', { cancelable: true });
+
+    try {
+      (selection as any)._onTapStart(startEvent);
+      (selection as any)._delayedTapMove(moveEvent);
+
+      expect(container.style.userSelect).toBe('none');
+
+      (selection as any)._onTapStop(stopEvent, false);
+
+      expect(container.style.userSelect).toBe('none');
+      release?.(0);
+      expect(container.style.userSelect).toBe('text');
+    } finally {
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+      selection.destroy();
+    }
   });
 
   it('positions but does not own a supplied selection area element', () => {
@@ -315,14 +419,14 @@ describe('SelectionArea', () => {
     let frameId = 0;
     let scheduledFrame: FrameRequestCallback | undefined;
 
-    globalThis.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+    globalThis.requestAnimationFrame = (callback: FrameRequestCallback) => {
       scheduledFrame = callback;
 
-      return ++frameId;
-    }) as typeof requestAnimationFrame;
-    globalThis.cancelAnimationFrame = ((handle: number) => {
+      return (frameId += 1);
+    };
+    globalThis.cancelAnimationFrame = (handle: number) => {
       canceledHandles.push(handle);
-    }) as typeof cancelAnimationFrame;
+    };
     (selection as any)._emitEvent = emitEvent;
 
     const first = createMouseEvent({

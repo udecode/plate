@@ -1,6 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+const compareEntries = ([left], [right]) => compareStrings(left, right);
+
 export const editorTargets = Object.freeze([
   {
     id: 'slate-v2',
@@ -224,7 +232,7 @@ export function createRichTextEditorCoverageRows({
   const benchmarkRegistry =
     registry || readBenchmarkRegistry({ registryPath, rootDir });
   const artifactSpecs = benchmarkRegistry.artifacts;
-  const workloads = benchmarkRegistry.workloads;
+  const { workloads } = benchmarkRegistry;
   const localTargets = new Map(
     editorTargets.map((target) => [
       target.id,
@@ -537,7 +545,9 @@ function normalizeCompareArtifactRows(
     const library = side === 'current' ? 'slate-v2:current' : 'slate:baseline';
     const repo = side === 'current' ? currentRepo : legacyRepo;
 
-    for (const [metricName, stats] of Object.entries(bucket).sort()) {
+    for (const [metricName, stats] of Object.entries(bucket).sort(
+      compareEntries
+    )) {
       if (!isMetricStatsObject(stats)) continue;
       rows.push(
         normalizeMetricStatsRow(stats, {
@@ -612,7 +622,9 @@ function normalizeBrowserTraceArtifactRows(
   const rows = [];
   const lane = String(payload.lane || payload.benchmark || spec.id);
 
-  for (const [surfaceName, surface] of Object.entries(surfaces).sort()) {
+  for (const [surfaceName, surface] of Object.entries(surfaces).sort(
+    compareEntries
+  )) {
     if (!surface || typeof surface !== 'object' || Array.isArray(surface)) {
       continue;
     }
@@ -675,7 +687,7 @@ function collectMetricStatsRows(
 
   if (Array.isArray(value)) return;
 
-  for (const [key, child] of Object.entries(value).sort()) {
+  for (const [key, child] of Object.entries(value).sort(compareEntries)) {
     if (skipArtifactMetaKey(key)) continue;
     collectMetricStatsRows(child, {
       artifactPath,
@@ -698,7 +710,9 @@ function collectThresholdRows(payload, spec, { artifactPath, rows }) {
     return;
   }
 
-  for (const [name, threshold] of Object.entries(thresholds).sort()) {
+  for (const [name, threshold] of Object.entries(thresholds).sort(
+    compareEntries
+  )) {
     if (
       !threshold ||
       typeof threshold !== 'object' ||
@@ -730,10 +744,10 @@ function collectThresholdRows(payload, spec, { artifactPath, rows }) {
 }
 
 function collectInvariantRows(payload, spec, { artifactPath, rows }) {
-  const lanes = payload.lanes;
+  const { lanes } = payload;
   if (!lanes || typeof lanes !== 'object' || Array.isArray(lanes)) return;
 
-  for (const [laneName, lane] of Object.entries(lanes).sort()) {
+  for (const [laneName, lane] of Object.entries(lanes).sort(compareEntries)) {
     const invariants = lane?.invariants;
     if (
       !invariants ||
@@ -743,7 +757,9 @@ function collectInvariantRows(payload, spec, { artifactPath, rows }) {
       continue;
     }
 
-    for (const [name, passed] of Object.entries(invariants).sort()) {
+    for (const [name, passed] of Object.entries(invariants).sort(
+      compareEntries
+    )) {
       rows.push(
         normalizeBenchmarkRow({
           category: `${spec.category}-invariant`,
@@ -996,7 +1012,7 @@ function findCommonSlateCompareMetricNames(surfaces) {
     .filter((metricName) =>
       remainingSets.every((metricSet) => metricSet.has(metricName))
     )
-    .sort();
+    .sort(compareStrings);
 }
 
 function isStatsObject(value) {
@@ -1005,14 +1021,18 @@ function isStatsObject(value) {
 
 function describeSlateCompareSurface(surfaceName) {
   switch (surfaceName) {
-    case 'legacyChunkOn':
+    case 'legacyChunkOn': {
       return { library: 'slate', variant: '' };
-    case 'v2DefaultRenderAuto':
+    }
+    case 'v2DefaultRenderAuto': {
       return { library: 'slate-v2', variant: 'default-render-auto' };
-    case 'v2DomPresent':
+    }
+    case 'v2DomPresent': {
       return { library: 'slate-v2', variant: 'dom-present' };
-    default:
+    }
+    default: {
       return { library: 'unknown-editor', variant: surfaceName };
+    }
   }
 }
 

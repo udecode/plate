@@ -1677,6 +1677,137 @@ test.describe('On richtext example', () => {
     });
   });
 
+  test('keeps long expanded marked composition atomic when compositionend precedes final input', async ({
+    browserName,
+    page,
+  }, testInfo) => {
+    test.skip(
+      browserName !== 'chromium' || testInfo.project.name === 'mobile',
+      'Desktop Chromium synthetic terminal-order proof'
+    );
+
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const editor = await openExample(page, 'plite/richtext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+    const originalText =
+      'This is editable rich text, much better than a <textarea>!';
+    const composedText =
+      'This is すし, much better than a <textarea>!';
+    const selectedText = 'editable rich text';
+    const preCompositionSelection = {
+      kind: 'text' as const,
+      anchor: { path: [0, 0], offset: 'This is '.length },
+      focus: { path: [0, 2], offset: ' text'.length },
+    };
+    const getActiveInputIntent = () =>
+      editor.root.evaluate((element: HTMLElement) => {
+        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+
+        return handle?.getInputState?.().activeIntent ?? null;
+      });
+
+    try {
+      await editor.selection.selectDOM(preCompositionSelection);
+      await assertPliteBrowserSelectionContract(editor, {
+        domSelection: {
+          anchorNodeText: 'This is editable ',
+          anchorOffset: 'This is '.length,
+          focusNodeText: ' text, ',
+          focusOffset: ' text'.length,
+        },
+        noDoubleSelectionHighlight: true,
+        selectedText,
+        selection: preCompositionSelection,
+      });
+      const preCompositionValue = await editor.get.modelValue();
+
+      await editor.ime.startSynthetic({ text: 'す' });
+      await editor.ime.updateSynthetic({ text: 'すし' });
+      await expect.poll(getActiveInputIntent).toBe('composition');
+      await page.waitForTimeout(1100);
+      await expect.poll(getActiveInputIntent).toBe('composition');
+
+      const terminalInput = await editor.root.evaluate(
+        (element: HTMLElement, text) => {
+          const active = element.ownerDocument.activeElement as HTMLElement;
+
+          if (!active || (active !== element && !element.contains(active))) {
+            throw new Error('Missing focused Plite editor for composition');
+          }
+
+          active.dispatchEvent(
+            new CompositionEvent('compositionend', {
+              bubbles: true,
+              cancelable: true,
+              data: text,
+            })
+          );
+          const beforeInput = new InputEvent('beforeinput', {
+            bubbles: true,
+            cancelable: true,
+            data: text,
+            inputType: 'insertFromComposition',
+            isComposing: false,
+          });
+          const dispatched = active.dispatchEvent(beforeInput);
+
+          return {
+            defaultPrevented: beforeInput.defaultPrevented,
+            dispatched,
+          };
+        },
+        'すし'
+      );
+
+      expect(terminalInput).toEqual({
+        defaultPrevented: true,
+        dispatched: false,
+      });
+      await expect
+        .poll(async () => (await editor.get.blockTexts())[0])
+        .toBe(composedText);
+      await editor.assert.focusOwner('editor');
+      const composedValue = await editor.get.modelValue();
+      const composedSelection = await editor.selection.get();
+
+      expect(composedSelection).toMatchObject({ kind: 'text' });
+      expect(composedSelection?.anchor).toEqual(composedSelection?.focus);
+
+      await editor.undo();
+
+      await expect.poll(() => editor.get.modelValue()).toEqual(preCompositionValue);
+      await assertPliteBrowserSelectionContract(editor, {
+        domSelection: {
+          anchorNodeText: 'This is editable ',
+          anchorOffset: 'This is '.length,
+          focusNodeText: ' text, ',
+          focusOffset: ' text'.length,
+        },
+        noDoubleSelectionHighlight: true,
+        selectedText,
+        selection: preCompositionSelection,
+      });
+      await expect
+        .poll(async () => (await editor.get.blockTexts())[0])
+        .toBe(originalText);
+
+      await editor.redo();
+
+      await expect.poll(() => editor.get.modelValue()).toEqual(composedValue);
+      await expect.poll(() => editor.selection.get()).toEqual(composedSelection);
+      await expect
+        .poll(async () => (await editor.get.blockTexts())[0])
+        .toBe(composedText);
+      await editor.assert.focusOwner('editor');
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
   test('exposes input intent for start insert, number insert, and delete', async ({
     page,
   }, testInfo) => {

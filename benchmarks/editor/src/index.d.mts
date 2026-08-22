@@ -1,10 +1,10 @@
-export declare const editorTargets: readonly {
+export declare const editorTargets: ReadonlyArray<{
   id: string;
   label: string;
   role: string;
   sourcePath: string;
   evidenceOwner: string;
-}[];
+}>;
 export declare const staleSurfacePaths: readonly string[];
 export declare const benchmarkRegistryDefaultPath =
   'research/benchmark-registry.json';
@@ -47,12 +47,12 @@ export declare function createEvidenceReadinessRows({
   rootDir,
 }?: {
   rootDir?: string | undefined;
-}): {
+}): Array<{
   category: string;
   fixture: string;
   library: string;
   status: string;
-}[];
+}>;
 export declare function createSlateLegacyCompareRows({
   artifactPath,
   registry,
@@ -67,24 +67,24 @@ export declare function createRichTextEditorBenchmarkRows({
   rootDir,
 }?: {
   rootDir?: string | undefined;
-}): {
+}): Array<{
   category: string;
   fixture: string;
   library: string;
   status: string;
-}[];
+}>;
 export declare function createRichTextEditorCoverageRows({
   registry,
   registryPath,
   rootDir,
 }?: {
   rootDir?: string | undefined;
-}): {
+}): Array<{
   category: string;
   fixture: string;
   library: string;
   status: string;
-}[];
+}>;
 export declare function createBenchmarkArtifactRows(
   spec: any,
   {
@@ -102,11 +102,11 @@ export declare function normalizeSlateLegacyCompareArtifact(
     artifactPath?: string | undefined;
     rootDir?: string | undefined;
   }
-): {
+): Array<{
   category: string;
   fixture: string;
   library: string;
   status: string;
-}[];
+}>;
 export declare function findStaleSurfaces(rootDir?: string): string[];
 export declare function readJson(filePath: any): any;

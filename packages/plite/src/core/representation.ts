@@ -8,6 +8,7 @@ import {
   TextApi,
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import { inheritNodeKey } from '../utils/node-keys';
 import {
   createInternalDocumentChange,
@@ -18,11 +19,7 @@ import {
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
 import { RootChange, reconcileChildrenStep } from './change/root-change';
-import type {
-  JsonEditorValue,
-  JsonNode,
-  PreparedTokenSlice,
-} from './change/tokens';
+import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
   ContentSlice as ContentSliceValue,
   getContentSliceCanonicalAuthority,
@@ -124,12 +121,8 @@ const canonicalizeInlineChildren = (
     }
 
     return (
-      isInline(
-        editor,
-        (flattened[index - 1] ?? before) as Descendant,
-        schema
-      ) ||
-      isInline(editor, (flattened[index + 1] ?? after) as Descendant, schema)
+      isInline(editor, flattened[index - 1] ?? before, schema) ||
+      isInline(editor, flattened[index + 1] ?? after, schema)
     );
   });
   const canonical: Descendant[] = [];
@@ -161,7 +154,7 @@ const canonicalizeInlineChildren = (
       preservePreviousInlineSpacer;
     const childIsInlineSpacer =
       child.text === '' &&
-      isInline(editor, nextInline as Descendant, schema) &&
+      isInline(editor, nextInline, schema) &&
       preserveChildInlineSpacer;
 
     if (
@@ -253,7 +246,7 @@ const canonicalizeNode = (
 ): Descendant => {
   if (TextApi.isText(node)) return node;
 
-  const source = node.children as readonly Descendant[];
+  const source = node.children;
   const nested = source.map((child) =>
     canonicalizeNode(editor, child, options)
   );
@@ -352,7 +345,7 @@ const getDescendant = (
 
   for (const index of path) {
     node = descendants[index];
-    if (!node) return;
+    if (!node) return undefined;
     descendants = ElementApi.isElement(node) ? node.children : [];
   }
 
@@ -369,7 +362,7 @@ export const getProtectedInlineSpacerEntries = (
   children: readonly Descendant[],
   points: readonly Point[],
   schema: RepresentationSchema = getEditorSchema(editor)
-): readonly Readonly<{ node: Descendant; path: Path }>[] => {
+): ReadonlyArray<Readonly<{ node: Descendant; path: Path }>> => {
   const entries = new Map<Descendant, Path>();
 
   for (const point of points) {
@@ -430,7 +423,7 @@ const getTextOffsetWithin = (
     path: readonly number[]
   ): boolean => {
     for (let index = 0; index < nodes.length; index++) {
-      const node = nodes[index]!;
+      const node = nodes[index];
       const nodePath = [...path, index];
 
       if (TextApi.isText(node)) {
@@ -477,7 +470,7 @@ const getPointAtTextOffset = (
     path: readonly number[]
   ): Point | null => {
     for (let index = 0; index < nodes.length; index++) {
-      const node = nodes[index]!;
+      const node = nodes[index];
       const nodePath = [...path, index];
 
       if (TextApi.isText(node)) {
@@ -592,7 +585,7 @@ const comparePathsDeepestFirst = (
   if (left.length !== right.length) return right.length - left.length;
 
   for (let index = 0; index < left.length; index++) {
-    if (left[index] !== right[index]) return right[index]! - left[index]!;
+    if (left[index] !== right[index]) return right[index] - left[index];
   }
 
   return 0;
@@ -691,7 +684,7 @@ export const prepareCanonicalFitSlice = (
             (node, childIndex) => node === child.children[childIndex]
           ))
         ? child
-        : ({ ...child, children: nested } as Element);
+        : { ...child, children: nested };
     });
 
     return prepared.every((child, index) => child === children[index])
@@ -812,9 +805,7 @@ const replaceCanonicalChildWindow = (
 
   if (!node || TextApi.isText(node as Descendant)) return;
 
-  const source = (
-    path.length === 0 ? rootChildren : (node as Element).children
-  ) as readonly Descendant[];
+  const source = path.length === 0 ? rootChildren : (node as Element).children;
   const parent = ElementApi.isElement(node) ? node : editor;
   const contentSpec = ElementApi.isElement(parent)
     ? schema.getElementContent(parent.type)
@@ -832,11 +823,11 @@ const replaceCanonicalChildWindow = (
 
     if (cached) return cached;
     const canonical = schema.canonicalizeChildren(
-      [source[index]!],
+      [source[index]],
       root,
       ancestors,
       false
-    )[0]!;
+    )[0];
 
     propertyNodes.set(index, canonical);
 
@@ -863,7 +854,7 @@ const replaceCanonicalChildWindow = (
       ) {
         break;
       }
-      from--;
+      from -= 1;
     }
     while (to < source.length) {
       const left = propertyNodeAt(to - 1);
@@ -876,7 +867,7 @@ const replaceCanonicalChildWindow = (
       ) {
         break;
       }
-      to++;
+      to += 1;
     }
   }
 
@@ -933,7 +924,7 @@ const replaceCanonicalChildWindow = (
       path,
       from,
       selected.length,
-      canonical as readonly JsonNode[]
+      canonical
     );
 
     draft.change = draft.change.empty
@@ -974,7 +965,7 @@ const replaceCanonicalChildWindow = (
     path,
     current.length,
     0,
-    defaults as readonly JsonNode[]
+    defaults
   );
 
   draft.change = draft.change.empty
@@ -1017,7 +1008,7 @@ export const constructCanonicalDocumentChange = (
     fitPreparation?.insert &&
     preparationIsCurrent &&
     fitChanges.length === 1 &&
-    fitChanges[0]!.data.some((value) => value === fitPreparation.insert)
+    fitChanges[0].data.some((value) => value === fitPreparation.insert)
       ? fitPreparation.trustedNodes
       : undefined;
 
@@ -1086,15 +1077,15 @@ export const constructCanonicalDocumentChange = (
             {
               path: moveParent,
               window: {
-                from: move.path.at(-1)!,
-                to: move.path.at(-1)! + 1,
+                from: getDefined(move.path.at(-1)),
+                to: getDefined(move.path.at(-1)) + 1,
               },
             },
             {
               path: targetParent,
               window: {
-                from: move.targetPath.at(-1)!,
-                to: move.targetPath.at(-1)! + 1,
+                from: getDefined(move.targetPath.at(-1)),
+                to: getDefined(move.targetPath.at(-1)) + 1,
               },
             },
           ]
@@ -1139,7 +1130,7 @@ export const constructCanonicalDocumentChange = (
           [],
           0,
           current.length,
-          canonical as readonly JsonNode[]
+          canonical
         );
 
         draft.change = step.change;
@@ -1153,7 +1144,7 @@ export const constructCanonicalDocumentChange = (
     if (localBlockMove) {
       profileCoreDuration('representation-move-locality-hit', () => undefined);
     } else if (rootChange) {
-      profileCoreDuration('representation-window-discovery', () =>
+      profileCoreDuration('representation-window-discovery', () => {
         rootChange.iterChangedRanges(
           (_fromBefore, _toBefore, fromAfter, toAfter) => {
             for (const position of [fromAfter, toAfter]) {
@@ -1198,8 +1189,8 @@ export const constructCanonicalDocumentChange = (
               }
             }
           }
-        )
-      );
+        );
+      });
     }
 
     const rootSpec = schema.getRootContent(

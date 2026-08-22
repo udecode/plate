@@ -22,7 +22,7 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
                 : '';
           const value = normalizeDateValue(dateValue);
 
-          if (!value) return;
+          if (!value) return undefined;
 
           return {
             children: [{ text: '' }],

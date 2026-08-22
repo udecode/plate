@@ -14,11 +14,11 @@ export const isEditor: EditorStaticApi['isEditor'] = (
     return false;
   }
 
-  const read = (value as { read?: unknown }).read;
+  const { read } = value as { read?: unknown };
 
   if (typeof read !== 'function') return false;
 
-  const runtime = (read as Editor['read']).runtime;
+  const { runtime } = read as Editor['read'];
 
   return (
     typeof runtime === 'object' &&

@@ -1,10 +1,12 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const basicBlocksValue = (
+export const basicBlocksValue: Value = (
   <fragment>
     <hheading level={2}>块</hheading>
     <hp>轻松创建从 H1 到 H6 的各级标题，以构建你的内容结构，使其更有条理。</hp>
@@ -16,7 +18,7 @@ export const basicBlocksValue = (
       </hblockquote>
     </hblockquote>
     <hcodeblock lang="javascript">
-      <hcodeline>// Use code blocks to showcase code snippets</hcodeline>
+      <hcodeline>{'// Use code blocks to showcase code snippets'}</hcodeline>
       <hcodeline>{'function greet() {'}</hcodeline>
       <hcodeline>{`  console.info('Hello World!');`}</hcodeline>
       <hcodeline>{'}'}</hcodeline>

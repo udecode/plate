@@ -8,7 +8,7 @@ const getCoords = (event: React.DragEvent | React.TouchEvent) => {
   if ('changedTouches' in event) {
     const touch = event.changedTouches[0];
 
-    if (!touch) return;
+    if (!touch) return undefined;
 
     return { x: touch.clientX, y: touch.clientY };
   }
@@ -144,8 +144,12 @@ export function ScrollArea({
       {...scrollAreaProps}
       ref={ref}
       style={style}
-      onDragEnd={() => stopScrolling(scaleYRef, frameRef)}
-      onDragLeave={() => stopScrolling(scaleYRef, frameRef)}
+      onDragEnd={() => {
+        stopScrolling(scaleYRef, frameRef);
+      }}
+      onDragLeave={() => {
+        stopScrolling(scaleYRef, frameRef);
+      }}
       onDragOver={handleEvent}
       onTouchMove={handleEvent}
     />
@@ -163,23 +167,30 @@ export function Scroller(props: DndScrollerOptions) {
   );
 }
 
-export function DndScroller(props: Partial<DndScrollerOptions>) {
-  const isDragging = useDndPluginStore('isDragging');
+function DelayedDndScroller(props: Partial<DndScrollerOptions>) {
   const [show, setShow] = React.useState(false);
 
   React.useEffect(() => {
-    if (isDragging) {
-      const timeout = setTimeout(() => {
-        setShow(true);
-      }, 100);
+    const timeout = setTimeout(() => {
+      setShow(true);
+    }, 100);
 
-      return () => clearTimeout(timeout);
-    }
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
 
-    setShow(false);
-  }, [isDragging]);
+  return <Scroller enabled={show} {...props} />;
+}
 
-  return <Scroller enabled={isDragging && show} {...props} />;
+export function DndScroller(props: Partial<DndScrollerOptions>) {
+  const isDragging = useDndPluginStore('isDragging');
+
+  if (!isDragging) {
+    return <Scroller enabled={false} {...props} />;
+  }
+
+  return <DelayedDndScroller {...props} />;
 }
 
 export function DndScrollerAfterEditable() {

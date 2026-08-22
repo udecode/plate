@@ -1,24 +1,22 @@
 import type { Path } from '@platejs/plite';
+import { useElementPath } from '@platejs/plite-react';
 
-import type { PlateElementDescriptor } from './useElement';
 import { useElementContext } from './useElementStore';
 
-/** Get the current element path and fail when the requested provider is absent. */
-export const usePath = (plugin?: PlateElementDescriptor): Path => {
-  const scope = plugin?.name;
-  const value = useElementContext(scope)?.path;
+/** Subscribe to the live path for the nearest rendered element. */
+export const usePath = (): Path => {
+  const renderedPath = useElementPath();
+  const storedPath = useElementContext()?.path;
+  const value = renderedPath ?? storedPath;
 
   if (!value) {
     throw new Error(
-      `usePath(${
-        scope ?? 'nearest'
-      }) must be used inside the matching element provider.`
+      'usePath() must be used inside a rendered element provider.'
     );
   }
 
   return value;
 };
 
-/** Get the memoized element path, or `null` when its provider is absent. */
-export const useOptionalPath = (plugin?: PlateElementDescriptor): Path | null =>
-  useElementContext(plugin?.name)?.path ?? null;
+/** Subscribe to the live path, or return `null` outside a rendered element. */
+export const useOptionalPath = (): Path | null => useElementPath();

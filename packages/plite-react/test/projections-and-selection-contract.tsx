@@ -47,7 +47,7 @@ import {
 
 type SegmentLike = {
   end: number;
-  slices: readonly { data?: Record<string, unknown> }[];
+  slices: ReadonlyArray<{ data?: Record<string, unknown> }>;
   start: number;
   text: string;
 };
@@ -113,7 +113,7 @@ const renderSegment = (segment: SegmentLike, children: ReactNode) => {
 
 const getProjectedSegments = (
   container: HTMLElement
-): { text: string; decorations: string[] }[] =>
+): Array<{ text: string; decorations: string[] }> =>
   Array.from(container.querySelectorAll('[data-decorations]')).map(
     (segment) => ({
       decorations: JSON.parse(
@@ -125,7 +125,7 @@ const getProjectedSegments = (
 
 const getProjectedSegmentMetadata = (
   container: HTMLElement
-): { end: number; start: number; text: string; decorations: string[] }[] =>
+): Array<{ end: number; start: number; text: string; decorations: string[] }> =>
   Array.from(container.querySelectorAll('[data-decorations]')).map(
     (segment) => ({
       ...JSON.parse((segment as HTMLElement).dataset.segment ?? '{}'),
@@ -162,7 +162,7 @@ const findTextRangesByText = (
   nodes: readonly Descendant[],
   text: string,
   parentPath: Path = []
-): PliteProjection<Record<string, unknown>>[] =>
+): Array<PliteProjection<Record<string, unknown>>> =>
   nodes.flatMap((node, index) => {
     const path = [...parentPath, index] as Path;
 
@@ -797,7 +797,7 @@ describe('plite-react projections and selection contract', () => {
           { children: snapshot.children } as never,
           [0, 0, 0]
         ) as { text: string };
-        const projections: PliteProjection<Record<string, unknown>>[] = [];
+        const projections: Array<PliteProjection<Record<string, unknown>>> = [];
 
         if (root && 'bold' in root) {
           projections.push({
@@ -1365,7 +1365,7 @@ describe('plite-react projections and selection contract', () => {
     }
 
     let runtimeScope = [firstNodeKey] as readonly string[];
-    const sourceScopes: (readonly string[] | null)[] = [];
+    const sourceScopes: Array<readonly string[] | null> = [];
     const store = createDecorationSource(editor, {
       id: 'scoped-source',
       read: ({ runtimeScope: readRuntimeScope, snapshot: nextSnapshot }) => {

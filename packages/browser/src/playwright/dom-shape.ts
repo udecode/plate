@@ -16,7 +16,7 @@ export const getRenderedBlockDOMShapes = async (
   root.evaluate((element: HTMLElement) => {
     const normalizeText = (text: string) => text.replace(/\uFEFF/g, '');
     const countLineBoxes = (block: Element) => {
-      const ownerDocument = block.ownerDocument;
+      const { ownerDocument } = block;
       const range = ownerDocument.createRange();
 
       range.selectNodeContents(block);
@@ -30,8 +30,6 @@ export const getRenderedBlockDOMShapes = async (
 
         tops.add(Math.round(rect.top));
       }
-
-      range.detach();
 
       return tops.size;
     };
@@ -74,7 +72,8 @@ export const getRenderedBlockDOMShape = async (
   root: Locator,
   blockIndex: number
 ): Promise<RenderedBlockDOMShapeSnapshot> => {
-  const shape = (await getRenderedBlockDOMShapes(root))[blockIndex];
+  const shapes = await getRenderedBlockDOMShapes(root);
+  const shape = shapes[blockIndex];
 
   if (!shape) {
     throw new Error(`Missing rendered block DOM shape for index ${blockIndex}`);
@@ -89,9 +88,11 @@ export const assertRenderedBlockText = async (
   text: string
 ) => {
   await expect
-    .poll(
-      async () => (await getRenderedBlockDOMShape(root, blockIndex)).textContent
-    )
+    .poll(async () => {
+      const shape = await getRenderedBlockDOMShape(root, blockIndex);
+
+      return shape.textContent;
+    })
     .toBe(text);
 };
 
@@ -100,11 +101,11 @@ export const assertNoUnexpectedZeroWidthBreaks = async (
   blockIndex: number
 ) => {
   await expect
-    .poll(
-      async () =>
-        (await getRenderedBlockDOMShape(root, blockIndex))
-          .unexpectedZeroWidthBreaks
-    )
+    .poll(async () => {
+      const shape = await getRenderedBlockDOMShape(root, blockIndex);
+
+      return shape.unexpectedZeroWidthBreaks;
+    })
     .toEqual([]);
 };
 

@@ -43,7 +43,7 @@ export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
           worker: false,
         });
 
-        if (testCsv.errors.length > 0) return;
+        if (testCsv.errors.length > 0) return undefined;
 
         const { errorTolerance = 0.25, parseOptions: configuredParseOptions } =
           store.get();
@@ -62,10 +62,10 @@ export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
         });
         const tolerance = Math.max(0, errorTolerance);
 
-        if (csv.data.length === 0) return;
+        if (csv.data.length === 0) return undefined;
 
         if (csv.meta.fields) {
-          if (csv.meta.fields.length < 2) return;
+          if (csv.meta.fields.length < 2) return undefined;
         } else if (
           csv.data.length < 2 ||
           !Array.isArray(csv.data[0]) ||
@@ -73,14 +73,14 @@ export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
           !Array.isArray(csv.data[1]) ||
           csv.data[1].length < 2
         ) {
-          return;
+          return undefined;
         }
 
         if (
           csv.errors.length > 0 &&
           csv.errors.length > tolerance * csv.data.length
         ) {
-          return;
+          return undefined;
         }
 
         const paragraphPlugin = editor.plugin(PLUGINS.paragraph);
@@ -91,7 +91,7 @@ export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
         const tr = trPlugin.schema.type;
         const tdPlugin = editor.plugin(PLUGINS.tableCell);
         const td = tdPlugin.schema.type;
-        const fields = csv.meta.fields;
+        const { fields } = csv.meta;
         const rows = fields
           ? [
               {

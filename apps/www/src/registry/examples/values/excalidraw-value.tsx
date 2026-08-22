@@ -1,7 +1,8 @@
-import type { ExcalidrawElement } from '@platejs/excalidraw';
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import type { ExcalidrawElement } from '@platejs/excalidraw';
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
@@ -18,7 +19,7 @@ export const excalidrawInitialData: Partial<
         fillStyle: 'hachure',
         frameId: null,
         groupIds: [],
-        height: 141.976_562_5,
+        height: 141.9765625,
         isDeleted: false,
         index: null,
         link: null,
@@ -34,9 +35,9 @@ export const excalidrawInitialData: Partial<
         updated: 1,
         version: 141,
         versionNonce: 361_174_001,
-        width: 186.472_656_25,
-        x: 100.503_906_25,
-        y: 93.675_781_25,
+        width: 186.47265625,
+        x: 100.50390625,
+        y: 93.67578125,
       },
       {
         id: '-xMIs_0jIFqvpx-R9UnaG',
@@ -46,7 +47,7 @@ export const excalidrawInitialData: Partial<
         fillStyle: 'hachure',
         frameId: null,
         groupIds: [],
-        height: 129.511_718_75,
+        height: 129.51171875,
         isDeleted: false,
         index: null,
         link: null,
@@ -62,9 +63,9 @@ export const excalidrawInitialData: Partial<
         updated: 1,
         version: 47,
         versionNonce: 1_128_618_623,
-        width: 198.218_75,
-        x: 300.570_312_5,
-        y: 190.691_406_25,
+        width: 198.21875,
+        x: 300.5703125,
+        y: 190.69140625,
       },
     ],
     state: { currentItemFontFamily: 1, viewBackgroundColor: '#AFEEEE' },
@@ -82,4 +83,4 @@ export const excalidrawValue = (
       <htext />
     </hexcalidraw>
   </fragment>
-);
+) as Value;

@@ -35,17 +35,17 @@ export interface EditorSelectorOptions<T = unknown> {
   equalityFn?: (a: T | null, b: T) => boolean;
   includeRootOrderChanges?: boolean;
   profileId?: string;
-  runtimeEventSource?: 'node' | 'path' | 'render';
+  runtimeEventSource?: 'node' | 'path' | 'render' | 'selection';
   nodeKey?: NodeKey | null;
   nodeKeys?: readonly NodeKey[] | null;
-  shouldUpdate?: (change?: EditorCommit<ValueOf<ContextEditor>>) => boolean;
+  shouldUpdate?: (change?: EditorCommit) => boolean;
 }
 
 /** Options for selectors that read from the immutable editor state view. */
 export interface EditorStateSelectorOptions<T> {
   deferred?: boolean;
   equalityFn?: (a: T | null, b: T) => boolean;
-  shouldUpdate?: (change?: EditorCommit<ValueOf<ContextEditor>>) => boolean;
+  shouldUpdate?: (change?: EditorCommit) => boolean;
 }
 
 export const EditorSelectorContext =
@@ -119,7 +119,9 @@ export function useEditorSelector<T>(
     genericSelector,
     equalityFn
   );
-  const updateFromCommit = useCallback(() => update(), [update]);
+  const updateFromCommit = useCallback(() => {
+    update();
+  }, [update]);
   const shouldUpdateRef = useRef(shouldUpdate);
 
   useIsomorphicLayoutEffect(() => {
@@ -196,6 +198,9 @@ export function useEditorSelectorContext() {
   const runtimeEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
   const runtimePathEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
   const runtimeRenderEventListeners = useRef(new Map<NodeKey, Set<Callback>>());
+  const runtimeSelectionEventListeners = useRef(
+    new Map<NodeKey, Set<Callback>>()
+  );
   const rootOrderRuntimeEventListeners = useRef(new Set<Callback>());
   const deferredEventListeners = useRef(
     new Map<Callback, DeferredCallbackPayload>()
@@ -230,6 +235,8 @@ export function useEditorSelectorContext() {
       );
       const affectedNodeKeys = change?.changed.nodeKeysAll('node') ?? [];
       const affectedPathNodeKeys = change?.changed.nodeKeysAll('path') ?? [];
+      const affectedSelectionNodeKeys =
+        change?.changed.nodeKeysAll('selection') ?? [];
       const syncedTextOnlyChange = Boolean(
         change?.changed.hasAny('text') &&
         !change.tags.includes('historic') &&
@@ -252,6 +259,7 @@ export function useEditorSelectorContext() {
         for (const nodeKey of new Set([
           ...affectedNodeKeys,
           ...affectedPathNodeKeys,
+          ...affectedSelectionNodeKeys,
         ])) {
           runtimeEventListeners.current.get(nodeKey)?.forEach((listener) => {
             runtimeCallbacks.add(listener);
@@ -288,6 +296,21 @@ export function useEditorSelectorContext() {
                 runtimeCallbacks.add(listener);
               });
           }
+        }
+      }
+      if (!change) {
+        runtimeSelectionEventListeners.current.forEach((listeners) => {
+          listeners.forEach((listener) => {
+            runtimeCallbacks.add(listener);
+          });
+        });
+      } else {
+        for (const nodeKey of affectedSelectionNodeKeys) {
+          runtimeSelectionEventListeners.current
+            .get(nodeKey)
+            ?.forEach((listener) => {
+              runtimeCallbacks.add(listener);
+            });
         }
       }
       for (const nodeKey of invalidatedNodeKeys) {
@@ -401,8 +424,10 @@ export function useEditorSelectorContext() {
             ? runtimePathEventListeners.current
             : runtimeEventSource === 'render'
               ? runtimeRenderEventListeners.current
-              : runtimeEventListeners.current;
-        const listenerSets: Set<Callback>[] = [];
+              : runtimeEventSource === 'selection'
+                ? runtimeSelectionEventListeners.current
+                : runtimeEventListeners.current;
+        const listenerSets: Array<Set<Callback>> = [];
 
         subscribedNodeKeys.forEach((subscribedNodeKey) => {
           const listeners =

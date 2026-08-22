@@ -28,7 +28,7 @@ describe('TrailingBlockPlugin', () => {
         TrailingBlockPlugin.configure({
           initialState: {
             insert: (insert) => {
-              insertCount++;
+              insertCount += 1;
               insert();
             },
           },

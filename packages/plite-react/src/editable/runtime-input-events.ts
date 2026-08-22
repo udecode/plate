@@ -93,14 +93,17 @@ export const useRuntimeInputEvents = ({
     return claimed;
   }, []);
   const runOwnedDOMMutation = useCallback(
-    (callback: () => void) =>
-      runtime.runOwnedDOMMutation('scheduler', callback),
+    (callback: () => void) => {
+      runtime.runOwnedDOMMutation('scheduler', callback);
+    },
     [runtime]
   );
   const repairDOMInput = useCallback<RepairDOMInput>(
     (nativeInput, rootElement) =>
       runTrackedEditableCompositionMutation({
-        callback: () => trace.repairDOMInputWithTrace(nativeInput, rootElement),
+        callback: () => {
+          trace.repairDOMInputWithTrace(nativeInput, rootElement);
+        },
         editor,
         inputController,
       }).result,
@@ -143,8 +146,8 @@ export const useRuntimeInputEvents = ({
         return;
       }
 
-      const nativeInput = event.nativeEvent as InputEvent;
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const nativeInput = event.nativeEvent;
+      const { pendingCompositionEnd } = inputController.state;
       const settledCompositionInputMatches =
         pendingCompositionEnd?.ownership === 'settled' &&
         pendingCompositionEnd.data === nativeInput.data &&
@@ -159,7 +162,7 @@ export const useRuntimeInputEvents = ({
         pendingCompositionEnd?.ownership === 'external' ||
         pendingCompositionEnd?.ownership === 'plite' ||
         settledCompositionInputMatches;
-      const pendingRootDOMInput = inputController.state.pendingRootDOMInput;
+      const { pendingRootDOMInput } = inputController.state;
       const rootDOMInputMatches =
         !!pendingRootDOMInput &&
         pendingRootDOMInput.inputType === nativeInput.inputType &&

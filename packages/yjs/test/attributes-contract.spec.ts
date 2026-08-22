@@ -105,7 +105,7 @@ describe('@platejs/yjs attribute contract', () => {
     assert.ok(text instanceof Y.XmlText);
     root.insert(0, [text]);
     doc.on('update', () => {
-      updates++;
+      updates += 1;
     });
 
     setYjsNodeAttributes(

@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const columnValue = (
+export const columnValue: Value = (
   <fragment>
     <hheading level={2}>Column</hheading>
     <hp>Create column and the border will hidden when viewing</hp>

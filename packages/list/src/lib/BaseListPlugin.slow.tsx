@@ -41,7 +41,7 @@ const pagedListPlugin = BaseListPlugin.configure({
             match: ElementApi.isElement,
           });
         }
-        if (path[0] === 0) return;
+        if (path[0] === 0) return undefined;
 
         const pagePath = [path[0] - 1];
         const page = state.nodes.get(pagePath, {
@@ -85,8 +85,8 @@ describe('BaseListPlugin scale and custom sibling traversal', () => {
       initialState: {
         getSiblingListOptions: {
           getPreviousEntry: ([, path], state) => {
-            traversals++;
-            if (!PathApi.hasPrevious(path)) return;
+            traversals += 1;
+            if (!PathApi.hasPrevious(path)) return undefined;
 
             return state.nodes.get(PathApi.previous(path), {
               match: ElementApi.isElement,

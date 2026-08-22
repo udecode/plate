@@ -508,7 +508,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
         clearEditableDropCursor(event.currentTarget);
       },
       onDragLeave: (event: React.DragEvent<HTMLDivElement>) => {
-        const relatedTarget = event.relatedTarget;
+        const { relatedTarget } = event;
 
         if (
           !isDOMNode(relatedTarget) ||
@@ -539,6 +539,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
   const lastDOMStrategyMetricsRef = useRef<EditableDOMStrategyMetrics | null>(
     null
   );
+  const externalMouseGestureRef = useRef(false);
   const rootInteractionEventBindings = useMemo(
     () => ({
       onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
@@ -546,7 +547,11 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
         propsOnFocusCapture?.(event);
       },
       onMouseDownCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-        activateRootView();
+        externalMouseGestureRef.current = event.defaultPrevented;
+
+        if (!externalMouseGestureRef.current) {
+          activateRootView();
+        }
         const voidTarget = getDropCursorTargetElement(event.target)?.closest(
           '[data-plite-node][data-plite-void="true"]'
         );
@@ -555,7 +560,9 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
         const draggableInlineVoidTarget =
           inlineVoidTarget && voidTarget?.getAttribute('draggable') === 'true';
 
-        if (draggableInlineVoidTarget) {
+        if (externalMouseGestureRef.current) {
+          onRuntimeMouseDownCapture?.(event);
+        } else if (draggableInlineVoidTarget) {
           onRuntimeMouseDownCapture?.(event);
         } else if (inlineVoidTarget) {
           onRootMouseDownCapture(event);
@@ -567,14 +574,18 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
         propsOnMouseDownCapture?.(event);
       },
       onMouseMoveCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-        activateRootView();
-        onRootMouseMoveCapture(event);
+        if (!externalMouseGestureRef.current) {
+          onRootMouseMoveCapture(event);
+        }
         propsOnMouseMoveCapture?.(event);
       },
       onMouseUpCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-        activateRootView();
-        onRootMouseUpCapture(event);
+        if (!externalMouseGestureRef.current) {
+          activateRootView();
+          onRootMouseUpCapture(event);
+        }
         propsOnMouseUpCapture?.(event);
+        externalMouseGestureRef.current = false;
       },
     }),
     [
@@ -594,7 +605,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
     const rootElement = ref.current;
 
     if (!rootElement || !domStrategyMetrics || !onDOMStrategyMetrics) {
-      return;
+      return undefined;
     }
 
     let cancelWrite = () => {};
@@ -694,7 +705,7 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
                       // Preserve adjacent whitespace and new lines.
                       whiteSpace: 'pre-wrap',
                       // Allow words to break if they are too long.
-                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
                       // Keep the public editable root visible and hittable.
                       zIndex: 0,
                     }),
@@ -890,7 +901,7 @@ const scrollRectIntoViewIfNeeded = ({
   const bottomEdge = window.innerHeight - SCROLL_VISIBILITY_MARGIN;
   const leftEdge = SCROLL_VISIBILITY_MARGIN;
   const rightEdge = window.innerWidth - SCROLL_VISIBILITY_MARGIN;
-  const scrollingElement = window.document.scrollingElement;
+  const { scrollingElement } = window.document;
   const canScrollWindowY = scrollingElement
     ? scrollingElement.scrollHeight > scrollingElement.clientHeight
     : window.document.documentElement.scrollHeight > window.innerHeight;
@@ -992,10 +1003,8 @@ export const isEventHandled = <
 /**
  * Check if the event's target is an input element
  */
-export const isDOMEventTargetInput = <
-  EventType extends React.SyntheticEvent<unknown, unknown>,
->(
-  event: EventType
+export const isDOMEventTargetInput = (
+  event: React.SyntheticEvent<unknown, unknown>
 ) =>
   isDOMNode(event.target) &&
   (event.target instanceof HTMLInputElement ||

@@ -20,12 +20,12 @@ import {
   type FileInsertInput,
   type ImageInsertInput,
   type ProviderMediaInsertInput,
-  mediaElementProperties,
+  type mediaElementProperties,
 } from './BaseMediaPlugin';
 import type { ImageElement } from './image/BaseImagePlugin';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
-import { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
+import type { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
 
 const TestInlinePlugin = defineBasePlugin('testInline', {
   schema: {

@@ -37,11 +37,11 @@ import { cn } from '@/lib/utils';
 export type BlockViewerContext = {
   activeFile: string | null;
   dependencies: string[];
-  highlightedFiles:
-    | (z.infer<typeof registryItemFileSchema> & {
-        highlightedContent: string;
-      })[]
-    | null;
+  highlightedFiles: Array<
+    z.infer<typeof registryItemFileSchema> & {
+      highlightedContent: string;
+    }
+  > | null;
   isLoading: boolean;
   item: z.infer<typeof registryItemSchema> & {
     meta?: {
@@ -157,7 +157,6 @@ export function BlockViewerProvider({
       view === 'code' &&
       files.length > 0 &&
       hasMissingFiles &&
-      !isLoading &&
       !hasErrorRef.current &&
       !isSettledRef.current
     ) {
@@ -165,13 +164,13 @@ export function BlockViewerProvider({
         setIsLoading(true);
 
         try {
-          const files = await fetchRegistryFiles(item.name);
+          const innerFiles = await fetchRegistryFiles(item.name);
 
-          if (files && !cancelled) {
-            setHighlightedFiles(files);
+          if (innerFiles && !cancelled) {
+            setHighlightedFiles(innerFiles);
 
-            if (!activeFileState && files.length) {
-              setActiveFile(files[0].target ?? null);
+            if (!activeFileState && innerFiles.length) {
+              setActiveFile(innerFiles[0].target ?? null);
             }
           }
         } catch (error) {
@@ -191,25 +190,36 @@ export function BlockViewerProvider({
     return () => {
       cancelled = true;
     };
-  }, [activeFileState, files, isLoading, item.name, view]);
+  }, [activeFileState, files, item.name, view]);
+  const contextValue = React.useMemo(
+    () => ({
+      activeFile,
+      dependencies,
+      highlightedFiles,
+      iframeKey,
+      isLoading,
+      item,
+      resizablePanelRef,
+      setActiveFile,
+      setIframeKey,
+      setView,
+      tree,
+      view,
+    }),
+    [
+      activeFile,
+      dependencies,
+      highlightedFiles,
+      iframeKey,
+      isLoading,
+      item,
+      tree,
+      view,
+    ]
+  );
 
   return (
-    <BlockViewerContext.Provider
-      value={{
-        activeFile,
-        dependencies,
-        highlightedFiles,
-        iframeKey,
-        isLoading,
-        item,
-        resizablePanelRef,
-        setActiveFile,
-        setIframeKey,
-        setView,
-        tree,
-        view,
-      }}
-    >
+    <BlockViewerContext.Provider value={contextValue}>
       <div
         id={item.name}
         className="group/block-view-wrapper flex min-w-0 flex-col items-stretch gap-4"
@@ -242,7 +252,9 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
       <Tabs
         className="hidden sm:flex"
         value={view}
-        onValueChange={(value) => setView(value as 'code' | 'preview')}
+        onValueChange={(value) => {
+          setView(value as 'code' | 'preview');
+        }}
       >
         <TabsList
           className={cn(
@@ -316,7 +328,9 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 variant="ghost"
                 className="size-6 rounded-sm p-0"
                 title="Refresh Preview"
-                onClick={() => setIframeKey((key) => key + 1)}
+                onClick={() => {
+                  setIframeKey((key) => key + 1);
+                }}
               >
                 <RotateCw />
                 <span className="sr-only">Refresh Preview</span>
@@ -454,7 +468,12 @@ function BlockViewerView({
                   className="chunk-mode relative z-20 size-full bg-background"
                   title={item.name}
                   height={item.meta?.iframeHeight ?? '100%'}
-                  sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  sandbox={
+                    item.meta?.src
+                      ? 'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads'
+                      : undefined
+                  }
                   src={item.meta?.src ?? `/view/${item.name}`}
                   style={
                     iframeMinWidth

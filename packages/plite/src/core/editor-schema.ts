@@ -26,6 +26,8 @@ import type {
   SchemaPropertyHandle,
   SchemaTarget,
 } from '../interfaces/schema';
+import { failInvariant } from '../internal/fail-invariant';
+import { getDefined } from '../internal/get-defined';
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
@@ -131,11 +133,13 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       options: Readonly<{ parent: Element; root?: RootKey }>
     ) => readonly Descendant[] | null;
     getElementContent: (type: string) => CompiledSchemaContentProgram | null;
-    getElementOwnedRoots: (element: Element) => readonly Readonly<{
-      ownership: import('../interfaces/schema').SchemaContentRootOwnership;
-      root: NamedRootKey;
-      slot: string;
-    }>[];
+    getElementOwnedRoots: (element: Element) => ReadonlyArray<
+      Readonly<{
+        ownership: import('../interfaces/schema').SchemaContentRootOwnership;
+        root: NamedRootKey;
+        slot: string;
+      }>
+    >;
     getOrphanedElementOwnedRoots: (
       input: Readonly<{
         after: EditorDocumentValue;
@@ -321,7 +325,7 @@ const canonicalizeCompiledExclusiveTextProperties = (
       left.key.localeCompare(right.key)
     );
   })) {
-    const property = entry.property;
+    const { property } = entry;
 
     if (
       property &&
@@ -524,9 +528,7 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   () => CompiledEditorSchema | null
 >();
 const VALIDATED_DOCUMENT_ROOTS = new WeakMap<object, string>();
-const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(
-  Object.freeze([]) as readonly JsonNode[]
-);
+const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(Object.freeze([]));
 
 /**
  * Resolve the exact compiled artifact behind a candidate schema API.
@@ -538,7 +540,7 @@ export const getCompiledEditorSchemaFromApi = (
 ) => COMPILED_SCHEMA_BY_API.get(schemaApi)?.() ?? null;
 
 export const createEditorSchema = <V extends Value = Value>(
-  getEditor: () => Editor<V, any>,
+  getEditor: () => Editor<V>,
   getRegistry: () => ExtensionRegistry<any> = () =>
     getExtensionRegistry(getEditor())
 ): InternalEditorSchemaApi<V> => {
@@ -676,7 +678,7 @@ export const createEditorSchema = <V extends Value = Value>(
           type,
         })
       : candidates.length === 1
-        ? candidates[0]!
+        ? candidates[0]
         : null;
 
     return property ? toPublicProperty(property) : null;
@@ -706,10 +708,12 @@ export const createEditorSchema = <V extends Value = Value>(
   const getDocumentOwnershipIndexes = (
     schema: CompiledEditorSchema,
     value: EditorDocumentValue
-  ): readonly Readonly<{
-    index: ElementOwnedRootIndex;
-    root: RootKey;
-  }>[] =>
+  ): ReadonlyArray<
+    Readonly<{
+      index: ElementOwnedRootIndex;
+      root: RootKey;
+    }>
+  > =>
     Object.freeze(
       Object.entries({
         main: value.children,
@@ -727,10 +731,12 @@ export const createEditorSchema = <V extends Value = Value>(
   const getLiveDocumentOwnershipIndexes = (
     schema: CompiledEditorSchema,
     targetRoot: RootKey
-  ): readonly Readonly<{
-    index: ElementOwnedRootIndex;
-    root: RootKey;
-  }>[] => {
+  ): ReadonlyArray<
+    Readonly<{
+      index: ElementOwnedRootIndex;
+      root: RootKey;
+    }>
+  > => {
     const editor = getEditor();
     const pending: RootKey[] = [
       'main',
@@ -751,7 +757,7 @@ export const createEditorSchema = <V extends Value = Value>(
       const index = ensureElementOwnedRootIndex(
         schema,
         root,
-        DocumentIndex.fromValue(children as readonly JsonNode[])
+        DocumentIndex.fromValue(children)
       );
 
       indexes.push({ index, root });
@@ -817,29 +823,29 @@ export const createEditorSchema = <V extends Value = Value>(
 
     switch (target.kind) {
       case 'type': {
-        const current = target as Extract<SchemaTarget, { kind: 'type' }>;
+        const current = target;
 
         return context.type === current.type;
       }
       case 'types': {
-        const current = target as Extract<SchemaTarget, { kind: 'types' }>;
+        const current = target;
 
         return current.types.includes(context.type);
       }
       case 'group': {
-        const current = target as Extract<SchemaTarget, { kind: 'group' }>;
+        const current = target;
 
         return (
           schema.elements.groups.get(current.group)?.has(context.type) ?? false
         );
       }
       case 'root': {
-        const current = target as Extract<SchemaTarget, { kind: 'root' }>;
+        const current = target;
 
         return context.root === current.root;
       }
       case 'parent': {
-        const current = target as Extract<SchemaTarget, { kind: 'parent' }>;
+        const current = target;
         const [parent, ...ancestors] = context.ancestors ?? [];
 
         return parent
@@ -851,7 +857,7 @@ export const createEditorSchema = <V extends Value = Value>(
           : 'unknown';
       }
       case 'not': {
-        const current = target as Extract<SchemaTarget, { kind: 'not' }>;
+        const current = target;
         const result = matchesTargetWithOpenAncestorBoundary(
           schema,
           current.target,
@@ -861,7 +867,7 @@ export const createEditorSchema = <V extends Value = Value>(
         return result === 'unknown' ? result : !result;
       }
       case 'and': {
-        const current = target as Extract<SchemaTarget, { kind: 'and' }>;
+        const current = target;
         let unknown = false;
 
         for (const child of current.targets) {
@@ -878,7 +884,7 @@ export const createEditorSchema = <V extends Value = Value>(
         return unknown ? 'unknown' : true;
       }
       case 'or': {
-        const current = target as Extract<SchemaTarget, { kind: 'or' }>;
+        const current = target;
         let unknown = false;
 
         for (const child of current.targets) {
@@ -895,6 +901,8 @@ export const createEditorSchema = <V extends Value = Value>(
         return unknown ? 'unknown' : false;
       }
     }
+
+    return failInvariant('Unexpected schema target kind');
   };
 
   const DEFAULT_ELEMENT_BEHAVIOR: EditorElementBehavior = Object.freeze({
@@ -949,7 +957,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const slots = getCompiledElement(element)?.contentRoots;
 
     if (!slots || slots.size === 0) return Object.freeze({});
-    const childRoots = (element as { childRoots?: unknown }).childRoots;
+    const { childRoots } = element as { childRoots?: unknown };
 
     if (typeof childRoots !== 'object' || childRoots === null) {
       return Object.freeze({});
@@ -961,7 +969,7 @@ export const createEditorSchema = <V extends Value = Value>(
           const root = (childRoots as Readonly<Record<string, unknown>>)[slot];
 
           return typeof root === 'string' && root.length > 0
-            ? [[slot, root as NamedRootKey] as const]
+            ? [[slot, root] as const]
             : [];
         })
       )
@@ -971,7 +979,7 @@ export const createEditorSchema = <V extends Value = Value>(
   const getElementOwnedRoots: InternalEditorSchemaApi['getElementOwnedRoots'] =
     (element) => {
       const contentRoots = getCompiledElement(element)?.contentRoots;
-      const childRoots = (element as { childRoots?: unknown }).childRoots;
+      const { childRoots } = element as { childRoots?: unknown };
 
       if (
         !contentRoots ||
@@ -990,7 +998,7 @@ export const createEditorSchema = <V extends Value = Value>(
             ? [
                 Object.freeze({
                   ownership: declaration.ownership,
-                  root: root as NamedRootKey,
+                  root,
                   slot,
                 }),
               ]
@@ -1033,12 +1041,9 @@ export const createEditorSchema = <V extends Value = Value>(
       const candidates = new Set(tracked);
 
       for (const [root, children] of Object.entries(afterRoots)) {
-        const beforeDocument = DocumentIndex.fromValue(
-          (beforeRoots[root] ?? []) as readonly JsonNode[]
-        );
+        const beforeDocument = DocumentIndex.fromValue(beforeRoots[root] ?? []);
         const afterDocument =
-          indexedAfter.get(root) ??
-          DocumentIndex.fromValue(children as readonly JsonNode[]);
+          indexedAfter.get(root) ?? DocumentIndex.fromValue(children);
         const index = changedRoots.has(root)
           ? rebaseElementOwnedRootIndex(
               schema,
@@ -1057,9 +1062,7 @@ export const createEditorSchema = <V extends Value = Value>(
         }
       }
       for (const root of change.deleteRoots) {
-        const beforeDocument = DocumentIndex.fromValue(
-          (beforeRoots[root] ?? []) as readonly JsonNode[]
-        );
+        const beforeDocument = DocumentIndex.fromValue(beforeRoots[root] ?? []);
         const index = rebaseElementOwnedRootIndex(
           schema,
           root,
@@ -1197,13 +1200,13 @@ export const createEditorSchema = <V extends Value = Value>(
       resolved.placement !== property.placement ||
       typeof resolved.key !== 'string'
     ) {
-      return;
+      return undefined;
     }
     if (
       (resolved.placement === 'element' && !ElementApi.isElement(node)) ||
       (resolved.placement === 'text' && !NodeApi.isText(node))
     ) {
-      return;
+      return undefined;
     }
     const ownDescriptor = Object.getOwnPropertyDescriptor(node, resolved.key);
     const ownValue =
@@ -1227,7 +1230,7 @@ export const createEditorSchema = <V extends Value = Value>(
         toCompiledTargetContext(type, options)
       )
     ) {
-      return;
+      return undefined;
     }
     return ownValue !== undefined ? ownValue : getPropertyDefault(resolved);
   }) as InternalEditorSchemaApi['getProperty'];
@@ -1309,7 +1312,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const nextProperties: Record<string, unknown> = {};
 
     for (const propertyId of compiled.construction.materializedPropertyIds) {
-      const property = schema.properties.byId.get(propertyId)!;
+      const property = getDefined(schema.properties.byId.get(propertyId));
 
       if (
         typeof property.key !== 'string' ||
@@ -1536,17 +1539,17 @@ export const createEditorSchema = <V extends Value = Value>(
         return (
           validationLocation ? validatePropertyValue : canonicalizePropertyValue
         )(`Editor ${placement} property "${key}"`, property.descriptor, value);
-      } catch (cause) {
-        if (!validationLocation) throw cause;
+      } catch (error) {
+        if (!validationLocation) throw error;
 
         throw createEditorSchemaValidationError(
           'invalid-property-value',
-          cause instanceof Error
-            ? cause.message
+          error instanceof Error
+            ? error.message
             : `Editor ${placement} property "${key}" is invalid.`,
           validationLocation,
           {
-            cause,
+            cause: error,
             property: { candidates: [property], key, placement },
           }
         );
@@ -1757,13 +1760,11 @@ export const createEditorSchema = <V extends Value = Value>(
           dropMisplaced
         );
 
-        return nested === node.children
-          ? node
-          : ({ ...node, children: nested } as Element);
+        return nested === node.children ? node : { ...node, children: nested };
       }
 
       const properties = canonicalizeDeclarativePropertyRecord(
-        node as unknown as Readonly<Record<string, unknown>>,
+        node,
         schema,
         'element',
         toCompiledTargetContext(type, { ancestors, root }),
@@ -1787,7 +1788,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
       if (candidate === node && nested === node.children) return node;
 
-      return { ...candidate, children: nested, type } as Element;
+      return { ...candidate, children: nested, type };
     });
 
     return canonical.every((node, index) => node === children[index])
@@ -1854,7 +1855,7 @@ export const createEditorSchema = <V extends Value = Value>(
             root,
           }),
           new Set(['text'])
-        ) as Text;
+        );
       }
 
       const type = getElementType(node) ?? '';
@@ -1871,7 +1872,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
       return candidate === node && nested === node.children
         ? node
-        : ({ ...candidate, children: nested } as Element);
+        : { ...candidate, children: nested };
     });
 
     return copied.every((node, index) => node === children[index])
@@ -1902,7 +1903,7 @@ export const createEditorSchema = <V extends Value = Value>(
       node ? [node] : [],
       root,
       getElementAncestors(children, path)
-    )[0]!;
+    )[0];
   };
 
   const getTextProperty = (
@@ -1923,7 +1924,7 @@ export const createEditorSchema = <V extends Value = Value>(
           toCompiledTargetContext(parentType, options)
         )
       : candidates.length === 1
-        ? candidates[0]!
+        ? candidates[0]
         : null;
   };
 
@@ -2391,8 +2392,8 @@ export const createEditorSchema = <V extends Value = Value>(
             key,
             toCompiledTargetContext(getElementType(parent) ?? '', options)
           )
-        : candidates.length === 1 && !candidates[0]!.target
-          ? candidates[0]!
+        : candidates.length === 1 && !candidates[0].target
+          ? candidates[0]
           : null;
 
       if (!property) {
@@ -2423,15 +2424,15 @@ export const createEditorSchema = <V extends Value = Value>(
           property.descriptor,
           value
         );
-      } catch (cause) {
+      } catch (error) {
         throw createEditorSchemaValidationError(
           'invalid-property-value',
-          cause instanceof Error
-            ? cause.message
+          error instanceof Error
+            ? error.message
             : `Editor text property "${key}" is invalid.`,
           location,
           {
-            cause,
+            cause: error,
             property: { candidates: [property], key, placement: 'text' },
           }
         );
@@ -2561,10 +2562,10 @@ export const createEditorSchema = <V extends Value = Value>(
     }
 
     canonicalizeDeclarativePropertyRecord(
-      node as unknown as Readonly<Record<string, unknown>>,
+      node,
       schema,
       'element',
-      toCompiledTargetContext(type!, { ancestors, root }),
+      toCompiledTargetContext(getDefined(type), { ancestors, root }),
       new Set([
         'children',
         'type',
@@ -2676,20 +2677,20 @@ export const createEditorSchema = <V extends Value = Value>(
   ) => {
     try {
       assertEditorJsonValue(value, label);
-    } catch (cause) {
+    } catch (error) {
       throw createEditorSchemaValidationError(
         'invalid-json',
-        cause instanceof Error
-          ? cause.message
+        error instanceof Error
+          ? error.message
           : `${label} must encode to JSON-compatible data.`,
         location,
-        { cause }
+        { cause: error }
       );
     }
   };
   const assertFragment: EditorStateSchemaApi<V>['assertFragment'] = (
     input: unknown
-  ): asserts input is readonly DescendantIn<V>[] => {
+  ): asserts input is ReadonlyArray<DescendantIn<V>> => {
     const location = toSchemaValidationLocation('main', []);
 
     assertSchemaJsonValue(input, 'Editor document fragment', location);
@@ -2859,7 +2860,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const path = resolveElementOwnedRootPath(index, input);
     const owner = path ? getDescendant(children, path) : undefined;
     const matches = owner
-      ? matchesElementOwnedRootDeclaration(input, owner as JsonNode)
+      ? matchesElementOwnedRootDeclaration(input, owner)
       : false;
 
     if (!path || !matches) {
@@ -3110,7 +3111,7 @@ export const createEditorSchema = <V extends Value = Value>(
           sealElementOwnedRootIndex(
             schema,
             root,
-            DocumentIndex.fromValue(children as readonly JsonNode[])
+            DocumentIndex.fromValue(children)
           );
         }
       }
@@ -3205,26 +3206,28 @@ export const createEditorSchema = <V extends Value = Value>(
       ...change.deleteRoots,
     ]);
     const touchedRoots = new Set(changedRoots);
-    const ownershipIndexes: Readonly<{
-      index: ElementOwnedRootIndex;
-      root: RootKey;
-    }>[] = [];
+    const ownershipIndexes: Array<
+      Readonly<{
+        index: ElementOwnedRootIndex;
+        root: RootKey;
+      }>
+    > = [];
 
     if (schema && hasContentRoots()) {
       const dirtyChildRoots = new Set<string>();
-      const dirtyIssues: Readonly<{
-        index: ElementOwnedRootIndex;
-        issue: ElementOwnedRootIssue;
-      }>[] = [];
+      const dirtyIssues: Array<
+        Readonly<{
+          index: ElementOwnedRootIndex;
+          issue: ElementOwnedRootIssue;
+        }>
+      > = [];
 
       for (const [root, children] of Object.entries(afterRoots)) {
         const afterDocument =
-          indexedAfter.get(root) ??
-          DocumentIndex.fromValue(children as readonly JsonNode[]);
+          indexedAfter.get(root) ?? DocumentIndex.fromValue(children);
         const beforeChildren = beforeRoots[root] ?? [];
         const beforeDocument =
-          indexedBefore.get(root) ??
-          DocumentIndex.fromValue(beforeChildren as readonly JsonNode[]);
+          indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
         const rootChange = getInternalDocumentRootChange(change, root);
         const index = touchedRoots.has(root)
           ? rebaseElementOwnedRootIndex(
@@ -3255,8 +3258,7 @@ export const createEditorSchema = <V extends Value = Value>(
       for (const root of change.deleteRoots) {
         const beforeChildren = beforeRoots[root] ?? [];
         const beforeDocument =
-          indexedBefore.get(root) ??
-          DocumentIndex.fromValue(beforeChildren as readonly JsonNode[]);
+          indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
         const index = rebaseElementOwnedRootIndex(
           schema,
           root,
@@ -3416,7 +3418,7 @@ export const createEditorSchema = <V extends Value = Value>(
         indexedAfter.get(root) ??
         (changedRoots.has(root)
           ? undefined
-          : DocumentIndex.fromValue(children as readonly JsonNode[]));
+          : DocumentIndex.fromValue(children));
 
       if (!afterDocument || afterDocument.value !== children) {
         throw new EditorSchemaValidationError(
@@ -3426,8 +3428,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
       const beforeChildren = beforeRoots[root] ?? [];
       const beforeDocument =
-        indexedBefore.get(root) ??
-        DocumentIndex.fromValue(beforeChildren as readonly JsonNode[]);
+        indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
       const rootChange = getInternalDocumentRootChange(change, root);
       const ownPaths = new Map<string, readonly number[]>();
       const recursivePaths = new Map<string, readonly number[]>();
@@ -3674,15 +3675,16 @@ export const createEditorSchema = <V extends Value = Value>(
         sealElementOwnedRootIndex(
           schema,
           root,
-          DocumentIndex.fromValue(children as readonly JsonNode[])
+          DocumentIndex.fromValue(children)
         );
       }
     }
   };
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
-    adoptDocumentBaseline: (value) =>
-      rememberValidatedDocumentRoots(value, getDeclarativeSchema()),
+    adoptDocumentBaseline: (value) => {
+      rememberValidatedDocumentRoots(value, getDeclarativeSchema());
+    },
     allowsElementType,
     canonicalizeTextPropertiesAt,
     canonicalizeChildren,

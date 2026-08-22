@@ -2559,6 +2559,69 @@ test('editable mouse down flushes pending native text before app mouse callbacks
   }
 });
 
+test('an externally canceled mouse gesture never imports editor selection', () => {
+  const editor = createReactEditor();
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  const root = mountEditableRoot(editor);
+  const flushPendingNativeTextInput = vi.fn();
+  const onClick = vi.fn();
+  const onMouseDown = vi.fn();
+  const onMouseUp = vi.fn();
+  const syncDOMSelectionFromRuntime = vi.fn();
+  const syncDOMSelectionToEditor = vi.fn();
+  const trace = { recordKernelEventTrace: vi.fn() } as any;
+  const { result } = renderHook(() =>
+    useTestRuntimeFocusMouseEvents({
+      editor,
+      flushPendingNativeTextInput,
+      inputController,
+      onClick,
+      onMouseDown,
+      onMouseUp,
+      readOnly: false,
+      selection: { syncDOMSelectionFromRuntime } as any,
+      state: inputController.state,
+      syncDOMSelectionToEditor,
+      trace,
+    })
+  );
+  const canceledEvent = {
+    currentTarget: root,
+    defaultPrevented: true,
+    isDefaultPrevented: () => true,
+    isPropagationStopped: () => false,
+    target: root,
+  } as any;
+
+  try {
+    result.current.onMouseDownCapture(canceledEvent);
+    result.current.onMouseDown(canceledEvent);
+    result.current.onMouseUp({
+      ...canceledEvent,
+      defaultPrevented: false,
+      isDefaultPrevented: () => false,
+    });
+    result.current.onClick({
+      ...canceledEvent,
+      defaultPrevented: false,
+      isDefaultPrevented: () => false,
+    });
+
+    expect(onMouseDown).toHaveBeenCalledTimes(1);
+    expect(onMouseUp).toHaveBeenCalledTimes(1);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(flushPendingNativeTextInput).not.toHaveBeenCalled();
+    expect(syncDOMSelectionFromRuntime).not.toHaveBeenCalled();
+    expect(syncDOMSelectionToEditor).not.toHaveBeenCalled();
+    expect(trace.recordKernelEventTrace).not.toHaveBeenCalled();
+  } finally {
+    unmountEditableRoot(editor, root);
+  }
+});
+
 test('editable paste flushes pending native text before app paste callbacks', () => {
   const editor = createReactEditor();
   const inputController = createEditableInputController({

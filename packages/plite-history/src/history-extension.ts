@@ -20,6 +20,7 @@ import {
   invertEffect,
 } from '@platejs/plite';
 import {
+  failInvariant,
   dispatchCommand,
   getEditorUpdateRoot,
   MAIN_ROOT_KEY,
@@ -61,9 +62,9 @@ import {
 
 export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
   /** Read the redo stack. */
-  redos: () => readonly Batch<V>[];
+  redos: () => ReadonlyArray<Batch<V>>;
   /** Read the undo stack. */
-  undos: () => readonly Batch<V>[];
+  undos: () => ReadonlyArray<Batch<V>>;
 };
 
 export type HistoryControlTx = TxOnlyMethod<() => void>;
@@ -279,9 +280,9 @@ const historyRedoCommand = defineCommand<HistoryRedoCommand, HistoryEditor>(
   'history.redo',
   {
     build: ({ input, state }) =>
-      state.transaction((tx) =>
-        applyHistoryAction(state, tx, 'redo', input.root)
-      ),
+      state.transaction((tx) => {
+        applyHistoryAction(state, tx, 'redo', input.root);
+      }),
   }
 );
 
@@ -289,9 +290,9 @@ const historyUndoCommand = defineCommand<HistoryUndoCommand, HistoryEditor>(
   'history.undo',
   {
     build: ({ input, state }) =>
-      state.transaction((tx) =>
-        applyHistoryAction(state, tx, 'undo', input.root)
-      ),
+      state.transaction((tx) => {
+        applyHistoryAction(state, tx, 'undo', input.root);
+      }),
   }
 );
 
@@ -300,7 +301,8 @@ const createCollapsedRangeAtTextInsert = (
   offset: number,
   template: Selection
 ): TextSelection => {
-  const afterPoint = group.afterPoint!;
+  const afterPoint =
+    group.afterPoint ?? failInvariant('Expected value to be defined');
   const point = {
     offset,
     path: [...afterPoint.path],
@@ -366,7 +368,7 @@ const prepareHistoryBatch = <V extends Value>(
 }> | null => {
   const group = createHistoryBatchGroup(commit);
   const getSelectionRoot = (selection: Selection, fallback?: string) => {
-    if (!selection) return;
+    if (!selection) return undefined;
 
     const root = getRangeRoot(selection) ?? fallback;
 
@@ -530,8 +532,8 @@ const createHistoryExtension = <
           return;
         }
 
-        const changes = commit.changes;
-        const inverseChanges = commit.inverseChanges;
+        const { changes } = commit;
+        const { inverseChanges } = commit;
 
         const effects = commit.effects.filter(
           (effect) => effect.type.history === 'push'
@@ -672,5 +674,4 @@ const createHistoryExtension = <
 /** Create the inverse-change history extension. */
 export const history = <const TEnabled extends boolean | undefined = undefined>(
   options: HistoryOptions<TEnabled> = {}
-): HistoryExtension<TEnabled> =>
-  createHistoryExtension(options) as HistoryExtension<TEnabled>;
+): HistoryExtension<TEnabled> => createHistoryExtension(options);

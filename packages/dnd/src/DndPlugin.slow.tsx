@@ -9,7 +9,7 @@ import { DndPlugin } from './DndPlugin';
 const blockNodeKey = 'runtime-block-1' as NodeKey;
 
 describe('DndPlugin', () => {
-  it('updates drag state from the drag handlers', () => {
+  it('does not claim native drags from arbitrary Plite nodes', () => {
     const editor = createPlateEditor({
       plugins: [DndPlugin],
     });
@@ -26,14 +26,34 @@ describe('DndPlugin', () => {
     pipeHandler(editor, { handlerKey: 'onDragStart' })?.(event);
     pipeHandler(editor, { handlerKey: 'onDragEnter' })?.(event);
 
-    expect(dataTransfer.effectAllowed).toBe('move');
-    expect(dataTransfer.dropEffect).toBe('move');
-    expect(context.store.get('draggingKey')).toBe(blockNodeKey);
-    expect(context.store.get('isDragging')).toBe(true);
+    expect(dataTransfer.effectAllowed).toBe('none');
+    expect(dataTransfer.dropEffect).toBe('none');
+    expect(context.store.get('draggingKey')).toBeNull();
+    expect(context.store.get('isDragging')).toBe(false);
     expect(context.store.get('_isOver')).toBe(true);
     const dropResult: unknown = pipeHandler(editor, {
       handlerKey: 'onDrop',
     })?.(event);
+    expect(dropResult).toBe(false);
+  });
+
+  it('consumes drops only while the React DnD adapter owns the drag', () => {
+    const editor = createPlateEditor({
+      plugins: [DndPlugin],
+    });
+    const context = editor.plugin(DndPlugin);
+    const event = {} as React.DragEvent;
+
+    context.store.set({
+      _isOver: true,
+      draggingKey: blockNodeKey,
+      isDragging: true,
+    });
+
+    const dropResult: unknown = pipeHandler(editor, {
+      handlerKey: 'onDrop',
+    })?.(event);
+
     expect(dropResult).toBe(true);
 
     pipeHandler(editor, { handlerKey: 'onDragEnd' })?.(event);
@@ -42,7 +62,7 @@ describe('DndPlugin', () => {
     expect(context.store.get('dropTarget')).toEqual({ key: null, line: '' });
   });
 
-  it('ignores drag starts without a block id and clears preview content on focus', () => {
+  it('clears preview content on focus', () => {
     const preview = document.createElement('div');
     const editor = createPlateEditor({
       plugins: [
@@ -52,18 +72,9 @@ describe('DndPlugin', () => {
       ],
     });
     const context = editor.plugin(DndPlugin);
-    const dataTransfer = {
-      dropEffect: 'none',
-      effectAllowed: 'none',
-    } as DataTransfer;
-    const dragEvent = {
-      dataTransfer,
-      target: document.createElement('div'),
-    } as unknown as React.DragEvent;
     const focusEvent = {} as React.FocusEvent;
 
     preview.append(document.createElement('span'));
-    pipeHandler(editor, { handlerKey: 'onDragStart' })?.(dragEvent);
     pipeHandler(editor, { handlerKey: 'onFocus' })?.(focusEvent);
 
     expect(context.store.get('draggingKey')).toBeNull();
@@ -179,7 +190,9 @@ describe('DndPlugin', () => {
 
       act(() => context.store.set({ isDragging: true }));
       await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 110));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 110);
+        });
       });
 
       const areas = view.container.querySelectorAll('.dnd-scroll-area');
@@ -196,7 +209,9 @@ describe('DndPlugin', () => {
 
       act(() => context.store.set({ enableScroller: true }));
       await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 110));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 110);
+        });
       });
       expect(view.container.querySelectorAll('.dnd-scroll-area')).toHaveLength(
         2

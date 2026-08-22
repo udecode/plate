@@ -2324,7 +2324,7 @@ const inspectContextualConfigure = (callback) => {
     if (node.type === 'ReturnStatement') {
       const value = unwrapTypedExpression(node.argument);
 
-      returnCount++;
+      returnCount += 1;
       if (value?.type === 'ObjectExpression') {
         properties.push(...value.properties);
       } else {
@@ -2838,8 +2838,7 @@ const resolveNamedSchemaLineage = (
       );
 
       if (spreadLineage) {
-        id = spreadLineage.id;
-        version = spreadLineage.version;
+        ({ id, version } = spreadLineage);
       }
 
       continue;
@@ -3484,7 +3483,7 @@ const collectLocalPluginDescriptorBindings = (
     if (!path || !binding) return false;
 
     const bindings = descriptorBindings.get(path) ?? new Set();
-    const size = bindings.size;
+    const { size } = bindings;
 
     bindings.add(binding);
     descriptorBindings.set(path, bindings);
@@ -4184,7 +4183,7 @@ const isInsidePluginSchema = (
   );
 
   return (
-    schemaIndex >= 0 &&
+    schemaIndex !== -1 &&
     isDirectPluginDeclarationObject(
       ancestors.slice(0, schemaIndex),
       pluginCreatorNames
@@ -4223,7 +4222,7 @@ const isInsidePluginInitialState = (
   );
 
   return (
-    initialStateIndex >= 0 &&
+    initialStateIndex !== -1 &&
     isDirectPluginDeclarationObject(
       ancestors.slice(0, initialStateIndex),
       pluginCreatorNames
@@ -4335,9 +4334,9 @@ const isPackagePluginDefinitionSource = (file) =>
 const isPluginTypeReference = (node) => {
   if (node?.type !== 'MemberExpression') return false;
 
-  let object = node.object;
+  let { object } = node;
 
-  while (object?.type === 'MemberExpression') object = object.object;
+  while (object?.type === 'MemberExpression') ({ object } = object);
 
   return (
     object?.type === 'Identifier' &&
@@ -4538,7 +4537,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ...getSchemaTypeBindings(ownerCallback),
     ]),
   });
-  const isSchemaTypeBinding = (node, typeBindings, schemaBindings) => {
+  const isSchemaTypeBinding = (node, typeBindings, innerSchemaBindings) => {
     const value = unwrapTypedExpression(node);
 
     if (value?.type === 'Identifier' && typeBindings.has(value.name)) {
@@ -4552,7 +4551,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     ) {
       const owner = unwrapTypedExpression(value.object);
 
-      return owner?.type === 'Identifier' && schemaBindings.has(owner.name);
+      return (
+        owner?.type === 'Identifier' && innerSchemaBindings.has(owner.name)
+      );
     }
 
     return false;
@@ -4631,7 +4632,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       return;
     }
 
-    const schemaBindings = getCodecContextSchemaBindings(
+    const innerSchemaBindings2 = getCodecContextSchemaBindings(
       codecsProperty,
       ownerCallback
     );
@@ -4693,7 +4694,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (
         hasCustomDecodeSource &&
-        !isSchemaTypeBinding(from, schemaBindings.types, schemaBindings.objects)
+        !isSchemaTypeBinding(
+          from,
+          innerSchemaBindings2.types,
+          innerSchemaBindings2.objects
+        )
       ) {
         report(
           fromProperty ?? decodeProperty,
@@ -4709,11 +4714,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         .filter(Boolean);
       const decodedSchemaBindings = {
         objects: new Set([
-          ...schemaBindings.objects,
+          ...innerSchemaBindings2.objects,
           ...getSchemaObjectBindings(decodeProperty?.value),
         ]),
         types: new Set([
-          ...schemaBindings.types,
+          ...innerSchemaBindings2.types,
           ...getSchemaTypeBindings(decodeProperty?.value),
         ]),
       };
@@ -4744,7 +4749,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
               (property) => property.type === 'SpreadElement'
             );
 
-            if (spreadIndex < 0) return false;
+            if (spreadIndex === -1) return false;
 
             return ['children', 'type'].some((name) => {
               const index = properties.findIndex(
@@ -4755,7 +4760,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
                   ) === name
               );
 
-              return index >= 0 && index < spreadIndex;
+              return index !== -1 && index < spreadIndex;
             });
           }
         )
@@ -4772,8 +4777,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           (property) =>
             !isSchemaTypeBinding(
               property.value,
-              schemaBindings.types,
-              schemaBindings.objects
+              innerSchemaBindings2.types,
+              innerSchemaBindings2.objects
             )
         )
       ) {
@@ -4874,7 +4879,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           );
 
         if (isIntentionalNegativeContract) {
-          pliteConfigNegativeContractCount++;
+          pliteConfigNegativeContractCount += 1;
           continue;
         }
 
@@ -5431,7 +5436,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           );
 
         if (isIntentionalNegativeContract) {
-          reactFactoryNegativeContractCount++;
+          reactFactoryNegativeContractCount += 1;
         } else {
           report(
             node,
@@ -5660,7 +5665,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         );
 
       if (isIntentionalRuntimeNegativeRenderNode) {
-        runtimeRenderNodeNegativeContractCount++;
+        runtimeRenderNodeNegativeContractCount += 1;
       }
 
       if (
@@ -6002,7 +6007,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
               );
 
             if (isIntentionalNegativeContract) {
-              rawCodecNegativeContractCount++;
+              rawCodecNegativeContractCount += 1;
             } else {
               report(
                 property,
@@ -6046,7 +6051,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
               ]
             : stages;
 
-          productionExtendChainCount++;
+          productionExtendChainCount += 1;
           productionExtendChains.push(stages);
 
           if (countStageField(authorStages, 'commands') > 1) {
@@ -6167,7 +6172,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
               );
 
             if (isIntentionalNegativeContract) {
-              rawCodecNegativeContractCount++;
+              rawCodecNegativeContractCount += 1;
             } else {
               report(
                 property,
@@ -6278,7 +6283,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           node.arguments[0]?.type === 'ObjectExpression');
 
       if (rawSchemaQuery) {
-        rawSchemaQueryCount++;
+        rawSchemaQueryCount += 1;
 
         if (rawSchemaQueryCount > allowedRawSchemaQueryCount) {
           report(

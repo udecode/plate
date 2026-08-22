@@ -234,8 +234,8 @@ export const unwrapNodes = ((
       return;
     }
 
-    const startWrapperIndex = startWrapperPath[0]!;
-    const endWrapperIndex = endWrapperPath[0]!;
+    const startWrapperIndex = startWrapperPath[0];
+    const endWrapperIndex = endWrapperPath[0];
     const wrapperChildCounts: number[] = [];
 
     for (
@@ -267,9 +267,9 @@ export const unwrapNodes = ((
       path: [
         startWrapperIndex +
           wrapperChildCounts
-            .slice(0, point.path[0]! - startWrapperIndex)
+            .slice(0, point.path[0] - startWrapperIndex)
             .reduce((total, count) => total + count, 0) +
-          point.path[1]!,
+          point.path[1],
         ...point.path.slice(2),
       ],
       offset: point.offset,

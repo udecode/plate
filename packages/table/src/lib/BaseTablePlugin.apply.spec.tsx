@@ -26,7 +26,7 @@ const createTableEditor = (input: TestEditor) =>
 
 const tableElement = (
   id: string,
-  rows: readonly (readonly string[])[]
+  rows: ReadonlyArray<readonly string[]>
 ): TableElementWithId => ({
   children: rows.map((values, row) => ({
     children: values.map((value) => ({
@@ -254,7 +254,7 @@ describe('BaseTablePlugin apply', () => {
     const nextKeep = editor.read.nodes.get([0, 0, 0], {
       type: BaseTableCellPlugin,
     });
-    assert(nextKeep);
+    assert.ok(nextKeep);
     expect(
       editor.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
     ).toEqual({ col: 0, row: 0 });
@@ -307,7 +307,7 @@ describe('BaseTablePlugin apply', () => {
     const nextKeep = replay.read.nodes.get([0, 0, 0], {
       type: BaseTableCellPlugin,
     });
-    assert(nextKeep);
+    assert.ok(nextKeep);
     expect(
       replay.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
     ).toEqual({ col: 0, row: 0 });
@@ -414,7 +414,7 @@ describe('BaseTablePlugin apply', () => {
     editor.update((tx) => tx.nodes.remove({ at: [0, 1, 1] }));
 
     const repaired = editor.read.nodes.get([0], { type: BaseTablePlugin })?.[0];
-    assert(repaired);
+    assert.ok(repaired);
 
     const repairedGrid = editor.read((state) => compileTableGrid(state, [0]));
     const repairedChildren = editor.read.children();
@@ -466,7 +466,7 @@ describe('BaseTablePlugin apply', () => {
     });
     let updateCount = 0;
 
-    doc.on('update', () => updateCount++);
+    doc.on('update', () => (updateCount += 1) - 1);
     source.update.table.insertColumn();
 
     expect(updateCount).toBe(1);

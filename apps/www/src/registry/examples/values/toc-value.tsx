@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const tocValue = (
+export const tocValue: Value = (
   <fragment>
     <hheading level={1}>
       <htext>Table of Contents</htext>
@@ -51,7 +52,7 @@ export const tocValue = (
   </fragment>
 );
 
-export const tocPlaygroundValue = (
+export const tocPlaygroundValue: Value = (
   <fragment>
     <htoc>
       <htext />

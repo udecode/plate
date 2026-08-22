@@ -206,7 +206,7 @@ export type DOMHandlers<
 };
 
 export type DOMHandlerProp = {
-  [K in keyof DOMHandlers & string]: K extends 'domBeforeInput'
+  [K in keyof DOMHandlers]-?: K extends 'domBeforeInput'
     ? 'onDOMBeforeInput'
     : `on${Capitalize<K>}`;
-}[keyof DOMHandlers & string];
+}[keyof DOMHandlers];

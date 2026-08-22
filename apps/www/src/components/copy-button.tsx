@@ -48,12 +48,13 @@ function legacyCopyToClipboard(value: string) {
   let hasCopied = false;
 
   try {
+    // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Clipboard API rejection still needs this compatibility fallback for older or restricted browsers.
     hasCopied = document.execCommand('copy');
   } catch {
     hasCopied = false;
   }
 
-  document.body.removeChild(textArea);
+  textArea.remove();
 
   return hasCopied;
 }
@@ -98,13 +99,15 @@ export function CopyButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hasCopied) return;
+    if (!hasCopied) return undefined;
 
     const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [hasCopied]);
 
   return (
@@ -113,7 +116,7 @@ export function CopyButton({
       variant={variant}
       className={cn(codeCopyButtonClassName, className)}
       onClick={async () => {
-        const hasCopied = await copyToClipboardWithMeta(
+        const innerHasCopied = await copyToClipboardWithMeta(
           value,
           event
             ? {
@@ -125,7 +128,7 @@ export function CopyButton({
             : undefined
         );
 
-        if (hasCopied) {
+        if (innerHasCopied) {
           setHasCopied(true);
         }
       }}
@@ -150,19 +153,21 @@ export function CopyWithClassNames({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hasCopied) return;
+    if (!hasCopied) return undefined;
 
     const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [hasCopied]);
 
   const copyToClipboard = async (_value: string) => {
-    const hasCopied = await copyToClipboardWithMeta(_value);
+    const innerHasCopied2 = await copyToClipboardWithMeta(_value);
 
-    if (hasCopied) {
+    if (innerHasCopied2) {
       setHasCopied(true);
     }
   };
@@ -211,20 +216,22 @@ export function CopyNpmCommandButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hasCopied) return;
+    if (!hasCopied) return undefined;
 
     const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [hasCopied]);
 
   const copyCommand = async (
     value: string,
     pm: 'bun' | 'npm' | 'pnpm' | 'yarn'
   ) => {
-    const hasCopied = await copyToClipboardWithMeta(value, {
+    const innerHasCopied3 = await copyToClipboardWithMeta(value, {
       name: 'copy_npm_command',
       properties: {
         command: value,
@@ -232,7 +239,7 @@ export function CopyNpmCommandButton({
       },
     });
 
-    if (hasCopied) {
+    if (innerHasCopied3) {
       setHasCopied(true);
     }
   };

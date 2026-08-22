@@ -28,7 +28,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],
     multiple: false,
-    onFilesSelected: async ({ plainFiles }) => {
+    onFilesSelected: async ({ plainFiles }: { plainFiles: File[] }) => {
       const text = await plainFiles[0].text();
       const nodes = markdownApi.deserialize(text).children;
 
@@ -39,7 +39,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
   const { openFilePicker: openHtmlFilePicker } = useFilePicker({
     accept: ['text/html'],
     multiple: false,
-    onFilesSelected: async ({ plainFiles }) => {
+    onFilesSelected: async ({ plainFiles }: { plainFiles: File[] }) => {
       const text = await plainFiles[0].text();
       const editorNode = getEditorDOMFromHtmlString(text);
       const nodes = editor.plugin(HtmlPlugin).api.deserialize({
@@ -55,7 +55,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
   const { openFilePicker: openDocxFilePicker } = useFilePicker({
     accept: ['.docx'],
     multiple: false,
-    onFilesSelected: async ({ plainFiles }) => {
+    onFilesSelected: async ({ plainFiles }: { plainFiles: File[] }) => {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
       const result = await editor
         .plugin(DocxImportPlugin)

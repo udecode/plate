@@ -62,8 +62,8 @@ export const sameNodeKeys = (
   left.every((nodeKey, index) => nodeKey === right[index]);
 
 const sameDirectTextChildNodes = (
-  left: readonly (PliteTextNode | null)[],
-  right: readonly (PliteTextNode | null)[]
+  left: ReadonlyArray<PliteTextNode | null>,
+  right: ReadonlyArray<PliteTextNode | null>
 ) =>
   left.length === right.length &&
   left.every((node, index) => node === right[index]);
@@ -71,7 +71,7 @@ const sameDirectTextChildNodes = (
 export const sameDescendantBinding = (
   left: {
     childNodeKeys: readonly NodeKey[];
-    directTextChildNodes: readonly (PliteTextNode | null)[];
+    directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
     isInline: boolean;
     isVoid: boolean;
     node: Descendant | null;
@@ -80,7 +80,7 @@ export const sameDescendantBinding = (
   } | null,
   right: {
     childNodeKeys: readonly NodeKey[];
-    directTextChildNodes: readonly (PliteTextNode | null)[];
+    directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
     isInline: boolean;
     isVoid: boolean;
     node: Descendant | null;

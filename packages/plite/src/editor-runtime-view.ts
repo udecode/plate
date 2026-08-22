@@ -65,7 +65,6 @@ import type {
   EditorView,
   EditorViewOptions,
   NodeTarget,
-  NamedRootKey,
   RootKey,
   Selection,
   SnapshotInput,
@@ -77,6 +76,7 @@ import type { Ancestor, NodeEntry } from './interfaces/node';
 import { RangeApi } from './interfaces/range';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeUnsetNodesOptions } from './interfaces/transforms/node';
+import { getDefined } from './internal/get-defined';
 import { withImplicitRangeRoot } from './internal/root-location';
 
 type ViewState = {
@@ -201,7 +201,7 @@ const runWithViewSelection = <T>(
   fn: () => T
 ): T | undefined => {
   if (!hasViewSelection(editor, viewState)) {
-    return;
+    return undefined;
   }
 
   return fn();
@@ -223,7 +223,7 @@ const withViewSnapshot = <V extends Value>(
   return Object.freeze({
     ...snapshot,
     selection,
-  }) as EditorSnapshot<V>;
+  });
 };
 
 const withRootChildren = <
@@ -254,7 +254,7 @@ const withRootChildren = <
     some: rootMethod(editor, viewState, state.nodes.some),
     toArray: rootMethod(editor, viewState, state.nodes.toArray),
     void: rootMethod(editor, viewState, state.nodes.void),
-  }) as T['nodes'];
+  });
 
 const withRootPoints = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
@@ -273,7 +273,7 @@ const withRootPoints = <V extends Value, T extends ViewStateTransformInput<V>>(
     isWordEnd: rootMethod(editor, viewState, state.points.isWordEnd),
     positions: rootGeneratorMethod(editor, viewState, state.points.positions),
     start: rootMethod(editor, viewState, state.points.start),
-  }) as T['points'];
+  });
 
 const withRootRanges = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
@@ -287,7 +287,7 @@ const withRootRanges = <V extends Value, T extends ViewStateTransformInput<V>>(
     get: rootMethod(editor, viewState, state.ranges.get),
     project: rootMethod(editor, viewState, state.ranges.project),
     unhang: rootMethod(editor, viewState, state.ranges.unhang),
-  }) as T['ranges'];
+  });
 
 const withRootMarks = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
@@ -317,7 +317,7 @@ const withRootMarks = <V extends Value, T extends ViewStateTransformInput<V>>(
         return state.marks();
       });
     }, state.marks)
-  ) as T['marks'];
+  );
 
 const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
@@ -332,15 +332,13 @@ const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
         viewState,
         getCurrentSelectionRoot(editor)
       ),
-  }) as T['runtime'];
+  });
 
 const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   editor: Editor,
   state: T,
   viewState: ViewState
 ): T & { view: EditorStateViewApi } => {
-  // oxlint-disable-next-line prefer-const -- View methods close over the frozen state assigned after construction.
-  let scopedState!: T & { view: EditorStateViewApi };
   const selection = () =>
     withViewSelection(
       state.selection(),
@@ -372,9 +370,9 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     ? Object.assign(
         (fn: (transaction: EditorTransactionSpecBuilder<V, any>) => void) =>
           runRootTransform(editor, viewState, () =>
-            state.transaction!((tx) =>
-              fn(withViewSpecTransaction(editor, tx, viewState))
-            )
+            getDefined(state.transaction)((tx) => {
+              fn(withViewSpecTransaction(editor, tx, viewState));
+            })
           ),
         {
           extend: (
@@ -384,9 +382,9 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
             fn: (transaction: EditorTransactionSpecBuilder<V, any>) => void
           ) =>
             runRootTransform(editor, viewState, () =>
-              state.transaction!.extend(base, (tx) =>
-                fn(withViewSpecTransaction(editor, tx, viewState))
-              )
+              getDefined(state.transaction).extend(base, (tx) => {
+                fn(withViewSpecTransaction(editor, tx, viewState));
+              })
             ),
         }
       )
@@ -394,7 +392,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   const ranges = withRootRanges<V, T>(editor, state, viewState);
   const selectionRangeState = { ranges };
 
-  scopedState = Object.freeze({
+  const scopedState: T & { view: EditorStateViewApi } = Object.freeze({
     ...state,
     children: () =>
       viewState.root === MAIN_ROOT_KEY
@@ -419,7 +417,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         ? { export: rootMethod(editor, viewState, baseSliceExport) }
         : {}),
       get: rootMethod(editor, viewState, state.slice.get),
-    }) as T['slice'],
+    }),
     selection: Object.freeze(
       Object.assign(selection, {
         contains: (target: NodeTarget) =>
@@ -509,7 +507,7 @@ const withViewTransaction = <V extends Value>(
       );
     }
 
-    return runRootTransform(editor, viewState, () => {
+    runRootTransform(editor, viewState, () => {
       const value = transaction.value();
       const selection =
         input.selection &&
@@ -562,7 +560,7 @@ const withViewTransaction = <V extends Value>(
     });
   };
 
-  const viewTransaction = Object.freeze({
+  const viewTransaction = Object.freeze<EditorUpdateTransaction<V, any>>({
     ...state,
     ...(getViewEditor
       ? {
@@ -587,28 +585,28 @@ const withViewTransaction = <V extends Value>(
       ),
     blocks: Object.freeze<EditorUpdateTransaction<V, any>['blocks']>({
       duplicate: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.duplicate(options as never)
-        )) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
+        runImplicitSelectionMutation(options, () => {
+          transaction.blocks.duplicate(options as never);
+        })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
       insertAfter: (
-        nodes: ElementIn<V> | readonly ElementIn<V>[],
+        nodes: ElementIn<V> | ReadonlyArray<ElementIn<V>>,
         options?: { at?: NodeTarget }
       ) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.insertAfter(nodes, options as never)
-        ),
-      lift: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.lift(options as never)
-        )) as EditorUpdateTransaction<V, any>['blocks']['lift'],
+        runImplicitSelectionMutation(options, () => {
+          transaction.blocks.insertAfter(nodes, options);
+        }),
+      lift: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.blocks.lift(options as never);
+        }),
       reset: (props, options) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.reset(props, options)
-        ),
+        runImplicitSelectionMutation(options, () => {
+          transaction.blocks.reset(props, options);
+        }),
       toggle: (type, options) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.toggle(type, options)
-        ),
+        runImplicitSelectionMutation(options, () => {
+          transaction.blocks.toggle(type, options);
+        }),
     }),
     break: Object.freeze({
       ...transaction.break,
@@ -620,9 +618,9 @@ const withViewTransaction = <V extends Value>(
         (...args: Parameters<typeof state.fragment>) => state.fragment(...args),
         {
           delete: (options = {}) =>
-            runImplicitSelectionMutation(options, () =>
-              transaction.fragment.delete(options)
-            ),
+            runImplicitSelectionMutation(options, () => {
+              transaction.fragment.delete(options);
+            }),
           replace: (
             content: Parameters<typeof transaction.fragment.replace>[0],
             options?: Parameters<typeof transaction.fragment.replace>[1]
@@ -636,80 +634,89 @@ const withViewTransaction = <V extends Value>(
     marks: Object.freeze(
       Object.assign(() => state.marks(), {
         add: (key: string, value: unknown) =>
-          runSelectionMutation(() => transaction.marks.add(key, value)),
+          runSelectionMutation(() => {
+            transaction.marks.add(key, value);
+          }),
         remove: (key: string) =>
-          runSelectionMutation(() => transaction.marks.remove(key)),
+          runSelectionMutation(() => {
+            transaction.marks.remove(key);
+          }),
         set: (marks: Parameters<typeof transaction.marks.set>[0]) =>
-          runSelectionMutation(() => transaction.marks.set(marks)),
+          runSelectionMutation(() => {
+            transaction.marks.set(marks);
+          }),
         toggle: (key: string, value?: unknown) =>
-          runSelectionMutation(() => transaction.marks.toggle(key, value)),
+          runSelectionMutation(() => {
+            transaction.marks.toggle(key, value);
+          }),
       }) satisfies typeof transaction.marks
     ),
     nodes: Object.freeze<EditorUpdateTransaction<V, any>['nodes']>({
       ...state.nodes,
-      duplicate: (entries, options) =>
-        runRootTransform(editor, viewState, () =>
-          transaction.nodes.duplicate(entries, options)
-        ),
-      insert: ((
-        nodes: ElementOrTextIn<V> | readonly ElementOrTextIn<V>[],
+      duplicate: (entries, options) => {
+        runRootTransform(editor, viewState, () => {
+          transaction.nodes.duplicate(entries, options);
+        });
+      },
+      insert: (
+        nodes: ElementOrTextIn<V> | ReadonlyArray<ElementOrTextIn<V>>,
         options?: { at?: NodeTarget }
       ) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.insert(nodes, options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['insert'],
-      lift: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.lift(options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['lift'],
-      merge: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.merge(options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['merge'],
-      move: ((options: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.move(options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['move'],
-      remove: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.remove(options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['remove'],
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.insert(nodes, options as never);
+        }),
+      lift: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.lift(options as never);
+        }),
+      merge: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.merge(options as never);
+        }),
+      move: (options: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.move(options as never);
+        }),
+      remove: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.remove(options as never);
+        }),
       replace: (nodes, options) =>
-        runImplicitSelectionMutation({ at: options.at }, () =>
-          transaction.nodes.replace(nodes, options)
-        ),
+        runImplicitSelectionMutation({ at: options.at }, () => {
+          transaction.nodes.replace(nodes, options);
+        }),
       replaceChildren: (children, options) =>
-        runImplicitSelectionMutation({ at: options.at }, () =>
-          transaction.nodes.replaceChildren(children, options)
-        ),
+        runImplicitSelectionMutation({ at: options.at }, () => {
+          transaction.nodes.replaceChildren(children, options);
+        }),
       set: ((...args: Parameters<typeof transaction.nodes.set>) =>
-        runImplicitSelectionMutation(args[1], () =>
-          transaction.nodes.set(...args)
-        )) as typeof transaction.nodes.set,
-      split: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.split(options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['split'],
+        runImplicitSelectionMutation(args[1], () => {
+          transaction.nodes.set(...args);
+        })) as typeof transaction.nodes.set,
+      split: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.split(options as never);
+        }),
       unset: ((
         props: string | readonly string[] | SchemaPropertyHandle,
         options?: NodeUnsetNodesOptions
       ) =>
-        runImplicitSelectionMutation(options, () =>
+        runImplicitSelectionMutation(options, () => {
           (
             transaction.nodes.unset as (
               property: string | readonly string[] | SchemaPropertyHandle,
               options?: NodeUnsetNodesOptions
             ) => void
-          )(props, options)
-        )) as typeof transaction.nodes.unset,
-      unwrap: ((options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.unwrap(options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['unwrap'],
-      wrap: ((element: ElementIn<V>, options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.nodes.wrap(element, options as never)
-        )) as EditorUpdateTransaction<V, any>['nodes']['wrap'],
+          )(props, options);
+        })) as typeof transaction.nodes.unset,
+      unwrap: (options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.unwrap(options as never);
+        }),
+      wrap: (element: ElementIn<V>, options?: { at?: NodeTarget }) =>
+        runImplicitSelectionMutation(options, () => {
+          transaction.nodes.wrap(element, options as never);
+        }),
     }),
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
@@ -733,29 +740,38 @@ const withViewTransaction = <V extends Value>(
         root: () => state.selection.root(),
         clear: () => runSelectionMutation(transaction.selection.clear),
         collapse: (options = {}) =>
-          runSelectionMutation(() => transaction.selection.collapse(options)),
+          runSelectionMutation(() => {
+            transaction.selection.collapse(options);
+          }),
         move: (options = {}) =>
-          runSelectionMutation(() => transaction.selection.move(options)),
+          runSelectionMutation(() => {
+            transaction.selection.move(options);
+          }),
         set: (target: Parameters<typeof transaction.selection.set>[0]) => {
           if (target == null) {
-            runSelectionMutation(() => transaction.selection.set(null));
+            runSelectionMutation(() => {
+              transaction.selection.set(null);
+            });
             return;
           }
 
-          runRootTransform(editor, viewState, () =>
-            transaction.selection.set(target)
-          );
+          runRootTransform(editor, viewState, () => {
+            transaction.selection.set(target);
+          });
         },
         setPoint: (
           props: Parameters<typeof transaction.selection.setPoint>[0],
           options?: Parameters<typeof transaction.selection.setPoint>[1]
         ) =>
-          runSelectionMutation(() =>
-            transaction.selection.setPoint(props, options)
-          ),
+          runSelectionMutation(() => {
+            transaction.selection.setPoint(props, options);
+          }),
         setRange: (
           props: Parameters<typeof transaction.selection.setRange>[0]
-        ) => runSelectionMutation(() => transaction.selection.setRange(props)),
+        ) =>
+          runSelectionMutation(() => {
+            transaction.selection.setRange(props);
+          }),
       }) satisfies typeof transaction.selection
     ),
     slice: Object.freeze({
@@ -772,27 +788,31 @@ const withViewTransaction = <V extends Value>(
     text: Object.freeze({
       ...state.text,
       delete: (options = {}) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.text.delete(options)
-        ),
+        runImplicitSelectionMutation(options, () => {
+          transaction.text.delete(options);
+        }),
       deleteBackward: (options = {}) =>
-        runSelectionMutation(() => transaction.text.deleteBackward(options)),
+        runSelectionMutation(() => {
+          transaction.text.deleteBackward(options);
+        }),
       deleteForward: (options = {}) =>
-        runSelectionMutation(() => transaction.text.deleteForward(options)),
+        runSelectionMutation(() => {
+          transaction.text.deleteForward(options);
+        }),
       insert: (
         text: string,
         options: Parameters<typeof transaction.text.insert>[1] = {}
       ) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.text.insert(text, options)
-        ),
+        runImplicitSelectionMutation(options, () => {
+          transaction.text.insert(text, options);
+        }),
     }),
     value: Object.freeze(
       Object.assign(() => state.value(), {
         replace: replaceValue,
       })
     ),
-  }) as EditorUpdateTransaction<V, any>;
+  });
 
   return viewTransaction;
 };
@@ -839,7 +859,7 @@ const createViewRuntime = <V extends Value>(
       ) as EditorStateView<V, any>;
     }
 
-    return cachedViewState!;
+    return getDefined(cachedViewState);
   };
 
   return Object.freeze({
@@ -991,7 +1011,7 @@ const createViewRuntime = <V extends Value>(
         throw new Error('Cannot update a read-only editor view.');
       }
 
-      const runUpdate = () =>
+      const runUpdate = () => {
         withEditorUpdateRoot(editor, viewState.root, () => {
           baseRuntime.update((transaction, context) => {
             fn(
@@ -1005,8 +1025,9 @@ const createViewRuntime = <V extends Value>(
             );
           }, updateOptions);
         });
+      };
       const targetRuntime = getViewEditor()
-        ? getTargetRuntime(getViewEditor()!)
+        ? getTargetRuntime(getDefined(getViewEditor()))
         : null;
 
       if (targetRuntime) {
@@ -1056,7 +1077,7 @@ const createEditorViewRuntime = <
       viewRuntime.update(
         fn as (
           transaction: EditorUpdateTransaction<V, any>,
-          context: EditorUpdateContext<Editor<V, any>>
+          context: EditorUpdateContext<Editor<V>>
         ) => void,
         { tags: policy.tags }
       );
@@ -1077,16 +1098,15 @@ const createEditorViewRuntime = <
     runRootTransform(sourceEditor, viewState, () =>
       sourceEditor.anchor(value, anchorOptions)
     );
-  const createViewKey: EditorKeyApi = rootMethod(sourceEditor, viewState, ((
-    target
-  ) =>
-    readEditor(sourceEditor, (state) =>
-      state.key(target as never)
-    )) as EditorKeyApi);
+  const createViewKey: EditorKeyApi = rootMethod(
+    sourceEditor,
+    viewState,
+    (target) => readEditor(sourceEditor, (state) => state.key(target as never))
+  );
   const installView: EditorView<V, TExtensions>['install'] = (
     extension,
-    options
-  ) => extendEditor(viewEditor!, extension, options);
+    innerOptions
+  ) => extendEditor(getDefined(viewEditor), extension, innerOptions);
   let extensionApis: Pick<Editor<V, TExtensions>, 'api' | 'extension'> | null =
     null;
 
@@ -1118,13 +1138,13 @@ const createEditorViewRuntime = <
     id: sourceEditor.id,
     key: createViewKey,
     read: viewRead,
-    root: toPublicRoot(viewState.root) as NamedRootKey | undefined,
+    root: toPublicRoot(viewState.root),
     subscribe: viewRuntime.subscribe,
     subscribeCommit: viewRuntime.subscribeCommit,
     update: viewUpdate,
   };
 
-  viewEditor = view as unknown as typeof sourceEditor;
+  viewEditor = view;
 
   setEditorRuntime(
     viewEditor,
@@ -1133,12 +1153,10 @@ const createEditorViewRuntime = <
     viewState.root
   );
   inheritExtensionRegistry(viewEditor, sourceEditor);
-  extensionApis = createEditorViewExtensionApis(
-    viewEditor,
-    sourceEditor
-  ) as Pick<Editor<V, TExtensions>, 'api' | 'extension'>;
+  extensionApis = createEditorViewExtensionApis(viewEditor, sourceEditor);
   return Object.freeze(view);
 };
 
 /** Create a root-scoped editor view while preserving layered capabilities. */
+// oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- [P0 behavior-boundary] The overload preserves framework editor subtypes while the runtime owner keeps the concrete Plite implementation.
 export const createEditorView = createEditorViewRuntime as CreateEditorView;

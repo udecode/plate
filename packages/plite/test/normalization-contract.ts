@@ -31,7 +31,7 @@ import { defineTestSchema } from './support/schema';
 describe('plite normalization contract', () => {
   it('repairs an invalid initial value through the maintenance API', () => {
     const editor = createEditor({
-      initialValue: [{ type: 'block', children: [] } as Element],
+      initialValue: [{ type: 'block', children: [] }],
     });
 
     assert.deepEqual(editor.read.children(), [{ type: 'block', children: [] }]);
@@ -46,10 +46,10 @@ describe('plite normalization contract', () => {
   it('repairs every root in stable maintenance scope', () => {
     const editor = createEditor({
       initialValue: {
-        children: [{ type: 'block', children: [] } as Element],
+        children: [{ type: 'block', children: [] }],
         roots: {
-          footer: [{ type: 'block', children: [] } as Element],
-          header: [{ type: 'block', children: [] } as Element],
+          footer: [{ type: 'block', children: [] }],
+          header: [{ type: 'block', children: [] }],
         },
       },
     });
@@ -130,7 +130,7 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ type: 'block', children: [] } as Descendant],
+      children: [{ type: 'block', children: [] }],
       selection: null,
     });
 
@@ -173,7 +173,7 @@ describe('plite normalization contract', () => {
     assert.equal(editorGetExtensionRegistry(editor).corrections.size, 2);
 
     editorReplace(editor, {
-      children: [{ type: 'block', children: [] } as Descendant],
+      children: [{ type: 'block', children: [] }],
       selection: null,
     });
 
@@ -470,7 +470,7 @@ describe('plite normalization contract', () => {
     );
 
     editorReplace(editor, {
-      children: [{ type: 'block', children: [] } as Descendant],
+      children: [{ type: 'block', children: [] }],
       selection: null,
     });
 
@@ -492,7 +492,7 @@ describe('plite normalization contract', () => {
     };
     let classification:
       | {
-          paths: readonly (readonly number[])[];
+          paths: ReadonlyArray<readonly number[]>;
           properties: boolean;
           structure: boolean;
           text: boolean;
@@ -561,14 +561,12 @@ describe('plite normalization contract', () => {
 
   it('scopes nested transaction change observers and cleans up after throws', () => {
     const editor = createEditor({
-      initialValue: [
-        { type: 'paragraph', children: [{ text: 'body' }] } as Element,
-      ],
+      initialValue: [{ type: 'paragraph', children: [{ text: 'body' }] }],
     });
     let scopedCalls = 0;
     let throwingCalls = 0;
     const scopedListener = () => {
-      scopedCalls++;
+      scopedCalls += 1;
     };
 
     editor.update((tx) => {
@@ -584,7 +582,7 @@ describe('plite normalization contract', () => {
             withTransactionDocumentChangeObserver(
               editor,
               () => {
-                throwingCalls++;
+                throwingCalls += 1;
               },
               () => {
                 tx.nodes.set({ throwing: true }, { at: [0] });
@@ -641,7 +639,7 @@ describe('plite normalization contract', () => {
     );
 
     editorReplace(editor, {
-      children: [{ type: 'block', children: [] } as Descendant],
+      children: [{ type: 'block', children: [] }],
       selection: null,
     });
 
@@ -682,7 +680,7 @@ describe('plite normalization contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'alpha' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -769,9 +767,7 @@ describe('plite normalization contract', () => {
     );
 
     editorReplace(editor, {
-      children: [
-        { type: 'paragraph', children: [{ text: 'value' }] } as Descendant,
-      ],
+      children: [{ type: 'paragraph', children: [{ text: 'value' }] }],
       selection: null,
     });
 
@@ -791,10 +787,10 @@ describe('plite normalization contract', () => {
 
     editorReplace(editor, {
       children: [
-        { text: 'one' } as Descendant,
-        { type: 'block', children: [{ text: 'two' }] } as Descendant,
-        { text: 'three' } as Descendant,
-        { type: 'block', children: [{ text: 'four' }] } as Descendant,
+        { text: 'one' },
+        { type: 'block', children: [{ text: 'two' }] },
+        { text: 'three' },
+        { type: 'block', children: [{ text: 'four' }] },
       ],
       selection: null,
     });
@@ -1076,9 +1072,7 @@ describe('plite normalization contract', () => {
       );
       editor.update((tx) => {
         tx.value.replace({
-          children: [
-            { type: 'draft', children: [{ text: 'alpha' }] } as Element,
-          ],
+          children: [{ type: 'draft', children: [{ text: 'alpha' }] }],
           selection: null,
         });
       });
@@ -1140,9 +1134,7 @@ describe('plite normalization contract', () => {
     );
     editor.update((tx) => {
       tx.value.replace({
-        children: [
-          { type: 'paragraph', children: [{ text: 'alpha' }] } as Element,
-        ],
+        children: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
         selection: null,
       });
     });
@@ -1198,7 +1190,7 @@ describe('plite normalization contract', () => {
               { type: 'slot', children: [{ text: 'first' }] },
               { type: 'slot', children: [{ text: 'second' }] },
             ],
-          } as Element,
+          },
         ],
         selection: null,
       });
@@ -1287,9 +1279,7 @@ describe('plite normalization contract', () => {
       try {
         editor.update((tx) => {
           tx.value.replace({
-            children: [
-              { type: 'paragraph', children: [{ text: 'alpha' }] } as Element,
-            ],
+            children: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
             selection: null,
           });
         });
@@ -1298,7 +1288,7 @@ describe('plite normalization contract', () => {
         return error.message;
       }
 
-      assert.fail('expected structural correction cycle');
+      return assert.fail('expected structural correction cycle');
     };
 
     const first = cycleMessage();
@@ -1366,7 +1356,7 @@ describe('plite normalization contract', () => {
             event: 'properties',
             correct({ entry: [node, path] }) {
               if (path.length === 1 && ElementApi.isElement(node)) {
-                visits.push(path[0]!);
+                visits.push(path[0]);
               }
             },
           },
@@ -1526,8 +1516,8 @@ describe('plite normalization contract', () => {
       });
 
       for (let index = 1; index < node.children.length; index++) {
-        const previous = node.children[index - 1]!;
-        const child = node.children[index]!;
+        const previous = node.children[index - 1];
+        const child = node.children[index];
 
         assert.equal(
           TextApi.isText(previous) &&

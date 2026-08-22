@@ -31,9 +31,15 @@ const isFixtureFile = (file: string) =>
 
 const getFixtureName = (file: string) => file.replace(/\.(tsx|ts|js)$/u, '');
 
+type FixtureModule = {
+  input: any;
+  output: any;
+  run: (editor: any) => any;
+};
+
 const runFixtureTree = (
   path: string,
-  runFixture: (module: Record<string, any>) => void
+  runFixture: (module: FixtureModule) => void
 ) => {
   describe(basename(path), () => {
     for (const file of readdirSync(path).sort()) {
@@ -48,7 +54,7 @@ const runFixtureTree = (
       if (!stat.isFile() || !isFixtureFile(file)) continue;
 
       const name = getFixtureName(file);
-      const source = readFileSync(fixturePath, 'utf8');
+      const source = readFileSync(fixturePath, 'utf-8');
       const testFn = /\bexport const skip\s*=\s*true\b/.test(source)
         ? it.skip
         : it;
@@ -68,28 +74,48 @@ const withTest = (editor: any) => {
   editor.install(history());
 
   Object.defineProperties(editor, {
-    delete: { value: (...args: any[]) => editorDelete(editor, ...args) },
+    delete: {
+      value: (...args: any[]) => {
+        editorDelete(editor, ...args);
+      },
+    },
     deleteBackward: {
       value: (...args: any[]) => editorDeleteBackward(editor, ...args),
     },
     deleteForward: {
-      value: (...args: any[]) => editorDeleteForward(editor, ...args),
+      value: (...args: any[]) => {
+        editorDeleteForward(editor, ...args);
+      },
     },
-    deselect: { value: (...args: any[]) => editorDeselect(editor, ...args) },
+    deselect: {
+      value: (...args: any[]) => {
+        editorDeselect(editor, ...args);
+      },
+    },
     insertBreak: {
       value: (...args: any[]) => editorInsertBreak(editor, ...args),
     },
     insertText: {
-      value: (...args: any[]) => editorInsertText(editor, ...args),
+      value: (...args: any[]) => {
+        editorInsertText(editor, ...args);
+      },
     },
-    move: { value: (...args: any[]) => editorMove(editor, ...args) },
+    move: {
+      value: (...args: any[]) => {
+        editorMove(editor, ...args);
+      },
+    },
     redo: {
       value: () =>
         editor.update((tx) => {
           tx.history.redo();
         }),
     },
-    select: { value: (...args: any[]) => editorSelect(editor, ...args) },
+    select: {
+      value: (...args: any[]) => {
+        editorSelect(editor, ...args);
+      },
+    },
     undo: {
       value: () =>
         editor.update((tx) => {
@@ -144,7 +170,7 @@ describe('@platejs/plite-history', () => {
 
     assert.equal(batch?.selectionBeforeRoot, 'header');
     assert.equal(batch?.selectionAfterRoot, undefined);
-    assert.equal(Object.hasOwn(batch!, 'selectionAfterRoot'), false);
+    assert.equal(Object.hasOwn(batch, 'selectionAfterRoot'), false);
 
     headerEditor.update((tx) => tx.history.undo());
 

@@ -12,7 +12,7 @@ describe('BlockMenuPlugin', () => {
     const editor = createPlateEditor({
       plugins: [BlockMenuPlugin],
     });
-    const api = editor.plugin(BlockMenuPlugin).api;
+    const { api } = editor.plugin(BlockMenuPlugin);
 
     expect(() => api.showContextMenu(blockA, { x: 12, y: 34 })).not.toThrow();
     expect(editor.plugin(BlockMenuPlugin).store.get()).toMatchObject({
@@ -25,7 +25,7 @@ describe('BlockMenuPlugin', () => {
     const editor = createPlateEditor({
       plugins: [BlockSelectionPlugin, BlockMenuPlugin],
     });
-    const api = editor.plugin(BlockMenuPlugin).api;
+    const { api } = editor.plugin(BlockMenuPlugin);
 
     api.show(blockA, { x: 12, y: 34 });
 
@@ -51,7 +51,7 @@ describe('BlockMenuPlugin', () => {
       [
         ...(editor.plugin(BlockSelectionPlugin).store.get().selectedKeys ??
           new Set<NodeKey>()),
-      ].sort()
+      ].sort((left, right) => left.localeCompare(right))
     ).toEqual([blockB]);
   });
 });

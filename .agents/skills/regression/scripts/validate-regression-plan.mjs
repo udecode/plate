@@ -819,6 +819,7 @@ export const validateRegressionPlan = (
   const corpusHeaders = [
     'owner',
     'affected_cases',
+    'pre_edit_baseline',
     'last_owner_edit',
     'combined_command',
     'receipt_input_digest',
@@ -854,6 +855,21 @@ export const validateRegressionPlan = (
           coveredCases.add(caseId);
         }
       }
+      if (!/^(?:pass|red):\s*\S/i.test(row.pre_edit_baseline ?? '')) {
+        errors.push(`${label} requires Pre-edit baseline pass: or red:`);
+      }
+
+      const finalReplayFields = [
+        row.last_owner_edit,
+        row.combined_command,
+        row.receipt_input_digest,
+        row.result,
+      ];
+
+      if (!complete && finalReplayFields.every((field) => !isResolved(field))) {
+        continue;
+      }
+
       if (!isResolved(row.combined_command)) {
         errors.push(`${label} requires Combined command`);
       }
@@ -893,6 +909,78 @@ export const validateRegressionPlan = (
         }
       }
     }
+    }
+  }
+
+  const gateFailureTable = parseTable(markdown, 'Gate failure closure');
+  const gateFailureHeaders = [
+    'gate',
+    'failure_signal',
+    'classification',
+    'resolution',
+    'final_rerun',
+  ];
+
+  if (
+    requireHeaders(
+      gateFailureTable,
+      'Gate failure closure',
+      gateFailureHeaders,
+      errors
+    )
+  ) {
+    if (!complete && gateFailureTable.rows.every(isPlaceholderRow)) {
+      // A gate cannot fail before execution starts.
+    } else {
+      const noneRows = gateFailureTable.rows.filter(
+        (row) => row.gate?.toLowerCase() === 'none'
+      );
+      const failedGateRows = gateFailureTable.rows.filter(
+        (row) => row.gate?.toLowerCase() !== 'none'
+      );
+
+      if (failedGateRows.length === 0) {
+        if (noneRows.length !== 1) {
+          errors.push(
+            'Gate failure closure requires one explicit none row when no started gate failed'
+          );
+        } else {
+          for (const field of [
+            'failure_signal',
+            'classification',
+            'resolution',
+            'final_rerun',
+          ]) {
+            if (!isNotApplicable(noneRows[0][field])) {
+              errors.push(
+                `Gate failure closure none ${field.replaceAll('_', ' ')} requires N/A reason`
+              );
+            }
+          }
+        }
+      } else if (noneRows.length > 0) {
+        errors.push('Gate failure closure cannot mix none with failed gates');
+      }
+
+      for (const row of failedGateRows) {
+        const label = `gate failure ${row.gate || '<missing>'}`;
+
+        for (const field of [
+          'gate',
+          'failure_signal',
+          'classification',
+          'resolution',
+        ]) {
+          if (!isResolved(row[field])) {
+            errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
+          }
+        }
+        if (complete && !isPass(row.final_rerun)) {
+          errors.push(`${label} requires Final rerun pass: <evidence>`);
+        } else if (!complete && !isResolved(row.final_rerun)) {
+          errors.push(`${label} requires a current Final rerun`);
+        }
+      }
     }
   }
 

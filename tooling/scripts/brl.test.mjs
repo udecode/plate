@@ -16,7 +16,9 @@ const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 test('keeps migrations in their opt-in barrel', (t) => {
   const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'plate-brl-'));
 
-  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+  t.after(() => {
+    rmSync(packageRoot, { force: true, recursive: true });
+  });
 
   mkdirSync(path.join(packageRoot, 'src/lib'), { recursive: true });
   mkdirSync(path.join(packageRoot, 'src/migrations'), { recursive: true });

@@ -66,7 +66,8 @@ describe('unit conversion', () => {
       // 1 pixel = 15 TWIP (at 96 DPI)
       expect(pixelToTWIP(1)).toBe(15);
       expect(pixelToTWIP(10)).toBe(150);
-      expect(pixelToTWIP(96)).toBe(1440); // 1 inch = 1440 TWIP
+      // 1 inch = 1440 TWIP
+      expect(pixelToTWIP(96)).toBe(1440);
     });
 
     it('pixelToEMU converts pixels to EMU', () => {
@@ -93,7 +94,8 @@ describe('unit conversion', () => {
       // 1 point = 20 TWIP
       expect(pointToTWIP(1)).toBe(20);
       expect(pointToTWIP(12)).toBe(240);
-      expect(pointToTWIP(72)).toBe(1440); // 72 points = 1 inch
+      // 72 points = 1 inch
+      expect(pointToTWIP(72)).toBe(1440);
     });
 
     it('pointToHIP converts points to half points', () => {
@@ -131,7 +133,8 @@ describe('unit conversion', () => {
     it('TWIPToEMU converts TWIP to EMU', () => {
       // 1 TWIP = 635 EMU
       expect(TWIPToEMU(1)).toBe(635);
-      expect(TWIPToEMU(1440)).toBe(914_400); // 1 inch in EMU
+      // 1 inch in EMU
+      expect(TWIPToEMU(1440)).toBe(914_400);
     });
   });
 
@@ -139,7 +142,8 @@ describe('unit conversion', () => {
     it('HIPToTWIP converts half points to TWIP', () => {
       // 1 half point = 10 TWIP
       expect(HIPToTWIP(1)).toBe(10);
-      expect(HIPToTWIP(22)).toBe(220); // 11pt = 22 half points = 220 TWIP
+      // 11pt = 22 half points = 220 TWIP
+      expect(HIPToTWIP(22)).toBe(220);
     });
   });
 });

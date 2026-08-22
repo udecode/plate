@@ -43,12 +43,12 @@ type NonJsonProjection = {
 };
 
 const formatProjection = (
-  projections: readonly {
+  projections: ReadonlyArray<{
     key: string;
     start: number;
     end: number;
     data?: { annotationId?: string; kind?: string; tone?: string };
-  }[]
+  }>
 ) =>
   projections.length === 0
     ? 'none'
@@ -133,7 +133,7 @@ const AnnotationHarness = ({
   annotations,
   editor,
 }: {
-  annotations: readonly PliteAnnotation<CommentData, CommentProjection>[];
+  annotations: ReadonlyArray<PliteAnnotation<CommentData, CommentProjection>>;
   editor: ReturnType<typeof createEditor>;
 }) => {
   const annotationStore = usePliteAnnotationStore(editor, annotations);
@@ -851,10 +851,9 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
-    let annotations: readonly PliteAnnotation<
-      CommentData,
-      CommentProjection
-    >[] = [
+    let annotations: ReadonlyArray<
+      PliteAnnotation<CommentData, CommentProjection>
+    > = [
       {
         anchor: commentAnchor,
         data: {
@@ -892,13 +891,13 @@ describe('plite-react annotation store contract', () => {
 
     annotations = [
       {
-        ...annotations[0]!,
+        ...annotations[0],
         data: {
-          ...annotations[0]!.data!,
+          ...annotations[0].data!,
           body: 'edited body',
         },
       },
-      annotations[1]!,
+      annotations[1],
     ];
 
     store.refresh({ ids: [], reason: 'annotation' });
@@ -944,10 +943,9 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    let annotations: readonly PliteAnnotation<
-      CommentData,
-      CommentProjection
-    >[] = [
+    let annotations: ReadonlyArray<
+      PliteAnnotation<CommentData, CommentProjection>
+    > = [
       {
         anchor,
         data: {
@@ -978,9 +976,9 @@ describe('plite-react annotation store contract', () => {
 
     annotations = [
       {
-        ...annotations[0]!,
+        ...annotations[0],
         data: {
-          ...annotations[0]!.data!,
+          ...annotations[0].data!,
           body: 'edited body',
         },
       },
@@ -1030,10 +1028,9 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
     });
-    let annotations: readonly PliteAnnotation<
-      CommentData,
-      CommentProjection
-    >[] = [
+    let annotations: ReadonlyArray<
+      PliteAnnotation<CommentData, CommentProjection>
+    > = [
       {
         anchor: firstAnchor,
         data: {
@@ -1071,9 +1068,9 @@ describe('plite-react annotation store contract', () => {
 
     annotations = [
       {
-        ...annotations[0]!,
+        ...annotations[0],
         data: {
-          ...annotations[0]!.data!,
+          ...annotations[0].data!,
           tone: 'approved',
         },
         projection: {
@@ -1081,7 +1078,7 @@ describe('plite-react annotation store contract', () => {
           tone: 'approved',
         },
       },
-      annotations[1]!,
+      annotations[1],
     ];
 
     store.refresh({ ids: ['comment-1'], reason: 'annotation' });
@@ -1223,10 +1220,9 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
-    let annotations: readonly PliteAnnotation<
-      CommentData,
-      CommentProjection
-    >[] = [
+    let annotations: ReadonlyArray<
+      PliteAnnotation<CommentData, CommentProjection>
+    > = [
       {
         anchor: commentAnchor,
         data: {
@@ -1277,9 +1273,9 @@ describe('plite-react annotation store contract', () => {
 
     annotations = [
       {
-        ...annotations[0]!,
+        ...annotations[0],
         data: {
-          ...annotations[0]!.data!,
+          ...annotations[0].data!,
           tone: 'question',
         },
         projection: {
@@ -1287,7 +1283,7 @@ describe('plite-react annotation store contract', () => {
           tone: 'question',
         },
       },
-      annotations[1]!,
+      annotations[1],
     ];
 
     store.refresh({ ids: ['comment-1'], reason: 'annotation' });
@@ -1371,10 +1367,9 @@ describe('plite-react annotation store contract', () => {
         focus: { path: [index, 0], offset: 4 },
       })
     );
-    const annotations: readonly PliteAnnotation<
-      CommentData,
-      CommentProjection
-    >[] = anchors.map((anchor, index) => ({
+    const annotations: ReadonlyArray<
+      PliteAnnotation<CommentData, CommentProjection>
+    > = anchors.map((anchor, index) => ({
       anchor,
       data: {
         body: `body ${index}`,

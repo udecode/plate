@@ -12,6 +12,7 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 
 import type { CustomValue } from './custom-types.d';
 
@@ -120,8 +121,10 @@ const TablesExample = () => {
       }
 
       const [, cellPath] = cell;
-      const cellIndex = cellPath.at(-1)!;
-      const rowIndex = cellPath.at(-2)!;
+      const cellIndex =
+        cellPath.at(-1) ?? failInvariant('Expected value to be defined');
+      const rowIndex =
+        cellPath.at(-2) ?? failInvariant('Expected value to be defined');
       const rowPath = cellPath.slice(0, -1);
       const tablePath = cellPath.slice(0, -2);
       let targetPath: number[] | null = null;
@@ -236,22 +239,31 @@ const table = () =>
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
-    case 'table':
+    case 'table': {
       return (
         <table className="plite-tables-table">
           <tbody {...attributes}>{children}</tbody>
         </table>
       );
-    case 'table-row':
+    }
+    case 'table-row': {
       return <tr {...attributes}>{children}</tr>;
-    case 'table-cell':
+    }
+    case 'table-cell': {
       return <td {...attributes}>{children}</td>;
-    default:
+    }
+    default: {
       return <p {...attributes}>{children}</p>;
+    }
   }
 };
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

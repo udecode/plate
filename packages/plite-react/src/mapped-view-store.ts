@@ -163,10 +163,10 @@ export const createViewSourceFaultBoundary = (
 
       try {
         return { ok: true, value: read() };
-      } catch (cause) {
+      } catch (error) {
         active = false;
         failureCount += 1;
-        reportViewSourceError(options.id, phase, cause, options.onError);
+        reportViewSourceError(options.id, phase, error, options.onError);
 
         return { ok: false };
       }

@@ -111,16 +111,16 @@ describe('isSelectOutside', () => {
     it('handle malformed selector gracefully', () => {
       const mockDiv = document.createElement('div');
       // Override querySelector to throw an error
-      const originalQuerySelector = mockDiv.querySelector;
-      mockDiv.querySelector = mock(() => {
-        throw new Error('Invalid selector');
-      });
+      const querySelector = spyOn(mockDiv, 'querySelector').mockImplementation(
+        () => {
+          throw new Error('Invalid selector');
+        }
+      );
 
       // The function doesn't catch the error, so it will throw
       expect(() => isSelectOutside(mockDiv)).toThrow('Invalid selector');
 
-      // Restore original method
-      mockDiv.querySelector = originalQuerySelector;
+      querySelector.mockRestore();
     });
 
     it('handle elements with data-plite-editor attribute', () => {

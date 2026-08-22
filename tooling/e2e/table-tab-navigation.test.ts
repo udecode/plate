@@ -27,7 +27,7 @@ const recordRuntimeErrors = (page: Page) => {
 const readSelection = async (target: Locator) =>
   target.evaluate((element) => {
     const selection = window.getSelection();
-    const activeElement = document.activeElement;
+    const { activeElement } = document;
 
     return {
       activeInEditor:

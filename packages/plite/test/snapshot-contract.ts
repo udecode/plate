@@ -54,9 +54,9 @@ import {
 
 type NestedTextElement = {
   a?: boolean;
-  readonly children: readonly {
-    readonly children: readonly { readonly text: string }[];
-  }[];
+  readonly children: ReadonlyArray<{
+    readonly children: ReadonlyArray<{ readonly text: string }>;
+  }>;
   type: string;
 };
 
@@ -244,7 +244,7 @@ const createLegacyInlineDeleteChildren = (): Element[] => [
       },
       { text: 'three' },
     ],
-  } as Element,
+  },
 ];
 
 const createLegacyInlineDeleteInsideChildren = (): Element[] => [
@@ -259,7 +259,7 @@ const createLegacyInlineDeleteInsideChildren = (): Element[] => [
       },
       { text: '' },
     ],
-  } as Element,
+  },
 ];
 
 const createLegacyInlineBoundaryChildren = (): Element[] => [
@@ -278,7 +278,7 @@ const createLegacyInlineBoundaryChildren = (): Element[] => [
       },
       { text: 'four' },
     ],
-  } as Element,
+  },
 ];
 
 const createLegacyInlineAfterChildren = (): Element[] => [
@@ -293,7 +293,7 @@ const createLegacyInlineAfterChildren = (): Element[] => [
       },
       { text: 'a' },
     ],
-  } as Element,
+  },
 ];
 
 const createLegacyWrappedBlockChildren = (): Element[] => [
@@ -312,7 +312,7 @@ const createLegacyNestedBlockChildren = (): Element[] => [
         children: [{ text: 'word' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createLegacyNestedBlockAcrossChildren = (): Element[] => [
@@ -320,7 +320,7 @@ const createLegacyNestedBlockAcrossChildren = (): Element[] => [
     type: 'quote',
     a: true,
     children: createLegacyBlockChildren(),
-  } as Element,
+  },
 ];
 
 const createLegacyQuoteChildren = (...texts: string[]): Element[] => [
@@ -330,7 +330,7 @@ const createLegacyQuoteChildren = (...texts: string[]): Element[] => [
       type: 'paragraph',
       children: [{ text }],
     })),
-  } as Element,
+  },
 ];
 
 const createLegacyNestedBlockStartChildren = (): Element[] => [
@@ -344,8 +344,8 @@ const createLegacyNestedBlockStartChildren = (): Element[] => [
       'four',
       'five',
       'six'
-    )[0]!.children,
-  } as Element,
+    )[0].children,
+  },
 ];
 
 const createLegacyNestedBlockMultipleChildren = (): Element[] => [
@@ -375,12 +375,12 @@ const createStyledChildren = (): Element[] => [
     type: 'paragraph',
     align: 'left',
     children: [{ text: 'alpha', bold: true }],
-  } as Element,
+  },
   {
     type: 'paragraph',
     align: 'right',
     children: [{ text: 'beta' }],
-  } as Element,
+  },
 ];
 
 const createMergeTextChildren = (): Element[] => [
@@ -390,7 +390,7 @@ const createMergeTextChildren = (): Element[] => [
       { text: 'al', bold: true },
       { text: 'pha', bold: true },
     ],
-  } as Element,
+  },
 ];
 
 const createElementMergeChildren = (): Element[] => [
@@ -398,7 +398,7 @@ const createElementMergeChildren = (): Element[] => [
     type: 'paragraph',
     data: true,
     children: [{ text: 'before' }],
-  } as Element,
+  },
   {
     type: 'paragraph',
     data: true,
@@ -410,7 +410,7 @@ const createElementMergeChildren = (): Element[] => [
       },
       { text: 'after' },
     ],
-  } as Element,
+  },
 ];
 
 const createWrapChildren = (): Element[] => [
@@ -433,7 +433,7 @@ const createListWrapperChildren = (): Element[] => [
         children: [{ text: 'two' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createUnwrapChildren = (): Element[] => [
@@ -449,7 +449,7 @@ const createUnwrapChildren = (): Element[] => [
         children: [{ text: 'beta' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createTopLevelUnwrapChildren = (): Element[] => [
@@ -465,7 +465,7 @@ const createTopLevelUnwrapChildren = (): Element[] => [
         children: [{ text: 'beta' }],
       },
     ],
-  } as Element,
+  },
   {
     type: 'quote',
     children: [
@@ -474,7 +474,7 @@ const createTopLevelUnwrapChildren = (): Element[] => [
         children: [{ text: 'gamma' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createLiftOnlyChildChildren = (): Element[] => [
@@ -486,7 +486,7 @@ const createLiftOnlyChildChildren = (): Element[] => [
         children: [{ text: 'alpha' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createLiftSiblingChildren = (): Element[] => [
@@ -506,7 +506,7 @@ const createLiftSiblingChildren = (): Element[] => [
         children: [{ text: 'three' }],
       },
     ],
-  } as Element,
+  },
 ];
 
 const createElementSplitChildren = (): Element[] => [
@@ -522,7 +522,7 @@ const createElementSplitChildren = (): Element[] => [
       },
       { text: 'after' },
     ],
-  } as Element,
+  },
 ];
 
 const getBlockTexts = (children: readonly Descendant[]) =>
@@ -578,7 +578,7 @@ it('normalizes split dirty paths instead of the full document', () => {
         {
           correct({ entry: [, path] }) {
             if (path.length === 1) {
-              normalizedTopLevelPaths.push(path[0]!);
+              normalizedTopLevelPaths.push(path[0]);
             }
           },
           event: 'content',
@@ -826,7 +826,7 @@ it('a registered correction can enforce a descendant-level node rewrite', () => 
       {
         type: 'heading',
         children: [{ text: 'nested' }],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -857,7 +857,7 @@ it('a root correction can wrap a semantically matched top-level block', () => {
                   ElementApi.isElement(child) && child.rootWrap === true
               );
 
-            if (index < 0) return;
+            if (index === -1) return;
 
             tx.nodes.wrap(
               { type: 'quote', children: [] },
@@ -879,7 +879,7 @@ it('a root correction can wrap a semantically matched top-level block', () => {
         type: 'paragraph',
         rootWrap: true,
         children: [{ text: 'alpha' }],
-      } as Descendant,
+      },
       { type: 'paragraph', children: [{ text: 'beta' }] },
     ],
     selection: null,
@@ -908,7 +908,7 @@ it('the correction kernel inserts an empty text child into empty elements', () =
       {
         type: 'paragraph',
         children: [],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -936,7 +936,7 @@ it('normalizes empty elements inserted by a root replacement', () => {
 
   editor.update((tx) => {
     tx.value.replace({
-      children: [{ type: 'paragraph', children: [] } as Descendant],
+      children: [{ type: 'paragraph', children: [] }],
       selection: null,
     });
   });
@@ -962,7 +962,7 @@ it('normalizes empty elements inserted by a nested replacement', () => {
             children: [{ text: 'alpha' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1000,7 +1000,7 @@ it('the correction kernel inserts spacer text around inline-only children', () =
             children: [{ text: 'beta' }],
           },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1126,7 +1126,7 @@ it('editorNormalize explicitly removes empty adjacent text in inline-style conta
           { text: '', bold: true },
           { text: 'beta', bold: true },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1152,7 +1152,7 @@ it('the correction kernel flattens direct blocks in inline-style containers', ()
           { text: 'alpha', bold: true },
           { text: 'gamma', italic: true },
         ],
-      } as Descendant,
+      },
     ],
     selection: null,
   });
@@ -1200,7 +1200,7 @@ it('markableVoid lets addMark and removeMark target the text child inside a void
           },
           { text: '' },
         ],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -1893,7 +1893,7 @@ it('publishes once after a transaction and keeps same-version reads stable', () 
 
 it('keeps text snapshots stable across later path-stable text commits', () => {
   const editor = createEditor();
-  const snapshots: ReturnType<typeof editorGetSnapshot>[] = [];
+  const snapshots: Array<ReturnType<typeof editorGetSnapshot>> = [];
 
   editorReplace(editor, {
     children: createChildren(),
@@ -1971,7 +1971,7 @@ it('keeps node keys unique when replacing a complete marked text leaf', () => {
 
 it('publishes one path-stable snapshot for batched text commits', () => {
   const editor = createEditor();
-  const snapshots: ReturnType<typeof editorGetSnapshot>[] = [];
+  const snapshots: Array<ReturnType<typeof editorGetSnapshot>> = [];
 
   editorReplace(editor, {
     children: createChildren(),
@@ -2008,7 +2008,7 @@ it('publishes one path-stable snapshot for batched text commits', () => {
 
 it('reuses snapshot indexes for selection-only listener snapshots', () => {
   const editor = createEditor();
-  const snapshots: ReturnType<typeof editorGetSnapshot>[] = [];
+  const snapshots: Array<ReturnType<typeof editorGetSnapshot>> = [];
 
   editorReplace(editor, {
     children: createChildren(),
@@ -2830,7 +2830,7 @@ it('editorAddMark applies bold across an expanded selection while preserving exi
           { text: 'cd', italic: true },
           { text: 'ef', underline: true },
         ],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -5291,7 +5291,7 @@ it('mirrors the legacy unwrapNodes/match-block/block-end.tsx oracle row', () => 
         type: 'quote',
         a: true,
         children: createExpandedChildren(),
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -5328,7 +5328,7 @@ it('mirrors the legacy unwrapNodes/match-block/block-middle.tsx oracle row', () 
           { type: 'paragraph', children: [{ text: 'five' }] },
           { type: 'paragraph', children: [{ text: 'six' }] },
         ],
-      } as Descendant,
+      },
     ],
     selection: {
       kind: 'text' as const,
@@ -5571,11 +5571,11 @@ it('mirrors the legacy liftNodes/path/middle-block.tsx oracle row', () => {
 
   const after = editorGetSnapshot(editor);
   const leadingWrapper = after.children[0] as Element & {
-    children: { children: { text: string }[] }[];
+    children: Array<{ children: Array<{ text: string }> }>;
     type: string;
   };
   const trailingWrapper = after.children[2] as Element & {
-    children: { children: { text: string }[] }[];
+    children: Array<{ children: Array<{ text: string }> }>;
     type: string;
   };
 

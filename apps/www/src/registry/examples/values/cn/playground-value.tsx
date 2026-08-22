@@ -1,5 +1,7 @@
 import type { EditorDocumentValue } from 'platejs';
 
+const PLAYGROUND_CREATED_AT = 1_704_067_200_000;
+
 export const playgroundValue: EditorDocumentValue = {
   children: [
     // Intro
@@ -43,7 +45,7 @@ export const playgroundValue: EditorDocumentValue = {
               suggestion: true,
               suggestion_playground1: {
                 id: 'playground1',
-                createdAt: Date.now(),
+                createdAt: PLAYGROUND_CREATED_AT,
                 type: 'insert',
                 userId: 'alice',
               },
@@ -57,7 +59,7 @@ export const playgroundValue: EditorDocumentValue = {
           suggestion: true,
           suggestion_playground1: {
             id: 'playground1',
-            createdAt: Date.now(),
+            createdAt: PLAYGROUND_CREATED_AT,
             type: 'insert',
             userId: 'alice',
           },
@@ -67,7 +69,7 @@ export const playgroundValue: EditorDocumentValue = {
           suggestion: true,
           suggestion_playground1: {
             id: 'playground1',
-            createdAt: Date.now(),
+            createdAt: PLAYGROUND_CREATED_AT,
             type: 'insert',
             userId: 'alice',
           },
@@ -78,7 +80,7 @@ export const playgroundValue: EditorDocumentValue = {
           suggestion: true,
           suggestion_playground2: {
             id: 'playground2',
-            createdAt: Date.now(),
+            createdAt: PLAYGROUND_CREATED_AT,
             type: 'remove',
             userId: 'bob',
           },
@@ -104,7 +106,7 @@ export const playgroundValue: EditorDocumentValue = {
           suggestion: true,
           suggestion_playground3: {
             id: 'playground3',
-            createdAt: Date.now(),
+            createdAt: PLAYGROUND_CREATED_AT,
             type: 'insert',
             userId: 'charlie',
           },

@@ -17,6 +17,8 @@ import type { Descendant } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
+import { failInvariant } from '../internal/fail-invariant';
+import { getDefined } from '../internal/get-defined';
 import { getDocumentChangeAfterPaths } from './change/classification';
 import {
   bindDocumentChangeNodeKeys,
@@ -172,7 +174,7 @@ const bindInverseNodeKeys = (
       indexes.set(root, index);
     }
 
-    return index.keyAt(path as Path);
+    return index.keyAt(path);
   };
 
   return bindDocumentChangeNodeKeys(inverse, before, keyAt);
@@ -228,7 +230,7 @@ const getTopLevelRanges = (
   if (indexes.length === 0) return Object.freeze([]);
 
   const ranges: TopLevelRuntimeRange[] = [];
-  let start = indexes[0]!;
+  let start = indexes[0];
   let end = start;
 
   for (const index of indexes.slice(1)) {
@@ -279,7 +281,7 @@ const mergeTopLevelRanges = (
     (left, right) => left[0] - right[0] || left[1] - right[1]
   );
   const merged: TopLevelRuntimeRange[] = [];
-  let [start, end] = ordered[0]!;
+  let [start, end] = ordered[0];
 
   for (const [nextStart, nextEnd] of ordered.slice(1)) {
     if (nextStart <= end + 1) {
@@ -304,23 +306,25 @@ const getStableTopLevelNodeKeys = (
     after.map((nodeKey, index) => [nodeKey, index] as const)
   );
   const common = before.filter((nodeKey) => afterPositions.has(nodeKey));
-  const predecessors = new Array<number>(common.length).fill(-1);
+  const predecessors = Array.from({ length: common.length }, () => -1);
   const tails: number[] = [];
 
   for (let index = 0; index < common.length; index++) {
-    const position = afterPositions.get(common[index]!)!;
+    const position = getDefined(afterPositions.get(common[index]));
     let low = 0;
     let high = tails.length;
 
     while (low < high) {
       const middle = (low + high) >> 1;
-      const tailPosition = afterPositions.get(common[tails[middle]!]!)!;
+      const tailPosition = getDefined(
+        afterPositions.get(common[tails[middle]])
+      );
 
       if (tailPosition < position) low = middle + 1;
       else high = middle;
     }
 
-    if (low > 0) predecessors[index] = tails[low - 1]!;
+    if (low > 0) predecessors[index] = getDefined(tails[low - 1]);
     tails[low] = index;
   }
 
@@ -328,8 +332,8 @@ const getStableTopLevelNodeKeys = (
   let cursor = tails.at(-1) ?? -1;
 
   while (cursor >= 0) {
-    stable.add(common[cursor]!);
-    cursor = predecessors[cursor]!;
+    stable.add(common[cursor]);
+    cursor = getDefined(predecessors[cursor]);
   }
 
   return stable;
@@ -339,7 +343,7 @@ const samePath = (left: Path | undefined, right: Path | undefined) =>
   left !== undefined && right !== undefined && PathApi.equals(left, right);
 
 const getNodeKeyAtPath = (index: SnapshotIndex, path: readonly number[]) =>
-  index.keyAt(path as Path);
+  index.keyAt(path);
 
 const getDescendantAtPath = (
   children: readonly Descendant[],
@@ -526,13 +530,13 @@ const createCommitChanged = ({
             removedStart < removedEnd &&
             beforeDocument.value[removedStart] === survivor
           ) {
-            removedStart++;
+            removedStart += 1;
           }
           if (
             removedStart < removedEnd &&
             beforeDocument.value[removedEnd] === survivor
           ) {
-            removedEnd--;
+            removedEnd -= 1;
           }
 
           end = Math.min(
@@ -558,8 +562,8 @@ const createCommitChanged = ({
             index !== movedTargetIndex &&
             beforeBoundaryNodes.has(afterDocument.value[index]);
 
-          if (start < end && isStableContext(start)) start++;
-          if (start < end && isStableContext(end)) end--;
+          if (start < end && isStableContext(start)) start += 1;
+          if (start < end && isStableContext(end)) end -= 1;
         }
       }
 
@@ -578,8 +582,8 @@ const createCommitChanged = ({
 
     if (cached) return cached;
 
-    const beforeIndex = getIndex('before', root);
-    const afterIndex = getIndex('after', root);
+    const innerBeforeIndex = getIndex('before', root);
+    const innerAfterIndex = getIndex('after', root);
     const classification = getInternalDocumentChangeClassification(
       changes,
       root
@@ -599,8 +603,8 @@ const createCommitChanged = ({
         for (let depth = 1; depth <= changedPath.length; depth++) {
           const path = changedPath.slice(0, depth) as Path;
           const key = path.join('.');
-          const beforeNodeKey = beforeIndex.keyAt(path);
-          const afterNodeKey = afterIndex.keyAt(path);
+          const beforeNodeKey = innerBeforeIndex.keyAt(path);
+          const afterNodeKey = innerAfterIndex.keyAt(path);
 
           touchedPaths.set(key, path);
           if (beforeNodeKey !== afterNodeKey) {
@@ -616,8 +620,8 @@ const createCommitChanged = ({
         }
 
         if (classification.text) {
-          const path = changedPath as Path;
-          const nodeKey = afterIndex.keyAt(path);
+          const path = changedPath;
+          const nodeKey = innerAfterIndex.keyAt(path);
 
           if (
             nodeKey &&
@@ -631,7 +635,7 @@ const createCommitChanged = ({
       const details = Object.freeze({
         changedNodeKeys,
         paths: Object.freeze(
-          classification.paths.map((path) => Object.freeze([...path]) as Path)
+          classification.paths.map((path) => Object.freeze([...path]))
         ),
         pathNodeKeys,
         propertiesChanged: classification.properties,
@@ -648,15 +652,15 @@ const createCommitChanged = ({
       return details;
     }
 
-    const beforeTopLevel = beforeIndex
+    const beforeTopLevel = innerBeforeIndex
       .entries()
       .filter(([, path]) => path.length === 1)
-      .sort(([, left], [, right]) => left[0]! - right[0]!)
+      .sort(([, left], [, right]) => left[0] - right[0])
       .map(([nodeKey]) => nodeKey);
-    const afterTopLevel = afterIndex
+    const afterTopLevel = innerAfterIndex
       .entries()
       .filter(([, path]) => path.length === 1)
-      .sort(([, left], [, right]) => left[0]! - right[0]!)
+      .sort(([, left], [, right]) => left[0] - right[0])
       .map(([nodeKey]) => nodeKey);
     const topLevelOrderChanged =
       beforeTopLevel.length !== afterTopLevel.length ||
@@ -714,7 +718,7 @@ const createCommitChanged = ({
         toBefore
       )) {
         const path = [...entry.path] as Path;
-        const nodeKey = getNodeKeyAtPath(beforeIndex, path);
+        const nodeKey = getNodeKeyAtPath(innerBeforeIndex, path);
 
         touchedPaths.set(pathKey(path), path);
         if (nodeKey) touchedChangedNodeKeys.add(nodeKey);
@@ -725,7 +729,7 @@ const createCommitChanged = ({
         toAfter
       )) {
         const path = [...entry.path] as Path;
-        const nodeKey = getNodeKeyAtPath(afterIndex, path);
+        const nodeKey = getNodeKeyAtPath(innerAfterIndex, path);
 
         touchedPaths.set(pathKey(path), path);
         if (nodeKey) touchedChangedNodeKeys.add(nodeKey);
@@ -733,13 +737,13 @@ const createCommitChanged = ({
     });
 
     const allNodeKeys = new Set<NodeKey>([
-      ...beforeIndex.entries().map(([nodeKey]) => nodeKey),
-      ...afterIndex.entries().map(([nodeKey]) => nodeKey),
+      ...innerBeforeIndex.entries().map(([nodeKey]) => nodeKey),
+      ...innerAfterIndex.entries().map(([nodeKey]) => nodeKey),
     ]);
 
     for (const nodeKey of allNodeKeys) {
-      const beforePath = beforeIndex.pathOf(nodeKey) ?? undefined;
-      const afterPath = afterIndex.pathOf(nodeKey) ?? undefined;
+      const beforePath = innerBeforeIndex.pathOf(nodeKey) ?? undefined;
+      const afterPath = innerAfterIndex.pathOf(nodeKey) ?? undefined;
 
       if (afterPath && !samePath(beforePath, afterPath)) {
         pathNodeKeys.add(nodeKey);
@@ -749,10 +753,10 @@ const createCommitChanged = ({
     }
 
     const beforeNodeKeys = new Set(
-      beforeIndex.entries().map(([nodeKey]) => nodeKey)
+      innerBeforeIndex.entries().map(([nodeKey]) => nodeKey)
     );
     const afterNodeKeys = new Set(
-      afterIndex.entries().map(([nodeKey]) => nodeKey)
+      innerAfterIndex.entries().map(([nodeKey]) => nodeKey)
     );
     const changedNodeKeys = new Set(
       [...touchedChangedNodeKeys].filter((nodeKey) =>
@@ -773,8 +777,8 @@ const createCommitChanged = ({
     let textChanged = false;
 
     for (const nodeKey of changedNodeKeys) {
-      const beforePath = beforeIndex.pathOf(nodeKey);
-      const afterPath = afterIndex.pathOf(nodeKey);
+      const beforePath = innerBeforeIndex.pathOf(nodeKey);
+      const afterPath = innerAfterIndex.pathOf(nodeKey);
       const beforeNode = beforePath ? beforeDocument.node(beforePath) : null;
       const afterNode = afterPath ? afterDocument.node(afterPath) : null;
       const beforeText =
@@ -802,7 +806,7 @@ const createCommitChanged = ({
       changedNodeKeys,
       paths: Object.freeze(
         (change ? getDocumentChangeAfterPaths(change, afterDocument) : []).map(
-          (path) => Object.freeze([...path]) as Path
+          (path) => Object.freeze([...path])
         )
       ),
       pathNodeKeys,
@@ -825,7 +829,7 @@ const createCommitChanged = ({
 
     if (cached) return cached;
 
-    const nodeKeys = new Set<NodeKey>([
+    const innerNodeKeys = new Set<NodeKey>([
       ...getSelectionNodeKeys(
         selectionBefore,
         root,
@@ -840,9 +844,9 @@ const createCommitChanged = ({
       ),
     ]);
 
-    selectionNodeKeys.set(root, nodeKeys);
+    selectionNodeKeys.set(root, innerNodeKeys);
 
-    return nodeKeys;
+    return innerNodeKeys;
   };
 
   const hasInRoot = (kind: EditorCommitChangeKind, root: RootKey): boolean => {
@@ -852,51 +856,63 @@ const createCommitChanged = ({
     );
 
     switch (kind) {
-      case 'document':
+      case 'document': {
         return (
           !!getInternalDocumentRootChange(changes, root) ||
           changes.createRoots.has(root) ||
           changes.deleteRoots.has(root)
         );
-      case 'marks':
+      }
+      case 'marks': {
         return (
           marksChanged &&
           ((selectionBefore !== null && selectionBeforeRoot === root) ||
             (selectionAfter !== null && selectionAfterRoot === root))
         );
-      case 'properties':
+      }
+      case 'properties': {
         return (
           hasInRoot('document', root) &&
           (classification
             ? classification.properties
             : getRootDetails(root).propertiesChanged)
         );
-      case 'replace':
+      }
+      case 'replace': {
         return replace && hasInRoot('document', root);
-      case 'root-order':
+      }
+      case 'root-order': {
         return getRootDetails(root).topLevelOrderChanged;
-      case 'selection':
+      }
+      case 'selection': {
         return (
           selectionChanged &&
           ((selectionBefore !== null && selectionBeforeRoot === root) ||
             (selectionAfter !== null && selectionAfterRoot === root))
         );
-      case 'snapshot':
+      }
+      case 'snapshot': {
         return (
           hasInRoot('document', root) ||
           hasInRoot('selection', root) ||
           hasInRoot('marks', root) ||
           stateChanged
         );
-      case 'state':
+      }
+      case 'state': {
         return stateChanged;
-      case 'structure':
+      }
+      case 'structure': {
         return classification
           ? classification.structure || getRootDetails(root).structureChanged
           : getRootDetails(root).structureChanged;
-      case 'text':
+      }
+      case 'text': {
         return classification?.text ?? getRootDetails(root).textChanged;
+      }
     }
+
+    return failInvariant('Unexpected commit change kind');
   };
 
   const getNodeKeys = (
@@ -937,18 +953,22 @@ const createCommitChanged = ({
         ]);
         break;
       }
-      case 'node':
+      case 'node': {
         result = Object.freeze([...getRootDetails(root).changedNodeKeys]);
         break;
-      case 'path':
+      }
+      case 'path': {
         result = Object.freeze([...getRootDetails(root).pathNodeKeys]);
         break;
-      case 'selection':
+      }
+      case 'selection': {
         result = Object.freeze([...getSelectionIds(root)]);
         break;
-      case 'text':
+      }
+      case 'text': {
         result = Object.freeze([...getRootDetails(root).textNodeKeys]);
         break;
+      }
     }
 
     nodeKeys.set(cacheKey, result);
@@ -1021,9 +1041,9 @@ export const createEditorCommit = <V extends Value>(
     enumerable: true,
     value: createCommitChanged({
       afterIndex: () => body.after.index,
-      after: afterValue as JsonEditorValue,
+      after: afterValue,
       beforeIndex: () => body.before.index,
-      before: beforeValue as JsonEditorValue,
+      before: beforeValue,
       changes: body.changes,
       replace,
       selectionAfter: body.selectionAfter,
@@ -1051,7 +1071,7 @@ export const createEditorCommit = <V extends Value>(
 
   EDITOR_COMMIT_SNAPSHOT_SOURCES.set(commit, {
     editor,
-    value: afterValue as JsonEditorValue,
+    value: afterValue,
   });
 
   return Object.freeze(commit);

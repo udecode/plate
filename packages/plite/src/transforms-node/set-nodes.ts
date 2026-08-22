@@ -19,8 +19,6 @@ import {
 } from '../interfaces/editor';
 import type { AnyEditor as Editor, Value } from '../interfaces/editor';
 import {
-  type Ancestor,
-  type NodeEntry,
   type NodeMatchPredicate,
   type Node,
   NodeApi,
@@ -31,6 +29,7 @@ import type {
   NodeMutationMethods,
   NodeSetNodesOptions,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -49,7 +48,7 @@ const NON_SETTABLE_NODE_PROPERTIES = new Set([
 ]);
 
 const getParentEntry = (editor: unknown, at: Location) =>
-  editorParent(editor as Editor, at) as NodeEntry<Ancestor>;
+  editorParent(editor as Editor, at);
 
 const trimSplitRangeEndAtTextStart = <
   V extends Value,
@@ -57,7 +56,7 @@ const trimSplitRangeEndAtTextStart = <
 >(
   editor: Editor<V, TExtensions>,
   range: Range,
-  match: NodeMatchPredicate<Node>
+  match: NodeMatchPredicate
 ): Range => {
   const [start, end] = RangeApi.edges(range);
 
@@ -135,7 +134,7 @@ export const setNodes = ((
         (key) => !NON_SETTABLE_NODE_PROPERTIES.has(key)
       );
 
-      const marksMatch: NodeMatchPredicate<Node> = (node, path) => {
+      const marksMatch: NodeMatchPredicate = (node, path) => {
         if (!NodeApi.isText(node)) {
           return false;
         }
@@ -222,7 +221,7 @@ export const setNodes = ((
         voids,
         always: !startAtStartOfNode,
       });
-      at = rangeAnchor.release()!;
+      at = getDefined(rangeAnchor.release());
 
       if (optionAt !== undefined && LocationApi.isRange(at)) {
         at = trimSplitRangeEndAtTextStart(editor, at, match);
@@ -261,10 +260,10 @@ export const setNodes = ((
         }
 
         const value: unknown = Object.hasOwn(node, k)
-          ? node[<keyof Node>k]
+          ? node[k as keyof Node]
           : undefined;
 
-        const newValue: unknown = props[<keyof Node>k];
+        const newValue: unknown = props[k as keyof Node];
 
         if (compare(newValue, value)) {
           hasChanges = true;
@@ -343,8 +342,8 @@ export const setNodes = ((
     }
 
     if (updates.length > 0) {
-      applyBuiltDocumentChange(editor, (builder, root) =>
-        builder.setNodes(root, updates)
+      applyBuiltDocumentChange(editor, (builder, innerRoot) =>
+        builder.setNodes(innerRoot, updates)
       );
     }
   });

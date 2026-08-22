@@ -24,6 +24,9 @@ export type DiscussionPluginState = {
 };
 
 const BLOCK_SUGGESTION_SELECTOR = '[data-block-suggestion="true"]';
+const PLAYGROUND_DISCUSSION_CREATED_AT = 1_704_067_200_000;
+const playgroundDiscussionDate = (offset = 0) =>
+  new Date(PLAYGROUND_DISCUSSION_CREATED_AT + offset);
 
 const getTargetElement = (target: EventTarget | null) => {
   if (target instanceof HTMLElement) return target;
@@ -43,7 +46,7 @@ export const getDiscussionClickTarget = ({
 
   if (!element) return null;
 
-  return element.closest(selector) as HTMLElement | null;
+  return element.closest(selector);
 };
 
 export const getDiscussionBlockClickTarget = ({
@@ -74,7 +77,7 @@ const discussionsData: TDiscussion[] = [
             type: 'paragraph',
           },
         ],
-        createdAt: new Date(Date.now() - 600_000),
+        createdAt: playgroundDiscussionDate(-600_000),
         discussionId: 'discussion1',
         isEdited: false,
         userId: 'charlie',
@@ -91,13 +94,13 @@ const discussionsData: TDiscussion[] = [
             type: 'paragraph',
           },
         ],
-        createdAt: new Date(Date.now() - 500_000),
+        createdAt: playgroundDiscussionDate(-500_000),
         discussionId: 'discussion1',
         isEdited: false,
         userId: 'bob',
       },
     ],
-    createdAt: new Date(),
+    createdAt: playgroundDiscussionDate(),
     documentContent: 'comments',
     isResolved: false,
     userId: 'charlie',
@@ -117,7 +120,7 @@ const discussionsData: TDiscussion[] = [
             type: 'paragraph',
           },
         ],
-        createdAt: new Date(Date.now() - 300_000),
+        createdAt: playgroundDiscussionDate(-300_000),
         discussionId: 'discussion2',
         isEdited: false,
         userId: 'bob',
@@ -134,13 +137,13 @@ const discussionsData: TDiscussion[] = [
             type: 'paragraph',
           },
         ],
-        createdAt: new Date(Date.now() - 200_000),
+        createdAt: playgroundDiscussionDate(-200_000),
         discussionId: 'discussion2',
         isEdited: false,
         userId: 'charlie',
       },
     ],
-    createdAt: new Date(),
+    createdAt: playgroundDiscussionDate(),
     documentContent: 'overlapping',
     isResolved: false,
     userId: 'bob',

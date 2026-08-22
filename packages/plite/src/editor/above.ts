@@ -9,12 +9,7 @@ import type {
   EditorAboveOptions,
   EditorStaticApi,
 } from '../interfaces/editor';
-import {
-  type Ancestor,
-  type Node,
-  NodeApi,
-  type NodeMatch,
-} from '../interfaces/node';
+import { type Ancestor, NodeApi, type NodeMatch } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 
 const assertNumericPath = (path: Path) => {
@@ -38,7 +33,7 @@ export const above = ((
   } = options;
 
   if (!at) {
-    return;
+    return undefined;
   }
 
   let path: Path;
@@ -52,12 +47,12 @@ export const above = ((
     !LocationApi.isRange(at) ||
     PathApi.equals(at.focus.path, at.anchor.path)
   ) {
-    if (path.length === 0) return;
+    if (path.length === 0) return undefined;
     path = PathApi.parent(path);
   }
 
   if (!NodeApi.has(editor, path)) {
-    return;
+    return undefined;
   }
 
   const reverse = mode === 'lowest';
@@ -65,9 +60,10 @@ export const above = ((
   const [firstMatch] = editorLevels(editor, {
     at: path,
     voids,
-    match: match as NodeMatch<Node> | undefined,
+    match: match as NodeMatch | undefined,
     reverse,
     type,
   });
-  return firstMatch; // if nothing matches this returns undefined
+  // if nothing matches this returns undefined
+  return firstMatch;
 }) as EditorStaticApi['above'];

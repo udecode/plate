@@ -77,8 +77,7 @@ export const getHighestNonEditable = (editor: Editor, at: Path | Point) =>
   });
 
 export const pathContainsPoint = (path: readonly number[], point: Point) =>
-  PathApi.equals(path as Path, point.path) ||
-  PathApi.isAncestor(path as Path, point.path);
+  PathApi.equals(path, point.path) || PathApi.isAncestor(path, point.path);
 
 export const matchPointRootVisibility = (
   point: Point,
@@ -110,10 +109,7 @@ export const shouldKeepSplitTextAfterInteriorElementRemoval = (
 ) =>
   !isAcrossBlocks &&
   start.path.length === end.path.length &&
-  PathApi.equals(
-    start.path.slice(0, -1) as Path,
-    end.path.slice(0, -1) as Path
-  ) &&
+  PathApi.equals(start.path.slice(0, -1), end.path.slice(0, -1)) &&
   Math.abs((start.path.at(-1) ?? 0) - (end.path.at(-1) ?? 0)) > 1 &&
   (() => {
     const parentPath = start.path.slice(0, -1) as Path;

@@ -160,7 +160,7 @@ const findInsertTextUsages = () => {
   for (const file of readdirSync(examplesDir).sort()) {
     if (!file.endsWith('.test.ts') || file === 'pagination.test.ts') continue;
 
-    const lines = readFileSync(join(examplesDir, file), 'utf8').split('\n');
+    const lines = readFileSync(join(examplesDir, file), 'utf-8').split('\n');
     let title = '__module_helper__';
 
     lines.forEach((source, index) => {
@@ -248,7 +248,7 @@ const findProjectGatedReturns = () => {
   for (const file of readdirSync(examplesDir).sort()) {
     if (!file.endsWith('.test.ts') || file === 'pagination.test.ts') continue;
 
-    const lines = readFileSync(join(examplesDir, file), 'utf8').split('\n');
+    const lines = readFileSync(join(examplesDir, file), 'utf-8').split('\n');
     let title = '__module_helper__';
 
     lines.forEach((source, index) => {
@@ -342,7 +342,7 @@ const findWeakSkipReasons = () => {
   for (const file of readdirSync(examplesDir).sort()) {
     if (!file.endsWith('.test.ts') || file === 'pagination.test.ts') continue;
 
-    const lines = readFileSync(join(examplesDir, file), 'utf8').split('\n');
+    const lines = readFileSync(join(examplesDir, file), 'utf-8').split('\n');
 
     lines.forEach((source, index) => {
       if (!source.includes('test.skip')) return;

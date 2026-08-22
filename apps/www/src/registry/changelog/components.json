@@ -2,6 +2,12 @@
   "schemaVersion": 1,
   "components": {
     "dnd": ["2026-08-20-demand-driven-dnd", "2026-08-17-flat-editor-registry"],
+    "version-history-demo": [
+      "2026-08-20-format-version-history-values",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
     "toolbar": [
       "2026-08-20-improve-editor-control-accessibility",
       "2026-08-17-flat-editor-registry",
@@ -915,11 +921,6 @@
       "2026-07-23-scoped-media-inserts",
       "2026-07-13-use-installed-block-insert-commands",
       "2026-04-23-redesign-blockquotes-container-blocks",
-      "2025-11-20-biome-ultracite"
-    ],
-    "version-history-demo": [
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-canonical-node-props",
       "2025-11-20-biome-ultracite"
     ],
     "heading-node-static": ["2026-08-13-use-runtime-keys-for-toc-docx"],

@@ -29,25 +29,27 @@ const config: Record<
 export const BlockListStatic: ListWrapper = (props) => {
   const { indent, listStyle, listType } = props.element;
 
-  if (!listType || listType === ListType.Bulleted) return;
+  if (!listType || listType === ListType.Bulleted) return undefined;
 
-  return (props) => (
-    <List
-      {...props}
-      indent={typeof indent === 'number' ? indent : undefined}
-      listStart={props.editor
-        .plugin(BaseListPlugin)
-        .read.ordinal(props.element)}
-      listStyle={listStyle}
-      listType={listType}
-    />
-  );
+  return function BlockListStaticWrapper(innerProps) {
+    return (
+      <List
+        {...innerProps}
+        indent={typeof indent === 'number' ? indent : undefined}
+        listStart={innerProps.editor
+          .plugin(BaseListPlugin)
+          .read.ordinal(innerProps.element)}
+        listStyle={listStyle}
+        listType={listType}
+      />
+    );
+  };
 };
 
 function List(props: BlockListProps) {
   const { indent, listStart, listStyle, listType } = props;
   const { Li, Marker } = config[listType] ?? {};
-  const List = isOrderedList(props.element) ? 'ol' : 'ul';
+  const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
 
@@ -55,14 +57,14 @@ function List(props: BlockListProps) {
   const marginLeft = indent ? `${indent * 24}px` : undefined;
 
   return (
-    <List
+    <InnerList
       className="relative m-0 p-0"
       style={{ listStyleType: markerStyle, marginLeft }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
       {Marker && <Marker {...props} />}
       {Li ? <Li {...props} /> : <li>{props.children}</li>}
-    </List>
+    </InnerList>
   );
 }
 

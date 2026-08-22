@@ -46,6 +46,7 @@ export const NavigationFeedbackPlugin = definePlatePlugin(
       isElement: true,
       nodeProps: {
         transformProps: ({ editor, element, path, plugin, props, text }) => {
+          // oxlint-disable-next-line react-hooks/rules-of-hooks -- [P0 behavior-boundary] Plate invokes this transform at a fixed render position; the hook order is stable behind the node-props protocol.
           const activeTarget = useEditorPluginStore(
             editor,
             plugin,

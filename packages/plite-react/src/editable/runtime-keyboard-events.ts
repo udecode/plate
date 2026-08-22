@@ -439,10 +439,15 @@ export const useRuntimeKeyboardEvents = ({
       );
 
       if (keyDownWorkerResult.repair) {
-        const repair = keyDownWorkerResult.repair;
+        const { repair } = keyDownWorkerResult;
 
         measureRuntimeKeyDownPhase('keydown.request-repair', () => {
-          runtime.repair.requestEditableRepair(repair);
+          runtime.repair.requestEditableRepair(
+            repair,
+            keyDownWorkerResult.focusEditor
+              ? { focusEditor: keyDownWorkerResult.focusEditor }
+              : undefined
+          );
         });
       }
 
@@ -472,7 +477,9 @@ export const useRuntimeKeyboardEvents = ({
         domPhaseScheduler.schedule(
           'selection-repair',
           'native-vertical-selection-import',
-          () => runtime.selection.syncDOMSelectionFromRuntime(),
+          () => {
+            runtime.selection.syncDOMSelectionFromRuntime();
+          },
           { timing: 'timeout' }
         );
       }
@@ -520,7 +527,7 @@ export const useRuntimeKeyboardEvents = ({
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
-          const selection = editorGetSnapshot(editor).selection;
+          const { selection } = editorGetSnapshot(editor);
 
           if (!selection) {
             return false;
@@ -584,7 +591,12 @@ export const useRuntimeKeyboardEvents = ({
 
       event.stopPropagation();
       if (keyDownWorkerResult.repair) {
-        runtime.repair.requestEditableRepair(keyDownWorkerResult.repair);
+        runtime.repair.requestEditableRepair(
+          keyDownWorkerResult.repair,
+          keyDownWorkerResult.focusEditor
+            ? { focusEditor: keyDownWorkerResult.focusEditor }
+            : undefined
+        );
       }
       runtime.trace.recordKeyDownTrace({
         decision,

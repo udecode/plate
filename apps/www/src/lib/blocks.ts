@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
-export async function getAllBlocks() {
+export function getAllBlocks() {
   // Parse and validate the registry items
   const items = z.array(registryItemSchema).parse(registry.items);
 

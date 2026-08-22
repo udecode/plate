@@ -75,7 +75,7 @@ describe('migratePlateV54 profile', () => {
     expect(result.children.map(({ type }) => type)).toEqual(
       Object.entries(V53_ELEMENT_TYPE_OWNERS)
         .filter(([type]) => type !== 'th')
-        .map(([, target]) => target)
+        .map(([, innerTarget]) => innerTarget)
     );
   });
 
@@ -863,9 +863,9 @@ describe('migratePlateV54 profile', () => {
 
   it('normalizes derived starts across configured page traversal', () => {
     const PagePlugin = defineBasePlugin('page', {
-      schema: ({ plugins }) => ({
+      schema: ({ plugins: innerPlugins }) => ({
         element: {
-          content: plugins.blockContent({
+          content: innerPlugins.blockContent({
             default: BaseParagraphPlugin,
             min: 1,
           }),
@@ -885,7 +885,7 @@ describe('migratePlateV54 profile', () => {
                     match: ElementApi.isElement,
                   });
                 }
-                if (path[0] === 0) return;
+                if (path[0] === 0) return undefined;
 
                 const pagePath = [path[0] - 1];
                 const page = state.nodes.get(pagePath, {
@@ -931,9 +931,9 @@ describe('migratePlateV54 profile', () => {
 
   it('preserves boundaries when custom page traversal does not continue', () => {
     const PagePlugin = defineBasePlugin('page', {
-      schema: ({ plugins }) => ({
+      schema: ({ plugins: innerPlugins2 }) => ({
         element: {
-          content: plugins.blockContent({
+          content: innerPlugins2.blockContent({
             default: BaseParagraphPlugin,
             min: 1,
           }),

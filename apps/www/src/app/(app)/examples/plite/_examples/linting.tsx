@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-argument -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { type EditorSnapshot, NodeApi, type Range } from '@platejs/plite';
 import {
   Editable,
@@ -126,7 +125,7 @@ const formatIssues = (issues: readonly LintIssueDecoration[]) =>
         .join('|');
 
 const getSegmentIssue = (
-  slices: readonly { data?: unknown }[]
+  slices: ReadonlyArray<{ data?: unknown }>
 ): LintIssue | null => {
   const issues = slices
     .map((slice) => slice.data as LintIssue | undefined)
@@ -307,7 +306,7 @@ const LintingExample = () => {
     id: 'linting',
     dirtiness: ['text', 'external'],
     revision: lintMode,
-    read: ({ snapshot }): readonly PliteRangeDecoration<LintIssue>[] =>
+    read: ({ snapshot }): ReadonlyArray<PliteRangeDecoration<LintIssue>> =>
       lintMode === 'off'
         ? []
         : collectLintIssues(snapshot.children, {

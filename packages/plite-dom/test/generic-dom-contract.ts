@@ -43,7 +43,7 @@ const jsonCodec = defineHostCodec<CustomValue>({
   },
   owns: [{ kind: 'schema' }],
   serialize: ({ slice, state }) => {
-    const content: readonly (CustomText | ParagraphElement)[] = slice.content;
+    const content: ReadonlyArray<CustomText | ParagraphElement> = slice.content;
     const children: readonly ParagraphElement[] = state.children();
 
     return JSON.stringify({ children, content });

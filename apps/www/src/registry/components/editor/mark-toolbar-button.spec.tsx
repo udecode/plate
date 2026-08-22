@@ -84,7 +84,7 @@ mock.module('sonner', () => ({
 
 mock.module('@udecode/cn', () => ({
   useComposedRef:
-    (...refs: React.Ref<HTMLInputElement>[]) =>
+    (...refs: Array<React.Ref<HTMLInputElement>>) =>
     (value: HTMLInputElement | null) => {
       refs.forEach((ref) => {
         if (!ref) return;
@@ -224,7 +224,7 @@ mock.module('./toolbar', () => ({
     pressed?: boolean;
     tooltip?: React.ReactNode;
   }) => (
-    <button aria-pressed={pressed} {...props}>
+    <button type="button" aria-pressed={pressed} {...props}>
       {children}
     </button>
   ),
@@ -288,6 +288,7 @@ describe('feature toolbar plugin portals', () => {
     const button = view.getByRole('button', { name: 'B' });
 
     expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(fireEvent.mouseDown(button)).toBe(false);
 
     fireEvent.click(button);
 
@@ -492,20 +493,20 @@ describe('feature toolbar plugin portals', () => {
       view.getByRole('grid', { name: 'Colors' })
     ).getAllByRole('gridcell');
 
-    cells[0]!.focus();
-    fireEvent.keyDown(cells[0]!, { key: 'ArrowRight' });
+    cells[0].focus();
+    fireEvent.keyDown(cells[0], { key: 'ArrowRight' });
     expect(document.activeElement).toBe(cells[1]);
 
-    fireEvent.keyDown(cells[1]!, { key: 'ArrowDown' });
+    fireEvent.keyDown(cells[1], { key: 'ArrowDown' });
     expect(document.activeElement).toBe(cells[11]);
 
-    fireEvent.keyDown(cells[11]!, { key: 'Home' });
+    fireEvent.keyDown(cells[11], { key: 'Home' });
     expect(document.activeElement).toBe(cells[0]);
 
-    fireEvent.keyDown(cells[0]!, { key: 'End' });
+    fireEvent.keyDown(cells[0], { key: 'End' });
     expect(document.activeElement).toBe(cells[11]);
 
-    fireEvent.click(cells[11]!);
+    fireEvent.click(cells[11]);
     expect(updateColorMock).toHaveBeenCalledWith('#00000b');
   });
 

@@ -63,14 +63,10 @@ describe('playwright IME helpers', () => {
       events.push(event.type);
     });
     active.addEventListener('beforeinput', (event) => {
-      events.push(
-        `${event.type}:${(event as InputEvent).inputType}:${(event as InputEvent).data}`
-      );
+      events.push(`${event.type}:${event.inputType}:${event.data}`);
     });
     active.addEventListener('input', (event) => {
-      events.push(
-        `${event.type}:${(event as InputEvent).inputType}:${(event as InputEvent).data}`
-      );
+      events.push(`${event.type}:${event.inputType}:${event.data}`);
     });
 
     active.focus();
@@ -103,14 +99,12 @@ describe('playwright IME helpers', () => {
     const events: string[] = [];
 
     active.addEventListener('beforeinput', (event) => {
-      const inputEvent = event as InputEvent;
+      const inputEvent = event;
       events.push(`${event.type}:${inputEvent.inputType}:${inputEvent.data}`);
       event.preventDefault();
     });
     active.addEventListener('input', (event) => {
-      events.push(
-        `${event.type}:${(event as InputEvent).inputType}:${(event as InputEvent).data}`
-      );
+      events.push(`${event.type}:${event.inputType}:${event.data}`);
     });
     active.addEventListener('compositionend', (event) => {
       events.push(event.type);
@@ -149,14 +143,12 @@ describe('playwright IME helpers', () => {
       getText: () => 'hello',
     };
     active.addEventListener('beforeinput', (event) => {
-      const inputEvent = event as InputEvent;
+      const inputEvent = event;
       events.push(`${event.type}:${inputEvent.inputType}:${inputEvent.data}`);
       event.preventDefault();
     });
     active.addEventListener('input', (event) => {
-      events.push(
-        `${event.type}:${(event as InputEvent).inputType}:${(event as InputEvent).data}`
-      );
+      events.push(`${event.type}:${event.inputType}:${event.data}`);
     });
     active.addEventListener('compositionend', (event) => {
       events.push(event.type);
@@ -204,14 +196,12 @@ describe('playwright IME helpers', () => {
       },
     };
     active.addEventListener('beforeinput', (event) => {
-      const inputEvent = event as InputEvent;
+      const inputEvent = event;
       events.push(`${event.type}:${inputEvent.inputType}:${inputEvent.data}`);
       event.preventDefault();
     });
     active.addEventListener('input', (event) => {
-      events.push(
-        `${event.type}:${(event as InputEvent).inputType}:${(event as InputEvent).data}`
-      );
+      events.push(`${event.type}:${event.inputType}:${event.data}`);
     });
     active.addEventListener('compositionend', (event) => {
       events.push(event.type);
@@ -380,13 +370,11 @@ describe('playwright IME helpers', () => {
         },
       };
       active.addEventListener('beforeinput', (event) => {
-        const inputEvent = event as InputEvent;
+        const inputEvent = event;
         events.push(`${event.type}:${inputEvent.inputType}:${inputEvent.data}`);
       });
       active.addEventListener('input', (event) => {
-        events.push(
-          `${event.type}:${(event as InputEvent).inputType}:${(event as InputEvent).data}`
-        );
+        events.push(`${event.type}:${event.inputType}:${event.data}`);
       });
 
       active.focus();
@@ -531,7 +519,7 @@ describe('playwright IME helpers', () => {
     const keydownEvents: string[] = [];
 
     active.addEventListener('keydown', (event) => {
-      keydownEvents.push(`${event.key}:${event.keyCode}`);
+      keydownEvents.push(`${event.key}:${Reflect.get(event, 'keyCode')}`);
     });
     active.focus();
 

@@ -16,20 +16,20 @@ const isAttributeValueExpression = (
 
 // Helper function to parse JSON attributes to props
 export function parseAttributes(
-  attributes: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+  attributes: Array<MdxJsxAttribute | MdxJsxExpressionAttribute>
 ): Record<string, unknown> {
   const props: Record<string, unknown> = {};
 
   if (attributes && attributes.length > 0) {
     attributes.forEach((attr) => {
       if (attr.type === 'mdxJsxAttribute' && attr.value !== undefined) {
-        let value = attr.value;
+        let value: unknown = attr.value;
 
         if (typeof attr.value === 'string') {
           try {
             value = JSON.parse(attr.value);
-          } catch (_error) {
-            value = attr.value;
+          } catch {
+            ({ value } = attr);
           }
         }
 

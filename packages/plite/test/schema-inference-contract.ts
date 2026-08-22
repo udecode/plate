@@ -626,7 +626,7 @@ const text: SchemaText<typeof ArticleSchema> = {
   comment_note: 'thread',
   text: 'typed',
 };
-const propertyIds: SchemaPropertyIds<typeof ArticleSchema>[] = [
+const propertyIds: Array<SchemaPropertyIds<typeof ArticleSchema>> = [
   'element:align@hash',
   'element:headingOnly@hash',
   'text:bold@hash',
@@ -692,7 +692,7 @@ const assertExternalSchemaValues = (
 
   const assertedDocument: EditorDocumentValue<ValueOf<typeof editor>> =
     document;
-  const assertedFragment: readonly DescendantIn<ValueOf<typeof editor>>[] =
+  const assertedFragment: ReadonlyArray<DescendantIn<ValueOf<typeof editor>>> =
     fragment;
 
   void assertedDocument;
@@ -898,10 +898,10 @@ const slottedHeading: (typeof slottedChildren)[number] = {
   type: 'heading',
 };
 
-type CustomValue = {
-  children: { custom: true; text: string }[];
+type CustomValue = Array<{
+  children: Array<{ custom: true; text: string }>;
   type: 'custom';
-}[];
+}>;
 
 const explicitEditor = createEditor<CustomValue>({
   initialValue: [{ children: [{ custom: true, text: '' }], type: 'custom' }],
@@ -909,15 +909,15 @@ const explicitEditor = createEditor<CustomValue>({
 const inferredRawEditor = createEditor({
   initialValue: [{ children: [{ custom: true, text: '' }], type: 'custom' }],
 });
-const explicitValue: readonly CustomValue[number][] =
+const explicitValue: ReadonlyArray<CustomValue[number]> =
   explicitEditor.read.children();
 const inferredCustom: boolean =
-  inferredRawEditor.read.children()[0]!.children[0]!.custom;
+  inferredRawEditor.read.children()[0].children[0].custom;
 
-type WiderValue = (
+type WiderValue = Array<
   | SchemaElementFor<typeof ArticleSchema>
-  | { children: { legacy: true; text: string }[]; type: 'legacy' }
-)[];
+  | { children: Array<{ legacy: true; text: string }>; type: 'legacy' }
+>;
 
 const articleExtensions = [ArticleSchema] as const;
 
@@ -926,7 +926,8 @@ const assertWiderValueType = () => {
     extensions: articleExtensions,
     initialValue: [{ children: [{ legacy: true, text: '' }], type: 'legacy' }],
   });
-  const widerValue: readonly WiderValue[number][] = widerEditor.read.children();
+  const widerValue: ReadonlyArray<WiderValue[number]> =
+    widerEditor.read.children();
 
   void widerValue;
 };

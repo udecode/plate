@@ -64,7 +64,7 @@ describe('suggestion link integration', () => {
 
     const outputLinkNode = output.children[0].children[1] as any;
     const linkNode = editor.read.children()[0].children[1] as any;
-    const suggestionLeaf = linkNode.children[1] as any;
+    const suggestionLeaf = linkNode.children[1];
     const suggestionData = editor
       .plugin(BaseSuggestionPlugin)
       .api.suggestionData(suggestionLeaf) as any;

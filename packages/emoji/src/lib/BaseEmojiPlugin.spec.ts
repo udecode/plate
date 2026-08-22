@@ -59,9 +59,9 @@ describe('BaseEmojiPlugin', () => {
 
     const plugin = editor.plugin(BaseEmojiPlugin);
     const state = editor.plugin(BaseEmojiPlugin).store.get();
-    const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
-    const createComboboxInput = state.createComboboxInput;
-    const createEmojiNode = state.createEmojiNode;
+    const { triggerPreviousCharPattern } = state;
+    const { createComboboxInput } = state;
+    const { createEmojiNode } = state;
 
     if (
       !triggerPreviousCharPattern ||

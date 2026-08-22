@@ -100,6 +100,75 @@ test('failed claimed fixes interrupt Patch and automatically repair Regression',
   assert.match(methodology, /On attempt 2[\s\S]*run `best-api`/);
 });
 
+test('stability-only failures freeze product edits until proof drift is classified', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /failure appears only during stability[\s\S]*freeze product bytes/
+  );
+  assert.match(
+    methodology,
+    /programmatic shortcut[\s\S]*shared browser harness/
+  );
+  assert.match(template, /stability-only failure[\s\S]*froze product edits/);
+});
+
+test('stability counts fresh executions instead of cached proof reuse', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+
+  assert.match(
+    regressionRule,
+    /Each required stability repetition must execute the proof command[\s\S]*Cached result\s+reuse does not count/
+  );
+});
+
+test('compositor repairs require material-state traces and pixel proof', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /trace[\s\S]*computed style[\s\S]*live\s+range geometry[\s\S]*model\/DOM endpoints[\s\S]*callback identity/
+  );
+  assert.match(
+    methodology,
+    /already final[\s\S]*reject lifecycle ordering as the cause/
+  );
+  assert.match(
+    template,
+    /computed style[\s\S]*live range geometry[\s\S]*model\/DOM endpoints[\s\S]*callback identity[\s\S]*pixels stay red[\s\S]*timing is rejected/
+  );
+});
+
+test('blocking pixel classifiers require positive and negative controls', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /pixel-diff oracle[\s\S]*positive and negative controls[\s\S]*known-absent state[\s\S]*invalidates every result/
+  );
+  assert.match(
+    methodology,
+    /known-positive state[\s\S]*known-negative state[\s\S]*revoke every green or red/
+  );
+  assert.match(
+    template,
+    /blocking pixel classifier[\s\S]*known-positive and known-negative[\s\S]*freezes product edits/
+  );
+});
+
 test('Regression routes semantic completion through executable helpers', () => {
   const rule = read('.agents/rules/regression.mdc');
   const template = read('docs/plans/templates/regression.md');

@@ -18,9 +18,11 @@ Primary template:
 docs/plans/templates/task.md
 
 Applied packs:
+
 - none
 
 Task source:
+
 - type: direct user correction
 - id / link: current Codex task
 - title: prefer stable test-pattern and global Oxlint ownership over repeated
@@ -32,6 +34,7 @@ Task source:
   every remaining test next-line directive; finish with green lint and full CI.
 
 First checkpoint:
+
 - Before implementation or broad exploration, copy every explicit prompt
   requirement into this plan as checkable checkpoints: scope, non-goals,
   timing/duration, stop conditions, deliverables, final handoff sections,
@@ -40,6 +43,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Timed checkpoint:
+
 - requested duration: N/A: none requested
 - semantics: N/A
 - initial confidence score: N/A
@@ -47,6 +51,7 @@ Timed checkpoint:
 - final score / loop closure: N/A
 
 Completion threshold:
+
 - Every active next-line directive is classified as global negative-sum,
   structural test/path pattern, explicit whole-file boundary, or local semantic
   exception.
@@ -66,12 +71,14 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-20-normalize-oxlint-exception-ownership.md` passes.
 
 Verification surface:
+
 - Exact source audit of `oxlint-disable-next-line`, file-level directives,
   config selectors, and rule counts split by test/non-test paths.
 - `node tooling/scripts/check-oxlint-config.mjs` and targeted Oxlint.
 - `pnpm lint:fix`, full `pnpm check`, and P1 local exact-slice autoreview.
 
 Constraints:
+
 - Preserve existing user-facing behavior outside the task scope.
 - Prefer the durable ownership boundary over caller-by-caller patches.
 - Do not create PRs, comments, commits, or pushes unless the task/user/skill
@@ -83,6 +90,7 @@ Constraints:
 - Preserve runtime, test, package, browser, and public API behavior.
 
 Boundaries:
+
 - Source of truth: the 60 active directives, `oxlint.config.ts`, Ultracite's
   migration playbook and compact rule policy, installed Oxlint behavior, and
   the preceding completed suppression audit.
@@ -95,16 +103,19 @@ Boundaries:
   satisfy a rule, reopening unrelated migration code, or creating a PR/commit.
 
 Output budget strategy:
+
 - Count and group directives first; inspect only the few source windows needed
   for ambiguous ownership. Cap config and review output; do not stream full CI
   logs unless a failure needs its owning slice.
 
 Blocked condition:
+
 - Block only if Oxlint cannot express the structural pattern or the same full
   check failure repeats after one evidence-based repair and one local-env reset
   when corruption signals apply.
 
 Task state:
+
 - task_type: tooling policy cleanup
 - task_complexity: normal non-trivial
 - current_phase: closeout
@@ -113,6 +124,7 @@ Task state:
 - goal_status: complete
 
 Current verdict:
+
 - verdict: the user's ownership correction is valid, but blanket test disabling
   would be unsafe; promote only test-specific idioms
 - confidence: 100% after full verification
@@ -121,6 +133,7 @@ Current verdict:
   remain local and visible
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
@@ -149,6 +162,7 @@ Start Gates:
 | Output budget strategy recorded | yes | count-first and capped-output strategy recorded above |
 
 Work Checklist:
+
 - [x] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded. N/A: no duration.
@@ -232,6 +246,7 @@ Phase / pass table:
 | Closeout | complete | final counts and residual debt recorded | final response |
 
 Findings:
+
 - Baseline source ownership was 60 next-line directives in 60 occurrences: 9
   in standard test paths and 51 outside them. Tests used six next-line rules.
 - The larger smell was 456 file-level directives across 386 files. The main
@@ -269,6 +284,7 @@ Findings:
   rules lack value.
 
 Decisions and tradeoffs:
+
 - Prefer global root policy only for a repository-wide invalid rule premise.
 - Prefer a config pattern when every matching file shares a language, fixture,
   test-runner, generated, declaration, or adapter condition.
@@ -279,6 +295,7 @@ Decisions and tradeoffs:
   security-sensitive production rules. Repetition does not erase their value.
 
 Implementation notes:
+
 - Added five root rule-offs and ten test-pattern rule-offs with semantic
   reasons.
 - Removed 127 obsolete directives from 118 files.
@@ -292,6 +309,7 @@ Implementation notes:
   patterns remain.
 
 Review fixes:
+
 - Invocation 1 reported two P1 claims. Both were rejected with installed-runtime
   proof: Ultracite 7.10.5 exports `jsPluginSettings` and `selectJsPlugins`, and
   `next-env.d.ts` is ignored while the core preset already disables its import
@@ -300,6 +318,7 @@ Review fixes:
   findings. No code change was warranted.
 
 Autoreview scope baseline:
+
 - Request: replace repeated per-test and exact-file suppression ownership with
   stable test patterns or globally justified negative-sum policy.
 - Violated invariant: exception scope must match semantic ownership; exact-file
@@ -327,6 +346,7 @@ Error attempts:
 | Direct Oxfmt check targeted the ignored goal-plan path | 1 | Use the plan's owning validator; full Oxfmt already passed before the evidence-only edit | Autogoal completion check passed; `docs/plans/**` is intentionally outside Oxfmt's targets |
 
 Verification evidence:
+
 - `node tooling/scripts/check-oxlint-config.mjs`: passed with 169 root rules and
   166 selector/rule pairs.
 - Exact selector audit: `(no exact selectors)`.
@@ -340,6 +360,7 @@ Verification evidence:
   confidence 0.87.
 
 Final handoff contract:
+
 - PR line: N/A: no PR requested
 - Issue / tracker line: N/A: direct local task
 - Confidence line: 100% for requested policy ownership and green checks
@@ -362,6 +383,7 @@ Final handoff contract:
 - PR body verified: N/A: no PR
 
 Task-style PR body contract:
+
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
   part of the diff and repo policy expects auto release, include that block.
 - Use the accepted kitcn PR #270 visual format. The body starts with an emoji
@@ -382,12 +404,14 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
+
 - PR: N/A: not requested
 - Issue / tracker: N/A: none
 - Browser proof: N/A: lint-only change
 - Caveats: unsafe-type file headers remain explicit follow-up debt
 
 Timeline:
+
 - 2026-08-20T11:45:49.818Z Task goal plan created.
 - 2026-08-20T12:03:00Z Promoted five global rules and ten test-owned rules;
   removed repeated directives and exact-file config selectors.
@@ -405,5 +429,6 @@ Reboot status:
 | What have I done? | See implementation notes, verification evidence, and timeline |
 
 Open risks:
+
 - No blocking risk. The 341 remaining file-level directives are an explicit
   future cleanup queue, dominated by erased/generated/runtime boundary typing.

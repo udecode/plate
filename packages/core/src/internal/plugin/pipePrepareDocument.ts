@@ -10,6 +10,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  failInvariant,
   MAIN_ROOT_KEY,
   mapSelectionThroughChange,
   runTrustedUpdate,
@@ -35,7 +36,9 @@ const getSharedNodeIndexes = (
   const visitBefore = (nodes: Value[number]['children'], parent: number[]) => {
     nodes.forEach((node, index) => {
       const path = [...parent, index];
-      const key = `initial:${nextKey++}` as NodeKey;
+      const key = `initial:${nextKey}` as NodeKey;
+
+      nextKey += 1;
 
       keys.set(node, key);
       beforeEntries.push([key, path]);
@@ -58,11 +61,11 @@ const getSharedNodeIndexes = (
   visitAfter(after, []);
 
   const createIndex = (
-    entries: readonly (readonly [NodeKey, Path])[]
+    entries: ReadonlyArray<readonly [NodeKey, Path]>
   ): SnapshotIndex => {
     const frozenEntries = Object.freeze(
       entries.map(([nodeKey, path]) =>
-        Object.freeze([nodeKey, Object.freeze([...path]) as Path] as const)
+        Object.freeze([nodeKey, Object.freeze([...path])] as const)
       )
     );
     const byKey = new Map(frozenEntries);
@@ -128,7 +131,9 @@ export const prepareDocument = (
   editor.runtime.isNormalizing = true;
   try {
     getPlateRuntime(editor).pluginCache.prepareDocument.forEach((name) => {
-      const plugin = getCompiledPlatePlugin(editor, name)!;
+      const plugin =
+        getCompiledPlatePlugin(editor, name) ??
+        failInvariant('Expected value to be defined');
 
       if (
         isEditOnly(editor.read.view.isReadOnly(), plugin, 'prepareDocument') ||

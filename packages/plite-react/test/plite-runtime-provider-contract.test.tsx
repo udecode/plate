@@ -70,9 +70,9 @@ class FakeDataTransfer {
 }
 
 const rootText = (state: { nodes: { children: () => Descendant[] } }) => {
-  const [firstBlock] = state.nodes.children() as {
-    children: { text: string }[];
-  }[];
+  const [firstBlock] = state.nodes.children() as Array<{
+    children: Array<{ text: string }>;
+  }>;
 
   return firstBlock?.children[0]?.text ?? '';
 };
@@ -255,8 +255,8 @@ describe('PliteRuntime provider contract', () => {
     });
     let contentRootEditor!: ReturnType<typeof usePliteRootEditor>;
 
-    const ContentRoot = ({ element }: { element: Element }) => {
-      const { chrome, root } = usePliteContentRoot(element);
+    const ContentRoot = ({ element: innerElement }: { element: Element }) => {
+      const { chrome, root } = usePliteContentRoot(innerElement);
       const text = usePliteRootState(root, rootText);
 
       contentRootEditor = usePliteRootEditor(root);
@@ -621,7 +621,7 @@ describe('PliteRuntime provider contract', () => {
 
   test('usePliteActiveRoot rerenders only when the active root changes', async () => {
     let runtime!: ReturnType<typeof usePliteRuntime>;
-    const activeRoots: (string | undefined)[] = [];
+    const activeRoots: Array<string | undefined> = [];
 
     const Probe = () => {
       const activeRoot = usePliteActiveRoot();
@@ -1569,7 +1569,7 @@ describe('PliteRuntime provider contract', () => {
       contributions: [
         clipboardHandler({
           insertData() {
-            insertCount++;
+            insertCount += 1;
 
             return true;
           },

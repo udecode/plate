@@ -1,3 +1,4 @@
+import { failInvariant } from '@platejs/plite/internal';
 import type { AnyEditor as Editor } from '@platejs/plite/internal';
 
 import {
@@ -139,7 +140,7 @@ export const createDOMPhaseScheduler = ({
   const removeTask = (task: ScheduledDOMPhaseTask) => {
     const index = tasks.indexOf(task);
 
-    if (index >= 0) tasks.splice(index, 1);
+    if (index !== -1) tasks.splice(index, 1);
     if (task.key && keyedTasks.get(task.key) === task) {
       keyedTasks.delete(task.key);
     }
@@ -223,10 +224,7 @@ export const createDOMPhaseScheduler = ({
       animationFrameHandle = schedulerWindow.requestAnimationFrame(run);
     } else {
       animationFrameUsesTimeout = true;
-      animationFrameHandle = globalThis.setTimeout(
-        run,
-        16
-      ) as unknown as number;
+      animationFrameHandle = globalThis.setTimeout(run, 16);
     }
   };
 
@@ -328,6 +326,7 @@ export const createDOMPhaseScheduler = ({
       );
     }
 
+    // oxlint-disable-next-line typescript/only-throw-error -- The scheduler must preserve the first phase callback failure unchanged after cleanup.
     if (firstError) throw firstError;
   };
 
@@ -354,7 +353,9 @@ export const createDOMPhaseScheduler = ({
         ...mutableDiagnostics,
         lastFlushPhases: Object.freeze([...mutableDiagnostics.lastFlushPhases]),
       }),
-    flush: () => flushReady(true),
+    flush: () => {
+      flushReady(true);
+    },
     pending: () => tasks.length,
     schedule(phase, label, callback, options = {}) {
       if (destroyed) return () => {};
@@ -362,12 +363,15 @@ export const createDOMPhaseScheduler = ({
       const existing = options.key ? keyedTasks.get(options.key) : undefined;
 
       if (existing) cancelTask(existing);
+      const id = nextTaskId;
+
+      nextTaskId += 1;
 
       const task: ScheduledDOMPhaseTask = {
         callback,
         cancelled: false,
         delay: options.delay ?? 0,
-        id: nextTaskId++,
+        id,
         ...(options.key ? { key: options.key } : {}),
         label,
         phase,
@@ -381,7 +385,9 @@ export const createDOMPhaseScheduler = ({
       if (task.key) keyedTasks.set(task.key, task);
       armTask(task);
 
-      return () => cancelTask(task);
+      return () => {
+        cancelTask(task);
+      };
     },
   };
 };
@@ -473,7 +479,12 @@ export const installEditorDOMPhaseScheduler = (
     const current = ROOT_TO_DOM_PHASE_SCHEDULERS.get(root);
     const index = current?.indexOf(registration) ?? -1;
 
-    if (index >= 0) current!.splice(index, 1);
+    if (index >= 0) {
+      (current ?? failInvariant('Expected value to be defined')).splice(
+        index,
+        1
+      );
+    }
     if (current?.length === 0) {
       ROOT_TO_DOM_PHASE_SCHEDULERS.delete(root);
     }

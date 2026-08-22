@@ -21,7 +21,7 @@ const i18n = {
 
 export function OpenInPlus({ className }: { className?: string }) {
   const locale = useLocale();
-  const content = i18n[locale as keyof typeof i18n];
+  const content = i18n[locale];
 
   return (
     <div
@@ -39,7 +39,7 @@ export function OpenInPlus({ className }: { className?: string }) {
       </Button>
       <a
         className="absolute inset-0"
-        href={`${siteConfig.links.platePro}`}
+        href={siteConfig.links.platePro}
         rel="noreferrer"
         target="_blank"
       >

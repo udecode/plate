@@ -21,10 +21,8 @@ export async function getPlaygroundPreviewData(): Promise<PlaygroundPreviewData 
     return null;
   }
 
-  const [tree, dependencies] = await Promise.all([
-    getCachedFileTree(item.files),
-    getCachedDependencies(item.name),
-  ]);
+  const tree = getCachedFileTree(item.files);
+  const dependencies = getCachedDependencies(item.name);
 
   return {
     dependencies,

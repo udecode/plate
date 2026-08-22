@@ -32,8 +32,8 @@ describe('Markdown node codec compiler', () => {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/markdown': {
-            encode: ({ schema }) => {
-              elementIdentity = schema.type;
+            encode: ({ schema: innerSchema }) => {
+              elementIdentity = innerSchema.type;
 
               return { type: 'text', value: 'element' };
             },
@@ -51,8 +51,8 @@ describe('Markdown node codec compiler', () => {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/markdown': {
-            encode: ({ schema }) => {
-              markIdentity = schema.key;
+            encode: ({ schema: innerSchema2 }) => {
+              markIdentity = innerSchema2.key;
 
               return { type: 'text', value: 'mark' };
             },
@@ -72,12 +72,12 @@ describe('Markdown node codec compiler', () => {
       value: [],
     } as any;
 
-    compiled.rules.persistedElement!.serialize!(
-      { children: [{ text: 'element' }], type: 'persistedElement' } as any,
+    compiled.rules.persistedElement.serialize!(
+      { children: [{ text: 'element' }], type: 'persistedElement' },
       options
     );
-    compiled.rules.persistedMark!.serialize!(
-      { persistedMark: true, text: 'mark' } as any,
+    compiled.rules.persistedMark.serialize!(
+      { persistedMark: true, text: 'mark' },
       options
     );
 
@@ -217,9 +217,9 @@ describe('Markdown node codec compiler', () => {
     const LowPlugin = elementPlugin('low').extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'text/markdown': {
-          decode: ({ schema }) => ({
+          decode: ({ schema: innerSchema3 }) => ({
             children: [{ text: '' }],
-            type: schema.type,
+            type: innerSchema3.type,
           }),
           from: 'html',
           kind: 'node',
@@ -230,9 +230,9 @@ describe('Markdown node codec compiler', () => {
     const HighPlugin = elementPlugin('high').extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'text/markdown': {
-          decode: ({ schema }) => ({
+          decode: ({ schema: innerSchema4 }) => ({
             children: [{ text: '' }],
-            type: schema.type,
+            type: innerSchema4.type,
           }),
           from: 'html',
           kind: 'node',
@@ -256,9 +256,9 @@ describe('Markdown node codec compiler', () => {
       .extend(({ defineCodecs }) => ({
         codecs: defineCodecs({
           'text/markdown': {
-            decode: ({ schema }) => ({
+            decode: ({ schema: innerSchema5 }) => ({
               children: [{ text: '' }],
-              type: schema.type,
+              type: innerSchema5.type,
             }),
             from: 'html',
             kind: 'node',
@@ -281,17 +281,17 @@ describe('Markdown node codec compiler', () => {
         codecs: defineCodecs({
           'text/markdown': [
             {
-              decode: ({ schema }) => ({
+              decode: ({ schema: innerSchema6 }) => ({
                 children: [{ text: '' }],
-                type: schema.type,
+                type: innerSchema6.type,
               }),
               from: 'html',
               kind: 'node',
             },
             {
-              decode: ({ schema }) => ({
+              decode: ({ schema: innerSchema7 }) => ({
                 children: [{ text: '' }],
-                type: schema.type,
+                type: innerSchema7.type,
               }),
               from: 'html',
               kind: 'node',
@@ -332,7 +332,7 @@ describe('Markdown node codec compiler', () => {
               ...declaration,
               typo: true,
             },
-          } as typeof codecs,
+          },
         };
       }
     );

@@ -1,3 +1,5 @@
+import { failInvariant } from '@platejs/plite/internal';
+
 const CSS_BREAK_WHITESPACE_PATTERN = /^[\t\n\f\r ]+$/;
 const STRING_EDGE_HIT_SLOP = 3;
 const VISUAL_LINE_TOLERANCE = 2;
@@ -121,17 +123,17 @@ export const getPliteStringLength = (string: HTMLElement) => {
   return string.textContent?.length ?? 0;
 };
 
-const getGraphemeBoundaryOffsets = (text: string) => {
-  const segmenter =
-    typeof Intl !== 'undefined' && 'Segmenter' in Intl
-      ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
-      : null;
+const graphemeSegmenter =
+  typeof Intl !== 'undefined' && 'Segmenter' in Intl
+    ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+    : null;
 
-  if (segmenter) {
+const getGraphemeBoundaryOffsets = (text: string) => {
+  if (graphemeSegmenter) {
     return [
       0,
       ...Array.from(
-        segmenter.segment(text),
+        graphemeSegmenter.segment(text),
         ({ index, segment }) => index + segment.length
       ),
     ];
@@ -149,9 +151,7 @@ const getGraphemeBoundaryOffsets = (text: string) => {
   ];
 };
 
-export const getUsableRangeRects = (
-  range: globalThis.Range | Range
-): DOMRect[] => {
+export const getUsableRangeRects = (range: globalThis.Range): DOMRect[] => {
   const hasRect = (rect: DOMRect | null): rect is DOMRect =>
     !!rect && (rect.width > 0 || rect.height > 0);
   const clientRects =
@@ -171,9 +171,8 @@ export const getUsableRangeRects = (
   return hasRect(boundingRect) ? [boundingRect] : [];
 };
 
-export const getUsableRangeRect = (
-  range: globalThis.Range | Range
-): DOMRect | null => getUsableRangeRects(range)[0] ?? null;
+export const getUsableRangeRect = (range: globalThis.Range): DOMRect | null =>
+  getUsableRangeRects(range)[0] ?? null;
 
 export const getCollapsedTextOffsetRect = (
   document: Document,
@@ -246,7 +245,7 @@ const getCollapsedOffsetLineRelation = ({
   textNode,
 }: {
   offset: number;
-  range: globalThis.Range | Range;
+  range: globalThis.Range;
   rect: DOMRect;
   textNode: globalThis.Node;
 }): 'inside' | 'outside' | 'unavailable' => {
@@ -277,7 +276,7 @@ const areSegmentRectsOutsideLine = ({
   textNode,
 }: {
   end: number;
-  range: globalThis.Range | Range;
+  range: globalThis.Range;
   rect: DOMRect;
   start: number;
   textNode: globalThis.Node;
@@ -304,7 +303,7 @@ const isNextPliteStringSegmentOutsideLine = ({
   rect,
   string,
 }: {
-  range: globalThis.Range | Range;
+  range: globalThis.Range;
   rect: DOMRect;
   string: HTMLElement;
 }) => {
@@ -372,7 +371,7 @@ const getSegmentEndOffset = ({
   end: number;
   index: number;
   offsets: number[];
-  range: globalThis.Range | Range;
+  range: globalThis.Range;
   rect: DOMRect;
   segment: string;
   segmentRect: DOMRect;
@@ -441,8 +440,8 @@ export const getPliteStringLineEdgeTextOffset = ({
   } | null = null;
 
   for (let index = 0; index < offsets.length - 1; index++) {
-    const start = offsets[index]!;
-    const end = offsets[index + 1]!;
+    const start = offsets[index];
+    const end = offsets[index + 1];
     const segment = text.slice(start, end);
 
     range.setStart(textNode, start);
@@ -530,8 +529,8 @@ export const getPliteStringLineOffsetAtX = ({
   } | null = null;
 
   for (let index = 0; index < offsets.length - 1; index++) {
-    const start = offsets[index]!;
-    const end = offsets[index + 1]!;
+    const start = offsets[index];
+    const end = offsets[index + 1];
 
     range.setStart(textNode, start);
     range.setEnd(textNode, end);
@@ -723,7 +722,7 @@ const createCollapsedRect = (
   const DOMRectConstructor = document.defaultView?.DOMRect;
 
   if (DOMRectConstructor) {
-    return new DOMRectConstructor(x, rect.top, 0, rect.height) as DOMRect;
+    return new DOMRectConstructor(x, rect.top, 0, rect.height);
   }
 
   return {
@@ -745,7 +744,7 @@ const createCollapsedRect = (
       x,
       y: rect.top,
     }),
-  } as DOMRect;
+  };
 };
 
 const getClosestBoundary = (
@@ -759,7 +758,11 @@ const getClosestBoundary = (
     return boundaries.findLast((boundary) => boundary < offset) ?? 0;
   }
 
-  return boundaries.find((boundary) => boundary > offset) ?? boundaries.at(-1)!;
+  return (
+    boundaries.find((boundary) => boundary > offset) ??
+    boundaries.at(-1) ??
+    failInvariant('Expected value to be defined')
+  );
 };
 
 const getAdjacentGrapheme = (
@@ -795,7 +798,9 @@ const getNativeDOMPointAtCoordinates = (
   x: number,
   y: number
 ): DOMGeometryPoint | null => {
+  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit exposes caretRangeFromPoint instead of the standard caretPositionFromPoint API.
   if (document.caretRangeFromPoint) {
+    // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Call the WebKit API only after its runtime presence check.
     const range = document.caretRangeFromPoint(x, y);
 
     return range ? [range.startContainer, range.startOffset] : null;
@@ -1059,8 +1064,8 @@ const getTextOffsetInVisualLineByX = ({
   let best: { distance: number; offset: number } | null = null;
 
   for (let index = 0; index < offsets.length - 1; index++) {
-    const start = offsets[index]!;
-    const end = offsets[index + 1]!;
+    const start = offsets[index];
+    const end = offsets[index + 1];
 
     range.setStart(textNode, start);
     range.setEnd(textNode, end);
@@ -1461,7 +1466,7 @@ export const createDOMGeometryKernel = ({
 
       if (!rect) continue;
 
-      const distance = getRectHorizontalDistance(rect as DOMRect, x);
+      const distance = getRectHorizontalDistance(rect, x);
 
       if (!best || distance < best.distance) {
         best = { distance, point: candidate };

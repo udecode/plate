@@ -17,7 +17,9 @@ const getNodeKeyScope = (editor: Editor) => {
   const existing = NODE_KEY_SCOPES.get(editor);
 
   if (existing) return existing;
-  const scope = `r${(nextNodeKeyScope++).toString(36)}`;
+  const scope = `r${nextNodeKeyScope.toString(36)}`;
+
+  nextNodeKeyScope += 1;
 
   NODE_KEY_SCOPES.set(editor, scope);
   return scope;

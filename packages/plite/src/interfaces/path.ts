@@ -1,3 +1,4 @@
+import { getDefined } from '../internal/get-defined';
 /**
  * `Path` arrays are a list of indexes that describe a node's exact position in
  * a Plite node tree. Although they are usually relative to the root `Editor`
@@ -216,7 +217,7 @@ export const PathApi: Readonly<PathInterface> = Object.freeze({
   },
 
   hasPrevious(path: Path): boolean {
-    return path.at(-1)! > 0;
+    return getDefined(path.at(-1)) > 0;
   },
 
   isAfter(path: Path, another: Path): boolean {
@@ -264,8 +265,8 @@ export const PathApi: Readonly<PathInterface> = Object.freeze({
 
     const as = path.slice(0, -1);
     const bs = another.slice(0, -1);
-    const al = path.at(-1)!;
-    const bl = another.at(-1)!;
+    const al = getDefined(path.at(-1));
+    const bl = getDefined(another.at(-1));
     return al !== bl && PathApi.equals(as, bs);
   },
 
@@ -291,7 +292,7 @@ export const PathApi: Readonly<PathInterface> = Object.freeze({
       );
     }
 
-    const last = path.at(-1)!;
+    const last = getDefined(path.at(-1));
     return path.slice(0, -1).concat(last + 1);
   },
 
@@ -310,7 +311,7 @@ export const PathApi: Readonly<PathInterface> = Object.freeze({
       );
     }
 
-    const last = path.at(-1)!;
+    const last = getDefined(path.at(-1));
 
     if (last <= 0) {
       throw new Error(

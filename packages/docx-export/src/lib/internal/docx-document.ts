@@ -1,3 +1,4 @@
+import { failInvariant } from '@platejs/plite/internal';
 import type JSZip from 'jszip';
 import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
@@ -69,9 +70,12 @@ const fontFamilyToTableObject = (
 const getBulletChar = (level: number): string => {
   // Symbol font bullet characters for different levels
   const bullets = [
-    '\uF0B7', // Level 0: Bullet (•)
-    'o', // Level 1: Circle (will render as ○ with Symbol font)
-    '\uF0A7', // Level 2: Square bullet (■)
+    // Level 0: Bullet (•)
+    '\uF0B7',
+    // Level 1: Circle (will render as ○ with Symbol font)
+    'o',
+    // Level 2: Square bullet (■)
+    '\uF0A7',
   ];
   return bullets[level % bullets.length];
 };
@@ -287,7 +291,7 @@ function generateSectionReferenceXML(
 
 function generateXMLString(xmlString: string): string {
   const xmlDocumentString = create(
-    { encoding: 'UTF-8', standalone: true },
+    { encoding: 'utf-8', standalone: true },
     xmlString
   );
 
@@ -300,7 +304,7 @@ async function generateSectionXML(
   type: 'footer' | 'header' = 'header'
 ): Promise<FooterResult | HeaderResult> {
   const sectionXML = create({
-    encoding: 'UTF-8',
+    encoding: 'utf-8',
     standalone: true,
     namespaceAlias: {
       w: namespaces.w,
@@ -335,21 +339,21 @@ async function generateSectionXML(
   }
   sectionXML.root().import(XMLFragment);
 
-  const referenceName = type === 'header' ? 'Header' : 'Footer';
-  const lastIdKey = `last${referenceName}Id` as 'lastFooterId' | 'lastHeaderId';
-  this[lastIdKey] += 1;
-
   if (type === 'header') {
+    this.lastHeaderId += 1;
+
     return {
       headerId: this.lastHeaderId,
       headerXML: sectionXML,
-    } as HeaderResult;
+    };
   }
+
+  this.lastFooterId += 1;
 
   return {
     footerId: this.lastFooterId,
     footerXML: sectionXML,
-  } as FooterResult;
+  };
 }
 
 class DocxDocument {
@@ -496,7 +500,7 @@ class DocxDocument {
 
   generateContentTypesXML(): string {
     const contentTypesXML = create(
-      { encoding: 'UTF-8', standalone: true },
+      { encoding: 'utf-8', standalone: true },
       contentTypesXMLString
     );
 
@@ -516,7 +520,7 @@ class DocxDocument {
 
   generateDocumentXML(): string {
     const documentXML = create(
-      { encoding: 'UTF-8', standalone: true },
+      { encoding: 'utf-8', standalone: true },
       generateDocumentTemplate(
         this.width,
         this.height,
@@ -524,7 +528,12 @@ class DocxDocument {
         this.margins
       )
     );
-    documentXML.root().first().import(this.documentXML!);
+    documentXML
+      .root()
+      .first()
+      .import(
+        this.documentXML ?? failInvariant('Expected value to be defined')
+      );
 
     generateSectionReferenceXML(
       documentXML,
@@ -680,7 +689,7 @@ class DocxDocument {
 
   generateFontTableXML(): string {
     const fontTableXML = create(
-      { encoding: 'UTF-8', standalone: true },
+      { encoding: 'utf-8', standalone: true },
       fontTableXMLString
     );
     const fontNames = [
@@ -701,25 +710,29 @@ class DocxDocument {
           .att('@w', 'name', fontName);
 
         switch (genericFontName) {
-          case 'serif':
+          case 'serif': {
             fontFragment
               .ele('@w', 'altName')
               .att('@w', 'val', 'Times New Roman');
             fontFragment.ele('@w', 'family').att('@w', 'val', 'roman');
             fontFragment.ele('@w', 'pitch').att('@w', 'val', 'variable');
             break;
-          case 'sans-serif':
+          }
+          case 'sans-serif': {
             fontFragment.ele('@w', 'altName').att('@w', 'val', 'Arial');
             fontFragment.ele('@w', 'family').att('@w', 'val', 'swiss');
             fontFragment.ele('@w', 'pitch').att('@w', 'val', 'variable');
             break;
-          case 'monospace':
+          }
+          case 'monospace': {
             fontFragment.ele('@w', 'altName').att('@w', 'val', 'Courier New');
             fontFragment.ele('@w', 'family').att('@w', 'val', 'modern');
             fontFragment.ele('@w', 'pitch').att('@w', 'val', 'fixed');
             break;
-          default:
+          }
+          default: {
             break;
+          }
         }
 
         fontTableXML.root().import(fontFragment);
@@ -735,7 +748,7 @@ class DocxDocument {
 
   generateNumberingXML(): string {
     const numberingXML = create(
-      { encoding: 'UTF-8', standalone: true },
+      { encoding: 'utf-8', standalone: true },
       generateNumberingXMLTemplate()
     );
 
@@ -749,7 +762,7 @@ class DocxDocument {
         .ele('@w', 'abstractNum')
         .att('@w', 'abstractNumId', String(numberingId));
 
-      [...new Array(8).keys()].forEach((level) => {
+      Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
         const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
           .ele('@w', 'lvl')
           .att('@w', 'ilvl', String(level))
@@ -855,7 +868,7 @@ class DocxDocument {
     const relationshipXMLStrings = this.relationships.map(
       ({ fileName, rels }) => {
         const xmlFragment = create(
-          { encoding: 'UTF-8', standalone: true },
+          { encoding: 'utf-8', standalone: true },
           fileName === documentFileName
             ? documentRelsXMLString
             : genericRelsXMLString
@@ -940,26 +953,31 @@ class DocxDocument {
     let relationshipType: string | undefined;
 
     switch (type) {
-      case hyperlinkType:
+      case hyperlinkType: {
         relationshipType = namespaces.hyperlinks;
         break;
-      case imageType:
+      }
+      case imageType: {
         relationshipType = namespaces.images;
         break;
-      case headerFileType:
+      }
+      case headerFileType: {
         relationshipType = namespaces.headers;
         break;
-      case footerFileType:
+      }
+      case footerFileType: {
         relationshipType = namespaces.footers;
         break;
-      case themeFileType:
+      }
+      case themeFileType: {
         relationshipType = namespaces.themes;
         break;
+      }
     }
 
     relationshipObject.rels.push({
       relationshipId: lastRelsId,
-      type: relationshipType!,
+      type: relationshipType ?? failInvariant('Expected value to be defined'),
       target,
       targetMode,
     });

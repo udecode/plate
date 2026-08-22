@@ -29,30 +29,30 @@ class VizMock {
   renderString = graphvizRenderString;
 }
 
-mock.module('mermaid', () => ({
+void mock.module('mermaid', () => ({
   default: {
     initialize: mermaidInitialize,
     render: mermaidRender,
   },
 }));
 
-mock.module('plantuml-encoder', () => ({
+void mock.module('plantuml-encoder', () => ({
   default: {
     encode: plantUmlEncode,
   },
 }));
 
-mock.module('flowchart.js', () => ({
+void mock.module('flowchart.js', () => ({
   default: {
     parse: flowchartParse,
   },
 }));
 
-mock.module('viz.js', () => ({
+void mock.module('viz.js', () => ({
   default: VizMock,
 }));
 
-mock.module('viz.js/full.render', () => ({
+void mock.module('viz.js/full.render', () => ({
   Module: 'module-stub',
   render: 'render-stub',
 }));

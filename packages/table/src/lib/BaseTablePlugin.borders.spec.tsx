@@ -416,7 +416,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const entry = editor.read.nodes.get([0, 1, 1], {
       type: BaseTableCellPlugin,
     });
-    assert(entry);
+    assert.ok(entry);
     const [target] = entry;
 
     expect(getFixtureId(target)).toBe('c22');

@@ -72,7 +72,7 @@ export const stopProcessTree = async (
 ) => {
   if (!child) return;
 
-  const pid = child.pid;
+  const { pid } = child;
 
   signalProcessGroup(child, pid, signal);
   const exited = await waitForExit(child, gracePeriodMs);

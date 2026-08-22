@@ -27,6 +27,7 @@ import type {
   NodeMutationMethods,
   NodeWrapNodesOptions,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -75,7 +76,7 @@ export const wrapNodes = ((
       if (!NodeApi.isDescendant(node)) return;
 
       const parentPath = PathApi.parent(target);
-      const index = target.at(-1)!;
+      const index = getDefined(target.at(-1));
 
       applyBuiltDocumentChange(editor, (builder, root) =>
         builder.replaceChildren(root, parentPath, index, 1, [
@@ -185,7 +186,7 @@ export const wrapNodes = ((
       }
 
       const [first] = matches;
-      const last = matches.at(-1)!;
+      const last = getDefined(matches.at(-1));
       const [, firstPath] = first;
       const [, lastPath] = last;
 
@@ -198,8 +199,8 @@ export const wrapNodes = ((
         : PathApi.common(firstPath, lastPath);
       const depth = commonPath.length + 1;
       const wrapperPath = PathApi.next(lastPath.slice(0, depth));
-      const firstChildIndex = firstPath[commonPath.length]!;
-      const lastChildIndex = lastPath[commonPath.length]!;
+      const firstChildIndex = firstPath[commonPath.length];
+      const lastChildIndex = lastPath[commonPath.length];
       const movePaths = Array.from(
         { length: lastChildIndex - firstChildIndex + 1 },
         (_, offset) => [...commonPath, firstChildIndex + offset]
@@ -221,8 +222,8 @@ export const wrapNodes = ((
               PathApi.equals(path, point.path.slice(0, path.length))
             );
 
-            if (matchIndex < 0) return point;
-            const basePath = movePaths[matchIndex]!;
+            if (matchIndex === -1) return point;
+            const basePath = movePaths[matchIndex];
 
             return {
               path: [
@@ -295,11 +296,11 @@ export const wrapNodes = ((
               PathApi.equals(path, point.path.slice(0, path.length))
             );
 
-            if (matchIndex < 0) {
+            if (matchIndex === -1) {
               return point;
             }
 
-            const basePath = movePaths[matchIndex]!;
+            const basePath = movePaths[matchIndex];
 
             return {
               path: [

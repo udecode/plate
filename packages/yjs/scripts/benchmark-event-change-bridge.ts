@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 
+import { failInvariant } from '@platejs/plite/internal';
+
 import {
   clearYjsTrace,
   createSeededYjsPeers,
@@ -32,13 +34,13 @@ if (!Number.isSafeInteger(sampleCount) || sampleCount < 1) {
 }
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 const summarize = (values: readonly number[]) => {
   const sorted = [...values].sort((left, right) => left - right);
 
   return {
-    max: sorted.at(-1)!,
-    min: sorted[0]!,
+    max: sorted.at(-1) ?? failInvariant('Expected value to be defined'),
+    min: sorted[0],
     p50: percentile(sorted, 0.5),
     p95: percentile(sorted, 0.95),
     p99: percentile(sorted, 0.99),
@@ -46,7 +48,7 @@ const summarize = (values: readonly number[]) => {
   };
 };
 const ratio = (values: readonly number[]) =>
-  Math.max(...values) / Math.max(Math.min(...values), 0.000_001);
+  Math.max(...values) / Math.max(Math.min(...values), 0.000001);
 const corePhaseDurations = new Map<string, number>();
 const corePhaseIds = new Set([
   'build-change',
@@ -120,7 +122,7 @@ const readCorePhaseDurations = () =>
     [...corePhaseDurations].sort(([left], [right]) => left.localeCompare(right))
   );
 const summarizeCorePhaseDurations = (
-  samples: readonly Record<string, number>[]
+  samples: ReadonlyArray<Record<string, number>>
 ) =>
   Object.fromEntries(
     [...corePhaseIds]

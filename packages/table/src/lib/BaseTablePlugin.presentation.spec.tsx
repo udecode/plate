@@ -29,7 +29,7 @@ describe('table presentation', () => {
       const entry = editor.read.nodes.get(path, {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };
@@ -162,7 +162,7 @@ describe('table presentation', () => {
       const entry = editor.read.nodes.get(path, {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };
@@ -388,12 +388,12 @@ describe('table presentation', () => {
     });
     const makeTableElement = (
       columnCount: number,
-      columnWidths?: (number | null)[]
+      columnWidths?: Array<number | null>
     ): TableElement =>
       ({
         children: [
           {
-            children: Array.from({ length: columnCount }).fill({}),
+            children: Array.from({ length: columnCount }, () => ({})),
             type: 'tableRow',
           },
         ],

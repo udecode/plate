@@ -4,6 +4,7 @@ import {
   defineExtension,
 } from '../../../packages/plite/src/index';
 import { getExtensionRegistry } from '../../../packages/plite/src/internal';
+import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>
@@ -22,7 +23,7 @@ const budgets = {
 } as const;
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const summarize = (values: readonly number[]) => {
   const sorted = [...values].sort((left, right) => left - right);
@@ -50,9 +51,9 @@ const createGraph = (
         ...(lifecycle
           ? {
               activate(_editor, context) {
-                lifecycle.activations++;
+                lifecycle.activations += 1;
                 context.onCleanup(() => {
-                  lifecycle.cleanups++;
+                  lifecycle.cleanups += 1;
                 });
               },
             }
@@ -67,7 +68,7 @@ const createGraph = (
 
   return {
     extensions,
-    root: extensions.at(-1)!,
+    root: getDefined(extensions.at(-1)),
   };
 };
 
@@ -174,7 +175,7 @@ const rows = cohorts.map(
   }
 );
 
-const stress = rows.at(-1)!;
+const stress = getDefined(rows.at(-1));
 const budgetRatios = {
   cleanup: stress.cleanupMs.p95 / budgets.reconfigure1000CleanupP95MsExclusive,
   compile: stress.compileMs.p95 / budgets.compile1000P95MsExclusive,

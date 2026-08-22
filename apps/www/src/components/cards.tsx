@@ -56,9 +56,15 @@ export type CardProps = Omit<HTMLAttributes<HTMLElement>, 'title'> & {
   icon?: ReactNode | string;
 };
 
-export function Card({ description, icon, title, ...props }: CardProps) {
-  const E = props.href ? (Link as any) : 'div';
-
+export function Card({
+  children,
+  className,
+  description,
+  href,
+  icon,
+  title,
+  ...props
+}: CardProps) {
   // Resolve icon if it's a string
   let IconComponent: React.ReactNode = null;
   if (typeof icon === 'string') {
@@ -68,16 +74,8 @@ export function Card({ description, icon, title, ...props }: CardProps) {
     IconComponent = icon;
   }
 
-  return (
-    <E
-      {...props}
-      className={cn(
-        '@max-lg:col-span-full block rounded-lg border bg-card p-4 text-card-foreground shadow-md transition-colors',
-        props.href && 'hover:bg-accent/80',
-        props.className
-      )}
-      data-card
-    >
+  const content = (
+    <>
       {IconComponent ? (
         <div className="mb-2 w-fit rounded-md border bg-muted p-1.5 text-muted-foreground [&_svg]:size-4">
           {IconComponent}
@@ -87,11 +85,31 @@ export function Card({ description, icon, title, ...props }: CardProps) {
       {description ? (
         <p className="!my-0 text-sm text-muted-foreground">{description}</p>
       ) : null}
-      {props.children ? (
+      {children ? (
         <div className="text-sm text-muted-foreground **:leading-normal">
-          {props.children}
+          {children}
         </div>
       ) : null}
-    </E>
+    </>
+  );
+
+  const cardClassName = cn(
+    '@max-lg:col-span-full block rounded-lg border bg-card p-4 text-card-foreground shadow-md transition-colors',
+    href && 'hover:bg-accent/80',
+    className
+  );
+
+  if (href) {
+    return (
+      <Link {...props} className={cardClassName} data-card href={href}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div {...props} className={cardClassName} data-card>
+      {content}
+    </div>
   );
 }

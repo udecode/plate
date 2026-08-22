@@ -91,7 +91,20 @@ const isDiffIntent = (value: unknown): value is JsonDiffIntent => {
   return isJsonRecord(newProperties) && isJsonRecord(properties);
 };
 
-const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
+export const formatPropertyValue = (
+  value: PropertyJsonValue | undefined
+): string => {
+  if (typeof value === 'string') return value;
+
+  return value === undefined
+    ? 'undefined'
+    : (JSON.stringify(value) ?? 'undefined');
+};
+
+const describeUpdate = ({
+  newProperties,
+  properties,
+}: Extract<JsonDiffIntent, { type: 'update' }>) => {
   const addedProps: string[] = [];
   const removedProps: string[] = [];
   const updatedProps: string[] = [];
@@ -125,7 +138,7 @@ const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
   if (updatedProps.length > 0) {
     updatedProps.forEach((key) => {
       descriptionParts.push(
-        `Updated ${key} from ${properties[key]} to ${newProperties[key]}`
+        `Updated ${key} from ${formatPropertyValue(properties[key])} to ${formatPropertyValue(newProperties[key])}`
       );
     });
   }
@@ -372,9 +385,9 @@ export default function VersionHistoryDemo() {
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        onValueChange={({ value }) =>
-          setValue(createVersionSnapshot(value.children))
-        }
+        onValueChange={({ value: innerValue }) => {
+          setValue(createVersionSnapshot(innerValue.children));
+        }}
         editor={editor}
       />
 
@@ -382,9 +395,12 @@ export default function VersionHistoryDemo() {
         Revision to compare:
         <select
           className="rounded-md border p-1"
-          onChange={(e) => setSelectedRevisionIndex(Number(e.target.value))}
+          onChange={(e) => {
+            setSelectedRevisionIndex(Number(e.target.value));
+          }}
         >
           {revisions.map((_, i) => (
+            // oxlint-disable-next-line react-doctor/no-array-index-as-key -- [P1 local-invariant] Revisions are append-only snapshots, so creation order is their stable identity in this selector.
             <option key={i} value={i}>
               Revision {i + 1}
             </option>

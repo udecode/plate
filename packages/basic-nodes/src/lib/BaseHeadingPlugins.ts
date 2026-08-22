@@ -70,7 +70,7 @@ export const BaseHeadingPlugin = defineBasePlugin(PLUGINS.heading, {
     }),
 
   render: {
-    nodeProps: ({ element }) => ({ as: `h${element.level}` }),
+    nodeProps: ({ element }) => ({ as: `h${String(element.level)}` }),
   },
   rules,
   update: ({ tx, schema: { type } }) => ({

@@ -24,10 +24,12 @@ type LabEvent = Readonly<{
   key: string | null;
   modifiers: readonly string[];
   targetPath: string | null;
-  targetRanges: readonly Readonly<{
-    endOffset: number;
-    startOffset: number;
-  }>[];
+  targetRanges: ReadonlyArray<
+    Readonly<{
+      endOffset: number;
+      startOffset: number;
+    }>
+  >;
   time: number;
 }>;
 
@@ -55,15 +57,17 @@ type LabExport = Readonly<{
   device: ReturnType<typeof readDeviceMetadata>;
   events: readonly LabEvent[];
   notice: string;
-  replay: readonly Readonly<{
-    data: string | null;
-    family: string;
-    inputType: string | null;
-    isComposing: boolean;
-    key: string | null;
-    modifiers: readonly string[];
-    targetPath: string | null;
-  }>[];
+  replay: ReadonlyArray<
+    Readonly<{
+      data: string | null;
+      family: string;
+      inputType: string | null;
+      isComposing: boolean;
+      key: string | null;
+      modifiers: readonly string[];
+      targetPath: string | null;
+    }>
+  >;
   snapshots: readonly LabSnapshot[];
   version: 1;
 }>;
@@ -85,7 +89,7 @@ const readDeviceMetadata = () => {
   const navigatorRecord = navigator as Navigator & {
     standalone?: boolean;
     userAgentData?: {
-      brands?: readonly Readonly<{ brand: string; version: string }>[];
+      brands?: ReadonlyArray<Readonly<{ brand: string; version: string }>>;
       mobile?: boolean;
       platform?: string;
     };
@@ -217,7 +221,9 @@ export function MobileLabClient() {
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   const storeSnapshot = useCallback((snapshot: LabSnapshot) => {
@@ -240,7 +246,7 @@ export function MobileLabClient() {
   );
 
   useEffect(() => {
-    if (!capturing || !root) return;
+    if (!capturing || !root) return undefined;
 
     const onEvent = (event: Event) => {
       const entry = summarizeEvent(event);
@@ -335,7 +341,9 @@ export function MobileLabClient() {
         <button
           className="rounded border px-3 py-2"
           data-test-id="mobile-lab-capture"
-          onClick={() => setCapturing((value) => !value)}
+          onClick={() => {
+            setCapturing((value) => !value);
+          }}
           type="button"
         >
           {capturing ? 'Pause capture' : 'Resume capture'}
@@ -343,7 +351,9 @@ export function MobileLabClient() {
         <button
           className="rounded border px-3 py-2"
           data-test-id="mobile-lab-snapshot"
-          onClick={() => captureSnapshot('manual')}
+          onClick={() => {
+            captureSnapshot('manual');
+          }}
           type="button"
         >
           Snapshot

@@ -139,7 +139,7 @@ const buildWorkspaceDevWebpackAliases = () =>
 
 const withMDX = createMDX({});
 
-const nextConfig = async (_phase: string) => {
+const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
     distDir: isPliteMode ? '.next-plite' : '.next',
@@ -197,7 +197,7 @@ const nextConfig = async (_phase: string) => {
 
     transpilePackages: ['ts-morph'],
 
-    async redirects() {
+    redirects() {
       return [
         {
           destination: '/docs/releases',
@@ -286,7 +286,7 @@ const nextConfig = async (_phase: string) => {
       ];
     },
 
-    async rewrites() {
+    rewrites() {
       return [
         {
           destination: '/llm',
@@ -311,15 +311,15 @@ const nextConfig = async (_phase: string) => {
       ];
     },
 
-    webpack: (config) => {
+    webpack: (innerConfig) => {
       if (isDev) {
-        config.resolve.alias = {
-          ...config.resolve.alias,
+        innerConfig.resolve.alias = {
+          ...innerConfig.resolve.alias,
           ...buildWorkspaceDevWebpackAliases(),
         };
       }
 
-      return config;
+      return innerConfig;
     },
   };
 

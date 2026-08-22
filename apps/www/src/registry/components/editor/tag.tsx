@@ -28,16 +28,12 @@ export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
         'flex items-center gap-1.5'
       )}
     >
-      {element.value as string}
+      {element.value}
     </div>
   );
 
   const content =
-    readOnly && element.url ? (
-      <Link href={element.url as string}>{badge}</Link>
-    ) : (
-      badge
-    );
+    readOnly && element.url ? <Link href={element.url}>{badge}</Link> : badge;
 
   return (
     <PlateElement

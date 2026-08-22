@@ -5,6 +5,7 @@ import type {
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
+import { getDefined } from '../internal/get-defined';
 import {
   assignFreshNodeKey,
   getOrCreateNodeKey,
@@ -26,10 +27,9 @@ import {
 } from './change/tokens';
 import { profileCoreDuration } from './profiling';
 
-const EMPTY_ENTRIES = Object.freeze([]) as readonly (readonly [
-  NodeKey,
-  Path,
-])[];
+const EMPTY_ENTRIES = Object.freeze([]) as ReadonlyArray<
+  readonly [NodeKey, Path]
+>;
 export type InternalEditorRuntimeElementEntry = Readonly<{
   path: Path;
   nodeKey: NodeKey;
@@ -102,14 +102,18 @@ const createElementEntryQuery = (
 
 export const pathKey = (path: Path) => {
   switch (path.length) {
-    case 0:
+    case 0: {
       return '';
-    case 1:
+    }
+    case 1: {
       return String(path[0]);
-    case 2:
+    }
+    case 2: {
       return `${path[0]}.${path[1]}`;
-    default:
+    }
+    default: {
       return path.join('.');
+    }
   }
 };
 
@@ -126,7 +130,7 @@ export const buildSnapshotIndex = (
     pathPrefix: Path
   ) => {
     nodes.forEach((node, index) => {
-      const path = Object.freeze([...pathPrefix, index]) as Path;
+      const path = Object.freeze([...pathPrefix, index]);
 
       if ('children' in node && Array.isArray(node.children)) {
         if (typeof node.type === 'string') {
@@ -141,7 +145,7 @@ export const buildSnapshotIndex = (
   };
 
   collectElementPaths(children, parentPath);
-  let materializedEntries: readonly (readonly [NodeKey, Path])[] | undefined;
+  let materializedEntries: ReadonlyArray<readonly [NodeKey, Path]> | undefined;
   let activeChildren: readonly Descendant[] | null = children;
   const cache = (nodeKey: NodeKey, path: Path) => {
     const key = pathKey(path);
@@ -159,7 +163,7 @@ export const buildSnapshotIndex = (
       );
     }
 
-    const frozenPath = Object.freeze([...path]) as Path;
+    const frozenPath = Object.freeze([...path]);
 
     idToPathCache.set(nodeKey, frozenPath);
     pathToIdCache.set(key, nodeKey);
@@ -208,7 +212,7 @@ export const buildSnapshotIndex = (
         });
       };
 
-      visit(activeChildren!, parentPath);
+      visit(getDefined(activeChildren), parentPath);
       materializedEntries = Object.freeze(entries);
       activeChildren = null;
 
@@ -410,11 +414,11 @@ const compactMappingSegments = (
 
   if (
     segments.length > 1 &&
-    segments.at(-1)!.change === null &&
-    segments.at(-2)!.change === null
+    getDefined(segments.at(-1)).change === null &&
+    getDefined(segments.at(-2)).change === null
   ) {
-    const right = segments.pop()!;
-    const left = segments.pop()!;
+    const right = getDefined(segments.pop());
+    const left = getDefined(segments.pop());
 
     segments.push(
       createPathStableMappingSegment(
@@ -433,9 +437,9 @@ const compactMappingSegments = (
   // are barriers because token positions can change across them.
   while (
     segments.length > 1 &&
-    segments.at(-1)!.span === segments.at(-2)!.span &&
-    segments.at(-1)!.change !== null &&
-    segments.at(-2)!.change !== null
+    getDefined(segments.at(-1)).span === getDefined(segments.at(-2)).span &&
+    getDefined(segments.at(-1)).change !== null &&
+    getDefined(segments.at(-2)).change !== null
   ) {
     const right = segments.pop() as StructuralSnapshotIndexMappingSegment;
     const left = segments.pop() as StructuralSnapshotIndexMappingSegment;
@@ -532,8 +536,8 @@ const positionWasReplaced = (
   let after = 0;
 
   for (let index = 0; index < change.sections.length; index += 2) {
-    const length = change.sections[index]!;
-    const inserted = change.sections[index + 1]!;
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
     const outputLength = inserted < 0 ? length : inserted;
 
     if (
@@ -711,8 +715,12 @@ const preparedRuntimePlacementsFromSegment = (
     sectionIndex < segment.change.sections.length;
     dataIndex++
   ) {
-    const length = segment.change.sections[sectionIndex++]!;
-    const inserted = segment.change.sections[sectionIndex++]!;
+    const length = segment.change.sections[sectionIndex];
+
+    sectionIndex += 1;
+    const inserted = segment.change.sections[sectionIndex];
+
+    sectionIndex += 1;
     const data = segment.change.data[dataIndex];
     const outputLength = inserted < 0 ? length : inserted;
 
@@ -737,7 +745,7 @@ const preparedRuntimePlacementsFromSegment = (
           placements.push(
             Object.freeze({
               index: boundary.index,
-              parentPath: Object.freeze([...boundary.parentPath]) as Path,
+              parentPath: Object.freeze([...boundary.parentPath]),
               segments: Object.freeze([]),
               slice: data,
             })
@@ -788,7 +796,7 @@ const preparedLocalPath = (
   ) {
     return null;
   }
-  const rootIndex = originPath[placement.parentPath.length]! - placement.index;
+  const rootIndex = originPath[placement.parentPath.length] - placement.index;
   const prepared = getPreparedDocumentSlice(placement.slice);
 
   if (!prepared || rootIndex < 0 || rootIndex >= prepared.nodes.length) {
@@ -819,7 +827,7 @@ const mapPreparedPathBackward = (
   let current: Path | null = path;
 
   for (let index = placement.segments.length - 1; index >= 0; index--) {
-    current = mapPathBackward(placement.segments[index]!, current);
+    current = mapPathBackward(placement.segments[index], current);
     if (!current) return null;
   }
 
@@ -828,7 +836,7 @@ const mapPreparedPathBackward = (
 
 const comparePaths = (left: Path, right: Path) => {
   for (let index = 0; index < Math.min(left.length, right.length); index++) {
-    const difference = left[index]! - right[index]!;
+    const difference = left[index] - right[index];
 
     if (difference !== 0) return difference;
   }
@@ -840,7 +848,7 @@ const orderPaths = (paths: Iterable<Path>) => {
   const ordered = [...paths];
 
   for (let index = 1; index < ordered.length; index++) {
-    if (comparePaths(ordered[index - 1]!, ordered[index]!) > 0) {
+    if (comparePaths(ordered[index - 1], ordered[index]) > 0) {
       return ordered.sort(comparePaths);
     }
   }
@@ -866,7 +874,7 @@ const collectChangedElementPaths = (
           Array.isArray(node.children) &&
           typeof node.type === 'string'
         ) {
-          const frozenPath = Object.freeze([...path]) as Path;
+          const frozenPath = Object.freeze([...path]);
 
           paths.set(
             pathKey(frozenPath),
@@ -964,10 +972,8 @@ const mapChangedNodeKeys = (
     : [];
 
   for (const relocation of relocations) {
-    sourcePaths.set(pathKey(relocation.path as Path), [...relocation.path]);
-    targetPaths.set(pathKey(relocation.targetPath as Path), [
-      ...relocation.targetPath,
-    ]);
+    sourcePaths.set(pathKey(relocation.path), [...relocation.path]);
+    targetPaths.set(pathKey(relocation.targetPath), [...relocation.targetPath]);
   }
 
   const orderedSources = orderPaths(sourcePaths.values());
@@ -1007,8 +1013,12 @@ const mapChangedNodeKeys = (
     sectionIndex < segment.change.sections.length;
     dataIndex++
   ) {
-    const length = segment.change.sections[sectionIndex++]!;
-    const inserted = segment.change.sections[sectionIndex++]!;
+    const length = segment.change.sections[sectionIndex];
+
+    sectionIndex += 1;
+    const inserted = segment.change.sections[sectionIndex];
+
+    sectionIndex += 1;
     const outputLength = inserted < 0 ? length : inserted;
     const data = segment.change.data[dataIndex];
 
@@ -1136,7 +1146,7 @@ const mapChangedNodeKeys = (
     if (continuations.length !== 1) continue;
     const nodeKey = index.keyAt(sourcePath);
 
-    if (nodeKey) claim(nodeKey, continuations[0]!);
+    if (nodeKey) claim(nodeKey, continuations[0]);
   }
 
   // Transforms can explicitly transfer a node key to the semantic
@@ -1247,7 +1257,7 @@ const queryMappedElementEntries = (
         typeof node.type === 'string' &&
         requested.has(node.type)
       ) {
-        const frozenPath = Object.freeze([...path]) as Path;
+        const frozenPath = Object.freeze([...path]);
 
         paths.set(
           pathKey(frozenPath),
@@ -1334,11 +1344,11 @@ export const mapSnapshotIndexThroughChange = (
   const { descriptor, segments } = profileCoreDuration(
     'runtime-index-map-descriptor',
     () => {
-      const segments = compactMappingSegments(
+      const innerSegments = compactMappingSegments(
         previous?.segments ?? [],
         segment
       );
-      const descriptor: MappedSnapshotIndexDescriptor = Object.freeze({
+      const innerDescriptor: MappedSnapshotIndexDescriptor = Object.freeze({
         base: previous?.base ?? index,
         discardedNodeKeys: new Set([
           ...(previous?.discardedNodeKeys ?? []),
@@ -1351,10 +1361,10 @@ export const mapSnapshotIndexThroughChange = (
           ),
           ...newPreparedRuntimePlacements,
         ]),
-        segments,
+        segments: innerSegments,
       });
 
-      return { descriptor, segments };
+      return { descriptor: innerDescriptor, segments: innerSegments };
     }
   );
   const previousElementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
@@ -1375,7 +1385,7 @@ export const mapSnapshotIndexThroughChange = (
         Array.isArray(node.children) &&
         typeof node.type === 'string'
       ) {
-        const frozenPath = Object.freeze([...path]) as Path;
+        const frozenPath = Object.freeze([...path]);
 
         additions.set(
           pathKey(frozenPath),
@@ -1405,9 +1415,8 @@ export const mapSnapshotIndexThroughChange = (
   const materializedElementPathsByType = new Map<string, ElementPathEntry[]>();
   let activeDescriptor: MappedSnapshotIndexDescriptor | null = descriptor;
   let activeSegments: readonly SnapshotIndexMappingSegment[] | null = segments;
-  let currentDocument: DocumentIndex | null = segments.at(-1)!.after;
-  let materializedEntries: readonly (readonly [NodeKey, Path])[] | undefined;
-  // oxlint-disable-next-line prefer-const -- Index helpers close over the frozen index assigned after construction.
+  let currentDocument: DocumentIndex | null = getDefined(segments.at(-1)).after;
+  let materializedEntries: ReadonlyArray<readonly [NodeKey, Path]> | undefined;
   let mappedIndex: SnapshotIndex;
 
   const nodeAt = (path: Path) => {
@@ -1418,7 +1427,7 @@ export const mapSnapshotIndexThroughChange = (
     }
   };
   const cache = (nodeKey: NodeKey, path: Path) => {
-    const frozenPath = Object.freeze([...path]) as Path;
+    const frozenPath = Object.freeze([...path]);
     const existingPath = idToPathCache.get(nodeKey);
     const existingNodeKey = pathToIdCache.get(pathKey(frozenPath));
 
@@ -1451,8 +1460,8 @@ export const mapSnapshotIndexThroughChange = (
   const targetPathFor = (path: Path) => {
     let targetPath: Path | null = path;
 
-    for (const segment of activeSegments!) {
-      targetPath = mapPathForward(segment, targetPath);
+    for (const innerSegment of getDefined(activeSegments)) {
+      targetPath = mapPathForward(innerSegment, targetPath);
 
       if (!targetPath) return null;
     }
@@ -1462,8 +1471,15 @@ export const mapSnapshotIndexThroughChange = (
   const sourcePathFor = (path: Path) => {
     let sourcePath: Path | null = path;
 
-    for (let index = activeSegments!.length - 1; index >= 0; index--) {
-      sourcePath = mapPathBackward(activeSegments![index]!, sourcePath);
+    for (
+      let innerIndex = getDefined(activeSegments).length - 1;
+      innerIndex >= 0;
+      innerIndex--
+    ) {
+      sourcePath = mapPathBackward(
+        getDefined(activeSegments)[innerIndex],
+        sourcePath
+      );
 
       if (!sourcePath) return null;
     }
@@ -1471,7 +1487,8 @@ export const mapSnapshotIndexThroughChange = (
     return sourcePath;
   };
   const preparedNodeKeyAtPath = (path: Path, node: Descendant) => {
-    for (const placement of activeDescriptor!.preparedRuntimePlacements) {
+    for (const placement of getDefined(activeDescriptor)
+      .preparedRuntimePlacements) {
       const originPath = mapPreparedPathBackward(placement, path);
       const localPath = originPath
         ? preparedLocalPath(placement, originPath)
@@ -1493,7 +1510,8 @@ export const mapSnapshotIndexThroughChange = (
   const preparedPathForNodeKey = (nodeKey: NodeKey) => {
     if (!nodeKey.startsWith('p')) return null;
 
-    for (const placement of activeDescriptor!.preparedRuntimePlacements) {
+    for (const placement of getDefined(activeDescriptor)
+      .preparedRuntimePlacements) {
       const localPath = getPreparedDocumentRuntimePath(
         placement.slice,
         nodeKey
@@ -1555,7 +1573,7 @@ export const mapSnapshotIndexThroughChange = (
       : availableAtPath(preparedNodeKeyAtPath(path, node as Descendant));
     const sourcePath = existing || preparedNodeKey ? null : sourcePathFor(path);
     const inheritedNodeKey = availableAtPath(
-      sourcePath ? activeDescriptor!.base.keyAt(sourcePath) : null
+      sourcePath ? getDefined(activeDescriptor).base.keyAt(sourcePath) : null
     );
     const nodeKey =
       existing ??
@@ -1615,7 +1633,7 @@ export const mapSnapshotIndexThroughChange = (
       });
     };
 
-    visit(currentDocument!.value as readonly Descendant[], []);
+    visit(getDefined(currentDocument).value as readonly Descendant[], []);
     materializedEntries = Object.freeze(entries);
     SNAPSHOT_ELEMENT_ENTRIES.set(
       mappedIndex,
@@ -1654,7 +1672,7 @@ export const mapSnapshotIndexThroughChange = (
         getNodeKeyForNode(node, editor) === nodeKey &&
         !discarded.has(nodeKey)
       ) {
-        return cache(nodeKey, targetPath!);
+        return cache(nodeKey, getDefined(targetPath));
       }
     }
 

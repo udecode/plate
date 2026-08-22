@@ -7,7 +7,6 @@ import {
   Code2,
   Copy,
   FileText,
-  Github,
   Sparkles,
 } from 'lucide-react';
 import type { ComponentPropsWithoutRef, Ref } from 'react';
@@ -29,6 +28,8 @@ import { Separator } from '@/components/ui/separator';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { getPlateLLMPromptUrl } from '@/lib/llm';
 import { cn } from '@/lib/utils';
+
+import { Icons } from './icons';
 
 const getMarkdownUrl = (url: string) => `${url}.md`;
 
@@ -83,7 +84,7 @@ const menuItems = [
   },
   {
     getHref: ({ url }: DocsCopyPageItemContext) => getGitHubDiscussionUrl(url),
-    icon: Github,
+    icon: Icons.gitHub,
     key: 'github',
     label: 'Ask in GitHub',
   },
@@ -164,7 +165,9 @@ export function DocsCopyPage({
           size="sm"
           variant="secondary"
           className="h-8 shadow-none md:h-7 md:text-[0.8rem]"
-          onClick={() => copyToClipboard(page)}
+          onClick={() => {
+            copyToClipboard(page);
+          }}
         >
           {isCopied ? <Check /> : <Copy />}
           Copy Page

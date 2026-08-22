@@ -4,7 +4,7 @@ You are rewriting release notes for Plate, an open-source rich-text editor frame
 
 ## Input
 
-**Raw changelog:** **RAW_CHANGELOG_PATH**
+**Raw changelog:** `__RAW_CHANGELOG_PATH__`
 
 The raw changelog is generated from Changesets package changelogs after publish. It is grouped by npm package and change type.
 
@@ -32,4 +32,4 @@ Rewrite each entry into a polished, user-focused release note while preserving t
 - Preserve all PR links in the raw changelog.
 - Preserve all migration-note blocks.
 
-Write the final release notes to: **RAW_CHANGELOG_PATH**.final
+Write the final release notes to: `__RAW_CHANGELOG_PATH__.final`

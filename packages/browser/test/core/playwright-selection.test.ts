@@ -181,7 +181,7 @@ describe('playwright selection snapshots', () => {
 
     (root as any).__pliteBrowserHandle = {
       getSelection: () => {
-        reads++;
+        reads += 1;
         return selection;
       },
     };

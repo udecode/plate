@@ -1197,7 +1197,7 @@ test('selection reconciler collapses an endpoint-equal expanded DOM range to the
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
 
     act(() => {
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 
@@ -1210,7 +1210,7 @@ test('selection reconciler collapses an endpoint-equal expanded DOM range to the
       editor.update((tx) => {
         tx.text.insert('x', { at: { offset: 0, path: [1, 0] } });
       });
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 
@@ -1288,7 +1288,7 @@ test('selection reconciler clears native selection for a model-only projection',
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
 
     act(() => {
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 
@@ -1306,7 +1306,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
-  const state = runtime.state;
+  const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
@@ -1360,7 +1360,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
     });
 
     act(() => {
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 
@@ -1383,7 +1383,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
-  const state = runtime.state;
+  const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
@@ -1435,12 +1435,12 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
       endOffset: 4,
       startContainer: textNode,
       startOffset: 4,
-    } as unknown as Range);
+    });
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
     const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
 
     act(() => {
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 
@@ -1457,7 +1457,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
-  const state = runtime.state;
+  const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
@@ -1523,7 +1523,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     const resolveDOMRange = vi.spyOn(ReactEditor, 'resolveDOMRange');
 
     act(() => {
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 
@@ -1616,12 +1616,70 @@ test('DOM coverage selection materializes every covered materialize boundary wit
   }
 });
 
+test('forced DOM coverage export rebuilds a fresh native range', () => {
+  const editor = createReactEditor();
+  const textNode = document.createTextNode('abc');
+  const domRange = document.createRange();
+
+  domRange.setStart(textNode, 0);
+  domRange.setEnd(textNode, 2);
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+  DOMCoverage.registerBoundary(editor, {
+    anchor: { type: 'placeholder' },
+    boundaryId: 'covered-paragraph',
+    copyPolicy: 'model',
+    coveredPathRanges: [{ kind: 'text', anchor: [0], focus: [0] }],
+    coveredRuntimeRanges: [],
+    findPolicy: 'native',
+    ownerPath: [],
+    ownerNodeKey: null,
+    reason: 'app-hidden',
+    selectionPolicy: 'skip',
+    state: 'intentionally-hidden',
+    version: 1,
+  });
+
+  const domSelection = document.getSelection();
+  const selection = editorGetSelection(editor);
+
+  try {
+    if (!domSelection || !selection) {
+      throw new Error('Expected document and editor selection');
+    }
+
+    vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue(domRange);
+    const addRange = vi.spyOn(domSelection, 'addRange');
+    const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+
+    expect(
+      applyDOMCoverageSelectionPolicy({
+        domSelection,
+        editor,
+        forceDOMRangeRebuild: true,
+        selection,
+      })
+    ).toBe(true);
+    expect(addRange).toHaveBeenCalledWith(domRange);
+    expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 2);
+  } finally {
+    DOMCoverage.clear(editor);
+    vi.restoreAllMocks();
+  }
+});
+
 test('selection reconciler preserves visible anchor text across DOM coverage boundaries', () => {
   vi.useFakeTimers();
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
-  const state = runtime.state;
+  const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
@@ -1710,8 +1768,12 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
       throw new Error('Expected rendered text and document selection');
     }
 
-    const [firstNode] = editor.read((state) => state.nodes.get([0, 0]));
-    const [secondNode] = editor.read((state) => state.nodes.get([2, 0]));
+    const [firstNode] = editor.read((innerState) =>
+      innerState.nodes.get([0, 0])
+    );
+    const [secondNode] = editor.read((innerState2) =>
+      innerState2.nodes.get([2, 0])
+    );
     const keyToElement = new WeakMap();
 
     EDITOR_TO_ELEMENT.set(editor, root);
@@ -1735,7 +1797,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
 
     act(() => {
-      renderTick++;
+      renderTick += 1;
       rerender(<Harness />);
     });
 

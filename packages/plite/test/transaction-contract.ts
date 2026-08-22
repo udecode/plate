@@ -62,7 +62,7 @@ const installCommandExtension = <Input>(
   handler: EditorCommandAroundHandler<Input>
 ) =>
   editor.install(
-    defineExtension(`test-command-${commandExtensionOrder++}`, {
+    defineExtension(`test-command-${(commandExtensionOrder += 1) - 1}`, {
       commands: ({ around }) => [around(command, handler)],
     })
   );
@@ -133,7 +133,7 @@ describe('plite transaction contract', () => {
 
   it('internal transaction keeps direct replacement draft-visible and publishes once on exit', () => {
     const editor = createEditor();
-    const publishedStates: ReturnType<typeof getVisibleState>[] = [];
+    const publishedStates: Array<ReturnType<typeof getVisibleState>> = [];
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
 
@@ -182,7 +182,7 @@ describe('plite transaction contract', () => {
 
   it('keeps node-key multi-node replacement atomic until commit and discardable', () => {
     const editor = createEditor();
-    const publishedStates: ReturnType<typeof getVisibleState>[] = [];
+    const publishedStates: Array<ReturnType<typeof getVisibleState>> = [];
     const normalizedPaths: string[] = [];
 
     replaceChildren(editor, [
@@ -254,7 +254,8 @@ describe('plite transaction contract', () => {
     ]);
 
     const discardEditor = createEditor();
-    const discardPublishedStates: ReturnType<typeof getVisibleState>[] = [];
+    const discardPublishedStates: Array<ReturnType<typeof getVisibleState>> =
+      [];
 
     replaceChildren(discardEditor, [
       paragraph('before'),
@@ -414,7 +415,8 @@ describe('plite transaction contract', () => {
 
   it('passes explicit commit metadata through subscribers', () => {
     const editor = createEditor();
-    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
+      [];
 
     replaceChildren(editor, [paragraph('one')]);
 
@@ -485,12 +487,12 @@ describe('plite transaction contract', () => {
     replaceChildren(editor, [paragraph('one')]);
 
     const observations: Array<{
-      paths: readonly import('@platejs/plite').Path[];
+      paths: ReadonlyArray<import('@platejs/plite').Path>;
       properties: boolean;
-      ranges: readonly {
+      ranges: ReadonlyArray<{
         after: readonly [number, number] | null;
         before: readonly [number, number] | null;
-      }[];
+      }>;
       structure: boolean;
       text: boolean;
     }> = [];
@@ -547,7 +549,7 @@ describe('plite transaction contract', () => {
         paragraph(`row-${index}`)
       ),
     });
-    const paths: import('@platejs/plite').Path[] = [];
+    const paths: Array<import('@platejs/plite').Path> = [];
     const ranges: Array<{
       after: readonly [number, number] | null;
       before: readonly [number, number] | null;
@@ -579,7 +581,7 @@ describe('plite transaction contract', () => {
 
   it('transaction mutation groups publish once', () => {
     const editor = createEditor();
-    const publishedStates: ReturnType<typeof getVisibleState>[] = [];
+    const publishedStates: Array<ReturnType<typeof getVisibleState>> = [];
 
     replaceChildren(editor, [paragraph('one')]);
 
@@ -626,7 +628,7 @@ describe('plite transaction contract', () => {
       assert.deepEqual(getMarks(editor), {});
     });
 
-    const selection = editorGetSnapshot(editor).selection;
+    const { selection } = editorGetSnapshot(editor);
 
     assert.equal(SelectionApi.isText(selection), true);
     assert.deepEqual(SelectionApi.isText(selection) ? selection.marks : null, {
@@ -1508,7 +1510,8 @@ describe('plite transaction contract', () => {
     const editor = createEditor();
     let cleanupCalls = 0;
     let signal: AbortSignal | null = null;
-    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
+      [];
 
     replaceChildren(editor, [paragraph('one')]);
     selectEditor(editor, {
@@ -1519,7 +1522,7 @@ describe('plite transaction contract', () => {
     const unextend = editor.install(
       defineExtension('lifecycle-extension', {
         activate: (context) => {
-          signal = context.signal;
+          ({ signal } = context);
           context.onCleanup(() => {
             cleanupCalls += 1;
           });
@@ -1680,7 +1683,7 @@ describe('plite transaction contract', () => {
     dispatchCommand(editor, editorCommands.replaceSlice, {
       slice: rawSlice,
     });
-    content[0]!.children[0] = { text: 'mutated' };
+    content[0].children[0] = { text: 'mutated' };
     unsubscribe();
 
     assert.deepEqual(receivedSlice, {
@@ -1711,7 +1714,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     editor.update.slice.replace(ContentSlice.closed([{ text: '1' }]));
     assert.equal(commands, 1);
@@ -1735,12 +1738,12 @@ describe('plite transaction contract', () => {
 
   it('delivers command-backed commits to extension commit listeners and preserves subscribe behavior', () => {
     const editor = createEditor();
-    const extensionCommits: NonNullable<
-      ReturnType<typeof editorGetLastCommit>
-    >[] = [];
-    const subscribedCommits: NonNullable<
-      ReturnType<typeof editorGetLastCommit>
-    >[] = [];
+    const extensionCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
+    const subscribedCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
 
     replaceChildren(editor, [paragraph('one')]);
     selectEditor(editor, {

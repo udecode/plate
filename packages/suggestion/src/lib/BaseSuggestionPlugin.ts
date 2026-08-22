@@ -199,7 +199,7 @@ type SetSuggestionNodesOptions = {
   createdAt?: number;
   includeInlineElements?: boolean;
   suggestionId?: string;
-} & NodeSetNodesOptions<Node>;
+} & NodeSetNodesOptions;
 
 const suggestionUntrackedDepth = new WeakMap<BaseEditor, number>();
 
@@ -305,7 +305,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             ...decoration,
           }),
         encode: ({ node }) => {
-          if (!TextApi.isText(node)) return;
+          if (!TextApi.isText(node)) return undefined;
 
           return {
             attributes: [],
@@ -419,7 +419,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       const inlineData = (node: InlineSuggestionProperties) => {
         const nodeKey = keyId(node);
 
-        if (!nodeKey) return;
+        if (!nodeKey) return undefined;
 
         const value = Reflect.get(node, nodeKey);
 
@@ -447,10 +447,14 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         }
 
         if (isBlockSuggestion(node)) return node.suggestion.id;
+
+        return undefined;
       };
       const suggestionData = (node: Node) => {
         if (isInlineSuggestion(node)) return inlineData(node);
         if (isBlockSuggestion(node)) return node.suggestion;
+
+        return undefined;
       };
       const skipDeletes = (node: Node): string => {
         if (
@@ -472,19 +476,19 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       const getProps: BaseSuggestionApi['getProps'] = (
         node,
         {
-          id = nanoid(),
+          id: innerId = nanoid(),
           createdAt = Date.now(),
           suggestionDeletion,
           suggestionUpdate,
           transient,
         } = {}
       ) => {
-        const currentUserId = store.get().currentUserId;
+        const { currentUserId } = store.get();
 
         if (currentUserId === null) return {};
 
         const suggestion = {
-          id,
+          id: innerId,
           createdAt,
           type: suggestionDeletion
             ? 'remove'
@@ -500,7 +504,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         }
 
         return {
-          [key(id)]: suggestion,
+          [key(innerId)]: suggestion,
           [suggestionKey]: true,
           ...(transient ? { [SUGGESTION_TRANSIENT_KEY]: true } : {}),
         };
@@ -552,18 +556,18 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             if (ElementApi.isElement(node)) {
               if (typeof node.type !== 'string') continue;
 
-              for (const key of Object.keys(node)) {
-                if (key === 'children' || key === 'type') continue;
+              for (const innerKey of Object.keys(node)) {
+                if (innerKey === 'children' || innerKey === 'type') continue;
 
                 if (
                   editor.read.schema.property({
                     ancestors,
-                    key,
+                    key: innerKey,
                     placement: 'element',
                     type: node.type,
                   })?.role === 'metadata'
                 ) {
-                  ignoredProperties.add(key);
+                  ignoredProperties.add(innerKey);
                 }
               }
               collectMetadataKeys(node.children, [node.type, ...ancestors]);
@@ -573,18 +577,18 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             const parentType = ancestors[0];
 
             if (!parentType) continue;
-            for (const key of Object.keys(node)) {
-              if (key === 'text') continue;
+            for (const innerKey2 of Object.keys(node)) {
+              if (innerKey2 === 'text') continue;
 
               if (
                 editor.read.schema.property({
                   ancestors: ancestors.slice(1),
-                  key,
+                  key: innerKey2,
                   placement: 'text',
                   type: parentType,
                 })?.role === 'metadata'
               ) {
-                ignoredProperties.add(key);
+                ignoredProperties.add(innerKey2);
               }
             }
           }
@@ -638,8 +642,8 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       }
 
       return {
-        createFragment: (fragment, { createdAt, id }) => {
-          const currentUserId = store.get().currentUserId;
+        createFragment: (fragment, { createdAt, id: innerId2 }) => {
+          const { currentUserId } = store.get();
 
           if (currentUserId === null) {
             return fragment.map((source) => ({ ...source }));
@@ -655,8 +659,8 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
               keys(node).forEach((nodeKey) => {
                 delete node[nodeKey];
               });
-              node[key(id)] = {
-                id,
+              node[key(innerId2)] = {
+                id: innerId2,
                 createdAt,
                 type: 'insert',
                 userId: currentUserId,
@@ -668,7 +672,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return {
               ...source,
               suggestion: {
-                id,
+                id: innerId2,
                 createdAt,
                 type: 'insert',
                 userId: currentUserId,
@@ -711,11 +715,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         userId: (node) =>
           keys(node)
             .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
-            .find((id): id is string => typeof id === 'string'),
+            .find(
+              (innerId3): innerId3 is string => typeof innerId3 === 'string'
+            ),
         userIds: (node) =>
           keys(node)
             .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
-            .filter((id): id is string => typeof id === 'string'),
+            .filter(
+              (innerId4): innerId4 is string => typeof innerId4 === 'string'
+            ),
       };
     },
   })
@@ -793,7 +801,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         if (!entry) {
           const edges = state.ranges.edges(at);
 
-          if (!edges) return;
+          if (!edges) return undefined;
 
           const [start, end] = edges;
           const nextPoint = state.points.after(end);
@@ -855,6 +863,8 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return { createdAt: identity.createdAt, id: identity.id };
           }
         }
+
+        return undefined;
       };
 
       return {
@@ -978,9 +988,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       const setNodes = (
         options: SetSuggestionNodesOptions = {}
       ): string | undefined => {
-        const currentUserId = store.get().currentUserId;
+        const { currentUserId } = store.get();
 
-        if (currentUserId === null) return;
+        if (currentUserId === null) return undefined;
 
         const {
           createdAt = Date.now(),
@@ -988,9 +998,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           suggestionId = nanoid(),
           ...nodeOptions
         } = options ?? {};
-        const at = (nodeOptions.at ?? tx.selection()) as Location | null;
+        const at = nodeOptions.at ?? tx.selection();
 
-        if (!at) return;
+        if (!at) return undefined;
 
         const queryAt = RangeApi.isRange(at)
           ? { anchor: RangeApi.start(at), focus: RangeApi.end(at) }
@@ -1014,7 +1024,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         };
 
         props[api.key(suggestionId)] = suggestion;
-        const matchTextOutsideInline: NodeSetNodesOptions<Node>['match'] = (
+        const matchTextOutsideInline: NodeSetNodesOptions['match'] = (
           node,
           path
         ) => {
@@ -1057,9 +1067,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           unit = 'character',
         }: DeleteSuggestionOptions = {}
       ): string | undefined => {
-        const currentUserId = store.get().currentUserId;
+        const { currentUserId } = store.get();
 
-        if (currentUserId === null) return;
+        if (currentUserId === null) return undefined;
 
         const getInlineEntryAt = (point: Point) =>
           tx.nodes.above({
@@ -1069,13 +1079,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           });
         const getAdjacentInlineVoidEntry = (
           point: Point,
-          { reverse }: { reverse?: boolean }
+          { reverse: innerReverse }: { reverse?: boolean }
         ) => {
           const index = point.path.at(-1);
 
-          if (index === undefined || (reverse && index === 0)) return;
+          if (index === undefined || (innerReverse && index === 0)) {
+            return undefined;
+          }
 
-          const adjacentPath = reverse
+          const adjacentPath = innerReverse
             ? PathApi.previous(point.path)
             : PathApi.next(point.path);
           const entry = tx.nodes.get(adjacentPath);
@@ -1088,16 +1100,18 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           ) {
             return entry;
           }
+
+          return undefined;
         };
         const isBoundaryPoint = (
           point: Point,
-          { reverse }: { reverse?: boolean }
+          { reverse: innerReverse2 }: { reverse?: boolean }
         ) => {
           const range = tx.ranges.get(point.path);
 
           if (!range) return false;
 
-          return reverse
+          return innerReverse2
             ? tx.points.isStart(point, range)
             : tx.points.isEnd(point, range);
         };
@@ -1334,15 +1348,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         moveSelection = false,
         reverse,
       }: DeleteSuggestionFragmentOptions = {}): string | undefined => {
-        if (store.get().currentUserId === null) return;
+        if (store.get().currentUserId === null) return undefined;
 
         const selection = tx.selection();
 
-        if (!selection) return;
+        if (!selection) return undefined;
 
         const edges = tx.ranges.edges(selection);
 
-        if (!edges) return;
+        if (!edges) return undefined;
 
         const [start, end] = edges;
 
@@ -1363,8 +1377,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         );
       };
       return {
-        clearTransient: (options?: EditorNodeUnsetOptions<Node>) =>
-          tx.nodes.unset(context.schema.properties.transientElement, options),
+        clearTransient: (options?: EditorNodeUnsetOptions<Node>) => {
+          tx.nodes.unset(context.schema.properties.transientElement, options);
+        },
         accept: (description: ResolvedSuggestion) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
@@ -1463,7 +1478,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           });
         },
         addMark: (mark: string, value: unknown) => {
-          const currentUserId = store.get().currentUserId;
+          const { currentUserId } = store.get();
 
           if (currentUserId === null || !isJsonValue(value)) return;
 
@@ -1518,7 +1533,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           );
         },
         insertText: (text: string) => {
-          const currentUserId = store.get().currentUserId;
+          const { currentUserId } = store.get();
 
           if (currentUserId === null) return;
 
@@ -1676,7 +1691,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             });
         },
         removeMark: (mark: string, previousValue: unknown = true) => {
-          const currentUserId = store.get().currentUserId;
+          const { currentUserId } = store.get();
 
           if (currentUserId === null || !isJsonValue(previousValue)) return;
 
@@ -1704,8 +1719,8 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             { match }
           );
         },
-        removeNodes: (nodes: readonly NodeEntry<Element | Text>[]) => {
-          const currentUserId = store.get().currentUserId;
+        removeNodes: (nodes: ReadonlyArray<NodeEntry<Element | Text>>) => {
+          const { currentUserId } = store.get();
 
           if (currentUserId === null) return;
           if (nodes.length === 0) return;
@@ -1794,7 +1809,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           });
         }),
         around(editorCommands.insertNodes, ({ input, tags, next }) => {
-          const currentUserId = store.get().currentUserId;
+          const { currentUserId } = store.get();
 
           if (
             !store.get().isSuggesting ||
@@ -1974,7 +1989,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           });
         }),
         around(editorCommands.insertBreak, ({ state, tags, next }) => {
-          const currentUserId = store.get().currentUserId;
+          const { currentUserId } = store.get();
 
           if (
             !store.get().isSuggesting ||

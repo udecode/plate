@@ -55,19 +55,19 @@ export type RegistryChangelogEvent = {
     path: string;
   };
   change: {
-    commits: {
+    commits: Array<{
       committedAt: string;
       date: string;
       sha: string;
       shortSha: string;
       subject: string;
       url: string;
-    }[];
+    }>;
     date: string;
     pullRequest?: {
       mergedAt?: string;
       number: number;
-      state: 'MERGED' | 'OPEN' | string;
+      state: string;
       title: string;
       url: string;
     };
@@ -83,18 +83,18 @@ export type RegistryChangelogEvent = {
 
 export type RegistryChangelogIndex = {
   schemaVersion: 1;
-  events: {
+  events: Array<{
     id: string;
     href: string;
     status: RegistryChangelogEvent['status'];
     kind: string;
     summary: string;
     change: RegistryChangelogEvent['change'];
-    diagnostics: Pick<RegistryChangelogDiagnostic, 'code' | 'severity'>[];
+    diagnostics: Array<Pick<RegistryChangelogDiagnostic, 'code' | 'severity'>>;
     entries: number;
     release: RegistryChangelogRelease;
     targets: string[];
-  }[];
+  }>;
 };
 
 export type RegistryChangelogComponents = {
@@ -119,20 +119,20 @@ function getRegistryChangelogDir() {
   return directory;
 }
 
-function readRegistryChangelogJson<T>(fileName: string): T {
+function readRegistryChangelogJson(fileName: string): unknown {
   return JSON.parse(
     fs.readFileSync(path.join(getRegistryChangelogDir(), fileName), 'utf-8')
-  ) as T;
+  );
 }
 
 export function getRegistryChangelogIndex() {
-  return readRegistryChangelogJson<RegistryChangelogIndex>('index.json');
+  return readRegistryChangelogJson('index.json') as RegistryChangelogIndex;
 }
 
 export function getRegistryChangelogComponents() {
-  return readRegistryChangelogJson<RegistryChangelogComponents>(
+  return readRegistryChangelogJson(
     'components.json'
-  );
+  ) as RegistryChangelogComponents;
 }
 
 export function getRegistryChangelogEvent(id: string) {
@@ -144,5 +144,5 @@ export function getRegistryChangelogEvent(id: string) {
     return null;
   }
 
-  return readRegistryChangelogJson<RegistryChangelogEvent>(`${eventId}.json`);
+  return readRegistryChangelogJson(`${eventId}.json`) as RegistryChangelogEvent;
 }

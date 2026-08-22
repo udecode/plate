@@ -50,6 +50,8 @@ const waitForChange = async (monitor, timeoutMs = 1000) => {
       setTimeout(resolve, 5);
     });
   }
+
+  return undefined;
 };
 
 const waitForMonitorReady = async (monitor) => {
@@ -375,7 +377,9 @@ test('proof monitor ignores baseline metadata but catches later writes', async (
     assert.equal(await monitor.checkpoint(), null);
 
     fs.writeFileSync(sourceFile, 'after');
-    assert.equal((await monitor.checkpoint())?.kind, 'source');
+    const checkpoint = await monitor.checkpoint();
+
+    assert.equal(checkpoint?.kind, 'source');
   } finally {
     await monitor.close();
     fs.rmSync(root, { force: true, recursive: true });

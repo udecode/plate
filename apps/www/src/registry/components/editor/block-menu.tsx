@@ -34,7 +34,7 @@ type Value = 'askAI' | null;
 export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const editor = useEditor();
   const { api } = useEditorPlugin(BlockMenuPlugin);
-  const [value, setValue] = React.useState<Value>(null);
+  const valueRef = React.useRef<Value>(null);
   const [isTouch, setIsTouch] = React.useState(false);
   const readOnly = useEditorReadOnly();
   const openKey = usePluginStore(BlockMenuPlugin, 'openKey');
@@ -48,7 +48,9 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
     window.addEventListener('resize', update);
     update();
 
-    return () => window.removeEventListener('resize', update);
+    return () => {
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   const handleTurnInto = React.useCallback(
@@ -86,13 +88,16 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       <ContextMenuTrigger
         asChild
         onContextMenu={(event) => {
-          const dataset = (event.target as HTMLElement).dataset;
+          const { dataset } = event.target as HTMLElement;
           const disabled =
             dataset?.slateEditor === 'true' ||
             readOnly ||
             dataset?.plateOpenContextMenu === 'false';
 
-          if (disabled) return event.preventDefault();
+          if (disabled) {
+            event.preventDefault();
+            return;
+          }
 
           setTimeout(() => {
             api.show(BLOCK_CONTEXT_MENU_ID, {
@@ -111,17 +116,17 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             e.preventDefault();
             editor.plugin(BlockSelectionPlugin).api.focus();
 
-            if (value === 'askAI') {
+            if (valueRef.current === 'askAI') {
               editor.plugin(AIChatPlugin).api.show();
             }
 
-            setValue(null);
+            valueRef.current = null;
           }}
         >
           <ContextMenuGroup>
             <ContextMenuItem
               onClick={() => {
-                setValue('askAI');
+                valueRef.current = 'askAI';
               }}
             >
               Ask AI
@@ -146,27 +151,45 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
               <ContextMenuSubTrigger>Turn into</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-48">
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(PLUGINS.paragraph)}
+                  onClick={() => {
+                    handleTurnInto(PLUGINS.paragraph);
+                  }}
                 >
                   Paragraph
                 </ContextMenuItem>
 
-                <ContextMenuItem onClick={() => handleTurnInto('heading-1')}>
+                <ContextMenuItem
+                  onClick={() => {
+                    handleTurnInto('heading-1');
+                  }}
+                >
                   Heading 1
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleTurnInto('heading-2')}>
+                <ContextMenuItem
+                  onClick={() => {
+                    handleTurnInto('heading-2');
+                  }}
+                >
                   Heading 2
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleTurnInto('heading-3')}>
+                <ContextMenuItem
+                  onClick={() => {
+                    handleTurnInto('heading-3');
+                  }}
+                >
                   Heading 3
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(PLUGINS.blockquote)}
+                  onClick={() => {
+                    handleTurnInto(PLUGINS.blockquote);
+                  }}
                 >
                   Blockquote
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => handleTurnInto(PLUGINS.codeDrawing)}
+                  onClick={() => {
+                    handleTurnInto(PLUGINS.codeDrawing);
+                  }}
                 >
                   Code Drawing
                 </ContextMenuItem>
@@ -176,29 +199,41 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
           <ContextMenuGroup>
             <ContextMenuItem
-              onClick={() =>
-                editor.plugin(BlockSelectionPlugin).update.setIndent(1)
-              }
+              onClick={() => {
+                editor.plugin(BlockSelectionPlugin).update.setIndent(1);
+              }}
             >
               Indent
             </ContextMenuItem>
             <ContextMenuItem
-              onClick={() =>
-                editor.plugin(BlockSelectionPlugin).update.setIndent(-1)
-              }
+              onClick={() => {
+                editor.plugin(BlockSelectionPlugin).update.setIndent(-1);
+              }}
             >
               Outdent
             </ContextMenuItem>
             <ContextMenuSub>
               <ContextMenuSubTrigger>Align</ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-48">
-                <ContextMenuItem onClick={() => handleAlign('left')}>
+                <ContextMenuItem
+                  onClick={() => {
+                    handleAlign('left');
+                  }}
+                >
                   Left
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleAlign('center')}>
+                <ContextMenuItem
+                  onClick={() => {
+                    handleAlign('center');
+                  }}
+                >
                   Center
                 </ContextMenuItem>
-                <ContextMenuItem onClick={() => handleAlign('right')}>
+                <ContextMenuItem
+                  onClick={() => {
+                    handleAlign('right');
+                  }}
+                >
                   Right
                 </ContextMenuItem>
               </ContextMenuSubContent>

@@ -8,6 +8,7 @@ import {
   type Text,
 } from '../interfaces';
 import { getChildren as editorGetChildren } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import { formatDebugValue } from './format-debug-value';
 import { inheritNodeKey } from './node-keys';
 
@@ -75,7 +76,7 @@ export const modifyDescendant = <N extends Descendant>(
   inheritNodeKey(modifiedNode, node, owner);
 
   while (slicedPath.length > 1) {
-    const index = slicedPath.pop()!;
+    const index = getDefined(slicedPath.pop());
     const ancestorNode = NodeApi.get(root, slicedPath) as Ancestor;
     if (NodeApi.isEditor(ancestorNode)) {
       throw new Error('Cannot modify the editor as a descendant');
@@ -93,7 +94,7 @@ export const modifyDescendant = <N extends Descendant>(
     inheritNodeKey(modifiedNode, ancestorNode, owner);
   }
 
-  const index = slicedPath.pop()!;
+  const index = getDefined(slicedPath.pop());
   setChildren(root, replaceChildren(getChildren(root), index, 1, modifiedNode));
 };
 
@@ -129,7 +130,7 @@ export const modifyLeaf = (
   root: Ancestor,
   path: Path,
   f: (leaf: Text) => Text
-) =>
+) => {
   modifyDescendant(root, path, (node) => {
     if (!NodeApi.isText(node)) {
       throw new Error(
@@ -141,3 +142,4 @@ export const modifyLeaf = (
 
     return f(node);
   });
+};

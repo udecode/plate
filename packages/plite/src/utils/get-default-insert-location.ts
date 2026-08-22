@@ -13,7 +13,7 @@ import type { AnyEditor as Editor } from '../interfaces/editor';
  * common use case when inserting from a non-selected state.
  */
 export const getDefaultInsertLocation = (editor: Editor): Location => {
-  const selection = editorGetSnapshot(editor).selection;
+  const { selection } = editorGetSnapshot(editor);
 
   if (selection) {
     return selection;

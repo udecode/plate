@@ -57,7 +57,7 @@ describe('compilePlateModel', () => {
         BehaviorPlugin,
       ],
     });
-    const model = getPlateModelPublication(editor)!.model;
+    const { model } = getPlateModelPublication(editor)!;
 
     expect(editor.plugin(ElementPlugin)).toMatchObject({
       name: 'elementCapability',
@@ -405,7 +405,7 @@ describe('compilePlateModel', () => {
     const editor = createBaseEditor({
       plugins: [BlockPlugin, MarkPlugin, PropertyPlugin],
     });
-    const model = getPlateModelPublication(editor)!.model;
+    const { model } = getPlateModelPublication(editor)!;
     const schemaContributions =
       getEditorExtensionRegistry(editor).schemaContributions.records;
 
@@ -593,7 +593,7 @@ describe('compilePlateModel', () => {
       {
         name: {
           get: () => {
-            accessorReads++;
+            accessorReads += 1;
 
             return BlockPlugin.name;
           },
@@ -742,10 +742,10 @@ describe('compilePlateModel', () => {
     };
     const plugin = defineBasePlugin('configuredModel', {
       initialState,
-      schema: ({ initialState }) => ({
+      schema: ({ initialState: innerInitialState }) => ({
         properties: {
           configuredModel: schema.elementProperty(property.string(), {
-            target: target.elements(initialState.targets),
+            target: target.elements(innerInitialState.targets),
           }),
         },
       }),
@@ -835,8 +835,8 @@ describe('compilePlateModel', () => {
     );
 
     expect(
-      installedPropertyPlugin.targetPlugins.map((target) =>
-        typeof target === 'string' ? target : target.name
+      installedPropertyPlugin.targetPlugins.map((innerTarget) =>
+        typeof innerTarget === 'string' ? innerTarget : innerTarget.name
       )
     ).toEqual([
       'configuredHeading',

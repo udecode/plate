@@ -31,6 +31,7 @@ import type {
   EditorSchemaContractContentProgram,
   SchemaPropertyKey,
 } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import { build } from 'esbuild';
 
 import {
@@ -399,7 +400,10 @@ const evaluateEditor = (bundlePath: string, resultPath: string, cwd: string) =>
       ],
       { cwd, maxBuffer: 16 * 1024 * 1024 },
       (error, _stdout, stderr) => {
-        if (!error) return resolvePromise();
+        if (!error) {
+          resolvePromise();
+          return;
+        }
         reject(
           new Error(
             stderr.trim() ||
@@ -434,7 +438,7 @@ const readEditor = async (
   try {
     writeDurableFile(outputPath, output.text);
     await evaluateEditor(outputPath, resultPath, cwd);
-    imported = JSON.parse(readFileSync(resultPath, 'utf8'));
+    imported = JSON.parse(readFileSync(resultPath, 'utf-8'));
   } finally {
     rmSync(outputDirectory, { force: true, recursive: true });
   }
@@ -488,19 +492,19 @@ const discoverTypeOnlySourceFiles = (
   const pending = [...sources];
 
   while (pending.length > 0) {
-    const path = pending.pop()!;
+    const path = pending.pop() ?? failInvariant('Expected value to be defined');
 
     if (!SOURCE_EXTENSION_PATTERN.test(path) || !existsSync(path)) continue;
     const dependencyKey = `${projectConfigPath ?? ''}\0${path}`;
     let discovered = dependencyCache.get(dependencyKey);
 
     if (!discovered) {
-      const source = readFileSync(path, 'utf8');
+      const source = readFileSync(path, 'utf-8');
       const specifiers = new Set<string>();
 
       TYPE_ONLY_IMPORT_PATTERNS.forEach((pattern) => {
         for (const match of source.matchAll(pattern)) {
-          specifiers.add(match[1]!);
+          specifiers.add(match[1]);
         }
       });
       const dependencies: string[] = [];
@@ -632,10 +636,12 @@ type MaterializationRequest = Readonly<{
 
 type MaterializationGroup = Readonly<{
   aliasName: string;
-  properties: readonly Readonly<{
-    key: string;
-    propertyId: string;
-  }>[];
+  properties: ReadonlyArray<
+    Readonly<{
+      key: string;
+      propertyId: string;
+    }>
+  >;
   source: string;
 }>;
 
@@ -647,17 +653,21 @@ const materializePropertyGroups = async (
   const session = existingSession ?? new NativeTypeScriptSession(cwd);
   const ownsSession = !existingSession;
   const helperPaths: string[] = [];
-  let prepared: readonly Readonly<{
-    generatedPaths: ReadonlySet<string>;
-    groups: readonly MaterializationGroup[];
-    helper: string;
-    helperPath: string;
-    nativeAliases: readonly Readonly<{
-      name: string;
-      position: number;
-      propertyNames: readonly string[];
-    }>[];
-  }>[];
+  let prepared: ReadonlyArray<
+    Readonly<{
+      generatedPaths: ReadonlySet<string>;
+      groups: readonly MaterializationGroup[];
+      helper: string;
+      helperPath: string;
+      nativeAliases: ReadonlyArray<
+        Readonly<{
+          name: string;
+          position: number;
+          propertyNames: readonly string[];
+        }>
+      >;
+    }>
+  >;
 
   try {
     prepared = requests.map(
@@ -686,7 +696,7 @@ const materializePropertyGroups = async (
           string,
           {
             aliasName: string;
-            properties: { key: string; propertyId: string }[];
+            properties: Array<{ key: string; propertyId: string }>;
             source: string;
           }
         >();
@@ -796,17 +806,17 @@ const materializePropertyGroups = async (
     );
 
     return materialized.map(({ properties, sourceFiles }, index) => {
-      const request = prepared[index]!;
+      const request = prepared[index];
 
       return Object.freeze({
         byPropertyId: Object.freeze(
           Object.fromEntries(
-            request.groups.flatMap((group) => [
-              ...group.properties.map(({ key, propertyId }) => [
+            request.groups.flatMap((group) =>
+              group.properties.map(({ key, propertyId }) => [
                 propertyId,
-                properties[group.aliasName]![key]!,
-              ]),
-            ])
+                properties[group.aliasName][key],
+              ])
+            )
           )
         ),
         sourceFiles,
@@ -822,7 +832,7 @@ const toPascalCase = (value: string) => {
     .replace(CAMEL_BOUNDARY_PATTERN, '$1 $2')
     .split(NON_IDENTIFIER_PATTERN)
     .filter(Boolean)
-    .map((part) => `${part[0]!.toUpperCase()}${part.slice(1)}`)
+    .map((part) => `${part[0].toUpperCase()}${part.slice(1)}`)
     .join('');
 
   return LEADING_DIGIT_PATTERN.test(result)
@@ -954,7 +964,7 @@ const relativeImport = (fromPath: string, toPath: string) => {
 };
 
 const portableShellArgument = (value: string) => {
-  if (SHELL_EXPANSION_PATTERN.test(value)) return;
+  if (SHELL_EXPANSION_PATTERN.test(value)) return undefined;
 
   return PORTABLE_SHELL_PATH_PATTERN.test(value) ? value : `"${value}"`;
 };
@@ -1051,7 +1061,7 @@ const renderGeneratedTypes = (
         );
       }
 
-      return Object.freeze({ localId, property: matches[0]! });
+      return Object.freeze({ localId, property: matches[0] });
     }
   );
   const schemaPluginBindings = compiledBindings.filter(
@@ -1094,7 +1104,9 @@ const renderGeneratedTypes = (
     )
     .join('\n');
   const resolveElementProperties = (binding: ElementBinding) => {
-    const element = elementByType.get(binding.type)!;
+    const element =
+      elementByType.get(binding.type) ??
+      failInvariant('Expected value to be defined');
     const persisted: Record<
       string,
       Readonly<{ optional: boolean; type: string }>
@@ -1152,9 +1164,14 @@ const renderGeneratedTypes = (
   );
   const elementDeclarations = bindings
     .map((binding) => {
-      const element = elementByType.get(binding.type)!;
+      const element =
+        elementByType.get(binding.type) ??
+        failInvariant('Expected value to be defined');
       const fields = renderProperties(
-        resolvedProperties.get(binding.name)!.persisted,
+        (
+          resolvedProperties.get(binding.name) ??
+          failInvariant('Expected value to be defined')
+        ).persisted,
         '  '
       );
       const childRoots =
@@ -1171,15 +1188,22 @@ const renderGeneratedTypes = (
       )};${childRoots}\n  readonly type: ${JSON.stringify(binding.type)};${fields ? `\n${fields}` : ''}\n}`;
     })
     .join('\n\n');
+  const allowedElementTypeSet = new Set(
+    schema.primaryRoot.content.allowedElementTypes
+  );
   const mutationDeclarations = bindings
     .map((binding) => {
-      const element = elementByType.get(binding.type)!;
-      const mutation = resolvedProperties.get(binding.name)!;
+      const element =
+        elementByType.get(binding.type) ??
+        failInvariant('Expected value to be defined');
+      const mutation =
+        resolvedProperties.get(binding.name) ??
+        failInvariant('Expected value to be defined');
       const construction = renderProperties(mutation.construction, '      ');
       const persisted = renderProperties(mutation.persisted, '      ');
       const toggle =
         element.groups.includes('textBlock') &&
-        schema.primaryRoot.content.allowedElementTypes.includes(binding.type) &&
+        allowedElementTypeSet.has(binding.type) &&
         Object.values(mutation.construction).every(
           (property) => property.optional
         ) &&
@@ -1243,12 +1267,14 @@ const writeDurableFile = (path: string, content: string) => {
 };
 
 type ArtifactJournal = Readonly<{
-  artifacts: readonly Readonly<{
-    backup: string;
-    existed: boolean;
-    path: string;
-    temporary: string;
-  }>[];
+  artifacts: ReadonlyArray<
+    Readonly<{
+      backup: string;
+      existed: boolean;
+      path: string;
+      temporary: string;
+    }>
+  >;
   phase: 'installed' | 'installing';
   version: 1;
 }>;
@@ -1279,7 +1305,9 @@ type WatchArtifactOwner = Readonly<{
 
 const ARTIFACT_PROCESS_TOKEN = randomUUID();
 
-class SimulatedArtifactProcessInterruption extends Error {
+class SimulatedArtifactProcessInterruptionError extends Error {
+  override name = 'SimulatedArtifactProcessInterruptionError';
+
   constructor() {
     super('simulated process interruption');
   }
@@ -1295,7 +1323,7 @@ const artifactJournalPath = (paths: readonly string[]) => {
   const sorted = [...paths].sort();
 
   return join(
-    artifactStateRoot(sorted[0]!),
+    artifactStateRoot(sorted[0]),
     'transactions',
     `${artifactBatchFingerprint(sorted)}.json`
   );
@@ -1319,7 +1347,7 @@ const artifactBatchLockPath = (paths: readonly string[]) => {
   const sorted = [...paths].sort();
 
   return join(
-    artifactStateRoot(sorted[0]!),
+    artifactStateRoot(sorted[0]),
     'locks',
     `transaction-${artifactBatchFingerprint(sorted)}`
   );
@@ -1367,8 +1395,8 @@ export const editorPrivateStateRoots = (entryPaths: readonly string[]) =>
 const readActiveWatchArtifactOwner = (
   path: string
 ): WatchArtifactOwner | undefined => {
-  if (!existsSync(path)) return;
-  const owner = JSON.parse(readFileSync(path, 'utf8')) as WatchArtifactOwner;
+  if (!existsSync(path)) return undefined;
+  const owner = JSON.parse(readFileSync(path, 'utf-8')) as WatchArtifactOwner;
 
   if (
     owner.version !== 1 ||
@@ -1386,7 +1414,7 @@ const readActiveWatchArtifactOwner = (
   ) {
     rmSync(path, { force: true });
 
-    return;
+    return undefined;
   }
 
   return owner;
@@ -1414,19 +1442,23 @@ const assertNoForeignWatchArtifactOwner = (
  * @internal
  */
 export const acquireEditorWatchOwnership = (entryPaths: readonly string[]) => {
-  const owned: { path: string; token: string }[] = [];
-  const artifactPaths = [
-    ...new Set(
-      entryPaths.flatMap((entryPath) => editorArtifactPaths(entryPath))
-    ),
-  ].sort();
+  const owned: Array<{ path: string; token: string }> = [];
+  const entryByArtifactPath = new Map(
+    entryPaths.flatMap((entryPath) =>
+      editorArtifactPaths(entryPath).map((artifactPath) => [
+        artifactPath,
+        entryPath,
+      ])
+    )
+  );
+  const artifactPaths = [...new Set(entryByArtifactPath.keys())].sort();
   const gates = acquireArtifactPublicationGates(artifactPaths);
 
   try {
     artifactPaths.forEach((artifactPath) => {
-      const entryPath = entryPaths.find((candidate) =>
-        editorArtifactPaths(candidate).includes(artifactPath)
-      )!;
+      const entryPath =
+        entryByArtifactPath.get(artifactPath) ??
+        failInvariant('Expected value to be defined');
       const path = watchArtifactOwnerPath(artifactPath);
       const token = randomUUID();
       const owner = `${JSON.stringify({
@@ -1454,7 +1486,8 @@ export const acquireEditorWatchOwnership = (entryPaths: readonly string[]) => {
 
           if (active) {
             throw new Error(
-              `Another Plate watcher owns generated artifact ${artifactPath} from ${active.entryPath}.`
+              `Another Plate watcher owns generated artifact ${artifactPath} from ${active.entryPath}.`,
+              { cause: error }
             );
           }
         } finally {
@@ -1515,7 +1548,7 @@ const acquireArtifactLock = (lockPath: string): ArtifactLock => {
 
       if (candidate === path) continue;
       const owner = JSON.parse(
-        readFileSync(candidate, 'utf8')
+        readFileSync(candidate, 'utf-8')
       ) as ArtifactLockOwner;
 
       if (
@@ -1544,8 +1577,9 @@ const acquireArtifactLock = (lockPath: string): ArtifactLock => {
   }
 };
 
-const releaseArtifactLock = ({ path }: ArtifactLock) =>
+const releaseArtifactLock = ({ path }: ArtifactLock) => {
   rmSync(path, { force: true });
+};
 
 const acquireArtifactPublicationGates = (artifactPaths: readonly string[]) => {
   const locks: ArtifactLock[] = [];
@@ -1598,9 +1632,9 @@ const writeArtifactJournalReference = (
 const readArtifactJournalReference = (artifactPath: string) => {
   const path = artifactJournalReferencePath(artifactPath);
 
-  if (!existsSync(path)) return;
+  if (!existsSync(path)) return undefined;
   const reference = JSON.parse(
-    readFileSync(path, 'utf8')
+    readFileSync(path, 'utf-8')
   ) as ArtifactJournalReference;
 
   if (
@@ -1618,8 +1652,8 @@ const readArtifactJournal = (
   path: string,
   expectedPaths?: readonly string[]
 ): ArtifactJournal | undefined => {
-  if (!existsSync(path)) return;
-  const journal = JSON.parse(readFileSync(path, 'utf8')) as ArtifactJournal;
+  if (!existsSync(path)) return undefined;
+  const journal = JSON.parse(readFileSync(path, 'utf-8')) as ArtifactJournal;
   const actual = journal.artifacts.map((artifact) => artifact.path).sort();
   const expected = expectedPaths ? new Set(expectedPaths) : undefined;
 
@@ -1649,27 +1683,29 @@ const recoverArtifactJournal = (
       rmSync(temporary, { force: true });
     });
   } else {
-    journal.artifacts.forEach(({ backup, existed, path, temporary }) => {
-      rmSync(temporary, { force: true });
-      if (existsSync(backup)) {
-        rmSync(path, { force: true });
-        renameSync(backup, path);
-      } else if (!existed) {
-        rmSync(path, { force: true });
-      } else if (!existsSync(path)) {
-        throw new Error(
-          `Cannot recover Plate artifact transaction because both the artifact and backup are missing: ${path}`
-        );
+    journal.artifacts.forEach(
+      ({ backup, existed, path: innerPath, temporary }) => {
+        rmSync(temporary, { force: true });
+        if (existsSync(backup)) {
+          rmSync(innerPath, { force: true });
+          renameSync(backup, innerPath);
+        } else if (!existed) {
+          rmSync(innerPath, { force: true });
+        } else if (!existsSync(innerPath)) {
+          throw new Error(
+            `Cannot recover Plate artifact transaction because both the artifact and backup are missing: ${innerPath}`
+          );
+        }
       }
-    });
+    );
   }
   new Set(journal.artifacts.map(({ backup }) => dirname(backup))).forEach(
     (directory) => {
       rmSync(directory, { force: true, recursive: true });
     }
   );
-  journal.artifacts.forEach(({ path }) => {
-    rmSync(artifactJournalReferencePath(path), { force: true });
+  journal.artifacts.forEach(({ path: innerPath2 }) => {
+    rmSync(artifactJournalReferencePath(innerPath2), { force: true });
   });
   rmSync(path, { force: true });
 };
@@ -1735,15 +1771,17 @@ const recoverReferencedArtifactJournals = (
 };
 
 const isCurrent = (path: string, content: string) =>
-  existsSync(path) && readFileSync(path, 'utf8') === content;
+  existsSync(path) && readFileSync(path, 'utf-8') === content;
 
 const replaceArtifactsWithResult = (
-  artifacts: readonly Readonly<{ content: string; path: string }>[],
+  artifacts: ReadonlyArray<Readonly<{ content: string; path: string }>>,
   {
     afterInstall,
     interruptAfterInstall,
     interruptAfterReference,
-    removeBackup = (path) => rmSync(path, { force: true }),
+    removeBackup = (path) => {
+      rmSync(path, { force: true });
+    },
   }: Readonly<{
     afterInstall?: (path: string, index: number) => void;
     /** Test-only process interruption point. */
@@ -1778,17 +1816,18 @@ const replaceArtifactsWithResult = (
     // unchanged generation serialized with concurrent publishers without
     // applying foreign-watcher rejection to a read-only result.
     if (
-      artifacts.every(({ content }, index) => isCurrent(paths[index]!, content))
+      artifacts.every(({ content }, index) => isCurrent(paths[index], content))
     ) {
       return Object.freeze([] as string[]);
     }
     const token = `${process.pid}-${randomUUID()}`;
     const prepared = artifacts.flatMap((artifact, index) => {
-      const path = paths[index]!;
+      const path = paths[index];
       const stagingDirectory = join(artifactStateRoot(path), 'staging', token);
       const artifactFingerprint = pathFingerprint(path);
 
-      return existsSync(path) && readFileSync(path, 'utf8') === artifact.content
+      return existsSync(path) &&
+        readFileSync(path, 'utf-8') === artifact.content
         ? []
         : [
             {
@@ -1824,7 +1863,7 @@ const replaceArtifactsWithResult = (
     prepared.forEach(({ path }, index) => {
       writeArtifactJournalReference(path, journalPath);
       if (interruptAfterReference === index) {
-        throw new SimulatedArtifactProcessInterruption();
+        throw new SimulatedArtifactProcessInterruptionError();
       }
     });
     writeArtifactJournal(journalPath, journal);
@@ -1846,13 +1885,15 @@ const replaceArtifactsWithResult = (
       prepared.forEach(({ path, temporary }, index) => {
         renameSync(temporary, path);
         if (interruptAfterInstall === index) {
-          throw new SimulatedArtifactProcessInterruption();
+          throw new SimulatedArtifactProcessInterruptionError();
         }
         afterInstall?.(path, index);
       });
       writeArtifactJournal(journalPath, { ...journal, phase: 'installed' });
     } catch (error) {
-      if (error instanceof SimulatedArtifactProcessInterruption) throw error;
+      if (error instanceof SimulatedArtifactProcessInterruptionError) {
+        throw error;
+      }
       recoverArtifactJournal(journalPath, paths);
 
       throw error;
@@ -1955,8 +1996,8 @@ export const compileEditors = async (
   );
   const prepared = editors.map(
     ({ editor, sourceFiles: bundleSourceFiles }, index) => {
-      const entryPath = entryPaths[index]!;
-      const schema = editor.schema;
+      const entryPath = entryPaths[index];
+      const { schema } = editor;
       const bindings = createBindings(editor.bindings, schema);
       const owners = [
         ...new Set(schema.properties.byId.map(({ owner }) => owner)),
@@ -2011,7 +2052,7 @@ export const compileEditors = async (
 
   return Object.freeze(
     prepared.map((current, index) => {
-      const properties = materialized[index]!;
+      const properties = materialized[index];
       const schemaSource = `${JSON.stringify(current.schema, null, 2)}\n`;
       const typesSource = renderGeneratedTypes(
         current.entryPath,
@@ -2031,7 +2072,7 @@ export const compileEditors = async (
         schemaPath: current.schemaPath,
         schemaSource,
         sourceFiles: Object.freeze(
-          [...properties.sourceFiles, ...sourceFileClosures[index]!].filter(
+          [...properties.sourceFiles, ...sourceFileClosures[index]].filter(
             (path, pathIndex, paths) =>
               path !== current.schemaPath &&
               path !== current.typesPath &&
@@ -2053,8 +2094,11 @@ export const compileEditors = async (
 export const compileEditor = async (
   entry: string,
   options: Pick<GenerateEditorOptions, 'cwd'> = {}
-): Promise<CompiledEditorArtifacts> =>
-  (await compileEditors([entry], options))[0]!;
+): Promise<CompiledEditorArtifacts> => {
+  const editors = await compileEditors([entry], options);
+
+  return editors[0];
+};
 
 export const generateEditors = async (
   entries: readonly string[],
@@ -2101,11 +2145,11 @@ export const generateEditors = async (
       const {
         schemaSource: _schemaSource,
         typesSource: _typesSource,
-        ...artifacts
+        ...innerArtifacts
       } = current;
 
       return Object.freeze({
-        ...artifacts,
+        ...innerArtifacts,
         status:
           publishedPaths.has(current.typesPath) ||
           publishedPaths.has(current.schemaPath)
@@ -2120,5 +2164,8 @@ export const generateEditor = async (
   entry: string,
   options: GenerateEditorOptions = {},
   session?: NativeTypeScriptSession
-): Promise<GeneratedEditorArtifacts> =>
-  (await generateEditors([entry], options, session))[0]!;
+): Promise<GeneratedEditorArtifacts> => {
+  const editors = await generateEditors([entry], options, session);
+
+  return editors[0];
+};

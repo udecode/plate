@@ -127,12 +127,14 @@ describe('TablePlugin onKeyDown', () => {
 
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 1, 0, 0] },
-      focus: { offset: 1, path: [1, 0, 1, 0, 0] },
+      focus: { offset: 0, path: [1, 0, 1, 0, 0] },
       kind: 'text',
     });
     expect(competingHandler).not.toHaveBeenCalled();
     await waitFor(() => {
       expect(window.getSelection()?.anchorNode?.textContent).toBe('✅');
+      expect(window.getSelection()?.anchorOffset).toBe(0);
+      expect(window.getSelection()?.isCollapsed).toBe(true);
     });
   });
 
@@ -202,7 +204,7 @@ describe('TablePlugin onKeyDown', () => {
 
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0, 0, 0] },
-      focus: { offset: 11, path: [1, 0, 0, 0, 0] },
+      focus: { offset: 0, path: [1, 0, 0, 0, 0] },
       kind: 'text',
     });
     expect(competingHandler).not.toHaveBeenCalled();
@@ -210,6 +212,8 @@ describe('TablePlugin onKeyDown', () => {
       expect(window.getSelection()?.anchorNode?.textContent).toBe(
         'Suggestions'
       );
+      expect(window.getSelection()?.anchorOffset).toBe(0);
+      expect(window.getSelection()?.isCollapsed).toBe(true);
     });
   });
 
@@ -340,7 +344,7 @@ describe('TablePlugin onKeyDown', () => {
     const event = createKeyboardEvent('ArrowRight', 39);
     const fallback = mock();
     const handler = pipeHandler(editor, {
-      editableProps: { onKeyDown: fallback } as never,
+      editableProps: { onKeyDown: fallback },
       handlerKey: 'onKeyDown',
     });
 
@@ -492,7 +496,7 @@ describe('TablePlugin onKeyDown', () => {
     const event = createKeyboardEvent('Process', 229, { shiftKey: false });
     const fallback = mock();
     const handler = pipeHandler(editor, {
-      editableProps: { onKeyDown: fallback } as never,
+      editableProps: { onKeyDown: fallback },
       handlerKey: 'onKeyDown',
     });
 
@@ -532,7 +536,7 @@ describe('TablePlugin onKeyDown', () => {
     const event = createKeyboardEvent('Process', 229, { shiftKey: false });
     const fallback = mock();
     const handler = pipeHandler(editor, {
-      editableProps: { onKeyDown: fallback } as never,
+      editableProps: { onKeyDown: fallback },
       handlerKey: 'onKeyDown',
     });
 

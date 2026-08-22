@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 
 import { ElementIdPlugin } from '@platejs/core';
-import { type PlateEditorReference } from '@platejs/core/react';
+import type { PlateEditorReference } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import type { Element, Value } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -310,7 +310,7 @@ describe('BaseTablePlugin prepared paste', () => {
     ) as Element[];
     let updateCount = 0;
 
-    doc.on('update', () => updateCount++);
+    doc.on('update', () => (updateCount += 1) - 1);
     expect(source.update.fragment.replace(pasted)).toBe(true);
 
     expect(updateCount).toBe(1);

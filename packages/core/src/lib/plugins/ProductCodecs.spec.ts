@@ -41,7 +41,7 @@ const seededShuffle = <T>(values: readonly T[], seed: number) => {
   for (let index = result.length - 1; index > 0; index--) {
     const swapIndex = Math.floor(random() * (index + 1));
 
-    [result[index], result[swapIndex]] = [result[swapIndex]!, result[index]!];
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
   }
 
   return result;
@@ -402,7 +402,7 @@ describe('product codecs', () => {
 
   it('rejects public identity fields and non-callable callbacks', () => {
     for (const field of ['key', 'owner', 'target'] as const) {
-      const name = `invalid${field[0]!.toUpperCase()}${field.slice(1)}`;
+      const name = `invalid${field[0].toUpperCase()}${field.slice(1)}`;
       const InvalidPlugin = defineBasePlugin(name, {
         codecs: ({ defineCodecs }) =>
           defineCodecs({
@@ -582,7 +582,7 @@ describe('product codecs', () => {
     };
     const QueryThrowPlugin = defineBasePlugin('queryThrowCodec', {}).extend(
       ({ defineCodecs }) => {
-        declarationCalls++;
+        declarationCalls += 1;
 
         return {
           codecs: defineCodecs({
@@ -606,7 +606,7 @@ describe('product codecs', () => {
     );
     const QueryFalsePlugin = defineBasePlugin('queryFalseCodec', {}).extend(
       ({ defineCodecs }) => {
-        declarationCalls++;
+        declarationCalls += 1;
 
         return {
           codecs: defineCodecs({
@@ -630,7 +630,7 @@ describe('product codecs', () => {
     );
     const DecodeThrowPlugin = defineBasePlugin('decodeThrowCodec', {}).extend(
       ({ defineCodecs }) => {
-        declarationCalls++;
+        declarationCalls += 1;
 
         return {
           codecs: defineCodecs({
@@ -649,7 +649,7 @@ describe('product codecs', () => {
     );
     const DecodeNullPlugin = defineBasePlugin('decodeNullCodec', {}).extend(
       ({ defineCodecs }) => {
-        declarationCalls++;
+        declarationCalls += 1;
 
         return {
           codecs: defineCodecs({
@@ -670,7 +670,7 @@ describe('product codecs', () => {
       'decodeFallbackCodec',
       {}
     ).extend(({ defineCodecs }) => {
-      declarationCalls++;
+      declarationCalls += 1;
 
       return {
         codecs: defineCodecs({
@@ -688,7 +688,7 @@ describe('product codecs', () => {
     });
     const EncodeThrowPlugin = defineBasePlugin('encodeThrowCodec', {}).extend(
       ({ defineCodecs }) => {
-        declarationCalls++;
+        declarationCalls += 1;
 
         return {
           codecs: defineCodecs({
@@ -707,7 +707,7 @@ describe('product codecs', () => {
     );
     const EncodeNullPlugin = defineBasePlugin('encodeNullCodec', {}).extend(
       ({ defineCodecs }) => {
-        declarationCalls++;
+        declarationCalls += 1;
 
         return {
           codecs: defineCodecs({
@@ -728,7 +728,7 @@ describe('product codecs', () => {
       'encodeFallbackCodec',
       {}
     ).extend(({ defineCodecs }) => {
-      declarationCalls++;
+      declarationCalls += 1;
 
       return {
         codecs: defineCodecs({
@@ -807,13 +807,13 @@ describe('product codecs', () => {
           'application/x-records': {
             scope: 'document',
             decode: ({ data }) => {
-              calls.decode++;
+              calls.decode += 1;
               decodedSlice = ContentSlice.fromJSON(JSON.parse(data));
 
               return decodedSlice as ReturnType<typeof ContentSlice.fromJSON>;
             },
             encode: ({ slice }) => {
-              calls.encode++;
+              calls.encode += 1;
               encodedSlice = slice;
 
               return JSON.stringify(slice);
@@ -903,7 +903,7 @@ describe('product codecs', () => {
           'application/x-malformed': {
             scope: 'document',
             decode: ({ data }) => {
-              decodeCalls++;
+              decodeCalls += 1;
 
               return JSON.parse(data);
             },
@@ -948,7 +948,7 @@ describe('product codecs', () => {
           [format]: {
             scope: 'document',
             decode: ({ data }) => {
-              decodeCalls++;
+              decodeCalls += 1;
 
               return ContentSlice.fromJSON(JSON.parse(data));
             },
@@ -976,7 +976,7 @@ describe('product codecs', () => {
       });
 
       for (const data of malformed) {
-        const version = editor.read.runtime.snapshot().version;
+        const { version } = editor.read.runtime.snapshot();
 
         expect(
           editor.api.dom.clipboard.insertData(createDataTransfer(format, data))

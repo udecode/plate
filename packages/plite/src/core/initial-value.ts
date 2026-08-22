@@ -16,7 +16,7 @@ export const cloneDocumentMeta = (
   meta: unknown
 ): Record<string, unknown> | undefined => {
   if (meta === undefined) {
-    return;
+    return undefined;
   }
 
   if (!isRecord(meta)) {

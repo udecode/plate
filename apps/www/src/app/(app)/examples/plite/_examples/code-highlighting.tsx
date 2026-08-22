@@ -1,19 +1,9 @@
-/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import {
   type Descendant,
   NodeApi,
   type Point,
   type Range,
 } from '@platejs/plite';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/components/prism-php';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-typescript';
 import { isHotkey } from '@platejs/plite-dom';
 import { history } from '@platejs/plite-history';
 import {
@@ -25,7 +15,6 @@ import {
   usePliteEditor,
   usePliteRangeDecorationSource,
 } from '@platejs/plite-react';
-import Prism from 'prismjs';
 import type React from 'react';
 import type { ChangeEvent, PointerEvent } from 'react';
 
@@ -45,6 +34,7 @@ import type {
   CustomValue,
 } from './custom-types.d';
 import { normalizeTokens } from './utils/normalize-tokens';
+import { Prism } from './utils/prism-runtime';
 
 const ParagraphType = 'paragraph';
 const CodeBlockType = 'code-block';
@@ -131,7 +121,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
           const isShiftTab = isHotkey('shift+tab', event);
 
           if (!isTab && !isShiftTab) {
-            return;
+            return undefined;
           }
 
           const handledCodeLines = updateSelectedCodeLines(
@@ -169,7 +159,9 @@ const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
         spellCheck={false}
       >
         <LanguageSelect
-          onChange={(e) => setLanguage(e.target.value)}
+          onChange={(e) => {
+            setLanguage(e.target.value);
+          }}
           value={element.language}
         />
         {children}
@@ -230,7 +222,9 @@ const CodeBlockButton = () => {
     <Button
       active
       data-test-id="code-block-button"
-      onClick={() => convertSelectionToCodeBlock(editor)}
+      onClick={() => {
+        convertSelectionToCodeBlock(editor);
+      }}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
         event.preventDefault();
       }}
@@ -262,8 +256,8 @@ const collectCodeRanges = (
   nodes: readonly Descendant[],
   language?: string,
   path: number[] = []
-): PliteRangeDecoration<Record<string, true>>[] => {
-  const ranges: PliteRangeDecoration<Record<string, true>>[] = [];
+): Array<PliteRangeDecoration<Record<string, true>>> => {
+  const ranges: Array<PliteRangeDecoration<Record<string, true>>> = [];
 
   nodes.forEach((node, nodeIndex) => {
     const nodePath = [...path, nodeIndex];
@@ -288,7 +282,7 @@ const collectCodeTextRanges = (
   text: string,
   path: number[],
   language = 'jsx'
-): PliteRangeDecoration<Record<string, true>>[] => {
+): Array<PliteRangeDecoration<Record<string, true>>> => {
   const grammar = Prism.languages[language];
 
   if (!grammar) {
@@ -297,12 +291,12 @@ const collectCodeTextRanges = (
 
   const tokens = Prism.tokenize(text, grammar);
   const normalizedTokens = normalizeTokens(tokens);
-  const ranges: PliteRangeDecoration<Record<string, true>>[] = [];
+  const ranges: Array<PliteRangeDecoration<Record<string, true>>> = [];
   let start = 0;
 
   normalizedTokens.forEach((lineTokens, lineIndex) => {
     for (const token of lineTokens) {
-      const length = token.content.length;
+      const { length } = token.content;
       if (!length) {
         continue;
       }
@@ -349,7 +343,7 @@ const preventLeadingCodeBlockBackspace = (
     children: state.children(),
     selection: state.selection(),
   }));
-  const selection = snapshot.selection;
+  const { selection } = snapshot;
 
   if (
     !selection ||
@@ -392,7 +386,7 @@ const updateSelectedCodeLines = (
     children: state.children(),
     selection: state.selection(),
   }));
-  const selection = snapshot.selection;
+  const { selection } = snapshot;
 
   if (!selection) {
     return false;

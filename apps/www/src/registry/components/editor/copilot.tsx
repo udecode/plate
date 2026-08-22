@@ -30,7 +30,7 @@ function GhostTextContent() {
       className="pointer-events-none text-muted-foreground/70 max-sm:hidden"
       contentEditable={false}
     >
-      {suggestionText && suggestionText}
+      {suggestionText}
     </span>
   );
 }

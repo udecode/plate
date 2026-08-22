@@ -40,7 +40,7 @@ type FacetRuntime = {
   documentRootRevisions: Map<string, number>;
   fieldRevisions: Map<string, number>;
   selectionRevision: number;
-  stack: EditorFacet<any, any>[];
+  stack: Array<EditorFacet<any, any>>;
 };
 
 /**
@@ -100,7 +100,7 @@ export const createEditorFacetDraft = (
 };
 
 const bumpDraftRevision = (draft: EditorFacetDraft) => {
-  draft.revision++;
+  draft.revision += 1;
 };
 
 /**
@@ -117,7 +117,7 @@ export const recordFacetDraftDocumentRoots = (
   if (changedRoots.size === 0) return;
 
   bumpDraftRevision(draft);
-  draft.documentRevision++;
+  draft.documentRevision += 1;
 
   for (const root of changedRoots) {
     bumpRevision(draft.documentRootRevisions, root);
@@ -132,12 +132,13 @@ export const recordFacetDraftDocumentRoots = (
 export const recordFacetDraftDocumentChange = (
   draft: EditorFacetDraft,
   change: EditorCommit['changes']
-) =>
+) => {
   recordFacetDraftDocumentRoots(draft, [
     ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
     ...change.createRoots,
     ...change.deleteRoots,
   ]);
+};
 
 /**
  * Invalidate one field dependency inside one draft.
@@ -159,18 +160,18 @@ export const recordFacetDraftFieldChange = (
  */
 export const recordFacetDraftSelectionChange = (draft: EditorFacetDraft) => {
   bumpDraftRevision(draft);
-  draft.selectionRevision++;
+  draft.selectionRevision += 1;
 };
 
 export const recordFacetCommit = (editor: Editor, commit: EditorCommit) => {
   const runtime = getFacetRuntime(editor);
 
   if (commit.changed.hasAny('document')) {
-    runtime.documentRevision++;
+    runtime.documentRevision += 1;
 
     for (const root of new Set([
       ...[...getInternalDocumentChangeEntries(commit.changes)].map(
-        ([root]) => root
+        ([innerRoot]) => innerRoot
       ),
       ...commit.changes.createRoots,
       ...commit.changes.deleteRoots,
@@ -178,7 +179,7 @@ export const recordFacetCommit = (editor: Editor, commit: EditorCommit) => {
       bumpRevision(runtime.documentRootRevisions, root);
     }
   }
-  if (commit.selectionChanged) runtime.selectionRevision++;
+  if (commit.selectionChanged) runtime.selectionRevision += 1;
 
   for (const key of commit.dirtyStateKeys) {
     if (key !== '$configuration') bumpRevision(runtime.fieldRevisions, key);
@@ -191,7 +192,7 @@ const sameInputs = <TInput>(
   right: readonly TInput[]
 ) =>
   left.length === right.length &&
-  left.every((value, index) => facet.compareInput(value, right[index]!));
+  left.every((value, index) => facet.compareInput(value, right[index]));
 
 const sameDependencies = (
   left: readonly unknown[] | undefined,
@@ -271,7 +272,7 @@ export const resolveFacet = <
   const runtime = draft ?? getFacetRuntime(editor);
   const cycleStart = runtime.stack.indexOf(facet);
 
-  if (cycleStart >= 0) {
+  if (cycleStart !== -1) {
     throw new Error(
       `Cyclic editor facet dependency: ${[
         ...runtime.stack.slice(cycleStart).map(({ key }) => key),
@@ -284,8 +285,9 @@ export const resolveFacet = <
 
   try {
     const registry = getExtensionRegistry(editor);
-    const providers = (registry.facets.get(facet.key) ??
-      []) as readonly EditorFacetProvider<TInput>[];
+    const providers = (registry.facets.get(facet.key) ?? []) as ReadonlyArray<
+      EditorFacetProvider<TInput>
+    >;
     const previous = runtime.cache.get(facet);
     const resolveDependency = (dependency: EditorFacetDependency): unknown => {
       if (dependency === 'document') return runtime.documentRevision;

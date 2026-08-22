@@ -8,6 +8,7 @@ import {
   useEditor,
   useEditorFocused,
   useElementSelected,
+  usePath,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -24,6 +25,7 @@ import {
 } from './resize-handle';
 
 export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
+  const path = usePath();
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'node' });
   const textAlign =
@@ -34,7 +36,7 @@ export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
       ? props.element.textAlign
       : 'center';
   const editor = useEditor();
-  const captionFocused = useCaptionFocused(props.path);
+  const captionFocused = useCaptionFocused(path);
   const previewOpen = usePluginStore(imagePlugin, 'previewOpen');
   const { isDragging, handleRef } = useDraggable({
     element: props.element,
@@ -52,11 +54,9 @@ export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
             <Resizable
               align={textAlign}
               minWidth={92}
-              onResizeEnd={(width) =>
-                editor
-                  .plugin(imagePlugin)
-                  .update.set({ width }, { at: props.path })
-              }
+              onResizeEnd={(width) => {
+                editor.plugin(imagePlugin).update.set({ width }, { at: path });
+              }}
               width={props.element.width}
             >
               <ResizeHandle
@@ -64,6 +64,7 @@ export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
                 direction="left"
               />
               <div>
+                {/* oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] The editor node owns a user URL, native draggable image, composed ref, and resizable width. */}
                 <img
                   ref={handleRef}
                   className={cn(

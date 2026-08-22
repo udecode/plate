@@ -28,21 +28,23 @@ export const TabbableKit = [
           return false;
         }
 
-        const blockingTypes = [
-          PLUGINS.codeBlock,
-          PLUGINS.listItem,
-          PLUGINS.todoList,
-          PLUGINS.table,
-        ].flatMap((name) => {
-          const plugin = editor.plugin(name);
+        const blockingTypes = new Set(
+          [
+            PLUGINS.codeBlock,
+            PLUGINS.listItem,
+            PLUGINS.todoList,
+            PLUGINS.table,
+          ].flatMap((name) => {
+            const plugin = editor.plugin(name);
 
-          return plugin.installed ? [plugin.schema.type] : [];
-        });
+            return plugin.installed ? [plugin.schema.type] : [];
+          })
+        );
 
         return !editor.read.nodes.some({
           match: (n) =>
             !!(
-              (ElementApi.isElement(n) && blockingTypes.includes(n.type)) ||
+              (ElementApi.isElement(n) && blockingTypes.has(n.type)) ||
               (ElementApi.isElement(n) && n.listType)
             ),
         });

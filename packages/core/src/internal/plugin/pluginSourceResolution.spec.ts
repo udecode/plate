@@ -34,7 +34,7 @@ describe('plugin source resolution', () => {
       baseCore: [Base],
       reactCore: [React],
       user: [User],
-    } as any);
+    });
 
     expect(winner.initialState).toEqual({ owner: 'user' });
     expect(winner.initialState).not.toHaveProperty('base');
@@ -53,7 +53,7 @@ describe('plugin source resolution', () => {
       baseCore: [Base],
       reactCore: [React],
       user: [],
-    } as any);
+    });
 
     expect(winner.initialState).toEqual({ react: true });
   });
@@ -85,7 +85,7 @@ describe('plugin source resolution', () => {
   it('composes same-family descriptors in source order', () => {
     const Component = () => null;
     const Shared = defineBasePlugin('shared', {
-      initialState: { owner: 'base' },
+      initialState: { owner: 'base', stable: 'base' },
     });
     const editor = createBaseEditor({
       plugins: [

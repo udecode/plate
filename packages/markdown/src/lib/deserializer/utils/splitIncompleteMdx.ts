@@ -1,22 +1,37 @@
 /** Check if character is valid for tag name: A-Z / a-z / 0-9 / $ - . _ : */
 const isNameChar = (c: number) =>
-  (c >= 48 && c <= 57) || // 0-9
-  (c >= 65 && c <= 90) || // A-Z
-  (c >= 97 && c <= 122) || // a-z
-  c === 36 || // $
-  c === 45 || // -
-  c === 46 || // .
-  c === 95 || // _
-  c === 58; // :
+  // 0-9
+  (c >= 48 && c <= 57) ||
+  // A-Z
+  (c >= 65 && c <= 90) ||
+  // a-z
+  (c >= 97 && c <= 122) ||
+  // $
+  c === 36 ||
+  // -
+  c === 45 ||
+  // .
+  c === 46 ||
+  // _
+  c === 95 ||
+  // :
+  c === 58;
 
 const isNameBoundary = (c: number) =>
-  c === 47 || // /
-  c === 62 || // >
-  c === 9 || // tab
-  c === 10 || // newline
-  c === 12 || // form feed
-  c === 13 || // carriage return
-  c === 32; // space
+  // /
+  c === 47 ||
+  // >
+  c === 62 ||
+  // tab
+  c === 9 ||
+  // newline
+  c === 10 ||
+  // form feed
+  c === 12 ||
+  // carriage return
+  c === 13 ||
+  // space
+  c === 32;
 
 export const splitIncompleteMdx = (data: string): string[] | string => {
   type Frame = {
@@ -27,34 +42,40 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
 
   const len = data.length;
   let i = 0;
-  let cutPos = -1; // Once "incomplete" is found, record the starting position and exit scanning
+  // Once "incomplete" is found, record the starting position and exit scanning
+  let cutPos = -1;
 
   while (i < len) {
-    if (data.codePointAt(i) !== 60 /* '<' */) {
-      i++;
+    /* '<' */
+    if (data.codePointAt(i) !== 60) {
+      i += 1;
       continue;
     }
 
-    const tagStart = i; // Remember the position of '<'
-    i++; // Skip '<'
+    // Remember the position of '<'
+    const tagStart = i;
+    // Skip '<'
+    i += 1;
     if (i >= len) {
       cutPos = tagStart;
       break;
-    } // Stream breaks at '<'
+      // Stream breaks at '<'
+    }
 
     let closing = false;
     if (data[i] === '/') {
       closing = true;
-      i++;
+      i += 1;
     }
 
     /* Parse tag name -------------------------------------------------- */
     const nameStart = i;
-    while (i < len && isNameChar(data.codePointAt(i) as number)) i++;
+    while (i < len && isNameChar(data.codePointAt(i) as number)) i += 1;
     if (nameStart === i) {
       cutPos = tagStart;
       break;
-    } // No name after '<'
+      // No name after '<'
+    }
 
     const tagName = data.slice(nameStart, i).toLowerCase();
     const next = data.codePointAt(i);
@@ -77,10 +98,11 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
       else if (ch === '>') {
         foundTagEnd = true;
         selfClosing = data[i - 1] === '/';
-        i++; // Include '>'
+        // Include '>'
+        i += 1;
         break;
       }
-      i++;
+      i += 1;
     }
 
     if (!foundTagEnd) {

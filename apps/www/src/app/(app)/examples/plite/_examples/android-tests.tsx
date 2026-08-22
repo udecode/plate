@@ -269,7 +269,12 @@ const TestCase = ({ value }: AndroidTestCase) => {
   );
 };
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

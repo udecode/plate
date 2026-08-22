@@ -1,4 +1,5 @@
-import clsx from 'clsx';
+import { failInvariant } from '@platejs/plite/internal';
+import { clsx } from 'clsx';
 import React from 'react';
 
 import {
@@ -37,7 +38,7 @@ export const pluginRenderTextStatic = (
         path: nodeProps.path,
         plugin,
         props: nodeProps as any,
-      }) as any;
+      });
 
       const defaultProps = Component ? {} : { as: plugin.render?.as };
 
@@ -60,15 +61,19 @@ export const pipeRenderTextStatic = (
   const textPropsEntries: Array<{ key: string; plugin: AnyBasePlugin }> = [];
 
   getPlateRuntime(editor).pluginCache.node.textMarks.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
 
     if (plugin) {
-      renderTexts.push(pluginRenderTextStatic(editor, plugin as any));
+      renderTexts.push(pluginRenderTextStatic(editor, plugin));
     }
   });
 
   getPlateRuntime(editor).pluginCache.node.textProps.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     const key = plugin
       ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
       : undefined;
@@ -78,8 +83,9 @@ export const pipeRenderTextStatic = (
     }
   });
 
-  return function render({ attributes, ...props }) {
-    let children = props.children;
+  return function render({ attributes: initialAttributes, ...props }) {
+    let attributes = initialAttributes;
+    let { children } = props;
 
     renderTexts.forEach((renderText) => {
       const newChildren = renderText({ ...props, children } as any);
@@ -117,7 +123,7 @@ export const pipeRenderTextStatic = (
       editor,
       path: props.path,
       props: { attributes, ...props, children } as any,
-    }) as any;
+    });
 
     return <PliteText {...ctxProps} />;
   };

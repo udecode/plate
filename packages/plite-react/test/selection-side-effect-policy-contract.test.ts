@@ -35,6 +35,9 @@ test('editable repair request exposes focused profiler buckets', () => {
     /profileEditableMutationDuration\(\s*'repair\.focus-editor'/
   );
   expect(source).toMatch(
+    /profileEditableMutationDuration\(\s*'repair\.focus-editor-after-render'/
+  );
+  expect(source).toMatch(
     /profileEditableMutationDuration\(\s*'repair\.force-render'/
   );
   expect(source).toMatch(
@@ -123,6 +126,113 @@ test('selection preservation policy suppresses repair focus without skipping sel
 
   expect(focusCalls).toBe(0);
   expect(syncCalls).toBe(1);
+});
+
+test('an explicit history target overrides its remote-selection focus suppression', () => {
+  const editor = createReactEditor();
+  const target = createRemoteSelectionEditor();
+  const runtime = new EditableDOMRuntime({ editor });
+  const originalFocus = ReactEditor.focus;
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: {
+      activeIntent: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: null,
+      pendingDOMSelectionImport: false,
+      selectionChangeOrigin: null,
+      selectionSource: 'model-owned',
+    },
+  });
+  const focusedEditors: unknown[] = [];
+  let pendingFocusEditor: unknown;
+
+  ReactEditor.focus = (focusEditor) => {
+    focusedEditors.push(focusEditor);
+  };
+
+  try {
+    applyEditableRepairRequest({
+      domPhaseScheduler: runtime.domPhaseScheduler,
+      domRepairQueue: {
+        beginFrame() {},
+        cancelBefore() {},
+        repair() {},
+        repairCaretAfterModelIntent() {},
+        repairCaretAfterModelTextInsert() {},
+        repairDOMInput() {},
+      },
+      editor,
+      focusEditor: target,
+      forceRender() {},
+      inputController,
+      request: { forceRender: true, kind: 'force-render' },
+      requestFocusAfterRender(focusEditor) {
+        pendingFocusEditor = focusEditor;
+      },
+      syncDOMSelectionToEditor() {},
+    });
+  } finally {
+    runtime.destroy();
+    ReactEditor.focus = originalFocus;
+  }
+
+  expect(focusedEditors).toEqual([target]);
+  expect(pendingFocusEditor).toBe(target);
+});
+
+test('refocuses after a forced renderer repair can replace the active editable', () => {
+  const editor = createReactEditor();
+  const runtime = new EditableDOMRuntime({ editor });
+  const originalFocus = ReactEditor.focus;
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: {
+      activeIntent: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: null,
+      pendingDOMSelectionImport: false,
+      selectionChangeOrigin: null,
+      selectionSource: 'model-owned',
+    },
+  });
+  const calls: string[] = [];
+
+  ReactEditor.focus = () => {
+    calls.push('focus');
+  };
+
+  try {
+    applyEditableRepairRequest({
+      domPhaseScheduler: runtime.domPhaseScheduler,
+      domRepairQueue: {
+        beginFrame() {},
+        cancelBefore() {},
+        repair() {},
+        repairCaretAfterModelIntent() {},
+        repairCaretAfterModelTextInsert() {},
+        repairDOMInput() {},
+      },
+      editor,
+      forceRender() {
+        calls.push('render');
+      },
+      inputController,
+      request: { focus: true, forceRender: true, kind: 'force-render' },
+      syncDOMSelectionToEditor() {},
+    });
+
+    expect(calls).toEqual(['focus', 'render']);
+    runtime.domPhaseScheduler.flush();
+    expect(calls).toEqual(['focus', 'render', 'focus']);
+  } finally {
+    runtime.destroy();
+    ReactEditor.focus = originalFocus;
+  }
 });
 
 test('sync-selection repair can mark programmatic selection without DOM sync', () => {

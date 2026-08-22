@@ -37,11 +37,9 @@ export async function BlockDisplay({
     return null;
   }
 
-  const [tree, highlightedFiles, dependencies] = await Promise.all([
-    getCachedFileTree(item.files),
-    getCachedHighlightedFiles(item.files),
-    getCachedDependencies(block.name),
-  ]);
+  const tree = getCachedFileTree(item.files);
+  const dependencies = getCachedDependencies(block.name);
+  const highlightedFiles = await getCachedHighlightedFiles(item.files);
 
   return (
     <BlockViewer

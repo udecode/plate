@@ -117,9 +117,9 @@ export interface PliteAnnotationStore<
   subscribeAnnotation: (id: string, listener: () => void) => () => void;
 }
 
-const EMPTY_PROJECTION_ENTRIES = Object.freeze(
-  []
-) as readonly PliteProjectionEntry<PliteAnnotationProjectionData>[];
+const EMPTY_PROJECTION_ENTRIES = Object.freeze([]) as ReadonlyArray<
+  PliteProjectionEntry<PliteAnnotationProjectionData>
+>;
 const EMPTY_METRICS = Object.freeze({
   annotationProjectCount: 0,
   annotationResolveCount: 0,
@@ -178,7 +178,7 @@ const getAnnotationProjectionDataSource = (data: unknown) => {
     return null;
   }
 
-  const key = data as object;
+  const key = data;
 
   return annotationProjectionDataSources.has(key)
     ? { source: annotationProjectionDataSources.get(key) }
@@ -275,8 +275,8 @@ const createPliteAnnotationStoreInternal = <
 >(
   editor: EditorType,
   source:
-    | readonly PliteAnnotation<TData, TProjection>[]
-    | (() => readonly PliteAnnotation<TData, TProjection>[]),
+    | ReadonlyArray<PliteAnnotation<TData, TProjection>>
+    | (() => ReadonlyArray<PliteAnnotation<TData, TProjection>>),
   options: PliteAnnotationStoreOptions,
   dormant: boolean
 ): ActivatablePliteAnnotationStore<TData, TProjection> => {
@@ -288,7 +288,7 @@ const createPliteAnnotationStoreInternal = <
   let mappedResolveCount = 0;
   let mappedProjectCount = 0;
   const createMappedSource = (
-    annotations: readonly PliteAnnotation<TData, TProjection>[]
+    annotations: ReadonlyArray<PliteAnnotation<TData, TProjection>>
   ) =>
     createStableIdMappedSource<
       PliteAnnotation<TData, TProjection>,
@@ -335,7 +335,7 @@ const createPliteAnnotationStoreInternal = <
   const initialAnnotationsResult = dormant
     ? ({
         ok: true,
-        value: [] as readonly PliteAnnotation<TData, TProjection>[],
+        value: [] as ReadonlyArray<PliteAnnotation<TData, TProjection>>,
       } as const)
     : faultBoundary.run('read', getAnnotations);
   const initialMappedResult = initialAnnotationsResult.ok
@@ -362,9 +362,9 @@ const createPliteAnnotationStoreInternal = <
     mappedSource.getSnapshot().byOutputKey as Readonly<
       Record<
         NodeKey,
-        readonly PliteProjectionEntry<
-          PliteAnnotationProjectionData<TProjection>
-        >[]
+        ReadonlyArray<
+          PliteProjectionEntry<PliteAnnotationProjectionData<TProjection>>
+        >
       >
     >;
   const annotationsStore = createMappedViewStoreKernel(toAnnotationSnapshot());
@@ -489,14 +489,14 @@ const createPliteAnnotationStoreInternal = <
     });
   let unsubscribeEditor = activated ? subscribeToEditor() : null;
 
-  const refresh = (options: PliteAnnotationRefreshOptions = {}) => {
+  const refresh = (innerOptions: PliteAnnotationRefreshOptions = {}) => {
     if (!activated || destroyed) return;
 
-    if (options.ids && options.ids.length === 0) {
+    if (innerOptions.ids && innerOptions.ids.length === 0) {
       return;
     }
 
-    refreshCandidates(options.ids ?? null, options.ids === undefined);
+    refreshCandidates(innerOptions.ids ?? null, innerOptions.ids === undefined);
   };
 
   return {
@@ -565,8 +565,8 @@ export function createPliteAnnotationStore<
 >(
   editor: EditorType,
   source:
-    | readonly PliteAnnotation<TData, TProjection>[]
-    | (() => readonly PliteAnnotation<TData, TProjection>[]),
+    | ReadonlyArray<PliteAnnotation<TData, TProjection>>
+    | (() => ReadonlyArray<PliteAnnotation<TData, TProjection>>),
   options: PliteAnnotationStoreOptions = {}
 ): PliteAnnotationStore<TData, TProjection> {
   return createPliteAnnotationStoreInternal(editor, source, options, false);
@@ -583,7 +583,7 @@ export const createDormantPliteAnnotationStore = <
 >(
   editor: EditorType,
   source:
-    | readonly PliteAnnotation<TData, TProjection>[]
-    | (() => readonly PliteAnnotation<TData, TProjection>[]),
+    | ReadonlyArray<PliteAnnotation<TData, TProjection>>
+    | (() => ReadonlyArray<PliteAnnotation<TData, TProjection>>),
   options: PliteAnnotationStoreOptions = {}
 ) => createPliteAnnotationStoreInternal(editor, source, options, true);

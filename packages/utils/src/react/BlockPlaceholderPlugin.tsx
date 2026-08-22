@@ -50,6 +50,8 @@ export const BlockPlaceholderPlugin = definePlatePlugin(
         if (target && path && PathApi.equals(target.path, path)) {
           return target.placeholder;
         }
+
+        return undefined;
       },
     },
   })

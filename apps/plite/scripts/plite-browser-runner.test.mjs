@@ -21,6 +21,7 @@ import {
   fingerprintBrowserUnit,
   formatIntegrityFailureDetails,
   getDefaultMaxTestsPerProcess,
+  getPliteBrowserProjects,
   getSelectionUniverseSelectors,
   MAX_BROWSER_WORKERS,
   MAX_NORMAL_TESTS_PER_PROCESS,
@@ -38,6 +39,13 @@ import {
   verifyExactCoverage,
   verifyMergedSummaries,
 } from './plite-browser-runner.mjs';
+
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
 
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptRoot, '..');
@@ -464,6 +472,21 @@ test('bounds parallel browser projects inside one worker budget', () => {
   assert.throws(() => createProjectExecutionPlan(['chromium'], 8, 0));
 });
 
+test('adds the focused mobile WebKit proxy only on Darwin', () => {
+  assert.deepEqual(getPliteBrowserProjects('darwin'), [
+    'chromium',
+    'firefox',
+    'mobile',
+    'webkit',
+    'mobile-webkit',
+  ]);
+  assert.deepEqual(getPliteBrowserProjects('linux'), [
+    'chromium',
+    'firefox',
+    'mobile',
+  ]);
+});
+
 test('hard-caps every browser worker input at eight', async () => {
   assert.equal(MAX_BROWSER_WORKERS, 8);
   assert.equal(resolveBrowserWorkerCount(4), 4);
@@ -501,12 +524,12 @@ test('hard-caps every browser worker input at eight', async () => {
     concurrency: 16,
     projects: Array.from({ length: 16 }, (_, index) => String(index)),
     runProject: async () => {
-      active++;
+      active += 1;
       maximumActive = Math.max(maximumActive, active);
       await new Promise((resolve) => {
         setTimeout(resolve, 5);
       });
-      active--;
+      active -= 1;
 
       return 0;
     },
@@ -533,7 +556,7 @@ test('project pool stops active siblings and does not schedule more work', async
       });
     },
     stopSiblings: async () => {
-      stops++;
+      stops += 1;
       releaseSibling(143);
     },
   });
@@ -551,13 +574,13 @@ test('project pool executes every project exactly once', async () => {
     concurrency: 2,
     projects: ['chromium', 'firefox', 'mobile', 'webkit'],
     runProject: async (project) => {
-      active++;
+      active += 1;
       maximumActive = Math.max(maximumActive, active);
       await new Promise((resolve) => {
         setTimeout(resolve, 1);
       });
       completed.push(project);
-      active--;
+      active -= 1;
 
       return 0;
     },
@@ -568,7 +591,7 @@ test('project pool executes every project exactly once', async () => {
 
   assert.equal(status, 0);
   assert.equal(maximumActive, 2);
-  assert.deepEqual(completed.sort(), [
+  assert.deepEqual(completed.sort(compareStrings), [
     'chromium',
     'firefox',
     'mobile',
@@ -653,7 +676,9 @@ test(
           );
 
           return new Promise((resolve) => {
-            sibling.once('close', () => resolve(143));
+            sibling.once('close', () => {
+              resolve(143);
+            });
           });
         },
         stopSiblings: () => stopProcessTree(sibling),
@@ -698,7 +723,7 @@ test('project pool stops siblings before propagating a project rejection', async
         return 0;
       },
       stopSiblings: async () => {
-        stops++;
+        stops += 1;
         releaseSibling();
       },
     }),
@@ -1186,10 +1211,12 @@ test('fans CI proof into independent project jobs with one build owner', () => {
   assert.match(workflow, /browser-matrix-linux:[\s\S]*?needs: browser-build/);
   assert.match(workflow, /browser-webkit:[\s\S]*?needs: browser-build/);
   assert.match(workflow, /project: \[firefox, mobile\]/);
+  assert.match(workflow, /project: mobile-webkit/);
+  assert.match(workflow, /total: 1/);
   assert.equal(
     workflow.match(/shard: \[1, 2, 3, 4\]/g)?.length,
-    3,
-    'every browser project lane must fan out into four bounded jobs'
+    2,
+    'full browser lanes must fan out into four bounded jobs'
   );
   assert.equal(
     workflow.match(/name: plite-browser-build/g)?.length,
@@ -1247,12 +1274,10 @@ test('splits CI jobs by workload and executes longest units first', () => {
     second.map(({ id }) => id),
     ['1', '2']
   );
-  assert.deepEqual([...first, ...second].map(({ id }) => id).sort(), [
-    '0',
-    '1',
-    '2',
-    '3',
-  ]);
+  assert.deepEqual(
+    [...first, ...second].map(({ id }) => id).sort(compareStrings),
+    ['0', '1', '2', '3']
+  );
   assert.throws(() => parseJob('0/3'));
   assert.throws(() => parseJob('4/3'));
   assert.throws(() => parseJob('wat'));

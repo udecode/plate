@@ -62,15 +62,17 @@ const withOperationKey = <T extends TableCellElementWithId>(
 
 const createDenseTable = (size: number): TableElementWithId => ({
   children: Array.from({ length: size }, (_, row): TableRowElementWithId => ({
-    children: Array.from({ length: size }, (_, col): TableCellElementWithId =>
-      withOperationKey(
-        {
-          children: [{ text: `${row}:${col}` }],
-          id: `cell-${row}-${col}`,
-          type: 'tableCell',
-        },
-        `cell-${row}-${col}`
-      )
+    children: Array.from(
+      { length: size },
+      (innerValue, col): TableCellElementWithId =>
+        withOperationKey(
+          {
+            children: [{ text: `${row}:${col}` }],
+            id: `cell-${row}-${col}`,
+            type: 'tableCell',
+          },
+          `cell-${row}-${col}`
+        )
     ),
     id: `row-${row}`,
     type: 'tableRow',
@@ -123,13 +125,13 @@ const measure = (run: () => void, iterations: number) => {
   return performance.now() - startedAt;
 };
 
-const measureSamples = (runs: readonly (() => void)[]) =>
+const measureSamples = (runs: ReadonlyArray<() => void>) =>
   runs.map((run) => measure(run, 1));
 
-const percentile = (samples: readonly number[], percentile: number) => {
+const percentile = (samples: readonly number[], innerPercentile: number) => {
   const sorted = [...samples].sort((left, right) => left - right);
 
-  return sorted[Math.ceil(sorted.length * percentile) - 1] ?? 0;
+  return sorted[Math.ceil(sorted.length * innerPercentile) - 1] ?? 0;
 };
 
 const collectGarbage = async () => {
@@ -141,7 +143,9 @@ const collectGarbage = async () => {
 
   for (let attempt = 0; attempt < 5; attempt++) {
     runtime.Bun?.gc(true);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
   }
 };
 

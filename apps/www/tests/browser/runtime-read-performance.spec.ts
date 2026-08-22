@@ -20,7 +20,7 @@ const percentile = (values: readonly number[], ratio: number) => {
 
   return sorted[
     Math.min(sorted.length - 1, Math.ceil(sorted.length * ratio) - 1)
-  ]!;
+  ];
 };
 
 test.describe('runtime read interaction performance', () => {
@@ -60,10 +60,10 @@ test.describe('runtime read interaction performance', () => {
           Math.min(...result.rows.map((row) => row.keydown));
         const expectedBlocks = [...beforeMeasuredBlocks];
 
-        expectedBlocks[0] = `${expectedBlocks[0]!.slice(
+        expectedBlocks[0] = `${expectedBlocks[0].slice(
           0,
           offset + 2
-        )}${MEASURED_TEXT}${expectedBlocks[0]!.slice(offset + 2)}`;
+        )}${MEASURED_TEXT}${expectedBlocks[0].slice(offset + 2)}`;
 
         expect(result.rows).toHaveLength(20);
         const trustedRowsAreComplete = result.rows.every(

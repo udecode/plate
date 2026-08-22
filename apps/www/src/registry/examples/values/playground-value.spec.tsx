@@ -25,4 +25,12 @@ describe('playgroundValue', () => {
       editor.read.children().some((node) => node.type === 'codeDrawing')
     ).toBe(true);
   });
+
+  it('is deterministic and already satisfies the trailing-block invariant', () => {
+    expect(JSON.stringify(playgroundValue)).toContain('1704067200000');
+    expect(playgroundValue.children.at(-1)).toEqual({
+      children: [{ text: '' }],
+      type: 'paragraph',
+    });
+  });
 });

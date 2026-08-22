@@ -46,7 +46,7 @@ import { deleteText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
 
 const createFullDocumentTextReplacement = (
-  editor: Editor<any, any>,
+  editor: Editor,
   text: string,
   marks: TextMarks | null = null
 ) => {
@@ -399,9 +399,9 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
   };
 
   if (explicitRoot) {
-    withEditorUpdateRoot(editor, explicitRoot, () =>
-      withEditorUpdateRootChildren(editor, explicitRoot, insertText)
-    );
+    withEditorUpdateRoot(editor, explicitRoot, () => {
+      withEditorUpdateRootChildren(editor, explicitRoot, insertText);
+    });
     return;
   }
 

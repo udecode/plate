@@ -42,13 +42,13 @@ function PotionLazyBlockContent() {
 
   useEffect(() => {
     if (shouldRender) {
-      return;
+      return undefined;
     }
 
     const element = ref.current;
 
     if (!element) {
-      return;
+      return undefined;
     }
 
     if (typeof IntersectionObserver === 'undefined') {

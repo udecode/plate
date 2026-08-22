@@ -40,10 +40,10 @@ export interface Batch<_V extends Value = Value> {
 export interface History<V extends Value = Value> {
   /** Monotonic revision of the published history value. */
   readonly revision: number;
-  readonly redos: readonly Batch<V>[];
+  readonly redos: ReadonlyArray<Batch<V>>;
   /** Schema identity that owns every persisted change in this history. */
   readonly schema: EditorSchemaIdentity;
-  readonly undos: readonly Batch<V>[];
+  readonly undos: ReadonlyArray<Batch<V>>;
 }
 
 export type HistoryJSON = Readonly<{
@@ -55,7 +55,7 @@ export type HistoryJSON = Readonly<{
 
 export type HistoryBatchJSON = Readonly<{
   change: ReturnType<DocumentChange['toJSON']>;
-  effects: readonly ReturnType<typeof encodeEditorEffect>[];
+  effects: ReadonlyArray<ReturnType<typeof encodeEditorEffect>>;
   selectionAfter: ReturnType<typeof encodeEditorSelection>;
   /** Additional named root; omitted for the primary root. */
   selectionAfterRoot?: string;

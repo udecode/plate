@@ -254,7 +254,7 @@ describe('BaseSuggestionPlugin behavior', () => {
 
           const data = inlineData(
             editor,
-            editor.read.children()[0].children[1] as any
+            editor.read.children()[0].children[1]
           );
           expect(
             data?.createdAt && data?.id && data?.type && data?.userId
@@ -543,7 +543,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
       editor.update.text.deleteBackward();
 
       const dateNode = editor.read.children()[0].children[1] as any;
-      const dateChild = dateNode.children?.[0] as any;
+      const dateChild = dateNode.children?.[0];
       const elementSuggestionData = inlineData(editor, dateNode);
       const childSuggestionData = inlineData(editor, dateChild);
 
@@ -579,7 +579,7 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
       editor.update.text.deleteBackward();
 
       const dateNode = editor.read.children()[0].children[1] as any;
-      const dateChild = dateNode.children?.[0] as any;
+      const dateChild = dateNode.children?.[0];
       const suggestionData =
         inlineData(editor, dateNode) ?? inlineData(editor, dateChild);
 
@@ -779,10 +779,7 @@ describe('when point before is not marked', () => {
 
     editor.update.text.deleteBackward();
 
-    const data = inlineData(
-      editor,
-      editor.read.children()[0].children[1] as any
-    );
+    const data = inlineData(editor, editor.read.children()[0].children[1]);
 
     expect(
       data?.createdAt && data?.id && data?.type && data?.userId
@@ -817,14 +814,8 @@ describe('when point before is marked', () => {
 
     editor.update.text.deleteBackward();
 
-    const data1 = inlineData(
-      editor,
-      editor.read.children()[0].children[0] as any
-    );
-    const data2 = inlineData(
-      editor,
-      editor.read.children()[0].children[1] as any
-    );
+    const data1 = inlineData(editor, editor.read.children()[0].children[0]);
+    const data2 = inlineData(editor, editor.read.children()[0].children[1]);
 
     expect(!!data1?.id && !!data2?.id).toEqual(true);
     expect(data1?.id !== data2?.id).toEqual(true);
@@ -851,10 +842,7 @@ describe('when delete line', () => {
 
     editor.update.text.deleteBackward({ unit: 'line' });
 
-    const data = inlineData(
-      editor,
-      editor.read.children()[0].children[0] as any
-    );
+    const data = inlineData(editor, editor.read.children()[0].children[0]);
 
     expect(
       data?.createdAt && data?.id && data?.type && data?.userId
@@ -885,10 +873,7 @@ describe('delete forward when editor.plugin(SuggestionPlugin).store.get().isSugg
 
     editor.update.text.deleteForward();
 
-    const data = inlineData(
-      editor,
-      editor.read.children()[0].children[1] as any
-    );
+    const data = inlineData(editor, editor.read.children()[0].children[1]);
 
     expect(editor.read.children()[0].children[0].text).toBe('o');
     expect(editor.read.children()[0].children[2].text).toBe('e');
@@ -920,10 +905,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
 
     editor.update.fragment.delete();
 
-    const data = inlineData(
-      editor,
-      editor.read.children()[0].children[0] as any
-    );
+    const data = inlineData(editor, editor.read.children()[0].children[0]);
 
     expect(editor.read.children()[0].children[0].text).toBe('one');
     expect(data).toMatchObject({
@@ -997,9 +979,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
     const trailingRemoveData = inlineData(editor, removeTrailingTextNode);
 
     expect(leftText).toEqual(output.children[0].children[0]);
-    expect(removeTextNode.text).toBe(
-      (output.children[0].children[1] as any).text
-    );
+    expect(removeTextNode.text).toBe(output.children[0].children[1].text);
     expect(removeData?.type).toBe('remove');
     expect(removeData?.userId).toBe('testId');
     expect(mentionNode.children).toEqual(
@@ -1009,7 +989,7 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
     expect(mentionData?.type).toBe('remove');
     expect(mentionData?.userId).toBe('testId');
     expect(removeTrailingTextNode.text).toBe(
-      (output.children[0].children[3] as any).text
+      output.children[0].children[3].text
     );
     expect(trailingRemoveData?.id).toBe(removeData?.id);
     expect(trailingRemoveData?.type).toBe('remove');
@@ -1080,9 +1060,9 @@ describe('insert text when cursor is expanded', () => {
     expect(editor.read.children()[0].children).toHaveLength(2);
 
     const removedNode = editor.read.children()[0].children[0];
-    const removeNodeData = inlineData(editor, removedNode as any);
+    const removeNodeData = inlineData(editor, removedNode);
     const insertedNode = editor.read.children()[0].children[1];
-    const insertedNodeData = inlineData(editor, insertedNode as any);
+    const insertedNodeData = inlineData(editor, insertedNode);
 
     expect(removedNode.text).toEqual('test');
     expect(insertedNode.text).toEqual('1');
@@ -1154,9 +1134,7 @@ describe('insert text when cursor is expanded', () => {
     const insertData = inlineData(editor, insertedNode);
 
     expect(leftText).toEqual(output.children[0].children[0]);
-    expect(removeTextNode.text).toBe(
-      (output.children[0].children[1] as any).text
-    );
+    expect(removeTextNode.text).toBe(output.children[0].children[1].text);
     expect(removeData?.type).toBe('remove');
     expect(removeData?.userId).toBe('testId');
     expect(mentionNode.children).toEqual(
@@ -1166,14 +1144,12 @@ describe('insert text when cursor is expanded', () => {
     expect(mentionData?.type).toBe('remove');
     expect(mentionData?.userId).toBe('testId');
     expect(removeTrailingTextNode.text).toBe(
-      (output.children[0].children[3] as any).text
+      output.children[0].children[3].text
     );
     expect(trailingRemoveData?.id).toBe(removeData?.id);
     expect(trailingRemoveData?.type).toBe('remove');
     expect(trailingRemoveData?.userId).toBe('testId');
-    expect(insertedNode.text).toBe(
-      (output.children[0].children[4] as any).text
-    );
+    expect(insertedNode.text).toBe(output.children[0].children[4].text);
     expect(insertData?.id).toBe(removeData?.id);
     expect(insertData?.type).toBe('insert');
     expect(insertData?.userId).toBe('testId');
@@ -1203,8 +1179,7 @@ describe('insertBreak when editor.plugin(SuggestionPlugin).store.get().isSuggest
 
     editor.update.break.insert();
 
-    const inserted = ((editor.read.children()[0] as any).children[0] as any)
-      .children[0] as any;
+    const inserted = (editor.read.children()[0] as any).children[0].children[0];
 
     expect(inserted.text).toBe('\n');
     expect(inlineData(editor, inserted)).toMatchObject({

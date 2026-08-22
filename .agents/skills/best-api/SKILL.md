@@ -201,6 +201,13 @@ Public DOM event handlers run before built-in editor commands. Returning the
 documented handled signal prevents the runtime command; `preventDefault`
 alone controls the browser default unless the handler contract says otherwise.
 
+Publication is an outcome boundary, not merely callback order. A fallible
+callback that may reject an update must run before authoritative state is
+published. Post-publication observers report failures through one optional
+host sink with precise owner and phase metadata; they do not reopen the
+transaction, widen the normal call site, or make a committed update appear to
+have failed.
+
 Inline means one coherent owner declaration, not a mandatory object-literal or
 chain spelling. Prefer the single inference-preserving shape with the fewest
 learned concepts; reject one public verb per compiler destination.

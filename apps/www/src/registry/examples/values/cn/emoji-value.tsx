@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const emojiValue = (
+export const emojiValue: Value = (
   <fragment>
     <hheading level={2}>表情符号</hheading>
     <hp>用一点趣味 🎉 和情感 😃 来表达自己。</hp>

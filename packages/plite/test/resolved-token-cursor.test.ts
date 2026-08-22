@@ -17,7 +17,7 @@ type ReferenceEntry = {
 
 const comparePaths = (left: readonly number[], right: readonly number[]) => {
   for (let index = 0; index < Math.min(left.length, right.length); index++) {
-    const difference = left[index]! - right[index]!;
+    const difference = left[index] - right[index];
 
     if (difference !== 0) return difference;
   }
@@ -35,7 +35,7 @@ const indexEntries = (nodes: readonly JsonNode[]) => {
   let position = 0;
 
   const visit = (node: JsonNode, path: readonly number[]) => {
-    const from = position++;
+    const from = (position += 1) - 1;
     const contentFrom = position;
     let kind: ReferenceEntry['kind'];
 
@@ -51,7 +51,7 @@ const indexEntries = (nodes: readonly JsonNode[]) => {
 
     const contentTo = position;
 
-    position++;
+    position += 1;
     entries.push({
       contentFrom,
       contentTo,
@@ -78,7 +78,7 @@ const childBoundaryAt = (
   let from = contentFrom;
 
   for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index]!;
+    const node = nodes[index];
     const length = nodeLength(node);
 
     if (position === from) return { index, parentPath };
@@ -124,7 +124,7 @@ const pointAt = (
   );
 
   if (containing.length > 0) {
-    const entry = assoc < 0 ? containing[0]! : containing.at(-1)!;
+    const entry = assoc < 0 ? containing[0] : containing.at(-1)!;
 
     return {
       offset: Math.max(
@@ -230,9 +230,7 @@ const textNode = fc
     bold: fc.option(fc.boolean(), { nil: undefined }),
     text: fc.string({ maxLength: 4 }),
   })
-  .map(({ bold, text }) =>
-    bold === undefined ? ({ text } as JsonNode) : ({ bold, text } as JsonNode)
-  );
+  .map(({ bold, text }) => (bold === undefined ? { text } : { bold, text }));
 const shallowElement = fc
   .record({
     children: fc.array(textNode, { maxLength: 3 }),

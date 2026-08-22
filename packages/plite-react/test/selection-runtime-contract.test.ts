@@ -466,7 +466,11 @@ describe('selection runtime', () => {
       })
     );
 
-    expect(syncOptions).toEqual([{ forceModelExport: true }]);
+    expect(syncOptions).toEqual([
+      {
+        forceModelExport: true,
+      },
+    ]);
     expect(inputController.state.selectionSource).toBe('model-owned');
   });
 

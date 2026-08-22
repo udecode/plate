@@ -232,7 +232,7 @@ void describe('@platejs/yjs react contract', () => {
     assert.equal(slices.length, 1);
     assert.ok(slice);
 
-    const data = slice.data;
+    const { data } = slice;
 
     assert.equal(data.clientId, 101);
     assert.deepEqual(data.data, { color: 'tomato', name: 'Ada' });

@@ -15,7 +15,7 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function ComponentPreviewPro({
-  id,
+  id: initialId,
   children,
   className,
   description,
@@ -23,6 +23,7 @@ export function ComponentPreviewPro({
   name,
   ...props
 }: ComponentPreviewProps) {
+  let id = initialId;
   if (!id && name) {
     id = name?.replace('-pro', '');
   }

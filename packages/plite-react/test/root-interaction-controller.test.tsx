@@ -357,14 +357,14 @@ describe('root interaction controller', () => {
       });
     });
 
-    const dispatched = fireEvent.mouseDown(blocks[1]!, {
+    const dispatched = fireEvent.mouseDown(blocks[1], {
       clientX: 4,
       clientY: 4,
     });
 
     expect(dispatched).toBe(false);
     expect(onMouseDown).toHaveBeenCalledOnce();
-    expect(onMouseDown.mock.calls[0]![0].defaultPrevented).toBe(true);
+    expect(onMouseDown.mock.calls[0][0].defaultPrevented).toBe(true);
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },

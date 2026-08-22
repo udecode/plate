@@ -448,6 +448,112 @@ describe('MarkdownPlugin', () => {
     expect(data.getData('text/markdown')).toBe('Primary content\n');
   });
 
+  it('keeps inline marks while unwrapping an open nested fragment', () => {
+    const editor = createTestEditor();
+    const data = new DataTransfer();
+    const blockquote = editor.api.markdown.deserialize('> alpha **beta** gamma')
+      .children[0];
+
+    writeHostFragmentData(
+      editor,
+      data,
+      ContentSlice.fromJSON({
+        content: [blockquote],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe('alpha **beta** gamma\n');
+  });
+
+  it('unwraps every open depth without inventing nested block markers', () => {
+    const editor = createTestEditor();
+    const data = new DataTransfer();
+    const blockquote = editor.api.markdown.deserialize(
+      '> # alpha **beta** gamma'
+    ).children[0];
+
+    writeHostFragmentData(
+      editor,
+      data,
+      ContentSlice.fromJSON({
+        content: [blockquote],
+        openEnd: 2,
+        openStart: 2,
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe('alpha **beta** gamma\n');
+  });
+
+  it('does not invent a heading marker for an open clipboard fragment', () => {
+    const editor = createTestEditor();
+    const data = new DataTransfer();
+    const heading = editor.api.markdown.deserialize('# alpha **beta** gamma')
+      .children[0];
+
+    writeHostFragmentData(
+      editor,
+      data,
+      ContentSlice.fromJSON({
+        content: [heading],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe('alpha **beta** gamma\n');
+  });
+
+  it('does not invent code fences for an open clipboard fragment', () => {
+    const editor = createTestEditor();
+    const data = new DataTransfer();
+    const codeBlock = editor.api.markdown.deserialize(
+      '```ts\nconst alpha = 1;\nconst beta = 2;\n```'
+    ).children[0];
+
+    writeHostFragmentData(
+      editor,
+      data,
+      ContentSlice.fromJSON({
+        content: [codeBlock],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe(
+      'const alpha = 1;\nconst beta = 2;\n'
+    );
+  });
+
+  it('does not invent a list marker for an open clipboard fragment', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseListPlugin, MarkdownPlugin],
+    });
+    const data = new DataTransfer();
+
+    writeHostFragmentData(
+      editor,
+      data,
+      ContentSlice.fromJSON({
+        content: [
+          {
+            children: [{ text: 'partial item' }],
+            indent: 1,
+            listType: 'bulleted',
+            type: 'paragraph',
+          },
+        ],
+        openEnd: 1,
+        openStart: 1,
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe('partial item\n');
+  });
+
   it('round-trips image alt through the Markdown host codec', () => {
     const source = createTestEditor();
     const document = source.api.markdown.deserialize('![Caption](/image.png)');

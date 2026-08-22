@@ -73,5 +73,5 @@ export const getReadRegistrationRuntime = <
     );
   }
 
-  return runtime as ReadRegistrationRuntime<any, any, TEditor>;
+  return runtime;
 };

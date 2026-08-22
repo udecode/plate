@@ -9,8 +9,8 @@ describe('pipeHandler', () => {
     const keyDown = mock();
     const editor = createPlateEditor({
       on: {
-        keyDown: ({ editor, event }) => {
-          editor.id satisfies string;
+        keyDown: ({ editor: innerEditor, event }) => {
+          innerEditor.id satisfies string;
           event.key satisfies string;
           keyDown();
         },
@@ -112,7 +112,7 @@ describe('pipeHandler', () => {
 
     pipeHandler(editor, {
       handlerKey: 'onKeyDown',
-    })?.({ isPropagationStopped: () => false } as React.KeyboardEvent);
+    })?.({ isPropagationStopped: () => false });
 
     expect(disabled).not.toHaveBeenCalled();
     expect(enabled).toHaveBeenCalledTimes(1);

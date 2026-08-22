@@ -15,11 +15,9 @@ type EditableDecoration<T = unknown> = PliteRangeDecoration<T>;
 type EditableDecorate<T = unknown> = (
   entry: [Descendant, Path],
   editor?: Editor
-) => readonly EditableDecoration<T>[];
+) => ReadonlyArray<EditableDecoration<T>>;
 
-const EMPTY_DECORATIONS = Object.freeze(
-  []
-) as readonly PliteDecoration<unknown>[];
+const EMPTY_DECORATIONS = Object.freeze([]) as readonly PliteDecoration[];
 
 export const readEditableDecorations = <T>(
   editor: Editor,
@@ -28,13 +26,13 @@ export const readEditableDecorations = <T>(
     runtimeScope,
     snapshot,
   }: Pick<PliteDecorationSourceReadContext, 'runtimeScope' | 'snapshot'>
-): readonly PliteDecoration<T>[] => {
+): ReadonlyArray<PliteDecoration<T>> => {
   if (!readDecorations) {
-    return EMPTY_DECORATIONS as readonly PliteDecoration<T>[];
+    return EMPTY_DECORATIONS as ReadonlyArray<PliteDecoration<T>>;
   }
 
   const root = { children: snapshot.children } as Ancestor;
-  const decorations: PliteDecoration<T>[] = [];
+  const decorations: Array<PliteDecoration<T>> = [];
   const visitedPathKeys = new Set<string>();
 
   const addDecorations = (node: Descendant, path: Path) => {

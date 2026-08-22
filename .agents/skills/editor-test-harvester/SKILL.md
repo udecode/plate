@@ -11,8 +11,16 @@ metadata:
 # Editor Test Harvester
 
 Use this skill when mining another editor repository for tests worth harvesting:
-Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill, or any local clone under
-`..`.
+Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill, ProseKit, Meowdown, or
+any local clone under `..`.
+
+Use ProseKit for extension composition, framework adapters, autocomplete, and
+editor UI behavior. Do not count behavior inherited from ProseMirror as a new
+independent invariant unless a ProseKit test adds a distinct contract. Use
+Meowdown for hybrid Markdown, hidden-syntax caret and selection behavior, touch
+input, IME, and WebKit cases. Split raw editor behavior from Meowdown's Markdown
+and product policy. Desktop WebKit and touch emulation are scoped browser proof,
+not raw iOS or iPhone proof.
 
 The job is not to clone their framework. The job is to extract portable editor
 behavior proof and route it to the right owner: raw Slate v2 substrate or Plate

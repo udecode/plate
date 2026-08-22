@@ -14,8 +14,8 @@ import {
   isElementDecorationsEqual,
   isTextDecorationsEqual,
 } from '@platejs/plite-dom';
-import { MAIN_ROOT_KEY } from '@platejs/plite/internal';
-import clsx from 'clsx';
+import { failInvariant, MAIN_ROOT_KEY } from '@platejs/plite/internal';
+import { clsx } from 'clsx';
 import React from 'react';
 
 import {
@@ -42,7 +42,7 @@ function BaseElementStatic({
   rootNodes,
   rootStack,
 }: {
-  contentRootValues: readonly (readonly Descendant[])[];
+  contentRootValues: ReadonlyArray<readonly Descendant[]>;
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: BaseEditor;
@@ -160,7 +160,7 @@ function BaseLeafStatic({
 
   const decoratedLeaves = TextApi.decorations(text, decorations);
 
-  const leafElements = decoratedLeaves.map(({ leaf, position }, index) => {
+  const leafElements = decoratedLeaves.map(({ leaf, position }) => {
     const leafElement = renderLeaf({
       attributes: { 'data-plite-leaf': true },
       children: (
@@ -174,7 +174,13 @@ function BaseLeafStatic({
       text: leaf,
     });
 
-    return <React.Fragment key={index}>{leafElement}</React.Fragment>;
+    return (
+      <React.Fragment
+        key={`${position?.start ?? 0}:${position?.end ?? leaf.text.length}`}
+      >
+        {leafElement}
+      </React.Fragment>
+    );
   });
 
   return renderText({
@@ -217,7 +223,7 @@ function Children({
   to?: number;
 }) {
   const root: Element = {
-    children: rootNodes as Descendant[],
+    children: rootNodes,
     type: 'static-root',
   };
 
@@ -254,10 +260,10 @@ function Children({
 
         return ElementApi.isElement(child) ? (
           <ElementStatic
-            key={i}
+            key={p.join('.')}
             contentRootValues={Object.values(
               editor.read.schema.getElementContentRoots(child)
-            ).map((root) => editor.read.root(root))}
+            ).map((innerRoot) => editor.read.root(innerRoot))}
             decorate={decorate}
             decorations={ds}
             editor={editor}
@@ -268,7 +274,7 @@ function Children({
           />
         ) : (
           <LeafStatic
-            key={i}
+            key={p.join('.')}
             decorations={ds}
             editor={editor}
             path={p}
@@ -296,7 +302,9 @@ export function PlateStatic<E = BaseEditor>(props: PlateStaticProps<E>) {
   let beforeEditable: React.ReactNode = null;
 
   getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     const BeforeEditable = plugin.render.beforeEditable;
 
     if (BeforeEditable) {
@@ -310,7 +318,9 @@ export function PlateStatic<E = BaseEditor>(props: PlateStaticProps<E>) {
   });
 
   getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     const AfterEditable = plugin.render.afterEditable;
 
     if (AfterEditable) {
@@ -351,7 +361,9 @@ export function PlateStatic<E = BaseEditor>(props: PlateStaticProps<E>) {
 
   // Use pre-computed arrays for aboveEditable components
   getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     const AboveEditable = plugin.render.aboveEditable;
 
     if (AboveEditable) {

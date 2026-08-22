@@ -29,6 +29,17 @@ import type {
   PliteBrowserTraceEntry,
 } from './types';
 
+const formatThrownValue = (value: unknown): string => {
+  if (value instanceof Error) return value.message;
+  if (typeof value === 'string') return value;
+
+  try {
+    return JSON.stringify(value) ?? 'Unknown error';
+  } catch {
+    return 'Unserializable error';
+  }
+};
+
 const assertNumberBudget = (
   actual: number,
   expected: PliteBrowserNumberBudget,
@@ -130,7 +141,7 @@ export const createEditorHarnessScenario = ({
     try {
       for (const [stepIndex, step] of steps.entries()) {
         switch (step.kind) {
-          case 'applyChange':
+          case 'applyChange': {
             await root.evaluate(
               (
                 element: HTMLElement,
@@ -164,7 +175,8 @@ export const createEditorHarnessScenario = ({
               }
             );
             break;
-          case 'applyValueChange':
+          }
+          case 'applyValueChange': {
             await root.evaluate(
               (
                 element: HTMLElement,
@@ -198,6 +210,7 @@ export const createEditorHarnessScenario = ({
               }
             );
             break;
+          }
           case 'activateShell': {
             const shell = page.getByRole('button', {
               name: step.buttonName,
@@ -350,13 +363,14 @@ export const createEditorHarnessScenario = ({
             }
             break;
           }
-          case 'assertModelSelectionExpanded':
+          case 'assertModelSelectionExpanded': {
             await expect
               .poll(async () =>
                 hasExpandedSelection(await getHarness().selection.get())
               )
               .toBe(true);
             break;
+          }
           case 'assertCapturedNodeKeyPath': {
             const nodeKey = capturedNodeKeys.get(step.name);
 
@@ -369,7 +383,10 @@ export const createEditorHarnessScenario = ({
                 root.evaluate(
                   (
                     element: HTMLElement,
-                    { key, nodeKey }: { key: string; nodeKey: string }
+                    {
+                      key,
+                      nodeKey: innerNodeKey,
+                    }: { key: string; nodeKey: string }
                   ) => {
                     const handle = (element as Record<string, any>)[key];
 
@@ -379,7 +396,7 @@ export const createEditorHarnessScenario = ({
                       );
                     }
 
-                    return handle.getPathByNodeKey(nodeKey);
+                    return handle.getPathByNodeKey(innerNodeKey);
                   },
                   { key: PLITE_BROWSER_HANDLE_KEY, nodeKey }
                 )
@@ -406,7 +423,7 @@ export const createEditorHarnessScenario = ({
 
             for (const [kind, expected] of Object.entries(
               step.budget.byKind ?? {}
-            ) as [PliteReactRenderKind, PliteBrowserNumberBudget][]) {
+            ) as Array<[PliteReactRenderKind, PliteBrowserNumberBudget]>) {
               assertNumberBudget(
                 snapshot.byKind[kind] ?? 0,
                 expected,
@@ -431,50 +448,54 @@ export const createEditorHarnessScenario = ({
             }
             break;
           }
-          case 'assertDOMCaret':
+          case 'assertDOMCaret': {
             await assertDOMCaretExpectation(root, step);
             break;
-          case 'assertBlockTexts':
-            {
-              const actualBlockTexts = (
-                await getHarness().get.blockTexts()
-              ).slice(step.startIndex ?? 0);
+          }
+          case 'assertBlockTexts': {
+            const blockTexts = await getHarness().get.blockTexts();
+            const actualBlockTexts = blockTexts.slice(step.startIndex ?? 0);
 
-              expect(
+            expect(
+              actualBlockTexts,
+              JSON.stringify({
                 actualBlockTexts,
-                JSON.stringify({
-                  actualBlockTexts,
-                  domSelection: await getHarness().get.domSelection(),
-                  expectedBlockTexts: step.texts,
-                  inputState: await root.evaluate(
-                    (element: HTMLElement, { key }: { key: string }) => {
-                      const handle = (element as Record<string, any>)[key];
+                domSelection: await getHarness().get.domSelection(),
+                expectedBlockTexts: step.texts,
+                inputState: await root.evaluate(
+                  (element: HTMLElement, { key }: { key: string }) => {
+                    const handle = (element as Record<string, any>)[key];
 
-                      return handle?.getInputState?.() ?? null;
-                    },
-                    { key: PLITE_BROWSER_HANDLE_KEY }
-                  ),
-                  kernelTrace: await getHarness().get.kernelTrace(),
-                  selection: await getHarness().selection.get(),
-                })
-              ).toEqual(step.texts);
-            }
+                    return handle?.getInputState?.() ?? null;
+                  },
+                  { key: PLITE_BROWSER_HANDLE_KEY }
+                ),
+                kernelTrace: await getHarness().get.kernelTrace(),
+                selection: await getHarness().selection.get(),
+              })
+            ).toEqual(step.texts);
             break;
-          case 'assertRenderedDOMShape':
+          }
+          case 'assertRenderedDOMShape': {
             await getHarness().assert.renderedDOMShape(step.shape);
             break;
-          case 'assertDOMSelection':
+          }
+          case 'assertDOMSelection': {
             await getHarness().assert.domSelection(step.selection);
             break;
-          case 'assertFocusOwner':
+          }
+          case 'assertFocusOwner': {
             await getHarness().assert.focusOwner(step.focusOwner);
             break;
-          case 'assertKernelTrace':
+          }
+          case 'assertKernelTrace': {
             await getHarness().assert.kernelTrace(step.trace);
             break;
-          case 'assertLastCommit':
+          }
+          case 'assertLastCommit': {
             await expect.poll(() => getHarness().get.lastCommit()).toBeTruthy();
             break;
+          }
           case 'assertLastCommitIncludesTags': {
             await expect
               .poll(async () => {
@@ -501,11 +522,12 @@ export const createEditorHarnessScenario = ({
               .toEqual(step.tags);
             break;
           }
-          case 'assertModelText':
+          case 'assertModelText': {
             await expect
               .poll(() => getHarness().get.modelText())
               .toContain(step.text);
             break;
+          }
           case 'assertLocatorText': {
             const locator = page.locator(step.selector).first();
             const getText = async () =>
@@ -519,34 +541,41 @@ export const createEditorHarnessScenario = ({
             }
             break;
           }
-          case 'assertSelection':
+          case 'assertSelection': {
             await getHarness().assert.selection(step.selection);
             break;
-          case 'assertSelectionContract':
+          }
+          case 'assertSelectionContract': {
             await assertPliteBrowserSelectionContract(
               getHarness(),
               step.expectation
             );
             break;
-          case 'assertSelectionLocation':
+          }
+          case 'assertSelectionLocation': {
             await expect
               .poll(() => getHarness().selection.location())
               .toMatchObject(step.location);
             break;
-          case 'assertSelectedText':
+          }
+          case 'assertSelectedText': {
             await expect
               .poll(() => getHarness().get.selectedText())
               .toBe(step.text);
             break;
-          case 'assertText':
+          }
+          case 'assertText': {
             await getHarness().assert.text(step.text);
             break;
-          case 'clickTestId':
+          }
+          case 'clickTestId': {
             await page.getByTestId(step.testId).click();
             break;
-          case 'clickSelector':
+          }
+          case 'clickSelector': {
             await page.locator(step.selector).first().click();
             break;
+          }
           case 'captureNodeKey': {
             const nodeKey = await root.evaluate(
               (
@@ -575,7 +604,7 @@ export const createEditorHarnessScenario = ({
             capturedNodeKeys.set(step.name, nodeKey);
             break;
           }
-          case 'composeText':
+          case 'composeText': {
             await getHarness().ime.compose({
               committedText: step.committedText,
               steps: step.steps,
@@ -583,19 +612,24 @@ export const createEditorHarnessScenario = ({
               transport: step.transport,
             });
             break;
-          case 'deleteBackward':
+          }
+          case 'deleteBackward': {
             await getHarness().deleteBackward();
             break;
-          case 'deleteForward':
+          }
+          case 'deleteForward': {
             await getHarness().deleteForward();
             break;
-          case 'dragTextSelection':
+          }
+          case 'dragTextSelection': {
             await dragTextSelection(page, step);
             break;
-          case 'clickTextOffset':
+          }
+          case 'clickTextOffset': {
             await clickTextOffset(root, step.path, step.offset);
             break;
-          case 'doubleClickTextOffset':
+          }
+          case 'doubleClickTextOffset': {
             if (step.selectedText === undefined) {
               await clickTextOffset(root, step.path, step.offset, {
                 clickCount: 2,
@@ -652,14 +686,16 @@ export const createEditorHarnessScenario = ({
                     domSelection
                   )}\nDisplayed selection: ${JSON.stringify(
                     displayedSelection
-                  )}\n${lastError instanceof Error ? lastError.message : String(lastError)}`
+                  )}\n${formatThrownValue(lastError)}`
                 );
               }
             }
             break;
-          case 'dropHtml':
+          }
+          case 'dropHtml': {
             await dropHtml(surface, root, step.html, step.text);
             break;
+          }
           case 'fillControl': {
             const control = page.locator(step.selector).first();
 
@@ -667,43 +703,55 @@ export const createEditorHarnessScenario = ({
             await expect(control).toHaveValue(step.value);
             break;
           }
-          case 'focus':
+          case 'focus': {
             await getHarness().focus();
             break;
-          case 'insertText':
+          }
+          case 'insertText': {
             await getHarness().insertText(step.text);
             break;
-          case 'mutateTextDOM':
+          }
+          case 'mutateTextDOM': {
             await mutateTextDOM(root, step);
             break;
-          case 'pasteHtml':
+          }
+          case 'pasteHtml': {
             await getHarness().clipboard.pasteHtml(step.html, step.text);
             break;
-          case 'pasteText':
+          }
+          case 'pasteText': {
             await getHarness().clipboard.pasteText(step.text);
             break;
-          case 'press':
+          }
+          case 'press': {
             await getHarness().press(step.key);
             break;
-          case 'rootClick':
+          }
+          case 'rootClick': {
             await getHarness().click();
             break;
-          case 'rootMouseDown':
+          }
+          case 'rootMouseDown': {
             await root.dispatchEvent('mousedown');
             break;
-          case 'resetRenderProfiler':
+          }
+          case 'resetRenderProfiler': {
             await resetPliteReactRenderProfiler(page);
             break;
-          case 'select':
+          }
+          case 'select': {
             await getHarness().selection.select(step.selection);
             break;
-          case 'selectDOM':
+          }
+          case 'selectDOM': {
             await getHarness().selection.selectDOM(step.selection);
             break;
-          case 'selectAll':
+          }
+          case 'selectAll': {
             await getHarness().selection.selectAll();
             break;
-          case 'settle':
+          }
+          case 'settle': {
             await page.waitForTimeout(0);
             await page.evaluate(
               () =>
@@ -713,8 +761,10 @@ export const createEditorHarnessScenario = ({
             );
             await page.waitForTimeout(step.timeoutMs ?? 25);
             break;
-          case 'snapshot':
+          }
+          case 'snapshot': {
             break;
+          }
           case 'typeThenUndo': {
             await getHarness().type(step.text);
             await assertDOMCaretExpectation(root, step.caretAfterType);
@@ -729,16 +779,16 @@ export const createEditorHarnessScenario = ({
               .toContain(step.expectedModelTextAfterUndo);
             break;
           }
-          case 'type':
+          case 'type': {
             await getHarness().type(step.text);
             break;
+          }
           case 'undo': {
             if (step.expectedModelTextBefore) {
               await expect
                 .poll(() => getHarness().get.modelText())
                 .toContain(step.expectedModelTextBefore);
             }
-
             await undoWithScenarioTransport();
             break;
           }

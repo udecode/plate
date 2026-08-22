@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
@@ -11,7 +10,8 @@ const REGISTRY_PATH = path.join(process.cwd(), 'public/r');
 // Capture screenshots.
 // ----------------------------------------------------------------------------
 async function captureScreenshots() {
-  const blockIds = (await getAllBlocks()).map((block) => block.name);
+  const allBlocks = getAllBlocks();
+  const blockIds = allBlocks.map((block) => block.name);
   const blocks = blockIds.filter((block) => {
     // Check if screenshots already exist
     const lightPath = path.join(REGISTRY_PATH, `${block}-light.png`);
@@ -63,7 +63,7 @@ async function captureScreenshots() {
         }
       });
       await page.screenshot({
-        path: screenshotPath as any,
+        path: screenshotPath as `${string}.png`,
       });
     }
     await page.close();

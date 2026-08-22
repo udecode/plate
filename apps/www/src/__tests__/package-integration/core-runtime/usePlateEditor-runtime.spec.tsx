@@ -23,7 +23,7 @@ describe('usePlateEditor Plite runtime route', () => {
     let replace: () => void = () => {
       throw new Error('runtime editor was not captured');
     };
-    let readRoot: () => readonly Value[number][] = () => {
+    let readRoot: () => ReadonlyArray<Value[number]> = () => {
       throw new Error('runtime editor was not captured');
     };
 

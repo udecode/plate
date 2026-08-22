@@ -22,6 +22,7 @@ import {
   isWebKitDOMHost,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
+  replaceDOMSelectionRange,
 } from '@platejs/plite-dom/internal';
 import type { RefObject } from 'react';
 
@@ -57,6 +58,7 @@ import type {
 import { isEditableOutsideFocusBoundarySettling } from './input-state';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
+  failInvariant,
   getSelection as editorGetSelection,
   getSelectionPrimaryRange,
   setEditorFocused,
@@ -183,10 +185,10 @@ export const isSelectionInEditorView = (
 };
 
 const getActiveElementInDocument = (targetDocument: Document) => {
-  let activeElement = targetDocument.activeElement;
+  let { activeElement } = targetDocument;
 
   while (activeElement?.shadowRoot?.activeElement) {
-    activeElement = activeElement.shadowRoot.activeElement;
+    ({ activeElement } = activeElement.shadowRoot);
   }
 
   return activeElement;
@@ -338,7 +340,7 @@ const captureScrollOffsets = (startElement: HTMLElement) => {
   }
 
   const window = startElement.ownerDocument.defaultView;
-  const scrollingElement = startElement.ownerDocument.scrollingElement;
+  const { scrollingElement } = startElement.ownerDocument;
 
   return () => {
     for (const { element, scrollLeft, scrollTop } of elements) {
@@ -570,15 +572,23 @@ const inferModelSelectionPreferenceReason = ({
 
   switch (selectionSource) {
     case 'app-owned':
-    case 'internal-control':
+    case 'internal-control': {
       return 'internal-control';
-    case 'composition-owned':
+    }
+    case 'composition-owned': {
       return 'composition';
-    case 'partial-dom-backed':
+    }
+    case 'partial-dom-backed': {
       return 'partial-dom-backed';
-    default:
+    }
+    case 'dom-current':
+    case 'model-owned':
+    case 'unknown': {
       return 'model-command';
+    }
   }
+
+  return failInvariant('Unexpected selection source');
 };
 
 export const isEditableModelSelectionPreferredForInput = ({
@@ -957,6 +967,7 @@ export const applyEditableDOMSelectionChange = ({
     const active = getActiveElementInDocument(editorDocument);
 
     if (active) {
+      // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit still requires execCommand('indent') to repair selection across a shadow-root editing host.
       editorDocument.execCommand('indent');
     } else {
       writePliteViewSelection(editor, null);
@@ -969,12 +980,13 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  const state = inputController.state;
+  const { state } = inputController;
   state.pendingNativeTextInputRepairSuppressedDOMSelection = false;
 
   if (
     (!isAndroidDOMHost(editorElement) && ReactEditor.isComposing(editor)) ||
     state.isDraggingInternally ||
+    state.isProjectingSelection ||
     isEditableOutsideFocusBoundarySettling(state)
   ) {
     return;
@@ -1371,7 +1383,7 @@ export const syncEditableDOMSelectionToEditor = ({
 
     const editorElement =
       explicitEditorElement ?? ReactEditor.assertDOMNode(editor, editor);
-    const activeElement = root.activeElement;
+    const { activeElement } = root;
     const editorHasDOMFocus =
       activeElement != null &&
       containsShadowAware(editorElement, activeElement);
@@ -1394,7 +1406,9 @@ export const syncEditableDOMSelectionToEditor = ({
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
       domSelection.removeAllRanges();
-      const clearNativeSelection = () => domSelection.removeAllRanges();
+      const clearNativeSelection = () => {
+        domSelection.removeAllRanges();
+      };
       const label = viewSelection
         ? 'view-selection'
         : SelectionApi.isNode(selection)
@@ -1432,6 +1446,7 @@ export const syncEditableDOMSelectionToEditor = ({
       applyDOMCoverageSelectionPolicy({
         domSelection,
         editor,
+        forceDOMRangeRebuild: options?.forceModelExport,
         onDOMSelectionWillChange: () => {
           state.isUpdatingSelection = true;
           state.selectionChangeOrigin = 'programmatic-export';
@@ -1472,7 +1487,13 @@ export const syncEditableDOMSelectionToEditor = ({
         ? captureScrollOffsets(editorElement)
         : null;
 
-      if (RangeApi.isBackward(projectedSelection)) {
+      const isBackward = RangeApi.isBackward(projectedSelection);
+
+      if (options?.forceModelExport) {
+        replaceDOMSelectionRange(domSelection, domRange, {
+          backward: isBackward,
+        });
+      } else if (isBackward) {
         domSelection.setBaseAndExtent(
           domRange.endContainer,
           domRange.endOffset,

@@ -218,7 +218,7 @@ describe('editor methods', () => {
 
   it('replaces a live node target and ignores a detached target', () => {
     const editor = setupEditor();
-    const target = editorGetChildren(editor)[1] as Element;
+    const target = editorGetChildren(editor)[1];
 
     editor.update((tx) => {
       tx.nodes.replace(paragraph('replacement'), { at: target });
@@ -274,7 +274,7 @@ describe('editor methods', () => {
       selection,
     });
 
-    const quote = editorGetChildren(editor)[0] as Element;
+    const quote = editorGetChildren(editor)[0];
     const text = quote.children[0];
 
     editor.update.nodes.replaceChildren(

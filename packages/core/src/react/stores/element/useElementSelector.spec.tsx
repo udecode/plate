@@ -11,7 +11,7 @@ describe('useElementSelector', () => {
   it('prefers the nearest matching scoped provider and otherwise falls back to the nearest provider', () => {
     const editor = createPlateEditor();
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => {
+    const Wrapper = ({ children }: { children: React.ReactNode }) => {
       const nameEntry = React.useMemo(
         () =>
           [
@@ -41,13 +41,13 @@ describe('useElementSelector', () => {
         <Plate editor={editor}>
           <ElementProvider
             element={nameEntry[0]}
-            entry={nameEntry as any}
+            entry={nameEntry}
             path={nameEntry[1]}
             scope="name"
           >
             <ElementProvider
               element={ageEntry[0]}
-              entry={ageEntry as any}
+              entry={ageEntry}
               path={ageEntry[1]}
               scope="age"
             >
@@ -63,7 +63,7 @@ describe('useElementSelector', () => {
         useElementSelector(([element]) => element.type, {
           scope: 'name',
         }),
-      { wrapper }
+      { wrapper: Wrapper }
     );
 
     expect(exactScope.result.current).toBe('name');
@@ -73,7 +73,7 @@ describe('useElementSelector', () => {
         useElementSelector(([element]) => element.type, {
           scope: 'missing',
         }),
-      { wrapper }
+      { wrapper: Wrapper }
     );
 
     expect(fallbackScope.result.current).toBe('age');
@@ -84,7 +84,7 @@ describe('useElementSelector', () => {
     const renderValues: number[] = [];
     let setEntry: React.Dispatch<React.SetStateAction<NodeEntry<Element>>>;
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => {
+    const Wrapper = ({ children }: { children: React.ReactNode }) => {
       const [entry, updateEntry] = React.useState<NodeEntry<Element>>([
         {
           children: [{ text: 'one' }],
@@ -121,7 +121,7 @@ describe('useElementSelector', () => {
 
         return value;
       },
-      { wrapper }
+      { wrapper: Wrapper }
     );
 
     expect(result.current).toBe(1);
@@ -157,7 +157,7 @@ describe('useElementSelector', () => {
       },
       [0],
     ] as any;
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>
         <ElementProvider
           element={entry[0]}
@@ -175,7 +175,7 @@ describe('useElementSelector', () => {
         useElementSelector(([element]) => `${element.type}-${suffix}`, {
           scope: 'element',
         }),
-      { initialProps: { suffix: 'one' }, wrapper }
+      { initialProps: { suffix: 'one' }, wrapper: Wrapper }
     );
 
     expect(result.current).toBe('paragraph-one');

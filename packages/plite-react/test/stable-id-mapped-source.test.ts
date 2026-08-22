@@ -142,7 +142,7 @@ describe('stable ID mapped source', () => {
         isEntityEqual: (left, right) => left.value === right.value,
         isItemEqual: (left, right) => left.value === right.value,
         isOutputEqual: (left, right) => {
-          comparisonCalls++;
+          comparisonCalls += 1;
           if (shouldThrow && comparisonCalls === 1) {
             throw new Error('comparison failed');
           }

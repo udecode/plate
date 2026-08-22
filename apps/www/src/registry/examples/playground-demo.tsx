@@ -47,7 +47,6 @@ export default function PlaygroundDemo({
     },
     [id, locale]
   );
-
   return (
     <Plate editor={editor}>
       <EditorContainer className={className}>

@@ -31,8 +31,12 @@ export function usePlateViewEditor<
   : TEnabled extends true | undefined
     ? StaticEditor<P>
     : StaticEditor<P> | null {
-  return React.useMemo((): any => {
-    if (options.enabled === false) return null;
-    return createStaticEditor(options);
-  }, [options?.id, options?.enabled, ...deps]);
+  return React.useMemo(
+    (): any => {
+      if (options.enabled === false) return null;
+      return createStaticEditor(options);
+    },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] This API intentionally keys editor ownership by id, enabled state, and caller-supplied dependencies rather than every options-object identity.
+    [options.id, options.enabled, ...deps]
+  );
 }

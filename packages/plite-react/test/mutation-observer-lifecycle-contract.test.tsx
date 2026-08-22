@@ -155,16 +155,18 @@ test('nested React commit claims stay isolated to their mounted root', async () 
     '[data-plite-editor]'
   );
 
-  roots[1]!.setAttribute('data-hostile', 'true');
-  act(() => firstStore.set('updated'));
+  roots[1].setAttribute('data-hostile', 'true');
+  act(() => {
+    firstStore.set('updated');
+  });
   await waitForMutations();
   firstRuntime.domPhaseScheduler.flush();
   secondRuntime.domPhaseScheduler.flush();
 
   expect(
-    roots[0]!.firstElementChild?.getAttribute('data-external-store-value')
+    roots[0].firstElementChild?.getAttribute('data-external-store-value')
   ).toBe('updated');
-  expect(roots[1]!.hasAttribute('data-hostile')).toBe(false);
+  expect(roots[1].hasAttribute('data-hostile')).toBe(false);
   expect(secondRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();

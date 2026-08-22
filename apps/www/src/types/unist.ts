@@ -9,11 +9,11 @@ export type NpmCommands = {
 
 export interface UnistNode extends Node {
   type: string;
-  attributes?: {
+  attributes?: Array<{
     name: string;
     value: unknown;
     type?: string;
-  }[];
+  }>;
   children?: UnistNode[];
   name?: string;
   properties?: {

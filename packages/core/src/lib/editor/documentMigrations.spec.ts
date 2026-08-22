@@ -14,7 +14,9 @@ const append = (document: EditorDocumentValue, suffix: string) => ({
   children: document.children.map((element) => ({
     ...element,
     children: element.children.map((child) =>
-      'text' in child ? { ...child, text: `${child.text}${suffix}` } : child
+      'text' in child
+        ? { ...child, text: `${String(child.text)}${suffix}` }
+        : child
     ),
   })),
 });
@@ -44,7 +46,7 @@ const source = (version: number, text = 'v') => ({
 });
 
 const text = (editor: ReturnType<typeof createBaseEditor>) =>
-  NodeApi.string(editor.read.children()[0]!);
+  NodeApi.string(editor.read.children()[0]);
 
 describe('document migrations', () => {
   it('runs every target-version step from v53 to v55', () => {
@@ -168,12 +170,12 @@ describe('document migrations', () => {
     const blankMigrations = defineDocumentMigrations(EditorSchema, {
       steps: {
         54: ({ document }) => {
-          calls++;
+          calls += 1;
 
           return document;
         },
         55: ({ document }) => {
-          calls++;
+          calls += 1;
 
           return document;
         },

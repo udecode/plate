@@ -27,7 +27,7 @@ describe('immutable history branches', () => {
     const value = editor.read.history();
 
     assert.equal(value.undos.length, 2);
-    assert(value.revision > 0);
+    assert.ok(value.revision > 0);
     assert.equal(Object.isFrozen(value), true);
     assert.equal(Object.isFrozen(value.undos), true);
     assert.equal(Object.isFrozen(value.undos[0]), true);
@@ -228,9 +228,9 @@ describe('immutable history branches', () => {
     editor.subscribe((_snapshot, commit) => {
       if (!commit) return;
 
-      commits++;
+      commits += 1;
       observedRevision = editor.read.history().revision;
-      assert(commit.tags.includes('history-restore'));
+      assert.ok(commit.tags.includes('history-restore'));
     });
 
     assert.equal(editor.read.history(), before);
@@ -251,7 +251,7 @@ describe('immutable history branches', () => {
     assert.equal(commits, 1);
     assert.equal(editor.read.history().undos.length, 1);
     assert.equal(observedRevision, editor.read.history().revision);
-    assert(observedRevision > before.revision);
+    assert.ok(observedRevision > before.revision);
 
     const restored = editor.read.history();
     const invalid = structuredClone(History.toJSON(source));

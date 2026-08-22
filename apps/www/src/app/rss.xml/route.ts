@@ -16,7 +16,7 @@ type ReleaseIndexEntry = {
   url: string;
 };
 
-export async function GET() {
+export function GET() {
   const items = (releaseIndexData as ReleaseIndexEntry[])
     .slice(0, maxRssItems)
     .map((release) => {

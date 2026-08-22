@@ -29,6 +29,7 @@ import {
 } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
+import { clearCrossEditorDragSession } from './cross-editor-drag-session';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
 import type {
@@ -37,6 +38,7 @@ import type {
   RepairDOMInput,
 } from './input-state';
 import { getNativeTextInsertDelta } from './native-text-input-delta';
+import { failInvariant } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { armModelOwnedTextInputGuard } from './selection-controller';
@@ -219,7 +221,7 @@ const getExpectedDeferredTextInputRepairTarget = ({
     return null;
   }
 
-  const path = selection.anchor.path;
+  const { path } = selection.anchor;
   const pathKey = path.join(',');
   const previousTarget =
     previousRepair?.pathKey === pathKey ? previousRepair.target : null;
@@ -440,12 +442,14 @@ const getReadOnlyDOMStringLengths = ({
       ? strings.indexOf(selectedString)
       : -1;
   const fallbackIndex = strings.findIndex((string) =>
-    string.textContent?.includes(nativeInput.data!)
+    string.textContent?.includes(
+      nativeInput.data ?? failInvariant('Expected value to be defined')
+    )
   );
   const targetIndex = selectedIndex >= 0 ? selectedIndex : fallbackIndex;
 
   if (targetIndex >= 0) {
-    lengths[targetIndex] = Math.max(0, lengths[targetIndex]! - extraLength);
+    lengths[targetIndex] = Math.max(0, lengths[targetIndex] - extraLength);
   }
 
   return lengths;
@@ -506,13 +510,13 @@ const getDOMInputRepairInsert = ({
     typeof nativeInput.data !== 'string' ||
     nativeInput.data.length === 0
   ) {
-    return;
+    return undefined;
   }
 
   const pliteNode = readRuntimeText(editor, path);
 
   if (!pliteNode || text === pliteNode.text) {
-    return;
+    return undefined;
   }
 
   const insert = getNativeTextInsertDelta({
@@ -540,7 +544,7 @@ const getRuntimeDOMInputRepairTarget = ({
     return null;
   }
 
-  const path = selection.anchor.path;
+  const { path } = selection.anchor;
   const pathAttribute = path.join(',');
   const textHost =
     getPliteNodeElementByPath(editor, path) ??
@@ -732,20 +736,21 @@ export const getDOMInputRepairTarget = (
       readRuntimeText(editor, runtimePath)
     ) {
       const targetPath = [...runtimePath] as Path;
-      const selectionOffset =
-        runtimeSelection!.anchor.offset + nativeTextLength;
+      const innerSelectionOffset =
+        (runtimeSelection ?? failInvariant('Expected value to be defined'))
+          .anchor.offset + nativeTextLength;
       const insert = getDOMInputRepairInsert({
         editor,
         nativeInput,
         path: targetPath,
-        selectionOffset,
+        selectionOffset: innerSelectionOffset,
         text: runtimeText,
       });
 
       return {
         ...(insert ? { insert } : {}),
         path: targetPath,
-        selectionOffset,
+        selectionOffset: innerSelectionOffset,
         text: runtimeText,
       };
     }
@@ -808,9 +813,11 @@ const restoreReadOnlyDOMText = ({
 };
 
 export const attachEditableGlobalDragLifecycleListeners = ({
+  editor,
   state,
   targetDocument,
 }: {
+  editor: ReactRuntimeEditor;
   state: EditableDragLifecycleState;
   targetDocument: Document;
 }) => {
@@ -821,6 +828,7 @@ export const attachEditableGlobalDragLifecycleListeners = ({
     state.draggedBlock = false;
     state.draggedRange = null;
     state.isDraggingInternally = false;
+    clearCrossEditorDragSession(targetDocument);
   };
   targetDocument.addEventListener('dragend', stoppedDragging);
   targetDocument.addEventListener('drop', stoppedDragging);
@@ -828,6 +836,7 @@ export const attachEditableGlobalDragLifecycleListeners = ({
   return () => {
     targetDocument.removeEventListener('dragend', stoppedDragging);
     targetDocument.removeEventListener('drop', stoppedDragging);
+    clearCrossEditorDragSession(targetDocument, editor);
   };
 };
 
@@ -846,7 +855,7 @@ export const useEditableRootRef = ({
   runtime: EditableDOMRuntime;
   scheduleOnDOMSelectionChange: CancelableCallback;
 }) => {
-  const editor = runtime.editor;
+  const { editor } = runtime;
 
   runtime.updateNativeInputHandlers({
     onDOMBeforeInput,
@@ -911,8 +920,9 @@ export const useEditableDOMInputHandler = ({
   const phaseScheduler = domPhaseScheduler;
   const restoreOwnedDOMText = useCallback(
     (nativeInput: InputEvent, rootElement: HTMLElement) => {
-      const restore = () =>
+      const restore = () => {
         restoreReadOnlyDOMText({ editor, nativeInput, rootElement });
+      };
 
       if (runOwnedDOMMutation) {
         runOwnedDOMMutation(restore);
@@ -975,7 +985,7 @@ export const useEditableDOMInputHandler = ({
       return;
     }
 
-    const anchorNode = domSelection.anchorNode;
+    const { anchorNode } = domSelection;
     const anchorElement = isDOMText(anchorNode)
       ? anchorNode.parentElement
       : isDOMElement(anchorNode)
@@ -1251,7 +1261,7 @@ export const useEditableDOMInputHandler = ({
     };
   }, [flushDeferredTextInputRepairs, rootRef]);
   const onDOMInput = useCallback(
-    (event: Event) =>
+    (event: Event) => {
       profileDOMInputDuration('dom-input-total', () => {
         const nativeInput = event as InputEvent;
 
@@ -1462,7 +1472,8 @@ export const useEditableDOMInputHandler = ({
           rootElement,
           target,
         })();
-      }),
+      });
+    },
     [
       deferNativeTextInputRepair,
       editor,

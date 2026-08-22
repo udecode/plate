@@ -19,7 +19,7 @@ describe('parseAttributes', () => {
       { name: 'label', type: 'mdxJsxAttribute', value: 'plain-text' },
       { name: 'missingValue', type: 'mdxJsxAttribute' },
       { type: 'mdxJsxExpressionAttribute', value: 'ignored' },
-    ] satisfies (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
+    ] satisfies Array<MdxJsxAttribute | MdxJsxExpressionAttribute>;
 
     expect(parseAttributes(attributes)).toEqual({
       config: { theme: 'dark' },

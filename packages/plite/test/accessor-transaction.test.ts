@@ -67,11 +67,11 @@ const getVisibleState = (editor: ReturnType<typeof createEditor>) => {
 describe('plite public accessor + transaction boundary', () => {
   it('sets one exact property by object and unsets it by schema handle', () => {
     const editor = createEditor<
-      readonly {
-        children: readonly { text: string }[];
+      ReadonlyArray<{
+        children: ReadonlyArray<{ text: string }>;
         id?: string;
         type: 'paragraph';
-      }[]
+      }>
     >({
       initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     });
@@ -166,7 +166,7 @@ describe('plite public accessor + transaction boundary', () => {
 
   it('internal transaction keeps direct replacement draft-visible and publishes once on exit', () => {
     const editor = createEditor();
-    const publishedStates: ReturnType<typeof getVisibleState>[] = [];
+    const publishedStates: Array<ReturnType<typeof getVisibleState>> = [];
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
 
@@ -295,7 +295,7 @@ describe('plite public accessor + transaction boundary', () => {
     assert.strictEqual(children, snapshot.children);
     assert.equal(Object.isFrozen(children), true);
     assert.equal(Object.isFrozen(children[0]), true);
-    assert.equal(Object.isFrozen(children[0]!.children), true);
+    assert.equal(Object.isFrozen(children[0].children), true);
 
     editor.update((tx) => {
       tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
@@ -320,15 +320,13 @@ describe('plite public accessor + transaction boundary', () => {
 
     const after = editor.read.runtime.snapshot();
     const commit = editor.read.lastCommit();
-    const changes = (
-      commit as unknown as {
-        changes: {
-          apply: (value: { children: readonly Element[] }) => {
-            children: readonly Element[];
-          };
+    const { changes } = commit as unknown as {
+      changes: {
+        apply: (value: { children: readonly Element[] }) => {
+          children: readonly Element[];
         };
-      }
-    ).changes;
+      };
+    };
 
     assert.ok(commit);
     assert.deepEqual(

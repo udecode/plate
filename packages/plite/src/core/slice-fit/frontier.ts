@@ -1,4 +1,5 @@
 import type { ContentSlice, Element } from '../../interfaces';
+import { getDefined } from '../../internal/get-defined';
 import type { PreparedTokenSlice } from '../change/tokens';
 import { prepareContentSliceVariant } from '../content-slice';
 import { profileCoreDuration } from '../profiling';
@@ -46,7 +47,7 @@ type PreparedOpenBlockFitCandidate = Readonly<{
 export type MaterializedSliceFitCandidate = SliceFitCandidateBase &
   Readonly<{
     insert: PreparedTokenSlice;
-    runtimeCandidatePaths?: readonly (readonly number[])[];
+    runtimeCandidatePaths?: ReadonlyArray<readonly number[]>;
     semanticChange?: Readonly<{
       from: number;
       insert: PreparedTokenSlice;
@@ -182,6 +183,9 @@ const createSliceFitFrontier = (
           boundary.from < exactFrom
             ? 4
             : 0);
+    const stateSerial = serial;
+
+    serial += 1;
     const state = Object.freeze({
       boundary,
       boundaryIndex,
@@ -190,7 +194,7 @@ const createSliceFitFrontier = (
       kind,
       openEnd,
       openStart,
-      serial: serial++,
+      serial: stateSerial,
     });
     let index = states.length;
 
@@ -198,8 +202,8 @@ const createSliceFitFrontier = (
     while (index > 0) {
       const parent = (index - 1) >> 1;
 
-      if (compare(states[parent]!, state) <= 0) break;
-      states[index] = states[parent]!;
+      if (compare(states[parent], state) <= 0) break;
+      states[index] = getDefined(states[parent]);
       index = parent;
     }
     states[index] = state;
@@ -219,13 +223,13 @@ const createSliceFitFrontier = (
       if (left >= states.length) break;
 
       const next =
-        right < states.length && compare(states[right]!, states[left]!) < 0
+        right < states.length && compare(states[right], states[left]) < 0
           ? right
           : left;
 
-      if (compare(states[next]!, last) >= 0) break;
+      if (compare(states[next], last) >= 0) break;
 
-      states[index] = states[next]!;
+      states[index] = getDefined(states[next]);
       index = next;
     }
 
@@ -314,6 +318,6 @@ export const selectSliceFitCandidate = (
 
     const candidates = input.candidates(prepared);
 
-    if (candidates.length > 0) return candidates[0]!;
+    if (candidates.length > 0) return candidates[0];
   }
 };

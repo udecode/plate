@@ -236,7 +236,7 @@ function EquationInput({
   }, [editor, element, isInline]);
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) return undefined;
 
     const timeoutId = window.setTimeout(() => {
       ref.current?.focus();
@@ -249,7 +249,9 @@ function EquationInput({
       }
     }, 0);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [open]);
 
   const setExpression = (latex: string) => {
@@ -286,7 +288,9 @@ function EquationInput({
     <TextareaAutosize
       ref={ref}
       value={element.latex}
-      onChange={(event) => setExpression(event.currentTarget.value)}
+      onChange={(event) => {
+        setExpression(event.currentTarget.value);
+      }}
       onKeyDown={(event) => {
         if (isHotkey('enter')(event)) {
           event.preventDefault();

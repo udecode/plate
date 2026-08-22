@@ -68,7 +68,8 @@ const collapsed = (path: number[], offset: number): TextSelection => ({
 describe('collab canonical remote reconcile contract', () => {
   it('publishes one remote replace commit, skips history, and preserves same-position anchors', () => {
     const editor = createCollabEditor();
-    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
+      [];
     const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
       if (commit) {
         commits.push(commit);

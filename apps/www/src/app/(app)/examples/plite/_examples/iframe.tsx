@@ -79,7 +79,11 @@ const IFrameExample = () => {
         <MarkButton format="underline" icon="format_underlined" />
         <MarkButton format="code" icon="code" />
       </Toolbar>
-      <IFrame onBlur={() => editor.api.dom.deselect()}>
+      <IFrame
+        onBlur={() => {
+          editor.api.dom.deselect();
+        }}
+      >
         <Editable
           autoFocus
           onKeyDown={(event) => {
@@ -89,6 +93,8 @@ const IFrameExample = () => {
                 return true;
               }
             }
+
+            return undefined;
           }}
           placeholder="Enter some rich text…"
           renderElement={ParagraphElement}
@@ -107,7 +113,12 @@ const ParagraphElement = ({
   <p {...attributes}>{children}</p>
 );
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps<CustomText>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -131,11 +142,15 @@ interface MarkButtonProps {
 
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
   const editor = useEditor();
-  const active = useEditorSelector((editor) => isMarkActive(editor, format));
+  const active = useEditorSelector((innerEditor) =>
+    isMarkActive(innerEditor, format)
+  );
   return (
     <Button
       active={active}
-      onClick={() => toggleMark(editor, format)}
+      onClick={() => {
+        toggleMark(editor, format);
+      }}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
         event.preventDefault();
       }}

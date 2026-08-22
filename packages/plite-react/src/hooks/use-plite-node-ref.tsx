@@ -63,9 +63,7 @@ const recordDOMTextSyncProfile = (id: string) => {
 };
 
 const parsePathKey = (key: string): Path =>
-  (key === ''
-    ? []
-    : key.split('.').map((part) => Number.parseInt(part, 10))) as Path;
+  key === '' ? [] : key.split('.').map((part) => Number.parseInt(part, 10));
 
 const getPathElementMap = (editor: Editor) => {
   const existing = EDITOR_TO_PATH_TO_ELEMENT.get(editor);
@@ -328,7 +326,7 @@ const parseDOMPath = (value: string | null): Path | null => {
 
   const path = value.split(',').map((part) => Number.parseInt(part, 10));
 
-  return path.every(Number.isFinite) ? (path as Path) : null;
+  return path.every(Number.isFinite) ? path : null;
 };
 
 export const getPliteNodePathFromDOMElement = (
@@ -373,7 +371,7 @@ const getProjectedDOMTextSyncLeafRanges = (
   const ranges: DOMTextSyncLeafRange[] = [];
 
   for (let index = 0; index < leaves.length; index += 1) {
-    const leaf = leaves[index]!;
+    const leaf = leaves[index];
     const string = strings[index];
 
     if (!(string instanceof HTMLElement)) {
@@ -457,7 +455,7 @@ const syncChangedProjectedTextToDOM = ({
   );
 
   ranges.forEach((range, index) => {
-    const removedRange = removedRanges[index]!;
+    const removedRange = removedRanges[index];
     const start =
       index !== insertLeafIndex && removedRange.start >= prefix
         ? removedRange.start + insertedLength
@@ -515,7 +513,7 @@ const syncChangedTextToElement = ({
     strings.length === 1 &&
     element.textContent?.replace(/\uFEFF/g, '') === nextText
   ) {
-    claimCanonicalStringDOM(strings[0]!);
+    claimCanonicalStringDOM(strings[0]);
     recordDOMTextSyncProfile('already-synced-custom-shell');
     return true;
   }
@@ -533,7 +531,7 @@ const syncChangedTextToElement = ({
     return false;
   }
 
-  const stringElement = strings[0]!;
+  const stringElement = strings[0];
 
   if (nextText.length === 0) {
     markDOMSyncMutationTarget(stringElement, 'childList');
@@ -605,7 +603,7 @@ const claimCanonicalStringDOM = (stringElement: Element) => {
 };
 
 const readTextAtPath = (editor: Editor, path: Path) => {
-  if (!editorHasPath(editor, path)) return;
+  if (!editorHasPath(editor, path)) return undefined;
 
   const entry = editor.read((state) => state.nodes.get(path));
 
@@ -693,7 +691,7 @@ export const syncChangedTextToDOM = (
 
     const previousText =
       syncedValues.get(nodeKey) ??
-      elements[0]!.textContent?.replace(/\uFEFF/g, '');
+      elements[0].textContent?.replace(/\uFEFF/g, '');
 
     if (previousText == null) {
       recordDOMTextSyncProfile('skip-no-previous-text');
@@ -885,6 +883,22 @@ export const usePliteNodeRef = (
     return cleanupBinding;
   }, [bindNode, cleanupBinding]);
 
+  useIsomorphicLayoutEffect(() => {
+    const element = nodeRef.current;
+
+    if (!editor || !nodeKey || !(element instanceof HTMLElement)) {
+      return;
+    }
+    const livePath = editorGetPathByNodeKey(editor, nodeKey);
+
+    if (
+      livePath &&
+      element.getAttribute('data-plite-path') !== livePath.join(',')
+    ) {
+      syncPliteElementPath({ editor, element, path: livePath, nodeKey });
+    }
+  });
+
   return useCallback(
     (nextNode: Node | null) => {
       if (nodeRef.current === nextNode) {
@@ -910,7 +924,7 @@ export const usePliteNodeKeyDOMValue = (nodeKey: NodeKey | null) => {
     () => false
   );
 
-  if (!nodeKey) return;
+  if (!nodeKey) return undefined;
 
   return isMounted ? nodeKey : getNodeKeyDOMValue(nodeKey);
 };

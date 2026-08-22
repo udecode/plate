@@ -32,11 +32,11 @@ const isActiveHardAffinityBoundary = (
 ) => {
   if (!path) return false;
   const match = editor.read((state) => {
-    if (!state.selection.isCollapsed()) return;
+    if (!state.selection.isCollapsed()) return undefined;
 
     const focus = state.selection()?.focus;
 
-    if (!focus) return;
+    if (!focus) return undefined;
 
     const selectedText = state.nodes.get(focus.path)?.[0];
 
@@ -73,7 +73,7 @@ export const pluginRenderLeaf = (
   editor: PlateEditor,
   plugin: AnyResolvedPlatePlugin
 ): RenderLeaf =>
-  function render(props) {
+  function RenderLeaf(props) {
     const readOnly = useEditorReadOnly();
     const {
       render: { leaf: leafComponent, node },
@@ -92,8 +92,7 @@ export const pluginRenderLeaf = (
         !plugin.render.nodeProps;
 
       if (canUseSimpleLeaf && !plugin.rules.selection?.affinity) {
-        const Tag = (plugin.render?.as ??
-          'span') as keyof HTMLElementTagNameMap;
+        const Tag = plugin.render?.as ?? 'span';
         const attributes = getSimpleLeafAttributes(
           props,
           getPluginNodeClass(plugin.name) || undefined
@@ -103,8 +102,7 @@ export const pluginRenderLeaf = (
       }
 
       if (canUseSimpleLeaf && plugin.rules.selection?.affinity === 'hard') {
-        const Tag = (plugin.render?.as ??
-          'span') as keyof HTMLElementTagNameMap;
+        const Tag = plugin.render?.as ?? 'span';
         const attributes = getSimpleLeafAttributes(
           props,
           getPluginNodeClass(plugin.name) || undefined
@@ -140,7 +138,7 @@ export const pluginRenderLeaf = (
         plugin,
         props: props as any,
         readOnly,
-      }) as any;
+      });
 
       const defaultProps = Component ? {} : { as: plugin.render?.as };
 

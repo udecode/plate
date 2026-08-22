@@ -93,15 +93,21 @@ function insertMedia(
   input: { name?: string; url: string }
 ) {
   switch (plugin.name) {
-    case BaseAudioPlugin.name:
+    case BaseAudioPlugin.name: {
       return editor.plugin(plugin).update.insert(input);
-    case BaseFilePlugin.name:
+    }
+    case BaseFilePlugin.name: {
       return editor.plugin(plugin).update.insert(input);
-    case BaseImagePlugin.name:
+    }
+    case BaseImagePlugin.name: {
       return editor.plugin(plugin).update.insert(input);
-    case BaseVideoPlugin.name:
+    }
+    case BaseVideoPlugin.name: {
       return editor.plugin(plugin).update.insert(input);
+    }
   }
+
+  return undefined;
 }
 
 export function MediaToolbarButton({
@@ -125,19 +131,18 @@ export function MediaToolbarButton({
 
   return (
     <>
-      <ToolbarSplitButton
-        onClick={() => {
-          openFilePicker();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            setOpen(true);
-          }
-        }}
-        pressed={open}
-      >
-        <ToolbarSplitButtonPrimary>
+      <ToolbarSplitButton pressed={open}>
+        <ToolbarSplitButtonPrimary
+          onClick={() => {
+            openFilePicker();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setOpen(true);
+            }
+          }}
+        >
           {currentConfig.icon}
         </ToolbarSplitButtonPrimary>
 
@@ -152,16 +157,26 @@ export function MediaToolbarButton({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             align="start"
             alignOffset={-32}
           >
             <DropdownMenuGroup>
-              <DropdownMenuItem onSelect={() => openFilePicker()}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  openFilePicker();
+                }}
+              >
                 {currentConfig.icon}
                 Upload from computer
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setDialogOpen(true)}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setDialogOpen(true);
+                }}
+              >
                 <LinkIcon />
                 Insert via URL
               </DropdownMenuItem>
@@ -210,6 +225,8 @@ function MediaUrlDialogContent({
     };
 
     insertMedia(editor, plugin, input);
+
+    return undefined;
   }, [url, editor, plugin, setOpen]);
 
   return (
@@ -220,7 +237,7 @@ function MediaUrlDialogContent({
 
       <AlertDialogDescription className="group relative w-full">
         <label
-          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
+          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-[top,font-size,color] group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
           htmlFor="url"
         >
           <span className="inline-flex bg-background px-2">URL</span>
@@ -229,7 +246,9 @@ function MediaUrlDialogContent({
           id="url"
           className="w-full"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') embedMedia();
           }}

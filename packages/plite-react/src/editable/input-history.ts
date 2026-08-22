@@ -71,7 +71,7 @@ export const updateNativeTextInput = (
         : getNativeTextInputUpdateTags(editor)
   );
 
-  profileEditableMutationDuration('native-text-input-update', () =>
-    getEditorRuntime(editor).update(update, { tags })
-  );
+  profileEditableMutationDuration('native-text-input-update', () => {
+    getEditorRuntime(editor).update(update, { tags });
+  });
 };

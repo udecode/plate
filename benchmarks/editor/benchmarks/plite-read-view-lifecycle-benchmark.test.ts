@@ -26,18 +26,18 @@ describe('read-view lifecycle benchmark authority', () => {
     );
 
     assert.equal(targets.length, 1);
-    assert.match(targets[0]!.command, /PLITE_READ_VIEW_LIFECYCLE_STRICT=1/u);
+    assert.match(targets[0].command, /PLITE_READ_VIEW_LIFECYCLE_STRICT=1/u);
     assert.match(
-      targets[0]!.command,
+      targets[0].command,
       /plite-read-view-lifecycle-benchmark\.ts/u
     );
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_read_view_lifecycle_width_ratio'
     );
-    assert.equal(targets[0]!.metrics.printsMetric, true);
-    assert.equal(targets[0]!.metrics.unit, 'ratio');
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.equal(targets[0].metrics.printsMetric, true);
+    assert.equal(targets[0].metrics.unit, 'ratio');
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/plite-read-view-lifecycle-benchmark.json',
         required: true,

@@ -8,6 +8,7 @@ import type {
   Text,
 } from '@platejs/plite';
 import { ElementApi } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
@@ -39,8 +40,8 @@ type MutableElement = {
 };
 type DeepMutable<T> = T extends (...args: any[]) => unknown
   ? T
-  : T extends readonly (infer TValue)[]
-    ? DeepMutable<TValue>[]
+  : T extends ReadonlyArray<infer TValue>
+    ? Array<DeepMutable<TValue>>
     : T extends object
       ? { -readonly [TKey in keyof T]: DeepMutable<T[TKey]> }
       : T;
@@ -256,8 +257,7 @@ const deepFreeze = <T>(value: T): T => {
   return value;
 };
 
-const freezePath = (path: readonly number[]): Path =>
-  Object.freeze([...path]) as Path;
+const freezePath = (path: readonly number[]): Path => Object.freeze([...path]);
 
 const freezeOperation = (operation: MutableOperation): TableOperation => {
   const frozen = cloneDeep(operation);
@@ -303,7 +303,7 @@ const targetAnchor = (
   target: TableTarget
 ): TableGridAnchor | undefined => {
   if (target.anchorKey) return context.grid.byKey.get(target.anchorKey);
-  if (!target.anchorPath) return;
+  if (!target.anchorPath) return undefined;
 
   const relative =
     target.anchorPath.length === 2
@@ -350,7 +350,7 @@ const rowIsHeader = (row: TableRowElement) =>
   (row.children as readonly TableCellElement[]).every(cellIsHeader);
 
 const resizeColumnSizes = (
-  columnWidths: readonly (number | null)[],
+  columnWidths: ReadonlyArray<number | null>,
   index: number,
   columnCount: number,
   initialTableWidth?: number,
@@ -442,7 +442,7 @@ const firstTextPoint = (
         : nodes.map((_, index) => index).reverse();
 
     for (const index of indexes) {
-      const node = nodes[index] as Descendant;
+      const node = nodes[index];
 
       if (typeof node.text === 'string') {
         return {
@@ -460,6 +460,8 @@ const firstTextPoint = (
 
       if (point) return point;
     }
+
+    return undefined;
   };
 
   return visit(cell.children, [...cellPath]);
@@ -481,7 +483,7 @@ const selectionForTable = (
     grid.slots[target.row ?? 0]?.[target.col ?? 0] ??
     grid.anchors[0];
 
-  if (!anchor) return;
+  if (!anchor) return undefined;
 
   const point = firstTextPoint(
     anchor.cell,
@@ -489,7 +491,7 @@ const selectionForTable = (
     target.edge ?? 'start'
   );
 
-  if (!point) return;
+  if (!point) return undefined;
 
   return deepFreeze({
     anchor: point,
@@ -517,7 +519,7 @@ const selectionForTableTargets = (
   const anchor = selectionForTable(table, tablePath, target.anchor)?.anchor;
   const focus = selectionForTable(table, tablePath, target.focus)?.focus;
 
-  if (!anchor || !focus) return;
+  if (!anchor || !focus) return undefined;
 
   return deepFreeze({
     anchor,
@@ -675,7 +677,7 @@ const planInsertRow = (
     )
   );
   const operations: MutableOperation[] = [];
-  const newCells: { cell: RuntimeTableCellElement; col: number }[] = [];
+  const newCells: Array<{ cell: RuntimeTableCellElement; col: number }> = [];
 
   for (const anchor of affected) {
     if (anchor.row + anchor.rowSpan - 1 >= insertRow && !firstRow) {
@@ -758,8 +760,12 @@ const planRemoveColumn = (
 
   if (intent.startCol === undefined && !selected) return missingAnchor(intent);
 
-  const start = intent.startCol ?? selected!.col;
-  const count = intent.columnCount ?? selected!.colSpan;
+  const start =
+    intent.startCol ??
+    (selected ?? failInvariant('Expected value to be defined')).col;
+  const count =
+    intent.columnCount ??
+    (selected ?? failInvariant('Expected value to be defined')).colSpan;
   const end = start + count - 1;
 
   if (count >= context.grid.width) {
@@ -846,8 +852,12 @@ const planRemoveRow = (
 
   if (intent.startRow === undefined && !selected) return missingAnchor(intent);
 
-  const start = intent.startRow ?? selected!.row;
-  const count = intent.rowCount ?? selected!.rowSpan;
+  const start =
+    intent.startRow ??
+    (selected ?? failInvariant('Expected value to be defined')).row;
+  const count =
+    intent.rowCount ??
+    (selected ?? failInvariant('Expected value to be defined')).rowSpan;
   const end = start + count - 1;
 
   if (count >= context.grid.height) {
@@ -855,8 +865,10 @@ const planRemoveRow = (
   }
 
   const operations: MutableOperation[] = [];
-  const moved: { anchor: TableGridAnchor; cell: RuntimeTableCellElement }[] =
-    [];
+  const moved: Array<{
+    anchor: TableGridAnchor;
+    cell: RuntimeTableCellElement;
+  }> = [];
 
   for (const anchor of context.grid.anchors) {
     const anchorEnd = anchor.row + anchor.rowSpan - 1;
@@ -1135,7 +1147,7 @@ const prepareTableRepair = (
 ): PreparedTableRepair | TableMutationDiagnostic => {
   const operations: MutableOperation[] = [];
   let context = initialContext;
-  let table = initialContext.table;
+  let { table } = initialContext;
   const maxPasses = Math.max(
     4,
     context.grid.anchors.length + context.grid.problems.length + 2
@@ -1172,12 +1184,10 @@ const prepareTableRepair = (
       for (let row = context.grid.height; row < requiredHeight; row++) {
         step.push({
           kind: 'insert-node',
-          node:
-            intent.createRow?.(row) ??
-            ({
-              children: [],
-              type: fallbackRowType ?? 'tableRow',
-            } as TableRowElement),
+          node: intent.createRow?.(row) ?? {
+            children: [],
+            type: fallbackRowType ?? 'tableRow',
+          },
           path: absolutePath(context, [row]),
         });
       }
@@ -1221,21 +1231,28 @@ const prepareTableRepair = (
 
       for (const problem of spanProblems) {
         switch (problem.kind) {
-          case 'collision':
+          case 'collision': {
             updateSpan(problem, 'colSpan', 1);
             updateSpan(problem, 'rowSpan', 1);
             break;
-          case 'invalid-col-span':
+          }
+          case 'invalid-col-span': {
             updateSpan(problem, 'colSpan', 1);
             break;
-          case 'invalid-row-span':
+          }
+          case 'invalid-row-span': {
             updateSpan(problem, 'rowSpan', 1);
             break;
-          case 'row-span-overflow':
+          }
+          case 'row-span-overflow': {
             if (!intent.extendRowSpans) {
               updateSpan(problem, 'rowSpan', problem.actual);
             }
             break;
+          }
+          case 'uncovered-slot': {
+            break;
+          }
         }
       }
 
@@ -1340,27 +1357,38 @@ export const planTableMutation = (
   intent: TableIntent
 ): TableMutationDiagnostic | TableMutationPlan => {
   switch (intent.kind) {
-    case 'insert-column':
+    case 'insert-column': {
       return planInsertColumn(context, intent);
-    case 'insert-row':
+    }
+    case 'insert-row': {
       return planInsertRow(context, intent);
-    case 'insert-table':
+    }
+    case 'insert-table': {
       return planInsertTable(context, intent);
-    case 'merge':
+    }
+    case 'merge': {
       return planMerge(context, intent);
-    case 'remove-column':
+    }
+    case 'remove-column': {
       return planRemoveColumn(context, intent);
-    case 'remove-row':
+    }
+    case 'remove-row': {
       return planRemoveRow(context, intent);
-    case 'remove-table':
+    }
+    case 'remove-table': {
       return freezePlan([
         { kind: 'remove-table', path: freezePath(context.tablePath) },
       ]);
-    case 'repair':
+    }
+    case 'repair': {
       return planRepair(context, intent);
-    case 'split':
+    }
+    case 'split': {
       return planSplit(context, intent);
+    }
   }
+
+  return failInvariant('Unexpected table mutation intent');
 };
 
 const mutableNodeAt = (
@@ -1372,7 +1400,7 @@ const mutableNodeAt = (
   for (const index of path) {
     const next = node.children[index];
 
-    if (!next || !isMutableElement(next)) return;
+    if (!next || !isMutableElement(next)) return undefined;
     node = next;
   }
 
@@ -1382,7 +1410,7 @@ const mutableNodeAt = (
 const applyOperations = (
   table: Element,
   tablePath: readonly number[],
-  operations: readonly (MutableOperation | TableOperation)[]
+  operations: ReadonlyArray<MutableOperation | TableOperation>
 ): Element | null => {
   const next = cloneMutableTable(table);
 
@@ -1420,8 +1448,9 @@ const applyOperations = (
 
     const node = mutableNodeAt(next, relative);
 
-    if (!node)
+    if (!node) {
       throw new Error(`Invalid table operation path ${operation.path}`);
+    }
 
     if (operation.kind === 'replace-children') {
       node.children = operation.children.map(cloneMutableDescendant);
@@ -1449,27 +1478,32 @@ export const applyTableMutationPlan = (
 ) => {
   for (const operation of plan.operations) {
     switch (operation.kind) {
-      case 'insert-node':
+      case 'insert-node': {
         tx.nodes.insert(operation.node, {
           ...operation.options,
           at: operation.path,
         });
         break;
+      }
       case 'remove-node':
-      case 'remove-table':
+      case 'remove-table': {
         tx.nodes.remove({ at: operation.path });
         break;
-      case 'replace-children':
+      }
+      case 'replace-children': {
         tx.nodes.replaceChildren(operation.children, {
           at: operation.path,
         });
         break;
-      case 'set-node':
+      }
+      case 'set-node': {
         tx.nodes.set(operation.properties, { at: operation.path });
         break;
-      case 'unset-node':
+      }
+      case 'unset-node': {
         tx.nodes.unset(operation.keys, { at: operation.path });
         break;
+      }
     }
   }
 

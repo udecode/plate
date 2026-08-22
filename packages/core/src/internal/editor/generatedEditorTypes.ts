@@ -3,7 +3,6 @@ import type {
   EditorValueTypeProvider,
   Element,
   SchemaPropertyHandle,
-  SchemaPropertyKey,
   Text,
   Value,
 } from '@platejs/plite';
@@ -14,9 +13,7 @@ type GeneratedEditorSchema = Readonly<{
   plugins: Readonly<
     Record<string, Readonly<{ key: string }> | Readonly<{ type: string }>>
   >;
-  properties: Readonly<
-    Record<string, SchemaPropertyHandle<SchemaPropertyKey> | undefined>
-  >;
+  properties: Readonly<Record<string, SchemaPropertyHandle | undefined>>;
 }>;
 
 type GeneratedEditorTypes<

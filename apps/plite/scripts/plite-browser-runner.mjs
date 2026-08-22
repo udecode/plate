@@ -1,5 +1,3 @@
-/* oxlint-disable no-loop-func -- These callbacks close over the current block-scoped iteration binding; there is no shared var binding whose value can drift. */
-/* oxlint-disable no-unmodified-loop-condition -- This loop intentionally delegates condition mutation or exits after the first iterator result; rewriting it would obscure the iterator protocol. */
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
@@ -26,6 +24,13 @@ export const DEFAULT_SERIAL_TESTS_PER_PROCESS = 3;
 export const DEFAULT_UNIT_WORKERS = 4;
 export const MAX_BROWSER_WORKERS = 8;
 export const BROWSER_PROFILE_ANNOTATION = 'plite-browser-profile';
+
+export const getPliteBrowserProjects = (platform = process.platform) => [
+  'chromium',
+  'firefox',
+  'mobile',
+  ...(platform === 'darwin' ? ['webkit', 'mobile-webkit'] : []),
+];
 const jobPattern = /^(\d+)\/(\d+)$/;
 const contextFailurePattern = /browserContext\.newPage/i;
 const launchFailurePattern = /browserType\.(?:launch|connect)/i;
@@ -246,14 +251,18 @@ export const runProjectPool = async ({
   let generation = 0;
   let stopPromise;
   const cancel = () => {
-    generation++;
+    generation += 1;
     stopPromise ??= Promise.resolve().then(stopSiblings);
 
     return stopPromise;
   };
   const runNext = async () => {
-    while (generation === 0) {
-      const project = projects[cursor++];
+    for (;;) {
+      if (generation !== 0) return;
+
+      const project = projects[cursor];
+
+      cursor += 1;
 
       if (!project) return;
 
@@ -293,7 +302,7 @@ export const runProjectPool = async ({
     Array.from({ length: boundedConcurrency }, () => runNext())
   );
 
-  // oxlint-disable-next-line typescript/only-throw-error -- [P1 error-identity] Preserve the first worker rejection unchanged.
+  // oxlint-disable-next-line typescript/only-throw-error -- The runner must propagate the first child-process failure value unchanged.
   if (firstError) throw firstError;
 
   return failedStatus;
@@ -383,17 +392,17 @@ const escapeRegex = (value) =>
 
 const createUnit = (selectionGroups, profile) => {
   const selectionMode = selectionGroups[0].mode;
-  const tests = selectionGroups.flatMap(({ tests }) => tests);
+  const tests = selectionGroups.flatMap(({ tests: innerTests }) => innerTests);
   const files = [...new Set(tests.map(({ file }) => file))];
   const testIds = tests.map(({ id }) => id);
   const testTimeouts = tests.map(({ id, timeoutMs }) => ({ id, timeoutMs }));
   const selections = selectionGroups.map(
-    ({ file, fullTitle, line, mode, tests }) => ({
+    ({ file, fullTitle, line, mode, tests: innerTests2 }) => ({
       file,
       fullTitle,
       line,
       mode,
-      testIds: tests.map(({ id }) => id),
+      testIds: innerTests2.map(({ id }) => id),
     })
   );
   const selectors =
@@ -951,14 +960,19 @@ export const createBrowserRunSummary = ({
   unitTimeoutFloorMs,
   unitWorkers,
 }) => {
-  const results = completedUnits.flatMap(({ results }) => results);
+  const results = completedUnits.flatMap(
+    ({ results: innerResults }) => innerResults
+  );
   const executedTestIds = results.map(({ id }) => id);
   const passedTestIds = results
     .filter(({ status: resultStatus }) => resultStatus === 'passed')
     .map(({ id }) => id);
   const skippedTests = results
     .filter(({ status: resultStatus }) => resultStatus === 'skipped')
-    .map(({ id, skipReason }) => ({ id, reason: skipReason }));
+    .map(({ id, skipReason: innerSkipReason }) => ({
+      id,
+      reason: innerSkipReason,
+    }));
   const selectedPlannedTestIds = selectedUnits.flatMap(
     ({ testIds }) => testIds
   );
@@ -1099,7 +1113,7 @@ export const verifyMergedSummaries = (summaries, requiredProjects) => {
     }
 
     const executedTestIds = projectSummaries.flatMap(
-      ({ executedTestIds }) => executedTestIds
+      ({ executedTestIds: innerExecutedTestIds }) => innerExecutedTestIds
     );
     const outcomeIds = projectSummaries.flatMap((summary) => [
       ...(summary.passedTestIds ?? []),

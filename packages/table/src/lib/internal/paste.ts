@@ -90,8 +90,8 @@ export type TableCellDropPlan = Readonly<{
 
 type DeepMutable<T> = T extends (...args: any[]) => unknown
   ? T
-  : T extends readonly (infer TValue)[]
-    ? DeepMutable<TValue>[]
+  : T extends ReadonlyArray<infer TValue>
+    ? Array<DeepMutable<TValue>>
     : T extends object
       ? { -readonly [TKey in keyof T]: DeepMutable<T[TKey]> }
       : T;
@@ -139,8 +139,7 @@ const repairableProblem = (problem: TableGridProblem) =>
   problem.kind === 'row-span-overflow' ||
   problem.kind === 'uncovered-slot';
 
-const freezePath = (path: readonly number[]): Path =>
-  Object.freeze([...path]) as Path;
+const freezePath = (path: readonly number[]): Path => Object.freeze([...path]);
 
 const absolutePath = (
   context: TableContext,
@@ -209,7 +208,7 @@ const repairTable = (
     return Object.freeze({
       kind: owner === 'source' ? 'invalid-source' : 'invalid-target',
       reason: 'repair-stalled',
-    }) as TablePasteDiagnostic;
+    });
   }
 
   return Object.freeze({
@@ -234,9 +233,9 @@ export const getTablePasteElement = (
     content.every((node) => ElementApi.isElement(node) && node.type === rowType)
   ) {
     return {
-      children: content as TableRowElement[],
+      children: content,
       type: tableType,
-    } as Element;
+    };
   }
 
   if (
@@ -255,7 +254,7 @@ export const getTablePasteElement = (
         },
       ],
       type: tableType,
-    } as Element;
+    };
   }
 
   return null;
@@ -373,7 +372,7 @@ const firstTextPoint = (
       : nodes.map((_, index) => index).reverse();
 
   for (const index of indexes) {
-    const node = nodes[index] as Descendant;
+    const node = nodes[index];
     const nextPath = path.concat(index);
 
     if (typeof node.text === 'string') {
@@ -576,7 +575,7 @@ export const planPreparedTablePaste = (
 
   if ('kind' in repaired) return repaired;
 
-  const context = repaired.context;
+  const { context } = repaired;
   const { endCol, endRow, startCol, startRow } = targetDimensions(
     context,
     prepared,
@@ -633,7 +632,7 @@ export const planPreparedTablePaste = (
   for (let row = startRow; row < endRow; row++) rowsToRebuild.add(row);
 
   for (const anchor of intersecting) {
-    for (let row = anchor.row; row < anchor.row + anchor.rowSpan; row++) {
+    for (let { row } = anchor; row < anchor.row + anchor.rowSpan; row++) {
       rowsToRebuild.add(row);
     }
   }
@@ -692,8 +691,8 @@ export const planPreparedTablePaste = (
   }
 
   for (const anchor of intersecting) {
-    for (let row = anchor.row; row < anchor.row + anchor.rowSpan; row++) {
-      for (let col = anchor.col; col < anchor.col + anchor.colSpan; col++) {
+    for (let { row } = anchor; row < anchor.row + anchor.rowSpan; row++) {
+      for (let { col } = anchor; col < anchor.col + anchor.colSpan; col++) {
         const inside =
           row >= startRow && row < endRow && col >= startCol && col < endCol;
 
@@ -996,7 +995,7 @@ const applyFocusedTableOperations = (
 
       rows[row] = {
         ...current,
-        children: operation.children as readonly TableCellElement[],
+        children: operation.children,
       };
       continue;
     }
@@ -1016,13 +1015,13 @@ const applyFocusedTableOperations = (
   return Object.freeze({
     ...table,
     children: Object.freeze(rows),
-  }) as Element;
+  });
 };
 
 const tagTableCells = (
   table: Element,
   tablePath: Path,
-  cells: readonly Readonly<{ key: NodeKey; path: Path }>[]
+  cells: ReadonlyArray<Readonly<{ key: NodeKey; path: Path }>>
 ): Element | null => {
   const tagged = cloneDeep(table);
 
@@ -1105,7 +1104,7 @@ const selectedSourceTable = (
   return Object.freeze({
     ...table,
     children: Object.freeze(rows),
-  }) as Element;
+  });
 };
 
 const clearTableCells = (
@@ -1158,7 +1157,7 @@ const clearTableCells = (
   return Object.freeze({
     ...table,
     children: Object.freeze(rows),
-  }) as Element;
+  });
 };
 
 const tableCellSelection = (
@@ -1220,7 +1219,7 @@ const tableCellSelection = (
     cells: Object.freeze(cells),
     focus: last.focus,
     kind: 'table-cell',
-  }) as Range;
+  });
 };
 
 const targetBoundsForDrop = (
@@ -1267,7 +1266,7 @@ export const planTableCellDrop = (
     return Object.freeze({ kind: 'stale-drag', reason: 'editor-mismatch' });
   }
 
-  const version = editor.read.runtime.snapshot().version;
+  const { version } = editor.read.runtime.snapshot();
 
   if (source.version !== version || target.version !== version) {
     return Object.freeze({ kind: 'stale-drag', reason: 'version-mismatch' });
@@ -1313,20 +1312,20 @@ export const planTableCellDrop = (
   }
 
   const sourceTable = tagTableCells(
-    currentSource as Element,
+    currentSource,
     source.tablePath,
-    sourceCells as readonly Readonly<{ key: NodeKey; path: Path }>[]
+    sourceCells as ReadonlyArray<Readonly<{ key: NodeKey; path: Path }>>
   );
 
   if (!sourceTable) {
     return Object.freeze({ kind: 'stale-drag', reason: 'missing-table' });
   }
 
-  const targetTable = currentTarget as Element;
+  const targetTable = currentTarget;
   const sourceElement = selectedSourceTable(sourceTable, source);
 
   if (!ElementApi.isElement(sourceElement)) {
-    return sourceElement as TablePasteDiagnostic;
+    return sourceElement;
   }
 
   const createCell: TableCellFactory = ({ children, header, sourceRow }) =>

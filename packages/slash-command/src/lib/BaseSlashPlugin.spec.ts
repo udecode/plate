@@ -37,8 +37,8 @@ describe('BaseSlashPlugin', () => {
     expect(inputPlugin.name).toBe(PLUGINS.slashInput);
     expect(plugin.editOnly).toBe(true);
     expect(state.trigger).toBe('/');
-    const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
-    const createComboboxInput = state.createComboboxInput;
+    const { triggerPreviousCharPattern } = state;
+    const { createComboboxInput } = state;
 
     if (!triggerPreviousCharPattern || !createComboboxInput) {
       throw new Error('Missing required slash plugin state');

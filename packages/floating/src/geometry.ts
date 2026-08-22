@@ -5,7 +5,7 @@ import { type Location, PathApi, type Range, RangeApi } from '@platejs/plite';
 import type React from 'react';
 
 export type VirtualRef = React.RefObject<Pick<
-  HTMLElement,
+  VirtualElement,
   'getBoundingClientRect'
 > | null>;
 
@@ -129,7 +129,7 @@ export const getBoundingClientRect = (
     )
     .filter((rect): rect is DOMRect => Boolean(rect));
 
-  if (clientRects.length === 0) return;
+  if (clientRects.length === 0) return undefined;
 
   return mergeClientRects(clientRects);
 };
@@ -140,7 +140,7 @@ export const createVirtualRef = (
   {
     fallbackRect,
   }: {
-    fallbackRect?: ClientRect;
+    fallbackRect?: ClientRectObject;
   } = {}
 ): VirtualRef => ({
   current: {

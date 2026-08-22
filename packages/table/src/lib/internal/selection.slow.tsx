@@ -59,14 +59,14 @@ const createThreeCellEditor = () =>
       },
     ],
     selection: null,
-  } as TestEditor);
+  });
 
 const getSelectionTypes = (editor: ReturnType<typeof createEditor>) => ({
   cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
   tableType: editor.plugin(BaseTablePlugin).schema.type,
 });
 
-const getFixtureIds = (anchors: readonly { cell: unknown }[]) =>
+const getFixtureIds = (anchors: ReadonlyArray<{ cell: unknown }>) =>
   anchors.map(({ cell }) => (cell as TableCellElementWithId).id);
 
 const readSelection = (
@@ -86,11 +86,11 @@ const readExpandedSelection = (
 ) => {
   const view = readSelection(editor);
 
-  assert(view);
+  assert.ok(view);
 
   const expansion = getTableSelectionExpansion(view, edge);
 
-  assert(expansion);
+  assert.ok(expansion);
 
   const anchor = editor.read.points.start(
     view.tablePath.concat(expansion.anchor.path)
@@ -99,8 +99,8 @@ const readExpandedSelection = (
     view.tablePath.concat(expansion.focus.path)
   );
 
-  assert(anchor);
-  assert(focus);
+  assert.ok(anchor);
+  assert.ok(focus);
 
   return editor.read((state) =>
     readTableSelection(state, {
@@ -132,14 +132,15 @@ const createGeneratedSpanTable = (seed: number): TableElement => {
     for (let col = 0; col < width; col++) {
       if (occupied[row][col]) continue;
 
-      const candidates: { colSpan: number; rowSpan: number }[] = [];
+      const candidates: Array<{ colSpan: number; rowSpan: number }> = [];
 
       for (let rowSpan = 1; rowSpan <= Math.min(3, height - row); rowSpan++) {
         for (let colSpan = 1; colSpan <= Math.min(3, width - col); colSpan++) {
           const available = Array.from({ length: rowSpan }, (_, rowOffset) =>
             Array.from(
               { length: colSpan },
-              (_, colOffset) => !occupied[row + rowOffset][col + colOffset]
+              (innerValue, colOffset) =>
+                !occupied[row + rowOffset][col + colOffset]
             ).every(Boolean)
           ).every(Boolean);
 
@@ -148,7 +149,7 @@ const createGeneratedSpanTable = (seed: number): TableElement => {
       }
 
       const { colSpan, rowSpan } = candidates[next(candidates.length)];
-      const cellKey = `s${seed}:${id++}`;
+      const cellKey = `s${seed}:${(id += 1) - 1}`;
 
       rows[row].push({
         children: [
@@ -217,8 +218,8 @@ describe('readTableSelection', () => {
     const endpointUnion = readSelection(editor, 'endpoint-union');
     const spanClosure = readSelection(editor);
 
-    assert(endpointUnion);
-    assert(spanClosure);
+    assert.ok(endpointUnion);
+    assert.ok(spanClosure);
 
     expect(endpointUnion.bounds).toEqual({
       maxCol: 2,
@@ -460,8 +461,8 @@ describe('readTableSelection', () => {
     const forwardView = readSelection(forwardEditor);
     const backwardView = readSelection(backwardEditor);
 
-    assert(forwardView);
-    assert(backwardView);
+    assert.ok(forwardView);
+    assert.ok(backwardView);
 
     expect(backwardView.bounds).toEqual(forwardView.bounds);
     expect(getFixtureIds(backwardView.anchors)).toEqual(
@@ -661,7 +662,7 @@ describe('readTableSelection', () => {
     const editor = createEditor(input);
     const view = readSelection(editor);
 
-    assert(view);
+    assert.ok(view);
 
     expect(
       getTableSelectionNeighbor(view.context, view.anchor, 'below')?.key
@@ -721,7 +722,7 @@ describe('readTableSelection', () => {
       const editor = createEditor({
         children: [table],
         selection: null,
-      } as TestEditor);
+      });
       const pairCount = Math.min(sourceGrid.anchors.length * 2, 40);
 
       for (let pair = 0; pair < pairCount; pair++) {
@@ -731,8 +732,8 @@ describe('readTableSelection', () => {
         const anchorPoint = editor.read.points.start([0, ...anchor.path]);
         const focusPoint = editor.read.points.end([0, ...focus.path]);
 
-        assert(anchorPoint);
-        assert(focusPoint);
+        assert.ok(anchorPoint);
+        assert.ok(focusPoint);
         editor.update.selection.set({
           anchor: anchorPoint,
           focus: focusPoint,
@@ -741,7 +742,7 @@ describe('readTableSelection', () => {
         const beforeProjection = readTableSelectionViewMetrics();
         const forward = readSelection(editor);
 
-        assert(forward);
+        assert.ok(forward);
         editor.update.selection.set({
           anchor: focusPoint,
           focus: anchorPoint,
@@ -749,7 +750,7 @@ describe('readTableSelection', () => {
 
         const backward = readSelection(editor);
 
-        assert(backward);
+        assert.ok(backward);
         const afterProjection = readTableSelectionViewMetrics();
         const selectedSlotCount =
           (forward.bounds.maxRow - forward.bounds.minRow + 1) *
@@ -809,7 +810,7 @@ describe('readTableSelection', () => {
       children: [
         {
           children: Array.from({ length: rowCount }, (_, row) => ({
-            children: Array.from({ length: colCount }, (_, col) => ({
+            children: Array.from({ length: colCount }, (innerValue2, col) => ({
               children: [
                 {
                   children: [{ text: `${row},${col}` }],
@@ -835,12 +836,12 @@ describe('readTableSelection', () => {
             const anchor = editor.read.points.start([0, anchorRow, anchorCol]);
             const focus = editor.read.points.start([0, focusRow, focusCol]);
 
-            assert(anchor);
-            assert(focus);
+            assert.ok(anchor);
+            assert.ok(focus);
             editor.update.selection.set({ anchor, focus });
 
             const view = readSelection(editor, 'endpoint-union');
-            assert(view);
+            assert.ok(view);
 
             const minRow = Math.min(anchorRow, focusRow);
             const maxRow = Math.max(anchorRow, focusRow);
@@ -851,7 +852,7 @@ describe('readTableSelection', () => {
               (_, rowOffset) =>
                 Array.from(
                   { length: maxCol - minCol + 1 },
-                  (_, colOffset) =>
+                  (innerValue3, colOffset) =>
                     `r${minRow + rowOffset}c${minCol + colOffset}`
                 )
             ).flat();
@@ -875,22 +876,22 @@ describe('readTableSelection', () => {
     const b = editor.read.points.start([0, 0, 1]);
     const c = editor.read.points.start([0, 0, 2]);
 
-    assert(a);
-    assert(b);
-    assert(c);
+    assert.ok(a);
+    assert.ok(b);
+    assert.ok(c);
     editor.update.selection.set({ anchor: a, focus: b });
     const selectionTypes = getSelectionTypes(editor);
 
     editor.update((tx) => {
       const first = readTableSelection(tx, selectionTypes);
 
-      assert(first);
+      assert.ok(first);
       const firstKeys = [tx.key([0, 0, 0])!, tx.key([0, 0, 1])!];
       tx.selection.set({ anchor: b, focus: c });
 
       const second = readTableSelection(tx, selectionTypes);
 
-      assert(second);
+      assert.ok(second);
       expect(second).not.toBe(first);
       expect(second.version).toBe(first.version);
       expect(first.cellKeys).toEqual(firstKeys);
@@ -903,15 +904,15 @@ describe('readTableSelection', () => {
     const anchor = editor.read.points.start([0, 0, 0]);
     const focus = editor.read.points.start([0, 0, 2]);
 
-    assert(anchor);
-    assert(focus);
+    assert.ok(anchor);
+    assert.ok(focus);
     editor.update.selection.set({ anchor, focus });
     const selectionTypes = getSelectionTypes(editor);
 
     editor.update((tx) => {
       const first = readTableSelection(tx, selectionTypes);
 
-      assert(first);
+      assert.ok(first);
       const firstKeys = [0, 1, 2].map((index) => tx.key([0, 0, index])!);
       tx.nodes.insert(
         {
@@ -929,7 +930,7 @@ describe('readTableSelection', () => {
 
       const second = readTableSelection(tx, selectionTypes);
 
-      assert(second);
+      assert.ok(second);
       expect(second).not.toBe(first);
       expect(second.version).toBe(first.version);
       expect(first.cellKeys).toEqual(firstKeys);
@@ -945,7 +946,7 @@ describe('readTableSelection', () => {
       children: [
         {
           children: Array.from({ length: size }, (_, row) => ({
-            children: Array.from({ length: size }, (_, col) => ({
+            children: Array.from({ length: size }, (innerValue4, col) => ({
               children: [
                 {
                   children: [{ text: `${row},${col}` }],
@@ -966,14 +967,14 @@ describe('readTableSelection', () => {
     const anchor = editor.read.points.start([0, 0, 0]);
     const focus = editor.read.points.end([0, size - 1, size - 1]);
 
-    assert(anchor);
-    assert(focus);
+    assert.ok(anchor);
+    assert.ok(focus);
     editor.update.selection.set({ anchor, focus });
 
     const before = readTableSelectionViewMetrics();
     const cold = readSelection(editor);
 
-    assert(cold);
+    assert.ok(cold);
 
     for (let index = 0; index < 10_000; index++) {
       expect(readSelection(editor)).toBe(cold);
@@ -993,12 +994,12 @@ describe('readTableSelection', () => {
 
     const nextFocus = editor.read.points.end([0, 0, 1]);
 
-    assert(nextFocus);
+    assert.ok(nextFocus);
     editor.update.selection.set({ anchor, focus: nextFocus });
 
     const next = readSelection(editor);
 
-    assert(next);
+    assert.ok(next);
     expect(next).not.toBe(cold);
     expect(next.version).toBeGreaterThan(cold.version);
     expect(getFixtureIds(next.anchors)).toEqual(['r0c0', 'r0c1']);

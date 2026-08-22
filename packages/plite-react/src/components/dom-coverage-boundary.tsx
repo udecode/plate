@@ -12,7 +12,10 @@ import { DOMCoverage } from '@platejs/plite-dom/internal';
 import React, { type ReactNode, useContext } from 'react';
 
 import { ElementPathContext, NodeKeyContext } from '../context';
-import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
+import {
+  failInvariant,
+  getNodeKey as editorGetNodeKey,
+} from '../editable/runtime-editor-api';
 import { useClaimEditableDOMCommit } from '../hooks/use-claim-editable-dom-commit';
 import { useEditor } from '../hooks/use-editor';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
@@ -74,8 +77,9 @@ export const DOMCoverageBoundaryRange = ({
           copyPolicy,
           coveredPathRanges: [
             {
-              anchor: anchorPath!,
-              focus: focusPath!,
+              anchor:
+                anchorPath ?? failInvariant('Expected value to be defined'),
+              focus: focusPath ?? failInvariant('Expected value to be defined'),
             },
           ],
           coveredRuntimeRanges:
@@ -94,7 +98,7 @@ export const DOMCoverageBoundaryRange = ({
 
   useIsomorphicLayoutEffect(() => {
     if (!hidden || !boundary) {
-      return;
+      return undefined;
     }
 
     return DOMCoverage.registerBoundary(editor, boundary);
@@ -102,7 +106,7 @@ export const DOMCoverageBoundaryRange = ({
 
   useIsomorphicLayoutEffect(() => {
     if (!hidden || !boundary || !onMaterialize) {
-      return;
+      return undefined;
     }
 
     return DOMCoverage.registerMaterializeHandler(
@@ -176,7 +180,7 @@ export const DOMCoverageSelfBoundary = ({
 
   useIsomorphicLayoutEffect(() => {
     if (!hidden || !boundary) {
-      return;
+      return undefined;
     }
 
     return DOMCoverage.registerBoundary(editor, boundary);
@@ -184,7 +188,7 @@ export const DOMCoverageSelfBoundary = ({
 
   useIsomorphicLayoutEffect(() => {
     if (!hidden || !boundary || !onMaterialize) {
-      return;
+      return undefined;
     }
 
     return DOMCoverage.registerMaterializeHandler(

@@ -29,6 +29,8 @@ export const parseMediaUrl = (
         return data;
       }
     }
+
+    return undefined;
   })();
 
   // Harden against XSS
@@ -37,12 +39,12 @@ export const parseMediaUrl = (
       const { protocol } = new URL(embed.url);
 
       if (!allowedProtocols.has(protocol)) {
-        return;
+        return undefined;
       }
     } catch {
       console.warn(`Could not parse URL: ${embed.url}`);
 
-      return;
+      return undefined;
     }
   }
 
@@ -83,6 +85,8 @@ export const parseTwitterUrl = (url: string): EmbedUrlData | undefined => {
       url,
     };
   }
+
+  return undefined;
 };
 
 const VIDEO_PROVIDER_VALUES = [
@@ -106,11 +110,15 @@ const providerUrls: Record<VideoProvider, string> = {
 };
 
 const parseUrl = (url: string) => {
-  if (!isUrl(url)) return;
+  if (!isUrl(url)) return undefined;
 
   try {
     return new URL(url);
-  } catch {}
+  } catch {
+    // Invalid media URLs are represented by an undefined parse result.
+  }
+
+  return undefined;
 };
 
 const getPathSegments = (url: URL) => url.pathname.split('/').filter(Boolean);
@@ -118,12 +126,12 @@ const getPathSegments = (url: URL) => url.pathname.split('/').filter(Boolean);
 const getSegmentAfter = (segments: string[], value: string) => {
   const index = segments.indexOf(value);
 
-  return index >= 0 ? segments[index + 1] : undefined;
+  return index !== -1 ? segments[index + 1] : undefined;
 };
 
 const isAlphaNumeric = (value: string) =>
   value.length > 0 &&
-  [...value].every((char) => {
+  Array.from(value).every((char) => {
     const code = char.charCodeAt(0);
 
     return (
@@ -135,7 +143,7 @@ const isAlphaNumeric = (value: string) =>
 
 const isNumeric = (value: string) =>
   value.length > 0 &&
-  [...value].every((char) => {
+  Array.from(value).every((char) => {
     const code = char.charCodeAt(0);
 
     return code >= 48 && code <= 57;
@@ -143,7 +151,7 @@ const isNumeric = (value: string) =>
 
 const isYoutubeId = (value: string | undefined) =>
   value?.length === 11 &&
-  [...value].every((char) => {
+  Array.from(value).every((char) => {
     const code = char.charCodeAt(0);
 
     return (
@@ -156,9 +164,9 @@ const isYoutubeId = (value: string | undefined) =>
   });
 
 const stripNonAlphaNumericSuffix = (value: string | undefined) => {
-  if (!value) return;
+  if (!value) return undefined;
 
-  const index = [...value].findIndex((char) => !isAlphaNumeric(char));
+  const index = Array.from(value).findIndex((char) => !isAlphaNumeric(char));
 
   return index === -1 ? value : value.slice(0, index);
 };
@@ -173,7 +181,9 @@ const parseYoutubeId = (url: URL) => {
     return isYoutubeId(id) ? id : undefined;
   }
 
-  if (host !== 'youtube.com' && !host.endsWith('.youtube.com')) return;
+  if (host !== 'youtube.com' && !host.endsWith('.youtube.com')) {
+    return undefined;
+  }
 
   const queryId = url.searchParams.get('v') ?? url.searchParams.get('ci');
 
@@ -199,7 +209,7 @@ const parseVimeoId = (url: URL) => {
     host !== 'vimeopro.com' &&
     !host.endsWith('.vimeopro.com')
   ) {
-    return;
+    return undefined;
   }
 
   return [...getPathSegments(url)].reverse().find(isNumeric);
@@ -213,7 +223,7 @@ const parseDailymotionId = (url: URL) => {
     host !== 'dailymotion.com' &&
     !host.endsWith('.dailymotion.com')
   ) {
-    return;
+    return undefined;
   }
 
   const segments = getPathSegments(url);
@@ -227,7 +237,7 @@ const parseDailymotionId = (url: URL) => {
 const parseYoukuId = (url: URL) => {
   const host = url.hostname.toLowerCase();
 
-  if (host !== 'youku.com' && !host.endsWith('.youku.com')) return;
+  if (host !== 'youku.com' && !host.endsWith('.youku.com')) return undefined;
 
   const segments = getPathSegments(url);
   const videoIdParam = url.searchParams.get('VideoIDS') ?? undefined;
@@ -246,7 +256,7 @@ const parseYoukuId = (url: URL) => {
 const parseCoubId = (url: URL) => {
   const host = url.hostname.toLowerCase();
 
-  if (host !== 'coub.com' && !host.endsWith('.coub.com')) return;
+  if (host !== 'coub.com' && !host.endsWith('.coub.com')) return undefined;
 
   const segments = getPathSegments(url);
   const id =
@@ -266,7 +276,7 @@ const parsers: Record<VideoProvider, (url: URL) => string | undefined> = {
 export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
   const parsedUrl = parseUrl(url);
 
-  if (!parsedUrl) return;
+  if (!parsedUrl) return undefined;
 
   for (const provider of VIDEO_PROVIDER_VALUES) {
     const id = parsers[provider](parsedUrl);
@@ -283,4 +293,6 @@ export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
       url: embedUrl,
     };
   }
+
+  return undefined;
 };

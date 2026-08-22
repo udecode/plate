@@ -27,6 +27,12 @@ export const pliteExampleComponents = {
   'comment-mode': createPliteExampleLoader(
     () => import('./_examples/comment-mode')
   ),
+  'cursor-overlay-ordering': createPliteExampleLoader(
+    () => import('./_examples/cursor-overlay-ordering')
+  ),
+  'cross-editor-drag': createPliteExampleLoader(
+    () => import('./_examples/cross-editor-drag')
+  ),
   'custom-placeholder': createPliteExampleLoader(
     () => import('./_examples/custom-placeholder')
   ),
@@ -72,6 +78,9 @@ export const pliteExampleComponents = {
   pagination: createPliteExampleLoader(() => import('./_examples/pagination')),
   'paste-html': createPliteExampleLoader(
     () => import('./_examples/paste-html')
+  ),
+  'plate-dnd-cross-editor': createPliteExampleLoader(
+    () => import('./_examples/plate-dnd-cross-editor')
   ),
   'persistent-annotation-anchors': createPliteExampleLoader(
     () => import('./_examples/persistent-annotation-anchors')

@@ -248,12 +248,16 @@ const Command = (props: CommandProps) => {
     /** Currently selected item value. */
     value: props.value ?? props.defaultValue ?? '',
   }));
-  const allItems = useLazyRef<Set<string>>(() => new Set()); // [...itemIds]
-  const allGroups = useLazyRef<Map<string, Set<string>>>(() => new Map()); // groupId → [...itemIds]
+  // [...itemIds]
+  const allItems = useLazyRef<Set<string>>(() => new Set());
+  // groupId → [...itemIds]
+  const allGroups = useLazyRef<Map<string, Set<string>>>(() => new Map());
   const ids = useLazyRef<Map<string, { value: string; keywords?: string[] }>>(
     () => new Map()
-  ); // id → { value, keywords }
-  const listeners = useLazyRef<Set<() => void>>(() => new Set()); // [...rerenders]
+    // id → { value, keywords }
+  );
+  // [...rerenders]
+  const listeners = useLazyRef<Set<() => void>>(() => new Set());
   const propsRef = useAsRef(props);
   const {
     children,
@@ -276,6 +280,125 @@ const Command = (props: CommandProps) => {
 
   const schedule = useScheduleLayoutEffect();
 
+  const store = useLazyRef<Store>(() => ({
+    emit: () => {
+      for (const l of listeners.current) {
+        l();
+      }
+    },
+    setState: (key, innerValue, preventScroll) => {
+      if (Object.is(state.current[key], innerValue)) return;
+
+      state.current[key] = innerValue;
+
+      if (key === 'search') {
+        // Filter synchronously before emitting back to children
+        filterItems();
+        sort();
+        schedule(1, selectFirstItem);
+      } else if (key === 'value') {
+        if (!preventScroll) {
+          // Scroll the selected item into view
+          schedule(5, scrollSelectedIntoView);
+        }
+        if (propsRef.current?.value !== undefined) {
+          // If controlled, just call the callback instead of updating state internally
+          const newValue = state.current.value ?? '';
+          propsRef.current.onValueChange?.(newValue);
+
+          return;
+        }
+      }
+
+      // Notify subscribers that state has changed
+      store.emit();
+    },
+    snapshot: () => state.current,
+    subscribe: (cb) => {
+      listeners.current.add(cb);
+
+      return () => listeners.current.delete(cb);
+    },
+  })).current;
+
+  const context = useLazyRef<Context>(() => ({
+    inputId,
+    label: label ?? props['aria-label'] ?? 'Command Menu',
+    labelId,
+    listId,
+    listInnerRef,
+    filter: () => propsRef.current.shouldFilter !== false,
+    getDisablePointerSelection: () =>
+      propsRef.current.disablePointerSelection ?? false,
+    // Track group lifecycle (mount, unmount)
+    group: (id) => {
+      if (!allGroups.current.has(id)) {
+        allGroups.current.set(id, new Set());
+      }
+
+      return () => {
+        ids.current.delete(id);
+        allGroups.current.delete(id);
+      };
+    },
+    // Track item lifecycle (mount, unmount)
+    item: (id, groupId) => {
+      allItems.current.add(id);
+
+      // Track this item within the group
+      if (groupId) {
+        if (allGroups.current.has(groupId)) {
+          allGroups.current.get(groupId)?.add(id);
+        } else {
+          allGroups.current.set(groupId, new Set([id]));
+        }
+      }
+
+      // Batch this, multiple items can mount in one pass
+      // and we should not be filtering/sorting/emitting each time
+      schedule(3, () => {
+        filterItems();
+        sort();
+
+        // Could be initial mount, select the first item if none already selected
+        if (!state.current.value) {
+          selectFirstItem();
+        }
+
+        store.emit();
+      });
+
+      return () => {
+        ids.current.delete(id);
+        allItems.current.delete(id);
+        state.current.filtered.items.delete(id);
+        const selectedItem = getSelectedItem();
+
+        // Batch this, multiple items could be removed in one pass
+        schedule(4, () => {
+          filterItems();
+
+          // The item removed have been the selected one,
+          // so selection should be moved to the first
+          if (selectedItem?.getAttribute('id') === id) selectFirstItem();
+
+          store.emit();
+        });
+      };
+    },
+    // Keep id → {value, keywords} mapping up-to-date
+    value: (id, innerValue2, keywords) => {
+      if (innerValue2 !== ids.current.get(id)?.value) {
+        ids.current.set(id, { keywords, value: innerValue2 });
+        state.current.filtered.items.set(id, score(innerValue2, keywords));
+        schedule(2, () => {
+          sort();
+          store.emit();
+        });
+      }
+    },
+  })).current;
+
   /** Controlled mode `value` handling. */
   useLayoutEffect(() => {
     if (value !== undefined) {
@@ -283,141 +406,19 @@ const Command = (props: CommandProps) => {
       state.current.value = v;
       store.emit();
     }
-  }, [value]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The lazy ref is a stable mutable store cell; its current value is the effect target, not a reactive dependency.
+  }, [store, value]);
 
   useLayoutEffect(() => {
     schedule(6, scrollSelectedIntoView);
-  }, []);
+  }, [schedule]);
 
-  const store: Store = React.useMemo(
-    () => ({
-      emit: () => {
-        for (const l of listeners.current) {
-          l();
-        }
-      },
-      setState: (key, value, preventScroll) => {
-        if (Object.is(state.current[key], value)) return;
+  function score(innerValue3: string, keywords?: string[]) {
+    const innerFilter = propsRef.current?.filter ?? defaultFilter;
 
-        state.current[key] = value;
-
-        if (key === 'search') {
-          // Filter synchronously before emitting back to children
-          filterItems();
-          sort();
-          schedule(1, selectFirstItem);
-        } else if (key === 'value') {
-          if (!preventScroll) {
-            // Scroll the selected item into view
-            schedule(5, scrollSelectedIntoView);
-          }
-          if (propsRef.current?.value !== undefined) {
-            // If controlled, just call the callback instead of updating state internally
-            const newValue = state.current.value ?? '';
-            propsRef.current.onValueChange?.(newValue);
-
-            return;
-          }
-        }
-
-        // Notify subscribers that state has changed
-        store.emit();
-      },
-      snapshot: () => state.current,
-      subscribe: (cb) => {
-        listeners.current.add(cb);
-
-        return () => listeners.current.delete(cb);
-      },
-    }),
-    []
-  );
-
-  const context: Context = React.useMemo(
-    () => ({
-      inputId,
-      label: label ?? props['aria-label'] ?? 'Command Menu',
-      labelId,
-      listId,
-      listInnerRef,
-      filter: () => propsRef.current.shouldFilter !== false,
-      getDisablePointerSelection: () =>
-        propsRef.current.disablePointerSelection ?? false,
-      // Track group lifecycle (mount, unmount)
-      group: (id) => {
-        if (!allGroups.current.has(id)) {
-          allGroups.current.set(id, new Set());
-        }
-
-        return () => {
-          ids.current.delete(id);
-          allGroups.current.delete(id);
-        };
-      },
-      // Track item lifecycle (mount, unmount)
-      item: (id, groupId) => {
-        allItems.current.add(id);
-
-        // Track this item within the group
-        if (groupId) {
-          if (allGroups.current.has(groupId)) {
-            allGroups.current.get(groupId)?.add(id);
-          } else {
-            allGroups.current.set(groupId, new Set([id]));
-          }
-        }
-
-        // Batch this, multiple items can mount in one pass
-        // and we should not be filtering/sorting/emitting each time
-        schedule(3, () => {
-          filterItems();
-          sort();
-
-          // Could be initial mount, select the first item if none already selected
-          if (!state.current.value) {
-            selectFirstItem();
-          }
-
-          store.emit();
-        });
-
-        return () => {
-          ids.current.delete(id);
-          allItems.current.delete(id);
-          state.current.filtered.items.delete(id);
-          const selectedItem = getSelectedItem();
-
-          // Batch this, multiple items could be removed in one pass
-          schedule(4, () => {
-            filterItems();
-
-            // The item removed have been the selected one,
-            // so selection should be moved to the first
-            if (selectedItem?.getAttribute('id') === id) selectFirstItem();
-
-            store.emit();
-          });
-        };
-      },
-      // Keep id → {value, keywords} mapping up-to-date
-      value: (id, value, keywords) => {
-        if (value !== ids.current.get(id)?.value) {
-          ids.current.set(id, { keywords, value });
-          state.current.filtered.items.set(id, score(value, keywords));
-          schedule(2, () => {
-            sort();
-            store.emit();
-          });
-        }
-      },
-    }),
-    []
-  );
-
-  function score(value: string, keywords?: string[]) {
-    const filter = propsRef.current?.filter ?? defaultFilter;
-
-    return value ? filter(value, state.current.search, keywords) : 0;
+    return innerValue3
+      ? innerFilter(innerValue3, state.current.search, keywords)
+      : 0;
   }
 
   /** Sorts items by score, and groups by highest item score. */
@@ -433,18 +434,18 @@ const Command = (props: CommandProps) => {
     const scores = state.current.filtered.items;
 
     // Sort the groups
-    const groups: [string, number][] = [];
-    state.current.filtered.groups.forEach((value) => {
-      const items = allGroups.current.get(value);
+    const groups: Array<[string, number]> = [];
+    state.current.filtered.groups.forEach((innerValue4) => {
+      const items = allGroups.current.get(innerValue4);
 
       // Get the maximum score of the group's items
       let max = 0;
       items?.forEach((item) => {
-        const score = scores.get(item) ?? 0;
-        max = Math.max(score, max);
+        const innerScore = scores.get(item) ?? 0;
+        max = Math.max(innerScore, max);
       });
 
-      groups.push([value, max]);
+      groups.push([innerValue4, max]);
     });
 
     // Sort items within groups to bottom
@@ -492,10 +493,10 @@ const Command = (props: CommandProps) => {
 
   function selectFirstItem() {
     const item = getValidItems().find(
-      (item) => item.getAttribute('aria-disabled') !== 'true'
+      (innerItem) => innerItem.getAttribute('aria-disabled') !== 'true'
     );
-    const value = item?.getAttribute(VALUE_ATTR);
-    store.setState('value', value ?? undefined);
+    const innerValue5 = item?.getAttribute(VALUE_ATTR);
+    store.setState('value', innerValue5 ?? undefined);
   }
 
   /** Filters the current items. */
@@ -517,12 +518,12 @@ const Command = (props: CommandProps) => {
 
     // Check which items should be included
     for (const id of allItems.current) {
-      const value = ids.current.get(id)?.value ?? '';
+      const innerValue6 = ids.current.get(id)?.value ?? '';
       const keywords = ids.current.get(id)?.keywords ?? [];
-      const rank = score(value, keywords);
+      const rank = score(innerValue6, keywords);
       state.current.filtered.items.set(id, rank);
 
-      if (rank > 0) itemCount++;
+      if (rank > 0) itemCount += 1;
     }
 
     // Check which groups have at least 1 item shown
@@ -578,10 +579,10 @@ const Command = (props: CommandProps) => {
     const items = getValidItems();
     const item = items[index];
 
-    const value = item?.getAttribute(VALUE_ATTR);
+    const innerValue7 = item?.getAttribute(VALUE_ATTR);
 
-    if (value !== null && value !== undefined) {
-      store.setState('value', value);
+    if (innerValue7 !== null && innerValue7 !== undefined) {
+      store.setState('value', innerValue7);
     }
   }
 
@@ -603,10 +604,10 @@ const Command = (props: CommandProps) => {
             ? items[0]
             : items[index + change];
     }
-    const value = newSelected?.getAttribute(VALUE_ATTR);
+    const innerValue8 = newSelected?.getAttribute(VALUE_ATTR);
 
-    if (value !== null && value !== undefined) {
-      store.setState('value', value);
+    if (innerValue8 !== null && innerValue8 !== undefined) {
+      store.setState('value', innerValue8);
     }
   }
 
@@ -624,15 +625,17 @@ const Command = (props: CommandProps) => {
     }
 
     if (item) {
-      const value = item.getAttribute(VALUE_ATTR);
+      const innerValue9 = item.getAttribute(VALUE_ATTR);
 
-      if (value !== null) store.setState('value', value);
+      if (innerValue9 !== null) store.setState('value', innerValue9);
     } else {
       updateSelectedByItem(change);
     }
   }
 
-  const last = () => updateSelectedToIndex(getValidItems().length - 1);
+  const last = () => {
+    updateSelectedToIndex(getValidItems().length - 1);
+  };
 
   const next = (e: React.KeyboardEvent) => {
     e.preventDefault();
@@ -678,20 +681,21 @@ const Command = (props: CommandProps) => {
     store.setState('search', search);
   };
 
-  const actions: Actions = React.useMemo(
-    () => ({
-      selectCurrentItem: selectItem,
-      selectFirstItem,
-      selectItem: updateSelectedToIndex,
-      selectLastItem: last,
-      selectNextItem: next,
-      selectPrevItem: prev,
-      setSearch,
-      selectNextGroup: () => updateSelectedByGroup(1),
-      selectPrevGroup: () => updateSelectedByGroup(-1),
-    }),
-    []
-  );
+  const actions = useLazyRef<Actions>(() => ({
+    selectCurrentItem: selectItem,
+    selectFirstItem,
+    selectItem: updateSelectedToIndex,
+    selectLastItem: last,
+    selectNextItem: next,
+    selectPrevItem: prev,
+    setSearch,
+    selectNextGroup: () => {
+      updateSelectedByGroup(1);
+    },
+    selectPrevGroup: () => {
+      updateSelectedByGroup(-1);
+    },
+  })).current;
   // FORK END
 
   return (
@@ -727,6 +731,7 @@ const Command = (props: CommandProps) => {
               // This prevents unwanted triggering while user is still inputting text with IME
               // e.keyCode === 229 is for the Japanese IME and Safari.
               // isComposing does not work with Japanese IME and Safari combination.
+              // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Safari's Japanese IME still needs the 229 fallback because isComposing is unreliable there.
               if (!e.nativeEvent.isComposing && e.keyCode !== 229) {
                 // Trigger item onSelect
                 e.preventDefault();
@@ -746,13 +751,13 @@ const Command = (props: CommandProps) => {
 
               break;
             }
+
             case 'j':
             case 'n': {
               // vim keybind down
               if (vimBindings && e.ctrlKey) {
                 next(e);
               }
-
               break;
             }
             case 'k':
@@ -761,7 +766,6 @@ const Command = (props: CommandProps) => {
               if (vimBindings && e.ctrlKey) {
                 prev(e);
               }
-
               break;
             }
           }
@@ -778,7 +782,7 @@ const Command = (props: CommandProps) => {
         {label}
       </label>
 
-      {SlottableWithNestedChildren(props, (child) => (
+      {slottableWithNestedChildren(props, (child) => (
         <StoreContext value={store}>
           {/* FORK: provide actions */}
           <ActionsContext value={actions}>
@@ -807,7 +811,9 @@ const Item = (props: ItemProps) => {
     if (!forceMount) {
       return context.item(id, groupContext?.id);
     }
-  }, [forceMount]);
+
+    return undefined;
+  }, [context, forceMount, groupContext?.id, id]);
 
   const value = useValue(id, ref, [props.value, props.children, ref]);
 
@@ -818,37 +824,37 @@ const Item = (props: ItemProps) => {
   const render = useCmdk((state) =>
     forceMount
       ? true
-      : context.filter() === false
+      : !context.filter()
         ? true
         : state.search
           ? (state.filtered.items.get(id) ?? 0) > 0
           : true
   );
-
-  React.useEffect(() => {
-    const element = ref.current;
-
-    if (!element || props.disabled) return;
-
-    element.addEventListener(SELECT_EVENT, onSelect);
-
-    return () => element.removeEventListener(SELECT_EVENT, onSelect);
-  }, [render, props.onSelect, props.disabled]);
-
-  function onSelect() {
+  const select = React.useCallback(() => {
+    if (value.current !== undefined) {
+      store.setState('value', value.current, true);
+    }
+  }, [store, value]);
+  const onSelect = React.useCallback(() => {
     const currentValue = value.current;
 
     if (currentValue === undefined) return;
 
     select();
     propsRef.current.onSelect?.(currentValue);
-  }
+  }, [propsRef, select, value]);
 
-  function select() {
-    if (value.current !== undefined) {
-      store.setState('value', value.current, true);
-    }
-  }
+  React.useEffect(() => {
+    const element = ref.current;
+
+    if (!element || props.disabled) return undefined;
+
+    element.addEventListener(SELECT_EVENT, onSelect);
+
+    return () => {
+      element.removeEventListener(SELECT_EVENT, onSelect);
+    };
+  }, [onSelect, props.disabled, props.onSelect, render]);
 
   if (!render) return null;
 
@@ -897,18 +903,21 @@ const Group = (props: GroupProps) => {
   const render = useCmdk((state) =>
     forceMount
       ? true
-      : context.filter() === false
+      : !context.filter()
         ? true
         : state.search
           ? state.filtered.groups.has(id)
           : true
   );
 
-  useLayoutEffect(() => context.group(id), []);
+  useLayoutEffect(() => context.group(id), [context, id]);
 
   useValue(id, ref, [props.value, props.heading, headingRef]);
 
-  const contextValue = React.useMemo(() => ({ id, forceMount }), [forceMount]);
+  const contextValue = React.useMemo(
+    () => ({ id, forceMount }),
+    [forceMount, id]
+  );
 
   return (
     <Primitive.div
@@ -924,7 +933,7 @@ const Group = (props: GroupProps) => {
         </div>
       )}
 
-      {SlottableWithNestedChildren(props, (child) => (
+      {slottableWithNestedChildren(props, (child) => (
         <div
           aria-labelledby={heading ? headingId : undefined}
           cmdk-group-items=""
@@ -983,7 +992,7 @@ const Input = (props: InputProps) => {
     if (props.value != null) {
       store.setState('search', props.value);
     }
-  }, [props.value]);
+  }, [props.value, store]);
 
   return (
     <Primitive.input
@@ -1030,10 +1039,10 @@ const List = (props: ListProps) => {
       let animationFrame = 0;
       const observer = new ResizeObserver(() => {
         animationFrame = requestAnimationFrame(() => {
-          const height = el.offsetHeight;
+          const innerHeight = el.offsetHeight;
           wrapper.style.setProperty(
             '--cmdk-list-height',
-            `${height.toFixed(1)}px`
+            `${innerHeight.toFixed(1)}px`
           );
         });
       });
@@ -1044,6 +1053,8 @@ const List = (props: ListProps) => {
         observer.unobserve(el);
       };
     }
+
+    return undefined;
   }, []);
 
   return (
@@ -1055,7 +1066,7 @@ const List = (props: ListProps) => {
       id={context.listId}
       role="listbox"
     >
-      {SlottableWithNestedChildren(props, (child) => (
+      {slottableWithNestedChildren(props, (child) => (
         <div cmdk-list-sizer="" ref={mergeRefs([height, context.listInnerRef])}>
           {child}
         </div>
@@ -1072,12 +1083,14 @@ const Dialog = (props: DialogProps) => {
     open,
     overlayClassName,
     ref: forwardedRef,
-    onOpenChange,
     ...etc
   } = props;
 
   return (
-    <RadixDialog.Root onOpenChange={onOpenChange} open={open}>
+    <RadixDialog.Root
+      onOpenChange={(nextOpen) => props.onOpenChange?.(nextOpen)}
+      open={open}
+    >
       <RadixDialog.Portal container={container}>
         <RadixDialog.Overlay className={overlayClassName} cmdk-overlay="" />
         <RadixDialog.Content
@@ -1128,7 +1141,7 @@ const Loading = (props: LoadingProps) => {
       cmdk-loading=""
       role="progressbar"
     >
-      {SlottableWithNestedChildren(props, (child) => (
+      {slottableWithNestedChildren(props, (child) => (
         <div aria-hidden>{child}</div>
       ))}
     </Primitive.div>
@@ -1180,6 +1193,8 @@ function findNextSibling(el: Element, selector: string) {
 
     sibling = sibling.nextElementSibling;
   }
+
+  return undefined;
 }
 
 function findPreviousSibling(el: Element, selector: string) {
@@ -1190,6 +1205,8 @@ function findPreviousSibling(el: Element, selector: string) {
 
     sibling = sibling.previousElementSibling;
   }
+
+  return undefined;
 }
 
 function useAsRef<T>(data: T) {
@@ -1212,13 +1229,13 @@ function useLazyRef<T>(fn: () => T) {
     ref.current = fn();
   }
 
-  return ref as React.MutableRefObject<T>;
+  return ref as React.RefObject<T>;
 }
 
 // ESM is still a nightmare with Next.js so I'm just gonna copy the package code in
 // https://github.com/gregberge/react-merge-refs
 // Copyright (c) 2020 Greg Bergé
-function mergeRefs<T>(refs: React.Ref<T>[]): React.RefCallback<T> {
+function mergeRefs<T>(refs: Array<React.Ref<T>>): React.RefCallback<T> {
   return (value) => {
     refs.forEach((ref) => {
       if (typeof ref === 'function') {
@@ -1241,7 +1258,7 @@ function useCmdk<T>(selector: (state: State) => T): T {
 function useValue(
   id: string,
   ref: React.RefObject<HTMLElement | null>,
-  deps: (React.ReactNode | React.RefObject<HTMLElement | null> | string)[],
+  deps: Array<React.ReactNode | React.RefObject<HTMLElement | null> | string>,
   aliases: string[] = []
 ) {
   const valueRef = React.useRef<string>(undefined);
@@ -1261,6 +1278,8 @@ function useValue(
           return valueRef.current;
         }
       }
+
+      return undefined;
     })();
 
     const keywords = aliases.map((alias) => alias.trim());
@@ -1285,12 +1304,16 @@ const useScheduleLayoutEffect = () => {
       f();
     }
     fns.current = new Map();
-  }, [s]);
+  }, [fns, s]);
 
-  return (id: number | string, cb: () => void) => {
-    fns.current.set(id, cb);
-    ss({});
-  };
+  return React.useCallback(
+    (id: number | string, cb: () => void) => {
+      fns.current.set(id, cb);
+      ss({});
+    },
+    // oxlint-disable-next-line react/preserve-manual-memoization -- The callback identity is stable while `fns.current` is the mutable queue; depending on the queue value would rebuild the scheduler after every flush.
+    [fns]
+  );
 };
 
 type SlottableElementProps = {
@@ -1316,7 +1339,7 @@ function renderChildren(children: React.ReactElement<SlottableElementProps>) {
     : children;
 }
 
-function SlottableWithNestedChildren(
+function slottableWithNestedChildren(
   { asChild, children }: { asChild?: boolean; children?: React.ReactNode },
   render: (child: React.ReactNode) => JSX.Element
 ) {

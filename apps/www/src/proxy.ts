@@ -8,13 +8,13 @@ const markdownRewrites = [
 ];
 
 export function getMarkdownRewrite(pathname: string) {
-  const hasMarkdownExtension = MARKDOWN_EXTENSION_REGEX.test(pathname);
+  const hasMarkdownExtension = pathname.endsWith('.md');
   const docsPathname = hasMarkdownExtension
     ? pathname.replace(MARKDOWN_EXTENSION_REGEX, '')
     : pathname;
 
-  for (const { rewrite } of markdownRewrites) {
-    const rewrittenPathname = rewrite(docsPathname);
+  for (const rewriteEntry of markdownRewrites) {
+    const rewrittenPathname = rewriteEntry.rewrite(docsPathname);
 
     if (rewrittenPathname) {
       return hasMarkdownExtension
@@ -31,8 +31,7 @@ export function proxy(request: NextRequest) {
 
   if (
     !pathname ||
-    (!MARKDOWN_EXTENSION_REGEX.test(request.nextUrl.pathname) &&
-      !isMarkdownPreferred(request))
+    (!request.nextUrl.pathname.endsWith('.md') && !isMarkdownPreferred(request))
   ) {
     return NextResponse.next();
   }

@@ -27,10 +27,10 @@ test('find-replace: decorated input keeps exact history and follow-up typing', a
     const initialBlocks = await editor.get.modelBlockTexts();
     const insertOffset = 'This is editable '.length;
     const inserted = 'qwertyuiop';
-    const expectedFirst = `${initialBlocks[0]!.slice(
+    const expectedFirst = `${initialBlocks[0].slice(
       0,
       insertOffset
-    )}${inserted}${initialBlocks[0]!.slice(insertOffset)}`;
+    )}${inserted}${initialBlocks[0].slice(insertOffset)}`;
     const expectedAfterType = [expectedFirst, ...initialBlocks.slice(1)];
 
     await editor.selection.collapse({ offset: insertOffset, path: [0, 0] });
@@ -143,7 +143,8 @@ test('select-editor: Enter preserves a query with no selectable item', async ({
     );
 
     await editor.ready({ editor: 'visible', text: 'Editor' });
-    const inputBlock = (await editor.get.modelBlockTexts()).length - 1;
+    const blockTexts = await editor.get.modelBlockTexts();
+    const inputBlock = blockTexts.length - 1;
 
     await editor.selection.collapse({ offset: 0, path: [inputBlock, 0] });
     await editor.focus();

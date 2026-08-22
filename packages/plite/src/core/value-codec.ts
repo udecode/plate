@@ -8,9 +8,10 @@ import type {
 import { deepFreeze } from './clone';
 import { createEditorEffect } from './transaction-values';
 
-const functionSource = Function.prototype.toString;
-const arrayConstructorSource = functionSource.call(Array);
-const objectConstructorSource = functionSource.call(Object);
+const getFunctionSource = (value: object) =>
+  Function.prototype.toString.call(value);
+const arrayConstructorSource = getFunctionSource(Array);
+const objectConstructorSource = getFunctionSource(Object);
 
 const hasIntrinsicConstructor = (
   prototype: object,
@@ -21,7 +22,7 @@ const hasIntrinsicConstructor = (
   return (
     Object.hasOwn(descriptor ?? {}, 'value') &&
     typeof descriptor?.value === 'function' &&
-    functionSource.call(descriptor.value) === constructorSource
+    getFunctionSource(descriptor.value) === constructorSource
   );
 };
 
@@ -76,7 +77,7 @@ export const getEditorJsonArrayItems = (
  */
 export const getEditorJsonRecordEntries = (
   value: unknown
-): readonly (readonly [string, unknown])[] | null => {
+): ReadonlyArray<readonly [string, unknown]> | null => {
   if (
     typeof value !== 'object' ||
     value === null ||
@@ -111,10 +112,12 @@ export const isEditorJsonValue = (
 
   switch (typeof value) {
     case 'boolean':
-    case 'string':
+    case 'string': {
       return true;
-    case 'number':
+    }
+    case 'number': {
       return Number.isFinite(value) && !Object.is(value, -0);
+    }
     case 'object': {
       if (seen.has(value)) return false;
       seen.add(value);
@@ -139,8 +142,9 @@ export const isEditorJsonValue = (
         seen.delete(value);
       }
     }
-    default:
+    default: {
       return false;
+    }
   }
 };
 
@@ -253,12 +257,14 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
 
     switch (typeof input) {
       case 'boolean':
-      case 'string':
+      case 'string': {
         return input;
-      case 'number':
+      }
+      case 'number': {
         if (!Number.isFinite(input) || Object.is(input, -0)) invalid();
 
         return input;
+      }
       case 'object': {
         if (seen.has(input)) invalid();
         seen.add(input);
@@ -281,8 +287,9 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
           seen.delete(input);
         }
       }
-      default:
+      default: {
         return invalid();
+      }
     }
   };
 
@@ -394,7 +401,7 @@ export const decodeVersionedValue = <TValue>(
 export const encodeEditorEffect = <TValue>(
   effect: EditorEffect<TValue>
 ): SerializedEditorEffect => {
-  const codec = effect.type.codec;
+  const { codec } = effect.type;
 
   if (!codec) {
     throw new Error(

@@ -3,12 +3,13 @@ import { EDITOR_TO_FORCE_RENDER } from '@platejs/plite-dom/internal';
 import { useCallback, useMemo, useReducer, useRef } from 'react';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import { ReactEditor } from '../plugin/react-editor';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { createDOMRepairQueue } from './dom-repair-queue';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   applyEditableRepairRequest,
   type EditableRepairRequest,
+  focusEditableRepairTarget,
 } from './mutation-controller';
 
 type PendingModelSelectionExport = {
@@ -38,6 +39,9 @@ export const useRuntimeRepairEngine = ({
 }) => {
   const { domPhaseScheduler, editor, inputController } = runtime;
   const [, forceRender] = useReducer((s) => s + 1, 0);
+  const pendingFocusEditorAfterRenderRef = useRef<ReactRuntimeEditor | null>(
+    null
+  );
   const pendingModelSelectionExportAfterRenderRef =
     useRef<PendingModelSelectionExport | null>(null);
   const domRepairQueue = useMemo(
@@ -67,6 +71,15 @@ export const useRuntimeRepairEngine = ({
       }
     });
   }, [editor, forceRender, runtime]);
+
+  useIsomorphicLayoutEffect(() => {
+    const focusEditor = pendingFocusEditorAfterRenderRef.current;
+
+    if (!focusEditor) return;
+
+    pendingFocusEditorAfterRenderRef.current = null;
+    focusEditableRepairTarget(focusEditor);
+  });
 
   useIsomorphicLayoutEffect(() => {
     const pending = pendingModelSelectionExportAfterRenderRef.current;
@@ -105,14 +118,21 @@ export const useRuntimeRepairEngine = ({
   });
 
   const requestEditableRepair = useCallback(
-    (request: EditableRepairRequest) => {
+    (
+      request: EditableRepairRequest,
+      options?: { focusEditor?: ReactRuntimeEditor }
+    ) => {
       applyEditableRepairRequest({
         domPhaseScheduler,
         domRepairQueue,
         editor,
+        focusEditor: options?.focusEditor,
         forceRender,
         inputController,
         request,
+        requestFocusAfterRender: (focusEditor) => {
+          pendingFocusEditorAfterRenderRef.current = focusEditor;
+        },
         syncDOMSelectionToEditor,
       });
     },

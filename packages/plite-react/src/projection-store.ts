@@ -13,6 +13,7 @@ import { NodeApi, RangeApi } from '@platejs/plite';
 
 import {
   type Editor,
+  failInvariant,
   projectRangeInSnapshot,
   getSnapshot as editorGetSnapshot,
   subscribeSource as editorSubscribeSource,
@@ -77,7 +78,7 @@ export type PliteProjectionSourceReadContext = PliteSourceDirtinessContext & {
 export type PliteProjectionSource<T = unknown> = (
   snapshot: EditorSnapshot,
   context: PliteProjectionSourceReadContext
-) => readonly PliteProjection<T>[];
+) => ReadonlyArray<PliteProjection<T>>;
 
 export type PliteSourceDirtiness =
   | PliteSourceDirtinessClass
@@ -119,7 +120,7 @@ export type PliteProjectionRefreshListener = (
 ) => void;
 
 export type PliteProjectionStoreSnapshot<T = unknown> = Readonly<
-  Record<string, readonly PliteProjectionSlice<T>[]>
+  Record<string, ReadonlyArray<PliteProjectionSlice<T>>>
 >;
 
 export type PliteProjectionStoreMetrics = Readonly<{
@@ -138,7 +139,9 @@ export type CompiledProjectionStore<T = unknown> = {
   destroy: () => void;
   getMetrics: () => PliteProjectionStoreMetrics;
   getSourceStatus: () => PliteViewSourceStatus;
-  getRuntimeSnapshot: (nodeKey: NodeKey) => readonly PliteProjectionSlice<T>[];
+  getRuntimeSnapshot: (
+    nodeKey: NodeKey
+  ) => ReadonlyArray<PliteProjectionSlice<T>>;
   getSnapshot: () => PliteProjectionStoreSnapshot<T>;
   refresh: (
     options?: PliteProjectionStoreRefreshOptions
@@ -166,7 +169,7 @@ const EMPTY_METRICS = Object.freeze({
 
 const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
   []
-) as readonly PliteProjectionSlice<unknown>[];
+) as readonly PliteProjectionSlice[];
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
 
 const profileProjectionStorePhase = <T>(id: string, run: () => T): T => {
@@ -211,18 +214,26 @@ const addEditorSourceForDirtinessClass = (
 ) => {
   switch (dirtiness) {
     case 'always':
-    case 'mark':
+    case 'mark': {
       sources.add('commit');
       break;
-    case 'selection':
+    }
+    case 'selection': {
       sources.add('selection');
       break;
-    case 'text':
+    }
+    case 'text': {
       sources.add('text');
       break;
-    case 'node':
+    }
+    case 'node': {
       sources.add('node');
       break;
+    }
+    case 'annotation':
+    case 'external': {
+      break;
+    }
   }
 };
 
@@ -274,20 +285,27 @@ const matchesDirtinessClass = (
   if (!context.change) return true;
 
   switch (dirtiness) {
-    case 'selection':
+    case 'selection': {
       return context.change.selectionChanged;
-    case 'text':
+    }
+    case 'text': {
       return context.change.changed.hasAny('text');
-    case 'mark':
+    }
+    case 'mark': {
       return context.change.changed.hasAny('marks');
-    case 'node':
+    }
+    case 'node': {
       return context.change.changed.hasAny('document');
-    case 'annotation':
+    }
+    case 'annotation': {
       return context.reason === 'annotation';
-    case 'external':
+    }
+    case 'external': {
       return context.reason === 'external' || context.reason === 'refresh';
-    default:
+    }
+    default: {
       return true;
+    }
   }
 };
 
@@ -328,7 +346,7 @@ const getDescendantAtPath = (
     return null;
   }
 
-  let node: Descendant | null = children[path[0]!] ?? null;
+  let node: Descendant | null = children[path[0]] ?? null;
 
   for (const index of path.slice(1)) {
     if (!node || !NodeApi.isElement(node)) {
@@ -462,7 +480,9 @@ const isRuntimeScopeDirty = (
   }
 
   return scopedNodeKeys.some((nodeKey) =>
-    context.change!.changed.hasNodeKey(nodeKey, 'decoration')
+    (
+      context.change ?? failInvariant('Expected value to be defined')
+    ).changed.hasNodeKey(nodeKey, 'decoration')
   );
 };
 
@@ -472,10 +492,12 @@ const mapProjection = <T>(
   runtimeScope: readonly NodeKey[] | null
 ): Readonly<{
   invalidRangeDropCount: number;
-  outputs: readonly Readonly<{
-    key: NodeKey;
-    value: PliteProjectionSlice<T>;
-  }>[];
+  outputs: ReadonlyArray<
+    Readonly<{
+      key: NodeKey;
+      value: PliteProjectionSlice<T>;
+    }>
+  >;
   projectedRangeCount: number;
 }> => {
   try {
@@ -563,7 +585,7 @@ export const createPliteProjectionStore = <T>(
   };
   const initialProjections =
     readSource(initialSnapshot, initialContext, initialRuntimeScope) ?? [];
-  const createMappedSource = (projections: readonly PliteProjection<T>[]) =>
+  const createMappedSource = (projections: ReadonlyArray<PliteProjection<T>>) =>
     createStableIdMappedSource<
       PliteProjection<T>,
       never,
@@ -806,10 +828,8 @@ export const createPliteProjectionStore = <T>(
     },
     getRuntimeSnapshot(nodeKey) {
       return (
-        (store.getSnapshot()[nodeKey] as
-          | readonly PliteProjectionSlice<T>[]
-          | undefined) ??
-        (EMPTY_RUNTIME_SNAPSHOT as readonly PliteProjectionSlice<T>[])
+        store.getSnapshot()[nodeKey] ??
+        (EMPTY_RUNTIME_SNAPSHOT as ReadonlyArray<PliteProjectionSlice<T>>)
       );
     },
     getSnapshot() {
@@ -864,8 +884,8 @@ export const createPliteProjectionStore = <T>(
     subscribeNodeKey(nodeKey, listener) {
       return store.subscribeKey(runtimeKey(nodeKey), listener);
     },
-    subscribeSourceId(sourceId, listener) {
-      return store.subscribeKey(sourceKey(sourceId), listener);
+    subscribeSourceId(innerSourceId, listener) {
+      return store.subscribeKey(sourceKey(innerSourceId), listener);
     },
   };
 };

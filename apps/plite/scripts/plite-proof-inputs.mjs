@@ -3,6 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const compareStrings = (left, right) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+
+  return 0;
+};
+
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const proofInputsScript = fileURLToPath(import.meta.url);
 const appBuildScript = path.join(scriptRoot, 'build-app-if-stale.mjs');
@@ -176,7 +183,7 @@ const collectFiles = (entryPath) => {
 const snapshotEntriesExcept = (entries, excludedPaths) => {
   const files = [...new Set(entries.flatMap(collectFiles))]
     .filter((file) => !excludedPaths.has(path.resolve(file)))
-    .sort();
+    .sort(compareStrings);
   const hash = createHash('sha256');
 
   for (const file of files) {
@@ -194,7 +201,9 @@ export const snapshotEntries = (entries) =>
 
 export const snapshotEnvironment = (names, environment = process.env) =>
   Object.fromEntries(
-    [...names].sort().map((name) => [name, environment[name] ?? null])
+    [...names]
+      .sort(compareStrings)
+      .map((name) => [name, environment[name] ?? null])
   );
 
 export const snapshotEnvironmentByPrefix = (
@@ -237,7 +246,9 @@ export const readManifestFingerprint = (manifestPath) => {
 
 export const hashEntries = (entries, salts = []) => {
   const hash = createHash('sha256');
-  const files = [...new Set(entries.flatMap(collectFiles))].sort();
+  const files = [...new Set(entries.flatMap(collectFiles))].sort(
+    compareStrings
+  );
 
   for (const salt of salts) {
     hash.update(`salt:${salt}\0`);
@@ -315,7 +326,7 @@ const snapshotMetadata = (entries, ignoredPaths) => {
 const findMetadataChange = (before, after, kind) => {
   const paths = new Set([...before.keys(), ...after.keys()]);
 
-  for (const changedPath of [...paths].sort()) {
+  for (const changedPath of [...paths].sort(compareStrings)) {
     const previous = before.get(changedPath);
     const current = after.get(changedPath);
 

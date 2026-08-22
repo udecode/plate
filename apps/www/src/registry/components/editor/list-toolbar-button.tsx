@@ -25,8 +25,8 @@ export function BulletedListToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
-  const pressed = useEditorSelector((editor) =>
-    editor.plugin(ListPlugin).read.isActive({ type: ListType.Bulleted })
+  const pressed = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(ListPlugin).read.isActive({ type: ListType.Bulleted })
   );
 
   return (
@@ -39,7 +39,9 @@ export function BulletedListToolbarButton() {
           });
           editor.api.dom.focus();
         }}
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
         data-state={pressed ? 'on' : 'off'}
       >
         <List className="size-4" />
@@ -53,11 +55,11 @@ export function BulletedListToolbarButton() {
         <DropdownMenuContent align="start" alignOffset={-32}>
           <DropdownMenuGroup>
             <DropdownMenuItem
-              onClick={() =>
+              onClick={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   type: ListType.Bulleted,
-                })
-              }
+                });
+              }}
             >
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full border border-current bg-current" />
@@ -65,12 +67,12 @@ export function BulletedListToolbarButton() {
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
+              onClick={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.Circle,
                   type: ListType.Bulleted,
-                })
-              }
+                });
+              }}
             >
               <div className="flex items-center gap-2">
                 <div className="size-2 rounded-full border border-current" />
@@ -78,12 +80,12 @@ export function BulletedListToolbarButton() {
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
+              onClick={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.Square,
                   type: ListType.Bulleted,
-                })
-              }
+                });
+              }}
             >
               <div className="flex items-center gap-2">
                 <div className="size-2 border border-current bg-current" />
@@ -101,8 +103,8 @@ export function NumberedListToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
-  const pressed = useEditorSelector((editor) =>
-    editor.plugin(ListPlugin).read.isActive({ type: ListType.Numbered })
+  const pressed = useEditorSelector((innerEditor2) =>
+    innerEditor2.plugin(ListPlugin).read.isActive({ type: ListType.Numbered })
   );
 
   return (
@@ -115,7 +117,9 @@ export function NumberedListToolbarButton() {
           });
           editor.api.dom.focus();
         }}
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
         data-state={pressed ? 'on' : 'off'}
       >
         <ListOrdered className="size-4" />
@@ -129,51 +133,51 @@ export function NumberedListToolbarButton() {
         <DropdownMenuContent align="start" alignOffset={-32}>
           <DropdownMenuGroup>
             <DropdownMenuItem
-              onSelect={() =>
+              onSelect={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   type: ListType.Numbered,
-                })
-              }
+                });
+              }}
             >
               Decimal (1, 2, 3)
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
+              onSelect={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.LowerAlpha,
                   type: ListType.Numbered,
-                })
-              }
+                });
+              }}
             >
               Lower Alpha (a, b, c)
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
+              onSelect={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.UpperAlpha,
                   type: ListType.Numbered,
-                })
-              }
+                });
+              }}
             >
               Upper Alpha (A, B, C)
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
+              onSelect={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.LowerRoman,
                   type: ListType.Numbered,
-                })
-              }
+                });
+              }}
             >
               Lower Roman (i, ii, iii)
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() =>
+              onSelect={() => {
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.UpperRoman,
                   type: ListType.Numbered,
-                })
-              }
+                });
+              }}
             >
               Upper Roman (I, II, III)
             </DropdownMenuItem>
@@ -188,8 +192,8 @@ export function TodoListToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
   const editor = useEditor();
-  const pressed = useEditorSelector((editor) =>
-    editor.plugin(ListPlugin).read.isActive({ type: ListType.Task })
+  const pressed = useEditorSelector((innerEditor3) =>
+    innerEditor3.plugin(ListPlugin).read.isActive({ type: ListType.Task })
   );
 
   return (
@@ -200,7 +204,9 @@ export function TodoListToolbarButton(
         editor.plugin(ListPlugin).update.toggle({ type: ListType.Task });
         editor.api.dom.focus();
       }}
-      onMouseDown={(event) => event.preventDefault()}
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       tooltip="Todo"
     >
       <ListTodoIcon />

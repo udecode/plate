@@ -11,6 +11,7 @@ import {
   usePliteWidgetStore,
   usePliteWidgets,
 } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import { cva } from 'class-variance-authority';
 import {
   type Dispatch,
@@ -53,7 +54,7 @@ type CommentProjection = {
 
 type CommentVisualState = 'question' | 'resolved' | 'review';
 
-type CommentEditor = ReactEditor<Value>;
+type CommentEditor = ReactEditor;
 
 const initialValue: Value = [
   {
@@ -196,7 +197,7 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
       return;
     }
 
-    const path = firstAnnotation.range.anchor.path;
+    const { path } = firstAnnotation.range.anchor;
 
     editor.update.text.insert('>', {
       at: {
@@ -509,7 +510,9 @@ const CommentModePane = ({
           </span>
         ) : (
           annotationSnapshot.allIds.map((id) => {
-            const annotation = annotationSnapshot.byId.get(id)!;
+            const annotation =
+              annotationSnapshot.byId.get(id) ??
+              failInvariant('Expected value to be defined');
 
             return (
               <div
@@ -535,7 +538,9 @@ const CommentModePane = ({
                   range:{formatRange(annotation.range)}
                 </span>
                 <Button
-                  onClick={() => removeComment(annotation.id)}
+                  onClick={() => {
+                    removeComment(annotation.id);
+                  }}
                   type="button"
                   variant="outline"
                 >
@@ -552,7 +557,9 @@ const CommentModePane = ({
             </span>
           ) : (
             widgetSnapshot.allIds.map((id) => {
-              const widget = widgetSnapshot.byId.get(id)!;
+              const widget =
+                widgetSnapshot.byId.get(id) ??
+                failInvariant('Expected value to be defined');
 
               return widget.visible ? (
                 <span className="plite-comment-mode-code" key={widget.id}>
@@ -568,7 +575,7 @@ const CommentModePane = ({
 };
 
 const CommentModeExample = () => {
-  const writerEditor = usePliteEditor<Value>({
+  const writerEditor = usePliteEditor({
     initialSelection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
@@ -576,7 +583,7 @@ const CommentModeExample = () => {
     },
     initialValue: cloneValue(initialValue),
   });
-  const commentEditor = usePliteEditor<Value>({
+  const commentEditor = usePliteEditor({
     initialSelection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
@@ -657,7 +664,9 @@ const CommentModeExample = () => {
             annotationStore={commentAnnotationStore}
             comments={comments}
             editor={commentEditor}
-            onCommentWrite={() => setCommentWrites((count) => count + 1)}
+            onCommentWrite={() => {
+              setCommentWrites((count) => count + 1);
+            }}
             setComments={setComments}
             writerEditor={writerEditor}
           />
@@ -665,7 +674,9 @@ const CommentModeExample = () => {
         <Plite
           annotationStore={writerAnnotationStore}
           editor={writerEditor}
-          onValueChange={({ value }) => handleWriterValueChange(value)}
+          onValueChange={({ value }) => {
+            handleWriterValueChange(value);
+          }}
         >
           <WriterPane editor={writerEditor} />
         </Plite>

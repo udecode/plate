@@ -50,7 +50,7 @@ const TextSlice = ({
       ? String(
           (
             snapshot.children[slot === 'left' ? 0 : 1] as {
-              children: { text: string }[];
+              children: Array<{ text: string }>;
             }
           ).children[0]?.text ?? ''
         )
@@ -71,9 +71,11 @@ const WidgetHarness = ({
 }: {
   counts: ReturnType<typeof createRenderCounts>;
   editor: ReturnType<typeof createEditor>;
-  widgets: readonly PliteWidget<{
-    label: string;
-  }>[];
+  widgets: ReadonlyArray<
+    PliteWidget<{
+      label: string;
+    }>
+  >;
 }) => {
   const widgetStore = usePliteWidgetStore(editor, widgets);
   const toolbarWidget = usePliteWidget(widgetStore, 'toolbar-widget');
@@ -359,7 +361,7 @@ describe('plite-react widget layer contract', () => {
 
     const widgets = (
       label: string
-    ): readonly PliteWidget<{ label: string }>[] => [
+    ): ReadonlyArray<PliteWidget<{ label: string }>> => [
       {
         anchor: { type: 'selection' },
         get data() {
@@ -457,7 +459,7 @@ describe('plite-react widget layer contract', () => {
 
     const widgets = (
       label: string
-    ): readonly PliteWidget<{ label: string }>[] => [
+    ): ReadonlyArray<PliteWidget<{ label: string }>> => [
       {
         anchor: { type: 'selection' },
         get data() {

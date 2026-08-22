@@ -27,8 +27,9 @@ const getHeadingLevel = (action: string) => {
   return match ? Number(match[1]) : undefined;
 };
 
-const toggleCodeBlock = (editor: PlateEditor) =>
+const toggleCodeBlock = (editor: PlateEditor) => {
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
+};
 
 const createBlock = ({
   type,
@@ -39,8 +40,9 @@ const createBlock = ({
   type,
 });
 
-const runFootnoteAction = (editor: PlateEditor) =>
+const runFootnoteAction = (editor: PlateEditor) => {
   editor.plugin(BaseFootnotePlugin).update.insert({}, { select: true });
+};
 
 const getActionType = (editor: PlateEditor, action: string) => {
   if (action === ACTION_THREE_COLUMNS) {
@@ -82,11 +84,13 @@ const removeEmptySourceAfterInsert = (
 };
 
 const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
-  [PLUGINS.date]: (editor) =>
-    editor.plugin(BaseDatePlugin).update.insert({}, { select: true }),
+  [PLUGINS.date]: (editor) => {
+    editor.plugin(BaseDatePlugin).update.insert({}, { select: true });
+  },
   [ACTION_FOOTNOTE]: runFootnoteAction,
-  [PLUGINS.inlineEquation]: (editor) =>
-    editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true }),
+  [PLUGINS.inlineEquation]: (editor) => {
+    editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true });
+  },
   [PLUGINS.link]: (editor) => {
     const link = editor.plugin(linkPlugin);
 
@@ -236,21 +240,25 @@ export const insertInlineElement = (editor: PlateEditor, action: string) => {
 };
 
 const setBlockMap: Record<string, (editor: PlateEditor) => void> = {
-  [ACTION_THREE_COLUMNS]: (editor) =>
-    editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 }),
+  [ACTION_THREE_COLUMNS]: (editor) => {
+    editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 });
+  },
   [PLUGINS.codeBlock]: toggleCodeBlock,
-  [PLUGINS.numberedList]: (editor) =>
+  [PLUGINS.numberedList]: (editor) => {
     editor.plugin(BaseListPlugin).update.toggle({
       type: editor.plugin(PLUGINS.numberedList).schema.type,
-    }),
-  [PLUGINS.taskList]: (editor) =>
+    });
+  },
+  [PLUGINS.taskList]: (editor) => {
     editor.plugin(BaseListPlugin).update.toggle({
       type: editor.plugin(PLUGINS.taskList).schema.type,
-    }),
-  [PLUGINS.bulletedList]: (editor) =>
+    });
+  },
+  [PLUGINS.bulletedList]: (editor) => {
     editor.plugin(BaseListPlugin).update.toggle({
       type: editor.plugin(PLUGINS.bulletedList).schema.type,
-    }),
+    });
+  },
 };
 
 export const applyBlockAction = (

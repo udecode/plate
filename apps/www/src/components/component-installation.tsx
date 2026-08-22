@@ -3,8 +3,16 @@
 import * as React from 'react';
 import type { RegistryItem } from 'shadcn/schema';
 
+import { Index } from '@/__registry__';
 import { BlockCode, type BlockViewerContext } from '@/components/block-viewer';
 import { ComponentPreviewPro } from '@/components/component-preview-pro';
+import {
+  createRegistryItemFallback,
+  generatedPropSchemas,
+  parseGeneratedItem,
+  parseGeneratedProp,
+  parseRegistryItem,
+} from '@/lib/generated-props';
 import {
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
@@ -16,7 +24,7 @@ import { ComponentPreview } from './component-preview';
 import { H2, H3, Step, Steps } from './typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-type RegistryExample = RegistryItem &
+type RegistryExample = Omit<RegistryItem, 'item'> &
   Partial<Pick<BlockViewerContext, 'highlightedFiles' | 'item' | 'tree'>>;
 
 type ComponentInstallationProps = {
@@ -31,12 +39,10 @@ type ComponentInstallationProps = {
   highlightedFiles?: BlockViewerContext['highlightedFiles'];
   inline?: boolean;
   item?: BlockViewerContext['item'];
-  name?: string;
+  name: string;
   tree?: BlockViewerContext['tree'];
   usage?: string[];
 };
-
-const parseGeneratedProp = <T,>(value: string): T => JSON.parse(value) as T;
 
 export function ComponentInstallation({
   __dependencies__: __registryDependencies__ = '[]',
@@ -53,25 +59,31 @@ export function ComponentInstallation({
 }: ComponentInstallationProps) {
   const dependencies =
     props.dependencies ??
-    parseGeneratedProp<string[]>(__registryDependencies__) ??
+    parseGeneratedProp(
+      __registryDependencies__,
+      generatedPropSchemas.dependencies
+    ) ??
     [];
 
   // Let React Compiler optimize these - no manual memoization needed
+  const registryEntry: unknown = Index[name];
   const item =
-    props.item ?? parseGeneratedProp<BlockViewerContext['item']>(__itemProp__);
+    props.item ??
+    parseGeneratedItem(__itemProp__) ??
+    parseRegistryItem(registryEntry) ??
+    createRegistryItemFallback(name);
   const highlightedFiles =
     props.highlightedFiles ??
-    parseGeneratedProp<BlockViewerContext['highlightedFiles']>(
-      __highlightedFilesProp__
+    parseGeneratedProp(
+      __highlightedFilesProp__,
+      generatedPropSchemas.highlightedFiles
     );
   const tree =
-    props.tree ?? parseGeneratedProp<BlockViewerContext['tree']>(__treeProp__);
+    props.tree ?? parseGeneratedProp(__treeProp__, generatedPropSchemas.tree);
 
   const dependenciesString = dependencies.join(' ');
-  const installCommand = getRegistryInstallCommand(name ?? item.name);
-  const clipboardInstallCommand = getRegistryClipboardInstallCommand(
-    name ?? item.name
-  );
+  const installCommand = getRegistryInstallCommand(name);
+  const clipboardInstallCommand = getRegistryClipboardInstallCommand(name);
 
   return (
     <div className="mt-4 mb-12">
@@ -126,8 +138,8 @@ export function ComponentInstallation({
         <>
           <H2>Usage</H2>
 
-          {usage.map((value, index) => (
-            <CodeBlock key={index} value={value} language="tsx" />
+          {usage.map((value) => (
+            <CodeBlock key={value} value={value} language="tsx" />
           ))}
         </>
       )}
@@ -160,10 +172,14 @@ export function ComponentInstallation({
                   key={example.name}
                   dependencies={example.dependencies}
                   highlightedFiles={example.highlightedFiles}
-                  item={{
-                    ...example.item,
-                    description: getRegistryTitle(example),
-                  }}
+                  item={
+                    example.item
+                      ? {
+                          ...example.item,
+                          description: getRegistryTitle(example),
+                        }
+                      : undefined
+                  }
                   tree={example.tree}
                 />
               );

@@ -20,7 +20,7 @@ export interface IGrid<R, T extends SectionId> {
   ) => this;
   indexOf: (sectionId: T) => number;
   section: (sectionId: T) => IGridSection<R, T> | undefined;
-  sections: () => IGridSection<R, T>[];
+  sections: () => Array<IGridSection<R, T>>;
   updateSection: (sectionId: T, elements: SectionElements) => this;
 }
 

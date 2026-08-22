@@ -121,7 +121,7 @@ const ConfiguredPropertyPlugin = defineBasePlugin('configuredProperty', {
   initialState: configuredPropertyInitialState,
   schema: ({ initialState, targetElementTypes }) => {
     const prefix: string = initialState.prefix;
-    const targetElementType: string = targetElementTypes[0]!;
+    const targetElementType: string = targetElementTypes[0];
 
     void prefix;
     void targetElementType;
@@ -383,8 +383,8 @@ const ExplicitPlateElementPlugin = definePlatePlugin('plateElementOwner', {
       type: 'plateElementDocumentType',
     },
   },
-  update: ({ schema }) => {
-    const exactType: 'plateElementDocumentType' = schema.type;
+  update: ({ schema: innerSchema }) => {
+    const exactType: 'plateElementDocumentType' = innerSchema.type;
 
     return { identity: () => exactType };
   },
@@ -462,8 +462,8 @@ void exactPlateFactoryProperty;
 void exactPlateFactoryType;
 
 const ExplicitPlateMarkPlugin = definePlatePlugin('plateMarkOwner', {
-  api: ({ schema }) => {
-    const exactKey: 'plateMarkDocumentKey' = schema.key;
+  api: ({ schema: innerSchema2 }) => {
+    const exactKey: 'plateMarkDocumentKey' = innerSchema2.key;
 
     return { identity: () => exactKey };
   },

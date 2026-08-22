@@ -1,5 +1,13 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import {
@@ -8,6 +16,8 @@ import {
   createConsumerSources,
   filterTypeScriptConsumerDiagnostics,
   getPublicExports,
+  getPlitePackageBoundaryContracts,
+  materializeResolvedDependencyClosure,
   parseRuntimeExportNames,
   PLITE_RELEASE_PACKAGES,
 } from './check-plite-release-artifacts.mjs';
@@ -66,6 +76,78 @@ test('builds every package before packing its release artifact', () => {
 
   for (const { directory } of PLITE_RELEASE_PACKAGES) {
     assert.match(releaseBuild, new RegExp(`--filter=\\./${directory}(?: |$)`));
+  }
+});
+
+test('owns focused packed proof for the Plite React and Yjs boundaries', () => {
+  const rootPackageJson = JSON.parse(
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
+  );
+
+  assert.deepEqual(
+    getPlitePackageBoundaryContracts().map(({ name }) => name),
+    [
+      '@platejs/plite',
+      '@platejs/plite-dom',
+      '@platejs/plite-react',
+      '@platejs/yjs',
+    ]
+  );
+  assert.match(
+    rootPackageJson.scripts['plite:release:boundaries'],
+    /--package-boundaries-only/
+  );
+});
+
+test('materializes an isolated dependency closure and rejects forbidden transitives', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'plite-boundary-fixture-'));
+  const sourceNodeModules = join(fixture, 'source', 'node_modules');
+  const destinationNodeModules = join(fixture, 'consumer', 'node_modules');
+
+  try {
+    for (const [name, manifest] of [
+      ['allowed', { dependencies: { forbidden: '1.0.0' }, name: 'allowed' }],
+      ['forbidden', { name: 'forbidden' }],
+    ]) {
+      const directory = join(sourceNodeModules, name);
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(
+        join(directory, 'package.json'),
+        `${JSON.stringify({ version: '1.0.0', ...manifest })}\n`
+      );
+    }
+
+    assert.throws(
+      () =>
+        materializeResolvedDependencyClosure({
+          destinationNodeModules,
+          forbiddenPackages: ['forbidden'],
+          requests: [
+            { fromDirectory: join(fixture, 'source'), name: 'allowed' },
+          ],
+        }),
+      /forbidden is reachable through the isolated dependency closure/
+    );
+
+    writeFileSync(
+      join(sourceNodeModules, 'allowed', 'package.json'),
+      `${JSON.stringify({ name: 'allowed', version: '1.0.0' })}\n`
+    );
+    materializeResolvedDependencyClosure({
+      destinationNodeModules,
+      forbiddenPackages: ['forbidden'],
+      requests: [{ fromDirectory: join(fixture, 'source'), name: 'allowed' }],
+    });
+
+    assert.equal(
+      readFileSync(
+        join(destinationNodeModules, 'allowed', 'package.json'),
+        'utf-8'
+      ),
+      `${JSON.stringify({ name: 'allowed', version: '1.0.0' })}\n`
+    );
+  } finally {
+    rmSync(fixture, { force: true, recursive: true });
   }
 });
 
@@ -255,7 +337,7 @@ test('builds an executable typed Plite schema consumer without changing DCE fixt
     assert.match(source, /defineEditorSchema/);
     assert.match(source, /createEditor/);
     assert.match(source, /read\.schema\.identity\(\)/);
-    assert.match(source, /read\.schema\.createAndFill/);
+    assert.match(source, /read\.schema\.create/);
     assert.match(source, /release-consumer-schema/);
   }
 
@@ -306,21 +388,22 @@ test('packs Core and builds an executable final Plate schema consumer', () => {
     assert.match(source, /createBaseEditor/);
     assert.match(source, /defineBasePlugin/);
     assert.match(source, /api: \(\{ store \}\) => \(\{/);
-    assert.match(source, /schema: \(\{ initialState \}\)/);
-    assert.match(source, /mark: releasePlateProperty\.boolean/);
+    assert.match(source, /schema: \{/);
+    assert.match(source, /key: 'release-artifact-strong'/);
+    assert.match(source, /property: releasePlateProperty\.boolean/);
     assert.match(source, /ReleaseParentPlugin/);
     assert.match(source, /releaseHeldPlugin\.store\.set/);
     assert.match(source, /releasePlateIdentityAfter/);
     assert.doesNotMatch(source, /\.extend\(\(\{ store \}\) =>/);
   }
 
-  assert.match(sources.types, /releaseExactElementType/);
+  assert.match(sources.types, /releaseCreatedElementType/);
   assert.match(sources.types, /releaseNestedElementName/);
   assert.doesNotMatch(sources.types, /@ts-expect-error/);
   assert.doesNotMatch(sources.runtime, /@ts-expect-error/);
   assert.match(
     sources.runtime,
-    /releaseHeldPlugin\.plugin\.initialState\.label, 'draft'/
+    /ReleaseElementPlugin\.initialState\.label, 'draft'/
   );
   assert.match(
     sources.runtime,

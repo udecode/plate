@@ -187,10 +187,10 @@ describe('@platejs/yjs multi-root document contract', () => {
     let sourceUpdates = 0;
     let targetCommits = 0;
     const onSourceUpdate = () => {
-      sourceUpdates++;
+      sourceUpdates += 1;
     };
     const unsubscribeTarget = target.editor.subscribeCommit(() => {
-      targetCommits++;
+      targetCommits += 1;
     });
 
     source.doc.on('update', onSourceUpdate);

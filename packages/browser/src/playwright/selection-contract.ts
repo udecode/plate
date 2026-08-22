@@ -30,18 +30,21 @@ export const assertPliteBrowserSelectionContract = async (
 
   if (expected.hasVisibleSelection !== undefined) {
     await expect
-      .poll(
-        async () => (await harness.selection.displayed()).hasVisibleSelection
-      )
+      .poll(async () => {
+        const selection = await harness.selection.displayed();
+
+        return selection.hasVisibleSelection;
+      })
       .toBe(expected.hasVisibleSelection);
   }
 
   if (expected.hasVisibleEditorSelection !== undefined) {
     await expect
-      .poll(
-        async () =>
-          (await harness.selection.displayed()).hasVisibleEditorSelection
-      )
+      .poll(async () => {
+        const selection = await harness.selection.displayed();
+
+        return selection.hasVisibleEditorSelection;
+      })
       .toBe(expected.hasVisibleEditorSelection);
   }
 

@@ -128,7 +128,9 @@ const PolicyControls = <T extends string>({
         aria-pressed={value === option}
         data-test-id={`${testId}-${option}`}
         key={option}
-        onClick={() => onChange(option)}
+        onClick={() => {
+          onChange(option);
+        }}
         size="sm"
         type="button"
         variant={value === option ? 'default' : 'outline'}
@@ -307,7 +309,9 @@ const HiddenContentBlocksExample = () => {
           <CardContent className="flex flex-wrap items-center gap-2">
             <Button
               data-test-id="toggle-accordion"
-              onClick={() => setAccordionOpen(!accordionOpen)}
+              onClick={() => {
+                setAccordionOpen(!accordionOpen);
+              }}
               size="sm"
               variant="outline"
             >
@@ -315,7 +319,9 @@ const HiddenContentBlocksExample = () => {
             </Button>
             <Button
               data-test-id="toggle-collapsible"
-              onClick={() => setCollapsibleOpen(!collapsibleOpen)}
+              onClick={() => {
+                setCollapsibleOpen(!collapsibleOpen);
+              }}
               size="sm"
               variant="outline"
             >
@@ -324,7 +330,9 @@ const HiddenContentBlocksExample = () => {
             <Separator className="h-6" orientation="vertical" />
             <Button
               data-test-id="select-copy-accordion"
-              onClick={() => selectAndCopy([1, 0, 0])}
+              onClick={() => {
+                selectAndCopy([1, 0, 0]);
+              }}
               size="sm"
               variant="secondary"
             >
@@ -332,7 +340,9 @@ const HiddenContentBlocksExample = () => {
             </Button>
             <Button
               data-test-id="select-copy-collapsible"
-              onClick={() => selectAndCopy([3, 0, 0])}
+              onClick={() => {
+                selectAndCopy([3, 0, 0]);
+              }}
               size="sm"
               variant="secondary"
             >
@@ -340,7 +350,9 @@ const HiddenContentBlocksExample = () => {
             </Button>
             <Button
               data-test-id="select-copy-details"
-              onClick={() => selectAndCopy([2, 1, 0])}
+              onClick={() => {
+                selectAndCopy([2, 1, 0]);
+              }}
               size="sm"
               variant="secondary"
             >
@@ -455,12 +467,14 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
   const childNodes = React.Children.toArray(children);
 
   switch (element.type) {
-    case 'accordion-block':
+    case 'accordion-block': {
       return (
         <EditableElement>
           <Accordion
             collapsible
-            onValueChange={(value) => setAccordionOpen(value === 'body')}
+            onValueChange={(value) => {
+              setAccordionOpen(value === 'body');
+            }}
             type="single"
             value={accordionOpen ? 'body' : ''}
           >
@@ -479,7 +493,9 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
                 <slots.contentBoundary
                   copyPolicy={copyPolicy}
                   mounted={accordionOpen}
-                  onMaterialize={() => setAccordionOpen(true)}
+                  onMaterialize={() => {
+                    setAccordionOpen(true);
+                  }}
                   scope={{
                     from: 0,
                     to: childNodes.length - 1,
@@ -492,7 +508,8 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
           </Accordion>
         </EditableElement>
       );
-    case 'collapsible-block':
+    }
+    case 'collapsible-block': {
       return (
         <EditableElement>
           <Collapsible onOpenChange={setCollapsibleOpen} open={collapsibleOpen}>
@@ -513,7 +530,9 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               <slots.contentBoundary
                 copyPolicy={copyPolicy}
                 mounted={collapsibleOpen}
-                onMaterialize={() => setCollapsibleOpen(true)}
+                onMaterialize={() => {
+                  setCollapsibleOpen(true);
+                }}
                 scope={{
                   from: 0,
                   to: childNodes.length - 1,
@@ -525,13 +544,14 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
           </Collapsible>
         </EditableElement>
       );
-    case 'tabs-block':
+    }
+    case 'tabs-block': {
       return (
         <EditableElement>
           <Tabs
-            onValueChange={(value) =>
-              setActiveTab(value as HiddenBlocksState['activeTab'])
-            }
+            onValueChange={(value) => {
+              setActiveTab(value as HiddenBlocksState['activeTab']);
+            }}
             value={activeTab}
           >
             <div contentEditable={false}>
@@ -592,10 +612,13 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
           </Tabs>
         </EditableElement>
       );
-    case 'tab-panel':
+    }
+    case 'tab-panel': {
       return <EditableElement>{children}</EditableElement>;
-    default:
+    }
+    default: {
       return <EditableElement>{children}</EditableElement>;
+    }
   }
 };
 

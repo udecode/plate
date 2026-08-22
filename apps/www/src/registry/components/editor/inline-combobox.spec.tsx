@@ -52,6 +52,12 @@ mock.module('@ariakit/react', () => ({
   Portal: ({ children }: any) => <>{children}</>,
   useComboboxContext: () => store,
   useComboboxStore: () => store,
+  useStoreState: (_store: typeof store, key: string) => {
+    if (key === 'items') return [];
+    if (key === 'value') return comboboxValue;
+
+    return null;
+  },
 }));
 
 mock.module('@platejs/combobox', () => ({

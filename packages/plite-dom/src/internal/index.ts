@@ -114,6 +114,7 @@ export {
   isVoid,
   keyToDataAttribute,
 } from '../utils/plite-dom-markers';
+export { replaceDOMSelectionRange } from '../utils/dom';
 export {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_DOM_EDITABLE,

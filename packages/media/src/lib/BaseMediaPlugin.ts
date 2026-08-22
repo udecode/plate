@@ -140,8 +140,8 @@ export function defineMediaPlugin(
 ): unknown {
   const extension: (
     context: BasePluginContext<MediaElementPluginDefinition>
-  ) => MediaPluginExtension = ({ schema, store }) => {
-    const type = schema.type;
+  ) => MediaPluginExtension = ({ schema: innerSchema, store }) => {
+    const { type } = innerSchema;
     const normalizeUrl = (url: string): MediaUrlProperties | undefined => {
       const state = store.get() as Readonly<MediaPluginState>;
       const normalized = normalizeUrlInput?.(state, url) ?? {

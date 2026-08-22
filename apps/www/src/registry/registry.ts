@@ -28,6 +28,9 @@ const EDITOR_BASE_PACKAGES: Record<PlateRegistryBase, string[]> = {
   base: ['@base-ui/react'],
   radix: ['@radix-ui/react-toolbar', '@radix-ui/react-tooltip'],
 };
+const EDITOR_BASE_PACKAGE_SET = new Set(
+  Object.values(EDITOR_BASE_PACKAGES).flat()
+);
 
 function getEditorComponentTarget(filePath: string) {
   const segmentIndex = filePath.indexOf(EDITOR_COMPONENT_PATH_SEGMENT);
@@ -84,8 +87,7 @@ function withEditorBase(
       ...item,
       dependencies: [
         ...(item.dependencies ?? []).filter(
-          (dependency) =>
-            !Object.values(EDITOR_BASE_PACKAGES).flat().includes(dependency)
+          (dependency) => !EDITOR_BASE_PACKAGE_SET.has(dependency)
         ),
         ...EDITOR_BASE_PACKAGES[base],
       ],

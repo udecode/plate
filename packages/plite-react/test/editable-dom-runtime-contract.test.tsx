@@ -49,7 +49,7 @@ test('keeps one runtime per mount without render fan-out and tears it down', () 
       wrapper: strictMode,
     }
   );
-  const runtime = mounted.result.current.runtime;
+  const { runtime } = mounted.result.current;
   const scheduler = runtime.domPhaseScheduler;
 
   const scheduled = vi.fn();
@@ -408,8 +408,7 @@ test.each(['destroy', 'setRoot'] as const)(
         scheduleTask: runtime.domPhaseScheduler.schedule,
         setComposing: runtime.setComposing,
       });
-      const pendingCompositionEnd =
-        runtime.inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = runtime.inputController.state;
 
       if (
         pendingCompositionEnd?.ownership !== 'plite' ||

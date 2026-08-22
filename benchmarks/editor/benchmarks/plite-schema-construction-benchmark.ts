@@ -7,6 +7,7 @@ import {
   target,
 } from '../../../packages/plite/src/index';
 import { getCompiledEditorSchema } from '../../../packages/plite/src/internal/index';
+import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const iterationsArgument = process.argv.find((argument) =>
@@ -24,7 +25,7 @@ if (!Number.isInteger(iterations) || iterations < 1) {
 }
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const schemaExtension = defineExtension('schema-construction-benchmark', {
   schema: {
@@ -70,7 +71,7 @@ if (
 
 const cohorts = [100, 1000, 10_000, 50_000] as const;
 const rows = cohorts.map((blocks) => {
-  const target = Math.floor(blocks / 2);
+  const innerTarget = Math.floor(blocks / 2);
   const editor = createEditor({
     extensions: [schemaExtension],
     initialValue: [
@@ -100,7 +101,7 @@ const rows = cohorts.map((blocks) => {
     editor.update((tx) => {
       tx.nodes.insert(
         { bold: true, text: 'x' },
-        { at: { offset: 0, path: [0, target, 0] } }
+        { at: { offset: 0, path: [0, innerTarget, 0] } }
       );
     });
     samples.push(performance.now() - before);
@@ -142,10 +143,11 @@ const rows = cohorts.map((blocks) => {
     maximumChangedSpan,
     p50Ms: percentile(samples, 0.5),
     p95Ms: percentile(samples, 0.95),
-    target,
+    target: innerTarget,
   };
 });
-const sizeRatio = rows.at(-1)!.p50Ms / Math.max(rows[0].p50Ms, 0.001);
+const sizeRatio =
+  getDefined(rows.at(-1)).p50Ms / Math.max(rows[0].p50Ms, 0.001);
 const strict = process.env.PLITE_SCHEMA_CONSTRUCTION_STRICT === '1';
 const maximumChangedSpan = Math.max(
   ...rows.map((row) => row.maximumChangedSpan)

@@ -12,6 +12,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  failInvariant,
   type AnyEditor,
   getCompiledEditorSchemaFromApi,
   initializeEditorExtensions,
@@ -166,7 +167,10 @@ const lowerPlateNodeType = (editor: BaseEditor, type: unknown): unknown => {
   }
   if (!hasPlateSchemaDescriptorShape(type)) return type;
 
-  return resolvePlateSchemaDescriptor(editor, type, true).binding.elementType!;
+  return (
+    resolvePlateSchemaDescriptor(editor, type, true).binding.elementType ??
+    failInvariant('Expected value to be defined')
+  );
 };
 
 const lowerPlateNodeOptions = (
@@ -452,7 +456,7 @@ const createPlateSchemaExtensions = (
     editor,
     model,
     () => {
-      const runtime = createPlateRuntimeExtensions(
+      const innerRuntime = createPlateRuntimeExtensions(
         editor,
         pluginList,
         model,
@@ -461,7 +465,7 @@ const createPlateSchemaExtensions = (
 
       return {
         codecExtension: compilePlateCodecs(editor, model, pluginList),
-        runtime,
+        runtime: innerRuntime,
       };
     }
   );
@@ -550,7 +554,7 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
     get(target, key, receiver) {
       if (key === 'create') {
         return (
-          descriptor: Parameters<typeof rawSchema.create>[0] | unknown,
+          descriptor: unknown,
           properties?: Readonly<Record<string, unknown>>
         ) => {
           if (!hasPlateSchemaDescriptorShape(descriptor)) {
@@ -565,7 +569,11 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
             true
           );
 
-          return rawSchema.create(binding.elementType!, properties);
+          return rawSchema.create(
+            binding.elementType ??
+              failInvariant('Expected value to be defined'),
+            properties
+          );
         };
       }
       if (key === 'allowsElementType') {
@@ -575,12 +583,12 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
         ) =>
           rawSchema.allowsElementType(
             hasPlateSchemaDescriptorShape(parent)
-              ? resolvePlateSchemaDescriptor(editor, parent, true).binding
-                  .elementType!
+              ? (resolvePlateSchemaDescriptor(editor, parent, true).binding
+                  .elementType ?? failInvariant('Expected value to be defined'))
               : parent,
             hasPlateSchemaDescriptorShape(child)
-              ? resolvePlateSchemaDescriptor(editor, child, true).binding
-                  .elementType!
+              ? (resolvePlateSchemaDescriptor(editor, child, true).binding
+                  .elementType ?? failInvariant('Expected value to be defined'))
               : child
           );
       }
@@ -595,15 +603,17 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
             true
           );
 
-          return rawSchema.element(binding.elementType!);
+          return rawSchema.element(
+            binding.elementType ?? failInvariant('Expected value to be defined')
+          );
         };
       }
       if (key === 'isElementTypeInGroup') {
         return (descriptor: PlateSchemaDescriptor | string, group: string) =>
           rawSchema.isElementTypeInGroup(
             hasPlateSchemaDescriptorShape(descriptor)
-              ? resolvePlateSchemaDescriptor(editor, descriptor, true).binding
-                  .elementType!
+              ? (resolvePlateSchemaDescriptor(editor, descriptor, true).binding
+                  .elementType ?? failInvariant('Expected value to be defined'))
               : descriptor,
             group
           );
@@ -676,23 +686,29 @@ const installPlateEditorExtensions = (
       schema
     );
 
-    withCompiledPlateModelCandidate(editor, configuration.model, () =>
+    withCompiledPlateModelCandidate(editor, configuration.model, () => {
       initializeEditorExtensions<AnyEditor>(editor, configuration.extensions, {
         initialize: initialization?.initialize
           ? (tx) => {
               restoreModelAccessors ??= installPlateModelAccessors(editor);
-              initialization.initialize!(tx);
+              (
+                initialization.initialize ??
+                failInvariant('Expected value to be defined')
+              )(tx);
             }
           : undefined,
         initialValue: initialization?.initialValue
           ? () => {
               restoreModelAccessors ??= installPlateModelAccessors(editor);
 
-              return initialization.initialValue!();
+              return (
+                initialization.initialValue ??
+                failInvariant('Expected value to be defined')
+              )();
             }
           : undefined,
-      })
-    );
+      });
+    });
   } catch (error) {
     restoreModelAccessors?.();
     restorePlateRuntimeExtensionBindings(editor, previousBindings);
@@ -818,9 +834,8 @@ type ApplyBaseEditorOptions<
 const applyBaseEditor = <
   V extends Value = Value,
   P extends BasePluginInput = CorePluginDefinition,
-  E extends AnyEditor = AnyEditor,
 >(
-  e: E,
+  e: AnyEditor,
   options: ApplyBaseEditorOptions<V, P>,
   implicitDocumentIsCurrent: boolean
 ): InternalBaseEditorWithInstalledPlugins<
@@ -1017,7 +1032,7 @@ const applyBaseEditor = <
       editor,
       (input: SnapshotInput) => {
         const inputSelection = input.selection;
-        const selection =
+        const innerSelection =
           inputSelection &&
           inputSelection !== 'start' &&
           inputSelection !== 'end'
@@ -1059,7 +1074,9 @@ const applyBaseEditor = <
         const migrated =
           migration?.document ?? (inputDocument as EditorDocumentValue);
         const selectionRoot =
-          selection?.anchor.root ?? selection?.focus.root ?? MAIN_ROOT_KEY;
+          innerSelection?.anchor.root ??
+          innerSelection?.focus.root ??
+          MAIN_ROOT_KEY;
         const runnerSelection =
           migration?.selection === 'start' || migration?.selection === 'end'
             ? undefined
@@ -1069,7 +1086,7 @@ const applyBaseEditor = <
             ? runnerSelection
             : mapDocumentSelection(
                 editor,
-                selection,
+                innerSelection,
                 inputDocument as EditorDocumentValue,
                 migrated,
                 selectionRoot
@@ -1094,7 +1111,7 @@ const applyBaseEditor = <
       editor,
       applicationPolicy,
       collectPlatePluginSourceCandidates(sourcePlugins),
-      () =>
+      () => {
         installPlateEditorExtensions(
           editor,
           identity
@@ -1129,7 +1146,8 @@ const applyBaseEditor = <
                   }),
               },
           schema
-        )
+        );
+      }
     );
 
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<
@@ -1272,11 +1290,7 @@ export function createBaseEditor({
   editor,
   id,
   ...options
-}: CreateBaseEditorOptionsForValue<
-  Value,
-  readonly BasePluginInput[],
-  EditorApplicationSchema | undefined
-> = {}): unknown {
+}: CreateBaseEditorOptionsForValue<Value> = {}): unknown {
   const baseEditor =
     editor ??
     createEditor({
@@ -1287,7 +1301,7 @@ export function createBaseEditor({
 
   return applyBaseEditor<Value, BasePluginInput>(
     baseEditor,
-    options as unknown as ApplyBaseEditorOptions<Value, BasePluginInput>,
+    options,
     editor === undefined
-  ) as unknown as BaseEditor;
+  );
 }

@@ -20,6 +20,7 @@ import type {
 } from '@platejs/plite-dom';
 import { parseDOMClipboardHtml } from '@platejs/plite-dom/internal';
 import {
+  failInvariant,
   getCompiledEditorSchemaFromApi,
   getCompiledSchemaPropertyId,
   reportEditorLifecycleError,
@@ -89,7 +90,9 @@ type CompiledHtmlRule = Readonly<{
 
 type MutableHtmlNode = {
   attributeWrites: Map<string, boolean | number | string | null>;
-  children: (HtmlContentToken | MutableHtmlNode | Readonly<{ text: string }>)[];
+  children: Array<
+    HtmlContentToken | MutableHtmlNode | Readonly<{ text: string }>
+  >;
   patchTarget: boolean;
   styleWrites: Map<string, number | string | null>;
   tag: string;
@@ -195,7 +198,7 @@ export const htmlStringToDOMNode = (html: string) =>
   parseDOMClipboardHtml(html).body;
 
 export const htmlTextNodeToString = (node: ChildNode | HTMLElement) => {
-  if (!isHtmlText(node)) return;
+  if (!isHtmlText(node)) return undefined;
   if (node.parentElement?.dataset.platePreventDeserialization) return '';
   if (
     node.textContent === '\uFEFF' &&
@@ -416,7 +419,9 @@ const preparePlugin = <P extends AnyBasePlugin & PluginReference>(
   plugin: P,
   registry: HtmlPluginRegistry
 ): PreparedHtmlPluginEntry<DefinitionOf<P>> => {
-  const installed = getCompiledPlatePlugin(editor, plugin)!;
+  const installed =
+    getCompiledPlatePlugin(editor, plugin) ??
+    failInvariant('Expected value to be defined');
   const parserValue =
     typeof installed.codecs === 'object' && installed.codecs !== null
       ? Reflect.get(installed.codecs, 'text/html')
@@ -561,8 +566,9 @@ export const pipePreparedInsertDataQuery = (
 const pipeTransformData = (
   state: EditorCoreStateView,
   plugins: readonly PreparedHtmlPluginEntry[],
-  { data, ...options }: HtmlParserOptions
+  { data: initialData, ...options }: HtmlParserOptions
 ) => {
+  let data = initialData;
   plugins.forEach((plugin) => {
     if (!plugin.transformData) return;
 
@@ -580,10 +586,11 @@ const pipeTransformFragment = (
   state: EditorCoreStateView,
   plugins: readonly PreparedHtmlPluginEntry[],
   {
-    fragment,
+    fragment: initialFragment,
     ...options
   }: HtmlParserOptions & { fragment: readonly Descendant[] }
 ) => {
+  let fragment = initialFragment;
   plugins.forEach((plugin) => {
     if (!plugin.transformFragment) return;
 
@@ -618,7 +625,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const hasHtmlControl = (value: string) => {
   for (const character of value) {
-    const codePoint = character.codePointAt(0)!;
+    const codePoint =
+      character.codePointAt(0) ?? failInvariant('Expected value to be defined');
 
     if (codePoint <= 0x1f || (codePoint >= 0x7f && codePoint <= 0x9f)) {
       return true;
@@ -686,7 +694,7 @@ const assertSafeStyleValue = (
   while (match) {
     let offset = HTML_STYLE_URL_RE.lastIndex;
 
-    while (value[offset] === ' ') offset++;
+    while (value[offset] === ' ') offset += 1;
     const quote =
       value[offset] === '"' || value[offset] === "'" ? value[offset] : null;
     let url: string;
@@ -699,7 +707,7 @@ const assertSafeStyleValue = (
       }
       url = value.slice(offset + 1, end);
       offset = end + 1;
-      while (value[offset] === ' ') offset++;
+      while (value[offset] === ' ') offset += 1;
       if (value[offset] !== ')') {
         throw new Error(`${label} has a malformed CSS URL.`);
       }
@@ -882,15 +890,18 @@ const targetMatchesElementType = (
   type: string
 ): boolean | null => {
   switch (target.kind) {
-    case 'type':
+    case 'type': {
       return target.type === type;
-    case 'types':
+    }
+    case 'types': {
       return target.types.includes(type);
-    case 'group':
+    }
+    case 'group': {
       return (
         model.contribution.elements?.[type]?.groups?.includes(target.group) ??
         false
       );
+    }
     case 'not': {
       const matched = targetMatchesElementType(model, target.target, type);
 
@@ -915,9 +926,12 @@ const targetMatchesElementType = (
       return matches.every((match) => match === false) ? false : null;
     }
     case 'parent':
-    case 'root':
+    case 'root': {
       return null;
+    }
   }
+
+  return failInvariant('Unexpected schema target while matching HTML');
 };
 
 const compileRule = (
@@ -1085,7 +1099,11 @@ const compileRule = (
     const unsupported = properties.find(
       ({ property }) =>
         property.placement !== 'element' ||
-        targetMatchesElementType(model, property.target, targetType!) !== true
+        targetMatchesElementType(
+          model,
+          property.target,
+          targetType ?? failInvariant('Expected value to be defined')
+        ) !== true
     );
 
     if (unsupported) {
@@ -1301,7 +1319,7 @@ const ruleClaimKeys = (rule: CompiledHtmlRule) => {
 
 const assertStaticConflicts = (rules: readonly CompiledHtmlRule[]) => {
   for (let index = 0; index < rules.length; index++) {
-    const left = rules[index]!;
+    const left = rules[index];
 
     for (const right of rules.slice(index + 1)) {
       if (left.rulePriority !== right.rulePriority) {
@@ -1467,9 +1485,11 @@ const invokeDecode = <T>(
     }
 
     return result === undefined ? undefined : normalize(result);
-  } catch (cause) {
-    reportDecodeError(editor, rule, element, cause);
+  } catch (error) {
+    reportDecodeError(editor, rule, element, error);
   }
+
+  return undefined;
 };
 
 class ReportedHtmlEncodeError extends Error {
@@ -1485,12 +1505,12 @@ const encodeWithRule = <T>(
 ): T => {
   try {
     return run();
-  } catch (cause) {
+  } catch (error) {
     reportEditorLifecycleError(
       Object.freeze({
         cause: new Error(
           `Plate HTML encode failed for owner "${rule.owner}", node "${TextApi.isText(node) ? (parentType ?? 'text') : node.type}", claims "${ruleClaimKeys(rule).join(', ')}".`,
-          { cause }
+          { cause: error }
         ),
         editor,
         extensionName: 'plate:html',
@@ -1556,7 +1576,10 @@ const validateExplicitDecodedChildren = (
       Object.hasOwn(value, key) ? [[key, value[key]] as const] : []
     )
   );
-  const parent = state.schema.create(rule.targetType!, properties);
+  const parent = state.schema.create(
+    rule.targetType ?? failInvariant('Expected value to be defined'),
+    properties
+  );
   try {
     state.schema.assertFragment([{ ...parent, children }]);
   } catch {
@@ -1591,10 +1614,11 @@ const isValidPropertyValue = (
   let valid: boolean;
 
   switch (descriptor.kind) {
-    case 'boolean':
+    case 'boolean': {
       valid = typeof value === 'boolean';
       break;
-    case 'enum':
+    }
+    case 'enum': {
       valid =
         typeof value === 'string' &&
         (
@@ -1603,12 +1627,15 @@ const isValidPropertyValue = (
           }
         ).values.includes(value);
       break;
-    case 'json':
+    }
+    case 'json': {
       valid = isJsonValue(value);
       break;
-    case 'number':
+    }
+    case 'number': {
       valid = typeof value === 'number' && Number.isFinite(value);
       break;
+    }
     case 'set': {
       const itemDescriptor = (
         descriptor as typeof descriptor & {
@@ -1632,9 +1659,10 @@ const isValidPropertyValue = (
         );
       break;
     }
-    case 'string':
+    case 'string': {
       valid = typeof value === 'string';
       break;
+    }
   }
   if (!valid || !descriptor.validate) return valid;
 
@@ -1647,13 +1675,13 @@ const isValidPropertyValue = (
 
 const propertyValuesFromDecode = (rule: CompiledHtmlRule, value: unknown) => {
   if (rule.properties.length === 1) {
-    if (!isValidPropertyValue(rule.properties[0]!, value)) {
+    if (!isValidPropertyValue(rule.properties[0], value)) {
       throw new Error(
-        `Plate HTML codec "${rule.owner}" returned invalid property "${rule.properties[0]!.key}".`
+        `Plate HTML codec "${rule.owner}" returned invalid property "${rule.properties[0].key}".`
       );
     }
 
-    return new Map([[rule.properties[0]!.key, value]]);
+    return new Map([[rule.properties[0].key, value]]);
   }
   if (!isRecord(value)) {
     throw new Error(
@@ -1934,9 +1962,9 @@ const decodeCompiledHtml = (
 
       if (decoded === undefined) continue;
       for (const [key, value] of decoded) {
-        const property = rule.properties.find(
-          (candidate) => candidate.key === key
-        )!;
+        const property =
+          rule.properties.find((candidate) => candidate.key === key) ??
+          failInvariant('Expected value to be defined');
 
         if (
           propertyAppliesToType(property, state, targetType) &&
@@ -2060,9 +2088,9 @@ const decodeCompiledHtml = (
 
       if (decoded === undefined) continue;
       for (const [key, value] of decoded) {
-        const property = rule.properties.find(
-          (candidate) => candidate.key === key
-        )!;
+        const property =
+          rule.properties.find((candidate) => candidate.key === key) ??
+          failInvariant('Expected value to be defined');
 
         if (!markValues.has(property.id)) {
           markValues.set(property.id, Object.freeze({ property, value }));
@@ -2142,7 +2170,8 @@ const decodeCompiledHtml = (
     }
 
     const createdElement = state.schema.create(
-      structural.rule.targetType!,
+      structural.rule.targetType ??
+        failInvariant('Expected value to be defined'),
       properties
     );
     const children =
@@ -2427,7 +2456,7 @@ const renderNodeSpec = (
     const children = node.children
       .map((child) => {
         if (child === HTML_CONTENT_TOKEN) {
-          contentTokens++;
+          contentTokens += 1;
 
           return content;
         }
@@ -2469,7 +2498,7 @@ const propertyValue = (
     ...(type ? { type } : {}),
   });
 
-  if (!compiled || compiled.id !== property.id) return;
+  if (!compiled || compiled.id !== property.id) return undefined;
   const descriptor = compiled.value;
   const value =
     node[property.key] === undefined && 'default' in descriptor
@@ -2479,11 +2508,11 @@ const propertyValue = (
   if (
     compiled.role === 'metadata' ||
     value === undefined ||
-    (descriptor.omitDefault === true &&
+    (descriptor.omitDefault &&
       'default' in descriptor &&
       isEqual(value, descriptor.default))
   ) {
-    return;
+    return undefined;
   }
 
   return value;
@@ -2507,7 +2536,7 @@ const hasContentValue = (
     property.role === 'content' &&
     value !== undefined &&
     !(
-      descriptor.omitDefault === true &&
+      descriptor.omitDefault &&
       'default' in descriptor &&
       isEqual(value, descriptor.default)
     )
@@ -2606,7 +2635,7 @@ const encodeContext = (
         ? Object.freeze({
             node,
             state,
-            value: values.get(rule.properties[0]!.key),
+            value: values.get(rule.properties[0].key),
           })
         : rule.kind === 'element' || rule.createsElement
           ? Object.freeze({
@@ -2649,10 +2678,12 @@ const encodeCompiledHtml = (
         serializerIndex.encodablePropertyIds,
         state
       );
-      const wrappers: Readonly<{
-        root: MutableHtmlNode;
-        rule: CompiledHtmlRule;
-      }>[] = [];
+      const wrappers: Array<
+        Readonly<{
+          root: MutableHtmlNode;
+          rule: CompiledHtmlRule;
+        }>
+      > = [];
       const handled = new Set<string>();
 
       for (const rule of parentType
@@ -2667,7 +2698,10 @@ const encodeCompiledHtml = (
         if (pending.length === 0) continue;
         const { context } = encodeContext(rule, node, state, parentType);
         const root = encodeWithRule(editor, rule, node, parentType, () => {
-          const value = rule.declaration.encode!(context);
+          const value = (
+            rule.declaration.encode ??
+            failInvariant('Expected value to be defined')
+          )(context);
 
           if (value === null) {
             throw new Error(
@@ -2686,7 +2720,7 @@ const encodeCompiledHtml = (
       let html = escapeHtmlText(node.text);
 
       for (let index = wrappers.length - 1; index >= 0; index--) {
-        const wrapper = wrappers[index]!;
+        const wrapper = wrappers[index];
 
         html = encodeWithRule(editor, wrapper.rule, node, parentType, () =>
           renderNodeSpec(wrapper.root, html)
@@ -2729,16 +2763,22 @@ const encodeCompiledHtml = (
       node,
       parentType,
       () => {
-        const spec = structuralRule.declaration.encode!(structuralContext!);
+        const spec = (
+          structuralRule.declaration.encode ??
+          failInvariant('Expected value to be defined')
+        )(structuralContext ?? failInvariant('Expected value to be defined'));
 
         if (spec === null) {
           throw new Error(
             `Plate HTML codec "${structuralRule.owner}" returned null for element "${node.type}".`
           );
         }
-        const root = compileNodeSpec(spec, new WeakSet());
+        const innerRoot = compileNodeSpec(spec, new WeakSet());
 
-        return Object.freeze({ patchTarget: findPatchTarget(root), root });
+        return Object.freeze({
+          patchTarget: findPatchTarget(innerRoot),
+          root: innerRoot,
+        });
       }
     );
     const handledProperties = new Set<string>(
@@ -2757,7 +2797,10 @@ const encodeCompiledHtml = (
       const { context } = encodeContext(rule, node, state, parentType);
 
       encodeWithRule(editor, rule, node, parentType, () => {
-        const patch = rule.declaration.encode!(context);
+        const patch = (
+          rule.declaration.encode ??
+          failInvariant('Expected value to be defined')
+        )(context);
 
         if (patch === null) {
           throw new Error(
@@ -2896,7 +2939,7 @@ export type HtmlApi<V extends Value = Value> = {
   deserialize: (options: {
     collapseWhiteSpace?: boolean;
     element: HTMLElement | string;
-  }) => DescendantIn<V>[] | null;
+  }) => Array<DescendantIn<V>> | null;
 };
 
 export const HtmlPlugin = defineBasePlugin(HTML_PLUGIN_NAME, {
@@ -2930,12 +2973,12 @@ export const HtmlPlugin = defineBasePlugin(HTML_PLUGIN_NAME, {
         schema.assertFragment(fragment);
 
         return fragment;
-      } catch (cause) {
+      } catch (error) {
         reportEditorLifecycleError(
           Object.freeze({
             cause: new Error(
               `Plate HTML direct decode returned an invalid fragment for <${normalized.tagName.toLowerCase()}>: ${normalized.outerHTML.slice(0, 512)}`,
-              { cause }
+              { cause: error }
             ),
             editor,
             extensionName: 'plate:html',

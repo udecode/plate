@@ -57,11 +57,13 @@ export type NativeTypeProperties = Readonly<
 >;
 
 export type NativeTypeHelper = Readonly<{
-  aliases: readonly Readonly<{
-    name: string;
-    position: number;
-    propertyNames?: readonly string[];
-  }>[];
+  aliases: ReadonlyArray<
+    Readonly<{
+      name: string;
+      position: number;
+      propertyNames?: readonly string[];
+    }>
+  >;
   generatedPaths: ReadonlySet<string>;
   path: string;
   source: string;
@@ -96,7 +98,7 @@ const localAmbientSourceFiles = (paths: readonly string[]) =>
       return false;
     }
     if (DECLARATION_FILE_PATTERN.test(path)) return true;
-    const source = readFileSync(path, 'utf8');
+    const source = readFileSync(path, 'utf-8');
 
     return (
       DECLARE_GLOBAL_PATTERN.test(source) || !MODULE_SYNTAX_PATTERN.test(source)
@@ -111,7 +113,7 @@ const stripJsonComments = (source: string) => {
   let escaped = false;
 
   for (let index = 0; index < source.length; index++) {
-    const character = source[index]!;
+    const character = source[index];
     const next = source[index + 1];
 
     if (inLineComment) {
@@ -126,7 +128,7 @@ const stripJsonComments = (source: string) => {
     if (inBlockComment) {
       if (character === '*' && next === '/') {
         result += '  ';
-        index++;
+        index += 1;
         inBlockComment = false;
       } else {
         result += character === '\n' ? '\n' : ' ';
@@ -147,13 +149,13 @@ const stripJsonComments = (source: string) => {
     }
     if (character === '/' && next === '/') {
       result += '  ';
-      index++;
+      index += 1;
       inLineComment = true;
       continue;
     }
     if (character === '/' && next === '*') {
       result += '  ';
-      index++;
+      index += 1;
       inBlockComment = true;
       continue;
     }
@@ -164,13 +166,17 @@ const stripJsonComments = (source: string) => {
 };
 
 const readJsonConfig = (path: string) => {
-  const source = readFileSync(path, 'utf8');
+  const source = readFileSync(path, 'utf-8');
 
   try {
     return JSON.parse(
       stripJsonComments(source).replace(/,\s*([}\]])/g, '$1')
     ) as Record<string, unknown>;
-  } catch {}
+  } catch {
+    // Invalid JSON-like TypeScript config text has no parsed object value.
+  }
+
+  return undefined;
 };
 
 const resolveConfigPath = (specifier: string, fromPath: string) => {
@@ -197,7 +203,7 @@ const resolveConfigPath = (specifier: string, fromPath: string) => {
 };
 
 const referencedConfigPaths = (path: string) => {
-  const source = readFileSync(path, 'utf8');
+  const source = readFileSync(path, 'utf-8');
   const parsed = readJsonConfig(path);
   const values = new Set<string>();
   const add = (value: unknown) => {
@@ -239,7 +245,7 @@ export const findEditorConfig = (entryPath: string) => {
     if (existsSync(candidate)) return candidate;
     const parent = dirname(directory);
 
-    if (parent === directory) return;
+    if (parent === directory) return undefined;
     directory = parent;
   }
 };
@@ -376,7 +382,7 @@ const formatDiagnostics = (
       const source =
         helpers.get(resolve(diagnostic.fileName)) ??
         (existsSync(diagnostic.fileName)
-          ? readFileSync(diagnostic.fileName, 'utf8')
+          ? readFileSync(diagnostic.fileName, 'utf-8')
           : '');
       const before = source.slice(0, diagnostic.pos);
       const line = before.split('\n').length;
@@ -395,6 +401,8 @@ const escapeTemplateLiteralText = (value: string) =>
 
 const nodeName = (node: Node) => {
   if ('text' in node && typeof node.text === 'string') return node.text;
+
+  return undefined;
 };
 
 const printedNamedTypes = new WeakMap<Checker, Map<string, string>>();
@@ -456,8 +464,9 @@ const printNamedType = async (
         return 'undefined';
       }
       if (type.isUnionType()) {
+        const unionTypes = await type.getTypes();
         const values = await Promise.all(
-          (await type.getTypes())
+          unionTypes
             .filter(
               (item) =>
                 !excludeUndefined ||
@@ -477,29 +486,29 @@ const printNamedType = async (
         return unique.sort().join(' | ') || 'undefined';
       }
       if (type.isIntersectionType()) {
-        const values = (
-          await Promise.all(
-            (
-              await type.getTypes()
-            ).map(async (item) => ({
-              item,
-              printed: await printNamedType(checker, item, nextSeen),
-            }))
-          )
-        ).flatMap(({ item, printed }) =>
-          printed === 'unknown'
-            ? []
-            : [item.isUnionType() ? `(${printed})` : printed]
+        const intersectionTypes = await type.getTypes();
+        const printedTypes = await Promise.all(
+          intersectionTypes.map(async (item) => ({
+            item,
+            printed: await printNamedType(checker, item, nextSeen),
+          }))
+        );
+        const values = printedTypes.flatMap(
+          ({ item, printed: innerPrinted }) =>
+            innerPrinted === 'unknown'
+              ? []
+              : [item.isUnionType() ? `(${innerPrinted})` : innerPrinted]
         );
 
         return [...new Set(values)].join(' & ') || 'unknown';
       }
       if (type.isTupleType()) {
         const tuple = type;
+        const tupleTypes = await checker.getTypeArguments(tuple);
         const values = await Promise.all(
-          (await checker.getTypeArguments(tuple)).map(async (item, index) => {
+          tupleTypes.map(async (item, index) => {
             const flag = tuple.elementFlags[index] ?? ElementFlags.Required;
-            const printed = await printNamedType(
+            const innerPrinted2 = await printNamedType(
               checker,
               item,
               nextSeen,
@@ -507,10 +516,12 @@ const printNamedType = async (
             );
 
             if (flag & (ElementFlags.Rest | ElementFlags.Variadic)) {
-              return `...${item.isUnionType() ? `(${printed})` : printed}[]`;
+              return `...${item.isUnionType() ? `(${innerPrinted2})` : innerPrinted2}[]`;
             }
 
-            return flag & ElementFlags.Optional ? `${printed}?` : printed;
+            return flag & ElementFlags.Optional
+              ? `${innerPrinted2}?`
+              : innerPrinted2;
           })
         );
 
@@ -528,7 +539,8 @@ const printNamedType = async (
         }
       }
       if (await checker.isArrayType(type)) {
-        const item = (await checker.getIndexInfosOfType(type)).find(
+        const indexInfos = await checker.getIndexInfosOfType(type);
+        const item = indexInfos.find(
           (index) => index.keyType.flags & TypeFlags.NumberLike
         )?.valueType;
 
@@ -555,37 +567,45 @@ const printNamedType = async (
           `Cannot materialize editor property type "${await checker.typeToString(type)}".`
         );
       }
-      if (
-        (await checker.getSignaturesOfType(type, SignatureKind.Call)).length > 0
-      ) {
+      const callSignatures = await checker.getSignaturesOfType(
+        type,
+        SignatureKind.Call
+      );
+
+      if (callSignatures.length > 0) {
         return 'unknown';
       }
-      const symbols = await checker.getPropertiesOfType(type);
+      const [symbols, indexInfos] = await Promise.all([
+        checker.getPropertiesOfType(type),
+        checker.getIndexInfosOfType(type),
+      ]);
       const types = await checker.getTypeOfSymbol(symbols);
-      const fields = await Promise.all(
-        symbols.map(async (property, index) => {
-          const optional = (property.flags & SymbolFlags.Optional) !== 0;
-          const value = types[index];
+      const [fields, indexFields] = await Promise.all([
+        Promise.all(
+          symbols.map(async (property, index) => {
+            const optional = (property.flags & SymbolFlags.Optional) !== 0;
+            const value = types[index];
 
-          return `readonly ${propertyName(property.name)}${optional ? '?' : ''}: ${
-            value
-              ? await printNamedType(checker, value, nextSeen, optional)
-              : 'unknown'
-          };`;
-        })
-      );
-      const indexFields = await Promise.all(
-        (await checker.getIndexInfosOfType(type)).map(async (index) => {
-          const key =
-            index.keyType.flags & TypeFlags.NumberLike ? 'number' : 'string';
+            return `readonly ${propertyName(property.name)}${optional ? '?' : ''}: ${
+              value
+                ? await printNamedType(checker, value, nextSeen, optional)
+                : 'unknown'
+            };`;
+          })
+        ),
+        Promise.all(
+          indexInfos.map(async (index) => {
+            const innerKey =
+              index.keyType.flags & TypeFlags.NumberLike ? 'number' : 'string';
 
-          return `readonly [key: ${key}]: ${await printNamedType(
-            checker,
-            index.valueType,
-            nextSeen
-          )};`;
-        })
-      );
+            return `readonly [key: ${innerKey}]: ${await printNamedType(
+              checker,
+              index.valueType,
+              nextSeen
+            )};`;
+          })
+        ),
+      ]);
 
       return `{ ${[...fields, ...indexFields].join(' ')} }`;
     })();
@@ -608,25 +628,36 @@ const printTypeNode = async (
   switch (node.kind) {
     case SyntaxKind.AnyKeyword:
     case SyntaxKind.ObjectKeyword:
-    case SyntaxKind.UnknownKeyword:
+    case SyntaxKind.UnknownKeyword: {
       return 'unknown';
-    case SyntaxKind.BigIntKeyword:
+    }
+    case SyntaxKind.BigIntKeyword: {
       return 'bigint';
-    case SyntaxKind.BooleanKeyword:
+    }
+    case SyntaxKind.BooleanKeyword: {
       return 'boolean';
-    case SyntaxKind.NeverKeyword:
+    }
+    case SyntaxKind.NeverKeyword: {
       throw new Error(
         'Generated editor property types cannot contain `never`.'
       );
-    case SyntaxKind.NumberKeyword:
+    }
+    case SyntaxKind.NumberKeyword: {
       return 'number';
-    case SyntaxKind.StringKeyword:
+    }
+    case SyntaxKind.StringKeyword: {
       return 'string';
-    case SyntaxKind.SymbolKeyword:
+    }
+    case SyntaxKind.SymbolKeyword: {
       return 'symbol';
+    }
     case SyntaxKind.UndefinedKeyword:
-    case SyntaxKind.VoidKeyword:
+    case SyntaxKind.VoidKeyword: {
       return 'undefined';
+    }
+    default: {
+      break;
+    }
   }
   if (isLiteralTypeNode(node)) {
     const value = node.literal;
@@ -872,7 +903,8 @@ const readTypeProperties = async (
           throw new Error(
             `Cannot materialize schema property "${symbol.name}": ${
               error instanceof Error ? error.message : String(error)
-            }`
+            }`,
+            { cause: error }
           );
         }
 
@@ -930,7 +962,7 @@ export class NativeTypeScriptSession {
             (path) => dirname(path) === directory
           );
 
-          if (virtualFiles.length === 0) return;
+          if (virtualFiles.length === 0) return undefined;
           const entries = readdirSync(directory, { withFileTypes: true });
 
           return {
@@ -1027,23 +1059,22 @@ export class NativeTypeScriptSession {
 
     // Collapse each save burst to its net TS transition. In particular,
     // create -> unlink is no change, while unlink -> add is a replacement.
-    if (event === 'add') {
+    if (event === 'add' || event === 'change') {
       if (deleted.delete(resolvedPath)) changed.add(resolvedPath);
-      else if (!changed.has(resolvedPath)) created.add(resolvedPath);
+      else if (event === 'add') {
+        if (!changed.has(resolvedPath)) created.add(resolvedPath);
+      } else if (!created.has(resolvedPath)) {
+        changed.add(resolvedPath);
+      }
 
       return;
     }
-    if (event === 'change') {
-      if (deleted.delete(resolvedPath)) changed.add(resolvedPath);
-      else if (!created.has(resolvedPath)) changed.add(resolvedPath);
+    const wasCreated = created.delete(resolvedPath);
 
-      return;
-    }
-    if (created.delete(resolvedPath)) {
-      changed.delete(resolvedPath);
+    changed.delete(resolvedPath);
+    if (wasCreated) {
       deleted.delete(resolvedPath);
     } else {
-      changed.delete(resolvedPath);
       deleted.add(resolvedPath);
     }
   }
@@ -1119,11 +1150,11 @@ export class NativeTypeScriptSession {
       string,
       Awaited<ReturnType<typeof projectForHelper>>
     >();
-    const projectEntries: {
+    const projectEntries: Array<{
       helper: NativeTypeHelper;
       project: NonNullable<Awaited<ReturnType<typeof projectForHelper>>>;
       projectKey: string;
-    }[] = [];
+    }> = [];
 
     for (const [helperIndex, helper] of helpers.entries()) {
       const configPath = configs[helperIndex];
@@ -1207,7 +1238,8 @@ export class NativeTypeScriptSession {
               throw new Error(
                 `Cannot materialize schema property "${alias.name}": ${
                   error instanceof Error ? error.message : String(error)
-                }`
+                }`,
+                { cause: error }
               );
             }
           })

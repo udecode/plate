@@ -11,8 +11,8 @@ export const run = (editor) => {
     match: (node, currentPath) => {
       // reject all nodes inside blocks tagged `noneditable`. Which is everything.
       if (node.noneditable) return false;
-      for (const [node, _] of NodeApi.ancestors(editor, currentPath)) {
-        if (node.noneditable) return false;
+      for (const [innerNode, _] of NodeApi.ancestors(editor, currentPath)) {
+        if (innerNode.noneditable) return false;
       }
       return true;
     },

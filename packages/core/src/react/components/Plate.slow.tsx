@@ -382,7 +382,7 @@ describe('Plate', () => {
 
       const MountCounter = () => {
         React.useEffect(() => {
-          mountCount++;
+          mountCount += 1;
         }, []);
 
         return null;
@@ -636,8 +636,8 @@ describe('Plate', () => {
       const SyncEditor = () => {
         const editor = usePlateEditor({
           plugins: [InitialValuePlugin],
-          initialValue: ({ editor }) =>
-            editor.plugin(InitialValuePlugin).api.decode(),
+          initialValue: ({ editor: innerEditor }) =>
+            innerEditor.plugin(InitialValuePlugin).api.decode(),
         });
 
         return (

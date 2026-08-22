@@ -34,7 +34,9 @@ function useActiveItem(itemIds: string[]) {
       }
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [itemIds]);
 
   return activeId;
@@ -45,11 +47,11 @@ export function DocsTableOfContents({
   toc,
   variant = 'list',
 }: {
-  toc: {
+  toc: Array<{
     depth: number;
     url: string;
     title?: React.ReactNode;
-  }[];
+  }>;
   className?: string;
   variant?: 'dropdown' | 'list';
 }) {

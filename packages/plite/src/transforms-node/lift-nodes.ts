@@ -15,6 +15,7 @@ import type {
   NodeLiftNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { deselect, select } from '../transforms-selection';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -46,13 +47,13 @@ export const liftNodes = ((
       return;
     }
 
-    const index = path.at(-1)!;
+    const index = getDefined(path.at(-1));
     const childCount = getChildren(editor, parent).length;
 
     if (childCount === 1) {
       moveNodes(editor, {
         at: path,
-        to: [...parentPath.slice(0, -1), parentPath.at(-1)! + 1],
+        to: [...parentPath.slice(0, -1), getDefined(parentPath.at(-1)) + 1],
       });
       removeNodes(editor, { at: parentPath });
       return;
@@ -69,7 +70,7 @@ export const liftNodes = ((
     if (index === childCount - 1) {
       moveNodes(editor, {
         at: path,
-        to: [...parentPath.slice(0, -1), parentPath.at(-1)! + 1],
+        to: [...parentPath.slice(0, -1), getDefined(parentPath.at(-1)) + 1],
       });
       return;
     }
@@ -87,7 +88,7 @@ export const liftNodes = ((
 
     moveNodes(editor, {
       at: path,
-      to: [...parentPath.slice(0, -1), parentPath.at(-1)! + 1],
+      to: [...parentPath.slice(0, -1), getDefined(parentPath.at(-1)) + 1],
     });
   };
 
@@ -164,7 +165,7 @@ export const liftNodes = ((
       return;
     }
 
-    const wrapperIndex = startParentPath[0]!;
+    const wrapperIndex = startParentPath[0];
     const selectedBaseIndex = wrapperIndex + (startIndex > 0 ? 1 : 0);
 
     for (let childIndex = endIndex; childIndex >= startIndex; childIndex -= 1) {
@@ -173,7 +174,7 @@ export const liftNodes = ((
 
     const mapPoint = (point: typeof start) => ({
       path: [
-        selectedBaseIndex + (point.path[1]! - startIndex),
+        selectedBaseIndex + (point.path[1] - startIndex),
         ...point.path.slice(2),
       ],
       offset: point.offset,

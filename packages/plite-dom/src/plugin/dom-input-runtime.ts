@@ -1,4 +1,5 @@
 import type { Range, RootKey } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 
 type DOMInputEventFamily =
   | 'beforeinput'
@@ -283,7 +284,7 @@ type DOMInputCommandEditingEpochTrace<TCommand = unknown> = Omit<
 };
 
 type CompositionEpoch = Readonly<{
-  anchor: unknown | null;
+  anchor: unknown;
   generation: number;
   id: number;
   modelCommitted: boolean;
@@ -368,11 +369,12 @@ const describeDOMInputEditingCommand = (command: unknown) => {
         kind: 'destructive' as const,
       };
     }
-    case 'delete-fragment':
+    case 'delete-fragment': {
       return {
         commandKey: `delete-fragment:${typeof value.direction === 'string' ? value.direction : 'selection'}`,
         kind: 'destructive' as const,
       };
+    }
     case 'insert-break': {
       if (typeof value.variant !== 'string') return null;
 
@@ -381,8 +383,9 @@ const describeDOMInputEditingCommand = (command: unknown) => {
         kind: 'model-command' as const,
       };
     }
-    default:
+    default: {
       return null;
+    }
   }
 };
 
@@ -396,21 +399,30 @@ export const resolveDOMInputKernelState = (
   source: DOMInputSelectionSource
 ): DOMInputKernelState => {
   switch (source) {
-    case 'app-owned':
+    case 'app-owned': {
       return 'app-owned';
-    case 'composition-owned':
+    }
+    case 'composition-owned': {
       return 'composition';
-    case 'dom-current':
+    }
+    case 'dom-current': {
       return 'dom-selection';
-    case 'internal-control':
+    }
+    case 'internal-control': {
       return 'internal-control';
-    case 'model-owned':
+    }
+    case 'model-owned': {
       return 'model-owned';
-    case 'partial-dom-backed':
+    }
+    case 'partial-dom-backed': {
       return 'partial-dom-backed';
-    case 'unknown':
+    }
+    case 'unknown': {
       return 'idle';
+    }
   }
+
+  return failInvariant('Unexpected DOM input ownership');
 };
 
 export const resolveDOMInputSelectionChangeOwnership = ({
@@ -881,13 +893,16 @@ export class DOMInputRuntime {
   beginFrame<TIntent, TSelection>(
     input: DOMInputEventFrameInput<TIntent, TSelection>
   ): DOMInputEventFrame<TIntent, TSelection> {
+    const id = this.nextFrameId;
+
+    this.nextFrameId += 1;
     const frame = Object.freeze({
       active: true,
       commitEpoch: input.commitEpoch ?? null,
       eventFamily: input.eventFamily,
       focusOwner: input.focusOwner ?? 'unknown',
       generation: this.options.getGeneration(),
-      id: this.nextFrameId++,
+      id,
       inputIntent: input.inputIntent ?? null,
       lifecyclePhase: input.lifecyclePhase ?? 'event',
       modelSelectionBefore: input.modelSelectionBefore,
@@ -903,22 +918,22 @@ export class DOMInputRuntime {
     return frame;
   }
 
-  currentFrame<TIntent = unknown, TSelection = Range | null>() {
+  currentFrame() {
     const frame = this.currentFrameValue;
 
     if (frame?.generation !== this.options.getGeneration()) return null;
 
-    return frame as DOMInputEventFrame<TIntent, TSelection> | null;
+    return frame as DOMInputEventFrame | null;
   }
 
-  endFrame<TIntent = unknown, TSelection = Range | null>() {
-    const frame = this.currentFrame<TIntent, TSelection>();
+  endFrame() {
+    const frame = this.currentFrame();
 
     if (!frame) return null;
 
     const inactiveFrame = Object.freeze({ ...frame, active: false });
 
-    this.currentFrameValue = inactiveFrame as DOMInputEventFrame;
+    this.currentFrameValue = inactiveFrame;
 
     return inactiveFrame;
   }
@@ -927,8 +942,8 @@ export class DOMInputRuntime {
     this.traces.length = 0;
   }
 
-  getTrace<T>() {
-    return this.traces as readonly T[];
+  getTrace() {
+    return this.traces as readonly unknown[];
   }
 
   recordTrace<T>(trace: T) {
@@ -943,6 +958,9 @@ export class DOMInputRuntime {
   private beginEditingEpoch<TCommand, TIntent, TSelection>(
     input: DOMInputEditingEpochInput<TCommand, TIntent, TSelection>
   ) {
+    const id = this.nextEditingEpochId;
+
+    this.nextEditingEpochId += 1;
     const epoch = Object.freeze({
       active: true,
       command: input.command,
@@ -950,7 +968,7 @@ export class DOMInputRuntime {
       generation: this.options.getGeneration(),
       handledCommand: null,
       handledCommandKey: null,
-      id: this.nextEditingEpochId++,
+      id,
       kind: input.kind,
       modelSelectionBefore: input.modelSelectionBefore,
       ownership: input.ownership,
@@ -962,7 +980,7 @@ export class DOMInputRuntime {
       targetOwner: input.targetOwner,
     }) satisfies DOMInputEditingEpoch<TCommand, TIntent, TSelection>;
 
-    this.currentEditingEpochValue = epoch as DOMInputEditingEpoch;
+    this.currentEditingEpochValue = epoch;
 
     return epoch;
   }
@@ -982,30 +1000,22 @@ export class DOMInputRuntime {
     });
   }
 
-  currentEditingEpoch<
-    TCommand = unknown,
-    TIntent = unknown,
-    TSelection = Range | null,
-  >() {
+  currentEditingEpoch() {
     const epoch = this.currentEditingEpochValue;
 
     if (epoch?.generation !== this.options.getGeneration()) return null;
 
-    return epoch as DOMInputEditingEpoch<TCommand, TIntent, TSelection> | null;
+    return epoch as DOMInputEditingEpoch<unknown, unknown, Range | null> | null;
   }
 
-  endEditingEpoch<
-    TCommand = unknown,
-    TIntent = unknown,
-    TSelection = Range | null,
-  >() {
-    const epoch = this.currentEditingEpoch<TCommand, TIntent, TSelection>();
+  endEditingEpoch() {
+    const epoch = this.currentEditingEpoch();
 
     if (!epoch) return null;
 
     const inactiveEpoch = Object.freeze({ ...epoch, active: false });
 
-    this.currentEditingEpochValue = inactiveEpoch as DOMInputEditingEpoch;
+    this.currentEditingEpochValue = inactiveEpoch;
 
     return inactiveEpoch;
   }
@@ -1013,7 +1023,7 @@ export class DOMInputRuntime {
   private beginOrJoinEditingEpoch<TCommand, TIntent, TSelection>(
     input: DOMInputEditingEpochInput<TCommand, TIntent, TSelection>
   ) {
-    const current = this.currentEditingEpoch<TCommand, TIntent, TSelection>();
+    const current = this.currentEditingEpoch();
 
     if (
       current &&
@@ -1023,7 +1033,7 @@ export class DOMInputRuntime {
         ownership: input.ownership,
       })
     ) {
-      return current;
+      return current as DOMInputEditingEpoch<TCommand, TIntent, TSelection>;
     }
 
     return this.beginEditingEpoch(input);
@@ -1042,18 +1052,14 @@ export class DOMInputRuntime {
     });
   }
 
-  private editingEpochForTrace<TCommand, TIntent, TSelection>(
-    trace: DOMInputEditingEpochTrace
-  ) {
-    const epoch = this.currentEditingEpoch<TCommand, TIntent, TSelection>();
+  private editingEpochForTrace(trace: DOMInputEditingEpochTrace) {
+    const epoch = this.currentEditingEpoch();
 
     return epoch && this.canTraceJoinEditingEpoch(epoch, trace) ? epoch : null;
   }
 
-  editingEpochForCommandTrace<TCommand, TIntent, TSelection>(
-    trace: DOMInputCommandEditingEpochTrace<TCommand>
-  ) {
-    return this.editingEpochForTrace<TCommand, TIntent, TSelection>({
+  editingEpochForCommandTrace(trace: DOMInputCommandEditingEpochTrace) {
+    return this.editingEpochForTrace({
       commandKey:
         describeDOMInputEditingCommand(trace.command)?.commandKey ?? null,
       eventFamily: trace.eventFamily,
@@ -1062,11 +1068,8 @@ export class DOMInputRuntime {
     });
   }
 
-  private markEditingEpochCommandHandled<TCommand>(
-    command: TCommand,
-    commandKey: string
-  ) {
-    const epoch = this.currentEditingEpoch<TCommand>();
+  private markEditingEpochCommandHandled(command: unknown, commandKey: string) {
+    const epoch = this.currentEditingEpoch();
 
     if (!epoch?.active || epoch.commandKey !== commandKey) return;
 
@@ -1074,10 +1077,10 @@ export class DOMInputRuntime {
       ...epoch,
       handledCommand: command,
       handledCommandKey: commandKey,
-    }) as DOMInputEditingEpoch;
+    });
   }
 
-  markCommandEditingEpochHandled<TCommand>(command: TCommand) {
+  markCommandEditingEpochHandled(command: unknown) {
     const commandKey = describeDOMInputEditingCommand(command)?.commandKey;
 
     if (commandKey) {
@@ -1130,8 +1133,8 @@ export class DOMInputRuntime {
     }
   }
 
-  closeCommandEditingEpochAfterTrace<TCommand>(
-    trace: DOMInputCommandEditingEpochTrace<TCommand> & {
+  closeCommandEditingEpochAfterTrace(
+    trace: DOMInputCommandEditingEpochTrace & {
       epochId: number | null;
     }
   ) {
@@ -1150,14 +1153,17 @@ export class DOMInputRuntime {
     owner = 'native',
     phase = 'native-composing',
   }: {
-    anchor?: unknown | null;
+    anchor?: unknown;
     owner?: CompositionEpoch['owner'];
     phase?: CompositionEpoch['phase'];
   } = {}) {
+    const id = this.nextCompositionEpochId;
+
+    this.nextCompositionEpochId += 1;
     const epoch = Object.freeze({
       anchor,
       generation: this.options.getGeneration(),
-      id: this.nextCompositionEpochId++,
+      id,
       modelCommitted: false,
       owner,
       phase,
@@ -1187,7 +1193,10 @@ export class DOMInputRuntime {
   }
 
   setCompositionSession(
-    session: { modelCommitted: boolean; text?: string | null } | null
+    session: {
+      modelCommitted: boolean;
+      text?: string | null;
+    } | null
   ) {
     if (!session) {
       this.compositionEpochValue = null;
@@ -1253,11 +1262,11 @@ export class DOMInputRuntime {
     }
   }
 
-  getPendingCompositionEnd<T>() {
-    return this.pendingCompositionEndValue as T | null;
+  getPendingCompositionEnd() {
+    return this.pendingCompositionEndValue;
   }
 
-  setPendingCompositionEnd<T>(pending: T | null) {
+  setPendingCompositionEnd(pending: unknown) {
     this.pendingCompositionEndValue = pending;
   }
 

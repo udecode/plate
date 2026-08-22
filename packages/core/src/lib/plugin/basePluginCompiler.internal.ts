@@ -204,7 +204,7 @@ export type BasePluginDependencyReferenceFor<TDependency> = ([
   BasePluginDependencySchemaReference<TDependency>;
 
 export type BasePluginDependencyReferences<
-  D extends readonly Readonly<{ name: string }>[],
+  D extends ReadonlyArray<Readonly<{ name: string }>>,
 > = {
   readonly [TIndex in keyof D]: D[TIndex] extends PluginReference<infer TName>
     ? PluginReference<TName> & BasePluginDependencyReferenceFor<D[TIndex]>
@@ -221,7 +221,7 @@ type BasePluginDependencyDescriptor<TDependency> =
       : never;
 
 export type BasePluginDependencyDescriptors<
-  D extends readonly (EditorExtensionReference | PluginReference)[],
+  D extends ReadonlyArray<EditorExtensionReference | PluginReference>,
 > = {
   readonly [TIndex in keyof D]: BasePluginDependencyDescriptor<D[TIndex]>;
 };
@@ -291,7 +291,7 @@ type InputRead<TInput> = TInput extends { read: infer TRead }
   : {};
 
 type InputSelection<TInput> = TInput extends {
-  selectionKinds: readonly EditorSelectionSpec<infer TSelection>[];
+  selectionKinds: ReadonlyArray<EditorSelectionSpec<infer TSelection>>;
 }
   ? Extract<TSelection, SelectionValue>
   : never;
@@ -307,10 +307,9 @@ type DecorationPayload<TRange> = [TRange] extends [never]
     : {};
 
 type InputDecoration<TInput> = TInput extends { decorate: infer TDecorate }
-  ? Exclude<
-      FactoryResult<TDecorate>,
-      undefined
-    > extends readonly (infer TRange)[]
+  ? Exclude<FactoryResult<TDecorate>, undefined> extends ReadonlyArray<
+      infer TRange
+    >
     ? DecorationPayload<TRange>
     : {}
   : {};
@@ -326,10 +325,9 @@ type InputSchema<TInput> = TInput extends { schema: infer TSchema }
   : never;
 
 type InputDependencies<TInput> = TInput extends {
-  dependencies: infer TDependencies extends readonly (
-    | EditorExtensionReference
-    | PluginReference
-  )[];
+  dependencies: infer TDependencies extends ReadonlyArray<
+    EditorExtensionReference | PluginReference
+  >;
 }
   ? {
       readonly [
@@ -344,10 +342,9 @@ type InputDependencies<TInput> = TInput extends {
   : readonly [];
 
 type InputConflicts<TInput> = TInput extends {
-  conflicts: infer TConflicts extends readonly (
-    | EditorExtensionReference
-    | PluginReference
-  )[];
+  conflicts: infer TConflicts extends ReadonlyArray<
+    EditorExtensionReference | PluginReference
+  >;
 }
   ? {
       readonly [
@@ -397,9 +394,9 @@ type NormalizedBasePluginField<
           : TKey extends 'enabled'
             ? InputEnabled<TInput>
             : TKey extends 'targetPlugins'
-              ? TInput[TKey] extends readonly (PluginReference | string)[]
+              ? TInput[TKey] extends ReadonlyArray<PluginReference | string>
                 ? TInput[TKey]
-                : readonly (PluginReference | string)[]
+                : ReadonlyArray<PluginReference | string>
               : TKey extends 'read'
                 ? InputRead<TInput>
                 : TKey extends 'selectionKinds'

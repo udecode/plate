@@ -82,11 +82,11 @@ const createElementJotaiStore = (state: ElementRuntimeState) => {
 };
 
 const createElementRuntimeStore = (
-  initialState: ElementRuntimeState
+  innerInitialState: ElementRuntimeState
 ): ElementRuntimeStore => {
   let jotaiStore: ReturnType<typeof createStore> | null = null;
   const listeners = new Set<() => void>();
-  let state = initialState;
+  let state = innerInitialState;
 
   return {
     getJotaiStore: () => {
@@ -229,7 +229,7 @@ export const useElementStore = (scope?: string) => {
       } as const)
     : scope;
 
-  return useElementStoreAtom(storeOptions as any);
+  return useElementStoreAtom(storeOptions);
 };
 
 export function ElementProvider({
@@ -254,15 +254,14 @@ export function ElementProvider({
   );
   const parentStore = React.useContext(ElementStoreContext);
   const storeContextValue = React.useMemo<ElementStoreContextValue>(
-    () =>
-      ({
-        parent: parentStore,
-        runtime,
-        scope,
-        get store() {
-          return runtime.getJotaiStore();
-        },
-      }) as ElementStoreContextValue,
+    () => ({
+      parent: parentStore,
+      runtime,
+      scope,
+      get store() {
+        return runtime.getJotaiStore();
+      },
+    }),
     [parentStore, runtime, scope]
   );
 

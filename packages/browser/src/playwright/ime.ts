@@ -132,7 +132,9 @@ export const commitSyntheticCompositionText = async (
       };
       const waitForDeferredModelTextChange = async () => {
         for (let attempt = 0; attempt < 3; attempt++) {
-          await new Promise((resolve) => setTimeout(resolve, 0));
+          await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+          });
 
           if (didModelTextChange()) {
             return true;
@@ -143,7 +145,9 @@ export const commitSyntheticCompositionText = async (
       };
       const waitForRenderedModelText = async () => {
         for (let attempt = 0; attempt < 5; attempt++) {
-          await new Promise((resolve) => setTimeout(resolve, 0));
+          await new Promise((resolve) => {
+            setTimeout(resolve, 0);
+          });
 
           const modelText = handle?.getText?.();
           const domText = root.textContent?.replace(/\uFEFF/g, '');
@@ -210,7 +214,7 @@ export const commitSyntheticCompositionText = async (
       const expandedModelSelection = isExpandedModelSelection(modelSelection);
       const isCoarsePointer =
         navigator.maxTouchPoints > 0 ||
-        globalThis.matchMedia?.('(pointer: coarse)').matches === true;
+        globalThis.matchMedia?.('(pointer: coarse)').matches;
       const preventedWithoutModelChange =
         beforeInputEvent.defaultPrevented && !modelChanged;
       const shouldUseSemanticTextFallback =
@@ -234,7 +238,7 @@ export const commitSyntheticCompositionText = async (
       if (shouldUseSemanticTextFallback) {
         applySemanticTextFallback();
       } else if (shouldTrustDefaultPreventedExpandedComposition) {
-        modelChanged = modelChanged || (await waitForDeferredModelTextChange());
+        modelChanged ||= await waitForDeferredModelTextChange();
 
         if (!modelChanged && semanticInsertText) {
           applySemanticTextFallback();

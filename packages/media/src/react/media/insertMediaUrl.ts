@@ -51,12 +51,17 @@ export const insertMediaUrl = async (
   const block = at === undefined ? editor.read.nodes.block()?.[0] : undefined;
 
   try {
-    const url = getUrl
-      ? await getUrl()
-      : // intentional user input for media URL
-        window.prompt(
-          `Enter the URL of the ${isImage ? PLUGINS.image : PLUGINS.mediaEmbed}`
-        );
+    let url: null | string;
+
+    if (getUrl) {
+      url = await getUrl();
+    } else {
+      // Intentional user input for a media URL.
+      // oxlint-disable-next-line no-alert -- [P1 local-invariant] Native prompt is the explicit fallback when no URL provider is configured.
+      url = window.prompt(
+        `Enter the URL of the ${isImage ? PLUGINS.image : PLUGINS.mediaEmbed}`
+      );
+    }
 
     if (!url) return;
 

@@ -1066,14 +1066,13 @@ test('completed projected text insert repair does not schedule repair retries', 
   const repairSetTimeout = vi.fn(() => 1);
   const repairQueueMicrotask = vi.fn();
   const domPhaseScheduler = createDOMPhaseScheduler({
-    getWindow: () =>
-      ({
-        cancelAnimationFrame: vi.fn(),
-        clearTimeout: vi.fn(),
-        queueMicrotask: repairQueueMicrotask,
-        requestAnimationFrame: repairRequestAnimationFrame,
-        setTimeout: repairSetTimeout,
-      }) as unknown as Window,
+    getWindow: () => ({
+      cancelAnimationFrame: vi.fn(),
+      clearTimeout: vi.fn(),
+      queueMicrotask: repairQueueMicrotask,
+      requestAnimationFrame: repairRequestAnimationFrame,
+      setTimeout: repairSetTimeout,
+    }),
   });
 
   testSchedulers.add(domPhaseScheduler);
@@ -1123,6 +1122,85 @@ test('completed projected text insert repair does not schedule repair retries', 
 
   try {
     queue.repairCaretAfterModelTextInsert();
+
+    expect(selection?.anchorOffset).toBe(2);
+    expect(setBaseAndExtent).toHaveBeenCalledTimes(1);
+    expect(repairQueueMicrotask).not.toHaveBeenCalled();
+    expect(repairRequestAnimationFrame).not.toHaveBeenCalled();
+    expect(repairSetTimeout).toHaveBeenCalledTimes(1);
+    expect(repairSetTimeout).toHaveBeenCalledWith(expect.any(Function), 150);
+  } finally {
+    setBaseAndExtent.mockRestore();
+    root.remove();
+  }
+});
+
+test('completed model caret repair does not schedule redundant retries', () => {
+  const editor = createReactEditor();
+  const root = mountEditorRoot(editor);
+  const inputController = {
+    preferModelSelectionForInputRef: { current: true },
+    state: createEditableInputControllerState(),
+  };
+  const repairRequestAnimationFrame = vi.fn(() => 1);
+  const repairSetTimeout = vi.fn(() => 1);
+  const repairQueueMicrotask = vi.fn();
+  const domPhaseScheduler = createDOMPhaseScheduler({
+    getWindow: () => ({
+      cancelAnimationFrame: vi.fn(),
+      clearTimeout: vi.fn(),
+      queueMicrotask: repairQueueMicrotask,
+      requestAnimationFrame: repairRequestAnimationFrame,
+      setTimeout: repairSetTimeout,
+    }),
+  });
+
+  testSchedulers.add(domPhaseScheduler);
+  inputController.state.selectionSource = 'model-owned';
+
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'abc' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('abc');
+  const range = document.createRange();
+  const selection = window.getSelection();
+
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-path', '0,0');
+  string.setAttribute('data-plite-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+
+  range.setStart(text, 0);
+  range.collapse(true);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+
+  const setBaseAndExtent = vi.spyOn(Selection.prototype, 'setBaseAndExtent');
+  const queue = createRuntimeDOMRepairQueue({
+    domPhaseScheduler,
+    editor,
+    inputController,
+    scrollSelectionIntoView: () => {},
+    syncDOMSelectionToEditor: () => {},
+  });
+
+  try {
+    queue.repairCaretAfterModelIntent();
 
     expect(selection?.anchorOffset).toBe(2);
     expect(setBaseAndExtent).toHaveBeenCalledTimes(1);
@@ -1552,7 +1630,7 @@ test('native input repair does not repair the caret for stale captured targets',
       state: createEditableInputControllerState(),
     },
     scrollSelectionIntoView: () => {
-      scrollCalls++;
+      scrollCalls += 1;
     },
     syncDOMSelectionToEditor: () => {},
   });
@@ -1635,7 +1713,7 @@ test('native input repair does not move selection for stale coalesced targets', 
       state: createEditableInputControllerState(),
     },
     scrollSelectionIntoView: () => {
-      scrollCalls++;
+      scrollCalls += 1;
     },
     syncDOMSelectionToEditor: () => {},
   });
@@ -1765,14 +1843,13 @@ test('text insert caret repair waits until rendered text matches the model', () 
   const repairSetTimeout = vi.fn(() => 1);
   const repairQueueMicrotask = vi.fn((callback: () => void) => callback());
   const domPhaseScheduler = createDOMPhaseScheduler({
-    getWindow: () =>
-      ({
-        cancelAnimationFrame: vi.fn(),
-        clearTimeout: vi.fn(),
-        queueMicrotask: repairQueueMicrotask,
-        requestAnimationFrame: repairRequestAnimationFrame,
-        setTimeout: repairSetTimeout,
-      }) as unknown as Window,
+    getWindow: () => ({
+      cancelAnimationFrame: vi.fn(),
+      clearTimeout: vi.fn(),
+      queueMicrotask: repairQueueMicrotask,
+      requestAnimationFrame: repairRequestAnimationFrame,
+      setTimeout: repairSetTimeout,
+    }),
   });
 
   testSchedulers.add(domPhaseScheduler);
@@ -2222,7 +2299,7 @@ test('repair execution is skipped for none policy', () => {
   expect(
     executeEditableRepairPolicy({
       repair: () => {
-        calls++;
+        calls += 1;
       },
       repairPolicy: { kind: 'none', reason: 'not-requested' },
     })
@@ -2236,7 +2313,7 @@ test('repair execution runs for explicit repair policy', () => {
   expect(
     executeEditableRepairPolicy({
       repair: () => {
-        calls++;
+        calls += 1;
       },
       repairPolicy: { kind: 'repair-caret', reason: 'repair-caret' },
     })

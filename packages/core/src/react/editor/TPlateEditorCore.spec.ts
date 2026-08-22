@@ -119,7 +119,7 @@ describe('PlateEditor core package', () => {
       expect(baseEditor.api.textFormatting.bold).toBeInstanceOf(Function);
       expect(baseEditor.api.image.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       baseEditor.api.list;
 
       const editor = createPlateEditor({
@@ -130,7 +130,7 @@ describe('PlateEditor core package', () => {
       expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
       expect(editor.api.image.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.list;
     });
 
@@ -149,7 +149,7 @@ describe('PlateEditor core package', () => {
 
       expect(editor.plugin(LinkPlugin).api.getAttributes).toBeDefined();
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.list;
     });
   });
@@ -178,7 +178,7 @@ describe('PlateEditor core package', () => {
       );
       expect(multiPluginEditor.api.table.insertTable).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       multiPluginEditor.api.nonExistentMethod;
     });
 
@@ -191,7 +191,7 @@ describe('PlateEditor core package', () => {
       expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
       expect(editor.api.image.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.table;
     });
 
@@ -205,7 +205,7 @@ describe('PlateEditor core package', () => {
       expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
       expect(editor.api.table.insertTable).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.image;
     });
 
@@ -228,7 +228,7 @@ describe('PlateEditor core package', () => {
       expect(editor.api.overlapping.bold).toBeInstanceOf(Function);
       expect(editor.api.overlapping.insertImage).toBeInstanceOf(Function);
 
-      // @ts-expect-error
+      // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.nonExistentMethod;
     });
   });

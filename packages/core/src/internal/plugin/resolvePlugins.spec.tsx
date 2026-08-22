@@ -24,7 +24,7 @@ describe('resolvePlugins', () => {
     let calls = 0;
     const Plugin = defineBasePlugin('singleInputRuleCompilation', {
       inputRules: () => {
-        calls++;
+        calls += 1;
 
         return [];
       },
@@ -100,7 +100,7 @@ describe('resolvePlugins', () => {
     const CorrectionPlugin = defineBasePlugin('descriptorQueryCorrection', {
       commands: ({ around }) => [
         around(editorCommands.setNodes, ({ next }) => {
-          setCommandCalls++;
+          setCommandCalls += 1;
 
           return next();
         }),
@@ -108,7 +108,7 @@ describe('resolvePlugins', () => {
       corrections: [
         {
           correct: () => {
-            correctionVisits++;
+            correctionVisits += 1;
           },
           event: 'properties',
           query: { type: LinkPlugin },
@@ -223,7 +223,7 @@ describe('resolvePlugins', () => {
       initialState: { label: 'unified' },
     })
       .extend(({ store }) => {
-        extensionCalls++;
+        extensionCalls += 1;
 
         return {
           api: () => ({
@@ -238,8 +238,8 @@ describe('resolvePlugins', () => {
         };
       })
       .extend(({ api, read }) => {
-        extensionCalls++;
-        const hasSelection = read.hasSelection;
+        extensionCalls += 1;
+        const { hasSelection } = read;
 
         void hasSelection;
 
@@ -944,7 +944,7 @@ describe('resolveAndSortPlugins', () => {
     const dependency = defineBasePlugin('configuredDependency', {
       initialState: { source: 'base' },
     }).configure(() => {
-      calls++;
+      calls += 1;
 
       return { initialState: { source: 'configured' } };
     });
@@ -1153,7 +1153,7 @@ describe('applyPluginOverrides', () => {
           source: 'base',
         },
       }).configure(() => {
-        calls++;
+        calls += 1;
 
         return {
           initialState: {
@@ -1456,7 +1456,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       initialState: { cycle, first: shared, second: shared },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const initialState = editor.plugin(plugin).initialState;
+    const { initialState } = editor.plugin(plugin);
 
     expect(initialState.first).toBe(initialState.second);
     expect(initialState.first).not.toBe(shared);

@@ -21,7 +21,7 @@ export const parsePliteDOMPath = (value: string | null): Path | null => {
 
   const path = value.split(',').map((part) => Number.parseInt(part, 10));
 
-  return path.every(Number.isFinite) ? (path as Path) : null;
+  return path.every(Number.isFinite) ? path : null;
 };
 
 export const getPliteDOMRuntimePath = <V extends Value>(

@@ -14,7 +14,7 @@ describe('getRenderNodeStaticProps', () => {
       },
       render: {
         nodeProps: ({ editor, element }) => {
-          const target =
+          const innerTarget =
             typeof element.attributes === 'object' &&
             element.attributes !== null &&
             !Array.isArray(element.attributes)
@@ -24,7 +24,7 @@ describe('getRenderNodeStaticProps', () => {
           return {
             className: 'plugin-class',
             'data-has-editor': editor ? 'yes' : 'no',
-            target: typeof target === 'string' ? target : undefined,
+            target: typeof innerTarget === 'string' ? innerTarget : undefined,
             title: undefined,
           };
         },

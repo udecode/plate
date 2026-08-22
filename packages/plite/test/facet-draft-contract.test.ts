@@ -60,7 +60,7 @@ describe('transaction-local facet caching', () => {
               dependencies: [{ kind: 'document' }],
             }),
             sidebarText.compute(
-              (state) => NodeApi.string(state.root('sidebar')[0]!),
+              (state) => NodeApi.string(state.root('sidebar')[0]),
               { dependencies: [{ kind: 'document', root: 'sidebar' }] }
             ),
             selectionOffset.compute(
@@ -148,7 +148,7 @@ describe('transaction-local facet caching', () => {
           facetProviders: [
             text.compute(
               (state) => {
-                computes++;
+                computes += 1;
                 return state.text.string([]);
               },
               { dependencies: ['document'] }

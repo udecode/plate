@@ -141,7 +141,7 @@ const isSelectionPathChangeForRoot = (root: string, change: EditorCommit) =>
     getSelectionPathKey(change.selectionAfter, change.selectionAfterRoot);
 
 const topLevelRangesIncludeIndex = (
-  ranges: readonly (readonly [number, number])[],
+  ranges: ReadonlyArray<readonly [number, number]>,
   index: number
 ) => ranges.some(([start, end]) => start <= index && end >= index);
 
@@ -198,7 +198,7 @@ export const useRootNodeKeys = () => {
   const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
-    (editor: ReactRuntimeEditor) => selectRootNodeKeys(editor),
+    (innerEditor: ReactRuntimeEditor) => selectRootNodeKeys(innerEditor),
     []
   );
   const shouldUpdate = useCallback(
@@ -207,8 +207,7 @@ export const useRootNodeKeys = () => {
   );
 
   return useEditorSelector(selector, {
-    equalityFn: (left, right) =>
-      left != null && sameNodeKeys(left as NodeKey[], right),
+    equalityFn: (left, right) => left != null && sameNodeKeys(left, right),
     profileId: 'root-node-keys',
     shouldUpdate,
   });
@@ -223,8 +222,8 @@ export const useRootDocumentEpoch = () => {
     lastEpochRef.current = { root, value: 0 };
   }
   const selector = useCallback(
-    (editor: ReactRuntimeEditor) =>
-      editor.read((state) => {
+    (innerEditor2: ReactRuntimeEditor) =>
+      innerEditor2.read((state) => {
         const commit = state.lastCommit();
 
         if (commit?.changed.has('replace', toPublicRootOption(root))) {
@@ -251,12 +250,12 @@ export const useTopLevelSelectionIndex = (enabled: boolean) => {
   const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
-    (editor: ReactRuntimeEditor) => {
+    (innerEditor3: ReactRuntimeEditor) => {
       if (!enabled) {
         return null;
       }
 
-      const selection = editor.read((state) => state.selection());
+      const selection = innerEditor3.read((state) => state.selection());
       const anchorIndex = selection?.anchor.path[0];
       const focusIndex = selection?.focus.path[0];
 
@@ -291,9 +290,9 @@ const sameSelectionPaths = (
     left.length === right.length &&
     left.every(
       (leftPath, pathIndex) =>
-        leftPath.length === right[pathIndex]!.length &&
+        leftPath.length === right[pathIndex].length &&
         leftPath.every(
-          (segment, segmentIndex) => segment === right[pathIndex]![segmentIndex]
+          (segment, segmentIndex) => segment === right[pathIndex][segmentIndex]
         )
     ));
 
@@ -301,12 +300,12 @@ export const useSelectionPaths = (enabled: boolean) => {
   const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
-    (editor: ReactRuntimeEditor) => {
+    (innerEditor4: ReactRuntimeEditor) => {
       if (!enabled) {
         return null;
       }
 
-      const selection = editor.read((state) => state.selection());
+      const selection = innerEditor4.read((state) => state.selection());
 
       if (!selection) {
         return null;
@@ -333,13 +332,13 @@ export const usePlaceholderValue = (placeholder?: ReactNode) => {
   const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const selector = useCallback(
-    (editor: ReactRuntimeEditor) =>
-      editor.read(
+    (innerEditor5: ReactRuntimeEditor) =>
+      innerEditor5.read(
         (state) =>
           placeholder &&
           state.nodes.children().length === 1 &&
-          Array.from(NodeApi.texts(editor)).length === 1 &&
-          NodeApi.string(editor) === ''
+          Array.from(NodeApi.texts(innerEditor5)).length === 1 &&
+          NodeApi.string(innerEditor5) === ''
       )
         ? placeholder
         : undefined,
@@ -367,7 +366,8 @@ export const useEditableRootCommitWakeup = () => {
   );
 
   useEditorSelector(
-    (editor) => editor.read((state) => state.lastCommit()?.version ?? 0),
+    (innerEditor6) =>
+      innerEditor6.read((state) => state.lastCommit()?.version ?? 0),
     {
       equalityFn: Object.is,
       profileId: 'editable-root-commit',

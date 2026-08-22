@@ -72,7 +72,7 @@ const sameSegmentPreview = (
   left.lines.every((line, index) => line === right.lines[index]);
 
 const topLevelRangesOverlap = (
-  ranges: readonly (readonly [number, number])[],
+  ranges: ReadonlyArray<readonly [number, number]>,
   startIndex: number,
   endIndex: number
 ) => ranges.some(([start, end]) => start <= endIndex && end >= startIndex);

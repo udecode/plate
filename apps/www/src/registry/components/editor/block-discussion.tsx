@@ -2,6 +2,7 @@
 
 import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
 import type { NormalizePluginState } from '@platejs/core/internal';
+import { failInvariant } from '@platejs/plite/internal';
 import {
   BaseSuggestionPlugin,
   SUGGESTION_TRANSIENT_KEY,
@@ -18,6 +19,7 @@ import {
   ElementApi,
   type Element,
   type NodeEntry,
+  type NodeKey,
   PathApi,
   PLUGINS,
   type Text,
@@ -31,7 +33,6 @@ import {
   type RenderNodeWrapper,
   type RenderNodeWrapperProps,
   useEditor,
-  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -52,6 +53,7 @@ import {
   BLOCK_SUGGESTION_TOKEN,
   buildBlockDiscussionIndex,
   type ResolvedSuggestion,
+  sameBlockDiscussionSelection,
   shouldRefreshBlockDiscussionIndex,
 } from '@/registry/lib/block-discussion-index';
 
@@ -63,6 +65,9 @@ import {
 } from './comment';
 
 type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
+
+const EMPTY_DISCUSSIONS = Object.freeze([]) as readonly TDiscussion[];
+const EMPTY_SUGGESTIONS = Object.freeze([]) as readonly ResolvedSuggestion[];
 
 const discussionIndexCache = new WeakMap<
   PlateEditor,
@@ -152,6 +157,7 @@ const getDiscussionIndex = (
 
       return blockLabels.get(node.type) ?? node.type;
     },
+    getBlockNodeKey: (node) => editor.key(node),
     getCommentId: (node) => commentApi.id(node),
     getSuggestionData: (node) => suggestionApi.suggestionData(node),
     getSuggestionDataList: (node) => suggestionApi.dataList(node),
@@ -159,6 +165,7 @@ const getDiscussionIndex = (
     getSuggestionKey: (id) => suggestionApi.key(id),
     isBlockSuggestion: (node) =>
       ElementApi.isElement(node) && suggestionApi.isBlockSuggestion(node),
+    isDraftComment: (node) => Boolean(node[getDraftCommentKey()]),
     isDate: (node) => node.type === dateType,
     isInlineEquation: (node) => node.type === inlineEquationType,
   });
@@ -181,12 +188,12 @@ export function BlockSuggestionCard({
 
   const userInfo = usePluginStore(discussionPlugin, 'user', suggestion.userId);
 
-  const accept = (suggestion: ResolvedSuggestion) => {
-    update.accept(suggestion);
+  const accept = (innerSuggestion: ResolvedSuggestion) => {
+    update.accept(innerSuggestion);
   };
 
-  const reject = (suggestion: ResolvedSuggestion) => {
-    update.reject(suggestion);
+  const reject = (innerSuggestion2: ResolvedSuggestion) => {
+    update.reject(innerSuggestion2);
   };
 
   const [hovering, setHovering] = React.useState(false);
@@ -218,8 +225,12 @@ export function BlockSuggestionCard({
     <div
       key={`${suggestion.suggestionId}-${idx}`}
       className="relative"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
+      onMouseEnter={() => {
+        setHovering(true);
+      }}
+      onMouseLeave={() => {
+        setHovering(false);
+      }}
     >
       <div className="flex flex-col p-4">
         <div className="relative flex items-center">
@@ -241,18 +252,21 @@ export function BlockSuggestionCard({
         <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
             {suggestion.type === 'remove' &&
-              getRemoveSummaryItems(suggestion.text!).map((text, index) => (
-                <div key={index} className="flex items-center gap-2">
+              getRemoveSummaryItems(
+                suggestion.text ?? failInvariant('Expected value to be defined')
+              ).map((text) => (
+                <div key={text} className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Delete:</span>
 
-                  <span key={index} className="text-sm">
-                    {text}
-                  </span>
+                  <span className="text-sm">{text}</span>
                 </div>
               ))}
 
             {suggestion.type === 'insert' &&
-              suggestionText2Array(suggestion.newText!).map((text, index) => (
+              suggestionText2Array(
+                suggestion.newText ??
+                  failInvariant('Expected value to be defined')
+              ).map((text, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Add:</span>
 
@@ -264,21 +278,25 @@ export function BlockSuggestionCard({
 
             {suggestion.type === 'replace' && (
               <div className="flex flex-col gap-2">
-                {suggestionText2Array(suggestion.newText!).map(
-                  (text, index) => (
-                    <React.Fragment key={index}>
-                      <div
-                        key={index}
-                        className="flex items-start gap-2 text-brand/80"
-                      >
-                        <span className="text-sm">with:</span>
-                        <span className="text-sm">{text || 'line breaks'}</span>
-                      </div>
-                    </React.Fragment>
-                  )
-                )}
+                {suggestionText2Array(
+                  suggestion.newText ??
+                    failInvariant('Expected value to be defined')
+                ).map((text, index) => (
+                  <React.Fragment key={index}>
+                    <div
+                      key={index}
+                      className="flex items-start gap-2 text-brand/80"
+                    >
+                      <span className="text-sm">with:</span>
+                      <span className="text-sm">{text || 'line breaks'}</span>
+                    </div>
+                  </React.Fragment>
+                ))}
 
-                {suggestionText2Array(suggestion.text!).map((text, index) => (
+                {suggestionText2Array(
+                  suggestion.text ??
+                    failInvariant('Expected value to be defined')
+                ).map((text, index) => (
                   <React.Fragment key={index}>
                     <div key={index} className="flex items-start gap-2">
                       <span className="text-sm text-muted-foreground">
@@ -312,7 +330,7 @@ export function BlockSuggestionCard({
 
         {suggestion.comments.map((comment, index) => (
           <Comment
-            key={comment.id ?? index}
+            key={comment.id}
             comment={comment}
             discussionLength={suggestion.comments.length}
             documentContent="__suggestion__"
@@ -325,17 +343,23 @@ export function BlockSuggestionCard({
         {hovering && (
           <div className="absolute top-4 right-4 flex gap-2">
             <Button
+              aria-label="Accept suggestion"
               variant="ghost"
               className="size-6 p-1 text-muted-foreground"
-              onClick={() => accept(suggestion)}
+              onClick={() => {
+                accept(suggestion);
+              }}
             >
               <CheckIcon className="size-4" />
             </Button>
 
             <Button
+              aria-label="Reject suggestion"
               variant="ghost"
               className="size-6 p-1 text-muted-foreground"
-              onClick={() => reject(suggestion)}
+              onClick={() => {
+                reject(suggestion);
+              }}
             >
               <XIcon className="size-4" />
             </Button>
@@ -354,53 +378,94 @@ export const isResolvedSuggestion = (
   suggestion: ResolvedSuggestion | TDiscussion
 ): suggestion is ResolvedSuggestion => 'suggestionId' in suggestion;
 
-export const BlockDiscussion: RenderNodeWrapper = (_props) => (props) => (
-  <BlockCommentContent {...props} />
-);
+export const BlockDiscussion: RenderNodeWrapper = (_props) =>
+  function BlockDiscussionWrapper(props) {
+    return <BlockCommentContent {...props} />;
+  };
 
-const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
+const BlockCommentContent = ({ children, element }: RenderNodeWrapperProps) => {
   const editor = useEditor();
+  const nodeKey = editor.key(element);
+  const discussions = usePluginStore(discussionPlugin, 'discussions');
+  const {
+    hasDraftComment,
+    isTopLevelBlock,
+    resolvedDiscussions,
+    resolvedSuggestions,
+  } = useEditorRuntimeState(
+    editor,
+    (state) => {
+      const index = getDiscussionIndex(
+        editor,
+        discussions,
+        state.runtime.snapshot().version
+      );
+
+      return {
+        contentKey: index.contentKeyByNodeKey.get(nodeKey) ?? '',
+        hasDraftComment: index.draftCommentNodeKeys.has(nodeKey),
+        isTopLevelBlock: index.topLevelNodeKeys.has(nodeKey),
+        resolvedDiscussions:
+          index.discussionsByNodeKey.get(nodeKey) ?? EMPTY_DISCUSSIONS,
+        resolvedSuggestions:
+          index.suggestionsByNodeKey.get(nodeKey) ?? EMPTY_SUGGESTIONS,
+      };
+    },
+    {
+      equalityFn: sameBlockDiscussionSelection,
+      shouldUpdate: shouldRefreshBlockDiscussionIndex,
+    }
+  );
+
+  if (!isTopLevelBlock) return <>{children}</>;
+  if (
+    resolvedSuggestions.length + resolvedDiscussions.length === 0 &&
+    !hasDraftComment
+  ) {
+    return <div className="w-full">{children}</div>;
+  }
+
+  return (
+    <BlockCommentDetails
+      hasDraftComment={hasDraftComment}
+      nodeKey={nodeKey}
+      resolvedDiscussions={resolvedDiscussions}
+      resolvedSuggestions={resolvedSuggestions}
+    >
+      {children}
+    </BlockCommentDetails>
+  );
+};
+
+const BlockCommentDetails = ({
+  children,
+  hasDraftComment,
+  nodeKey,
+  resolvedDiscussions,
+  resolvedSuggestions,
+}: {
+  children: React.ReactNode;
+  hasDraftComment: boolean;
+  nodeKey: NodeKey;
+  resolvedDiscussions: readonly TDiscussion[];
+  resolvedSuggestions: readonly ResolvedSuggestion[];
+}) => {
+  const editor = useEditor();
+  const blockPath =
+    editor.read.nodes.path(nodeKey) ??
+    failInvariant('Expected value to be defined');
   const { api: commentsApi, read: commentsRead } =
     useEditorPlugin(commentPlugin);
   const { api: suggestionApi, read: suggestionRead } =
     useEditorPlugin(suggestionPlugin);
-  const blockPath = usePath();
-  const discussions = usePluginStore(discussionPlugin, 'discussions');
-  const indexVersionRef = React.useRef(editor.read.runtime.snapshot().version);
-  const version = useEditorRuntimeState(
-    editor,
-    (state) => {
-      const commit = state.lastCommit();
 
-      if (shouldRefreshBlockDiscussionIndex(commit ?? undefined)) {
-        indexVersionRef.current = state.runtime.snapshot().version;
-      }
-
-      return indexVersionRef.current;
-    },
-    { shouldUpdate: shouldRefreshBlockDiscussionIndex }
-  );
-  const { resolvedDiscussions, resolvedSuggestions } = React.useMemo(() => {
-    const index = getDiscussionIndex(editor, discussions, version);
-    const blockKey = blockPath.join(',');
-
-    return {
-      resolvedDiscussions: index.discussionsByBlock.get(blockKey) ?? [],
-      resolvedSuggestions: index.suggestionsByBlock.get(blockKey) ?? [],
-    };
-  }, [blockPath, discussions, editor, version]);
-  const isTopLevelBlock = blockPath.length === 1;
-  const draftCommentNode = isTopLevelBlock
+  const draftCommentNode = hasDraftComment
     ? commentsRead.node({ at: blockPath, isDraft: true })
     : undefined;
-  const commentNodes = isTopLevelBlock
-    ? [...commentsRead.nodes({ at: blockPath })]
-    : [];
-  const suggestionNodes = isTopLevelBlock
-    ? [...suggestionRead.nodes({ at: blockPath })].filter(
-        ([node]) => !node[SUGGESTION_TRANSIENT_KEY]
-      )
-    : [];
+  const commentNodes = [...commentsRead.nodes({ at: blockPath })];
+  const suggestionNodes = [...suggestionRead.nodes({ at: blockPath })].filter(
+    ([node]) => !node[SUGGESTION_TRANSIENT_KEY]
+  );
   const suggestionsCount = resolvedSuggestions.length;
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
@@ -439,7 +504,7 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
     selected ||
     (isCommenting && !!draftCommentNode && commentingCurrent);
 
-  const anchorElement = React.useMemo(() => {
+  const anchorElement = (() => {
     let activeNode: NodeEntry<Element | Text> | undefined;
 
     if (activeSuggestion) {
@@ -460,21 +525,11 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
 
     if (!activeNode) return null;
 
-    return editor.api.dom.resolveDOMNode(activeNode[0]) as HTMLElement | null;
-  }, [
-    open,
-    activeSuggestion,
-    activeCommentId,
-    editor.api,
-    suggestionNodes,
-    draftCommentNode,
-    commentNodes,
-  ]);
-
-  if (!isTopLevelBlock) return <>{children}</>;
-
-  if (suggestionsCount + resolvedDiscussions.length === 0 && !draftCommentNode)
-    return <div className="w-full">{children}</div>;
+    return editor.api.dom.resolveDOMNode(activeNode[0]);
+  })();
+  const [triggerElement, setTriggerElement] =
+    React.useState<HTMLButtonElement | null>(null);
+  const popoverAnchorElement = anchorElement ?? triggerElement;
 
   return (
     <div className="flex w-full justify-between">
@@ -493,18 +548,18 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
         }}
       >
         <div className="w-full">{children}</div>
-        {anchorElement && (
-          <PopoverAnchor
-            asChild
-            className="w-full"
-            virtualRef={{ current: anchorElement }}
-          />
+        {popoverAnchorElement && (
+          <PopoverAnchor virtualRef={{ current: popoverAnchorElement }} />
         )}
 
         <PopoverContent
           className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+          }}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+          }}
           align="center"
           side="bottom"
         >
@@ -549,6 +604,7 @@ const BlockCommentContent = ({ children }: RenderNodeWrapperProps) => {
           <div className="relative left-0 size-0 select-none">
             <PopoverTrigger asChild>
               <Button
+                ref={setTriggerElement}
                 variant="ghost"
                 className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
                 data-active={open}
@@ -590,7 +646,7 @@ function BlockComment({
       <div className="p-4">
         {discussion.comments.map((comment, index) => (
           <Comment
-            key={comment.id ?? index}
+            key={comment.id}
             comment={comment}
             discussionLength={discussion.comments.length}
             documentContent={discussion?.documentContent}

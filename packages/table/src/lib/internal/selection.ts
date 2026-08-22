@@ -9,6 +9,7 @@ import type {
   NodeKey,
 } from '@platejs/plite';
 import { ElementApi, PathApi, PointApi, RangeApi } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 
 import type { TableCellElement } from '../BaseTablePlugin';
 import { createTableContext, type TableContext } from './context';
@@ -28,7 +29,7 @@ export type TableSelectionView = Readonly<{
   anchors: readonly TableGridAnchor[];
   bounds: TableSelectionBounds;
   cellKeys: readonly NodeKey[];
-  cellEntries: readonly ElementEntry<TableCellElement>[];
+  cellEntries: ReadonlyArray<ElementEntry<TableCellElement>>;
   complete: boolean;
   context: TableContext;
   focus: TableGridAnchor;
@@ -95,7 +96,7 @@ const closeBoundsOverSpans = (
   initialBounds: TableSelectionBounds
 ): TableSelectionBounds => {
   let bounds = initialBounds;
-  const queue: { col: number; row: number }[] = [];
+  const queue: Array<{ col: number; row: number }> = [];
   const enqueueAddedSlots = (
     previous: TableSelectionBounds | null,
     next: TableSelectionBounds
@@ -135,7 +136,7 @@ const closeBoundsOverSpans = (
   enqueueAddedSlots(null, bounds);
 
   for (const { col, row } of queue) {
-    projectionSlotCount++;
+    projectionSlotCount += 1;
 
     const cell = context.anchorAt(row, col);
 
@@ -172,7 +173,7 @@ const getAnchorsWithinBounds = (
 
   for (let row = bounds.minRow; row <= bounds.maxRow; row++) {
     for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
-      projectionSlotCount++;
+      projectionSlotCount += 1;
 
       const anchor = context.anchorAt(row, col);
 
@@ -209,12 +210,12 @@ export const readTableSelection = (
   const cached = cacheKey ? selectionViewCache.get(snapshot.index) : undefined;
 
   if (cached?.key === cacheKey && cached.version === snapshot.version) {
-    cacheHitCount++;
+    cacheHitCount += 1;
 
     return cached.view;
   }
 
-  compileCount++;
+  compileCount += 1;
 
   const isCell = (node: Node): node is TableCellElement =>
     ElementApi.isElement(node) &&
@@ -277,7 +278,9 @@ export const readTableSelection = (
   }
 
   const [table, tablePath] = anchorTableEntry;
-  const context = createTableContext(state, tablePath, root)!;
+  const context =
+    createTableContext(state, tablePath, root) ??
+    failInvariant('Expected value to be defined');
   const anchor =
     context.anchorAtPath(anchorEntry[1]) ?? context.anchorOf(anchorEntry[0]);
   const focus =
@@ -285,7 +288,9 @@ export const readTableSelection = (
 
   if (!anchor || !focus) return publish(null);
 
-  const endpointBounds = getTableSelectionBounds([anchor, focus])!;
+  const endpointBounds =
+    getTableSelectionBounds([anchor, focus]) ??
+    failInvariant('Expected value to be defined');
   const bounds =
     expansion === 'span-closure'
       ? closeBoundsOverSpans(context, endpointBounds)

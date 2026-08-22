@@ -59,9 +59,9 @@ export type PliteViewSelectionDecorationSourceOptions = Readonly<{
   runtimeScope?: PliteProjectionRuntimeScope;
 }>;
 
-const EMPTY_DECORATIONS = Object.freeze(
-  []
-) as readonly PliteDecoration<PliteViewSelectionDecorationData>[];
+const EMPTY_DECORATIONS = Object.freeze([]) as ReadonlyArray<
+  PliteDecoration<PliteViewSelectionDecorationData>
+>;
 
 const cloneOwner = (
   owner: PliteViewBoundaryOwner | null
@@ -99,7 +99,7 @@ const isPliteViewSelectionDecorationData = (
   (value as { pliteViewSelection?: unknown }).pliteViewSelection === true;
 
 export const hasVisiblePliteViewSelectionDecoration = (
-  slices: readonly { data?: unknown }[],
+  slices: ReadonlyArray<{ data?: unknown }>,
   {
     owner,
     root,
@@ -111,7 +111,7 @@ export const hasVisiblePliteViewSelectionDecoration = (
   const viewRoot = root ?? MAIN_ROOT_KEY;
 
   return slices.some((slice) => {
-    const data = slice.data;
+    const { data } = slice;
 
     if (!isPliteViewSelectionDecorationData(data)) {
       return false;
@@ -188,12 +188,13 @@ const readScopedPliteViewSelectionDecorations = (
   index: number,
   range: Range,
   context: PliteDecorationSourceReadContext
-): readonly PliteDecoration<PliteViewSelectionDecorationData>[] | null => {
+): ReadonlyArray<PliteDecoration<PliteViewSelectionDecorationData>> | null => {
   if (!context.runtimeScope || !isScopedSegment(segment)) {
     return null;
   }
 
-  const decorations: PliteDecoration<PliteViewSelectionDecorationData>[] = [];
+  const decorations: Array<PliteDecoration<PliteViewSelectionDecorationData>> =
+    [];
   const visitedPathKeys = new Set<string>();
   const scopedPaths: Path[] = [];
 
@@ -249,7 +250,7 @@ const readScopedPliteViewSelectionDecorations = (
 const readPliteViewSelectionDecorations = (
   editor: ReactRuntimeEditor<any>,
   context: PliteDecorationSourceReadContext
-): readonly PliteDecoration<PliteViewSelectionDecorationData>[] => {
+): ReadonlyArray<PliteDecoration<PliteViewSelectionDecorationData>> => {
   const viewSelection = readPliteViewSelection(editor);
 
   if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
@@ -264,7 +265,8 @@ const readPliteViewSelectionDecorations = (
 
     return roots;
   };
-  const decorations: PliteDecoration<PliteViewSelectionDecorationData>[] = [];
+  const decorations: Array<PliteDecoration<PliteViewSelectionDecorationData>> =
+    [];
 
   viewSelection.segments.parts.forEach((segment, index) => {
     const anchor = resolvePliteViewSelectionDecorationEndpoint(
@@ -329,7 +331,7 @@ export const usePliteViewSelectionDecorationSource = (
   enabled: boolean,
   options: PliteViewSelectionDecorationSourceOptions = {}
 ): PliteDecorationSource<PliteViewSelectionDecorationData> | null => {
-  const runtimeScope = options.runtimeScope;
+  const { runtimeScope } = options;
   const source = useMemo(() => {
     if (!enabled) {
       return null;
@@ -343,7 +345,7 @@ export const usePliteViewSelectionDecorationSource = (
   useEffect(() => () => source?.destroy(), [source]);
   useIsomorphicLayoutEffect(() => {
     if (!source) {
-      return;
+      return undefined;
     }
 
     return subscribePliteViewSelection(editor, () => {

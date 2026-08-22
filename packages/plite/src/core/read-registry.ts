@@ -5,10 +5,8 @@ import type {
   EditorReadInput,
   EditorReadRegistration,
   EditorReadResult,
-  EditorStateView,
-  ExtensionsOf,
-  ValueOf,
 } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import {
   type CompiledReadPipeline,
@@ -49,7 +47,7 @@ function* wrapGeneratorContext(
           break;
         } catch (error) {
           if (!generator.throw) throw error;
-          result = run(() => generator.throw!(error));
+          result = run(() => generator.throw(error));
         }
       }
 
@@ -105,7 +103,7 @@ export const registerReadInRegistry = <TEditor extends BaseEditor<any, any>>(
     if (!current) return;
 
     const index = current.indexOf(compiled);
-    if (index >= 0) current.splice(index, 1);
+    if (index !== -1) current.splice(index, 1);
     if (current.length === 0) {
       byDescriptor.delete(read);
       byId.delete(read.id);
@@ -122,9 +120,8 @@ export const registerReadInRegistry = <TEditor extends BaseEditor<any, any>>(
 
 export const executeEditorRead = <
   TRead extends EditorReadDescriptor<any, any, any>,
-  TEditor extends BaseEditor<any, any>,
 >(
-  editor: TEditor,
+  editor: BaseEditor<any, any>,
   read: TRead,
   input: EditorReadInput<TRead>,
   applyDefault: (input: EditorReadInput<TRead>) => EditorReadResult<TRead>
@@ -136,23 +133,15 @@ export const executeEditorRead = <
     const exitRead = enterEditorRead(owner);
 
     try {
-      return fnWithState(
-        fn,
-        getEditorStateView(owner) as EditorStateView<
-          ValueOf<TEditor>,
-          ExtensionsOf<TEditor>
-        >
-      );
+      return fnWithState(fn, getEditorStateView(owner));
     } finally {
       exitRead();
     }
   };
-  let activeState:
-    | EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
-    | undefined;
+  let activeState: ReturnType<typeof getEditorStateView> | undefined;
   const fnWithState = <T>(
     fn: () => T,
-    state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+    state: ReturnType<typeof getEditorStateView>
   ): T => {
     const previous = activeState;
     activeState = state;
@@ -219,7 +208,7 @@ export const executeEditorRead = <
       delegated = true;
       return dispatch(
         index + 1,
-        overrideInput.length === 0 ? currentInput : overrideInput[0]!
+        overrideInput.length === 0 ? currentInput : getDefined(overrideInput[0])
       );
     };
     return registration.run({

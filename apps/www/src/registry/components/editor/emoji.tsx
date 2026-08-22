@@ -66,7 +66,9 @@ export function EmojiInputElement(
               <InlineComboboxItem
                 key={emoji.id}
                 value={emoji.name}
-                onClick={() => editor.plugin(emojiPlugin).update.insert(emoji)}
+                onClick={() => {
+                  editor.plugin(emojiPlugin).update.insert(emoji);
+                }}
               >
                 {emoji.skins[0].native} {emoji.name}
               </InlineComboboxItem>

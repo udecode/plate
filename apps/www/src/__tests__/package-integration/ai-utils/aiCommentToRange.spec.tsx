@@ -410,34 +410,34 @@ describe('AIChatPlugin read.commentRange', () => {
 
     const comments = [
       {
-        blockRef: refByFixtureId.gYBjGfssdm!,
+        blockRef: refByFixtureId.gYBjGfssdm,
         comment:
           'This is the introductory header for the Plate Playground, setting the stage for the content that follows.',
         content: '# Welcome to the Plate Playground!',
       },
       {
-        blockRef: refByFixtureId['5zZ8_hM53b']!,
+        blockRef: refByFixtureId['5zZ8_hM53b'],
         comment:
           'This sentence introduces the technologies used to build the rich-text editor, Plite and React.',
         content:
           'Experience a modern rich-text editor built with [Plite](https://platejs.org/docs/plite) and [React](https://reactjs.org).',
       },
       {
-        blockRef: refByFixtureId.GznILN9jX7!,
+        blockRef: refByFixtureId.GznILN9jX7,
         comment:
           'This section describes the collaborative editing features, including suggestions and comments, highlighting the ability to annotate and discuss changes.',
         content:
           '## Collaborative Editing\n\nReview and refine content seamlessly. Use [<suggestion>suggestions</suggestion>](/docs/suggestion) <suggestion>like this added text</suggestion> or to <suggestion>mark text for removal</suggestion>. Discuss changes using [<comment>comments</comment>](/docs/comment) <comment>on many text segments</comment>. You can even have <comment><suggestion>overlapping</suggestion></comment> annotations!',
       },
       {
-        blockRef: refByFixtureId.ll9QY8QwZe!,
+        blockRef: refByFixtureId.ll9QY8QwZe,
         comment:
           'This section highlights the AI-powered editing capabilities, including content generation and text editing features, accessible via keyboard shortcuts.',
         content:
           '## AI-Powered Editing\n\nBoost your productivity with integrated [AI SDK](/docs/ai). Press <kbd>⌘+J</kbd> or <kbd>Space</kbd> in an empty line to:\n\n* Generate content (continue writing, summarize, explain)\n* Edit existing text (improve, fix grammar, change tone)',
       },
       {
-        blockRef: refByFixtureId.Iu6xPiuKMv!,
+        blockRef: refByFixtureId.Iu6xPiuKMv,
         comment:
           'This section explains the rich content editing features, including structuring content with headings and lists, applying text marks, and using autoformatting for Markdown-like shortcuts.',
         content:
@@ -447,7 +447,12 @@ describe('AIChatPlugin read.commentRange', () => {
 
     const ranges: Range[] = [];
     for (const aiComment of comments) {
-      ranges.push(editor.plugin(AIChatPlugin).read.commentRange(aiComment)!);
+      const range = editor.plugin(AIChatPlugin).read.commentRange(aiComment);
+
+      if (!range) {
+        throw new Error('Expected fixture comment to resolve to a range.');
+      }
+      ranges.push(range);
     }
 
     expect(ranges).toMatchSnapshot();

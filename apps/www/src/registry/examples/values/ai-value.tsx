@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const aiValue = (
+export const aiValue: Value = (
   <fragment>
     <hheading level={2}>AI Menu</hheading>
     <hp>Generate and refine content with AI.</hp>

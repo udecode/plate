@@ -337,7 +337,7 @@ describe('createPluginContext', () => {
     expect(context.read.inspect()).toBe('read');
     context.update.inspect();
     expect(updateInspections).toBe(1);
-    const prototypeFacade = Reflect.get(context.read as object, '__proto__');
+    const prototypeFacade = Reflect.get(context.read, '__proto__');
     const inheritedMethod = Reflect.get(prototypeFacade, 'hasOwnProperty');
 
     expect(() =>

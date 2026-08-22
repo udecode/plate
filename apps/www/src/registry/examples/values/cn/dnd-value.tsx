@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const dndValue = (
+export const dndValue: Value = (
   <fragment>
     <hheading level={2}>拖放</hheading>
     <hp>使用拖放功能轻松重新组织文档中的内容。</hp>

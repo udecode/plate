@@ -81,7 +81,9 @@ function HomePlaygroundToolbar({
       <Tabs
         className="hidden sm:flex"
         value={view}
-        onValueChange={(value) => setView(value as 'code' | 'preview')}
+        onValueChange={(value) => {
+          setView(value as 'code' | 'preview');
+        }}
       >
         <TabsList className="grid h-8! grid-cols-2 items-center rounded-lg p-1 *:data-[slot=tabs-trigger]:h-6 *:data-[slot=tabs-trigger]:rounded-sm *:data-[slot=tabs-trigger]:px-2 *:data-[slot=tabs-trigger]:text-xs">
           <TabsTrigger value="preview">Preview</TabsTrigger>
@@ -140,7 +142,9 @@ function HomePlaygroundToolbar({
               variant="ghost"
               className="size-6 rounded-sm p-0"
               title="Refresh Preview"
-              onClick={() => setIframeKey((key) => key + 1)}
+              onClick={() => {
+                setIframeKey((key) => key + 1);
+              }}
             >
               <RotateCw />
               <span className="sr-only">Refresh Preview</span>
@@ -203,7 +207,7 @@ export function PlaygroundPreview({
   tree,
 }: ComponentProps<'div'> & PlaygroundPreviewData) {
   const locale = useLocale();
-  const content = i18n[locale as keyof typeof i18n];
+  const content = i18n[locale];
   const [previewWidth, setPreviewWidth] =
     React.useState<keyof typeof HOME_PREVIEW_WIDTHS>('100');
   const previewItem = React.useMemo(
@@ -223,7 +227,7 @@ export function PlaygroundPreview({
       <BlockViewerProvider
         dependencies={dependencies}
         highlightedFiles={highlightedFiles as any}
-        item={previewItem as any}
+        item={previewItem}
         tree={tree}
       >
         <HomePlaygroundToolbar

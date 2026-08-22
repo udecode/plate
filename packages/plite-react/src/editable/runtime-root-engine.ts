@@ -16,6 +16,7 @@ import { useFlushDeferredSelectorsOnRender } from '../hooks/use-editor-selector'
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
+import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
 import { useEditableRootRef } from './input-router';
 import { useProjectionDOMRepairBridge } from './projection-repair-bridge';
 import { useEditableRootCommitWakeup } from './root-selector-sources';
@@ -179,16 +180,47 @@ export const useEditableRootRuntime = ({
     editor,
     inputController,
   });
-  const rootInteractionSelectionBridge = useMemo(
-    () => ({
-      beforeModelSelection: () => {
+  const rootInteractionSelectionBridge = useMemo(() => {
+    const prepareModelSelection = (projectedDrag: boolean) => {
+      const mountedRuntimes = new Set([
+        runtime,
+        ...getMountedEditableDOMRuntimes(editor),
+      ]);
+
+      for (const mountedRuntime of mountedRuntimes) {
+        mountedRuntime.cancelSelectionChangeHandlers();
+        mountedRuntime.inputController.state.pendingDOMSelectionImport = false;
+        mountedRuntime.inputController.state.isProjectingSelection =
+          projectedDrag;
         setEditableModelSelectionPreference({
-          inputController,
+          inputController: mountedRuntime.inputController,
           preferModelSelection: true,
           reason: 'programmatic-export',
           selectionSource: 'model-owned',
         });
-        inputController.state.selectionChangeOrigin = 'programmatic-export';
+        mountedRuntime.inputController.state.selectionChangeOrigin =
+          'programmatic-export';
+      }
+    };
+
+    return {
+      beginProjectedDrag: () => {
+        prepareModelSelection(true);
+      },
+      beforeModelSelection: () => {
+        prepareModelSelection(false);
+      },
+      finishProjectedDrag: () => {
+        const mountedRuntimes = new Set([
+          runtime,
+          ...getMountedEditableDOMRuntimes(editor),
+        ]);
+
+        for (const mountedRuntime of mountedRuntimes) {
+          mountedRuntime.cancelSelectionChangeHandlers();
+          mountedRuntime.inputController.state.pendingDOMSelectionImport = false;
+          mountedRuntime.inputController.state.isProjectingSelection = false;
+        }
       },
       importDOMSelection: () => {
         setEditableModelSelectionPreference({
@@ -202,14 +234,15 @@ export const useEditableRootRuntime = ({
       },
       isPartialDOMBackedSelection,
       syncDOMSelectionToEditor,
-    }),
-    [
-      inputController,
-      isPartialDOMBackedSelection,
-      selectionImportController,
-      syncDOMSelectionToEditor,
-    ]
-  );
+    };
+  }, [
+    editor,
+    inputController,
+    isPartialDOMBackedSelection,
+    runtime,
+    selectionImportController,
+    syncDOMSelectionToEditor,
+  ]);
   const eventRuntime = useEditableEventRuntime({
     callbacks,
     deferNativeTextInputRepair,
@@ -231,34 +264,35 @@ export const useEditableRootRuntime = ({
     runtime,
     scheduleOnDOMSelectionChange,
   });
-  const editableEventBindings = useMemo(() => {
-    const handlers = eventRuntime.handlers;
-
-    return {
-      onBeforeInput: handlers.onReactBeforeInput,
-      onBlur: handlers.onBlur,
-      onClick: handlers.onClick,
-      onCompositionEnd: handlers.onCompositionEnd,
-      onCompositionStart: handlers.onCompositionStart,
-      onCompositionUpdate: handlers.onCompositionUpdate,
-      onCopy: handlers.onCopy,
-      onCut: handlers.onCut,
-      onDragEnd: handlers.onDragEnd,
-      onDragOver: handlers.onDragOver,
-      onDragStart: handlers.onDragStart,
-      onDrop: handlers.onDrop,
-      onFocus: handlers.onFocus,
-      onInput: handlers.onInput,
-      onInputCapture: handlers.onInputCapture,
-      onKeyDown: handlers.onKeyDown,
-      onKeyDownCapture: handlers.onKeyDownCapture,
-      onMouseDown: handlers.onMouseDown,
-      onMouseDownCapture: handlers.onMouseDownCapture,
-      onMouseUp: handlers.onMouseUp,
-      onPaste: handlers.onPaste,
-      ref: callbackRef,
-    } satisfies EditableRootEventBindings;
-  }, [callbackRef, eventRuntime.handlers]);
+  const { handlers: eventHandlers } = eventRuntime;
+  const editableEventBindings = useMemo(
+    () =>
+      ({
+        onBeforeInput: eventHandlers.onReactBeforeInput,
+        onBlur: eventHandlers.onBlur,
+        onClick: eventHandlers.onClick,
+        onCompositionEnd: eventHandlers.onCompositionEnd,
+        onCompositionStart: eventHandlers.onCompositionStart,
+        onCompositionUpdate: eventHandlers.onCompositionUpdate,
+        onCopy: eventHandlers.onCopy,
+        onCut: eventHandlers.onCut,
+        onDragEnd: eventHandlers.onDragEnd,
+        onDragOver: eventHandlers.onDragOver,
+        onDragStart: eventHandlers.onDragStart,
+        onDrop: eventHandlers.onDrop,
+        onFocus: eventHandlers.onFocus,
+        onInput: eventHandlers.onInput,
+        onInputCapture: eventHandlers.onInputCapture,
+        onKeyDown: eventHandlers.onKeyDown,
+        onKeyDownCapture: eventHandlers.onKeyDownCapture,
+        onMouseDown: eventHandlers.onMouseDown,
+        onMouseDownCapture: eventHandlers.onMouseDownCapture,
+        onMouseUp: eventHandlers.onMouseUp,
+        onPaste: eventHandlers.onPaste,
+        ref: callbackRef,
+      }) satisfies EditableRootEventBindings,
+    [callbackRef, eventHandlers]
+  );
 
   useEditableRootGlobalLifecycle({
     runtime,

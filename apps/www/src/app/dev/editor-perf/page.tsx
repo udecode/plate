@@ -34,6 +34,7 @@ import {
   type Element as PliteElement,
 } from '@platejs/plite';
 import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import {
   Provider as JotaiProvider,
   atom as createJotaiAtom,
@@ -495,13 +496,14 @@ const benchJotaiAtoms = {
   entry: benchJotaiEntryAtom,
   path: benchJotaiPathAtom,
 } as const;
+const benchElementInitialState: BenchElementStoreState = {
+  element: null,
+  entry: null,
+  path: null,
+};
 
 const { BenchElementNoEffectProvider } = createAtomStore(
-  {
-    element: null,
-    entry: null,
-    path: null,
-  } as BenchElementStoreState,
+  benchElementInitialState,
   {
     name: 'benchElementNoEffect' as const,
     suppressWarnings: true,
@@ -790,7 +792,7 @@ function BenchHydrateSyncAtoms({
   React.useLayoutEffect(() => {
     for (const [atom, value] of hydrateValues) {
       if (value !== undefined && value !== null) {
-        store.set(atom as any, value as any);
+        store.set(atom, value);
       }
     }
   }, [hydrateValues, store]);
@@ -895,7 +897,7 @@ function BenchRenderNodeHookElementFromProvider({
 
   return (
     <p
-      {...(attributes as any)}
+      {...attributes}
       data-bench-depth={pathDepth || undefined}
       data-bench-type={element?.type ?? undefined}
     >
@@ -918,7 +920,7 @@ function BenchRenderNodeHookElementFromPlainContext({
 
   return (
     <p
-      {...(attributes as any)}
+      {...attributes}
       data-bench-depth={pathDepth || undefined}
       data-bench-type={element?.type ?? undefined}
     >
@@ -940,7 +942,7 @@ function BenchRenderNodeHookElementFromJotai({
 
   return (
     <p
-      {...(attributes as any)}
+      {...attributes}
       data-bench-depth={pathDepth || undefined}
       data-bench-type={element?.type ?? undefined}
     >
@@ -1000,7 +1002,7 @@ function BenchRenderNodeSelectorElementFromProvider({
 
   return (
     <p
-      {...(attributes as any)}
+      {...attributes}
       data-bench-depth={selected.pathDepth || undefined}
       data-bench-type={selected.type ?? undefined}
     >
@@ -1027,7 +1029,7 @@ function BenchRenderNodeSelectorElementFromPlainContext({
 
   return (
     <p
-      {...(attributes as any)}
+      {...attributes}
       data-bench-depth={selected.pathDepth || undefined}
       data-bench-type={selected.type ?? undefined}
     >
@@ -1054,7 +1056,7 @@ function BenchRenderNodeSelectorElementFromJotai({
 
   return (
     <p
-      {...(attributes as any)}
+      {...attributes}
       data-bench-depth={selected.pathDepth || undefined}
       data-bench-type={selected.type ?? undefined}
     >
@@ -1525,11 +1527,13 @@ function buildElementPathMap(value: Value) {
 }
 
 function parseDataPlitePath(value: unknown): Path | undefined {
-  if (typeof value !== 'string' || value.length === 0) return;
+  if (typeof value !== 'string' || value.length === 0) return undefined;
 
   const path = value.split(',').map(Number);
 
-  if (path.some((part) => !Number.isInteger(part) || part < 0)) return;
+  if (path.some((part) => !Number.isInteger(part) || part < 0)) {
+    return undefined;
+  }
 
   return path;
 }
@@ -1538,7 +1542,7 @@ function getRenderElementPath(
   props: RenderElementProps,
   pathMap: WeakMap<PliteElement, number[]>
 ) {
-  const element = props.element as PliteElement;
+  const { element } = props;
 
   return (
     props.path ??
@@ -1737,7 +1741,9 @@ function wait(ms: number) {
 function waitForNextPaint() {
   return new Promise<void>((resolve) => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => resolve());
+      requestAnimationFrame(() => {
+        resolve();
+      });
     });
   });
 }
@@ -1948,7 +1954,7 @@ function createFanoutParagraph(index: number): Descendant {
   return {
     children: [{ text: `fanout update ${index}` }],
     type: 'paragraph',
-  } as Descendant;
+  };
 }
 
 const getBenchmarkDOMStrategy = (config: BenchmarkConfig) =>
@@ -1978,8 +1984,8 @@ function BenchmarkElement({
     contentVisibility: elementContentVisibility ? ('auto' as const) : undefined,
   };
 
-  switch ((element as PliteElement).type) {
-    case 'h1':
+  switch (element.type) {
+    case 'h1': {
       return (
         <h1
           {...attributes}
@@ -1989,12 +1995,14 @@ function BenchmarkElement({
           {children}
         </h1>
       );
-    default:
+    }
+    default: {
       return (
         <p {...attributes} style={style} className="mb-3 leading-7">
           {children}
         </p>
       );
+    }
   }
 }
 
@@ -2205,7 +2213,7 @@ function PrebuiltScenarioEditor({
 
   return (
     <div className="h-full overflow-auto p-4">
-      <Plate editor={editor as any}>
+      <Plate editor={editor}>
         <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
@@ -2253,7 +2261,7 @@ function PluginCensusEditorSurface({
 
   return (
     <div className="h-full overflow-auto p-4">
-      <Plate editor={editor as any}>
+      <Plate editor={editor}>
         <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
@@ -2318,19 +2326,27 @@ function MixedSubscriber() {
 
 function FanoutSubscriber({ caseId }: { caseId: FanoutCaseId }) {
   switch (caseId) {
-    case 'editor-state':
+    case 'editor-state': {
       return <EditorStateSubscriber />;
-    case 'editor-value':
+    }
+    case 'editor-value': {
       return <EditorValueSubscriber />;
-    case 'editor-selector':
+    }
+    case 'editor-selector': {
       return <EditorSelectorSubscriber />;
-    case 'plugin-store':
+    }
+    case 'plugin-store': {
       return <PluginStoreSubscriber />;
-    case 'mixed':
+    }
+    case 'mixed': {
       return <MixedSubscriber />;
-    case 'none':
+    }
+    case 'none': {
       return null;
+    }
   }
+
+  return undefined;
 }
 
 function FanoutSubscribers({
@@ -2558,7 +2574,7 @@ function BenchmarkEditableMount({
           text,
         } as any,
         readOnly: false,
-      }) as any;
+      });
 
       return (
         <PlateLeaf as="strong" {...ctxProps}>
@@ -2619,10 +2635,10 @@ function BenchmarkEditableMount({
     []
   );
   const customElementRender = React.useMemo(() => {
-    if (!elementBenchmarkMode) return;
+    if (!elementBenchmarkMode) return undefined;
 
     return (props: RenderElementProps) => {
-      const element = props.element as PliteElement;
+      const { element } = props;
       const path = getRenderElementPath(props, pathMap);
 
       if (!path) return renderElement(props);
@@ -2763,9 +2779,8 @@ function BenchmarkEditableMount({
             className:
               [typeClass, baseAttributes.className].filter(Boolean).join(' ') ||
               undefined,
-          } as any;
-          const Tag = (elementPlugin.render?.as ??
-            'div') as keyof HTMLElementTagNameMap;
+          };
+          const Tag = elementPlugin.render?.as ?? 'div';
 
           return (
             <Tag
@@ -2831,18 +2846,17 @@ function BenchmarkEditableMount({
       }
 
       if (elementBenchmarkMode === 'render-as-no-provider') {
-        const Tag = (elementPlugin?.render?.as ??
-          'div') as keyof HTMLElementTagNameMap;
+        const Tag = elementPlugin?.render?.as ?? 'div';
 
         return (
           <Tag
-            data-plite-inline={(baseAttributes as any)['data-plite-inline']}
+            data-plite-inline={baseAttributes['data-plite-inline']}
             data-plite-node="element"
-            {...(baseAttributes as any)}
+            {...baseAttributes}
             style={
               {
                 position: 'relative',
-                ...(baseAttributes as any).style,
+                ...baseAttributes.style,
               } as React.CSSProperties
             }
           >
@@ -2948,7 +2962,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <ElementProvider
@@ -2981,7 +2995,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <ElementProvider
@@ -2991,7 +3005,7 @@ function BenchmarkEditableMount({
             scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <BenchRenderNodeHookElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="element-provider"
             >
               {props.children}
@@ -3017,7 +3031,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchElementContext.Provider
@@ -3029,7 +3043,7 @@ function BenchmarkEditableMount({
             }}
           >
             <BenchRenderNodeHookElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="plain-context"
             >
               {props.children}
@@ -3055,7 +3069,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchJotaiStoreProvider
@@ -3064,7 +3078,7 @@ function BenchmarkEditableMount({
             path={path}
           >
             <BenchRenderNodeHookElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="jotai"
             >
               {props.children}
@@ -3092,7 +3106,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchJotaiHydrateOnlyProvider
@@ -3101,7 +3115,7 @@ function BenchmarkEditableMount({
             path={path}
           >
             <BenchRenderNodeHookElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="jotai"
             >
               {props.children}
@@ -3129,7 +3143,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchJotaiHydrateSyncProvider
@@ -3138,7 +3152,7 @@ function BenchmarkEditableMount({
             path={path}
           >
             <BenchRenderNodeHookElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="jotai"
             >
               {props.children}
@@ -3164,7 +3178,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <ElementProvider
@@ -3174,7 +3188,7 @@ function BenchmarkEditableMount({
             scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <BenchRenderNodeSelectorElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="element-provider"
             >
               {props.children}
@@ -3202,7 +3216,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchElementContext.Provider
@@ -3214,7 +3228,7 @@ function BenchmarkEditableMount({
             }}
           >
             <BenchRenderNodeSelectorElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="plain-context"
             >
               {props.children}
@@ -3242,7 +3256,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchJotaiStoreProvider
@@ -3251,7 +3265,7 @@ function BenchmarkEditableMount({
             path={path}
           >
             <BenchRenderNodeSelectorElement
-              attributes={ctxProps.attributes as any}
+              attributes={ctxProps.attributes}
               source="jotai"
             >
               {props.children}
@@ -3443,7 +3457,7 @@ function BenchmarkEditableMount({
             plugin: elementPlugin,
           } as any,
           readOnly: false,
-        }) as any;
+        });
 
         return (
           <BenchElementProviderPropEffect
@@ -3492,7 +3506,7 @@ function BenchmarkEditableMount({
         plugin: plugin as any,
         props: { ...props, path } as any,
         readOnly: false,
-      }) as any;
+      });
 
       return (
         <PlateElement {...ctxProps}>
@@ -3510,7 +3524,7 @@ function BenchmarkEditableMount({
       !precomputedElementPluginPath ||
       editor.read.schema.element(paragraphType) === undefined
     ) {
-      return;
+      return undefined;
     }
 
     const renderParagraph = pluginRenderElement(
@@ -3519,7 +3533,7 @@ function BenchmarkEditableMount({
     );
 
     return (props: RenderElementProps) => {
-      const element = props.element as PliteElement;
+      const { element } = props;
 
       if (element.type !== paragraphType) {
         return renderElement(props);
@@ -3639,8 +3653,8 @@ function BenchmarkEditableMount({
         className="min-h-[70vh] outline-none"
         readOnly={false}
         renderElement={finalRenderElement as any}
-        renderLeaf={finalRenderLeaf as any}
-        renderText={finalRenderText as any}
+        renderLeaf={finalRenderLeaf}
+        renderText={finalRenderText}
         spellCheck={false}
       />
     </Plite>
@@ -3656,7 +3670,7 @@ function CoreMountSurface({
   config: BenchmarkConfig;
   editor: PlateEditor;
 }) {
-  const id = editor.id;
+  const { id } = editor;
 
   return (
     <div className="h-full overflow-auto p-4">
@@ -4418,7 +4432,7 @@ function ElementIdFragmentCard({
 
 export default function EditorPerfPage() {
   const [config, setConfig] = React.useState<BenchmarkConfig>(
-    () => HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG as BenchmarkConfig
+    () => HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG
   );
   const [didLoadSearchParams, setDidLoadSearchParams] = React.useState(false);
   const [activeScenarioId, setActiveScenarioId] =
@@ -4580,18 +4594,22 @@ export default function EditorPerfPage() {
     Partial<Record<PluginCensusScenarioId, number>>
   >({});
   const activeScenario = React.useMemo(
-    () => SCENARIOS.find((scenario) => scenario.id === activeScenarioId)!,
+    () =>
+      SCENARIOS.find((scenario) => scenario.id === activeScenarioId) ??
+      failInvariant('Expected value to be defined'),
     [activeScenarioId]
   );
   const activeFanoutCase = React.useMemo(
-    () => FANOUT_CASES.find((caseItem) => caseItem.id === activeFanoutCaseId)!,
+    () =>
+      FANOUT_CASES.find((caseItem) => caseItem.id === activeFanoutCaseId) ??
+      failInvariant('Expected value to be defined'),
     [activeFanoutCaseId]
   );
   const activeCoreMountCase = React.useMemo(
     () =>
       CORE_MOUNT_CASES.find(
         (caseItem) => caseItem.id === activeCoreMountCaseId
-      )!,
+      ) ?? failInvariant('Expected value to be defined'),
     [activeCoreMountCaseId]
   );
   const selectedPluginCensusEntries = React.useMemo(
@@ -4735,7 +4753,9 @@ export default function EditorPerfPage() {
     async (scenarioId: ScenarioId) => {
       mountDurationRef.current[scenarioId] = undefined;
 
-      const scenario = SCENARIOS.find((item) => item.id === scenarioId)!;
+      const scenario =
+        SCENARIOS.find((item) => item.id === scenarioId) ??
+        failInvariant('Expected value to be defined');
       const nextEditor = createScenarioMountedEditor({
         config,
         scenario,
@@ -4830,9 +4850,9 @@ export default function EditorPerfPage() {
     }) => {
       pluginCensusDurationRef.current[scenarioId] = undefined;
 
-      const entry = CORE_PLUGIN_CENSUS_ENTRIES.find(
-        (item) => item.id === entryId
-      )!;
+      const entry =
+        CORE_PLUGIN_CENSUS_ENTRIES.find((item) => item.id === entryId) ??
+        failInvariant('Expected value to be defined');
       const value = getPluginCensusValue({
         blocks: config.blocks,
         entry,
@@ -5529,9 +5549,7 @@ export default function EditorPerfPage() {
         );
       }
       if (pluginCensusEntry) {
-        setActivePluginCensusEntryId(
-          pluginCensusEntry as CorePluginCensusEntryId | 'all'
-        );
+        setActivePluginCensusEntryId(pluginCensusEntry);
       }
 
       setMountVersion((version) => version + 1);
@@ -5617,7 +5635,7 @@ export default function EditorPerfPage() {
 
   React.useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setConfig(getInitialHugeDocumentBenchmarkConfig() as BenchmarkConfig);
+      setConfig(getInitialHugeDocumentBenchmarkConfig());
       setDidLoadSearchParams(true);
     }, 0);
 
@@ -5897,7 +5915,9 @@ export default function EditorPerfPage() {
           <Button
             disabled={!!runningLabel}
             variant="outline"
-            onClick={() => setMountVersion((version) => version + 1)}
+            onClick={() => {
+              setMountVersion((version) => version + 1);
+            }}
           >
             Remount active scenario
           </Button>

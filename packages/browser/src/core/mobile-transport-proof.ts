@@ -51,7 +51,7 @@ export const classifyBrowserMobileTransportProof = (
   transport: BrowserMobileTransportId
 ): BrowserMobileTransportProof => {
   switch (transport) {
-    case 'appium-android':
+    case 'appium-android': {
       return {
         evidenceClass: 'automated-direct',
         platform: 'android-chrome',
@@ -60,7 +60,8 @@ export const classifyBrowserMobileTransportProof = (
         transport,
         unsupportedClaims: [...DIRECT_DEVICE_UNSUPPORTED_CLAIMS],
       };
-    case 'appium-ios':
+    }
+    case 'appium-ios': {
       return {
         evidenceClass: 'automated-direct',
         platform: 'ios-safari',
@@ -69,7 +70,8 @@ export const classifyBrowserMobileTransportProof = (
         transport,
         unsupportedClaims: [...DIRECT_DEVICE_UNSUPPORTED_CLAIMS],
       };
-    case 'agent-browser-ios':
+    }
+    case 'agent-browser-ios': {
       return {
         evidenceClass: 'automated-proxy',
         platform: 'ios-safari',
@@ -84,7 +86,10 @@ export const classifyBrowserMobileTransportProof = (
           'voice-input',
         ],
       };
+    }
   }
+
+  throw new Error(`Unexpected mobile transport: ${String(transport)}`);
 };
 
 /** Return the proof capability matrix for every known mobile transport. */

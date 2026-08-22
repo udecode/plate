@@ -168,7 +168,7 @@ const typedInferredSchemaReactEditor: ReactEditor<
   InferredSchemaValue,
   readonly [typeof InferredSchema]
 > = inferredSchemaReactEditor;
-const inferredSchemaValue: readonly InferredSchemaValue[number][] =
+const inferredSchemaValue: ReadonlyArray<InferredSchemaValue[number]> =
   inferredSchemaReactEditor.read((state) => state.children());
 const invalidInferredSchemaValue: ValueOf<typeof inferredSchemaReactEditor> = [
   {
@@ -347,8 +347,8 @@ const SchemaHookProbe = () => {
     InferredSchemaValue,
     readonly [typeof InferredSchema]
   > = editor;
-  const value: readonly InferredSchemaValue[number][] = editor.read((state) =>
-    state.children()
+  const value: ReadonlyArray<InferredSchemaValue[number]> = editor.read(
+    (state) => state.children()
   );
 
   void typedEditor;
@@ -450,11 +450,13 @@ const _placeholderAsInput = (
   </PliteReact.PlitePlaceholder>
 );
 
-usePliteEditor({
-  initialValue,
-  // @ts-expect-error withEditor wrapper composition is cut
-  withEditor: (editor) => editor,
-});
+const useInvalidWithEditorContract = () => {
+  usePliteEditor({
+    initialValue,
+    // @ts-expect-error withEditor wrapper composition is cut
+    withEditor: (editor) => editor,
+  });
+};
 
 void baseValue;
 void commandDescriptor;
@@ -464,6 +466,7 @@ void specialCommandPayload;
 void customApiResult;
 void inferredSchemaValue;
 void invalidInferredSchemaValue;
+void useInvalidWithEditorContract;
 void typedInferredSchemaReactEditor;
 void _placeholderAsSpan;
 void _placeholderAsInput;

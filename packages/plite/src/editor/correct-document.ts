@@ -31,6 +31,7 @@ import type {
 import { getChildren as getEditorChildren } from '../interfaces/editor';
 import { NodeApi, type NodeEntry } from '../interfaces/node';
 import { PathApi, type Path } from '../interfaces/path';
+import { getDefined } from '../internal/get-defined';
 import { node } from './node';
 
 const CORRECTION_EVENTS: readonly EditorCorrectionEvent[] = [
@@ -165,7 +166,7 @@ const indexCorrections = (editor: Editor) => {
   );
 
   for (const [id, correction] of getExtensionRegistry(editor).corrections) {
-    byEvent.get(correction.event)!.push({ correction, id });
+    getDefined(byEvent.get(correction.event)).push({ correction, id });
   }
 
   return byEvent;
@@ -197,7 +198,7 @@ export const correctDocument = (
       const nodeKey = getNodeKey(editor, path);
 
       for (const event of events) {
-        for (const indexed of corrections.get(event)!) {
+        for (const indexed of getDefined(corrections.get(event))) {
           if (!matchesEditorCorrection(entry, indexed.correction)) continue;
 
           const key = targetKey(root, nodeKey, path, event, indexed.id);
@@ -221,7 +222,7 @@ export const correctDocument = (
     ) => {
       for (const path of [...paths].sort(comparePaths)) {
         if (!NodeApi.has(editor, path)) continue;
-        enqueueEntry(node(editor, path) as NodeEntry, events);
+        enqueueEntry(node(editor, path), events);
       }
     };
     const enqueueChangedDocument = (
@@ -310,7 +311,9 @@ export const correctDocument = (
     };
     const takeTarget = () => {
       while (orderIndex < order.length) {
-        const key = order[orderIndex++]!;
+        const key = order[orderIndex];
+
+        orderIndex += 1;
         const target = pending.get(key);
 
         if (!target) continue;
@@ -318,6 +321,8 @@ export const correctDocument = (
         pending.delete(key);
         return target;
       }
+
+      return undefined;
     };
     const resolveTarget = (target: CorrectionTarget): NodeEntry | null => {
       const runtimePath = target.nodeKey
@@ -327,7 +332,7 @@ export const correctDocument = (
 
       if (!path || !NodeApi.has(editor, path)) return null;
 
-      const entry = node(editor, path) as NodeEntry;
+      const entry = node(editor, path);
 
       if (
         runtimePath &&
@@ -438,10 +443,11 @@ export const correctDocument = (
       capturedChanges = null;
     }
   };
-  const runInRoot = () =>
+  const runInRoot = () => {
     withEditorUpdateRoot(editor, root, () =>
       withEditorUpdateRootChildren(editor, root, runCorrectionWorklist)
     );
+  };
 
   if (!isInTransaction(editor)) {
     runEditorTransaction(editor, runInRoot, { skipCorrections: true });

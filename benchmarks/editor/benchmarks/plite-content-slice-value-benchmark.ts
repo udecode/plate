@@ -7,6 +7,7 @@ import {
   type Descendant,
   ElementApi,
 } from '../../../packages/plite/src/index';
+import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const iterationsArgument = process.argv.find((argument) =>
@@ -35,7 +36,7 @@ for (const [name, value] of [
 }
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const summarize = (samples: readonly number[]) => {
   const sorted = [...samples].sort((left, right) => left - right);
@@ -176,8 +177,8 @@ const rows = cohorts.map(({ name, nodes }) => {
   };
 });
 
-const tiny = rows[0]!;
-const stress = rows.at(-1)!;
+const tiny = rows[0];
+const stress = getDefined(rows.at(-1));
 const trustedIdentityReuse = rows.every(
   (row) => row.trustedIdentityMatches === iterations * trustedIterations
 );

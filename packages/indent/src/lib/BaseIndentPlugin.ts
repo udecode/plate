@@ -184,7 +184,7 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
           const styleValue = element.style.marginLeft;
 
           if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
-            return;
+            return undefined;
           }
           const numericValue = unit
             ? styleValue.slice(0, -unit.length)
@@ -222,7 +222,7 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
         if (!ElementApi.isElement(node)) return;
 
         const { indentMax } = editor.plugin(BaseIndentPlugin).store.get();
-        const indent = node.indent;
+        const { indent } = node;
 
         if (
           typeof indentMax === 'number' &&

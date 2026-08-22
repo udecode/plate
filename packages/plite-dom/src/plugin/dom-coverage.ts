@@ -654,7 +654,7 @@ export const DOMCoverage = {
   ) {
     let targetBoundary: DOMCoverageBoundary | null = boundary;
     let targetPoint: Point | null = point;
-    const selectionPolicy = boundary.selectionPolicy;
+    const { selectionPolicy } = boundary;
     const visited = new Set<string>();
 
     while (targetBoundary?.selectionPolicy === selectionPolicy && targetPoint) {
@@ -749,7 +749,9 @@ export const DOMCoverage = {
     handler: DOMCoverageMaterializeHandler
   ) {
     const registry = getRegistry(editor);
-    const handlerId = registry.nextMaterializeHandlerId++;
+    const handlerId = registry.nextMaterializeHandlerId;
+
+    registry.nextMaterializeHandlerId += 1;
 
     registry.materializeHandlers.set(handlerId, handler);
 
@@ -763,10 +765,7 @@ export const DOMCoverage = {
     editor: DOMEditorType<any>,
     point: Point
   ): DOMCoverageDOMPointResult {
-    const boundary = DOMCoverage.getBoundaryForPoint(
-      editor as unknown as EditorType,
-      point
-    );
+    const boundary = DOMCoverage.getBoundaryForPoint(editor, point);
 
     if (boundary) {
       return {
@@ -787,10 +786,7 @@ export const DOMCoverage = {
     editor: DOMEditorType<any>,
     range: PliteRange
   ): DOMCoverageDOMRangeResult {
-    const boundaries = DOMCoverage.getBoundariesForRange(
-      editor as unknown as EditorType,
-      range
-    );
+    const boundaries = DOMCoverage.getBoundariesForRange(editor, range);
 
     if (boundaries.length > 0) {
       return {

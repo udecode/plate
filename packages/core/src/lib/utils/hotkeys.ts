@@ -11,7 +11,7 @@ import type { BaseEditor } from '../editor';
 export { isHotkey } from 'is-hotkey';
 
 /** Hotkey mappings for each platform. */
-const HOTKEYS = {
+const HOTKEYS: Record<string, HotkeySpec> = {
   bold: 'mod+b',
   compose: ['down', 'left', 'right', 'up', 'backspace', 'enter'],
   deleteBackward: 'shift?+backspace',
@@ -36,7 +36,7 @@ const HOTKEYS = {
   untab: 'shift+tab',
 };
 
-const APPLE_HOTKEYS = {
+const APPLE_HOTKEYS: Record<string, HotkeySpec> = {
   deleteBackward: ['ctrl+backspace', 'ctrl+h'],
   deleteForward: ['ctrl+delete', 'ctrl+d'],
   deleteLineBackward: 'cmd+shift?+backspace',
@@ -53,7 +53,7 @@ const APPLE_HOTKEYS = {
   transposeCharacter: 'ctrl+t',
 };
 
-const WINDOWS_HOTKEYS = {
+const WINDOWS_HOTKEYS: Record<string, HotkeySpec> = {
   deleteWordBackward: 'ctrl+shift?+backspace',
   deleteWordForward: 'ctrl+shift?+delete',
   redo: ['ctrl+y', 'ctrl+shift+z'],
@@ -62,11 +62,11 @@ const WINDOWS_HOTKEYS = {
 /** Create a platform-aware hotkey checker. */
 
 export const createHotkey = (key: string) => {
-  const generic = (HOTKEYS as any)[key];
-  const apple = (APPLE_HOTKEYS as any)[key];
-  const windows = (WINDOWS_HOTKEYS as any)[key];
-  const isApple = apple && isKeyHotkey(apple);
-  const isWindows = windows && isKeyHotkey(windows);
+  const generic = HOTKEYS[key];
+  const apple = APPLE_HOTKEYS[key];
+  const windows = WINDOWS_HOTKEYS[key];
+  const isApple = apple ? isKeyHotkey(apple) : undefined;
+  const isWindows = windows ? isKeyHotkey(windows) : undefined;
 
   return (event: KeyboardEventLike) => {
     const appleHost = usesAppleDOMHotkeys(event);
@@ -74,7 +74,7 @@ export const createHotkey = (key: string) => {
     if (
       generic &&
       isDOMHotkey(
-        generic as HotkeySpec,
+        generic,
         { platform: appleHost ? 'apple' : 'other' },
         event as PliteKeyboardEventLike
       )

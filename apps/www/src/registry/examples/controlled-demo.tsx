@@ -67,8 +67,8 @@ export default function ControlledEditorDemo() {
 }
 
 function AsyncControlledEditorDemo() {
-  const [initialValue, setInitialValue] = React.useState<
-    { children: { text: string }[]; type: string }[] | undefined
+  const [innerInitialValue, setInitialValue] = React.useState<
+    Array<{ children: Array<{ text: string }>; type: string }> | undefined
   >(undefined);
   const [loading, setLoading] = React.useState(true);
   const editor = usePlateEditor();
@@ -87,15 +87,15 @@ function AsyncControlledEditorDemo() {
   }, []);
 
   React.useEffect(() => {
-    if (!loading && initialValue) {
+    if (!loading && innerInitialValue) {
       editor.update((tx) => {
-        tx.value.replace({ children: initialValue });
+        tx.value.replace({ children: innerInitialValue });
         const end = tx.points.end([]);
 
         if (end) tx.selection.set(end);
       });
     }
-  }, [loading, initialValue, editor]);
+  }, [loading, innerInitialValue, editor]);
 
   if (loading) return <div>Loading…</div>;
 

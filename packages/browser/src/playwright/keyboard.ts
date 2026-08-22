@@ -74,34 +74,37 @@ export const dispatchSyntheticKey = async (
   root: Locator,
   eventInit: SyntheticKeyInit
 ) => {
-  await root.evaluate((element: HTMLElement, eventInit: SyntheticKeyInit) => {
-    const createKeyEvent = (type: 'keydown' | 'keyup') =>
-      new KeyboardEvent(type, {
-        altKey: eventInit.altKey,
-        bubbles: true,
-        cancelable: true,
-        ctrlKey: eventInit.ctrlKey,
-        key: eventInit.key,
-        metaKey: eventInit.metaKey,
-        shiftKey: eventInit.shiftKey,
-      });
-    const defineKeyCode = (event: KeyboardEvent) => {
-      if (eventInit.which == null) {
+  await root.evaluate(
+    (element: HTMLElement, innerEventInit: SyntheticKeyInit) => {
+      const createKeyEvent = (type: 'keydown' | 'keyup') =>
+        new KeyboardEvent(type, {
+          altKey: innerEventInit.altKey,
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: innerEventInit.ctrlKey,
+          key: innerEventInit.key,
+          metaKey: innerEventInit.metaKey,
+          shiftKey: innerEventInit.shiftKey,
+        });
+      const defineKeyCode = (event: KeyboardEvent) => {
+        if (innerEventInit.which == null) {
+          return event;
+        }
+
+        Object.defineProperty(event, 'keyCode', {
+          value: innerEventInit.which,
+        });
+        Object.defineProperty(event, 'which', {
+          value: innerEventInit.which,
+        });
+
         return event;
-      }
+      };
 
-      Object.defineProperty(event, 'keyCode', {
-        value: eventInit.which,
-      });
-      Object.defineProperty(event, 'which', {
-        value: eventInit.which,
-      });
-
-      return event;
-    };
-
-    element.dispatchEvent(defineKeyCode(createKeyEvent('keydown')));
-    element.dispatchEvent(defineKeyCode(createKeyEvent('keyup')));
-  }, eventInit);
+      element.dispatchEvent(defineKeyCode(createKeyEvent('keydown')));
+      element.dispatchEvent(defineKeyCode(createKeyEvent('keyup')));
+    },
+    eventInit
+  );
   await root.page().waitForTimeout(0);
 };

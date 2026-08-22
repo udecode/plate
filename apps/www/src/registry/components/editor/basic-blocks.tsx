@@ -27,33 +27,39 @@ export const BasicBlocksKit = [
     },
     shortcuts: {
       toggleHeading1: {
-        handler: ({ editor }) =>
-          editor.plugin(HeadingPlugin).update.toggle({ level: 1 }),
+        handler: ({ editor }) => {
+          editor.plugin(HeadingPlugin).update.toggle({ level: 1 });
+        },
         keys: 'mod+alt+1',
       },
       toggleHeading2: {
-        handler: ({ editor }) =>
-          editor.plugin(HeadingPlugin).update.toggle({ level: 2 }),
+        handler: ({ editor }) => {
+          editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
+        },
         keys: 'mod+alt+2',
       },
       toggleHeading3: {
-        handler: ({ editor }) =>
-          editor.plugin(HeadingPlugin).update.toggle({ level: 3 }),
+        handler: ({ editor }) => {
+          editor.plugin(HeadingPlugin).update.toggle({ level: 3 });
+        },
         keys: 'mod+alt+3',
       },
       toggleHeading4: {
-        handler: ({ editor }) =>
-          editor.plugin(HeadingPlugin).update.toggle({ level: 4 }),
+        handler: ({ editor }) => {
+          editor.plugin(HeadingPlugin).update.toggle({ level: 4 });
+        },
         keys: 'mod+alt+4',
       },
       toggleHeading5: {
-        handler: ({ editor }) =>
-          editor.plugin(HeadingPlugin).update.toggle({ level: 5 }),
+        handler: ({ editor }) => {
+          editor.plugin(HeadingPlugin).update.toggle({ level: 5 });
+        },
         keys: 'mod+alt+5',
       },
       toggleHeading6: {
-        handler: ({ editor }) =>
-          editor.plugin(HeadingPlugin).update.toggle({ level: 6 }),
+        handler: ({ editor }) => {
+          editor.plugin(HeadingPlugin).update.toggle({ level: 6 });
+        },
         keys: 'mod+alt+6',
       },
     },

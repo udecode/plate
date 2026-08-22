@@ -61,7 +61,7 @@ export function usePliteChildRoot(
         );
       }
 
-      return explicitRoot as NamedRootKey;
+      return explicitRoot;
     }
 
     if (!nodeKey) {

@@ -28,14 +28,22 @@ export function Markdown({
     >
       <ReactMarkdown
         components={{
-          a: ({ children, ...props }) => (
+          a: ({ children: innerChildren, ...props }) => (
             <Link {...(props as any)} className="pl-0">
-              {children}
+              {innerChildren}
             </Link>
           ),
-          code({ children, className, node, ...props }) {
-            const match = LANGUAGE_REGEX.exec(className || '');
-            const value = String(children).replace(TRAILING_NEWLINE_REGEX, '');
+          code({
+            children: innerChildren2,
+            className: innerClassName,
+            node,
+            ...props
+          }) {
+            const match = LANGUAGE_REGEX.exec(innerClassName || '');
+            const value =
+              typeof innerChildren2 === 'string'
+                ? innerChildren2.replace(TRAILING_NEWLINE_REGEX, '')
+                : '';
 
             return match ? (
               <CodeBlock
@@ -45,26 +53,34 @@ export function Markdown({
                 {...props}
               />
             ) : (
-              <code className={className} {...props}>
-                {children}
+              <code className={innerClassName} {...props}>
+                {innerChildren2}
               </code>
             );
           },
-          li({ children }) {
-            return <Typography.LI className="pl-0">{children}</Typography.LI>;
-          },
-          ol({ children }) {
+          li({ children: innerChildren3 }) {
             return (
-              <Typography.OL className="ml-0 pl-6">{children}</Typography.OL>
+              <Typography.LI className="pl-0">{innerChildren3}</Typography.LI>
             );
           },
-          p({ children }) {
+          ol({ children: innerChildren4 }) {
             return (
-              <Typography.P className="mt-6 mb-0">{children}</Typography.P>
+              <Typography.OL className="ml-0 pl-6">
+                {innerChildren4}
+              </Typography.OL>
             );
           },
-          ul({ children }) {
-            return <Typography.UL className="ml-0">{children}</Typography.UL>;
+          p({ children: innerChildren5 }) {
+            return (
+              <Typography.P className="mt-6 mb-0">
+                {innerChildren5}
+              </Typography.P>
+            );
+          },
+          ul({ children: innerChildren6 }) {
+            return (
+              <Typography.UL className="ml-0">{innerChildren6}</Typography.UL>
+            );
           },
         }}
         remarkPlugins={[remarkGfm]}

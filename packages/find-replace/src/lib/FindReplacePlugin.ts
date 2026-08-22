@@ -33,7 +33,7 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
       return [];
     }
 
-    const textEntries: NodeEntry<Text>[] = [];
+    const textEntries: Array<NodeEntry<Text>> = [];
 
     for (const [index, child] of node.children.entries()) {
       if (TextApi.isText(child)) {
@@ -69,10 +69,12 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
       return [];
     }
 
-    const ranges: (DecoratedRange & {
-      search: string;
-      searchHighlight: boolean;
-    })[] = [];
+    const ranges: Array<
+      DecoratedRange & {
+        search: string;
+        searchHighlight: boolean;
+      }
+    > = [];
     let cumulativePosition = 0;
     let matchIndex = 0;
 
@@ -85,7 +87,7 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
         const matchEnd = matchStart + search.length;
 
         if (matchEnd <= textStart) {
-          matchIndex++;
+          matchIndex += 1;
 
           continue;
         }
@@ -114,7 +116,7 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
           });
         }
         if (matchEnd <= textEnd) {
-          matchIndex++;
+          matchIndex += 1;
         } else {
           break;
         }

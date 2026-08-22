@@ -135,12 +135,16 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   });
 
   React.useEffect(() => {
-    if (!refreshOnResize || !containerRef?.current) return;
+    if (!refreshOnResize || !containerRef?.current) return undefined;
 
-    const resizeObserver = new ResizeObserver(() => refresh());
+    const resizeObserver = new ResizeObserver(() => {
+      refresh();
+    });
     resizeObserver.observe(containerRef.current);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [containerRef, refresh, refreshOnResize]);
 
   React.useEffect(

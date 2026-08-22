@@ -105,7 +105,7 @@ const replaceRoot = (editor: BaseEditor, children: Value) => {
 let elementRenderCount = 0;
 
 function ElementStaticMock(props: Parameters<typeof PliteElement>[0]) {
-  elementRenderCount++;
+  elementRenderCount += 1;
 
   return <PliteElement {...props} />;
 }
@@ -122,7 +122,7 @@ function resetElementRenderCount() {
 let leafRenderCount = 0;
 
 function LeafStaticMock(props: Parameters<typeof PliteLeaf>[0]) {
-  leafRenderCount++;
+  leafRenderCount += 1;
 
   return <PliteLeaf {...props} />;
 }
@@ -172,7 +172,8 @@ describe('PlateStatic Memoization', () => {
     // Create a new array reference with the same content (just to test reference changes)
     const newValueRef = [
       {
-        children: [{ text: 'Hello world' }], // same text, but new object
+        // same text, but new object
+        children: [{ text: 'Hello world' }],
         type: 'paragraph',
       },
     ];

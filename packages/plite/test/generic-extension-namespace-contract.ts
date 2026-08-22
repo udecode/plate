@@ -22,7 +22,7 @@ type ImageElement = {
   children: CustomText[];
 };
 
-type CustomValue = (ParagraphElement | ImageElement)[];
+type CustomValue = Array<ParagraphElement | ImageElement>;
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];

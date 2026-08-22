@@ -188,11 +188,11 @@ export const transformPathAfterRemove = (
   if (
     path.length >= removedPath.length &&
     removedParent.every((part, index) => path[index] === part) &&
-    path[removedPath.length - 1]! > removedIndex
+    path[removedPath.length - 1] > removedIndex
   ) {
     const transformed = [...path];
 
-    transformed[removedPath.length - 1]! -= 1;
+    transformed[removedPath.length - 1] -= 1;
 
     return transformed;
   }

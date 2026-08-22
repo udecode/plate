@@ -276,7 +276,7 @@ export const assertCanonicalYjsTrace = (
 
 export const getYjsRemoteCursors = (
   peer: Peer
-): readonly YjsRemoteCursor<YjsRemoteCursorData>[] =>
+): ReadonlyArray<YjsRemoteCursor<YjsRemoteCursorData>> =>
   getYjsState(peer).remoteCursors();
 
 export const getYjsAwarenessRevision = (peer: Peer): number =>
@@ -313,19 +313,19 @@ export const runYjsUpdate = (peer: Peer, fn: (tx: YjsTx) => void): void => {
 };
 
 export const disconnectYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (yjs) => yjs.disconnect());
+  runYjsUpdate(peer, (innerYjs) => innerYjs.disconnect());
 };
 
 export const connectYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (yjs) => yjs.connect());
+  runYjsUpdate(peer, (innerYjs2) => innerYjs2.connect());
 };
 
 export const clearYjsTrace = (peer: Peer): void => {
-  runYjsUpdate(peer, (yjs) => yjs.clearTrace());
+  runYjsUpdate(peer, (innerYjs3) => innerYjs3.clearTrace());
 };
 
 export const reconcileYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (yjs) => yjs.reconcile());
+  runYjsUpdate(peer, (innerYjs4) => innerYjs4.reconcile());
 };
 
 export const disconnectAndClearYjsTrace = (peer: Peer): void => {

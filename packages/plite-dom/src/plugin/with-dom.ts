@@ -162,15 +162,15 @@ export function dom(
 ): DOMExtension<false>;
 export function dom(
   options?: Omit<DOMEditorOptions, 'clipboard'> & { clipboard?: never }
-): DOMExtension<true>;
+): DOMExtension;
 export function dom(options: DOMEditorOptions): DOMExtension<boolean>;
 export function dom(
   options: DOMEditorOptions = {}
-): DOMExtension<true> | DOMExtension<false> | DOMExtension<boolean> {
+): DOMExtension | DOMExtension<false> | DOMExtension<boolean> {
   const createApi = ({
     editor,
     getContributions,
-  }: EditorExtensionApiFactoryContext<EditorType>) => {
+  }: EditorExtensionApiFactoryContext) => {
     const handlers = getContributions(DOM_CLIPBOARD_HANDLERS);
 
     const { clipboard, ...domApi } = createDOMEditorCapability(
@@ -259,8 +259,6 @@ export type DOMEditor<
   V extends import('@platejs/plite').Value = import('@platejs/plite').Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = Omit<EditorType<V, TExtensions>, 'api' | 'update'> & {
-  readonly api: EditorType<V, TExtensions>['api'] &
-    DOMExtensionTypes<true>['api'];
-  update: EditorType<V, TExtensions>['update'] &
-    DOMExtensionTypes<true>['update'];
+  readonly api: EditorType<V, TExtensions>['api'] & DOMExtensionTypes['api'];
+  update: EditorType<V, TExtensions>['update'] & DOMExtensionTypes['update'];
 };

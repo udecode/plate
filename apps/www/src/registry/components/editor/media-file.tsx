@@ -3,7 +3,7 @@
 import type { FilePlugin } from '@platejs/media/react';
 import { FileUp } from 'lucide-react';
 import type { PlateElementProps } from 'platejs/react';
-import { PlateElement, useElementSelected } from 'platejs/react';
+import { PlateElement, useElementSelected, usePath } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -11,8 +11,9 @@ import { cn } from '@/lib/utils';
 import { Caption, useCaptionFocused } from './caption';
 
 export function FileElement(props: PlateElementProps<typeof FilePlugin>) {
+  const path = usePath();
   const selected = useElementSelected({ mode: 'node' });
-  const captionFocused = useCaptionFocused(props.path);
+  const captionFocused = useCaptionFocused(path);
 
   return (
     <PlateElement className="my-px rounded-sm" {...props}>
@@ -25,7 +26,6 @@ export function FileElement(props: PlateElementProps<typeof FilePlugin>) {
             download={props.element.name}
             href={props.element.url}
             rel="noopener noreferrer"
-            role="button"
             target="_blank"
           >
             <div className={cn('flex items-center gap-1 p-1')}>

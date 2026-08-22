@@ -147,7 +147,7 @@ const rootValue = (value: JsonEditorValue, root: RootKey) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
 
 const rawNodeAt = (
-  children: readonly Record<string, unknown>[],
+  children: ReadonlyArray<Record<string, unknown>>,
   path: Path
 ): Record<string, unknown> | null => {
   let descendants = children;
@@ -157,7 +157,7 @@ const rawNodeAt = (
     node = descendants[index];
     if (!node) return null;
     descendants = Array.isArray(node.children)
-      ? (node.children as readonly Record<string, unknown>[])
+      ? (node.children as ReadonlyArray<Record<string, unknown>>)
       : [];
   }
 
@@ -173,7 +173,7 @@ const publicPoint = (
 ): Point =>
   Object.freeze({
     offset: point.offset,
-    path: Object.freeze([...point.path]) as Path,
+    path: Object.freeze([...point.path]),
     ...(includeRoot ? { root } : {}),
   });
 
@@ -187,7 +187,7 @@ const getSelectionSpecByKind = (
 ): RuntimeSelectionSpec => {
   const registered = registry.selectionSpecs.get(kind)?.spec;
 
-  if (registered) return registered as unknown as RuntimeSelectionSpec;
+  if (registered) return registered;
   if (kind === 'text' || kind === 'node') {
     return { kind };
   }
@@ -277,7 +277,7 @@ export const decodeEditorSelection = (
     throw new Error('Invalid editor selection envelope.');
   }
 
-  const kind = (input as { kind: string }).kind;
+  const { kind } = input as { kind: string };
   const selection = decodeVersionedValue(
     getSelectionCodec(editor, kind),
     input,
@@ -362,7 +362,7 @@ const createMapContext = (
       return publicPoint(forward as Point, targetRoot, includeRoot);
     }
     if (!forward) {
-      return publicPoint(backward as Point, targetRoot, includeRoot);
+      return publicPoint(backward, targetRoot, includeRoot);
     }
 
     const backwardPoint = backward as Point;
@@ -433,10 +433,7 @@ const createMapContext = (
     );
     const next =
       mapped == null ? null : afterDocument.pointAt(mapped, association);
-    const sourceNode = rawNodeAt(
-      rootValue(before, targetRoot) as readonly Record<string, unknown>[],
-      point.path
-    );
+    const sourceNode = rawNodeAt(rootValue(before, targetRoot), point.path);
     const preservesNonEmptyTextPosition =
       options.preferPositionMapping &&
       typeof sourceNode?.text === 'string' &&
@@ -454,17 +451,14 @@ const createMapContext = (
             association
           )
         : next
-          ? publicPoint(next as Point, targetRoot, point.root !== undefined)
+          ? publicPoint(next, targetRoot, point.root !== undefined)
           : null;
     const nodeKey = runtimeIndexes?.before.keyAt(point.path);
     const retainedPath = nodeKey
       ? runtimeIndexes?.after.pathOf(nodeKey)
       : undefined;
     const retainedNode = retainedPath
-      ? rawNodeAt(
-          rootValue(after, targetRoot) as readonly Record<string, unknown>[],
-          retainedPath
-        )
+      ? rawNodeAt(rootValue(after, targetRoot), retainedPath)
       : null;
     const sourceText = sourceNode?.text;
     const retainedText = retainedNode?.text;
@@ -505,7 +499,7 @@ const createMapContext = (
       : undefined;
 
     if (retainedPath) {
-      return Object.freeze([...retainedPath]) as unknown as Path;
+      return Object.freeze([...retainedPath]);
     }
 
     const beforeDocument = DocumentIndex.fromValue(rootValue(before, root));
@@ -522,7 +516,7 @@ const createMapContext = (
     const next =
       mapped == null ? null : afterDocument.nodeStartingAt(mapped)?.path;
 
-    return next ? (Object.freeze([...next]) as unknown as Path) : null;
+    return next ? Object.freeze([...next]) : null;
   };
 
   const mapRange: EditorSelectionMapContext['mapRange'] = (
@@ -588,17 +582,14 @@ export const getSelectionReplacementRange = (
   );
 };
 
-export const getSelectionPrimaryRange = <TEditor extends Editor<any, any>>(
-  editor: TEditor,
+export const getSelectionPrimaryRange = (
+  editor: Editor,
   selection: Selection
 ): Range | null => {
   if (!selection) return null;
   if (SelectionApi.isNode(selection)) return null;
 
-  const primaryRange = getSelectionSpec(
-    editor as Editor,
-    selection
-  ).primaryRange;
+  const { primaryRange } = getSelectionSpec(editor, selection);
 
   return primaryRange ? primaryRange(selection) : selection;
 };
@@ -611,7 +602,7 @@ export const getSelectionSpecMarks = <
   selection: Selection,
   state: EditorStateView<V, TExtensions>
 ): EditorMarks<V> | null | undefined => {
-  if (!selection) return;
+  if (!selection) return undefined;
 
   return getSelectionSpec(editor, selection).marks?.(selection, state) as
     | EditorMarks<V>
@@ -627,7 +618,7 @@ export const getSelectionSpecSlice = <
   selection: Selection,
   state: EditorStateView<V, TExtensions>
 ): ContentSlice<V> | undefined => {
-  if (!selection) return;
+  if (!selection) return undefined;
 
   return getSelectionSpec(editor, selection).slice?.(selection, state) as
     | ContentSlice<V>
@@ -705,10 +696,7 @@ export const assertSelectionSupported = (
   if (SelectionApi.isNode(selection)) {
     const nodeRoot = pointRoot(selection.anchor, root);
     const node = rawNodeAt(
-      rootValue(jsonDocumentValue, nodeRoot) as readonly Record<
-        string,
-        unknown
-      >[],
+      rootValue(jsonDocumentValue, nodeRoot),
       selection.path
     );
 
@@ -779,8 +767,8 @@ export const mapSelectionThroughChange = (
   const context = createMapContext(
     editor,
     change,
-    before as JsonEditorValue,
-    after as JsonEditorValue,
+    before,
+    after,
     root,
     options.runtimeIndexes
   );

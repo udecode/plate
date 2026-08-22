@@ -145,7 +145,6 @@ export const createDOMRepairQueue = ({
   syncDOMSelectionToEditor: () => void;
 }): DOMRepairQueue => {
   const frameState = createDOMRepairFrameState();
-  // oxlint-disable-next-line prefer-const -- Queue methods close over the completed queue assigned after method construction.
   let queue: DOMRepairQueue;
   const scheduler = domPhaseScheduler;
   const scheduleRepairAnimationFrame = (callback: () => void) =>
@@ -169,7 +168,9 @@ export const createDOMRepairQueue = ({
     delays?: number[];
     immediate?: boolean;
   } = {}) => {
-    const repair = () => queue.repairCaretAfterModelTextInsert();
+    const repair = () => {
+      queue.repairCaretAfterModelTextInsert();
+    };
 
     if (immediate) {
       repair();
@@ -210,7 +211,7 @@ export const createDOMRepairQueue = ({
     nativeInput: DOMInputRepair,
     rootElement: HTMLElement
   ) => {
-    const target = nativeInput.target;
+    const { target } = nativeInput;
     const insert = target?.insert;
 
     if (!target?.preferCapturedInsert || !insert) {
@@ -287,7 +288,7 @@ export const createDOMRepairQueue = ({
     const nextOffset = insert.offset + insert.text.length;
 
     armRepairInducedSelectionOriginGuard();
-    profileDOMRepairDuration('captured-update-model', () =>
+    profileDOMRepairDuration('captured-update-model', () => {
       updateNativeTextInput(editor, (tx) => {
         tx.text.insert(insert.text, {
           at: { path: target.path, offset: insert.offset },
@@ -305,8 +306,8 @@ export const createDOMRepairQueue = ({
             focus: { path: target.path, offset: nextOffset },
           });
         }
-      })
-    );
+      });
+    });
     if (!isInsideVirtualizedDOM(textHost)) {
       setEditableModelSelectionPreference({
         inputController,
@@ -315,9 +316,9 @@ export const createDOMRepairQueue = ({
         selectionSource: 'dom-current',
       });
     }
-    profileDOMRepairDuration('captured-repair-caret', () =>
-      scheduleTextInsertCaretRepair()
-    );
+    profileDOMRepairDuration('captured-repair-caret', () => {
+      scheduleTextInsertCaretRepair();
+    });
 
     return true;
   };
@@ -382,7 +383,7 @@ export const createDOMRepairQueue = ({
       const liveDOMTextHostText = textHostText;
 
       if (nativeInput.target) {
-        path = nativeInput.target.path;
+        ({ path } = nativeInput.target);
         const liveDOMTextHostMatchesTarget =
           liveDOMPath && PathApi.equals(liveDOMPath, path)
             ? true
@@ -395,7 +396,7 @@ export const createDOMRepairQueue = ({
           rootElement.querySelector<HTMLElement>(
             `[data-plite-node="text"][data-plite-path="${path.join(',')}"]`
           );
-        selectionOffset = nativeInput.target.selectionOffset;
+        ({ selectionOffset } = nativeInput.target);
         textHostText = nativeInput.target.text;
       }
 
@@ -981,41 +982,46 @@ export const createDOMRepairQueue = ({
           return scrollCurrentDOMSelectionIntoView();
         });
 
+      let repairCompleted = false;
+      const attemptRepair = () => {
+        if (repairCompleted) {
+          return true;
+        }
+
+        const repaired = repairCollapsedSelectionByPath();
+
+        repairCompleted =
+          repaired && (kind === 'repair-caret' || textInsertRepairCompleted);
+
+        return repairCompleted;
+      };
       const retry = (remainingRetries: number) => {
         scheduleRepairAnimationFrame(() => {
           if (!isCurrentRepairFrame()) {
             return;
           }
 
-          const repaired = repairCollapsedSelectionByPath();
-          if (
-            kind === 'repair-caret-after-text-insert' &&
-            repaired &&
-            textInsertRepairCompleted
-          ) {
+          if (attemptRepair()) {
             return;
           }
 
           if (remainingRetries > 0) {
-            scheduleRepairTimeout(() => retry(remainingRetries - 1), 25);
+            scheduleRepairTimeout(() => {
+              retry(remainingRetries - 1);
+            }, 25);
           }
         });
       };
 
-      const repaired = repairCollapsedSelectionByPath();
-      if (
-        kind === 'repair-caret-after-text-insert' &&
-        repaired &&
-        textInsertRepairCompleted
-      ) {
+      if (attemptRepair()) {
         return;
       }
 
       scheduleRepairMicrotask(() => {
-        repairCollapsedSelectionByPath();
+        attemptRepair();
       });
       scheduleRepairTimeout(() => {
-        repairCollapsedSelectionByPath();
+        attemptRepair();
       });
       retry(kind === 'repair-caret-after-text-insert' ? 40 : 8);
     },

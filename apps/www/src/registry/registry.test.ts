@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { createPlateRegistry, PLATE_REGISTRY_BASES } from './registry';
 
 describe('Plate registry editor files', () => {
-  const items = createPlateRegistry().items;
+  const { items } = createPlateRegistry();
 
   function toEditorTarget(path: string) {
     return `@components/editor/${path.slice(path.indexOf('components/editor/') + 'components/editor/'.length)}`;

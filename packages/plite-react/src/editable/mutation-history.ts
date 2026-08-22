@@ -20,8 +20,8 @@ const getHistoryBatchSingleChangedRoot = (
   editor.read((state) => {
     const history = (state as { history?: unknown }).history as
       | {
-          redos?: () => readonly { change?: DocumentChange }[];
-          undos?: () => readonly { change?: DocumentChange }[];
+          redos?: () => ReadonlyArray<{ change?: DocumentChange }>;
+          undos?: () => ReadonlyArray<{ change?: DocumentChange }>;
         }
       | undefined;
     const stack =
@@ -68,14 +68,12 @@ export const applyModelOwnedHistoryIntent = ({
   writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
   try {
     runTrustedUpdate(editor, (tx) => {
-      const history = (
-        tx as {
-          history?: {
-            redo?: () => void;
-            undo?: () => void;
-          };
-        }
-      ).history;
+      const { history } = tx as {
+        history?: {
+          redo?: () => void;
+          undo?: () => void;
+        };
+      };
       const fn = history?.[direction];
 
       if (typeof fn !== 'function') {

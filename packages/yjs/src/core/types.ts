@@ -62,9 +62,9 @@ export type YjsProviderEventHandler =
 
 export type YjsProviderLike = {
   readonly awareness?: YjsAwarenessLike;
-  readonly connect?: () => Promise<unknown> | unknown;
+  readonly connect?: () => unknown;
   readonly destroy?: () => void;
-  readonly disconnect?: () => Promise<unknown> | unknown;
+  readonly disconnect?: () => unknown;
   readonly doc?: Y.Doc;
   readonly off?: (
     event: YjsProviderEvent,
@@ -164,11 +164,14 @@ type YjsExtensionBaseOptions = {
   readonly sharedEffectCompaction?: YjsSharedEffectCompactionOptions;
 };
 
-export type YjsExtensionOptions = YjsExtensionBaseOptions &
-  (
-    | Readonly<{ cursorData?: never }>
-    | Readonly<{ cursorData: YjsCursorDataSchema }>
-  );
+export type YjsExtensionOptions<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = YjsExtensionBaseOptions &
+  ([YjsRemoteCursorData] extends [TCursorData]
+    ?
+        | Readonly<{ cursorData?: never }>
+        | Readonly<{ cursorData: YjsCursorDataSchema<TCursorData> }>
+    : Readonly<{ cursorData: YjsCursorDataSchema<TCursorData> }>);
 
 export type YjsState<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
@@ -184,7 +187,7 @@ export type YjsState<
   readonly remoteCursor: (
     clientId: number
   ) => YjsRemoteCursor<TCursorData> | null;
-  readonly remoteCursors: () => readonly YjsRemoteCursor<TCursorData>[];
+  readonly remoteCursors: () => ReadonlyArray<YjsRemoteCursor<TCursorData>>;
   readonly root: () => Y.XmlElement;
   readonly subscribeAwareness: (listener: () => void) => () => void;
   readonly subscribeProvider: (listener: () => void) => () => void;

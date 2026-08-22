@@ -15,9 +15,11 @@ export interface PliteProjectionEntry<T = unknown> {
 /** External store that publishes projection entries by node key. */
 export interface PliteProjectionStore<T = unknown> {
   getSnapshot: () => Readonly<
-    Record<string, readonly PliteProjectionEntry<T>[]>
+    Record<string, ReadonlyArray<PliteProjectionEntry<T>>>
   >;
-  getRuntimeSnapshot?: (nodeKey: NodeKey) => readonly PliteProjectionEntry<T>[];
+  getRuntimeSnapshot?: (
+    nodeKey: NodeKey
+  ) => ReadonlyArray<PliteProjectionEntry<T>>;
   subscribeProjectionRefresh?: (
     listener: (result: PliteProjectionRefreshResult) => void
   ) => () => void;
@@ -26,9 +28,9 @@ export interface PliteProjectionStore<T = unknown> {
   subscribeSourceId?: (sourceId: string, listener: () => void) => () => void;
 }
 
-const EMPTY_PROJECTIONS = Object.freeze(
-  []
-) as readonly PliteProjectionEntry<never>[];
+const EMPTY_PROJECTIONS = Object.freeze([]) as ReadonlyArray<
+  PliteProjectionEntry<never>
+>;
 const subscribeEmpty = () => () => {};
 const getEmptyRuntimeSnapshot = () => EMPTY_PROJECTIONS;
 
@@ -40,7 +42,7 @@ const getEmptyRuntimeSnapshot = () => EMPTY_PROJECTIONS;
  */
 export function usePliteProjectionEntries<T = unknown>(
   nodeKey: NodeKey | null
-): readonly PliteProjectionEntry<T>[] {
+): ReadonlyArray<PliteProjectionEntry<T>> {
   const store = useContext(ProjectionContext);
   const subscribe = useCallback(
     (listener: () => void) => {
@@ -56,11 +58,11 @@ export function usePliteProjectionEntries<T = unknown>(
     () =>
       (nodeKey &&
         (store?.getRuntimeSnapshot?.(nodeKey) as
-          | readonly PliteProjectionEntry<T>[]
+          | ReadonlyArray<PliteProjectionEntry<T>>
           | undefined)) ??
       ((nodeKey &&
         (store?.getSnapshot()[nodeKey] as
-          | readonly PliteProjectionEntry<T>[]
+          | ReadonlyArray<PliteProjectionEntry<T>>
           | undefined)) ||
         EMPTY_PROJECTIONS),
     [nodeKey, store]

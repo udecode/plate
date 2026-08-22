@@ -7,6 +7,7 @@ import {
   defineExtension,
   defineStateField,
   type Element,
+  type EditorUpdateTransaction,
   type EditorUpdateTag,
   txOnly,
 } from '@platejs/plite';
@@ -212,7 +213,7 @@ describe('update policy contract', () => {
       },
     });
 
-    const version = editor.read.runtime.snapshot().version;
+    const { version } = editor.read.runtime.snapshot();
 
     assert.throws(
       () =>
@@ -241,7 +242,7 @@ describe('update policy contract', () => {
       },
     });
 
-    const version = editor.read.runtime.snapshot().version;
+    const { version } = editor.read.runtime.snapshot();
 
     assert.throws(
       () =>
@@ -276,7 +277,7 @@ describe('update policy contract', () => {
       },
     });
 
-    const version = editor.read.runtime.snapshot().version;
+    const { version } = editor.read.runtime.snapshot();
     let release!: () => void;
     let settle!: () => void;
     const escapedErrors: unknown[] = [];
@@ -287,28 +288,36 @@ describe('update policy contract', () => {
       settle = resolve;
     });
 
-    assert.throws(
-      () =>
-        editor.update(async (tx) => {
-          tx.text.insert('!');
-          await gate;
+    const escapedUpdate: (
+      tx: EditorUpdateTransaction
+    ) => Promise<void> = async (tx) => {
+      tx.text.insert('!');
+      await gate;
 
-          for (const mutate of [
-            () => tx.text.insert('?'),
-            () => tx.setField(escapedState, 'escaped'),
-            () => tx.tags.add('escaped'),
-          ]) {
-            try {
-              mutate();
-            } catch (error) {
-              escapedErrors.push(error);
-            }
-          }
+      for (const mutate of [
+        () => {
+          tx.text.insert('?');
+        },
+        () => {
+          tx.setField(escapedState, 'escaped');
+        },
+        () => {
+          tx.tags.add('escaped');
+        },
+      ]) {
+        try {
+          mutate();
+        } catch (error) {
+          escapedErrors.push(error);
+        }
+      }
 
-          settle();
-        }),
-      /must be synchronous/
-    );
+      settle();
+    };
+
+    assert.throws(() => {
+      editor.update(escapedUpdate as never);
+    }, /must be synchronous/);
     assert.equal(editor.read.text.string([]), 'one');
     assert.equal(editor.read.runtime.snapshot().version, version);
 
@@ -410,16 +419,13 @@ describe('update policy contract', () => {
       },
     });
 
-    const version = editor.read.runtime.snapshot().version;
+    const { version } = editor.read.runtime.snapshot();
     const dynamicUpdate = editor.update as unknown as Record<
       string,
       Record<string, (...args: unknown[]) => unknown>
     >;
 
-    assert.throws(
-      () => dynamicUpdate.workflow!.scoped!('!'),
-      /transaction-only/
-    );
+    assert.throws(() => dynamicUpdate.workflow.scoped('!'), /transaction-only/);
     assert.equal(editor.read.text.string([]), 'one');
     assert.equal(editor.read.runtime.snapshot().version, version);
 

@@ -65,7 +65,8 @@ export const programmingLanguages: languageMap = {
 };
 
 export const generateRandomString = (length: number, lowercase = false) => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXY3456789'; // excluding similar looking characters like Z, 2, I, 1, O, 0
+  // excluding similar looking characters like Z, 2, I, 1, O, 0
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXY3456789';
   let result = '';
 
   for (let i = 0; i < length; i++) {
@@ -85,6 +86,7 @@ const CodeBlock: FC<Props> = ({ language, value }) => {
 
     const fileExtension = programmingLanguages[language] || '.file';
     const suggestedFileName = `file-${generateRandomString(3, true)}${fileExtension}`;
+    // oxlint-disable-next-line no-alert -- [P1 local-invariant] Native prompt lets the user rename a local download without extra dialog state.
     const fileName = window.prompt('Enter file name', suggestedFileName);
 
     if (!fileName) {

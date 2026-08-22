@@ -24,6 +24,7 @@ mock.module('platejs/react', () => ({
   useEditorMounted: () => true,
   useEditorReadOnly: () => false,
   useElementSelected: () => false,
+  usePath: () => [0],
 }));
 
 mock.module('@/lib/utils', () => ({

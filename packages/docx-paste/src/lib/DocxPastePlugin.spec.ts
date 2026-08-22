@@ -406,7 +406,7 @@ describe('DocxPastePlugin', () => {
       format: 'text/html',
       source: source(dataTransfer),
     });
-    const body = new DOMParser().parseFromString(result, 'text/html').body;
+    const { body } = new DOMParser().parseFromString(result, 'text/html');
     const paragraph = body.querySelector('p') as HTMLElement;
 
     expect(paragraph.dataset.indent).toBe('2');

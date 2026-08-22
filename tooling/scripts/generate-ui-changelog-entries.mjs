@@ -1078,7 +1078,7 @@ function toReleaseState(
   release,
   changeUnit,
   {
-    hasPendingChangeset,
+    hasPendingChangeset: innerHasPendingChangeset,
     isChangeAfterRelease,
     isReleaseAncestor,
     latestRelease,
@@ -1106,7 +1106,7 @@ function toReleaseState(
     };
   }
 
-  if (hasPendingChangeset) {
+  if (innerHasPendingChangeset) {
     return {
       status: 'latest',
       source: 'pending-changeset',
@@ -1183,7 +1183,7 @@ function getRegistryChangelogArtifactOutputs(outputs, outDir) {
 export function buildRegistryChangelogEvents(
   rows,
   {
-    hasPendingChangeset = false,
+    hasPendingChangeset: innerHasPendingChangeset2 = false,
     isChangeAfterRelease = isChangeUnitAfterRelease,
     isReleaseAncestor = isChangeUnitInRelease,
     outDir = DEFAULT_OUT_DIR,
@@ -1241,7 +1241,7 @@ export function buildRegistryChangelogEvents(
       },
       change: toChangeMetadata(changeUnit, commits),
       release: toReleaseState(release, changeUnit, {
-        hasPendingChangeset,
+        hasPendingChangeset: innerHasPendingChangeset2,
         isChangeAfterRelease,
         isReleaseAncestor,
         latestRelease,

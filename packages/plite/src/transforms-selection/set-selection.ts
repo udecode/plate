@@ -53,21 +53,21 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
     }
 
     const value = Object.hasOwn(selection, key)
-      ? selection[<keyof Range>key]
+      ? selection[key as keyof Range]
       : undefined;
-    const newValue = props[<keyof Range>key];
+    const newValue = props[key as keyof Range];
 
     if (
       compareSelectionProps(
-        <keyof Range>key,
+        key as keyof Range,
         value,
         newValue,
         selectionRoot,
         updateRoot
       )
     ) {
-      oldProps[<keyof Range>key] = selection[<keyof Range>key];
-      newProps[<keyof Range>key] = props[<keyof Range>key];
+      oldProps[key as keyof Range] = selection[key as keyof Range];
+      newProps[key as keyof Range] = props[key as keyof Range];
     }
   }
 
@@ -89,7 +89,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   ) {
     const { marks: _marks, ...selectionWithoutMarks } = nextSelection;
 
-    nextSelection = selectionWithoutMarks as typeof nextSelection;
+    nextSelection = selectionWithoutMarks;
   }
 
   writeSelection(editor, nextSelection, updateRoot);

@@ -44,6 +44,12 @@ export const wrapWithBlockId = (
     throw new Error('Block IDs can only wrap Markdown flow content.');
   }
 
+  const data: NonNullable<MdMdxJsxFlowElement['data']> & {
+    _mdxExplicitJsx: true;
+  } = {
+    _mdxExplicitJsx: true,
+  };
+
   return {
     attributes: [
       {
@@ -53,9 +59,7 @@ export const wrapWithBlockId = (
       },
     ],
     children: [mdastNode],
-    data: {
-      _mdxExplicitJsx: true,
-    } as MdMdxJsxFlowElement['data'] & { _mdxExplicitJsx: true },
+    data,
     name: 'block',
     type: 'mdxJsxFlowElement',
   };

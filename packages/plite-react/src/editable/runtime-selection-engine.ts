@@ -160,10 +160,7 @@ export const createRuntimeSelectionChangeHandler = ({
   processing: RefObject<boolean>;
   readOnly: boolean;
 }): RuntimeSelectionChangeHandler => {
-  // oxlint-disable-next-line prefer-const -- The throttled handler closes over itself for cancellation.
-  let onDOMSelectionChange: RuntimeSelectionChangeHandler;
-
-  onDOMSelectionChange = throttle(() => {
+  const onDOMSelectionChange: RuntimeSelectionChangeHandler = throttle(() => {
     const selectionChangeOrigin =
       inputController.state.selectionChangeOrigin ?? 'native-user';
     const modelSelectionPreferred =
@@ -280,15 +277,14 @@ export const createRuntimeSelectionChangeHandler = ({
     } finally {
       inputController.state.pendingDOMSelectionImport = false;
     }
-  }, 100) as RuntimeSelectionChangeHandler;
+  }, 100);
 
   return onDOMSelectionChange;
 };
 
 export const createRuntimeSelectionChangeScheduler = (
   onDOMSelectionChange: RuntimeSelectionChangeHandler
-): RuntimeSelectionChangeHandler =>
-  debounce(onDOMSelectionChange, 0) as RuntimeSelectionChangeHandler;
+): RuntimeSelectionChangeHandler => debounce(onDOMSelectionChange, 0);
 
 export const shouldFlushSelectionChangeAfterKeyDownPolicy = ({
   decision,

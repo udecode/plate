@@ -10,7 +10,7 @@ export const useToggle = () => {
   const toggleIndex = useEditorSelector(
     (editor) => {
       const result = new Map<NodeKey, NodeKey[]>();
-      let enclosingToggles: [NodeKey, number][] = [];
+      let enclosingToggles: Array<[NodeKey, number]> = [];
 
       editor.read.children().forEach((element, index) => {
         if (!ElementApi.isElement(element)) return;

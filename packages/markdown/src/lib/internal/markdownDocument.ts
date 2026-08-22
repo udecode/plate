@@ -11,7 +11,9 @@ import type { Node as UnistNode } from 'unist';
 
 import type { MarkdownConversionContext } from '../types';
 
-export class MarkdownBlockIdError extends Error {}
+export class MarkdownBlockIdError extends Error {
+  override name = 'MarkdownBlockIdError';
+}
 
 export type MarkdownSerializeDocumentValue = {
   children: readonly Descendant[];
@@ -45,7 +47,7 @@ const serializeUnknownMdxChild = (child: UnistNode): string => {
 };
 
 const serializeUnknownMdxAttributes = (
-  attributes?: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+  attributes?: Array<MdxJsxAttribute | MdxJsxExpressionAttribute>
 ) => {
   if (!attributes?.length) return '';
 
@@ -67,7 +69,9 @@ const serializeUnknownMdxAttributes = (
       return `${name}={${attribute.value.value}}`;
     }
 
-    return `${name}="${String(attribute.value)}"`;
+    return typeof attribute.value === 'string'
+      ? `${name}="${attribute.value}"`
+      : name;
   });
 
   return serialized.length > 0 ? ` ${serialized.join(' ')}` : '';

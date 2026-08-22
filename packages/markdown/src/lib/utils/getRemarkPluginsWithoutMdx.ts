@@ -23,7 +23,7 @@ type MaterializableUnsafe = NormalizePluginState<
 >;
 type MaterializableSettings = Omit<Settings, 'join' | 'unsafe'> &
   Readonly<{
-    join?: readonly NonNullable<Settings['join']>[number][] | null;
+    join?: ReadonlyArray<NonNullable<Settings['join']>[number]> | null;
     unsafe?: readonly MaterializableUnsafe[] | null;
   }>;
 
@@ -78,11 +78,11 @@ const materializePluggable = (
 };
 
 export const materializeRemarkPlugins = (
-  plugins: readonly (ConfiguredPluggable | Pluggable)[]
+  plugins: ReadonlyArray<ConfiguredPluggable | Pluggable>
 ): Pluggable[] => plugins.map(materializePluggable);
 
 export const getRemarkPluginsWithoutMdx = (
-  plugins: readonly (ConfiguredPluggable | Pluggable)[]
+  plugins: ReadonlyArray<ConfiguredPluggable | Pluggable>
 ) =>
   materializeRemarkPlugins(plugins).filter(
     (plugin) =>

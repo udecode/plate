@@ -76,11 +76,7 @@ const getInputRuntime = (editor: AnyEditor) =>
 export const getCurrentEditableEditingEpoch = (
   editor: AnyEditor
 ): EditableEditingEpoch | null =>
-  getInputRuntime(editor).currentEditingEpoch<
-    EditableCommand,
-    InputIntent,
-    Range | null
-  >();
+  getInputRuntime(editor).currentEditingEpoch() as EditableEditingEpoch | null;
 
 export const beginEditableEditingEpoch = (
   editor: AnyEditor,
@@ -100,11 +96,7 @@ export const beginEditableEditingEpoch = (
 export const endEditableEditingEpoch = (
   editor: AnyEditor
 ): EditableEditingEpoch | null =>
-  getInputRuntime(editor).endEditingEpoch<
-    EditableCommand,
-    InputIntent,
-    Range | null
-  >();
+  getInputRuntime(editor).endEditingEpoch() as EditableEditingEpoch | null;
 
 export const markEditableEditingEpochCommandHandled = (
   editor: AnyEditor,
@@ -144,16 +136,12 @@ export const getEditableEditingEpochForTrace = (
   editor: AnyEditor,
   trace: EditableEditingEpochTraceInput
 ): EditableEditingEpoch | null =>
-  getInputRuntime(editor).editingEpochForCommandTrace<
-    EditableCommand,
-    InputIntent,
-    Range | null
-  >({
+  getInputRuntime(editor).editingEpochForCommandTrace({
     command: trace.command,
     eventFamily: trace.eventFamily,
     ownership: trace.ownership,
     selectionChangeOrigin: trace.selectionChangeOrigin,
-  });
+  }) as EditableEditingEpoch | null;
 
 export const closeEditableEditingEpochAfterTrace = (
   editor: AnyEditor,

@@ -71,7 +71,9 @@ test('accepts a bin-only public package', () => {
 test('asserts every public runtime and declaration artifact', (t) => {
   const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-build-'));
 
-  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+  t.after(() => {
+    rmSync(packageRoot, { force: true, recursive: true });
+  });
 
   mkdirSync(path.join(packageRoot, 'dist'));
   writeFileSync(
@@ -80,19 +82,22 @@ test('asserts every public runtime and declaration artifact', (t) => {
   );
   writeFileSync(path.join(packageRoot, 'dist/index.js'), 'export {};\n');
 
-  assert.throws(
-    () => assertPackageBuildArtifacts(packageRoot),
-    /dist\/index\.d\.ts/u
-  );
+  assert.throws(() => {
+    assertPackageBuildArtifacts(packageRoot);
+  }, /dist\/index\.d\.ts/u);
 
   writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export {};\n');
-  assert.doesNotThrow(() => assertPackageBuildArtifacts(packageRoot));
+  assert.doesNotThrow(() => {
+    assertPackageBuildArtifacts(packageRoot);
+  });
 });
 
 test('rejects plugin descriptors erased to any in public declarations', (t) => {
   const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-build-'));
 
-  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+  t.after(() => {
+    rmSync(packageRoot, { force: true, recursive: true });
+  });
 
   mkdirSync(path.join(packageRoot, 'dist'));
   writeFileSync(
@@ -105,16 +110,17 @@ test('rejects plugin descriptors erased to any in public declarations', (t) => {
     'declare const BrokenPlugin: any;\nexport { BrokenPlugin };\n'
   );
 
-  assert.throws(
-    () => assertPackageBuildArtifacts(packageRoot),
-    /plugin declarations collapsed to any/u
-  );
+  assert.throws(() => {
+    assertPackageBuildArtifacts(packageRoot);
+  }, /plugin declarations collapsed to any/u);
 });
 
 test('rejects declaration aliases with erased Readonly arguments', (t) => {
   const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-build-'));
 
-  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+  t.after(() => {
+    rmSync(packageRoot, { force: true, recursive: true });
+  });
 
   mkdirSync(path.join(packageRoot, 'dist'));
   writeFileSync(
@@ -127,10 +133,9 @@ test('rejects declaration aliases with erased Readonly arguments', (t) => {
     'type BrokenDescriptor = Readonly;\nexport { BrokenDescriptor };\n'
   );
 
-  assert.throws(
-    () => assertPackageBuildArtifacts(packageRoot),
-    /lost their Readonly type arguments/u
-  );
+  assert.throws(() => {
+    assertPackageBuildArtifacts(packageRoot);
+  }, /lost their Readonly type arguments/u);
 });
 
 test('shared package config builds from the invoking package root', async () => {

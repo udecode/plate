@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { EditorDocumentValue } from 'platejs';
 
 jsx;
 
@@ -68,7 +69,7 @@ export const mediaPlaceholderValue = {
   ),
 };
 
-export const mediaValue = {
+export const mediaValue: EditorDocumentValue = {
   children: (
     <fragment>
       {imageValue.children}

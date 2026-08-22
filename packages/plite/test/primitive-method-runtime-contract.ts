@@ -130,7 +130,7 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.wrap({ type: 'quote', children: [] } as never);
+      tx.nodes.wrap({ type: 'quote', children: [] });
     });
 
     assert.equal(calls, 1);

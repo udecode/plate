@@ -11,13 +11,13 @@ import type {
 } from './use-plite-projection-entries';
 
 const refEquality = (a: unknown, b: unknown) => a === b;
-const EMPTY_PROJECTIONS = Object.freeze(
-  []
-) as readonly PliteProjectionEntry<never>[];
+const EMPTY_PROJECTIONS = Object.freeze([]) as ReadonlyArray<
+  PliteProjectionEntry<never>
+>;
 
 /** Data passed to a decoration selector for one rendered runtime. */
 export type EditorDecorationSelectorContext<TData = unknown> = {
-  projections: readonly PliteProjectionEntry<TData>[];
+  projections: ReadonlyArray<PliteProjectionEntry<TData>>;
   nodeKey: NodeKey | null;
   store: PliteProjectionStore<TData> | null;
 };
@@ -32,13 +32,13 @@ const getRuntimeProjections = <TData,>(
   nodeKey: NodeKey | null
 ) => {
   if (!store || !nodeKey) {
-    return EMPTY_PROJECTIONS as readonly PliteProjectionEntry<TData>[];
+    return EMPTY_PROJECTIONS as ReadonlyArray<PliteProjectionEntry<TData>>;
   }
 
   return (
     store.getRuntimeSnapshot?.(nodeKey) ??
     store.getSnapshot()[nodeKey] ??
-    (EMPTY_PROJECTIONS as readonly PliteProjectionEntry<TData>[])
+    EMPTY_PROJECTIONS
   );
 };
 
@@ -75,7 +75,7 @@ export function useDecorationSelector<TSelected, TData = unknown>(
   useIsomorphicLayoutEffect(() => {
     if (!store || !nodeKey) {
       update();
-      return;
+      return undefined;
     }
 
     const unsubscribe = store.subscribeNodeKey

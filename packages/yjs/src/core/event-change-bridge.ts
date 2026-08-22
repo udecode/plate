@@ -8,6 +8,7 @@ import {
   type Text,
 } from '@platejs/plite';
 import {
+  failInvariant,
   createInternalRootChangeFromSections,
   type DocumentChangeRelocation,
   getDocumentChangeRelocations,
@@ -250,7 +251,7 @@ const findTopLevelElementSplit = (
     from < after.length &&
     areJsonLikeValuesEqual(before[from], after[from])
   ) {
-    from++;
+    from += 1;
   }
 
   let suffixCount = 0;
@@ -263,7 +264,7 @@ const findTopLevelElementSplit = (
       after.at(-1 - suffixCount)
     )
   ) {
-    suffixCount++;
+    suffixCount += 1;
   }
 
   const beforeChanged = before.slice(from, before.length - suffixCount);
@@ -300,7 +301,7 @@ const findTopLevelElementSplit = (
 const findTextMergeAtLevel = (
   before: readonly Descendant[],
   after: readonly Descendant[],
-  parentPath: readonly number[]
+  innerParentPath: readonly number[]
 ): ElementTextMerge | null => {
   let from = 0;
 
@@ -309,7 +310,7 @@ const findTextMergeAtLevel = (
     from < after.length &&
     areJsonLikeValuesEqual(before[from], after[from])
   ) {
-    from++;
+    from += 1;
   }
 
   let suffixCount = 0;
@@ -322,7 +323,7 @@ const findTextMergeAtLevel = (
       after.at(-1 - suffixCount)
     )
   ) {
-    suffixCount++;
+    suffixCount += 1;
   }
 
   const beforeChanged = before.slice(from, before.length - suffixCount);
@@ -347,15 +348,17 @@ const findTextMergeAtLevel = (
       (element) =>
         element.children.length !== 1 ||
         !isText(element.children[0] ?? null) ||
-        !nodePropertiesEqual(elements[0]!, element, 'children')
+        !nodePropertiesEqual(elements[0], element, 'children')
     ) ||
-    !nodePropertiesEqual(elements[0]!, merged, 'children')
+    !nodePropertiesEqual(elements[0], merged, 'children')
   ) {
     return null;
   }
 
-  const firstText = elements[0]!.children[0] as PliteText;
-  const lastText = elements.at(-1)!.children[0] as PliteText;
+  const firstText = elements[0].children[0] as PliteText;
+  const lastText = (
+    elements.at(-1) ?? failInvariant('Expected value to be defined')
+  ).children[0] as PliteText;
   const afterText = merged.children[0] as PliteText;
 
   if (
@@ -372,7 +375,7 @@ const findTextMergeAtLevel = (
     prefixLength < afterText.text.length &&
     firstText.text[prefixLength] === afterText.text[prefixLength]
   ) {
-    prefixLength++;
+    prefixLength += 1;
   }
 
   let suffixLength = 0;
@@ -382,7 +385,7 @@ const findTextMergeAtLevel = (
     suffixLength < afterText.text.length - prefixLength &&
     lastText.text.at(-1 - suffixLength) === afterText.text.at(-1 - suffixLength)
   ) {
-    suffixLength++;
+    suffixLength += 1;
   }
 
   if (prefixLength + suffixLength !== afterText.text.length) return null;
@@ -394,7 +397,7 @@ const findTextMergeAtLevel = (
     firstText,
     from,
     lastText,
-    parentPath,
+    parentPath: innerParentPath,
     prefix: afterText.text.slice(0, prefixLength),
     suffix: afterText.text.slice(prefixLength),
   };
@@ -403,9 +406,9 @@ const findTextMergeAtLevel = (
 const findElementTextMerge = (
   before: readonly Descendant[],
   after: readonly Descendant[],
-  parentPath: readonly number[] = []
+  innerParentPath2: readonly number[] = []
 ): ElementTextMerge | null => {
-  const direct = findTextMergeAtLevel(before, after, parentPath);
+  const direct = findTextMergeAtLevel(before, after, innerParentPath2);
 
   if (direct !== null) return direct;
   if (before.length !== after.length) return null;
@@ -427,7 +430,7 @@ const findElementTextMerge = (
     }
 
     nested = findElementTextMerge(oldNode.children, newNode.children, [
-      ...parentPath,
+      ...innerParentPath2,
       index,
     ]);
 
@@ -447,7 +450,7 @@ type NestedChildSplice = Readonly<{
 const findNestedChildSplice = (
   before: readonly Descendant[],
   after: readonly Descendant[],
-  parentPath: readonly number[] = []
+  innerParentPath3: readonly number[] = []
 ): NestedChildSplice | null => {
   if (areJsonLikeValuesEqual(before, after)) return null;
 
@@ -472,23 +475,23 @@ const findNestedChildSplice = (
       nodePropertiesEqual(oldNode, newNode, 'children')
     ) {
       const nested = findNestedChildSplice(oldNode.children, newNode.children, [
-        ...parentPath,
+        ...innerParentPath3,
         changedIndex,
       ]);
 
       if (nested !== null) return nested;
     }
-    if (parentPath.length === 0) return null;
+    if (innerParentPath3.length === 0) return null;
 
     return {
       after: [newNode],
       before: [oldNode],
       from: changedIndex,
-      parentPath,
+      parentPath: innerParentPath3,
     };
   }
 
-  if (parentPath.length === 0) return null;
+  if (innerParentPath3.length === 0) return null;
 
   let from = 0;
 
@@ -497,7 +500,7 @@ const findNestedChildSplice = (
     from < after.length &&
     areJsonLikeValuesEqual(before[from], after[from])
   ) {
-    from++;
+    from += 1;
   }
 
   let suffixCount = 0;
@@ -510,14 +513,14 @@ const findNestedChildSplice = (
       after.at(-1 - suffixCount)
     )
   ) {
-    suffixCount++;
+    suffixCount += 1;
   }
 
   return {
     after: after.slice(from, after.length - suffixCount),
     before: before.slice(from, before.length - suffixCount),
     from,
-    parentPath,
+    parentPath: innerParentPath3,
   };
 };
 
@@ -548,13 +551,12 @@ const findTextLeafMergeTopIndex = (
       return null;
     }
 
-    const first = oldElement.children[0] as PliteText;
+    const first = oldElement.children[0];
     const merged = newElement.children[0] as PliteText;
 
     if (
       !nodePropertiesEqual(first, merged, 'text') ||
-      oldElement.children.map((child) => (child as PliteText).text).join('') !==
-        merged.text
+      oldElement.children.map((child) => child.text).join('') !== merged.text
     ) {
       return null;
     }
@@ -650,7 +652,7 @@ const isYjsNode = (value: unknown): value is YjsNode =>
   value instanceof Y.XmlElement || value instanceof Y.XmlText;
 
 const copyDelta = (
-  delta: readonly Readonly<Record<string, unknown>>[]
+  delta: ReadonlyArray<Readonly<Record<string, unknown>>>
 ): CapturedYjsDeltaPart[] =>
   delta.map((part) => ({
     ...(typeof part.delete === 'number' ? { delete: part.delete } : {}),
@@ -674,7 +676,7 @@ const changedEventKeys = (event: Y.YEvent<Y.AbstractType<unknown>>) => {
 };
 
 export const captureYjsEventBatch = (
-  events: readonly Y.YEvent<Y.AbstractType<unknown>>[],
+  events: ReadonlyArray<Y.YEvent<Y.AbstractType<unknown>>>,
   transaction: Y.Transaction
 ): CapturedYjsEventBatch => {
   const deletedTextTargets = new Set<Y.XmlText>();
@@ -693,11 +695,7 @@ export const captureYjsEventBatch = (
 
       return {
         childListChanged,
-        delta: childListChanged
-          ? copyDelta(
-              event.delta as readonly Readonly<Record<string, unknown>>[]
-            )
-          : [],
+        delta: childListChanged ? copyDelta(event.delta) : [],
         keys: changedEventKeys(event),
         target: event.target,
       };
@@ -1121,6 +1119,8 @@ class IndexedSequence<TValue extends object> {
         return current.value;
       }
     }
+
+    return undefined;
   }
 
   has(value: TValue): boolean {
@@ -1294,11 +1294,11 @@ const getTopLevelNode = (
   target: Y.AbstractType<unknown> | YjsNode
 ): YjsNode | null => {
   let current: Y.AbstractType<unknown> | YjsNode = target;
-  let parent = current.parent;
+  let { parent } = current;
 
   while (parent !== null && parent !== root) {
     current = parent;
-    parent = current.parent;
+    ({ parent } = current);
   }
 
   return parent === root && isYjsNode(current) ? current : null;
@@ -1365,7 +1365,8 @@ const parseRootDelta = (
 
       begin();
       beforeIndex += part.delete;
-      current!.beforeTo = beforeIndex;
+      (current ?? failInvariant('Expected value to be defined')).beforeTo =
+        beforeIndex;
     }
     if (part.insert !== undefined) {
       if (!Array.isArray(part.insert) || !part.insert.every(isYjsNode)) {
@@ -1387,7 +1388,7 @@ const parseRootDelta = (
       const oldIndex = before.indexOf(node);
 
       if (
-        oldIndex >= 0 &&
+        oldIndex !== -1 &&
         !regions.some(
           ({ beforeFrom, beforeTo }) =>
             beforeFrom <= oldIndex && oldIndex < beforeTo
@@ -1427,15 +1428,15 @@ const parseProjectedRootInsertDelta = (
 
         const visibleIndex = before.indexOf(retained);
 
-        if (visibleIndex >= 0) {
+        if (visibleIndex !== -1) {
           if (visibleIndex !== beforeIndex) return null;
 
-          beforeIndex++;
+          beforeIndex += 1;
         } else if (!hasProjectionAttributes(retained)) {
           return null;
         }
-        rawIndex++;
-        remaining--;
+        rawIndex += 1;
+        remaining -= 1;
       }
     }
     if (part.insert !== undefined) {
@@ -1486,7 +1487,7 @@ const finalizeRootRegions = (
   for (const node of normalizedNodes) {
     const oldIndex = before.indexOf(node);
 
-    if (oldIndex < 0) continue;
+    if (oldIndex === -1) continue;
     for (const region of regions) {
       region.nodes = region.nodes.filter((candidate) => candidate !== node);
     }
@@ -1533,15 +1534,17 @@ const finalizeRootRegions = (
 
 const mapRootNodeIndex = (
   beforeIndex: number,
-  regions: readonly (EventImportRegion & {
-    nodes: readonly YjsNode[];
-  })[]
+  regions: ReadonlyArray<
+    EventImportRegion & {
+      nodes: readonly YjsNode[];
+    }
+  >
 ): number | undefined => {
   let offset = 0;
 
   for (const region of regions) {
     if (beforeIndex < region.beforeFrom) return beforeIndex + offset;
-    if (beforeIndex < region.beforeTo) return;
+    if (beforeIndex < region.beforeTo) return undefined;
 
     offset += region.nodes.length - (region.beforeTo - region.beforeFrom);
   }
@@ -1656,7 +1659,7 @@ const sparseLowerRegions = (
       if (!node) return null;
 
       measuredLength += measureTokenLength(node).length;
-      afterTo++;
+      afterTo += 1;
     }
 
     if (measuredLength < requiredLength) return null;
@@ -1741,7 +1744,7 @@ const eventNormalizationTargets = (batch: CapturedYjsEventBatch) => {
       parents.add(event.target);
     }
     if (event.target instanceof Y.XmlText) {
-      const parent = event.target.parent;
+      const { parent } = event.target;
 
       if (parent instanceof Y.XmlElement) parents.add(parent);
       if (event.delta.some((part) => part.delete !== undefined)) {
@@ -1833,7 +1836,7 @@ export class YjsEventChangeBridge {
       : [];
     const relocationResult =
       exactRelocations.length === 1
-        ? this.lowerExactRelocation(change, expected, exactRelocations[0]!)
+        ? this.lowerExactRelocation(change, expected, exactRelocations[0])
         : null;
 
     if (relocationResult !== null) return relocationResult;
@@ -1935,7 +1938,7 @@ export class YjsEventChangeBridge {
       const region = mergedRegions[regionIndex];
 
       if (region === undefined) {
-        regionIndex--;
+        regionIndex -= 1;
         continue;
       }
 
@@ -1982,9 +1985,9 @@ export class YjsEventChangeBridge {
               before[removedIndex]
             );
           }
-          removeCount--;
-          removedIndex++;
-          removed++;
+          removeCount -= 1;
+          removedIndex += 1;
+          removed += 1;
         }
 
         const insertedNodes = after.map((node, index) =>
@@ -2010,9 +2013,9 @@ export class YjsEventChangeBridge {
               region.beforeFrom + insertIndex,
               node
             );
-            inserted++;
+            inserted += 1;
           }
-          insertIndex++;
+          insertIndex += 1;
         }
 
         this.topNodes.splice(
@@ -2044,7 +2047,7 @@ export class YjsEventChangeBridge {
         );
       }
 
-      regionIndex--;
+      regionIndex -= 1;
     }
     this.children = expected;
     this.ready = this.topNodes.length === expected.length;
@@ -2097,7 +2100,7 @@ export class YjsEventChangeBridge {
     let changedRanges = 0;
 
     change.iterChangedRanges((root) => {
-      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges++;
+      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
     });
 
     this.topNodes.splice(split.from + 1, 0, [right]);
@@ -2147,7 +2150,7 @@ export class YjsEventChangeBridge {
         return null;
       }
 
-      const firstElement = yjsElements[0] as Y.XmlElement;
+      const firstElement = yjsElements[0];
       const lastElement = yjsElements.at(-1) as Y.XmlElement;
       const firstChildren = getYjsVisibleChildren(this.root, firstElement);
       const lastChildren = getYjsVisibleChildren(this.root, lastElement);
@@ -2216,7 +2219,7 @@ export class YjsEventChangeBridge {
         const visibleIndex = visible.indexOf(node);
 
         if (
-          visibleIndex >= 0 &&
+          visibleIndex !== -1 &&
           !removeYjsVirtualPlaceholderChild(
             this.root,
             parent,
@@ -2231,7 +2234,9 @@ export class YjsEventChangeBridge {
       let changedRanges = 0;
 
       change.iterChangedRanges((root) => {
-        if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges++;
+        if (internalDocumentChangeRoot(root) === this.rootKey) {
+          changedRanges += 1;
+        }
       });
 
       const topIndex = merge.parentPath[0] ?? merge.from;
@@ -2274,7 +2279,7 @@ export class YjsEventChangeBridge {
     let changedRanges = 0;
 
     change.iterChangedRanges((root) => {
-      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges++;
+      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
     });
 
     const child = expected[textLeafTopIndex];
@@ -2364,10 +2369,10 @@ export class YjsEventChangeBridge {
     let changedRanges = 0;
 
     change.iterChangedRanges((root) => {
-      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges++;
+      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
     });
 
-    const topIndex = splice.parentPath[0]!;
+    const topIndex = splice.parentPath[0];
     const topNode = expected[topIndex];
     const tokenLengthNodes =
       topNode === undefined ? 0 : this.lengths.set(topIndex, topNode);
@@ -2413,7 +2418,7 @@ export class YjsEventChangeBridge {
     let changedRanges = 0;
 
     change.iterChangedRanges((root) => {
-      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges++;
+      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
     });
 
     let tokenLengthNodes = 0;
@@ -2458,11 +2463,11 @@ export class YjsEventChangeBridge {
     let changedRanges = 0;
 
     change.iterChangedRanges((root) => {
-      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges++;
+      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
     });
 
-    const from = relocation.path[0]!;
-    const to = relocation.targetPath[0]!;
+    const from = relocation.path[0];
+    const to = relocation.targetPath[0];
 
     this.topNodes.move(from, to);
     this.lengths.move(from, to);
@@ -2546,7 +2551,7 @@ export class YjsEventChangeBridge {
       const entry = prepared[regionIndex];
 
       if (entry === undefined) {
-        regionIndex--;
+        regionIndex -= 1;
         continue;
       }
 
@@ -2559,7 +2564,7 @@ export class YjsEventChangeBridge {
           const visible = getYjsVisibleChildren(this.root, this.root);
           const visibleIndex = visible.indexOf(oldTopNode);
 
-          if (visibleIndex >= 0) {
+          if (visibleIndex !== -1) {
             if (
               !removeYjsVirtualPlaceholderChild(
                 this.root,
@@ -2575,10 +2580,10 @@ export class YjsEventChangeBridge {
                 this.children[beforeIndex]
               );
             }
-            removed++;
+            removed += 1;
           }
         }
-        beforeIndex--;
+        beforeIndex -= 1;
       }
 
       const insertionIndex = Math.min(
@@ -2588,9 +2593,9 @@ export class YjsEventChangeBridge {
 
       entry.nodes.forEach((node, index) => {
         insertYjsChild(this.root, this.root, insertionIndex + index, node);
-        inserted++;
+        inserted += 1;
       });
-      regionIndex--;
+      regionIndex -= 1;
     }
 
     this.topNodes.reset(getYjsVisibleChildren(this.root, this.root));
@@ -2776,7 +2781,7 @@ export class YjsEventChangeBridge {
 
       const index = this.topNodes.indexOf(node);
 
-      return index < 0 ? undefined : mapRootNodeIndex(index, structural);
+      return index === -1 ? undefined : mapRootNodeIndex(index, structural);
     };
     const readNodes = new Set<YjsNode>();
 
@@ -2810,9 +2815,9 @@ export class YjsEventChangeBridge {
         const inserted = region.nodes.map((node) => {
           const oldIndex = this.topNodes.indexOf(node);
 
-          return oldIndex < 0
+          return oldIndex === -1
             ? this.canonicalizeNode(readPliteNodeFromYjs(this.root, node))
-            : (this.children[oldIndex] as Descendant);
+            : this.children[oldIndex];
         });
 
         nextChildren.splice(
@@ -2841,7 +2846,7 @@ export class YjsEventChangeBridge {
       const beforeIndex = this.topNodes.indexOf(node);
       const afterIndex = getNextTopIndex(node);
 
-      if (beforeIndex >= 0 && afterIndex !== undefined) {
+      if (beforeIndex !== -1 && afterIndex !== undefined) {
         regions.push({
           afterFrom: afterIndex,
           afterTo: afterIndex + 1,

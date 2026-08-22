@@ -53,7 +53,9 @@ mock.module('platejs/react', () => ({
 
 mock.module('@/components/ui/button', () => ({
   Button: ({ children, ...props }: any) => (
-    <button {...props}>{children}</button>
+    <button type="button" {...props}>
+      {children}
+    </button>
   ),
 }));
 

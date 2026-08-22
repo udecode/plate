@@ -18,7 +18,7 @@ export interface UseVirtualFloatingOptions extends Partial<UseFloatingOptions> {
 
 export interface UseVirtualFloatingReturn extends UseFloatingReturn<VirtualElement> {
   style: React.CSSProperties;
-  virtualElementRef: React.MutableRefObject<VirtualElement>;
+  virtualElementRef: React.RefObject<VirtualElement>;
 }
 
 /** `useFloating` with a controlled virtual reference element. */
@@ -26,7 +26,9 @@ export const useVirtualFloating = ({
   getBoundingClientRect = getDefaultBoundingClientRect,
   ...floatingOptions
 }: UseVirtualFloatingOptions): UseVirtualFloatingReturn => {
-  const virtualElementRef = React.useRef(createVirtualElement());
+  const [virtualElementRef] = React.useState<React.RefObject<VirtualElement>>(
+    () => ({ current: createVirtualElement() })
+  );
   const floatingResult = useFloating<VirtualElement>({
     whileElementsMounted: autoUpdate,
     ...floatingOptions,
@@ -36,7 +38,7 @@ export const useVirtualFloating = ({
   useIsomorphicLayoutEffect(() => {
     virtualElementRef.current.getBoundingClientRect = getBoundingClientRect;
     refs.setReference(virtualElementRef.current);
-    void update();
+    update();
   }, [getBoundingClientRect, refs.setReference, update]);
 
   return {

@@ -44,7 +44,7 @@ export type PliteDecorationSourceOptions<
   id: string;
   read: (
     context: PliteDecorationSourceReadContext<V, TExtensions>
-  ) => readonly PliteDecoration<T>[];
+  ) => ReadonlyArray<PliteDecoration<T>>;
 };
 
 export type PliteRangeDecorationSourceOptions<
@@ -58,16 +58,18 @@ export type PliteRangeDecorationSourceOptions<
   data?: T;
   read: (
     context: PliteDecorationSourceReadContext<V, TExtensions>
-  ) => readonly PliteRangeDecoration<T>[];
+  ) => ReadonlyArray<PliteRangeDecoration<T>>;
 };
 
 export type PliteDecorationSource<T = unknown> = {
   destroy: () => void;
   getMetrics: () => PliteProjectionStoreMetrics;
   getSourceStatus: () => PliteViewSourceStatus;
-  getRuntimeSnapshot: (nodeKey: NodeKey) => readonly PliteProjectionSlice<T>[];
+  getRuntimeSnapshot: (
+    nodeKey: NodeKey
+  ) => ReadonlyArray<PliteProjectionSlice<T>>;
   getSnapshot: () => Readonly<
-    Record<string, readonly PliteProjectionSlice<T>[]>
+    Record<string, ReadonlyArray<PliteProjectionSlice<T>>>
   >;
   id: string;
   refresh: (
@@ -83,9 +85,11 @@ export type PliteDecorationSource<T = unknown> = {
 };
 
 export type PliteOverlayProjectionStore<T = unknown> = {
-  getRuntimeSnapshot?: (nodeKey: NodeKey) => readonly PliteProjectionSlice<T>[];
+  getRuntimeSnapshot?: (
+    nodeKey: NodeKey
+  ) => ReadonlyArray<PliteProjectionSlice<T>>;
   getSnapshot: () => Readonly<
-    Record<string, readonly PliteProjectionSlice<T>[]>
+    Record<string, ReadonlyArray<PliteProjectionSlice<T>>>
   >;
   refresh?: (
     options?: PliteProjectionStoreRefreshOptions
@@ -99,23 +103,25 @@ export type PliteOverlayProjectionStore<T = unknown> = {
 };
 
 const EMPTY_SNAPSHOT = Object.freeze(Object.create(null)) as Readonly<
-  Record<string, readonly PliteProjectionSlice<unknown>[]>
+  Record<string, readonly PliteProjectionSlice[]>
 >;
 
 const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
   []
-) as readonly PliteProjectionSlice<unknown>[];
+) as readonly PliteProjectionSlice[];
 
 const mergeSnapshots = <T>(
-  sources: readonly PliteOverlayProjectionStore<T>[]
-): Readonly<Record<string, readonly PliteProjectionSlice<T>[]>> => {
+  sources: ReadonlyArray<PliteOverlayProjectionStore<T>>
+): Readonly<Record<string, ReadonlyArray<PliteProjectionSlice<T>>>> => {
   if (sources.length === 0) {
     return EMPTY_SNAPSHOT as Readonly<
-      Record<string, readonly PliteProjectionSlice<T>[]>
+      Record<string, ReadonlyArray<PliteProjectionSlice<T>>>
     >;
   }
 
-  const merged: Record<string, PliteProjectionSlice<T>[]> = Object.create(null);
+  const merged: Record<string, Array<PliteProjectionSlice<T>>> = Object.create(
+    null
+  );
 
   for (const source of sources) {
     const snapshot = source.getSnapshot();
@@ -125,11 +131,13 @@ const mergeSnapshots = <T>(
     }
   }
 
-  const frozen: Record<string, readonly PliteProjectionSlice<T>[]> =
-    Object.create(null);
+  const frozen: Record<
+    string,
+    ReadonlyArray<PliteProjectionSlice<T>>
+  > = Object.create(null);
 
   for (const nodeKey of Object.keys(merged)) {
-    frozen[nodeKey] = Object.freeze(merged[nodeKey]!);
+    frozen[nodeKey] = Object.freeze(merged[nodeKey]);
   }
 
   return Object.freeze(frozen);
@@ -152,9 +160,9 @@ const getRangeDecorationKey = (sourceId: string, range: Range, index: number) =>
   `${sourceId}:${range.anchor.path.join('.')}:${range.anchor.offset}:${range.focus.path.join('.')}:${range.focus.offset}:${index}`;
 
 export const toPliteRangeDecorations = <T>(
-  ranges: readonly PliteRangeDecoration<T>[],
+  ranges: ReadonlyArray<PliteRangeDecoration<T>>,
   options: Pick<PliteRangeDecorationSourceOptions<T>, 'data' | 'id'>
-): PliteDecoration<T>[] =>
+): Array<PliteDecoration<T>> =>
   ranges.map((rangeDecoration, index) => {
     const isRange = RangeApi.isRange(rangeDecoration);
     const sourceRange = isRange ? rangeDecoration : rangeDecoration.range;
@@ -230,24 +238,24 @@ export const createRangeDecorationSource = <
 };
 
 export const composeDecorationSources = <T = unknown>(
-  sources: readonly PliteDecorationSource<T>[] | null | undefined
+  sources: ReadonlyArray<PliteDecorationSource<T>> | null | undefined
 ) => composeProjectionSources(sources);
 
 export const composeProjectionSources = <T = unknown>(
-  sources: readonly PliteOverlayProjectionStore<T>[] | null | undefined
+  sources: ReadonlyArray<PliteOverlayProjectionStore<T>> | null | undefined
 ) => {
   if (!sources || sources.length === 0) {
     return null;
   }
 
   if (sources.length === 1) {
-    return sources[0]!;
+    return sources[0];
   }
 
   let snapshot = mergeSnapshots(sources);
   const runtimeSnapshots = new Map<
     NodeKey,
-    readonly PliteProjectionSlice<T>[]
+    ReadonlyArray<PliteProjectionSlice<T>>
   >();
 
   const invalidate = (listener: () => void) => () => {
@@ -272,7 +280,7 @@ export const composeProjectionSources = <T = unknown>(
       );
       const nextSnapshot =
         slices.length === 0
-          ? (EMPTY_RUNTIME_SNAPSHOT as readonly PliteProjectionSlice<T>[])
+          ? (EMPTY_RUNTIME_SNAPSHOT as ReadonlyArray<PliteProjectionSlice<T>>)
           : Object.freeze(slices);
 
       runtimeSnapshots.set(nodeKey, nextSnapshot);

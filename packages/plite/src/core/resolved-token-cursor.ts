@@ -1,3 +1,4 @@
+import { getDefined } from '../internal/get-defined';
 import type { JsonNode } from './change/tokens';
 
 type NodeKind = 'element' | 'text';
@@ -81,7 +82,7 @@ const findChildIndexAtPosition = (
 
   while (low <= high) {
     const middle = (low + high) >>> 1;
-    const offset = children.offsets[middle]!;
+    const offset = children.offsets[middle];
 
     if (offset <= target) {
       match = middle;
@@ -114,8 +115,8 @@ export class ResolvedTokenCursor {
       const index = findChildIndexAtPosition(children, contentFrom, position);
 
       if (index >= 0) {
-        const child = children.children[index]!;
-        const from = contentFrom + children.offsets[index]!;
+        const child = children.children[index];
+        const from = contentFrom + children.offsets[index];
 
         if (position === from) {
           return { index, parentPath: [...parentPath] };
@@ -127,7 +128,7 @@ export class ResolvedTokenCursor {
           position < from + child.length
         ) {
           parentPath.push(index);
-          children = child.children;
+          ({ children } = child);
           contentFrom = from + 1;
           continue;
         }
@@ -154,8 +155,8 @@ export class ResolvedTokenCursor {
       const index = findChildIndexAtPosition(children, contentFrom, position);
 
       if (index < 0) break;
-      const child = children.children[index]!;
-      const from = contentFrom + children.offsets[index]!;
+      const child = children.children[index];
+      const from = contentFrom + children.offsets[index];
       const to = from + child.length;
 
       if (position < from || to < position) break;
@@ -165,7 +166,7 @@ export class ResolvedTokenCursor {
 
       if (!child.children || position <= from || to <= position) break;
 
-      children = child.children;
+      ({ children } = child);
       contentFrom = from + 1;
     }
 
@@ -188,8 +189,8 @@ export class ResolvedTokenCursor {
 
       while (index > 0) {
         const previousIndex = index - 1;
-        const previous = children.children[previousIndex]!;
-        const previousFrom = contentFrom + children.offsets[previousIndex]!;
+        const previous = children.children[previousIndex];
+        const previousFrom = contentFrom + children.offsets[previousIndex];
 
         if (previousFrom + previous.length < from) break;
 
@@ -197,8 +198,8 @@ export class ResolvedTokenCursor {
       }
 
       for (; index < children.children.length; index++) {
-        const child = children.children[index]!;
-        const childFrom = contentFrom + children.offsets[index]!;
+        const child = children.children[index];
+        const childFrom = contentFrom + children.offsets[index];
 
         if (childFrom > to) break;
 
@@ -238,15 +239,15 @@ export class ResolvedTokenCursor {
 
       if (index < 0) return null;
 
-      const child = children.children[index]!;
-      const from = contentFrom + children.offsets[index]!;
+      const child = children.children[index];
+      const from = contentFrom + children.offsets[index];
 
       this.frames.push({ children, contentFrom, index });
 
       if (position === from) return this.currentEntry();
 
       if (child.children && from < position && position < from + child.length) {
-        children = child.children;
+        ({ children } = child);
         contentFrom = from + 1;
         continue;
       }
@@ -327,8 +328,8 @@ export class ResolvedTokenCursor {
 
     if (!frame) return null;
 
-    const node = frame.children.children[frame.index]!;
-    const from = frame.contentFrom + frame.children.offsets[frame.index]!;
+    const node = frame.children.children[frame.index];
+    const from = frame.contentFrom + frame.children.offsets[frame.index];
 
     return this.createEntry(
       node,
@@ -362,7 +363,7 @@ export class ResolvedTokenCursor {
     }
 
     while (this.frames.length > 0) {
-      const frame = this.frames.at(-1)!;
+      const frame = getDefined(this.frames.at(-1));
 
       if (frame.index + 1 < frame.children.children.length) {
         frame.index += 1;
@@ -379,7 +380,7 @@ export class ResolvedTokenCursor {
   private previous() {
     if (this.frames.length === 0) return false;
 
-    const frame = this.frames.at(-1)!;
+    const frame = getDefined(this.frames.at(-1));
 
     if (frame.index === 0) {
       this.frames.pop();
@@ -390,8 +391,8 @@ export class ResolvedTokenCursor {
     frame.index -= 1;
 
     while (true) {
-      const entry = this.currentEntry()!;
-      const node = this.currentNode()!;
+      const entry = getDefined(this.currentEntry());
+      const node = getDefined(this.currentNode());
 
       if (!node.children?.children.length) return true;
 
@@ -433,14 +434,14 @@ export class ResolvedTokenCursor {
 
       if (index < 0) return false;
 
-      const child = children.children[index]!;
-      const from = contentFrom + children.offsets[index]!;
+      const child = children.children[index];
+      const from = contentFrom + children.offsets[index];
 
       this.frames.push({ children, contentFrom, index });
 
       if (!child.children || position === from) return true;
 
-      children = child.children;
+      ({ children } = child);
       contentFrom = from + 1;
     }
   }

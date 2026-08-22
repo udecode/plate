@@ -3,6 +3,7 @@ import {
   useEditorScrollElementRef,
   useOptionalEditorReadOnly,
 } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import { useComposedRef } from '@udecode/react-utils';
 import React, { type HTMLAttributes } from 'react';
 
@@ -42,10 +43,14 @@ export const PlateContainer = ({
   );
 
   getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     if (isEditOnly(readOnly, plugin, 'render')) return;
 
-    const BeforeContainer = plugin.render.beforeContainer!;
+    const BeforeContainer =
+      plugin.render.beforeContainer ??
+      failInvariant('Expected value to be defined');
 
     beforeContainer = (
       <>
@@ -56,10 +61,14 @@ export const PlateContainer = ({
   });
 
   getPlateRuntime(editor).pluginCache.render.afterContainer.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     if (isEditOnly(readOnly, plugin, 'render')) return;
 
-    const AfterContainer = plugin.render.afterContainer!;
+    const AfterContainer =
+      plugin.render.afterContainer ??
+      failInvariant('Expected value to be defined');
 
     afterContainer = (
       <>

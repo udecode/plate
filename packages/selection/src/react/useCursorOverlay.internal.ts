@@ -20,10 +20,14 @@ export const useCursorOverlayPlugin = () => {
   );
 
   useEffect(() => {
-    if (!isSelecting) return;
+    if (!isSelecting) return undefined;
 
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       cursorOverlay.api.removeCursor('selection');
     }, 0);
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [cursorOverlay.api, isSelecting]);
 };

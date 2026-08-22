@@ -47,18 +47,18 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
     editor.plugin(CopilotPlugin).store.set({ isLoading: true });
 
-    await expect(
-      editor.plugin(CopilotPlugin).api.triggerSuggestion()
-    ).resolves.toBe(false);
+    expect(await editor.plugin(CopilotPlugin).api.triggerSuggestion()).toBe(
+      false
+    );
   });
 
   it('returns false while copilot loading is active', async () => {
     const editor = createEditor();
     editor.plugin(CopilotPlugin).store.set({ isLoading: true });
 
-    await expect(
-      editor.plugin(CopilotPlugin).api.triggerSuggestion()
-    ).resolves.toBe(false);
+    expect(await editor.plugin(CopilotPlugin).api.triggerSuggestion()).toBe(
+      false
+    );
   });
 
   it('returns false while AI chat is streaming', async () => {
@@ -68,9 +68,9 @@ describe('CopilotPlugin triggerSuggestion', () => {
     } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
     editor.plugin(AIChatPlugin).store.set({ chat });
 
-    await expect(
-      editor.plugin(CopilotPlugin).api.triggerSuggestion()
-    ).resolves.toBe(false);
+    expect(await editor.plugin(CopilotPlugin).api.triggerSuggestion()).toBe(
+      false
+    );
   });
 
   it('stores a finished completion as the current block suggestion', async () => {
@@ -78,10 +78,13 @@ describe('CopilotPlugin triggerSuggestion', () => {
     const nodeKey = editor.key([0])!;
     const fetchCompletion = mock(
       async (_input: RequestInfo | URL, _init?: RequestInit) =>
-        new Response(JSON.stringify({ text: 'Completed' }), {
-          headers: { 'Content-Type': 'application/json' },
-          status: 200,
-        })
+        Response.json(
+          { text: 'Completed' },
+          {
+            headers: { 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        )
     ) as unknown as typeof fetch;
     editor.plugin(CopilotPlugin).store.set({
       completeOptions: { api: '/completion', fetch: fetchCompletion },
@@ -110,10 +113,13 @@ describe('CopilotPlugin triggerSuggestion', () => {
       async (_input: RequestInfo | URL, init?: RequestInit) => {
         requestHeaders = init?.headers;
 
-        return new Response(JSON.stringify({ text: 'Completed' }), {
-          headers: { 'Content-Type': 'application/json' },
-          status: 200,
-        });
+        return Response.json(
+          { text: 'Completed' },
+          {
+            headers: { 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        );
       }
     ) as unknown as typeof fetch;
 

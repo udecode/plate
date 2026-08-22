@@ -44,7 +44,7 @@ export const getSelectionPatchRoot = (
   fallback = MAIN_ROOT_KEY
 ): string | undefined => {
   if (!patch) {
-    return;
+    return undefined;
   }
 
   const { anchor, focus } = patch;
@@ -60,7 +60,7 @@ export const getLocationRoot = (
   location: Path | Point | Range | readonly unknown[] | undefined
 ): string | undefined => {
   if (!location || Array.isArray(location)) {
-    return;
+    return undefined;
   }
 
   if ('path' in location && 'offset' in location) {
@@ -70,6 +70,8 @@ export const getLocationRoot = (
   if ('anchor' in location && 'focus' in location) {
     return getExplicitRangeLocationRoot(location) ?? undefined;
   }
+
+  return undefined;
 };
 
 const getExplicitRangeLocationRoot = (

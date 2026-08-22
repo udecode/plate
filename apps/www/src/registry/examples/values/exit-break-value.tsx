@@ -1,19 +1,20 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 import { createTable } from './table-value';
 
 jsx;
 
-export const trailingBlockValue = (
+export const trailingBlockValue: Value = (
   <fragment>
     <hheading level={2}>Trailing Block</hheading>
     <hp>Always have a trailing paragraph at the end of your editor.</hp>
   </fragment>
 );
 
-export const exitBreakValue = (
+export const exitBreakValue: Value = (
   <fragment>
     <hheading level={2}>Exit Break</hheading>
     <hp>

@@ -47,10 +47,9 @@ import type {
 
 const PLUGIN_NAME_PATTERN = /^[a-z][A-Za-z0-9]*$/;
 
-type BasePluginDependencies = readonly (
-  | EditorExtensionReference
-  | PluginReference
-)[];
+type BasePluginDependencies = ReadonlyArray<
+  EditorExtensionReference | PluginReference
+>;
 
 type ConstructorFactoryResult<TValue> = TValue extends (
   ...args: infer _TArguments
@@ -63,7 +62,7 @@ type BasePluginConstructorContextDefinition<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration = never,
-  TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
 > = Readonly<{
   dependencies: BasePluginDependencyReferences<D>;
   initialState: S;
@@ -78,7 +77,7 @@ type BasePluginConstructorSchemaFactory<
   N extends string,
   D extends BasePluginDependencies,
   S extends object,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TSchema extends PluginSchemaDeclaration,
 > = (
   context: PluginSchemaContext<
@@ -91,7 +90,7 @@ type BasePluginConstructorSchemaFactory<
 type BasePluginConstructorInitialStateInput<
   N extends string,
   D extends BasePluginDependencies,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
 > =
   | ((
       context: BasePluginContext<
@@ -105,7 +104,7 @@ type BasePluginConstructorUpdateFactory<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TUpdate extends object,
 > = (
   context: BasePluginContext<
@@ -149,7 +148,7 @@ type BasePluginConstructorPresenceKey =
   | 'validate';
 
 type MutableBasePlugin = AnyBasePlugin & {
-  targetPlugins: readonly (PluginReference | string)[];
+  targetPlugins: ReadonlyArray<PluginReference | string>;
 };
 
 type PluginRecord = Record<PropertyKey, unknown> & {
@@ -522,7 +521,7 @@ type BasePluginConstructorRestInput<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
 > = Omit<
   BasePluginDefinitionInput<
     NoInfer<
@@ -552,7 +551,7 @@ type BasePluginConstructorSchemaInput<
   N extends string,
   D extends BasePluginDependencies,
   S extends object,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TSchema extends PluginSchemaDeclaration,
 > =
   | BasePluginConstructorSchemaFactory<N, D, S, TTargetPlugins, TSchema>
@@ -574,14 +573,14 @@ type BasePluginConstructorCapabilityDefinition<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
 > = BasePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins> &
   ('schema' extends TKeys
     ? Readonly<{ schema: TSchema }>
     : Readonly<Record<never, never>>);
 
 type BasePluginConstructorSelection<
-  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
+  TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>>,
 > =
   TSelectionKinds[number] extends EditorSelectionSpec<infer TSelection>
     ? Extract<TSelection, SelectionValue>
@@ -613,15 +612,14 @@ export function defineBasePlugin<
     ? Extract<ConstructorFactoryResult<TInitialStateInput>, object>
     : {},
   const TConflicts extends BasePluginDependencies = readonly [],
-  const TTargetPlugins extends readonly (PluginReference | string)[] =
+  const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
     readonly [],
   const TRead extends BasePluginConstructorRead<TKeys, TSchema> =
     BasePluginConstructorRead<TKeys, TSchema>,
-  const TSelectionKinds extends readonly EditorSelectionSpec<any>[] =
+  const TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>> =
     readonly [],
   const TSelectors extends PluginSelectors<S> = {},
   const TEnabled extends boolean = boolean,
-  const TShortcuts extends BasePluginShortcutRecord = {},
 >(
   name: N,
   definition: Readonly<Record<TKeys, unknown>> &
@@ -726,7 +724,7 @@ export function defineBasePlugin<
       ) => TRead;
       selectionKinds?: TSelectionKinds;
       selectors?: TSelectors & PluginSelectors<NoInfer<S>>;
-      shortcuts?: TShortcuts;
+      shortcuts?: BasePluginShortcutRecord;
       targetPlugins?: TTargetPlugins;
       update?: BasePluginConstructorUpdateFactory<
         N,

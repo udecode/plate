@@ -40,7 +40,7 @@ describe('createValue', () => {
 
   it('stores media captions as direct inline children', () => {
     const value = DEMO_VALUES.media;
-    const children: unknown[] = value.children;
+    const children: readonly unknown[] = value.children;
     const mediaTypes = new Set([
       'audio',
       'file',

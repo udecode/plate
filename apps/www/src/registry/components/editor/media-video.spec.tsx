@@ -42,6 +42,7 @@ mock.module('platejs/react', () => ({
   useEditorMounted: useEditorMountedMock,
   useEditorReadOnly: () => false,
   useElementSelected: () => false,
+  usePath: () => [0],
 }));
 
 mock.module('react-lite-youtube-embed', () => ({

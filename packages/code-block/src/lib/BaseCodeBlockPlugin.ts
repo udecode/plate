@@ -22,6 +22,7 @@ import {
   type TextOf,
 } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
+import { failInvariant } from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 import type { createLowlight, LanguageFn } from 'lowlight';
 
@@ -91,18 +92,18 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
     }: {
       at?: Location | null;
     } = {}) => {
-      if (!at) return;
+      if (!at) return undefined;
 
       const codeLine = state.nodes.above({
         at,
         type: BaseCodeLinePlugin,
       });
 
-      if (!codeLine) return;
+      if (!codeLine) return undefined;
 
       const codeBlock = state.nodes.parent(codeLine[1], { type: plugin });
 
-      if (!codeBlock) return;
+      if (!codeBlock) return undefined;
 
       return { codeBlock, codeLine };
     };
@@ -540,7 +541,9 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
                 );
 
                 return true;
-              } catch (_error) {}
+              } catch {
+                // Ignore malformed syntax nodes and keep scanning candidates.
+              }
             }
 
             if (isInCodeBlock && text?.includes('\n')) {
@@ -805,7 +808,7 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
 
     return typeof value === 'string' ? value : value.source;
   };
-  const concat = (...values: (RegExp | string | null | undefined)[]) =>
+  const concat = (...values: Array<RegExp | string | null | undefined>) =>
     values.map((value) => source(value)).join('');
   const lookahead = (value: RegExp | string) => concat('(?=', value, ')');
 
@@ -1155,7 +1158,7 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
   const parseNodes = (
     nodes: HighlightNode[],
     className: string[] = []
-  ): { classes: string[]; text: string }[] =>
+  ): Array<{ classes: string[]; text: string }> =>
     nodes.flatMap((node) => {
       if (node.type === 'element') {
         const nodeClassName = node.properties.className;
@@ -1175,8 +1178,10 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
         ? [{ classes: className, text: node.value }]
         : [];
     });
-  const normalizeTokens = (tokens: { classes: string[]; text: string }[]) => {
-    const lines: { classes: string[]; content: string }[][] = [[]];
+  const normalizeTokens = (
+    tokens: Array<{ classes: string[]; text: string }>
+  ) => {
+    const lines: Array<Array<{ classes: string[]; content: string }>> = [[]];
     let currentLine = lines[0];
 
     for (const token of tokens) {
@@ -1187,7 +1192,8 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
 
         if (index < tokenLines.length - 1) {
           lines.push([]);
-          currentLine = lines.at(-1)!;
+          currentLine =
+            lines.at(-1) ?? failInvariant('Expected value to be defined');
         }
       });
     }

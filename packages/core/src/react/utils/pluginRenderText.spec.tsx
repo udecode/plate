@@ -17,7 +17,7 @@ it('uses a plain render.as fast path for simple text plugins', () => {
     navigationFeedback: false,
     plugins: [testPlugin],
   });
-  const renderText = pluginRenderText(editor, testPlugin as any);
+  const renderText = pluginRenderText(editor, testPlugin);
   const TestComponent = () =>
     renderText({
       attributes: {

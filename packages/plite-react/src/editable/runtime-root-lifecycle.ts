@@ -38,7 +38,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
   targetDocument: Document;
 }) => {
   const targetWindow = targetDocument.defaultView;
-  const eventName = targetWindow?.PointerEvent ? 'pointerdown' : 'mousedown';
+  let outsideFocusBoundaryRevision = 0;
   const releaseRootOwnedNativeState = () => {
     const rootElement = rootRef.current;
 
@@ -47,9 +47,9 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
 
     let hadRootOwnedNativeState = false;
-    const activeElement = targetDocument.activeElement;
+    const { activeElement } = targetDocument;
     const hasReadOnlyModelSelection =
-      readOnly && Boolean(editor.read((state) => state.selection()));
+      readOnly && Boolean(editor.read((innerState) => innerState.selection()));
 
     if (
       targetWindow &&
@@ -79,7 +79,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
 
     if (!hadRootOwnedNativeState) {
-      return;
+      return undefined;
     }
 
     IS_FOCUSED.delete(editor);
@@ -95,7 +95,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     return true;
   };
 
-  const handleOutsidePointerDown = (event: PointerEvent | MouseEvent) => {
+  const handleOutsidePress = (event: PointerEvent | MouseEvent) => {
     const rootElement = rootRef.current;
 
     if (!rootElement || event.defaultPrevented) {
@@ -109,19 +109,61 @@ export const attachEditableOutsideFocusBoundaryListener = ({
       return;
     }
 
+    outsideFocusBoundaryRevision += 1;
+    const releaseRevision = outsideFocusBoundaryRevision;
+
     state.outsideFocusBoundarySettleUntil = getEditableInputTimestamp() + 100;
     domPhaseScheduler.schedule(
       'dom-write',
       'release-outside-focus-native-state',
-      releaseRootOwnedNativeState,
-      { timing: 'timeout' }
+      () => {
+        if (releaseRevision !== outsideFocusBoundaryRevision) return;
+
+        releaseRootOwnedNativeState();
+      },
+      {
+        key: 'release-outside-focus-native-state',
+        timing: 'timeout',
+      }
     );
   };
 
-  targetDocument.addEventListener(eventName, handleOutsidePointerDown);
+  const handleOutsidePointerDown = (event: PointerEvent) => {
+    if (event.pointerType === 'mouse') return;
+
+    handleOutsidePress(event);
+  };
+  const handleOutsideMouseDown = (event: MouseEvent) => {
+    handleOutsidePress(event);
+  };
+  const handleFocusIn = (event: FocusEvent) => {
+    const rootElement = rootRef.current;
+
+    if (
+      rootElement &&
+      isDOMNode(event.target) &&
+      containsShadowAware(rootElement, event.target)
+    ) {
+      outsideFocusBoundaryRevision += 1;
+      state.outsideFocusBoundarySettleUntil = 0;
+    }
+  };
+
+  if (targetWindow?.PointerEvent) {
+    targetDocument.addEventListener('pointerdown', handleOutsidePointerDown);
+  }
+  targetDocument.addEventListener('mousedown', handleOutsideMouseDown);
+  targetDocument.addEventListener('focusin', handleFocusIn);
 
   return () => {
-    targetDocument.removeEventListener(eventName, handleOutsidePointerDown);
+    if (targetWindow?.PointerEvent) {
+      targetDocument.removeEventListener(
+        'pointerdown',
+        handleOutsidePointerDown
+      );
+    }
+    targetDocument.removeEventListener('mousedown', handleOutsideMouseDown);
+    targetDocument.removeEventListener('focusin', handleFocusIn);
   };
 };
 
@@ -145,6 +187,7 @@ export const useEditableRootGlobalLifecycle = ({
     );
     const detachGlobalDragLifecycleListeners =
       attachEditableGlobalDragLifecycleListeners({
+        editor,
         state,
         targetDocument: window.document,
       });

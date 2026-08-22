@@ -16,8 +16,12 @@ export function SuggestionToolbarButton() {
   return (
     <ToolbarButton
       className={cn(isSuggesting && 'text-brand/80 hover:text-brand/80')}
-      onClick={() => store.set({ isSuggesting: !isSuggesting })}
-      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => {
+        store.set({ isSuggesting: !isSuggesting });
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+      }}
       tooltip={isSuggesting ? 'Turn off suggesting' : 'Suggestion edits'}
     >
       <PencilLineIcon />

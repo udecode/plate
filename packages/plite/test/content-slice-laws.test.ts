@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { ContentSlice, type Descendant } from '@platejs/plite';
 import fc from 'fast-check';
 
-import { PreparedTokenSlice, type JsonNode } from '../src/core/change/tokens';
+import { PreparedTokenSlice } from '../src/core/change/tokens';
 import {
   encodeContentSlice,
   prepareContentSliceVariant,
@@ -156,9 +156,7 @@ void describe('ContentSlice generated laws', () => {
     void assertLaw(
       fc.property(sliceInputArbitrary, (input) => {
         const slice = ContentSlice.fromJSON(input);
-        const canonical = PreparedTokenSlice.fromNodes(
-          slice.content as readonly JsonNode[]
-        );
+        const canonical = PreparedTokenSlice.fromNodes(slice.content);
 
         assert.deepEqual(
           encodeContentSlice(slice).toJSON(),

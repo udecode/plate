@@ -59,7 +59,8 @@ export const normalizeTokens = (
 
   while (stackIndex > -1) {
     while (true) {
-      i = tokenArrIndexStack[stackIndex]++;
+      i = tokenArrIndexStack[stackIndex];
+      tokenArrIndexStack[stackIndex] += 1;
       if (i >= tokenArrSizeStack[stackIndex]) break;
 
       let content: PrismToken['content'] | string;
@@ -78,12 +79,12 @@ export const normalizeTokens = (
           types = appendTypes(types, token.alias);
         }
 
-        content = token.content;
+        ({ content } = token);
       }
 
       // If token.content is an array, increase the stack depth and repeat this while-loop
       if (typeof content !== 'string') {
-        stackIndex++;
+        stackIndex += 1;
         typeArrStack.push(types);
         tokenArrStack.push(content as PrismToken[]);
         tokenArrIndexStack.push(0);
@@ -98,16 +99,16 @@ export const normalizeTokens = (
       currentLine.push({ types, content: splitByNewlines[0] });
 
       // Create a new line for each string on a new line
-      for (let i = 1; i < newlineCount; i++) {
+      for (let innerI = 1; innerI < newlineCount; innerI++) {
         normalizeEmptyLines(currentLine);
         currentLine = [];
         acc.push(currentLine);
-        currentLine.push({ types, content: splitByNewlines[i] });
+        currentLine.push({ types, content: splitByNewlines[innerI] });
       }
     }
 
     // Decreate the stack depth
-    stackIndex--;
+    stackIndex -= 1;
     typeArrStack.pop();
     tokenArrStack.pop();
     tokenArrIndexStack.pop();

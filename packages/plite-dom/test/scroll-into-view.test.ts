@@ -50,11 +50,11 @@ const createDOMRange = () => {
 };
 
 beforeAll(() => {
-  globalThis.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+  globalThis.requestAnimationFrame = (callback: FrameRequestCallback) => {
     callback(0);
 
     return 1;
-  }) as typeof requestAnimationFrame;
+  };
 });
 
 afterEach(() => {

@@ -12,6 +12,6 @@ export const node = (
   options: EditorNodeOptions = {}
 ): NodeEntry => {
   const path = editorPath(editor, at, options);
-  const node = NodeApi.get(editor, path);
-  return [node, path];
+  const innerNode = NodeApi.get(editor, path);
+  return [innerNode, path];
 };

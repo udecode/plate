@@ -23,7 +23,9 @@ test('rejects a packed declaration that imports a missing Core symbol', (t) => {
     'yjs'
   );
 
-  t.after(() => rmSync(root, { force: true, recursive: true }));
+  t.after(() => {
+    rmSync(root, { force: true, recursive: true });
+  });
   mkdirSync(coreDirectory, { recursive: true });
   mkdirSync(join(yjsDirectory, 'dist'), { recursive: true });
   writeFileSync(
@@ -92,8 +94,7 @@ test('rejects a packed declaration that imports a missing Core symbol', (t) => {
     })
   );
 
-  assert.throws(
-    () => runTypeScriptConsumer(consumerDirectory, 'tsconfig.json'),
-    /TS2305: Module .*@platejs\/core.*MissingCoreSymbol/
-  );
+  assert.throws(() => {
+    runTypeScriptConsumer(consumerDirectory, 'tsconfig.json');
+  }, /TS2305: Module .*@platejs\/core.*MissingCoreSymbol/);
 });

@@ -29,7 +29,7 @@ export const findCodeBlockLanguageChange = <
             ? node.children[index]
             : undefined;
 
-      if (!node) return;
+      if (!node) return undefined;
     }
 
     return node;
@@ -72,4 +72,6 @@ export const findCodeBlockLanguageChange = <
       }
     }
   }
+
+  return undefined;
 };

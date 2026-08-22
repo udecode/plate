@@ -16,6 +16,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  failInvariant,
   type AnyEditor as EditorType,
   getSelection as editorGetSelection,
   getActiveEditorTransaction,
@@ -54,6 +55,7 @@ import {
   isDOMSelection,
   isDOMText,
   normalizeDOMPoint,
+  replaceDOMSelectionRange,
 } from '../utils/dom';
 import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
 import { Key } from '../utils/key';
@@ -118,6 +120,14 @@ const ROOT_TO_FOCUS_REQUEST_OWNER = new WeakMap<
   }
 >();
 
+const getLastChildren = (element: HTMLElement): HTMLElement => {
+  if (element.childElementCount > 0) {
+    return getLastChildren(element.children[0] as HTMLElement);
+  }
+
+  return element;
+};
+
 /** Core editor accepted by the DOM bridge before its API is installed. */
 export type DOMEditor<
   V extends Value = Value,
@@ -170,7 +180,7 @@ export interface DOMApi {
     }
   ) => Point | null;
   resolvePliteRange: (
-    domRange: DOMRange | DOMSelection | DOMStaticRange | globalThis.Selection,
+    domRange: DOMRange | DOMSelection | DOMStaticRange,
     options: {
       exactMatch: boolean;
     }
@@ -187,7 +197,7 @@ export interface DOMApi {
     }
   ) => Point;
   assertPliteRange: (
-    domRange: DOMRange | DOMSelection | DOMStaticRange | globalThis.Selection,
+    domRange: DOMRange | DOMSelection | DOMStaticRange,
     options: {
       exactMatch: boolean;
     }
@@ -800,18 +810,18 @@ const resolvePointNearCoordinates = (
     : null;
 };
 
-const getEditorDOMViewRoot = (editor: EditorType<any>, root?: RootKey) =>
+const getEditorDOMViewRoot = (editor: EditorType, root?: RootKey) =>
   toInternalRoot(root ?? editor.read.view.root());
 
-const notifyEditorDOMScopeListeners = (editor: EditorType<any>) => {
+const notifyEditorDOMScopeListeners = (editor: EditorType) => {
   EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor)?.forEach((listener) => {
     listener();
   });
 };
 
 const setWeakElement = (
-  map: WeakMap<EditorType<any>, HTMLElement>,
-  editor: EditorType<any>,
+  map: WeakMap<EditorType, HTMLElement>,
+  editor: EditorType,
   element: HTMLElement | null
 ) => {
   if (element) {
@@ -828,7 +838,7 @@ const setWeakElement = (
 };
 
 export const setEditorDOMRootElement = (
-  editor: EditorType<any>,
+  editor: EditorType,
   element: HTMLElement | null
 ) => {
   const previousRoot = EDITOR_TO_DOM_ROOT.get(editor) ?? null;
@@ -840,7 +850,7 @@ export const setEditorDOMRootElement = (
 };
 
 export const setEditorDOMEditableElement = (
-  editor: EditorType<any>,
+  editor: EditorType,
   element: HTMLElement | null,
   root?: RootKey
 ) => {
@@ -871,7 +881,7 @@ export const setEditorDOMEditableElement = (
 };
 
 export const setEditorDOMScrollElement = (
-  editor: EditorType<any>,
+  editor: EditorType,
   element: HTMLElement | null
 ) => {
   if (setWeakElement(EDITOR_TO_DOM_SCROLL, editor, element)) {
@@ -880,7 +890,7 @@ export const setEditorDOMScrollElement = (
 };
 
 export const subscribeEditorDOMScope = (
-  editor: EditorType<any>,
+  editor: EditorType,
   listener: () => void
 ) => {
   const listeners = EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor) ?? new Set();
@@ -1165,16 +1175,21 @@ export const DOMEditor: DOMEditorInterface = {
       if (transaction) {
         transaction.selection.set(start);
       } else {
-        editor.update((tx) => tx.selection.set(start));
+        editor.update((tx) => {
+          tx.selection.set(start);
+        });
       }
     }
 
     const syncDomSelection = () => {
-      const selection = getLiveSelection();
+      const innerSelection = getLiveSelection();
 
-      if (selection) {
+      if (innerSelection) {
         const domSelection = getSelection(root);
-        const projectedSelection = getSelectionPrimaryRange(editor, selection);
+        const projectedSelection = getSelectionPrimaryRange(
+          editor,
+          innerSelection
+        );
 
         if (!domSelection) {
           return;
@@ -1186,21 +1201,9 @@ export const DOMEditor: DOMEditorInterface = {
         const domRange = DOMEditor.resolveDOMRange(editor, projectedSelection);
 
         if (domRange) {
-          if (RangeApi.isBackward(projectedSelection)) {
-            domSelection.setBaseAndExtent(
-              domRange.endContainer,
-              domRange.endOffset,
-              domRange.startContainer,
-              domRange.startOffset
-            );
-          } else {
-            domSelection.setBaseAndExtent(
-              domRange.startContainer,
-              domRange.startOffset,
-              domRange.endContainer,
-              domRange.endOffset
-            );
-          }
+          replaceDOMSelectionRange(domSelection, domRange, {
+            backward: RangeApi.isBackward(projectedSelection),
+          });
         }
       }
     };
@@ -1303,17 +1306,15 @@ export const DOMEditor: DOMEditorInterface = {
       // FocusedContext is updated to the correct value
       IS_FOCUSED.set(editor, true);
       setEditorFocused(editor, true);
-      const activeElement = root.activeElement;
-      const activeElementWithBlur = activeElement as
-        | (Element & { blur?: () => void })
-        | null;
+      const { activeElement } = root;
 
       if (
         isDOMElement(activeElement) &&
         containsShadowAware(el, activeElement) &&
-        typeof activeElementWithBlur?.blur === 'function'
+        'blur' in activeElement &&
+        typeof activeElement.blur === 'function'
       ) {
-        activeElementWithBlur.blur();
+        activeElement.blur();
       }
 
       el.focus({ preventScroll: true });
@@ -1376,12 +1377,14 @@ export const DOMEditor: DOMEditorInterface = {
       targetEl = (
         isDOMElement(target) ? target : target.parentElement
       ) as HTMLElement;
-    } catch (err) {
+    } catch (error) {
       if (
-        err instanceof Error &&
-        !err.message.includes('Permission denied to access property "nodeType"')
+        error instanceof Error &&
+        !error.message.includes(
+          'Permission denied to access property "nodeType"'
+        )
       ) {
-        throw err;
+        throw error;
       }
     }
 
@@ -1394,7 +1397,7 @@ export const DOMEditor: DOMEditorInterface = {
       'button, input, select, textarea, [role="button"]'
     );
     const isContentEditable =
-      targetEl.isContentEditable === true ||
+      targetEl.isContentEditable ||
       (typeof targetEl.isContentEditable === 'boolean'
         ? closestShadowAware(targetEl, '[contenteditable="false"]') === editorEl
         : !isInteractiveControl &&
@@ -1691,8 +1694,7 @@ export const DOMEditor: DOMEditorInterface = {
 
     if (!root) return null;
 
-    const affinity = (range as Range & { affinity?: 'backward' | 'forward' })
-      .affinity;
+    const { affinity } = range as Range & { affinity?: 'backward' | 'forward' };
 
     return createDOMGeometryKernel({ root }).rangeRect(
       DOMEditor.resolveDOMRange(editor, range),
@@ -1740,6 +1742,7 @@ export const DOMEditor: DOMEditorInterface = {
       if (!leafElement) return;
 
       const hadOwnRect = Object.hasOwn(leafElement, 'getBoundingClientRect');
+      // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] The original own method is restored on the same element after the temporary range-backed call; rebinding would change its identity.
       const originalGetBoundingClientRect = leafElement.getBoundingClientRect;
 
       leafElement.getBoundingClientRect =
@@ -1779,8 +1782,7 @@ export const DOMEditor: DOMEditorInterface = {
     const belongsToEditor =
       domEl &&
       editorEl &&
-      closestShadowAware(domEl as HTMLElement, '[data-plite-editor]') ===
-        editorEl;
+      closestShadowAware(domEl, '[data-plite-editor]') === editorEl;
     const node = belongsToEditor
       ? ELEMENT_TO_NODE.get(domEl as HTMLElement)
       : null;
@@ -1824,9 +1826,10 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     const domEl = isDOMElement(domNode) ? domNode : domNode.parentElement;
+    const domNodeLabel = domEl?.nodeName ?? domNode.nodeName;
 
     throw new PliteDOMResolutionError(
-      `Cannot resolve a Plite node from DOM node: ${domEl}`,
+      `Cannot resolve a Plite node from DOM node: ${domNodeLabel}`,
       { code: '@platejs/plite-dom/plite-node', details: { domNode } }
     );
   },
@@ -1853,7 +1856,7 @@ export const DOMEditor: DOMEditorInterface = {
       ? domPoint
       : normalizeDOMPoint(domPoint);
     const parentNode = nearestNode.parentNode as DOMElement;
-    let searchDirection = options.searchDirection;
+    let { searchDirection } = options;
     let textNode: DOMElement | null = null;
     let offset = 0;
 
@@ -1922,7 +1925,12 @@ export const DOMEditor: DOMEditorInterface = {
               return;
             }
 
-            el!.parentNode!.removeChild(el);
+            const node = el ?? failInvariant('Expected value to be defined');
+
+            if (!node.parentNode) {
+              failInvariant('Expected value to be defined');
+            }
+            node.remove();
           });
 
           // COMPAT: Edge has a bug where Range.prototype.toString() will
@@ -1930,7 +1938,7 @@ export const DOMEditor: DOMEditorInterface = {
           // attempts to reposition its cursor to match the native position. Use
           // textContent.length instead.
           // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/10291116/
-          offset = contents.textContent!.length;
+          offset = contents.textContent.length;
           domNode = textNode;
         }
       } else if (voidNode) {
@@ -1947,23 +1955,26 @@ export const DOMEditor: DOMEditorInterface = {
 
         // COMPAT: In read-only editors the leaf is not rendered.
         if (leafNode) {
-          textNode = leafNode.closest('[data-plite-node="text"]')!;
+          textNode =
+            leafNode.closest('[data-plite-node="text"]') ??
+            failInvariant('Expected value to be defined');
           domNode = leafNode;
-          offset = domNode.textContent!.length;
+          offset = domNode.textContent.length;
           domNode.querySelectorAll('[data-plite-zero-width]').forEach((el) => {
-            offset -= el.textContent!.length;
+            offset -= el.textContent.length;
           });
         } else {
           offset = 1;
         }
       } else if (nonEditableNode) {
-        const boundaryPlitePoint = resolvePlitePointFromDOMCoverageBoundary(
-          editor,
-          [nonEditableNode, 0]
-        );
+        const innerBoundaryPlitePoint =
+          resolvePlitePointFromDOMCoverageBoundary(editor, [
+            nonEditableNode,
+            0,
+          ]);
 
-        if (boundaryPlitePoint) {
-          return boundaryPlitePoint;
+        if (innerBoundaryPlitePoint) {
+          return innerBoundaryPlitePoint;
         }
 
         // Find the edge of the nearest leaf in `searchDirection`
@@ -2008,16 +2019,18 @@ export const DOMEditor: DOMEditorInterface = {
         }
 
         if (leafNode) {
-          textNode = leafNode.closest('[data-plite-node="text"]')!;
+          textNode =
+            leafNode.closest('[data-plite-node="text"]') ??
+            failInvariant('Expected value to be defined');
           domNode = leafNode;
           if (searchDirection === 'forward') {
             offset = 0;
           } else {
-            offset = domNode.textContent!.length;
+            offset = domNode.textContent.length;
             domNode
               .querySelectorAll('[data-plite-zero-width]')
               .forEach((el) => {
-                offset -= el.textContent!.length;
+                offset -= el.textContent.length;
               });
           }
         }
@@ -2025,7 +2038,7 @@ export const DOMEditor: DOMEditorInterface = {
 
       if (
         domNode &&
-        offset === domNode.textContent!.length &&
+        offset === domNode.textContent.length &&
         // COMPAT: Android IMEs might remove the zero width space while composing,
         // and we don't add it for line-breaks.
         isAndroidDOMHost(parentNode) &&
@@ -2042,7 +2055,7 @@ export const DOMEditor: DOMEditorInterface = {
           // length being off by one, so we need to subtract one to account for this.
           (isGeckoDOMHost(domNode) && domNode.textContent?.endsWith('\n\n')))
       ) {
-        offset--;
+        offset -= 1;
       }
     }
 
@@ -2061,15 +2074,16 @@ export const DOMEditor: DOMEditorInterface = {
           return null;
         }
 
-        let { path, offset } = editorPoint(editor, nodePath, {
+        const { offset: initialOffset, path } = editorPoint(editor, nodePath, {
           edge: 'start',
         });
+        let innerOffset = initialOffset;
 
         if (!node.querySelector('[data-plite-leaf]')) {
-          offset = nearestOffset;
+          innerOffset = nearestOffset;
         }
 
-        return { path, offset };
+        return { path, offset: innerOffset };
       }
     }
 
@@ -2080,8 +2094,8 @@ export const DOMEditor: DOMEditorInterface = {
     // COMPAT: If someone is clicking from one Plite editor into another,
     // the select event fires twice, once for the old editor's `element`
     // first, and then afterwards for the correct `element`. (2017/03/03)
-    const mountedPath = resolveMountedDOMPath(editor, textNode! as HTMLElement);
-    const pliteNode = DOMEditor.resolvePliteNode(editor, textNode!);
+    const mountedPath = resolveMountedDOMPath(editor, textNode as HTMLElement);
+    const pliteNode = DOMEditor.resolvePliteNode(editor, textNode);
     const resolvedPath = pliteNode
       ? DOMEditor.resolvePath(editor, pliteNode)
       : null;
@@ -2134,8 +2148,10 @@ export const DOMEditor: DOMEditorInterface = {
       return point;
     }
 
+    const [domNode, offset] = domPoint;
+
     throw new PliteDOMResolutionError(
-      `Cannot resolve a Plite point from DOM point: ${domPoint}`,
+      `Cannot resolve a Plite point from DOM point: ${domNode.nodeName},${offset}`,
       { code: '@platejs/plite-dom/plite-point', details: { domPoint } }
     );
   },
@@ -2165,7 +2181,8 @@ export const DOMEditor: DOMEditorInterface = {
           isGeckoDOMHost(domRange.anchorNode ?? domRange.focusNode ?? el) &&
           domRange.rangeCount > 1
         ) {
-          focusNode = domRange.focusNode; // Focus node works fine
+          // Focus node works fine
+          ({ focusNode } = domRange);
           const firstRange = domRange.getRangeAt(0);
           const lastRange = domRange.getRangeAt(domRange.rangeCount - 1);
 
@@ -2175,23 +2192,15 @@ export const DOMEditor: DOMEditorInterface = {
             firstRange.startContainer instanceof HTMLTableRowElement &&
             lastRange.startContainer instanceof HTMLTableRowElement
           ) {
-            // HTMLElement, becouse Element is a Plite element
-            function getLastChildren(element: HTMLElement): HTMLElement {
-              if (element.childElementCount > 0) {
-                return getLastChildren(<HTMLElement>element.children[0]);
-              }
-              return element;
-            }
-
-            const firstNodeRow = <HTMLTableRowElement>firstRange.startContainer;
-            const lastNodeRow = <HTMLTableRowElement>lastRange.startContainer;
+            const firstNodeRow = firstRange.startContainer;
+            const lastNodeRow = lastRange.startContainer;
 
             // This should never fail as "The HTMLElement interface represents any HTML element."
             const firstNode = getLastChildren(
-              <HTMLElement>firstNodeRow.children[firstRange.startOffset]
+              firstNodeRow.children[firstRange.startOffset] as HTMLElement
             );
             const lastNode = getLastChildren(
-              <HTMLElement>lastNodeRow.children[lastRange.startOffset]
+              lastNodeRow.children[lastRange.startOffset] as HTMLElement
             );
 
             // Zero, as we allways take the right one as the anchor point
@@ -2210,7 +2219,7 @@ export const DOMEditor: DOMEditorInterface = {
             }
 
             if (lastNode instanceof HTMLElement) {
-              anchorOffset = (<HTMLElement>lastNode).innerHTML.length;
+              anchorOffset = lastNode.innerHTML.length;
             } else {
               // Fallback option
               anchorOffset = 0;
@@ -2228,10 +2237,7 @@ export const DOMEditor: DOMEditorInterface = {
             focusOffset = lastRange.startOffset;
           }
         } else {
-          anchorNode = domRange.anchorNode;
-          anchorOffset = domRange.anchorOffset;
-          focusNode = domRange.focusNode;
-          focusOffset = domRange.focusOffset;
+          ({ anchorNode, anchorOffset, focusNode, focusOffset } = domRange);
         }
 
         // Endpoint equality is the only collapsed signal Plite can trust across
@@ -2266,7 +2272,7 @@ export const DOMEditor: DOMEditorInterface = {
       focusNode.textContent?.endsWith('\n\n') &&
       focusOffset === focusNode.textContent.length
     ) {
-      focusOffset--;
+      focusOffset -= 1;
     }
 
     const anchor = DOMEditor.resolvePlitePoint(
@@ -2293,7 +2299,7 @@ export const DOMEditor: DOMEditorInterface = {
       return null;
     }
 
-    let range: Range = { anchor: anchor as Point, focus: focus as Point };
+    let range: Range = { anchor, focus };
     // if the selection is a hanging range that ends in a void
     // and the DOM focus is an Element
     // (meaning that the selection ends before the element)
@@ -2318,7 +2324,7 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     throw new PliteDOMResolutionError(
-      `Cannot resolve a Plite range from DOM range: ${domRange}`,
+      'Cannot resolve a Plite range from DOM range',
       { code: '@platejs/plite-dom/plite-range', details: { domRange } }
     );
   },
@@ -2368,7 +2374,7 @@ export const createDOMEditorCapability = <
   TExtensions extends readonly unknown[],
 >(
   editor: DOMEditor<V, TExtensions>,
-  clipboardHandlers: readonly DOMClipboardHandler<any>[] = []
+  clipboardHandlers: ReadonlyArray<DOMClipboardHandler<any>> = []
 ): DOMEditorCapability<V> => {
   const resolveVisualPoint = (
     point: Point,
@@ -2453,7 +2459,7 @@ export const createDOMEditorCapability = <
   const runClipboardInsert = (
     data: DataTransfer,
     fallback: (data: DataTransfer) => boolean,
-    handlers: readonly DOMClipboardHandler<any>[] = []
+    handlers: ReadonlyArray<DOMClipboardHandler<any>> = []
   ) => {
     const transaction = getActiveEditorTransaction(editor);
     const insert = (tx: EditorUpdateTransaction<V, TExtensions>) =>
@@ -2475,14 +2481,20 @@ export const createDOMEditorCapability = <
     return handled;
   };
   const capability: DOMEditorCapability<V> = {
-    blur: () => DOMEditor.blur(editor),
-    deselect: () => DOMEditor.deselect(editor),
+    blur: () => {
+      DOMEditor.blur(editor);
+    },
+    deselect: () => {
+      DOMEditor.deselect(editor);
+    },
     editable: (root) => DOMEditor.editable(editor, root),
     findDocumentOrShadowRoot: () => DOMEditor.findDocumentOrShadowRoot(editor),
     assertEventRange: (event) => DOMEditor.assertEventRange(editor, event),
     findKey: (node) => DOMEditor.findKey(editor, node),
     assertPath: (node) => DOMEditor.assertPath(editor, node),
-    focus: (options) => DOMEditor.focus(editor, options),
+    focus: (options) => {
+      DOMEditor.focus(editor, options);
+    },
     getWindow: () => DOMEditor.getWindow(editor),
     hasDOMNode: (target, options) =>
       DOMEditor.hasDOMNode(editor, target, options),
@@ -2508,12 +2520,15 @@ export const createDOMEditorCapability = <
         ),
       readSlice: (data: Pick<DataTransfer, 'getData' | 'types'>) =>
         readDOMClipboardSlice(editor, data),
-      writeSelection: (data: Pick<DataTransfer, 'getData' | 'setData'>) =>
-        DOMEditor.clipboard.writeSelection(editor, data),
+      writeSelection: (data: Pick<DataTransfer, 'getData' | 'setData'>) => {
+        DOMEditor.clipboard.writeSelection(editor, data);
+      },
       writeSlice: (
         data: Pick<DataTransfer, 'getData' | 'setData'>,
         payload: ClipboardSliceWrite<V>
-      ) => writeDOMClipboardSlice(editor, data, payload),
+      ) => {
+        writeDOMClipboardSlice(editor, data, payload);
+      },
     }),
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),
@@ -2529,8 +2544,9 @@ export const createDOMEditorCapability = <
     resolveVisualPoint,
     root: () => DOMEditor.root(editor),
     scroll: () => DOMEditor.scroll(editor),
-    scrollIntoView: (target, options) =>
-      DOMEditor.scrollIntoView(editor, target, options),
+    scrollIntoView: (target, options) => {
+      DOMEditor.scrollIntoView(editor, target, options);
+    },
     resolvePliteNode: (domNode) => DOMEditor.resolvePliteNode(editor, domNode),
     resolvePlitePoint: (domPoint, options) =>
       DOMEditor.resolvePlitePoint(editor, domPoint, options),

@@ -10,12 +10,12 @@ const useDropMock = mock(() => {
 });
 const useEditorMock = mock();
 
-mock.module('@platejs/core/react', () => ({
+void mock.module('@platejs/core/react', () => ({
   ...actualPlatejsReact,
   useEditor: useEditorMock,
 }));
 
-mock.module('react-dnd', () => ({
+void mock.module('react-dnd', () => ({
   useDrag: useDragMock,
   useDrop: useDropMock,
 }));

@@ -23,7 +23,7 @@ if (registeredDom) {
 
 afterAll(() => {
   if (registeredDom) {
-    GlobalRegistrator.unregister();
+    void GlobalRegistrator.unregister();
   }
 });
 

@@ -54,11 +54,11 @@ describe('mergeDeep', () => {
       {
         nested: new Example(1),
         plain: { left: true },
-      } as any,
+      },
       {
         nested: { value: 2 },
         plain: sourceInstance,
-      } as any
+      }
     );
 
     expect(result.nested).toEqual({ value: 2 });

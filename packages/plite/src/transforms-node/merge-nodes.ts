@@ -30,6 +30,7 @@ import type {
   NodeMergeNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
 import { formatDebugValue } from '../utils/format-debug-value';
@@ -91,7 +92,7 @@ const hasSingleChildNest = (editor: Editor, node: Node): boolean =>
     (NodeApi.isElement(node) && editorIsVoid(editor, node)) ||
     (!NodeApi.isText(node) &&
       getChildren(editor, node).length === 1 &&
-      hasSingleChildNest(editor, getChildren(editor, node)[0]!)));
+      hasSingleChildNest(editor, getChildren(editor, node)[0])));
 
 export const mergeNodes = ((
   editor: Editor,
@@ -134,7 +135,7 @@ export const mergeNodes = ((
           deletion: 'nearest',
         });
         deleteText(editor, { at });
-        at = pointAnchor.release()!;
+        at = getDefined(pointAnchor.release());
 
         if (options.at == null) {
           select(editor, at);

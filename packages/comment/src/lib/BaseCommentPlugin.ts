@@ -33,7 +33,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
             ...decoration,
           }),
         encode: ({ node }) => {
-          if (!TextApi.isText(node)) return;
+          if (!TextApi.isText(node)) return undefined;
 
           return {
             attributes: [],
@@ -74,14 +74,14 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
   },
 })
   .extend(({ plugin }) => {
-    type CommentText = TextOf<typeof plugin>;
+    type innerCommentText = TextOf<typeof plugin>;
 
     return {
       api: () => ({
         id: (leaf: Omit<Text, 'text'>) => {
           const keys = Object.keys(leaf);
 
-          if (keys.includes(getDraftCommentKey())) return;
+          if (keys.includes(getDraftCommentKey())) return undefined;
 
           return keys
             .filter((key) => isCommentKey(key) && key !== getDraftCommentKey())
@@ -96,7 +96,10 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
             match: (node) => isCommentText(node) && isCommentNodeById(node, id),
           }),
         node: (
-          options: Omit<EditorNodesOptions<CommentText>, 'match' | 'type'> & {
+          options: Omit<
+            EditorNodesOptions<innerCommentText>,
+            'match' | 'type'
+          > & {
             id?: string;
             isDraft?: boolean;
           } = {}
@@ -105,7 +108,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
 
           return state.nodes.find({
             ...rest,
-            match: (node): node is CommentText => {
+            match: (node): node is innerCommentText => {
               if (!isCommentText(node)) return false;
               if (isDraft) {
                 return !!node[key] && !!node[getDraftCommentKey()];
@@ -116,7 +119,10 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
           });
         },
         nodes: (
-          options: Omit<EditorNodesOptions<CommentText>, 'match' | 'type'> & {
+          options: Omit<
+            EditorNodesOptions<innerCommentText>,
+            'match' | 'type'
+          > & {
             id?: string;
             isDraft?: boolean;
             transient?: boolean;
@@ -126,7 +132,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
 
           return state.nodes.toArray({
             ...rest,
-            match: (node): node is CommentText => {
+            match: (node): node is innerCommentText => {
               if (!isCommentText(node)) return false;
               if (isDraft) {
                 return !!node[key] && !!node[getDraftCommentKey()];
@@ -159,7 +165,7 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
     };
   })
   .extend((context) => {
-    type CommentText = TextOf<typeof context.plugin>;
+    type innerCommentText2 = TextOf<typeof context.plugin>;
     const {
       api,
       plugin,
@@ -178,13 +184,13 @@ export const BaseCommentPlugin = defineBasePlugin(PLUGINS.comment, {
 
           if (!nodeEntry) return;
 
-          for (const key of getCommentKeys(nodeEntry[0])) {
-            tx.marks.remove(key);
+          for (const innerKey of getCommentKeys(nodeEntry[0])) {
+            tx.marks.remove(innerKey);
           }
 
           tx.marks.remove(key);
         },
-        setDraft: (options: NodeSetNodesOptions<CommentText> = {}) => {
+        setDraft: (options: NodeSetNodesOptions<innerCommentText2> = {}) => {
           tx.nodes.set(
             {
               [getDraftCommentKey()]: true,

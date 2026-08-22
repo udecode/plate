@@ -80,8 +80,8 @@ export function PlaceholderElement(
     try {
       const [result] = await uploadFiles('editorUploader', {
         files: [file],
-        onUploadProgress: ({ progress }) => {
-          setProgress(Math.min(progress, 100));
+        onUploadProgress: ({ progress: innerProgress }) => {
+          setProgress(Math.min(innerProgress, 100));
         },
       });
 
@@ -104,16 +104,17 @@ export function PlaceholderElement(
 
       const mockUploadedFile = {
         key: 'mock-key-0',
-        appUrl: `https://mock-app-url.com/${file.name}`,
         name: file.name,
         size: file.size,
         type: file.type,
-        url: URL.createObjectURL(file),
+        ufsUrl: URL.createObjectURL(file),
       } as UploadedFile;
       let mockProgress = 0;
 
       while (mockProgress < 100) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 50);
+        });
         mockProgress += 2;
         setProgress(Math.min(mockProgress, 100));
       }
@@ -128,7 +129,7 @@ export function PlaceholderElement(
     }
   }, []);
 
-  const loading = isUploading && uploadingFile;
+  const loading = Boolean(isUploading && uploadingFile);
 
   const mediaPlugin = [
     PLUGINS.audio,
@@ -166,7 +167,7 @@ export function PlaceholderElement(
   const { openFilePicker } = useFilePicker({
     accept: currentContent?.accept ?? [],
     multiple: true,
-    onFilesSelected: ({ plainFiles: updatedFiles }) => {
+    onFilesSelected: ({ plainFiles: updatedFiles }: { plainFiles: File[] }) => {
       const firstFile = updatedFiles[0];
       const restFiles = updatedFiles.slice(1);
 
@@ -189,17 +190,26 @@ export function PlaceholderElement(
 
     update({ history: 'skip' }).replaceMedia(
       {
-        ...(naturalSize ?? {}),
+        ...naturalSize,
         ...(mediaPlugin === PLUGINS.file ? { name: uploadedFile.name } : {}),
         plugin: mediaPlugin,
         provider: mediaPlugin === PLUGINS.video ? 'file' : undefined,
-        url: uploadedFile.url,
+        url: uploadedFile.ufsUrl,
       },
       { at: path }
     );
 
     api.removeUploadingFile(nodeKey);
-  }, [uploadedFile, isImage, naturalSize, nodeKey, path]);
+  }, [
+    api,
+    mediaPlugin,
+    uploadedFile,
+    isImage,
+    naturalSize,
+    nodeKey,
+    path,
+    update,
+  ]);
 
   /** Paste and drop */
   React.useEffect(() => {
@@ -214,12 +224,14 @@ export function PlaceholderElement(
   return (
     <PlateElement className="my-1" {...props}>
       {(!loading || !isImage) && (
-        <div
+        <button
           className={cn(
-            'flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'
+            'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 text-left hover:bg-primary/10'
           )}
+          disabled={loading}
           onClick={() => !loading && openFilePicker()}
           contentEditable={false}
+          type="button"
         >
           <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
             {currentContent.icon}
@@ -238,7 +250,7 @@ export function PlaceholderElement(
               </div>
             )}
           </div>
-        </div>
+        </button>
       )}
 
       {isImage && currentFile && (
@@ -291,6 +303,7 @@ export function ImageProgress({
 
   return (
     <div className={cn('relative', className)} contentEditable={false}>
+      {/* oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] This local blob preview must expose native load dimensions and revoke its object URL directly. */}
       <img
         className="h-auto w-full rounded-sm object-cover"
         alt={file.name}

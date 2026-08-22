@@ -55,11 +55,11 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
     const getBlockStartRange = createCachedGetter(() => {
       const blockEntry = getBlockEntry();
 
-      if (!selection || !blockEntry) return;
+      if (!selection || !blockEntry) return undefined;
 
       const anchor = state.points.start(blockEntry[1]);
 
-      if (!anchor) return;
+      if (!anchor) return undefined;
 
       return {
         anchor,
@@ -72,7 +72,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
       return range ? state.text.string(range) : undefined;
     });
     const getCharAfter = createCachedGetter(() => {
-      if (!selection || !isCollapsed) return;
+      if (!selection || !isCollapsed) return undefined;
 
       const afterPoint = state.points.after(selection, {
         distance: 1,
@@ -87,7 +87,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
         : undefined;
     });
     const getCharBefore = createCachedGetter(() => {
-      if (!selection || !isCollapsed) return;
+      if (!selection || !isCollapsed) return undefined;
 
       const beforePoint = state.points.before(selection, {
         distance: 1,
@@ -139,7 +139,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
             };
             if (
               typeof rule.enabled === 'function' &&
-              Reflect.apply(rule.enabled, undefined, [context]) === false
+              !Reflect.apply(rule.enabled, undefined, [context])
             ) {
               continue;
             }
@@ -207,7 +207,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
             };
             if (
               typeof rule.enabled === 'function' &&
-              Reflect.apply(rule.enabled, undefined, [context]) === false
+              !Reflect.apply(rule.enabled, undefined, [context])
             ) {
               continue;
             }
@@ -282,7 +282,7 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
             }
             if (
               typeof rule.enabled === 'function' &&
-              Reflect.apply(rule.enabled, undefined, [context]) === false
+              !Reflect.apply(rule.enabled, undefined, [context])
             ) {
               continue;
             }

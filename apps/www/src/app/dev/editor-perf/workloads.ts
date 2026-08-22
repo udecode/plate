@@ -1,5 +1,4 @@
-import type { Element } from '@platejs/plite';
-import { migrateElementIds, type Descendant, type Value } from 'platejs';
+import { migrateElementIds, type Value } from 'platejs';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 
@@ -459,12 +458,12 @@ function buildFallbackParagraphValue(blocks: number): Value {
   }
 
   const value = buildMixedBlockValue(blocks).map((node) => {
-    const nextNode = structuredClone(node) as Element;
+    const nextNode = structuredClone(node);
 
     return {
       ...nextNode,
       ...(nextNode.type === 'paragraph' ? { type: 'quote' } : {}),
-    } as Descendant;
+    };
   }) as Value;
 
   fallbackParagraphDocumentCache.set(blocks, value);
@@ -480,39 +479,57 @@ export function getEditorPerfWorkloadValue({
   workloadId: EditorPerfWorkloadId;
 }) {
   switch (workloadId) {
-    case 'huge-paragraph':
+    case 'huge-paragraph': {
       return buildParagraphValue(blocks);
-    case 'huge-heading':
+    }
+    case 'huge-heading': {
       return buildHeadingValue(blocks);
-    case 'huge-blockquote':
+    }
+    case 'huge-blockquote': {
       return buildBlockquoteValue(blocks);
-    case 'huge-bold':
+    }
+    case 'huge-bold': {
       return buildBoldValue(blocks);
-    case 'huge-code':
+    }
+    case 'huge-code': {
       return buildCodeValue(blocks);
-    case 'huge-highlight':
+    }
+    case 'huge-highlight': {
       return buildHighlightValue(blocks);
-    case 'huge-hr':
+    }
+    case 'huge-hr': {
       return buildHorizontalRuleValue(blocks);
-    case 'huge-italic':
+    }
+    case 'huge-italic': {
       return buildItalicValue(blocks);
-    case 'huge-kbd':
+    }
+    case 'huge-kbd': {
       return buildKbdValue(blocks);
-    case 'huge-strikethrough':
+    }
+    case 'huge-strikethrough': {
       return buildStrikethroughValue(blocks);
-    case 'huge-script':
+    }
+    case 'huge-script': {
       return buildScriptValue(blocks);
-    case 'huge-underline':
+    }
+    case 'huge-underline': {
       return buildUnderlineValue(blocks);
-    case 'huge-dense-text':
+    }
+    case 'huge-dense-text': {
       return buildDenseTextValue(blocks);
-    case 'huge-dense-inline-props':
+    }
+    case 'huge-dense-inline-props': {
       return buildDenseInlinePropsValue(blocks);
-    case 'huge-paragraph-fallback':
+    }
+    case 'huge-paragraph-fallback': {
       return buildFallbackParagraphValue(blocks);
-    case 'huge-mixed-block':
+    }
+    case 'huge-mixed-block': {
       return buildMixedBlockValue(blocks);
+    }
   }
+
+  throw new Error('Unknown editor performance workload.');
 }
 
 export function getSeededEditorPerfWorkloadValue({
@@ -579,7 +596,7 @@ export function getElementIdFragmentBenchmarkData({
     value = sourceValue;
     fragment = sourceValue
       .slice(0, resolvedFragmentBlocks)
-      .map((node) => structuredClone(node)) as Value;
+      .map((node) => structuredClone(node));
   } else {
     value = getEditorPerfWorkloadValue({
       blocks,

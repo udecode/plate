@@ -244,12 +244,12 @@ describe('descriptor-based extension read middleware', () => {
       extensions: [
         defineExtension('generator-read', {
           readMiddleware: ({ around }) => [
-            around(read, ({ editor, next }) =>
+            around(read, ({ editor: innerEditor, next }) =>
               (function* lazyReadMiddleware() {
                 try {
                   yield* next();
                 } finally {
-                  editor.update(() => {});
+                  innerEditor.update(() => {});
                 }
               })()
             ),
@@ -266,9 +266,11 @@ describe('descriptor-based extension read middleware', () => {
       }
     );
 
-    assert.throws(() => {
-      for (const _value of result) break;
-    }, /editor\.update cannot be started inside editor\.read/);
+    result.next();
+    assert.throws(
+      () => result.return(),
+      /editor\.update cannot be started inside editor\.read/
+    );
   });
 
   it('preserves the complete generator protocol through middleware', () => {

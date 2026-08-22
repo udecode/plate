@@ -214,7 +214,10 @@ const captureNativeClipboardPayload = async (
   const snapshotKey = `__pliteNativeClipboardPayload_${eventName}_${Date.now()}_${Math.random()}`;
 
   await root.evaluate(
-    (element: HTMLElement, { eventName, snapshotKey }) => {
+    (
+      element: HTMLElement,
+      { eventName: innerEventName, snapshotKey: innerSnapshotKey }
+    ) => {
       const ownerWindow = element.ownerDocument.defaultView;
 
       if (!ownerWindow) {
@@ -250,8 +253,10 @@ const captureNativeClipboardPayload = async (
               types: [],
             };
       };
-      snapshots[snapshotKey] = capture;
-      ownerWindow.addEventListener(eventName, capture.listener, { once: true });
+      snapshots[innerSnapshotKey] = capture;
+      ownerWindow.addEventListener(innerEventName, capture.listener, {
+        once: true,
+      });
     },
     { eventName, snapshotKey }
   );
@@ -278,7 +283,7 @@ const captureNativeClipboardPayload = async (
       }, snapshotKey);
 
       if (payload) {
-        return payload as ClipboardPayloadSnapshot;
+        return payload;
       }
 
       await sleep(20);
@@ -287,20 +292,23 @@ const captureNativeClipboardPayload = async (
     throw new Error(`No native ${eventName} event reached the editor window`);
   } finally {
     await root.evaluate(
-      (element: HTMLElement, { eventName, snapshotKey }) => {
+      (
+        element: HTMLElement,
+        { eventName: innerEventName2, snapshotKey: innerSnapshotKey2 }
+      ) => {
         const ownerWindow = element.ownerDocument.defaultView;
 
         if (!ownerWindow) return;
 
         const snapshots = ownerWindow as unknown as Record<string, unknown>;
-        const capture = snapshots[snapshotKey] as
+        const capture = snapshots[innerSnapshotKey2] as
           | { listener?: EventListener }
           | undefined;
 
         if (capture?.listener) {
-          ownerWindow.removeEventListener(eventName, capture.listener);
+          ownerWindow.removeEventListener(innerEventName2, capture.listener);
         }
-        delete snapshots[snapshotKey];
+        delete snapshots[innerSnapshotKey2];
       },
       { eventName, snapshotKey }
     );
@@ -353,7 +361,9 @@ export const pastePayloadThroughEvent = async (
       });
 
       const wasNotCanceled = element.dispatchEvent(event);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
 
       if (
         wasNotCanceled &&

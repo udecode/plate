@@ -254,6 +254,7 @@ const assertTypedPluginPropertyMutations = () => {
         | { count: number };
       const dynamicNumberKey = 1 as number;
       const dynamicStringKey = 'count' as string;
+      const invalidCount: unknown = undefined;
       const storedToneOrCustomKey = 'storedTone' as 'storedTone' | 'custom';
       const validPatchUnion = {} as
         | { count: number }
@@ -283,7 +284,7 @@ const assertTypedPluginPropertyMutations = () => {
       tx.nodes.set(invalidNumberIndexUnion);
       tx.nodes.set(validStringIndexUnion);
       // @ts-expect-error unknown on one closed property is not an open record
-      tx.nodes.set({ count: undefined as unknown });
+      tx.nodes.set({ count: invalidCount });
       // @ts-expect-error aliased properties use their persisted schema key
       tx.nodes.set({ storedTone: 'warning' });
       // Dynamic string-keyed patches remain the explicit escape hatch.
@@ -507,11 +508,11 @@ const assertTypedAuthoringContext = () => {
     },
   });
   const ElementIdentityPlugin = defineBasePlugin('elementCapability', {
-    api: ({ schema }) => ({
-      identity: () => schema.type,
+    api: ({ schema: innerSchema }) => ({
+      identity: () => innerSchema.type,
     }),
-    read: ({ schema }) => ({
-      identity: () => schema.type,
+    read: ({ schema: innerSchema2 }) => ({
+      identity: () => innerSchema2.type,
     }),
     schema: {
       element: {
@@ -519,10 +520,10 @@ const assertTypedAuthoringContext = () => {
         type: 'persistedElement',
       },
     },
-    update: ({ schema }) => ({
+    update: ({ schema: innerSchema3 }) => ({
       create: () => ({
         children: [{ text: '' }],
-        type: schema.type,
+        type: innerSchema3.type,
       }),
     }),
   });
@@ -532,16 +533,16 @@ const assertTypedAuthoringContext = () => {
       schema: () => ({
         element: schema.element.textBlock(),
       }),
-      update: ({ schema }) => ({
+      update: ({ schema: innerSchema4 }) => ({
         create: () => ({
           children: [{ text: '' }],
-          type: schema.type,
+          type: innerSchema4.type,
         }),
       }),
     }
-  ).extend(({ schema }) => ({
+  ).extend(({ schema: innerSchema5 }) => ({
     api: () => ({
-      defaultElementType: () => schema.type,
+      defaultElementType: () => innerSchema5.type,
     }),
   }));
   const PropertyIdentityPlugin = defineBasePlugin('propertyCapability', {
@@ -551,14 +552,14 @@ const assertTypedAuthoringContext = () => {
         property: property.boolean({ default: false, omitDefault: true }),
       },
     },
-    api: ({ schema }) => ({
-      identity: () => schema.key,
+    api: ({ schema: innerSchema6 }) => ({
+      identity: () => innerSchema6.key,
     }),
-    read: ({ schema }) => ({
-      identity: () => schema.key,
+    read: ({ schema: innerSchema7 }) => ({
+      identity: () => innerSchema7.key,
     }),
-    update: ({ schema }) => ({
-      create: () => ({ [schema.key]: true }),
+    update: ({ schema: innerSchema8 }) => ({
+      create: () => ({ [innerSchema8.key]: true }),
     }),
   });
   const ExactRootApiPlugin = defineBasePlugin('exactRootApi', {

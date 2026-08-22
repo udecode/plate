@@ -40,7 +40,7 @@ export type PlatePluginCache = Readonly<{
 type PublishedEditorShortcut = Readonly<
   Omit<EditorShortcut, 'keys' | 'scopes' | 'target'> & {
     keys?:
-      | readonly (readonly ({} & string)[])[]
+      | ReadonlyArray<ReadonlyArray<{} & string>>
       | readonly string[]
       | string
       | null;

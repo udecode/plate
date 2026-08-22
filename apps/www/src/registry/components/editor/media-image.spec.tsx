@@ -36,6 +36,7 @@ mock.module('platejs/react', () => ({
     return selection?.kind === 'node' && selection.path?.[0] === 0;
   },
   usePluginStore: usePluginStoreMock,
+  usePath: () => [0],
 }));
 
 mock.module('@/lib/utils', () => ({

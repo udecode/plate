@@ -51,23 +51,43 @@ const createDeferredYjsTx = <TCursorData extends YjsRemoteCursorData>(
   getController: () => YjsController<TCursorData>
 ): YjsTx<TCursorData> =>
   Object.freeze({
-    clearSelection: () => getController().tx().clearSelection(),
-    clearTrace: () => getController().tx().clearTrace(),
-    connect: () => getController().tx().connect(),
-    disconnect: () => getController().tx().disconnect(),
-    pause: () => getController().tx().pause(),
-    reconcile: () => getController().tx().reconcile(),
-    reconnect: () => getController().tx().reconnect(),
-    resume: () => getController().tx().resume(),
-    retireSharedEffectPeer: (peerId) =>
-      getController().tx().retireSharedEffectPeer(peerId),
-    sendCursorData: (data) => getController().tx().sendCursorData(data),
-    sendSelection: (range, data) =>
-      getController().tx().sendSelection(range, data),
+    clearSelection: () => {
+      getController().tx().clearSelection();
+    },
+    clearTrace: () => {
+      getController().tx().clearTrace();
+    },
+    connect: () => {
+      getController().tx().connect();
+    },
+    disconnect: () => {
+      getController().tx().disconnect();
+    },
+    pause: () => {
+      getController().tx().pause();
+    },
+    reconcile: () => {
+      getController().tx().reconcile();
+    },
+    reconnect: () => {
+      getController().tx().reconnect();
+    },
+    resume: () => {
+      getController().tx().resume();
+    },
+    retireSharedEffectPeer: (peerId) => {
+      getController().tx().retireSharedEffectPeer(peerId);
+    },
+    sendCursorData: (data) => {
+      getController().tx().sendCursorData(data);
+    },
+    sendSelection: (range, data) => {
+      getController().tx().sendSelection(range, data);
+    },
   });
 
 const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
-  options: YjsExtensionOptions
+  options: YjsExtensionOptions<TCursorData>
 ) => {
   const activationErrors = new WeakMap<Editor, unknown>();
   const controllers = new WeakMap<Editor, YjsController<TCursorData>>();
@@ -79,6 +99,7 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
 
     const activationError = activationErrors.get(owner);
 
+    // oxlint-disable-next-line typescript/only-throw-error -- Extension lookup must preserve the host-owned activation failure unchanged.
     if (activationError !== undefined) throw activationError;
 
     throw new Error('Yjs extension is not active on this editor.');
@@ -204,7 +225,9 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
           }
         }
       });
-      context.afterPublish(() => controller.seed());
+      context.afterPublish(() => {
+        controller.seed();
+      });
     },
     on: {
       commit({ commit, editor, snapshot }): void {

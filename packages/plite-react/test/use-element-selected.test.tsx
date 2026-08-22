@@ -1,13 +1,13 @@
 import { SelectionApi } from '@platejs/plite';
 import { hasPath as editorHasPath } from '@platejs/plite/internal';
 import { act, render } from '@testing-library/react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import {
   createReactEditor,
   Editable,
   type ReactEditor,
-  RenderElementProps,
+  type RenderElementProps,
   Plite,
   useElementSelected,
 } from '../src';
@@ -39,7 +39,7 @@ describe('useElementSelected', () => {
       latestCollapsedSelectedById = {};
       latestNodeSelectedById = {};
 
-      const renderElement = ({
+      const RenderElement = ({
         element,
         attributes,
         children,
@@ -60,7 +60,7 @@ describe('useElementSelected', () => {
 
       render(
         <Plite editor={editor}>
-          <Editable renderElement={renderElement} />
+          <Editable renderElement={RenderElement} />
         </Plite>
       );
     });
@@ -153,6 +153,44 @@ describe('useElementSelected', () => {
 
       expect(latestSelectedById.new).toBe(false);
       expect(latestSelectedById['2']).toBe(true);
+    });
+
+    it('does not rerender an unselected element when only its path changes', async () => {
+      const renderCounts = new Map<string, number>();
+      const localEditor = createReactEditor({ initialValue: initialValue() });
+
+      render(
+        <Plite editor={localEditor}>
+          <Editable
+            renderElement={({ attributes, children, element }) => {
+              const id = String((element as { id?: unknown }).id);
+
+              useElementSelected();
+              renderCounts.set(id, (renderCounts.get(id) ?? 0) + 1);
+
+              return <div {...attributes}>{children}</div>;
+            }}
+          />
+        </Plite>
+      );
+
+      await act(async () => {
+        localEditor.update((tx) => {
+          tx.selection.set({ path: [0, 0, 0], offset: 0 });
+        });
+      });
+      const countBeforeInsert = renderCounts.get('2');
+
+      await act(async () => {
+        localEditor.update((tx) => {
+          tx.nodes.insert({ id: 'new', children: [{ text: '' }] } as any, {
+            at: [0],
+          });
+        });
+      });
+
+      expect(renderCounts.get('2')).toBe(countBeforeInsert);
+      expect(renderCounts.get('new')).toBe(1);
     });
 
     it('supports collapsed-only mode without changing intersection mode', async () => {
@@ -325,7 +363,7 @@ describe('useElementSelected', () => {
 
     const watchedPath = [2];
     const selectedByHostId: Record<string, boolean | undefined> = {};
-    const renderElement = ({
+    const RenderElement = ({
       element,
       attributes,
       children,
@@ -342,7 +380,7 @@ describe('useElementSelected', () => {
 
     render(
       <Plite editor={editor}>
-        <Editable renderElement={renderElement} />
+        <Editable renderElement={RenderElement} />
       </Plite>
     );
 

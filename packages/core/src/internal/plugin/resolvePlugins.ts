@@ -5,6 +5,7 @@ import type {
   EditorStateSchemaApi,
 } from '@platejs/plite';
 import {
+  failInvariant,
   compileEditorExtension,
   getCandidateEditorExtensionApi,
   getCompiledSchemaPropertyId,
@@ -179,11 +180,20 @@ const isOpaquePluginDescriptorResource = (
   const key = path.at(-1);
   const parent = path.at(-2);
 
-  if (parent === 'render' && isOpaquePluginRenderKey(key!)) return true;
+  if (
+    parent === 'render' &&
+    isOpaquePluginRenderKey(
+      key ?? failInvariant('Expected value to be defined')
+    )
+  ) {
+    return true;
+  }
   if (
     typeof key === 'number' &&
     path.length === 2 &&
-    opaqueNativeResourceFields.has(parent!)
+    opaqueNativeResourceFields.has(
+      parent ?? failInvariant('Expected value to be defined')
+    )
   ) {
     return true;
   }
@@ -193,21 +203,21 @@ const isOpaquePluginDescriptorResource = (
 
 type MutableDeep<T> = T extends (...args: never[]) => unknown
   ? T
-  : T extends readonly (infer TItem)[]
-    ? MutableDeep<TItem>[]
+  : T extends ReadonlyArray<infer TItem>
+    ? Array<MutableDeep<TItem>>
     : T extends object
       ? { -readonly [K in keyof T]: MutableDeep<T[K]> }
       : T;
 
 type MutablePlatePluginCache = MutableDeep<PlatePluginCache>;
 type MutableResolvedInputRulesMeta = {
-  insertBreak: Extract<ResolvedInputRule, { target: 'insertBreak' }>[];
-  insertData: Extract<ResolvedInputRule, { target: 'insertData' }>[];
+  insertBreak: Array<Extract<ResolvedInputRule, { target: 'insertBreak' }>>;
+  insertData: Array<Extract<ResolvedInputRule, { target: 'insertData' }>>;
   insertText: {
-    all: Extract<ResolvedInputRule, { target: 'insertText' }>[];
+    all: Array<Extract<ResolvedInputRule, { target: 'insertText' }>>;
     byTrigger: Record<
       string,
-      Extract<ResolvedInputRule, { target: 'insertText' }>[]
+      Array<Extract<ResolvedInputRule, { target: 'insertText' }>>
     >;
   };
   plugins: Record<string, { rules: ResolvedInputRule[] }>;
@@ -441,7 +451,9 @@ const publishPlatePluginDescriptors = (
   const snapshots = new WeakMap<object, unknown>();
 
   pluginList.forEach((plugin) => {
-    const published = publishedByName.get(plugin.name)!;
+    const published =
+      publishedByName.get(plugin.name) ??
+      failInvariant('Expected value to be defined');
 
     for (const key of Reflect.ownKeys(plugin)) {
       const descriptor = Object.getOwnPropertyDescriptor(plugin, key);
@@ -511,8 +523,10 @@ const publishPlatePluginDescriptors = (
     }
   });
 
-  const publishedPluginList = pluginList.map((plugin) =>
-    publishedByName.get(plugin.name)!
+  const publishedPluginList = pluginList.map(
+    (plugin) =>
+      publishedByName.get(plugin.name) ??
+      failInvariant('Expected value to be defined')
   );
 
   publishedPluginList.forEach(Object.freeze);
@@ -581,7 +595,7 @@ const publishCompiledSchemaHandles = (
             `Plate plugin "${binding.name}" schema property "${id}" did not resolve to one compiled property.`
           );
         }
-        const compiled = matches[0]!;
+        const compiled = matches[0];
         const compiledTarget = compiled.target ?? undefined;
 
         if (
@@ -636,10 +650,10 @@ const publishCompiledSchemaHandles = (
         return [
           localId,
           Object.freeze({
-            id: matches[0]!.id,
-            key: matches[0]!.key,
+            id: matches[0].id,
+            key: matches[0].key,
             kind: 'schema-property' as const,
-            placement: matches[0]!.placement,
+            placement: matches[0].placement,
           }),
         ];
       })
@@ -668,7 +682,11 @@ const publishCompiledSchemaHandles = (
       propertyHandles: Object.freeze(propertyHandles),
       schema: Object.freeze({
         ...binding.schema,
-        ...(binding.kind === 'mark' ? { key: propertyKey! } : {}),
+        ...(binding.kind === 'mark'
+          ? {
+              key: propertyKey ?? failInvariant('Expected value to be defined'),
+            }
+          : {}),
         properties: Object.freeze(
           Object.fromEntries(
             Object.keys(binding.schema.properties).map((localId) => [
@@ -790,13 +808,18 @@ export const createPlateModelPublication = (
   const containerTypes = publishedModel.bindings.flatMap((binding) => {
     if (binding.kind !== 'element' || !blockTypes) return [];
 
-    const childTypes = compiledSchema.elements.byType.get(binding.elementType!)
-      ?.content?.allowedElementTypes;
+    const childTypes = compiledSchema.elements.byType.get(
+      binding.elementType ?? failInvariant('Expected value to be defined')
+    )?.content?.allowedElementTypes;
 
     if (!childTypes) return [];
 
     for (const childType of childTypes) {
-      if (blockTypes.has(childType)) return [binding.elementType!];
+      if (blockTypes.has(childType)) {
+        return [
+          binding.elementType ?? failInvariant('Expected value to be defined'),
+        ];
+      }
     }
 
     return [];
@@ -947,10 +970,7 @@ const inspectPluginUpdateMethods = (
   pluginList: readonly AnyBasePlugin[],
   model: CompiledPlateModel
 ) => {
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let probe: unknown;
-
-  probe = new Proxy(() => probe, {
+  const probe: unknown = new Proxy(() => probe, {
     apply: () => probe,
     get: () => probe,
   });
@@ -980,10 +1000,10 @@ const inspectPluginUpdateMethods = (
           tx: probe,
         }),
       ]) as object;
-    } catch (cause) {
+    } catch (error) {
       throw new Error(
         `Plate update namespace "${plugin.name}" could not be inspected. Update factories must construct commands without executing document work.`,
-        { cause }
+        { cause: error }
       );
     }
 
@@ -1008,9 +1028,9 @@ const resolvePluginCapability = (
   contributions: readonly ResolvedPluginCapabilityContribution[],
   context: object
 ) => {
-  const values = contributions.map(({ factory, kind }) =>
+  const values = contributions.map(({ factory, kind: innerKind }) =>
     Reflect.apply(factory, undefined, [
-      kind === 'native'
+      innerKind === 'native'
         ? context
         : Object.assign(Object.create(pluginContext), context),
     ])
@@ -1109,7 +1129,10 @@ export const createPlateRuntimeExtensions = (
         .slice(0, index)
         .flatMap((previous) =>
           previous.conflicts.some((conflict) => conflict.name === plugin.name)
-            ? [extensionByName.get(previous.name)!]
+            ? [
+                extensionByName.get(previous.name) ??
+                  failInvariant('Expected value to be defined'),
+              ]
             : []
         ),
     ];
@@ -1286,27 +1309,27 @@ export const createPlateRuntimeExtensions = (
                           context.tx.schema.isBlock(element) &&
                           options?.at === undefined
                         ) {
-                          return context.tx.blocks.insertAfter(
-                            element,
-                            options
-                          );
+                          context.tx.blocks.insertAfter(element, options);
+                          return;
                         }
 
-                        return context.tx.nodes.insert(element, options);
+                        context.tx.nodes.insert(element, options);
                       },
-                      remove: (options?: Readonly<Record<string, unknown>>) =>
+                      remove: (options?: Readonly<Record<string, unknown>>) => {
                         context.tx.nodes.remove({
                           ...options,
                           type: elementType,
-                        }),
+                        });
+                      },
                       set: (
                         properties: Readonly<Record<string, unknown>>,
                         options?: Readonly<Record<string, unknown>>
-                      ) =>
+                      ) => {
                         context.tx.nodes.set(properties, {
                           ...options,
                           type: elementType,
-                        }),
+                        });
+                      },
                       ...(hasGenericToggle && !hasAuthoredToggle
                         ? {
                             toggle: (
@@ -1330,9 +1353,12 @@ export const createPlateRuntimeExtensions = (
                   : {}),
                 ...(markKey
                   ? {
-                      clear: () => context.tx.marks.remove(markKey),
-                      set: (value: unknown) =>
-                        context.tx.marks.add(markKey, value),
+                      clear: () => {
+                        context.tx.marks.remove(markKey);
+                      },
+                      set: (value: unknown) => {
+                        context.tx.marks.add(markKey, value);
+                      },
                       toggle: (value?: unknown) => {
                         if (!markIsBoolean && value === undefined) {
                           throw new TypeError(
@@ -1376,7 +1402,7 @@ export const createPlateRuntimeExtensions = (
                 EditorExtensionDefinitionInput<BaseEditor>['corrections']
               >
             ).map((correction) => {
-              const query = correction.query;
+              const { query } = correction;
 
               if (
                 !query ||
@@ -1487,13 +1513,16 @@ export const createPlateRuntimeExtensions = (
         Object.create(null);
 
       pluginList.forEach((plugin) => {
-        const extension = extensionByName.get(plugin.name)!;
+        const extension =
+          extensionByName.get(plugin.name) ??
+          failInvariant('Expected value to be defined');
         const candidate = getCandidateEditorExtensionApi(editor, extension)?.[
           plugin.name
         ];
         const api = isApiRecord(candidate)
           ? candidate
-          : fallbackApiByPlugin.get(plugin.name)!;
+          : (fallbackApiByPlugin.get(plugin.name) ??
+            failInvariant('Expected value to be defined'));
 
         apiByPlugin[plugin.name] = api;
         shortcutApiByPlugin[plugin.name] = Object.freeze({ api });
@@ -1532,9 +1561,7 @@ const createPluginShortcuts = (
 
         if (hotkey === null) {
           // If hotkey is null, remove the namespaced shortcut
-          delete (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
-            namespacedKey
-          ];
+          delete shortcuts[namespacedKey];
         } else if (hotkey && typeof hotkey === 'object') {
           const { target, ...hotkeyOptions } = hotkey;
           const resolvedHotkey = { ...hotkeyOptions } as Record<
@@ -1631,9 +1658,9 @@ const createPluginShortcuts = (
 
           resolvedHotkey.priority ??= 0;
 
-          (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
-            namespacedKey
-          ] = resolvedHotkey as NonNullable<BasePlugin['shortcuts'][string]>;
+          shortcuts[namespacedKey] = resolvedHotkey as NonNullable<
+            BasePlugin['shortcuts'][string]
+          >;
           compilerInputs.push({
             declarationIndex,
             id: namespacedKey,
@@ -1691,7 +1718,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
         plugin,
         priority: mergedRule.priority ?? 0,
         ruleIndex,
-      } as ResolvedInputRule;
+      };
 
       resolvedMeta.plugins[plugin.name].rules.push(resolvedRule);
 
@@ -1856,8 +1883,7 @@ const applyComponentOverrides = (
   > = Object.create(null);
 
   for (const plugin of plugins) {
-    const components = (plugin.override as { components?: NodeComponents })
-      .components;
+    const { components } = plugin.override as { components?: NodeComponents };
 
     if (!components) continue;
     Object.entries(components).forEach(([key, component]) => {
@@ -2091,11 +2117,17 @@ const resolveAndSortPluginsCandidate = (
   const sourceIndexByDescriptor = new WeakMap<object, number>();
   const indexed = new WeakSet<object>();
   let nextSourceIndex = 0;
+  const takeSourceIndex = () => {
+    const sourceIndex = nextSourceIndex;
+
+    nextSourceIndex += 1;
+    return sourceIndex;
+  };
   const indexDescriptor = (value: unknown) => {
     if (!value || typeof value !== 'object' || indexed.has(value)) return;
 
     indexed.add(value);
-    sourceIndexByDescriptor.set(value, nextSourceIndex++);
+    sourceIndexByDescriptor.set(value, takeSourceIndex());
     if (!isNominalPluginDescriptor(value)) return;
 
     const plugin = value as AnyBasePlugin;
@@ -2132,7 +2164,9 @@ const resolveAndSortPluginsCandidate = (
         descriptor,
         path,
         role,
-        sourceIndex: sourceIndexByDescriptor.get(descriptor)!,
+        sourceIndex:
+          sourceIndexByDescriptor.get(descriptor) ??
+          failInvariant('Expected value to be defined'),
       });
       rootOriginsByName.set(descriptor.name, origins);
     }
@@ -2183,7 +2217,7 @@ const resolveAndSortPluginsCandidate = (
       (origin) => rootRolePrecedence[origin.role] === highestPrecedence
     );
     let selected = highestRoleOrigins[0];
-    let descriptor = selected.descriptor;
+    let { descriptor } = selected;
 
     if (highestRoleOrigins.length > 1) {
       const orderedOrigins = [...highestRoleOrigins].sort(
@@ -2201,10 +2235,11 @@ const resolveAndSortPluginsCandidate = (
       const authoringStages = getPluginDescriptorMetadata(
         lineageOrigin.descriptor
       ).stages;
-      const sharesAuthoringLineage = orderedOrigins.every(({ descriptor }) =>
-        getPluginDescriptorMetadata(descriptor).stages.every(
-          (stage, index) => stage === authoringStages[index]
-        )
+      const sharesAuthoringLineage = orderedOrigins.every(
+        ({ descriptor: innerDescriptor }) =>
+          getPluginDescriptorMetadata(innerDescriptor).stages.every(
+            (stage, index) => stage === authoringStages[index]
+          )
       );
 
       if (families.size > 1 || !sharesAuthoringLineage) {
@@ -2228,7 +2263,8 @@ const resolveAndSortPluginsCandidate = (
           ])
         ),
       });
-      selected = orderedOrigins.at(-1)!;
+      selected =
+        orderedOrigins.at(-1) ?? failInvariant('Expected value to be defined');
     }
 
     const resolved = resolveDescriptor(descriptor);
@@ -2260,7 +2296,8 @@ const resolveAndSortPluginsCandidate = (
     reference: unknown,
     index: number
   ) => {
-    const ownerPlugin = owner.resolved!;
+    const ownerPlugin =
+      owner.resolved ?? failInvariant('Expected value to be defined');
     const path = `${owner.origin.path}.dependencies[${index}]`;
     const descriptor = assertPluginReference(reference, ownerPlugin.name, path);
     const hidden = hiddenByName.get(descriptor.name);
@@ -2285,7 +2322,7 @@ const resolveAndSortPluginsCandidate = (
         origin: {
           path,
           sourceIndex:
-            sourceIndexByDescriptor.get(descriptor) ?? nextSourceIndex++,
+            sourceIndexByDescriptor.get(descriptor) ?? takeSourceIndex(),
         },
       };
       nodes.set(descriptor.name, target);
@@ -2296,7 +2333,9 @@ const resolveAndSortPluginsCandidate = (
     ) {
       target.origin = {
         ...target.origin,
-        sourceIndex: sourceIndexByDescriptor.get(descriptor)!,
+        sourceIndex:
+          sourceIndexByDescriptor.get(descriptor) ??
+          failInvariant('Expected value to be defined'),
       };
     }
 
@@ -2349,7 +2388,8 @@ const resolveAndSortPluginsCandidate = (
   });
 
   requiredByTarget.forEach((edges, targetName) => {
-    const target = nodes.get(targetName)!;
+    const target =
+      nodes.get(targetName) ?? failInvariant('Expected value to be defined');
 
     if (target.resolved?.enabled === false) {
       const edge = edges[0];
@@ -2408,8 +2448,8 @@ const resolveAndSortPluginsCandidate = (
   const ordered: AnyBasePlugin[] = [];
 
   while (ready.length > 0) {
-    const node = ready.shift()!;
-    const name = node.resolved.name;
+    const node = ready.shift() ?? failInvariant('Expected value to be defined');
+    const { name } = node.resolved;
 
     ordered.push(node.resolved);
     dependentsByDependency.get(name)?.forEach((dependentName) => {
@@ -2417,7 +2457,10 @@ const resolveAndSortPluginsCandidate = (
 
       indegree.set(dependentName, next);
       if (next === 0) {
-        ready.push(enabledByName.get(dependentName)!);
+        ready.push(
+          enabledByName.get(dependentName) ??
+            failInvariant('Expected value to be defined')
+        );
         ready.sort(compareReady);
       }
     });

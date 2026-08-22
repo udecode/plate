@@ -186,7 +186,7 @@ describe('pluginInjectNodeProps', () => {
           },
           nodeKey: 'tone',
           styleKey: 'color',
-          transformClassName: ({ value }) => `tone-${value}`,
+          transformClassName: ({ value }) => `tone-${String(value)}`,
           transformNodeValue: ({ nodeValue }) =>
             typeof nodeValue === 'string' ? nodeValue.toUpperCase() : nodeValue,
           transformProps: ({ props, value }) => ({

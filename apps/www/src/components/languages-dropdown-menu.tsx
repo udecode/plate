@@ -20,13 +20,15 @@ export function LanguagesDropdownMenu() {
     if (locale === 'cn') {
       // Switch to Chinese - add /cn prefix if not present
       if (pathname?.startsWith('/cn')) {
-        return; // Already on CN
+        // Already on CN
+        return;
       }
       newPathname = `/cn${pathname || '/'}`;
     } else {
       // Switch to English - remove /cn prefix
       if (!pathname?.startsWith('/cn')) {
-        return; // Already on English
+        // Already on English
+        return;
       }
       const segments = pathname.split('/').filter((p) => !!p && p !== 'cn');
       newPathname = segments.length > 0 ? `/${segments.join('/')}` : '/';
@@ -48,7 +50,9 @@ export function LanguagesDropdownMenu() {
           <button
             type="button"
             className="m-0 w-full cursor-pointer"
-            onClick={() => handleClick()}
+            onClick={() => {
+              handleClick();
+            }}
           >
             English
           </button>
@@ -57,7 +61,9 @@ export function LanguagesDropdownMenu() {
           <button
             type="button"
             className="w-full cursor-pointer"
-            onClick={() => handleClick('cn')}
+            onClick={() => {
+              handleClick('cn');
+            }}
           >
             中文
           </button>

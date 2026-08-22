@@ -63,7 +63,7 @@ const getEncodedTextAttributes = (
   const encoded: YjsAttributeRecord = {};
 
   for (const [key, value] of Object.entries(attributes)) {
-    if (!isSetValued(node as Descendant, key, context)) {
+    if (!isSetValued(node, key, context)) {
       encoded[key] = value;
       continue;
     }
@@ -243,7 +243,7 @@ const commonPrefixLength = (left: string, right: string): number => {
   const limit = Math.min(left.length, right.length);
   let length = 0;
 
-  while (length < limit && left[length] === right[length]) length++;
+  while (length < limit && left[length] === right[length]) length += 1;
 
   return length;
 };
@@ -257,7 +257,7 @@ const commonSuffixLength = (
   let length = 0;
 
   while (length < limit && left.at(-1 - length) === right.at(-1 - length)) {
-    length++;
+    length += 1;
   }
 
   return length;
@@ -364,7 +364,7 @@ const canReplaceCompatibleYjsChildrenWithReader = (
       if (!isPliteText(oldChild) || !isPliteText(newChild)) {
         return false;
       }
-      index++;
+      index += 1;
       continue;
     }
 
@@ -384,7 +384,7 @@ const canReplaceCompatibleYjsChildrenWithReader = (
         return false;
       }
 
-      index++;
+      index += 1;
       continue;
     }
 
@@ -411,7 +411,7 @@ const applyCompatibleYjsChildrenReplacement = (
     const newChild = newChildren[index];
 
     if (newChild === undefined) {
-      index++;
+      index += 1;
       continue;
     }
 
@@ -423,7 +423,7 @@ const applyCompatibleYjsChildrenReplacement = (
 
     if (child instanceof Y.XmlText) {
       if (!isPliteText(oldChild) || !isPliteText(newChild)) {
-        index++;
+        index += 1;
         continue;
       }
 
@@ -433,7 +433,7 @@ const applyCompatibleYjsChildrenReplacement = (
         child,
         getTextAttributes(oldChild),
         attributes,
-        (key) => isSetValued(newChild as Descendant, key, context)
+        (key) => isSetValued(newChild, key, context)
       );
       replaceYjsText(
         child,
@@ -442,7 +442,7 @@ const applyCompatibleYjsChildrenReplacement = (
         getEncodedTextAttributes(newChild, isSetValued, context)
       );
 
-      index++;
+      index += 1;
       continue;
     }
 
@@ -455,7 +455,7 @@ const applyCompatibleYjsChildrenReplacement = (
         child,
         getElementAttributes(oldChild),
         getElementAttributes(newChild),
-        (key) => isSetValued(newChild as Descendant, key, context)
+        (key) => isSetValued(newChild, key, context)
       );
       applyCompatibleYjsChildrenReplacement(
         readVisibleChildren,
@@ -471,7 +471,7 @@ const applyCompatibleYjsChildrenReplacement = (
         }
       );
     }
-    index++;
+    index += 1;
   }
 };
 

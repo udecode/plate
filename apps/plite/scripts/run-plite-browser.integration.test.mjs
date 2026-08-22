@@ -283,13 +283,14 @@ test(
   async (context) => {
     const fixture = createFixture();
 
-    context.after(() =>
-      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
-    );
+    context.after(() => {
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true });
+    });
 
     const { environment, run } = createFixtureRunner(fixture);
-    const writeControl = (value) =>
+    const writeControl = (value) => {
       writeFile(fixture.controlFile, `${JSON.stringify(value)}\n`);
+    };
     const stateDirectory = path.join(
       fixture.appRoot,
       '.tmp/plite-browser-runner'
@@ -422,9 +423,9 @@ test(
   async (context) => {
     const fixture = createFixture();
 
-    context.after(() =>
-      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
-    );
+    context.after(() => {
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true });
+    });
 
     const { environment, run } = createFixtureRunner(fixture);
     const initial = await run();

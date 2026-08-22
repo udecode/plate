@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+
 import { jsx } from '@platejs/test-utils';
 
 jsx;
@@ -12,7 +13,7 @@ export const codeBlockValue = (
       languages with proper formatting and indentation.
     </hp>
     <hcodeblock lang="javascript">
-      <hcodeline>// JavaScript example with async/await</hcodeline>
+      <hcodeline>{'// JavaScript example with async/await'}</hcodeline>
       <hcodeline>{'async function fetchUserData(userId) {'}</hcodeline>
       <hcodeline>{'  try {'}</hcodeline>
       <hcodeline>
@@ -51,7 +52,7 @@ export const codeBlockValue = (
     </hcodeblock>
     <hp>CSS styling example:</hp>
     <hcodeblock lang="css">
-      <hcodeline>/* Modern CSS with custom properties */</hcodeline>
+      <hcodeline>{'/* Modern CSS with custom properties */'}</hcodeline>
       <hcodeline>{':root {'}</hcodeline>
       <hcodeline>{'  --primary-color: #3b82f6;'}</hcodeline>
       <hcodeline>{'  --secondary-color: #64748b;'}</hcodeline>

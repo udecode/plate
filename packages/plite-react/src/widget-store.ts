@@ -10,7 +10,10 @@ import type {
   PliteAnnotationStore,
   PliteResolvedAnnotation,
 } from './annotation-store';
-import { getSnapshot as editorGetSnapshot } from './editable/runtime-editor-api';
+import {
+  failInvariant,
+  getSnapshot as editorGetSnapshot,
+} from './editable/runtime-editor-api';
 import {
   areMappedViewDataEqual,
   createMappedViewStoreKernel,
@@ -127,15 +130,20 @@ const areWidgetAnchorsEqual = (
   if (left.type !== right.type) return false;
 
   switch (left.type) {
-    case 'annotation':
+    case 'annotation': {
       return (
         right.type === 'annotation' && left.annotationId === right.annotationId
       );
-    case 'node':
+    }
+    case 'node': {
       return right.type === 'node' && left.nodeKey === right.nodeKey;
-    case 'selection':
+    }
+    case 'selection': {
       return true;
+    }
   }
+
+  return failInvariant('Unexpected widget anchor type');
 };
 
 const areWidgetInputsEqual = <T extends Record<string, unknown>>(
@@ -159,7 +167,7 @@ const areResolvedWidgetsEqual = <
   left.visible === right.visible;
 
 const getEditorChangeWidgetIds = <T extends Record<string, unknown>>(
-  widgets: readonly PliteWidget<T>[],
+  widgets: ReadonlyArray<PliteWidget<T>>,
   change: EditorCommit,
   editor: EditorType
 ) => {
@@ -204,7 +212,7 @@ const createPliteWidgetStoreInternal = <
   TAnnotation extends Record<string, unknown>,
 >(
   editor: EditorType,
-  getWidgets: () => readonly PliteWidget<T>[],
+  getWidgets: () => ReadonlyArray<PliteWidget<T>>,
   annotationStore: PliteAnnotationStore<TAnnotation> | null | undefined,
   options: PliteWidgetStoreOptions,
   dormant: boolean
@@ -250,7 +258,7 @@ const createPliteWidgetStoreInternal = <
       visible,
     }) as PliteResolvedWidget<T, TAnnotation>;
   };
-  const createMappedSource = (widgets: readonly PliteWidget<T>[]) =>
+  const createMappedSource = (widgets: ReadonlyArray<PliteWidget<T>>) =>
     createStableIdMappedSource<
       PliteWidget<T>,
       PliteResolvedWidget<T, TAnnotation>,
@@ -266,7 +274,7 @@ const createPliteWidgetStoreInternal = <
       }),
     });
   const initialWidgetsResult = dormant
-    ? ({ ok: true, value: [] as readonly PliteWidget<T>[] } as const)
+    ? ({ ok: true, value: [] as ReadonlyArray<PliteWidget<T>> } as const)
     : faultBoundary.run('read', getWidgets);
   const initialMappedResult = initialWidgetsResult.ok
     ? faultBoundary.run('resolve', () =>
@@ -298,7 +306,7 @@ const createPliteWidgetStoreInternal = <
   let activated = !dormant;
 
   const syncWidgets = (
-    widgets: readonly PliteWidget<T>[],
+    widgets: ReadonlyArray<PliteWidget<T>>,
     syncOptions: Readonly<{
       forceAll?: boolean;
       forceIds?: readonly string[];
@@ -451,7 +459,7 @@ export const createPliteWidgetStore = <
   TAnnotation extends Record<string, unknown>,
 >(
   editor: EditorType,
-  getWidgets: () => readonly PliteWidget<T>[],
+  getWidgets: () => ReadonlyArray<PliteWidget<T>>,
   annotationStore?: PliteAnnotationStore<TAnnotation> | null,
   options: PliteWidgetStoreOptions = {}
 ): PliteWidgetStore<T, TAnnotation> =>
@@ -473,7 +481,7 @@ export const createDormantPliteWidgetStore = <
   TAnnotation extends Record<string, unknown>,
 >(
   editor: EditorType,
-  getWidgets: () => readonly PliteWidget<T>[],
+  getWidgets: () => ReadonlyArray<PliteWidget<T>>,
   annotationStore?: PliteAnnotationStore<TAnnotation> | null,
   options: PliteWidgetStoreOptions = {}
 ) =>

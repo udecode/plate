@@ -28,13 +28,15 @@ export function BlockCopyButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hasCopied) return;
+    if (!hasCopied) return undefined;
 
     const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [hasCopied]);
 
   return (

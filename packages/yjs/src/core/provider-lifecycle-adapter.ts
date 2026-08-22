@@ -155,7 +155,7 @@ export const createYjsProviderLifecycleAdapter = ({
   };
 
   const syncProviderLifecycleResult = (
-    result: Promise<unknown> | unknown,
+    result: unknown,
     fallbackConnected: boolean
   ): void => {
     if (isPromiseLike(result)) {
@@ -180,7 +180,7 @@ export const createYjsProviderLifecycleAdapter = ({
       const event = PROVIDER_SYNC_EVENTS[index];
 
       provider?.on?.(event, providerSyncedObserver);
-      index++;
+      index += 1;
     }
   };
 
@@ -192,7 +192,7 @@ export const createYjsProviderLifecycleAdapter = ({
       const event = PROVIDER_SYNC_EVENTS[index];
 
       provider?.off?.(event, providerSyncedObserver);
-      index++;
+      index += 1;
     }
   };
 
@@ -208,6 +208,8 @@ export const createYjsProviderLifecycleAdapter = ({
     if (setConnected(true)) {
       updateProviderRevision();
     }
+
+    return undefined;
   };
 
   const disconnect = (): unknown => {
@@ -233,6 +235,8 @@ export const createYjsProviderLifecycleAdapter = ({
     if (setConnected(false)) {
       updateProviderRevision();
     }
+
+    return undefined;
   };
 
   const reconnect = (): void => {

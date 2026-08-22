@@ -40,7 +40,7 @@ describe('ImageProgress', () => {
     previewIndex = 0;
     createObjectURL.mockReset();
     createObjectURL.mockImplementation(
-      () => `blob:image-preview-${++previewIndex}`
+      () => `blob:image-preview-${(previewIndex += 1)}`
     );
     revokeObjectURL.mockReset();
   });

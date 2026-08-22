@@ -153,18 +153,21 @@ export function ToolbarButton({
 
 export function ToolbarSplitButton({
   className,
+  pressed,
   ...props
-}: React.ComponentPropsWithoutRef<typeof ToolbarButton>) {
+}: React.ComponentPropsWithoutRef<'div'> & { pressed?: boolean }) {
   return (
-    <ToolbarButton
+    <div
       className={cn('group flex gap-0 px-0 hover:bg-transparent', className)}
+      data-pressed={pressed || undefined}
+      role="group"
       {...props}
     />
   );
 }
 
 type ToolbarSplitButtonPrimaryProps = Omit<
-  React.ComponentPropsWithoutRef<'span'>,
+  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
   'size'
 > &
   VariantProps<typeof toolbarButtonVariants>;
@@ -177,7 +180,7 @@ export function ToolbarSplitButtonPrimary({
   ...props
 }: ToolbarSplitButtonPrimaryProps) {
   return (
-    <span
+    <ToolbarPrimitive.Button
       className={cn(
         toolbarButtonVariants({
           size,
@@ -187,10 +190,11 @@ export function ToolbarSplitButtonPrimary({
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}
+      type="button"
       {...props}
     >
       {children}
-    </span>
+    </ToolbarPrimitive.Button>
   );
 }
 
@@ -199,10 +203,10 @@ export function ToolbarSplitButtonSecondary({
   size,
   variant,
   ...props
-}: React.ComponentPropsWithoutRef<'span'> &
+}: React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button> &
   VariantProps<typeof dropdownArrowVariants>) {
   return (
-    <span
+    <ToolbarPrimitive.Button
       className={cn(
         dropdownArrowVariants({
           size,
@@ -211,12 +215,11 @@ export function ToolbarSplitButtonSecondary({
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}
-      onClick={(e) => e.stopPropagation()}
-      role="button"
+      type="button"
       {...props}
     >
       <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
-    </span>
+    </ToolbarPrimitive.Button>
   );
 }
 

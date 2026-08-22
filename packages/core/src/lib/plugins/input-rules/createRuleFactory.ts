@@ -662,7 +662,7 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
       getMergedInput(context, factoryOptions);
 
     if (config.type === 'mark') {
-      const enabled = config.enabled;
+      const { enabled } = config;
 
       return createMarkInputRule({
         enabled: enabled
@@ -682,9 +682,9 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
     }
 
     if (config.type === 'blockStart') {
-      const apply = config.apply;
-      const enabled = config.enabled;
-      const resolveMatch = config.resolveMatch;
+      const { apply } = config;
+      const { enabled } = config;
+      const { resolveMatch } = config;
 
       return createBlockStartInputRule({
         enabled: enabled
@@ -712,8 +712,8 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
     }
 
     if (config.type === 'blockFence') {
-      const enabled = config.enabled;
-      const resolveMatch = config.resolveMatch;
+      const { enabled } = config;
+      const { resolveMatch } = config;
       const on =
         resolveFactoryValue(config.on ?? optionOn, factoryOptions) ?? 'match';
 
@@ -736,8 +736,8 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
     }
 
     if (config.type === 'insertText') {
-      const enabled = config.enabled;
-      const resolve = config.resolve;
+      const { enabled } = config;
+      const { resolve } = config;
 
       return defineInputRule<unknown>({
         apply: (context, match) =>
@@ -757,8 +757,8 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
     }
 
     if (config.type === 'insertBreak') {
-      const enabled = config.enabled;
-      const resolve = config.resolve;
+      const { enabled } = config;
+      const { resolve } = config;
 
       return defineInputRule<unknown>({
         apply: (context, match) =>
@@ -777,8 +777,8 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
     }
 
     if (config.type === 'insertData') {
-      const enabled = config.enabled;
-      const resolve = config.resolve;
+      const { enabled } = config;
+      const { resolve } = config;
 
       return defineInputRule<unknown>({
         apply: (context, match) =>
@@ -797,7 +797,7 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
       });
     }
 
-    const enabled = config.enabled;
+    const { enabled } = config;
 
     return createTextSubstitutionInputRule({
       enabled: enabled

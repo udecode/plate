@@ -16,7 +16,7 @@ describe('BaseMediaEmbedPlugin', () => {
       plugins: [BaseMediaEmbedPlugin],
     });
     const plugin = editor.plugin(BaseMediaEmbedPlugin);
-    const transformUrl = plugin.initialState.transformUrl!;
+    const { transformUrl } = plugin.initialState;
 
     expect(plugin.name).toBe('mediaEmbed');
     expect(plugin.name).toBe(PLUGINS.mediaEmbed);
@@ -260,7 +260,7 @@ describe('BaseMediaEmbedPlugin', () => {
       type: BaseMediaEmbedPlugin,
     })?.[0];
 
-    assert(element);
+    assert.ok(element);
     expect(
       editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
         element,
@@ -289,7 +289,7 @@ describe('BaseMediaEmbedPlugin', () => {
       type: BaseMediaEmbedPlugin,
     })?.[0];
 
-    assert(element);
+    assert.ok(element);
     expect(
       editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
         element,
@@ -320,7 +320,7 @@ describe('BaseMediaEmbedPlugin', () => {
       type: BaseMediaEmbedPlugin,
     })?.[0];
 
-    assert(element);
+    assert.ok(element);
     expect(
       editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
         element,
@@ -350,7 +350,7 @@ describe('BaseMediaEmbedPlugin', () => {
       type: BaseMediaEmbedPlugin,
     })?.[0];
 
-    assert(element);
+    assert.ok(element);
     expect(
       editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
         element,
@@ -402,11 +402,11 @@ describe('BaseMediaEmbedPlugin', () => {
         }),
         BaseMediaEmbedPlugin,
       ],
-      initialValue: ({ editor }) => [
+      initialValue: ({ editor: innerEditor }) => [
         {
           children: [{ text: '' }],
           id: 'document-node-id',
-          type: editor.plugin(BaseMediaEmbedPlugin).schema.type,
+          type: innerEditor.plugin(BaseMediaEmbedPlugin).schema.type,
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
         },
       ],

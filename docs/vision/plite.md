@@ -176,6 +176,10 @@ donor checkout as proof after the transplant.
   public surface.
 - `EditorCommit` is the local runtime fact for history, collaboration, React,
   DOM repair, proof, and subscribers.
+- Publication is the update outcome boundary. A callback that can still abort
+  belongs before publication; observers that run after an `EditorCommit`
+  exists report failure through `lifecycleErrorSink` and cannot make the
+  committed update appear rejected.
 - Overlay architecture is split into Decoration, Annotation, and Widget lanes.
 - Anchors are live editor-scoped handles created through `editor.anchor` or
   `tx.anchor`. Serialized durable positions are a separate concern; low-level

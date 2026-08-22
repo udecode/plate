@@ -114,11 +114,11 @@ export const Editor = ({
 
 Editor.displayName = 'Editor';
 
-export function EditorView<E>({
+export function EditorView({
   className,
   variant,
   ...props
-}: PlateViewProps<E> & VariantProps<typeof editorVariants>) {
+}: PlateViewProps<unknown> & VariantProps<typeof editorVariants>) {
   return (
     <PlateView
       {...props}

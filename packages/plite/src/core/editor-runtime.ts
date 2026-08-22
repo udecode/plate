@@ -92,7 +92,7 @@ export type InternalEditorReadRuntime = RuntimeMethods<
   parent: {
     (
       at: Location,
-      options: EditorParentOptions<Ancestor> & {
+      options: EditorParentOptions & {
         type: NodeTypeSelector;
       }
     ): NodeEntry<Ancestor> | undefined;
@@ -109,7 +109,7 @@ export type InternalEditorReadRuntime = RuntimeMethods<
 
 export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
   getChildren: () => V;
-  getFragment: () => DescendantIn<V>[];
+  getFragment: () => Array<DescendantIn<V>>;
   getLastCommit: () => EditorCommit<V> | null;
   getPathByNodeKey: (nodeKey: NodeKey) => Path | null;
   getNodeKey: (path: Path) => NodeKey | null;
@@ -119,7 +119,7 @@ export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
 
 export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   read: <T>(fn: (state: EditorStateView<V, any>) => T) => T;
-  runCommand: EditorCommandDispatch<Editor<V, any>>;
+  runCommand: EditorCommandDispatch<Editor<V>>;
   subscribe: (listener: SnapshotListener<V>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<V>) => () => void;
   subscribeSource: (
@@ -129,7 +129,7 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   update: (
     fn: (
       transaction: EditorUpdateTransaction<V, any>,
-      context: EditorUpdateContext<Editor<V, any>>
+      context: EditorUpdateContext<Editor<V>>
     ) => void,
     options?: InternalEditorUpdateOptions
   ) => void;
@@ -213,5 +213,5 @@ export const getEditorRuntimeRoot = (editor: Editor): RootKey =>
   EDITOR_RUNTIME_ROOT.get(editor) ?? 'main';
 
 export const getEditorSchema = <V extends Value>(
-  editor: Editor<V, any>
+  editor: Editor<V>
 ): InternalEditorSchemaApi<V> => getEditorRuntime(editor).schema;

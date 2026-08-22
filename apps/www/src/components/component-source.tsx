@@ -23,13 +23,14 @@ interface ComponentSourceProps extends React.HTMLAttributes<HTMLDivElement> {
 export function ComponentSource({
   children,
   className,
-  full,
+  full: initialFull,
   internal,
   name,
   src,
   title,
   ...props
 }: ComponentSourceProps) {
+  let full = initialFull;
   if (!isDefined(full) && !internal) {
     full = true;
   }

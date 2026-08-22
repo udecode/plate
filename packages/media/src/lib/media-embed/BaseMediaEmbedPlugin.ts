@@ -28,8 +28,8 @@ const normalizeMediaEmbedWidth = (
   element: HTMLElement,
   width: string | null
 ) => {
-  if (!width) return;
-  const style = element.ownerDocument.createElement('div').style;
+  if (!width) return undefined;
+  const { style } = element.ownerDocument.createElement('div');
 
   style.width = width;
 
@@ -75,7 +75,7 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
                 element.getAttribute(MEDIA_EMBED_URL_ATTRIBUTE)
               );
 
-            if (!url) return;
+            if (!url) return undefined;
 
             const width =
               iframe?.style.width ||
@@ -129,12 +129,12 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
         {
           decode: ({ element }) => {
             if (element.parentElement?.matches('figure.plate-media-embed')) {
-              return;
+              return undefined;
             }
 
             const url = element.getAttribute('src');
 
-            if (!url) return;
+            if (!url) return undefined;
 
             const width = element.style.width || undefined;
 

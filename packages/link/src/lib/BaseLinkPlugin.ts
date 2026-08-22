@@ -160,7 +160,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
     findAutolink: (): LinkTextAutolinkMatch | undefined => {
       const selection = state.selection();
 
-      if (!selection || !state.selection.isCollapsed()) return;
+      if (!selection || !state.selection.isCollapsed()) return undefined;
 
       const before = state.points.before(
         selection,
@@ -181,14 +181,14 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
           type: plugin,
         })
       ) {
-        return;
+        return undefined;
       }
 
       const text = state.text.string(range);
       const { getUrlHref, isUrl } = store.get();
       const url = getUrlHref?.(text) ?? text;
 
-      if (!isUrl(url)) return;
+      if (!isUrl(url)) return undefined;
 
       return { range, url };
     },
@@ -210,7 +210,9 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
         decode: ({ element }) => {
           const url = element.getAttribute('href');
 
-          if (!url || !validateUrlWithOptions(store.get(), url)) return;
+          if (!url || !validateUrlWithOptions(store.get(), url)) {
+            return undefined;
+          }
 
           return {
             target: element.getAttribute('target') || '_blank',
@@ -302,14 +304,16 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
       exitEnd: () => {
         const selection = tx.selection();
 
-        if (!selection || !tx.selection.isCollapsed()) return;
+        if (!selection || !tx.selection.isCollapsed()) return undefined;
 
         const link = tx.nodes.above({
           at: selection,
           type: plugin,
         });
 
-        if (!link || !tx.points.isEnd(selection.focus, link[1])) return;
+        if (!link || !tx.points.isEnd(selection.focus, link[1])) {
+          return undefined;
+        }
 
         const nextPoint = tx.points.after(link[1]);
 
@@ -390,6 +394,8 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
         }
 
         tx.nodes.unwrap({ type: plugin, ...options });
+
+        return undefined;
       },
       upsert: ({
         insertNodesOptions,
@@ -403,7 +409,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
       }: UpsertLinkOptions) => {
         const selection = tx.selection();
 
-        if (!selection) return;
+        if (!selection) return undefined;
 
         const linkAbove = tx.nodes.above({
           at: selection,
@@ -415,7 +421,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
 
           return true;
         }
-        if (!skipValidation && !api.validateUrl(url)) return;
+        if (!skipValidation && !api.validateUrl(url)) return undefined;
 
         const nextText = isDefined(text) && text.length === 0 ? url : text;
         const updateText = () => {
@@ -529,7 +535,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
 
         const leaf = tx.nodes.leaf(selection.focus.path);
 
-        if (!leaf) return;
+        if (!leaf) return undefined;
 
         tx.fragment.replace(
           [
@@ -623,7 +629,7 @@ const breakAutolinkRule = createLinkRule<{}, {}, LinkTextAutolinkMatch>({
         url: match.url,
       })
     ) {
-      return;
+      return undefined;
     }
 
     context.tx.selection.collapse({ edge: 'end' });
@@ -643,12 +649,14 @@ const pasteAutolinkRule = createLinkRule<
 >({
   type: 'insertData',
   resolve: (context) => {
-    if (!context.text) return;
+    if (!context.text) return undefined;
 
     const { getUrlHref } = context.editor.plugin(BaseLinkPlugin).store.get();
     const url = getUrlHref?.(context.text) ?? context.text;
 
-    if (!context.editor.plugin(BaseLinkPlugin).api.validateUrl(url)) return;
+    if (!context.editor.plugin(BaseLinkPlugin).api.validateUrl(url)) {
+      return undefined;
+    }
 
     const selection = context.editor.read.selection();
     let shouldLink = false;
@@ -707,7 +715,7 @@ const spaceAutolinkRule = createLinkRule<{}, {}, LinkTextAutolinkMatch>({
         url: match.url,
       })
     ) {
-      return;
+      return undefined;
     }
 
     context.tx.selection.collapse({ edge: 'end' });
@@ -726,11 +734,13 @@ export const LinkRules = {
       type: 'insertText',
       trigger: ')',
       resolve: ({ editor, options, text }) => {
-        if (text !== ')' || options?.at) return;
+        if (text !== ')' || options?.at) return undefined;
 
         const selection = editor.read.selection();
 
-        if (!selection || !editor.read.selection.isCollapsed()) return;
+        if (!selection || !editor.read.selection.isCollapsed()) {
+          return undefined;
+        }
         const codeBlock = editor.plugin(PLUGINS.codeBlock);
 
         if (
@@ -741,7 +751,7 @@ export const LinkRules = {
               : BaseLinkPlugin,
           })
         ) {
-          return;
+          return undefined;
         }
 
         const block = editor.read.nodes.block({ at: selection });
@@ -750,25 +760,27 @@ export const LinkRules = {
           ? { anchor: blockStart, focus: selection.anchor }
           : undefined;
 
-        if (!blockRange) return;
+        if (!blockRange) return undefined;
 
         const textBefore = editor.read.text.string(blockRange);
         const match = LINK_AUTOMD_REGEX.exec(textBefore);
 
-        if (!match) return;
+        if (!match) return undefined;
 
         const [, linkText, rawUrl] = match;
         const { transformInput } = editor.plugin(BaseLinkPlugin).store.get();
         const url = transformInput ? (transformInput(rawUrl) ?? '') : rawUrl;
 
-        if (!url || !editor.plugin(BaseLinkPlugin).api.validateUrl(url)) return;
+        if (!url || !editor.plugin(BaseLinkPlugin).api.validateUrl(url)) {
+          return undefined;
+        }
 
         const startPoint = editor.read.points.before(selection, {
           distance: match[0].length,
           unit: 'character',
         });
 
-        if (!startPoint) return;
+        if (!startPoint) return undefined;
 
         return {
           range: { anchor: startPoint, focus: selection.anchor },

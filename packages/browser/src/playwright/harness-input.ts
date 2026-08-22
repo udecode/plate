@@ -82,7 +82,9 @@ export const createEditorHarnessClipboard = ({
           break;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 20));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 20);
+        });
       }
 
       if (!html && !text && types.length === 0) {
@@ -115,7 +117,8 @@ export const createEditorHarnessClipboard = ({
       const beforeSelectedText = await harness.get.selectedText();
       const beforeSelection = await harness.selection.get();
       const beforeText = await harness.get.modelText();
-      const beforeTraceLength = (await harness.get.kernelTrace()).length;
+      const beforeTrace = await harness.get.kernelTrace();
+      const beforeTraceLength = beforeTrace.length;
 
       await harness.focus();
 
@@ -156,7 +159,8 @@ export const createEditorHarnessClipboard = ({
       const beforeSelectedText = await harness.get.selectedText();
       const beforeSelection = await harness.selection.get();
       const beforeText = await harness.get.modelText();
-      const beforeTraceLength = (await harness.get.kernelTrace()).length;
+      const beforeTrace = await harness.get.kernelTrace();
+      const beforeTraceLength = beforeTrace.length;
       const text = plainText ?? (await toPlainText(surface, html));
 
       await harness.focus();

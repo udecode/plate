@@ -15,9 +15,11 @@ Primary template:
 docs/plans/templates/task.md
 
 Applied packs:
+
 - none
 
 Task source:
+
 - type: direct user request
 - id / link: current Codex task
 - title: audit all Oxlint next-line suppressions
@@ -27,6 +29,7 @@ Task source:
   fixed/removed; explicitly scrutinize test suppressions.
 
 First checkpoint:
+
 - Before implementation or broad exploration, copy every explicit prompt
   requirement into this plan as checkable checkpoints: scope, non-goals,
   timing/duration, stop conditions, deliverables, final handoff sections,
@@ -35,6 +38,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Timed checkpoint:
+
 - requested duration: N/A: none requested
 - semantics: N/A
 - initial confidence score: N/A
@@ -42,6 +46,7 @@ Timed checkpoint:
 - final score / loop closure: N/A
 
 Completion threshold:
+
 - Every owned-source occurrence is reconciled by two independent searches.
 - Every directive has file, line, rule, target construct, and one concrete
   disposition: keep local, move to a narrow override, move global, or
@@ -56,6 +61,7 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-20-audit-oxlint-next-line-suppressions.md` passes.
 
 Verification surface:
+
 - Two independently implemented repository searches with matching directive
   and file counts.
 - A parser-produced inventory checked against source context and the active
@@ -65,6 +71,7 @@ Verification surface:
   audit and does not change executable behavior or Oxlint configuration.
 
 Constraints:
+
 - Preserve existing user-facing behavior outside the task scope.
 - Prefer the durable ownership boundary over caller-by-caller patches.
 - Do not create PRs, comments, commits, or pushes unless the task/user/skill
@@ -77,6 +84,7 @@ Constraints:
   defect or valid doctrine.
 
 Boundaries:
+
 - Source of truth: current repository source, `oxlint.config.ts`, and the
   migrate-to-ultracite rule policy/playbook.
 - Allowed edit scope: this goal plan only; all product/tooling/config source is
@@ -91,15 +99,18 @@ Boundaries:
   fix, or claiming that a repeated suppression is automatically config-worthy.
 
 Output budget strategy:
+
 - Count before printing. Parse the bounded match set into compact TSV/JSON in
   `/tmp`, inspect grouped summaries plus targeted source windows, and avoid
   streaming unrelated source or full lint output.
 
 Blocked condition:
+
 - Block only if repository files cannot be read or independent inventory
   methods disagree after excluding the same non-source trees.
 
 Task state:
+
 - task_type: read-only tooling policy audit
 - task_complexity: moderate
 - current_phase: closeout
@@ -108,6 +119,7 @@ Task state:
 - goal_status: complete
 
 Current verdict:
+
 - verdict: complete audit; tune one global rule option, add one JavaScript
   pattern exception and three exact-file owners, keep the other directives
   source-local, and add no global rule disable
@@ -117,6 +129,7 @@ Current verdict:
   every occurrence has a source-backed disposition
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
@@ -145,6 +158,7 @@ Start Gates:
 | Output budget strategy recorded | yes | compact counted inventory in `/tmp`; targeted context reads |
 
 Work Checklist:
+
 - [x] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded. N/A: no duration requested.
@@ -228,6 +242,7 @@ Phase / pass table:
 | Closeout | completed | final report prepared | final response |
 
 Findings:
+
 - Raw text scan: 93 matches. One is prose in
   `docs/plans/2026-08-18-migrate-plate-monorepo-to-ultracite.md:701`, leaving
   92 active next-line directives in 65 files.
@@ -343,6 +358,7 @@ Findings:
     (`unicorn/prefer-regexp-test`).
 
 Decisions and tradeoffs:
+
 - Do not add any rule to the broad test override. Tests are not exempt from
   promise, deprecation, console, accessor, allocation, or unsafe-eval rules.
 - Exact-file overrides are justified only when the whole file owns the valid
@@ -357,6 +373,7 @@ Decisions and tradeoffs:
 - No diagnostic count was used as a disable reason.
 
 Implementation notes:
+
 - Read-only audit. No product, tooling, or Oxlint config source was changed.
 - If authorized, the config cleanup should add the `prefer-const` option, add
   the JavaScript rule to the existing unchecked-JS override, and add three
@@ -365,6 +382,7 @@ Implementation notes:
   though it is outside this next-line inventory.
 
 Review fixes:
+
 - N/A: no implementation diff; source contexts and policy decisions were
   reviewed directly.
 
@@ -374,6 +392,7 @@ Error attempts:
 | One unpruned recursive `grep` produced no result | 1 | prune dependency/cache/output directories explicitly | `find` + pruned `grep` completed and independently matched 65 files / 92 directives |
 
 Verification evidence:
+
 - `rg` actual-directive scan: 65 files, 92 directives.
 - Independent pruned `find` + `grep`: 65 files, 92 directives.
 - Rule parser: 95 suppressions, 22 unique rules.
@@ -387,6 +406,7 @@ Verification evidence:
   has no rule option.
 
 Final handoff contract:
+
 - PR line: N/A: none requested or created
 - Issue / tracker line: N/A: direct task only
 - Confidence line: 99%; both inventories reconcile and all rows are classified
@@ -411,6 +431,7 @@ Final handoff contract:
 - PR body verified: N/A: no PR
 
 Task-style PR body contract:
+
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
   part of the diff and repo policy expects auto release, include that block.
 - Use the accepted kitcn PR #270 visual format. The body starts with an emoji
@@ -431,12 +452,14 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
+
 - PR: N/A
 - Issue / tracker: N/A
 - Browser proof: N/A
 - Caveats: no recommendations applied in this read-only audit
 
 Timeline:
+
 - 2026-08-20T10:43:43.679Z Task goal plan created.
 - 2026-08-20: Ultracite policy and active Oxlint overrides read.
 - 2026-08-20: Independent inventories reconciled at 65 files and 92 active
@@ -454,5 +477,6 @@ Reboot status:
 | What have I done? | Reconciled every occurrence and recorded its exact disposition; see Timeline and Verification evidence |
 
 Open risks:
+
 - None within the read-only audit. Applying the 32 cleanup recommendations
   still requires editing the config/directives and rerunning lint/check.

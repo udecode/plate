@@ -3,6 +3,7 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '@platejs/plite-dom/internal';
+import { history } from '@platejs/plite-history';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
@@ -26,8 +27,12 @@ import {
   createEditableInputControllerState,
   beginEditableCompositionSession,
   markEditableCompositionModelCommitted,
+  shouldMergeEditableCompositionHistory,
   type EditableInputController,
+  type PendingCompositionInput,
 } from '../src/editable/input-state';
+import { applyModelOwnedBeforeInputMutation } from '../src/editable/model-input-strategy';
+import { applyModelOwnedHistoryIntent } from '../src/editable/mutation-controller';
 import {
   claimSettledCompositionInput,
   queuePendingCompositionModelInput,
@@ -47,6 +52,36 @@ const createTextEditor = (text = 'abcd') => {
   });
 
   return editor as ReactEditor;
+};
+
+const readVisibleEditorState = (editor: ReactEditor) =>
+  editor.read((state) => ({
+    selection: structuredClone(state.selection()),
+    value: structuredClone(state.value()),
+  }));
+
+const createMarkedHistoryEditor = () => {
+  const editor = createEditor({ extensions: [history()] }) as ReactEditor;
+
+  editorReplace(editor, {
+    children: [
+      {
+        children: [
+          { text: 'This is editable ' },
+          { bold: true, text: 'rich' },
+          { text: ' text, done' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 'This is '.length },
+      focus: { path: [0, 2], offset: ' text'.length },
+    },
+  });
+
+  return { before: readVisibleEditorState(editor), editor };
 };
 
 const createCompositionEvent = (
@@ -112,6 +147,7 @@ describe('composition state', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文');
     const setComposing = vi.fn();
+    const inputController = createInputController();
     const androidInputManager = { handleCompositionStart: vi.fn() };
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
@@ -122,6 +158,7 @@ describe('composition state', () => {
         androidInputManagerRef: { current: androidInputManager },
         editor,
         event,
+        inputController,
         setComposing,
       });
 
@@ -133,8 +170,247 @@ describe('composition state', () => {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
+      expect(inputController.state.compositionSession).toEqual({
+        modelCommitted: false,
+        text: null,
+      });
+      expect(shouldMergeEditableCompositionHistory(inputController)).toBe(true);
     } finally {
       hasEditableTarget.mockRestore();
+    }
+  });
+
+  it('keeps a marked multi-leaf composition replacement in one history unit', () => {
+    const { before, editor } = createMarkedHistoryEditor();
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+    let pendingInput: PendingCompositionInput | null = null;
+
+    try {
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      const compositionSelection = editorGetSelection(editor);
+
+      expect(compositionSelection).not.toBeNull();
+      expect(editorString(editor, [])).toBe('This is , done');
+      inputController.state.pendingCompositionEnd = {
+        cancel: vi.fn(),
+        flush: vi.fn(() => false),
+        ownership: 'plite',
+        phase: 'end-pending',
+        replaceWithInput: (input) => {
+          pendingInput = input;
+          return true;
+        },
+      };
+      expect(
+        queuePendingCompositionModelInput({
+          command: {
+            inputType: 'insertFromComposition',
+            kind: 'insert-text',
+            text: 'すし',
+          },
+          data: 'すし',
+          editor,
+          inputController,
+          inputType: 'insertFromComposition',
+          repair: { requestEditableRepair: vi.fn() },
+          selection: compositionSelection,
+          setComposing: vi.fn(),
+        })
+      ).toBe(true);
+
+      if (!pendingInput || !compositionSelection) {
+        throw new Error('expected queued composition input');
+      }
+      expect(pendingInput.commit(compositionSelection, { publish: true })).toBe(
+        true
+      );
+      const composed = readVisibleEditorState(editor);
+
+      expect(editorString(editor, [])).toBe('This is すし, done');
+      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
+        true
+      );
+      expect(
+        editor.read((state) => ({
+          selection: state.selection(),
+          value: state.value(),
+        }))
+      ).toEqual(before);
+      expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
+        true
+      );
+      expect(
+        editor.read((state) => ({
+          selection: state.selection(),
+          value: state.value(),
+        }))
+      ).toEqual(composed);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('keeps direct final composition input in the expanded replacement history unit', () => {
+    const { before, editor } = createMarkedHistoryEditor();
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      const compositionSelection = editorGetSelection(editor);
+
+      expect(compositionSelection).not.toBeNull();
+      applyModelOwnedBeforeInputMutation({
+        data: 'すし',
+        editor,
+        inputType: 'insertFromComposition',
+        mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+        native: false,
+        selection: compositionSelection,
+        setComposing: vi.fn(),
+      });
+      const composed = readVisibleEditorState(editor);
+
+      expect(editorString(editor, [])).toBe('This is すし, done');
+      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
+        true
+      );
+      expect(readVisibleEditorState(editor)).toEqual(before);
+      expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
+        true
+      );
+      expect(readVisibleEditorState(editor)).toEqual(composed);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('keeps Chrome fallback input in the expanded replacement history unit', () => {
+    const { before, editor } = createMarkedHistoryEditor();
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      const compositionSelection = editorGetSelection(editor);
+
+      if (!compositionSelection) {
+        throw new Error('expected composition selection');
+      }
+      expect(
+        commitChromeCompositionEndFallback({
+          editor,
+          mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+          target: compositionSelection,
+          text: 'すし',
+        })
+      ).toBe(true);
+      const composed = readVisibleEditorState(editor);
+
+      expect(editorString(editor, [])).toBe('This is すし, done');
+      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
+        true
+      );
+      expect(readVisibleEditorState(editor)).toEqual(before);
+      expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
+        true
+      );
+      expect(readVisibleEditorState(editor)).toEqual(composed);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('does not merge collapsed composition input with an unrelated edit', () => {
+    const editor = createEditor({ extensions: [history()] }) as ReactEditor;
+    const firstSelection = {
+      kind: 'text' as const,
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    };
+
+    editorReplace(editor, {
+      children: [
+        { children: [{ text: 'ab' }], type: 'paragraph' },
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 4 },
+        focus: { path: [1, 0], offset: 4 },
+      },
+    });
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('!', { at: { path: [1, 0], offset: 4 } });
+    });
+    const valueAfterUnrelatedEdit = structuredClone(
+      editor.read((state) => state.value())
+    );
+
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.selection.set(firstSelection);
+    });
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      expect(shouldMergeEditableCompositionHistory(inputController)).toBe(
+        false
+      );
+      applyModelOwnedBeforeInputMutation({
+        data: '文',
+        editor,
+        inputType: 'insertFromComposition',
+        mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+        native: false,
+        selection: editorGetSelection(editor),
+        setComposing: vi.fn(),
+      });
+
+      expect(editorString(editor, [0])).toBe('a文b');
+      expect(editorString(editor, [1])).toBe('tail!');
+      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
+        true
+      );
+      expect(editor.read((state) => state.value())).toEqual(
+        valueAfterUnrelatedEdit
+      );
+    } finally {
+      hasSelectableTarget.mockRestore();
     }
   });
 
@@ -335,10 +611,9 @@ describe('composition state', () => {
     }
   });
 
-  for (const phase of ['end-pending', 'input-claimed'] satisfies readonly (
-    | 'end-pending'
-    | 'input-claimed'
-  )[]) {
+  for (const phase of ['end-pending', 'input-claimed'] satisfies ReadonlyArray<
+    'end-pending' | 'input-claimed'
+  >) {
     it(`flushes real ${phase} work model-only during teardown`, () => {
       const editor = createTextEditor();
       const event = createCompositionEvent('文', 'a文d');
@@ -372,8 +647,7 @@ describe('composition state', () => {
           scheduleTask,
           setComposing,
         });
-        const pendingCompositionEnd =
-          inputController.state.pendingCompositionEnd;
+        const { pendingCompositionEnd } = inputController.state;
 
         if (pendingCompositionEnd?.ownership !== 'plite') {
           throw new Error('expected Plite-owned composition end');
@@ -446,7 +720,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -478,9 +752,11 @@ describe('composition state', () => {
     const event = createCompositionEvent('文', 'a文d');
     const cleanupFailure = new Error('unmanaged DOM cleanup failed');
 
-    event.currentTarget.querySelectorAll = () => {
-      throw cleanupFailure;
-    };
+    const querySelectorAll = vi
+      .spyOn(event.currentTarget, 'querySelectorAll')
+      .mockImplementation(() => {
+        throw cleanupFailure;
+      });
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
@@ -531,6 +807,7 @@ describe('composition state', () => {
     } finally {
       inputController.state.pendingCompositionEnd?.cancel();
       hasSelectableTarget.mockRestore();
+      querySelectorAll.mockRestore();
     }
   });
 
@@ -650,8 +927,8 @@ describe('composition state', () => {
     const compositionSelection = editorGetSelection(editor);
     const anchor = vi
       .spyOn(editor, 'anchor')
-      .mockReturnValueOnce({ release: () => compositionSelection } as never)
-      .mockReturnValueOnce({ release: () => null } as never);
+      .mockReturnValueOnce({ release: () => compositionSelection })
+      .mockReturnValueOnce({ release: () => null });
     const scheduled: Array<{ callback: () => void; cancelled: boolean }> = [];
     const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
       vi.fn((_phase, _label, callback) => {
@@ -684,7 +961,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -775,7 +1052,7 @@ describe('composition state', () => {
   for (const inputType of [
     'insertFromComposition',
     'insertText',
-  ] satisfies readonly ('insertFromComposition' | 'insertText')[]) {
+  ] satisfies ReadonlyArray<'insertFromComposition' | 'insertText'>) {
     it(`lets the first ${inputType} replace fallback exactly once`, () => {
       const editor = createTextEditor();
       const event = createCompositionEvent('文', 'a文d');
@@ -823,8 +1100,7 @@ describe('composition state', () => {
           setComposing,
         });
 
-        const pendingCompositionEnd =
-          inputController.state.pendingCompositionEnd;
+        const { pendingCompositionEnd } = inputController.state;
 
         expect(pendingCompositionEnd?.ownership).toBe('plite');
         if (pendingCompositionEnd?.ownership !== 'plite') {
@@ -926,7 +1202,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -1007,7 +1283,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -1084,7 +1360,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -1199,7 +1475,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -1274,7 +1550,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');
@@ -1325,7 +1601,7 @@ describe('composition state', () => {
         });
         throw targetFailure;
       },
-    } as never);
+    });
     let deferredCommit: (() => void) | undefined;
     const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
       vi.fn((_phase, _label, callback) => {
@@ -1430,7 +1706,7 @@ describe('composition state', () => {
         scheduleTask,
         setComposing,
       });
-      const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+      const { pendingCompositionEnd } = inputController.state;
 
       if (pendingCompositionEnd?.ownership !== 'plite') {
         throw new Error('expected Plite-owned composition end');

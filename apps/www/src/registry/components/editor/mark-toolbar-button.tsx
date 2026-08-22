@@ -45,8 +45,8 @@ export function MarkToolbarButton({
   ...props
 }: MarkToolbarButtonProps) {
   const editor = useEditor();
-  const pressed = useEditorSelector((editor) =>
-    editor.plugin(plugin).read.isActive(value)
+  const pressed = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(plugin).read.isActive(value)
   );
 
   return (

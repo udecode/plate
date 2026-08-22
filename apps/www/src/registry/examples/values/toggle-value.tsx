@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const toggleValue = (
+export const toggleValue: Value = (
   <fragment>
     <hheading level={2}>Toggle</hheading>
     <hp>Create toggles with multiple levels of indentation</hp>

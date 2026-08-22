@@ -28,9 +28,15 @@ export function CodeBlockCommand({
   const [hasCopied, setHasCopied] = React.useState(false);
   React.useEffect(() => {
     if (hasCopied) {
-      const timer = setTimeout(() => setHasCopied(false), 2000);
-      return () => clearTimeout(timer);
+      const timer = setTimeout(() => {
+        setHasCopied(false);
+      }, 2000);
+      return () => {
+        clearTimeout(timer);
+      };
     }
+
+    return undefined;
   }, [hasCopied]);
   const packageManager = config.packageManager || 'pnpm';
   const tabs = {
@@ -44,7 +50,7 @@ export function CodeBlockCommand({
     if (!command) {
       return;
     }
-    const hasCopied = await copyToClipboardWithMeta(command, {
+    const innerHasCopied = await copyToClipboardWithMeta(command, {
       name: 'copy_npm_command',
       properties: {
         command,
@@ -52,7 +58,7 @@ export function CodeBlockCommand({
       },
     });
 
-    if (hasCopied) {
+    if (innerHasCopied) {
       setHasCopied(true);
     }
   };

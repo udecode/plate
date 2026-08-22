@@ -127,33 +127,43 @@ const editableVoid = () =>
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'block-quote':
+    case 'block-quote': {
       return (
         <BlockQuote {...(props as RenderElementProps<BlockQuoteElement>)} />
       );
-    case 'paragraph':
+    }
+    case 'paragraph': {
       return (
         <ParagraphElement
           {...(props as RenderElementProps<ParagraphElementType>)}
         />
       );
-    default:
+    }
+    default: {
       return <p {...props.attributes}>{props.children}</p>;
+    }
   }
 };
 
 const renderVoid = (props: RenderVoidProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'editable-void':
+    case 'editable-void': {
       return <EditableVoid element={props.element} />;
-    default:
+    }
+    default: {
       return null;
+    }
   }
 };
 
 const renderLeaf = (props: RenderLeafProps<CustomText>) => <Leaf {...props} />;
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps<CustomText>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

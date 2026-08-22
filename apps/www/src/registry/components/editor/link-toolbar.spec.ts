@@ -68,8 +68,8 @@ describe('LinkPlugin floating API', () => {
         triggerFloatingLinkHotkeys: 'alt+k',
       },
     });
-    const editor = createPlateEditor({ plugins: [configuredPlugin] });
-    const link = editor.plugin(configuredPlugin);
+    const innerEditor = createPlateEditor({ plugins: [configuredPlugin] });
+    const link = innerEditor.plugin(configuredPlugin);
 
     link.store.set({ mode: 'insert', text: 'draft', url: '/draft' });
     link.api.hide();
@@ -84,7 +84,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('reopens edit mode from the current link selection after hiding', () => {
-    const editor = createPlateEditor({
+    const innerEditor2 = createPlateEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -106,22 +106,22 @@ describe('LinkPlugin floating API', () => {
         },
       ],
     });
-    const link = editor.plugin(linkPlugin);
+    const link = innerEditor2.plugin(linkPlugin);
 
-    link.api.show('edit', editor.id);
+    link.api.show('edit', innerEditor2.id);
     link.api.hide();
 
     expect(link.api.trigger({ focused: true })).toBe(true);
     expect(link.store.get()).toMatchObject({
       isEditing: true,
       mode: 'edit',
-      openEditorId: editor.id,
+      openEditorId: innerEditor2.id,
       url: 'https://example.com',
     });
   });
 
   it('does not trigger a stale link selection in an unfocused editor', () => {
-    const editor = createPlateEditor({
+    const innerEditor3 = createPlateEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -142,14 +142,14 @@ describe('LinkPlugin floating API', () => {
         },
       ],
     });
-    const link = editor.plugin(linkPlugin);
+    const link = innerEditor3.plugin(linkPlugin);
 
     expect(link.api.trigger({ focused: false })).toBeUndefined();
     expect(link.store.get().mode).toBe('');
   });
 
   it('opens insert mode with selected text', () => {
-    const editor = createPlateEditor({
+    const innerEditor4 = createPlateEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -161,20 +161,20 @@ describe('LinkPlugin floating API', () => {
       ],
     });
 
-    const triggered = editor
+    const triggered = innerEditor4
       .plugin(linkPlugin)
       .api.triggerInsert({ focused: true });
 
     expect(triggered).toBe(true);
-    expect(editor.plugin(linkPlugin).store.get()).toMatchObject({
+    expect(innerEditor4.plugin(linkPlugin).store.get()).toMatchObject({
       mode: 'insert',
-      openEditorId: editor.id,
+      openEditorId: innerEditor4.id,
       text: 'selected text',
     });
   });
 
   it('loads link state into edit mode and strips duplicate URL text', () => {
-    const editor = createPlateEditor({
+    const innerEditor5 = createPlateEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -198,10 +198,10 @@ describe('LinkPlugin floating API', () => {
       ],
     });
 
-    const triggered = editor.plugin(linkPlugin).api.triggerEdit();
+    const triggered = innerEditor5.plugin(linkPlugin).api.triggerEdit();
 
     expect(triggered).toBe(true);
-    expect(editor.plugin(linkPlugin).store.get()).toMatchObject({
+    expect(innerEditor5.plugin(linkPlugin).store.get()).toMatchObject({
       isEditing: true,
       newTab: true,
       text: '',
@@ -210,7 +210,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('loads the selected link when the document contains multiple links', () => {
-    const editor = createPlateEditor({
+    const innerEditor6 = createPlateEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -239,17 +239,17 @@ describe('LinkPlugin floating API', () => {
       ],
     });
 
-    const triggered = editor.plugin(linkPlugin).api.triggerEdit();
+    const triggered = innerEditor6.plugin(linkPlugin).api.triggerEdit();
 
     expect(triggered).toBe(true);
-    expect(editor.plugin(linkPlugin).store.get()).toMatchObject({
+    expect(innerEditor6.plugin(linkPlugin).store.get()).toMatchObject({
       text: 'second',
       url: 'https://second.dev',
     });
   });
 
   it('routes edit mode through the edit trigger', () => {
-    const editor = createPlateEditor({
+    const innerEditor7 = createPlateEditor({
       plugins: [
         linkPlugin.configure({
           initialState: { mode: 'edit' },
@@ -276,9 +276,9 @@ describe('LinkPlugin floating API', () => {
       ],
     });
 
-    editor.plugin(linkPlugin).api.trigger({ focused: true });
+    innerEditor7.plugin(linkPlugin).api.trigger({ focused: true });
 
-    expect(editor.plugin(linkPlugin).store.get()).toMatchObject({
+    expect(innerEditor7.plugin(linkPlugin).store.get()).toMatchObject({
       isEditing: true,
       text: 'hello',
       url: 'https://x.dev',

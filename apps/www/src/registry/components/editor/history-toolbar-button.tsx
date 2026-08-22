@@ -16,7 +16,9 @@ export function RedoToolbarButton(
       {...props}
       disabled={!canRedo}
       onClick={redo}
-      onMouseDown={(e) => e.preventDefault()}
+      onMouseDown={(e) => {
+        e.preventDefault();
+      }}
       tooltip="Redo"
     >
       <Redo2Icon />
@@ -34,7 +36,9 @@ export function UndoToolbarButton(
       {...props}
       disabled={!canUndo}
       onClick={undo}
-      onMouseDown={(e) => e.preventDefault()}
+      onMouseDown={(e) => {
+        e.preventDefault();
+      }}
       tooltip="Undo"
     >
       <Undo2Icon />

@@ -10,6 +10,7 @@ import {
   createFragment,
   createSelection,
   createText,
+  type HyperscriptAttributes,
 } from './creators';
 
 /**
@@ -34,7 +35,7 @@ const DEFAULT_CREATORS = {
 
 type HyperscriptCreators<T = any> = Record<
   string,
-  (tagName: string, attributes: { [key: string]: any }, children: any[]) => T
+  (tagName: string, attributes: HyperscriptAttributes, children: any[]) => T
 >;
 
 /**
@@ -43,25 +44,19 @@ type HyperscriptCreators<T = any> = Record<
  * tags.
  */
 
-type HyperscriptShorthands = Record<string, Record<string, any>>;
+type HyperscriptShorthands = Record<string, HyperscriptAttributes>;
 
 type HyperscriptElementCreators<TElements extends HyperscriptShorthands> = {
   [TKey in keyof TElements]: HyperscriptCreators<Element>[string];
 };
 
-const stripJsxDevelopmentAttributes = (attributes: Object): Object => {
-  if (
-    !Object.hasOwn(attributes, '__self') &&
-    !Object.hasOwn(attributes, '__source')
-  ) {
-    return attributes;
-  }
+const stripJsxDevelopmentAttributes = (
+  attributes: object
+): HyperscriptAttributes => {
+  const normalized = Object.fromEntries(Object.entries(attributes));
 
-  const {
-    __self: _self,
-    __source: _source,
-    ...normalized
-  } = attributes as Record<string, unknown>;
+  delete normalized.__self;
+  delete normalized.__source;
 
   return normalized;
 };
@@ -80,6 +75,7 @@ const createHyperscript = <
 }) => {
   const elementCreators = normalizeElements(options?.elements);
   // Object.assign preserves generic custom creator keys in the inferred factory type.
+
   const creators = Object.assign(
     {},
     DEFAULT_CREATORS,
@@ -98,7 +94,7 @@ const createHyperscript = <
 const createFactory = <T extends HyperscriptCreators>(creators: T) => {
   const jsx = <S extends keyof T & string>(
     tagName: S,
-    attributes?: Object,
+    attributes?: object,
     ...children: any[]
   ): ReturnType<T[S]> => {
     const creator = creators[tagName];
@@ -107,15 +103,15 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
       throw new Error(`No hyperscript creator found for tag: <${tagName}>`);
     }
 
-    let normalizedAttributes = attributes ?? {};
+    let normalizedAttributes: HyperscriptAttributes = {};
     let normalizedChildren = children;
 
-    if (!isObject(normalizedAttributes)) {
-      normalizedChildren = [normalizedAttributes].concat(normalizedChildren);
-      normalizedAttributes = {};
-    } else {
-      normalizedAttributes =
-        stripJsxDevelopmentAttributes(normalizedAttributes);
+    if (attributes != null) {
+      if (!isObject(attributes)) {
+        normalizedChildren = [attributes].concat(normalizedChildren);
+      } else {
+        normalizedAttributes = stripJsxDevelopmentAttributes(attributes);
+      }
     }
 
     normalizedChildren = normalizedChildren
@@ -147,13 +143,13 @@ const normalizeElements = <TElements extends HyperscriptShorthands>(
 
     if (typeof props !== 'object') {
       throw new Error(
-        `Properties specified for a hyperscript shorthand should be an object, but for the custom element <${tagName}> tag you passed: ${props}`
+        `Properties specified for a hyperscript shorthand should be an object, but for the custom element <${tagName}> tag you passed: ${String(props)}`
       );
     }
 
     creators[tagName] = (
       _tagName: string,
-      attributes: { [key: string]: any },
+      attributes: HyperscriptAttributes,
       children: any[]
     ) => createElement('element', { ...props, ...attributes }, children);
   }

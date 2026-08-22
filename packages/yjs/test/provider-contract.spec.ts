@@ -278,10 +278,10 @@ describe('@platejs/yjs provider contract', () => {
     assert.equal(getYjsProviderStatus(peer), null);
     assert.equal(getYjsProviderSynced(peer), null);
 
-    runYjsUpdate(peer, (yjs) => {
-      yjs.disconnect();
+    runYjsUpdate(peer, (innerYjs) => {
+      innerYjs.disconnect();
       assert.equal(isYjsPeerConnected(peer), false);
-      yjs.reconnect();
+      innerYjs.reconnect();
     });
 
     assert.equal(isYjsPeerConnected(peer), true);
@@ -292,15 +292,15 @@ describe('@platejs/yjs provider contract', () => {
       children: initialValue(),
       clientId: 'a',
     });
-    const yjs = readEditorYjsState(peer.editor);
+    const innerYjs2 = readEditorYjsState(peer.editor);
     const seen: boolean[] = [];
-    const unsubscribe = yjs.subscribeProvider(() => {
-      seen.push(yjs.connected());
+    const unsubscribe = innerYjs2.subscribeProvider(() => {
+      seen.push(innerYjs2.connected());
     });
 
-    runYjsUpdate(peer, (yjs) => {
-      yjs.disconnect();
-      yjs.connect();
+    runYjsUpdate(peer, (innerYjs3) => {
+      innerYjs3.disconnect();
+      innerYjs3.connect();
     });
     unsubscribe();
 
@@ -311,15 +311,15 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new FakeProvider();
     seedProviderDoc(provider);
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
+    const innerYjs4 = readEditorYjsState(editor);
 
-    assert.equal(yjs.doc(), provider.doc);
-    assert.equal(yjs.providerStatus(), 'disconnected');
-    assert.equal(yjs.providerSynced(), true);
-    assert.equal(yjs.connected(), false);
+    assert.equal(innerYjs4.doc(), provider.doc);
+    assert.equal(innerYjs4.providerStatus(), 'disconnected');
+    assert.equal(innerYjs4.providerSynced(), true);
+    assert.equal(innerYjs4.connected(), false);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.sendSelection(selection(), { name: 'Provider peer' });
+    runEditorYjsUpdate(editor, (innerYjs5) => {
+      innerYjs5.sendSelection(selection(), { name: 'Provider peer' });
     });
 
     assert.deepEqual(provider.awareness.getLocalState()?.data, {
@@ -332,10 +332,10 @@ describe('@platejs/yjs provider contract', () => {
   it('subscribes to provider status and provider-reported sync changes', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
-    const seen: [YjsProviderStatus | null, boolean | null][] = [];
-    const unsubscribe = yjs.subscribeProvider(() => {
-      seen.push([yjs.providerStatus(), yjs.providerSynced()]);
+    const innerYjs6 = readEditorYjsState(editor);
+    const seen: Array<[YjsProviderStatus | null, boolean | null]> = [];
+    const unsubscribe = innerYjs6.subscribeProvider(() => {
+      seen.push([innerYjs6.providerStatus(), innerYjs6.providerSynced()]);
     });
 
     provider.emitStatus('connecting');
@@ -360,10 +360,10 @@ describe('@platejs/yjs provider contract', () => {
   it('does not notify provider subscribers for unchanged status or sync events', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
-    const seen: [YjsProviderStatus | null, boolean | null][] = [];
-    const unsubscribe = yjs.subscribeProvider(() => {
-      seen.push([yjs.providerStatus(), yjs.providerSynced()]);
+    const innerYjs7 = readEditorYjsState(editor);
+    const seen: Array<[YjsProviderStatus | null, boolean | null]> = [];
+    const unsubscribe = innerYjs7.subscribeProvider(() => {
+      seen.push([innerYjs7.providerStatus(), innerYjs7.providerSynced()]);
     });
 
     provider.emitStatus('disconnected');
@@ -408,8 +408,8 @@ describe('@platejs/yjs provider contract', () => {
     const { cleanup, editor } = createProviderEditor(provider);
     const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.reconcile();
+    runEditorYjsUpdate(editor, (innerYjs8) => {
+      innerYjs8.reconcile();
     });
 
     assert.equal(editorString(editor, [0]), 'alpha');
@@ -667,28 +667,28 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new FakeProvider({ status: 'connected' });
     seedProviderDoc(provider);
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
+    const innerYjs9 = readEditorYjsState(editor);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.sendSelection(selection(), { name: 'Remote peer' });
+    runEditorYjsUpdate(editor, (innerYjs10) => {
+      innerYjs10.sendSelection(selection(), { name: 'Remote peer' });
     });
     provider.awareness.setRemoteState(88, {
       data: { name: 'Remote peer' },
       selection: provider.awareness.getLocalState()?.selection,
     });
 
-    assert.equal(yjs.connected(), true);
-    assert.equal(yjs.remoteCursors().length, 1);
+    assert.equal(innerYjs9.connected(), true);
+    assert.equal(innerYjs9.remoteCursors().length, 1);
 
     provider.emitStatus({ status: 'disconnected' });
 
-    assert.equal(yjs.connected(), false);
-    assert.deepEqual(yjs.remoteCursors(), []);
+    assert.equal(innerYjs9.connected(), false);
+    assert.deepEqual(innerYjs9.remoteCursors(), []);
 
     provider.emitStatus('connected');
 
-    assert.equal(yjs.connected(), true);
-    assert.equal(yjs.remoteCursors().length, 1);
+    assert.equal(innerYjs9.connected(), true);
+    assert.equal(innerYjs9.remoteCursors().length, 1);
 
     cleanup();
   });
@@ -713,8 +713,8 @@ describe('@platejs/yjs provider contract', () => {
     const unlink = linkAwareness(providerA, providerB);
     const range = selection();
 
-    runEditorYjsUpdate(peerA.editor, (yjs) => {
-      yjs.sendSelection(range, { name: 'Ada' });
+    runEditorYjsUpdate(peerA.editor, (innerYjs11) => {
+      innerYjs11.sendSelection(range, { name: 'Ada' });
     });
 
     assert.deepEqual(readEditorYjsState(peerB.editor).remoteCursors(), [
@@ -725,15 +725,15 @@ describe('@platejs/yjs provider contract', () => {
       },
     ]);
 
-    runEditorYjsUpdate(peerA.editor, (yjs) => {
-      yjs.disconnect();
+    runEditorYjsUpdate(peerA.editor, (innerYjs12) => {
+      innerYjs12.disconnect();
     });
 
     assert.deepEqual(readEditorYjsState(peerB.editor).remoteCursors(), []);
 
-    runEditorYjsUpdate(peerA.editor, (yjs) => {
-      yjs.connect();
-      yjs.sendSelection(range, { name: 'Ada' });
+    runEditorYjsUpdate(peerA.editor, (innerYjs13) => {
+      innerYjs13.connect();
+      innerYjs13.sendSelection(range, { name: 'Ada' });
     });
 
     assert.deepEqual(readEditorYjsState(peerB.editor).remoteCursors(), [
@@ -753,32 +753,32 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new DeferredConnectProvider();
     seedProviderDoc(provider);
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
+    const innerYjs14 = readEditorYjsState(editor);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.sendSelection(selection(), { name: 'Remote peer' });
+    runEditorYjsUpdate(editor, (innerYjs15) => {
+      innerYjs15.sendSelection(selection(), { name: 'Remote peer' });
     });
     provider.awareness.setRemoteState(88, {
       data: { name: 'Remote peer' },
       selection: provider.awareness.getLocalState()?.selection,
     });
 
-    assert.equal(yjs.connected(), false);
-    assert.deepEqual(yjs.remoteCursors(), []);
+    assert.equal(innerYjs14.connected(), false);
+    assert.deepEqual(innerYjs14.remoteCursors(), []);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.connect();
+    runEditorYjsUpdate(editor, (innerYjs16) => {
+      innerYjs16.connect();
     });
 
     assert.deepEqual(provider.calls, ['connect']);
-    assert.equal(yjs.providerStatus(), 'disconnected');
-    assert.equal(yjs.connected(), false);
-    assert.deepEqual(yjs.remoteCursors(), []);
+    assert.equal(innerYjs14.providerStatus(), 'disconnected');
+    assert.equal(innerYjs14.connected(), false);
+    assert.deepEqual(innerYjs14.remoteCursors(), []);
 
     provider.emitStatus('connected');
 
-    assert.equal(yjs.connected(), true);
-    assert.equal(yjs.remoteCursors().length, 1);
+    assert.equal(innerYjs14.connected(), true);
+    assert.equal(innerYjs14.remoteCursors().length, 1);
 
     cleanup();
   });
@@ -787,26 +787,26 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new StatusOnlyProvider();
     seedProviderDoc(provider);
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
+    const innerYjs17 = readEditorYjsState(editor);
 
-    assert.equal(yjs.providerStatus(), 'disconnected');
-    assert.equal(yjs.connected(), false);
+    assert.equal(innerYjs17.providerStatus(), 'disconnected');
+    assert.equal(innerYjs17.connected(), false);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.connect();
+    runEditorYjsUpdate(editor, (innerYjs18) => {
+      innerYjs18.connect();
     });
 
     assert.deepEqual(provider.calls, ['connect']);
-    assert.equal(yjs.providerStatus(), 'connected');
-    assert.equal(yjs.connected(), true);
+    assert.equal(innerYjs17.providerStatus(), 'connected');
+    assert.equal(innerYjs17.connected(), true);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.disconnect();
+    runEditorYjsUpdate(editor, (innerYjs19) => {
+      innerYjs19.disconnect();
     });
 
     assert.deepEqual(provider.calls, ['connect', 'disconnect']);
-    assert.equal(yjs.providerStatus(), 'disconnected');
-    assert.equal(yjs.connected(), false);
+    assert.equal(innerYjs17.providerStatus(), 'disconnected');
+    assert.equal(innerYjs17.connected(), false);
 
     cleanup();
   });
@@ -817,30 +817,30 @@ describe('@platejs/yjs provider contract', () => {
     });
     seedProviderDoc(provider);
     const { cleanup, editor } = createProviderEditor(provider);
-    const yjs = readEditorYjsState(editor);
+    const innerYjs20 = readEditorYjsState(editor);
 
-    assert.equal(yjs.connected(), true);
+    assert.equal(innerYjs20.connected(), true);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.disconnect();
+    runEditorYjsUpdate(editor, (innerYjs21) => {
+      innerYjs21.disconnect();
     });
 
     assert.deepEqual(provider.calls, ['disconnect']);
-    assert.equal(yjs.providerStatus(), 'connected');
-    assert.equal(yjs.connected(), false);
+    assert.equal(innerYjs20.providerStatus(), 'connected');
+    assert.equal(innerYjs20.connected(), false);
 
     provider.emitStatus('connected');
 
-    assert.equal(yjs.providerStatus(), 'connected');
-    assert.equal(yjs.connected(), false);
+    assert.equal(innerYjs20.providerStatus(), 'connected');
+    assert.equal(innerYjs20.connected(), false);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.connect();
+    runEditorYjsUpdate(editor, (innerYjs22) => {
+      innerYjs22.connect();
     });
 
     assert.deepEqual(provider.calls, ['disconnect', 'connect']);
-    assert.equal(yjs.providerStatus(), 'connected');
-    assert.equal(yjs.connected(), true);
+    assert.equal(innerYjs20.providerStatus(), 'connected');
+    assert.equal(innerYjs20.connected(), true);
 
     cleanup();
   });
@@ -849,8 +849,8 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.reconnect();
+    runEditorYjsUpdate(editor, (innerYjs23) => {
+      innerYjs23.reconnect();
     });
 
     assert.deepEqual(provider.calls, ['disconnect', 'connect']);
@@ -864,8 +864,8 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new AsyncDisconnectProvider();
     const { cleanup, editor } = createProviderEditor(provider);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.reconnect();
+    runEditorYjsUpdate(editor, (innerYjs24) => {
+      innerYjs24.reconnect();
     });
 
     assert.deepEqual(provider.calls, ['disconnect']);
@@ -882,8 +882,8 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new AsyncRejectDisconnectProvider();
     const { cleanup, editor } = createProviderEditor(provider);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.reconnect();
+    runEditorYjsUpdate(editor, (innerYjs25) => {
+      innerYjs25.reconnect();
     });
 
     assert.deepEqual(provider.calls, ['disconnect']);
@@ -901,15 +901,15 @@ describe('@platejs/yjs provider contract', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.pause();
-      yjs.disconnect();
+    runEditorYjsUpdate(editor, (innerYjs28) => {
+      innerYjs28.pause();
+      innerYjs28.disconnect();
     });
 
-    const yjs = readEditorYjsState(editor);
+    const innerYjs26 = readEditorYjsState(editor);
 
-    assert.equal(yjs.paused(), true);
-    assert.equal(yjs.connected(), false);
+    assert.equal(innerYjs26.paused(), true);
+    assert.equal(innerYjs26.connected(), false);
     assert.deepEqual(provider.calls, ['disconnect']);
 
     cleanup();
@@ -924,8 +924,8 @@ describe('@platejs/yjs provider contract', () => {
       notifications += 1;
     });
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.sendSelection(selection(), { name: 'Provider peer' });
+    runEditorYjsUpdate(editor, (innerYjs27) => {
+      innerYjs27.sendSelection(selection(), { name: 'Provider peer' });
     });
 
     cleanup();

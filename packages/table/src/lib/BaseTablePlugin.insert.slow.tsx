@@ -68,7 +68,7 @@ describe('table insertion slow contracts', () => {
           { select: true }
         );
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(output.selection!);
       }
     );
@@ -130,7 +130,7 @@ describe('table insertion slow contracts', () => {
           { at: [0], select: true }
         );
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(output.selection!);
       }
     );
@@ -202,7 +202,7 @@ describe('table insertion slow contracts', () => {
           { select: true }
         );
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(output.selection!);
       }
     );
@@ -278,7 +278,7 @@ describe('table insertion slow contracts', () => {
           { at: [1], select: true }
         );
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(output.selection!);
       }
     );
@@ -350,7 +350,7 @@ describe('table insertion slow contracts', () => {
           { select: true }
         );
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(output.selection!);
       }
     );
@@ -361,7 +361,7 @@ describe('table insertion slow contracts', () => {
 
     type MakeTableWithColsOptions = {
       rowCols: string[][];
-      columnWidths?: (number | null)[];
+      columnWidths?: Array<number | null>;
       cursorPath?: [number, number];
     };
 
@@ -428,7 +428,7 @@ describe('table insertion slow contracts', () => {
 
             editor.update.table.insertColumn({ select: true });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
             expect(editor.read.selection()).toEqual(output.selection!);
           }
         );
@@ -462,7 +462,7 @@ describe('table insertion slow contracts', () => {
               select: true,
             });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
             expect(editor.read.selection()).toEqual(output.selection!);
           }
         );
@@ -494,7 +494,7 @@ describe('table insertion slow contracts', () => {
 
             editor.update.table.insertColumn({ at: [0, 0, 0], select: true });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
             expect(editor.read.selection()).toEqual(output.selection!);
           }
         );
@@ -526,7 +526,7 @@ describe('table insertion slow contracts', () => {
 
             editor.update.table.insertColumn({ before: true, select: true });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
             expect(editor.read.selection()).toEqual(output.selection!);
           }
         );
@@ -594,7 +594,7 @@ describe('table insertion slow contracts', () => {
 
               editor.update.table.insertColumn();
 
-              expect(editor.read.children()).toMatchObject(output.children!);
+              expect(editor.read.children()).toMatchObject(output.children);
             }
           );
         });
@@ -633,7 +633,7 @@ describe('table insertion slow contracts', () => {
 
               editor.update.table.insertColumn();
 
-              expect(editor.read.children()).toMatchObject(output.children!);
+              expect(editor.read.children()).toMatchObject(output.children);
             }
           );
 
@@ -670,7 +670,7 @@ describe('table insertion slow contracts', () => {
 
               editor.update.table.insertColumn({ at: [0, 0, 0] });
 
-              expect(editor.read.children()).toMatchObject(output.children!);
+              expect(editor.read.children()).toMatchObject(output.children);
             }
           );
         });
@@ -792,7 +792,7 @@ describe('table insertion slow contracts', () => {
 
               editor.update.table.insertColumn();
 
-              expect(editor.read.children()).toMatchObject(output.children!);
+              expect(editor.read.children()).toMatchObject(output.children);
             }
           );
 
@@ -829,7 +829,7 @@ describe('table insertion slow contracts', () => {
 
               editor.update.table.insertColumn();
 
-              expect(editor.read.children()).toMatchObject(output.children!);
+              expect(editor.read.children()).toMatchObject(output.children);
             }
           );
         });
@@ -867,7 +867,7 @@ describe('table insertion slow contracts', () => {
 
             editor.update.table.insertColumn({ before: true });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
           }
         );
       });

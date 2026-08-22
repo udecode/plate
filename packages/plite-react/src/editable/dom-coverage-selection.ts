@@ -1,5 +1,8 @@
 import { NodeApi, RangeApi, type Range as PliteRange } from '@platejs/plite';
-import { DOMCoverage } from '@platejs/plite-dom/internal';
+import {
+  DOMCoverage,
+  replaceDOMSelectionRange,
+} from '@platejs/plite-dom/internal';
 
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
@@ -134,7 +137,8 @@ const getDOMRangeProjection = (
 
 const applyDOMRangeProjection = (
   domSelection: globalThis.Selection,
-  projection: DOMRangeProjection | null
+  projection: DOMRangeProjection | null,
+  forceDOMRangeRebuild: boolean
 ) => {
   domSelection.removeAllRanges();
 
@@ -144,7 +148,11 @@ const applyDOMRangeProjection = (
 
   const { backward, domRange } = projection;
 
-  if (backward) {
+  if (forceDOMRangeRebuild) {
+    replaceDOMSelectionRange(domSelection, domRange, {
+      backward,
+    });
+  } else if (backward) {
     domSelection.setBaseAndExtent(
       domRange.endContainer,
       domRange.endOffset,
@@ -164,11 +172,13 @@ const applyDOMRangeProjection = (
 export const applyDOMCoverageSelectionPolicy = ({
   domSelection,
   editor,
+  forceDOMRangeRebuild = false,
   onDOMSelectionWillChange,
   selection,
 }: {
   domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
+  forceDOMRangeRebuild?: boolean;
   onDOMSelectionWillChange?: () => void;
   selection: PliteRange;
 }) => {
@@ -199,7 +209,7 @@ export const applyDOMCoverageSelectionPolicy = ({
   const projection = getDOMRangeProjection(editor, selection);
 
   onDOMSelectionWillChange?.();
-  applyDOMRangeProjection(domSelection, projection);
+  applyDOMRangeProjection(domSelection, projection, forceDOMRangeRebuild);
 
   return true;
 };

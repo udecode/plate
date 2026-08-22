@@ -1,6 +1,7 @@
 import { type Path, PathApi, TextApi } from '@platejs/plite';
 import { setDOMTextSyncRendererCapability } from '@platejs/plite-react/internal';
-import clsx from 'clsx';
+import { failInvariant } from '@platejs/plite/internal';
+import { clsx } from 'clsx';
 import React from 'react';
 
 import {
@@ -28,11 +29,11 @@ const isActiveHardAffinityBoundary = (
 ) => {
   if (!path) return false;
   const match = editor.read((state) => {
-    if (!state.selection.isCollapsed()) return;
+    if (!state.selection.isCollapsed()) return undefined;
 
     const focus = state.selection()?.focus;
 
-    if (!focus) return;
+    if (!focus) return undefined;
 
     const selectedText = state.nodes.get(focus.path)?.[0];
 
@@ -52,7 +53,7 @@ const isActiveHardAffinityBoundary = (
 const getDecoratedLeaf = (
   leaf: Record<string, unknown>,
   segment?: {
-    slices?: readonly { data?: unknown }[];
+    slices?: ReadonlyArray<{ data?: unknown }>;
   }
 ) => {
   let decoratedLeaf = leaf;
@@ -145,7 +146,9 @@ export const pipeRenderLeaf = (
   );
 
   plateRuntime.pluginCache.node.decoratedMarks.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
 
     if (plugin) {
       const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
@@ -165,7 +168,7 @@ export const pipeRenderLeaf = (
           editOnly: plugin.editOnly,
           key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,
-          tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
+          tag: plugin.render?.as ?? 'span',
         };
 
         renderLeafEntries.push(entry);
@@ -189,7 +192,9 @@ export const pipeRenderLeaf = (
   });
 
   plateRuntime.pluginCache.node.leafProps.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     const key = plugin
       ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
       : undefined;
@@ -221,16 +226,14 @@ export const pipeRenderLeaf = (
     !hasInjectNodeProps && !renderLeafProp && leafPropsEntries.length === 0;
 
   return setDOMTextSyncRendererCapability(
-    ({ attributes, ...props }) => {
+    ({ attributes: initialAttributes, ...props }) => {
+      let attributes = initialAttributes;
       const readOnly = editor.read.view.isReadOnly();
-      const leaf = getDecoratedLeaf(
-        props.leaf as Record<string, unknown>,
-        (props as any).segment
-      );
+      const leaf = getDecoratedLeaf(props.leaf, (props as any).segment);
       let hasActiveSimpleRenderLeaf = false;
       let hasActiveComplexRenderLeaf = false;
 
-      props.leaf = leaf as any;
+      props.leaf = leaf;
 
       for (const key in leaf) {
         if (!Object.hasOwn(leaf, key)) continue;
@@ -259,7 +262,7 @@ export const pipeRenderLeaf = (
         } of renderLeafEntries) {
           if (!leaf[key]) continue;
 
-          if (editOnly && isEditOnly(readOnly, { editOnly } as any, 'render')) {
+          if (editOnly && isEditOnly(readOnly, { editOnly }, 'render')) {
             continue;
           }
 
@@ -342,22 +345,19 @@ export const pipeRenderLeaf = (
       }
 
       if (renderLeafProp) {
-        return renderLeafProp({ attributes, ...props } as any);
+        return renderLeafProp({ attributes, ...props });
       }
 
       const ctxProps = getRenderNodeProps({
         editor,
         props: { attributes, ...props } as any,
         readOnly,
-      }) as any;
+      });
 
       return <PlateLeaf {...ctxProps}>{props.children}</PlateLeaf>;
     },
     ({ marks, projections }) => {
-      const decoratedMarks = getDecoratedLeaf(
-        marks as Record<string, unknown>,
-        { slices: projections }
-      );
+      const decoratedMarks = getDecoratedLeaf(marks, { slices: projections });
       const hasActiveTextInjectionTransform = textInjectionTransformScopes.some(
         ({ keys, wildcard }) =>
           wildcard || keys.some((key) => Boolean(decoratedMarks[key]))

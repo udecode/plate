@@ -54,7 +54,7 @@ const nestedApiLevel: 1 | 2 = basePlateEditor.api.child.getLevel();
 const plateValue: ValueOf<typeof plateEditor> = [
   { children: [{ text: 'hello' }], type: 'paragraph' },
 ];
-const paragraphType: string = plateValue[0]!.type;
+const paragraphType: string = plateValue[0].type;
 const plateLabel: 'body' | 'title' = plateEditor.api.display.getLabel();
 
 basePlateEditor.api.child.setLevel(1);

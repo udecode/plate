@@ -10,9 +10,15 @@ let selection: any;
 let editorSelectorEditor: any;
 let lastPluginEditor: any;
 
-const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
+type TestEditor = Record<string, unknown> & {
+  api?: any;
+  read?: any;
+  update?: any;
+};
+
+const withPluginEditor = <T extends TestEditor>(editor: T) => {
   const readState = {
-    ...(editor.read ?? {}),
+    ...editor.read,
     footnote: {
       definitionText: () => {},
       hasDuplicateDefinitions: () => false,
@@ -21,34 +27,34 @@ const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
       isResolved: () => false,
       nextRef: () => '1',
       references: () => [],
-      ...(editor.read?.footnote ?? {}),
+      ...editor.read?.footnote,
     },
     nodes: {
-      ...(editor.read?.nodes ?? {}),
+      ...editor.read?.nodes,
       parent: editor.read?.nodes?.parent ?? (() => {}),
     },
     points: {
-      ...(editor.read?.points ?? {}),
+      ...editor.read?.points,
       before: editor.read?.points?.before ?? (() => {}),
     },
     ranges: {
-      ...(editor.read?.ranges ?? {}),
+      ...editor.read?.ranges,
       get: editor.read?.ranges?.get ?? (() => {}),
     },
     selection: editor.read?.selection ?? (() => selection),
     text: {
-      ...(editor.read?.text ?? {}),
+      ...editor.read?.text,
       string: editor.read?.text?.string ?? (() => ''),
     },
   };
   const updateCommands = {
-    ...(editor.update ?? {}),
+    ...editor.update,
     footnote: {
       createDefinition: () => {},
       focusDefinition: () => {},
       focusReference: () => {},
       normalizeDuplicateDefinition: () => {},
-      ...(editor.update?.footnote ?? {}),
+      ...editor.update?.footnote,
     },
   };
 
@@ -109,10 +115,10 @@ mock.module('platejs/react', () => ({
       ? withPluginEditor(editorSelectorEditor)
       : (lastPluginEditor ?? withPluginEditor({}));
     const read = {
-      ...(currentEditor.read ?? {}),
+      ...currentEditor.read,
       footnote: {
-        ...(lastPluginEditor?.read?.footnote ?? {}),
-        ...(currentEditor.read?.footnote ?? {}),
+        ...lastPluginEditor?.read?.footnote,
+        ...currentEditor.read?.footnote,
       },
     };
 
@@ -132,6 +138,7 @@ mock.module('platejs/react', () => ({
     return activeTarget;
   },
   useElementSelected: () => isSelected,
+  usePath: () => nodePath ?? [0],
 }));
 
 mock.module('platejs/static', () => ({
@@ -997,7 +1004,7 @@ describe('footnote node rendering', () => {
     expect(buttons[1].textContent).toContain('[^1]');
     expect(buttons[2].textContent).toContain('[^2]');
 
-    fireEvent.click(buttons[0]!);
+    fireEvent.click(buttons[0]);
 
     expect(deleteBackward).not.toHaveBeenCalled();
     expect(insertFootnote).toHaveBeenCalledWith({

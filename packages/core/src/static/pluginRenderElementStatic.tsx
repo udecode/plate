@@ -1,3 +1,4 @@
+import { failInvariant } from '@platejs/plite/internal';
 import React from 'react';
 
 import {
@@ -23,7 +24,8 @@ export const pluginRenderElementStatic = (
   editor: BaseEditor,
   plugin: AnyBasePluginPortal | AnyPluginBase
 ): PliteRenderElement =>
-  function render(nodeProps) {
+  function render(initialNodeProps) {
+    let nodeProps = initialNodeProps;
     const elementType = getCompiledPlateModelBinding(
       editor,
       plugin
@@ -41,10 +43,12 @@ export const pluginRenderElementStatic = (
       path: nodeProps.path,
       plugin,
       props: nodeProps as any,
-    }) as any;
+    });
 
     getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
-      const wrapperPlugin = getCompiledPlatePlugin(editor, name)!;
+      const wrapperPlugin =
+        getCompiledPlatePlugin(editor, name) ??
+        failInvariant('Expected value to be defined');
       const wrapperContext = createPluginContext(editor, wrapperPlugin);
       const renderBelow = wrapperPlugin.render.belowNodes;
       const hoc =
@@ -70,13 +74,15 @@ export const pluginRenderElementStatic = (
 
         {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
           (name) => {
-            const plugin = getCompiledPlatePlugin(editor, name)!;
-            const Component = plugin.render.belowRootNodes;
-            const pluginContext = createPluginContext(editor, plugin);
+            const innerPlugin =
+              getCompiledPlatePlugin(editor, name) ??
+              failInvariant('Expected value to be defined');
+            const innerComponent = innerPlugin.render.belowRootNodes;
+            const pluginContext = createPluginContext(editor, innerPlugin);
 
-            if (typeof Component !== 'function') return null;
+            if (typeof innerComponent !== 'function') return null;
 
-            return Reflect.apply(Component, undefined, [
+            return Reflect.apply(innerComponent, undefined, [
               {
                 ...defaultProps,
                 ...nodeProps,
@@ -90,7 +96,9 @@ export const pluginRenderElementStatic = (
     );
 
     getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((name) => {
-      const wrapperPlugin = getCompiledPlatePlugin(editor, name)!;
+      const wrapperPlugin =
+        getCompiledPlatePlugin(editor, name) ??
+        failInvariant('Expected value to be defined');
       const wrapperContext = createPluginContext(editor, wrapperPlugin);
       const renderAbove = wrapperPlugin.render.aboveNodes;
       const hoc =

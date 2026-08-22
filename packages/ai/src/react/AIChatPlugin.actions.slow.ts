@@ -162,7 +162,7 @@ describe('ai chat action utils', () => {
       chat,
       chatNodes: [
         {
-          node: editor.read.children()[0]!,
+          node: editor.read.children()[0],
           nodeKey,
         },
       ],

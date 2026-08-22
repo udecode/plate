@@ -33,7 +33,7 @@ export const startPliteBrowserNativeEventTrace = async (
       element: HTMLElement,
       {
         key,
-        options,
+        options: innerOptions,
       }: { key: string; options: PliteBrowserNativeEventTraceOptions }
     ) => {
       const previous = (element as Record<string, any>)[key] as
@@ -42,9 +42,9 @@ export const startPliteBrowserNativeEventTrace = async (
 
       previous?.stop?.();
 
-      const maxEntries = options.maxEntries ?? 100;
+      const innerMaxEntries = innerOptions.maxEntries ?? 100;
       const enabledEvents = new Set<PliteBrowserNativeEventTraceType>(
-        options.events ?? [
+        innerOptions.events ?? [
           'selectionchange',
           'beforeinput',
           'input',
@@ -64,7 +64,7 @@ export const startPliteBrowserNativeEventTrace = async (
       let lastComposition: PliteBrowserNativeEventTraceEntry | null = null;
 
       const rootNode = element.getRootNode() as Document | ShadowRoot;
-      const ownerDocument = element.ownerDocument;
+      const { ownerDocument } = element;
 
       const getRootSelection = () =>
         'getSelection' in rootNode
@@ -196,7 +196,7 @@ export const startPliteBrowserNativeEventTrace = async (
         let id = nodeIds.get(textNode);
 
         if (!id) {
-          id = `text-${++nodeId}`;
+          id = `text-${(nodeId += 1)}`;
           nodeIds.set(textNode, id);
         }
 
@@ -380,8 +380,8 @@ export const startPliteBrowserNativeEventTrace = async (
       const pushEntry = (entry: PliteBrowserNativeEventTraceEntry) => {
         entries.push(entry);
 
-        if (entries.length > maxEntries) {
-          entries.splice(0, entries.length - maxEntries);
+        if (entries.length > innerMaxEntries) {
+          entries.splice(0, entries.length - innerMaxEntries);
         }
       };
 

@@ -395,7 +395,7 @@ describe('DOM coverage private boundary harness', () => {
       expect(boundary).toMatchObject({
         coveredPathRanges: [{ anchor: [0], focus: [0] }],
       });
-      boundaryId = boundary!.boundaryId;
+      ({ boundaryId } = boundary!);
     });
 
     expect(boundaryId).toMatch(/^content-boundary:/);
@@ -485,7 +485,7 @@ describe('DOM coverage private boundary harness', () => {
       selection: null,
     });
 
-    const renderElement = ({
+    const RenderElement = ({
       children,
       element,
       slots,
@@ -517,7 +517,7 @@ describe('DOM coverage private boundary harness', () => {
         <Plite editor={editor}>
           <Editable
             id="dom-coverage-context-boundary-toggle"
-            renderElement={renderElement}
+            renderElement={RenderElement}
           />
         </Plite>
       </BoundaryVisibilityContext>
@@ -636,7 +636,7 @@ describe('DOM coverage private boundary harness', () => {
             }
 
             if (props.element.type === 'item') {
-              renderedItemCount++;
+              renderedItemCount += 1;
             }
 
             return <EditableElement>{props.children}</EditableElement>;

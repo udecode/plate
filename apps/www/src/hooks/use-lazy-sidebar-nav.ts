@@ -62,7 +62,7 @@ export function useLazySidebarNav(locale: string, enabled: boolean) {
   );
 
   React.useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return undefined;
 
     let mounted = true;
 

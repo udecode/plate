@@ -33,6 +33,7 @@ export const useEditableRootRuntimeState = ({
         onPartialDOMBackedSelectionChange: setExplicitPartialDOMBackedSelection,
         readOnly,
       }),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the runtime; the adjacent committed effect updates read-only and DOM-strategy inputs without replacing it.
     [editor]
   );
 
@@ -64,6 +65,7 @@ export const useEditableRootRuntimeState = ({
 
   useEffect(() => {
     if (explicitPartialDOMBackedSelection && !modelPartialDOMBackedSelection) {
+      // oxlint-disable-next-line react-doctor/no-adjust-state-on-prop-change -- [P0 behavior-boundary] The explicit partial-selection flag is external runtime state; clear it only after the editor model catches up.
       setExplicitPartialDOMBackedSelection(false);
     }
   }, [explicitPartialDOMBackedSelection, modelPartialDOMBackedSelection]);

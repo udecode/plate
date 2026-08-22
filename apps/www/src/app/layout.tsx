@@ -1,4 +1,3 @@
-/* oxlint-disable react/no-danger -- This sink receives trusted generated, sanitized, encoded, or editor-marker content from its adjacent owner; removing the sink breaks rendering. */
 import { Agentation } from 'agentation';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
@@ -93,6 +92,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Script
           id="theme-color-script"
           strategy="beforeInteractive"
+          // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] This repository-owned bootstrap is a fixed script assembled only from static theme constants.
           dangerouslySetInnerHTML={{
             __html: `
               try {

@@ -41,7 +41,9 @@ export function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
     useBlockViewer();
   const deps = dependencies.join(' ');
 
-  const file = highlightedFiles?.find((file) => file.target === activeFile);
+  const file = highlightedFiles?.find(
+    (innerFile) => innerFile.target === activeFile
+  );
 
   if (!file?.content && isLoading) {
     return (
@@ -92,6 +94,7 @@ export function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
         <div
           key={file?.path}
           className="no-scrollbar overflow-y-auto"
+          // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] The registry highlighter owns and escapes this generated HTML before it reaches the viewer.
           dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
         />
       </figure>
@@ -196,7 +199,9 @@ function BlockCopyCodeButton() {
   const { activeFile, highlightedFiles } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
-  const file = highlightedFiles?.find((file) => file.target === activeFile);
+  const file = highlightedFiles?.find(
+    (innerFile2) => innerFile2.target === activeFile
+  );
 
   const content = file?.content;
 

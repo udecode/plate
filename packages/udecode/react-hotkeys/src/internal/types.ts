@@ -29,11 +29,12 @@ export type KeyboardModifiers = {
   meta?: boolean;
   mod?: boolean;
   shift?: boolean;
-  useKey?: boolean; // Custom modifier to listen to the produced key instead of the code
+  // Custom modifier to listen to the produced key instead of the code
+  useKey?: boolean;
 };
 
 export type Keys =
-  | readonly (readonly (({} & string) | keyof typeof Key)[])[]
+  | ReadonlyArray<ReadonlyArray<({} & string) | keyof typeof Key>>
   | readonly string[]
   | string;
 

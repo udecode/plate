@@ -20,6 +20,7 @@ import {
   writeDOMFragmentData,
   writeDOMRangeData,
 } from '@platejs/plite-dom';
+import { failInvariant } from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 import copyToClipboard from 'copy-to-clipboard';
 import type React from 'react';
@@ -34,7 +35,7 @@ const BLOCK_SELECTION_DESELECT_TAG = 'block-selection-deselect';
 
 type AddOnContextMenuOptions = {
   element: Element;
-  event: React.MouseEvent<HTMLDivElement, MouseEvent>;
+  event: React.MouseEvent<HTMLDivElement>;
   disabledWhenFocused?: boolean;
 };
 
@@ -118,7 +119,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       const blockMenu = editor.plugin(BlockMenuPlugin);
       if (
         event.button === 0 &&
-        store.get().selectedKeys!.size > 0 &&
+        store.get().selectedKeys.size > 0 &&
         (!blockMenu.installed || !blockMenu.store.get('openKey'))
       ) {
         store.set({ isSelecting: false, selectedKeys: new Set() });
@@ -128,10 +129,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
   selectors: {
     has: (state, key: NodeKey[] | NodeKey) =>
       Array.isArray(key)
-        ? key.every((singleKey) => state.selectedKeys!.has(singleKey))
-        : state.selectedKeys!.has(key),
-    isSelected: (state, key?: NodeKey) => !!key && state.selectedKeys!.has(key),
-    isSelectingSome: (state) => state.selectedKeys!.size > 0,
+        ? key.every((singleKey) => state.selectedKeys.has(singleKey))
+        : state.selectedKeys.has(key),
+    isSelected: (state, key?: NodeKey) => !!key && state.selectedKeys.has(key),
+    isSelectingSome: (state) => state.selectedKeys.size > 0,
   },
   read: ({ editor, store, state }) => {
     const getNodes = (options?: GetBlockSelectionNodesOptions) => {
@@ -141,8 +142,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             ...state.nodes.toArray({
               at: [],
               match: (node): node is Element =>
-                ElementApi.isElement(node) &&
-                selectedKeys.has(state.key(node)!),
+                ElementApi.isElement(node) && selectedKeys.has(state.key(node)),
             }),
           ]
         : [];
@@ -152,7 +152,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       }
 
       if (options?.collapseTableRows) {
-        const collapsedNodes: [Element, Path][] = [];
+        const collapsedNodes: Array<[Element, Path]> = [];
         const tableRow = editor.plugin(PLUGINS.tableRow);
 
         nodes.forEach(([node, path]) => {
@@ -179,7 +179,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             return;
           }
 
-          const [existing, existingPath] = collapsedNodes[existingIndex]!;
+          const [existing, existingPath] = collapsedNodes[existingIndex];
           collapsedNodes[existingIndex] = [
             { ...existing, children: [...existing.children, node] },
             existingPath,
@@ -209,7 +209,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
 })
   .extend(({ editor, read, store }) => {
     const add = (key: NodeKey[] | NodeKey) => {
-      const next = new Set(store.get().selectedKeys!);
+      const next = new Set(store.get().selectedKeys);
 
       if (Array.isArray(key)) {
         for (const singleKey of key) {
@@ -230,7 +230,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
     };
     const isSelectable = (element: Element, path: Path) =>
       editor.read.schema.isBlock(element) &&
-      store.get().isSelectable!(element, path);
+      store.get().isSelectable(element, path);
     const set = (key: NodeKey[] | NodeKey) => {
       store.set({ selectedKeys: new Set(Array.isArray(key) ? key : [key]) });
     };
@@ -301,7 +301,8 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
               !editor.read.schema.isVoid(nodeEntry[0]) &&
               !isOpenAlways
             ) {
-              return event.stopPropagation();
+              event.stopPropagation();
+              return;
             }
           }
         }
@@ -327,14 +328,14 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
         if (blocks.length === 0) return;
 
         if (direction === 'up') {
-          const [, topPath] = blocks[0]!;
+          const [, topPath] = blocks[0];
           const previous = editor.read.nodes.previous({
             at: topPath,
             from: 'parent',
             match: (node, path): node is Element =>
               ElementApi.isElement(node) && isSelectable(node, path),
           });
-          const key = editor.key(previous?.[0] ?? blocks[0]![0]);
+          const key = editor.key(previous?.[0] ?? blocks[0][0]);
 
           if (!key) return;
           if (previous) store.set({ anchorKey: key });
@@ -342,14 +343,18 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
           return;
         }
 
-        const [, bottomPath] = blocks.at(-1)!;
+        const [, bottomPath] =
+          blocks.at(-1) ?? failInvariant('Expected value to be defined');
         const next = editor.read.nodes.next({
           at: bottomPath,
           from: 'child',
           match: (node, path): node is Element =>
             ElementApi.isElement(node) && isSelectable(node, path),
         });
-        const key = editor.key(next?.[0] ?? blocks.at(-1)![0]);
+        const key = editor.key(
+          next?.[0] ??
+            (blocks.at(-1) ?? failInvariant('Expected value to be defined'))[0]
+        );
 
         if (!key) return;
         if (next) store.set({ anchorKey: key });
@@ -383,9 +388,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
 
         if (blocks.length === 0) return;
 
-        const [topNode, topPath] = blocks[0]!;
-        const [bottomNode, bottomPath] = blocks.at(-1)!;
-        let anchorKey = store.get().anchorKey;
+        const [topNode, topPath] = blocks[0];
+        const [bottomNode, bottomPath] =
+          blocks.at(-1) ?? failInvariant('Expected value to be defined');
+        let { anchorKey } = store.get();
 
         if (!anchorKey) {
           const fallback = editor.key(
@@ -424,7 +430,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             });
 
             if (!below) return;
-            selectedKeys.add(editor.key(below[0])!);
+            selectedKeys.add(editor.key(below[0]));
           } else {
             const topKey = editor.key(topNode);
 
@@ -464,8 +470,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
         } else {
           const bottomKey = editor.key(bottomNode);
 
-          if (bottomKey && bottomKey !== anchorKey)
+          if (bottomKey && bottomKey !== anchorKey) {
             selectedKeys.delete(bottomKey);
+          }
         }
 
         selectedKeys.add(anchorKey);
@@ -564,7 +571,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
             ) {
               return;
             }
-            const setData = data.setData;
+            const { setData } = data;
 
             didWrite = write({
               setData: (format, value) => {
@@ -577,7 +584,7 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
         return didCopy && didWrite;
       },
       delete: (key: NodeKey[] | NodeKey) => {
-        const next = new Set(store.get().selectedKeys!);
+        const next = new Set(store.get().selectedKeys);
 
         if (Array.isArray(key)) {
           for (const singleKey of key) {
@@ -718,10 +725,10 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       on: {
         commit({ commit }) {
           if (
+            !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG) &&
             (commit.tags.includes(BLOCK_SELECTION_DESELECT_TAG) ||
-              (commit.selectionChanged &&
-                !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
-            store.get().selectedKeys!.size > 0 &&
+              commit.selectionChanged) &&
+            store.get().selectedKeys.size > 0 &&
             !store.get().isSelectionAreaVisible &&
             !isBlockMenuOpen()
           ) {
@@ -742,9 +749,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
 
           return {
             className: 'plite-selectable',
-            onContextMenu: (
-              event: React.MouseEvent<HTMLDivElement, MouseEvent>
-            ) => api.addOnContextMenu({ element, event }),
+            onContextMenu: (event: React.MouseEvent<HTMLDivElement>) => {
+              api.addOnContextMenu({ element, event });
+            },
           };
         },
       },
@@ -753,24 +760,24 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
       selectAll: {
         keys: 'mod+a',
         priority: 0,
-        handler: ({ editor }) => {
+        handler: ({ editor: innerEditor }) => {
           if (store.get('disableSelectAll')) return false;
 
-          const selection = editor.read.selection();
-          const block = editor.read.nodes.block({ mode: 'highest' });
+          const selection = innerEditor.read.selection();
+          const block = innerEditor.read.nodes.block({ mode: 'highest' });
 
           if (!selection || !block) return false;
 
           if (
-            !editor.read.selection.isWithinBlock() ||
-            (editor.read.selection.isAtBlockStart() &&
-              editor.read.selection.isAtBlockEnd())
+            !innerEditor.read.selection.isWithinBlock() ||
+            (innerEditor.read.selection.isAtBlockStart() &&
+              innerEditor.read.selection.isAtBlockEnd())
           ) {
             api.selectAll();
             return true;
           }
 
-          editor.update.selection.set(block[1]);
+          innerEditor.update.selection.set(block[1]);
           return true;
         },
       },
@@ -837,14 +844,16 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
           }
 
           tx.dom.insertData(data);
-          updateContext.afterCommit(() => api.selectInserted());
+          updateContext.afterCommit(() => {
+            api.selectInserted();
+          });
         },
         removeNodes: (options: RemoveBlockSelectionNodesOptions = {}) => {
           const entries = getSelectedBlocks();
 
           if (entries.length === 0) return;
 
-          const firstPath = entries[0]![1];
+          const firstPath = entries[0][1];
 
           for (const [, path] of entries.toReversed()) {
             tx.nodes.remove({ at: path });
@@ -898,7 +907,9 @@ export const BlockSelectionPlugin = definePlatePlugin(PLUGINS.blockSelection, {
           if (!range) return;
 
           tx.selection.set(range);
-          updateContext.afterCommit(() => api.clear());
+          updateContext.afterCommit(() => {
+            api.clear();
+          });
         },
         setIndent: (indent: number, options?: NodeSetNodesOptions) => {
           getSelectedBlocks().forEach(([node, path]) => {

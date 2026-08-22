@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-return -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
@@ -410,7 +409,7 @@ async function checkDocsRegistry() {
       'Expected docs-meta to inline rewritten Fumadocs meta.json content'
     );
 
-    const installedDocsMeta = JSON.parse(docsMetaFile.content!) as DocsMeta;
+    const installedDocsMeta = JSON.parse(docsMetaFile.content) as DocsMeta;
     const misplacedHrefs = [
       ...collectInstalledDocsRegistryHrefs(installedDocsMeta),
     ].filter((href) => !INSTALLED_DOCS_HREF_REGEX.test(href));

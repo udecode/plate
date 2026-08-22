@@ -8,8 +8,8 @@ const upstreamPluginPath = path.join(
   path.dirname(antiSlopConfigPath),
   'plugin.mjs'
 );
-const upstreamPlugin = (await import(pathToFileURL(upstreamPluginPath).href))
-  .default;
+const upstreamModule = await import(pathToFileURL(upstreamPluginPath).href);
+const upstreamPlugin = upstreamModule.default;
 
 const assertionKinds = new Set(['TSAsExpression', 'TSTypeAssertion']);
 
@@ -44,7 +44,7 @@ export const hasExplicitTopTypeBridge = (node) => {
 
 export const isTypeAssertionAnnotation = (node) => {
   let current = node;
-  let parent = current.parent;
+  let { parent } = current;
 
   while (
     parent !== null &&
@@ -52,7 +52,7 @@ export const isTypeAssertionAnnotation = (node) => {
     !assertionKinds.has(parent.type)
   ) {
     current = parent;
-    parent = parent.parent;
+    ({ parent } = parent);
   }
 
   return (
@@ -69,7 +69,7 @@ const typeReferenceName = (node) =>
 
 export const isAnyConditionalFallback = (node) => {
   let current = node;
-  let parent = current.parent;
+  let { parent } = current;
 
   while (parent !== null && parent.type.startsWith('TS')) {
     if (
@@ -81,7 +81,7 @@ export const isAnyConditionalFallback = (node) => {
     }
 
     current = parent;
-    parent = parent.parent;
+    ({ parent } = parent);
   }
 
   return false;
@@ -127,7 +127,7 @@ export const shouldSuppressUnsafeDictionary = ({ data, node }) =>
 
 const wrapContext = (context, shouldSuppress) => {
   const descriptors = Object.getOwnPropertyDescriptors(context);
-  const report = context.report;
+  const { report } = context;
 
   descriptors.report = {
     ...descriptors.report,

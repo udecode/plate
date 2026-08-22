@@ -1,24 +1,30 @@
 export function getCodeTitleIconLabel(language: unknown) {
-  if (typeof language !== 'string') return;
+  if (typeof language !== 'string') return undefined;
 
   switch (language) {
-    case 'css':
+    case 'css': {
       return '#';
+    }
     case 'javascript':
     case 'js':
-    case 'jsx':
+    case 'jsx': {
       return 'JS';
-    case 'json':
+    }
+    case 'json': {
       return '{}';
+    }
     case 'bash':
     case 'sh':
-    case 'shell':
+    case 'shell': {
       return '>';
+    }
     case 'ts':
     case 'tsx':
-    case 'typescript':
+    case 'typescript': {
       return 'TS';
-    default:
+    }
+    default: {
       return language.slice(0, 3).toUpperCase();
+    }
   }
 }

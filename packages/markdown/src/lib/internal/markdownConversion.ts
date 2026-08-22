@@ -23,7 +23,6 @@ import { htmlToJsx } from '../deserializer/utils/htmlToJsx';
 import { splitIncompleteMdx } from '../deserializer/utils/splitIncompleteMdx';
 import { stripMarkdownBlocks } from '../deserializer/utils/stripMarkdown';
 import type { MarkdownPluginState } from '../MarkdownPlugin';
-import type { MdRoot } from '../mdast';
 import { intrinsicRules } from '../rules/intrinsicRules';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import type {
@@ -77,8 +76,8 @@ export type MarkdownRuntime = Readonly<{
   state: MarkdownRuntimeEditorState;
 }>;
 
-export const createMarkdownRuntime = <E extends BaseEditor>(
-  editor: E,
+export const createMarkdownRuntime = (
+  editor: BaseEditor,
   options: MarkdownRuntimeState,
   state: MarkdownRuntimeEditorState
 ): MarkdownRuntime => {
@@ -100,8 +99,8 @@ export const createMarkdownRuntime = <E extends BaseEditor>(
   });
 };
 
-export const withMarkdownRuntime = <T, E extends BaseEditor>(
-  editor: E,
+export const withMarkdownRuntime = <T>(
+  editor: BaseEditor,
   options: MarkdownRuntimeState,
   run: (runtime: MarkdownRuntime) => T
 ): T =>
@@ -261,10 +260,10 @@ export const deserializeMdWithRuntime = (
   return {
     children: output.map((item) =>
       TextApi.isText(item)
-        ? ({
+        ? {
             children: [item],
             type: paragraphType,
-          } as Element)
+          }
         : item
     ),
   };
@@ -510,11 +509,7 @@ export const serializeMdWithRuntime = (
       ...mergedOptions.remarkStringifyOptions,
     });
   return toRemarkProcessor.stringify({
-    children: convertNodesSerialize(
-      value,
-      mergedOptions,
-      true
-    ) as MdRoot['children'],
+    children: convertNodesSerialize(value, mergedOptions, true),
     type: 'root',
   });
 };

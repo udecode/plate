@@ -98,7 +98,7 @@ export const buildMdastNode = (
   options: SerializeMdContext,
   isBlock = false
 ) => {
-  const type = node.type;
+  const { type } = node;
   let fallbackType = type;
 
   if (options.registry.type(PLUGINS.heading) === type) {
@@ -129,6 +129,8 @@ export const buildMdastNode = (
   }
 
   console.warn(`Unreachable code: ${JSON.stringify(node)}`);
+
+  return undefined;
 };
 
 const isListElement = (
@@ -145,6 +147,8 @@ const shouldIncludeText = (
   options: SerializeMdContext
 ): boolean => {
   const { allowedNodes, allowNode, disallowedNodes } = options;
+  const allowedNodeSet = allowedNodes ? new Set(allowedNodes) : null;
+  const disallowedNodeSet = disallowedNodes ? new Set(disallowedNodes) : null;
 
   // First check allowedNodes/disallowedNodes
   if (
@@ -160,12 +164,12 @@ const shouldIncludeText = (
   for (const [key, value] of Object.entries(text)) {
     if (key === 'text') continue;
 
-    if (allowedNodes) {
+    if (allowedNodeSet) {
       // If allowedNodes is specified, only include if the mark is in allowedNodes
-      if (!allowedNodes.includes(key) && value) {
+      if (!allowedNodeSet.has(key) && value) {
         return false;
       }
-    } else if (disallowedNodes?.includes(key) && value) {
+    } else if (disallowedNodeSet?.has(key) && value) {
       // If using disallowedNodes, exclude if the mark is in disallowedNodes
       return false;
     }

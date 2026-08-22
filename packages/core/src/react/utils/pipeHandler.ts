@@ -12,7 +12,7 @@ import type { AnyResolvedPlatePlugin } from '../plugin';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { DOMHandlerProp, DOMHandlers } from '../plugin/DOMHandlers';
 
-type DOMHandlerName = keyof DOMHandlers & string;
+type DOMHandlerName = keyof DOMHandlers;
 
 type PluginWithDOMHandlers = AnyResolvedPlatePlugin & {
   on?: DOMHandlers;
@@ -21,7 +21,7 @@ type PluginWithDOMHandlers = AnyResolvedPlatePlugin & {
 const getDOMHandlerName = (handlerKey: DOMHandlerProp): DOMHandlerName => {
   if (handlerKey === 'onDOMBeforeInput') return 'domBeforeInput';
 
-  return `${handlerKey[2]!.toLowerCase()}${handlerKey.slice(3)}` as DOMHandlerName;
+  return `${handlerKey[2].toLowerCase()}${handlerKey.slice(3)}` as DOMHandlerName;
 };
 
 const convertDomEventToSyntheticEvent = (
@@ -30,15 +30,15 @@ const convertDomEventToSyntheticEvent = (
   let propagationStopped = false;
 
   return {
-    ...domEvent,
+    ...domEvent, // oxlint-disable-line typescript/no-misused-spread -- [P0 behavior-boundary] This fixture intentionally projects a class-backed host value into a plain synthetic object.
     bubbles: domEvent.bubbles,
     cancelable: domEvent.cancelable,
-    currentTarget: domEvent.currentTarget!,
+    currentTarget: domEvent.currentTarget as EventTarget,
     defaultPrevented: domEvent.defaultPrevented,
     eventPhase: domEvent.eventPhase,
     isTrusted: domEvent.isTrusted,
     nativeEvent: domEvent,
-    target: domEvent.target!,
+    target: domEvent.target as EventTarget,
     timeStamp: domEvent.timeStamp,
     type: domEvent.type,
     isDefaultPrevented: () => domEvent.defaultPrevented,
@@ -48,7 +48,9 @@ const convertDomEventToSyntheticEvent = (
         'persist is not implemented for synthetic events created using convertDomEventToSyntheticEvent'
       );
     },
-    preventDefault: () => domEvent.preventDefault(),
+    preventDefault: () => {
+      domEvent.preventDefault();
+    },
     stopPropagation: () => {
       propagationStopped = true;
       domEvent.stopPropagation();
@@ -116,7 +118,7 @@ export function pipeHandler<K extends DOMHandlerProp>(
     (plugin) => (plugin as PluginWithDOMHandlers).on?.[pluginHandlerName]
   );
 
-  if (relevantPlugins.length === 0 && !propsHandler) return;
+  if (relevantPlugins.length === 0 && !propsHandler) return undefined;
 
   return (event: any) => {
     const isDomEvent = event instanceof Event;

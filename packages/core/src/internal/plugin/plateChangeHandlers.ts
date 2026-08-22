@@ -3,6 +3,7 @@ import type {
   EditorTextChangeContext,
 } from '@platejs/plite';
 import { defineExtension } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 
 import type { BaseEditor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
@@ -37,10 +38,14 @@ export const subscribePlateChangeCallbacks = <E extends BaseEditor>(
   const listeners = PLATE_CHANGE_CALLBACKS.get(editor) ?? new Set();
   const listener: PlateChangeCallbacks = {
     onNodeChange: onNodeChange
-      ? (context) => onNodeChange(context as EditorNodeChangeContext<E>)
+      ? (context) => {
+          onNodeChange(context as EditorNodeChangeContext<E>);
+        }
       : undefined,
     onTextChange: onTextChange
-      ? (context) => onTextChange(context as EditorTextChangeContext<E>)
+      ? (context) => {
+          onTextChange(context as EditorTextChangeContext<E>);
+        }
       : undefined,
   };
 
@@ -77,7 +82,9 @@ export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
           editor,
         } as EditorNodeChangeContext<BaseEditor>;
         getPlateRuntime(editor).pluginCache.on.nodeChange.forEach((name) => {
-          const plugin = getCompiledPlatePlugin(editor, name)!;
+          const plugin =
+            getCompiledPlatePlugin(editor, name) ??
+            failInvariant('Expected value to be defined');
 
           if (!plugin) return;
 
@@ -114,7 +121,9 @@ export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
           editor,
         } as EditorTextChangeContext<BaseEditor>;
         getPlateRuntime(editor).pluginCache.on.textChange.forEach((name) => {
-          const plugin = getCompiledPlatePlugin(editor, name)!;
+          const plugin =
+            getCompiledPlatePlugin(editor, name) ??
+            failInvariant('Expected value to be defined');
 
           if (!plugin) return;
 

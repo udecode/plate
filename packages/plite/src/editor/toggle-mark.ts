@@ -24,10 +24,7 @@ export const applyToggleMark = (
       return;
     }
 
-    const marks = (tx.marks ?? tx.getSelectionMarks()) as Record<
-      string,
-      unknown
-    > | null;
+    const marks = tx.marks ?? tx.getSelectionMarks();
     const currentValue = marks?.[key];
     const isActive =
       currentValue !== undefined &&

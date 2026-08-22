@@ -11,6 +11,7 @@ import {
   type Element,
   type SchemaElement,
 } from '../../../packages/plite/src/index';
+import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const DOCUMENT_WIDTHS = [10, 1000, 10_000, 50_000] as const;
@@ -37,7 +38,7 @@ const outputArgument = process.argv.find((candidate) =>
 );
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const summarize = (values: readonly number[]) => {
   const sorted = [...values].sort((left, right) => left - right);
@@ -219,12 +220,12 @@ const sliceSizeRows = SLICE_SIZES.map((topLevelNodes) => {
 
 const ratio = (stress: number, tiny: number) => stress / Math.max(tiny, 0.001);
 const documentWidthRatio = ratio(
-  documentWidthRows.at(-1)!.warmFit.ns.p50,
-  documentWidthRows[0]!.warmFit.ns.p50
+  getDefined(documentWidthRows.at(-1)).warmFit.ns.p50,
+  documentWidthRows[0].warmFit.ns.p50
 );
 const schemaWidthRatio = ratio(
-  schemaWidthRows.at(-1)!.warmFit.ns.p50,
-  schemaWidthRows[0]!.warmFit.ns.p50
+  getDefined(schemaWidthRows.at(-1)).warmFit.ns.p50,
+  schemaWidthRows[0].warmFit.ns.p50
 );
 const allRows = [...documentWidthRows, ...schemaWidthRows, ...sliceSizeRows];
 const correctness = {
@@ -296,9 +297,9 @@ if (process.env.PLITE_FIT_CONTENT_LOCALITY_STRICT === '1') {
 }
 
 const output = `${JSON.stringify(result, null, 2)}\n`;
-const widestDocument = documentWidthRows.at(-1)!;
-const widestSchema = schemaWidthRows.at(-1)!;
-const largestSlice = sliceSizeRows.at(-1)!;
+const widestDocument = getDefined(documentWidthRows.at(-1));
+const widestSchema = getDefined(schemaWidthRows.at(-1));
+const largestSlice = getDefined(sliceSizeRows.at(-1));
 
 process.stdout.write(
   `METRIC plite_fit_content_document_width_ratio=${documentWidthRatio}\n`

@@ -36,27 +36,31 @@ type ListWrapperProps = Parameters<ListWrapper>[0] & {
 export const BlockList: ListWrapper = (props) => {
   const { listStyle, listType } = props.element;
 
-  if (!listType || listType === ListType.Bulleted) return;
+  if (!listType || listType === ListType.Bulleted) return undefined;
 
-  return (props) => (
-    <List
-      {...props}
-      listStart={props.editor.plugin(ListPlugin).read.ordinal(props.element)}
-      listStyle={listStyle}
-      listType={listType}
-    />
-  );
+  return function BlockListWrapper(innerProps) {
+    return (
+      <List
+        {...innerProps}
+        listStart={innerProps.editor
+          .plugin(ListPlugin)
+          .read.ordinal(innerProps.element)}
+        listStyle={listStyle}
+        listType={listType}
+      />
+    );
+  };
 };
 
 function List(props: ListWrapperProps) {
   const { listStart, listStyle, listType } = props;
   const { Li, Marker } = config[listType] ?? {};
-  const List = isOrderedList(props.element) ? 'ol' : 'ul';
+  const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
 
   return (
-    <List
+    <InnerList
       className="relative m-0 p-0"
       style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
@@ -70,7 +74,7 @@ function List(props: ListWrapperProps) {
           {props.lineBreakBadge}
         </li>
       )}
-    </List>
+    </InnerList>
   );
 }
 
@@ -91,7 +95,9 @@ function TodoMarker(props: ListWrapperProps) {
 
           editor.update.nodes.set({ checked: value }, { at: props.element });
         }}
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
       />
     </div>
   );

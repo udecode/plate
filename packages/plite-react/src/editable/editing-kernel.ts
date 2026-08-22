@@ -450,7 +450,7 @@ export const getEditableKernelTrace = (
 ): readonly EditableKernelTraceEntry[] =>
   DOMRootRuntime.resolveInputRuntime(
     editor
-  ).getTrace<EditableKernelTraceEntry>();
+  ).getTrace() as readonly EditableKernelTraceEntry[];
 
 export const clearEditableKernelTrace = (editor: AnyEditor) => {
   DOMRootRuntime.resolveInputRuntime(editor).clearTrace();
@@ -459,10 +459,9 @@ export const clearEditableKernelTrace = (editor: AnyEditor) => {
 export const getCurrentEditableEventFrame = (
   editor: AnyEditor
 ): EditableEventFrame | null =>
-  DOMRootRuntime.resolveInputRuntime(editor).currentFrame<
-    InputIntent,
-    Range | null
-  >();
+  DOMRootRuntime.resolveInputRuntime(
+    editor
+  ).currentFrame() as EditableEventFrame | null;
 
 export const beginEditableEventFrame = (
   editor: AnyEditor,
@@ -490,10 +489,9 @@ export const beginEditableEventFrame = (
 export const endEditableEventFrame = (
   editor: AnyEditor
 ): EditableEventFrame | null =>
-  DOMRootRuntime.resolveInputRuntime(editor).endFrame<
-    InputIntent,
-    Range | null
-  >();
+  DOMRootRuntime.resolveInputRuntime(
+    editor
+  ).endFrame() as EditableEventFrame | null;
 
 export const recordEditableKernelTrace = ({
   editor,
@@ -728,29 +726,40 @@ const getBeforeInputDeleteCommand = ({
   switch (inputType) {
     case 'deleteByComposition':
     case 'deleteByCut':
-    case 'deleteByDrag':
+    case 'deleteByDrag': {
       return { kind: 'delete-fragment', selection };
+    }
     case 'deleteContent':
-    case 'deleteContentForward':
+    case 'deleteContentForward': {
       return { direction: 'forward', kind: 'delete' };
-    case 'deleteContentBackward':
+    }
+    case 'deleteContentBackward': {
       return { direction: 'backward', kind: 'delete' };
-    case 'deleteEntireSoftLine':
+    }
+    case 'deleteEntireSoftLine': {
       return { kind: 'delete-both', unit: 'line' };
-    case 'deleteHardLineBackward':
+    }
+    case 'deleteHardLineBackward': {
       return { direction: 'backward', kind: 'delete', unit: 'block' };
-    case 'deleteSoftLineBackward':
+    }
+    case 'deleteSoftLineBackward': {
       return { direction: 'backward', kind: 'delete', unit: 'line' };
-    case 'deleteHardLineForward':
+    }
+    case 'deleteHardLineForward': {
       return { direction: 'forward', kind: 'delete', unit: 'block' };
-    case 'deleteSoftLineForward':
+    }
+    case 'deleteSoftLineForward': {
       return { direction: 'forward', kind: 'delete', unit: 'line' };
-    case 'deleteWordBackward':
+    }
+    case 'deleteWordBackward': {
       return { direction: 'backward', kind: 'delete', unit: 'word' };
-    case 'deleteWordForward':
+    }
+    case 'deleteWordForward': {
       return { direction: 'forward', kind: 'delete', unit: 'word' };
-    default:
+    }
+    default: {
       return null;
+    }
   }
 };
 

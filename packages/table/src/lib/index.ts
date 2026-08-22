@@ -3,4 +3,4 @@
  */
 
 export * from './BaseTablePlugin';
-export * from './types';
+export type * from './types';

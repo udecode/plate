@@ -23,7 +23,7 @@ const headingVariants = cva(
 );
 
 export function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  const level = props.element.level;
+  const { level } = props.element;
   const tag = `h${level}` as const;
 
   return (

@@ -25,7 +25,7 @@ describe('BaseTagPlugin', () => {
 
     editor.update.tag.insert(tagProps);
 
-    const children = editor.read.children()[0].children;
+    const { children } = editor.read.children()[0];
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toEqual({

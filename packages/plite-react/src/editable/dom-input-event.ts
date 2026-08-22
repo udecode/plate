@@ -31,9 +31,9 @@ export const getInputEventData = (
 export const getInputEventTargetRanges = (
   event: InputEvent
 ): readonly StaticRange[] => {
-  const { getTargetRanges } = event as InputEventWithTargetRanges;
+  const inputEvent = event as InputEventWithTargetRanges;
 
-  return typeof getTargetRanges === 'function'
-    ? getTargetRanges.call(event)
+  return typeof inputEvent.getTargetRanges === 'function'
+    ? inputEvent.getTargetRanges()
     : [];
 };

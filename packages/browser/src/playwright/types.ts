@@ -696,7 +696,7 @@ export type EditorSnapshot = {
   domSelection: DOMSelectionSnapshot | null;
   focusOwner: FocusOwnerSnapshot;
   kernelTrace: PliteBrowserKernelTraceEntry[];
-  lastCommit: unknown | null;
+  lastCommit: unknown;
   placeholderShape: PlaceholderShape | null;
 };
 
@@ -1304,7 +1304,7 @@ export type PliteBrowserEditorHarness = {
     focusOwner: () => Promise<FocusOwnerSnapshot>;
     kernelTrace: () => Promise<PliteBrowserKernelTraceEntry[]>;
     history: () => Promise<unknown>;
-    lastCommit: () => Promise<unknown | null>;
+    lastCommit: () => Promise<unknown>;
     placeholderShape: (selector?: string) => Promise<PlaceholderShape | null>;
   };
   selection: {

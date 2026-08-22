@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const tabbableValue = (
+export const tabbableValue: Value = (
   <fragment>
     <hheading level={2}>可Tab</hheading>
     <hp>使用Tabbable插件确保编辑器内的平滑标签导航体验。</hp>

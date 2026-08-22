@@ -193,8 +193,7 @@ export const isWordHtml = (body: HTMLElement): boolean => {
   traverseHtmlElements(body, (element) => {
     const style = element.getAttribute('style') ?? '';
 
-    result =
-      result ||
+    result ||=
       style.includes('mso-') ||
       Array.from(element.classList).some((className) =>
         className.startsWith('Mso')
@@ -401,7 +400,7 @@ export const cleanWordHtml = (html: string, rtf: string): string => {
         let offset = 0;
 
         while (node.data[offset] === '\n' || node.data[offset] === '\r') {
-          offset++;
+          offset += 1;
         }
 
         node.data = node.data

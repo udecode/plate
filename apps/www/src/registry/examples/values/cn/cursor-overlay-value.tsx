@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const cursorOverlayValue = (
+export const cursorOverlayValue: Value = (
   <fragment>
     <hheading level={2}>光标覆盖</hheading>
     <hp>

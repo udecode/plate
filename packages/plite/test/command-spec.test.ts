@@ -300,7 +300,9 @@ describe('pure command transaction specs', () => {
 
         try {
           Object.getPrototypeOf(result);
-        } catch {}
+        } catch {
+          // This probe only verifies that hostile proxy traps stay contained.
+        }
 
         return result;
       }),
@@ -311,7 +313,9 @@ describe('pure command transaction specs', () => {
 
         try {
           Object.isExtensible(result);
-        } catch {}
+        } catch {
+          // This probe only verifies that hostile proxy traps stay contained.
+        }
 
         return result;
       }),
@@ -322,7 +326,9 @@ describe('pure command transaction specs', () => {
 
         try {
           structuredClone(result);
-        } catch {}
+        } catch {
+          // This probe only verifies that hostile proxy traps stay contained.
+        }
 
         return result;
       }),
@@ -353,7 +359,7 @@ describe('pure command transaction specs', () => {
     );
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     const spec = editor.read((state) => insert.build(state, { text: '!' }));
 
     assert.notEqual(spec, false);
@@ -400,7 +406,7 @@ describe('pure command transaction specs', () => {
     const command = defineCommand<{ value: number }>('test.prepare-count', {
       build: () => false,
       prepare(input) {
-        prepares++;
+        prepares += 1;
 
         return Object.freeze({ ...input });
       },
@@ -598,35 +604,86 @@ describe('pure command transaction specs', () => {
     const point = { offset: 1, path: [0, 0] };
     const selection = SelectionApi.text({ anchor: point, focus: point });
     const rows: ReadonlyArray<readonly [string, () => unknown]> = [
-      [editorCommands.toggleBlock.id, () => editor.update.blocks.toggle('p')],
-      [editorCommands.insertBreak.id, () => editor.update.break.insert()],
+      [
+        editorCommands.toggleBlock.id,
+        () => {
+          editor.update.blocks.toggle('p');
+        },
+      ],
+      [
+        editorCommands.insertBreak.id,
+        () => {
+          editor.update.break.insert();
+        },
+      ],
       [
         editorCommands.insertSoftBreak.id,
-        () => editor.update.break.insertSoft(),
+        () => {
+          editor.update.break.insertSoft();
+        },
       ],
-      [editorCommands.deleteFragment.id, () => editor.update.fragment.delete()],
+      [
+        editorCommands.deleteFragment.id,
+        () => {
+          editor.update.fragment.delete();
+        },
+      ],
       [
         editorCommands.replaceSlice.id,
         () => editor.update.fragment.replace([{ text: 'x' }]),
       ],
-      [editorCommands.addMark.id, () => editor.update.marks.add('bold', true)],
-      [editorCommands.removeMark.id, () => editor.update.marks.remove('bold')],
+      [
+        editorCommands.addMark.id,
+        () => {
+          editor.update.marks.add('bold', true);
+        },
+      ],
+      [
+        editorCommands.removeMark.id,
+        () => {
+          editor.update.marks.remove('bold');
+        },
+      ],
       [
         editorCommands.toggleMark.id,
         () => editor.update.marks.toggle('bold', true),
       ],
       [
         editorCommands.insertNodes.id,
-        () => editor.update.nodes.insert({ text: 'x' }),
+        () => {
+          editor.update.nodes.insert({ text: 'x' });
+        },
       ],
-      [editorCommands.removeNodes.id, () => editor.update.nodes.remove()],
+      [
+        editorCommands.removeNodes.id,
+        () => {
+          editor.update.nodes.remove();
+        },
+      ],
       [
         editorCommands.setNodes.id,
-        () => editor.update.nodes.set({ bold: true }),
+        () => {
+          editor.update.nodes.set({ bold: true });
+        },
       ],
-      [editorCommands.collapse.id, () => editor.update.selection.collapse()],
-      [editorCommands.move.id, () => editor.update.selection.move()],
-      [editorCommands.select.id, () => editor.update.selection.set(selection)],
+      [
+        editorCommands.collapse.id,
+        () => {
+          editor.update.selection.collapse();
+        },
+      ],
+      [
+        editorCommands.move.id,
+        () => {
+          editor.update.selection.move();
+        },
+      ],
+      [
+        editorCommands.select.id,
+        () => {
+          editor.update.selection.set(selection);
+        },
+      ],
       [
         editorCommands.setSelection.id,
         () => editor.update.selection.setRange({ anchor: point }),
@@ -635,9 +692,24 @@ describe('pure command transaction specs', () => {
         editorCommands.replaceSlice.id,
         () => editor.update.slice.replace(ContentSlice.closed([{ text: 'x' }])),
       ],
-      [editorCommands.delete.id, () => editor.update.text.deleteBackward()],
-      [editorCommands.delete.id, () => editor.update.text.deleteForward()],
-      [editorCommands.insertText.id, () => editor.update.text.insert('x')],
+      [
+        editorCommands.delete.id,
+        () => {
+          editor.update.text.deleteBackward();
+        },
+      ],
+      [
+        editorCommands.delete.id,
+        () => {
+          editor.update.text.deleteForward();
+        },
+      ],
+      [
+        editorCommands.insertText.id,
+        () => {
+          editor.update.text.insert('x');
+        },
+      ],
     ];
 
     for (const [expectedId, invoke] of rows) {
@@ -654,30 +726,29 @@ describe('pure command transaction specs', () => {
     const self = defineCommand('test.recursion.self');
     const left = defineCommand('test.recursion.left');
     const right = defineCommand('test.recursion.right');
-    // oxlint-disable-next-line prefer-const -- The recursive handler closes over the editor assigned after handler construction.
-    let selfEditor!: ReturnType<typeof createTextEditor>;
-    // oxlint-disable-next-line prefer-const -- The mutually recursive handlers close over the editor assigned after construction.
-    let mutualEditor!: ReturnType<typeof createTextEditor>;
+    const selfEditor: ReturnType<typeof createTextEditor> = createTextEditor(
+      ({ handle }) => [
+        handle(self, () => {
+          dispatchCommand(selfEditor, self);
 
-    selfEditor = createTextEditor(({ handle }) => [
-      handle(self, () => {
-        dispatchCommand(selfEditor, self);
+          return false;
+        }),
+      ]
+    );
+    const mutualEditor: ReturnType<typeof createTextEditor> = createTextEditor(
+      ({ handle }) => [
+        handle(left, () => {
+          dispatchCommand(mutualEditor, right);
 
-        return false;
-      }),
-    ]);
-    mutualEditor = createTextEditor(({ handle }) => [
-      handle(left, () => {
-        dispatchCommand(mutualEditor, right);
+          return false;
+        }),
+        handle(right, () => {
+          dispatchCommand(mutualEditor, left);
 
-        return false;
-      }),
-      handle(right, () => {
-        dispatchCommand(mutualEditor, left);
-
-        return false;
-      }),
-    ]);
+          return false;
+        }),
+      ]
+    );
 
     assert.throws(
       () => dispatchCommand(selfEditor, self),
@@ -726,7 +797,7 @@ describe('pure command transaction specs', () => {
     const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
 
     void editor.read.runtime.snapshot().index;
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     try {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
@@ -760,7 +831,7 @@ describe('pure command transaction specs', () => {
     const editor = createTextEditor();
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     editor.update((tx) => {
       tx.text.insert('x');
       tx.command(insert, { text: 'y' });
@@ -781,7 +852,7 @@ describe('pure command transaction specs', () => {
     };
     const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     try {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
         record(event) {
@@ -1009,10 +1080,7 @@ describe('pure command transaction specs', () => {
     const handlerCommand = defineCommand<{ text: string }>(
       'test.guarded-handler'
     );
-    // oxlint-disable-next-line prefer-const -- The guarded handler closes over the editor assigned after handler construction.
-    let handlerEditor!: Editor<Value>;
-
-    handlerEditor = createTextEditor(({ handle }) => [
+    const handlerEditor: Editor<Value> = createTextEditor(({ handle }) => [
       handle(handlerCommand, () => {
         handlerEditor.update(() => {});
 
@@ -1044,7 +1112,7 @@ describe('pure command transaction specs', () => {
     });
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     dispatchCommand(editor, editorCommands.insertText, {
       options: {
         at: SelectionApi.text({
@@ -1245,7 +1313,7 @@ describe('pure command transaction specs', () => {
     const mainNodeKey = runtime.key([0]);
     const headerNodeKey = header.key([0]);
 
-    runtime.subscribeCommit(() => commits++);
+    runtime.subscribeCommit(() => (commits += 1) - 1);
     try {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
         record(event) {
@@ -1290,14 +1358,14 @@ describe('pure command transaction specs', () => {
     let prepares = 0;
     const blocked = defineCommand<InsertCommand>('test.read-only', {
       build: ({ input, state }) => {
-        builds++;
+        builds += 1;
 
         return state.transaction((tx) => {
           tx.text.insert(input.text);
         });
       },
       prepare: (input) => {
-        prepares++;
+        prepares += 1;
 
         return input;
       },
@@ -1356,7 +1424,7 @@ describe('pure command transaction specs', () => {
             offset: 3,
             path: [0, 0],
           });
-          tx.selection.set(target.resolve()!);
+          tx.selection.set(target.resolve());
         }),
     });
     const editor = createTextEditor();
@@ -1457,7 +1525,7 @@ describe('pure command transaction specs', () => {
       finalizeExtensionRegistry(configured)
     );
     const entries = registry.commands.byDescriptor.get(insert)?.entries as
-      | readonly Readonly<{ run: () => false }>[]
+      | ReadonlyArray<Readonly<{ run: () => false }>>
       | undefined;
 
     for (const entry of entries ?? []) entry.run();
@@ -1583,7 +1651,7 @@ describe('pure command transaction specs', () => {
     ]);
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     assert.equal(dispatchCommand(editor, decline), false);
     assert.equal(editor.read.text.string([]), 'ab');
@@ -1671,17 +1739,14 @@ describe('pure command transaction specs', () => {
 
     assert.notEqual(spec, false);
     assert.throws(
-      () =>
-        other
-          .read((current) => current)
-          .transaction.extend(spec as TransactionSpec, () => {}),
+      () => other.read((current) => current).transaction.extend(spec, () => {}),
       /different editor/
     );
 
     editor.update((tx) => tx.text.insert('y'));
 
     assert.throws(
-      () => state.transaction.extend(spec as TransactionSpec, () => {}),
+      () => state.transaction.extend(spec, () => {}),
       /stale transaction spec/
     );
   });

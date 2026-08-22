@@ -8,7 +8,7 @@ const repoRoot = fileURLToPath(new URL('../../../..', import.meta.url));
 const runRootScript = (script: string, env = process.env) =>
   spawnSync('bun', ['run', script], {
     cwd: repoRoot,
-    encoding: 'utf8',
+    encoding: 'utf-8',
     env,
   });
 

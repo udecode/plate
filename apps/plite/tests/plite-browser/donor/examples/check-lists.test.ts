@@ -92,4 +92,44 @@ test.describe('Check-lists example', () => {
       });
     }
   });
+
+  test('moves document-start navigation to a leading checklist item', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop checklist proof');
+
+    const editor = await openExample(page, 'plite/check-lists', {
+      query: { case: 'leading-item' },
+      ready: { editor: 'visible', text: 'Finish here.' },
+    });
+    const documentStartHotkey =
+      process.platform === 'darwin' ? 'Meta+ArrowUp' : 'Control+Home';
+
+    await expect(editor.locator.block([0]).locator('input')).toHaveCount(1);
+    await expect
+      .poll(() => editor.get.modelBlockTexts())
+      .toEqual(['Start here.', 'Keep going.', 'Finish here.']);
+
+    await editor.selection.selectDOM({
+      kind: 'text',
+      anchor: { path: [2, 0], offset: 6 },
+      focus: { path: [2, 0], offset: 6 },
+    });
+    await editor.focus();
+    await editor.root.press(documentStartHotkey);
+
+    await expect
+      .poll(() => editor.selection.get())
+      .toEqual({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      });
+    await editor.assert.domSelectionTarget({
+      anchorOffset: 0,
+      anchorPath: [0, 0],
+      isCollapsed: true,
+    });
+    await editor.assert.noDoubleSelectionHighlight();
+  });
 });

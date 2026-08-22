@@ -17,6 +17,7 @@ import {
   type EditableCommand,
   prepareEditableBeforeInputKernel,
 } from './editing-kernel';
+import { getModelOwnedHistoryFocusRepair } from './history-focus';
 import {
   armModelOwnedTextInputGuard,
   getNestedEditableDOMSelectionRoot,
@@ -35,12 +36,12 @@ import {
   clearExpiredTextInputRepairEcho,
   type EditableInputController,
   runTrackedEditableCompositionMutation,
+  shouldMergeEditableCompositionHistory,
 } from './input-state';
 import {
   applyModelOwnedBeforeInputMutation,
   applyModelOwnedNativeHistoryEvent,
   type DeferredMutation,
-  shouldForceRenderAfterModelOwnedHistory,
 } from './model-input-strategy';
 import { getNativeBeforeInputDecision } from './native-input-strategy';
 import {
@@ -205,7 +206,7 @@ export const queuePendingCompositionModelInput = ({
   selection: Range | null;
   setComposing: EditableEventRuntime['composition']['setComposing'];
 }) => {
-  const pendingCompositionEnd = inputController.state.pendingCompositionEnd;
+  const { pendingCompositionEnd } = inputController.state;
 
   if (pendingCompositionEnd?.ownership !== 'plite') return false;
 
@@ -214,6 +215,7 @@ export const queuePendingCompositionModelInput = ({
     data,
     inputType,
   });
+  const mergeHistory = shouldMergeEditableCompositionHistory(inputController);
   const selectionAnchor = selection
     ? editor.anchor(selection, {
         association: 'inward',
@@ -248,6 +250,7 @@ export const queuePendingCompositionModelInput = ({
               data: capturedInput.data,
               editor,
               inputType: capturedInput.inputType,
+              mergeHistory,
               native: false,
               preserveComposing: true,
               selection: liveSelection,
@@ -413,7 +416,7 @@ export const useRuntimeBeforeInputEvents = ({
 }) => {
   const pliteRuntimeContext = useOptionalPliteRuntimeContext();
   const handleDOMBeforeInput = useCallback(
-    (event: InputEvent) =>
+    (event: InputEvent) => {
       profileBeforeInputDuration('beforeinput-total', () => {
         const shouldFlushPendingTextInput =
           deferNativeTextInputRepair &&
@@ -451,11 +454,22 @@ export const useRuntimeBeforeInputEvents = ({
         ) {
           event.preventDefault();
           event.stopImmediatePropagation();
-          if (shouldForceRenderAfterModelOwnedHistory(editor)) {
-            repair.requestEditableRepair({
-              forceRender: true,
-              kind: 'force-render',
-            });
+          const historyFocusRepair = getModelOwnedHistoryFocusRepair({
+            editor,
+            getActiveContentRootOwner:
+              pliteRuntimeContext?.getActiveContentRootOwner,
+            getContentRootOwnerViewEditor:
+              pliteRuntimeContext?.getContentRootOwnerViewEditor,
+            getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+          });
+
+          if (historyFocusRepair.repair) {
+            repair.requestEditableRepair(
+              historyFocusRepair.repair,
+              historyFocusRepair.focusEditor
+                ? { focusEditor: historyFocusRepair.focusEditor }
+                : undefined
+            );
           }
           handledDOMBeforeInputRef.current = true;
           return;
@@ -661,7 +675,8 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (targetEditor && androidInputManagerRef.current) {
-            return androidInputManagerRef.current.handleDOMBeforeInput(event);
+            androidInputManagerRef.current.handleDOMBeforeInput(event);
+            return;
           }
 
           if (targetEditor && targetEditor !== editor) {
@@ -709,6 +724,9 @@ export const useRuntimeBeforeInputEvents = ({
                     data,
                     editor: targetEditor,
                     inputType: type,
+                    mergeHistory:
+                      isCompositionFinalInputType(type) &&
+                      shouldMergeEditableCompositionHistory(inputController),
                     native: false,
                     selection:
                       currentSelection ??
@@ -766,7 +784,8 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (androidInputManagerRef.current) {
-            return androidInputManagerRef.current.handleDOMBeforeInput(event);
+            androidInputManagerRef.current.handleDOMBeforeInput(event);
+            return;
           }
 
           if (shouldAbortForCompositionChange) {
@@ -786,7 +805,7 @@ export const useRuntimeBeforeInputEvents = ({
             })
           );
 
-          let native = beforeInputDecision.native;
+          let { native } = beforeInputDecision;
           const forceModelOwnedTextInput = profileBeforeInputDuration(
             'beforeinput-force-model-owned-text-input',
             () =>
@@ -831,7 +850,7 @@ export const useRuntimeBeforeInputEvents = ({
               });
             }
           );
-          native = beforeInputSelection.native;
+          ({ native } = beforeInputSelection);
           if (initialNative && !native && beforeInputSelection.nativeBlocker) {
             recordPliteReactRender({
               id: `beforeinput-native-demoted:${beforeInputSelection.nativeBlocker}`,
@@ -1009,6 +1028,9 @@ export const useRuntimeBeforeInputEvents = ({
                     data,
                     editor,
                     inputType: type,
+                    mergeHistory:
+                      isCompositionFinalInputType(type) &&
+                      shouldMergeEditableCompositionHistory(inputController),
                     native,
                     selection: currentSelection,
                     setComposing,
@@ -1046,7 +1068,8 @@ export const useRuntimeBeforeInputEvents = ({
             );
           }
         }
-      }),
+      });
+    },
     [
       androidInputManagerRef,
       deferNativeTextInputRepair,
@@ -1086,6 +1109,8 @@ export const useRuntimeBeforeInputEvents = ({
             data: text,
             editor,
             inputType: 'insertText',
+            mergeHistory:
+              shouldMergeEditableCompositionHistory(inputController),
             native: false,
             selection: readRuntimeSelectionRange(editor),
             setComposing,

@@ -62,23 +62,27 @@ const embed = () =>
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'paragraph':
+    case 'paragraph': {
       return (
         <ParagraphElement
           {...(props as RenderElementProps<ParagraphElementType>)}
         />
       );
-    default:
+    }
+    default: {
       return <p {...props.attributes}>{props.children}</p>;
+    }
   }
 };
 
 const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
   switch (element.type) {
-    case 'video':
-      return <VideoElement element={element as VideoElementType} />;
-    default:
+    case 'video': {
+      return <VideoElement element={element} />;
+    }
+    default: {
       return null;
+    }
   }
 };
 
@@ -150,7 +154,9 @@ const UrlInput = ({ url, onChange }: UrlInputProps) => {
         setValue(newUrl);
         onChange(newUrl);
       }}
-      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      onClick={(e: React.MouseEvent) => {
+        e.stopPropagation();
+      }}
       type="text"
       value={value}
     />

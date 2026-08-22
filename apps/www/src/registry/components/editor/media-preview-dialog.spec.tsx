@@ -111,7 +111,7 @@ describe('MediaPreviewDialog', () => {
     );
     const view = render(<MediaPreviewDialog />);
 
-    fireEvent.click(view.getAllByRole('button')[3]);
+    fireEvent.click(view.getByRole('button', { name: 'Zoom in' }));
 
     expect(previewApi.zoomIn).toHaveBeenCalledTimes(1);
     expect(previewApi.close).not.toHaveBeenCalled();

@@ -37,9 +37,9 @@ it('uses custom hotkey handler for bold', () => {
     plugins: [
       BoldPlugin.configure({
         on: {
-          keyDown: ({ editor, event }) => {
+          keyDown: ({ editor: innerEditor, event }) => {
             if (event.key === 'b' && event.ctrlKey) {
-              editor.update.marks.toggle('bold');
+              innerEditor.update.marks.toggle('bold');
             }
           },
         },

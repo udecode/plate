@@ -131,11 +131,11 @@ function useRuntimeNodeSelector<T>(
   const contextNodeKey = useContext(NodeKeyContext);
   const nodeKey = nodeKeyProp ?? contextNodeKey;
   const nodeSelector = useCallback(
-    (editor: ReactRuntimeEditor) => {
-      const { node, path } = readNodeByKey(editor, nodeKey);
+    (innerEditor: ReactRuntimeEditor) => {
+      const { node, path } = readNodeByKey(innerEditor, nodeKey);
 
       return selector({
-        editor,
+        editor: innerEditor,
         node,
         path,
         nodeKey,

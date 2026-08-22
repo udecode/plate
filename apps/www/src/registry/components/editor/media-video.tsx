@@ -14,6 +14,7 @@ import {
   useEditor,
   useEditorMounted,
   useElementSelected,
+  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
@@ -29,6 +30,7 @@ import {
 } from './resize-handle';
 
 export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
+  const path = usePath();
   const selected = useElementSelected({ mode: 'node' });
   const { provider, url: unsafeUrl } = props.element;
   const textAlign =
@@ -47,7 +49,8 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
   );
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
   const isYoutube = embed?.provider === 'youtube';
-  const captionFocused = useCaptionFocused(props.path);
+  const youtubeId = isYoutube ? embed.id : undefined;
+  const captionFocused = useCaptionFocused(path);
   const editor = useEditor();
   const isEditorMounted = useEditorMounted();
   const shouldRenderEmbedPlayer =
@@ -69,11 +72,9 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
             align={textAlign}
             maxWidth={isTweet ? 550 : '100%'}
             minWidth={isTweet ? 300 : 100}
-            onResizeEnd={(width) =>
-              editor
-                .plugin(VideoPlugin)
-                .update.set({ width }, { at: props.path })
-            }
+            onResizeEnd={(width) => {
+              editor.plugin(VideoPlugin).update.set({ width }, { at: path });
+            }}
             width={props.element.width}
           >
             <div className="group/media">
@@ -87,10 +88,10 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
                 direction="right"
               />
 
-              {provider !== 'file' && isYoutube && (
+              {provider !== 'file' && youtubeId && (
                 <div ref={handleRef}>
                   <LiteYouTubeEmbed
-                    id={embed!.id!}
+                    id={youtubeId}
                     title="youtube"
                     wrapperClass={cn(
                       'aspect-video rounded-sm',
@@ -114,6 +115,7 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
 
               {shouldRenderFileVideo && (
                 <div ref={handleRef}>
+                  {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
                   <video
                     className="w-full max-w-full rounded-sm object-cover px-0"
                     src={unsafeUrl}

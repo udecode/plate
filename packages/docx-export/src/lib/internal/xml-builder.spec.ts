@@ -23,7 +23,8 @@ describe('color conversion', () => {
   describe('regex patterns', () => {
     it('rgbRegex matches RGB values', () => {
       expect(rgbRegex.test('rgb(255, 0, 0)')).toBe(true);
-      expect(rgbRegex.test('rgb(0,0,0)')).toBe(true); // space after comma is optional
+      // space after comma is optional
+      expect(rgbRegex.test('rgb(0,0,0)')).toBe(true);
       expect(rgbRegex.test('rgb(128, 128, 128)')).toBe(true);
       expect(rgbRegex.test('#FF0000')).toBe(false);
     });

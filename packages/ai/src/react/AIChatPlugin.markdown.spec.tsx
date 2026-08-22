@@ -131,7 +131,7 @@ describe('AIChatPlugin read.markdown', () => {
         type: 'tableCellWithRef',
       });
       const cellRefs = [...result.matchAll(/<CellRef ref="([^"]+)" \/>/g)].map(
-        (match) => match[1]!
+        (match) => match[1]
       );
 
       expect(cellRefs).toEqual(['c1', 'c2']);
@@ -139,8 +139,8 @@ describe('AIChatPlugin read.markdown', () => {
       const refs = aiChat.store.get('_tableCellRefs');
 
       expect(Object.keys(refs)).toEqual(cellRefs);
-      expect(result).not.toContain(refs.c1!.key);
-      expect(result).not.toContain(refs.c2!.key);
+      expect(result).not.toContain(refs.c1.key);
+      expect(result).not.toContain(refs.c2.key);
 
       expect(result).toContain(
         `<Cell ref="${cellRefs[0]}">\n产品经理\n</Cell>`
@@ -289,9 +289,9 @@ describe('AIChatPlugin read.markdown', () => {
       const aiChat = editor.plugin(AIChatPlugin);
       const result = aiChat.read.markdown({ type: 'tableCellWithRef' });
       const ref = aiChat.store.get('_tableCellRefs').c1;
-      const cellKey = createEditorView(editor, { root: 'header' }).key([
-        0, 0, 0,
-      ]);
+      const cellKey = createEditorView(editor, {
+        root: 'header',
+      }).key([0, 0, 0]);
 
       if (!cellKey) throw new Error('Expected a named-root table cell key');
 

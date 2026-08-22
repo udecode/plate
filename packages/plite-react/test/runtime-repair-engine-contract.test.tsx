@@ -137,6 +137,66 @@ test('does not export when selection changes without a document commit', () => {
   ).toBe(false);
 });
 
+test('settles only the latest explicit focus target after the repair render', () => {
+  const editor = createReactEditor();
+  const staleTarget = createReactEditor();
+  const target = createReactEditor();
+  const focus = vi.spyOn(ReactEditor, 'focus').mockImplementation(() => {});
+  const { result } = renderRepairEngine(editor);
+  const requestRepair = result.current.requestEditableRepair as unknown as (
+    request: { forceRender: true; kind: 'force-render' },
+    options: { focusEditor: ReactRuntimeEditor }
+  ) => void;
+
+  try {
+    act(() => {
+      requestRepair(
+        { forceRender: true, kind: 'force-render' },
+        { focusEditor: staleTarget }
+      );
+      requestRepair(
+        { forceRender: true, kind: 'force-render' },
+        { focusEditor: target }
+      );
+    });
+
+    expect(focus).toHaveBeenNthCalledWith(1, staleTarget);
+    expect(focus).toHaveBeenNthCalledWith(2, target);
+    expect(focus).toHaveBeenNthCalledWith(3, target);
+
+    act(() => result.current.forceRender());
+
+    expect(focus).toHaveBeenCalledTimes(3);
+  } finally {
+    focus.mockRestore();
+  }
+});
+
+test('fails closed when an explicit focus target is unavailable after render', () => {
+  const editor = createReactEditor();
+  const target = createReactEditor();
+  const focus = vi.spyOn(ReactEditor, 'focus').mockImplementation(() => {
+    throw new Error('unmounted target');
+  });
+  const { result } = renderRepairEngine(editor);
+
+  try {
+    expect(() => {
+      act(() => {
+        result.current.requestEditableRepair(
+          { forceRender: true, kind: 'force-render' },
+          { focusEditor: target }
+        );
+      });
+    }).not.toThrow();
+    expect(focus).toHaveBeenCalledTimes(2);
+    expect(focus).toHaveBeenNthCalledWith(1, target);
+    expect(focus).toHaveBeenNthCalledWith(2, target);
+  } finally {
+    focus.mockRestore();
+  }
+});
+
 test('repair engine registers force render only after commit and cleans up on unmount', () => {
   const editor = createReactEditor();
   const ThrowingHarness = () => {

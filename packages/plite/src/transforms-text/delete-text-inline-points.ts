@@ -108,7 +108,7 @@ export const moveLeadingSpacerPointIntoFollowingInline = (
     return livePoint;
   }
 
-  const nextSiblingPath = PathApi.next(livePoint.path as Path);
+  const nextSiblingPath = PathApi.next(livePoint.path);
 
   if (!editorHasPath(editor, nextSiblingPath)) {
     return livePoint;
@@ -147,7 +147,7 @@ export const moveTrailingTextPointIntoFollowingInline = (
     return livePoint;
   }
 
-  const nextSiblingPath = PathApi.next(livePoint.path as Path);
+  const nextSiblingPath = PathApi.next(livePoint.path);
 
   if (!editorHasPath(editor, nextSiblingPath)) {
     return livePoint;

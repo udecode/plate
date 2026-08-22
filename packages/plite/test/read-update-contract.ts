@@ -52,9 +52,9 @@ describe('read/update contract', () => {
       },
     });
 
-    const state = editor.read((state) => ({
-      children: state.runtime.snapshot().children,
-      selection: state.selection(),
+    const state = editor.read((innerState) => ({
+      children: innerState.runtime.snapshot().children,
+      selection: innerState.selection(),
     }));
 
     assert.deepEqual(state.children, [paragraph('one')]);
@@ -69,11 +69,11 @@ describe('read/update contract', () => {
     });
 
     assert.equal(
-      editor.read((state) => state.text.string([])),
+      editor.read((innerState2) => innerState2.text.string([])),
       'one!'
     );
 
-    const commit = editor.read((state) => state.lastCommit());
+    const commit = editor.read((innerState3) => innerState3.lastCommit());
 
     assert.ok(commit);
     assert.equal(commit.changed.has('text'), true);

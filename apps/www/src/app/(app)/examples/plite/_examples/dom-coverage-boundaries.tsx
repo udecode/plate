@@ -138,7 +138,9 @@ const DomCoverageBoundariesExample = () => {
   );
 
   const refreshTrace = useCallback(() => {
-    setTimeout(() => setTraceTick((tick) => tick + 1), 0);
+    setTimeout(() => {
+      setTraceTick((tick) => tick + 1);
+    }, 0);
   }, []);
 
   const updateHiddenBody = useCallback(() => {
@@ -216,35 +218,45 @@ const DomCoverageBoundariesExample = () => {
     <div className="plite-dom-coverage-page">
       <div className="plite-dom-coverage-toolbar">
         <Button
-          onClick={() => toggleHiddenBoundary('headerHidden')}
+          onClick={() => {
+            toggleHiddenBoundary('headerHidden');
+          }}
           type="button"
           variant="outline"
         >
           Header
         </Button>
         <Button
-          onClick={() => toggleHiddenBoundary('outerHidden')}
+          onClick={() => {
+            toggleHiddenBoundary('outerHidden');
+          }}
           type="button"
           variant="outline"
         >
           Outer
         </Button>
         <Button
-          onClick={() => toggleHiddenBoundary('innerHidden')}
+          onClick={() => {
+            toggleHiddenBoundary('innerHidden');
+          }}
           type="button"
           variant="outline"
         >
           Nested
         </Button>
         <Button
-          onClick={() => toggleHiddenBoundary('deepHidden')}
+          onClick={() => {
+            toggleHiddenBoundary('deepHidden');
+          }}
           type="button"
           variant="outline"
         >
           Deep
         </Button>
         <Button
-          onClick={() => toggleHiddenBoundary('footerHidden')}
+          onClick={() => {
+            toggleHiddenBoundary('footerHidden');
+          }}
           type="button"
           variant="outline"
         >
@@ -310,7 +322,7 @@ const Element = ({
   const childNodes = React.Children.toArray(children);
 
   switch (element.type) {
-    case 'header':
+    case 'header': {
       return (
         <slots.contentBoundary
           boundaryId="hidden-header"
@@ -323,7 +335,8 @@ const Element = ({
           scope={{ type: 'self' }}
         />
       );
-    case 'section':
+    }
+    case 'section': {
       return (
         <EditableElement>
           <div className="plite-dom-coverage-summary" contentEditable={false}>
@@ -342,7 +355,8 @@ const Element = ({
           />
         </EditableElement>
       );
-    case 'nested-section':
+    }
+    case 'nested-section': {
       return (
         <EditableElement>
           <div className="plite-dom-coverage-summary" contentEditable={false}>
@@ -361,7 +375,8 @@ const Element = ({
           />
         </EditableElement>
       );
-    case 'deep-section':
+    }
+    case 'deep-section': {
       return (
         <EditableElement>
           <div className="plite-dom-coverage-summary" contentEditable={false}>
@@ -380,11 +395,14 @@ const Element = ({
           />
         </EditableElement>
       );
-    case 'bulleted-list':
+    }
+    case 'bulleted-list': {
       return <ul>{children}</ul>;
-    case 'list-item':
+    }
+    case 'list-item': {
       return <li>{children}</li>;
-    case 'footer':
+    }
+    case 'footer': {
       return (
         <slots.contentBoundary
           boundaryId="hidden-footer"
@@ -397,8 +415,10 @@ const Element = ({
           scope={{ type: 'self' }}
         />
       );
-    default:
+    }
+    default: {
       return <EditableElement>{children}</EditableElement>;
+    }
   }
 };
 

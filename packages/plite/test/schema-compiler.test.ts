@@ -26,11 +26,11 @@ import {
 import { hashSchemaIdentityString } from '../src/core/schema-compiler';
 
 const legacyHashSchemaIdentityString = (value: string) => {
-  let hash = 0xcbf29ce484222325n;
+  let hash = 0xcb_f2_9c_e4_84_22_23_25n;
 
   for (let index = 0; index < value.length; index++) {
     hash ^= BigInt(value.charCodeAt(index));
-    hash = BigInt.asUintN(64, hash * 0x100000001b3n);
+    hash = BigInt.asUintN(64, hash * 0x1_00_00_00_01_b3n);
   }
 
   return hash.toString(16).padStart(16, '0');
@@ -589,10 +589,7 @@ describe('schema compiler', () => {
       assert.throws(
         () =>
           compileEditorSchemaContributions([
-            record(
-              `complete-without-${field}`,
-              malformed as EditorSchemaContributionRecord['contribution']
-            ),
+            record(`complete-without-${field}`, malformed),
           ]),
         (error: unknown) => {
           assert.ok(error instanceof EditorSchemaCompileError);
@@ -1418,11 +1415,11 @@ describe('schema compiler', () => {
       'replace'
     );
     assert.equal(
-      matchesCompiledSchemaTarget(compiled, textProperty!.target, context),
+      matchesCompiledSchemaTarget(compiled, textProperty.target, context),
       true
     );
     assert.equal(
-      matchesCompiledSchemaTarget(compiled, textProperty!.target, {
+      matchesCompiledSchemaTarget(compiled, textProperty.target, {
         ...context,
         root: 'comments',
       }),
@@ -1520,7 +1517,7 @@ describe('schema compiler', () => {
     const [propertyId] = first.elements.byType.get('paragraph')!.propertyIds;
 
     assert.deepEqual(
-      first.properties.byId.get(propertyId!)!.descriptor.default,
+      first.properties.byId.get(propertyId)!.descriptor.default,
       ['a', 'b']
     );
     assert.equal(first.identity.fingerprint, second.identity.fingerprint);
@@ -1846,7 +1843,7 @@ describe('schema compiler', () => {
     const editor = createEditor({
       extensions: [slot.of(create())] as const,
     });
-    const before = getCompiledEditorSchema(editor)!;
+    const before = getCompiledEditorSchema(editor);
     const configurationRevision =
       getCompiledEditorConfiguration(editor).revision;
     let commits = 0;
@@ -1905,7 +1902,7 @@ describe('schema compiler', () => {
     const editor = createEditor({
       extensions: [slot.of(create(nonEmpty))] as const,
     });
-    const before = getCompiledEditorSchema(editor)!;
+    const before = getCompiledEditorSchema(editor);
     let commits = 0;
 
     editor.subscribeCommit(() => {
@@ -1921,7 +1918,7 @@ describe('schema compiler', () => {
 
     editor.update.extensions.reconfigure(slot, create(anyString));
 
-    const after = getCompiledEditorSchema(editor)!;
+    const after = getCompiledEditorSchema(editor);
     const [propertyId] = after.properties.byId.keys();
 
     assert.deepEqual(
@@ -1933,11 +1930,11 @@ describe('schema compiler', () => {
     assert.equal(after.identity.fingerprint, before.identity.fingerprint);
     assert.equal(commits, 1);
     assert.equal(
-      before.properties.byId.get(propertyId!)!.descriptor.validate?.(''),
+      before.properties.byId.get(propertyId)!.descriptor.validate?.(''),
       false
     );
     assert.equal(
-      after.properties.byId.get(propertyId!)!.descriptor.validate?.(''),
+      after.properties.byId.get(propertyId)!.descriptor.validate?.(''),
       true
     );
     assert.equal(editor.read.schema.identity(), before.identity);
@@ -1975,7 +1972,7 @@ describe('schema compiler', () => {
         ),
       ] as const,
     });
-    const before = getCompiledEditorSchema(editor)!;
+    const before = getCompiledEditorSchema(editor);
     let commits = 0;
 
     editor.subscribeCommit(() => {
@@ -1986,7 +1983,7 @@ describe('schema compiler', () => {
       create((value): value is string => typeof value === 'string')
     );
 
-    const after = getCompiledEditorSchema(editor)!;
+    const after = getCompiledEditorSchema(editor);
 
     assert.notEqual(after, before);
     assert.equal(after.identity.fingerprint, before.identity.fingerprint);

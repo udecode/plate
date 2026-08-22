@@ -1,4 +1,4 @@
-import type { Element, ElementOf, Path, Text, TextOf } from '@platejs/plite';
+import type { Element, ElementOf, Text, TextOf } from '@platejs/plite';
 import type { EditorSchemaSource } from '@platejs/plite/internal';
 import { useComposedRef } from '@udecode/react-utils';
 import type { UnknownObject } from '@udecode/utils';
@@ -65,9 +65,8 @@ type PlateElementRenderProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = never,
 > = PlateNodeProps<C> &
-  RenderElementProps<N> & {
+  Omit<RenderElementProps<N>, 'path'> & {
     attributes: UnknownObject;
-    path: Path;
   };
 
 /** Props for the element component owned by a plugin descriptor. */
@@ -114,14 +113,13 @@ type PlateElementComponentProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'div',
-> = RenderElementProps<N> &
+> = Omit<RenderElementProps<N>, 'path'> &
   Pick<PlateNodeProps<C>, 'ref'> & {
     attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
       UnknownObject;
     as?: T;
     className?: string;
     insetProp?: boolean;
-    path: Path;
     plugin?: {
       rules: {
         selection?: SelectionRules;
@@ -140,9 +138,15 @@ export const PlateElement = function PlateElement({
   const attributes = {
     ...props.attributes,
     className:
-      clsx((props.attributes as any).className, props.className) || undefined,
+      clsx(
+        (props.attributes as { className?: string }).className,
+        props.className
+      ) || undefined,
     ref: useComposedRef(ref, getAttributeRef(props.attributes)),
-    style: { ...(props.attributes as any).style, ...props.style },
+    style: {
+      ...(props.attributes as { style?: React.CSSProperties }).style,
+      ...props.style,
+    },
   };
 
   const inset =
@@ -185,7 +189,11 @@ function PlateElementBody({
       {isVoidTag ? (
         <div
           data-plite-node="element"
-          data-plite-inline={attributes['data-plite-inline']}
+          data-plite-inline={
+            (attributes as { 'data-plite-inline'?: boolean })[
+              'data-plite-inline'
+            ]
+          }
           {...attributes}
           style={
             {
@@ -200,7 +208,11 @@ function PlateElementBody({
       ) : (
         <Tag
           data-plite-node="element"
-          data-plite-inline={attributes['data-plite-inline']}
+          data-plite-inline={
+            (attributes as { 'data-plite-inline'?: boolean })[
+              'data-plite-inline'
+            ]
+          }
           {...attributes}
           style={
             {
@@ -250,9 +262,15 @@ export const PlateText = function PlateText({
   const attributes = {
     ...props.attributes,
     className:
-      clsx((props.attributes as any).className, props.className) || undefined,
+      clsx(
+        (props.attributes as { className?: string }).className,
+        props.className
+      ) || undefined,
     ref: useComposedRef(ref, getAttributeRef(props.attributes)),
-    style: { ...(props.attributes as any).style, ...props.style },
+    style: {
+      ...(props.attributes as { style?: React.CSSProperties }).style,
+      ...props.style,
+    },
   };
 
   return <Tag {...attributes}>{children}</Tag>;
@@ -307,9 +325,15 @@ export const PlateLeaf = function PlateLeaf({
   const attributes = {
     ...props.attributes,
     className:
-      clsx((props.attributes as any).className, props.className) || undefined,
+      clsx(
+        (props.attributes as { className?: string }).className,
+        props.className
+      ) || undefined,
     ref: useComposedRef(ref, getAttributeRef(props.attributes)),
-    style: { ...(props.attributes as any).style, ...props.style },
+    style: {
+      ...(props.attributes as { style?: React.CSSProperties }).style,
+      ...props.style,
+    },
   };
 
   const inset = insetProp ?? props.plugin?.rules.selection?.affinity === 'hard';

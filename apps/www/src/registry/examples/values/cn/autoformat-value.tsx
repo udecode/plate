@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const autoformatValue = (
+export const autoformatValue: Value = (
   <fragment>
     <hheading level={2}>自动格式化</hheading>
     <hp>

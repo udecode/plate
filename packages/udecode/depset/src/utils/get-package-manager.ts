@@ -5,15 +5,18 @@ export type PackageManager = 'bun' | 'npm' | 'pnpm' | 'yarn';
 export async function getPackageManager(
   targetDir: string,
   {
-    programmatic = true, // ni specific
+    // ni specific
+    programmatic = true,
     withFallback = true,
   }: { programmatic?: boolean; withFallback?: boolean } = {}
 ): Promise<PackageManager> {
   const detected = await detect({ cwd: targetDir, programmatic });
 
   if (detected) {
-    if (detected.startsWith('yarn')) return 'yarn'; // Catches yarn and yarn@berry
-    if (detected.startsWith('pnpm')) return 'pnpm'; // Catches pnpm and pnpm@version
+    // Catches yarn and yarn@berry
+    if (detected.startsWith('yarn')) return 'yarn';
+    // Catches pnpm and pnpm@version
+    if (detected.startsWith('pnpm')) return 'pnpm';
     if (detected === 'bun') return 'bun';
     if (detected === 'npm') return 'npm';
   }
@@ -33,5 +36,6 @@ export async function getPackageManager(
     }
   }
 
-  return 'npm'; // Default or if no fallback matched
+  // Default or if no fallback matched
+  return 'npm';
 }

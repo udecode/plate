@@ -9,7 +9,12 @@ import {
   type NodeKey,
 } from '@platejs/plite';
 import { renderHook } from '@testing-library/react';
-import type { DropTargetHookSpec, DropTargetMonitor } from 'react-dnd';
+import type {
+  DragSourceHookSpec,
+  DragSourceMonitor,
+  DropTargetHookSpec,
+  DropTargetMonitor,
+} from 'react-dnd';
 import * as actualReactDnd from 'react-dnd';
 
 import { DndPlugin } from './DndPlugin';
@@ -22,6 +27,13 @@ import type {
 let dropSpec:
   | DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }>
   | undefined;
+let dragSpec:
+  | DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }>
+  | undefined;
+const dragSpecByItem = new WeakMap<
+  object,
+  DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }>
+>();
 const useDropMock = mock(
   (spec: DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }>) => {
     dropSpec = spec;
@@ -31,18 +43,24 @@ const useDropMock = mock(
 );
 let currentEditor: PlateEditor;
 
-mock.module('@platejs/core/react', () => ({
+void mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: () => currentEditor,
 }));
 
-mock.module('react-dnd', () => ({
+void mock.module('react-dnd', () => ({
   ...actualReactDnd,
-  useDrag: () => [
-    { isAboutToDrag: false, isDragging: false },
-    () => null,
-    () => null,
-  ],
+  useDrag: (
+    spec: DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }>
+  ) => {
+    dragSpec = spec;
+
+    return [
+      { isAboutToDrag: false, isDragging: false },
+      () => null,
+      () => null,
+    ];
+  },
   useDrop: useDropMock,
 }));
 
@@ -50,9 +68,8 @@ afterAll(() => {
   mock.restore();
 });
 
-const { DRAG_ITEM_BLOCK, getHoverDirection, useDndNode } = await import(
-  `./useDndNode?behavior=${Math.random().toString(36).slice(2)}`
-);
+const { DRAG_ITEM_BLOCK, getHoverDirection, useDndNode, useDraggable } =
+  await import(`./useDndNode?behavior=${Math.random().toString(36).slice(2)}`);
 
 const renderDropNode = (editor: PlateEditor, options: UseDropNodeOptions) => {
   const { accept, canDropNode, element, nodeRef, ...drop } = options;
@@ -74,7 +91,7 @@ const getElement = (editor: PlateEditor, path: number[]) => {
     match: ElementApi.isElement,
   });
 
-  assert(entry);
+  assert.ok(entry);
 
   return entry[0];
 };
@@ -82,7 +99,7 @@ const getElement = (editor: PlateEditor, path: number[]) => {
 const getNodeKey = (editor: PlateEditor, path: number[]) => {
   const key = editor.key(path);
 
-  assert(key);
+  assert.ok(key);
 
   return key;
 };
@@ -92,12 +109,19 @@ const getTexts = (editor: PlateEditor) =>
 
 const nodeKey = (value: string) => value as NodeKey;
 
-const callDrop = (dragItem: DragItemNode, monitor: DropTargetMonitor) => {
+const callDrop = (
+  dragItem: DragItemNode,
+  monitor: DropTargetMonitor
+): Record<PropertyKey, unknown> => {
   if (typeof dropSpec?.drop !== 'function') {
     throw new Error('Expected the DnD drop callback.');
   }
 
-  return dropSpec.drop(dragItem, monitor);
+  const result = dropSpec.drop(dragItem, monitor);
+
+  return result && typeof result === 'object'
+    ? (result as Record<PropertyKey, unknown>)
+    : {};
 };
 
 const callHover = (dragItem: DragItemNode, monitor: DropTargetMonitor) => {
@@ -105,10 +129,61 @@ const callHover = (dragItem: DragItemNode, monitor: DropTargetMonitor) => {
     throw new Error('Expected the DnD hover callback.');
   }
 
-  return dropSpec.hover(dragItem, monitor);
+  dropSpec.hover(dragItem, monitor);
+};
+
+const callDragItem = (monitor: DragSourceMonitor) => {
+  if (typeof dragSpec?.item !== 'function') {
+    throw new Error('Expected the DnD drag item callback.');
+  }
+
+  const item = dragSpec.item(monitor);
+
+  if (!item) throw new Error('Expected a DnD drag item.');
+
+  dragSpecByItem.set(item, dragSpec);
+
+  return item;
+};
+
+const callDragEnd = (
+  dragItem: DragItemNode,
+  dropResult: Record<PropertyKey, unknown>
+) => {
+  const sourceDragSpec = dragSpecByItem.get(dragItem);
+
+  if (typeof sourceDragSpec?.end !== 'function') {
+    throw new Error('Expected the DnD drag end callback.');
+  }
+
+  sourceDragSpec.end(dragItem, {
+    getDropResult: () => dropResult,
+  } as unknown as DragSourceMonitor);
 };
 
 describe('Dnd node behavior', () => {
+  it('returns caller-owned node and preview refs from useDraggable', () => {
+    currentEditor = createPlateEditor();
+    const input = {
+      children: [{ text: 'block' }],
+      type: 'paragraph',
+    } as Element;
+    currentEditor.update.value.replace({ children: [input], selection: null });
+    const element = getElement(currentEditor, [0]);
+    const nodeRef = { current: document.createElement('div') };
+    const previewRef = { current: document.createElement('div') };
+    const { result } = renderHook(() =>
+      useDraggable({
+        element,
+        multiplePreviewRef: previewRef,
+        nodeRef,
+      })
+    );
+
+    expect(result.current.nodeRef).toBe(nodeRef);
+    expect(result.current.previewRef).toBe(previewRef);
+  });
+
   let clientOffset: null | { x: number; y: number };
   const monitor = {
     canDrop: () => true,
@@ -308,6 +383,293 @@ describe('Dnd node behavior', () => {
       expect(new Set(keys).size).toBe(keys.length);
       expect(targetEditor.read.text.string([])).toContain('source');
     });
+
+    it('keeps an edited source and inserts the drag-start snapshot', () => {
+      const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const targetEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'captured' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+
+      const sourceElement = getElement(sourceEditor, [0]);
+
+      currentEditor = sourceEditor;
+      renderHook(() => useDraggable({ element: sourceElement }));
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      sourceEditor.update.selection.set({ offset: 0, path: [0, 0] });
+      sourceEditor.update.text.insert('edited ');
+
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const dropResult = callDrop(capturedItem, monitor);
+
+      callDragEnd(capturedItem, { ...dropResult, dropEffect: 'move' });
+
+      expect(getTexts(targetEditor)).toEqual(['target', 'captured']);
+      expect(getTexts(sourceEditor)).toEqual(['edited captured', 'keep']);
+    });
+
+    it('copies a captured block across editors when the backend resolves copy', () => {
+      const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const targetEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'captured' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+
+      currentEditor = sourceEditor;
+      renderHook(() =>
+        useDraggable({ element: getElement(sourceEditor, [0]) })
+      );
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const dropResult = callDrop(capturedItem, monitor);
+
+      callDragEnd(capturedItem, { ...dropResult, dropEffect: 'copy' });
+
+      expect(getTexts(targetEditor)).toEqual(['target', 'captured']);
+      expect(getTexts(sourceEditor)).toEqual(['captured', 'keep']);
+    });
+
+    it('composes a caller drag end with cross-editor move completion', () => {
+      const onDragEnd = mock(() => {});
+      const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const targetEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'captured' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+
+      currentEditor = sourceEditor;
+      renderHook(() =>
+        useDraggable({
+          drag: { end: onDragEnd },
+          element: getElement(sourceEditor, [0]),
+        })
+      );
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const dropResult = callDrop(capturedItem, monitor);
+
+      callDragEnd(capturedItem, { ...dropResult, dropEffect: 'move' });
+
+      expect(onDragEnd).toHaveBeenCalledTimes(1);
+      expect(getTexts(sourceEditor)).toEqual(['keep']);
+      expect(getTexts(targetEditor)).toEqual(['target', 'captured']);
+    });
+
+    it('moves only the captured source when a third editor is mounted', () => {
+      const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const targetEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const bystanderEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'captured' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+      bystanderEditor.update.value.replace({
+        children: [{ children: [{ text: 'bystander' }], type: 'paragraph' }],
+        selection: null,
+      });
+
+      currentEditor = sourceEditor;
+      renderHook(() =>
+        useDraggable({ element: getElement(sourceEditor, [0]) })
+      );
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const dropResult = callDrop(capturedItem, monitor);
+
+      callDragEnd(capturedItem, { ...dropResult, dropEffect: 'move' });
+
+      expect(getTexts(sourceEditor)).toEqual(['keep']);
+      expect(getTexts(targetEditor)).toEqual(['target', 'captured']);
+      expect(getTexts(bystanderEditor)).toEqual(['bystander']);
+    });
+
+    it.each([
+      { dropResult: { dropEffect: 'move' }, title: 'empty' },
+      {
+        dropResult: { dropEffect: 'move', external: true },
+        title: 'external',
+      },
+    ])(
+      'keeps the source for an unclaimed $title drop result',
+      ({ dropResult }) => {
+        const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+        sourceEditor.update.value.replace({
+          children: [
+            { children: [{ text: 'captured' }], type: 'paragraph' },
+            { children: [{ text: 'keep' }], type: 'paragraph' },
+          ],
+          selection: null,
+        });
+
+        currentEditor = sourceEditor;
+        renderHook(() =>
+          useDraggable({ element: getElement(sourceEditor, [0]) })
+        );
+        const capturedItem = callDragItem({} as DragSourceMonitor);
+
+        callDragEnd(capturedItem, dropResult);
+
+        expect(getTexts(sourceEditor)).toEqual(['captured', 'keep']);
+      }
+    );
+
+    it('keeps the source when the target rejects the landing', () => {
+      const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const targetEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'captured' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+
+      currentEditor = sourceEditor;
+      renderHook(() =>
+        useDraggable({ element: getElement(sourceEditor, [0]) })
+      );
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        canDropNode: () => false,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const dropResult = callDrop(capturedItem, monitor);
+
+      callDragEnd(capturedItem, { ...dropResult, dropEffect: 'move' });
+
+      expect(getTexts(sourceEditor)).toEqual(['captured', 'keep']);
+      expect(getTexts(targetEditor)).toEqual(['target']);
+    });
+
+    it('still moves the captured block after a selection-only change', () => {
+      const sourceEditor = createPlateEditor({ plugins: [DndPlugin] });
+      const targetEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'captured' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+
+      const sourceElement = getElement(sourceEditor, [0]);
+
+      currentEditor = sourceEditor;
+      renderHook(() => useDraggable({ element: sourceElement }));
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      sourceEditor.update.selection.set({ offset: 0, path: [1, 0] });
+
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const dropResult = callDrop(capturedItem, monitor);
+
+      callDragEnd(capturedItem, { ...dropResult, dropEffect: 'move' });
+
+      expect(getTexts(targetEditor)).toEqual(['target', 'captured']);
+      expect(getTexts(sourceEditor)).toEqual(['keep']);
+    });
+
+    it('keeps same-editor drag routing after an unrelated document edit', () => {
+      const innerEditor = createPlateEditor({ plugins: [DndPlugin] });
+
+      innerEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'drag' }], type: 'paragraph' },
+          { children: [{ text: 'hover' }], type: 'paragraph' },
+          { children: [{ text: 'other' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+
+      currentEditor = innerEditor;
+      renderHook(() => useDraggable({ element: getElement(innerEditor, [0]) }));
+      const capturedItem = callDragItem({} as DragSourceMonitor);
+
+      innerEditor.update.selection.set({ offset: 0, path: [2, 0] });
+      innerEditor.update.text.insert('edited ');
+
+      renderDropNode(innerEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(innerEditor, [1]),
+        nodeRef,
+      });
+      callDrop(capturedItem, monitor);
+
+      expect(getTexts(innerEditor)).toEqual(['hover', 'drag', 'edited other']);
+    });
   });
 
   describe('hover', () => {
@@ -399,6 +761,25 @@ describe('Dnd node behavior', () => {
       expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
         key: previousKey,
         line: 'bottom',
+      });
+    });
+
+    it('keeps a top drop on the first block without requesting a negative path', () => {
+      const firstElement = getElement(editor, [0]);
+      const firstKey = getNodeKey(editor, [0]);
+
+      clientOffset = { x: 50, y: 25 };
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: firstElement,
+        nodeRef,
+      });
+
+      callHover(dragItem, monitor);
+
+      expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
+        key: firstKey,
+        line: 'top',
       });
     });
 

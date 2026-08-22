@@ -84,14 +84,14 @@ describe('compiled schema architecture benchmark authority', () => {
 
     assert.equal(targets.length, 1);
     assert.match(
-      targets[0]!.command,
+      targets[0].command,
       /plite-schema-architecture-benchmark\.ts/u
     );
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_schema_architecture_compile_p95_ms'
     );
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/plite-schema-architecture-benchmark.json',
         required: true,
@@ -154,15 +154,15 @@ describe('compiled schema architecture benchmark authority', () => {
       /METRIC plite_schema_architecture_schema_invalidation_property_affected_runtime_ids=/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /schema_invalidation_document_width_ratio<=1\.5/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /schema_invalidation_changed_type_ratio<=2/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /schema_invalidation_property_affected_runtime_ids=64/u
     );
     assert.match(source, /getSchemaInvalidatedRuntimeIds/u);
@@ -189,11 +189,11 @@ describe('compiled schema architecture benchmark authority', () => {
     assert.match(source, /schema-validation-incremental-hit/u);
     assert.match(source, /schema-validation-full-document-boundary/u);
     assert.match(
-      targets[0]!.correctness.command,
+      targets[0].correctness.command,
       /incremental-schema-validation\.test\.ts/u
     );
-    assert.match(targets[0]!.command, /--expose-gc/u);
-    assert.match(targets[0]!.command, /PLITE_SCHEMA_TYPECHECK_BUDGET=1/u);
+    assert.match(targets[0].command, /--expose-gc/u);
+    assert.match(targets[0].command, /PLITE_SCHEMA_TYPECHECK_BUDGET=1/u);
     assert.match(
       source,
       /METRIC plite_schema_architecture_retained_heap_baseline_ratio=/u
@@ -255,47 +255,47 @@ describe('compiled schema architecture benchmark authority', () => {
       /METRIC plite_schema_architecture_typecheck_check_time_ratio=/u
     );
     assert.match(
-      targets[0]!.correctness.command,
+      targets[0].correctness.command,
       /compilePlateModel\.spec\.ts/u
     );
     assert.match(
-      targets[0]!.correctness.command,
+      targets[0].correctness.command,
       /projected-clipboard-contract\.test\.ts/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /contribution_1000_compile_p95_ms<100/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /contribution_1000_previous_revision_cache_p95_ms<50/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /projected_clipboard_width_ratio<=1\.5/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /projected_clipboard_open_start=1/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /projected_clipboard_open_end=1/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /typecheck_1000_instantiations<5000000/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /large_document_migration_10000_configuration_commit_count=10/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /large_document_migration_10000_migration_call_count=10/u
     );
     assert.match(
-      targets[0]!.thresholds.promotion,
+      targets[0].thresholds.promotion,
       /typecheck_check_time_ratio<=2/u
     );
   });
@@ -336,7 +336,7 @@ Total time:          1.50s
       (cohort) => {
         events.push(`measure:${cohort}`);
 
-        return ++measured;
+        return (measured += 1);
       },
       () => events.push('gc')
     );

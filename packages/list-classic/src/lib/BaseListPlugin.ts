@@ -295,7 +295,7 @@ export const BaseTodoListPlugin = defineBasePlugin(PLUGINS.todoList, {
           tx.nodes.insert(
             {
               checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
-              children: [{ text: '', ...(tx.marks() || {}) }],
+              children: [{ text: '', ...tx.marks() }],
               type,
             },
             { at: nextPath }
@@ -402,11 +402,15 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               match: ElementApi.isElement,
             });
 
-            if (!list || !api.getListTypes().includes(list[0].type)) return;
+            if (!list || !api.getListTypes().includes(list[0].type)) {
+              return undefined;
+            }
 
             return { list, listItem };
           }
         }
+
+        return undefined;
       };
 
       /** Searches upward for the root list element */
@@ -415,7 +419,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
       ): ElementEntry | undefined => {
         const location = at === undefined ? state.selection() : at;
 
-        if (!location) return;
+        if (!location) return undefined;
 
         const parentList = state.nodes.above({
           at: location,
@@ -431,6 +435,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           return getListRoot(parentListPath) ?? parentList;
         }
+
+        return undefined;
       };
 
       /** Is the list nested, i.e. its parent is a list item. */
@@ -465,7 +471,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           const [liNode, liPath] = listItem;
           const listItemIndex = liPath.at(-1);
 
-          if (listItemIndex === undefined) return;
+          if (listItemIndex === undefined) return undefined;
 
           const liParent = tx.nodes.above({
             at: listPath,
@@ -477,8 +483,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             try {
               toListPath = PathApi.next(listPath);
-            } catch (_error) {
-              return;
+            } catch {
+              return undefined;
             }
 
             const condA = api.hasListChild(liNode);
@@ -503,7 +509,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 match: ElementApi.isElement,
               })?.[0];
 
-              if (!toListNode) return;
+              if (!toListNode) return undefined;
 
               // Move li sub-lis to the new list
               moveListItemsToList({
@@ -517,7 +523,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 match: ElementApi.isElement,
               })?.[0];
 
-              if (!toListNode) return;
+              if (!toListNode) return undefined;
 
               // Move next lis to the new list
               moveListItemsToList({
@@ -559,7 +565,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               match: ElementApi.isElement,
             })?.[0];
 
-            if (!toListNode) return;
+            if (!toListNode) return undefined;
 
             // Move next siblings to li sublist.
             moveListItemsToList({
@@ -640,13 +646,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               api.getListTypes().includes(node.type)
           );
 
-          if (sublistIndex === -1) return;
+          if (sublistIndex === -1) return undefined;
 
           fromListPath = fromListItem[1].concat(sublistIndex);
         } else if (fromList) {
           fromListPath = fromList[1];
         } else {
-          return;
+          return undefined;
         }
 
         let to: Path | null = null;
@@ -659,13 +665,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             to = toList[1].concat([toListIndex]);
           }
         }
-        if (!to) return;
+        if (!to) return undefined;
 
         const fromListNode = tx.nodes.get(fromListPath, {
           match: ElementApi.isElement,
         })?.[0];
 
-        if (!fromListNode) return;
+        if (!fromListNode) return undefined;
 
         const childRefs = fromListNode.children
           .map((_, index) => fromListPath.concat(index))
@@ -815,7 +821,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             match: ElementApi.isElement,
           });
 
-          if (!previousLi) return;
+          if (!previousLi) return undefined;
 
           // 1
           let tempLiPath = PathApi.next(liPath);
@@ -840,7 +846,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             match: ElementApi.isElement,
           });
 
-          if (!tempLi) return;
+          if (!tempLi) return undefined;
 
           const tempLiRef = tx.refs.path(tempLi[1], {
             association: 'forward',
@@ -858,7 +864,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           const currentTempLiPath = tempLiRef.resolve();
 
-          if (!currentTempLiPath) return;
+          if (!currentTempLiPath) return undefined;
 
           tempLiPath = currentTempLiPath;
           const currentTempLi = tx.nodes.get(tempLiPath, {
@@ -868,7 +874,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             match: ElementApi.isElement,
           });
 
-          if (!currentTempLi || !currentPreviousLi) return;
+          if (!currentTempLi || !currentPreviousLi) return undefined;
 
           // 4
           moveSublistItems({
@@ -955,12 +961,12 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             return true;
           }
           // The selection's common node might be a list type
-          const selection = tx.selection();
+          const innerSelection = tx.selection();
 
-          if (!at && selection) {
+          if (!at && innerSelection) {
             const commonPath = PathApi.common(
-              selection.anchor.path,
-              selection.focus.path
+              innerSelection.anchor.path,
+              innerSelection.focus.path
             );
             const commonNode = tx.nodes.get(commonPath, {
               match: ElementApi.isElement,
@@ -1402,14 +1408,16 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               mode: 'all',
             })
           ).filter(([, path]) => path.length === rootPathLength + 1);
+          const listTypeSet = new Set(api.getListTypes());
+          const validLiChildrenTypeSet = new Set(validLiChildrenTypes);
 
           for (const [node, path] of nodes) {
-            if (api.getListTypes().includes(node.type)) {
+            if (listTypeSet.has(node.type)) {
               setListTreeType(path, { checked, type });
               continue;
             }
 
-            if (!validLiChildrenTypes?.includes(node.type)) {
+            if (!validLiChildrenTypeSet.has(node.type)) {
               tx.nodes.set(
                 {
                   type: editor.plugin(PLUGINS.listItemContent).schema.type,
@@ -1533,7 +1541,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
                 {
                   children: [
                     {
-                      children: [{ text: '', ...(tx.marks() || {}) }],
+                      children: [{ text: '', ...tx.marks() }],
                       type: licType,
                     },
                   ],
@@ -2071,7 +2079,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               type: context.api.getListTypes(),
             });
 
-            if (!list) return;
+            if (!list) return undefined;
 
             const [listNode, listPath] = list;
 
@@ -2094,6 +2102,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
               return liPath;
             }
+
+            return undefined;
           };
           const getLiStart = (
             selection: Range,
@@ -2370,7 +2380,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               children: [child],
               ...props,
               type: listItemType,
-            } as Element;
+            };
           };
 
           const sliceElementAtPoint = (
@@ -2394,16 +2404,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
               if (index === undefined) return structuredClone(node);
 
-              const edgeChild = sliceNode(
-                node.children[index] as Descendant,
-                rest
-              );
+              const edgeChild = sliceNode(node.children[index], rest);
               const children =
                 side === 'before'
                   ? [...node.children.slice(0, index), edgeChild]
                   : [edgeChild, ...node.children.slice(index + 1)];
 
-              return { ...node, children } as Element;
+              return { ...node, children };
             };
 
             return sliceNode(element, relativePath) as Element;
@@ -2450,20 +2457,20 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               if (isSingleLic(fragment)) {
                 textNodes = (first.children[0] as Element)
                   .children as Descendant[];
-                listItemNodes = rest as Element[];
+                listItemNodes = rest;
               } else if (isEmptyNode) {
                 const [newLic, ...newSublists] = first.children as Element[];
                 sublists = newSublists;
                 textNodes = newLic.children as Descendant[];
-                listItemNodes = rest as Element[];
+                listItemNodes = rest;
               } else {
                 textNodes = [{ text: '' }];
-                listItemNodes = [first as Element, ...(rest as Element[])];
+                listItemNodes = [first, ...rest];
               }
             } else {
               textNodes = (first.children[0] as Element)
                 .children as Descendant[];
-              listItemNodes = rest as Element[];
+              listItemNodes = rest;
             }
 
             return { listItemNodes, sublists, textNodes };

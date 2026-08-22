@@ -792,7 +792,7 @@ describe('basic style HTML codecs', () => {
 
     if (!html) throw new Error('Missing HTML codec serialization');
 
-    const body = new DOMParser().parseFromString(html, 'text/html').body;
+    const { body } = new DOMParser().parseFromString(html, 'text/html');
     const paragraph = body.querySelector('p') as HTMLElement;
     const styledElements = Array.from(
       body.querySelectorAll<HTMLElement>('[style]')
@@ -819,7 +819,7 @@ describe('basic style HTML codecs', () => {
     expect(
       styledElements.some((element) => element.style.fontWeight === '700')
     ).toBe(true);
-    expect(editor.api.html.deserialize({ element: html! })).toEqual([
+    expect(editor.api.html.deserialize({ element: html })).toEqual([
       ...editor.read.children(),
     ]);
   });

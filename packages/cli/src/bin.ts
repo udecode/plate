@@ -47,13 +47,17 @@ program
           exitCode = code;
           resolveSignal();
         };
-        const onInterrupt = () => stop(130);
-        const onTerminate = () => stop(143);
+        const onInterrupt = () => {
+          stop(130);
+        };
+        const onTerminate = () => {
+          stop(143);
+        };
         const controller = new AbortController();
 
         process.on('SIGINT', onInterrupt);
         process.on('SIGTERM', onTerminate);
-        signal.then(() => {
+        void signal.then(() => {
           controller.abort(new Error('Plate watch stopped during startup.'));
         });
         let watcher: Awaited<ReturnType<typeof watchEditors>> | undefined;
@@ -149,7 +153,7 @@ migrateCommand
         }
         const result = await runEditorMigrationInput(
           options.entry,
-          readFileSync(0, 'utf8'),
+          readFileSync(0, 'utf-8'),
           options
         );
 
@@ -183,7 +187,7 @@ migrateCommand
     }
   );
 
-program.parseAsync().catch((error) => {
+program.parseAsync().catch((error: unknown) => {
   process.stderr.write(
     `${error instanceof Error ? error.message : String(error)}\n`
   );

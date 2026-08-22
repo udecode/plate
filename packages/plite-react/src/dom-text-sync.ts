@@ -21,7 +21,7 @@ export type DOMTextSyncCapability =
 
 export type DOMTextSyncRendererCapabilityContext = Readonly<{
   marks: Omit<Text, 'text'>;
-  projections: readonly PliteProjectionSlice<unknown>[];
+  projections: readonly PliteProjectionSlice[];
 }>;
 
 const DOM_TEXT_SYNC_RENDERER_CAPABILITY = Symbol.for(
@@ -69,7 +69,7 @@ export const getDOMTextSyncCapability = ({
 }: {
   hasText: boolean;
   marks?: Omit<Text, 'text'>;
-  projections: readonly PliteProjectionSlice<unknown>[];
+  projections: readonly PliteProjectionSlice[];
   renderLeaf?: unknown;
   renderSegment?: unknown;
   renderText?: unknown;
@@ -113,7 +113,7 @@ export const canUseProjectedDOMTextSync = ({
 }: {
   hasText: boolean;
   marks?: Omit<Text, 'text'>;
-  projections: readonly PliteProjectionSlice<unknown>[];
+  projections: readonly PliteProjectionSlice[];
   renderLeaf?: unknown;
   renderSegment?: unknown;
   renderText?: unknown;

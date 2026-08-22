@@ -9,7 +9,7 @@ export type PliteBrowserFeatureContractRow = {
 /** Declarative browser contract bundle for one feature area. */
 export type PliteBrowserFeatureContractDefinition = {
   feature: string;
-  rows: readonly Omit<PliteBrowserFeatureContractRow, 'feature'>[];
+  rows: ReadonlyArray<Omit<PliteBrowserFeatureContractRow, 'feature'>>;
 };
 
 /** Indexed browser contract registry built from feature definitions. */

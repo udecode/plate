@@ -53,8 +53,10 @@ const listTypeToBadgeStyles: Record<string, string> = {
 };
 
 export function API({ children, name }: { children: ReactNode; name: string }) {
+  const contextValue = React.useMemo(() => ({ name }), [name]);
+
   return (
-    <APIContext.Provider value={{ name }}>
+    <APIContext.Provider value={contextValue}>
       <Card className="mt-6 mb-16 p-0">
         <CardContent className="space-y-6 py-6">{children}</CardContent>
       </Card>
@@ -89,7 +91,9 @@ export function APIItem({
                 className={cn(
                   'opacity-0 hover:opacity-100 group-hover:opacity-100'
                 )}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 href={`#${id}`}
               >
                 <div className="absolute top-2 -left-5 pr-1 leading-none">
@@ -204,6 +208,10 @@ export function APIList({
 }: APIListProps) {
   const { name } = React.useContext(APIContext);
   const childCount = React.Children.count(children);
+  const contextValue = React.useMemo(
+    () => ({ listType, name }),
+    [listType, name]
+  );
   const hasItems = childCount > 0;
   const newValues = Array.from(Array.from({ length: childCount }).keys()).map(
     (i) => i.toString()
@@ -217,7 +225,7 @@ export function APIList({
   const id = name ? `${name}-${listTypeToId[listType]}` : undefined;
 
   return (
-    <APIContext.Provider value={{ listType, name }}>
+    <APIContext.Provider value={contextValue}>
       <section className="flex w-full flex-col items-center">
         <div className="w-full">
           <div className="">
@@ -231,7 +239,9 @@ export function APIList({
                     className={cn(
                       'opacity-0 hover:opacity-100 group-hover:opacity-100'
                     )}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
                     href={`#${id}`}
                   >
                     <div className="absolute top-0 -left-5 pr-1 leading-none">
@@ -349,7 +359,9 @@ export function APISubListItem({
             className={cn(
               'opacity-0 hover:opacity-100 group-hover:opacity-100'
             )}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             href={`#${id}`}
           >
             <div className="absolute top-2 -left-5 pr-1 leading-none">

@@ -10,7 +10,7 @@ describe('deserializeMdList - comprehensive coverage', () => {
   const editor = createTestEditor();
 
   it('preserves ordered-list starts after setValue normalizes the value', () => {
-    const editor = createTestEditor();
+    const innerEditor = createTestEditor();
     const input = `
 1. First list item
 
@@ -20,7 +20,7 @@ Break between lists.
 3. Third list item
 `.trim();
 
-    const value = editor.api.markdown.deserialize(input);
+    const value = innerEditor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -48,9 +48,9 @@ Break between lists.
       },
     ]);
 
-    editor.update.value.replace(value);
+    innerEditor.update.value.replace(value);
 
-    expect(editor.read.value().children).toMatchObject([
+    expect(innerEditor.read.value().children).toMatchObject([
       {
         children: [{ text: 'First list item' }],
         indent: 1,

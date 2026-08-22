@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const linkValue = (
+export const linkValue: Value = (
   <fragment>
     <hheading level={2}>链接</hheading>
     <hp>

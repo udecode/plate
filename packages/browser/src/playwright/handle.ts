@@ -37,10 +37,10 @@ export const evaluateHarnessHandle = async <
     (
       element: HTMLElement,
       {
-        args,
-        errorMessage,
+        args: innerArgs,
+        errorMessage: innerErrorMessage,
         key,
-        method,
+        method: innerMethod,
       }: {
         args: readonly unknown[];
         errorMessage: string;
@@ -49,13 +49,13 @@ export const evaluateHarnessHandle = async <
       }
     ) => {
       const handle = (element as Record<string, any>)[key];
-      const fn = handle?.[method];
+      const fn = handle?.[innerMethod];
 
       if (typeof fn !== 'function') {
-        throw new Error(errorMessage);
+        throw new Error(innerErrorMessage);
       }
 
-      return fn(...args);
+      return fn(...innerArgs);
     },
     { args: args ?? [], errorMessage, key: PLITE_BROWSER_HANDLE_KEY, method }
   ) as Promise<ReturnType<PliteBrowserHarnessHandle[TMethod]>>;

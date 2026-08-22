@@ -33,6 +33,7 @@ import type {
   TextInsertFragmentOptions,
   TextInsertTextOptions,
 } from '../interfaces/transforms/text';
+import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { ContentSlice as ContentSliceValue } from './content-slice';
@@ -371,7 +372,7 @@ const getFullBlockTextReplacement = (
   if (!paths) return null;
 
   if (paths.length === 1) {
-    const block = state.nodes.get(paths[0]!)?.[0];
+    const block = state.nodes.get(paths[0])?.[0];
 
     if (
       block &&
@@ -396,9 +397,9 @@ const getFullBlockTextReplacement = (
 
   if (!firstText) return null;
 
-  const firstPath = paths[0]!;
+  const firstPath = paths[0];
   const parentPath = PathApi.parent(firstPath);
-  const index = firstPath.at(-1)!;
+  const index = getDefined(firstPath.at(-1));
   const point: Point = {
     offset: text.length,
     path: [...parentPath, index, ...firstText[1]],
@@ -467,7 +468,7 @@ export type SelectCommand = {
 
 export type SetNodesCommand = {
   options?: CommandTargetOptions<NodeSetNodesOptions>;
-  props: Partial<NodeProps<Node>>;
+  props: Partial<NodeProps>;
 };
 
 export type SetSelectionCommand = {
@@ -495,9 +496,9 @@ export type EditorCommands = Readonly<{
   collapse: EditorCommand<CollapseSelectionCommand>;
   delete: EditorCommand<DeleteCommand>;
   deleteFragment: EditorCommand<DeleteFragmentCommand>;
-  insertBreak: EditorCommand<InsertBreakCommand>;
+  insertBreak: EditorCommand;
   insertNodes: EditorCommand<InsertNodesCommand>;
-  insertSoftBreak: EditorCommand<InsertSoftBreakCommand>;
+  insertSoftBreak: EditorCommand;
   insertText: EditorCommand<InsertTextCommand>;
   move: EditorCommand<MoveSelectionCommand>;
   removeMark: EditorCommand<RemoveMarkCommand>;
@@ -514,11 +515,15 @@ export type EditorCommands = Readonly<{
 export const editorCommands: EditorCommands = Object.freeze({
   addMark: defineCommand<AddMarkCommand>('mark.add', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.marks.add(input.key, input.value)),
+      state.transaction((tx) => {
+        tx.marks.add(input.key, input.value);
+      }),
   }),
   collapse: defineCommand<CollapseSelectionCommand>('selection.collapse', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.selection.collapse(input.options)),
+      state.transaction((tx) => {
+        tx.selection.collapse(input.options);
+      }),
   }),
   delete: defineCommand<DeleteCommand>('content.delete', {
     build: ({ input, state }) => {
@@ -555,9 +560,9 @@ export const editorCommands: EditorCommands = Object.freeze({
         : null;
 
       if (fullBlocks) {
-        const firstPath = fullBlocks[0]!;
+        const firstPath = fullBlocks[0];
         const parentPath = PathApi.parent(firstPath);
-        const index = firstPath.at(-1)!;
+        const index = getDefined(firstPath.at(-1));
         const previousPoint =
           index > 0 ? state.points.end([...parentPath, index - 1]) : undefined;
         const nextPoint = previousPoint
@@ -585,12 +590,12 @@ export const editorCommands: EditorCommands = Object.freeze({
             );
 
         if (!survivingPoint && !defaultChild) {
-          return state.transaction((tx) =>
+          return state.transaction((tx) => {
             tx.fragment.delete({
               direction: input.direction,
               ...(input.at === undefined ? {} : { at: input.at }),
-            })
-          );
+            });
+          });
         }
 
         return state.transaction((tx) => {
@@ -624,20 +629,23 @@ export const editorCommands: EditorCommands = Object.freeze({
         });
       }
 
-      return state.transaction((tx) =>
+      return state.transaction((tx) => {
         tx.fragment.delete({
           direction: input.direction,
           ...(input.at === undefined ? {} : { at: input.at }),
-        })
-      );
+        });
+      });
     },
   }),
-  insertBreak: defineCommand<InsertBreakCommand>('break.insert', {
-    build: ({ state }) => state.transaction((tx) => tx.break.insert()),
+  insertBreak: defineCommand('break.insert', {
+    build: ({ state }) =>
+      state.transaction((tx) => {
+        tx.break.insert();
+      }),
   }),
   insertNodes: defineCommand<InsertNodesCommand>('node.insert', {
     build: ({ input, state }) =>
-      state.transaction((tx) =>
+      state.transaction((tx) => {
         (
           tx.nodes.insert as (
             nodes: Descendant | readonly Descendant[],
@@ -645,11 +653,14 @@ export const editorCommands: EditorCommands = Object.freeze({
               NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>
             >
           ) => void
-        )(input.nodes, input.options)
-      ),
+        )(input.nodes, input.options);
+      }),
   }),
-  insertSoftBreak: defineCommand<InsertSoftBreakCommand>('break.insertSoft', {
-    build: ({ state }) => state.transaction((tx) => tx.break.insertSoft()),
+  insertSoftBreak: defineCommand('break.insertSoft', {
+    build: ({ state }) =>
+      state.transaction((tx) => {
+        tx.break.insertSoft();
+      }),
   }),
   insertText: defineCommand<InsertTextCommand>('text.insert', {
     build: ({ input, state }) => {
@@ -672,36 +683,46 @@ export const editorCommands: EditorCommands = Object.freeze({
         });
       }
 
-      return state.transaction((tx) =>
-        tx.text.insert(input.text, input.options)
-      );
+      return state.transaction((tx) => {
+        tx.text.insert(input.text, input.options);
+      });
     },
   }),
   move: defineCommand<MoveSelectionCommand>('selection.move', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.selection.move(input.options)),
+      state.transaction((tx) => {
+        tx.selection.move(input.options);
+      }),
   }),
   removeMark: defineCommand<RemoveMarkCommand>('mark.remove', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.marks.remove(input.key)),
+      state.transaction((tx) => {
+        tx.marks.remove(input.key);
+      }),
   }),
   removeNodes: defineCommand<RemoveNodesCommand>('node.remove', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.nodes.remove(input.options as never)),
+      state.transaction((tx) => {
+        tx.nodes.remove(input.options as never);
+      }),
   }),
   select: defineCommand<SelectCommand>('selection.select', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.selection.set(input.target)),
+      state.transaction((tx) => {
+        tx.selection.set(input.target);
+      }),
   }),
   setNodes: defineCommand<SetNodesCommand>('node.set', {
     build: ({ input, state }) =>
-      state.transaction((tx) =>
-        tx.nodes.set(input.props, input.options as NodeSetNodesOptions)
-      ),
+      state.transaction((tx) => {
+        tx.nodes.set(input.props, input.options as NodeSetNodesOptions);
+      }),
   }),
   setSelection: defineCommand<SetSelectionCommand>('selection.update', {
     build: ({ input, state }) =>
-      state.transaction((tx) => tx.selection.setRange(input.props)),
+      state.transaction((tx) => {
+        tx.selection.setRange(input.props);
+      }),
   }),
   replaceSlice: defineCommand<ReplaceSliceCommand>('slice.replace', {
     build: ({ input, state }) => state.slice.fit(input.slice, input.options),

@@ -71,9 +71,7 @@ const selectSelectionRoot = (
     return null;
   }
 
-  return (selection.anchor.root ??
-    selection.focus.root ??
-    MAIN_ROOT_KEY) as RootKey;
+  return selection.anchor.root ?? selection.focus.root ?? MAIN_ROOT_KEY;
 };
 
 const selectLastCommitSingleChangedRoot = (
@@ -121,14 +119,12 @@ const getHistoryStacks = (
   redos: () => readonly unknown[];
   undos: () => readonly unknown[];
 } | null => {
-  const history = (
-    state as {
-      history?: {
-        redos?: () => readonly unknown[];
-        undos?: () => readonly unknown[];
-      };
-    }
-  ).history;
+  const { history } = state as {
+    history?: {
+      redos?: () => readonly unknown[];
+      undos?: () => readonly unknown[];
+    };
+  };
   const redos = history?.redos;
   const undos = history?.undos;
 
@@ -239,7 +235,7 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
         const restoreFocus = () => {
           const focusEditor = editor.read((state) => {
             const selectionRoot = selectSelectionRoot(state);
-            const historyRoot =
+            const innerHistoryRoot =
               fixedRoot ??
               selectionRoot ??
               (root !== MAIN_ROOT_KEY
@@ -253,7 +249,7 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
               getActiveContentRootOwner,
               getContentRootOwnerViewEditor,
               getMountedViewEditor,
-              historyRoot,
+              historyRoot: innerHistoryRoot,
               selectionRoot: fixedRoot ? null : selectionRoot,
             });
           });

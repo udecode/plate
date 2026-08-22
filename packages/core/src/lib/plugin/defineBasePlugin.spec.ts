@@ -185,7 +185,7 @@ describe('defineBasePlugin', () => {
       .extend(({ store }) => ({
         api: () => ({ value: () => store.get().value }),
       }))
-      .configure(() => ({ initialState: { value: ++next } }));
+      .configure(() => ({ initialState: { value: (next += 1) } }));
     const first = createBaseEditor({ plugins: [Plugin] });
     const second = createBaseEditor({ plugins: [Plugin] });
 

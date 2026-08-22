@@ -65,7 +65,7 @@ const ConstructorInferencePlugin = defineBasePlugin('constructorInference', {
 
     return {
       count: 0,
-      mode: 'idle' as 'busy' | 'idle',
+      mode: 'idle',
     };
   },
   schema: ({ initialState, plugins }) => ({
@@ -252,7 +252,7 @@ const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
       },
     },
   },
-  codecs: ({ defineCodecs, schema }) =>
+  codecs: ({ defineCodecs, schema: innerSchema }) =>
     defineCodecs({
       'text/html': {
         decode: () => ({}),
@@ -263,7 +263,7 @@ const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
         decode: ({ node }) => {
           const exactSource: MdParagraph = node;
           const sourceIsAny: IsAny<typeof node> = false;
-          const targetType: string = schema.type;
+          const targetType: string = innerSchema.type;
 
           void exactSource;
           void sourceIsAny;
@@ -276,7 +276,7 @@ const MarkdownCodecContractPlugin = defineBasePlugin('markdownCodecContract', {
           return {
             align: 'left',
             children: [{ text: '' }],
-            type: schema.type,
+            type: innerSchema.type,
           };
         },
         encode: ({ node }) => {
@@ -327,7 +327,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
         },
       },
     }),
-    codecs: ({ defineCodecs, schema }) =>
+    codecs: ({ defineCodecs, schema: innerSchema2 }) =>
       defineCodecs({
         'text/html': {
           decode: () => ({}),
@@ -352,7 +352,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
           decode: ({ node }) => {
             const exactSource: MdParagraph = node;
             const sourceIsAny: IsAny<typeof node> = false;
-            const targetType: string = schema.type;
+            const targetType: string = innerSchema2.type;
 
             void exactSource;
             void sourceIsAny;
@@ -365,7 +365,7 @@ const MarkdownSchemaFactoryCodecContractPlugin = defineBasePlugin(
             return {
               align: 'left',
               children: [{ text: '' }],
-              type: schema.type,
+              type: innerSchema2.type,
             };
           },
           encode: ({ node }) => {
@@ -396,7 +396,7 @@ const MarkdownMarkCodecContractPlugin = defineBasePlugin(
   'markdownMarkCodecContract',
   {
     schema: { mark: property.string() },
-    codecs: ({ defineCodecs, schema }) =>
+    codecs: ({ defineCodecs, schema: innerSchema3 }) =>
       defineCodecs({
         'text/html': {
           decode: ({ element }) => element.style.color || undefined,
@@ -410,7 +410,7 @@ const MarkdownMarkCodecContractPlugin = defineBasePlugin(
           decode: ({ decode, decoration, node }) =>
             decode(node.children, {
               ...decoration,
-              [schema.key]: 'red',
+              [innerSchema3.key]: 'red',
             }),
           encode: ({ node }) => ({
             attributes: [],
@@ -1216,7 +1216,7 @@ const ResolvedOverrideContextPlugin = defineBasePlugin(
 ).extend(({ plugin }) => {
   const overrideIsAny: IsAny<typeof plugin.override> = false;
   const components: object | undefined = plugin.override.components;
-  const pluginOverrides: Record<string, object> | undefined =
+  const pluginOverrides: Record<string, { enabled?: boolean }> | undefined =
     plugin.override.plugins;
 
   void components;

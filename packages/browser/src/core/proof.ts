@@ -71,14 +71,14 @@ type AppiumExecuteResponse = {
   value: string;
 };
 
-export const extractAppiumJsonValue = <T>(raw: string) => {
+export const extractAppiumJsonValue = (raw: string): unknown => {
   const parsed = JSON.parse(raw) as AppiumExecuteResponse;
 
   if (typeof parsed?.value !== 'string') {
     throw new Error('Appium execute payload did not return a string value');
   }
 
-  return JSON.parse(parsed.value) as T;
+  return JSON.parse(parsed.value);
 };
 
 const isDebugSnapshot = (value: unknown): value is DebugSnapshot => {
@@ -140,9 +140,7 @@ export const extractAgentBrowserDebugSnapshot = (raw: string) => {
 
 /** Extract a debug snapshot from an Appium execute response. */
 export const extractAppiumDebugSnapshot = (raw: string) =>
-  parseDebugSnapshot(
-    JSON.stringify(extractAppiumJsonValue<DebugSnapshot>(raw))
-  );
+  parseDebugSnapshot(JSON.stringify(extractAppiumJsonValue(raw)));
 
 /** Evaluate IME input behavior from a browser debug snapshot. */
 export const evaluateImeInput = (

@@ -1,9 +1,4 @@
-import {
-  type ComponentPropsWithRef,
-  type FormEvent,
-  type InputEvent as ReactInputEvent,
-  useMemo,
-} from 'react';
+import { type ComponentPropsWithRef, type FormEvent, useMemo } from 'react';
 
 import type {
   EditableDOMBeforeInputHandler,
@@ -59,7 +54,10 @@ type EditableRootEventHandlers = ReturnType<
 type EditableRepairRuntime = {
   domRepairQueue: DOMRepairQueue;
   forceRender: () => void;
-  requestEditableRepair: (request: EditableRepairRequest) => void;
+  requestEditableRepair: (
+    request: EditableRepairRequest,
+    options?: { focusEditor?: EditableDOMRuntime['editor'] }
+  ) => void;
   requestModelSelectionExportAfterRender: () => void;
 };
 
@@ -156,9 +154,7 @@ export const useEditableEventRuntime = ({
     runtime,
     syncDOMSelectionToEditor,
     trace: eventCore.trace,
-    onInput: callbacks.onInput as
-      | ((event: ReactInputEvent<HTMLDivElement>) => boolean | void)
-      | undefined,
+    onInput: callbacks.onInput,
   });
   useRuntimeBrowserHandle({
     browserHandleNextId,
@@ -186,9 +182,7 @@ export const useEditableEventRuntime = ({
       | ((event: FormEvent<HTMLDivElement>) => boolean | void)
       | undefined,
     onDOMBeforeInput,
-    onInput: callbacks.onInput as
-      | ((event: ReactInputEvent<HTMLDivElement>) => boolean | void)
-      | undefined,
+    onInput: callbacks.onInput,
     onUserInput: runtime.onUserInput,
     processing,
     queuePendingNativeTextInput: inputHandlers.queuePendingNativeTextInput,

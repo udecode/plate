@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
+import { failInvariant } from '@platejs/plite/internal';
 import {
   type Registry,
   type RegistryItem,
@@ -165,12 +166,14 @@ export function getAllFiles(
   return processFiles(uniqueFiles);
 }
 
-function processFiles(files: ({ path: string; file?: string } | string)[]): {
+function processFiles(
+  files: Array<{ path: string; file?: string } | string>
+): Array<{
   file: string;
   language: string;
   name: string;
   type: string;
-}[] {
+}> {
   return files.map((fileOrObj) => {
     const file =
       typeof fileOrObj === 'string'
@@ -364,7 +367,7 @@ async function getAllItemFiles(
   name: string,
   seen = new Set<string>(),
   isShadcn?: boolean
-): Promise<{ path: string; type?: string }[]> {
+): Promise<Array<{ path: string; type?: string }>> {
   const dependency = resolveRegistryDependency(name, isShadcn);
   const itemName = dependency.name;
   const seenKey = getSeenKey(itemName, dependency.isShadcn);
@@ -438,7 +441,9 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     try {
       raw = await fs.readFile(filePath, 'utf-8');
       break;
-    } catch {}
+    } catch {
+      // Try the next supported source extension.
+    }
   }
 
   if (!raw) {
@@ -463,7 +468,7 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
 }
 
 function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
-  let target = file.target;
+  let { target } = file;
 
   if (!target || target === '') {
     const fileName = file.path.split('/').pop();
@@ -517,7 +522,7 @@ export type FileTree = {
 };
 
 export function createFileTreeForRegistryItemFiles(
-  files?: { path: string; target?: string }[]
+  files?: Array<{ path: string; target?: string }>
 ) {
   if (!files) {
     return null;
@@ -526,8 +531,8 @@ export function createFileTreeForRegistryItemFiles(
   const root: FileTree[] = [];
 
   for (const file of files) {
-    const path = file.target ?? file.path;
-    const parts = path.split('/');
+    const innerPath = file.target ?? file.path;
+    const parts = innerPath.split('/');
     let currentLevel = root;
 
     for (let i = 0; i < parts.length; i++) {
@@ -545,20 +550,23 @@ export function createFileTreeForRegistryItemFiles(
       if (existingNode) {
         if (isFile) {
           // Update existing file node with full path
-          existingNode.path = path;
+          existingNode.path = innerPath;
         } else {
           // Move to next level in the tree
-          currentLevel = existingNode.children!;
+          currentLevel =
+            existingNode.children ??
+            failInvariant('Expected value to be defined');
         }
       } else {
         const newNode: FileTree = isFile
-          ? { name: part, path }
+          ? { name: part, path: innerPath }
           : { children: [], name: part };
 
         currentLevel.push(newNode);
 
         if (!isFile) {
-          currentLevel = newNode.children!;
+          currentLevel =
+            newNode.children ?? failInvariant('Expected value to be defined');
         }
       }
     }

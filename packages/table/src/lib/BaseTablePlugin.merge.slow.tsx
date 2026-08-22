@@ -29,7 +29,7 @@ describe('table merge slow contracts', () => {
 
     const getTable = (editor: ReturnType<typeof createTableEditor>) => {
       const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };
@@ -132,7 +132,7 @@ describe('table merge slow contracts', () => {
             'table',
             'paragraph',
           ]);
-          expect(NodeApi.string(mergedCell.children[1]!)).toBe('nested');
+          expect(NodeApi.string(mergedCell.children[1])).toBe('nested');
         });
       });
 
@@ -189,7 +189,7 @@ describe('table merge slow contracts', () => {
 
           editor.plugin(BaseTablePlugin).update.split();
 
-          expect(editor.read.children()).toMatchObject(output.children!);
+          expect(editor.read.children()).toMatchObject(output.children);
           expect(editor.read.selection()).toEqual(output.selection!);
         });
 
@@ -284,7 +284,7 @@ describe('table merge slow contracts', () => {
 
           editor.update.table.removeRow();
 
-          expect(editor.read.children()).toMatchObject(output.children!);
+          expect(editor.read.children()).toMatchObject(output.children);
           expect(editor.read.selection()).toEqual(output.selection!);
         });
 
@@ -385,7 +385,7 @@ describe('table merge slow contracts', () => {
 
           editor.update.table.removeColumn();
 
-          expect(editor.read.children()).toMatchObject(output.children!);
+          expect(editor.read.children()).toMatchObject(output.children);
           expect(editor.read.selection()).toEqual(output.selection!);
         });
 

@@ -19,16 +19,15 @@ const cell = <TType extends string = 'tableCell'>(
   options: Omit<Partial<TableCellElementWithId<TType>>, 'type'> & {
     type?: TType;
   } = {}
-): TableCellElementWithId<TType> =>
-  ({
-    [TABLE_CELL_OPERATION_KEY]: id,
-    children: [{ text: id }],
-    id,
-    type: 'tableCell' as TType,
-    ...options,
-  }) as TableCellElementWithId<TType>;
+): TableCellElementWithId<TType> => ({
+  [TABLE_CELL_OPERATION_KEY]: id,
+  children: [{ text: id }],
+  id,
+  type: 'tableCell' as TType,
+  ...options,
+});
 
-const table = (rows: readonly (readonly TableCellElement[])[]): Element => ({
+const table = (rows: ReadonlyArray<readonly TableCellElement[]>): Element => ({
   children: rows.map((children, index): TableRowElementWithId => ({
     children: [...children],
     id: `row-${index}`,
@@ -49,7 +48,7 @@ const context = (
     anchorAt: (row, col) => grid.slots[row]?.[col] ?? null,
     anchorAtPath: (cellPath) =>
       grid.byPath.get(cellPath.slice(path.length).join(',')),
-    anchorOf: (value) => grid.byCell.get(value),
+    anchorOf: (innerValue) => grid.byCell.get(innerValue),
     entryAt: (row, col) => {
       const anchor = grid.slots[row]?.[col];
 
@@ -82,7 +81,7 @@ const seededFactory = (prefix: string): TableCellFactory => {
   let index = 0;
 
   return ({ header }) =>
-    cell(`${prefix}-${index++}`, {
+    cell(`${prefix}-${(index += 1) - 1}`, {
       children: [{ text: '' }],
       type: header ? 'th' : 'td',
     });
@@ -203,11 +202,11 @@ describe('planTableMutation', () => {
     expect(withColumn).not.toBeNull();
     if (!withColumn) return;
 
-    const insertedIds = compileTableGrid(withColumn)
+    const insertedId = compileTableGrid(withColumn)
       .anchors.map(({ key }) => key)
-      .filter((id): id is string => !!id && id.startsWith('created-'));
+      .find((id): id is string => !!id && id.startsWith('created-'));
     const removed = planTableMutation(context(withColumn), {
-      anchorKey: insertedIds[0],
+      anchorKey: insertedId,
       kind: 'remove-column',
     });
 
@@ -557,12 +556,13 @@ describe('planTableMutation', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const input = table(
         Array.from({ length: 1 + (seed % 5) }, (_, row) =>
-          Array.from({ length: 1 + ((seed + row) % 4) }, (_, col) =>
-            cell(`seed-${seed}-${row}-${col}`, {
-              ...(col === 0 && (seed + row) % 3 === 0
+          Array.from({ length: 1 + ((seed + row) % 4) }, (innerValue2, col) =>
+            cell(
+              `seed-${seed}-${row}-${col}`,
+              col === 0 && (seed + row) % 3 === 0
                 ? { rowSpan: 2 + (seed % 3) }
-                : {}),
-            })
+                : {}
+            )
           )
         )
       );
@@ -619,7 +619,9 @@ describe('planTableMutation', () => {
 
         const input = table(
           Array.from({ length: rowCount }, (_, row) =>
-            Array.from({ length: colCount }, (_, col) => cell(`r${row}c${col}`))
+            Array.from({ length: colCount }, (innerValue3, col) =>
+              cell(`r${row}c${col}`)
+            )
           )
         );
         const keys = compileTableGrid(input).anchors.flatMap(({ key }) =>

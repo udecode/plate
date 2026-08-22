@@ -31,8 +31,9 @@ export type SelectionValue = Range &
 
 export type EditorSelection = NodeSelection | TextSelection;
 
-export type Selection<TSelection extends SelectionValue = SelectionValue> =
-  TSelection | null;
+export type Selection<
+  TSelection extends SelectionValue = SelectionValue,
+> = TSelection | null;
 
 const equalValue = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true;

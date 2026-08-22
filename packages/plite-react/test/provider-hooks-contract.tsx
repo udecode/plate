@@ -167,9 +167,9 @@ describe('plite-react provider hooks contract', () => {
     const shouldUpdate = jest.fn(() => true);
     const selector = jest.fn((nextEditor: typeof editor) =>
       nextEditor.read((state) => {
-        const [firstBlock] = state.nodes.children() as {
-          children: { text: string }[];
-        }[];
+        const [firstBlock] = state.nodes.children() as Array<{
+          children: Array<{ text: string }>;
+        }>;
 
         return firstBlock?.children[0]?.text ?? '';
       })
@@ -553,7 +553,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('useEditorSelector reads the latest canonical commit from the editor', async () => {
     const editor = createReactEditor({ initialValue });
-    const seenEditors: (typeof editor)[] = [];
+    const seenEditors: Array<typeof editor> = [];
     const selector = jest.fn((nextEditor: typeof editor) => {
       seenEditors.push(nextEditor);
 
@@ -1392,14 +1392,14 @@ describe('plite-react provider hooks contract', () => {
       element,
     }: RenderElementProps) => {
       const path = useElementPath();
+      const rawId = (element as { id?: unknown }).id;
+      const id =
+        typeof rawId === 'string' || typeof rawId === 'number'
+          ? String(rawId)
+          : 'unknown';
 
       return (
-        <div
-          {...attributes}
-          data-testid={`path-${String(
-            (element as { id?: unknown }).id ?? 'unknown'
-          )}`}
-        >
+        <div {...attributes} data-testid={`path-${id}`}>
           <span>{path?.join('.') ?? 'missing'}</span>
           {children}
         </div>
@@ -1647,12 +1647,13 @@ describe('plite-react provider hooks contract', () => {
     }));
     const editor = createReactEditor({ initialValue: value });
     const trackedNodeKey = editorGetNodeKey(editor, [10]);
+    const trackedTextNodeKey = editorGetNodeKey(editor, [10, 0]);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
 
-    if (!trackedNodeKey) {
-      throw new Error('Expected node key for shifted DOM path sync contract');
+    if (!trackedNodeKey || !trackedTextNodeKey) {
+      throw new Error('Expected node keys for shifted DOM path sync contract');
     }
 
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
@@ -1668,8 +1669,13 @@ describe('plite-react provider hooks contract', () => {
         rendered!.container.querySelector<HTMLElement>(
           `[data-plite-node="element"][data-plite-node-key="${trackedNodeKey}"]`
         );
+      const getTrackedText = () =>
+        rendered!.container.querySelector<HTMLElement>(
+          `[data-plite-node="text"][data-plite-node-key="${trackedTextNodeKey}"]`
+        );
 
       expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('10');
+      expect(getTrackedText()?.getAttribute('data-plite-path')).toBe('10,0');
 
       counter.reset();
 
@@ -1684,6 +1690,7 @@ describe('plite-react provider hooks contract', () => {
 
       await waitFor(() => {
         expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('11');
+        expect(getTrackedText()?.getAttribute('data-plite-path')).toBe('11,0');
       });
 
       const profile = counter.snapshot();
@@ -1696,6 +1703,103 @@ describe('plite-react provider hooks contract', () => {
       rendered?.unmount();
       globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
     }
+  });
+
+  test('Editable move commits sync stable element and text DOM paths', async () => {
+    const editor = createReactEditor({
+      initialValue: [
+        { type: 'block', children: [{ text: 'moved' }] },
+        { type: 'block', children: [{ text: 'sibling' }] },
+      ],
+    });
+    const movedNodeKey = editorGetNodeKey(editor, [0]);
+    const movedTextNodeKey = editorGetNodeKey(editor, [0, 0]);
+
+    if (!movedNodeKey || !movedTextNodeKey) {
+      throw new Error('Expected node keys for moved DOM path sync contract');
+    }
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable data-testid="move-dom-path-sync" />
+      </Plite>
+    );
+    const getMovedElement = () =>
+      rendered.container.querySelector<HTMLElement>(
+        `[data-plite-node="element"][data-plite-node-key="${movedNodeKey}"]`
+      );
+    const getMovedText = () =>
+      rendered.container.querySelector<HTMLElement>(
+        `[data-plite-node="text"][data-plite-node-key="${movedTextNodeKey}"]`
+      );
+
+    expect(getMovedElement()?.getAttribute('data-plite-path')).toBe('0');
+    expect(getMovedText()?.getAttribute('data-plite-path')).toBe('0,0');
+
+    await act(async () => {
+      editorMoveNodes(editor, { at: [0], to: [2] });
+    });
+
+    await waitFor(() => {
+      expect(getMovedElement()?.getAttribute('data-plite-path')).toBe('1');
+      expect(getMovedText()?.getAttribute('data-plite-path')).toBe('1,0');
+    });
+  });
+
+  test('Editable does not rerender stable custom elements when sibling paths shift', async () => {
+    const value = Array.from({ length: 40 }, (_value, index) => ({
+      id: `line-${index}`,
+      type: 'block',
+      children: [{ text: `line ${index}` }],
+    }));
+    const editor = createReactEditor({ initialValue: value });
+    const renderCounts = new Map<string, number>();
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable
+          renderElement={({ attributes, children, element }) => {
+            const id = String((element as { id?: unknown }).id);
+
+            renderCounts.set(id, (renderCounts.get(id) ?? 0) + 1);
+
+            return <div {...attributes}>{children}</div>;
+          }}
+        />
+      </Plite>
+    );
+    const trackedNodeKey = editorGetNodeKey(editor, [10]);
+
+    if (!trackedNodeKey) {
+      throw new Error('Expected node key for shifted custom-render contract');
+    }
+
+    const getTrackedElement = () =>
+      rendered.container.querySelector<HTMLElement>(
+        `[data-plite-node="element"][data-plite-node-key="${trackedNodeKey}"]`
+      );
+    const renderCountBeforeInsert = renderCounts.get('line-10');
+
+    expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('10');
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.nodes.insert(
+          {
+            id: 'inserted',
+            type: 'block',
+            children: [{ text: 'new line' }],
+          } as never,
+          { at: [0] }
+        );
+      });
+    });
+
+    await waitFor(() => {
+      expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('11');
+    });
+    expect(renderCounts.get('line-10')).toBe(renderCountBeforeInsert);
+    expect(renderCounts.get('inserted')).toBe(1);
   });
 
   test('runtime selector listeners update shifted siblings during top-level inserts', async () => {

@@ -225,7 +225,7 @@ type NodeForSelectorItem<TItem> =
 
 /** The element selected by a persisted type or raw schema element handle. */
 export type NodeForTypeSelector<TType extends NodeTypeSelector> =
-  TType extends readonly (infer TItem)[]
+  TType extends ReadonlyArray<infer TItem>
     ? NodeForSelectorItem<TItem>
     : NodeForSelectorItem<TType>;
 
@@ -456,7 +456,7 @@ export type EditorFacetComputeOptions<TRoot extends RootKey = RootKey> =
      * Inputs read by the provider. Omit this to preserve whole-editor revision
      * invalidation. An empty list computes the provider once per registration.
      */
-    dependencies: readonly EditorFacetDependency<TRoot>[];
+    dependencies: ReadonlyArray<EditorFacetDependency<TRoot>>;
   }>;
 
 export type EditorFacetProvider<TInput = any> = Readonly<{
@@ -506,9 +506,9 @@ export type EditorExtensionReconfigureOptions = Readonly<{
 
 export type EditorTransactionExtensionsApi = {
   /** Replace one named extension slot when the surrounding update commits. */
-  reconfigure: <const TInput extends EditorExtensionInput>(
+  reconfigure: (
     slot: EditorExtensionSlotLike,
-    input: TInput,
+    input: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => void;
 };
@@ -617,7 +617,7 @@ export type EditorFragmentReadOptions = {
 
 export type EditorStateFragmentApi<V extends Value = Value> = (
   options?: EditorFragmentReadOptions
-) => readonly DescendantIn<V>[];
+) => ReadonlyArray<DescendantIn<V>>;
 
 export type EditorSliceReadOptions = Readonly<{
   at?: Range;
@@ -639,7 +639,7 @@ export type EditorStateSliceApi<V extends Value = Value> = {
       /** Named secondary-root context. Omit for the primary root. */
       root?: NamedRootKey<TRoot>;
     }>
-  ) => readonly DescendantIn<V>[] | null;
+  ) => ReadonlyArray<DescendantIn<V>> | null;
   /** Read one immutable slice with structural openness preserved. */
   get: (options?: EditorSliceReadOptions) => ContentSlice<V>;
 };
@@ -798,7 +798,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options?: WithNodeTarget<EditorBlockOptions<ValueElement<V>>>
     ): NodeEntry<ValueElement<V>> | undefined;
   };
-  children: (at?: NodeTarget) => readonly ValueDescendant<V>[];
+  children: (at?: NodeTarget) => ReadonlyArray<ValueDescendant<V>>;
   elementReadOnly: (
     options?: WithNodeTarget<EditorElementReadOnlyOptions>
   ) => NodeEntry<Element> | undefined;
@@ -820,7 +820,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     (
       at: Location | NodeKey,
       options?: EditorNodeGetOptions<ValueTreeNode<V>>
-    ): NodeEntry<ValueTreeNode<V>> | undefined;
+    ): NodeEntry | undefined;
   };
   hasBlocks: (element: Element) => boolean;
   hasInlines: (element: Element) => boolean;
@@ -849,7 +849,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     ): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
     (
       options?: WithNodeTarget<EditorLevelsOptions<ValueTreeNode<V>>>
-    ): Generator<NodeEntry<ValueTreeNode<V>>, void, undefined>;
+    ): Generator<NodeEntry, void, undefined>;
   };
   /**
    * Resolve a path in this editor/view root. A `NodeKey` owned by another root
@@ -869,7 +869,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     ): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
     (
       options?: EditorNodesReadOptions<ValueTreeNode<V>>
-    ): Generator<NodeEntry<ValueTreeNode<V>>, void, undefined>;
+    ): Generator<NodeEntry, void, undefined>;
   };
   find: {
     <TGuard extends ValueTreeNode<V>>(
@@ -883,9 +883,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
         type: TType;
       }
     ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
-    (
-      options?: EditorNodesReadOptions<ValueTreeNode<V>>
-    ): NodeEntry<ValueTreeNode<V>> | undefined;
+    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): NodeEntry | undefined;
   };
   some: {
     <const TType extends NodeTypeSelector>(
@@ -900,15 +898,13 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {
         match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
       }
-    ): readonly NodeEntry<TGuard>[];
+    ): ReadonlyArray<NodeEntry<TGuard>>;
     <const TType extends NodeTypeSelector>(
       options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
-    ): readonly NodeEntry<NodeForTypeSelector<TType>>[];
-    (
-      options?: EditorNodesReadOptions<ValueTreeNode<V>>
-    ): readonly NodeEntry<ValueTreeNode<V>>[];
+    ): ReadonlyArray<NodeEntry<NodeForTypeSelector<TType>>>;
+    (options?: EditorNodesReadOptions<ValueTreeNode<V>>): readonly NodeEntry[];
     <const TType extends NodeTypeSelector, R>(
       options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
@@ -923,7 +919,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     ): readonly R[];
     <R>(
       options: EditorNodesReadOptions<ValueTreeNode<V>> | undefined,
-      map: (entry: NodeEntry<ValueTreeNode<V>>) => R
+      map: (entry: NodeEntry) => R
     ): readonly R[];
   };
   next: {
@@ -956,7 +952,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
     (
       at: NodeTarget,
-      options?: EditorParentOptions<Ancestor>
+      options?: EditorParentOptions
     ): NodeEntry<Ancestor> | undefined;
   };
   previous: {
@@ -974,7 +970,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
     (
       options?: WithNodeTarget<EditorPreviousOptions<ValueTreeNode<V>>>
-    ): NodeEntry<ValueTreeNode<V>> | undefined;
+    ): NodeEntry | undefined;
   };
   shouldMergeNodesRemovePrevNode: (
     previous: NodeEntry,
@@ -988,7 +984,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
 export type EditorTransactionNodesApi<V extends Value = Value> =
   EditorStateNodesApi<V> & {
     duplicate: <T extends ElementOrTextIn<V>>(
-      entries: readonly NodeEntry<T>[],
+      entries: ReadonlyArray<NodeEntry<T>>,
       options?: NodeDuplicateOptions
     ) => void;
     insert: {
@@ -1008,7 +1004,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       ): void;
       <T extends ElementOrTextIn<V>>(
         nodes: T | readonly T[],
-        options?: WithNodeTarget<NodeInsertNodesOptions<NodeIn<V>, undefined>>
+        options?: WithNodeTarget<NodeInsertNodesOptions<NodeIn<V>>>
       ): void;
     };
     lift: {
@@ -1085,8 +1081,8 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       nodes: T | readonly T[],
       options: EditorReplaceNodeOptions
     ) => void;
-    replaceChildren: <T extends ElementOrTextIn<V>>(
-      children: readonly T[],
+    replaceChildren: (
+      children: ReadonlyArray<ElementOrTextIn<V>>,
       options: EditorReplaceChildrenOptions
     ) => void;
     set: EditorNodeSetObject<V>;
@@ -1130,17 +1126,14 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         props: TKey | readonly TKey[],
         options?: EditorNodeUnsetOptions<NodeIn<V>>
       ): void;
-      <
-        const THandle extends SchemaPropertyHandle<string, unknown>,
-        const TType extends NodeTypeSelector,
-      >(
-        property: THandle,
+      <const TType extends NodeTypeSelector>(
+        property: SchemaPropertyHandle<string>,
         options: EditorNodeUnsetOptions<NodeForTypeSelector<TType>, TType> & {
           type: TType;
         }
       ): void;
-      <const THandle extends SchemaPropertyHandle<string, unknown>>(
-        property: THandle,
+      (
+        property: SchemaPropertyHandle<string>,
         options?: EditorNodeUnsetOptions<NodeIn<V>>
       ): void;
       <TKey extends string, const TType extends NodeTypeSelector>(
@@ -1173,8 +1166,8 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       }): void;
     };
     wrap: {
-      <E extends ElementIn<V>, const TType extends NodeTypeSelector>(
-        element: E,
+      <const TType extends NodeTypeSelector>(
+        element: ElementIn<V>,
         options: {
           at?: NodeTarget;
           match?: NodeMatch<NodeForTypeSelector<TType>>;
@@ -1184,8 +1177,8 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
           voids?: boolean;
         }
       ): void;
-      <E extends ElementIn<V>>(
-        element: E,
+      (
+        element: ElementIn<V>,
         options?: {
           at?: NodeTarget;
           match?: NodeMatch<NodeIn<V>>;
@@ -1260,7 +1253,7 @@ export type EditorTransactionFragmentApi<V extends Value = Value> =
     ) => void;
     /** Fit and replace known-closed content as one canonical closed slice. */
     replace: (
-      content: readonly DescendantIn<V>[],
+      content: ReadonlyArray<DescendantIn<V>>,
       options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
     ) => boolean;
   };
@@ -1341,9 +1334,9 @@ export type EditorSchemaPropertyReadOptions = Readonly<{
 }>;
 
 export type EditorSchemaReadProperty = {
-  <TKey extends string, TValue, TPlacement extends 'element' | 'text'>(
+  <TValue>(
     node: Element | Text,
-    property: SchemaPropertyHandle<TKey, TValue, TPlacement>,
+    property: SchemaPropertyHandle<string, TValue>,
     options?: EditorSchemaPropertyReadOptions
   ): TValue | undefined;
   (
@@ -1433,16 +1426,16 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
    */
   assertFragment(
     children: unknown
-  ): asserts children is readonly DescendantIn<V>[];
+  ): asserts children is ReadonlyArray<DescendantIn<V>>;
 };
 
 /** Immutable open document content carried across host and insertion boundaries. */
 export type ContentSlice<V extends Value = Value> = Readonly<{
-  content: readonly DescendantIn<V>[];
+  content: ReadonlyArray<DescendantIn<V>>;
   openEnd: number;
   openStart: number;
   /** Detached secondary roots referenced by the slice content. */
-  roots?: Readonly<Record<RootKey, readonly DescendantIn<V>[]>>;
+  roots?: Readonly<Record<RootKey, ReadonlyArray<DescendantIn<V>>>>;
 }>;
 
 export type EditorStateRuntimeApi<V extends Value = Value> = {
@@ -1508,7 +1501,7 @@ export type EditorCoreStateView<
    */
   root: <TRoot extends RootKey>(
     root: NamedRootKey<TRoot>
-  ) => readonly V[number][];
+  ) => ReadonlyArray<V[number]>;
   runtime: EditorStateRuntimeApi<V>;
   schema: EditorStateSchemaApi<V>;
   selection: EditorStateSelectionApi<TSelection>;
@@ -1826,6 +1819,7 @@ export type CreateEditorOptions<
   id?: string;
   initialSelection?: Selection<EditorSelectionFromExtensions<TExtensions>>;
   initialValue?: InitialValue<V>;
+  /** Receives failures from observers that run after authoritative state is published. */
   lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TExtensions>>;
   maxLength?: number;
   readOnly?: boolean;
@@ -1910,7 +1904,7 @@ export type NodeKey = string & {
 
 export type SnapshotIndex = Readonly<{
   /** Materialize the lazy index and return stable, frozen node-key/path pairs. */
-  entries: () => readonly (readonly [NodeKey, Path])[];
+  entries: () => ReadonlyArray<readonly [NodeKey, Path]>;
   /** Return the node key at a snapshot path, or `null` when absent. */
   keyAt: (path: Path) => NodeKey | null;
   /** Return the snapshot path for a node key, or `null` when absent. */
@@ -1991,10 +1985,12 @@ export interface TransactionSpec<TRoot extends RootKey = RootKey> {
    * @internal
    */
   readonly [TRANSACTION_SPEC_TYPE]: true;
-  readonly annotations: readonly Readonly<{
-    type: EditorUpdateAnnotation<unknown>;
-    value: unknown;
-  }>[];
+  readonly annotations: ReadonlyArray<
+    Readonly<{
+      type: EditorUpdateAnnotation;
+      value: unknown;
+    }>
+  >;
   readonly changes: DocumentChange;
   readonly effects: readonly EditorEffect[];
   readonly kind: 'transaction';
@@ -2214,7 +2210,7 @@ export type EditorExtensionReadMiddlewareFactory<
   TEditor extends BaseEditor<any, any> = Editor,
 > = BivariantMethod<
   [context: EditorExtensionReadContext<TEditor>],
-  readonly EditorReadRegistration<TEditor>[]
+  ReadonlyArray<EditorReadRegistration<TEditor>>
 >;
 
 /** @internal */
@@ -2435,7 +2431,7 @@ export type EditorExtensionApiFactoryContext<
   editor: EditorExtensionCandidateEditor<TEditor>;
   getContributions: <TValue>(
     point: EditorExtensionPoint<TValue>
-  ) => readonly Readonly<TValue>[];
+  ) => ReadonlyArray<Readonly<TValue>>;
   /** Named view root, or `undefined` for the primary document. */
   root: NamedRootKey | undefined;
 }>;
@@ -2496,7 +2492,15 @@ export type EditorLifecycleError<TEditor = Editor> =
       cause: unknown;
       editor: TEditor;
       extensionName: string;
-      phase: 'afterPublish' | 'cleanup' | 'commit-listener';
+      phase:
+        | 'after-commit'
+        | 'afterPublish'
+        | 'cleanup'
+        | 'commit-listener'
+        | 'node-change-listener'
+        | 'snapshot-listener'
+        | 'source-listener'
+        | 'text-change-listener';
     }>
   | Readonly<{
       cause: unknown;
@@ -2985,7 +2989,7 @@ export type EditorExtension<TDefinition extends EditorExtensionDefinition> =
  * callback-rich shape to the compact definition carried by `DefinitionOf`.
  */
 export type EditorExtensionDefinitionInput<
-  TEditor extends BaseEditor<any, any> = BaseEditor<any, readonly []>,
+  TEditor extends BaseEditor<any, any> = BaseEditor<any>,
 > = {
   enabled?: boolean;
   dependencies?: readonly EditorExtensionReference[];
@@ -2997,13 +3001,15 @@ export type EditorExtensionDefinitionInput<
   readMiddleware?: EditorExtensionReadMiddlewareFactory<TEditor>;
   commands?: (
     context: EditorExtensionCommandContext<TEditor>
-  ) => readonly EditorCommandRegistration<TEditor>[];
-  corrections?: readonly EditorCorrection<TEditor>[];
-  stateFields?: readonly EditorStateField<any>[];
+  ) => ReadonlyArray<EditorCommandRegistration<TEditor>>;
+  corrections?: ReadonlyArray<EditorCorrection<TEditor>>;
+  stateFields?: ReadonlyArray<EditorStateField<any>>;
   effectTypes?: readonly EditorEffectType[];
   facetProviders?: readonly EditorFacetProvider[];
-  selectionKinds?: readonly EditorSelectionSpec<any>[];
-  contributions?: readonly EditorExtensionContributionInput<NoInfer<TEditor>>[];
+  selectionKinds?: ReadonlyArray<EditorSelectionSpec<any>>;
+  contributions?: ReadonlyArray<
+    EditorExtensionContributionInput<NoInfer<TEditor>>
+  >;
   on?: EditorExtensionChangeHandlers<TEditor>;
   activate?: (
     context: EditorExtensionActivationContext & Readonly<{ editor: TEditor }>
@@ -3020,9 +3026,7 @@ export type EditorExtensionInput =
 
 export type EditorExtensionSlotLike = Readonly<{
   key: string;
-  of: <const TInput extends EditorExtensionInput>(
-    input: TInput
-  ) => EditorExtensionReference;
+  of: (input: EditorExtensionInput) => EditorExtensionReference;
 }>;
 
 export type EditorSelectionMapContext = Readonly<{
@@ -3201,7 +3205,9 @@ type EditorResolvedArrayExtensionAndDependencies<TExtension> =
 export type EditorResolvedInstalledExtensions<
   TExtensions extends readonly unknown[],
 > = number extends TExtensions['length']
-  ? readonly EditorResolvedArrayExtensionAndDependencies<TExtensions[number]>[]
+  ? ReadonlyArray<
+      EditorResolvedArrayExtensionAndDependencies<TExtensions[number]>
+    >
   : TExtensions extends readonly []
     ? readonly []
     : TExtensions extends readonly [
@@ -3756,7 +3762,7 @@ type EditorStaticLevels = {
   <V extends Value>(
     editor: AnyEditor<V>,
     options?: EditorLevelsOptions<ValueTreeNode<V>>
-  ): Generator<NodeEntry<ValueTreeNode<V>>, void, undefined>;
+  ): Generator<NodeEntry, void, undefined>;
 };
 
 type EditorStaticNext = {
@@ -3794,7 +3800,7 @@ type EditorStaticPrevious = {
   <V extends Value>(
     editor: AnyEditor<V>,
     options?: EditorPreviousOptions<ValueTreeNode<V>>
-  ): NodeEntry<ValueTreeNode<V>> | undefined;
+  ): NodeEntry | undefined;
 };
 
 type EditorStaticParent = {
@@ -3962,14 +3968,14 @@ export interface EditorStaticApi {
   fragment: <V extends Value>(
     editor: AnyEditor<V>,
     at: Location
-  ) => readonly DescendantIn<V>[];
+  ) => ReadonlyArray<DescendantIn<V>>;
 
   /**
    * Get the fragment at the current selection.
    */
   getFragment: <V extends Value>(
     editor: AnyEditor<V>
-  ) => readonly DescendantIn<V>[];
+  ) => ReadonlyArray<DescendantIn<V>>;
 
   /**
    * Get the current immutable snapshot of editor state.
@@ -4005,13 +4011,9 @@ export interface EditorStaticApi {
    * at the specified location or (if not defined) the current selection or (if not defined) the end of the document.
    */
   insertNode: {
-    <
-      V extends Value,
-      T extends ElementOrTextIn<V>,
-      const TType extends NodeTypeSelector | undefined,
-    >(
+    <V extends Value, const TType extends NodeTypeSelector | undefined>(
       editor: AnyEditor<V>,
-      node: T,
+      node: ElementOrTextIn<V>,
       options: NodeInsertNodesOptions<
         NodeInsertSplitTarget<V, TType>,
         TType
@@ -4022,10 +4024,10 @@ export interface EditorStaticApi {
         >['split'] & { type: TType };
       }
     ): void;
-    <V extends Value, T extends ElementOrTextIn<V>>(
+    <V extends Value>(
       editor: AnyEditor<V>,
-      node: T,
-      options?: NodeInsertNodesOptions<NodeIn<V>, undefined>
+      node: ElementOrTextIn<V>,
+      options?: NodeInsertNodesOptions<NodeIn<V>>
     ): void;
   };
 
@@ -4192,8 +4194,8 @@ export interface EditorStaticApi {
    */
   range: (editor: AnyEditor, at: Location, to?: Location) => Range;
 
-  install: <TEditor extends AnyEditor>(
-    editor: TEditor,
+  install: (
+    editor: AnyEditor,
     extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => () => void;
@@ -4449,7 +4451,9 @@ const editorInternalApi: EditorInternalApiTable = {
   delete(editor, options) {
     runInternalEditorWrite(
       editor,
-      (owner) => executeDeleteText(owner, options),
+      (owner) => {
+        executeDeleteText(owner, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   },
@@ -4463,7 +4467,9 @@ const editorInternalApi: EditorInternalApiTable = {
   deselect(editor) {
     runInternalEditorWrite(
       editor,
-      (owner) => executeDeselect(owner),
+      (owner) => {
+        executeDeselect(owner);
+      },
       getImplicitSelectionRoot(editor)
     );
   },
@@ -4484,7 +4490,7 @@ const editorInternalApi: EditorInternalApiTable = {
   },
 
   fragment<V extends Value>(editor: Editor<V>, at: Location) {
-    return getEditorRuntime(editor).fragment(at) as DescendantIn<V>[];
+    return getEditorRuntime(editor).fragment(at) as Array<DescendantIn<V>>;
   },
 
   getFragment(editor) {
@@ -4628,7 +4634,9 @@ const editorInternalApi: EditorInternalApiTable = {
   liftNodes: ((editor: AnyEditor, options?: NodeLiftNodesOptions) => {
     runInternalEditorWrite(
       editor,
-      (owner) => executeLiftNodes(owner, options),
+      (owner) => {
+        executeLiftNodes(owner, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   }) as EditorStaticApi['liftNodes'],
@@ -4642,7 +4650,9 @@ const editorInternalApi: EditorInternalApiTable = {
   mergeNodes: ((editor: AnyEditor, options?: NodeMergeNodesOptions) => {
     runInternalEditorWrite(
       editor,
-      (owner) => executeMergeNodes(owner, options),
+      (owner) => {
+        executeMergeNodes(owner, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   }) as EditorStaticApi['mergeNodes'],
@@ -4653,16 +4663,21 @@ const editorInternalApi: EditorInternalApiTable = {
 
   moveNodes: ((editor: AnyEditor, options: NodeMoveNodesOptions) => {
     if (isPathLocation(options.at) && options.at.length === 1) {
-      return runInternalEditorWriteSkipNormalize(
+      runInternalEditorWriteSkipNormalize(
         editor,
-        (owner) => executeMoveNodes(owner, options),
+        (owner) => {
+          executeMoveNodes(owner, options);
+        },
         getWriteRoot(editor, options.at)
       );
+      return;
     }
 
     runInternalEditorWrite(
       editor,
-      (owner) => executeMoveNodes(owner, options),
+      (owner) => {
+        executeMoveNodes(owner, options);
+      },
       getWriteRoot(editor, options.at)
     );
   }) as EditorStaticApi['moveNodes'],
@@ -4716,14 +4731,16 @@ const editorInternalApi: EditorInternalApiTable = {
 
   removeNodes: ((editor: AnyEditor, options?: NodeRemoveNodesOptions) => {
     dispatchCommand(editor, editorCommands.removeNodes, {
-      options: options as unknown as NodeRemoveNodesOptions,
+      options,
     });
   }) as EditorStaticApi['removeNodes'],
 
   replaceChildren(editor, children, options) {
     runInternalEditorWrite(
       editor,
-      (owner) => executeReplaceChildren(owner, children, options),
+      (owner) => {
+        executeReplaceChildren(owner, children, options);
+      },
       getWriteRoot(editor, options.at)
     );
   },
@@ -4737,7 +4754,9 @@ const editorInternalApi: EditorInternalApiTable = {
   setPoint(editor, props, options) {
     runInternalEditorWrite(
       editor,
-      (owner) => executeSetPoint(owner, props, options),
+      (owner) => {
+        executeSetPoint(owner, props, options);
+      },
       getImplicitSelectionRoot(editor)
     );
   },
@@ -4748,8 +4767,8 @@ const editorInternalApi: EditorInternalApiTable = {
     options?: NodeSetNodesOptions
   ) => {
     dispatchCommand(editor, editorCommands.setNodes, {
-      options: options as unknown as NodeSetNodesOptions,
-      props: props as Partial<NodeProps<Node>>,
+      options,
+      props: props as Partial<NodeProps>,
     });
   }) as EditorStaticApi['setNodes'],
 
@@ -4762,7 +4781,9 @@ const editorInternalApi: EditorInternalApiTable = {
   splitNodes: ((editor: AnyEditor, options?: NodeSplitNodesOptions) => {
     runInternalEditorWrite(
       editor,
-      (owner) => executeSplitNodes(owner, options),
+      (owner) => {
+        executeSplitNodes(owner, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   }) as EditorStaticApi['splitNodes'],
@@ -4786,7 +4807,9 @@ const editorInternalApi: EditorInternalApiTable = {
   ) => {
     runInternalEditorWrite(
       editor,
-      (owner) => executeUnsetNodes(owner, props, options),
+      (owner) => {
+        executeUnsetNodes(owner, props, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   }) as EditorStaticApi['unsetNodes'],
@@ -4794,7 +4817,9 @@ const editorInternalApi: EditorInternalApiTable = {
   unwrapNodes: ((editor: AnyEditor, options?: NodeUnwrapNodesOptions) => {
     runInternalEditorWrite(
       editor,
-      (owner) => executeUnwrapNodes(owner, options),
+      (owner) => {
+        executeUnwrapNodes(owner, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   }) as EditorStaticApi['unwrapNodes'],
@@ -4806,7 +4831,9 @@ const editorInternalApi: EditorInternalApiTable = {
   ) => {
     runInternalEditorWrite(
       editor,
-      (owner) => executeWrapNodes(owner, element, options),
+      (owner) => {
+        executeWrapNodes(owner, element, options);
+      },
       getWriteRoot(editor, options?.at)
     );
   }) as EditorStaticApi['wrapNodes'],

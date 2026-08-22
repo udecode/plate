@@ -1,5 +1,5 @@
 export declare const jsx: <
-  S extends (
+  S extends
     | 'anchor'
     | 'cursor'
     | 'editor'
@@ -7,12 +7,10 @@ export declare const jsx: <
     | 'focus'
     | 'fragment'
     | 'selection'
-    | 'text'
-  ) &
-    string,
+    | 'text',
 >(
   tagName: S,
-  attributes?: Object,
+  attributes?: object,
   ...children: any[]
 ) => ReturnType<
   ({
@@ -20,9 +18,7 @@ export declare const jsx: <
     cursor: typeof import('../src/creators').createCursor;
     editor: (
       _tagName: string,
-      attributes: {
-        [key: string]: any;
-      },
+      attributes: import('../src/creators').HyperscriptAttributes,
       children: any[]
     ) => import('platejs').Editor;
     element: typeof import('../src/creators').createElement;

@@ -195,15 +195,19 @@ const MentionExample = () => {
             return true;
           }
           case 'Tab':
-          case 'Enter':
+          case 'Enter': {
             insertMention(chars[index], target);
             setTarget(null);
             return true;
-          case 'Escape':
+          }
+          case 'Escape': {
             setTarget(null);
             return true;
+          }
         }
       }
+
+      return undefined;
     },
     [chars, index, insertMention, target]
   );
@@ -307,19 +311,23 @@ const MentionExample = () => {
 
 const renderElement = (props: RenderElementProps<MentionValueElement>) => {
   switch (props.element.type) {
-    case 'paragraph':
+    case 'paragraph': {
       return <Paragraph {...(props as RenderElementProps<ParagraphElement>)} />;
-    default:
+    }
+    default: {
       return <span {...props.attributes}>{props.children}</span>;
+    }
   }
 };
 
 const renderVoid = ({ element }: RenderVoidProps<MentionValueElement>) => {
   switch (element.type) {
-    case 'mention':
-      return <Mention element={element as MentionElement} />;
-    default:
+    case 'mention': {
+      return <Mention element={element} />;
+    }
+    default: {
       return null;
+    }
   }
 };
 
@@ -327,9 +335,10 @@ const renderVoid = ({ element }: RenderVoidProps<MentionValueElement>) => {
 // In a real project you would get these from the same mark/rendering module.
 const Leaf = ({
   attributes,
-  children,
+  children: initialChildren,
   leaf,
 }: RenderLeafProps<SchemaText<typeof MentionSchema>>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

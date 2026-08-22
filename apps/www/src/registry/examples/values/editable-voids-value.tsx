@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const editableVoidsValue = (
+export const editableVoidsValue: Value = (
   <fragment>
     <hp>
       In addition to nodes that contain editable text, you can insert void

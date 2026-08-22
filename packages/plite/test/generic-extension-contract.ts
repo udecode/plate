@@ -40,7 +40,7 @@ const extension = defineExtension('generic-extension', {
     commit({ commit, snapshot }) {
       const change: DocumentChange = commit.changes;
       const changedPaths = commit.changed.paths();
-      const children = snapshot.children;
+      const { children } = snapshot;
 
       void change;
       void changedPaths;

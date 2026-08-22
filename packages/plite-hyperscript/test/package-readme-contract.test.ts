@@ -25,7 +25,7 @@ describe('plite-hyperscript package README contract', () => {
   });
 
   it('names the root fixture factory exports in package docs', () => {
-    const docs = readFileSync(packageReadmePath, 'utf8');
+    const docs = readFileSync(packageReadmePath, 'utf-8');
 
     for (const name of [
       'jsx',

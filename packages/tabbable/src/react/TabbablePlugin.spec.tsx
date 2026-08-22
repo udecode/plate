@@ -5,9 +5,41 @@ import { type Node, type Path, createEditor } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
+import { createTabIndexRestorationQueue } from './TabbableEffects.internal';
 import { TabbablePlugin } from './TabbablePlugin';
 
 jsxt;
+
+describe('tabindex restoration', () => {
+  it('preserves a missing attribute when restoration is rescheduled', async () => {
+    const button = document.createElement('button');
+    const queue = createTabIndexRestorationQueue();
+
+    queue.defer(button);
+    queue.defer(button);
+
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 5);
+    });
+
+    expect(button.hasAttribute('tabindex')).toBe(false);
+  });
+
+  it('preserves the original value when restoration is rescheduled', async () => {
+    const button = document.createElement('button');
+    const queue = createTabIndexRestorationQueue();
+
+    button.setAttribute('tabindex', '0');
+    queue.defer(button);
+    queue.defer(button);
+
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 5);
+    });
+
+    expect(button.getAttribute('tabindex')).toBe('0');
+  });
+});
 
 const VoidPlugin = definePlatePlugin('void', {
   schema: {

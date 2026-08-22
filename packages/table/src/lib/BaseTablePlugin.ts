@@ -34,6 +34,7 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
+import { failInvariant } from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 
 import {
@@ -133,7 +134,7 @@ const clampTableSelection = (
     at: selection.anchor,
     type: tableType,
   });
-  let focus = selection.focus;
+  let { focus } = selection;
 
   if (anchorTable) {
     const [, path] = anchorTable;
@@ -190,7 +191,7 @@ const isTableCellSelection = (
   }
 
   const tableSelection = selection as TableCellSelection;
-  const root = tableSelection.anchor.root;
+  const { root } = tableSelection.anchor;
 
   if (tableSelection.focus.root !== root) return false;
 
@@ -289,7 +290,7 @@ const getTableAnchorPoint = (
       ? NodeApi.last(anchor.cell, [])
       : NodeApi.first(anchor.cell, []);
 
-  if (!TextApi.isText(text)) return;
+  if (!TextApi.isText(text)) return undefined;
 
   return {
     offset: edge === 'end' ? text.text.length : 0,
@@ -420,10 +421,10 @@ const tableCellBordersProperty = property.json({
 const HTML_PX_NUMBER_PATTERN = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:px)?$/i;
 
 const parseHtmlCssNumber = (value: string | null | undefined) => {
-  if (!value) return;
+  if (!value) return undefined;
   const normalized = value.trim();
 
-  if (!HTML_PX_NUMBER_PATTERN.test(normalized)) return;
+  if (!HTML_PX_NUMBER_PATTERN.test(normalized)) return undefined;
 
   const parsed = Number.parseFloat(normalized);
 
@@ -690,7 +691,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 }
 
                 if (!blocked) break;
-                column++;
+                column += 1;
               }
               if (column >= MAX_IMPORTED_TABLE_COLUMNS) {
                 widthInferenceTruncated = true;
@@ -873,10 +874,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             { length: widthCount },
             (_, index) => colgroupWidths[index] ?? normalizedCellWidths[index]
           );
-          const columnWidths =
-            widths.length > 0 && widths.some((width) => width !== undefined)
-              ? widths.map((width) => width ?? null)
-              : undefined;
+          const columnWidths = widths.some((width) => width !== undefined)
+            ? widths.map((width) => width ?? null)
+            : undefined;
           const marginLeft = parseHtmlCssNumber(element.style.marginLeft);
 
           return {
@@ -1077,7 +1077,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       const getCellIndicesByKey = (key: NodeKey): CellIndices | undefined => {
         const cellPath = state.nodes.path(key);
 
-        if (!cellPath) return;
+        if (!cellPath) return undefined;
 
         const anchor = createTableContext(
           state,
@@ -1141,13 +1141,15 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     row.children.some((rowCell) => rowCell === cell)
                 )
               ) {
-                return node as Element;
+                return node;
               }
 
               const nested = visit(node.children);
 
               if (nested) return nested;
             }
+
+            return undefined;
           };
           const value = state.value();
 
@@ -1189,9 +1191,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       function getGridByRange(
         options: GetTableRangeOptions<'all'>
       ): TableRangeEntries;
-      function getGridByRange(
-        options: GetTableRangeOptions<'cell' | 'table'>
-      ): ElementEntry[];
+      function getGridByRange(options: GetTableRangeOptions): ElementEntry[];
       function getGridByRange({
         at,
         format = 'table',
@@ -1274,7 +1274,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         } = {}) => {
           const view = state.table.getSelection(at);
 
-          if (!view) return;
+          if (!view) return undefined;
 
           const row =
             view.anchor.row +
@@ -1309,28 +1309,28 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         }: {
           at?: Location | null;
         } = {}) => {
-          if (!at) return;
+          if (!at) return undefined;
 
           const cellEntry = state.nodes.find({
             at,
             match: api.isCell,
           });
 
-          if (!cellEntry) return;
+          if (!cellEntry) return undefined;
 
           const rowEntry = state.nodes.above({
             at: cellEntry[1],
             type: BaseTableRowPlugin,
           });
 
-          if (!rowEntry) return;
+          if (!rowEntry) return undefined;
 
           const tableEntry = state.nodes.above({
             at: rowEntry[1],
             type: plugin,
           });
 
-          if (!tableEntry) return;
+          if (!tableEntry) return undefined;
 
           return {
             cell: cellEntry,
@@ -1495,15 +1495,17 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       },
       getCellSize: ({
         cellIndices,
-        columnWidths,
+        columnWidths: initialColumnWidths,
         element,
-        rowSize,
+        rowSize: initialRowSize,
       }: {
         element: TableCellElement;
         cellIndices?: CellIndices;
-        columnWidths?: readonly (number | null)[];
+        columnWidths?: ReadonlyArray<number | null>;
         rowSize?: number;
       }): { minHeight: number; width: number } => {
+        let rowSize = initialRowSize;
+        let columnWidths = initialColumnWidths;
         const path = state.nodes.path(element);
 
         if (!path) return { minHeight: rowSize ?? 0, width: 0 };
@@ -1547,7 +1549,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         const width = columnWidths
           .slice(col, col + colSpan)
           .reduce<number>(
-            (total, width) => total + (width ?? fallbackWidth),
+            (total, innerWidth) => total + (innerWidth ?? fallbackWidth),
             0
           );
 
@@ -2013,7 +2015,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             : undefined;
           let tablePath: Path;
           let anchorPath: Path;
-          let before = options.before;
+          let { before } = options;
           let atColumn: number | undefined;
 
           if (tableAt?.type === type && options.at) {
@@ -2073,7 +2075,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             : undefined;
           let tablePath: Path;
           let anchorPath: Path;
-          let before = options.before;
+          let { before } = options;
 
           if (tableAt?.type === type && options.at) {
             tablePath = options.at;
@@ -2330,7 +2332,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 match: (node) => TextApi.isText(node),
               })
               .forEach(([text]) => {
-                textCount++;
+                textCount += 1;
 
                 Object.keys(text).forEach((key) => {
                   if (key === 'text') return;
@@ -2400,7 +2402,10 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             const view = tx.table.getSelection(cellPath);
             const addDirection = (direction: BorderDirection) => {
               if (direction === 'top') {
-                if (rowIndex === 0) return addBorder(cellEntry, 'top', width);
+                if (rowIndex === 0) {
+                  addBorder(cellEntry, 'top', width);
+                  return;
+                }
 
                 const anchor = view
                   ? getTableSelectionNeighbor(
@@ -2418,7 +2423,10 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 return;
               }
               if (direction === 'left') {
-                if (cellIndex === 0) return addBorder(cellEntry, 'left', width);
+                if (cellIndex === 0) {
+                  addBorder(cellEntry, 'left', width);
+                  return;
+                }
 
                 const anchor = view
                   ? getTableSelectionNeighbor(view.context, view.anchor, 'left')
@@ -2446,10 +2454,10 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           });
         };
         const applyMutation = (
-          context: NonNullable<ReturnType<typeof createTableContext>>,
+          innerContext: NonNullable<ReturnType<typeof createTableContext>>,
           intent: TableIntent
         ) => {
-          const result = planTableMutation(context, intent);
+          const result = planTableMutation(innerContext, intent);
 
           if (result.kind !== 'plan') {
             editor
@@ -2479,14 +2487,14 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 const selected = tx.table.getSelection()?.cellEntries ?? [];
 
                 if (selected.length > 1) {
-                  return selected.map(([cell]) => cell as TableCellElement);
+                  return selected.map(([cell]) => cell);
                 }
 
                 const cell = tx.nodes.block({
                   match: api.isCell,
                 });
 
-                return cell ? [cell[0] as TableCellElement] : [];
+                return cell ? [cell[0]] : [];
               })();
 
             if (selectedCells.length === 0) return;
@@ -2545,7 +2553,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 updates.push({ at, border: direction, width });
               });
             };
-            const apply = () => setBorderWidths(updates);
+            const apply = () => {
+              setBorderWidths(updates);
+            };
 
             if (border === 'none') {
               const width = tx.table.getSelectedCellsBorders(selectedCells).none
@@ -2581,12 +2591,12 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
               targets.forEach((target) => {
                 for (
-                  let row = target.row;
+                  let { row } = target;
                   row < target.row + target.rowSpan;
                   row++
                 ) {
                   for (
-                    let col = target.col;
+                    let { col } = target;
                     col < target.col + target.colSpan;
                     col++
                   ) {
@@ -2665,15 +2675,22 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             if (cellEntries.length < 2) return;
 
             const firstCellPath = cellEntries[0][1];
-            const context = createTableContext(tx, firstCellPath.slice(0, -2));
-
-            if (!context) return;
-
-            const cellKeys = cellEntries.map(
-              ([cell]) => context.anchorOf(cell)!.key
+            const innerContext2 = createTableContext(
+              tx,
+              firstCellPath.slice(0, -2)
             );
 
-            applyMutation(context, {
+            if (!innerContext2) return;
+
+            const cellKeys = cellEntries.map(
+              ([cell]) =>
+                (
+                  innerContext2.anchorOf(cell) ??
+                  failInvariant('Expected value to be defined')
+                ).key
+            );
+
+            applyMutation(innerContext2, {
               cellKeys,
               createCell: ({ children, header, sourceRow }) =>
                 api.createCell({
@@ -2692,7 +2709,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           }: MoveTableSelectionOptions = {}) => {
             const view = tx.table.getSelection(at);
 
-            if (!view) return;
+            if (!view) return undefined;
 
             if (edge) {
               const minCell = fromOneCell ? 0 : 1;
@@ -2716,7 +2733,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 return true;
               }
 
-              return;
+              return undefined;
             }
 
             const target = getTableSelectionNeighbor(
@@ -2901,13 +2918,13 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             if (!firstCell) return;
 
             const [cell, path] = firstCell;
-            const context = createTableContext(tx, path.slice(0, -2));
+            const innerContext3 = createTableContext(tx, path.slice(0, -2));
 
-            if (!context) return;
+            if (!innerContext3) return;
 
-            const cellKey = context.anchorOf(cell)?.key;
+            const cellKey = innerContext3.anchorOf(cell)?.key;
 
-            applyMutation(context, {
+            applyMutation(innerContext3, {
               ...(cellKey ? { anchorKey: cellKey } : { anchorPath: path }),
               createCell: ({ children, header, sourceRow }) =>
                 api.createCell({
@@ -2953,7 +2970,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 ? tableView.context.entryAt(target.row, target.col)
                 : undefined;
 
-            if (targetEntry) tx.selection.set(targetEntry[1]);
+            if (targetEntry) {
+              const targetStart = tx.points.start(targetEntry[1]);
+
+              if (targetStart) tx.selection.set(targetStart);
+            }
 
             return true;
           },
@@ -2982,7 +3003,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       contributions: [
         clipboardHandler({
           insertData(data, { next }) {
-            const types = Array.from(data.types ?? []);
+            const types = new Set(data.types);
             const read = (format: string) => {
               try {
                 return data.getData(format);
@@ -3003,8 +3024,8 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               ? 'model'
               : html
                 ? 'html'
-                : types.includes('text/tsv') ||
-                    types.includes('text/tab-separated-values') ||
+                : types.has('text/tsv') ||
+                    types.has('text/tab-separated-values') ||
                     text.includes('\t')
                   ? 'tsv'
                   : 'csv';
@@ -3074,7 +3095,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             context.store.get();
 
           if (node.type === context.schema.type) {
-            const table = node as Element;
+            const table = node;
             const currentColSizes = getTableColumnSizes(table);
             const repair = planTableMutation(
               createDetachedTableContext(table, path),
@@ -3243,7 +3264,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           if (cells.length < 2) return false;
 
           const anchor = state.points.start(cells[0][1]);
-          const focus = state.points.start(cells.at(-1)![1]);
+          const focus = state.points.start(
+            (cells.at(-1) ?? failInvariant('Expected value to be defined'))[1]
+          );
           const range = anchor && focus ? { anchor, focus } : null;
 
           const replacement = state.transaction((tx) => {
@@ -3264,19 +3287,21 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           return range
             ? state.transaction.extend(replacement, (tx) => {
                 const cellRanges = cells.flatMap(([, path]) => {
-                  const anchor = tx.points.start(path);
-                  const focus = tx.points.end(path);
+                  const innerAnchor = tx.points.start(path);
+                  const cellFocus = tx.points.end(path);
 
-                  return anchor && focus ? [{ anchor, focus }] : [];
+                  return innerAnchor && cellFocus
+                    ? [{ anchor: innerAnchor, focus: cellFocus }]
+                    : [];
                 });
-                const anchor = cellRanges[0]?.anchor;
-                const focus = cellRanges.at(-1)?.anchor;
+                const innerAnchor = cellRanges[0]?.anchor;
+                const innerFocus = cellRanges.at(-1)?.anchor;
 
-                if (anchor && focus && cellRanges.length > 1) {
+                if (innerAnchor && innerFocus && cellRanges.length > 1) {
                   tx.selection.set({
-                    anchor,
+                    anchor: innerAnchor,
                     cells: cellRanges,
-                    focus,
+                    focus: innerFocus,
                     kind: 'table-cell',
                   });
                 } else {
@@ -3309,7 +3334,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
         if (!view) return false;
 
-        const root = view.root;
+        const { root } = view;
         let source = getTablePasteElement(slice, {
           cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
           rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
@@ -3328,7 +3353,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           const children = state.slice.fitContent(slice, {
             parent: view.anchor.cell,
             ...(root === undefined ? {} : { root }),
-          }) as TableCellElement['children'] | null;
+          });
 
           if (children === null) {
             return rejectTablePaste({
@@ -3383,7 +3408,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     parent: cell,
                     ...(root === undefined ? {} : { root }),
                   }
-                ) as TableCellElement['children'] | null;
+                );
 
                 if (!fitted) return fitted;
 
@@ -3397,7 +3422,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                     at,
                     ...(root === undefined ? {} : { root }),
                   })
-                ) as TableCellElement['children'];
+                );
               },
           ...(root === undefined ? {} : { root }),
           startCol: fillBounds?.minCol ?? view.anchor.col,
@@ -3427,7 +3452,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
         if (cells.length < 2) return next();
 
-        const focus = state.points.start(cells.at(-1)![1]);
+        const focus = state.points.start(
+          (cells.at(-1) ?? failInvariant('Expected value to be defined'))[1]
+        );
         const transaction = state.transaction((tx) => {
           cells.forEach(([, path]) => {
             tx.nodes.replaceChildren(

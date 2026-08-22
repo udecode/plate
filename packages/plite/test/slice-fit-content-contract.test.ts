@@ -154,7 +154,7 @@ describe('detached slice content fitting', () => {
     const commitBefore = editor.read.lastCommit();
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     const fitted = editor.read.slice.fitContent(
       ContentSlice.closed([{ text: 'hello' }]),
@@ -170,7 +170,7 @@ describe('detached slice content fitting', () => {
     assert.equal(Object.isFrozen(fitted?.[0]), true);
     assert.doesNotThrow(() =>
       editor.read.schema.assertFragment([
-        { children: [...fitted!], type: 'cell' },
+        { children: [...fitted], type: 'cell' },
       ])
     );
   });

@@ -1,6 +1,19 @@
 import type { Value } from 'platejs';
 
-import { createVersionSnapshot } from './version-history-demo';
+import {
+  createVersionSnapshot,
+  formatPropertyValue,
+} from './version-history-demo';
+
+describe('formatPropertyValue', () => {
+  it('keeps strings readable and serializes structured JSON values', () => {
+    expect(formatPropertyValue('draft')).toBe('draft');
+    expect(formatPropertyValue({ nested: ['draft', 2] })).toBe(
+      '{"nested":["draft",2]}'
+    );
+    expect(formatPropertyValue(undefined)).toBe('undefined');
+  });
+});
 
 describe('createVersionSnapshot', () => {
   it('returns isolated snapshots for version history values', () => {

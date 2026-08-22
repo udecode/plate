@@ -1,9 +1,11 @@
 import {
   createEditor,
   type Descendant,
+  type Editor,
+  type Element as PliteElement,
   type Node,
   type Point,
-  ElementApi as PliteElement,
+  ElementApi,
 } from '@platejs/plite';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -54,7 +56,7 @@ const seedNodeMaps = (editor: Editor, children: Descendant[]) => {
     NODE_TO_PARENT.set(child, parent);
     NODE_TO_INDEX.set(child, index);
 
-    if (PliteElement.isElement(child)) {
+    if (ElementApi.isElement(child)) {
       child.children.forEach((nested, nestedIndex) => {
         visit(child, nested, nestedIndex);
       });
@@ -67,11 +69,11 @@ const seedNodeMaps = (editor: Editor, children: Descendant[]) => {
 };
 
 const createDom = () => {
-  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  const innerDom = new JSDOM('<!doctype html><html><body></body></html>');
   return {
-    dom,
-    document: dom.window.document,
-    window: dom.window,
+    dom: innerDom,
+    document: innerDom.window.document,
+    window: innerDom.window,
   };
 };
 
@@ -579,19 +581,20 @@ describe('plite-dom bridge', () => {
       string.getBoundingClientRect = () =>
         createRect({ height: 30, left: 0, top: 0, width: 26 });
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        const offset = this.startOffset;
-        const isSecondLine = offset > 26;
-        const left = isSecondLine ? offset - 26 : offset;
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          const offset = this.startOffset;
+          const isSecondLine = offset > 26;
+          const left = isSecondLine ? offset - 26 : offset;
 
-        return createRect({
-          height: 10,
-          left,
-          top: isSecondLine ? 20 : 0,
-          width: this.collapsed ? 0 : Math.max(1, this.endOffset - offset),
-        });
-      };
-      window.Range.prototype.getClientRects = function () {
+          return createRect({
+            height: 10,
+            left,
+            top: isSecondLine ? 20 : 0,
+            width: this.collapsed ? 0 : Math.max(1, this.endOffset - offset),
+          });
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         return [this.getBoundingClientRect()] as unknown as DOMRectList;
       };
 
@@ -669,37 +672,38 @@ describe('plite-dom bridge', () => {
           createRect({ height: 10, left: 0, top: 20, width: 60 }),
         ] as unknown as DOMRectList;
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        const offset = this.startOffset;
-        const isSecondLine = offset >= 11;
-        const left = isSecondLine ? (offset - 11) * 10 : offset * 10;
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          const offset = this.startOffset;
+          const isSecondLine = offset >= 11;
+          const left = isSecondLine ? (offset - 11) * 10 : offset * 10;
 
-        if (this.collapsed) {
-          return createRect({
-            height: 0,
-            left,
-            top: isSecondLine ? 20 : 0,
-            width: 0,
-          });
-        }
+          if (this.collapsed) {
+            return createRect({
+              height: 0,
+              left,
+              top: isSecondLine ? 20 : 0,
+              width: 0,
+            });
+          }
 
-        if (offset === 10) {
+          if (offset === 10) {
+            return createRect({
+              height: 10,
+              left: 100,
+              top: 0,
+              width: 0,
+            });
+          }
+
           return createRect({
             height: 10,
-            left: 100,
-            top: 0,
-            width: 0,
+            left,
+            top: isSecondLine ? 20 : 0,
+            width: Math.max(1, this.endOffset - offset) * 10,
           });
-        }
-
-        return createRect({
-          height: 10,
-          left,
-          top: isSecondLine ? 20 : 0,
-          width: Math.max(1, this.endOffset - offset) * 10,
-        });
-      };
-      window.Range.prototype.getClientRects = function () {
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         const rect = this.getBoundingClientRect();
 
         return (rect.width > 0 || rect.height > 0
@@ -787,21 +791,22 @@ describe('plite-dom bridge', () => {
           createRect({ height: 10, left: 0, top: 0, width: 50 }),
         ] as unknown as DOMRectList;
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        if (this.collapsed) {
-          return createRect({ height: 0, left: 0, top: 0, width: 0 });
-        }
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          if (this.collapsed) {
+            return createRect({ height: 0, left: 0, top: 0, width: 0 });
+          }
 
-        return this.startContainer === secondText
-          ? createRect({ height: 10, left: 0, top: 20, width: 10 })
-          : createRect({
-              height: 10,
-              left: this.startOffset === 4 ? 50 : this.startOffset * 10,
-              top: 0,
-              width: this.startOffset === 4 ? 0 : 10,
-            });
-      };
-      window.Range.prototype.getClientRects = function () {
+          return this.startContainer === secondText
+            ? createRect({ height: 10, left: 0, top: 20, width: 10 })
+            : createRect({
+                height: 10,
+                left: this.startOffset === 4 ? 50 : this.startOffset * 10,
+                top: 0,
+                width: this.startOffset === 4 ? 0 : 10,
+              });
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         const rect = this.getBoundingClientRect();
 
         return (rect.width > 0 || rect.height > 0
@@ -912,21 +917,22 @@ describe('plite-dom bridge', () => {
           createRect({ height: 10, left: 0, top: 0, width: 50 }),
         ] as unknown as DOMRectList;
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        if (this.collapsed) {
-          return createRect({ height: 0, left: 0, top: 0, width: 0 });
-        }
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          if (this.collapsed) {
+            return createRect({ height: 0, left: 0, top: 0, width: 0 });
+          }
 
-        return this.startContainer === secondText
-          ? createRect({ height: 10, left: 0, top: 20, width: 10 })
-          : createRect({
-              height: 10,
-              left: this.startOffset === 4 ? 50 : this.startOffset * 10,
-              top: 0,
-              width: this.startOffset === 4 ? 0 : 10,
-            });
-      };
-      window.Range.prototype.getClientRects = function () {
+          return this.startContainer === secondText
+            ? createRect({ height: 10, left: 0, top: 20, width: 10 })
+            : createRect({
+                height: 10,
+                left: this.startOffset === 4 ? 50 : this.startOffset * 10,
+                top: 0,
+                width: this.startOffset === 4 ? 0 : 10,
+              });
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         const rect = this.getBoundingClientRect();
 
         return (rect.width > 0 || rect.height > 0
@@ -1007,25 +1013,26 @@ describe('plite-dom bridge', () => {
           createRect({ height: 10, left: 0, top: 0, width: 150 }),
         ] as unknown as DOMRectList;
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        if (this.collapsed) {
-          return createRect({ height: 0, left: 0, top: 0, width: 0 });
-        }
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          if (this.collapsed) {
+            return createRect({ height: 0, left: 0, top: 0, width: 0 });
+          }
 
-        if (this.startOffset === 4) {
-          return createRect({ height: 10, left: 90, top: 0, width: 0 });
-        }
+          if (this.startOffset === 4) {
+            return createRect({ height: 10, left: 90, top: 0, width: 0 });
+          }
 
-        return this.startOffset >= 5
-          ? createRect({ height: 10, left: 0, top: 20, width: 10 })
-          : createRect({
-              height: 10,
-              left: this.startOffset * 20,
-              top: 0,
-              width: 20,
-            });
-      };
-      window.Range.prototype.getClientRects = function () {
+          return this.startOffset >= 5
+            ? createRect({ height: 10, left: 0, top: 20, width: 10 })
+            : createRect({
+                height: 10,
+                left: this.startOffset * 20,
+                top: 0,
+                width: 20,
+              });
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         const rect = this.getBoundingClientRect();
 
         return (rect.width > 0 || rect.height > 0
@@ -1060,7 +1067,7 @@ describe('plite-dom bridge', () => {
   it('does not back up right-edge event ranges for visible whitespace', () => {
     for (const { collapsedCaretTop, text } of [
       { collapsedCaretTop: 0, text: 'alpha beta ' },
-      { collapsedCaretTop: 20, text: 'alpha beta\u00a0' },
+      { collapsedCaretTop: 20, text: 'alpha beta\u00A0' },
     ]) {
       withDom(({ document, window }) => {
         const editor = createParagraphEditor(text);
@@ -1115,28 +1122,29 @@ describe('plite-dom bridge', () => {
             }),
           ] as unknown as DOMRectList;
 
-        window.Range.prototype.getBoundingClientRect = function () {
-          const offset = this.startOffset;
+        window.Range.prototype.getBoundingClientRect =
+          function getBoundingClientRect() {
+            const offset = this.startOffset;
 
-          if (this.collapsed && offset === text.length) {
+            if (this.collapsed && offset === text.length) {
+              return createRect({
+                height: 10,
+                left: collapsedCaretTop === 0 ? text.length * 10 : 0,
+                top: collapsedCaretTop,
+                width: 0,
+              });
+            }
+
             return createRect({
               height: 10,
-              left: collapsedCaretTop === 0 ? text.length * 10 : 0,
-              top: collapsedCaretTop,
-              width: 0,
+              left: offset * 10,
+              top: 0,
+              width: this.collapsed
+                ? 0
+                : Math.max(1, this.endOffset - offset) * 10,
             });
-          }
-
-          return createRect({
-            height: 10,
-            left: offset * 10,
-            top: 0,
-            width: this.collapsed
-              ? 0
-              : Math.max(1, this.endOffset - offset) * 10,
-          });
-        };
-        window.Range.prototype.getClientRects = function () {
+          };
+        window.Range.prototype.getClientRects = function getClientRects() {
           return [this.getBoundingClientRect()] as unknown as DOMRectList;
         };
 
@@ -1215,24 +1223,27 @@ describe('plite-dom bridge', () => {
           createRect({ height: 10, left: 0, top: 20, width: 50 }),
         ] as unknown as DOMRectList;
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        const offset = this.startOffset;
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          const offset = this.startOffset;
 
-        if (this.collapsed && offset === 11) {
-          return createRect({ height: 10, left: 110, top: 0, width: 0 });
-        }
+          if (this.collapsed && offset === 11) {
+            return createRect({ height: 10, left: 110, top: 0, width: 0 });
+          }
 
-        const isSecondLine = offset >= 11;
-        const left = isSecondLine ? (offset - 11) * 10 : offset * 10;
+          const isSecondLine = offset >= 11;
+          const left = isSecondLine ? (offset - 11) * 10 : offset * 10;
 
-        return createRect({
-          height: 10,
-          left,
-          top: isSecondLine ? 20 : 0,
-          width: this.collapsed ? 0 : Math.max(1, this.endOffset - offset) * 10,
-        });
-      };
-      window.Range.prototype.getClientRects = function () {
+          return createRect({
+            height: 10,
+            left,
+            top: isSecondLine ? 20 : 0,
+            width: this.collapsed
+              ? 0
+              : Math.max(1, this.endOffset - offset) * 10,
+          });
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         return [this.getBoundingClientRect()] as unknown as DOMRectList;
       };
 
@@ -1310,18 +1321,19 @@ describe('plite-dom bridge', () => {
           createRect({ height: 10, left: 0, top: 0, width: 30 }),
         ] as unknown as DOMRectList;
 
-      window.Range.prototype.getBoundingClientRect = function () {
-        const offset = this.startOffset;
-        const left = offset === 0 ? 20 : offset === 1 ? 10 : 0;
+      window.Range.prototype.getBoundingClientRect =
+        function getBoundingClientRect() {
+          const offset = this.startOffset;
+          const left = offset === 0 ? 20 : offset === 1 ? 10 : 0;
 
-        return createRect({
-          height: 10,
-          left,
-          top: 0,
-          width: this.collapsed ? 0 : 10,
-        });
-      };
-      window.Range.prototype.getClientRects = function () {
+          return createRect({
+            height: 10,
+            left,
+            top: 0,
+            width: this.collapsed ? 0 : 10,
+          });
+        };
+      window.Range.prototype.getClientRects = function getClientRects() {
         return [this.getBoundingClientRect()] as unknown as DOMRectList;
       };
 

@@ -51,15 +51,18 @@ const EMPTY_SNAPSHOT: TablePerfHarnessSnapshot = {
 
 const createTable = (rows: number, cols: number): TableElement => ({
   children: Array.from({ length: rows }, (_, rowIndex): TableRowElement => ({
-    children: Array.from({ length: cols }, (_, colIndex): TableCellElement => ({
-      children: [
-        {
-          children: [{ text: `R${rowIndex}C${colIndex}` }],
-          type: 'paragraph',
-        },
-      ],
-      type: 'tableCell',
-    })),
+    children: Array.from(
+      { length: cols },
+      (innerValue, colIndex): TableCellElement => ({
+        children: [
+          {
+            children: [{ text: `R${rowIndex}C${colIndex}` }],
+            type: 'paragraph',
+          },
+        ],
+        type: 'tableCell',
+      })
+    ),
     type: 'tableRow',
   })),
   columnWidths: Array.from({ length: cols }, () => 100),
@@ -74,7 +77,9 @@ const cellPoint = (row: number, col: number) => ({
 const nextPaint = () =>
   new Promise<void>((resolve) => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => resolve());
+      requestAnimationFrame(() => {
+        resolve();
+      });
     });
   });
 
@@ -434,7 +439,7 @@ function TablePerfEditor({
   });
 
   React.useLayoutEffect(() => {
-    onEditor(editor as unknown as PlateEditor);
+    onEditor(editor);
   }, [editor, onEditor]);
 
   return (

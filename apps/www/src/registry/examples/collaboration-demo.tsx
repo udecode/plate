@@ -128,7 +128,7 @@ class DemoAwareness {
     const hadLocalState = this.localState !== null;
 
     this.localState = Object.freeze({
-      ...(this.localState ?? {}),
+      ...this.localState,
       [field]: value,
     });
     this.states.set(this.clientID, this.localState);
@@ -547,12 +547,9 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
 
   if (!runtime) {
     return (
-      <div
-        className="flex min-h-96 items-center justify-center text-sm text-muted-foreground"
-        role="status"
-      >
+      <output className="flex min-h-96 items-center justify-center text-sm text-muted-foreground">
         Starting a local collaboration room…
-      </div>
+      </output>
     );
   }
 
@@ -737,8 +734,12 @@ function PeerControls({
         aria-label={`Undo ${peer.name}`}
         data-history-action="undo"
         disabled={undoDepth === 0}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={() => editor.update.history.undo()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
+        onClick={() => {
+          editor.update.history.undo();
+        }}
         size="sm"
         variant="outline"
       >
@@ -749,8 +750,12 @@ function PeerControls({
         aria-label={`Redo ${peer.name}`}
         data-history-action="redo"
         disabled={redoDepth === 0}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={() => editor.update.history.redo()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
+        onClick={() => {
+          editor.update.history.redo();
+        }}
         size="sm"
         variant="outline"
       >

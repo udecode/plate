@@ -241,7 +241,7 @@ describe('AIChatPlugin suggestions', () => {
         .map((_, index) =>
           editor.read.text
             .string([index])
-            .endsWith(['last-a', 'last-b', 'last-c', 'last-d'][index]!)
+            .endsWith(['last-a', 'last-b', 'last-c', 'last-d'][index])
         )
     ).toEqual([true, true, true, true]);
   });

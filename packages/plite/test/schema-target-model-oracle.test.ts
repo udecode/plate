@@ -80,35 +80,34 @@ const contextArbitrary = fc.record({
 
 const toTarget = (input: ModelTarget): SchemaTarget => {
   switch (input.kind) {
-    case 'type':
+    case 'type': {
       return target.type(input.type);
-    case 'group':
+    }
+    case 'group': {
       return target.group(input.group);
-    case 'root':
+    }
+    case 'root': {
       return input.root === null ? target.root() : target.root(input.root);
-    case 'parent':
+    }
+    case 'parent': {
       return target.parent(toTarget(input.target));
-    case 'not':
+    }
+    case 'not': {
       return target.not(toTarget(input.target));
+    }
     case 'and': {
       const [left, right, ...rest] = input.targets;
 
-      return target.and(
-        toTarget(left!),
-        toTarget(right!),
-        ...rest.map(toTarget)
-      );
+      return target.and(toTarget(left), toTarget(right), ...rest.map(toTarget));
     }
     case 'or': {
       const [left, right, ...rest] = input.targets;
 
-      return target.or(
-        toTarget(left!),
-        toTarget(right!),
-        ...rest.map(toTarget)
-      );
+      return target.or(toTarget(left), toTarget(right), ...rest.map(toTarget));
     }
   }
+
+  return assert.fail('unreachable model target kind');
 };
 
 const matchesModel = (
@@ -116,15 +115,18 @@ const matchesModel = (
   context: CompiledSchemaTargetContext
 ): boolean => {
   switch (input.kind) {
-    case 'type':
+    case 'type': {
       return context.type === input.type;
-    case 'group':
+    }
+    case 'group': {
       return (
         Number(context.type.slice('target_'.length)) % GROUP_COUNT ===
         Number(input.group.slice('group_'.length))
       );
-    case 'root':
+    }
+    case 'root': {
       return context.root === input.root;
+    }
     case 'parent': {
       const [parent, ...ancestors] = context.ancestors ?? [];
 
@@ -132,13 +134,18 @@ const matchesModel = (
         ? matchesModel(input.target, { ...context, ancestors, type: parent })
         : false;
     }
-    case 'not':
+    case 'not': {
       return !matchesModel(input.target, context);
-    case 'and':
+    }
+    case 'and': {
       return input.targets.every((child) => matchesModel(child, context));
-    case 'or':
+    }
+    case 'or': {
       return input.targets.some((child) => matchesModel(child, context));
+    }
   }
+
+  return assert.fail('unreachable model target kind');
 };
 
 const compileTarget = (input: ModelTarget) => {
@@ -179,7 +186,7 @@ const compileTarget = (input: ModelTarget) => {
     },
   ];
   const compiled = compileEditorSchemaContributions(records);
-  const compiledProperty = [...compiled.properties.byId.values()][0]!;
+  const compiledProperty = [...compiled.properties.byId.values()][0];
 
   return { compiled, compiledProperty };
 };

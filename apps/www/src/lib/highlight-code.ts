@@ -17,13 +17,16 @@ function getLanguageFromFilePath(path?: string) {
     case 'css':
     case 'json':
     case 'ts':
-    case 'tsx':
+    case 'tsx': {
       return extension;
+    }
     case 'js':
-    case 'jsx':
+    case 'jsx': {
       return extension;
-    default:
+    }
+    default: {
       return 'tsx';
+    }
   }
 }
 
@@ -65,7 +68,7 @@ export async function highlightCode(code: string, language = 'tsx') {
 }
 
 export async function highlightFiles(
-  files?: z.infer<typeof registryItemFileSchema>[]
+  files?: Array<z.infer<typeof registryItemFileSchema>>
 ) {
   if (!files) {
     return null;

@@ -147,7 +147,7 @@ function useResolvedPluginStore(
     ];
 
     selector = keyOrSelector;
-    equalityFn = options.equalityFn;
+    ({ equalityFn } = options);
   } else {
     const namedSelector = (store.selectors as Record<PropertyKey, unknown>)[
       keyOrSelector

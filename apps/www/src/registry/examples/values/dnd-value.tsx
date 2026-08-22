@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const dndValue = (
+export const dndValue: Value = (
   <fragment>
     <hheading level={2}>Drag and Drop</hheading>
     <hp>Easily reorganize content within your document using drag and drop.</hp>

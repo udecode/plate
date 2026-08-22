@@ -43,21 +43,25 @@ export type EditorSchemaValidationPropertyInput = Readonly<{
 const freezeTarget = (target: SchemaTarget): SchemaTarget => {
   switch (target.kind) {
     case 'and':
-    case 'or':
+    case 'or': {
       return Object.freeze({
         ...target,
         targets: Object.freeze(target.targets.map(freezeTarget)),
       });
+    }
     case 'not':
-    case 'parent':
+    case 'parent': {
       return Object.freeze({ ...target, target: freezeTarget(target.target) });
-    case 'types':
+    }
+    case 'types': {
       return Object.freeze({
         ...target,
         types: Object.freeze([...target.types]),
       });
-    default:
+    }
+    default: {
       return Object.freeze({ ...target });
+    }
   }
 };
 

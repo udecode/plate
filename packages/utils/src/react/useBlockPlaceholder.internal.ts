@@ -121,4 +121,6 @@ export const useBlockPlaceholderInjection = (
       placeholder,
     };
   }
+
+  return undefined;
 };

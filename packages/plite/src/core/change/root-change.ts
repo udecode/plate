@@ -1,4 +1,5 @@
 import type { NodeKey } from '../../interfaces/editor';
+import { getDefined } from '../../internal/get-defined';
 import { profileCoreDuration } from '../profiling';
 import { assertEditorJsonValue } from '../value-codec';
 import {
@@ -87,11 +88,11 @@ export type NodePropertyDelta = Readonly<{
 
 export type TrackMode = 'after' | 'around' | 'before';
 
-export type RootChangeJson = readonly {
+export type RootChangeJson = ReadonlyArray<{
   length: number;
   properties?: PropertyDeltaJson;
   replacement?: readonly JsonTokenData[];
-}[];
+}>;
 
 export const normalizePropertyDelta = (
   delta: NodePropertyDelta
@@ -115,7 +116,9 @@ export const normalizePropertyDelta = (
     if (!Array.isArray(delta.unset)) {
       throw new Error('Invalid node property delta.');
     }
-    for (const key of [...delta.unset].sort()) {
+    for (const key of [...delta.unset].sort((left, right) =>
+      left < right ? -1 : left > right ? 1 : 0
+    )) {
       reserve(key, 'scalar');
       modifications.push(Object.freeze({ key, type: 'unset' }));
     }
@@ -210,7 +213,7 @@ export const semanticPropertyModifications = (
   for (const key of [
     ...new Set([...Object.keys(before), ...Object.keys(after)]),
   ]
-    .filter((key) => !unsafeNodePropertyKeys.has(key))
+    .filter((innerKey) => !unsafeNodePropertyKeys.has(innerKey))
     .sort()) {
     if (!isSetValued(key)) {
       if (!Object.hasOwn(after, key)) {
@@ -454,13 +457,15 @@ export type MutableChangeSetApplyWork = {
 export const CHANGE_SET_APPLY_STATS = new WeakMap<
   RootChange,
   Readonly<{
-    ancestorPaths: readonly (readonly number[])[];
-    changedRanges: readonly Readonly<{
-      fromAfter: number;
-      fromBefore: number;
-      toAfter: number;
-      toBefore: number;
-    }>[];
+    ancestorPaths: ReadonlyArray<readonly number[]>;
+    changedRanges: ReadonlyArray<
+      Readonly<{
+        fromAfter: number;
+        fromBefore: number;
+        toAfter: number;
+        toBefore: number;
+      }>
+    >;
     fallbackReason: ChangeSetApplyFallbackReason | null;
     localizedReplacements: number;
     propertyChanges: number;
@@ -537,8 +542,9 @@ export class SectionIterator {
 
   next() {
     if (this.index < this.sections.length) {
-      this.length = this.sections[this.index++]!;
-      this.inserted = this.sections[this.index++]!;
+      this.length = getDefined(this.sections[this.index]);
+      this.inserted = getDefined(this.sections[this.index + 1]);
+      this.index += 2;
     } else {
       this.length = 0;
       this.inserted = -3;
@@ -568,7 +574,7 @@ export const addSection = (
   const last = sections.length - 2;
 
   if (last >= 0 && inserted === -1 && sections[last + 1] === -1) {
-    sections[last]! += length;
+    sections[last] += length;
     return;
   }
 
@@ -576,8 +582,8 @@ export const addSection = (
     inserted >= 0 &&
     (forceJoin || (last >= 0 && length === 0 && sections[last] === 0))
   ) {
-    sections[last]! += length;
-    sections[last + 1]! += inserted;
+    sections[last] += length;
+    sections[last + 1] += inserted;
     data[data.length - 1] = (
       (data.at(-1) ?? PreparedTokenSlice.empty) as PreparedTokenSlice
     ).concat((value ?? PreparedTokenSlice.empty) as PreparedTokenSlice);
@@ -796,7 +802,9 @@ export const getDocumentPropertyContext = (
     const ancestor = document.node(path.slice(0, depth));
 
     if (!isTextNode(ancestor)) {
-      ancestorTypes.push(String(ancestor.type ?? 'element'));
+      ancestorTypes.push(
+        typeof ancestor.type === 'string' ? ancestor.type : 'element'
+      );
     }
   }
 
@@ -812,7 +820,9 @@ export const getDocumentPropertyContext = (
     type:
       placement === 'text'
         ? (parent ?? 'text')
-        : String(node.type ?? 'element'),
+        : typeof node.type === 'string'
+          ? node.type
+          : 'element',
   });
 };
 
@@ -829,7 +839,7 @@ export const commonTextPrefixLength = (left: string, right: string) => {
   const limit = Math.min(left.length, right.length);
   let length = 0;
 
-  while (length < limit && left[length] === right[length]) length++;
+  while (length < limit && left[length] === right[length]) length += 1;
 
   return length;
 };
@@ -842,7 +852,7 @@ export const commonTextSuffixLength = (
   let length = 0;
 
   while (length < limit && left.at(-length - 1) === right.at(-length - 1)) {
-    length++;
+    length += 1;
   }
 
   return length;
@@ -910,7 +920,7 @@ export const createStructurallyAlignedChanges = (
       }
     }
     for (let index = node.children.length - 1; index >= 0; index--) {
-      const childBoundary = getBoundary(node.children[index]!);
+      const childBoundary = getBoundary(node.children[index]);
 
       suffix = `${childBoundary.suffix.slice(
         Math.max(
@@ -1055,7 +1065,7 @@ export const createStructurallyAlignedChanges = (
       prefix < target.length &&
       jsonEqual(source[prefix], target[prefix])
     ) {
-      prefix++;
+      prefix += 1;
     }
 
     let suffix = 0;
@@ -1065,7 +1075,7 @@ export const createStructurallyAlignedChanges = (
       suffix < target.length - prefix &&
       jsonEqual(source.at(-suffix - 1), target.at(-suffix - 1))
     ) {
-      suffix++;
+      suffix += 1;
     }
 
     const sourceEnd = source.length - suffix;
@@ -1078,8 +1088,8 @@ export const createStructurallyAlignedChanges = (
     const scores = Array.from({ length: sourceCount }, (_value, sourceIndex) =>
       Array.from({ length: targetCount }, (_targetValue, targetIndex) =>
         continuityScore(
-          source[prefix + sourceIndex]!,
-          target[prefix + targetIndex]!
+          source[prefix + sourceIndex],
+          target[prefix + targetIndex]
         )
       )
     );
@@ -1090,16 +1100,16 @@ export const createStructurallyAlignedChanges = (
 
     for (let sourceIndex = sourceCount - 1; sourceIndex >= 0; sourceIndex--) {
       for (let targetIndex = targetCount - 1; targetIndex >= 0; targetIndex--) {
-        const score = scores[sourceIndex]![targetIndex]!;
+        const score = scores[sourceIndex][targetIndex];
         const matched =
           score > 0
-            ? score + matrix[sourceIndex + 1]![targetIndex + 1]!
+            ? score + matrix[sourceIndex + 1][targetIndex + 1]
             : Number.NEGATIVE_INFINITY;
 
-        matrix[sourceIndex]![targetIndex] = Math.max(
+        matrix[sourceIndex][targetIndex] = Math.max(
           matched,
-          matrix[sourceIndex + 1]![targetIndex]!,
-          matrix[sourceIndex]![targetIndex + 1]!
+          matrix[sourceIndex + 1][targetIndex],
+          matrix[sourceIndex][targetIndex + 1]
         );
       }
     }
@@ -1109,24 +1119,24 @@ export const createStructurallyAlignedChanges = (
     let targetIndex = 0;
 
     while (sourceIndex < sourceCount && targetIndex < targetCount) {
-      const score = scores[sourceIndex]![targetIndex]!;
+      const score = scores[sourceIndex][targetIndex];
       const matched =
         score > 0
-          ? score + matrix[sourceIndex + 1]![targetIndex + 1]!
+          ? score + matrix[sourceIndex + 1][targetIndex + 1]
           : Number.NEGATIVE_INFINITY;
-      const skipSource = matrix[sourceIndex + 1]![targetIndex]!;
-      const skipTarget = matrix[sourceIndex]![targetIndex + 1]!;
+      const skipSource = matrix[sourceIndex + 1][targetIndex];
+      const skipTarget = matrix[sourceIndex][targetIndex + 1];
 
       if (matched >= skipSource && matched >= skipTarget) {
         matches.push(
           Object.freeze([prefix + sourceIndex, prefix + targetIndex] as const)
         );
-        sourceIndex++;
-        targetIndex++;
+        sourceIndex += 1;
+        targetIndex += 1;
       } else if (skipTarget >= skipSource) {
-        targetIndex++;
+        targetIndex += 1;
       } else {
-        sourceIndex++;
+        sourceIndex += 1;
       }
     }
 
@@ -1147,19 +1157,19 @@ export const createStructurallyAlignedChanges = (
     for (const [matchedSource, matchedTarget] of matches) {
       addGap(matchedSource, matchedTarget);
 
-      const row = scores[matchedSource - prefix]!;
-      const score = row[matchedTarget - prefix]!;
+      const row = scores[matchedSource - prefix];
+      const score = row[matchedTarget - prefix];
       const best = Math.max(...row);
       const column = scores.map(
-        (candidateRow) => candidateRow[matchedTarget - prefix]!
+        (candidateRow) => candidateRow[matchedTarget - prefix]
       );
       const columnBest = Math.max(...column);
 
       if (
         matchedSource !== matchedTarget &&
         isCompleteTextContinuation(
-          source[matchedSource]!,
-          target[matchedTarget]!
+          source[matchedSource],
+          target[matchedTarget]
         ) &&
         score === best &&
         row.filter((candidate) => candidate === best).length === 1 &&
@@ -1170,7 +1180,7 @@ export const createStructurallyAlignedChanges = (
       }
 
       if (
-        !diffNode(source[matchedSource]!, target[matchedTarget]!, [
+        !diffNode(source[matchedSource], target[matchedTarget], [
           ...parentPath,
           matchedSource,
         ])
@@ -1206,7 +1216,7 @@ const sameNodeStructure = (left: JsonNode, right: JsonNode): boolean => {
   }
 
   return left.children.every((child, index) =>
-    sameNodeStructure(child, right.children[index]!)
+    sameNodeStructure(child, right.children[index])
   );
 };
 
@@ -1215,7 +1225,7 @@ const sameDocumentStructure = (
   right: readonly JsonNode[]
 ): boolean =>
   left.length === right.length &&
-  left.every((node, index) => sameNodeStructure(node, right[index]!));
+  left.every((node, index) => sameNodeStructure(node, right[index]));
 
 const mergeStructuralChangeAtStableSiblingRange = (
   before: DocumentIndex,
@@ -1229,7 +1239,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
     from < afterStructural.value.length &&
     jsonEqual(before.value[from], afterStructural.value[from])
   ) {
-    from++;
+    from += 1;
   }
 
   let suffix = 0;
@@ -1242,7 +1252,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
       afterStructural.value.at(-1 - suffix)
     )
   ) {
-    suffix++;
+    suffix += 1;
   }
 
   const source = before.value.slice(from, before.value.length - suffix);
@@ -1285,7 +1295,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
 const collectDocumentNodes = (
   nodes: readonly JsonNode[],
   parentPath: readonly number[] = [],
-  result: Readonly<{ node: JsonNode; path: readonly number[] }>[] = []
+  result: Array<Readonly<{ node: JsonNode; path: readonly number[] }>> = []
 ) => {
   nodes.forEach((node, index) => {
     const path = [...parentPath, index];
@@ -1342,7 +1352,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     }
     if (jsonEqual(edited, candidate.node)) continue;
 
-    const targetPath = targets[0]!.path;
+    const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);
 
     if (targetIndex === undefined) continue;
@@ -1377,7 +1387,7 @@ export class RootChange {
     this.newLength = this.sections.reduce((length, value, index) => {
       if (index % 2 === 0) return length;
 
-      return length + (value < 0 ? this.sections[index - 1]! : value);
+      return length + (value < 0 ? this.sections[index - 1] : value);
     }, 0);
     Object.freeze(this);
   }
@@ -1494,7 +1504,7 @@ export class RootChange {
 
     if (propertyOnly) {
       const changes = beforeTokens.tokens.flatMap((token, index) => {
-        const next = afterTokens.tokens[index]!;
+        const next = afterTokens.tokens[index];
 
         if (
           token.kind !== 'open' ||
@@ -1504,7 +1514,7 @@ export class RootChange {
           return [];
         }
 
-        const entry = before.nodeStartingAt(beforeTokens.offsets[index]!);
+        const entry = before.nodeStartingAt(beforeTokens.offsets[index]);
 
         if (!entry) {
           throw new Error('Cannot resolve changed node properties.');
@@ -1526,9 +1536,9 @@ export class RootChange {
           ? []
           : [
               {
-                from: beforeTokens.offsets[index]!,
+                from: beforeTokens.offsets[index],
                 properties: propertyDeltaFromModifications(modifications),
-                to: beforeTokens.offsets[index]! + 1,
+                to: beforeTokens.offsets[index] + 1,
               } satisfies RootChangeSection,
             ];
       });
@@ -1584,13 +1594,11 @@ export class RootChange {
       index < this.sections.length;
       dataIndex++
     ) {
-      addSection(
-        sections,
-        data,
-        this.sections[index++]!,
-        this.sections[index++]!,
-        this.data[dataIndex]!
-      );
+      const innerLength = this.sections[index];
+      const inserted = this.sections[index + 1];
+
+      index += 2;
+      addSection(sections, data, innerLength, inserted, this.data[dataIndex]);
     }
 
     addSection(sections, data, length - offset - this.length, -1, null);
@@ -1735,7 +1743,7 @@ export class RootChange {
       }
 
       const sourceParent = source.path.slice(0, -1);
-      const sourceIndex = source.path.at(-1)!;
+      const sourceIndex = getDefined(source.path.at(-1));
       const sameParent = pathKey(sourceParent) === pathKey(target.parentPath);
       const targetIndex =
         sameParent && sourceIndex < target.index
@@ -1946,8 +1954,8 @@ export class RootChange {
     if (
       bMove &&
       aReplacements.length === 1 &&
-      bMove.from <= aReplacement!.from &&
-      aReplacement!.to < bMove.to
+      bMove.from <= aReplacement.from &&
+      aReplacement.to < bMove.to
     ) {
       const moveAfterA = moveNodeChange(afterA, bMove.path, bMove.targetPath);
       const merged = moveAfterA.apply(afterA);
@@ -1961,8 +1969,8 @@ export class RootChange {
     if (
       aMove &&
       bReplacements.length === 1 &&
-      aMove.from <= bReplacement!.from &&
-      bReplacement!.to < aMove.to
+      aMove.from <= bReplacement.from &&
+      bReplacement.to < aMove.to
     ) {
       const moveAfterB = moveNodeChange(afterB, aMove.path, aMove.targetPath);
       const merged = moveAfterB.apply(afterB);
@@ -1978,7 +1986,9 @@ export class RootChange {
       isNodeDeletion(bReplacement) &&
       contains(bReplacement, aReplacement)
     ) {
-      const deletedPath = document.nodeStartingAt(bReplacement!.from)!.path;
+      const deletedPath = getDefined(
+        document.nodeStartingAt(bReplacement.from)
+      ).path;
 
       return {
         a: RootChange.empty(afterB.length),
@@ -1991,7 +2001,9 @@ export class RootChange {
       isNodeDeletion(aReplacement) &&
       contains(aReplacement, bReplacement)
     ) {
-      const deletedPath = document.nodeStartingAt(aReplacement!.from)!.path;
+      const deletedPath = getDefined(
+        document.nodeStartingAt(aReplacement.from)
+      ).path;
 
       return {
         a: removeNodeChange(afterB, deletedPath),
@@ -2075,7 +2087,7 @@ export class RootChange {
 
             if (inserted.length === 1 && jsonEqual(inserted[0], sourceNode)) {
               const sourceParent = source.path.slice(0, -1);
-              const sourceIndex = source.path.at(-1)!;
+              const sourceIndex = getDefined(source.path.at(-1));
               const sameParent =
                 pathKey(sourceParent) === pathKey(target.parentPath);
               const targetIndex =
@@ -2106,8 +2118,8 @@ export class RootChange {
     );
 
     for (let index = 1; index < replacementsByPosition.length; index++) {
-      const previous = replacementsByPosition[index - 1]!;
-      const replacement = replacementsByPosition[index]!;
+      const previous = replacementsByPosition[index - 1];
+      const replacement = replacementsByPosition[index];
 
       if (previous.from === replacement.from) {
         work.fallbackReason = 'ambiguous-replacement-position';
@@ -2230,7 +2242,7 @@ export class RootChange {
       }
 
       if (insertedNodes && nodeEntry?.to === replacement.to) {
-        const index = nodeEntry.path.at(-1)!;
+        const index = getDefined(nodeEntry.path.at(-1));
         const parentPath = nodeEntry.path.slice(0, -1);
 
         if (!recordLocality(parentPath)) return null;
@@ -2294,7 +2306,7 @@ export class RootChange {
             'change-set-local-decode',
             () => decodeNodes(local).nodes
           );
-          const index = ancestor.path.at(-1)!;
+          const index = getDefined(ancestor.path.at(-1));
 
           if (!recordLocality(ancestor.path)) return null;
           current = profileCoreDuration('change-set-local-splice', () =>
@@ -2318,10 +2330,10 @@ export class RootChange {
         .nodeRangesTouching(replacement.from, replacement.to)
         .filter((entry) => entry.path.length === 1);
       const firstTopLevelIndex = Math.min(
-        ...topLevelRanges.map((entry) => entry.path[0]!)
+        ...topLevelRanges.map((entry) => entry.path[0])
       );
       const lastTopLevelIndex = Math.max(
-        ...topLevelRanges.map((entry) => entry.path[0]!)
+        ...topLevelRanges.map((entry) => entry.path[0])
       );
 
       if (
@@ -2377,9 +2389,12 @@ export class RootChange {
     let position = 0;
 
     for (let index = 0, dataIndex = 0; index < this.sections.length;) {
-      const length = this.sections[index++]!;
-      const inserted = this.sections[index++]!;
-      const data = this.data[dataIndex++]!;
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const data = this.data[dataIndex];
+
+      index += 2;
+      dataIndex += 1;
 
       if (inserted >= 0) {
         replacements.push({
@@ -2400,9 +2415,12 @@ export class RootChange {
     let position = 0;
 
     for (let index = 0, dataIndex = 0; index < this.sections.length;) {
-      const length = this.sections[index++]!;
-      const inserted = this.sections[index++]!;
-      const data = this.data[dataIndex++]!;
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const data = this.data[dataIndex];
+
+      index += 2;
+      dataIndex += 1;
 
       if (inserted === -2) {
         changes.push({
@@ -2451,7 +2469,7 @@ export class RootChange {
       }
 
       const sourceParent = source.path.slice(0, -1);
-      const sourceIndex = source.path.at(-1)!;
+      const sourceIndex = getDefined(source.path.at(-1));
       const sameParent = pathKey(sourceParent) === pathKey(target.parentPath);
       const targetIndex =
         sameParent && sourceIndex < target.index
@@ -2548,9 +2566,12 @@ export class RootChange {
       };
 
       for (let index = 0, dataIndex = 0; index < this.sections.length;) {
-        const length = this.sections[index++]!;
-        const inserted = this.sections[index++]!;
-        const value = this.data[dataIndex++]!;
+        const length = this.sections[index];
+        const inserted = this.sections[index + 1];
+        const value = this.data[dataIndex];
+
+        index += 2;
+        dataIndex += 1;
 
         const source = document.slice(position, position + length);
 
@@ -2610,8 +2631,8 @@ export class RootChange {
     let position = 0;
 
     for (let index = 0; index < this.sections.length; index += 2) {
-      const length = this.sections[index]!;
-      const inserted = this.sections[index + 1]!;
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
 
       if (inserted === -1) {
         addSection(sections, data, length, -1, null);
@@ -2668,8 +2689,10 @@ export class RootChange {
       sectionIndex < this.sections.length;
       dataIndex++
     ) {
-      const length = this.sections[sectionIndex++]!;
-      const inserted = this.sections[sectionIndex++]!;
+      const length = this.sections[sectionIndex];
+      const inserted = this.sections[sectionIndex + 1];
+
+      sectionIndex += 2;
       const outputLength = inserted < 0 ? length : inserted;
       const value = data[dataIndex];
 
@@ -2699,7 +2722,7 @@ export class RootChange {
           const prepared = PreparedTokenSlice.fromPreparedNodes(nodes, (path) =>
             nodeKeyAt([
               ...from.parentPath,
-              from.index + path[0]!,
+              from.index + path[0],
               ...path.slice(1),
             ])
           );
@@ -2724,8 +2747,10 @@ export class RootChange {
     let positionB = 0;
 
     for (let index = 0; index < this.sections.length;) {
-      let length = this.sections[index++]!;
-      let inserted = this.sections[index++]!;
+      let length = this.sections[index];
+      let inserted = this.sections[index + 1];
+
+      index += 2;
 
       if (inserted === -1) {
         positionA += length;
@@ -2736,10 +2761,12 @@ export class RootChange {
       if (inserted === -2) inserted = length;
 
       while (index < this.sections.length && this.sections[index + 1] !== -1) {
-        length += this.sections[index++]!;
-        const added = this.sections[index++]!;
+        length += this.sections[index];
+        const added = this.sections[index + 1];
 
-        inserted += added === -2 ? this.sections[index - 2]! : added;
+        index += 2;
+
+        inserted += added === -2 ? this.sections[index - 2] : added;
       }
 
       visit(positionA, positionA + length, positionB, positionB + inserted);
@@ -2757,8 +2784,10 @@ export class RootChange {
     let positionB = 0;
 
     for (let index = 0; index < this.sections.length;) {
-      const length = this.sections[index++]!;
-      const inserted = this.sections[index++]!;
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+
+      index += 2;
       const endA = positionA + length;
 
       if (inserted < 0) {
@@ -2801,8 +2830,8 @@ export class RootChange {
 
   toJSON(): RootChangeJson {
     return this.data.map((value, index) => {
-      const length = this.sections[index * 2]!;
-      const inserted = this.sections[index * 2 + 1]!;
+      const length = this.sections[index * 2];
+      const inserted = this.sections[index * 2 + 1];
 
       if (inserted === -1) return { length };
       if (inserted === -2) {
@@ -2883,11 +2912,13 @@ export const removeNodeChange = (
 
 export const setNodesChange = (
   document: DocumentIndex,
-  updates: readonly Readonly<{
-    newProperties: JsonRecord;
-    path: readonly number[];
-    properties: JsonRecord;
-  }>[],
+  updates: ReadonlyArray<
+    Readonly<{
+      newProperties: JsonRecord;
+      path: readonly number[];
+      properties: JsonRecord;
+    }>
+  >,
   isSetValued: DocumentSetPropertyResolver = () => false,
   root: string | null = null
 ) => {
@@ -3171,7 +3202,7 @@ export const splitNodeChange = (
     }
 
     before = { ...node, text: node.text.slice(0, position) };
-    after = { ...properties, text: node.text.slice(position) } as JsonNode;
+    after = { ...properties, text: node.text.slice(position) };
   } else {
     if (position < 0 || position > node.children.length) {
       throw new Error(`Cannot split element at child index ${position}.`);
@@ -3186,7 +3217,7 @@ export const splitNodeChange = (
           : {}),
       ...properties,
       children: node.children.slice(position),
-    } as JsonNode;
+    };
   }
 
   const split = document.withSplicedNodes(path.slice(0, -1), index, 1, [

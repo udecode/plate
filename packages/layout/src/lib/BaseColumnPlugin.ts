@@ -82,7 +82,7 @@ export const BaseColumnItemPlugin = defineBasePlugin(PLUGINS.column, {
         [node, path]: NodeEntry<Element>,
         { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
       ) => {
-        if (direction !== 'left') return;
+        if (direction !== 'left') return undefined;
 
         const middleChildNode = NodeApi.get(node, [1]);
 
@@ -109,6 +109,8 @@ export const BaseColumnItemPlugin = defineBasePlugin(PLUGINS.column, {
           });
         });
         tx.nodes.remove({ at: middleChildPath });
+
+        return undefined;
       },
       selectAll: () => {
         const selection = tx.selection();
@@ -174,13 +176,13 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
     {
       event: 'content',
       query: { type: plugin },
-      correct({ editor, entry: [node, path], tx }) {
+      correct({ editor: innerEditor, entry: [node, path], tx }) {
         if (!ElementApi.isElement(node)) return;
 
-        const columnType = editor.plugin(BaseColumnItemPlugin).schema.type;
+        const columnType = innerEditor.plugin(BaseColumnItemPlugin).schema.type;
         const columns = node.children.filter(
           (column): column is ColumnElement =>
-            ElementApi.isElementType<ColumnElement>(column, columnType) &&
+            ElementApi.isElementType(column, columnType) &&
             typeof column.width === 'string'
         );
 
@@ -212,7 +214,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
     const columnType = editor.plugin(BaseColumnItemPlugin).schema.type;
     const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
     const columnsToWidths = (columns = 2) =>
-      new Array(columns).fill(null).map(() => `${100 / columns}%`);
+      Array.from({ length: columns }, () => `${100 / columns}%`);
     const setColumns = ({ at, columns, widths }: SetColumnsOptions) => {
       if (!at) return;
 
@@ -244,7 +246,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
 
       if (targetCount > currentCount) {
         tx.nodes.insert(
-          new Array(targetCount - currentCount).fill(null).map((_, index) => ({
+          Array.from({ length: targetCount - currentCount }, (_, index) => ({
             children: [
               {
                 children: [{ text: '' }],
@@ -294,7 +296,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
 
         tx.nodes.insert(
           {
-            children: new Array(columns).fill(null).map(() => ({
+            children: Array.from({ length: columns }, () => ({
               children: [
                 {
                   children: [{ text: '' }],
@@ -338,7 +340,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
         const [node, path] = entry;
         const columnWidths = widths ?? columnsToWidths(columns);
         const columnGroup = {
-          children: new Array(columns).fill(null).map((_, index) => ({
+          children: Array.from({ length: columns }, (_, index) => ({
             children: [
               index === 0
                 ? node

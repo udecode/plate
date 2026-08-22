@@ -1,6 +1,156 @@
 import { createTestEditor } from './__tests__/createTestEditor';
 
+const commonmarkAstCorpus = [
+  { input: '# Heading', title: 'ATX heading' },
+  {
+    input: 'Paragraph with **bold**, _emphasis_, and `inline code`.',
+    title: 'mixed inline marks',
+  },
+  {
+    input: '[Plate](https://platejs.org "Editor framework")',
+    title: 'link with title',
+  },
+  {
+    input: '> quoted first line\n>\n> quoted second line',
+    title: 'multi-paragraph blockquote',
+  },
+  { input: '- alpha\n- beta', title: 'bullet list' },
+  { input: '1. first\n2. second', title: 'ordered list' },
+  {
+    input: '```ts\nconst answer = 42;\n```',
+    title: 'fenced code block',
+  },
+  { input: '---', title: 'thematic break' },
+  {
+    input: '![Caption](/image.png "Image title")',
+    title: 'image with title',
+  },
+  { input: 'alpha  \nbeta', title: 'hard line break' },
+  {
+    input: 'Escaped \\*asterisk\\* and \\[brackets\\].',
+    title: 'escaped punctuation',
+  },
+  {
+    input: '---\ntitle: Example\n---\n\nBody',
+    title: 'frontmatter followed by content',
+  },
+];
+
+const MARKDOWN_STRESS_SEED = 0x50_4c_41_54;
+const MARKDOWN_STRESS_CASES = 256;
+const markdownStressAtoms = [
+  'alpha',
+  'beta',
+  '0',
+  '9',
+  "'",
+  '’',
+  '«',
+  '\u200D',
+  '\u0300',
+  '\u3000',
+  '\u00A0',
+  '\uFEFF',
+  '\uFFFD',
+  '🍄',
+  '€',
+  '永',
+] as const;
+
+const createSeededRandom = (seed: number) => {
+  let state = seed >>> 0;
+
+  return () => {
+    state = (state + 0x6d_2b_79_f5) >>> 0;
+
+    let value = state;
+
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+
+    return ((value ^ (value >>> 14)) >>> 0) / 0x1_00_00_00_00;
+  };
+};
+
+const createMarkdownStressCases = () => {
+  const random = createSeededRandom(MARKDOWN_STRESS_SEED);
+  const pick = <T>(values: readonly T[]) =>
+    values[Math.floor(random() * values.length)];
+  const text = () => {
+    const length = 1 + Math.floor(random() * 6);
+
+    return Array.from({ length }, () => pick(markdownStressAtoms)).join(' ');
+  };
+  const inline = () => {
+    const value = text();
+
+    return pick([
+      value,
+      `**${value}**`,
+      `_${value}_`,
+      `\`${value}\``,
+      `[${value}](https://example.com/${Math.floor(random() * 1000)})`,
+      `Escaped \\*${value}\\*`,
+    ]);
+  };
+  const block = () =>
+    pick([
+      inline(),
+      `## ${text()}`,
+      `> ${inline()}`,
+      `- ${inline()}\n- ${inline()}`,
+      `1. ${inline()}\n2. ${inline()}`,
+      `\`\`\`text\n${text()} | # ~ $\n\`\`\``,
+      `${inline()}  \n${inline()}`,
+    ]);
+
+  return [
+    ...markdownStressAtoms.map((atom) => `Required Unicode atom: ${atom}`),
+    ...Array.from({ length: MARKDOWN_STRESS_CASES }, () => {
+      const blocks = 1 + Math.floor(random() * 4);
+      const separator = random() < 0.25 ? '\r\n\r\n' : '\n\n';
+
+      return Array.from({ length: blocks }, block).join(separator);
+    }),
+  ];
+};
+
 describe('commonmark package surfaces', () => {
+  it('keeps fixed-seed structural and Unicode inputs AST-stable', () => {
+    const editor = createTestEditor();
+
+    createMarkdownStressCases().forEach((input, caseIndex) => {
+      try {
+        const first = editor.api.markdown.deserialize(input);
+        const canonical = editor.api.markdown.serialize({ value: first });
+        const second = editor.api.markdown.deserialize(canonical);
+        const replay = editor.api.markdown.serialize({ value: second });
+
+        expect(second).toEqual(first);
+        expect(editor.api.markdown.deserialize(replay)).toEqual(second);
+      } catch (error) {
+        throw new Error(
+          `Markdown stress failure: seed=${MARKDOWN_STRESS_SEED} case=${caseIndex} input=${JSON.stringify(input)}`,
+          { cause: error }
+        );
+      }
+    });
+  });
+
+  it.each(commonmarkAstCorpus)(
+    'keeps the parsed AST stable for $title',
+    ({ input }) => {
+      const editor = createTestEditor();
+      const first = editor.api.markdown.deserialize(input);
+      const canonical = editor.api.markdown.serialize({ value: first });
+      const second = editor.api.markdown.deserialize(canonical);
+      const replay = editor.api.markdown.serialize({ value: second });
+
+      expect(second).toEqual(first);
+      expect(editor.api.markdown.deserialize(replay)).toEqual(second);
+    }
+  );
+
   it.each([
     {
       expected: 'Visit [Plate](https://platejs.org)\n',

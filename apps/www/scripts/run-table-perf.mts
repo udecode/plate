@@ -40,7 +40,7 @@ type RunnerJobResult = {
 function getArg(name: string) {
   const index = process.argv.indexOf(`--${name}`);
 
-  if (index === -1) return;
+  if (index === -1) return undefined;
 
   return process.argv[index + 1];
 }
@@ -253,16 +253,18 @@ function getBudgetFailures(runs: RunnerJobResult[]) {
 
     if (!budget) continue;
 
-    for (const [benchmark, threshold] of Object.entries(budget) as [
-      BenchmarkName,
-      {
-        dragHandles?: number;
-        maxMs: number;
-        p95Ms: number;
-        p99Ms: number;
-        selectedCellElements?: number;
-      },
-    ][]) {
+    for (const [benchmark, threshold] of Object.entries(budget) as Array<
+      [
+        BenchmarkName,
+        {
+          dragHandles?: number;
+          maxMs: number;
+          p95Ms: number;
+          p99Ms: number;
+          selectedCellElements?: number;
+        },
+      ]
+    >) {
       const snapshot = run.benchmarks[benchmark];
       const result =
         benchmark === 'mount'

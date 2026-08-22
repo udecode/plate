@@ -189,10 +189,9 @@ type NormalizeInstalledCapability<
               ? Readonly<{ schemaContribution: () => TSchema }>
               : {}) &
         (TCapability extends Readonly<{
-          targetPlugins: infer TTargetPlugins extends readonly (
-            | PluginReference
-            | string
-          )[];
+          targetPlugins: infer TTargetPlugins extends ReadonlyArray<
+            PluginReference | string
+          >;
         }>
           ? Readonly<{ targetPlugins: TTargetPlugins }>
           : {}) &
@@ -299,12 +298,12 @@ type IsLiteralDisabled<D extends AnyBasePluginDefinition> = [
 
 type InferHiddenCapability<
   D extends AnyBasePluginDefinition,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames extends PropertyKey,
   Seen extends PropertyKey,
 > =
   IsBroadPluginDefinition<D> extends true
     ? never
-    : D['name'] extends ExplicitNames | Seen
+    : D['name'] extends innerExplicitNames | Seen
       ? never
       : IsLiteralDisabled<D> extends true
         ? never
@@ -312,17 +311,17 @@ type InferHiddenCapability<
 
 type InferHiddenDependencies<
   D extends AnyBasePluginDefinition,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames2 extends PropertyKey,
   Seen extends PropertyKey,
 > = InferDependencies<D>[number] extends infer P
   ? P extends unknown
-    ? InferHiddenDependency<P, ExplicitNames, Seen>
+    ? InferHiddenDependency<P, innerExplicitNames2, Seen>
     : never
   : never;
 
 type InferHiddenDependency<
   P,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames3 extends PropertyKey,
   Seen extends PropertyKey,
 > = (
   [PluginDependencySource<P>] extends [never]
@@ -339,13 +338,13 @@ type InferHiddenDependency<
     : InferenceIdentityOf<P>
 ) extends infer D
   ? D extends AnyBasePluginDefinition
-    ? InferHiddenCapability<D, ExplicitNames, Seen>
+    ? InferHiddenCapability<D, innerExplicitNames3, Seen>
     : never
   : never;
 
 type InferExplicitPlugin<
   P,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames4 extends PropertyKey,
   DisabledNames extends PropertyKey,
 > =
   InferenceIdentityOf<P> extends infer D extends AnyBasePluginDefinition
@@ -353,21 +352,26 @@ type InferExplicitPlugin<
       ? never
       :
           | InstalledPluginCapability<P, D>
-          | InferExplicitHiddenCapabilities<P, D, ExplicitNames, ExactName<D>>
+          | InferExplicitHiddenCapabilities<
+              P,
+              D,
+              innerExplicitNames4,
+              ExactName<D>
+            >
     : never;
 
 type InferExplicitHiddenCapabilities<
   P,
   D extends AnyBasePluginDefinition,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames5 extends PropertyKey,
   Seen extends PropertyKey,
 > = [DirectInstalledCapabilitiesOf<P>] extends [never]
-  ? InferHiddenDependencies<D, ExplicitNames, Seen>
+  ? InferHiddenDependencies<D, innerExplicitNames5, Seen>
   : NormalizeInstalledCapability<
         PliteInstalledCapabilitiesOf<P>
       > extends infer TCapability
     ? TCapability extends AnyBasePluginDefinition
-      ? InferHiddenCapability<TCapability, ExplicitNames, Seen>
+      ? InferHiddenCapability<TCapability, innerExplicitNames5, Seen>
       : never
     : never;
 
@@ -466,12 +470,12 @@ type DirectInstalledRuntimeCapability<P, D extends AnyBasePluginDefinition> = [
 
 type InferHiddenRuntimeCapability<
   D extends AnyBasePluginDefinition,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames6 extends PropertyKey,
   Seen extends PropertyKey,
 > =
   IsBroadPluginDefinition<D> extends true
     ? never
-    : D['name'] extends ExplicitNames | Seen
+    : D['name'] extends innerExplicitNames6 | Seen
       ? never
       : IsLiteralDisabled<D> extends true
         ? never
@@ -479,17 +483,17 @@ type InferHiddenRuntimeCapability<
 
 type InferHiddenRuntimeDependencies<
   D extends AnyBasePluginDefinition,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames7 extends PropertyKey,
   Seen extends PropertyKey,
 > = InferDependencies<D>[number] extends infer P
   ? P extends unknown
-    ? InferHiddenRuntimeDependency<P, ExplicitNames, Seen>
+    ? InferHiddenRuntimeDependency<P, innerExplicitNames7, Seen>
     : never
   : never;
 
 type InferHiddenRuntimeDependency<
   P,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames8 extends PropertyKey,
   Seen extends PropertyKey,
 > = (
   [PluginDependencySource<P>] extends [never]
@@ -502,10 +506,10 @@ type InferHiddenRuntimeDependency<
     ? D['name'] extends Seen
       ? never
       :
-          | InferHiddenRuntimeCapability<D, ExplicitNames, Seen>
+          | InferHiddenRuntimeCapability<D, innerExplicitNames8, Seen>
           | InferHiddenRuntimeDependencies<
               D,
-              ExplicitNames,
+              innerExplicitNames8,
               Seen | ExactName<D>
             >
     : never
@@ -514,21 +518,21 @@ type InferHiddenRuntimeDependency<
 type InferExplicitRuntimeHiddenCapabilities<
   P,
   D extends AnyBasePluginDefinition,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames9 extends PropertyKey,
   Seen extends PropertyKey,
 > = [DirectInstalledCapabilitiesOf<P>] extends [never]
-  ? InferHiddenRuntimeDependencies<D, ExplicitNames, Seen>
+  ? InferHiddenRuntimeDependencies<D, innerExplicitNames9, Seen>
   : NormalizeInstalledRuntimeCapability<
         PliteInstalledCapabilitiesOf<P>
       > extends infer TCapability
     ? TCapability extends AnyBasePluginDefinition
-      ? InferHiddenRuntimeCapability<TCapability, ExplicitNames, Seen>
+      ? InferHiddenRuntimeCapability<TCapability, innerExplicitNames9, Seen>
       : never
     : never;
 
 type InferExplicitRuntimePlugin<
   P,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames10 extends PropertyKey,
   DisabledNames extends PropertyKey,
 > =
   InferenceIdentityOf<P> extends infer D extends AnyBasePluginDefinition
@@ -544,7 +548,7 @@ type InferExplicitRuntimePlugin<
           | InferExplicitRuntimeHiddenCapabilities<
               P,
               D,
-              ExplicitNames,
+              innerExplicitNames10,
               ExactName<D>
             >
     : never;
@@ -563,7 +567,7 @@ export type InferRuntimePlugins<T extends readonly unknown[]> =
 
 type InferDirectRuntimePlugin<
   P,
-  ExplicitNames extends PropertyKey,
+  innerExplicitNames11 extends PropertyKey,
   DisabledNames extends PropertyKey,
 > =
   PluginDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
@@ -577,9 +581,9 @@ type InferDirectRuntimePlugin<
                 ? TDependency extends AnyBasePluginDefinition
                   ? TDependency['name'] extends DisabledNames
                     ? never
-                    : string extends ExplicitNames
+                    : string extends innerExplicitNames11
                       ? CompactAuthoredRuntimePluginDefinition<TDependency>
-                      : TDependency['name'] extends ExplicitNames
+                      : TDependency['name'] extends innerExplicitNames11
                         ? never
                         : CompactAuthoredRuntimePluginDefinition<TDependency>
                   : never
@@ -709,7 +713,7 @@ type ElementToggleUpdate = Readonly<{
 }>;
 
 type PlateGeneratedElementForSelector<TMutations, TSelector> =
-  TSelector extends readonly (infer TItem)[]
+  TSelector extends ReadonlyArray<infer TItem>
     ? PlateGeneratedElementForSelector<TMutations, TItem>
     : TSelector extends PluginReference
       ? PlateElementForMutation<EditorMutationForPlugin<TMutations, TSelector>>
@@ -973,7 +977,7 @@ type InstalledPluginElementType<C extends AnyBasePluginDefinition> =
 
 type SchemaContributionProperty<TContribution> =
   TContribution extends Readonly<{
-    properties?: readonly (infer TProperty)[];
+    properties?: ReadonlyArray<infer TProperty>;
   }>
     ? Extract<TProperty, SchemaProperty>
     : never;
@@ -1069,7 +1073,7 @@ type SchemaElementDescriptorProperties<TElement> = [TElement] extends [never]
 
 type SchemaContributionContentRoot<TContribution> =
   TContribution extends Readonly<{
-    contentRoots?: readonly (infer TContentRoot)[];
+    contentRoots?: ReadonlyArray<infer TContentRoot>;
   }>
     ? Extract<TContentRoot, SchemaContentRootContribution>
     : never;
@@ -1097,7 +1101,7 @@ type PluginReferenceName<TPlugin> =
 
 type InstalledPluginElementTypesForPlugins<
   D,
-  TPlugins extends readonly (PluginReference | string)[],
+  TPlugins extends ReadonlyArray<PluginReference | string>,
 > = {
   readonly [TIndex in keyof TPlugins]: InstalledPluginElementTypeForName<
     D,
@@ -1117,10 +1121,9 @@ type ResolvePluginTargetProperty<
   >
     ? TTarget extends SchemaTypesTarget<infer TTypes>
       ? string extends TTypes[number]
-        ? InferTargetPlugins<D> extends infer TPlugins extends readonly (
-            | PluginReference
-            | string
-          )[]
+        ? InferTargetPlugins<D> extends infer TPlugins extends ReadonlyArray<
+            PluginReference | string
+          >
           ? TPlugins extends readonly []
             ? TProperty
             : SchemaElementProperty<
@@ -1164,10 +1167,10 @@ type PlateRawSchemaDeclaration<D> =
         MergeObjectIntersection<
           SchemaContributionElements<ExactSchemaContribution<D>>
         >,
-        readonly ResolvedSchemaContributionProperty<D>[],
+        ReadonlyArray<ResolvedSchemaContributionProperty<D>>,
         NonNullable<EditorSchemaContribution['groups']>,
         NonNullable<EditorSchemaContribution['roots']>,
-        readonly SchemaContributionContentRoot<ExactSchemaContribution<D>>[]
+        ReadonlyArray<SchemaContributionContentRoot<ExactSchemaContribution<D>>>
       >;
 
 type PlateSchemaDefinition<D> = EditorSchemaDerivedDefinition<
@@ -1496,7 +1499,7 @@ type PlatePropertiesForPlugin<TSchema, TPlugin> = [TSchema] extends [
 type PlateNodeTypeSelector =
   | PluginReference
   | string
-  | readonly (PluginReference | string)[];
+  | ReadonlyArray<PluginReference | string>;
 
 /** Broad insertion options for package APIs that forward a stored selector. */
 export type PlateNodeInsertOptions = Omit<
@@ -1514,7 +1517,7 @@ export type PlateNodeInsertOptions = Omit<
 };
 
 type PlateElementForSelector<TSchema, TSelector> =
-  TSelector extends readonly (infer TItem)[]
+  TSelector extends ReadonlyArray<infer TItem>
     ? PlateElementForSelector<TSchema, TItem>
     : TSelector extends string
       ? Element & { type: TSelector }
@@ -1523,7 +1526,7 @@ type PlateElementForSelector<TSchema, TSelector> =
         : never;
 
 type PlatePropertiesForSelector<TSchema, TSelector> =
-  TSelector extends readonly (infer TItem)[]
+  TSelector extends ReadonlyArray<infer TItem>
     ? PlatePropertiesForSelector<TSchema, TItem>
     : TSelector extends PluginReference
       ? PlatePropertiesForPlugin<TSchema, TSelector>
@@ -1693,7 +1696,7 @@ type PlateEditorStateNodes<V extends Value, TSchema> = Omit<
         PlateElementForSelector<TSchema, TSelector>,
         TSelector
       >
-    ): readonly NodeEntry<PlateElementForSelector<TSchema, TSelector>>[];
+    ): ReadonlyArray<NodeEntry<PlateElementForSelector<TSchema, TSelector>>>;
     <const TSelector extends PlateNodeTypeSelector, R>(
       options: PlateNodesReadOptions<
         PlateElementForSelector<TSchema, TSelector>,
@@ -2192,7 +2195,7 @@ type InvalidPlateElementSelectorItem<TItem> = TItem extends PluginReference
 
 type PlateElementSelectorGuard<TSelector> = [
   InvalidPlateElementSelectorItem<
-    TSelector extends readonly (infer TItem)[] ? TItem : TSelector
+    TSelector extends ReadonlyArray<infer TItem> ? TItem : TSelector
   >,
 ] extends [never]
   ? unknown
@@ -2236,7 +2239,7 @@ type PlateNodeSelectorUnset<S> = <
 ) => void;
 
 type PlatePluginTransactionNodes<D, S = D> = Omit<
-  EditorUpdateTransaction<Value>['nodes'],
+  EditorUpdateTransaction['nodes'],
   | keyof PlateEditorStateNodes<Value, S>
   | 'insert'
   | 'lift'
@@ -2255,9 +2258,7 @@ type PlatePluginTransactionNodes<D, S = D> = Omit<
   >(
     nodes: TNode | readonly TNode[],
     options: Omit<
-      NonNullable<
-        Parameters<EditorUpdateTransaction<Value>['nodes']['insert']>[1]
-      >,
+      NonNullable<Parameters<EditorUpdateTransaction['nodes']['insert']>[1]>,
       'split'
     > & {
       split: PlateInsertSplitOptions<
@@ -2270,31 +2271,31 @@ type PlatePluginTransactionNodes<D, S = D> = Omit<
       nodes: TNode | readonly TNode[],
       options?: PlateNodeInsertOptions
     ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['insert'];
+    EditorUpdateTransaction['nodes']['insert'];
   lift: (<const TSelector extends PlateNodeTypeSelector>(
     options: PlateNodeSelectorOptions<
-      Parameters<EditorUpdateTransaction<Value>['nodes']['lift']>[0],
+      Parameters<EditorUpdateTransaction['nodes']['lift']>[0],
       PlateElementForSelector<S, TSelector>,
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['lift'];
+    EditorUpdateTransaction['nodes']['lift'];
   merge: (<const TSelector extends PlateNodeTypeSelector>(
     options: PlateNodeSelectorOptions<
-      Parameters<EditorUpdateTransaction<Value>['nodes']['merge']>[0],
+      Parameters<EditorUpdateTransaction['nodes']['merge']>[0],
       PlateElementForSelector<S, TSelector>,
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['merge'];
+    EditorUpdateTransaction['nodes']['merge'];
   move: (<const TSelector extends PlateNodeTypeSelector>(
     options: PlateNodeSelectorOptions<
-      Parameters<EditorUpdateTransaction<Value>['nodes']['move']>[0],
+      Parameters<EditorUpdateTransaction['nodes']['move']>[0],
       PlateElementForSelector<S, TSelector>,
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['move'];
+    EditorUpdateTransaction['nodes']['move'];
   remove: (<const TSelector extends PlateNodeTypeSelector>(
     options: PlateNodeSelectorOptions<
       NodeRemoveNodesOptions<PlateElementForSelector<S, TSelector>>,
@@ -2302,7 +2303,7 @@ type PlatePluginTransactionNodes<D, S = D> = Omit<
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['remove'];
+    EditorUpdateTransaction['nodes']['remove'];
   set: PlateNodeSelectorSet<S> &
     (<const TProps extends PlatePluginNodeSetProps<D>>(
       props: TProps & ValidatePluginWritablePropertyPatch<D, TProps>,
@@ -2310,19 +2311,19 @@ type PlatePluginTransactionNodes<D, S = D> = Omit<
     ) => void);
   split: (<const TSelector extends PlateNodeTypeSelector>(
     options: PlateNodeSelectorOptions<
-      Parameters<EditorUpdateTransaction<Value>['nodes']['split']>[0],
+      Parameters<EditorUpdateTransaction['nodes']['split']>[0],
       PlateElementForSelector<S, TSelector>,
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['split'];
+    EditorUpdateTransaction['nodes']['split'];
   unset: PlateNodeSelectorUnset<S> & {
     <const TKey extends PluginWritablePropertyKey<D>>(
       property: TKey | readonly TKey[],
       options?: EditorNodeUnsetOptions<NodeIn<Value>>
     ): void;
-    <const THandle extends SchemaPropertyHandle<string, unknown>>(
-      property: THandle,
+    (
+      property: SchemaPropertyHandle<string>,
       options?: EditorNodeUnsetOptions<NodeIn<Value>>
     ): void;
     <TKey extends string>(
@@ -2332,24 +2333,21 @@ type PlatePluginTransactionNodes<D, S = D> = Omit<
   };
   unwrap: (<const TSelector extends PlateNodeTypeSelector>(
     options: PlateNodeSelectorOptions<
-      Parameters<EditorUpdateTransaction<Value>['nodes']['unwrap']>[0],
+      Parameters<EditorUpdateTransaction['nodes']['unwrap']>[0],
       PlateElementForSelector<S, TSelector>,
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['unwrap'];
-  wrap: (<
-    TElement extends Element,
-    const TSelector extends PlateNodeTypeSelector,
-  >(
-    element: TElement,
+    EditorUpdateTransaction['nodes']['unwrap'];
+  wrap: (<const TSelector extends PlateNodeTypeSelector>(
+    element: Element,
     options: PlateNodeSelectorOptions<
-      Parameters<EditorUpdateTransaction<Value>['nodes']['wrap']>[1],
+      Parameters<EditorUpdateTransaction['nodes']['wrap']>[1],
       PlateElementForSelector<S, TSelector>,
       TSelector
     >
   ) => void) &
-    EditorUpdateTransaction<Value>['nodes']['wrap'];
+    EditorUpdateTransaction['nodes']['wrap'];
 } & PlateEditorStateNodes<Value, S>;
 
 type WithPluginWritableNodes<TTransaction, D, S = D> = Omit<
@@ -2473,8 +2471,8 @@ type PlateEditorInsertNodes<TMethod, S> = TMethod extends (
   : never;
 
 type PlateEditorWrapNodes<TMethod, S> = TMethod extends (...args: any[]) => void
-  ? (<TElement extends Element, const TSelector extends PlateNodeTypeSelector>(
-      element: TElement,
+  ? (<const TSelector extends PlateNodeTypeSelector>(
+      element: Element,
       options: PlateDirectNodeSelectorOptions<
         Parameters<TMethod>[1],
         PlateElementForSelector<S, TSelector>,
@@ -2729,7 +2727,7 @@ export type InternalPliteEditorWithInstalledPlateDefinitions<
 > = {
   api: PlateEditorApi<V, D>;
   extension: PlatePluginExtensionPortal<D> &
-    PliteRuntimeBaseEditor<V, readonly []>['extension'];
+    PliteRuntimeBaseEditor<V>['extension'];
   read: PlateEditorRead<V, D, S> & {
     schema: PlateEditorStateSchemaApi<V, S>;
   };

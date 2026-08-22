@@ -43,7 +43,7 @@ export type UseOnClickOutsideReturn = React.RefCallback<El>;
 
 type El = HTMLElement;
 
-type Refs = readonly React.RefObject<El | null>[];
+type Refs = ReadonlyArray<React.RefObject<El | null>>;
 
 const checkClass = (el: Element, cl: string): boolean =>
   el.classList?.contains(cl);
@@ -90,14 +90,13 @@ export const useOnClickOutside = (
     callbackRef.current = callback;
   }, [callback]);
 
-  const ref = React.useCallback(
-    (nextElement: El | null) => setElement(nextElement),
-    []
-  );
+  const ref = React.useCallback((nextElement: El | null) => {
+    setElement(nextElement);
+  }, []);
   const eventTypesKey = eventTypes.join('\u0000');
 
   React.useEffect(() => {
-    if (!refsOpt?.length && !element) return;
+    if (!refsOpt?.length && !element) return undefined;
 
     const pendingBlurChecks = new Set<ReturnType<typeof setTimeout>>();
 
@@ -118,7 +117,7 @@ export const useOnClickOutside = (
       : [ignoreClass];
 
     const handler = (event: Event) => {
-      const target = event.target;
+      const { target } = event;
 
       if (!(target instanceof Node)) return;
 
@@ -152,7 +151,7 @@ export const useOnClickOutside = (
       pendingBlurChecks.add(timeout);
     };
 
-    if (disabled) return;
+    if (disabled) return undefined;
 
     const activeEventTypes = eventTypesKey.split('\u0000');
     for (const type of activeEventTypes) {

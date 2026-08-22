@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-08-20-format-version-history-values",
+      "href": "/registry/changelog/2026-08-20-format-version-history-values.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Format nested version history values",
+      "change": {
+        "type": "source",
+        "date": "2026-08-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["version-history-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-20-improve-editor-control-accessibility",
       "href": "/registry/changelog/2026-08-20-improve-editor-control-accessibility.json",
       "status": "draft",

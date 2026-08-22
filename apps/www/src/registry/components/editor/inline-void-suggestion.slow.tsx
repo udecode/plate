@@ -41,7 +41,7 @@ mock.module('platejs/react', () => ({
     <div
       className={className}
       {...props}
-      {...(attributes as Record<string, unknown>)}
+      {...attributes!}
       data-testid="plate-element"
     >
       {children}
@@ -58,7 +58,7 @@ mock.module('platejs/react', () => ({
     <span
       className={className}
       {...props}
-      {...(attributes as Record<string, unknown>)}
+      {...attributes!}
       data-testid="plate-leaf"
     >
       {children}
@@ -104,7 +104,9 @@ mock.module('@platejs/suggestion/react', () => ({
 
 mock.module('@/components/ui/button', () => ({
   Button: ({ children, ...props }: React.ComponentProps<'button'>) => (
-    <button {...props}>{children}</button>
+    <button type="button" {...props}>
+      {children}
+    </button>
   ),
   buttonVariants: () => '',
 }));

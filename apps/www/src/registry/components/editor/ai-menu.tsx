@@ -53,11 +53,7 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-export const AIChatEditor = React.memo(function AIChatEditor({
-  content,
-}: {
-  content: string;
-}) {
+export const AIChatEditor = React.memo(({ content }: { content: string }) => {
   const aiEditor = usePlateEditor({
     plugins: BaseEditorKit,
   });
@@ -77,6 +73,8 @@ export const AIChatEditor = React.memo(function AIChatEditor({
   return <EditorStatic variant="aiChat" editor={aiEditor} />;
 });
 
+AIChatEditor.displayName = 'AIChatEditor';
+
 export function AIMenu() {
   const editor = useEditor();
   const { api, read } = useEditorPlugin(AIChatPlugin);
@@ -88,8 +86,8 @@ export function AIMenu() {
     BlockSelectionPlugin,
     'isSelectingSome'
   );
-  const selectionExpanded = useEditorSelector((editor) =>
-    editor.read.selection.isExpanded()
+  const selectionExpanded = useEditorSelector((innerEditor) =>
+    innerEditor.read.selection.isExpanded()
   );
   const isSelecting = selectionExpanded || isSelectingSome;
   const isFocusedLast = useFocusedLast();
@@ -116,13 +114,13 @@ export function AIMenu() {
   )?.text;
 
   React.useEffect(() => {
-    if (!streaming) return;
+    if (!streaming) return undefined;
 
     const anchorEntry = read.node({ anchor: true });
-    if (!anchorEntry) return;
+    if (!anchorEntry) return undefined;
 
     const anchorDom = editor.api.dom.resolveDOMNode(anchorEntry[0]);
-    if (!anchorDom) return;
+    if (!anchorDom) return undefined;
     const animationFrame = window.requestAnimationFrame(() => {
       setAnchorElement(anchorDom);
     });
@@ -132,8 +130,8 @@ export function AIMenu() {
     };
   }, [editor, read, streaming]);
 
-  const setOpen = (open: boolean) => {
-    if (open) {
+  const setOpen = (innerOpen: boolean) => {
+    if (innerOpen) {
       api.show();
     } else {
       api.hide();
@@ -158,13 +156,13 @@ export function AIMenu() {
     if (blockSelection.store.get('isSelectingSome')) {
       const block = blockSelection.read.getNodes({}).at(-1);
 
-      if (!block || !ElementApi.isElement(block[0])) return;
+      if (!block || !ElementApi.isElement(block[0])) return undefined;
 
       nextAnchor = editor.api.dom.resolveDOMNode(block[0]);
     } else if (editor.read.selection.isCollapsed()) {
       const ancestorEntry = editor.read.nodes.block();
 
-      if (!ancestorEntry) return;
+      if (!ancestorEntry) return undefined;
 
       const [ancestor] = ancestorEntry;
 
@@ -189,7 +187,7 @@ export function AIMenu() {
       nextAnchor = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
     }
 
-    if (!nextAnchor) return;
+    if (!nextAnchor) return undefined;
     const animationFrame = window.requestAnimationFrame(() => {
       setAnchorElement(nextAnchor);
     });
@@ -206,7 +204,7 @@ export function AIMenu() {
   const isLoading = status === 'streaming' || status === 'submitted';
 
   React.useEffect(() => {
-    if (toolName !== 'edit' || mode !== 'chat' || isLoading) return;
+    if (toolName !== 'edit' || mode !== 'chat' || isLoading) return undefined;
 
     let anchorNode = editor
       .plugin(SuggestionPlugin)
@@ -220,12 +218,12 @@ export function AIMenu() {
         .at(-1);
     }
 
-    if (!anchorNode) return;
+    if (!anchorNode) return undefined;
 
     const block = editor.read.nodes.block({ at: anchorNode[1] });
     const domNode = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
 
-    if (!domNode) return;
+    if (!domNode) return undefined;
 
     const animationFrame = window.requestAnimationFrame(() => {
       setAnchorElement(domNode);
@@ -242,9 +240,11 @@ export function AIMenu() {
 
   if (toolName === 'edit' && mode === 'chat' && isLoading) return null;
 
+  if (!anchorElement) return null;
+
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement! }} />
+      <PopoverAnchor virtualRef={{ current: anchorElement }} />
 
       <PopoverContent
         className="border-none bg-transparent p-0 shadow-none"
@@ -289,7 +289,7 @@ export function AIMenu() {
                 }
                 if (isHotkey('enter')(e) && !e.shiftKey && !value) {
                   e.preventDefault();
-                  void api.submit(input);
+                  api.submit(input);
                   setInput('');
                 }
               }}
@@ -350,7 +350,8 @@ const aiChatItems = {
       const { mode, toolName } = editor.plugin(AIChatPlugin).store.get();
 
       if (mode === 'chat' && toolName === 'generate') {
-        return editor.plugin(AIChatPlugin).update.replaceSelection();
+        editor.plugin(AIChatPlugin).update.replaceSelection();
+        return;
       }
 
       editor.plugin(AIChatPlugin).update.accept();
@@ -388,7 +389,7 @@ const aiChatItems = {
 
       const isEmpty = NodeApi.string(ancestorNode[0]).trim().length === 0;
 
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         mode: 'insert',
         prompt: isEmpty
           ? `<Document>
@@ -415,7 +416,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Emojify',
     value: 'emojify',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt:
           'Add a small number of contextually relevant emojis within each block only. You may insert emojis, but do not remove, replace, or rewrite existing text, and do not modify Markdown syntax, links, or line breaks.',
         toolName: 'edit',
@@ -427,7 +428,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Explain',
     value: 'explain',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt: {
           default: 'Explain {editor}',
           selecting: 'Explain',
@@ -441,7 +442,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Fix spelling & grammar',
     value: 'fixSpelling',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt:
           'Fix spelling, grammar, and punctuation errors within each block only, without changing meaning, tone, or adding new information.',
         toolName: 'edit',
@@ -453,7 +454,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Generate Markdown sample',
     value: 'generateMarkdownSample',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt: 'Generate a markdown sample',
         toolName: 'generate',
       });
@@ -464,7 +465,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Generate MDX sample',
     value: 'generateMdxSample',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt: 'Generate a mdx sample',
         toolName: 'generate',
       });
@@ -475,7 +476,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Improve writing',
     value: 'improveWriting',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt:
           'Improve the writing for clarity and flow, without changing meaning or adding new information.',
         toolName: 'edit',
@@ -496,7 +497,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Make longer',
     value: 'makeLonger',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt:
           'Make the content longer by elaborating on existing ideas within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
@@ -508,7 +509,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Make shorter',
     value: 'makeShorter',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt:
           'Make the content shorter by reducing verbosity within each block only, without changing meaning or removing essential information.',
         toolName: 'edit',
@@ -528,7 +529,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Simplify language',
     value: 'simplifyLanguage',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         prompt:
           'Simplify the language by using clearer and more straightforward wording within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
@@ -540,7 +541,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Add a summary',
     value: 'summarize',
     onSelect: ({ editor, input }) => {
-      void editor.plugin(AIChatPlugin).api.submit(input, {
+      editor.plugin(AIChatPlugin).api.submit(input, {
         mode: 'insert',
         prompt: {
           default: 'Summarize {editor}',
@@ -555,7 +556,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Try again',
     value: 'tryAgain',
     onSelect: ({ editor }) => {
-      void editor.plugin(AIChatPlugin).api.reload();
+      editor.plugin(AIChatPlugin).api.reload();
     },
   },
 } satisfies Record<
@@ -566,7 +567,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: string;
     component?: React.ComponentType<{ menuState: EditorChatState }>;
     filterItems?: boolean;
-    items?: { label: string; value: string }[];
+    items?: Array<{ label: string; value: string }>;
     shortcut?: string;
     onSelect?: ({
       editor,
@@ -580,10 +581,10 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
 
 const menuStateItems: Record<
   EditorChatState,
-  {
-    items: (typeof aiChatItems)[keyof typeof aiChatItems][];
+  Array<{
+    items: Array<(typeof aiChatItems)[keyof typeof aiChatItems]>;
     heading?: string;
-  }[]
+  }>
 > = {
   cursorCommand: [
     {
@@ -642,8 +643,8 @@ export const AIMenuItems = ({
     BlockSelectionPlugin,
     'isSelectingSome'
   );
-  const selectionExpanded = useEditorSelector((editor) =>
-    editor.read.selection.isExpanded()
+  const selectionExpanded = useEditorSelector((innerEditor2) =>
+    innerEditor2.read.selection.isExpanded()
   );
   const isSelecting = selectionExpanded || isSelectingSome;
 
@@ -667,8 +668,11 @@ export const AIMenuItems = ({
 
   return (
     <>
-      {menuGroups.map((group, index) => (
-        <CommandGroup key={index} heading={group.heading}>
+      {menuGroups.map((group) => (
+        <CommandGroup
+          key={group.heading ?? group.items[0]?.value}
+          heading={group.heading}
+        >
           {group.items.map((menuItem) => (
             <CommandItem
               key={menuItem.value}
@@ -736,7 +740,9 @@ export function AILoadingBar() {
           size="sm"
           variant="ghost"
           className="flex items-center gap-1 text-xs"
-          onClick={() => api.stop()}
+          onClick={() => {
+            api.stop();
+          }}
         >
           <PauseIcon className="h-4 w-4" />
           Stop
@@ -762,7 +768,9 @@ export function AILoadingBar() {
             <Button
               size="sm"
               disabled={isLoading}
-              onClick={() => handleComments('accept')}
+              onClick={() => {
+                handleComments('accept');
+              }}
             >
               Accept
             </Button>
@@ -770,7 +778,9 @@ export function AILoadingBar() {
             <Button
               size="sm"
               disabled={isLoading}
-              onClick={() => handleComments('reject')}
+              onClick={() => {
+                handleComments('reject');
+              }}
             >
               Reject
             </Button>

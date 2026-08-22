@@ -7,6 +7,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  failInvariant,
   type AnyEditor,
   areEditorSchemaIdentitiesEqual,
   getInternalDocumentChangeClassificationEntries,
@@ -75,7 +76,7 @@ const getStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => {
 
   if (!store) {
     store = createStore(editor);
-    HISTORY.set(editor, store as HistoryStore<Value>);
+    HISTORY.set(editor, store);
   }
 
   return store;
@@ -85,7 +86,7 @@ const setStore = <V extends Value>(
   editor: Editor<V>,
   store: HistoryStore<V>
 ) => {
-  HISTORY.set(editor, store as HistoryStore<Value>);
+  HISTORY.set(editor, store);
 };
 
 const publish = <V extends Value>(
@@ -109,12 +110,11 @@ const publish = <V extends Value>(
 
 const cloneFrozen = <T>(value: T): T => {
   const clone = structuredClone(value);
-  const pending: object[] =
-    clone && typeof clone === 'object' ? [clone as object] : [];
+  const pending: object[] = clone && typeof clone === 'object' ? [clone] : [];
   const seen = new WeakSet<object>();
 
   while (pending.length > 0) {
-    const item = pending.pop()!;
+    const item = pending.pop() ?? failInvariant('Expected value to be defined');
 
     if (seen.has(item)) continue;
     seen.add(item);
@@ -197,7 +197,7 @@ const clipBranch = <V extends Value>(
   if (!value || maxDepth === 0) return null;
   if (value.depth <= maxDepth) return value;
 
-  const kept: HistoryBranch<V>[] = [];
+  const kept: Array<HistoryBranch<V>> = [];
   let current: HistoryBranch<V> | null = value;
 
   while (current && kept.length < maxDepth) {
@@ -245,8 +245,8 @@ const addMapping = <V extends Value>(
 
 const journalEntries = <V extends Value>(
   journal: MappingJournal<V>
-): readonly PendingMapping<V>[] => {
-  const entries: PendingMapping<V>[] = [];
+): ReadonlyArray<PendingMapping<V>> => {
+  const entries: Array<PendingMapping<V>> = [];
 
   for (
     let item: MappingJournal<V> | null = journal;
@@ -267,12 +267,10 @@ const resolveHead = <V extends Value>(
 
   let batchBase = value.base;
   let batchValue = value.batch;
-  let next = value.next;
+  let { next } = value;
 
   for (const mapping of journalEntries(value.mappings)) {
-    const nextBase = batchValue.change.apply(
-      batchBase
-    ) as EditorDocumentValue<V>;
+    const nextBase = batchValue.change.apply(batchBase);
     const batchChange =
       mapping.textOnly && isTextOnlyMapping(batchValue.change)
         ? DocumentChange.between(batchBase, nextBase)
@@ -321,7 +319,7 @@ const resolveHead = <V extends Value>(
         textOnly: false,
       });
     }
-    batchBase = mappedBatchBase as EditorDocumentValue<V>;
+    batchBase = mappedBatchBase;
   }
 
   if (batchValue.change.empty && batchValue.effects.length === 0) return next;
@@ -344,11 +342,13 @@ const resolveAll = <V extends Value>(
   editor: Editor<V>,
   value: HistoryBranch<V> | null
 ) => {
-  const newest: Readonly<{
-    base: EditorDocumentValue<V>;
-    batch: Batch<V>;
-    group: HistoryBatchGroup | null;
-  }>[] = [];
+  const newest: Array<
+    Readonly<{
+      base: EditorDocumentValue<V>;
+      batch: Batch<V>;
+      group: HistoryBatchGroup | null;
+    }>
+  > = [];
   let current = value;
 
   while (current) {
@@ -364,7 +364,7 @@ const resolveAll = <V extends Value>(
 
   let resolved: HistoryBranch<V> | null = null;
   for (let index = newest.length - 1; index >= 0; index--) {
-    const entry = newest[index]!;
+    const entry = newest[index];
 
     resolved = branch(entry.batch, entry.base, resolved, null, entry.group);
   }
@@ -376,7 +376,7 @@ const resolveAll = <V extends Value>(
 };
 
 const fromBatches = <V extends Value>(
-  batches: readonly Batch<V>[],
+  batches: ReadonlyArray<Batch<V>>,
   base: EditorDocumentValue<V>,
   maxDepth: number
 ) => {
@@ -388,9 +388,7 @@ const fromBatches = <V extends Value>(
 
   for (const batchValue of batches.slice(-maxDepth).toReversed()) {
     entries.push({ base: currentBase, batch: batchValue });
-    currentBase = batchValue.change.apply(
-      currentBase
-    ) as EditorDocumentValue<V>;
+    currentBase = batchValue.change.apply(currentBase);
   }
 
   let value: HistoryBranch<V> | null = null;
@@ -592,7 +590,7 @@ const isTextOnlyMapping = (change: DocumentChange) => {
     classifications.length > 0 &&
     classifications.every(
       ([, classification]) =>
-        classification.text === true &&
+        classification.text &&
         !classification.properties &&
         !classification.structure
     )

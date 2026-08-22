@@ -19,7 +19,7 @@ export const copyPath = (path: Path): Path => {
     }
 
     copy[index] = pathValue;
-    index++;
+    index += 1;
   }
 
   return copy;
@@ -38,7 +38,7 @@ export const parentPath = (path: Path): Path => {
     }
 
     parent[index] = pathValue;
-    index++;
+    index += 1;
   }
 
   return parent;
@@ -64,7 +64,7 @@ export const nextPath = (path: Path): Path => {
     }
 
     next[pathIndex] = pathValue;
-    pathIndex++;
+    pathIndex += 1;
   }
 
   next[lastIndex] = index + 1;
@@ -86,7 +86,7 @@ export const pathsEqual = (
     if (left[index] !== right[index]) {
       return false;
     }
-    index++;
+    index += 1;
   }
 
   return true;

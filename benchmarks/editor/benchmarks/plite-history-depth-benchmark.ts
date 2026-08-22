@@ -18,7 +18,7 @@ if (!Number.isInteger(remoteCommits) || remoteCommits < 1) {
 }
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -56,7 +56,9 @@ const rows = [100, 1000].map((depth) => {
   const heapDeltaBytes = process.memoryUsage().heapUsed - heapBefore;
   const undoStartedAt = performance.now();
 
-  editor.update((tx) => tx.history.undo());
+  editor.update((tx) => {
+    tx.history.undo();
+  });
 
   const undoResolutionMs = performance.now() - undoStartedAt;
   const expected = `${'r'.repeat(remoteCommits)}body${'l'.repeat(depth - 1)}`;
@@ -81,10 +83,10 @@ const rows = [100, 1000].map((depth) => {
   };
 });
 
-const normal = rows[0]!;
-const stress = rows[1]!;
-const medianDepthRatio = stress.p50Ms / Math.max(normal.p50Ms, 0.000_001);
-const p95DepthRatio = stress.p95Ms / Math.max(normal.p95Ms, 0.000_001);
+const normal = rows[0];
+const stress = rows[1];
+const medianDepthRatio = stress.p50Ms / Math.max(normal.p50Ms, 0.000001);
+const p95DepthRatio = stress.p95Ms / Math.max(normal.p95Ms, 0.000001);
 const strict = process.env.PLITE_HISTORY_DEPTH_STRICT === '1';
 
 if (strict && (medianDepthRatio > 4 || p95DepthRatio > 4)) {

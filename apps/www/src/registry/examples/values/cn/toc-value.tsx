@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const tocValue = (
+export const tocValue: Value = (
   <fragment>
     <hheading level={1}>
       <htext>目录</htext>

@@ -105,7 +105,7 @@ describe('MultiSelectPlugin', () => {
 
     editor.update.value.repair();
 
-    const children = editor.read.children()[0].children;
+    const { children } = editor.read.children()[0];
     const tags = Array.from(
       editor.read.nodes.entries({
         at: [],

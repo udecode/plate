@@ -1,4 +1,5 @@
 import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -6,10 +7,19 @@ const ShadowDOM = () => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (container.current!.shadowRoot) return;
+    if (
+      (container.current ?? failInvariant('Expected value to be defined'))
+        .shadowRoot
+    ) {
+      return;
+    }
 
     // Create a shadow DOM
-    const outerShadowRoot = container.current!.attachShadow({ mode: 'open' });
+    const outerShadowRoot = (
+      container.current ?? failInvariant('Expected value to be defined')
+    ).attachShadow({
+      mode: 'open',
+    });
     const host = document.createElement('div');
     outerShadowRoot.appendChild(host);
 

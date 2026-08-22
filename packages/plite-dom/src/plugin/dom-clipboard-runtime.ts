@@ -15,7 +15,11 @@ import {
   SelectionApi,
   type Value,
 } from '@platejs/plite';
-import { dispatchCommand, void as editorVoid } from '@platejs/plite/internal';
+import {
+  failInvariant,
+  dispatchCommand,
+  void as editorVoid,
+} from '@platejs/plite/internal';
 
 import {
   getPlainText,
@@ -87,7 +91,7 @@ export const dispatchDOMClipboardHandlers = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  handlers: readonly DOMClipboardHandler<any>[],
+  handlers: ReadonlyArray<DOMClipboardHandler<any>>,
   data: DataTransfer,
   tx: EditorUpdateTransaction<V, TExtensions>,
   fallback: (data: DataTransfer) => boolean
@@ -98,21 +102,19 @@ export const dispatchDOMClipboardHandlers = <
     if (!handler) return fallback(nextData);
     let delegated = false;
 
-    return (
-      handler.insertData(nextData, {
-        next(replacement = nextData) {
-          if (delegated) {
-            throw new Error(
-              'DOM clipboard handler next() can only be called once.'
-            );
-          }
-          delegated = true;
+    return handler.insertData(nextData, {
+      next(replacement = nextData) {
+        if (delegated) {
+          throw new Error(
+            'DOM clipboard handler next() can only be called once.'
+          );
+        }
+        delegated = true;
 
-          return dispatch(index - 1, replacement);
-        },
-        tx,
-      }) === true
-    );
+        return dispatch(index - 1, replacement);
+      },
+      tx,
+    });
   };
 
   return dispatch(handlers.length - 1, data);
@@ -232,7 +234,7 @@ const stringifyDOMFragmentData = <V extends Value>(
   const pending: Descendant[] = [...slice.content];
 
   while (pending.length > 0) {
-    const node = pending.pop()!;
+    const node = pending.pop() ?? failInvariant('Expected value to be defined');
 
     nodes.add(node);
 
@@ -310,7 +312,7 @@ export const writeDOMHostFragmentData = <V extends Value>(
 ) => {
   const clipboardFormatKey =
     payload.clipboardFormatKey ?? getDOMClipboardFormatKey(editor);
-  let window = payload.window;
+  let { window } = payload;
 
   if (!window) {
     try {
@@ -380,8 +382,8 @@ const writeModelBackedRangeData = <V extends Value>(
 ) => {
   writeDOMHostFragmentData(editor, data, {
     clipboardFormatKey,
-    html: ({ clipboardFormatKey, encoded, text }) =>
-      `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(clipboardFormatKey)}">${escapeHtmlText(text)}</span>`,
+    html: ({ clipboardFormatKey: innerClipboardFormatKey, encoded, text }) =>
+      `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(innerClipboardFormatKey)}">${escapeHtmlText(text)}</span>`,
     slice,
   });
 };
@@ -404,7 +406,7 @@ export const writeDOMSelectionData = <V extends Value>(
 ) => {
   const selection = editor.read((state) => state.selection());
 
-  if (!selection) return;
+  if (!selection) return undefined;
 
   return writeDOMRangeData(editor, data, selection, {
     slice: editor.read.slice.export(),
@@ -428,7 +430,7 @@ export const writeDOMRangeData = <V extends Value>(
       range,
       options.slice
     );
-    return;
+    return undefined;
   }
 
   const [start, end] = RangeApi.edges(range);
@@ -436,7 +438,7 @@ export const writeDOMRangeData = <V extends Value>(
   const endVoid = editorVoid(editor, { at: end.path });
 
   if (RangeApi.isCollapsed(range) && !startVoid) {
-    return;
+    return undefined;
   }
 
   let coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, range);
@@ -479,7 +481,7 @@ export const writeDOMRangeData = <V extends Value>(
       range,
       options.slice
     );
-    return;
+    return undefined;
   }
 
   // Clone the range so the encoded fragment can be recovered from HTML paste.
@@ -487,7 +489,7 @@ export const writeDOMRangeData = <V extends Value>(
 
   if (!domRange) {
     if (hasPolicyBoundaries) {
-      return;
+      return undefined;
     }
 
     writeModelBackedRangeData(
@@ -497,7 +499,7 @@ export const writeDOMRangeData = <V extends Value>(
       range,
       options.slice
     );
-    return;
+    return undefined;
   }
   let contents = domRange.cloneContents();
   let attach = getDefaultFragmentAttach(contents);
@@ -602,7 +604,7 @@ export const writeDOMRangeData = <V extends Value>(
     data.setData('text/html', div.innerHTML);
     data.setData('text/plain', getPlainText(div));
   }
-  contents.ownerDocument.body.removeChild(div);
+  div.remove();
   return data;
 };
 

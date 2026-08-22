@@ -29,13 +29,20 @@ export type SelectItem = {
   isNew?: boolean;
 };
 
+const EMPTY_SELECT_ITEMS: SelectItem[] = [];
+
 const areSelectItemsEqual = (
   previous: SelectItem[] | null | undefined,
   next: SelectItem[] | undefined
-) =>
-  (previous?.length ?? 0) === (next?.length ?? 0) &&
-  (previous ?? []).every((item, index) => item.value === next?.[index]?.value);
-const EMPTY_SELECT_ITEMS: SelectItem[] = [];
+) => {
+  const previousItems = previous ?? EMPTY_SELECT_ITEMS;
+  const nextItems = next ?? EMPTY_SELECT_ITEMS;
+
+  return (
+    previousItems.length === nextItems.length &&
+    previousItems.every((item, index) => item.value === nextItems[index]?.value)
+  );
+};
 
 type SelectEditorContextValue = {
   controlled: boolean;
@@ -66,7 +73,7 @@ const useSelectEditorContext = () => {
 export function SelectEditor({
   children,
   defaultValue,
-  items = [],
+  items = EMPTY_SELECT_ITEMS,
   value,
   onValueChange,
 }: {
@@ -79,20 +86,22 @@ export function SelectEditor({
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState(defaultValue);
   const hasSelectableItemsRef = React.useRef(false);
+  const contextValue = React.useMemo(
+    () => ({
+      controlled: value !== undefined,
+      hasSelectableItemsRef,
+      items,
+      open,
+      setOpen,
+      setValue: setInternalValue,
+      value: value ?? internalValue,
+      onValueChange,
+    }),
+    [internalValue, items, onValueChange, open, value]
+  );
 
   return (
-    <SelectEditorContext
-      value={{
-        controlled: value !== undefined,
-        hasSelectableItemsRef,
-        items,
-        open,
-        setOpen,
-        setValue: setInternalValue,
-        value: value ?? internalValue,
-        onValueChange,
-      }}
-    >
+    <SelectEditorContext value={contextValue}>
       <Command
         className="overflow-visible bg-transparent has-data-readonly:w-fit"
         shouldFilter={false}
@@ -122,8 +131,8 @@ export function SelectEditorContent({
 
   return (
     <Plate
-      onValueChange={({ editor }) => {
-        setSearch(editor.read.text.string([]));
+      onValueChange={({ editor: innerEditor }) => {
+        setSearch(innerEditor.read.text.string([]));
       }}
       editor={editor}
     >
@@ -142,7 +151,8 @@ function SelectEditorValueSync({
 }) {
   const editor = useEditor();
   const selectedItems = useEditorSelector(
-    (editor) => editor.plugin(MultiSelectPlugin).read.getSelectedItems(),
+    (innerEditor2) =>
+      innerEditor2.plugin(MultiSelectPlugin).read.getSelectedItems(),
     {
       equalityFn: (previous, next) =>
         !!previous &&
@@ -158,7 +168,7 @@ function SelectEditorValueSync({
 
   React.useEffect(() => {
     if (!controlled || editor.plugin(MultiSelectPlugin).read.isEqual(value)) {
-      return;
+      return undefined;
     }
     const timeout = globalThis.setTimeout(() => {
       const currentValue = valueRef.current;
@@ -168,9 +178,11 @@ function SelectEditorValueSync({
           children: createEditorValue(currentValue),
         });
       }
-    });
+    }, 0);
 
-    return () => globalThis.clearTimeout(timeout);
+    return () => {
+      globalThis.clearTimeout(timeout);
+    };
   }, [controlled, editor, selectedItems, value]);
 
   return null;
@@ -249,20 +261,23 @@ export function SelectEditorCombobox() {
   const previousValueRef = React.useRef(value);
   const selectedItems =
     useEditorSelector(
-      (editor) => editor.plugin(MultiSelectPlugin).read.getSelectedItems(),
+      (innerEditor3) =>
+        innerEditor3.plugin(MultiSelectPlugin).read.getSelectedItems(),
       {
         equalityFn: areSelectItemsEqual,
       }
     ) ?? EMPTY_SELECT_ITEMS;
-  const search = useEditorSelector((editor) => editor.read.text.string([]));
+  const search = useEditorSelector((innerEditor4) =>
+    innerEditor4.read.text.string([])
+  );
   const selectableItems = React.useMemo(() => {
     const seenValues = new Set<string>();
     const uniqueItems = items.filter((item) => {
-      const value = item.value.toLowerCase();
+      const innerValue = item.value.toLowerCase();
 
-      if (seenValues.has(value)) return false;
+      if (seenValues.has(innerValue)) return false;
 
-      seenValues.add(value);
+      seenValues.add(innerValue);
 
       return true;
     });
@@ -343,11 +358,14 @@ export function SelectEditorCombobox() {
       <PopoverContent
         className="p-0 data-[state=open]:animate-none"
         style={{
-          // Reading ref for dynamic width calculation.
-          width: (containerRef.current?.offsetWidth ?? 0) + 8,
+          width: 'calc(var(--radix-popover-trigger-width) + 8px)',
         }}
-        onCloseAutoFocus={(e) => e.preventDefault()}
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+        }}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
         align="start"
         alignOffset={-4}
         sideOffset={8}
@@ -358,7 +376,9 @@ export function SelectEditorCombobox() {
               <CommandItem
                 key={item.value}
                 className="cursor-pointer gap-2"
-                onMouseDown={(e) => e.preventDefault()}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                }}
                 onSelect={() => {
                   editor
                     .plugin(MultiSelectPlugin)

@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const slashCommandValue = (
+export const slashCommandValue: Value = (
   <fragment>
     <hheading level={2}>
       <htext>斜杠命令</htext>

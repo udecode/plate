@@ -202,7 +202,7 @@ describe('cursor geometry', () => {
 
       middleDomNode.getClientRects = () =>
         createRectList([new DOMRect(30, 40, 12, 8)]);
-      globalThis.Range.prototype.getClientRects = function () {
+      globalThis.Range.prototype.getClientRects = function getClientRects() {
         if (startDomNode.contains(this.startContainer)) {
           return createRectList([new DOMRect(10, 20, 5, 9)]);
         }

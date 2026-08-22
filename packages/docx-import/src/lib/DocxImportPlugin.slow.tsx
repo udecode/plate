@@ -45,7 +45,7 @@ const TestLinkPlugin = defineBasePlugin('link', {
         decode: ({ element }) => {
           const url = element.getAttribute('href');
 
-          if (!url) return;
+          if (!url) return undefined;
 
           return {
             target: element.getAttribute('target') || '_blank',
@@ -112,7 +112,7 @@ const TestTablePlugin = defineBasePlugin(PLUGINS.table, {
 
 const readDocxFixture = (filename: string): Buffer => {
   const docxTestDir = path.resolve(
-    __dirname,
+    import.meta.dirname,
     '../../../../apps/www/src/__tests__/package-integration/docx'
   );
   const filepath = path.join(docxTestDir, `${filename}.docx`);

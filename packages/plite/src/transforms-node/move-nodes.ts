@@ -10,11 +10,12 @@ import {
   isBlock as editorIsBlock,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
-import { type Path, PathApi } from '../interfaces/path';
+import { PathApi } from '../interfaces/path';
 import type {
   NodeMoveNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { normalizeNodeMatch } from '../utils/node-match';
 
 export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
@@ -36,17 +37,17 @@ export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
             at.at(-1) != null &&
             to.at(-1) != null &&
             PathApi.equals(at.slice(0, -1), to.slice(0, -1)) &&
-            at.at(-1)! < to.at(-1)!;
+            getDefined(at.at(-1)) < getDefined(to.at(-1));
 
           const effectiveTo = sameParentForwardMove
             ? [
                 ...to.slice(0, -1),
                 Math.min(
-                  to.at(-1)!,
-                  NodeApi.isEditor(getNode(editor, at.slice(0, -1) as Path)[0])
+                  getDefined(to.at(-1)),
+                  NodeApi.isEditor(getNode(editor, at.slice(0, -1))[0])
                     ? editorGetChildren(editor).length - 1
                     : (
-                        getNode(editor, at.slice(0, -1) as Path)[0] as {
+                        getNode(editor, at.slice(0, -1))[0] as {
                           readonly children: readonly unknown[];
                         }
                       ).children.length - 1

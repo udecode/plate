@@ -1,3 +1,4 @@
+import { failInvariant } from '@platejs/plite/internal';
 import React from 'react';
 
 import {
@@ -32,7 +33,7 @@ export const pipeRenderElementStatic = (
       : undefined;
 
     if (plugin && binding?.kind === 'element') {
-      return pluginRenderElementStatic(editor, plugin)(props as any);
+      return pluginRenderElementStatic(editor, plugin)(props);
     }
 
     if (renderElementProp) {
@@ -43,7 +44,7 @@ export const pipeRenderElementStatic = (
       editor,
       path: props.path,
       props: { ...props } as any,
-    }) as any;
+    });
 
     return (
       <PliteElement {...ctxProps}>
@@ -51,8 +52,9 @@ export const pipeRenderElementStatic = (
 
         {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
           (name) => {
-            const plugin = getCompiledPlatePlugin(editor, name)! as any;
-            const Component = plugin.render.belowRootNodes;
+            const innerPlugin = (getCompiledPlatePlugin(editor, name) ??
+              failInvariant('Expected value to be defined')) as any;
+            const Component = innerPlugin.render.belowRootNodes;
 
             return <Component key={name} {...ctxProps} />;
           }

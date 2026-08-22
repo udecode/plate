@@ -40,6 +40,7 @@ import type {
   NodeMutationMethods,
   NodeSplitNodesOptions,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -119,7 +120,7 @@ const isInlineStartSplit = (
   editorIsStart(editor, point, path);
 
 const getActiveDraftRoot = (editor: Editor): Node => {
-  const value = getActiveDocumentChangeBuilder(editor).value;
+  const { value } = getActiveDocumentChangeBuilder(editor);
   const root = getActiveUpdateRoot(editor) ?? 'main';
 
   return {
@@ -215,7 +216,7 @@ export const splitNodes = ((
               builder.splitNode(
                 root,
                 path,
-                options.position!,
+                getDefined(options.position),
                 getSplitProperties(editor, node, path, root)
               )
             );
@@ -308,8 +309,8 @@ export const splitNodes = ((
             if (!after) {
               const text = { text: '' };
               const afterPath = PathApi.next(voidPath);
-              insertNodes(editor as Editor, text, { at: afterPath, voids });
-              after = editorPoint(editor, afterPath)!;
+              insertNodes(editor, text, { at: afterPath, voids });
+              after = getDefined(editorPoint(editor, afterPath));
             }
 
             splitPoint = after;
@@ -342,7 +343,7 @@ export const splitNodes = ((
         const lowestPath = splitPoint.path.slice(0, depth);
         let rightHighestPath: Path | null = null;
         let position =
-          height === 0 ? splitPoint.offset : splitPoint.path[depth]!;
+          height === 0 ? splitPoint.offset : splitPoint.path[depth];
         let didSplitDescendant = false;
 
         profileCoreDuration('split-nodes-levels-loop', () => {
@@ -361,7 +362,7 @@ export const splitNodes = ((
               break;
             }
 
-            const point = beforeAnchor.resolve()!;
+            const point = getDefined(beforeAnchor.resolve());
             const isEnd = editorIsEnd(editor, point, path);
 
             if (
@@ -390,7 +391,7 @@ export const splitNodes = ((
               rightHighestPath = PathApi.next(path);
             }
 
-            position = path.at(-1)! + (split || isEnd ? 1 : 0);
+            position = getDefined(path.at(-1)) + (split || isEnd ? 1 : 0);
           }
         });
 

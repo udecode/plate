@@ -144,13 +144,17 @@ export const focusPliteEditableAfterEventFrame = <
   const cancelFrame = domPhaseScheduler.schedule(
     'dom-write',
     'focus-editable-frame',
-    () => focusPliteEditable(editor),
+    () => {
+      focusPliteEditable(editor);
+    },
     { timing: 'animation-frame' }
   );
   const cancelSettle = domPhaseScheduler.schedule(
     'dom-write',
     'focus-editable-settle',
-    () => focusPliteEditable(editor),
+    () => {
+      focusPliteEditable(editor);
+    },
     { timing: 'timeout' }
   );
 

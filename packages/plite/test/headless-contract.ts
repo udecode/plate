@@ -34,7 +34,7 @@ const createSelectedEditor = (): EditorType =>
       jsx('anchor', { path: [1, 0], offset: 2 }),
       jsx('focus', { path: [1, 0], offset: 2 })
     )
-  ) as EditorType;
+  );
 
 describe('plite headless contract', () => {
   it('supports package-split headless composition through source-resolved package imports', () => {

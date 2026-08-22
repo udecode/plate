@@ -94,7 +94,7 @@ type RequiredMarkElement = {
   children: RequiredMarkText[];
 };
 
-type CustomValue = (ParagraphElement | QuoteElement)[];
+type CustomValue = Array<ParagraphElement | QuoteElement>;
 
 const value: CustomValue = [{ type: 'paragraph', children: [{ text: 'one' }] }];
 
@@ -106,10 +106,10 @@ const inferredReadonlyEditor = createEditor({
   ],
 });
 declare const externalDocument: EditorDocumentValue<
-  {
-    children: { text: string; transient: false }[];
+  Array<{
+    children: Array<{ text: string; transient: false }>;
     type: 'external';
-  }[]
+  }>
 >;
 const fittedDocument = typedEditor.read.schema.fitDocument(externalDocument);
 
@@ -210,7 +210,7 @@ type _ElementEntry = Assert<
 >;
 
 const assertReadonlyPublication = (
-  value: Value,
+  innerValue: Value,
   element: Element,
   text: Text,
   path: Path,
@@ -219,7 +219,7 @@ const assertReadonlyPublication = (
   snapshot: EditorSnapshot
 ) => {
   // @ts-expect-error published values do not expose array mutation
-  value[0] = element;
+  innerValue[0] = element;
   // @ts-expect-error published element children are readonly
   element.children[0] = text;
   // @ts-expect-error published element properties are readonly
@@ -321,9 +321,9 @@ const maybeElement: unknown = {
   type: 'paragraph',
   children: [{ text: 'one' }],
 };
-if (ElementApi.isElement<ParagraphElement>(maybeElement)) {
-  const custom: ParagraphElement = maybeElement;
-  void custom;
+if (ElementApi.isElement(maybeElement)) {
+  const element: Element = maybeElement;
+  void element;
 }
 
 const assertPrimitiveMethodTypes = () => {
@@ -331,7 +331,7 @@ const assertPrimitiveMethodTypes = () => {
     typedEditor.read.slice.get();
   const fitted: false | import('@platejs/plite').TransactionSpec =
     typedEditor.read.slice.fit(slice);
-  const fittedContent: readonly DescendantIn<CustomValue>[] | null =
+  const fittedContent: ReadonlyArray<DescendantIn<CustomValue>> | null =
     typedEditor.read.slice.fitContent(slice, {
       parent: { children: [{ text: '' }], type: 'paragraph' },
     });

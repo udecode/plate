@@ -18,7 +18,7 @@ export type YjsSchemaEnvelope = Readonly<{
 const readEnvelopeProperties = (
   value: unknown
 ): Readonly<{ format: unknown; identity: unknown }> | undefined => {
-  if (!isRecord(value)) return;
+  if (!isRecord(value)) return undefined;
 
   try {
     const prototype = Object.getPrototypeOf(value);
@@ -27,7 +27,7 @@ const readEnvelopeProperties = (
       (prototype !== Object.prototype && prototype !== null) ||
       Reflect.ownKeys(value).length !== 2
     ) {
-      return;
+      return undefined;
     }
 
     const format = Object.getOwnPropertyDescriptor(value, 'format');
@@ -41,11 +41,15 @@ const readEnvelopeProperties = (
       !Object.hasOwn(identity, 'value') ||
       identity.enumerable !== true
     ) {
-      return;
+      return undefined;
     }
 
     return { format: format.value, identity: identity.value };
-  } catch {}
+  } catch {
+    // Invalid metadata is treated as absent and renegotiated by the provider.
+  }
+
+  return undefined;
 };
 
 const freezeIdentity = (

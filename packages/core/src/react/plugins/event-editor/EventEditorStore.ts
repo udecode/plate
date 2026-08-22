@@ -14,17 +14,16 @@ export type EventEditorState = {
 };
 
 /** Store where the keys are event names and the values are editor ids. */
-export const EventEditorStore = createZustandStore(
-  {
-    blur: null,
-    focus: null,
-    last: null,
-  } as EventEditorState,
-  {
-    mutative: true,
-    name: 'event-editor',
-  }
-);
+const initialEventEditorState: EventEditorState = {
+  blur: null,
+  focus: null,
+  last: null,
+};
+
+export const EventEditorStore = createZustandStore(initialEventEditorState, {
+  mutative: true,
+  name: 'event-editor',
+});
 
 export const getEventPlateId = (id?: string) => {
   if (id) return id;

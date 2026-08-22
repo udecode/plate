@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const iframeValue = (
+export const iframeValue: Value = (
   <fragment>
     <hp>
       在这个示例中，文档被渲染到一个受控的 <htext code>iframe</htext> 中。

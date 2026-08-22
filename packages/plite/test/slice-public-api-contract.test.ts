@@ -52,9 +52,9 @@ describe('slice and fragment public APIs', () => {
     let sliceCommits = 0;
     let fragmentCommits = 0;
 
-    previewEditor.subscribeCommit(() => previewCommits++);
-    sliceEditor.subscribeCommit(() => sliceCommits++);
-    fragmentEditor.subscribeCommit(() => fragmentCommits++);
+    previewEditor.subscribeCommit(() => (previewCommits += 1) - 1);
+    sliceEditor.subscribeCommit(() => (sliceCommits += 1) - 1);
+    fragmentEditor.subscribeCommit(() => (fragmentCommits += 1) - 1);
 
     const spec = previewEditor.read.slice.fit(slice);
 
@@ -84,7 +84,7 @@ describe('slice and fragment public APIs', () => {
     const before = editor.read.runtime.snapshot();
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
 
     const result = editor.read.slice.fit(ContentSlice.closed([{ text: '!' }]), {
       at: [99],

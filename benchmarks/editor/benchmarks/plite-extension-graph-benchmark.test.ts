@@ -26,15 +26,15 @@ describe('extension graph benchmark authority', () => {
     );
 
     assert.equal(targets.length, 1);
-    assert.match(targets[0]!.command, /PLITE_EXTENSION_GRAPH_STRICT=1/u);
-    assert.match(targets[0]!.command, /plite-extension-graph-benchmark\.ts/u);
+    assert.match(targets[0].command, /PLITE_EXTENSION_GRAPH_STRICT=1/u);
+    assert.match(targets[0].command, /plite-extension-graph-benchmark\.ts/u);
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_extension_graph_worst_budget_ratio'
     );
-    assert.equal(targets[0]!.metrics.printsMetric, true);
-    assert.equal(targets[0]!.metrics.unit, 'ratio');
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.equal(targets[0].metrics.printsMetric, true);
+    assert.equal(targets[0].metrics.unit, 'ratio');
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/plite-extension-graph-benchmark.json',
         required: true,

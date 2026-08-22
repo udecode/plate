@@ -201,7 +201,9 @@ const DocumentStatePanel = () => {
       </div>
       <div className="plite-document-state-controls">
         <Button
-          onClick={() => setTitle('Q3 Launch Brief')}
+          onClick={() => {
+            setTitle('Q3 Launch Brief');
+          }}
           type="button"
           variant="outline"
         >

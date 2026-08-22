@@ -5,9 +5,10 @@ import {
   type EditableProps as PliteEditableProps,
   useOptionalEditorReadOnly,
 } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import { useHotkeysContext } from '@udecode/react-hotkeys';
 import { useComposedRef } from '@udecode/react-utils';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import React, { useRef } from 'react';
@@ -138,7 +139,7 @@ function PlateContentBranch({
   const { id } = editableInput;
   const { activeScopes } = useHotkeysContext();
   const modelRevision = usePlateModelRevision(editor);
-  const shortcutTable = getPlateRuntime(editor).shortcutTable;
+  const { shortcutTable } = getPlateRuntime(editor);
   const store = usePlateStore(id);
   const storeDecorate = useAtomStoreValue(store, 'decorate');
   const storeRenderElement = useAtomStoreValue(store, 'renderElement');
@@ -173,7 +174,7 @@ function PlateContentBranch({
   const scrollSelectionIntoView = React.useMemo<
     PliteEditableProps['scrollSelectionIntoView']
   >(() => {
-    if (!editableInput.scrollSelectionIntoView) return;
+    if (!editableInput.scrollSelectionIntoView) return undefined;
 
     return (_editor, domRange) => {
       editableInput.scrollSelectionIntoView?.(editor, domRange);
@@ -222,6 +223,8 @@ function PlateContentBranch({
           ) {
             event.preventDefault();
           }
+
+          // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Detect propagation stopped directly on the native event, then synchronize React's event flag.
           if (event.nativeEvent.cancelBubble) {
             event.stopPropagation();
 
@@ -285,10 +288,14 @@ function PlateContentBranch({
   let beforeEditable: React.ReactNode = null;
 
   getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-    const BeforeEditable = plugin.render.beforeEditable!;
+    const BeforeEditable =
+      plugin.render.beforeEditable ??
+      failInvariant('Expected value to be defined');
 
     beforeEditable = (
       <>
@@ -299,10 +306,14 @@ function PlateContentBranch({
   });
 
   getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-    const AfterEditable = plugin.render.afterEditable!;
+    const AfterEditable =
+      plugin.render.afterEditable ??
+      failInvariant('Expected value to be defined');
 
     afterEditable = (
       <>
@@ -322,10 +333,14 @@ function PlateContentBranch({
   );
 
   getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-    const AboveEditable = plugin.render.aboveEditable!;
+    const AboveEditable =
+      plugin.render.aboveEditable ??
+      failInvariant('Expected value to be defined');
 
     aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
   });

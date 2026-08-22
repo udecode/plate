@@ -35,15 +35,18 @@ export type DebugPluginState = {
 const initialState: DebugPluginState = {
   isProduction: process.env.NODE_ENV === 'production',
   logger: {
-    error: (message, type, details) =>
-      console.error(`${type ? `[${type}] ` : ''}${message}`, details),
-    info: (message, type, details) =>
-      console.info(`${type ? `[${type}] ` : ''}${message}`, details),
-    log: (message, type, details) =>
-      // lib.
-      console.log(`${type ? `[${type}] ` : ''}${message}`, details),
-    warn: (message, type, details) =>
-      console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
+    error: (message, type, details) => {
+      console.error(`${type ? `[${type}] ` : ''}${message}`, details);
+    },
+    info: (message, type, details) => {
+      console.info(`${type ? `[${type}] ` : ''}${message}`, details);
+    },
+    log: (message, type, details) => {
+      console.log(`${type ? `[${type}] ` : ''}${message}`, details);
+    },
+    warn: (message, type, details) => {
+      console.warn(`${type ? `[${type}] ` : ''}${message}`, details);
+    },
   },
   logLevel: process.env.NODE_ENV === 'production' ? 'error' : 'log',
   throwErrors: true,
@@ -74,7 +77,7 @@ export const DebugPlugin = defineBasePlugin('debug', {
       const state = store.get();
 
       if (state.isProduction && level === 'log') return;
-      if (logLevels.indexOf(level) <= logLevels.indexOf(state.logLevel!)) {
+      if (logLevels.indexOf(level) <= logLevels.indexOf(state.logLevel)) {
         if (level === 'error' && state.throwErrors) {
           throw new PlateError(message, type);
         }
@@ -83,14 +86,18 @@ export const DebugPlugin = defineBasePlugin('debug', {
     };
 
     return {
-      error: (message: unknown, type?: DebugErrorType, details?: unknown) =>
-        log('error', String(message), type, details),
-      info: (message: string, type?: DebugErrorType, details?: unknown) =>
-        log('info', message, type, details),
-      log: (message: string, type?: DebugErrorType, details?: unknown) =>
-        log('log', message, type, details),
-      warn: (message: string, type?: DebugErrorType, details?: unknown) =>
-        log('warn', message, type, details),
+      error: (message: unknown, type?: DebugErrorType, details?: unknown) => {
+        log('error', String(message), type, details);
+      },
+      info: (message: string, type?: DebugErrorType, details?: unknown) => {
+        log('info', message, type, details);
+      },
+      log: (message: string, type?: DebugErrorType, details?: unknown) => {
+        log('log', message, type, details);
+      },
+      warn: (message: string, type?: DebugErrorType, details?: unknown) => {
+        log('warn', message, type, details);
+      },
     };
   },
   initialState,

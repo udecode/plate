@@ -95,7 +95,7 @@ describe('when inserting html', () => {
         initialValue: input.children,
       });
 
-      insertData(editor, dataTransfer as any);
+      insertData(editor, dataTransfer);
 
       expect(editor.read.children()).toEqual(expected.children);
     });

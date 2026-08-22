@@ -103,7 +103,7 @@ const readSerializedEffect = (
     (input.version as number) < 1 ||
     !Object.hasOwn(input, 'value')
   ) {
-    return;
+    return undefined;
   }
 
   try {
@@ -113,7 +113,11 @@ const readSerializedEffect = (
       value: deepFreeze(structuredClone(input.value)),
       version: input.version as number,
     });
-  } catch {}
+  } catch {
+    // Invalid effect-log metadata is excluded from the shared payload.
+  }
+
+  return undefined;
 };
 
 const getEventId = (source: string, sequence: number): string =>
@@ -142,7 +146,7 @@ const readSharedEffectAuthority = (
     typeof input.peerId !== 'string' ||
     !isCanonicalSource(input.peerId)
   ) {
-    return;
+    return undefined;
   }
 
   return Object.freeze({
@@ -155,11 +159,11 @@ const readSharedEffectAuthority = (
 const readEventId = (
   input: unknown
 ): Readonly<{ sequence: number; source: string }> | undefined => {
-  if (typeof input !== 'string') return;
+  if (typeof input !== 'string') return undefined;
 
   const separator = input.indexOf(':');
 
-  if (separator < 1 || separator !== input.lastIndexOf(':')) return;
+  if (separator < 1 || separator !== input.lastIndexOf(':')) return undefined;
 
   const source = input.slice(0, separator);
   const sequence = Number(input.slice(separator + 1));
@@ -170,19 +174,21 @@ const readEventId = (
     sequence < 1 ||
     input !== getEventId(source, sequence)
   ) {
-    return;
+    return undefined;
   }
 
   return Object.freeze({ sequence, source });
 };
 
 const readRecipients = (input: unknown): readonly string[] | undefined => {
-  if (!Array.isArray(input)) return;
+  if (!Array.isArray(input)) return undefined;
 
   const recipients = new Set<string>();
 
   for (const peerId of input) {
-    if (typeof peerId !== 'string' || !isCanonicalSource(peerId)) return;
+    if (typeof peerId !== 'string' || !isCanonicalSource(peerId)) {
+      return undefined;
+    }
 
     recipients.add(peerId);
   }
@@ -193,7 +199,7 @@ const readRecipients = (input: unknown): readonly string[] | undefined => {
 const readWatermarks = (
   input: unknown
 ): YjsSharedEffectWatermarks | undefined => {
-  if (!isRecord(input)) return;
+  if (!isRecord(input)) return undefined;
 
   const entries: Array<readonly [string, number]> = [];
 
@@ -203,7 +209,7 @@ const readWatermarks = (
       !Number.isSafeInteger(value) ||
       (value as number) < 0
     ) {
-      return;
+      return undefined;
     }
 
     entries.push([source, value as number]);
@@ -228,7 +234,7 @@ const readSharedEffectCheckpoint = (
     typeof input.id !== 'string' ||
     !Array.isArray(input.effects)
   ) {
-    return;
+    return undefined;
   }
 
   const through = readWatermarks(input.through);
@@ -239,7 +245,7 @@ const readSharedEffectCheckpoint = (
     input.id !== createCheckpointId(through) ||
     effects.some((effect) => effect === undefined)
   ) {
-    return;
+    return undefined;
   }
 
   return Object.freeze({
@@ -259,7 +265,7 @@ const readSharedEffectAck = (
     typeof input.active !== 'boolean' ||
     !Array.isArray(input.consumed)
   ) {
-    return;
+    return undefined;
   }
 
   const through = readWatermarks(input.through);
@@ -267,7 +273,9 @@ const readSharedEffectAck = (
     readEventId(eventId) ? (eventId as string) : undefined
   );
 
-  if (!through || consumed.some((eventId) => eventId === undefined)) return;
+  if (!through || consumed.some((eventId) => eventId === undefined)) {
+    return undefined;
+  }
 
   return Object.freeze({
     active: input.active,
@@ -302,13 +310,13 @@ const readSharedEffectEvent = (
     !isRecord(input.effect) ||
     (input.replay !== 'latest' && input.replay !== 'live')
   ) {
-    return;
+    return undefined;
   }
 
   const sequence = input.sequence as number;
 
   if (input.id !== getEventId(input.source, sequence)) {
-    return;
+    return undefined;
   }
 
   const effect = readSerializedEffect(input.effect);
@@ -319,7 +327,7 @@ const readSharedEffectEvent = (
     !recipients ||
     (input.replay === 'latest' && recipients.length > 0)
   ) {
-    return;
+    return undefined;
   }
 
   return Object.freeze({
@@ -1318,7 +1326,7 @@ export class YjsSharedEffectLog {
   private trimPendingOrder(): void {
     while (
       this.pendingHead < this.pendingOrder.length &&
-      !this.pendingEvents.has(this.pendingOrder[this.pendingHead]!)
+      !this.pendingEvents.has(this.pendingOrder[this.pendingHead])
     ) {
       this.pendingHead += 1;
     }

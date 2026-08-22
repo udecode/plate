@@ -42,7 +42,7 @@ const createSchedulerWindow = () => {
         return animationFrames.length;
       },
       setTimeout: (callback: () => void) => {
-        const handle = nextHandle++;
+        const handle = (nextHandle += 1) - 1;
 
         timeouts.set(handle, callback);
         return handle;
@@ -233,7 +233,7 @@ test('destroying the standalone fallback cancels its queued host work', () => {
   const fake = createSchedulerWindow();
   const callback = mock();
 
-  EDITOR_TO_WINDOW.set(editor, fake.schedulerWindow as Window);
+  EDITOR_TO_WINDOW.set(editor, fake.schedulerWindow);
   scheduleEditorDOMPhase(editor, 'dom-write', 'fallback', callback);
   expect(fake.animationFrames).toHaveLength(1);
 
@@ -273,7 +273,9 @@ test('mounting one root does not cancel a sibling root fallback queue', async ()
     mountedScheduler
   );
 
-  await new Promise<void>((resolve) => window.queueMicrotask(resolve));
+  await new Promise<void>((resolve) => {
+    window.queueMicrotask(resolve);
+  });
 
   expect(callback).toHaveBeenCalledTimes(1);
   expect(mountedSchedule).not.toHaveBeenCalled();
@@ -296,13 +298,17 @@ test('standalone root replacement retires queued work from the old root', async 
   });
   setEditorDOMRootElement(editor, secondRoot);
 
-  await new Promise<void>((resolve) => window.queueMicrotask(resolve));
+  await new Promise<void>((resolve) => {
+    window.queueMicrotask(resolve);
+  });
   expect(oldRootCallback).not.toHaveBeenCalled();
 
   scheduleEditorDOMPhase(editor, 'dom-write', 'new-root', newRootCallback, {
     timing: 'microtask',
   });
-  await new Promise<void>((resolve) => window.queueMicrotask(resolve));
+  await new Promise<void>((resolve) => {
+    window.queueMicrotask(resolve);
+  });
   expect(newRootCallback).toHaveBeenCalledTimes(1);
 
   setEditorDOMRootElement(editor, null);
@@ -320,7 +326,9 @@ test('fallback callbacks fail closed when the editor root changes directly', asy
   });
   EDITOR_TO_ELEMENT.set(editor, secondRoot);
 
-  await new Promise<void>((resolve) => window.queueMicrotask(resolve));
+  await new Promise<void>((resolve) => {
+    window.queueMicrotask(resolve);
+  });
   expect(callback).not.toHaveBeenCalled();
 
   destroyEditorDOMPhaseSchedulerFallback(editor);

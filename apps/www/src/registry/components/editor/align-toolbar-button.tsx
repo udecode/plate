@@ -40,10 +40,10 @@ const items = [
     icon: AlignJustifyIcon,
     value: 'justify',
   },
-] as const satisfies readonly {
+] as const satisfies ReadonlyArray<{
   icon: React.ComponentType;
   value: Alignment;
-}[];
+}>;
 
 export function AlignToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();
@@ -52,10 +52,11 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
       defaultValue: 'start',
       getProp: (node) =>
         ElementApi.isElement(node)
-          ? items.find(({ value }) => value === node.textAlign)?.value
+          ? items.find(({ value: innerValue }) => innerValue === node.textAlign)
+              ?.value
           : undefined,
     }) ?? 'left';
-  const selectedValue = String(value);
+  const selectedValue = typeof value === 'string' ? value : 'left';
 
   const [open, setOpen] = React.useState(false);
   const IconValue =
@@ -72,8 +73,10 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
       <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup
           value={selectedValue}
-          onValueChange={(value) => {
-            const alignment = items.find((item) => item.value === value)?.value;
+          onValueChange={(innerValue2) => {
+            const alignment = items.find(
+              (item) => item.value === innerValue2
+            )?.value;
 
             if (!alignment) return;
 

@@ -1,7 +1,6 @@
 import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
-  type NamedRootKey,
   type Range,
   RangeApi,
 } from '@platejs/plite';
@@ -58,7 +57,7 @@ const getProjectedViewSelectionClipboardRanges = (
     const roots = Object.fromEntries(
       [...rootKeys].map((root) => [
         root,
-        root === 'main' ? state.children() : state.root(root as NamedRootKey),
+        root === 'main' ? state.children() : state.root(root),
       ])
     );
     const ranges: Range[] = [];

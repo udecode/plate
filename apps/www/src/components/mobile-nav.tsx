@@ -39,7 +39,7 @@ function getNavTitle(item: SidebarNavItem, locale: string) {
 }
 
 function getNavHref(item: SidebarNavItem, locale: string) {
-  if (!item.href) return;
+  if (!item.href) return undefined;
 
   return hrefWithLocale(item.href, locale);
 }
@@ -84,7 +84,7 @@ export function MobileNav({
   const [open, setOpen] = React.useState(false);
   const locale = useLocale();
   const pathname = usePathname();
-  const content = i18n[locale as keyof typeof i18n];
+  const content = i18n[locale];
   const { sidebarNav } = useLazySidebarNav(locale, open && !tree);
   const docsRoot = getDocsRootFromPathname(pathname ?? '');
   const navTree = React.useMemo(
@@ -95,7 +95,7 @@ export function MobileNav({
   const renderNavLink = (
     item: SidebarNavItem,
     key: React.Key,
-    className?: string
+    innerClassName?: string
   ) => {
     const href = getNavHref(item, locale);
 
@@ -106,7 +106,7 @@ export function MobileNav({
     return (
       <MobileLink
         key={key}
-        className={className}
+        className={innerClassName}
         onOpenChange={setOpen}
         href={href}
         rel={external ? 'noreferrer' : undefined}
@@ -128,8 +128,12 @@ export function MobileNav({
             '-ml-2 mr-2 size-8 px-0 text-base lg:hidden',
             className
           )}
-          onFocus={() => preloadSidebarNav(locale)}
-          onPointerEnter={() => preloadSidebarNav(locale)}
+          onFocus={() => {
+            preloadSidebarNav(locale);
+          }}
+          onPointerEnter={() => {
+            preloadSidebarNav(locale);
+          }}
         >
           <div className="relative flex h-8 w-4 items-center justify-center">
             <div className="relative size-4">
@@ -153,6 +157,7 @@ export function MobileNav({
           </span>
         </Button>
       </PopoverTrigger>
+      {/* oxlint-disable-next-line react-doctor/no-transition-all -- [P1 local-invariant] The shared popover owns its transition properties; this caller only sets duration and backdrop behavior. */}
       <PopoverContent
         className="no-scrollbar h-(--radix-popper-available-height) w-(--radix-popper-available-width) overflow-y-auto rounded-none border-none bg-background/90 p-0 shadow-none backdrop-blur duration-100"
         align="start"

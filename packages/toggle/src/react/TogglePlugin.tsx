@@ -6,6 +6,7 @@ import {
   ElementApi,
   PathApi,
 } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 
 import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 import { ToggleVisibility } from './ToggleVisibility.internal';
@@ -22,7 +23,9 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
           return false;
         }
 
-        const toggleKey = state.key(currentBlockEntry[1])!;
+        const toggleKey =
+          state.key(currentBlockEntry[1]) ??
+          failInvariant('Expected value to be defined');
         const isOpen = store.get('isOpen', toggleKey);
         const lastEnclosedEntry = isOpen
           ? undefined
@@ -38,7 +41,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
             const insertedBlock = tx.nodes.block();
 
             if (insertedBlock) {
-              const indent = insertedBlock[0].indent;
+              const { indent } = insertedBlock[0];
 
               tx.nodes.set(
                 {
@@ -78,7 +81,11 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
             if (
               !blockBefore ||
               !ElementApi.isElement(blockBefore[0]) ||
-              !store.get('isClosed', state.key(blockBefore[1])!)
+              !store.get(
+                'isClosed',
+                state.key(blockBefore[1]) ??
+                  failInvariant('Expected value to be defined')
+              )
             ) {
               return;
             }
@@ -111,7 +118,11 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
           if (
             !blockAfter ||
             !ElementApi.isElement(blockAfter[0]) ||
-            !store.get('isClosed', state.key(blockAfter[1])!)
+            !store.get(
+              'isClosed',
+              state.key(blockAfter[1]) ??
+                failInvariant('Expected value to be defined')
+            )
           ) {
             return;
           }

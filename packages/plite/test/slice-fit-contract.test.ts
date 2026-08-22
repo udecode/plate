@@ -217,7 +217,7 @@ describe('contextual schema slice fitting', () => {
     const source = [paragraph('before')];
     const slice = ContentSlice.closed(source);
 
-    source[0]!.children[0] = { text: 'after' };
+    source[0].children[0] = { text: 'after' };
 
     assert.deepEqual(slice.content, [paragraph('before')]);
     assert.equal(Object.isFrozen(slice.content), true);
@@ -322,9 +322,9 @@ describe('contextual schema slice fitting', () => {
     const after = editor.read.children();
 
     assert.equal(after[0], block);
-    assert.equal(after[0]!.children[0], text);
+    assert.equal(after[0].children[0], text);
     assert.notEqual(after[1], block);
-    assert.notEqual(after[1]!.children[0], text);
+    assert.notEqual(after[1].children[0], text);
   });
 
   it('reads canonical slices with their structural edges intact', () => {
@@ -568,8 +568,8 @@ describe('contextual schema slice fitting', () => {
       profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind !== 'core-time') return;
-          if (event.id === 'slice-fit-canonicalize') canonicalized++;
-          if (event.id === 'slice-fit-variant-materialize') materialized++;
+          if (event.id === 'slice-fit-canonicalize') canonicalized += 1;
+          if (event.id === 'slice-fit-variant-materialize') materialized += 1;
         },
       };
       fitted = editor.read.slice.fit(
@@ -616,7 +616,7 @@ describe('contextual schema slice fitting', () => {
     const committedBefore = editor.read.children();
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     editor.update((tx) => {
       assert.equal(
         tx.slice.replace(slice, {
@@ -732,7 +732,7 @@ describe('contextual schema slice fitting', () => {
     let commits = 0;
     let replaced = true;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     editor.update((tx) => {
       replaced = tx.slice.replace(
         ContentSlice.closed([
@@ -1080,7 +1080,7 @@ describe('contextual schema slice fitting', () => {
           {
             event: 'content',
             correct() {
-              correctionVisits++;
+              correctionVisits += 1;
             },
           },
         ],
@@ -1146,8 +1146,8 @@ describe('contextual schema slice fitting', () => {
     assert.equal(after[1], before[1]);
     assert.notEqual(after[0], after[2]);
     assert.notEqual(after[1], after[3]);
-    assert.notEqual(after[2]!.children[0], after[0]!.children[0]);
-    assert.notEqual(after[3]!.children[0], after[1]!.children[0]);
+    assert.notEqual(after[2].children[0], after[0].children[0]);
+    assert.notEqual(after[3].children[0], after[1].children[0]);
     assert.equal(editor.key([0]), firstNodeKey);
     assert.equal(editor.key([1]), secondNodeKey);
     assert.notEqual(editor.key([0]), editor.key([2]));
@@ -1216,7 +1216,7 @@ describe('contextual schema slice fitting', () => {
             event.kind === 'core-time' &&
             event.id === 'slice-fit-variant-materialize'
           ) {
-            materialized++;
+            materialized += 1;
           }
         },
       };
@@ -1396,7 +1396,7 @@ describe('contextual schema slice fitting', () => {
             event.kind === 'core-time' &&
             event.id === 'representation-fit-proof-hit'
           ) {
-            proofHits++;
+            proofHits += 1;
           }
         },
       };
@@ -1816,6 +1816,63 @@ describe('contextual schema slice fitting', () => {
     assert.equal(editor.read.children()[1], tail);
   });
 
+  it('composes inline void deletion and fitted reinsertion in one transaction', () => {
+    const editor = createEditor({
+      extensions: [defineMentionSchema('inline-void-move-transaction')],
+      initialValue: [
+        paragraph('', [
+          { text: 'Create links, mention ' },
+          {
+            character: 'Alice',
+            children: [{ text: '' }],
+            type: 'mention',
+          },
+          { text: ', or insert emojis.' },
+        ]),
+      ],
+    });
+    const draggedRange = editor.read.ranges.get([0, 1]);
+
+    assert.ok(draggedRange);
+    const slice = editor.read.slice.get({ at: draggedRange });
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
+
+    editor.update((tx) => {
+      const target = tx.anchor(
+        {
+          anchor: { offset: ', or insert'.length, path: [0, 2] },
+          focus: { offset: ', or insert'.length, path: [0, 2] },
+          kind: 'text',
+        },
+        { association: 'forward', deletion: 'nearest' }
+      );
+
+      tx.text.delete({ at: draggedRange });
+
+      const dropRange = target.release();
+
+      assert.ok(dropRange);
+      assert.equal(tx.slice.replace(slice, { at: dropRange }), true);
+    });
+    unsubscribe();
+
+    const { children } = editor.read.children()[0];
+    const mentionIndex = children.findIndex(
+      (node) => ElementApi.isElement(node) && node.type === 'mention'
+    );
+
+    assert.ok(mentionIndex > 0);
+    assert.equal(commits, 1);
+    assert.match(
+      children
+        .slice(0, mentionIndex)
+        .map((node) => (ElementApi.isElement(node) ? '' : node.text))
+        .join(''),
+      /or insert$/
+    );
+  });
+
   it('keeps named-root selection coordinates on fitted insertion', () => {
     const namedSchema = defineEditorSchema('schema:named-root-slice-fit', {
       elements: {
@@ -2130,7 +2187,7 @@ describe('contextual schema slice fitting', () => {
     });
     let commits = 0;
 
-    editor.subscribeCommit(() => commits++);
+    editor.subscribeCommit(() => (commits += 1) - 1);
     assert.throws(
       () => editor.update((tx) => tx.changes.apply(noncanonical)),
       /canonical editor representation/i

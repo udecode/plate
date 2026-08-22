@@ -30,10 +30,7 @@ import type { AndroidInputManager } from '../hooks/android-input-manager/android
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
-import {
-  isPliteViewSelectionCollapsed,
-  readPliteViewSelection,
-} from '../view-selection';
+import { readPliteViewSelection } from '../view-selection';
 import { applyEditableCaretMovement, getTextDirection } from './caret-engine';
 import {
   applyContentRootNavigation,
@@ -48,8 +45,8 @@ import {
 } from './editing-epoch-adapter';
 import { getEditableCommandFromKeyDown } from './editing-kernel';
 import {
+  getModelOwnedHistoryFocusRepair,
   type HistoryFocusOwnerApi,
-  resolveHistoryFocusEditor,
 } from './history-focus';
 import {
   type EditableCompositionStateSetter,
@@ -59,33 +56,32 @@ import {
   isNestedEditableDOMTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
-import {
-  applyModelOwnedHistoryIntent,
-  shouldForceRenderAfterModelOwnedHistory,
-} from './model-input-strategy';
-import {
-  applyEditableCommand,
-  consumeModelOwnedHistoryFocusRoot,
-} from './mutation-controller';
+import { applyModelOwnedHistoryIntent } from './model-input-strategy';
+import { applyEditableCommand } from './mutation-controller';
 import {
   isInline as editorIsInline,
   isVoid as editorIsVoid,
   isElementReadOnly as editorIsElementReadOnly,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
-  getInternalDocumentChangeRootKeys,
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 
 export type EditableKeyDownResult = {
+  focusEditor?: ReactRuntimeEditor;
   handled: boolean;
   repair?: EditableRepairRequest | null;
 };
 
 const keyDownHandled = (
-  repair?: EditableRepairRequest | null
-): EditableKeyDownResult => ({ handled: true, repair });
+  repair?: EditableRepairRequest | null,
+  focusEditor?: ReactRuntimeEditor
+): EditableKeyDownResult => ({
+  ...(focusEditor ? { focusEditor } : {}),
+  handled: true,
+  repair,
+});
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
 
 const DEFAULT_MODEL_COMMAND_REPAIR: EditableRepairRequest = {
@@ -145,7 +141,7 @@ const selectionSpansNativeTextInputBoundary = ({
 };
 
 const getSelectionRootKey = (selection: Range | null): RootKey =>
-  (selection?.anchor.root ?? selection?.focus.root ?? MAIN_ROOT_KEY) as RootKey;
+  selection?.anchor.root ?? selection?.focus.root ?? MAIN_ROOT_KEY;
 
 const getTargetElement = (target: EventTarget | null) =>
   isDOMElement(target)
@@ -177,9 +173,7 @@ const getNestedEditableRootKey = (
     return null;
   }
 
-  return (
-    (targetEditor.getAttribute('data-plite-root') as RootKey | null) ?? null
-  );
+  return targetEditor.getAttribute('data-plite-root') ?? null;
 };
 
 const qualifySelectionRoot = (
@@ -275,79 +269,14 @@ const isReadOnlyNativeEditingKey = (nativeEvent: KeyboardEvent) => {
   );
 };
 
-const getLastCommitSingleChangedRoot = (
-  editor: ReactRuntimeEditor
-): RootKey | null => {
-  const commit = editor.read((state) => state.lastCommit());
-  const roots = new Set<RootKey>([
-    ...(commit ? getInternalDocumentChangeRootKeys(commit.changes) : []),
-    ...(commit?.changes.createRoots ?? []),
-    ...(commit?.changes.deleteRoots ?? []),
-  ]);
+const getModelOwnedHistoryKeyDownResult = (
+  options: {
+    editor: ReactRuntimeEditor;
+  } & HistoryFocusOwnerApi
+): EditableKeyDownResult => {
+  const { focusEditor, repair } = getModelOwnedHistoryFocusRepair(options);
 
-  return roots.size === 1 ? (roots.values().next().value ?? null) : null;
-};
-
-const getModelOwnedHistoryRepair = ({
-  domPhaseScheduler,
-  editor,
-  getActiveContentRootOwner,
-  getContentRootOwnerViewEditor,
-  getMountedViewEditor,
-}: {
-  domPhaseScheduler: DOMPhaseScheduler;
-  editor: ReactRuntimeEditor;
-} & HistoryFocusOwnerApi): EditableRepairRequest => {
-  const forceRender = shouldForceRenderAfterModelOwnedHistory(editor);
-  const historyFocusRoot = consumeModelOwnedHistoryFocusRoot(editor);
-  const selection = readRuntimeSelection(editor);
-  const selectionRoot = selection ? getSelectionRootKey(selection) : null;
-  const currentRoot = toInternalRoot(editor.read((state) => state.view.root()));
-  const focusEditor = resolveHistoryFocusEditor({
-    currentRoot,
-    editor,
-    getActiveContentRootOwner,
-    getContentRootOwnerViewEditor,
-    getMountedViewEditor,
-    historyRoot: historyFocusRoot ?? getLastCommitSingleChangedRoot(editor),
-    selectionRoot,
-  });
-
-  if (focusEditor && focusEditor !== editor) {
-    focusPliteEditable(focusEditor);
-    const focusScheduler =
-      getMountedEditableDOMRuntime(focusEditor)?.domPhaseScheduler ??
-      domPhaseScheduler;
-
-    focusScheduler.schedule(
-      'dom-write',
-      'history-focus-editor',
-      () => focusPliteEditable(focusEditor),
-      { timing: 'animation-frame' }
-    );
-
-    return forceRender
-      ? { forceRender, kind: 'force-render' }
-      : { kind: 'none' };
-  }
-
-  const viewSelection = readPliteViewSelection(editor);
-  if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
-    return forceRender
-      ? { forceRender, kind: 'force-render' }
-      : { kind: 'none' };
-  }
-
-  return {
-    focus: true,
-    forceRender,
-    kind: 'repair-caret',
-    selectionSourceTransition: {
-      preferModelSelection: true,
-      reason: 'model-command',
-      selectionSource: 'model-owned',
-    },
-  };
+  return keyDownHandled(repair, focusEditor);
 };
 
 const isPartialDOMStrategyRuntime = (domStrategyRuntime: unknown) =>
@@ -610,15 +539,12 @@ export const applyEditableKeyDown = ({
           editor,
         })
       ) {
-        return keyDownHandled(
-          getModelOwnedHistoryRepair({
-            domPhaseScheduler,
-            editor,
-            getActiveContentRootOwner,
-            getContentRootOwnerViewEditor,
-            getMountedViewEditor,
-          })
-        );
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
       }
 
       return keyDownHandled();
@@ -634,15 +560,12 @@ export const applyEditableKeyDown = ({
           editor,
         })
       ) {
-        return keyDownHandled(
-          getModelOwnedHistoryRepair({
-            domPhaseScheduler,
-            editor,
-            getActiveContentRootOwner,
-            getContentRootOwnerViewEditor,
-            getMountedViewEditor,
-          })
-        );
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
       }
 
       return keyDownHandled();
@@ -683,7 +606,7 @@ export const applyEditableKeyDown = ({
     // COMPAT: The composition end event isn't fired reliably in all browsers,
     // so we sometimes might end up stuck in a composition state even though we
     // aren't composing any more.
-    if (ReactEditor.isComposing(editor) && nativeEvent.isComposing === false) {
+    if (ReactEditor.isComposing(editor) && !nativeEvent.isComposing) {
       setComposing(false);
     }
 
@@ -743,7 +666,9 @@ export const applyEditableKeyDown = ({
         targetScheduler.schedule(
           'dom-write',
           'typed-root-focus-editor',
-          () => focusPliteEditable(targetEditor),
+          () => {
+            focusPliteEditable(targetEditor);
+          },
           { timing: 'animation-frame' }
         );
 
@@ -826,15 +751,12 @@ export const applyEditableKeyDown = ({
           editor,
         })
       ) {
-        return keyDownHandled(
-          getModelOwnedHistoryRepair({
-            domPhaseScheduler,
-            editor,
-            getActiveContentRootOwner,
-            getContentRootOwnerViewEditor,
-            getMountedViewEditor,
-          })
-        );
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
       }
 
       return keyDownHandled();
@@ -849,15 +771,12 @@ export const applyEditableKeyDown = ({
           editor,
         })
       ) {
-        return keyDownHandled(
-          getModelOwnedHistoryRepair({
-            domPhaseScheduler,
-            editor,
-            getActiveContentRootOwner,
-            getContentRootOwnerViewEditor,
-            getMountedViewEditor,
-          })
-        );
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
       }
 
       return keyDownHandled();

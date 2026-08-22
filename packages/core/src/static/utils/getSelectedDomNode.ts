@@ -2,7 +2,7 @@
 export const getSelectedDomNode = () => {
   const selection = window.getSelection();
 
-  if (!selection || selection.rangeCount === 0) return;
+  if (!selection || selection.rangeCount === 0) return undefined;
   const range = selection.getRangeAt(0);
 
   const htmlFragment = range.cloneContents();

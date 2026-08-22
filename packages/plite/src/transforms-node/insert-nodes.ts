@@ -29,6 +29,7 @@ import type {
   NodeInsertNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
+import { getDefined } from '../internal/get-defined';
 import { select as selectSelection } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
 import { getDefaultInsertLocation } from '../utils';
@@ -91,7 +92,7 @@ const insertNodesRuntime = (
           deletion: 'nearest',
         });
         deleteText(editor, { at });
-        at = pointAnchor.release()!;
+        at = getDefined(pointAnchor.release());
       }
     }
 
@@ -149,7 +150,7 @@ const insertNodesRuntime = (
     }
 
     const parentPath = PathApi.parent(at);
-    let index = at.at(-1)!;
+    let index = getDefined(at.at(-1));
 
     if (!voids && editorVoid(editor, { at: parentPath })) {
       return;

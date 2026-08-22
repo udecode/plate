@@ -98,7 +98,7 @@ const copyTraceEntries = (
     }
 
     copy[index] = entry;
-    index++;
+    index += 1;
   }
 
   return copy;
@@ -137,7 +137,7 @@ export class YjsController<
   private readonly localOrigin = {};
   private readonly seedOrigin = {};
   private readonly observer: (
-    events: Y.YEvent<Y.AbstractType<unknown>>[],
+    events: Array<Y.YEvent<Y.AbstractType<unknown>>>,
     transaction: Y.Transaction
   ) => void;
   private readonly provider?: YjsProviderLike;
@@ -146,7 +146,7 @@ export class YjsController<
   private readonly root: Y.XmlElement;
   private readonly roots: Y.Map<Y.XmlElement>;
   private readonly rootsObserver: (
-    events: Y.YEvent<Y.AbstractType<unknown>>[],
+    events: Array<Y.YEvent<Y.AbstractType<unknown>>>,
     transaction: Y.Transaction
   ) => void;
   private readonly schemaMetadata: Y.Map<unknown>;
@@ -178,7 +178,7 @@ export class YjsController<
 
   constructor(
     editor: Editor,
-    options: YjsExtensionOptions,
+    options: YjsExtensionOptions<TCursorData>,
     context: Readonly<{
       canonicalize: YjsEditorAdapter['canonicalize'];
       emptyValueFor: (root: string) => readonly Descendant[];
@@ -249,7 +249,9 @@ export class YjsController<
         }
         this.updateAwarenessRevision();
       },
-      onProviderSyncedChange: () => this.reconcileProviderOwnedDocAfterSync(),
+      onProviderSyncedChange: () => {
+        this.reconcileProviderOwnedDocAfterSync();
+      },
       provider: this.provider,
     });
     this.bindings.set(
@@ -277,7 +279,8 @@ export class YjsController<
       editor: this.editor,
       isConnected: () => this.providerLifecycle.connected(),
       rootFor: (root) => this.rootFor(root),
-      validateCursorData: options.cursorData?.validate ?? isRecord,
+      validateCursorData: (value): value is TCursorData =>
+        options.cursorData?.validate(value) ?? isRecord(value),
     });
     this.observer = (events, transaction) => {
       if (this.shouldIgnoreRemoteTransaction(transaction)) return;
@@ -846,7 +849,7 @@ export class YjsController<
     this.pendingRemoteSchemaChange = false;
 
     if (!rootChanged && namedRoots.size === 1 && events !== null) {
-      this.importYjsEvents(events, pending.effects, [...namedRoots][0]!);
+      this.importYjsEvents(events, pending.effects, [...namedRoots][0]);
     } else if (namedRoots.size > 0) {
       this.importDocumentFromYjs('remote-reconcile', pending.effects, {
         main: rootChanged,

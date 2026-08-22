@@ -13,7 +13,7 @@ import {
 } from './tokens';
 
 export type DocumentChangeRootClassification = Readonly<{
-  paths: readonly (readonly number[])[];
+  paths: ReadonlyArray<readonly number[]>;
   properties: boolean;
   structure: boolean;
   text: boolean;
@@ -118,8 +118,12 @@ export const classifyRootChangeWithRuntimeCandidates = (
   let positionAfter = 0;
 
   for (let index = 0; index < change.sections.length;) {
-    const length = change.sections[index++]!;
-    const inserted = change.sections[index++]!;
+    const length = change.sections[index];
+
+    index += 1;
+    const inserted = change.sections[index];
+
+    index += 1;
     const fromBefore = positionBefore;
     const toBefore = positionBefore + length;
     const fromAfter = positionAfter;
@@ -176,7 +180,7 @@ export const classifyRootChangeWithRuntimeCandidates = (
     const rangeStructureChanged =
       beforeStructure.length !== afterStructure.length ||
       beforeStructure.some(
-        (signature, index) => signature !== afterStructure[index]
+        (signature, innerIndex) => signature !== afterStructure[innerIndex]
       );
 
     if (rangeStructureChanged) {
@@ -191,7 +195,7 @@ export const classifyRootChangeWithRuntimeCandidates = (
 
     if (
       beforeText.length !== afterText.length ||
-      beforeText.some((value, index) => value !== afterText[index])
+      beforeText.some((value, innerIndex2) => value !== afterText[innerIndex2])
     ) {
       text = true;
     }
@@ -202,8 +206,8 @@ export const classifyRootChangeWithRuntimeCandidates = (
     if (
       beforeOpen.length !== afterOpen.length ||
       beforeOpen.some(
-        (token, index) =>
-          !afterOpen[index] || !jsonEqual(token, afterOpen[index])
+        (token, innerIndex3) =>
+          !afterOpen[innerIndex3] || !jsonEqual(token, afterOpen[innerIndex3])
       )
     ) {
       properties = true;
@@ -261,7 +265,7 @@ export const getDocumentRangePaths = (
 };
 
 export const getTopLevelRange = (
-  paths: readonly (readonly number[])[]
+  paths: ReadonlyArray<readonly number[]>
 ): TopLevelRuntimeRange | null => {
   const indices = paths.flatMap((path) =>
     path[0] === undefined ? [] : [path[0]]
@@ -281,7 +285,7 @@ export const getTopLevelRange = (
 export const getDocumentChangeAfterPaths = (
   change: RootChange,
   after: DocumentIndex
-): readonly (readonly number[])[] => {
+): ReadonlyArray<readonly number[]> => {
   const paths = new Map<string, readonly number[]>();
 
   change.iterChangedRanges((_fromBefore, _toBefore, fromAfter, toAfter) => {

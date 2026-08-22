@@ -40,7 +40,7 @@ const readGitFile = (path: string, cwd: string) => {
   try {
     const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
       cwd,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
     const repositoryPath = relative(root, path).replaceAll('\\', '/');
@@ -49,7 +49,7 @@ const readGitFile = (path: string, cwd: string) => {
 
     return execFileSync('git', ['show', `HEAD:${repositoryPath}`], {
       cwd: root,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
     });
   } catch {
@@ -63,7 +63,7 @@ const schemaTypesSnapshot = (source: string, fingerprint: string) => {
   const start = source.indexOf('export interface EditorText');
   const end = source.indexOf('\nexport type Schema =');
 
-  if (start < 0 || end < start) {
+  if (start === -1 || end < start) {
     throw new Error('Invalid generated editor type artifact.');
   }
 

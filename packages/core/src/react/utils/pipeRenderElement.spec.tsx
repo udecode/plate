@@ -46,7 +46,7 @@ const ListStylePropertyPlugin = defineBasePlugin('listStyleProperty', {
 
 const renderPipe = (editor: PlateEditor) => {
   const renderElement = pipeRenderElement(editor)!;
-  const element = editor.read.children()[0] as any;
+  const element = editor.read.children()[0];
 
   const RenderProbe = () =>
     renderElement({
@@ -66,7 +66,7 @@ const renderPipe = (editor: PlateEditor) => {
 
 const renderPipeBare = (editor: PlateEditor) => {
   const renderElement = pipeRenderElement(editor)!;
-  const element = editor.read.children()[0] as any;
+  const element = editor.read.children()[0];
 
   const RenderProbe = () =>
     renderElement({
@@ -298,18 +298,19 @@ describe('pipeRenderElement', () => {
   });
 
   it('runs inactive belowNodes wrappers under element context', () => {
+    const useInactiveBelowNodes = ({ element }: any) => {
+      usePath();
+
+      return element.type === 'quote'
+        ? ({ children }: any) => <section>{children}</section>
+        : undefined;
+    };
     const editor = createPlateEditor({
       navigationFeedback: false,
       plugins: [
         defineBasePlugin('inactiveBelow', {
           render: {
-            belowNodes: ({ element }: any) => {
-              usePath();
-
-              return element.type === 'quote'
-                ? ({ children }: any) => <section>{children}</section>
-                : undefined;
-            },
+            belowNodes: useInactiveBelowNodes,
           },
         }),
       ],
@@ -353,6 +354,16 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps element context for inject.nodeProps transform hooks', () => {
+    const useHookInjectProps = ({ props }: any) => {
+      const element = useElement();
+      const path = usePath();
+
+      return {
+        ...props,
+        'data-context-path': path?.join(','),
+        'data-context-type': element.type,
+      };
+    };
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
@@ -362,17 +373,7 @@ describe('pipeRenderElement', () => {
             nodeProps: {
               nodeKey: 'markerStyle',
               query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
-              transformProps: ({ props }) => {
-                const element = useElement();
-
-                const path = usePath();
-
-                return {
-                  ...props,
-                  'data-context-path': path?.join(','),
-                  'data-context-type': element.type,
-                };
-              },
+              transformProps: useHookInjectProps,
             },
           },
         }),
@@ -394,6 +395,14 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps element store context for inject.nodeProps transform hooks', () => {
+    const useSelectorInjectProps = ({ props }: any) => {
+      const type = useElementSelector(([element]) => element.type);
+
+      return {
+        ...props,
+        'data-selected-type': type,
+      };
+    };
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
@@ -403,14 +412,7 @@ describe('pipeRenderElement', () => {
             nodeProps: {
               nodeKey: 'markerStyle',
               query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
-              transformProps: ({ props }) => {
-                const type = useElementSelector(([element]) => element.type);
-
-                return {
-                  ...props,
-                  'data-selected-type': type,
-                };
-              },
+              transformProps: useSelectorInjectProps,
             },
           },
         }),
@@ -478,6 +480,17 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps pathless inject.nodeProps when active belowNodes wrappers are present', () => {
+    const useActiveBelowNodes = ({ element }: any) => {
+      const path = usePath();
+
+      return element.type === 'paragraph'
+        ? ({ children }: any) => (
+            <section data-path={path.join(',')} data-testid="active-below">
+              {children}
+            </section>
+          )
+        : undefined;
+    };
     const editor = createPlateEditor({
       plugins: [
         ListStylePropertyPlugin,
@@ -501,20 +514,7 @@ describe('pipeRenderElement', () => {
         }),
         defineBasePlugin('activeBelow', {
           render: {
-            belowNodes: ({ element }: any) => {
-              const path = usePath();
-
-              return element.type === 'paragraph'
-                ? ({ children }: any) => (
-                    <section
-                      data-path={path.join(',')}
-                      data-testid="active-below"
-                    >
-                      {children}
-                    </section>
-                  )
-                : undefined;
-            },
+            belowNodes: useActiveBelowNodes,
           },
         }),
       ],

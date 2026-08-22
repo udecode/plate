@@ -58,7 +58,7 @@ export function getReleaseMajorAnchor(major: string) {
 
 export function getReleaseMajorGroups<
   TRelease extends Pick<ReleaseIndexRelease, 'tag'>,
->(releases: TRelease[]): ReleaseMajorGroup<TRelease>[] {
+>(releases: TRelease[]): Array<ReleaseMajorGroup<TRelease>> {
   const groupsByMajor = new Map<string, TRelease[]>();
 
   for (const release of releases) {

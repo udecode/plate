@@ -83,7 +83,11 @@ export const createEditorHarnessAssertions = ({
   },
   focusOwner: async (expected: FocusOwnerSnapshot['kind']) => {
     await expect
-      .poll(async () => (await getFocusOwnerSnapshot(root)).kind)
+      .poll(async () => {
+        const snapshot = await getFocusOwnerSnapshot(root);
+
+        return snapshot.kind;
+      })
       .toBe(expected);
   },
   kernelTrace: async (expected: PliteBrowserKernelTraceExpectation) => {

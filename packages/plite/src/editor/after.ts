@@ -53,7 +53,7 @@ export const after: EditorStaticApi['after'] = (editor, at, options = {}) => {
       target = p;
     }
 
-    d++;
+    d += 1;
   }
 
   return target;

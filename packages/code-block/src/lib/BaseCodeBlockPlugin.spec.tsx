@@ -180,10 +180,10 @@ describe('BaseCodeBlockPlugin', () => {
 
     editor.api.dom.clipboard.writeSelection(data);
 
-    const body = new DOMParser().parseFromString(
+    const { body } = new DOMParser().parseFromString(
       data.getData('text/html'),
       'text/html'
-    ).body;
+    );
     const pre = body.querySelector('pre[data-language="typescript"]');
 
     if (!(pre instanceof HTMLElement)) {
@@ -261,7 +261,7 @@ describe('BaseCodeBlockPlugin', () => {
     const entry = editor
       .plugin(BaseCodeBlockPlugin)
       .read.entry({ at: [0, 0, 0] });
-    assert(entry?.codeBlock);
+    assert.ok(entry?.codeBlock);
 
     return entry.codeBlock[0];
   };
@@ -1121,7 +1121,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const editor = createEditor(input);
       let commits = 0;
-      const unsubscribe = editor.subscribeCommit(() => commits++);
+      const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
 
       editor.api.dom.clipboard.insertData(data);
       unsubscribe();
@@ -1189,7 +1189,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const expected = (
         <editor>
           <hcodeblock>
-            <hcodeline>// this is a comment</hcodeline>
+            <hcodeline>{'// this is a comment'}</hcodeline>
             <hcodeline>
               console.log("hello world");
               <cursor />
@@ -1563,10 +1563,10 @@ const createHighlightEditor = () =>
 let editor: ReturnType<typeof createHighlightEditor>;
 
 const getDecorations = (
-  editor: ReturnType<typeof createHighlightEditor>,
+  innerEditor: ReturnType<typeof createHighlightEditor>,
   [codeBlock, path]: NodeEntry<CodeBlockElement>
 ) => {
-  const decorate = pipeDecorate(editor);
+  const decorate = pipeDecorate(innerEditor);
 
   decorate?.([codeBlock, path]);
 

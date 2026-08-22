@@ -9,6 +9,7 @@ import { type Descendant, NodeApi } from '../interfaces/node';
 import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
+import { getDefined } from '../internal/get-defined';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
 
@@ -26,7 +27,7 @@ const getOpenDepth = (editor: Editor, point: Point) => {
         editor.read.schema.getElementSlicePolicy(ancestor).preserveContext)
     );
   });
-  return barrierIndex < 0 ? ancestorPaths.length : barrierIndex;
+  return barrierIndex === -1 ? ancestorPaths.length : barrierIndex;
 };
 
 /**
@@ -64,7 +65,7 @@ export const getContentSlice = <V extends Value>(
   const schema = getEditorSchema(editor);
   const content =
     selectedNode && NodeApi.isDescendant(selectedNode)
-      ? [schema.copyNodeAt(selectedNode, nodeSelection!.path, root)]
+      ? [schema.copyNodeAt(selectedNode, getDefined(nodeSelection).path, root)]
       : schema.copyChildren(
           fullRootContent ?? NodeApi.fragment(editor, selection),
           root
@@ -78,15 +79,15 @@ export const getContentSlice = <V extends Value>(
     children.forEach((node) => {
       if (!ElementApi.isElement(node)) return;
 
-      for (const root of Object.values(
+      for (const innerRoot of Object.values(
         editor.read.schema.getElementContentRoots(node)
-      ) as string[]) {
-        if (visitedRoots.has(root)) continue;
-        const rootContent = document.roots?.[root];
+      )) {
+        if (visitedRoots.has(innerRoot)) continue;
+        const rootContent = document.roots?.[innerRoot];
 
         if (!rootContent) continue;
-        visitedRoots.add(root);
-        roots[root] = rootContent;
+        visitedRoots.add(innerRoot);
+        roots[innerRoot] = rootContent;
         collect(rootContent);
       }
 

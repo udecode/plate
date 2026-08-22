@@ -18,9 +18,11 @@ Primary template:
 docs/plans/templates/task.md
 
 Applied packs:
+
 - none
 
 Task source:
+
 - type: direct user authorization following the completed suppression audit
 - id / link: current Codex task; source audit at
   `docs/plans/2026-08-20-audit-oxlint-next-line-suppressions.md`
@@ -32,6 +34,7 @@ Task source:
   repository checks.
 
 First checkpoint:
+
 - Before implementation or broad exploration, copy every explicit prompt
   requirement into this plan as checkable checkpoints: scope, non-goals,
   timing/duration, stop conditions, deliverables, final handoff sections,
@@ -40,6 +43,7 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Timed checkpoint:
+
 - requested duration: N/A: none requested
 - semantics: N/A
 - initial confidence score: N/A
@@ -47,6 +51,7 @@ Timed checkpoint:
 - final score / loop closure: N/A
 
 Completion threshold:
+
 - Root `prefer-const` remains an error with
   `ignoreReadBeforeAssign: true`; all 21 corresponding directives are gone.
 - The existing unchecked-JavaScript override owns
@@ -70,6 +75,7 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-20-implement-oxlint-next-line-cleanup.md` passes.
 
 Verification surface:
+
 - Exact source count and stale-directive searches for all 32 accepted rows plus
   the adjacent benchmark line directive.
 - `node tooling/scripts/check-oxlint-config.mjs`.
@@ -79,6 +85,7 @@ Verification surface:
 - P1 local autoreview with zero accepted/actionable findings.
 
 Constraints:
+
 - Preserve existing user-facing behavior outside the task scope.
 - Prefer the durable ownership boundary over caller-by-caller patches.
 - Do not create PRs, comments, commits, or pushes unless the task/user/skill
@@ -90,6 +97,7 @@ Constraints:
 - Preserve all 60 exact source-local exceptions accepted by the audit.
 
 Boundaries:
+
 - Source of truth: completed audit plan, current `oxlint.config.ts`, installed
   Oxlint schema, Ultracite rule policy, and the 92-directive baseline.
 - Allowed edit scope: `oxlint.config.ts`, the 20 source files containing the 32
@@ -103,15 +111,18 @@ Boundaries:
   adding dependencies, or reopening already-audited global policy.
 
 Output budget strategy:
+
 - Use exact rule/path searches and count summaries. Cap check/review output;
   save or inspect only failing slices if a broad command fails.
 
 Blocked condition:
+
 - Block only if the accepted config cannot express the audited ownership or the
   same full-check failure repeats after one evidence-based fix and, for local
   install-corruption signals, one reinstall/rerun.
 
 Task state:
+
 - task_type: tooling/config cleanup
 - task_complexity: normal non-trivial
 - current_phase: closeout
@@ -120,6 +131,7 @@ Task state:
 - goal_status: complete
 
 Current verdict:
+
 - verdict: complete; all accepted ownership changes are implemented and green
 - confidence: 99%
 - next owner: user
@@ -127,6 +139,7 @@ Current verdict:
   the full repository check, migration tooling, and P1 review all closed
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until every completion threshold
@@ -155,6 +168,7 @@ Start Gates:
 | Output budget strategy recorded | yes | exact searches/counts plus capped check/review output |
 
 Work Checklist:
+
 - [x] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded. N/A: no duration.
@@ -239,6 +253,7 @@ Phase / pass table:
 | Closeout | complete | P1 exact-slice review clean | final response |
 
 Findings:
+
 - `ignoreReadBeforeAssign` correctly covers 8 genuinely deferred assignments,
   but 13 self-referential initializers were ordinary `const` candidates. They
   were fixed instead of suppressing the rule.
@@ -252,6 +267,7 @@ Findings:
   parser would make the configuration worse.
 
 Decisions and tradeoffs:
+
 - No rule was disabled globally and no broad test override was added.
 - Stable language boundaries use config overrides; one-off semantic exceptions
   remain inline; three unusual exact owners use exact-file overrides.
@@ -259,6 +275,7 @@ Decisions and tradeoffs:
   rule-option-only approach proved incomplete.
 
 Implementation notes:
+
 - Added `prefer-const: ['error', { ignoreReadBeforeAssign: true }]`.
 - Added unchecked-JavaScript ownership for the catch-callback unknown rule.
 - Added exact-file ownership for keyboard module mocking, benchmark dynamic
@@ -269,12 +286,14 @@ Implementation notes:
   line directive. Exactly 60 next-line directives remain.
 
 Review fixes:
+
 - No accepted finding required a fix. The first scoped bundle included unrelated
   DOM-repair work and reported one P1 at line 992; this task touched only the
   deferred declaration near line 148. It was rejected as a different behavior
   owner. The tightened exact cleanup slice passed with zero findings.
 
 Autoreview scope baseline:
+
 - Request: apply every accepted next-line suppression cleanup without weakening
   rules globally or adding a broad test exception.
 - Invariant: a suppression belongs at the narrowest stable owner; ordinary
@@ -300,6 +319,7 @@ Error attempts:
 | First scoped review included unrelated DOM-repair changes | 1 | Remove unrelated same-file migration work from the bundle | Exact cleanup slice returned zero findings |
 
 Verification evidence:
+
 - Exact audit: 60 active `oxlint-disable-next-line` directives in 45 files;
   zero matching directives remain in the 20 moved-owner files.
 - `node tooling/scripts/check-oxlint-config.mjs`: passed; 164 root rules and 147
@@ -317,6 +337,7 @@ Verification evidence:
   on the exact isolated cleanup slice: clean, zero findings, 0.91 confidence.
 
 Final handoff contract:
+
 - PR line: N/A: no PR requested
 - Issue / tracker line: N/A: direct local task
 - Confidence line: 99%; exact counts and every owning check are green
@@ -338,6 +359,7 @@ Final handoff contract:
 - PR body verified: N/A: no PR
 
 Task-style PR body contract:
+
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
   part of the diff and repo policy expects auto release, include that block.
 - Use the accepted kitcn PR #270 visual format. The body starts with an emoji
@@ -358,6 +380,7 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
+
 - PR: N/A: no PR requested
 - Issue / tracker: N/A: none
 - Browser proof: N/A: no browser surface
@@ -365,6 +388,7 @@ Final handoff / sync:
   no product or CI risk remains within this task
 
 Timeline:
+
 - 2026-08-20T11:00:47.331Z Task goal plan created.
 - 2026-08-20 Implemented audited config ownership and fixed 13 declarations.
 - 2026-08-20 Completed targeted lint/typecheck, two fixer passes, Doctor,
@@ -381,5 +405,6 @@ Reboot status:
 | What have I done? | Implemented every accepted row and closed all owner-aware checks |
 
 Open risks:
+
 - None within task scope. The generic strict policy script has a documented
   parser gap, while the repo-owned structural check and full CI command pass.

@@ -16,7 +16,6 @@ import {
   getTablePasteElement,
   planPreparedTablePaste,
   prepareTablePaste,
-  type PreparedTablePastePlan,
   type TablePasteSource,
 } from './paste';
 
@@ -27,7 +26,7 @@ const cell = (
   options: Partial<TableCellElementWithId> = {}
 ): TableCellElementWithId => ({
   children: [{ text }],
-  id: options.id ?? `cell-${generatedId++}`,
+  id: options.id ?? `cell-${(generatedId += 1) - 1}`,
   type: 'tableCell',
   ...options,
 });
@@ -37,7 +36,7 @@ const row = (
   options: Partial<TableRowElementWithId> = {}
 ): TableRowElementWithId => ({
   children: [...children],
-  id: options.id ?? `row-${generatedId++}`,
+  id: options.id ?? `row-${(generatedId += 1) - 1}`,
   type: 'tableRow',
   ...options,
 });
@@ -47,7 +46,7 @@ const table = (
   options: Partial<Element> = {}
 ): Element => ({
   children: [...rows],
-  id: options.id ?? `table-${generatedId++}`,
+  id: options.id ?? `table-${(generatedId += 1) - 1}`,
   type: 'table',
   ...options,
 });
@@ -89,11 +88,7 @@ const paste = (
   expect(result.kind).toBe('plan');
   if (result.kind !== 'plan') throw new Error(JSON.stringify(result));
 
-  const output = applyTableMutationPlanToTable(
-    target,
-    [0],
-    result as PreparedTablePastePlan
-  );
+  const output = applyTableMutationPlanToTable(target, [0], result);
 
   expect(output).not.toBeNull();
 
@@ -412,7 +407,7 @@ describe('PreparedTablePaste planning contracts', () => {
         createRow,
         fillBounds: { maxCol: 3, maxRow: 1, minCol: 0, minRow: 0 },
         fitChildren: (_cell, children) => {
-          fits++;
+          fits += 1;
           return children;
         },
         startCol: 0,
@@ -461,7 +456,7 @@ describe('PreparedTablePaste planning contracts', () => {
     const target = table(
       Array.from({ length: 128 }, (_, rowIndex) =>
         row(
-          Array.from({ length: 128 }, (_, colIndex) =>
+          Array.from({ length: 128 }, (innerValue, colIndex) =>
             cell(`${rowIndex}:${colIndex}`)
           )
         )
@@ -558,7 +553,7 @@ describe('PreparedTablePaste planning contracts', () => {
                     )
                 )
             ).toEqual(['x', 'x', 'x', 'x']);
-            cases++;
+            cases += 1;
           }
         }
       }

@@ -41,10 +41,10 @@ describe('BaseBlockquotePlugin', () => {
 
     editor.api.dom.clipboard.writeSelection(data);
 
-    const body = new DOMParser().parseFromString(
+    const { body } = new DOMParser().parseFromString(
       data.getData('text/html'),
       'text/html'
-    ).body;
+    );
 
     expect(body.querySelector('blockquote > p')?.textContent).toBe('Quote');
   });
@@ -286,10 +286,10 @@ describe('BaseHorizontalRulePlugin', () => {
 
     editor.api.dom.clipboard.writeSelection(data);
 
-    const body = new DOMParser().parseFromString(
+    const { body } = new DOMParser().parseFromString(
       data.getData('text/html'),
       'text/html'
-    ).body;
+    );
 
     expect(body.querySelector('hr')).not.toBeNull();
   });

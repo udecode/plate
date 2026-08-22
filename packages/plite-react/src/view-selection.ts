@@ -1,5 +1,6 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '@platejs/plite';
 
+import { failInvariant } from './editable/runtime-editor-api';
 import {
   clonePliteViewBoundaryProjectedPoint,
   createPliteViewBoundaryGraph,
@@ -145,19 +146,25 @@ export const collapsePliteViewSelection = (
   edge: PliteViewSelectionCollapseEdge
 ): PliteViewBoundaryPoint => {
   switch (edge) {
-    case 'anchor':
+    case 'anchor': {
       return cloneProjectedPoint(selection.anchor);
-    case 'focus':
+    }
+    case 'focus': {
       return cloneProjectedPoint(selection.focus);
-    case 'start':
+    }
+    case 'start': {
       return cloneProjectedPoint(
         selection.segments.backward ? selection.focus : selection.anchor
       );
-    case 'end':
+    }
+    case 'end': {
       return cloneProjectedPoint(
         selection.segments.backward ? selection.anchor : selection.focus
       );
+    }
   }
+
+  return failInvariant('Unexpected view selection collapse edge');
 };
 
 export const readPliteViewSelection = (

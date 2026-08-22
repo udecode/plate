@@ -77,7 +77,7 @@ describe('plate change handlers', () => {
 
     onNodeChange.mockClear();
 
-    editor.update.nodes.set({ variant: 'lead' } as any, { at: [0] });
+    editor.update.nodes.set({ variant: 'lead' }, { at: [0] });
 
     expect(onNodeChange).toHaveBeenCalledTimes(1);
     expect(onNodeChange.mock.calls[0]?.[0]).toMatchObject({

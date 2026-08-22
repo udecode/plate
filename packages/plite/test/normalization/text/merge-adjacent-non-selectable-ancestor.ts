@@ -8,7 +8,7 @@ export const input = createEditor() as any;
 const runtime = getEditorRuntime(input);
 
 const { shouldNormalize } = runtime;
-const isSelectable = runtime.schema.isSelectable;
+const { isSelectable } = runtime.schema;
 
 runtime.schema = {
   ...runtime.schema,

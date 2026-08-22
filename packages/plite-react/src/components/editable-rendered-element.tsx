@@ -8,7 +8,6 @@ import { DOMCoverage } from '@platejs/plite-dom/internal';
 import React, { createElement, type ComponentType } from 'react';
 
 import { useEditor } from '../hooks/use-editor';
-import { useElementPath } from '../hooks/use-element-path';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type {
@@ -61,11 +60,10 @@ export const EditableRenderedElement = <
   renderElement: RenderElementRenderer<TElement>;
 }) => {
   const editor = useEditor();
-  const currentPath = useElementPath() ?? path;
 
   useIsomorphicLayoutEffect(() => {
     if (!isDevelopment) {
-      return;
+      return undefined;
     }
 
     let cancelled = false;
@@ -76,7 +74,7 @@ export const EditableRenderedElement = <
 
       assertRenderedElementChildrenHaveDOMOrCoverage(editor, {
         element: props.element,
-        path: currentPath,
+        path: editor.read.nodes.path(props.element) ?? path,
       });
     }, 0);
 
@@ -84,7 +82,7 @@ export const EditableRenderedElement = <
       cancelled = true;
       globalThis.clearTimeout(timeout);
     };
-  }, [currentPath, editor, props.element]);
+  }, [editor, path, props.element]);
 
   return (
     <EditableRenderedElementBoundary
@@ -100,7 +98,7 @@ const getFirstTextPath = (node: Descendant, path: Path): Path | null => {
   }
 
   for (let index = 0; index < node.children.length; index++) {
-    const textPath = getFirstTextPath(node.children[index]!, [...path, index]);
+    const textPath = getFirstTextPath(node.children[index], [...path, index]);
 
     if (textPath) {
       return textPath;
@@ -110,11 +108,9 @@ const getFirstTextPath = (node: Descendant, path: Path): Path | null => {
   return null;
 };
 
-const assertRenderedElementChildrenHaveDOMOrCoverage = <
-  TElement extends PliteElementNode,
->(
+const assertRenderedElementChildrenHaveDOMOrCoverage = (
   editor: ReactRuntimeEditor,
-  { element, path }: { element: TElement; path: Path }
+  { element, path }: { element: PliteElementNode; path: Path }
 ) => {
   element.children.forEach((child, index) => {
     const childPath = [...path, index];

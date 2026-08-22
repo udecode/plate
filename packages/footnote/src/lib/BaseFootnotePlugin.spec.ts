@@ -162,7 +162,7 @@ describe('BaseFootnotePlugins', () => {
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
     });
     const api = editor.read.footnote;
-    const footnote = editor.update.footnote;
+    const { footnote } = editor.update;
 
     expect(api).toBeDefined();
     expect(typeof api.nextRef).toBe('function');

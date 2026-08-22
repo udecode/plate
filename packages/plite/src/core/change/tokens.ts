@@ -1,4 +1,5 @@
 import type { NodeKey } from '../../interfaces/editor';
+import { getDefined } from '../../internal/get-defined';
 import {
   preparedNodeKeyAt,
   preparedNodeKeyOffset,
@@ -167,7 +168,7 @@ export const deepFreeze = <T>(value: T): T => {
   if (isRecord(value)) {
     for (const item of Object.values(value)) deepFreeze(item);
 
-    return Object.freeze(value) as T;
+    return Object.freeze(value);
   }
 
   return value;
@@ -207,8 +208,8 @@ export const commonPrefixLength = (
   let length = 0;
 
   for (let index = 0; index < left.length && index < right.length; index += 1) {
-    const leftToken = left[index]!;
-    const rightToken = right[index]!;
+    const leftToken = left[index];
+    const rightToken = right[index];
 
     if (tokensEqual(leftToken, rightToken)) {
       length += tokenLength(leftToken);
@@ -241,8 +242,8 @@ export const commonSuffixLength = (
   let rightIndex = right.length - 1;
 
   while (leftIndex >= 0 && rightIndex >= 0 && length < limit) {
-    const leftToken = left[leftIndex]!;
-    const rightToken = right[rightIndex]!;
+    const leftToken = left[leftIndex];
+    const rightToken = right[rightIndex];
     const remaining = limit - length;
 
     if (tokensEqual(leftToken, rightToken)) {
@@ -405,7 +406,7 @@ export const getPreparedDocumentNodeKey = (
   let position = 0;
 
   for (let depth = 0; depth < path.length; depth++) {
-    const index = path[depth]!;
+    const index = path[depth];
     const node = children.children[index];
     const offset = children.offsets[index];
 
@@ -420,7 +421,7 @@ export const getPreparedDocumentNodeKey = (
     }
     if (!node.children) return null;
     position += 1;
-    children = node.children;
+    ({ children } = node);
   }
 
   return null;
@@ -490,7 +491,7 @@ export class PreparedTokenSlice {
     let length = 0;
 
     if (preparedNodes) {
-      length = preparedNodes.index.length;
+      ({ length } = preparedNodes.index);
       DOCUMENT_SLICE_PREPARED_NODES.set(this, preparedNodes);
     } else if (deferredView) {
       length = deferredView.to - deferredView.from;
@@ -515,7 +516,7 @@ export class PreparedTokenSlice {
   get offsets(): readonly number[] {
     this.materializeTokens();
 
-    return DOCUMENT_SLICE_OFFSETS.get(this)!;
+    return getDefined(DOCUMENT_SLICE_OFFSETS.get(this));
   }
 
   get tokens(): readonly JsonToken[] {
@@ -529,10 +530,10 @@ export class PreparedTokenSlice {
     const deferred = DOCUMENT_SLICE_DEFERRED_VIEWS.get(this);
 
     if (deferred) {
-      const tokens = deferred.source.sliceMaterialized(
+      const { tokens } = deferred.source.sliceMaterialized(
         deferred.from,
         deferred.to
-      ).tokens;
+      );
       const offsets: number[] = [];
       let length = 0;
 
@@ -619,7 +620,7 @@ export class PreparedTokenSlice {
     ) => {
       children.children.forEach((child, childIndex) => {
         const childPath = [...path, childIndex];
-        const childPosition = position + children.offsets[childIndex]!;
+        const childPosition = position + children.offsets[childIndex];
         const nodeKey = nodeKeyAt?.(childPath);
 
         if (nodeKey) runtimeNodeKeys.set(childPosition, nodeKey);
@@ -770,8 +771,7 @@ export class PreparedTokenSlice {
 
     while (low < high) {
       const middle = (low + high) >> 1;
-      const tokenEnd =
-        this.offsets[middle]! + tokenLength(this.tokens[middle]!);
+      const tokenEnd = this.offsets[middle] + tokenLength(this.tokens[middle]);
 
       if (tokenEnd <= from) {
         low = middle + 1;
@@ -781,8 +781,8 @@ export class PreparedTokenSlice {
     }
 
     for (let index = low; index < this.tokens.length; index++) {
-      const token = this.tokens[index]!;
-      const position = this.offsets[index]!;
+      const token = this.tokens[index];
+      const position = this.offsets[index];
       const length = tokenLength(token);
       const end = position + length;
       const overlapFrom = Math.max(from, position);

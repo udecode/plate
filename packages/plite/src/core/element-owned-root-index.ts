@@ -1,6 +1,7 @@
 import type { Element, RootKey } from '../interfaces';
 import { ElementApi } from '../interfaces';
 import type { SchemaContentRootOwnership } from '../interfaces/schema';
+import { getDefined } from '../internal/get-defined';
 import type { DocumentIndex } from './change/document-index';
 import { getRootChangeRelocations } from './change/mapping';
 import type { RootChange } from './change/root-change';
@@ -45,7 +46,7 @@ const mapNode = <T>(
   });
 
 const rotateMapLeft = <T>(node: PersistentMapNode<T>) => {
-  const right = node.right!;
+  const right = getDefined(node.right);
 
   return mapNode(
     right.key,
@@ -56,7 +57,7 @@ const rotateMapLeft = <T>(node: PersistentMapNode<T>) => {
 };
 
 const rotateMapRight = <T>(node: PersistentMapNode<T>) => {
-  const left = node.left!;
+  const left = getDefined(node.left);
 
   return mapNode(
     left.key,
@@ -70,7 +71,7 @@ const balanceMap = <T>(node: PersistentMapNode<T>) => {
   const balance = mapHeight(node.left) - mapHeight(node.right);
 
   if (balance > 1) {
-    const left = node.left!;
+    const left = getDefined(node.left);
 
     return rotateMapRight(
       mapHeight(left.left) < mapHeight(left.right)
@@ -79,7 +80,7 @@ const balanceMap = <T>(node: PersistentMapNode<T>) => {
     );
   }
   if (balance < -1) {
-    const right = node.right!;
+    const right = getDefined(node.right);
 
     return rotateMapLeft(
       mapHeight(right.right) < mapHeight(right.left)
@@ -101,6 +102,8 @@ const persistentMapGet = <T>(
     if (key === current.key) return current.value;
     current = key < current.key ? current.left : current.right;
   }
+
+  return undefined;
 };
 
 const persistentMapSet = <T>(
@@ -182,7 +185,15 @@ function* persistentMapEntries<T>(
 const stableProgramValue = (value: unknown): unknown => {
   if (Array.isArray(value)) return value.map(stableProgramValue);
   if (value instanceof Set) {
-    return [...value].map(stableProgramValue).sort();
+    const entries = [...value];
+
+    if (!entries.every((entry): entry is string => typeof entry === 'string')) {
+      throw new Error('Schema content program sets must contain strings.');
+    }
+
+    return entries.sort((left, right) =>
+      left < right ? -1 : left > right ? 1 : 0
+    );
   }
   if (typeof value !== 'object' || value === null) return value;
 
@@ -220,7 +231,7 @@ const getOwnerId = (owner: object) => {
   let id = ownerIds.get(owner);
 
   if (!id) {
-    id = (++nextOwnerId).toString(36).padStart(8, '0');
+    id = (nextOwnerId += 1).toString(36).padStart(8, '0');
     ownerIds.set(owner, id);
   }
 
@@ -229,7 +240,7 @@ const getOwnerId = (owner: object) => {
 
 let nextPathOriginId = 0;
 const createPathOriginId = () =>
-  (++nextPathOriginId).toString(36).padStart(8, '0');
+  (nextPathOriginId += 1).toString(36).padStart(8, '0');
 
 export type ElementOwnedRootBinding = Readonly<{
   childRoot: string;
@@ -265,7 +276,7 @@ export const matchesElementOwnedRootDeclaration = (
   if (!ElementApi.isElement(node) || getElementType(node) !== input.ownerType) {
     return false;
   }
-  const childRoots = (node as { childRoots?: unknown }).childRoots;
+  const { childRoots } = node as { childRoots?: unknown };
   const ownsSlot =
     typeof childRoots === 'object' &&
     childRoots !== null &&
@@ -281,7 +292,7 @@ export const matchesElementOwnedRootDeclaration = (
   }
   if (issue?.kind === 'invalid-root') {
     if (!ownsSlot) return false;
-    const childRoot = (childRoots as Record<string, unknown>)[input.slot!];
+    const childRoot = (childRoots as Record<string, unknown>)[input.slot];
 
     return (
       typeof childRoot !== 'string' ||
@@ -292,7 +303,7 @@ export const matchesElementOwnedRootDeclaration = (
 
   return (
     ownsSlot &&
-    (childRoots as Record<string, unknown>)[input.slot!] ===
+    (childRoots as Record<string, unknown>)[input.slot] ===
       (input as ElementOwnedRootBinding).childRoot
   );
 };
@@ -397,12 +408,14 @@ const getElementType = (element: { type?: unknown }) =>
     : null;
 
 type OwnerDeclaration = Readonly<{
-  bindings: readonly Readonly<{
-    binding: ElementOwnedRootBinding;
-    childRoot: string;
-    key: string;
-    programKey: string;
-  }>[];
+  bindings: ReadonlyArray<
+    Readonly<{
+      binding: ElementOwnedRootBinding;
+      childRoot: string;
+      key: string;
+      programKey: string;
+    }>
+  >;
   id: string;
   issues: readonly ElementOwnedRootIssue[];
   pathOrigin: string;
@@ -431,7 +444,7 @@ const readOwnerDeclaration = (
       path: Object.freeze([...path]),
       pathOrigin,
     } as const;
-    const childRoots = (owner as { childRoots?: unknown }).childRoots;
+    const { childRoots } = owner as { childRoots?: unknown };
 
     if (typeof childRoots !== 'object' || childRoots === null) {
       return Object.freeze({
@@ -447,7 +460,7 @@ const readOwnerDeclaration = (
       });
     }
 
-    const bindings: OwnerDeclaration['bindings'][number][] = [];
+    const bindings: Array<OwnerDeclaration['bindings'][number]> = [];
     const issues: ElementOwnedRootIssue[] = [];
 
     for (const [slot, root] of contentRoots) {
@@ -604,7 +617,7 @@ const visitOwnerDeclarations = (
     visitOwnerDeclarations(
       schema,
       ownerRoot,
-      child as JsonNode,
+      child,
       [...path, index],
       visit,
       skip,
@@ -622,12 +635,12 @@ const changedNodes = (
     prefixSteps: number;
     touching: number;
   }
-): readonly Readonly<{ path: readonly number[]; recursive: boolean }>[] => {
+): ReadonlyArray<Readonly<{ path: readonly number[]; recursive: boolean }>> => {
   const touching = document.nodeRangesTouching(from, to);
 
   if (metrics) metrics.touching = touching.length;
-  const contained: (typeof touching)[number][] = [];
-  const boundary: (typeof touching)[number][] = [];
+  const contained: Array<(typeof touching)[number]> = [];
+  const boundary: Array<(typeof touching)[number]> = [];
 
   for (const entry of touching) {
     if (entry.from >= from && entry.to <= to) {
@@ -638,10 +651,12 @@ const changedNodes = (
   }
   contained.sort((left, right) => left.path.length - right.path.length);
   boundary.sort((left, right) => left.path.length - right.path.length);
-  const selected: Readonly<{
-    path: readonly number[];
-    recursive: boolean;
-  }>[] = [];
+  const selected: Array<
+    Readonly<{
+      path: readonly number[];
+      recursive: boolean;
+    }>
+  > = [];
   type SelectedPathNode = {
     children?: Map<number, SelectedPathNode>;
     selected: boolean;
@@ -730,7 +745,9 @@ const buildIndex = (
         root,
         node,
         [position],
-        (declaration) => updateDeclaration(index, declaration, 'add', dirty),
+        (declaration) => {
+          updateDeclaration(index, declaration, 'add', dirty);
+        },
         skip,
         pathOrigin
       );
@@ -785,10 +802,12 @@ const transferChangedOwnerIdentities = (
   before: DocumentIndex,
   after: DocumentIndex,
   change: RootChange,
-  ranges: readonly Readonly<{
-    fromBefore: number;
-    toBefore: number;
-  }>[]
+  ranges: ReadonlyArray<
+    Readonly<{
+      fromBefore: number;
+      toBefore: number;
+    }>
+  >
 ) => {
   const mapping = appendCanonicalDocumentPathMapping(
     EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING,
@@ -947,8 +966,9 @@ export const rebaseElementOwnedRootIndex = (
           root,
           node,
           candidate.path,
-          (declaration) =>
-            updateDeclaration(index, declaration, 'remove', true),
+          (declaration) => {
+            updateDeclaration(index, declaration, 'remove', true);
+          },
           relocatedBefore,
           pathOrigin,
           candidate.recursive
@@ -965,7 +985,9 @@ export const rebaseElementOwnedRootIndex = (
           root,
           node,
           candidate.path,
-          (declaration) => updateDeclaration(index, declaration, 'add', true),
+          (declaration) => {
+            updateDeclaration(index, declaration, 'add', true);
+          },
           relocatedAfter,
           pathOrigin,
           candidate.recursive
@@ -990,7 +1012,7 @@ export const getElementOwnedRootGrammarBindings = (
       content: grammar.content,
       count: mapSize(grammar.bindings),
       ownership: grammar.ownership,
-      owner: persistentMapEntries(grammar.bindings).next().value![1],
+      owner: getDefined(persistentMapEntries(grammar.bindings).next().value)[1],
     }))
   );
 };

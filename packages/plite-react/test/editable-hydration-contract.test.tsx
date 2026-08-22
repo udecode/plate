@@ -133,3 +133,95 @@ test('Editable hydrates separate editor runtimes without exposing their key scop
     consoleError.mockRestore();
   }
 });
+
+test('content boundaries hydrate without exposing server runtime key scopes', async () => {
+  const recoverableErrors: unknown[] = [];
+  const consoleErrors: unknown[][] = [];
+  const consoleError = vi
+    .spyOn(console, 'error')
+    .mockImplementation((...args) => {
+      consoleErrors.push(args);
+    });
+  const createBoundaryFixture = () => {
+    const editor = createReactEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'alpha' }],
+        },
+      ],
+    });
+    const renderElement = ({
+      attributes,
+      slots,
+    }: Parameters<
+      NonNullable<React.ComponentProps<typeof Editable>['renderElement']>
+    >[0]) => (
+      <div {...attributes}>
+        {slots.contentBoundary({
+          mounted: false,
+          scope: { from: 0, type: 'children' },
+        })}
+      </div>
+    );
+    const renderFixture = () => (
+      <Plite editor={editor}>
+        <Editable renderElement={renderElement} />
+      </Plite>
+    );
+
+    return { editor, fixture: renderFixture(), renderFixture };
+  };
+  const server = createBoundaryFixture();
+  const client = createBoundaryFixture();
+  const container = document.createElement('div');
+  let root: Root | undefined;
+
+  try {
+    container.innerHTML = renderToString(server.fixture);
+    document.body.appendChild(container);
+
+    const serverBoundary = container.querySelector(
+      '[data-plite-dom-coverage-boundary]'
+    );
+
+    expect(serverBoundary).toHaveAttribute(
+      'data-plite-dom-coverage-boundary',
+      'content-boundary:n0:children:0:0'
+    );
+
+    await act(async () => {
+      root = hydrateRoot(container, client.fixture, {
+        onRecoverableError(error) {
+          recoverableErrors.push(error);
+        },
+      });
+      await Promise.resolve();
+    });
+
+    expect(recoverableErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+    expect(
+      container.querySelector('[data-plite-dom-coverage-boundary]')
+    ).toHaveAttribute(
+      'data-plite-dom-coverage-boundary',
+      `content-boundary:${client.editor.key([0])}:children:0:0`
+    );
+
+    await act(async () => {
+      root?.render(client.renderFixture());
+      await Promise.resolve();
+    });
+
+    expect(recoverableErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+  } finally {
+    if (root) {
+      await act(async () => {
+        root?.unmount();
+      });
+    }
+    container.remove();
+    consoleError.mockRestore();
+  }
+});

@@ -77,7 +77,7 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
         decode: ({ element }) => {
           const ref = element.getAttribute('data-plate-mention-ref');
 
-          if (!isNonBlankRef(ref)) return;
+          if (!isNonBlankRef(ref)) return undefined;
 
           const label = element.getAttribute('data-plate-mention-label');
 
@@ -102,7 +102,7 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
 
       'text/markdown': {
         decode: ({ node }) => {
-          if (!isNonBlankRef(node.username)) return;
+          if (!isNonBlankRef(node.username)) return undefined;
 
           return {
             children: [{ text: '' }],

@@ -19,6 +19,7 @@ export function VideoElementStatic(
           style={{ width }}
         >
           <div>
+            {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
             <video
               className="w-full max-w-full rounded-sm object-cover px-0"
               src={url}

@@ -61,7 +61,9 @@ export function Resizable({
   const width = widthState.source === nodeWidth ? widthState.value : nodeWidth;
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const setWidth = React.useCallback(
-    (value: ResizeLength) => setWidthState({ source: nodeWidth, value }),
+    (value: ResizeLength) => {
+      setWidthState({ source: nodeWidth, value });
+    },
     [nodeWidth]
   );
 
@@ -171,12 +173,12 @@ export function ResizeHandle({
   const initialSize = initialSizeProp ?? initialSizeState;
   const isHorizontal = direction === 'left' || direction === 'right';
   const publishHoverEnd = React.useEffectEvent(() => onHoverEnd?.());
-  const publishResize = React.useEffectEvent((event: ResizeEvent) =>
-    onResize(event)
-  );
+  const publishResize = React.useEffectEvent((event: ResizeEvent) => {
+    onResize(event);
+  });
 
   React.useEffect(() => {
-    if (!isResizing) return;
+    if (!isResizing) return undefined;
 
     const sendResizeEvent = (
       event: MouseEvent | TouchEvent,

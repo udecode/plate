@@ -2,7 +2,6 @@ import type {
   Descendant,
   Path,
   NodeKey,
-  Element as PliteElementNode,
   Text as PliteTextNode,
 } from '@platejs/plite';
 
@@ -19,11 +18,11 @@ import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
 const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
   []
-) as readonly (PliteTextNode | null)[];
+) as ReadonlyArray<PliteTextNode | null>;
 
 export type EditableDescendantBinding = {
   childNodeKeys: readonly NodeKey[];
-  directTextChildNodes: readonly (PliteTextNode | null)[];
+  directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
   isInline: boolean;
   isVoid: boolean;
   node: Descendant | null;
@@ -71,7 +70,7 @@ export const readEditableDescendantBinding = ({
 
   const childNodeKeys = isEditableTextNode(descendant)
     ? EMPTY_RUNTIME_IDS
-    : ((descendant as PliteElementNode).children
+    : (descendant.children
         .map((_, index) => {
           const childPath = [...path, index] as Path;
 
@@ -88,7 +87,7 @@ export const readEditableDescendantBinding = ({
   return {
     childNodeKeys,
     directTextChildNodes: usesDirectTextChildren
-      ? (descendant as PliteElementNode).children.map((child) =>
+      ? descendant.children.map((child) =>
           isEditableTextNode(child) ? child : null
         )
       : EMPTY_DIRECT_TEXT_CHILD_NODES,

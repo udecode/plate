@@ -37,6 +37,7 @@ import {
   markEditableCompositionModelCommitted,
   recordEditableCompositionText,
   restoreEditableCompositionRuntimeMarks,
+  shouldMergeEditableCompositionHistory,
 } from './input-state';
 import type { Editor } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
@@ -82,7 +83,7 @@ const createCompositionFailureScope = () => {
 };
 
 const getCompositionEventText = (event: CompositionEvent<HTMLDivElement>) =>
-  event.data || (event.nativeEvent as globalThis.CompositionEvent).data;
+  event.data || event.nativeEvent.data;
 
 const isCompositionEventTargetInput = ({
   event,
@@ -140,8 +141,12 @@ const preventReadOnlyEditableComposition = ({
     : false;
   const runtimeMarks = captureEditableCompositionRuntimeMarks(editor);
 
-  failures.attempt(() => event.preventDefault());
-  failures.attempt(() => event.stopPropagation());
+  failures.attempt(() => {
+    event.preventDefault();
+  });
+  failures.attempt(() => {
+    event.stopPropagation();
+  });
   if (pendingCompositionEnd?.ownership === 'plite') {
     failures.attempt(() => pendingCompositionEnd.flush({ publish: false }));
   } else {
@@ -155,7 +160,9 @@ const preventReadOnlyEditableComposition = ({
     inputController.state.compositionSession = null;
   }
   if (wasComposing && setComposing) {
-    failures.attempt(() => setComposing(false));
+    failures.attempt(() => {
+      setComposing(false);
+    });
   }
   if (inputController) {
     inputController.state.isComposing = false;
@@ -167,11 +174,13 @@ const preventReadOnlyEditableComposition = ({
     }
   }
   if (siblingOwnsComposition) {
-    failures.attempt(() =>
-      restoreEditableCompositionRuntimeMarks(editor, runtimeMarks)
-    );
+    failures.attempt(() => {
+      restoreEditableCompositionRuntimeMarks(editor, runtimeMarks);
+    });
   } else {
-    failures.attempt(() => clearEditableCompositionRuntimeState(editor));
+    failures.attempt(() => {
+      clearEditableCompositionRuntimeState(editor);
+    });
   }
   failures.throwIfAny();
 
@@ -284,7 +293,9 @@ const schedulePendingCompositionEnd = ({
       cancelExpiry = scheduleTask(
         'model',
         'clear-composition-end-tombstone',
-        () => tombstone.cancel(),
+        () => {
+          tombstone.cancel();
+        },
         {
           key: 'composition-end-tombstone',
           timing: 'timeout',
@@ -306,7 +317,7 @@ const schedulePendingCompositionEnd = ({
       let enteredOwnedMutation = false;
       const failures = createCompositionFailureScope();
 
-      failures.attempt(() =>
+      failures.attempt(() => {
         runOwnedDOMMutation(() => {
           enteredOwnedMutation = true;
           failures.attempt(() =>
@@ -314,8 +325,8 @@ const schedulePendingCompositionEnd = ({
               settled = true;
             })
           );
-        })
-      );
+        });
+      });
       active = false;
       if (!enteredOwnedMutation) {
         const pendingInput = claimedInput;
@@ -370,7 +381,7 @@ const schedulePendingCompositionEnd = ({
       const setupFailures = createCompositionFailureScope();
 
       setupFailures.attempt(takeScheduledCancellation);
-      setupFailures.attempt(() =>
+      setupFailures.attempt(() => {
         schedule((settle) => {
           const pendingInput = claimedInput;
 
@@ -424,8 +435,8 @@ const schedulePendingCompositionEnd = ({
           if (publishCompletion) failures.attempt(finishComposing);
           failures.throwIfAny();
           if (committed && publishCompletion) pendingInput.complete();
-        })
-      );
+        });
+      });
 
       if (setupFailures.hasError()) {
         setupFailures.attempt(cancel);
@@ -468,7 +479,7 @@ const schedulePendingCompositionEnd = ({
     inputController.state.pendingCompositionEnd?.cancel()
   );
   inputController.state.pendingCompositionEnd = controller;
-  setupFailures.attempt(() =>
+  setupFailures.attempt(() => {
     schedule((settle) => {
       const failures = createCompositionFailureScope();
 
@@ -501,8 +512,8 @@ const schedulePendingCompositionEnd = ({
       failures.attempt(discardFallback);
       if (publishCompletion) failures.attempt(finishComposing);
       failures.throwIfAny();
-    })
-  );
+    });
+  });
   if (setupFailures.hasError()) {
     setupFailures.attempt(cancel);
     setupFailures.attempt(finishComposing);
@@ -512,12 +523,14 @@ const schedulePendingCompositionEnd = ({
 
 export const commitChromeCompositionEndFallback = ({
   editor,
+  mergeHistory = false,
   rootElement,
   shouldCommit = true,
   target,
   text,
 }: {
   editor: Editor;
+  mergeHistory?: boolean;
   rootElement?: HTMLElement | null;
   shouldCommit?: boolean;
   target: Selection;
@@ -556,10 +569,12 @@ export const commitChromeCompositionEndFallback = ({
     }
   };
   const finishCleanup = () => {
-    captureFailure(() =>
-      removeUnmanagedCompositionTextNodes({ editor, rootElement, text })
-    );
-    captureFailure(() => clearEditableCompositionRuntimeState(editor));
+    captureFailure(() => {
+      removeUnmanagedCompositionTextNodes({ editor, rootElement, text });
+    });
+    captureFailure(() => {
+      clearEditableCompositionRuntimeState(editor);
+    });
   };
 
   if (!shouldCommit || !target) {
@@ -581,7 +596,9 @@ export const commitChromeCompositionEndFallback = ({
       writeRuntimeMarks(editor, placeholderMarks);
     }
 
-    updateNativeTextInput(editor, (tx) => {
+    const insertCompositionText: Parameters<typeof updateNativeTextInput>[1] = (
+      tx
+    ) => {
       if (
         target &&
         placeholderMarks &&
@@ -595,7 +612,16 @@ export const commitChromeCompositionEndFallback = ({
       }
 
       tx.text.insert(text, target ? { at: target } : undefined);
-    });
+    };
+
+    if (mergeHistory) {
+      editor.update(
+        { tags: ['composition', 'history-merge'] },
+        insertCompositionText
+      );
+    } else {
+      updateNativeTextInput(editor, insertCompositionText);
+    }
   });
   finishCleanup();
   const committed = editor.read((state) => state.children()) !== childrenBefore;
@@ -680,7 +706,7 @@ const removeUnmanagedCompositionTextNodes = ({
       }
 
       textNodes.forEach((textNode) => {
-        textNode.parentNode?.removeChild(textNode);
+        textNode.remove();
       });
     });
 };
@@ -766,7 +792,9 @@ export const applyEditableCompositionEnd = ({
     if (compositionEndIsExternallyOwned) {
       schedulePendingCompositionEnd({
         commitFallback: () => false,
-        discardFallback: () => clearEditableCompositionRuntimeState(editor),
+        discardFallback: () => {
+          clearEditableCompositionRuntimeState(editor);
+        },
         finishComposing,
         inputController,
         ownership: 'external',
@@ -782,6 +810,7 @@ export const applyEditableCompositionEnd = ({
     const compositionText =
       getCompositionEventText(event) ??
       inputController.state.compositionSession?.text;
+    const mergeHistory = shouldMergeEditableCompositionHistory(inputController);
     const target = editor.read((state) => state.selection());
     const targetAnchor =
       target &&
@@ -807,6 +836,7 @@ export const applyEditableCompositionEnd = ({
       const fallback = failures.attempt(() =>
         commitChromeCompositionEndFallback({
           editor,
+          mergeHistory,
           rootElement,
           shouldCommit:
             shouldCommit &&
@@ -821,23 +851,23 @@ export const applyEditableCompositionEnd = ({
       );
 
       if (childrenAfter.ok && childrenAfter.value !== childrenBefore) {
-        failures.attempt(() =>
-          markEditableCompositionModelCommitted(inputController)
-        );
+        failures.attempt(() => {
+          markEditableCompositionModelCommitted(inputController);
+        });
       }
 
       if (fallback.ok && fallback.value && publish) {
-        failures.attempt(() =>
+        failures.attempt(() => {
           setEditableModelSelectionPreference({
             inputController,
             preferModelSelection: true,
             reason: 'composition',
             selectionSource: 'model-owned',
-          })
-        );
-        failures.attempt(() =>
-          armModelOwnedTextInputGuard({ inputController })
-        );
+          });
+        });
+        failures.attempt(() => {
+          armModelOwnedTextInputGuard({ inputController });
+        });
         failures.attempt(() => {
           inputController.state.selectionChangeOrigin = 'programmatic-export';
         });
@@ -855,7 +885,9 @@ export const applyEditableCompositionEnd = ({
         const failures = createCompositionFailureScope();
 
         failures.attempt(releaseTarget);
-        failures.attempt(() => clearEditableCompositionRuntimeState(editor));
+        failures.attempt(() => {
+          clearEditableCompositionRuntimeState(editor);
+        });
         failures.throwIfAny();
       },
       finishComposing,
@@ -925,15 +957,16 @@ export const applyEditableCompositionStart = ({
     }
 
     const marks = editor.read((state) => state.marks());
+    const selection = editor.read((state) => state.selection());
 
     if (inputController) {
-      beginEditableCompositionSession(inputController);
+      beginEditableCompositionSession(inputController, {
+        historyMergePending: !!selection && RangeApi.isExpanded(selection),
+      });
       inputController.state.activeIntent = 'composition';
     }
 
     setComposing(true);
-
-    const selection = editor.read((state) => state.selection());
 
     if (selection && RangeApi.isExpanded(selection)) {
       updateNativeTextInput(editor, (tx) => {

@@ -46,6 +46,28 @@ export type ElementDragItemNode = {
   editor?: PlateEditor;
 };
 
+const crossEditorDropResult = Symbol('crossEditorDropResult');
+const dragSourceSnapshot = Symbol('dragSourceSnapshot');
+
+type ElementDragSourceSnapshot = {
+  children: readonly unknown[];
+  editor: PlateEditor;
+  elements: readonly Element[];
+};
+
+type InternalElementDragItemNode = ElementDragItemNode & {
+  [dragSourceSnapshot]?: ElementDragSourceSnapshot;
+};
+
+type CrossEditorDropResult = {
+  dropEffect?: string;
+  [crossEditorDropResult]?: {
+    children: readonly unknown[];
+    editor: PlateEditor;
+    paths: readonly Path[];
+  };
+};
+
 export type FileDragItemNode = {
   dataTransfer: DataTransfer[];
   files: FileList;
@@ -67,6 +89,29 @@ export interface UseDragNodeOptions extends DragSourceHookSpec<
   element: Element;
 }
 
+const completeCrossEditorDrag = (
+  editor: PlateEditor,
+  monitor: Parameters<NonNullable<UseDragNodeOptions['end']>>[1]
+) => {
+  const dropResult = monitor.getDropResult<CrossEditorDropResult>();
+  const move = dropResult?.[crossEditorDropResult];
+
+  if (
+    !move ||
+    move.editor !== editor ||
+    dropResult?.dropEffect === 'copy' ||
+    editor.read.runtime.snapshot().children !== move.children
+  ) {
+    return;
+  }
+
+  editor.update((tx) => {
+    move.paths.forEach((path) => {
+      tx.nodes.remove({ at: path });
+    });
+  });
+};
+
 export interface UseDropNodeOptions extends DropTargetHookSpec<
   DragItemNode,
   unknown,
@@ -81,7 +126,7 @@ export interface UseDropNodeOptions extends DropTargetHookSpec<
     props: {
       key: NodeKey;
       dragItem: DragItemNode;
-      monitor: DropTargetMonitor<DragItemNode, unknown>;
+      monitor: DropTargetMonitor<DragItemNode>;
       nodeRef: React.RefObject<HTMLElement | null>;
     }
   ) => boolean | void;
@@ -105,19 +150,28 @@ export type UseDndNodeOptions = Pick<UseDropNodeOptions, 'element'> &
       props: {
         key: NodeKey;
         dragItem: DragItemNode;
-        monitor: DropTargetMonitor<DragItemNode, unknown>;
+        monitor: DropTargetMonitor<DragItemNode>;
         nodeRef: React.RefObject<HTMLElement | null>;
       }
     ) => boolean | void;
   };
 
-export type UseDraggableOptions = UseDndNodeOptions;
+export type UseDraggableOptions<
+  TNode extends HTMLElement = HTMLDivElement,
+  TPreview extends HTMLElement = HTMLDivElement,
+> = Omit<UseDndNodeOptions, 'multiplePreviewRef' | 'nodeRef'> & {
+  multiplePreviewRef?: React.RefObject<TPreview | null>;
+  nodeRef?: React.RefObject<TNode | null>;
+};
 
-export type DraggableState = {
+export type DraggableState<
+  TNode extends HTMLElement = HTMLDivElement,
+  TPreview extends HTMLElement = HTMLDivElement,
+> = {
   isAboutToDrag: boolean;
   isDragging: boolean;
-  nodeRef: React.RefObject<HTMLDivElement | null>;
-  previewRef: React.RefObject<HTMLDivElement | null>;
+  nodeRef: React.RefObject<TNode | null>;
+  previewRef: React.RefObject<TPreview | null>;
   handleRef: React.RefCallback<HTMLElement>;
 };
 
@@ -140,10 +194,10 @@ export const getHoverDirection = ({
   orientation = 'vertical',
   nodeKey,
 }: GetHoverDirectionOptions): DropDirection => {
-  if (!nodeRef.current) return;
+  if (!nodeRef.current) return undefined;
 
   if ('element' in dragItem) {
-    if (element === dragItem.element) return;
+    if (element === dragItem.element) return undefined;
 
     const draggedKeys = Array.isArray(dragItem.key)
       ? dragItem.key
@@ -154,14 +208,14 @@ export const getHoverDirection = ({
       nodeKey !== undefined &&
       draggedKeys.includes(nodeKey)
     ) {
-      return;
+      return undefined;
     }
   }
 
   const hoverBoundingRect = nodeRef.current.getBoundingClientRect();
   const clientOffset = monitor.getClientOffset();
 
-  if (!clientOffset) return;
+  if (!clientOffset) return undefined;
 
   if (orientation === 'vertical') {
     const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
@@ -203,39 +257,34 @@ export const getDropPath = (
     nodeKey: editor.key(element),
   });
 
-  if (!direction) return;
+  if (!direction) return undefined;
 
   let dragEntry: NodeEntry<Element> | undefined;
   let dropEntry: NodeEntry<Element> | undefined;
+  const hoveredNodePath = editor.read.nodes.path(element);
 
   if ('element' in dragItem) {
-    const hoveredPath = editor.read.nodes.path(element);
-
-    if (!hoveredPath) return;
+    if (!hoveredNodePath) return undefined;
 
     const sourceEditor =
       dragItem.editorId === editor.id ? editor : dragItem.editor;
     const dragPath = sourceEditor?.read.nodes.path(dragItem.element);
 
-    if (sourceEditor && !dragPath) return;
+    if (sourceEditor && !dragPath) return undefined;
 
     if (dragPath) {
       dragEntry = [dragItem.element, dragPath];
     }
-    dropEntry = [element, hoveredPath];
-  } else {
-    const hoveredPath = editor.read.nodes.path(element);
-
-    if (hoveredPath) dropEntry = [element, hoveredPath];
-  }
-  if (!dropEntry) return;
+    dropEntry = [element, hoveredNodePath];
+  } else if (hoveredNodePath) dropEntry = [element, hoveredNodePath];
+  if (!dropEntry) return undefined;
   if (
     (canDropNode &&
       dragEntry &&
       !canDropNode({ dragEntry, dragItem, dropEntry, editor })) ||
     !monitor.canDrop()
   ) {
-    return;
+    return undefined;
   }
 
   let dropPath: Path | undefined;
@@ -248,19 +297,21 @@ export const getDropPath = (
   if (direction === 'bottom' || direction === 'right') {
     dropPath = hoveredPath;
 
-    if (dragPath && PathApi.equals(dragPath, PathApi.next(dropPath))) return;
+    if (dragPath && PathApi.equals(dragPath, PathApi.next(dropPath))) {
+      return undefined;
+    }
   }
   if (direction === 'top' || direction === 'left') {
     const hoveredIndex = hoveredPath.at(-1);
 
-    if (hoveredIndex === undefined) return;
+    if (hoveredIndex === undefined) return undefined;
 
     dropPath = [...hoveredPath.slice(0, -1), hoveredIndex - 1];
 
-    if (dragPath && PathApi.equals(dragPath, dropPath)) return;
+    if (dragPath && PathApi.equals(dragPath, dropPath)) return undefined;
   }
 
-  if (!dropPath) return;
+  if (!dropPath) return undefined;
 
   const before =
     dragPath &&
@@ -276,7 +327,12 @@ export const getDropPath = (
 
 const useDomDragNode = (
   editor: PlateEditor,
-  { element: staleElement, item, ...options }: UseDragNodeOptions
+  {
+    element: staleElement,
+    end: onDragEnd,
+    item,
+    ...options
+  }: UseDragNodeOptions
 ): [
   { isAboutToDrag: boolean; isDragging: boolean },
   ConnectDragSource,
@@ -295,13 +351,21 @@ const useDomDragNode = (
       return true;
     },
     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
-    end: () => {
-      editor.plugin(DndStorePlugin).store.set({ isDragging: false });
-      document.body.classList.remove('dragging');
-      setIsAboutToDrag(false);
+    end: (dragItem, monitor) => {
+      try {
+        completeCrossEditorDrag(editor, monitor);
+      } finally {
+        try {
+          onDragEnd?.(dragItem, monitor);
+        } finally {
+          editor.plugin(DndStorePlugin).store.set({ isDragging: false });
+          document.body.classList.remove('dragging');
+          setIsAboutToDrag(false);
+        }
+      }
     },
     item(monitor) {
-      const store = editor.plugin(DndStorePlugin).store;
+      const { store } = editor.plugin(DndStorePlugin);
 
       store.set({ isDragging: true });
       store.set({ _isOver: true });
@@ -328,19 +392,42 @@ const useDomDragNode = (
         store.set({ draggingKey: elementKey });
       }
 
-      return {
+      const dragItem: ElementDragItemNode = {
         key,
         editor,
         editorId: editor.id,
         element,
         ...itemValue,
       };
+      const draggedKeys = Array.isArray(dragItem.key)
+        ? dragItem.key
+        : [dragItem.key];
+      const elements = draggedKeys
+        .map((draggedKey) =>
+          editor.read.nodes.get(draggedKey, {
+            match: ElementApi.isElement,
+          })
+        )
+        .filter((entry): entry is NodeEntry<Element> => !!entry)
+        .toSorted(([, a], [, b]) => PathApi.compare(a, b))
+        .map(([node]) => node);
+      const snapshot = editor.read.runtime.snapshot();
+
+      return {
+        ...dragItem,
+        [dragSourceSnapshot]: {
+          children: snapshot.children,
+          editor,
+          elements: elements.length > 0 ? elements : [dragItem.element],
+        },
+      } satisfies InternalElementDragItemNode;
     },
     ...options,
   });
 
   React.useEffect(() => {
     if (!collected.isDragging && isAboutToDrag) {
+      // oxlint-disable-next-line react-doctor/no-adjust-state-on-prop-change -- [P0 behavior-boundary] This bridges react-dnd monitor state and clears an attempted drag only when the external monitor never starts it.
       setIsAboutToDrag(false);
     }
   }, [collected.isDragging, isAboutToDrag]);
@@ -371,7 +458,7 @@ const useDomDropNode = (
     collect: (monitor) => ({
       isOver: monitor.isOver({ shallow: true }),
     }),
-    drop: (dragItem, monitor) => {
+    drop: (dragItem, monitor): CrossEditorDropResult | undefined => {
       const key = editor.key(element);
 
       if (!('key' in dragItem)) {
@@ -387,9 +474,9 @@ const useDomDropNode = (
           .plugin(DndStorePlugin)
           .store.get('onDropFiles');
 
-        if (!result || !onDropFiles) return;
+        if (!result || !onDropFiles) return undefined;
 
-        return onDropFiles({
+        onDropFiles({
           key,
           dragItem,
           editor,
@@ -397,13 +484,14 @@ const useDomDropNode = (
           nodeRef,
           target: result.to,
         });
+        return undefined;
       }
 
       const handled =
         !!onDropHandler &&
         onDropHandler(editor, { key, dragItem, monitor, nodeRef });
 
-      if (handled) return;
+      if (handled) return undefined;
 
       const result = getDropPath(editor, {
         canDropNode,
@@ -414,7 +502,7 @@ const useDomDropNode = (
         orientation,
       });
 
-      if (!result) return;
+      if (!result) return undefined;
 
       const { direction, dragPath, to } = result;
 
@@ -425,7 +513,7 @@ const useDomDropNode = (
 
         if (draggedKeys.length > 1) {
           if (draggedKeys.includes(editor.key(element))) {
-            return;
+            return undefined;
           }
 
           const entries = draggedKeys
@@ -464,20 +552,23 @@ const useDomDropNode = (
             }
           });
         } else {
-          if (!dragPath) return;
+          if (!dragPath) return undefined;
 
           editor.update.nodes.move({ at: dragPath, to });
         }
 
-        return;
+        return undefined;
       }
 
-      const sourceEditor = dragItem.editor;
+      const sourceSnapshot = (dragItem as InternalElementDragItemNode)[
+        dragSourceSnapshot
+      ];
+      const sourceEditor = sourceSnapshot?.editor ?? dragItem.editor;
 
       if (!sourceEditor) {
         editor.update.nodes.insert(dragItem.element, { at: to });
 
-        return;
+        return undefined;
       }
 
       const draggedKeys = Array.isArray(dragItem.key)
@@ -492,17 +583,35 @@ const useDomDropNode = (
           })
         )
         .filter((entry): entry is NodeEntry<Element> => !!entry);
-      const elements = entries
-        .toSorted(([, a], [, b]) => PathApi.compare(a, b))
-        .map(([node]) => node);
+      const elements =
+        sourceSnapshot?.elements ??
+        entries
+          .toSorted(([, a], [, b]) => PathApi.compare(a, b))
+          .map(([node]) => node);
       const paths = entries
         .map(([, path]) => path)
         .toSorted((a, b) => PathApi.compare(b, a));
+
+      const targetChildren = editor.read.runtime.snapshot().children;
 
       editor.update.nodes.insert(
         elements.length > 0 ? elements : dragItem.element,
         { at: to }
       );
+
+      if (editor.read.runtime.snapshot().children === targetChildren) {
+        return undefined;
+      }
+
+      if (sourceSnapshot) {
+        return {
+          [crossEditorDropResult]: {
+            children: sourceSnapshot.children,
+            editor: sourceEditor,
+            paths,
+          },
+        } satisfies CrossEditorDropResult;
+      }
 
       if (paths.length > 0) {
         sourceEditor.update((tx) => {
@@ -511,9 +620,11 @@ const useDomDropNode = (
           });
         });
       }
+
+      return undefined;
     },
     hover: (dragItem, monitor) => {
-      const store = editor.plugin(DndStorePlugin).store;
+      const { store } = editor.plugin(DndStorePlugin);
       const { _isOver, dropTarget } = store.get();
       const currentKey = dropTarget?.key ?? null;
       const currentLine = dropTarget?.line ?? '';
@@ -549,14 +660,13 @@ const useDomDropNode = (
           const elementPath = editor.read.nodes.path(element);
 
           if (!elementPath) return;
-
-          const previousPath = PathApi.previous(elementPath);
-
-          if (!previousPath) {
+          if (!PathApi.hasPrevious(elementPath)) {
             store.set({ dropTarget: newDropTarget });
 
             return;
           }
+
+          const previousPath = PathApi.previous(elementPath);
 
           store.set({
             dropTarget: editor.read.nodes.get(previousPath, {
@@ -589,6 +699,11 @@ const useInertDropNode = (): ReturnType<typeof useDomDropNode> => [
 
 const useDropNode = canUseDomDnd() ? useDomDropNode : useInertDropNode;
 
+/**
+ * Register one element as a drag source and drop target using caller-owned
+ * refs. Mount this hook only while the surrounding UI needs DnD interaction;
+ * use `useDraggable` when the hook should own the refs instead.
+ */
 export const useDndNode = ({
   canDropNode,
   drag: dragOptions,
@@ -636,14 +751,21 @@ export const useDndNode = ({
   return { dragRef, isAboutToDrag, isDragging, isOver };
 };
 
-export const useDraggable = (props: UseDraggableOptions): DraggableState => {
+export const useDraggable = <
+  TNode extends HTMLElement = HTMLDivElement,
+  TPreview extends HTMLElement = HTMLDivElement,
+>(
+  props: UseDraggableOptions<TNode, TPreview>
+): DraggableState<TNode, TPreview> => {
   const {
     orientation = 'vertical',
     type = DRAG_ITEM_BLOCK,
     onDropHandler,
   } = props;
-  const nodeRef = React.useRef<HTMLDivElement>(null);
-  const multiplePreviewRef = React.useRef<HTMLDivElement>(null);
+  const fallbackNodeRef = React.useRef<TNode>(null);
+  const fallbackPreviewRef = React.useRef<TPreview>(null);
+  const nodeRef = props.nodeRef ?? fallbackNodeRef;
+  const multiplePreviewRef = props.multiplePreviewRef ?? fallbackPreviewRef;
   const { dragRef, isAboutToDrag, isDragging } = useDndNode({
     multiplePreviewRef,
     nodeRef,

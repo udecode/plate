@@ -152,6 +152,13 @@ Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, TipTap
 extensions, document editors, browser editor test suites, pagination/
 virtualization libraries, and TypeScript-heavy UI/runtime projects.
 
+Use ProseKit for headless extension composition, framework adapters,
+autocomplete, and editor UI prior art. Use Meowdown for hybrid Markdown,
+hidden-syntax caret and selection behavior, touch input, IME, and WebKit proof
+ideas. Separate behavior those projects own from behavior inherited through
+ProseMirror. Treat Meowdown's desktop WebKit and touch-emulation tests as scoped
+browser evidence, not raw iOS or iPhone proof.
+
 For code-level claims, treat web/GitHub hits as leads only. Clone or inspect the
 real source locally before patching Plite. Never patch runtime from snippets,
 issue titles, README claims, or vague discussions.

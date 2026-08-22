@@ -59,7 +59,9 @@ test(
     const workspace = fs.mkdtempSync(
       path.join(os.tmpdir(), 'plite-benchmark-target-')
     );
-    t.after(() => fs.rmSync(workspace, { force: true, recursive: true }));
+    t.after(() => {
+      fs.rmSync(workspace, { force: true, recursive: true });
+    });
 
     const script = (name, source) => {
       const filePath = path.join(workspace, name);

@@ -13,7 +13,6 @@ import type {
   Range,
   RootKey,
   Selection,
-  Text,
   Value,
 } from '../../interfaces';
 import { ElementApi, NodeApi, RangeApi, SelectionApi } from '../../interfaces';
@@ -177,7 +176,7 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
     root: RootKey,
     value?: EditorDocumentValue
   ) => CompiledSchemaContentProgram | null | undefined;
-  getEditor: () => Editor<V, any>;
+  getEditor: () => Editor<V>;
   getElementAncestors: (
     children: readonly Descendant[],
     path: readonly number[],
@@ -296,7 +295,7 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const createDefaultForContent = (
-    schema: CompiledEditorSchema,
+    innerSchema: CompiledEditorSchema,
     content: CompiledSchemaContentProgram,
     creating: ReadonlySet<string>,
     options: RuntimeTargetOptions
@@ -307,7 +306,7 @@ export const compileSliceFitter = <V extends Value>(
     if (!plan || creating.has(plan.type)) return null;
 
     return createDeclarativeAndFill(
-      schema,
+      innerSchema,
       plan.type,
       undefined,
       creating,
@@ -316,7 +315,7 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const fitDirectContent = (
-    schema: CompiledEditorSchema,
+    innerSchema2: CompiledEditorSchema,
     content: CompiledSchemaContentProgram,
     source: readonly Descendant[],
     createdDefaults: readonly Descendant[] = [],
@@ -324,7 +323,7 @@ export const compileSliceFitter = <V extends Value>(
   ): readonly Descendant[] | null => {
     if (
       (content.max !== null && source.length > content.max) ||
-      !allContentAllowed(schema, content, source)
+      !allContentAllowed(innerSchema2, content, source)
     ) {
       return null;
     }
@@ -334,9 +333,9 @@ export const compileSliceFitter = <V extends Value>(
     while (fitted.length < content.min) {
       const createdDefault = createdDefaults[fitted.length];
       const child =
-        createdDefault && contentAllows(schema, content, createdDefault)
+        createdDefault && contentAllows(innerSchema2, content, createdDefault)
           ? createdDefault
-          : createDefaultForContent(schema, content, new Set(), options);
+          : createDefaultForContent(innerSchema2, content, new Set(), options);
 
       if (!child) return null;
       fitted.push(child);
@@ -346,7 +345,7 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const createWrappedContent = (
-    schema: CompiledEditorSchema,
+    innerSchema3: CompiledEditorSchema,
     wrappers: readonly string[],
     source: readonly Descendant[],
     options: RuntimeTargetOptions = {}
@@ -356,7 +355,7 @@ export const compileSliceFitter = <V extends Value>(
 
     for (const type of wrappers) {
       const wrapper = createDeclarativeAndFill(
-        schema,
+        innerSchema3,
         type,
         undefined,
         new Set(),
@@ -375,11 +374,17 @@ export const compileSliceFitter = <V extends Value>(
     for (const wrapper of created.toReversed()) {
       const content = getCompiledElement(wrapper)?.content;
       const fitted = content
-        ? fitDirectContent(schema, content, children, wrapper.children, options)
+        ? fitDirectContent(
+            innerSchema3,
+            content,
+            children,
+            wrapper.children,
+            options
+          )
         : children;
 
       if (!fitted) return null;
-      children = [{ ...wrapper, children: [...fitted] } as Element];
+      children = [{ ...wrapper, children: [...fitted] }];
     }
 
     return children;
@@ -402,37 +407,41 @@ export const compileSliceFitter = <V extends Value>(
     child: Descendant
   ): readonly string[] | null => {
     if (canContain(parent, child)) return [];
-    const schema = getDeclarativeSchema();
+    const innerSchema4 = getDeclarativeSchema();
     const parentType = getElementType(parent);
     const childType = NodeApi.isText(child) ? null : getElementType(child);
 
-    if (!schema || !parentType || (!NodeApi.isText(child) && !childType)) {
+    if (
+      !innerSchema4 ||
+      !parentType ||
+      (!NodeApi.isText(child) && !childType)
+    ) {
       return null;
     }
 
     return resolveCompiledSchemaWrapperPlan(
-      schema,
+      innerSchema4,
       `element:${parentType}`,
       childType
     );
   };
 
   const findWrappingForContent = (
-    schema: CompiledEditorSchema,
+    innerSchema5: CompiledEditorSchema,
     programId: string,
     content: CompiledSchemaContentProgram,
     child: Descendant
   ): readonly string[] | null => {
-    if (contentAllows(schema, content, child)) return [];
+    if (contentAllows(innerSchema5, content, child)) return [];
     const childType = NodeApi.isText(child) ? null : getElementType(child);
 
     if (!NodeApi.isText(child) && !childType) return null;
 
-    return resolveCompiledSchemaWrapperPlan(schema, programId, childType);
+    return resolveCompiledSchemaWrapperPlan(innerSchema5, programId, childType);
   };
 
   const fitClosedNode = (
-    schema: CompiledEditorSchema,
+    innerSchema6: CompiledEditorSchema,
     node: Descendant,
     options: RuntimeTargetOptions
   ): Descendant | null => {
@@ -450,15 +459,17 @@ export const compileSliceFitter = <V extends Value>(
     if (NodeApi.isText(node)) return retainOrigin(node);
 
     const type = getElementType(node);
-    const element = type ? schema.elements.byType.get(type) : undefined;
+    const element = type ? innerSchema6.elements.byType.get(type) : undefined;
 
     if (!element) {
-      return schema.unknown === 'preserve' ? retainOrigin(node, true) : null;
+      return innerSchema6.unknown === 'preserve'
+        ? retainOrigin(node, true)
+        : null;
     }
     if (!element.content) return retainOrigin(node, true);
 
     const children = fitClosedContent(
-      schema,
+      innerSchema6,
       `element:${type}`,
       element.content,
       node.children,
@@ -478,11 +489,11 @@ export const compileSliceFitter = <V extends Value>(
       return retainOrigin(node, true);
     }
 
-    return retainOrigin({ ...node, children: [...children] } as Element);
+    return retainOrigin({ ...node, children: [...children] });
   };
 
   const fitClosedDefaultShell = (
-    schema: CompiledEditorSchema,
+    innerSchema7: CompiledEditorSchema,
     content: CompiledSchemaContentProgram,
     node: Element,
     options: RuntimeTargetOptions
@@ -491,17 +502,17 @@ export const compileSliceFitter = <V extends Value>(
 
     if (plan?.kind !== 'element') return null;
     const shell = createDeclarativeAndFill(
-      schema,
+      innerSchema7,
       plan.type,
       undefined,
       new Set(),
       options
     );
-    const shellContent = schema.elements.byType.get(plan.type)?.content;
+    const shellContent = innerSchema7.elements.byType.get(plan.type)?.content;
 
     if (!shellContent) return null;
     const children = fitClosedContent(
-      schema,
+      innerSchema7,
       `element:${plan.type}`,
       shellContent,
       node.children,
@@ -522,7 +533,7 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   function fitClosedContent(
-    schema: CompiledEditorSchema,
+    innerSchema8: CompiledEditorSchema,
     programId: string,
     content: CompiledSchemaContentProgram,
     source: readonly Descendant[],
@@ -536,15 +547,25 @@ export const compileSliceFitter = <V extends Value>(
     }> = [];
 
     for (const sourceChild of source) {
-      const child = fitClosedNode(schema, sourceChild, options);
+      const child = fitClosedNode(innerSchema8, sourceChild, options);
 
       if (!child) return null;
-      let wrappers = findWrappingForContent(schema, programId, content, child);
+      let wrappers = findWrappingForContent(
+        innerSchema8,
+        programId,
+        content,
+        child
+      );
 
       let fittedChild = child;
 
       if (!wrappers && coerceDefaultShell && ElementApi.isElement(child)) {
-        const shell = fitClosedDefaultShell(schema, content, child, options);
+        const shell = fitClosedDefaultShell(
+          innerSchema8,
+          content,
+          child,
+          options
+        );
 
         if (shell) {
           fittedChild = shell;
@@ -575,7 +596,7 @@ export const compileSliceFitter = <V extends Value>(
 
     for (const group of groups) {
       const children = createWrappedContent(
-        schema,
+        innerSchema8,
         group.wrappers,
         group.children,
         options
@@ -587,11 +608,11 @@ export const compileSliceFitter = <V extends Value>(
 
     if (content.max !== null && fitted.length > content.max) return null;
 
-    return fitDirectContent(schema, content, fitted, [], options);
+    return fitDirectContent(innerSchema8, content, fitted, [], options);
   }
 
   const fitClosedSliceInterior = (
-    schema: CompiledEditorSchema,
+    innerSchema9: CompiledEditorSchema,
     slice: ContentSlice,
     root: RootKey,
     provenance?: RootFitPathProvenance
@@ -612,7 +633,7 @@ export const compileSliceFitter = <V extends Value>(
         let next: Descendant | null = child;
 
         if (!opensStart && !opensEnd) {
-          next = fitClosedNode(schema, child, {
+          next = fitClosedNode(innerSchema9, child, {
             ancestors,
             fitOrigins,
             root,
@@ -632,7 +653,7 @@ export const compileSliceFitter = <V extends Value>(
               (node, childIndex) => node !== child.children[childIndex]
             )
           ) {
-            next = { ...child, children: [...nested] } as Element;
+            next = { ...child, children: [...nested] };
           }
         }
 
@@ -679,8 +700,8 @@ export const compileSliceFitter = <V extends Value>(
         break;
       }
 
-      depth++;
-      children = node.children;
+      depth += 1;
+      ({ children } = node);
     }
 
     return depth;
@@ -690,11 +711,11 @@ export const compileSliceFitter = <V extends Value>(
     slice: ContentSlice,
     options: Readonly<{ parent: Element; root?: RootKey }>
   ): readonly Descendant[] | null => {
-    const schema = getDeclarativeSchema();
+    const innerSchema10 = getDeclarativeSchema();
     const parentType = getElementType(options.parent);
 
-    if (!schema || !parentType) return null;
-    const element = schema.elements.byType.get(parentType);
+    if (!innerSchema10 || !parentType) return null;
+    const element = innerSchema10.elements.byType.get(parentType);
 
     if (!element?.content) return null;
     const parentContent = element.content;
@@ -714,9 +735,7 @@ export const compileSliceFitter = <V extends Value>(
       'Detached slice-fit parent'
     );
     let virtualChildren = Object.freeze([parent]);
-    let virtualDocument = DocumentIndex.fromValue(
-      virtualChildren as readonly JsonNode[]
-    );
+    let virtualDocument = DocumentIndex.fromValue(virtualChildren);
     let parentRange = virtualDocument.nodeRange([0]);
     let anchor = virtualDocument.pointAt(parentRange.from + 1, 1);
     let focus = virtualDocument.pointAt(parentRange.to - 1, -1);
@@ -727,9 +746,7 @@ export const compileSliceFitter = <V extends Value>(
         'Detached slice-fit parent'
       );
       virtualChildren = Object.freeze([parent]);
-      virtualDocument = DocumentIndex.fromValue(
-        virtualChildren as readonly JsonNode[]
-      );
+      virtualDocument = DocumentIndex.fromValue(virtualChildren);
       parentRange = virtualDocument.nodeRange([0]);
       anchor = virtualDocument.pointAt(parentRange.from + 1, 1);
       focus = virtualDocument.pointAt(parentRange.to - 1, -1);
@@ -758,7 +775,7 @@ export const compileSliceFitter = <V extends Value>(
       indexConstructedRoot,
       isSetValued: (node, key, context) =>
         isSetValuedProperty(node, key, context),
-      validateConstructed: ({ after }) =>
+      validateConstructed: ({ after }) => {
         profileCoreDuration('slice-fit-content-validation', () => {
           const fittedParent = getDocumentRoot(
             after as EditorDocumentValue,
@@ -774,13 +791,13 @@ export const compileSliceFitter = <V extends Value>(
               'Detached slice fitting must retain its parent element.'
             );
           }
-          const children = fittedParent.children;
+          const { children } = fittedParent;
 
           if (
             children.length < parentContent.min ||
             (parentContent.max !== null &&
               children.length > parentContent.max) ||
-            !allContentAllowed(schema, parentContent, children)
+            !allContentAllowed(innerSchema10, parentContent, children)
           ) {
             throw new EditorSchemaValidationError(
               `Editor element "${parentType}" has invalid fitted content.`
@@ -789,12 +806,13 @@ export const compileSliceFitter = <V extends Value>(
 
           validateDeclarativeChildren(
             children,
-            schema,
+            innerSchema10,
             root,
             [fittedParent],
             []
           );
-        }),
+        });
+      },
     });
     const at: Range = {
       anchor: {
@@ -808,7 +826,7 @@ export const compileSliceFitter = <V extends Value>(
         ...(root === 'main' ? {} : { root }),
       },
     };
-    const input = ContentSliceValue.fromJSON(slice);
+    const innerInput = ContentSliceValue.fromJSON(slice);
     const contentBounds = {
       from: parentRange.from + 1,
       to: parentRange.to - 1,
@@ -818,7 +836,7 @@ export const compileSliceFitter = <V extends Value>(
       target: {
         at,
         contentBounds,
-        ...(input.openStart === 0 && input.openEnd === 0
+        ...(innerInput.openStart === 0 && innerInput.openEnd === 0
           ? { exactBounds: contentBounds }
           : {}),
         kind: 'range',
@@ -911,7 +929,7 @@ export const compileSliceFitter = <V extends Value>(
 
       if (!canOpenStructuralContext(source)) return null;
 
-      let children = source.children;
+      let { children } = source;
 
       while (true) {
         const first = children[0];
@@ -1099,7 +1117,7 @@ export const compileSliceFitter = <V extends Value>(
     const deleting = source.content.length === 0;
     const directSourceContexts = (() => {
       const contexts: Descendant[] = [];
-      let content = source.content;
+      let { content } = source;
 
       for (let depth = 0; depth <= source.openStart; depth++) {
         const node = content[0];
@@ -1289,7 +1307,7 @@ export const compileSliceFitter = <V extends Value>(
     exactTo: number,
     insert: PreparedTokenSlice
   ) => {
-    const tokens: ReturnType<typeof getNodeToken>[] = [];
+    const tokens: Array<ReturnType<typeof getNodeToken>> = [];
 
     if (boundary.from < exactFrom && boundary.to === exactTo) {
       for (let depth = 1; depth <= end.path.length; depth++) {
@@ -1345,7 +1363,7 @@ export const compileSliceFitter = <V extends Value>(
       createIndexes: () => ReadonlyMap<string, DocumentIndex>;
       runtimeCandidatePaths: ReadonlyMap<
         string,
-        readonly (readonly number[])[]
+        ReadonlyArray<readonly number[]>
       >;
     }>
   ) => {
@@ -1670,9 +1688,9 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     try {
-      profileCoreDuration('slice-fit-vocabulary-validation', () =>
-        validateSliceVocabulary(sourceSlice.content)
-      );
+      profileCoreDuration('slice-fit-vocabulary-validation', () => {
+        validateSliceVocabulary(sourceSlice.content);
+      });
     } catch (error) {
       if (error instanceof EditorSchemaValidationError) return false;
 
@@ -1822,7 +1840,7 @@ export const compileSliceFitter = <V extends Value>(
       if (token.sourceNode) return token.sourceNode as Descendant;
 
       return token.nodeKind === 'text'
-        ? ({ ...token.props, text: '' } as Text)
+        ? { ...token.props, text: '' }
         : ({ ...token.props, children: [] } as unknown as Element);
     };
     const rootContainmentByKind = new Map<string, boolean>();
@@ -1833,11 +1851,11 @@ export const compileSliceFitter = <V extends Value>(
       const cached = rootContainmentByKind.get(kind);
 
       if (cached !== undefined) return cached;
-      const schema = getDeclarativeSchema();
+      const innerSchema11 = getDeclarativeSchema();
       const rootContent = targetRootProgram;
       const allowed =
-        schema && rootContent
-          ? contentAllows(schema, rootContent, child)
+        innerSchema11 && rootContent
+          ? contentAllows(innerSchema11, rootContent, child)
           : ElementApi.isElement(child) && !getElementBehavior(child).inline;
 
       rootContainmentByKind.set(kind, allowed);
@@ -2146,7 +2164,7 @@ export const compileSliceFitter = <V extends Value>(
 
           if (!node || !ElementApi.isElement(node)) return null;
           preferred = node;
-          children = node.children;
+          ({ children } = node);
         }
 
         const targetDepth = start.path
@@ -2161,7 +2179,7 @@ export const compileSliceFitter = <V extends Value>(
               contextsShareContent(node, preferred)
           );
 
-        if (targetDepth < 0) return null;
+        if (targetDepth === -1) return null;
 
         while (stack.length > targetDepth + 1) {
           closeTop();
@@ -2174,7 +2192,7 @@ export const compileSliceFitter = <V extends Value>(
         targetHasInlineAncestor
       ) {
         while (stack.length > 0) {
-          const top = openTokenNode(stack.at(-1)!);
+          const top = openTokenNode(stack.at(-1) as FitOpenToken);
 
           if (
             NodeApi.isText(top) ||
@@ -2202,9 +2220,11 @@ export const compileSliceFitter = <V extends Value>(
           }
         }
 
-        const token =
-          endTextToken ??
-          ({ kind: 'open', nodeKind: 'text', props: {} } as FitOpenToken);
+        const token = endTextToken ?? {
+          kind: 'open',
+          nodeKind: 'text',
+          props: {},
+        };
 
         return openFitted(token);
       };
@@ -2247,7 +2267,7 @@ export const compileSliceFitter = <V extends Value>(
         allowAsymmetric &&
         stack.length === expected.length &&
         stack.every((token, index) =>
-          openContextsMatch(token, expected[index]!)
+          openContextsMatch(token, expected[index])
         );
 
       if (
@@ -2255,7 +2275,7 @@ export const compileSliceFitter = <V extends Value>(
         stack.length > 0 &&
         stack.length < localEndContext.length &&
         stack.every((token, index) =>
-          openContextsMatch(token, localEndContext[index]!)
+          openContextsMatch(token, localEndContext[index])
         )
       ) {
         for (
@@ -2263,8 +2283,8 @@ export const compileSliceFitter = <V extends Value>(
           index < localEndContext.length;
           index++
         ) {
-          append(localEndContext[index]!);
-          stack.push(localEndContext[index]!);
+          append(localEndContext[index]);
+          stack.push(localEndContext[index]);
         }
       }
 
@@ -2278,14 +2298,14 @@ export const compileSliceFitter = <V extends Value>(
       let shared = 0;
 
       while (shared < stack.length && shared < expected.length) {
-        if (!openContextsMatch(stack[shared]!, expected[shared]!)) break;
-        shared++;
+        if (!openContextsMatch(stack[shared], expected[shared])) break;
+        shared += 1;
       }
 
       while (stack.length > shared) closeTop();
       for (let index = shared; index < expected.length; index++) {
-        append(expected[index]!);
-        stack.push(expected[index]!);
+        append(expected[index]);
+        stack.push(expected[index]);
       }
 
       let candidateFrom = exactFrom;
@@ -2392,7 +2412,7 @@ export const compileSliceFitter = <V extends Value>(
     const getInsertionContent = (variant: ContentSlice) => {
       if (variant.openStart !== variant.openEnd) return null;
 
-      let content = variant.content;
+      let { content } = variant;
 
       for (let depth = 0; depth < variant.openStart; depth++) {
         const node = content.length === 1 ? content[0] : null;
@@ -2433,7 +2453,7 @@ export const compileSliceFitter = <V extends Value>(
       ) {
         return false;
       }
-      const schema = getDeclarativeSchema();
+      const innerSchema12 = getDeclarativeSchema();
       const parent =
         from.parentPath.length === 0
           ? null
@@ -2451,7 +2471,7 @@ export const compileSliceFitter = <V extends Value>(
         ...parentChildren.slice(to.index),
       ];
 
-      if (!schema) {
+      if (!innerSchema12) {
         if (parent) {
           if (!ElementApi.isElement(parent)) return false;
 
@@ -2470,20 +2490,26 @@ export const compileSliceFitter = <V extends Value>(
       if (parent && !ElementApi.isElement(parent)) return false;
       const parentType = parent ? getElementType(parent) : null;
       const program = parentType
-        ? schema.elements.byType.get(parentType)?.content
+        ? innerSchema12.elements.byType.get(parentType)?.content
         : targetRootProgram;
 
       if (!program) return false;
 
-      const fitted = fitDirectContent(schema, program, nextChildren, [], {
-        ancestors:
-          parent && ElementApi.isElement(parent)
-            ? getElementAncestors(rootChildren, from.parentPath, {
-                includeTarget: true,
-              })
-            : [],
-        root,
-      });
+      const fitted = fitDirectContent(
+        innerSchema12,
+        program,
+        nextChildren,
+        [],
+        {
+          ancestors:
+            parent && ElementApi.isElement(parent)
+              ? getElementAncestors(rootChildren, from.parentPath, {
+                  includeTarget: true,
+                })
+              : [],
+          root,
+        }
+      );
 
       return Boolean(
         fitted &&
@@ -2551,7 +2577,7 @@ export const compileSliceFitter = <V extends Value>(
         prefix.length === 0 && suffix.length === 0
           ? fullInsert
           : PreparedTokenSlice.fromPreparedNodes(preparedContent);
-      const targetIndex = targetPath[0]!;
+      const targetIndex = targetPath[0];
       const lastIndex = targetIndex + preparedContent.length - 1;
       const runtimeCandidatePaths: Array<readonly number[]> = [
         Object.freeze([targetIndex]),
@@ -2715,7 +2741,7 @@ export const compileSliceFitter = <V extends Value>(
 
           if (!node || !ElementApi.isElement(node)) return [];
           result.push(node);
-          children = node.children;
+          ({ children } = node);
         }
 
         return result;
@@ -2734,7 +2760,7 @@ export const compileSliceFitter = <V extends Value>(
         if (source.length !== depth) {
           return false;
         }
-        const preferred = source.at(-1)!;
+        const preferred = source.at(-1) as Element;
 
         return target.some((targetNode) => {
           const sameType =
@@ -2887,7 +2913,7 @@ export const compileSliceFitter = <V extends Value>(
                   'slice-fit-structural-candidates',
                   () =>
                     createStructuralCandidates(
-                      state.boundary!,
+                      state.boundary as SliceBoundaryCandidate,
                       variant,
                       state.cost
                     )
@@ -3138,18 +3164,18 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const fitDocumentInput = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>,
+    innerInput2: EditorDocumentValue<TValue>,
     selectionInput?: Readonly<{
       root: RootKey;
       selection: NonNullable<Selection>;
     }>
   ) => {
-    assertEditorJsonValue(input, 'Editor schema document');
+    assertEditorJsonValue(innerInput2, 'Editor schema document');
 
-    const inputRoots = input.roots ?? {};
+    const inputRoots = innerInput2.roots ?? {};
     const initial = cloneFrozen({
       children: [],
-      ...(input.meta !== undefined ? { meta: input.meta } : {}),
+      ...(innerInput2.meta !== undefined ? { meta: innerInput2.meta } : {}),
     }) as JsonEditorValue;
     const builder = new ChangeDraft(initial, {
       construct: (
@@ -3170,14 +3196,14 @@ export const compileSliceFitter = <V extends Value>(
       preparationRevision: () => api,
     });
     const roots = new Map<string, readonly Descendant[]>([
-      ['main', input.children],
+      ['main', innerInput2.children],
       ...Object.entries(inputRoots).sort(([left], [right]) =>
         left.localeCompare(right)
       ),
     ]);
 
     for (const root of getVocabulary().rootNames) {
-      if (getRootContent(root, input)?.min) {
+      if (getRootContent(root, innerInput2)?.min) {
         roots.set(root, inputRoots[root] ?? []);
       }
     }
@@ -3193,7 +3219,7 @@ export const compileSliceFitter = <V extends Value>(
       }
     };
 
-    collectProjectedRoots(input.children);
+    collectProjectedRoots(innerInput2.children);
     for (const children of Object.values(inputRoots)) {
       collectProjectedRoots(children);
     }
@@ -3216,7 +3242,7 @@ export const compileSliceFitter = <V extends Value>(
       });
 
       if (!fitted) {
-        validateDocument(input);
+        validateDocument(innerInput2);
         throw new EditorSchemaValidationError(
           `Editor ${
             root === 'main' ? 'primary root' : `root "${root}"`
@@ -3245,21 +3271,21 @@ export const compileSliceFitter = <V extends Value>(
   };
 
   const fitDocument = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>
-  ): EditorDocumentValue<V> => fitDocumentInput(input).document;
+    innerInput3: EditorDocumentValue<TValue>
+  ): EditorDocumentValue<V> => fitDocumentInput(innerInput3).document;
 
   const fitDocumentWithSelection = <TValue extends Value>(
-    input: EditorDocumentValue<TValue>,
+    innerInput4: EditorDocumentValue<TValue>,
     options: Readonly<{
       root: RootKey;
       selection: NonNullable<Selection>;
     }>
   ) => {
-    const fitted = fitDocumentInput(input, options);
+    const fitted = fitDocumentInput(innerInput4, options);
 
     return Object.freeze({
       document: fitted.document,
-      selection: fitted.selection!,
+      selection: fitted.selection as NonNullable<Selection>,
     });
   };
 

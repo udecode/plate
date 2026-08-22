@@ -14,6 +14,7 @@ import {
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
+  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
@@ -32,6 +33,7 @@ import {
 export function MediaEmbedElement(
   props: PlateElementProps<typeof MediaEmbedPlugin>
 ) {
+  const path = usePath();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected({ mode: 'node' });
@@ -52,8 +54,9 @@ export function MediaEmbedElement(
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
   const isYoutube = embed?.provider === 'youtube';
+  const youtubeId = isYoutube ? embed.id : undefined;
   const editor = useEditor();
-  const captionFocused = useCaptionFocused(props.path);
+  const captionFocused = useCaptionFocused(path);
   const provider = embed?.provider;
 
   return (
@@ -65,11 +68,11 @@ export function MediaEmbedElement(
               align={textAlign}
               maxWidth={isTweet ? 550 : '100%'}
               minWidth={isTweet ? 300 : 100}
-              onResizeEnd={(width) =>
+              onResizeEnd={(width) => {
                 editor
                   .plugin(MediaEmbedPlugin)
-                  .update.set({ width }, { at: props.path })
-              }
+                  .update.set({ width }, { at: path });
+              }}
               width={props.element.width}
             >
               <ResizeHandle
@@ -78,10 +81,10 @@ export function MediaEmbedElement(
               />
 
               {isVideo ? (
-                isYoutube ? (
+                youtubeId ? (
                   <div>
                     <LiteYouTubeEmbed
-                      id={embed!.id!}
+                      id={youtubeId}
                       title="youtube"
                       wrapperClass={cn(
                         'rounded-sm',
@@ -117,15 +120,18 @@ export function MediaEmbedElement(
                         isVideo && 'border-0',
                         focused && selected && 'ring-2 ring-ring ring-offset-2'
                       )}
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      // oxlint-disable-next-line react/iframe-missing-sandbox -- [P0 behavior-boundary] External media providers need scripts and their own origin for playback; the remaining sandbox capabilities stay explicit.
+                      sandbox="allow-scripts allow-same-origin allow-presentation"
                       title="embed"
-                      src={embed!.url}
+                      src={embed.url}
                       allowFullScreen
                     />
                   </div>
                 )
               ) : null}
 
-              {isTweet && (
+              {isTweet && embed.id && (
                 <div
                   className={cn(
                     '[&_.react-tweet-theme]:my-0',
@@ -134,7 +140,7 @@ export function MediaEmbedElement(
                       '[&_.react-tweet-theme]:ring-2 [&_.react-tweet-theme]:ring-ring [&_.react-tweet-theme]:ring-offset-2'
                   )}
                 >
-                  <Tweet id={embed!.id!} />
+                  <Tweet id={embed.id} />
                 </div>
               )}
 

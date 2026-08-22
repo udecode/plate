@@ -1,5 +1,5 @@
 import type { Element, Path, Text } from '@platejs/plite';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import type { BaseEditor } from '../../lib/editor';
 import type {

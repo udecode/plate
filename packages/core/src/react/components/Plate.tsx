@@ -6,9 +6,9 @@ import type {
   NodeEntry,
   Range,
   Selection,
-  Value,
 } from '@platejs/plite';
 import { EditorReadOnlyProvider } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import isEqual from 'lodash/isEqual.js';
 import React from 'react';
 
@@ -40,7 +40,7 @@ type PlateTextChangeContext<E> = Omit<EditorTextChangeContext, 'editor'> & {
 };
 
 export type PlateValueChangeContext<E = PlateEditor> = PlateCommitContext<E> & {
-  value: EditorDocumentValue<Value>;
+  value: EditorDocumentValue;
 };
 
 export interface PlateProps<E = PlateEditor> {
@@ -91,7 +91,7 @@ function PlateInner({
   onSelectionChange,
   onTextChange,
   onValueChange,
-}: PlateProps<PlateEditor> & {
+}: PlateProps & {
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const plateReadOnly = readOnly ?? editor?.read.view.isReadOnly();
@@ -105,9 +105,9 @@ function PlateInner({
     onSelectionChange,
     onValueChange,
   });
-  const [lastDocumentValueRef] = React.useState(() => ({
-    current: editor?.read.value(),
-  }));
+  const lastDocumentValueRef = React.useRef<EditorDocumentValue | undefined>(
+    undefined
+  );
 
   React.useInsertionEffect(() => {
     observersRef.current = {
@@ -119,15 +119,19 @@ function PlateInner({
 
   React.useLayoutEffect(
     () =>
-      subscribePlateChangeCallbacks(editor!, {
-        onNodeChange,
-        onTextChange,
-      }),
+      subscribePlateChangeCallbacks(
+        editor ?? failInvariant('Expected value to be defined'),
+        {
+          onNodeChange,
+          onTextChange,
+        }
+      ),
     [editor, onNodeChange, onTextChange]
   );
 
   React.useLayoutEffect(() => {
-    const currentEditor = editor!;
+    const currentEditor =
+      editor ?? failInvariant('Expected value to be defined');
     lastObservedCommitVersion.current = observerBaselineVersion;
     lastDocumentValueRef.current = currentEditor.read.value();
 
@@ -137,13 +141,18 @@ function PlateInner({
     ) => {
       lastObservedCommitVersion.current = commit.version;
 
-      const { onCommit, onSelectionChange, onValueChange } =
-        observersRef.current;
-      if (!onCommit && !onSelectionChange && !onValueChange) return;
+      const {
+        onCommit: innerOnCommit,
+        onSelectionChange: innerOnSelectionChange,
+        onValueChange: innerOnValueChange,
+      } = observersRef.current;
+      if (!innerOnCommit && !innerOnSelectionChange && !innerOnValueChange) {
+        return;
+      }
 
       const documentChanged = commit.changed.hasAny('document');
       const stateChanged = commit.dirtyStateKeys.length > 0;
-      const value = onValueChange
+      const value = innerOnValueChange
         ? documentChanged || stateChanged
           ? currentEditor.read.value()
           : (lastDocumentValueRef.current ?? currentEditor.read.value())
@@ -159,10 +168,10 @@ function PlateInner({
 
       const context = { commit, editor: currentEditor, snapshot };
 
-      onCommit?.(context);
+      innerOnCommit?.(context);
 
       if (value && (documentChanged || persistedMetaChanged)) {
-        onValueChange?.({
+        innerOnValueChange?.({
           ...context,
           value,
         });
@@ -173,7 +182,7 @@ function PlateInner({
         (commit.selectionBeforeRoot === undefined ||
           commit.selectionAfterRoot === undefined)
       ) {
-        onSelectionChange?.({
+        innerOnSelectionChange?.({
           ...context,
           selection: snapshot.selection,
         });
@@ -201,11 +210,11 @@ function PlateInner({
       <PlateStoreProvider
         containerRef={containerRef}
         decorate={decorate}
-        editor={editor!}
+        editor={editor ?? failInvariant('Expected value to be defined')}
         primary={primary}
         renderElement={renderElement}
         renderLeaf={renderLeaf}
-        scope={editor!.id}
+        scope={(editor ?? failInvariant('Expected value to be defined')).id}
       >
         {children}
       </PlateStoreProvider>

@@ -133,12 +133,10 @@ export const PliteElement = function PliteElement({
       data-plite-node="element"
       data-plite-inline={attributes['data-plite-inline']}
       {...attributes}
-      style={
-        {
-          position: 'relative',
-          ...attributes?.style,
-        } as React.CSSProperties
-      }
+      style={{
+        position: 'relative',
+        ...attributes?.style,
+      }}
     >
       {children}
     </Tag>

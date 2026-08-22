@@ -43,15 +43,15 @@ const parseHtmlNonNegativeInteger = (
   value: string | null,
   maximum: number
 ): number | undefined => {
-  if (value === null) return;
+  if (value === null) return undefined;
 
   const match = htmlNonNegativeIntegerPattern.exec(value);
 
-  if (!match) return;
+  if (!match) return undefined;
 
   const [, sign, digits] = match;
 
-  if (sign === '-' && !zeroDigitsPattern.test(digits)) return;
+  if (sign === '-' && !zeroDigitsPattern.test(digits)) return undefined;
 
   const integer = Number(digits);
 
@@ -90,7 +90,7 @@ export const resetImportedTableCellSpans = (table: HTMLTableElement) => {
 };
 
 export const getImportedTableCellColSpan = (element: HTMLElement) => {
-  const table = element.closest('table') as HTMLTableElement | null;
+  const table = element.closest('table');
 
   if (!table) return parseHtmlColSpan(element.getAttribute('colspan')) ?? 1;
 
@@ -129,7 +129,7 @@ export const getImportedTableCellColSpan = (element: HTMLElement) => {
     let rangeTreeSize = 1;
 
     while (rangeTreeSize < rows.length) rangeTreeSize *= 2;
-    const rangeTree = new Array<number>(rangeTreeSize * 2).fill(0);
+    const rangeTree = Array.from({ length: rangeTreeSize * 2 }, () => 0);
 
     rows.forEach((row, index) => {
       rangeTree[rangeTreeSize + index] = rowCells.get(row)?.length ?? 0;
@@ -260,7 +260,7 @@ export const parseHtmlRowSpan = (element: HTMLElement) => {
 
   if (!isZero) return span !== undefined && span > 1 ? span : undefined;
 
-  const row = element.closest('tr') as HTMLTableRowElement | null;
+  const row = element.closest('tr');
   const parent = row?.parentElement;
   const table = row?.closest('table') as HTMLTableElement | null;
   const decodeSessionActive =
@@ -292,10 +292,10 @@ export const parseHtmlRowSpan = (element: HTMLElement) => {
 };
 
 const parseCssPixelNumber = (value: string | null | undefined) => {
-  if (!value) return;
+  if (!value) return undefined;
   const match = cssPixelNumberPattern.exec(value.trim());
 
-  if (!match) return;
+  if (!match) return undefined;
 
   const parsed = Number(match[1]);
 
@@ -348,6 +348,8 @@ const getBorderStyle = (
       };
     }
   }
+
+  return undefined;
 };
 
 const parseBorder = (
@@ -356,7 +358,14 @@ const parseBorder = (
 ): TableCellBorder | undefined => {
   const border = getBorderStyle(style, direction);
 
-  if (!border.style || !border.rawWidth || border.width === undefined) return;
+  if (
+    !border ||
+    !border.style ||
+    !border.rawWidth ||
+    border.width === undefined
+  ) {
+    return undefined;
+  }
 
   return {
     ...(border.color ? { color: border.color } : {}),
@@ -366,7 +375,7 @@ const parseBorder = (
 };
 
 const serializeBorder = (border: TableCellBorder | undefined) => {
-  if (!border) return;
+  if (!border) return undefined;
 
   return `${border.width ?? 1}px ${border.style ?? 'solid'} ${
     border.color ?? 'currentColor'

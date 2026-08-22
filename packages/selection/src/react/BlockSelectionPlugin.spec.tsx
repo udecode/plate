@@ -216,7 +216,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual(['block1', 'block2']);
   });
@@ -255,7 +255,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual(['block1']);
   });
@@ -274,7 +274,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual(['block1']);
   });
@@ -295,7 +295,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual([]);
   });
@@ -319,7 +319,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual(['block1']);
   });
@@ -341,7 +341,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual(['block1']);
   });
@@ -362,7 +362,7 @@ describe('BlockSelectionPlugin', () => {
     expect(
       persistedIds(
         editor,
-        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')!
+        editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
       )
     ).toEqual([]);
   });
@@ -411,7 +411,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block3']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block3']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -436,7 +436,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block1']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -461,7 +461,7 @@ describe('moveSelection', () => {
       let selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block1']);
       let anchorKey = editor
         .plugin(BlockSelectionPlugin)
         .store.get('anchorKey');
@@ -481,7 +481,7 @@ describe('moveSelection', () => {
       selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block3']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block3']);
       anchorKey = editor.plugin(BlockSelectionPlugin).store.get('anchorKey');
       expect(persistedId(editor, anchorKey!)).toBe('block3');
     });
@@ -501,7 +501,7 @@ describe('moveSelection', () => {
       let selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block1']);
       let anchorKey = editor
         .plugin(BlockSelectionPlugin)
         .store.get('anchorKey');
@@ -521,7 +521,7 @@ describe('moveSelection', () => {
       selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block3']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block3']);
       anchorKey = editor.plugin(BlockSelectionPlugin).store.get('anchorKey');
       expect(persistedId(editor, anchorKey!)).toBe('block3');
     });
@@ -562,7 +562,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['parent1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['parent1']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -585,7 +585,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block1']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -662,10 +662,9 @@ describe('moveSelection', () => {
       ]);
 
       editor.plugin(BlockSelectionPlugin).store.set({
-        isSelectable: (node) => {
-          // Only table and tr are selectable
-          return node.type === 'table' || node.type === 'tableRow';
-        },
+        // Only table and tr are selectable
+        isSelectable: (node) =>
+          node.type === 'table' || node.type === 'tableRow',
       });
     });
 
@@ -684,7 +683,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['tr2']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['tr2']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -707,7 +706,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['tr2']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['tr2']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -730,7 +729,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['tr2']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['tr2']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -814,7 +813,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['child1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['child1']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -837,7 +836,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['grandchild1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['grandchild1']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -866,7 +865,7 @@ describe('moveSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['child2']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['child2']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -1038,7 +1037,9 @@ describe('setSelectedKeys', () => {
 
     expect(getSelectedIds(editor)).toEqual(['row-1']);
 
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 5);
+    });
 
     expect(getSelectedIds(editor)).toEqual([]);
   });
@@ -1092,7 +1093,7 @@ describe('shiftSelection', () => {
         const selectedKeys = editor
           .plugin(BlockSelectionPlugin)
           .store.get('selectedKeys');
-        expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+        expect(persistedIds(editor, selectedKeys).sort()).toEqual(
           ['block1', 'block2'].sort()
         );
       });
@@ -1112,7 +1113,7 @@ describe('shiftSelection', () => {
         const selectedKeys = editor
           .plugin(BlockSelectionPlugin)
           .store.get('selectedKeys');
-        expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+        expect(persistedIds(editor, selectedKeys).sort()).toEqual(
           ['block1', 'block2', 'block3'].sort()
         );
       });
@@ -1132,7 +1133,7 @@ describe('shiftSelection', () => {
         const selectedKeys = editor
           .plugin(BlockSelectionPlugin)
           .store.get('selectedKeys');
-        expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+        expect(persistedIds(editor, selectedKeys).sort()).toEqual(
           ['block2'].sort()
         );
       });
@@ -1152,7 +1153,7 @@ describe('shiftSelection', () => {
         const selectedKeys = editor
           .plugin(BlockSelectionPlugin)
           .store.get('selectedKeys');
-        expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+        expect(persistedIds(editor, selectedKeys).sort()).toEqual(
           ['block1', 'block2', 'block3'].sort()
         );
       });
@@ -1172,7 +1173,7 @@ describe('shiftSelection', () => {
         const selectedKeys = editor
           .plugin(BlockSelectionPlugin)
           .store.get('selectedKeys');
-        expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+        expect(persistedIds(editor, selectedKeys).sort()).toEqual(
           ['block1', 'block2'].sort()
         );
       });
@@ -1212,10 +1213,8 @@ describe('shiftSelection', () => {
 
       // For testing skipping, let's say child2 is not selectable or something
       editor.plugin(BlockSelectionPlugin).store.set({
-        isSelectable: (node) => {
-          // We'll skip if node.id === 'child2'
-          return node.id !== 'child2';
-        },
+        // We'll skip if node.id === 'child2'
+        isSelectable: (node) => node.id !== 'child2',
       });
     });
 
@@ -1233,10 +1232,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual([
-        'parent1',
-        'block3',
-      ]);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['parent1', 'block3']);
     });
 
     it('shrink from parent1 if anchor is block3 (not top-most) SHIFT+DOWN', () => {
@@ -1253,7 +1249,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block3']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block3']);
     });
 
     it('expand up from block4 to block3 if anchor is block4 (bottom-most)', () => {
@@ -1271,7 +1267,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['child1', 'block3', 'block4'].sort()
       );
     });
@@ -1291,7 +1287,7 @@ describe('shiftSelection', () => {
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
       // block4 should be removed from selection
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['parent1', 'block3'].sort()
       );
     });
@@ -1311,7 +1307,7 @@ describe('shiftSelection', () => {
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
 
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['parent1', 'block3'].sort()
       );
     });
@@ -1410,7 +1406,7 @@ describe('shiftSelection', () => {
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
       // Should now have table1 + tr1
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['table1'].sort()
       );
     });
@@ -1429,7 +1425,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['tr1']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['tr1']);
     });
 
     it('expand up from tr1 => add table1 if anchor=tr1 is bottom-most - remove', () => {
@@ -1450,7 +1446,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['table1'].sort()
       );
     });
@@ -1469,7 +1465,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['tr1', 'tr2'].sort()
       );
     });
@@ -1488,7 +1484,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['tr2']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['tr2']);
     });
 
     it('skip td / p nodes that are not selectable', () => {
@@ -1522,7 +1518,7 @@ describe('shiftSelection', () => {
       const newSelectedIds = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, newSelectedIds!).sort()).toEqual(
+      expect(persistedIds(editor, newSelectedIds).sort()).toEqual(
         ['blockZ', 'tr2'].sort()
       );
     });
@@ -1549,7 +1545,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!).sort()).toEqual(
+      expect(persistedIds(editor, selectedKeys).sort()).toEqual(
         ['block2', 'block3'].sort()
       );
       // anchor is set to block2
@@ -1572,7 +1568,7 @@ describe('shiftSelection', () => {
       const selectedKeys = editor
         .plugin(BlockSelectionPlugin)
         .store.get('selectedKeys');
-      expect(persistedIds(editor, selectedKeys!)).toEqual(['block1', 'block2']);
+      expect(persistedIds(editor, selectedKeys)).toEqual(['block1', 'block2']);
 
       const anchorKey = editor
         .plugin(BlockSelectionPlugin)
@@ -1691,7 +1687,7 @@ describe('block selection document transforms', () => {
       .store.set({ selectedKeys: nodeKeySet(editor, ['block1']) });
 
     editor.update((tx) => {
-      tx.blockSelection.setNodes({ align: 'center' } as any);
+      tx.blockSelection.setNodes({ align: 'center' });
     });
 
     expect(editor.read.children()[0].align).toBe('center');
@@ -1712,7 +1708,7 @@ describe('block selection document transforms', () => {
       editor
         .plugin(BlockSelectionPlugin)
         .store.set({ selectedKeys: new Set([insertedKey]) });
-      tx.blockSelection.setNodes({ align: 'center' } as any);
+      tx.blockSelection.setNodes({ align: 'center' });
     });
 
     expect(editor.read.children()[1].align).toBe('center');
@@ -1741,7 +1737,7 @@ describe('block selection document transforms', () => {
       .store.set({ selectedKeys: nodeKeySet(editor, ['block1']) });
 
     editor.update((tx) => {
-      tx.blockSelection.setTexts({ bold: true } as any);
+      tx.blockSelection.setTexts({ bold: true });
     });
 
     expect(editor.read.children()[0].children[0].bold).toBe(true);
@@ -1818,7 +1814,9 @@ describe('duplicateBlockSelectionNodes', () => {
         throw new Error('rollback');
       })
     ).toThrow('rollback');
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
     expect(editor.read.children()).toHaveLength(1);
     expect(editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')).toBe(
@@ -2049,7 +2047,7 @@ const CopyTablePlugin = defineBasePlugin('table', {
 });
 
 const createCopyEditor = (
-  entries: NodeEntry<Element>[],
+  entries: Array<NodeEntry<Element>>,
   documentEntries = entries
 ) => {
   const selection = {
@@ -2098,12 +2096,7 @@ describe('api.copy', () => {
     copyToClipboardSpy = spyOn(
       copyToClipboardModule,
       'default'
-    ).mockImplementation(
-      copyToClipboardMock as unknown as (
-        text: string,
-        options?: CopyOptions
-      ) => boolean
-    );
+    ).mockImplementation(copyToClipboardMock);
     writeDOMRangeDataSpy = spyOn(
       PliteDOM,
       'writeDOMRangeData'
@@ -2143,7 +2136,7 @@ describe('api.copy', () => {
         { id: 'block3', children: [{ text: 'Last block' }], type: 'paragraph' },
         [2],
       ],
-    ] satisfies NodeEntry<Element>[];
+    ] satisfies Array<NodeEntry<Element>>;
     const editor = createCopyEditor(entries);
     const { data, values } = createDataTransfer();
     const selection = editor.read.selection();
@@ -2191,7 +2184,7 @@ describe('api.copy', () => {
         },
         [1],
       ],
-    ] satisfies NodeEntry<Element>[];
+    ] satisfies Array<NodeEntry<Element>>;
     const editor = createCopyEditor(entries);
     const { data, values } = createDataTransfer();
 
@@ -2346,7 +2339,7 @@ describe('selection block utils', () => {
       });
       const initialValue = editor.read.children();
       let commits = 0;
-      const unsubscribe = editor.subscribeCommit(() => commits++);
+      const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
 
       editor
         .plugin(BlockSelectionPlugin)
@@ -2397,7 +2390,7 @@ describe('selection block utils', () => {
       const initialValue = editor.read.children();
       const selectedKeys = nodeKeySet(editor, ['p1']);
       let commits = 0;
-      const unsubscribe = editor.subscribeCommit(() => commits++);
+      const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
 
       editor.plugin(BlockSelectionPlugin).store.set({ selectedKeys });
       const event = {

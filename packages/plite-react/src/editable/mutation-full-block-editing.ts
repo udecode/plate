@@ -37,7 +37,7 @@ const isPlainTextLeafStart = ({
       return false;
     }
 
-    const blockPath = [path[0]!];
+    const blockPath = [path[0]];
     const [block] =
       state.nodes.get(blockPath) ??
       failInvariant(

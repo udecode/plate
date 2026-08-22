@@ -188,7 +188,8 @@ describe('when insertData with nested ul inside li', () => {
       {
         children: [
           {
-            text: 'Item 1 ', // Note: trailing space from HTML
+            // Note: trailing space from HTML
+            text: 'Item 1 ',
           },
         ],
         indent: 1,
@@ -198,7 +199,8 @@ describe('when insertData with nested ul inside li', () => {
       {
         children: [
           {
-            text: 'Item 1.1 ', // Note: trailing space from HTML
+            // Note: trailing space from HTML
+            text: 'Item 1.1 ',
           },
         ],
         indent: 2,

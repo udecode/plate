@@ -53,7 +53,7 @@ const createSeededEditor = () => {
 
 type FakeAdapterState = {
   connected: boolean;
-  exports: readonly ReturnType<DocumentChange['toJSON']>[];
+  exports: ReadonlyArray<ReturnType<DocumentChange['toJSON']>>;
   originClientId: string;
   paused: boolean;
   remoteImports: number;
@@ -69,7 +69,7 @@ type FakeAdapterRuntimeState = {
 const createFakeCollabAdapterExtension = () => {
   let controller: {
     connect: () => void;
-    exports: () => readonly ReturnType<DocumentChange['toJSON']>[];
+    exports: () => ReadonlyArray<ReturnType<DocumentChange['toJSON']>>;
     importRemote: (change: ReturnType<DocumentChange['toJSON']>) => void;
     listenerEvents: () => readonly string[];
     pause: () => void;
@@ -207,7 +207,7 @@ describe('collab adapter extension contract', () => {
     insertTextAtEnd(editor, '!');
 
     assert.equal(adapter.exports().length, 1);
-    assert.equal(DocumentChange.fromJSON(adapter.exports()[0]!).empty, false);
+    assert.equal(DocumentChange.fromJSON(adapter.exports()[0]).empty, false);
 
     const remoteSpec = editor.read((state) =>
       state.transaction((tx) => {

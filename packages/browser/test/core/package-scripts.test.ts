@@ -126,7 +126,7 @@ describe('package scripts', () => {
         fileURLToPath(
           new URL(`../../src/${subpath}/index.ts`, import.meta.url)
         ),
-        'utf8'
+        'utf-8'
       );
 
       for (const match of indexSource.matchAll(
@@ -134,7 +134,7 @@ describe('package scripts', () => {
       )) {
         const [, rawNames, sourceSpecifier] = match;
         const sourcePath = `${sourceRoot}${sourceSpecifier}.ts`;
-        const source = readFileSync(sourcePath, 'utf8');
+        const source = readFileSync(sourcePath, 'utf-8');
 
         for (const rawName of rawNames.split(',')) {
           const name = rawName
@@ -194,7 +194,7 @@ describe('package scripts', () => {
   test('keeps direct playwright exports documented in source', () => {
     const playwrightSource = readFileSync(
       fileURLToPath(new URL('../../src/playwright/index.ts', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
     const missing: string[] = [];
 
@@ -223,12 +223,12 @@ describe('package scripts', () => {
     );
     const readme = readFileSync(
       fileURLToPath(new URL('../../README.md', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       scripts: Record<string, string>;
     };
-    const scripts = packageJson.scripts;
+    const { scripts } = packageJson;
 
     expect(scripts.test).toContain('test:core');
     expect(scripts.test).toContain('test:dom');
@@ -246,7 +246,7 @@ describe('package scripts', () => {
     const coreIndexPath = fileURLToPath(
       new URL('../../src/core/index.ts', import.meta.url)
     );
-    const coreIndex = readFileSync(coreIndexPath, 'utf8');
+    const coreIndex = readFileSync(coreIndexPath, 'utf-8');
 
     expect(coreIndex).not.toMatch(/\bas\s+\w+Proof\b/);
     expect(coreIndex).not.toContain('evaluateImeInputProof');
@@ -261,7 +261,7 @@ describe('package scripts', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../package.json', import.meta.url)
     );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       files: string[];
       license: string;
       name: string;
@@ -286,7 +286,7 @@ describe('package scripts', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../package.json', import.meta.url)
     );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       exports: Record<string, unknown>;
       main?: string;
       module?: string;
@@ -294,7 +294,7 @@ describe('package scripts', () => {
     };
     const tsdownConfig = readFileSync(
       fileURLToPath(new URL('../../tsdown.config.mts', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
 
     expect(packageJson.main).toBeUndefined();
@@ -318,7 +318,7 @@ describe('package scripts', () => {
   test('keeps the package README explicit about subpath proof APIs', () => {
     const readme = readFileSync(
       fileURLToPath(new URL('../../README.md', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
 
     for (const name of [

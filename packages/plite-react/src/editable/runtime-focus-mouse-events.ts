@@ -68,6 +68,7 @@ export const useRuntimeFocusMouseEvents = ({
 }) => {
   const nativeInternalFocusRef = useRef(false);
   const nativePointerFocusRef = useRef(false);
+  const externalMouseGestureRef = useRef(false);
 
   const markNativePointerFocus = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
@@ -118,7 +119,7 @@ export const useRuntimeFocusMouseEvents = ({
       });
       publishFocusState();
 
-      const relatedTarget = event.relatedTarget;
+      const { relatedTarget } = event;
       const movingWithinEditor =
         relatedTarget != null &&
         isDOMNode(relatedTarget) &&
@@ -209,7 +210,9 @@ export const useRuntimeFocusMouseEvents = ({
         event.target === editorElement &&
         !nativePointerFocusRef.current
       ) {
-        const syncProgrammaticFocusSelection = () => syncDOMSelectionToEditor();
+        const syncProgrammaticFocusSelection = () => {
+          syncDOMSelectionToEditor();
+        };
 
         nativeInternalFocusRef.current = false;
         syncProgrammaticFocusSelection();
@@ -244,6 +247,12 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      if (externalMouseGestureRef.current) {
+        externalMouseGestureRef.current = false;
+        onClick?.(event);
+        return;
+      }
+
       const decision = prepareEditableFocusMouseKernel({
         editor,
         event,
@@ -263,7 +272,9 @@ export const useRuntimeFocusMouseEvents = ({
         onClick,
         readOnly,
       });
-      if (SelectionApi.isNode(editor.read((state) => state.selection()))) {
+      if (
+        SelectionApi.isNode(editor.read((innerState) => innerState.selection()))
+      ) {
         syncDOMSelectionToEditor();
       }
     },
@@ -281,6 +292,12 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleMouseDownCapture = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      externalMouseGestureRef.current = event.defaultPrevented;
+
+      if (externalMouseGestureRef.current) {
+        return;
+      }
+
       clearVerticalGoal();
       markNativePointerFocus(event);
 
@@ -318,6 +335,11 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleMouseDown = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      if (externalMouseGestureRef.current) {
+        onMouseDown?.(event);
+        return;
+      }
+
       flushPendingNativeTextInput?.();
       const decision = prepareEditableFocusMouseKernel({
         editor,
@@ -353,15 +375,31 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleMouseUp = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      if (externalMouseGestureRef.current) {
+        onMouseUp?.(event);
+        domPhaseScheduler.schedule(
+          'model',
+          'clear-external-mouse-gesture',
+          () => {
+            externalMouseGestureRef.current = false;
+          },
+          { timing: 'timeout' }
+        );
+        return;
+      }
+
       if (isInteractiveInternalTarget(editor, event.target)) {
         onMouseUp?.(event);
         return;
       }
 
-      const handled =
-        (onMouseUp?.(event) as boolean | void) ?? event.defaultPrevented;
+      const handled = onMouseUp?.(event) ?? event.defaultPrevented;
 
-      if (SelectionApi.isNode(editor.read((state) => state.selection()))) {
+      if (
+        SelectionApi.isNode(
+          editor.read((innerState2) => innerState2.selection())
+        )
+      ) {
         syncDOMSelectionToEditor();
         return;
       }
@@ -370,7 +408,7 @@ export const useRuntimeFocusMouseEvents = ({
         selection.syncDOMSelectionFromRuntime();
       }
     },
-    [editor, onMouseUp, selection, syncDOMSelectionToEditor]
+    [domPhaseScheduler, editor, onMouseUp, selection, syncDOMSelectionToEditor]
   );
   const onRuntimeMouseUp = useEditableMouseHandler({
     handleMouse: handleMouseUp,

@@ -73,13 +73,9 @@ const inlineChildArbitrary = fc.oneof(
   }))
 );
 const fitChildArbitrary = fc.oneof(
-  textArbitrary.map((text) => ({ text }) as Descendant),
-  textArbitrary.map(
-    (text) => ({ type: 'paragraph', children: [{ text }] }) as Descendant
-  ),
-  textArbitrary.map(
-    (text) => ({ type: 'caption', children: [{ text }] }) as Descendant
-  )
+  textArbitrary.map((text) => ({ text })),
+  textArbitrary.map((text) => ({ type: 'paragraph', children: [{ text }] })),
+  textArbitrary.map((text) => ({ type: 'caption', children: [{ text }] }))
 );
 
 const assertCanonical = (children: readonly Descendant[]) => {
@@ -142,7 +138,7 @@ describe('compiled schema and correction laws', () => {
 
         assert.doesNotThrow(() => editor.read.schema.assertDocument(after));
         assert.deepEqual(fitted.changes.apply(value), after);
-        assertCanonical(after.children as readonly Descendant[]);
+        assertCanonical(after.children);
       }),
       { numRuns: 100 }
     );

@@ -34,7 +34,7 @@ const LABELS = [
   { url: '/docs/components/label', value: 'Label' },
   { url: '/docs/components/popover', value: 'Popover' },
   { url: '/docs/components/tag', value: 'Tag Element' },
-] satisfies (SelectItem & { url: string })[];
+] satisfies Array<SelectItem & { url: string }>;
 
 const formSchema = z.object({
   labels: z
@@ -73,7 +73,9 @@ export default function EditorSelectForm() {
                   <Button
                     variant="ghost"
                     className="h-10"
-                    onClick={() => setReadOnly(!readOnly)}
+                    onClick={() => {
+                      setReadOnly(!readOnly);
+                    }}
                     type="button"
                   >
                     {readOnly ? (

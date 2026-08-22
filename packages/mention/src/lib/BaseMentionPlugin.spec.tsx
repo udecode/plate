@@ -84,8 +84,8 @@ describe('BaseMentionPlugin', () => {
     const entry = editor.read.nodes.get([0], {
       match: ElementApi.isElement,
     });
-    assert(entry);
-    const children = entry[0].children;
+    assert.ok(entry);
+    const { children } = entry[0];
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({
@@ -233,11 +233,11 @@ describe('BaseMentionPlugin', () => {
   });
 
   it('inserts a trailing space when the mention lands at block end', () => {
-    const MentionPlugin = BaseMentionPlugin.configure({
+    const innerMentionPlugin = BaseMentionPlugin.configure({
       initialState: { insertSpaceAfterMention: true },
     });
     const editor = createBaseEditor({
-      plugins: [MentionPlugin],
+      plugins: [innerMentionPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
@@ -246,13 +246,15 @@ describe('BaseMentionPlugin', () => {
       initialValue: [{ children: [{ text: 'hi' }], type: 'paragraph' }],
     });
 
-    editor.plugin(MentionPlugin).update.insert({ ref: 'u1', label: 'Ada' });
+    editor
+      .plugin(innerMentionPlugin)
+      .update.insert({ ref: 'u1', label: 'Ada' });
 
     const entry = editor.read.nodes.get([0], {
       match: ElementApi.isElement,
     });
-    assert(entry);
-    const children = entry[0].children;
+    assert.ok(entry);
+    const { children } = entry[0];
 
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
@@ -269,11 +271,11 @@ describe('BaseMentionPlugin', () => {
   });
 
   it('skips the trailing space when the mention is inserted mid-block', () => {
-    const MentionPlugin = BaseMentionPlugin.configure({
+    const innerMentionPlugin2 = BaseMentionPlugin.configure({
       initialState: { insertSpaceAfterMention: true },
     });
     const editor = createBaseEditor({
-      plugins: [MentionPlugin],
+      plugins: [innerMentionPlugin2],
       selection: {
         kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
@@ -282,12 +284,14 @@ describe('BaseMentionPlugin', () => {
       initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
     });
 
-    editor.plugin(MentionPlugin).update.insert({ ref: 'u1', label: 'Ada' });
+    editor
+      .plugin(innerMentionPlugin2)
+      .update.insert({ ref: 'u1', label: 'Ada' });
 
     const entry = editor.read.nodes.get([0], {
       match: ElementApi.isElement,
     });
-    assert(entry);
+    assert.ok(entry);
 
     expect(entry[0].children).toMatchObject([
       { text: 'he' },

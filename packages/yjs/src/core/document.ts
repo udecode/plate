@@ -104,7 +104,9 @@ export const createYjsPropertyContext = (
     type:
       placement === 'text'
         ? (parent ?? 'text')
-        : String((node as Readonly<Record<string, unknown>>).type ?? 'element'),
+        : typeof (node as Readonly<Record<string, unknown>>).type === 'string'
+          ? ((node as Readonly<Record<string, unknown>>).type as string)
+          : 'element',
   };
 };
 
@@ -146,11 +148,11 @@ export const indexYjsPropertyContexts = (
 
   const visit = (
     nodes: readonly Descendant[],
-    parentPath: Path,
+    innerParentPath: Path,
     ancestors: readonly string[]
   ): void => {
     nodes.forEach((node, index) => {
-      const path = [...parentPath, index];
+      const path = [...innerParentPath, index];
       const context = createYjsPropertyContext(node, {
         ancestors,
         path,
@@ -174,7 +176,7 @@ let nextNodeId = 0;
 const nodeIdScope = Math.random().toString(36).slice(2);
 
 const createYjsNodeId = (scope: string): string =>
-  `plite-yjs-${scope}-${++nextNodeId}`;
+  `plite-yjs-${scope}-${(nextNodeId += 1)}`;
 
 const assignFreshYjsNodeId = (node: YjsNode): string => {
   const id = createYjsNodeId(nodeIdScope);
@@ -221,7 +223,7 @@ export const getYjsTextContent = (node: Y.XmlText): string => {
     const part = delta[index];
 
     text += getYjsTextDeltaPartText(part);
-    index++;
+    index += 1;
   }
 
   return text;
@@ -263,7 +265,7 @@ export const getYjsTextContentFrom = (
     }
 
     skipped = nextSkipped;
-    index++;
+    index += 1;
   }
 
   return text;
@@ -296,28 +298,28 @@ export const yjsTextContentEndsWith = (
     const part = delta[index];
 
     if (part === undefined) {
-      index--;
+      index -= 1;
       continue;
     }
 
     const partText = getYjsTextDeltaPartText(part);
 
     if (partText.length === 0) {
-      index--;
+      index -= 1;
       continue;
     }
 
     let partIndex = partText.length - 1;
 
     while (partIndex >= 0 && suffixIndex > 0) {
-      suffixIndex--;
+      suffixIndex -= 1;
 
       if (partText[partIndex] !== suffix[suffixIndex]) {
         return false;
       }
-      partIndex--;
+      partIndex -= 1;
     }
-    index--;
+    index -= 1;
   }
 
   return suffixIndex === 0;
@@ -337,9 +339,9 @@ const getRawYjsChildren = (node: Y.XmlElement): YjsNode[] => {
 
     if (isYjsContentNode(child)) {
       children[writeIndex] = child;
-      writeIndex++;
+      writeIndex += 1;
     }
-    index++;
+    index += 1;
   }
 
   children.length = writeIndex;
@@ -357,7 +359,7 @@ const pushRawYjsChildren = (target: YjsNode[], node: Y.XmlElement): void => {
     if (isYjsContentNode(child)) {
       target.push(child);
     }
-    index++;
+    index += 1;
   }
 };
 
@@ -371,7 +373,7 @@ const hasRawYjsChildren = (node: Y.XmlElement): boolean => {
     if (isYjsContentNode(child)) {
       return true;
     }
-    index++;
+    index += 1;
   }
 
   return false;
@@ -482,7 +484,7 @@ const getYjsVisibleChildSlots = (
         rawIndex: VIRTUAL_YJS_CHILD_RAW_INDEX,
       };
       visibleNodes.add(virtualChild);
-      writeIndex++;
+      writeIndex += 1;
     }
   }
 
@@ -492,12 +494,12 @@ const getYjsVisibleChildSlots = (
     const child = rawChildren[rawIndex];
 
     if (child === undefined) {
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
     if (isHiddenYjsNode(child)) {
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
@@ -512,17 +514,17 @@ const getYjsVisibleChildSlots = (
       if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
         rawSlots[writeIndex] = { node: virtualChild, rawIndex };
         visibleNodes.add(virtualChild);
-        writeIndex++;
+        writeIndex += 1;
       }
 
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
     rawSlots[writeIndex] = { node: child, rawIndex };
     visibleNodes.add(child);
-    writeIndex++;
-    rawIndex++;
+    writeIndex += 1;
+    rawIndex += 1;
   }
 
   rawSlots.length = writeIndex;
@@ -551,7 +553,7 @@ const getYjsVisibleChildNodes = (
     if (virtualChild !== null) {
       children[writeIndex] = virtualChild;
       visibleNodes.add(virtualChild);
-      writeIndex++;
+      writeIndex += 1;
     }
   }
 
@@ -561,12 +563,12 @@ const getYjsVisibleChildNodes = (
     const child = rawChildren[rawIndex];
 
     if (child === undefined) {
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
     if (isHiddenYjsNode(child)) {
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
@@ -581,17 +583,17 @@ const getYjsVisibleChildNodes = (
       if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
         children[writeIndex] = virtualChild;
         visibleNodes.add(virtualChild);
-        writeIndex++;
+        writeIndex += 1;
       }
 
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
     children[writeIndex] = child;
     visibleNodes.add(child);
-    writeIndex++;
-    rawIndex++;
+    writeIndex += 1;
+    rawIndex += 1;
   }
 
   children.length = writeIndex;
@@ -607,7 +609,7 @@ const getYjsVisibleChildSlotAt = (
   rawChildren: readonly unknown[] = node.toArray()
 ): YjsVisibleChildSlot | undefined => {
   if (typeof index !== 'number' || index < 0) {
-    return;
+    return undefined;
   }
 
   const visibleNodes = new Set<YjsNode>();
@@ -630,7 +632,7 @@ const getYjsVisibleChildSlotAt = (
       }
 
       visibleNodes.add(virtualChild);
-      visibleIndex++;
+      visibleIndex += 1;
     }
   }
 
@@ -640,7 +642,7 @@ const getYjsVisibleChildSlotAt = (
     const child = rawChildren[rawIndex];
 
     if (!isYjsContentNode(child) || isHiddenYjsNode(child)) {
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
@@ -658,10 +660,10 @@ const getYjsVisibleChildSlotAt = (
         }
 
         visibleNodes.add(virtualChild);
-        visibleIndex++;
+        visibleIndex += 1;
       }
 
-      rawIndex++;
+      rawIndex += 1;
       continue;
     }
 
@@ -671,9 +673,11 @@ const getYjsVisibleChildSlotAt = (
       return { node: child, rawIndex };
     }
 
-    visibleIndex++;
-    rawIndex++;
+    visibleIndex += 1;
+    rawIndex += 1;
   }
+
+  return undefined;
 };
 
 const getYjsVisibleChildAt = (
@@ -695,9 +699,9 @@ export const getYjsChildren = (node: Y.XmlElement): YjsNode[] => {
 
     if (isYjsContentNode(child) && !isHiddenYjsNode(child)) {
       children[writeIndex] = child;
-      writeIndex++;
+      writeIndex += 1;
     }
-    index++;
+    index += 1;
   }
 
   children.length = writeIndex;
@@ -783,7 +787,7 @@ export const resolveYjsTextPoint = (
     }
 
     remainingOffset -= length;
-    childIndex++;
+    childIndex += 1;
   }
 
   return null;
@@ -817,7 +821,7 @@ export const getYjsVisiblePath = (
       const child = children[index];
 
       if (child === undefined) {
-        index++;
+        index += 1;
         continue;
       }
 
@@ -828,7 +832,7 @@ export const getYjsVisiblePath = (
       if (childPath !== null) {
         return childPath;
       }
-      index++;
+      index += 1;
     }
 
     return null;
@@ -963,7 +967,7 @@ export const createYjsNodes = (
         root: location.root,
       })
     );
-    index++;
+    index += 1;
   }
 
   return yjsNodes;
@@ -1016,7 +1020,7 @@ export const readPliteValueFromYjs = (
       node,
       resolveNodeById
     );
-    index++;
+    index += 1;
   }
 
   return children.length > 0 ? children : [...emptyValue];
@@ -1070,7 +1074,7 @@ const removeDuplicateVirtualYjsChildReferences = (
       if (virtualChild !== null && visibleNodes.has(virtualChild)) {
         parent.delete(rawIndex - deleted, 1);
         removed.add(child);
-        deleted++;
+        deleted += 1;
       } else if (virtualChild !== null) {
         visibleNodes.add(virtualChild);
       }
@@ -1118,7 +1122,7 @@ const removeRedundantEmptyYjsTextChildren = (
       removed.add(slot.node);
       parent.delete(slot.rawIndex, 1);
     }
-    slotIndex--;
+    slotIndex -= 1;
   }
 };
 
@@ -1148,7 +1152,7 @@ const removeRedundantEmptyYjsTextTree = (
         visited
       );
     }
-    index++;
+    index += 1;
   }
 
   removeRedundantEmptyYjsTextChildren(root, parent, resolveNodeById, removed);
@@ -1260,7 +1264,7 @@ const readYjsTextForPlite = (
     const part = delta[index];
 
     if (part === undefined) {
-      index++;
+      index += 1;
       continue;
     }
 
@@ -1277,7 +1281,7 @@ const readYjsTextForPlite = (
       }
     }
 
-    index++;
+    index += 1;
   }
 
   return { attributes: attributes ?? {}, text };
@@ -1352,7 +1356,7 @@ const readPliteNodeFromYjsWithResolver = (
       child,
       resolveNodeById
     );
-    index++;
+    index += 1;
   }
 
   const pliteElement: YjsAttributeRecord = {};
@@ -1405,7 +1409,7 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
 
       previous = insertedParent;
 
-      const parent = insertedParent.parent;
+      const { parent } = insertedParent;
 
       if (!(parent instanceof Y.XmlElement)) continue;
 
@@ -1420,7 +1424,7 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
 
       right = siblingSlots[previousIndex + 1]?.node;
     } else {
-      const parent = inserted.parent;
+      const { parent } = inserted;
 
       if (!(parent instanceof Y.XmlElement)) continue;
 
@@ -1584,9 +1588,9 @@ const cloneYjsNodeWithRoot = (
 
     if (childClone !== null) {
       children[writeIndex] = childClone;
-      writeIndex++;
+      writeIndex += 1;
     }
-    slotIndex++;
+    slotIndex += 1;
   }
 
   children.length = writeIndex;
@@ -1620,9 +1624,9 @@ export const cloneVisibleYjsNodes = (
 
     if (clone !== null) {
       clones[writeIndex] = clone;
-      writeIndex++;
+      writeIndex += 1;
     }
-    index++;
+    index += 1;
   }
 
   clones.length = writeIndex;
@@ -1670,15 +1674,15 @@ export const splitVisibleYjsChildren = (
     const slot = visibleSlots[index];
 
     if (slot === undefined) {
-      index++;
+      index += 1;
       continue;
     }
 
     if (!hasRawYjsChildSlot(slot)) {
       parent.removeAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
       rightChildren[writeIndex] = createVirtualYjsMovePlaceholder(slot.node);
-      writeIndex++;
-      index++;
+      writeIndex += 1;
+      index += 1;
 
       continue;
     }
@@ -1692,9 +1696,9 @@ export const splitVisibleYjsChildren = (
 
     if (childClone !== null) {
       rightChildren[writeIndex] = childClone;
-      writeIndex++;
+      writeIndex += 1;
     }
-    index++;
+    index += 1;
   }
 
   rightChildren.length = writeIndex;
@@ -1707,7 +1711,7 @@ export const splitVisibleYjsChildren = (
     if (slot !== undefined && hasRawYjsChildSlot(slot)) {
       parent.delete(slot.rawIndex, 1);
     }
-    index--;
+    index -= 1;
   }
 
   return rightChildren;
@@ -1746,7 +1750,7 @@ const getYjsNodeWithResolver = (
     }
 
     current = child;
-    pathIndex++;
+    pathIndex += 1;
   }
 
   return current;
@@ -1783,7 +1787,7 @@ const getYjsNodeWithResolverIf = (
     }
 
     current = child;
-    pathIndex++;
+    pathIndex += 1;
   }
 
   return current;
@@ -2134,7 +2138,7 @@ const matchesPliteNodeContent = (
     ) {
       return false;
     }
-    index++;
+    index += 1;
   }
 
   return true;
@@ -2159,12 +2163,12 @@ const findHiddenYjsChildIndex = (
     const child = rawChildren[index];
 
     if (child === undefined) {
-      index++;
+      index += 1;
       continue;
     }
 
     if (!isHiddenYjsNode(child) || !matchesPliteNode(child, pliteNode)) {
-      index++;
+      index += 1;
       continue;
     }
 
@@ -2173,8 +2177,8 @@ const findHiddenYjsChildIndex = (
     }
 
     candidateIndex = index;
-    candidateCount++;
-    index++;
+    candidateCount += 1;
+    index += 1;
   }
 
   return candidateCount === 1 ? candidateIndex : -1;

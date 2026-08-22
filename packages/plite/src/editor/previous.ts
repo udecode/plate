@@ -26,26 +26,26 @@ export const previous = ((
   let match = normalizeNodeMatch(options.type, options.match);
 
   if (!at) {
-    return;
+    return undefined;
   }
 
   if (LocationApi.isPath(at) && at.length === 0) {
-    return;
+    return undefined;
   }
 
   if (options.sibling) {
     if (!LocationApi.isPath(at)) {
-      return;
+      return undefined;
     }
 
     if (!PathApi.hasPrevious(at)) {
-      return;
+      return undefined;
     }
 
     const previousPath = PathApi.previous(at);
 
     if (!NodeApi.has(editor, previousPath)) {
-      return;
+      return undefined;
     }
 
     return editorNode(editor, previousPath) as any;
@@ -69,7 +69,7 @@ export const previous = ((
 
   if (!start) {
     if (!pointBeforeLocation) {
-      return;
+      return undefined;
     }
 
     start = pointBeforeLocation.path;
@@ -78,7 +78,7 @@ export const previous = ((
   const firstEntry = editorFirst(editor, []);
 
   if (!firstEntry) {
-    return;
+    return undefined;
   }
 
   const [, to] = firstEntry;
@@ -99,7 +99,7 @@ export const previous = ((
     }
   }
 
-  const [previous] = nodes(editor, {
+  const [innerPrevious] = nodes(editor, {
     reverse: true,
     at: span,
     match,
@@ -107,5 +107,5 @@ export const previous = ((
     voids,
   });
 
-  return previous;
+  return innerPrevious;
 }) as EditorStaticApi['previous'];

@@ -48,7 +48,7 @@ import {
 
 type Group = {
   group: string;
-  items: {
+  items: Array<{
     icon: React.ReactNode;
     value: string;
     onSelect: (editor: PlateEditor, value: string) => void;
@@ -56,7 +56,7 @@ type Group = {
     focusEditor?: boolean;
     keywords?: string[];
     label?: string;
-  }[];
+  }>;
 };
 
 const groups: Group[] = [
@@ -255,7 +255,9 @@ export function SlashInputElement(
                   <InlineComboboxItem
                     key={value}
                     value={value}
-                    onClick={() => onSelect(editor, value)}
+                    onClick={() => {
+                      onSelect(editor, value);
+                    }}
                     label={label}
                     focusEditor={focusEditor}
                     group={group}

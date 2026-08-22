@@ -99,7 +99,7 @@ const indexRoot = (
   let index = indexes.get(root);
 
   if (!index) {
-    index = DocumentIndex.fromValue(rootNodes(value as JsonEditorValue, root));
+    index = DocumentIndex.fromValue(rootNodes(value, root));
     indexes.set(root, index);
   }
 
@@ -130,7 +130,7 @@ const applyAnchorChange = (
   const before = state.value;
   const beforeIndexes = new Map(state.indexes);
   const afterIndexes = new Map(beforeIndexes);
-  let children = before.children;
+  let { children } = before;
   let roots = before.roots ? { ...before.roots } : undefined;
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {

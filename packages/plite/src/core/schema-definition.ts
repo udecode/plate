@@ -38,6 +38,7 @@ import type {
   SchemaTextPropertyOptions,
   SchemaTextBlockOptions,
 } from '../interfaces/schema';
+import { getDefined } from '../internal/get-defined';
 import { cloneFrozen } from './clone';
 import { getCompiledSchemaPropertyId } from './schema-compiler';
 import type { EditorSchemaSource } from './schema-source.internal';
@@ -233,7 +234,7 @@ const assertPropertyDescriptorValidations = (
   assertPropertyValidation(descriptor, owner);
   if (descriptor.kind !== 'set') return;
 
-  const item = (descriptor as PropertySetDescriptor).item;
+  const { item } = descriptor as PropertySetDescriptor;
 
   if (item) assertPropertyDescriptorValidations(item, `${owner} item`);
 };
@@ -350,7 +351,7 @@ const defineValue = <
   options: PropertyValueOptions<TValue> & TOptions = {} as TOptions
 ): PropertyValueDescriptor<TValue, TKind, TOptions> => {
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     [
       'default',
       'generate',
@@ -403,7 +404,7 @@ const defineValue = <
 
   return clonePropertyDescriptor(
     {
-      ...(hasDefault ? { default: defaultValue as TValue } : {}),
+      ...(hasDefault ? { default: defaultValue } : {}),
       kind,
       omitDefault: options.omitDefault ?? false,
       required: options.required ?? false,
@@ -428,7 +429,7 @@ const defineSet = <
 ): PropertySetDescriptor<TItemDescriptor, TOptions> => {
   assertPropertyDescriptorValidations(item, 'property.set');
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     [
       'default',
       'generate',
@@ -460,7 +461,7 @@ const defineSet = <
     throw new Error('property.set generate must be a function.');
   }
 
-  let defaultValue: readonly PropertyValueOf<TItemDescriptor>[] | undefined;
+  let defaultValue: ReadonlyArray<PropertyValueOf<TItemDescriptor>> | undefined;
 
   if (hasDefault) {
     if (!Array.isArray(options.default)) {
@@ -527,7 +528,7 @@ const defineEnum = <
   options: PropertyValueOptions<TValues[number]> & TOptions = {} as TOptions
 ): PropertyEnumDescriptor<TValues, TOptions> => {
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     [
       'default',
       'generate',
@@ -655,7 +656,7 @@ function defineJson<
   options: PropertyJsonOptions<TValue> = {}
 ): PropertyJsonDescriptor<TValue, TOptions> {
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     [
       'default',
       'generate',
@@ -667,10 +668,7 @@ function defineJson<
     'property.json'
   );
 
-  return defineValue<TValue, 'json', TOptions>(
-    'json',
-    options as TOptions
-  ) as PropertyJsonDescriptor<TValue, TOptions>;
+  return defineValue<TValue, 'json', TOptions>('json', options);
 }
 
 /** Shared JSON property value builders. */
@@ -732,11 +730,7 @@ const typeTarget = <const TType extends string>(type: TType) => {
   return Object.freeze({ kind: 'type', type });
 };
 
-const elementReferenceName = <
-  const TSource extends string | Readonly<{ name: string }>,
->(
-  source: TSource
-) => {
+const elementReferenceName = (source: string | Readonly<{ name: string }>) => {
   const name = typeof source === 'string' ? source : source.name;
 
   assertNonEmpty(name, 'Schema element source');
@@ -763,7 +757,7 @@ const attachElementSourceReference = <T extends object>(
  * @internal
  */
 export const getSchemaElementSourceReference = (value: unknown): unknown => {
-  if (!value || typeof value !== 'object') return;
+  if (!value || typeof value !== 'object') return undefined;
 
   const read = Reflect.get(value, schemaElementSourceReference);
 
@@ -787,7 +781,7 @@ type SchemaElementContentRule<
   type: SchemaElementSourceName<TSource>;
 }>;
 type SchemaElementContentRules<
-  TSources extends readonly (string | Readonly<{ name: string }>)[],
+  TSources extends ReadonlyArray<string | Readonly<{ name: string }>>,
 > = {
   readonly [TIndex in keyof TSources]: TSources[TIndex] extends
     | string
@@ -824,7 +818,7 @@ const elementTarget = <
 };
 
 type SchemaElementTargetNames<
-  TSources extends readonly (string | Readonly<{ name: string }>)[],
+  TSources extends ReadonlyArray<string | Readonly<{ name: string }>>,
 > = {
   readonly [TIndex in keyof TSources]: SchemaElementSourceName<
     TSources[TIndex]
@@ -834,7 +828,7 @@ type SchemaElementTargetNames<
 const elementTargets = <
   const TSources extends readonly [
     string | Readonly<{ name: string }>,
-    ...(string | Readonly<{ name: string }>)[],
+    ...Array<string | Readonly<{ name: string }>>,
   ],
 >(
   sources: TSources
@@ -930,8 +924,11 @@ export const target = Object.freeze({
   group: groupTarget,
   element: elementTarget,
   elements: elementTargets,
-  not: <const TTarget extends SchemaTarget>(target: TTarget) =>
-    cloneFrozenDeclaration({ kind: 'not' as const, target }, 'target.not'),
+  not: <const TTarget extends SchemaTarget>(innerTarget: TTarget) =>
+    cloneFrozenDeclaration(
+      { kind: 'not' as const, target: innerTarget },
+      'target.not'
+    ),
   or: <
     const TTargets extends readonly [
       SchemaTarget,
@@ -941,9 +938,9 @@ export const target = Object.freeze({
   >(
     ...targets: TTargets
   ) => combineTargets('or', targets),
-  parent: <const TTarget extends SchemaTarget>(target: TTarget) =>
+  parent: <const TTarget extends SchemaTarget>(innerTarget2: TTarget) =>
     cloneFrozenDeclaration(
-      { kind: 'parent' as const, target },
+      { kind: 'parent' as const, target: innerTarget2 },
       'target.parent'
     ),
   root: rootTarget,
@@ -1008,7 +1005,7 @@ function textProperty(
   const keyed =
     typeof keyOrValue === 'string' ||
     ('kind' in keyOrValue && keyOrValue.kind === 'prefix');
-  const key = keyed ? (keyOrValue as SchemaPropertyKey) : null;
+  const key = keyed ? keyOrValue : null;
   const value = (
     keyed ? valueOrOptions : keyOrValue
   ) as PropertyValueDescriptor;
@@ -1018,7 +1015,7 @@ function textProperty(
 
   if (key) assertPropertyKey(key);
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     ['copy', 'exclusive', 'inclusive', 'role', 'split', 'target', 'typeChange'],
     'schema.textProperty options'
   );
@@ -1038,7 +1035,7 @@ function textProperty(
       value,
     },
     'schema.textProperty'
-  ) as SchemaTextProperty | SchemaTextPropertyDefinition;
+  );
 }
 
 function elementProperty<
@@ -1065,7 +1062,7 @@ function elementProperty(
   const keyed =
     typeof keyOrValue === 'string' ||
     ('kind' in keyOrValue && keyOrValue.kind === 'prefix');
-  const key = keyed ? (keyOrValue as SchemaPropertyKey) : null;
+  const key = keyed ? keyOrValue : null;
   const value = (
     keyed ? valueOrOptions : keyOrValue
   ) as PropertyValueDescriptor;
@@ -1075,7 +1072,7 @@ function elementProperty(
 
   if (key) assertPropertyKey(key);
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     ['copy', 'role', 'split', 'target', 'typeChange'],
     'schema.elementProperty options'
   );
@@ -1093,7 +1090,7 @@ function elementProperty(
       value,
     },
     'schema.elementProperty'
-  ) as SchemaElementProperty | SchemaElementPropertyDefinition;
+  );
 }
 
 const keyPrefix = <const TPrefix extends string>(
@@ -1105,11 +1102,7 @@ const keyPrefix = <const TPrefix extends string>(
 };
 
 const assertContentOptions = (options: SchemaContentOptions) => {
-  assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
-    ['default', 'max', 'min'],
-    'Schema content options'
-  );
+  assertOnlyKeys(options, ['default', 'max', 'min'], 'Schema content options');
   for (const [key, value] of [
     ['min', options.min],
     ['max', options.max],
@@ -1234,7 +1227,7 @@ function textBlock(
   options: SchemaTextBlockOptions = {}
 ): SchemaElement<SchemaTextBlockOptions & { content: TextBlockContent }> {
   assertOnlyKeys(
-    options as Readonly<Record<string, unknown>>,
+    options,
     [
       'atom',
       'contentRoots',
@@ -1310,9 +1303,9 @@ function propertyHandle(
     value: typeof elementOrProperty
   ): value is SchemaElementHandle<EditorSchemaSource, string> =>
     'schema' in value && value.kind === 'schema-element';
-  const property = isElement(elementOrProperty)
+  const innerProperty = isElement(elementOrProperty)
     ? {
-        key: key!,
+        key: getDefined(key),
         placement: 'element' as const,
         target: Object.freeze({
           kind: 'type' as const,
@@ -1321,13 +1314,13 @@ function propertyHandle(
       }
     : elementOrProperty;
 
-  assertPropertyKey(property.key);
+  assertPropertyKey(innerProperty.key);
 
   return Object.freeze({
-    id: getCompiledSchemaPropertyId(property),
-    key: property.key,
+    id: getCompiledSchemaPropertyId(innerProperty),
+    key: innerProperty.key,
     kind: 'schema-property',
-    placement: property.placement,
+    placement: innerProperty.placement,
   });
 }
 
@@ -1386,7 +1379,7 @@ type SchemaContentApi = (<
     elements: <
       const TSources extends readonly [
         string | Readonly<{ name: string }>,
-        ...(string | Readonly<{ name: string }>)[],
+        ...Array<string | Readonly<{ name: string }>>,
       ],
       const TOptions extends SchemaElementContentOptions = {},
     >(
@@ -1517,19 +1510,16 @@ const schemaContent: SchemaContentApi = Object.assign(content, {
       default: { type: reference.type },
     });
   },
-  elements: <
-    const TSources extends readonly [
+  elements: <const TOptions extends SchemaElementContentOptions = {}>(
+    sources: readonly [
       string | Readonly<{ name: string }>,
-      ...(string | Readonly<{ name: string }>)[],
+      ...Array<string | Readonly<{ name: string }>>,
     ],
-    const TOptions extends SchemaElementContentOptions = {},
-  >(
-    sources: TSources,
     options: TOptions = {} as TOptions
   ) => {
     const references = sources.map(elementTarget) as unknown as [
-      SchemaElementContentRule<TSources[0]>,
-      ...SchemaElementContentRule<TSources[number]>[],
+      SchemaElementContentRule<string | Readonly<{ name: string }>>,
+      ...Array<SchemaElementContentRule<string | Readonly<{ name: string }>>>,
     ];
 
     return combineContent('any', references, {
@@ -1687,7 +1677,7 @@ export const normalizeEditorSchemaDefinition = <
 ): NormalizedEditorSchemaInput<TInput> => {
   assertNonEmpty(name, 'Editor schema name');
   assertOnlyKeys(
-    input as Readonly<Record<string, unknown>>,
+    input,
     [
       'contentRoots',
       'elements',
@@ -1704,8 +1694,8 @@ export const normalizeEditorSchemaDefinition = <
   const named = Object.hasOwn(input, 'id') || Object.hasOwn(input, 'version');
 
   if (named) {
-    const id = input.id;
-    const version = input.version;
+    const { id } = input;
+    const { version } = input;
 
     if (typeof id !== 'string') {
       throw new Error('Named editor schema must define a non-empty id.');

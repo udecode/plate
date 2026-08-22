@@ -136,11 +136,11 @@ describe('input rules', () => {
             definePlatePlugin('testPlugin', {}).configure({
               inputRules: Array.from({ length: 8 }, (_, index) =>
                 defineInputRule({
-                  apply: ({ insertText }) => {
+                  apply: ({ insertText: innerInsertText }) => {
                     callCounts[index] += 1;
 
                     if (index !== winnerIndex) return false;
-                    if (continueInsertion) insertText('continued');
+                    if (continueInsertion) innerInsertText('continued');
 
                     return true;
                   },

@@ -32,6 +32,7 @@ import {
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
+import { getDefined } from '../internal/get-defined';
 import { getConsistentRangeTextMarks } from '../internal/range-text-marks';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 import { mergeNodes, removeNodes } from '../transforms-node';
@@ -511,7 +512,7 @@ const reconcileDeleteStructure = (
       mergeAdjacentTextRuns(editor);
     } else if (shouldRemoveEmptyForwardStartBlock(editor, plan)) {
       removeNodes(editor, {
-        at: plan.effectiveStartBlockPath!,
+        at: getDefined(plan.effectiveStartBlockPath),
         voids: plan.voids,
       });
       removeEmptyStructuralArtifacts(
@@ -731,7 +732,7 @@ const normalizeFinalDeletePoint = (
     return point;
   }
 
-  if (!editorHasPath(editor, point.path as Path)) {
+  if (!editorHasPath(editor, point.path)) {
     return editorGetChildren(editor).length > 0
       ? editorPoint(editor, [], { edge: 'start' })
       : point;
@@ -739,7 +740,7 @@ const normalizeFinalDeletePoint = (
 
   if (point.offset === 0 && point.path.length > 0) {
     const previousSiblingPath =
-      point.path.at(-1) === 0 ? null : PathApi.previous(point.path as Path);
+      point.path.at(-1) === 0 ? null : PathApi.previous(point.path);
 
     if (previousSiblingPath && editorHasPath(editor, previousSiblingPath)) {
       const previousSibling = getCurrentNode(editor, previousSiblingPath);
@@ -755,7 +756,7 @@ const normalizeFinalDeletePoint = (
     }
 
     const nextSiblingPath =
-      point.path.at(-1) == null ? null : PathApi.next(point.path as Path);
+      point.path.at(-1) == null ? null : PathApi.next(point.path);
 
     if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
       const nextSibling = getCurrentNode(editor, nextSiblingPath);
@@ -775,10 +776,10 @@ const normalizeFinalDeletePoint = (
     if (
       !options.allowForwardBoundaryJump &&
       point.path.length >= 2 &&
-      editorHasPath(editor, point.path as Path) &&
-      isTextNode(getCurrentNode(editor, point.path as Path))
+      editorHasPath(editor, point.path) &&
+      isTextNode(getCurrentNode(editor, point.path))
     ) {
-      const currentTextNode = getCurrentNode(editor, point.path as Path);
+      const currentTextNode = getCurrentNode(editor, point.path);
       const parentPath = point.path.slice(0, -1) as Path;
 
       if (editorHasPath(editor, parentPath)) {
@@ -820,8 +821,8 @@ const normalizeFinalDeletePoint = (
 
     if (
       point.path.length > 0 &&
-      editorHasPath(editor, point.path as Path) &&
-      isTextNode(getCurrentNode(editor, point.path as Path))
+      editorHasPath(editor, point.path) &&
+      isTextNode(getCurrentNode(editor, point.path))
     ) {
       const parentPath = point.path.slice(0, -1) as Path;
 
@@ -857,9 +858,9 @@ const normalizeFinalDeletePoint = (
     }
 
     if (point.path.length > 0) {
-      const currentNode = getCurrentNode(editor, point.path as Path);
+      const currentNode = getCurrentNode(editor, point.path);
       const nextSiblingPath =
-        point.path.at(-1) == null ? null : PathApi.next(point.path as Path);
+        point.path.at(-1) == null ? null : PathApi.next(point.path);
 
       if (
         isTextNode(currentNode) &&
@@ -921,8 +922,8 @@ const normalizeFinalDeletePoint = (
       return point;
     }
 
-    const currentNode = editorHasPath(editor, point.path as Path)
-      ? getCurrentNode(editor, point.path as Path)
+    const currentNode = editorHasPath(editor, point.path)
+      ? getCurrentNode(editor, point.path)
       : null;
 
     if (currentNode && isTextNode(currentNode) && currentNode.text === '') {
@@ -964,10 +965,7 @@ const normalizeFinalDeletePoint = (
     return point;
   }
 
-  if (
-    point.offset === 0 &&
-    isTextNode(getCurrentNode(editor, point.path as Path))
-  ) {
+  if (point.offset === 0 && isTextNode(getCurrentNode(editor, point.path))) {
     const previousSiblingPath =
       parentPath.at(-1) === 0 ? null : PathApi.previous(parentPath);
 
@@ -992,7 +990,7 @@ const normalizeFinalDeletePoint = (
   }
 
   if (
-    isTextNode(getCurrentNode(editor, point.path as Path)) &&
+    isTextNode(getCurrentNode(editor, point.path)) &&
     PointApi.equals(point, editorPoint(editor, point.path, { edge: 'end' }))
   ) {
     const nextSiblingPath =
@@ -1242,11 +1240,11 @@ export const deleteText: TextMutationMethods['delete'] = (
       const root = getLocationRoot(at);
 
       if (root) {
-        withEditorUpdateRoot(editor, root, () =>
+        withEditorUpdateRoot(editor, root, () => {
           withEditorUpdateRootChildren(editor, root, () =>
             deleteAt(stripLocationRoots(at))
-          )
-        );
+          );
+        });
       } else {
         deleteAt(at);
       }
@@ -1254,9 +1252,9 @@ export const deleteText: TextMutationMethods['delete'] = (
   };
 
   if (transactionRoot) {
-    withEditorUpdateRoot(editor, transactionRoot, () =>
-      withEditorUpdateRootChildren(editor, transactionRoot, run)
-    );
+    withEditorUpdateRoot(editor, transactionRoot, () => {
+      withEditorUpdateRootChildren(editor, transactionRoot, run);
+    });
   } else {
     run();
   }

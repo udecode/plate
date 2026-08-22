@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const findReplaceValue = (
+export const findReplaceValue: Value = (
   <fragment>
     <hp>
       This is editable text that you can search. As you search, it looks for

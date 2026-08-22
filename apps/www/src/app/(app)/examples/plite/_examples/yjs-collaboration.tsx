@@ -374,7 +374,9 @@ const createExampleNetwork = (): ExampleNetwork => {
   };
 
   for (const peer of peers) {
-    peer.awareness.onLocalStateChange = () => network.syncAwareness();
+    peer.awareness.onLocalStateChange = () => {
+      network.syncAwareness();
+    };
   }
 
   return network;
@@ -500,7 +502,7 @@ const getTextEntryAtPath = (
       return null;
     }
 
-    children = current.children;
+    ({ children } = current);
   }
 
   return current && TextApi.isText(current)
@@ -952,7 +954,9 @@ const handleDeleteKeyDown = (
 
     if (nodeIndex !== -1) {
       event.preventDefault();
-      runPeerCommand(network, peer, editor, (tx) => removeBlock(nodeIndex, tx));
+      runPeerCommand(network, peer, editor, (tx) => {
+        removeBlock(nodeIndex, tx);
+      });
 
       return true;
     }
@@ -964,9 +968,9 @@ const handleDeleteKeyDown = (
     }
 
     event.preventDefault();
-    runPeerCommand(network, peer, editor, (tx) =>
-      replaceBlockTextWithEmpty(blockIndex, tx)
-    );
+    runPeerCommand(network, peer, editor, (tx) => {
+      replaceBlockTextWithEmpty(blockIndex, tx);
+    });
 
     return true;
   }
@@ -1041,8 +1045,9 @@ const moveFirstBlockDown = (tx: PeerCommandTx) => {
   tx.nodes.move({ at: [0], to: [1] });
 };
 
-const setFirstBlockRole = (tx: PeerCommandTx) =>
+const setFirstBlockRole = (tx: PeerCommandTx) => {
   tx.nodes.set({ role: 'title' }, { at: [0] });
+};
 
 const unsetFirstBlockRole = (tx: PeerCommandTx) => {
   const [firstBlock] = tx.value().children;
@@ -1237,7 +1242,7 @@ const Element = ({
   element,
 }: RenderElementProps<CollaborationElement>) => {
   switch (element.type) {
-    case 'block-quote':
+    case 'block-quote': {
       return (
         <blockquote
           {...attributes}
@@ -1246,16 +1251,19 @@ const Element = ({
           {children}
         </blockquote>
       );
-    default:
+    }
+    default: {
       return <p {...attributes}>{children}</p>;
+    }
   }
 };
 
 const Leaf = ({
   attributes,
-  children,
+  children: initialChildren,
   leaf,
 }: RenderLeafProps<CollaborationText>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -1272,7 +1280,7 @@ const CursorStatus = ({ editor }: { editor: YjsEditor }) => {
         ? 'remote:none'
         : cursors
             .map((cursor) => {
-              const selection = cursor.selection;
+              const { selection } = cursor;
 
               if (!selection) {
                 return `${cursor.clientId}:null`;
@@ -1304,8 +1312,12 @@ const CommandButton = ({
     className={cn('h-8 rounded-md px-2 text-xs', className)}
     data-test-id={testId}
     disabled={disabled}
-    onClick={(event) => handleCommandClick(event, onRun)}
-    onPointerDown={(event) => handleCommandPointerDown(event, onRun)}
+    onClick={(event) => {
+      handleCommandClick(event, onRun);
+    }}
+    onPointerDown={(event) => {
+      handleCommandPointerDown(event, onRun);
+    }}
     size="sm"
     type="button"
     variant="outline"
@@ -1383,7 +1395,7 @@ const PeerPanel = ({
 
   const canUndo = peer.undoDepth > 0;
   const canRedo = peer.redoDepth > 0;
-  const connected = peer.connected;
+  const { connected } = peer;
   const label = `Peer ${peer.id.toUpperCase()}`;
 
   useEffect(
@@ -1432,9 +1444,9 @@ const PeerPanel = ({
           <div className="grid gap-2 border-b border-slate-200 px-3 py-2 text-xs">
             <div className="flex flex-wrap gap-1.5">
               <CommandButton
-                onRun={() =>
-                  setIncompatibleJoin(attemptIncompatibleJoin(peer.doc))
-                }
+                onRun={() => {
+                  setIncompatibleJoin(attemptIncompatibleJoin(peer.doc));
+                }}
                 testId="yjs-schema-incompatible-join"
               >
                 Join with schema v2
@@ -1469,27 +1481,33 @@ const PeerPanel = ({
 
         <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
           <CommandButton
-            onRun={() => selectHello(network, peer, editor)}
+            onRun={() => {
+              selectHello(network, peer, editor);
+            }}
             testId={`yjs-peer-${peer.id}-select`}
           >
             Select
           </CommandButton>
           <CommandButton
-            onRun={() =>
-              runPeerCommand(network, peer, editor, (tx) => toggleBold(tx))
-            }
+            onRun={() => {
+              runPeerCommand(network, peer, editor, (tx) => toggleBold(tx));
+            }}
             testId={`yjs-peer-${peer.id}-mark-bold`}
           >
             Bold
           </CommandButton>
           <CommandButton
-            onRun={() => setConnected(network, peer, editor, false)}
+            onRun={() => {
+              setConnected(network, peer, editor, false);
+            }}
             testId={`yjs-peer-${peer.id}-disconnect`}
           >
             Offline
           </CommandButton>
           <CommandButton
-            onRun={() => setConnected(network, peer, editor, true)}
+            onRun={() => {
+              setConnected(network, peer, editor, true);
+            }}
             testId={`yjs-peer-${peer.id}-connect`}
           >
             Online
@@ -1505,14 +1523,18 @@ const PeerPanel = ({
           </CommandButton>
           <CommandButton
             disabled={!canUndo}
-            onRun={() => undoPeer(network, peer, editor)}
+            onRun={() => {
+              undoPeer(network, peer, editor);
+            }}
             testId={`yjs-peer-${peer.id}-undo`}
           >
             Undo
           </CommandButton>
           <CommandButton
             disabled={!canRedo}
-            onRun={() => redoPeer(network, peer, editor)}
+            onRun={() => {
+              redoPeer(network, peer, editor);
+            }}
             testId={`yjs-peer-${peer.id}-redo`}
           >
             Redo
@@ -1521,159 +1543,159 @@ const PeerPanel = ({
 
         <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 appendText(peer, tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-append`}
           >
             Append
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 replaceDocument(peer, tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-replace`}
           >
             Replace
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 removeSecondBlock(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-remove-node`}
           >
             Remove
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 splitFirstText(peer, tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-split-node`}
           >
             Split
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 mergeSecondBlock(peer, tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-merge-node`}
           >
             Merge
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 moveFirstBlockDown(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-move-down`}
           >
             Down
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 setFirstBlockRole(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-set-node`}
           >
             Set Role
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 unsetFirstBlockRole(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-unset-node`}
           >
             Unset Role
           </CommandButton>
           <CommandButton
-            onRun={() =>
-              runPeerCommand(network, peer, editor, (tx) => wrapFirstBlock(tx))
-            }
+            onRun={() => {
+              runPeerCommand(network, peer, editor, (tx) => wrapFirstBlock(tx));
+            }}
             testId={`yjs-peer-${peer.id}-wrap-node`}
           >
             Wrap
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 unwrapFirstBlock(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-unwrap`}
           >
             Unwrap
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 liftFirstWrappedBlock(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-lift`}
           >
             Lift
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 insertFragmentText(peer, tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-insert-fragment`}
           >
             Fragment
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 deleteFirstFragment(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-delete-fragment`}
           >
             Delete
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 deleteBackwardFromFirstBlockEnd(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-delete-backward`}
           >
             Back
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 insertExclamation(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-insert-text`}
           >
             Insert !
           </CommandButton>
           <CommandButton
-            onRun={() =>
+            onRun={() => {
               runPeerCommand(network, peer, editor, (tx) =>
                 moveFirstBlockAfterSecond(tx)
-              )
-            }
+              );
+            }}
             testId={`yjs-peer-${peer.id}-move`}
           >
             Move
@@ -1691,9 +1713,9 @@ const PeerPanel = ({
             autoFocus={peer.id === 'a'}
             className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
             key={peer.renderEpoch}
-            onKeyDown={(event) =>
-              handleEditableKeyDown(event, network, peer, editor)
-            }
+            onKeyDown={(event) => {
+              handleEditableKeyDown(event, network, peer, editor);
+            }}
             placeholder="Start typing"
             renderElement={Element}
             renderLeaf={Leaf}

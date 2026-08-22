@@ -19,6 +19,7 @@ import {
   getPliteStringEdgeOffset,
   isWebKitDOMHost,
   supportsDOMBeforeInput,
+  usesAppleDOMHotkeys,
 } from '@platejs/plite-dom/internal';
 import type { ClipboardEvent, DragEvent } from 'react';
 
@@ -29,6 +30,11 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
+import {
+  beginCrossEditorDragSession,
+  clearCrossEditorDragSession,
+  readCrossEditorDragSession,
+} from './cross-editor-drag-session';
 import type { EditableCommand } from './editing-kernel';
 import {
   type EditableRepairRequest,
@@ -109,6 +115,10 @@ const isClipboardEventHandled = ({
 
 const hasClipboardFiles = (data: DataTransfer | null | undefined) =>
   !!data?.files && data.files.length > 0;
+
+const isCrossEditorCopyDrop = (event: DragEvent<HTMLDivElement>) =>
+  event.dataTransfer.dropEffect === 'copy' ||
+  (usesAppleDOMHotkeys(event) ? event.altKey : event.ctrlKey);
 
 const isDragEventHandled = ({
   event,
@@ -363,9 +373,7 @@ export const applyEditableCopy = ({
   event: ClipboardEvent<HTMLDivElement>;
   onCopy?: EditablePasteHandler;
 }) => {
-  const clipboardData =
-    event.clipboardData ??
-    (event.nativeEvent as globalThis.ClipboardEvent).clipboardData;
+  const clipboardData = event.clipboardData ?? event.nativeEvent.clipboardData;
 
   if (
     clipboardData &&
@@ -393,9 +401,7 @@ export const applyEditableCut = ({
   onCut?: EditablePasteHandler;
   readOnly: boolean;
 }): EditableClipboardResult => {
-  const clipboardData =
-    event.clipboardData ??
-    (event.nativeEvent as globalThis.ClipboardEvent).clipboardData;
+  const clipboardData = event.clipboardData ?? event.nativeEvent.clipboardData;
 
   if (clipboardData && readOnly) {
     preventReadOnlyClipboardDefault({ editor, event, handler: onCut });
@@ -625,6 +631,8 @@ export const applyEditableDragEnd = ({
       handler: onDragEnd,
     });
   }
+
+  clearCrossEditorDragSession(ReactEditor.getWindow(editor).document, editor);
 };
 
 export const applyEditableDragOver = ({
@@ -713,9 +721,26 @@ export const applyEditableDragStart = ({
     state.draggedBlock = draggedBlock;
     state.draggedRange = draggedRange;
     state.isDraggingInternally = true;
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.effectAllowed = 'copyMove';
 
     editor.api.dom.clipboard.writeSelection(event.dataTransfer);
+    const slice = editor.api.dom.clipboard.readSlice(event.dataTransfer);
+
+    if (
+      draggedRange &&
+      slice?.kind === 'slice' &&
+      slice.slice.content.length > 0
+    ) {
+      beginCrossEditorDragSession({
+        dataTransfer: event.dataTransfer,
+        document: ReactEditor.getWindow(editor).document,
+        draggedBlock,
+        slice: slice.slice,
+        sourceChildren: editor.read((innerState) => innerState.children()),
+        sourceEditor: editor,
+        sourceRange: draggedRange,
+      });
+    }
   }
 };
 
@@ -748,22 +773,37 @@ export const applyEditableDrop = ({
     })
   ) {
     event.preventDefault();
+    const { document } = ReactEditor.getWindow(editor);
+    const crossEditorSession = state.isDraggingInternally
+      ? null
+      : readCrossEditorDragSession({
+          dataTransfer: event.dataTransfer,
+          document,
+          targetEditor: editor,
+        });
+    const ownsDrag = state.isDraggingInternally || !!crossEditorSession;
 
     // Keep the drag-start payload range. Native drop handling can move the
     // live selection to the text drop target before this handler runs.
-    const draggedRange = state.draggedRange ?? readRuntimeSelection(editor);
+    const draggedRange =
+      crossEditorSession?.sourceRange ??
+      state.draggedRange ??
+      readRuntimeSelection(editor);
     const isBlockDrag =
+      crossEditorSession?.draggedBlock ||
       state.draggedBlock ||
-      (draggedRange ? isBlockVoidRange(editor, draggedRange) : false);
+      (state.isDraggingInternally && draggedRange
+        ? isBlockVoidRange(editor, draggedRange)
+        : false);
 
     // Find the range where the drop happened
     const defaultRange = ReactEditor.resolveEventRange(editor, event);
     const blockDropRange =
-      state.isDraggingInternally && isBlockDrag
+      ownsDrag && isBlockDrag
         ? resolveBlockDropRangeFromEvent(editor, event)
         : null;
     const textDropRange =
-      state.isDraggingInternally && !isBlockDrag
+      ownsDrag && !isBlockDrag
         ? resolveTextDropRangeFromEvent(editor, event)
         : null;
     const range = isBlockDrag
@@ -771,14 +811,19 @@ export const applyEditableDrop = ({
       : (textDropRange ?? defaultRange);
 
     if (!range) {
+      if (crossEditorSession) {
+        clearCrossEditorDragSession(document, crossEditorSession.sourceEditor);
+      }
       return clipboardResult({ command: null });
     }
 
     const data = event.dataTransfer;
     const command: EditableCommand = { data, kind: 'insert-data' };
-    const internalSlice = state.isDraggingInternally
-      ? editor.api.dom.clipboard.readSlice(data)
-      : null;
+    const internalSlice = crossEditorSession
+      ? { kind: 'slice' as const, slice: crossEditorSession.slice }
+      : state.isDraggingInternally
+        ? editor.api.dom.clipboard.readSlice(data)
+        : null;
     const movesDraggedRange =
       state.isDraggingInternally &&
       draggedRange !== null &&
@@ -786,6 +831,8 @@ export const applyEditableDrop = ({
         !!editorVoid(editor, { at: draggedRange, voids: true })) &&
       !RangeApi.equals(draggedRange, range) &&
       !editorVoid(editor, { at: range, voids: true });
+    let inserted = false;
+
     editor.update((tx) => {
       const dropAnchor = tx.anchor(range, {
         association: 'forward',
@@ -802,10 +849,10 @@ export const applyEditableDrop = ({
 
       tx.selection.set(dropRange);
 
-      const inserted =
-        internalSlice?.kind === 'slice'
+      inserted =
+        (internalSlice?.kind === 'slice'
           ? tx.slice.replace(internalSlice.slice)
-          : applyEditableCommand({ command, editor });
+          : applyEditableCommand({ command, editor })) ?? false;
 
       if (inserted && movesDraggedRange && isBlockDrag) {
         const selection = tx.selection();
@@ -837,6 +884,22 @@ export const applyEditableDrop = ({
         }
       }
     });
+
+    if (crossEditorSession) {
+      clearCrossEditorDragSession(document, crossEditorSession.sourceEditor);
+
+      if (
+        inserted &&
+        !isCrossEditorCopyDrop(event) &&
+        crossEditorSession.sourceEditor.read((innerState2) =>
+          innerState2.children()
+        ) === crossEditorSession.sourceChildren
+      ) {
+        crossEditorSession.sourceEditor.update((tx) => {
+          tx.text.delete({ at: crossEditorSession.sourceRange });
+        });
+      }
+    }
     // When dragging from another source into the editor, it's possible
     // that the current editor does not have focus.
     if (!ReactEditor.isFocused(editor)) {

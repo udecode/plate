@@ -1,3 +1,4 @@
+import { createPliteBrowserEditorHarness } from '@platejs/browser/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const recordRuntimeErrors = (page: Page) => {
@@ -35,7 +36,7 @@ const readSelectionGeometry = (target: Locator, expectedText: string) =>
       document.querySelectorAll<HTMLElement>(
         '[data-plite-node="element"], [data-plite-node="text"], [data-slate-node="element"], [data-slate-node="text"]'
       )
-    ).find((element) => element.textContent === text);
+    ).find((innerElement) => innerElement.textContent === text);
     const stringHosts = textHost
       ? Array.from(
           textHost.querySelectorAll<HTMLElement>(
@@ -62,7 +63,9 @@ const readSelectionGeometry = (target: Locator, expectedText: string) =>
       activeInEditor: !!editor && editor.contains(document.activeElement),
       fontSizes: Array.from(
         new Set(
-          stringHosts.map((element) => getComputedStyle(element).fontSize)
+          stringHosts.map(
+            (innerElement2) => getComputedStyle(innerElement2).fontSize
+          )
         )
       ),
       selection: selection.toString(),
@@ -78,129 +81,61 @@ const readPaintedSelectionWidth = async (
   page: Page,
   selectedBlock: Locator
 ) => {
-  const selectedScreenshot = await selectedBlock.screenshot();
-  const baselineId = 'plate-5091-selection-baseline';
+  const selectedScreenshot = await selectedBlock.screenshot({
+    caret: 'initial',
+  });
 
-  await selectedBlock.evaluate((element, id) => {
-    const clone = element.cloneNode(true) as HTMLElement;
-    const sourceElements = [
-      element,
-      ...element.querySelectorAll<HTMLElement>('*'),
-    ];
-    const cloneElements = [clone, ...clone.querySelectorAll<HTMLElement>('*')];
+  return page.evaluate(async (selectedBase64) => {
+    const decode = async (base64: string) => {
+      const bytes = Uint8Array.from(atob(base64), (character) =>
+        character.charCodeAt(0)
+      );
 
-    sourceElements.forEach((source, index) => {
-      const target = cloneElements[index];
+      return createImageBitmap(new Blob([bytes]));
+    };
+    const selectedBitmap = await decode(selectedBase64);
 
-      if (!target) return;
-      const style = getComputedStyle(source);
+    const canvas = document.createElement('canvas');
 
-      for (const property of Array.from(style)) {
-        target.style.setProperty(
-          property,
-          style.getPropertyValue(property),
-          style.getPropertyPriority(property)
-        );
-      }
-    });
+    canvas.width = selectedBitmap.width;
+    canvas.height = selectedBitmap.height;
 
-    const bounds = element.getBoundingClientRect();
+    const context = canvas.getContext('2d');
 
-    clone.dataset.plate5091Baseline = id;
-    clone.style.height = `${bounds.height}px`;
-    clone.style.left = '0';
-    clone.style.margin = '0';
-    clone.style.pointerEvents = 'none';
-    clone.style.position = 'absolute';
-    clone.style.top = `${document.documentElement.scrollHeight + 100}px`;
-    clone.style.width = `${bounds.width}px`;
-    document.body.append(clone);
-  }, baselineId);
+    if (!context) throw new Error('Expected screenshot canvas context');
 
-  const baseline = page.locator(`[data-plate5091-baseline="${baselineId}"]`);
-  const baselineScreenshot = await baseline.screenshot();
+    context.drawImage(selectedBitmap, 0, 0);
+    const selectedPixels = context.getImageData(
+      0,
+      0,
+      selectedBitmap.width,
+      canvas.height
+    ).data;
 
-  await baseline.evaluate((element) => element.remove());
+    let firstX = Number.POSITIVE_INFINITY;
+    let lastX = Number.NEGATIVE_INFINITY;
 
-  return page.evaluate(
-    async ([selectedBase64, baselineBase64]) => {
-      const decode = async (base64: string) => {
-        const bytes = Uint8Array.from(atob(base64), (character) =>
-          character.charCodeAt(0)
-        );
+    for (let y = 0; y < canvas.height; y += 1) {
+      for (let x = 0; x < selectedBitmap.width; x += 1) {
+        const offset = (y * selectedBitmap.width + x) * 4;
+        const red = selectedPixels[offset] ?? 0;
+        const green = selectedPixels[offset + 1] ?? 0;
+        const blue = selectedPixels[offset + 2] ?? 0;
 
-        return createImageBitmap(new Blob([bytes]));
-      };
-      const [selectedBitmap, baselineBitmap] = await Promise.all([
-        decode(selectedBase64),
-        decode(baselineBase64),
-      ]);
-
-      if (selectedBitmap.width !== baselineBitmap.width) {
-        throw new Error(
-          `Expected matching selected and baseline screenshots: ${selectedBitmap.width}x${selectedBitmap.height} vs ${baselineBitmap.width}x${baselineBitmap.height}`
-        );
-      }
-
-      const canvas = document.createElement('canvas');
-
-      canvas.width = selectedBitmap.width;
-      canvas.height = Math.min(selectedBitmap.height, baselineBitmap.height);
-
-      const context = canvas.getContext('2d');
-
-      if (!context) throw new Error('Expected screenshot canvas context');
-
-      context.drawImage(selectedBitmap, 0, 0);
-      const selectedPixels = context.getImageData(
-        0,
-        0,
-        selectedBitmap.width,
-        canvas.height
-      ).data;
-
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(baselineBitmap, 0, 0);
-      const baselinePixels = context.getImageData(
-        0,
-        0,
-        baselineBitmap.width,
-        canvas.height
-      ).data;
-
-      let firstX = Number.POSITIVE_INFINITY;
-      let lastX = Number.NEGATIVE_INFINITY;
-
-      for (let y = 0; y < canvas.height; y += 1) {
-        for (let x = 0; x < selectedBitmap.width; x += 1) {
-          const offset = (y * selectedBitmap.width + x) * 4;
-          const red = selectedPixels[offset] ?? 0;
-          const green = selectedPixels[offset + 1] ?? 0;
-          const blue = selectedPixels[offset + 2] ?? 0;
-          const difference =
-            Math.abs(red - (baselinePixels[offset] ?? 0)) +
-            Math.abs(green - (baselinePixels[offset + 1] ?? 0)) +
-            Math.abs(blue - (baselinePixels[offset + 2] ?? 0));
-
-          if (difference > 30 && blue > red + 10 && blue > green + 5) {
-            firstX = Math.min(firstX, x);
-            lastX = Math.max(lastX, x);
-          }
+        if (blue > red + 10 && blue > green + 5) {
+          firstX = Math.min(firstX, x);
+          lastX = Math.max(lastX, x);
         }
       }
+    }
 
-      return Number.isFinite(firstX)
-        ? (lastX - firstX + 1) / devicePixelRatio
-        : 0;
-    },
-    [
-      selectedScreenshot.toString('base64'),
-      baselineScreenshot.toString('base64'),
-    ] as const
-  );
+    return Number.isFinite(firstX)
+      ? (lastX - firstX + 1) / devicePixelRatio
+      : 0;
+  }, selectedScreenshot.toString('base64'));
 };
 
-test('font-size command refreshes expanded native selection geometry (#5091)', async ({
+test('font-size command refreshes expanded selection paint (#5091)', async ({
   page,
 }) => {
   const useHomepage = process.env.PLATE_5091_HOMEPAGE === '1';
@@ -221,9 +156,6 @@ test('font-size command refreshes expanded native selection geometry (#5091)', a
   const fontSizeInput = surface.locator(
     'input[data-plate-focus="true"][value="16"]'
   );
-  const floatingToolbar = surface.getByRole('toolbar').filter({
-    has: surface.getByRole('button', { exact: true, name: 'Ask AI' }),
-  });
 
   await expect(editor).toHaveCount(1);
   await expect(target).toBeVisible();
@@ -233,19 +165,23 @@ test('font-size command refreshes expanded native selection geometry (#5091)', a
 
   try {
     await target.scrollIntoViewIfNeeded();
-
-    const targetBox = await target.boundingBox();
-
-    if (!targetBox) throw new Error('Expected visible target text geometry');
-
-    const y = targetBox.y + targetBox.height / 2;
-
-    await page.mouse.move(targetBox.x + 1, y);
-    await page.mouse.down();
-    await page.mouse.move(targetBox.x + targetBox.width - 1, y, { steps: 12 });
-    await page.mouse.up();
-
-    await expect(floatingToolbar).toBeVisible();
+    expect(await readPaintedSelectionWidth(page, selectedBlock)).toBe(0);
+    const browserEditor = createPliteBrowserEditorHarness(
+      page,
+      'playground',
+      editor
+    );
+    await browserEditor.selection.dragTextRange({
+      endAffinity: 'after',
+      endOffset: expectedSelection.length,
+      settleMs: 25,
+      startOffset: 0,
+      steps: 24,
+      text: expectedSelection,
+    });
+    await expect(
+      editor.locator('[data-plite-view-selection="true"]')
+    ).toHaveCount(0);
     await expect
       .poll(() => readSelectionGeometry(target, expectedSelection))
       .toMatchObject({
@@ -259,14 +195,16 @@ test('font-size command refreshes expanded native selection geometry (#5091)', a
 
     if (!before) throw new Error('Expected initial selection geometry');
 
-    const beforePaintedSelectionWidth = await readPaintedSelectionWidth(
-      page,
-      selectedBlock
-    );
-
-    expect(
-      Math.abs(beforePaintedSelectionWidth - before.textWidth)
-    ).toBeLessThan(3);
+    await expect
+      .poll(
+        async () =>
+          Math.abs(
+            (await readPaintedSelectionWidth(page, selectedBlock)) -
+              before.textWidth
+          ),
+        { timeout: 2000 }
+      )
+      .toBeLessThan(3);
 
     await fontSizeInput.click();
     await surface.getByRole('button', { exact: true, name: '10' }).click();
@@ -285,6 +223,11 @@ test('font-size command refreshes expanded native selection geometry (#5091)', a
 
     expect(after.textWidth).toBeLessThan(before.textWidth * 0.8);
     expect(Math.abs(after.selectionWidth - after.textWidth)).toBeLessThan(1);
+    await expect(
+      editor.locator('[data-plite-view-selection="true"]')
+    ).toHaveCount(0);
+    // The unfixed cursor overlay remains stale beyond this window.
+    await page.waitForTimeout(200);
 
     await expect
       .poll(

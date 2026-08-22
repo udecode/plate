@@ -1,3 +1,4 @@
+import { getDefined } from '../../internal/get-defined';
 import {
   classifyRootChange,
   classifyRootChangeWithRuntimeCandidates,
@@ -799,7 +800,7 @@ export class ChangeDraft {
             root,
             classifyRootChangeWithRuntimeCandidates(
               rootChange,
-              step.indexedBefore.get(root)!,
+              getDefined(step.indexedBefore.get(root)),
               sourceIndex
             ).runtimeCandidates
           );
@@ -1040,11 +1041,13 @@ export class ChangeDraft {
 
   setNodes(
     root: string,
-    updates: readonly Readonly<{
-      newProperties: JsonRecord;
-      path: readonly number[];
-      properties: JsonRecord;
-    }>[]
+    updates: ReadonlyArray<
+      Readonly<{
+        newProperties: JsonRecord;
+        path: readonly number[];
+        properties: JsonRecord;
+      }>
+    >
   ) {
     return this.applyRoot(
       root,

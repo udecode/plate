@@ -33,7 +33,7 @@ const ConfiguredAIChatPlugin = AIChatPlugin.configure({
   },
 });
 
-const assertTypedAIChatKitStore = () => {
+const useAssertTypedAIChatKitStore = () => {
   const chatOptions = usePluginStore(AIChatKitPlugin, 'chatOptions');
   const api: string = chatOptions.api;
 
@@ -41,4 +41,4 @@ const assertTypedAIChatKitStore = () => {
 };
 
 void ConfiguredAIChatPlugin;
-void assertTypedAIChatKitStore;
+void useAssertTypedAIChatKitStore;

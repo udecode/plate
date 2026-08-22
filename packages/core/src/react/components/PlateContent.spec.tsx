@@ -345,7 +345,7 @@ describe('PlateContent', () => {
     );
 
     act(() => {
-      editor.update.nodes.set({ variant: 'lead' } as any, { at: [0] });
+      editor.update.nodes.set({ variant: 'lead' }, { at: [0] });
       editor.update.text.insert('!', {
         at: { offset: 3, path: [0, 0] },
       });

@@ -27,7 +27,7 @@ export const BlockquoteRules = {
     apply: ({ editor, getBlockEntry, tx }, match) => {
       const blockEntry = getBlockEntry();
 
-      if (!blockEntry) return;
+      if (!blockEntry) return undefined;
 
       tx.text.delete({ at: match.range });
       tx.nodes.wrap(
@@ -163,7 +163,9 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
     untab: { keys: 'shift+tab' },
   },
   update: ({ editor, plugin, tx, schema: { type } }) => ({
-    toggle: () => tx.blocks.toggle(type, { wrap: true }),
+    toggle: () => {
+      tx.blocks.toggle(type, { wrap: true });
+    },
     untab: () => {
       const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
       const blocks = [
@@ -230,12 +232,12 @@ export const BaseHorizontalRulePlugin = defineBasePlugin(
 );
 
 const groupInlineChildrenIntoParagraphs = (
-  children: readonly import('@platejs/plite').Descendant[],
+  children: ReadonlyArray<import('@platejs/plite').Descendant>,
   context: Pick<MarkdownDecodeContext, 'isBlock' | 'isInline' | 'registry'>
 ) => {
   const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-  const elements: import('@platejs/plite').Descendant[] = [];
-  let inlineNodes: import('@platejs/plite').Descendant[] = [];
+  const elements: Array<import('@platejs/plite').Descendant> = [];
+  let inlineNodes: Array<import('@platejs/plite').Descendant> = [];
 
   const flushInlineNodes = () => {
     if (inlineNodes.length === 0) return;

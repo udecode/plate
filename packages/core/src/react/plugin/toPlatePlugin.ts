@@ -61,10 +61,9 @@ type NormalizePlatePluginAdapterInput<
 > = NormalizePlatePluginInput<Omit<TInput, 'dependencies'>, TFallbackName> &
   ('dependencies' extends keyof TInput
     ? TInput extends {
-        dependencies: infer TDependencies extends readonly (
-          | EditorExtensionReference
-          | PluginReference
-        )[];
+        dependencies: infer TDependencies extends ReadonlyArray<
+          EditorExtensionReference | PluginReference
+        >;
       }
       ? Readonly<{
           dependencies: TDependencies;
@@ -75,7 +74,9 @@ type NormalizePlatePluginAdapterInput<
 type NormalizePlatePluginAdapterWithDependencies<
   TInput,
   TFallbackName extends string,
-  TDependencies extends readonly (EditorExtensionReference | PluginReference)[],
+  TDependencies extends ReadonlyArray<
+    EditorExtensionReference | PluginReference
+  >,
 > = NormalizePlatePluginInput<Omit<TInput, 'dependencies'>, TFallbackName> &
   Readonly<{ dependencies: TDependencies }>;
 
@@ -89,10 +90,9 @@ type AdaptedBasePluginDefinition<
   Readonly<{ name: C['name'] }> &
   ('dependencies' extends keyof TNormalized
     ? TNormalized extends {
-        dependencies: infer TDependencies extends readonly (
-          | EditorExtensionReference
-          | PluginReference
-        )[];
+        dependencies: infer TDependencies extends ReadonlyArray<
+          EditorExtensionReference | PluginReference
+        >;
       }
       ? Readonly<{ dependencies: TDependencies }>
       : Readonly<Record<never, never>>
@@ -111,7 +111,7 @@ const isRuntimeBasePlugin = (value: unknown): value is AnyBasePlugin =>
   typeof Reflect.get(value, 'extend') === 'function';
 
 const assertNoPrivateRenderNode = (value: PluginRecord) => {
-  const render = value.render;
+  const { render } = value;
 
   if (isObjectRecord(render) && Object.hasOwn(render, 'node')) {
     throw new Error(
@@ -329,10 +329,9 @@ export function toPlatePlugin<const C extends AnyBasePluginDefinition>(
 
 export function toPlatePlugin<
   const TBasePlugin extends BasePluginAdapterSource,
-  const TDependencies extends readonly (
-    | EditorExtensionReference
-    | PluginReference
-  )[],
+  const TDependencies extends ReadonlyArray<
+    EditorExtensionReference | PluginReference
+  >,
   const TAdapter extends PlateAdapterObjectWithoutDependencies<
     NoInfer<BasePluginDefinitionOf<TBasePlugin>>
   >,

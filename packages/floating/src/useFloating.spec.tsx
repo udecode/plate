@@ -17,7 +17,7 @@ const useFloatingMock = mock(() => ({
   y: 20,
 }));
 
-mock.module('./floating-ui', () => ({
+void mock.module('./floating-ui', () => ({
   autoUpdate: mock(),
   useFloating: useFloatingMock,
 }));

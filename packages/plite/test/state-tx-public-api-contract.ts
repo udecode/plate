@@ -39,21 +39,21 @@ describe('state/tx public API contract', () => {
       initialValue: [paragraph('one')],
     });
 
-    const state = editor.read((state) => ({
-      lastCommit: state.lastCommit(),
-      selection: state.selection(),
-      value: state.value(),
+    const state = editor.read((innerState) => ({
+      lastCommit: innerState.lastCommit(),
+      selection: innerState.selection(),
+      value: innerState.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('one')] });
     assert.deepEqual(
-      editor.read((state) => state.children()),
+      editor.read((innerState2) => innerState2.children()),
       [paragraph('one')]
     );
     const primaryRoot: string = 'main';
 
     assert.throws(
-      () => editor.read((state) => state.root(primaryRoot)),
+      () => editor.read((innerState3) => innerState3.root(primaryRoot)),
       /Use editor\.read\.children/
     );
     assert.deepEqual(state.selection, selection);
@@ -207,10 +207,10 @@ describe('state/tx public API contract', () => {
       });
     });
 
-    const state = editor.read((state) => ({
-      lastCommit: state.lastCommit(),
-      selection: state.selection(),
-      value: state.value(),
+    const state = editor.read((innerState4) => ({
+      lastCommit: innerState4.lastCommit(),
+      selection: innerState4.selection(),
+      value: innerState4.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('two')] });
@@ -229,7 +229,7 @@ describe('state/tx public API contract', () => {
     const appended = paragraph('three');
 
     editor.update.value.replace({
-      children: [paragraph('one'), before[1]!, appended],
+      children: [paragraph('one'), before[1], appended],
       selection: null,
     });
 
@@ -450,14 +450,14 @@ describe('state/tx public API contract', () => {
   it('passes grouped read state into editor.read', () => {
     const editor = createSeededEditor();
 
-    const state = editor.read((state) => ({
-      isVoid: state.schema.isVoid({
+    const state = editor.read((innerState5) => ({
+      isVoid: innerState5.schema.isVoid({
         type: 'image',
         children: [{ text: '' }],
       }),
-      selection: state.selection(),
-      text: state.text.string([]),
-      value: state.value(),
+      selection: innerState5.selection(),
+      text: innerState5.text.string([]),
+      value: innerState5.value(),
     }));
 
     assert.equal(state.isVoid, false);
@@ -512,11 +512,11 @@ describe('state/tx public API contract', () => {
     assert.equal(typeof firstTextNodeKey, 'string');
     assert.equal(editor.key([0, 0]), firstTextNodeKey);
 
-    const state = editor.read((state) => ({
-      lastCommit: state.lastCommit(),
-      path: state.nodes.path(firstTextNodeKey),
-      snapshot: state.runtime.snapshot(),
-      valueHasSnapshot: 'snapshot' in state.value,
+    const state = editor.read((innerState6) => ({
+      lastCommit: innerState6.lastCommit(),
+      path: innerState6.nodes.path(firstTextNodeKey),
+      snapshot: innerState6.runtime.snapshot(),
+      valueHasSnapshot: 'snapshot' in innerState6.value,
     }));
 
     assert.equal(state.valueHasSnapshot, false);
@@ -561,7 +561,7 @@ describe('state/tx public API contract', () => {
         roots: { header: [paragraph('header')] },
       },
     });
-    const header = editor.read.root('header')[0]!;
+    const header = editor.read.root('header')[0];
     const headerEditor = createEditorView(editor, { root: 'header' });
     const nodeKey = headerEditor.key(header);
     const mainTextNodeKey = editor.key([0, 0]);
@@ -630,10 +630,10 @@ describe('state/tx public API contract', () => {
       });
     });
 
-    const state = editor.read((state) => ({
-      oldSecondTextPath: state.nodes.path(oldSecondTextNodeKey!),
-      nextTextNodeKey: state.key([0, 0]),
-      value: state.value(),
+    const state = editor.read((innerState7) => ({
+      oldSecondTextPath: innerState7.nodes.path(oldSecondTextNodeKey!),
+      nextTextNodeKey: innerState7.key([0, 0]),
+      value: innerState7.value(),
     }));
 
     assert.deepEqual(state.value, { children: [paragraph('fresh')] });
@@ -652,9 +652,9 @@ describe('state/tx public API contract', () => {
       tx.text.insert('!', { at: { path: [1, 0], offset: 3 } });
     });
 
-    const state = editor.read((state) => ({
-      path: state.nodes.path(textNodeKey!),
-      value: state.value(),
+    const state = editor.read((innerState8) => ({
+      path: innerState8.nodes.path(textNodeKey!),
+      value: innerState8.value(),
     }));
 
     assert.deepEqual(state.path, [1, 0]);
@@ -723,34 +723,34 @@ describe('state/tx public API contract', () => {
   it('exposes complete query groups through state instead of direct editor aliases', () => {
     const editor = createSeededEditor();
 
-    const state = editor.read((state) => ({
-      after: state.points.after({ path: [0, 0], offset: 3 }),
-      before: state.points.before({ path: [1, 0], offset: 0 }),
-      edge: state.points.isEdge({ path: [0, 0], offset: 0 }, [0]),
-      first: state.nodes.first([]),
-      hasBlocks: state.nodes.hasBlocks({
+    const state = editor.read((innerState9) => ({
+      after: innerState9.points.after({ path: [0, 0], offset: 3 }),
+      before: innerState9.points.before({ path: [1, 0], offset: 0 }),
+      edge: innerState9.points.isEdge({ path: [0, 0], offset: 0 }, [0]),
+      first: innerState9.nodes.first([]),
+      hasBlocks: innerState9.nodes.hasBlocks({
         type: 'container',
         children: [paragraph('nested')],
       }),
-      hasPath: state.nodes.hasPath([1, 0]),
-      isBlock: state.schema.isBlock(paragraph('one')),
-      isEmpty: state.nodes.isEmpty({
+      hasPath: innerState9.nodes.hasPath([1, 0]),
+      isBlock: innerState9.schema.isBlock(paragraph('one')),
+      isEmpty: innerState9.nodes.isEmpty({
         type: 'paragraph',
         children: [{ text: '' }],
       }),
-      last: state.nodes.last([]),
-      levels: Array.from(state.nodes.levels({ at: [0, 0] })),
-      nodePaths: state.nodes.toArray({ at: [] }, ([, path]) => path),
-      projected: state.ranges.project({
+      last: innerState9.nodes.last([]),
+      levels: Array.from(innerState9.nodes.levels({ at: [0, 0] })),
+      nodePaths: innerState9.nodes.toArray({ at: [] }, ([, path]) => path),
+      projected: innerState9.ranges.project({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       }),
-      range: state.ranges.get([0]),
-      unhang: state.ranges.unhang({
+      range: innerState9.ranges.get([0]),
+      unhang: innerState9.ranges.unhang({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       }),
-      voidNode: state.nodes.void({ at: [] }),
+      voidNode: innerState9.nodes.void({ at: [] }),
     }));
 
     assert.deepEqual(state.after, { path: [1, 0], offset: 0 });
@@ -892,7 +892,7 @@ describe('state/tx public API contract', () => {
   it('routes tx writes through the isolated transaction draft', () => {
     const editor = createSeededEditor();
     let primitiveCalls = 0;
-    const staleInsertTextKey = `insert${'Text'}`;
+    const staleInsertTextKey = `insertText`;
 
     (editor as unknown as Record<string, unknown>)[staleInsertTextKey] = () => {
       primitiveCalls += 1;

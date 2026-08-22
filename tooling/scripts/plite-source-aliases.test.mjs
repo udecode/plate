@@ -40,11 +40,13 @@ test('www maps every Plite public runtime entry to its exact source file', () =>
   const appConfig = JSON.parse(
     readFileSync(path.join(appRoot, 'tsconfig.json'), 'utf-8')
   );
-  const paths = appConfig.compilerOptions.paths;
+  const { paths } = appConfig.compilerOptions;
 
   for (const { sourceEntry, specifier } of getWorkspaceSourceEntries(
     repoRoot
-  ).filter(({ specifier }) => specifier.startsWith('@platejs/plite'))) {
+  ).filter(({ specifier: innerSpecifier }) =>
+    innerSpecifier.startsWith('@platejs/plite')
+  )) {
     assert.deepEqual(paths[specifier], [
       path.relative(appRoot, sourceEntry).replaceAll(path.sep, '/'),
     ]);

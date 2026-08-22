@@ -368,7 +368,7 @@ export const takeDOMSelectionLocationSnapshotForRoot = async (
       return null;
     }
 
-    const anchorNode = selection.anchorNode;
+    const { anchorNode } = selection;
     const anchorElement =
       anchorNode.nodeType === Node.TEXT_NODE
         ? anchorNode.parentElement
@@ -687,7 +687,7 @@ export const waitForSelectionSync = async (
         element: HTMLElement,
         {
           allowMissingNativeSelection,
-          expectedSelection,
+          expectedSelection: innerExpectedSelection,
           key,
         }: {
           allowMissingNativeSelection: boolean;
@@ -883,21 +883,21 @@ export const waitForSelectionSync = async (
         const missingNativeSelectionAccepted =
           allowMissingNativeSelection &&
           !nativeSelectionInRoot &&
-          (!expectedSelection ||
+          (!innerExpectedSelection ||
             (!!handle?.getSelection &&
-              selectionsEqual(handleSelection, expectedSelection) &&
+              selectionsEqual(handleSelection, innerExpectedSelection) &&
               (!modelBackedSelection ||
-                selectionsEqual(projectedSelection, expectedSelection))));
+                selectionsEqual(projectedSelection, innerExpectedSelection))));
         const synced = missingNativeSelectionAccepted
           ? true
-          : expectedSelection
+          : innerExpectedSelection
             ? handle?.getSelection
-              ? selectionsEqual(handleSelection, expectedSelection) &&
+              ? selectionsEqual(handleSelection, innerExpectedSelection) &&
                 (modelBackedSelection ||
-                  selectionsEqual(nativeSelection, expectedSelection)) &&
+                  selectionsEqual(nativeSelection, innerExpectedSelection)) &&
                 (!modelBackedSelection ||
-                  selectionsEqual(projectedSelection, expectedSelection))
-              : selectionsEqual(nativeSelection, expectedSelection)
+                  selectionsEqual(projectedSelection, innerExpectedSelection))
+              : selectionsEqual(nativeSelection, innerExpectedSelection)
             : handle?.getSelection
               ? modelBackedSelection
                 ? selectionsEqual(handleSelection, projectedSelection)
@@ -907,7 +907,7 @@ export const waitForSelectionSync = async (
               : nativeSelection !== null;
 
         return {
-          expectedSelection,
+          expectedSelection: innerExpectedSelection,
           handleSelection,
           modelBackedSelection,
           nativeSelection,

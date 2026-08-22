@@ -289,9 +289,12 @@ describe('listToMdastTree', () => {
     });
 
     // The structure should correctly represent the indentation levels
-    expect(result.children).toHaveLength(2); // Two top-level items
-    expect(result.children[0].children).toHaveLength(2); // First item has paragraph and nested list
-    expect(getList(result.children[0], 1).children).toHaveLength(2); // Nested list has two items
+    // Two top-level items
+    expect(result.children).toHaveLength(2);
+    // First item has paragraph and nested list
+    expect(result.children[0].children).toHaveLength(2);
+    // Nested list has two items
+    expect(getList(result.children[0], 1).children).toHaveLength(2);
   });
 
   it('throw error for empty nodes', () => {

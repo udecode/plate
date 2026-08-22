@@ -10,9 +10,10 @@ import type { RefObject } from 'react';
 
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
-type DOMInputRuntime = DOMRootRuntime<HTMLElement>['domInputRuntime'];
+type DOMInputRuntime = DOMRootRuntime['domInputRuntime'];
 
 const EDITABLE_INPUT_RUNTIME = Symbol('editable-input-runtime');
+const EDITABLE_COMPOSITION_HISTORY_MERGE = new WeakSet<DOMInputRuntime>();
 
 export type InputIntent =
   | 'clipboard'
@@ -99,18 +100,22 @@ export type PendingCompositionEnd =
   | Readonly<{
       cancel: () => void;
       data: string;
-      inputTypes: readonly ('insertFromComposition' | 'insertText')[];
+      inputTypes: ReadonlyArray<'insertFromComposition' | 'insertText'>;
       ownership: 'settled';
       phase: 'settled';
     }>;
 
 export type EditableInputControllerState = {
   activeIntent: InputIntent | null;
-  compositionSession: { modelCommitted: boolean; text: string | null } | null;
+  compositionSession: {
+    modelCommitted: boolean;
+    text: string | null;
+  } | null;
   draggedBlock: boolean;
   draggedRange: Range | null;
   isComposing: boolean;
   isDraggingInternally: boolean;
+  isProjectingSelection: boolean;
   isUpdatingSelection: boolean;
   latestElement: DOMElement | null;
   modelSelectionPreference?: ModelSelectionPreference | null;
@@ -208,14 +213,21 @@ const bindEditableInputRuntimeState = (
       configurable: true,
       enumerable: true,
       get: () => domInputRuntime.compositionSession,
-      set: (session) => domInputRuntime.setCompositionSession(session),
+      set: (session) => {
+        if (!session) {
+          EDITABLE_COMPOSITION_HISTORY_MERGE.delete(domInputRuntime);
+        }
+        domInputRuntime.setCompositionSession(session);
+      },
     },
     pendingCompositionEnd: {
       configurable: true,
       enumerable: true,
       get: () =>
-        domInputRuntime.getPendingCompositionEnd<PendingCompositionEnd>(),
-      set: (pending) => domInputRuntime.setPendingCompositionEnd(pending),
+        domInputRuntime.getPendingCompositionEnd() as PendingCompositionEnd | null,
+      set: (pending) => {
+        domInputRuntime.setPendingCompositionEnd(pending);
+      },
     },
     pendingNativeTextInputRepairOffset: {
       configurable: true,
@@ -276,6 +288,7 @@ export const createEditableInputControllerState = (
       draggedRange: null,
       isComposing: false,
       isDraggingInternally: false,
+      isProjectingSelection: false,
       isUpdatingSelection: false,
       latestElement: null,
       modelSelectionPreference: null,
@@ -297,10 +310,23 @@ export const createEditableInputControllerState = (
   );
 
 export const beginEditableCompositionSession = (
-  inputController: EditableInputController
+  inputController: EditableInputController,
+  { historyMergePending = false }: { historyMergePending?: boolean } = {}
 ) => {
+  if (historyMergePending) {
+    EDITABLE_COMPOSITION_HISTORY_MERGE.add(inputController.domInputRuntime);
+  } else {
+    EDITABLE_COMPOSITION_HISTORY_MERGE.delete(inputController.domInputRuntime);
+  }
+
   inputController.domInputRuntime.beginComposition();
 };
+
+export const shouldMergeEditableCompositionHistory = (
+  inputController: EditableInputController
+) =>
+  inputController.state.compositionSession !== null &&
+  EDITABLE_COMPOSITION_HISTORY_MERGE.has(inputController.domInputRuntime);
 
 export const markEditableCompositionModelCommitted = (
   inputController: EditableInputController

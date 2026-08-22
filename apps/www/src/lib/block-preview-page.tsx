@@ -25,7 +25,7 @@ export async function generateBlockPreviewMetadata({
     return {};
   }
 
-  const title = `${item.description ? `${item.description}` : ''}`;
+  const title = item.description ? item.description : '';
   const description = getRegistryInstallCommand(item.name);
 
   return {
@@ -49,8 +49,8 @@ export async function generateBlockPreviewMetadata({
   };
 }
 
-export async function generateBlockPreviewStaticParams() {
-  const blocks = await getAllBlocks();
+export function generateBlockPreviewStaticParams() {
+  const blocks = getAllBlocks();
 
   return blocks.map(({ name }) => ({
     name,

@@ -7,7 +7,7 @@ import {
 } from '@platejs/plite';
 import { useCallback, useContext } from 'react';
 
-import { ElementPathContext, NodeKeyContext } from '../context';
+import { NodeKeyContext } from '../context';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
@@ -33,7 +33,6 @@ export const useElementSelected = ({
   mode = 'intersects',
 }: UseElementSelectedOptions = {}): boolean => {
   const element = useOptionalElement();
-  const contextPath = useContext(ElementPathContext);
   const nodeKey = useContext(NodeKeyContext);
 
   const selector = useCallback(
@@ -46,7 +45,6 @@ export const useElementSelected = ({
       const selectedPath =
         path ??
         (nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null) ??
-        contextPath ??
         (element ? ReactEditor.resolvePath(editor, element) : null);
       if (!selectedPath) return false;
       if (!editorHasPath(editor, selectedPath)) return false;
@@ -63,7 +61,7 @@ export const useElementSelected = ({
       const range = editorRange(editor, selectedPath);
       return !!RangeApi.intersection(range, selection);
     },
-    [contextPath, element, mode, path, nodeKey]
+    [element, mode, path, nodeKey]
   );
 
   const shouldUpdate = useCallback(
@@ -91,7 +89,9 @@ export const useElementSelected = ({
 
   return useEditorSelector(selector, {
     deferred: true,
+    nodeKey: path ? null : nodeKey,
     profileId: 'element-selected',
+    runtimeEventSource: 'selection',
     shouldUpdate,
   });
 };

@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 export type DocContentDoc = {
   copyMarkdown?: string;
   description?: string;
-  docs?: { route?: string; title?: string }[];
+  docs?: Array<{ route?: string; title?: string }>;
   links?: {
     api?: string;
     doc?: string;

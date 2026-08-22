@@ -92,38 +92,38 @@ export const setSelection = async (
     const anchor = resolvePoint(expected.anchor);
     const focus = resolvePoint(expected.focus);
     const rootNode = element.getRootNode() as Document | ShadowRoot;
-    const selection =
+    const innerSelection =
       'getSelection' in rootNode
         ? rootNode.getSelection()
         : element.ownerDocument.getSelection();
 
-    if (!selection) {
+    if (!innerSelection) {
       throw new Error('Cannot access window selection');
     }
 
     const isBackward = comparePoint(expected.anchor, expected.focus) > 0;
     const isCollapsed = comparePoint(expected.anchor, expected.focus) === 0;
 
-    selection.removeAllRanges();
+    innerSelection.removeAllRanges();
 
     if (isCollapsed) {
-      selection.collapse(anchor.node, anchor.offset);
+      innerSelection.collapse(anchor.node, anchor.offset);
       return;
     }
 
-    if (isBackward && typeof selection.extend === 'function') {
+    if (isBackward && typeof innerSelection.extend === 'function') {
       const range = element.ownerDocument.createRange();
       range.setStart(focus.node, focus.offset);
       range.setEnd(focus.node, focus.offset);
-      selection.addRange(range);
-      selection.extend(anchor.node, anchor.offset);
+      innerSelection.addRange(range);
+      innerSelection.extend(anchor.node, anchor.offset);
       return;
     }
 
     const range = element.ownerDocument.createRange();
     range.setStart(anchor.node, anchor.offset);
     range.setEnd(focus.node, focus.offset);
-    selection.addRange(range);
+    innerSelection.addRange(range);
   }, selection);
 };
 
@@ -314,13 +314,13 @@ export const dragTextRange = async (
     (
       element,
       {
-        endAffinity,
-        endOffset,
-        endText,
-        endTextNodeIndex,
-        startOffset,
-        text,
-        textNodeIndex,
+        endAffinity: innerEndAffinity,
+        endOffset: innerEndOffset,
+        endText: innerEndText,
+        endTextNodeIndex: innerEndTextNodeIndex,
+        startOffset: innerStartOffset,
+        text: innerText,
+        textNodeIndex: innerTextNodeIndex,
       }: Omit<PliteBrowserDragTextRangeOptions, 'settleMs' | 'steps'> & {
         endAffinity: NonNullable<
           PliteBrowserDragTextRangeOptions['endAffinity']
@@ -328,7 +328,7 @@ export const dragTextRange = async (
         textNodeIndex: number;
       }
     ) => {
-      const ownerDocument = element.ownerDocument;
+      const { ownerDocument } = element;
       const walker = ownerDocument.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT
@@ -351,23 +351,24 @@ export const dragTextRange = async (
 
         return target;
       };
-      const startNode = findTextNode(text, textNodeIndex);
-      const resolvedEndText = endText ?? text;
-      const resolvedEndTextNodeIndex = endTextNodeIndex ?? textNodeIndex;
+      const startNode = findTextNode(innerText, innerTextNodeIndex);
+      const resolvedEndText = innerEndText ?? innerText;
+      const resolvedEndTextNodeIndex =
+        innerEndTextNodeIndex ?? innerTextNodeIndex;
       const endNode = findTextNode(resolvedEndText, resolvedEndTextNodeIndex);
 
-      if (startNode === endNode && startOffset > endOffset) {
+      if (startNode === endNode && innerStartOffset > innerEndOffset) {
         throw new Error('dragTextRange expects startOffset <= endOffset');
       }
       const scrollNodeIntoView = (node: Node) => {
-        const element =
+        const innerElement =
           node.nodeType === Node.TEXT_NODE
             ? node.parentElement
             : node instanceof Element
               ? node
               : null;
 
-        element?.scrollIntoView({ block: 'center', inline: 'nearest' });
+        innerElement?.scrollIntoView({ block: 'center', inline: 'nearest' });
       };
 
       scrollNodeIntoView(startNode);
@@ -432,7 +433,7 @@ export const dragTextRange = async (
         }
 
         const shouldEndAfterText =
-          endAffinity === 'after' && offset >= textLength;
+          innerEndAffinity === 'after' && offset >= textLength;
 
         return {
           x: shouldEndAfterText
@@ -441,8 +442,8 @@ export const dragTextRange = async (
           y: rect.top + rect.height / 2,
         };
       };
-      const start = pointAt(startNode, startOffset, 'start');
-      const end = pointAt(endNode, endOffset, 'end');
+      const start = pointAt(startNode, innerStartOffset, 'start');
+      const end = pointAt(endNode, innerEndOffset, 'end');
 
       return {
         endX: end.x,
@@ -496,10 +497,10 @@ export const doubleClickDragTextRange = async (
     (
       element,
       {
-        doubleClickOffset,
-        endOffset,
-        text,
-        textNodeIndex,
+        doubleClickOffset: innerDoubleClickOffset,
+        endOffset: innerEndOffset2,
+        text: innerText2,
+        textNodeIndex: innerTextNodeIndex2,
       }: Required<
         Pick<
           PliteBrowserDoubleClickDragTextRangeOptions,
@@ -507,7 +508,7 @@ export const doubleClickDragTextRange = async (
         >
       >
     ) => {
-      const ownerDocument = element.ownerDocument;
+      const { ownerDocument } = element;
       const walker = ownerDocument.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT
@@ -515,15 +516,17 @@ export const doubleClickDragTextRange = async (
       const matches: Node[] = [];
 
       while (walker.nextNode()) {
-        if (walker.currentNode.textContent === text) {
+        if (walker.currentNode.textContent === innerText2) {
           matches.push(walker.currentNode);
         }
       }
 
-      const textNode = matches[textNodeIndex];
+      const textNode = matches[innerTextNodeIndex2];
 
       if (!textNode) {
-        throw new Error(`Text node not found for double-click drag: ${text}`);
+        throw new Error(
+          `Text node not found for double-click drag: ${innerText2}`
+        );
       }
 
       const textLength = textNode.textContent?.length ?? 0;
@@ -553,7 +556,7 @@ export const doubleClickDragTextRange = async (
 
         if (!rect || rect.width <= 0 || rect.height <= 0) {
           throw new Error(
-            `Text offset has no selectable rect: ${text} @ ${offset}`
+            `Text offset has no selectable rect: ${innerText2} @ ${offset}`
           );
         }
 
@@ -569,7 +572,7 @@ export const doubleClickDragTextRange = async (
           y: rect.top + rect.height / 2,
         };
       };
-      const forward = endOffset >= doubleClickOffset;
+      const forward = innerEndOffset2 >= innerDoubleClickOffset;
 
       textNode.parentElement?.scrollIntoView({
         block: 'center',
@@ -577,8 +580,8 @@ export const doubleClickDragTextRange = async (
       });
 
       return {
-        end: pointAt(endOffset, forward ? 'end' : 'start'),
-        start: pointAt(doubleClickOffset, 'anchor'),
+        end: pointAt(innerEndOffset2, forward ? 'end' : 'start'),
+        start: pointAt(innerDoubleClickOffset, 'anchor'),
       };
     },
     { doubleClickOffset, endOffset, text, textNodeIndex }

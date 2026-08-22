@@ -108,9 +108,9 @@ const importRemoteCommit = (
 
 describe('collab and history runtime contract', () => {
   it('publishes one commit truth for collab subscribers, extension listeners, and history', () => {
-    const extensionCommits: NonNullable<
-      ReturnType<typeof editorGetLastCommit>
-    >[] = [];
+    const extensionCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
     const editor = createEditor({
       extensions: [
         history(),
@@ -138,9 +138,9 @@ describe('collab and history runtime contract', () => {
 
     assert.ok(nodeKey);
 
-    const subscribedCommits: NonNullable<
-      ReturnType<typeof editorGetLastCommit>
-    >[] = [];
+    const subscribedCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
     const unsubscribeSubscribe = editorSubscribe(
       editor,
       (_snapshot, commit) => {
@@ -159,7 +159,7 @@ describe('collab and history runtime contract', () => {
     assert.equal(subscribedCommits.length, 1);
     assert.equal(extensionCommits.length, 1);
 
-    const commit = subscribedCommits[0]!;
+    const commit = subscribedCommits[0];
 
     assert.equal(extensionCommits[0], commit);
     assert.equal(editorGetLastCommit(editor), commit);
@@ -203,8 +203,9 @@ describe('collab and history runtime contract', () => {
   it('imports local canonical changes with deterministic snapshot tags', () => {
     const source = createCollabEditor();
     const remote = createCollabEditor();
-    const remoteCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
-      [];
+    const remoteCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
     const unsubscribe = editorSubscribe(remote, (_snapshot, commit) => {
       if (commit) {
         remoteCommits.push(commit);

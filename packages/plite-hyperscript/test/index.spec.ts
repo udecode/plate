@@ -66,7 +66,7 @@ const runFixtures = (path: string) => {
       if (!stat.isFile() || !isFixtureFile(file)) continue;
 
       const name = getFixtureName(file);
-      const source = readFileSync(fixturePath, 'utf8');
+      const source = readFileSync(fixturePath, 'utf-8');
       const testFn = /\bexport const skip\s*=\s*true\b/.test(source)
         ? it.skip
         : it;

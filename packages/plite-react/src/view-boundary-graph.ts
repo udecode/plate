@@ -54,8 +54,8 @@ export const clonePliteViewBoundaryPoint = (point: Point): Point =>
   Object.freeze({
     ...(point.root ? { root: point.root } : {}),
     offset: point.offset,
-    path: Object.freeze(clonePliteViewBoundaryPath(point.path)) as Path,
-  }) as Point;
+    path: Object.freeze(clonePliteViewBoundaryPath(point.path)),
+  });
 
 export const clonePliteViewBoundaryOwner = (
   owner: PliteViewBoundaryOwner | null | undefined
@@ -63,9 +63,7 @@ export const clonePliteViewBoundaryOwner = (
   owner
     ? Object.freeze({
         childRoot: owner.childRoot,
-        ownerPath: Object.freeze(
-          clonePliteViewBoundaryPath(owner.ownerPath)
-        ) as Path,
+        ownerPath: Object.freeze(clonePliteViewBoundaryPath(owner.ownerPath)),
         ownerRoot: owner.ownerRoot,
       })
     : null;
@@ -115,7 +113,7 @@ export const getPliteDescendantAtPath = (
     return null;
   }
 
-  let node: Descendant | null = children[path[0]!] ?? null;
+  let node: Descendant | null = children[path[0]] ?? null;
 
   for (const index of path.slice(1)) {
     if (!node || !NodeApi.isElement(node)) {

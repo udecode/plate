@@ -1,4 +1,3 @@
-/* oxlint-disable nextjs/no-img-element -- This image consumes a user or runtime URL and editor-owned dimensions that Next Image cannot statically authorize or preserve. */
 import type { Element as PliteElement } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -66,10 +65,12 @@ const PasteHtmlExample = () => {
         renderText={FontSizeText}
         renderVoid={({ element }) => {
           switch (element.type) {
-            case 'image':
+            case 'image': {
               return <ImageElement element={element} />;
-            default:
+            }
+            default: {
               return null;
+            }
           }
         }}
       />
@@ -82,94 +83,110 @@ const Element = (props: RenderElementProps<CustomElement>) => {
   const style = getElementStyle(element);
 
   switch (element.type) {
-    case 'block-quote':
+    case 'block-quote': {
       return (
         <blockquote style={style} {...attributes}>
           {children}
         </blockquote>
       );
-    case 'code-block':
+    }
+    case 'code-block': {
       return (
         <pre>
           <code {...attributes}>{children}</code>
         </pre>
       );
-    case 'bulleted-list':
+    }
+    case 'bulleted-list': {
       return (
         <ul style={style} {...attributes}>
           {children}
         </ul>
       );
-    case 'heading-one':
+    }
+    case 'heading-one': {
       return (
         <h1 style={style} {...attributes}>
           {children}
         </h1>
       );
-    case 'heading-two':
+    }
+    case 'heading-two': {
       return (
         <h2 style={style} {...attributes}>
           {children}
         </h2>
       );
-    case 'heading-three':
+    }
+    case 'heading-three': {
       return (
         <h3 style={style} {...attributes}>
           {children}
         </h3>
       );
-    case 'heading-four':
+    }
+    case 'heading-four': {
       return (
         <h4 style={style} {...attributes}>
           {children}
         </h4>
       );
-    case 'heading-five':
+    }
+    case 'heading-five': {
       return (
         <h5 style={style} {...attributes}>
           {children}
         </h5>
       );
-    case 'heading-six':
+    }
+    case 'heading-six': {
       return (
         <h6 style={style} {...attributes}>
           {children}
         </h6>
       );
-    case 'list-item':
+    }
+    case 'list-item': {
       return (
         <li style={style} {...attributes}>
           {children}
         </li>
       );
-    case 'numbered-list':
+    }
+    case 'numbered-list': {
       return (
         <ol style={style} {...attributes}>
           {children}
         </ol>
       );
-    case 'table':
+    }
+    case 'table': {
       return (
         <table>
           <tbody {...attributes}>{children}</tbody>
         </table>
       );
-    case 'table-cell':
+    }
+    case 'table-cell': {
       return <td {...attributes}>{children}</td>;
-    case 'table-row':
+    }
+    case 'table-row': {
       return <tr {...attributes}>{children}</tr>;
-    case 'link':
+    }
+    case 'link': {
       return (
         <SafeLink attributes={attributes} href={element.url}>
           {children}
         </SafeLink>
       );
-    default:
+    }
+    default: {
       return (
         <p style={style} {...attributes}>
           {children}
         </p>
       );
+    }
   }
 };
 
@@ -220,6 +237,7 @@ const ImageElement = ({ element }: RenderVoidProps<ImageElementType>) => {
   const selected = useElementSelected();
 
   return (
+    // oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] This example renders the raw pasted image URL as editor content, which is the behavior under demonstration.
     <img
       alt=""
       className={cn(
@@ -231,7 +249,12 @@ const ImageElement = ({ element }: RenderVoidProps<ImageElementType>) => {
   );
 };
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps<CustomText>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

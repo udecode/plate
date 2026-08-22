@@ -25,8 +25,7 @@ export const getEditableRootFromTarget = (
   const element = mouseEventTargetToElement(target);
   const editableRoot = element?.closest('[data-plite-editor="true"]');
 
-  return (editableRoot?.getAttribute('data-plite-root') ??
-    MAIN_ROOT_KEY) as RootKey;
+  return editableRoot?.getAttribute('data-plite-root') ?? MAIN_ROOT_KEY;
 };
 
 const parseContentRootOwnerPath = (value: string | null): Path | null => {
@@ -36,7 +35,7 @@ const parseContentRootOwnerPath = (value: string | null): Path | null => {
 
   const path = value.split(',').map((part) => Number.parseInt(part, 10));
 
-  return path.every(Number.isFinite) ? (path as Path) : null;
+  return path.every(Number.isFinite) ? path : null;
 };
 
 export const getContentRootOwnerFromTarget = ({
@@ -73,9 +72,10 @@ export const getContentRootOwnerFromTarget = ({
     (ownerElement instanceof HTMLElement
       ? getPliteNodePathFromDOMElement(ownerElement)
       : null);
-  const ownerRoot = (slotOwnerRoot ??
+  const ownerRoot =
+    slotOwnerRoot ??
     ownerEditorElement?.getAttribute('data-plite-root') ??
-    MAIN_ROOT_KEY) as RootKey;
+    MAIN_ROOT_KEY;
 
   return ownerPath
     ? {

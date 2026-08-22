@@ -59,29 +59,31 @@ export default function MyEditorPage() {
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         <ToolbarButton
-          onClick={() =>
-            editor.plugin(HeadingPlugin).update.toggle({ level: 1 })
-          }
+          onClick={() => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 1 });
+          }}
         >
           H1
         </ToolbarButton>
         <ToolbarButton
-          onClick={() =>
-            editor.plugin(HeadingPlugin).update.toggle({ level: 2 })
-          }
+          onClick={() => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
+          }}
         >
           H2
         </ToolbarButton>
         <ToolbarButton
-          onClick={() =>
-            editor.plugin(HeadingPlugin).update.toggle({ level: 3 })
-          }
+          onClick={() => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 3 });
+          }}
         >
           H3
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}
+          onClick={() => {
+            editor.plugin(BlockquotePlugin).update.toggle();
+          }}
         >
           Quote
         </ToolbarButton>

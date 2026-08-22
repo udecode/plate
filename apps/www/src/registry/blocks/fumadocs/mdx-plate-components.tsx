@@ -3,9 +3,10 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import { type VariantProps, cva } from 'class-variance-authority';
-import { cn } from 'fumadocs-ui/utils/cn';
 import { ChevronDownIcon, PlusIcon } from 'lucide-react';
 import React, { type ReactNode, createContext, useState } from 'react';
+
+import { cn } from '../../../lib/utils';
 
 type Item = {
   children: ReactNode;
@@ -46,8 +47,10 @@ const listTypeToBadgeStyles: Record<string, string> = {
 };
 
 export function API({ children, name }: { children: ReactNode; name: string }) {
+  const contextValue = React.useMemo(() => ({ name }), [name]);
+
   return (
-    <APIContext value={{ name }}>
+    <APIContext value={contextValue}>
       <Card className="mt-6 mb-16 bg-white p-0 dark:bg-zinc-800">
         <CardContent className="space-y-6 py-6 **:[p]:m-0">
           {children}
@@ -77,7 +80,9 @@ export function APIItem({ children, name, optional, required, type }: Item) {
                 className={cn(
                   'opacity-0 hover:opacity-100 group-hover:opacity-100'
                 )}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 href={`#${id}`}
               >
                 <div className="absolute top-2 -left-5 pr-1 leading-none">
@@ -191,13 +196,17 @@ export function APIList({
 }: APIListProps) {
   const { name } = React.useContext(APIContext);
   const childCount = React.Children.count(children);
+  const contextValue = React.useMemo(
+    () => ({ listType, name }),
+    [listType, name]
+  );
 
   if (listType === 'returns' && !childCount) return null;
 
   const id = name ? `${name}-${listTypeToId[listType]}` : undefined;
 
   return (
-    <APIContext value={{ listType, name }}>
+    <APIContext value={contextValue}>
       <section className="flex w-full flex-col items-center">
         <div className="w-full">
           <div className="">
@@ -211,7 +220,9 @@ export function APIList({
                     className={cn(
                       'opacity-0 hover:opacity-100 group-hover:opacity-100'
                     )}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
                     href={`#${id}`}
                   >
                     <div className="absolute top-0 -left-5 pr-1 leading-none">
@@ -301,7 +312,9 @@ export function APISubListItem({
             className={cn(
               'opacity-0 hover:opacity-100 group-hover:opacity-100'
             )}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             href={`#${id}`}
           >
             <div className="absolute top-2 -left-5 pr-1 leading-none">

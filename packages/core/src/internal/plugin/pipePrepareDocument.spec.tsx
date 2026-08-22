@@ -18,23 +18,22 @@ describe('pipePrepareDocument', () => {
 
   const createTestPlugin = (name: string) =>
     defineBasePlugin(name, {
-      prepareDocument: ({ document }: any) =>
-        ({
-          ...document,
-          children: document.children.map((node: any) => ({
-            ...node,
-            count: node.count + 1,
-          })),
-          roots: Object.fromEntries(
-            Object.entries(document.roots ?? {}).map(([root, children]) => [
-              root,
-              (children as any[]).map((node) => ({
-                ...node,
-                count: node.count + 1,
-              })),
-            ])
-          ),
-        }) as any,
+      prepareDocument: ({ document }: any) => ({
+        ...document,
+        children: document.children.map((node: any) => ({
+          ...node,
+          count: node.count + 1,
+        })),
+        roots: Object.fromEntries(
+          Object.entries(document.roots ?? {}).map(([root, children]) => [
+            root,
+            (children as any[]).map((node) => ({
+              ...node,
+              count: node.count + 1,
+            })),
+          ])
+        ),
+      }),
     });
 
   const CountPlugin = defineBasePlugin('count', {
@@ -256,7 +255,7 @@ describe('pipePrepareDocument', () => {
     const migrations = defineDocumentMigrations(EditorSchema, {
       steps: {
         1: ({ document }) => {
-          migrationCalls++;
+          migrationCalls += 1;
 
           return document;
         },
@@ -265,7 +264,7 @@ describe('pipePrepareDocument', () => {
     });
     const PreparePlugin = defineBasePlugin('prepareCurrent', {
       prepareDocument: ({ document }) => {
-        preparationCalls++;
+        preparationCalls += 1;
 
         return document;
       },

@@ -693,7 +693,7 @@ describe('plite transforms contract', () => {
             { type: 'inline', children: [{ text: 'word' }] },
             { text: '' },
           ],
-        } as Descendant,
+        },
       ],
       selection: collapsedSelection([0, 1, 0], 0),
     });
@@ -727,7 +727,7 @@ describe('plite transforms contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'one' }],
-        } as Descendant,
+        },
       ],
       selection: collapsedSelection([0, 0], 0),
     });
@@ -751,7 +751,7 @@ describe('plite transforms contract', () => {
     type CalloutElement = {
       type: 'callout';
       icon: string;
-      children: { text: string; bold?: true }[];
+      children: Array<{ text: string; bold?: true }>;
     };
     const editor = createEditor<CalloutElement[]>({
       initialValue: [
@@ -945,7 +945,7 @@ describe('plite transforms contract', () => {
           type: 'heading-two',
           id: 'stable-heading',
           children: [{ bold: true, text: 'Title' }],
-        } as Descendant,
+        },
       ],
       selection: collapsedSelection([0, 0], 0),
     });
@@ -979,7 +979,7 @@ describe('plite transforms contract', () => {
               { text: 'Wiki' },
               { italic: true, text: ' & Worktile' },
             ],
-          } as Descendant,
+          },
         ],
         selection: null,
       });
@@ -1019,7 +1019,7 @@ describe('plite transforms contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'before text after' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1064,7 +1064,7 @@ describe('plite transforms contract', () => {
             { type: 'mention', children: [{ text: '' }] },
             { text: ' after text' },
           ],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1112,7 +1112,7 @@ describe('plite transforms contract', () => {
           key: 'keep-me',
           foo: 'drop-me',
           children: [{ text: 'Title' }],
-        } as Descendant,
+        },
       ],
       selection: collapsedSelection([0, 0], 0),
     });
@@ -1172,7 +1172,7 @@ describe('plite transforms contract', () => {
         {
           type: 'quote',
           children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1197,7 +1197,7 @@ describe('plite transforms contract', () => {
               children: [{ text: 'Helloworld' }],
             },
           ],
-        } as Descendant,
+        },
       ],
       selection: collapsedSelection([0, 0, 0], 5),
     });
@@ -1250,7 +1250,7 @@ describe('plite transforms contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'one' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1280,7 +1280,7 @@ describe('plite transforms contract', () => {
             },
             { text: '' },
           ],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1323,7 +1323,7 @@ describe('plite transforms contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'one' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1348,7 +1348,7 @@ describe('plite transforms contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'one' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1366,11 +1366,11 @@ describe('plite transforms contract', () => {
         {
           type: 'paragraph',
           children: [{ text: 'one' }],
-        } as Descendant,
+        },
         {
           type: 'slashInput',
           children: [{ text: '' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });
@@ -1421,7 +1421,7 @@ describe('plite transforms contract', () => {
             },
             { text: '' },
           ],
-        } as Descendant,
+        },
       ],
       selection: collapsedSelection([0, 1, 1, 0], 0),
     });
@@ -1550,9 +1550,12 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.wrap({ type: 'quote', children: [] } as Element, {
-        split: true,
-      });
+      tx.nodes.wrap(
+        { type: 'quote', children: [] },
+        {
+          split: true,
+        }
+      );
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1577,7 +1580,7 @@ describe('plite transforms contract', () => {
           type: 'block',
           noneditable: true,
           children: [{ text: 'word' }],
-        } as Descendant,
+        },
       ],
       selection: {
         kind: 'text' as const,
@@ -1587,19 +1590,24 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.wrap({ type: 'quote', children: [] } as Element, {
-        match: (node, currentPath) => {
-          if ('noneditable' in node && node.noneditable === true) return false;
-
-          for (const [ancestor] of NodeApi.ancestors(editor, currentPath)) {
-            if ('noneditable' in ancestor && ancestor.noneditable === true) {
+      tx.nodes.wrap(
+        { type: 'quote', children: [] },
+        {
+          match: (node, currentPath) => {
+            if ('noneditable' in node && node.noneditable === true) {
               return false;
             }
-          }
 
-          return true;
-        },
-      });
+            for (const [ancestor] of NodeApi.ancestors(editor, currentPath)) {
+              if ('noneditable' in ancestor && ancestor.noneditable === true) {
+                return false;
+              }
+            }
+
+            return true;
+          },
+        }
+      );
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -1626,7 +1634,7 @@ describe('plite transforms contract', () => {
               children: [{ type: 'block', children: [{ text: 'word' }] }],
             },
           ],
-        } as Descendant,
+        },
       ],
       selection: {
         kind: 'text' as const,
@@ -1691,7 +1699,7 @@ describe('plite transforms contract', () => {
         {
           type: 'void-block',
           children: [{ text: '' }],
-        } as Descendant,
+        },
       ],
       selection: null,
     });

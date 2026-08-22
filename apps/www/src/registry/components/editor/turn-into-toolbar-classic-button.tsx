@@ -127,9 +127,8 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
     getProp: (node) =>
       ElementApi.isElement(node) ? getBlockType(node) : undefined,
   });
-  const selectedDocumentValue = String(
-    documentValue ?? editor.plugin(PLUGINS.paragraph).schema.type
-  );
+  const selectedDocumentValue =
+    typeof documentValue === 'string' ? documentValue : PLUGINS.paragraph;
   const selectedValue =
     turnIntoItems.find(({ value }) => {
       if (value === ACTION_THREE_COLUMNS) return false;

@@ -14,10 +14,10 @@ import type { ChatMessage } from '@/registry/components/editor/use-chat';
  *   {content}
  *   </tools>
  */
-export const tag = (tag: string, content?: string | null) => {
+export const tag = (innerTag: string, content?: string | null) => {
   if (!content) return '';
 
-  return [`<${tag}>`, content, `</${tag}>`].join('\n');
+  return [`<${innerTag}>`, content, `</${innerTag}>`].join('\n');
 };
 
 /**
@@ -26,15 +26,16 @@ export const tag = (tag: string, content?: string | null) => {
  * @example
  *   <tools>{content}</tools>
  */
-export const inlineTag = (tag: string, content?: string | null) => {
+export const inlineTag = (innerTag2: string, content?: string | null) => {
   if (!content) return '';
 
-  return [`<${tag}>`, content, `</${tag}>`].join('');
+  return [`<${innerTag2}>`, content, `</${innerTag2}>`].join('');
 };
 
 // Sections split by double newlines
-export const sections = (sections: (boolean | string | null | undefined)[]) =>
-  sections.filter(Boolean).join('\n\n');
+export const sections = (
+  innerSections: Array<boolean | string | null | undefined>
+) => innerSections.filter(Boolean).join('\n\n');
 
 // List items split by newlines
 export const list = (items: string[] | undefined) =>
@@ -134,8 +135,7 @@ export const buildStructuredPrompt = ({
     rules && tag('rules', rules),
 
     formattedExamples &&
-      'Here are some examples of how to respond in a standard interaction:\n' +
-        tag('examples', formattedExamples),
+      `Here are some examples of how to respond in a standard interaction:\n${tag('examples', formattedExamples)}`,
 
     history &&
       dedent`

@@ -116,7 +116,9 @@ export type RootInteractionControllerOptions = {
   runtime?: EditableDOMRuntime;
   selection: RootInteractionSelectionMode;
   selectionBridge?: {
+    beginProjectedDrag: () => void;
     beforeModelSelection: () => void;
+    finishProjectedDrag: () => void;
     importDOMSelection: () => void;
     isPartialDOMBackedSelection: (selection: Range | null) => boolean;
     syncDOMSelectionToEditor: (
@@ -179,6 +181,8 @@ type PendingProjectedDrag = {
   clientY: number;
   editor: RootInteractionEditor;
   endpoint: RootInteractionDragEndpoint;
+  finish: () => void;
+  releaseCleanup: () => void;
 };
 
 type PendingDragAutoScroll = {
@@ -199,6 +203,38 @@ type PendingDragAutoScrollRef = {
 };
 
 let pendingProjectedDrag: PendingProjectedDrag | null = null;
+
+const finishPendingProjectedDrag = (projectedDrag: PendingProjectedDrag) => {
+  projectedDrag.releaseCleanup();
+  projectedDrag.finish();
+  if (pendingProjectedDrag === projectedDrag) {
+    pendingProjectedDrag = null;
+  }
+};
+
+const attachProjectedDragReleaseListeners = (
+  projectedDrag: PendingProjectedDrag,
+  rootElement: HTMLElement
+) => {
+  const document = rootElement.ownerDocument;
+  const window = document.defaultView;
+  const release = () => {
+    if (pendingProjectedDrag === projectedDrag) {
+      finishPendingProjectedDrag(projectedDrag);
+    }
+  };
+  const releaseOnBlur = () => {
+    finishPendingProjectedDrag(projectedDrag);
+  };
+
+  document.addEventListener('mouseup', release);
+  window?.addEventListener('blur', releaseOnBlur);
+
+  return () => {
+    document.removeEventListener('mouseup', release);
+    window?.removeEventListener('blur', releaseOnBlur);
+  };
+};
 
 const measureRootMouseDownPhase = <T>(id: string, run: () => T): T => {
   if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
@@ -418,8 +454,23 @@ const resolveProjectedDragEndpoint = ({
 }): RootInteractionDragEndpoint | null => {
   const targetRoot = resolvedRoot ?? getEditableRootFromTarget(event.target);
   const targetEditor = getMountedViewEditor(targetRoot) ?? editor;
-  const range =
+  const eventRange =
     resolvedRange ?? targetEditor.api.dom.resolveEventRange(event.nativeEvent);
+  const coordinatePlacement = eventRange
+    ? null
+    : getEditableRootChromeCoordinatePlacement({
+        editor: targetEditor,
+        event,
+        includeInsideString: true,
+      });
+  const range =
+    eventRange ??
+    (coordinatePlacement
+      ? resolvePliteStringPlacementRange({
+          editor: targetEditor,
+          placement: coordinatePlacement,
+        })
+      : null);
 
   if (!range) {
     return null;
@@ -506,10 +557,12 @@ const applyProjectedDragSelection = ({
   anchor,
   editor,
   focus,
+  selectionBridge,
 }: {
   anchor: RootInteractionDragEndpoint;
   editor: RootInteractionEditor;
   focus: RootInteractionDragEndpoint;
+  selectionBridge?: RootInteractionControllerOptions['selectionBridge'];
 }) => {
   if (isSameProjectedEndpoint(anchor, focus)) {
     return false;
@@ -523,6 +576,7 @@ const applyProjectedDragSelection = ({
     return false;
   }
 
+  selectionBridge?.beginProjectedDrag();
   writePliteViewSelection(
     editor,
     createPliteViewSelection(createContentRootProjectionGraph(editor, owners), {
@@ -814,6 +868,7 @@ const applyProjectedDragSelectionFromEvent = ({
       anchor: projectedDrag.endpoint,
       editor: projectedDrag.editor,
       focus,
+      selectionBridge,
     });
   const shouldUseModel =
     !appliedView &&
@@ -1287,7 +1342,7 @@ export const useRootInteractionController = ({
   );
 
   const onMouseDownCapture = useCallback<MouseEventHandler<HTMLElement>>(
-    (event) =>
+    (event) => {
       measureRootMouseDownPhase('root-mousedown.capture', () => {
         if (disabled || event.defaultPrevented) {
           return;
@@ -1486,14 +1541,25 @@ export const useRootInteractionController = ({
             editor)
           : editor;
 
+        pendingProjectedDrag?.releaseCleanup();
+        pendingProjectedDrag?.finish();
         pendingProjectedDrag = projectedDragEndpoint
           ? {
               clientX: event.clientX,
               clientY: event.clientY,
               editor: projectedDragEditor,
               endpoint: projectedDragEndpoint,
+              finish: () => selectionBridge?.finishProjectedDrag(),
+              releaseCleanup: () => {},
             }
           : null;
+        if (pendingProjectedDrag) {
+          pendingProjectedDrag.releaseCleanup =
+            attachProjectedDragReleaseListeners(
+              pendingProjectedDrag,
+              event.currentTarget
+            );
+        }
 
         pendingInteractionRef.current = {
           action,
@@ -1520,6 +1586,13 @@ export const useRootInteractionController = ({
           preventNativeSelection
         ) {
           event.preventDefault();
+        }
+
+        if (
+          action.type === 'place-editable-root' &&
+          rootEdgeCoordinatePlacement
+        ) {
+          clearDOMSelectionFromEvent(event);
         }
 
         if (action.type === 'place-editable-root') {
@@ -1556,7 +1629,8 @@ export const useRootInteractionController = ({
           },
           { phase: 'model', target: event.currentTarget }
         );
-      }),
+      });
+    },
     [
       applyInteractionAction,
       disabled,
@@ -1567,6 +1641,7 @@ export const useRootInteractionController = ({
       root,
       scheduleInteractionFrame,
       selection,
+      selectionBridge,
     ]
   );
 
@@ -1576,7 +1651,9 @@ export const useRootInteractionController = ({
       const projectedDrag = pendingProjectedDrag;
 
       if (event.buttons === 0) {
-        pendingProjectedDrag = null;
+        if (projectedDrag) {
+          finishPendingProjectedDrag(projectedDrag);
+        }
         stopDragAutoScroll(pendingDragAutoScrollRef);
         return;
       }
@@ -1684,8 +1761,10 @@ export const useRootInteractionController = ({
       const { action: pendingAction } = pendingInteraction;
       const projectedDrag = pendingProjectedDrag;
       pendingProjectedDrag = null;
-      const currentTarget = event.currentTarget;
+      projectedDrag?.releaseCleanup();
+      const { currentTarget } = event;
       const pointerMoved = hasPointerMoved(pendingInteraction, event);
+
       const importExpandedDOMSelection = () => {
         const expandedDOMSelection =
           getExpandedDOMSelectionInTarget(currentTarget);
@@ -1747,16 +1826,18 @@ export const useRootInteractionController = ({
         return 'imported' as const;
       };
 
-      if (
-        projectedDrag &&
-        applyProjectedDragSelectionFromEvent({
+      if (projectedDrag) {
+        const appliedProjectedDrag = applyProjectedDragSelectionFromEvent({
           event,
           getMountedViewEditor,
           projectedDrag,
           selectionBridge,
-        })
-      ) {
-        return;
+        });
+
+        projectedDrag.finish();
+        if (appliedProjectedDrag) {
+          return;
+        }
       }
 
       if (pendingAction.type === 'ignore') {

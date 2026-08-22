@@ -201,7 +201,7 @@ function JsonActions({
 }
 
 function ChangelogEventArticle({ event }: { event: RegistryChangelogEvent }) {
-  const pullRequest = event.change.pullRequest;
+  const { pullRequest } = event.change;
 
   return (
     <article

@@ -47,7 +47,7 @@ export const useAndroidInputManagerForEditor = (
   );
 
   useIsomorphicLayoutEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return undefined;
 
     EDITOR_TO_SCHEDULE_FLUSH.set(editor, inputManager.scheduleFlush);
 

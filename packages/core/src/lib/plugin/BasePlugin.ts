@@ -63,7 +63,7 @@ import type {
 } from './basePluginCompiler.internal';
 import type { HandlerReturnType } from './HandlerReturnType';
 import type { MarkdownNodeCodecInput } from './MarkdownNodeCodec';
-import { pluginCodecMapDeclaration } from './pluginAuthoringContext';
+import type { pluginCodecMapDeclaration } from './pluginAuthoringContext';
 import type {
   AnyBasePluginDefinition,
   BaseInjectProps,
@@ -138,8 +138,8 @@ type InferPluginRead<C extends AnyBasePluginDefinition> =
     ? Extract<InferRead<C>, EditorReadMethodRecord>
     : InferRead<C>;
 type ErasedPluginInject = {
-  excludeBelowPlugins?: readonly (PluginReference | string)[] | null;
-  excludePlugins?: readonly (PluginReference | string)[] | null;
+  excludeBelowPlugins?: ReadonlyArray<PluginReference | string> | null;
+  excludePlugins?: ReadonlyArray<PluginReference | string> | null;
   isBlock?: boolean | null;
   isElement?: boolean | null;
   isLeaf?: boolean | null;
@@ -156,14 +156,20 @@ type ErasedPluginOn = Record<
 >;
 type ErasedPluginRender = {
   aboveEditable?: React.FC<{ children: React.ReactNode }> | null;
-  aboveNodes?: ErasedPluginCallable<unknown> | null;
+  aboveNodes?:
+    | ErasedPluginCallable
+    | Readonly<{
+        component: React.ComponentType<any>;
+        match?: ErasedPluginCallable<boolean>;
+      }>
+    | null;
   abovePlite?: React.FC<{ children: React.ReactNode }> | null;
   afterContainer?: React.ComponentType<any> | null;
   afterEditable?: React.ComponentType<any> | null;
   as?: keyof HTMLElementTagNameMap | null;
   beforeContainer?: React.ComponentType<any> | null;
   beforeEditable?: React.ComponentType<any> | null;
-  belowNodes?: ErasedPluginCallable<unknown> | null;
+  belowNodes?: ErasedPluginCallable | null;
   belowRootNodes?: ErasedPluginCallable<React.ReactNode> | null;
   isDecoration?: boolean | null;
   leaf?: NodeComponent | null;
@@ -220,7 +226,7 @@ export type AnyBasePlugin = {
   on: ErasedPluginOn;
   override: {
     components?: NodeComponents;
-    plugins?: Record<string, object>;
+    plugins?: Record<string, ErasedBasePluginOverride>;
   };
   read?: ErasedPluginCallable<EditorReadMethodTree>;
   readMiddleware?: ErasedPluginCallable;
@@ -233,7 +239,7 @@ export type AnyBasePlugin = {
   stateFields?: NonNullable<
     EditorExtensionDefinitionInput<BaseEditor>['stateFields']
   >;
-  targetPlugins: readonly (PluginReference | string)[];
+  targetPlugins: ReadonlyArray<PluginReference | string>;
   prepareDocument?: ErasedPluginCallable<EditorDocumentValue | Value> | null;
   update?: ErasedPluginCallable<object>;
   useHooks?: ErasedPluginCallable | null;
@@ -264,7 +270,7 @@ export type AnyBasePluginContext = Omit<DynamicBasePluginPortal, 'schema'> & {
   readonly defineCodecs: object;
   readonly editor: object;
   readonly plugin: AnyPluginBase;
-  readonly schema: PluginAuthorSchemaView<AnyBasePluginDefinition>;
+  readonly schema: PluginAuthorSchemaView;
 };
 
 /**
@@ -277,7 +283,7 @@ export type Decorate<
   TDecoration extends object = InferPluginDecoration<C>,
 > = (
   ctx: BasePluginContext<C> & { entry: NodeEntry }
-) => (DecoratedRange & TDecoration)[] | undefined;
+) => Array<DecoratedRange & TDecoration> | undefined;
 
 // -----------------------------------------------------------------------------
 
@@ -346,7 +352,7 @@ export type HtmlMatchValue = string | readonly string[];
 type HtmlMatcherFields = {
   attributes?: Readonly<Record<string, true | HtmlMatchValue>>;
   className?: string;
-  style?: Readonly<Record<string, '*' | HtmlMatchValue>>;
+  style?: Readonly<Record<string, HtmlMatchValue>>;
   tag?: HtmlMatchValue;
 };
 
@@ -384,7 +390,9 @@ export type HtmlNodeSpec = Readonly<{
   attributes?: HtmlAttributes;
   children?:
     | HtmlContentToken
-    | readonly (HtmlContentToken | HtmlNodeSpec | Readonly<{ text: string }>)[];
+    | ReadonlyArray<
+        HtmlContentToken | HtmlNodeSpec | Readonly<{ text: string }>
+      >;
   patchTarget?: true;
   style?: Readonly<Record<string, number | string | null | undefined>>;
   tag: string;
@@ -450,7 +458,7 @@ type HtmlContributionElements<C extends AnyBasePluginDefinition> =
 
 type HtmlContributionProperties<C extends AnyBasePluginDefinition> =
   HtmlContribution<C> extends Readonly<{
-    properties: readonly (infer TProperty extends SchemaProperty)[];
+    properties: ReadonlyArray<infer TProperty extends SchemaProperty>;
   }>
     ? TProperty
     : never;
@@ -768,7 +776,7 @@ export type PluginSelfHtmlCodecMap<C extends AnyBasePluginDefinition> =
       | PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>
       | readonly [
           PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>,
-          ...PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>[],
+          ...Array<PluginHtmlCodecInput<C, PluginSelfHtmlCodec<C>>>,
         ];
   }>;
 
@@ -777,7 +785,7 @@ type PluginSelfHtmlElementPropertyCodecMap<
   TRule,
 > =
   C extends Readonly<{
-    targetPlugins: readonly (PluginReference | string)[];
+    targetPlugins: ReadonlyArray<PluginReference | string>;
   }>
     ? [HtmlContributionProperties<C>] extends [never]
       ? never
@@ -789,7 +797,7 @@ type PluginSelfHtmlElementPropertyCodecMap<
               | PluginHtmlCodecInput<C, TRule>
               | readonly [
                   PluginHtmlCodecInput<C, TRule>,
-                  ...PluginHtmlCodecInput<C, TRule>[],
+                  ...Array<PluginHtmlCodecInput<C, TRule>>,
                 ];
             'text/markdown'?: never;
           }>
@@ -804,23 +812,23 @@ type PluginSelfHtmlCodecMapForRule<
     | PluginHtmlCodecInput<C, TRule>
     | readonly [
         PluginHtmlCodecInput<C, TRule>,
-        ...PluginHtmlCodecInput<C, TRule>[],
+        ...Array<PluginHtmlCodecInput<C, TRule>>,
       ];
   'text/markdown'?: never;
 }>;
 
 type PluginTargetedHtmlCreateCodecMap<C extends AnyBasePluginDefinition> =
-  C extends Readonly<{ targetPlugins: readonly (PluginReference | string)[] }>
+  C extends Readonly<{ targetPlugins: ReadonlyArray<PluginReference | string> }>
     ? PluginSelfHtmlCodecMapForRule<C, HtmlElementPropertyCreateRule<C>>
     : never;
 
 type PluginTargetedHtmlMixedCodecMap<C extends AnyBasePluginDefinition> =
-  C extends Readonly<{ targetPlugins: readonly (PluginReference | string)[] }>
+  C extends Readonly<{ targetPlugins: ReadonlyArray<PluginReference | string> }>
     ? Readonly<{
         'text/html': readonly [
           PluginHtmlCodecInput<C, HtmlElementPropertyCreateRule<C>>,
           PluginHtmlCodecInput<C, HtmlSelfNonCreatingRule<C>>,
-          ...PluginHtmlCodecInput<C, HtmlSelfNonCreatingRule<C>>[],
+          ...Array<PluginHtmlCodecInput<C, HtmlSelfNonCreatingRule<C>>>,
         ];
         'text/markdown'?: never;
       }>
@@ -844,9 +852,11 @@ export type PluginForeignHtmlCodecMap<
         HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>> & {
           target: ForeignHtmlCodecTarget<C, TTarget>;
         },
-        ...(HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>> & {
-          target: ForeignHtmlCodecTarget<C, TTarget>;
-        })[],
+        ...Array<
+          HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>> & {
+            target: ForeignHtmlCodecTarget<C, TTarget>;
+          }
+        >,
       ];
 }>;
 
@@ -864,10 +874,12 @@ type PluginForeignHtmlCodecInput<
           ForeignCodecDefinition<C, NoInfer<TTarget>>,
           HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>>
         >,
-        ...PluginHtmlCodecInput<
-          ForeignCodecDefinition<C, NoInfer<TTarget>>,
-          HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>>
-        >[],
+        ...Array<
+          PluginHtmlCodecInput<
+            ForeignCodecDefinition<C, NoInfer<TTarget>>,
+            HtmlForeignRule<ForeignCodecDefinition<C, NoInfer<TTarget>>>
+          >
+        >,
       ];
 }>;
 
@@ -937,7 +949,7 @@ type ErasedBasePluginOverride = Partial<{
   rules: object;
   selectors: object;
   shortcuts: object;
-  targetPlugins: readonly (PluginReference | string)[];
+  targetPlugins: ReadonlyArray<PluginReference | string>;
   prepareDocument: unknown;
 }>;
 
@@ -1073,7 +1085,7 @@ type BaseNativeCorrectionContext<C extends AnyBasePluginDefinition> =
 type BasePluginCorrectionType =
   | NodeTypeSelector
   | PluginReference
-  | readonly (NodeTypeSelector | PluginReference)[];
+  | ReadonlyArray<NodeTypeSelector | PluginReference>;
 
 type BasePluginCorrection<C extends AnyBasePluginDefinition> = Omit<
   BaseNativeCorrection<C>,
@@ -1098,7 +1110,7 @@ type BasePluginAuthorFields<
   BaseNativeExtensionFields<C> & {
     api?: (context: BasePluginContext<C>) => InferApi<C>;
     conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
-    corrections?: readonly BasePluginCorrection<C>[];
+    corrections?: ReadonlyArray<BasePluginCorrection<C>>;
     dependencies: BasePluginDependencyDescriptors<InferDependencies<C>>;
     on: BasePluginOn<C>;
     read?: (
@@ -1348,10 +1360,9 @@ export interface BasePlugin<
   readonly schema: InferPluginSchema<C>;
   readonly selectors: InferSelectors<C>;
   readonly targetPlugins: C extends {
-    targetPlugins: infer TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[];
+    targetPlugins: infer TTargetPlugins extends ReadonlyArray<
+      PluginReference | string
+    >;
   }
     ? TTargetPlugins
     : readonly [];
@@ -1436,7 +1447,7 @@ type BasePluginShortcutRecord = Record<
 >;
 
 type BasePluginSelectionFromKinds<
-  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
+  TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>>,
 > =
   TSelectionKinds[number] extends EditorSelectionSpec<infer TSelection>
     ? Extract<TSelection, SelectionValue>
@@ -1457,12 +1468,12 @@ type BasePluginStageInput<
   TApi extends object,
   TRead extends PluginReadMethodTree<C>,
   TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
-  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
+  TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>>,
   TUpdate extends object,
   TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TShortcuts extends BasePluginShortcutRecord,
 > = Readonly<Record<TKeys, unknown>> &
   Pick<
@@ -1482,7 +1493,7 @@ type BasePluginStageInput<
     ) => TRead;
     selectors?: TSelectors & PluginSelectors<InferPluginStoreState<C>>;
     selectionKinds?: TSelectionKinds;
-    shortcuts?: PluginShortcutInput<C, TShortcuts, EditorShortcut>;
+    shortcuts?: PluginShortcutInput<C, TShortcuts>;
     targetPlugins?: TTargetPlugins;
     update?: (
       context: BasePluginContext<C> & {
@@ -1536,12 +1547,12 @@ type BasePluginStageContribution<
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
-  TSelectionKinds extends readonly EditorSelectionSpec<any>[],
+  TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>>,
   TUpdate extends object,
   TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
 > = Readonly<{
   [TKey in Exclude<TKeys, BasePluginStageSpecialKey>]: true;
 }> &
@@ -1590,12 +1601,12 @@ type BasePluginStageDefinition<
   TApi extends object = {},
   TRead extends object = {},
   TSelectors extends object = {},
-  TSelectionKinds extends readonly EditorSelectionSpec<any>[] = readonly [],
+  TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>> = readonly [],
   TUpdate extends object = {},
   TDecoration extends object = {},
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
-  TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
 > = MergePluginDefinitions<
   C,
   BasePluginStageContribution<
@@ -1668,7 +1679,7 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   component?: NodeComponent;
   enabled?: boolean;
   initialState?: Partial<InferPluginStoreState<C>>;
-  targetPlugins?: readonly (PluginReference | string)[];
+  targetPlugins?: ReadonlyArray<PluginReference | string>;
 };
 
 export type BasePluginPortal<
@@ -1694,12 +1705,10 @@ export type BasePluginContext<
 interface BasePluginMethods<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > {
-  configure<
-    const TConfig extends
+  configure(
+    config:
       | BasePluginConfiguration<C>
-      | ((context: BasePluginContext<C>) => BasePluginConfiguration<C>),
-  >(
-    config: TConfig
+      | ((context: BasePluginContext<C>) => BasePluginConfiguration<C>)
   ): ConfiguredBasePlugin<C>;
   // Callback overload must precede the raw-extension overload for contextual inference.
   extend<
@@ -1708,13 +1717,13 @@ interface BasePluginMethods<
     const TApi extends object = {},
     const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
-    const TSelectionKinds extends readonly EditorSelectionSpec<any>[] =
+    const TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>> =
       readonly [],
     const TUpdate extends object = {},
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (PluginReference | string)[] =
+    const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
       readonly [],
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
@@ -1780,13 +1789,13 @@ interface BasePluginMethods<
     const TApi extends object = {},
     const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
-    const TSelectionKinds extends readonly EditorSelectionSpec<any>[] =
+    const TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>> =
       readonly [],
     const TUpdate extends object = {},
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (PluginReference | string)[] =
+    const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
       readonly [],
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
@@ -1849,7 +1858,7 @@ export type TransformOptions<
 > = BaseTransformOptions & BasePluginContext<C>;
 
 type EditorShortcutOptions = {
-  keys?: (({} & string)[][] | readonly string[] | string) | null;
+  keys?: (Array<Array<{} & string>> | readonly string[] | string) | null;
   delimiter?: string;
   description?: string;
   document?: Document;

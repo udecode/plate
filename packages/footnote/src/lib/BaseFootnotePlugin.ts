@@ -52,7 +52,7 @@ export const BaseFootnoteDefinitionPlugin = defineBasePlugin(
           from: 'footnoteDefinition',
           kind: 'node',
           decode: ({ decodeNodes, decoration, node, registry }) => {
-            if (!isNonBlankRef(node.identifier)) return;
+            if (!isNonBlankRef(node.identifier)) return undefined;
 
             const paragraphType =
               registry.type(PLUGINS.paragraph) ?? 'paragraph';
@@ -163,10 +163,10 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
     let registry:
       | {
           children: readonly Descendant[];
-          definitions: NodeEntry<Footnote>[];
-          definitionsByRef: Map<string, NodeEntry<Footnote>[]>;
-          footnotes: NodeEntry<Footnote>[];
-          referencesByRef: Map<string, NodeEntry<Footnote>[]>;
+          definitions: Array<NodeEntry<Footnote>>;
+          definitionsByRef: Map<string, Array<NodeEntry<Footnote>>>;
+          footnotes: Array<NodeEntry<Footnote>>;
+          referencesByRef: Map<string, Array<NodeEntry<Footnote>>>;
         }
       | undefined;
     const getRegistry = () => {
@@ -174,10 +174,10 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
 
       if (registry?.children === children) return registry;
 
-      const definitions: NodeEntry<Footnote>[] = [];
-      const footnotes: NodeEntry<Footnote>[] = [];
-      const definitionsByRef = new Map<string, NodeEntry<Footnote>[]>();
-      const referencesByRef = new Map<string, NodeEntry<Footnote>[]>();
+      const definitions: Array<NodeEntry<Footnote>> = [];
+      const footnotes: Array<NodeEntry<Footnote>> = [];
+      const definitionsByRef = new Map<string, Array<NodeEntry<Footnote>>>();
+      const referencesByRef = new Map<string, Array<NodeEntry<Footnote>>>();
 
       for (const entry of state.nodes.toArray({
         at: [],
@@ -230,19 +230,24 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
       definition: ({ ref }: { ref: string }) => definitions({ ref })[0],
       definitions,
       definitionText: ({ ref }: { ref: string }) => {
-        const definition = definitions({ ref })[0];
+        const innerDefinition = definitions({ ref })[0];
 
-        return definition ? state.text.string(definition[1]) : undefined;
+        return innerDefinition
+          ? state.text.string(innerDefinition[1])
+          : undefined;
       },
       duplicateDefinitions: ({ ref }: { ref: string }) =>
         definitions({ ref }).slice(1),
       duplicateRefs: () => {
         const counts = new Map<string, number>();
 
-        for (const [definition] of definitions()) {
-          if (!definition.ref) continue;
+        for (const [innerDefinition2] of definitions()) {
+          if (!innerDefinition2.ref) continue;
 
-          counts.set(definition.ref, (counts.get(definition.ref) ?? 0) + 1);
+          counts.set(
+            innerDefinition2.ref,
+            (counts.get(innerDefinition2.ref) ?? 0) + 1
+          );
         }
 
         return [...counts].filter(([, count]) => count > 1).map(([ref]) => ref);
@@ -251,8 +256,8 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         definitions({ ref }).length > 1,
       refs: () => [
         ...new Set(
-          definitions().flatMap(([definition]) =>
-            definition.ref ? [definition.ref] : []
+          definitions().flatMap(([innerDefinition3]) =>
+            innerDefinition3.ref ? [innerDefinition3.ref] : []
           )
         ),
       ],
@@ -385,17 +390,17 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         return nextRef;
       };
       const selectDefinition = ({ ref }: { ref: string }) => {
-        const definition = tx.plugin(plugin).definition({ ref });
+        const innerDefinition4 = tx.plugin(plugin).definition({ ref });
 
-        if (!definition) return false;
+        if (!innerDefinition4) return false;
 
-        const point = tx.points.start(definition[1]);
+        const point = tx.points.start(innerDefinition4[1]);
 
         if (!point) return false;
 
         tx.selection.set({ anchor: point, focus: point });
 
-        return { point, targetPath: definition[1] };
+        return { point, targetPath: innerDefinition4[1] };
       };
       const selectReference = ({
         ref,

@@ -43,7 +43,7 @@ const findNodeReferencePath = (
   parentPath: readonly number[] = []
 ): readonly number[] | null => {
   for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index]!;
+    const node = nodes[index];
     const path = [...parentPath, index];
 
     if (node === target) return path;
@@ -60,10 +60,9 @@ const findNodeReferencePath = (
 export const replaceChildren = <
   V extends Value,
   TExtensions extends readonly unknown[],
-  T extends ElementOrTextIn<NoInfer<V>>,
 >(
   editor: Editor<V, TExtensions>,
-  children: readonly T[],
+  children: ReadonlyArray<ElementOrTextIn<NoInfer<V>>>,
   {
     at,
     count,
@@ -82,8 +81,8 @@ export const replaceChildren = <
   const pointIsReplaced = (point: Point) =>
     point.path.length > at.length &&
     at.every((part, depth) => point.path[depth] === part) &&
-    point.path[at.length]! >= index &&
-    point.path[at.length]! < index + replacedChildren.length;
+    point.path[at.length] >= index &&
+    point.path[at.length] < index + replacedChildren.length;
   const mapPointByReference = (point: Point) => {
     const target = NodeApi.get(editor, point.path);
     const relativePath = findNodeReferencePath(children, target);
@@ -91,7 +90,7 @@ export const replaceChildren = <
     return relativePath
       ? {
           ...point,
-          path: [...at, index + relativePath[0]!, ...relativePath.slice(1)],
+          path: [...at, index + relativePath[0], ...relativePath.slice(1)],
         }
       : null;
   };
@@ -116,7 +115,7 @@ export const replaceChildren = <
               ...selection,
               anchor,
               focus,
-              path: [...at, index + relativePath[0]!, ...relativePath.slice(1)],
+              path: [...at, index + relativePath[0], ...relativePath.slice(1)],
             };
           }
 
@@ -138,7 +137,7 @@ export const replaceChildren = <
             .slice(0, replacedChildren.length)
             .map((_child, childIndex) => ({
               path: [...at, index + childIndex],
-              source: replacedChildren[childIndex]!,
+              source: replacedChildren[childIndex],
             }))
         : undefined,
       ...(selectionAfter === undefined ? {} : { selectionAfter }),

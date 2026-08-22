@@ -18,7 +18,9 @@ mock.module('@/components/ui/button', () => ({
     children,
     ...props
   }: React.ComponentProps<'button'> & { asChild?: boolean }) => (
-    <button {...props}>{children}</button>
+    <button type="button" {...props}>
+      {children}
+    </button>
   ),
 }));
 

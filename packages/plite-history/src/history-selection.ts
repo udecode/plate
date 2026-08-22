@@ -33,7 +33,7 @@ export const cloneRange = (range: Selection, root?: string): Selection =>
     : null;
 
 export const getRangeRoot = (range: Selection): string | undefined => {
-  if (!range) return;
+  if (!range) return undefined;
 
   const meta = getRangeRootMeta(range);
 

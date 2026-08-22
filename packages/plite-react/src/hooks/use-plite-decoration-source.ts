@@ -93,7 +93,8 @@ const createDecorationSourceLifecycle = <T>() => {
   return {
     mount(source: PliteDecorationSource<T>) {
       currentSource = source;
-      const mountedVersion = ++effectVersion;
+      effectVersion += 1;
+      const mountedVersion = effectVersion;
 
       return () => {
         queueMicrotask(() => {
@@ -181,7 +182,7 @@ export const usePliteDecorationSource = <
         read: (context) => optionsCell.current.read(context),
         runtimeScope: hasRuntimeScope
           ? (context) => {
-              const runtimeScope = optionsCell.current.runtimeScope;
+              const { runtimeScope } = optionsCell.current;
 
               if (!runtimeScope) {
                 return null;
@@ -232,7 +233,7 @@ export const usePliteRangeDecorationSource = <
           }),
         runtimeScope: hasRuntimeScope
           ? (context) => {
-              const runtimeScope = optionsCell.current.runtimeScope;
+              const { runtimeScope } = optionsCell.current;
 
               if (!runtimeScope) {
                 return null;

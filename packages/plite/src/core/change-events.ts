@@ -12,6 +12,7 @@ import type {
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
+import { getDefined } from '../internal/get-defined';
 import { getInternalDocumentChangeEntries } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
 import type { RootChange } from './change/root-change';
@@ -103,7 +104,7 @@ export const hasChangedRuntimeAncestor = (
 
 const comparePaths = (left: Path, right: Path) => {
   for (let index = 0; index < Math.min(left.length, right.length); index++) {
-    const difference = left[index]! - right[index]!;
+    const difference = left[index] - right[index];
 
     if (difference !== 0) return difference;
   }
@@ -204,23 +205,25 @@ const getStableNodeKeys = (
     after.map((nodeKey, index) => [nodeKey, index] as const)
   );
   const common = before.filter((nodeKey) => afterPositions.has(nodeKey));
-  const predecessors = new Array<number>(common.length).fill(-1);
+  const predecessors = Array.from({ length: common.length }, () => -1);
   const tails: number[] = [];
 
   for (let index = 0; index < common.length; index++) {
-    const position = afterPositions.get(common[index]!)!;
+    const position = getDefined(afterPositions.get(common[index]));
     let low = 0;
     let high = tails.length;
 
     while (low < high) {
       const middle = (low + high) >> 1;
-      const tailPosition = afterPositions.get(common[tails[middle]!]!)!;
+      const tailPosition = getDefined(
+        afterPositions.get(common[tails[middle]])
+      );
 
       if (tailPosition < position) low = middle + 1;
       else high = middle;
     }
 
-    if (low > 0) predecessors[index] = tails[low - 1]!;
+    if (low > 0) predecessors[index] = getDefined(tails[low - 1]);
     tails[low] = index;
   }
 
@@ -228,8 +231,8 @@ const getStableNodeKeys = (
   let cursor = tails.at(-1) ?? -1;
 
   while (cursor >= 0) {
-    stable.add(common[cursor]!);
-    cursor = predecessors[cursor]!;
+    stable.add(common[cursor]);
+    cursor = getDefined(predecessors[cursor]);
   }
 
   return stable;
@@ -238,13 +241,13 @@ const getStableNodeKeys = (
 const getMovedNodeKeys = (
   beforeIndex: SnapshotIndex,
   afterIndex: SnapshotIndex,
-  beforeEntries: readonly (readonly [NodeKey, Path])[],
-  afterEntries: readonly (readonly [NodeKey, Path])[],
+  beforeEntries: ReadonlyArray<readonly [NodeKey, Path]>,
+  afterEntries: ReadonlyArray<readonly [NodeKey, Path]>,
   exactMovedNodeKeys: ReadonlySet<NodeKey>
 ) => {
-  const orderEntries = (entries: readonly (readonly [NodeKey, Path])[]) => {
+  const orderEntries = (entries: ReadonlyArray<readonly [NodeKey, Path]>) => {
     for (let index = 1; index < entries.length; index++) {
-      if (comparePaths(entries[index - 1]![1], entries[index]![1]) > 0) {
+      if (comparePaths(entries[index - 1][1], entries[index][1]) > 0) {
         return [...entries].sort(([, left], [, right]) =>
           comparePaths(left, right)
         );
@@ -261,7 +264,7 @@ const getMovedNodeKeys = (
   const afterChildren = new Map<NodeKey | null, NodeKey[]>();
 
   const collect = (
-    entries: readonly (readonly [NodeKey, Path])[],
+    entries: ReadonlyArray<readonly [NodeKey, Path]>,
     index: SnapshotIndex,
     parents: Map<NodeKey, NodeKey | null>,
     children: Map<NodeKey | null, NodeKey[]>
@@ -415,7 +418,7 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
         editor,
         kind,
         node: afterNode,
-        path: [...(afterPath ?? beforePath!)] as Path,
+        path: [...(afterPath ?? getDefined(beforePath))] as Path,
         previousPath: beforePath ? ([...beforePath] as Path) : null,
         previousNode: beforeNode,
         root: publicRoot,

@@ -132,7 +132,7 @@ export const BaseSuggestionKit = [
             'data-inline-suggestion': suggestionData.type,
           };
         },
-        transformStyle: () => ({}) as CSSStyleDeclaration,
+        transformStyle: () => ({}),
       },
     },
     render: {

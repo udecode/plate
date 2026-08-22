@@ -11,7 +11,7 @@ export const BaseListKit = [
       nodeProps: {
         nodeKey: 'listType',
         query: ({ nodeProps }) => {
-          const element = nodeProps.element;
+          const { element } = nodeProps;
 
           return (
             element?.listType === ListType.Bulleted && !isOrderedList(element)

@@ -184,12 +184,12 @@ const mimes = {
     source: 'apache',
   },
   'application/javascript': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['js', 'mjs'],
     source: 'iana',
   },
   'application/json': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['json', 'map'],
     source: 'iana',
   },
@@ -222,7 +222,7 @@ const mimes = {
     source: 'iana',
   },
   'application/manifest+json': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['webmanifest'],
     source: 'iana',
   },
@@ -1950,22 +1950,22 @@ const mimes = {
     source: 'apache',
   },
   'application/vnd.syncml+xml': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['xsm'],
     source: 'iana',
   },
   'application/vnd.syncml.dm+wbxml': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['bdm'],
     source: 'iana',
   },
   'application/vnd.syncml.dm+xml': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['xdm'],
     source: 'iana',
   },
   'application/vnd.syncml.dmddf+xml': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['ddf'],
     source: 'iana',
   },
@@ -2030,7 +2030,7 @@ const mimes = {
     source: 'iana',
   },
   'application/vnd.wap.wbxml': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['wbxml'],
     source: 'iana',
   },
@@ -3151,7 +3151,7 @@ const mimes = {
     source: 'iana',
   },
   'text/css': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['css'],
     source: 'iana',
   },
@@ -3172,7 +3172,7 @@ const mimes = {
     source: 'nginx',
   },
   'text/n3': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['n3'],
     source: 'iana',
   },
@@ -3213,7 +3213,7 @@ const mimes = {
     source: 'iana',
   },
   'text/turtle': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['ttl'],
     source: 'iana',
   },
@@ -3270,7 +3270,7 @@ const mimes = {
     source: 'iana',
   },
   'text/vnd.sun.j2me.app-descriptor': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['jad'],
     source: 'iana',
   },
@@ -3283,7 +3283,7 @@ const mimes = {
     source: 'iana',
   },
   'text/vtt': {
-    charset: 'UTF-8',
+    charset: 'utf-8',
     extensions: ['vtt'],
     source: 'iana',
   },

@@ -36,6 +36,9 @@ export function MediaEmbedElementStatic(
         ) : embed?.url ? (
           <iframe
             className="aspect-video w-full rounded-sm border-0"
+            referrerPolicy="strict-origin-when-cross-origin"
+            // oxlint-disable-next-line react/iframe-missing-sandbox -- [P0 behavior-boundary] External media providers need scripts and their own origin for playback; the remaining sandbox capabilities stay explicit.
+            sandbox="allow-scripts allow-same-origin allow-presentation"
             src={embed.url}
             title="Embedded media"
             allowFullScreen

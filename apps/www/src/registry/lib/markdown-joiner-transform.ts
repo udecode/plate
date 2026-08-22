@@ -14,7 +14,7 @@ export const markdownJoinerTransform =
     let textStreamEnded = false;
 
     return new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
-      async flush(controller) {
+      flush(controller) {
         // Only flush if we haven't seen text-end yet
         if (!textStreamEnded) {
           const remaining = joiner.flush();
@@ -23,7 +23,7 @@ export const markdownJoinerTransform =
               id: lastTextDeltaId,
               text: remaining,
               type: 'text-delta',
-            } as TextStreamPart<TOOLS>);
+            });
           }
         }
       },
@@ -46,7 +46,7 @@ export const markdownJoinerTransform =
               id: lastTextDeltaId,
               text: remaining,
               type: 'text-delta',
-            } as TextStreamPart<TOOLS>);
+            });
           }
           textStreamEnded = true;
           controller.enqueue(chunk);
@@ -100,8 +100,9 @@ export class MarkdownJoiner {
   }
 
   private isCompleteList(): boolean {
-    if (UNORDERED_LIST_PATTERN.test(this.buffer) && this.buffer.includes('['))
+    if (UNORDERED_LIST_PATTERN.test(this.buffer) && this.buffer.includes('[')) {
       return TODO_LIST_PATTERN.test(this.buffer);
+    }
 
     return (
       UNORDERED_LIST_PATTERN.test(this.buffer) ||
@@ -235,5 +236,7 @@ export class MarkdownJoiner {
 async function delay(delayInMs?: number | null): Promise<void> {
   return delayInMs == null
     ? Promise.resolve()
-    : new Promise((resolve) => setTimeout(resolve, delayInMs));
+    : new Promise((resolve) => {
+        setTimeout(resolve, delayInMs);
+      });
 }

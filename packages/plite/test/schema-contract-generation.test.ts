@@ -403,34 +403,37 @@ describe('generated editor schema contract', () => {
   });
 
   it('diffs every target-specific property and ignores contributor provenance', () => {
-    const Article = defineEditorSchema('schema:target-specific-properties', {
-      elements: {
-        paragraph: { content: schema.content.text() },
-        quote: { content: schema.content.text() },
-      },
-      id: 'target-specific-properties',
-      properties: [
-        schema.elementProperty('tone', property.string(), {
-          target: target.type('paragraph'),
-        }),
-        schema.elementProperty('tone', property.string(), {
-          target: target.type('quote'),
-        }),
-      ],
-      root: schema.content.types(['paragraph', 'quote']),
-      unknown: 'reject',
-      version: 1,
-    });
+    const innerArticle = defineEditorSchema(
+      'schema:target-specific-properties',
+      {
+        elements: {
+          paragraph: { content: schema.content.text() },
+          quote: { content: schema.content.text() },
+        },
+        id: 'target-specific-properties',
+        properties: [
+          schema.elementProperty('tone', property.string(), {
+            target: target.type('paragraph'),
+          }),
+          schema.elementProperty('tone', property.string(), {
+            target: target.type('quote'),
+          }),
+        ],
+        root: schema.content.types(['paragraph', 'quote']),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
     const ParagraphOnly = defineEditorSchema(
       'schema:target-specific-properties',
       {
-        ...Article.schema,
-        properties: [Article.schema.properties[0]],
+        ...innerArticle.schema,
+        properties: [innerArticle.schema.properties[0]],
       }
     );
     const QuoteOnly = defineEditorSchema('schema:target-specific-properties', {
-      ...Article.schema,
-      properties: [Article.schema.properties[1]],
+      ...innerArticle.schema,
+      properties: [innerArticle.schema.properties[1]],
     });
     const compile = (
       contribution: EditorSchemaContributionRecord['contribution'],
@@ -439,8 +442,8 @@ describe('generated editor schema contract', () => {
       createEditorSchemaContract(
         compileEditorSchemaContributions([{ contribution, extensionName }])
       );
-    const previous = compile(Article.schema, 'left-contributor');
-    const relabeled = compile(Article.schema, 'right-contributor');
+    const previous = compile(innerArticle.schema, 'left-contributor');
+    const relabeled = compile(innerArticle.schema, 'right-contributor');
 
     assert.deepEqual(
       diffEditorSchemaContracts(previous, relabeled).changes,

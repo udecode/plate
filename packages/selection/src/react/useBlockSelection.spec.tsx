@@ -6,12 +6,12 @@ const useEditorMock = mock();
 const useElementContextMock = mock();
 const usePluginStoreMock = mock();
 
-mock.module('@platejs/core/react', () => ({
+void mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: useEditorMock,
   usePluginStore: usePluginStoreMock,
 }));
-mock.module('@platejs/core/react/internal', () => ({
+void mock.module('@platejs/core/react/internal', () => ({
   useElementContext: useElementContextMock,
 }));
 
@@ -41,8 +41,8 @@ describe('block selection hooks', () => {
     const { useBlockSelected } = await loadHooks();
 
     expect(renderHook(() => useBlockSelected()).result.current).toBe(true);
-    expect(
-      renderHook(() => useBlockSelected('runtime:b' as NodeKey)).result.current
-    ).toBe(false);
+    expect(renderHook(() => useBlockSelected('runtime:b')).result.current).toBe(
+      false
+    );
   });
 });

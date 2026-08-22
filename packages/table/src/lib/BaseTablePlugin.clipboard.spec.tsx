@@ -203,7 +203,7 @@ describe('table clipboard', () => {
         });
 
         editor.update.text.insert('e');
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -353,7 +353,7 @@ describe('table clipboard', () => {
 
           return (record.children ?? []).map(readText).join('');
         };
-        const copiedCells = envelope.slice.content[0]!.children.flatMap(
+        const copiedCells = envelope.slice.content[0].children.flatMap(
           (row) => row.children
         );
 
@@ -428,11 +428,11 @@ describe('table clipboard', () => {
                 <htd>
                   <hp>
                     <anchor />
-                    {'left,right'}
+                    left,right
                   </hp>
                 </htd>
                 <htd>
-                  <hp>{'say "hi"'}</hp>
+                  <hp>say "hi"</hp>
                 </htd>
               </htr>
               <htr>

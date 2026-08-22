@@ -3,53 +3,53 @@
 //
 // The best case, this character is a match, and either this is the start
 // of the string, or the previous character was also a match.
-const // The goodness of an exact-case match should be higher than a
-  // case-insensitive match by a small amount.
-  //
-  // i.e. "HTML" is more likely than "haml" when "HM" is typed.
-  //
-  // This will not change the order of suggestions based on SCORE_* until
-  // 1000 characters are inserted between matches.
-  PENALTY_CASE_MISMATCH = 0.9999,
-  // Match higher for letters closer to the beginning of the word
-  // PENALTY_DISTANCE_FROM_START = 0.9,
-  // If the word has more characters than the user typed, it should
-  // be penalised slightly.
-  //
-  // i.e. "html" is more likely than "html5" if I type "html".
-  //
-  // However, it may well be the case that there's a sensible secondary
-  // ordering (like alphabetical) that it makes sense to rely on when
-  // there are many prefix matches, so we don't make the penalty increase
-  // with the number of tokens.
-  PENALTY_NOT_COMPLETE = 0.99,
-  // The goodness of a match should decay slightly with each missing
-  // character.
-  //
-  // i.e. "bad" is more likely than "bard" when "bd" is typed.
-  //
-  // This will not change the order of suggestions based on SCORE_* until
-  // 100 characters are inserted between matches.
-  PENALTY_SKIPPED = 0.999,
-  // Any other match isn't ideal, but we include it for completeness.
-  SCORE_CHARACTER_JUMP = 0.17,
-  SCORE_CONTINUE_MATCH = 1,
-  SCORE_NON_SPACE_WORD_JUMP = 0.8,
-  // A new match at the start of a word scores better than a new match
-  // elsewhere as it's more likely that the user will type the starts
-  // of fragments.
-  // NOTE: We score word jumps between spaces slightly higher than slashes, brackets
-  // hyphens, etc.
-  SCORE_SPACE_WORD_JUMP = 0.9,
-  // If the user transposed two letters, it should be significantly penalized.
-  //
-  // i.e. "ouch" is more likely than "curtain" when "uc" is typed.
-  SCORE_TRANSPOSITION = 0.1;
+// The goodness of an exact-case match should be higher than a
+// case-insensitive match by a small amount.
+//
+// i.e. "HTML" is more likely than "haml" when "HM" is typed.
+//
+// This will not change the order of suggestions based on SCORE_* until
+// 1000 characters are inserted between matches.
+const PENALTY_CASE_MISMATCH = 0.9999;
+// Match higher for letters closer to the beginning of the word
+// PENALTY_DISTANCE_FROM_START = 0.9,
+// If the word has more characters than the user typed, it should
+// be penalised slightly.
+//
+// i.e. "html" is more likely than "html5" if I type "html".
+//
+// However, it may well be the case that there's a sensible secondary
+// ordering (like alphabetical) that it makes sense to rely on when
+// there are many prefix matches, so we don't make the penalty increase
+// with the number of tokens.
+const PENALTY_NOT_COMPLETE = 0.99;
+// The goodness of a match should decay slightly with each missing
+// character.
+//
+// i.e. "bad" is more likely than "bard" when "bd" is typed.
+//
+// This will not change the order of suggestions based on SCORE_* until
+// 100 characters are inserted between matches.
+const PENALTY_SKIPPED = 0.999;
+// Any other match isn't ideal, but we include it for completeness.
+const SCORE_CHARACTER_JUMP = 0.17;
+const SCORE_CONTINUE_MATCH = 1;
+const SCORE_NON_SPACE_WORD_JUMP = 0.8;
+// A new match at the start of a word scores better than a new match
+// elsewhere as it's more likely that the user will type the starts
+// of fragments.
+// NOTE: We score word jumps between spaces slightly higher than slashes, brackets
+// hyphens, etc.
+const SCORE_SPACE_WORD_JUMP = 0.9;
+// If the user transposed two letters, it should be significantly penalized.
+//
+// i.e. "ouch" is more likely than "curtain" when "uc" is typed.
+const SCORE_TRANSPOSITION = 0.1;
 
-const COUNT_GAPS_REGEXP = /["#&(+./@[\\_{]/g,
-  COUNT_SPACE_REGEXP = /[\s-]/g,
-  IS_GAP_REGEXP = /["#&(+./@[\\_{]/,
-  IS_SPACE_REGEXP = /[\s-]/;
+const COUNT_GAPS_REGEXP = /["#&(+./@[\\_{]/g;
+const COUNT_SPACE_REGEXP = /[\s-]/g;
+const IS_GAP_REGEXP = /["#&(+./@[\\_{]/;
+const IS_SPACE_REGEXP = /[\s-]/;
 
 function commandScoreInner(
   string: string,
@@ -131,7 +131,8 @@ function commandScoreInner(
         lowerString.charAt(index - 1) ===
           lowerAbbreviation.charAt(abbreviationIndex + 1)) ||
       (lowerAbbreviation.charAt(abbreviationIndex + 1) ===
-        lowerAbbreviation.charAt(abbreviationIndex) && // allow duplicate letters. Ref #7428
+        // allow duplicate letters. Ref #7428
+        lowerAbbreviation.charAt(abbreviationIndex) &&
         lowerString.charAt(index - 1) !==
           lowerAbbreviation.charAt(abbreviationIndex))
     ) {

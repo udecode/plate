@@ -20,6 +20,7 @@ import {
   IS_NODE_MAP_DIRTY,
   installEditorDOMPhaseScheduler,
   NODE_TO_ELEMENT,
+  replaceDOMSelectionRange,
 } from '../src/internal';
 
 type DOMTestEditor = ReturnType<typeof createNestedEditor>;
@@ -73,12 +74,12 @@ const createLargeEditor = (blocks: number) => {
 };
 
 const withDom = (run: (document: Document) => void) => {
-  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  const innerDom = new JSDOM('<!doctype html><html><body></body></html>');
 
   try {
-    run(dom.window.document);
+    run(innerDom.window.document);
   } finally {
-    dom.window.close();
+    innerDom.window.close();
   }
 };
 
@@ -352,6 +353,62 @@ describe('DOM coverage boundaries', () => {
     });
   });
 
+  test.each([
+    [false, false],
+    [true, false],
+    [false, true],
+  ])(
+    'installs exact selection direction (backward: %s, collapsed: %s)',
+    (backward, collapsed) => {
+      withDom((document) => {
+        const text = document.createTextNode('abc');
+        const range = document.createRange();
+        const calls: string[] = [];
+        let addedRange: globalThis.Range | null = null;
+        let baseAndExtentCall: unknown[] | null = null;
+        const selection = {
+          addRange(nextRange: globalThis.Range) {
+            calls.push('addRange');
+            addedRange = nextRange;
+          },
+          removeAllRanges() {
+            calls.push('removeAllRanges');
+          },
+          setBaseAndExtent(
+            nextAnchorNode: Node,
+            nextAnchorOffset: number,
+            nextFocusNode: Node,
+            nextFocusOffset: number
+          ) {
+            calls.push('setBaseAndExtent');
+            baseAndExtentCall = [
+              nextAnchorNode,
+              nextAnchorOffset,
+              nextFocusNode,
+              nextFocusOffset,
+            ];
+          },
+        } as unknown as Selection;
+
+        range.setStart(text, 0);
+        range.setEnd(text, collapsed ? 0 : 2);
+        replaceDOMSelectionRange(selection, range, { backward });
+
+        expect(addedRange).toBe(collapsed ? null : range);
+        expect(baseAndExtentCall).toEqual(
+          backward
+            ? [text, range.endOffset, text, range.startOffset]
+            : [text, range.startOffset, text, range.endOffset]
+        );
+        expect(calls).toEqual(
+          collapsed
+            ? ['setBaseAndExtent']
+            : ['removeAllRanges', 'addRange', 'setBaseAndExtent']
+        );
+      });
+    }
+  );
+
   test('syncs native selection inside a shadow root when focusing', () => {
     withDom((document) => {
       const editor = createEditor({ extensions: [dom()] });
@@ -359,8 +416,16 @@ describe('DOM coverage boundaries', () => {
       const shadowRoot = host.attachShadow({ mode: 'open' });
       const root = document.createElement('div');
       let getSelectionCalls = 0;
+      const addedRanges: globalThis.Range[] = [];
+      let removeAllRangesCalls = 0;
       const selectionCalls: unknown[][] = [];
       const fakeSelection = {
+        addRange(range: globalThis.Range) {
+          addedRanges.push(range);
+        },
+        removeAllRanges() {
+          removeAllRangesCalls += 1;
+        },
         setBaseAndExtent(...args: unknown[]) {
           selectionCalls.push(args);
         },
@@ -403,6 +468,9 @@ describe('DOM coverage boundaries', () => {
       editor.api.dom.focus({ retries: 1 });
 
       expect(getSelectionCalls).toBeGreaterThan(0);
+      expect(removeAllRangesCalls).toBe(0);
+      expect(addedRanges).toHaveLength(0);
+      expect(selectionCalls).not.toHaveLength(0);
       expect(tasks).toContainEqual({
         label: 'dom-editor-focus-selection-sync',
         options: {
@@ -437,8 +505,9 @@ describe('DOM coverage boundaries', () => {
       bindDOMNode(editor, textNode as Descendant, textDOM);
       const { scheduler } = createRecordingScheduler({ run: true });
       const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
-      const commits: NonNullable<ReturnType<typeof editor.read.lastCommit>>[] =
-        [];
+      const commits: Array<
+        NonNullable<ReturnType<typeof editor.read.lastCommit>>
+      > = [];
       const unsubscribe = editor.subscribeCommit((commit) => {
         commits.push(commit);
       });
@@ -884,9 +953,7 @@ describe('DOM coverage boundaries', () => {
         });
       });
 
-      editor.api.dom.clipboard.writeSelection(
-        clipboard as unknown as DataTransfer
-      );
+      editor.api.dom.clipboard.writeSelection(clipboard);
 
       expect(clipboard.getData('text/plain')).toBe('Hidden alpha');
       expect(clipboard.getData('text/html')).toContain('Hidden alpha');

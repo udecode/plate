@@ -35,16 +35,18 @@ const PreviewMarkdownPlugin = definePlatePlugin('previewMarkdown', {
 
       return getLength(token.content);
     };
-    const ranges: (DecoratedRange & {
-      blockquote?: boolean;
-      bold?: boolean;
-      code?: boolean;
-      hr?: boolean;
-      italic?: boolean;
-      list?: boolean;
-      previewMarkdown: boolean;
-      title?: boolean;
-    })[] = [];
+    const ranges: Array<
+      DecoratedRange & {
+        blockquote?: boolean;
+        bold?: boolean;
+        code?: boolean;
+        hr?: boolean;
+        italic?: boolean;
+        list?: boolean;
+        previewMarkdown: boolean;
+        title?: boolean;
+      }
+    > = [];
     const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
     let start = 0;
 

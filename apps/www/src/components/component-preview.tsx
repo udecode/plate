@@ -7,6 +7,12 @@ import {
   BlockViewer,
   type BlockViewerContext,
 } from '@/components/block-viewer';
+import {
+  generatedPropSchemas,
+  parseGeneratedItem,
+  parseGeneratedProp,
+  parseRegistryItem,
+} from '@/lib/generated-props';
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
@@ -41,8 +47,6 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: 'block' | 'component' | 'example';
 }
 
-const parseGeneratedProp = <T,>(value: string): T => JSON.parse(value) as T;
-
 export function ComponentPreview({
   align = 'start',
   children,
@@ -56,6 +60,7 @@ export function ComponentPreview({
   type,
   ...props
 }: ComponentPreviewProps) {
+  const registryEntry: unknown = Index[name];
   const Component = Index[name]?.component;
 
   const Preview = Component ? (
@@ -74,7 +79,12 @@ export function ComponentPreview({
 
   let item =
     props.item ??
-    parseGeneratedProp<BlockViewerContext['item']>(props.__item__ ?? '[]');
+    parseGeneratedItem(props.__item__) ??
+    parseRegistryItem(registryEntry);
+
+  if (!item) {
+    return <div className="mt-4 mb-12">{Preview}</div>;
+  }
 
   // Create new object instead of mutating
   if (name === 'potion-iframe-demo') {
@@ -93,13 +103,17 @@ export function ComponentPreview({
         block={BlockExamples.has(item.name)}
         dependencies={
           props.dependencies ??
-          parseGeneratedProp<string[]>(props.__dependencies__ ?? '[]')
+          parseGeneratedProp(
+            props.__dependencies__ ?? '[]',
+            generatedPropSchemas.dependencies
+          )
         }
         height={height}
         highlightedFiles={
           props.highlightedFiles ??
-          parseGeneratedProp<BlockViewerContext['highlightedFiles']>(
-            props.__highlightedFiles__ ?? '[]'
+          parseGeneratedProp(
+            props.__highlightedFiles__ ?? '[]',
+            generatedPropSchemas.highlightedFiles
           )
         }
         item={item}
@@ -126,7 +140,7 @@ export function ComponentPreview({
         }
         tree={
           props.tree ??
-          parseGeneratedProp<BlockViewerContext['tree']>(props.__tree__ ?? '[]')
+          parseGeneratedProp(props.__tree__ ?? '[]', generatedPropSchemas.tree)
         }
       />
     </div>

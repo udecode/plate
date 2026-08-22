@@ -1,3 +1,4 @@
+import { getDefined } from '../internal/get-defined';
 // Character (grapheme cluster) boundaries are determined according to
 // the default grapheme cluster boundary specification, extended grapheme clusters variant[1].
 //
@@ -20,8 +21,10 @@ export const getCharacterDistance = (str: string, isRTL = false): number => {
   let right: CodepointType = CodepointType.None;
   let distance = 0;
   // Evaluation of these conditions are deferred.
-  let gb11: boolean | null = null; // Is GB11 applicable?
-  let gb12Or13: boolean | null = null; // Is GB12 or GB13 applicable?
+  // Is GB11 applicable?
+  let gb11: boolean | null = null;
+  // Is GB12 or GB13 applicable?
+  let gb12Or13: boolean | null = null;
 
   for (const char of codepoints) {
     const code = char.codePointAt(0);
@@ -87,7 +90,7 @@ type CodePoint = {
 };
 
 const codePointAt = (text: string, offset: number): CodePoint => {
-  const code = text.codePointAt(offset)!;
+  const code = getDefined(text.codePointAt(offset));
 
   return { code, length: code > 0xff_ff ? 2 : 1 };
 };
@@ -305,18 +308,18 @@ export const getWordDistances = (text: string, isRTL = false): number[] => {
   let pendingDistance = 0;
 
   for (let index = 0; index < segments.length;) {
-    const segment = segments[index]!;
+    const segment = segments[index];
 
     if (segment.kind === 'separator') {
       pendingDistance += segment.length;
-      index++;
+      index += 1;
       continue;
     }
 
     if (segment.kind === 'word') {
       distances.push(pendingDistance + segment.length);
       pendingDistance = 0;
-      index++;
+      index += 1;
       continue;
     }
 
@@ -325,8 +328,8 @@ export const getWordDistances = (text: string, isRTL = false): number[] => {
     pendingDistance = 0;
 
     while (segments[index]?.kind === 'emoji') {
-      distance += segments[index]!.length;
-      index++;
+      distance += segments[index].length;
+      index += 1;
     }
 
     distances.push(distance);
@@ -381,7 +384,7 @@ export const codepointsIteratorRTL = function* (str: string) {
       if (isHighSurrogate(char2.charCodeAt(0))) {
         yield char2 + char1;
 
-        i++;
+        i += 1;
         continue;
       }
     }
@@ -500,7 +503,7 @@ function intersects(x: CodepointType, y: CodepointType) {
   return (x & y) !== 0;
 }
 
-const NonBoundaryPairs: [CodepointType, CodepointType][] = [
+const NonBoundaryPairs: Array<[CodepointType, CodepointType]> = [
   // GB6
   [
     CodepointType.L,

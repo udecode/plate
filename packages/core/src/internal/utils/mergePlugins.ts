@@ -13,10 +13,12 @@ const pluginDescriptors = new WeakSet<object>();
 export type PluginDescriptorMetadata = Readonly<{
   configured: boolean;
   configurationLayers: readonly ErasedPluginConfigurationLayer[];
-  htmlCodecContributions: readonly Readonly<{
-    extension: ErasedPluginCallable;
-    targetPlugin: string | null;
-  }>[];
+  htmlCodecContributions: ReadonlyArray<
+    Readonly<{
+      extension: ErasedPluginCallable;
+      targetPlugin: string | null;
+    }>
+  >;
   resolved: boolean;
   stages: readonly ErasedPluginCallable[];
 }>;
@@ -384,6 +386,8 @@ export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: unknown[]): T {
       if (key === 'initialState') {
         return mergeDefinedProperties(objValue, srcValue);
       }
+
+      return undefined;
     }
   );
 

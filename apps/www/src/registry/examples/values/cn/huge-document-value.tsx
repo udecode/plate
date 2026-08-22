@@ -1,6 +1,6 @@
-import { jsx } from '@platejs/test-utils';
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import { jsx } from '@platejs/test-utils';
 import type { Element } from 'platejs';
 
 jsx;

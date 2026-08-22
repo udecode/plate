@@ -153,7 +153,7 @@ export const normalizeDOMPoint = (domPoint: DOMPoint): DOMPoint => {
 export const hasShadowRoot = (node: Node | null) => {
   let parent = node?.parentNode;
   while (parent) {
-    if (parent.toString() === '[object ShadowRoot]') {
+    if (Object.prototype.toString.call(parent) === '[object ShadowRoot]') {
       return true;
     }
     parent = parent.parentNode;
@@ -331,11 +331,41 @@ export const getSelection = (root: Document | ShadowRoot): Selection | null => {
   return document.getSelection();
 };
 
+/** Replace the native range while preserving its exact direction. */
+export const replaceDOMSelectionRange = (
+  selection: DOMSelection,
+  range: DOMRange,
+  {
+    backward = false,
+  }: {
+    backward?: boolean;
+  } = {}
+) => {
+  const anchorNode = backward ? range.endContainer : range.startContainer;
+  const anchorOffset = backward ? range.endOffset : range.startOffset;
+  const focusNode = backward ? range.startContainer : range.endContainer;
+  const focusOffset = backward ? range.startOffset : range.endOffset;
+
+  if (range.collapsed) {
+    selection.setBaseAndExtent(
+      anchorNode,
+      anchorOffset,
+      focusNode,
+      focusOffset
+    );
+    return;
+  }
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  selection.setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset);
+};
+
 /**
  * Retrieves the deepest active element in the DOM, considering nested shadow DOMs.
  */
 export const getActiveElement = () => {
-  let activeElement = document.activeElement;
+  let { activeElement } = document;
 
   while (activeElement?.shadowRoot?.activeElement) {
     activeElement = activeElement?.shadowRoot?.activeElement;
@@ -388,7 +418,7 @@ export const closestShadowAware = (
     if (current.parentElement) {
       current = current.parentElement;
     } else if (current.parentNode && 'host' in current.parentNode) {
-      current = (current.parentNode as ShadowRoot).host as DOMElement;
+      current = (current.parentNode as ShadowRoot).host;
     } else {
       return null;
     }

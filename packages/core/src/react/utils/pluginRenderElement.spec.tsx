@@ -10,6 +10,7 @@ import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateRoot } from '../components/PlateRoot';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { createPlateEditor } from '../editor/withPlate';
+import { definePlatePlugin } from '../plugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement';
@@ -37,7 +38,7 @@ const renderPlugin = (
   editor: PlateEditor,
   name: string = ParagraphPlugin.name
 ) => {
-  const element = editor.read.children()[0] as any;
+  const element = editor.read.children()[0];
   const plugin = getCompiledPlatePlugin(editor, name)!;
   const renderElement = pluginRenderElement(editor, plugin as any);
 
@@ -73,23 +74,20 @@ describe('pluginRenderElement', () => {
   });
 
   it('keeps element context available for custom node components', () => {
+    const ParagraphComponent = ({ attributes, children }: any) => {
+      const element = useElement();
+
+      return (
+        <p {...attributes} data-marker={element.marker} data-testid="paragraph">
+          {children}
+        </p>
+      );
+    };
     const editor = createPlateEditor({
       plugins: [
         MarkerPlugin,
         ParagraphPlugin.configure({
-          component: ({ attributes, children }) => {
-            const element = useElement();
-
-            return (
-              <p
-                {...attributes}
-                data-marker={element.marker}
-                data-testid="paragraph"
-              >
-                {children}
-              </p>
-            );
-          },
+          component: ParagraphComponent,
         }),
       ],
       initialValue: createValue(),
@@ -123,6 +121,37 @@ describe('pluginRenderElement', () => {
     const { getByTestId } = renderPlugin(editor);
 
     expect(getByTestId('wrapper')).toHaveTextContent('Body');
+  });
+
+  it('prefilters descriptor wrappers before mounting their component', () => {
+    let componentCalls = 0;
+    let matchCalls = 0;
+    const WrapperPlugin = definePlatePlugin('wrapper', {
+      render: {
+        aboveNodes: {
+          component: ({ children }) => {
+            componentCalls += 1;
+
+            return <section>{children}</section>;
+          },
+          match: ({ renderPath }) => {
+            matchCalls += 1;
+            expect(renderPath).toEqual([0]);
+
+            return false;
+          },
+        },
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [MarkerPlugin, WrapperPlugin],
+      initialValue: createValue(),
+    });
+
+    renderPlugin(editor);
+
+    expect(matchCalls).toBeGreaterThan(0);
+    expect(componentCalls).toBe(0);
   });
 
   it('preserves Plite children for void render.as tags', () => {

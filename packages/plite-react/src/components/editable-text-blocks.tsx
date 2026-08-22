@@ -7,7 +7,6 @@ import {
   type RootKey,
   type NodeKey,
   type Element as PliteElementNode,
-  type Node as PliteNode,
   type Range as PliteRange,
   type Text as PliteTextNode,
 } from '@platejs/plite';
@@ -61,6 +60,7 @@ import {
 } from '../editable/root-selector-sources';
 import {
   type Editor,
+  failInvariant,
   isEditor as editorIsEditor,
   isInline as editorIsInline,
   point as editorPoint,
@@ -79,7 +79,7 @@ import {
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { ReactEditor } from '../plugin/react-editor';
 import { ProjectionContext } from '../projection-context';
 import type {
   PliteProjectionRuntimeScope,
@@ -217,7 +217,7 @@ export type EditableElementSlots = {
 };
 
 const createContentBoundaryId = (
-  nodeKey: NodeKey,
+  nodeKey: string,
   scope: EditableDOMCoverageBoundaryScope
 ) => {
   if (scope.type === 'self') {
@@ -247,7 +247,7 @@ const createEditableElementSlots = <
     renderText?: (props: RenderTextProps) => ReactNode;
     renderVoid?: RenderVoidRenderer<TElement>;
     ownerPath: Path;
-    nodeKey: NodeKey;
+    nodeKey: string;
   }
 ): EditableElementSlots => {
   const renderContentBoundary = ({
@@ -462,6 +462,7 @@ function EditableContentRootView({
   const activateRootView = React.useCallback(() => {
     setActiveViewEditor(editor, root);
   }, [editor, root, setActiveViewEditor]);
+  const externalMouseGestureRef = React.useRef(false);
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
@@ -474,8 +475,12 @@ function EditableContentRootView({
     React.MouseEventHandler<HTMLDivElement>
   >(
     (event) => {
-      activateRootView();
-      rootInteraction.onMouseDownCapture(event);
+      externalMouseGestureRef.current = event.defaultPrevented;
+
+      if (!externalMouseGestureRef.current) {
+        activateRootView();
+        rootInteraction.onMouseDownCapture(event);
+      }
     },
     [activateRootView, rootInteraction]
   );
@@ -483,8 +488,11 @@ function EditableContentRootView({
     React.MouseEventHandler<HTMLDivElement>
   >(
     (event) => {
-      activateRootView();
-      rootInteraction.onMouseUpCapture(event);
+      if (!externalMouseGestureRef.current) {
+        activateRootView();
+        rootInteraction.onMouseUpCapture(event);
+      }
+      externalMouseGestureRef.current = false;
     },
     [activateRootView, rootInteraction]
   );
@@ -492,10 +500,11 @@ function EditableContentRootView({
     React.MouseEventHandler<HTMLDivElement>
   >(
     (event) => {
-      activateRootView();
-      rootInteraction.onMouseMoveCapture(event);
+      if (!externalMouseGestureRef.current) {
+        rootInteraction.onMouseMoveCapture(event);
+      }
     },
-    [activateRootView, rootInteraction]
+    [rootInteraction]
   );
   const onFocusCapture = React.useCallback<
     React.FocusEventHandler<HTMLDivElement>
@@ -639,7 +648,7 @@ export type EditableDecoration<T = unknown> = PliteRangeDecoration<T>;
 export type EditableDecorate<T = unknown> = (
   entry: [Descendant, Path],
   editor?: Editor
-) => readonly EditableDecoration<T>[];
+) => ReadonlyArray<EditableDecoration<T>>;
 
 export type EditableProps<
   T = unknown,
@@ -929,7 +938,7 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
         renderText,
         renderVoid,
         ownerPath: path,
-        nodeKey,
+        nodeKey: nodeKeyDOMValue ?? nodeKey,
       }),
     } as unknown as RenderElementProps<TElement>;
 
@@ -1133,7 +1142,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     hasDecorate,
   ]);
   const viewSelectionDecorationSource = usePliteViewSelectionDecorationSource(
-    editor as unknown as ReactRuntimeEditor<any>,
+    editor,
     true,
     {
       runtimeScope: activeDecorateRuntimeScope,
@@ -1351,7 +1360,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
 
   useIsomorphicLayoutEffect(() => {
     if (!rootGroups) {
-      return;
+      return undefined;
     }
 
     return DOMCoverage.registerMaterializeHandler(
@@ -1398,7 +1407,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
 
   useIsomorphicLayoutEffect(() => {
     if (!virtualizedPlan) {
-      return;
+      return undefined;
     }
 
     return DOMCoverage.registerMaterializeHandler(
@@ -1426,7 +1435,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
 
     const node = editor.read((state) => state.nodes.get(anchorPath)?.[0]);
 
-    if (node && editor.api.dom.resolveDOMNode(node as PliteNode)) {
+    if (node && editor.api.dom.resolveDOMNode(node)) {
       lastVirtualizedScrollPathKeyRef.current = anchorPathKey;
       return;
     }
@@ -1521,7 +1530,13 @@ const EditableInner = <T, TElement extends PliteElementNode>({
 
       if (options.select && internalSegmentDOMStrategySize != null) {
         try {
-          const start = editorPoint(editor, [startIndex!], { edge: 'start' });
+          const start = editorPoint(
+            editor,
+            [startIndex ?? failInvariant('Expected value to be defined')],
+            {
+              edge: 'start',
+            }
+          );
           writeRuntimeSelection(editor, { anchor: start, focus: start });
         } catch {
           // Leave selection unchanged for non-text-startable segments.
@@ -1605,7 +1620,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   );
   React.useEffect(() => {
     if (!decorateSource) {
-      return;
+      return undefined;
     }
 
     return () => {
@@ -1632,23 +1647,17 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     decorateCell.current = decorate;
     decorateSource?.refresh({
       reason: 'external',
-      requiresDOMSelectionExport: ReactEditor.isFocused(
-        editor as unknown as ReactRuntimeEditor
-      ),
+      requiresDOMSelectionExport: ReactEditor.isFocused(editor),
     });
   }, [decorate, decorateCell, decorateSource, editor]);
   React.useEffect(() => {
     decorateSource?.refresh({
       reason: 'external',
-      requiresDOMSelectionExport: ReactEditor.isFocused(
-        editor as unknown as ReactRuntimeEditor
-      ),
+      requiresDOMSelectionExport: ReactEditor.isFocused(editor),
     });
     viewSelectionDecorationSource?.refresh({
       reason: 'external',
-      requiresDOMSelectionExport: ReactEditor.isFocused(
-        editor as unknown as ReactRuntimeEditor
-      ),
+      requiresDOMSelectionExport: ReactEditor.isFocused(editor),
     });
   }, [
     autoDecorateRuntimeScopeKey,
@@ -1835,7 +1844,10 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                   startIndex={range.startIndex}
                 />
               ))}
-              {virtualizedItemGroups!.map((group) => (
+              {(
+                virtualizedItemGroups ??
+                failInvariant('Expected value to be defined')
+              ).map((group) => (
                 <div
                   data-plite-dom-strategy-virtual-row-group="true"
                   key={group.groupId}
@@ -1916,7 +1928,10 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                       endIndex={segment.mountedStartIndex - 1}
                       onPromote={handlePromoteSegment}
                       previewChars={
-                        internalSegmentDOMStrategyConfig!.previewChars
+                        (
+                          internalSegmentDOMStrategyConfig ??
+                          failInvariant('Expected value to be defined')
+                        ).previewChars
                       }
                       nodeKeys={segment.nodeKeys.slice(
                         0,
@@ -1953,7 +1968,10 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                       endIndex={segment.endIndex}
                       onPromote={handlePromoteSegment}
                       previewChars={
-                        internalSegmentDOMStrategyConfig!.previewChars
+                        (
+                          internalSegmentDOMStrategyConfig ??
+                          failInvariant('Expected value to be defined')
+                        ).previewChars
                       }
                       nodeKeys={segment.nodeKeys.slice(
                         segment.mountedEndIndex - segment.startIndex + 1
@@ -1973,7 +1991,12 @@ const EditableInner = <T, TElement extends PliteElementNode>({
                   endIndex={segment.endIndex}
                   key={`partial-dom-${segment.segmentIndex}`}
                   onPromote={handlePromoteSegment}
-                  previewChars={internalSegmentDOMStrategyConfig!.previewChars}
+                  previewChars={
+                    (
+                      internalSegmentDOMStrategyConfig ??
+                      failInvariant('Expected value to be defined')
+                    ).previewChars
+                  }
                   nodeKeys={segment.nodeKeys}
                   segmentIndex={segment.segmentIndex}
                   startIndex={segment.startIndex}

@@ -285,7 +285,7 @@ const installDOMSelectionApi = <
 
   spyOn(editor.api.dom, 'findDocumentOrShadowRoot').mockReturnValue({
     getSelection: () => domSelection,
-  } as unknown as Document);
+  });
   spyOn(editor.api.dom, 'resolvePliteRange').mockReturnValue(range);
 };
 
@@ -293,7 +293,7 @@ const readTable = <V extends Value, D extends BasePluginDefinition>(
   editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   index: number
 ) => {
-  const table = editor.read.children()[index] as Element;
+  const table = editor.read.children()[index];
 
   return table.children.map((row) =>
     (row as Element).children.map((cell) => NodeApi.string(cell))
@@ -307,7 +307,7 @@ const readRootTable = <V extends Value, D extends BasePluginDefinition>(
   const value = editor.read.value();
   const table = (
     root === undefined ? value.children[0] : value.roots?.[root]?.[0]
-  ) as Element;
+  )!;
 
   return table.children.map((row) =>
     (row as Element).children.map((cell) => NodeApi.string(cell))

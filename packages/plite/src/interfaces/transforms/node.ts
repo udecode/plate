@@ -216,7 +216,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
     >(
       editor: Editor<TValue, TExtensions>,
       nodes: T | readonly T[],
-      options?: NodeInsertNodesOptions<NodeIn<TValue>, undefined>
+      options?: NodeInsertNodesOptions<NodeIn<TValue>>
     ): void;
   };
 
@@ -323,13 +323,9 @@ export interface NodeMutationMethods<V extends Value = Value> {
   };
 
   /** Replace a range of children under an ancestor node atomically. */
-  replaceChildren: <
-    TValue extends V,
-    TExtensions extends readonly unknown[],
-    T extends ElementOrTextIn<TValue>,
-  >(
+  replaceChildren: <TValue extends V, TExtensions extends readonly unknown[]>(
     editor: Editor<TValue, TExtensions>,
-    children: readonly T[],
+    children: ReadonlyArray<ElementOrTextIn<TValue>>,
     options: NodeReplaceChildrenOptions
   ) => void;
 

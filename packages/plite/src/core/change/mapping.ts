@@ -184,7 +184,7 @@ export const compareRelocationPaths = (
   right: readonly number[]
 ) => {
   for (let index = 0; index < Math.min(left.length, right.length); index++) {
-    const difference = left[index]! - right[index]!;
+    const difference = left[index] - right[index];
 
     if (difference !== 0) return difference;
   }
@@ -194,7 +194,7 @@ export const compareRelocationPaths = (
 
 export const collectRelocationCandidates = (
   document: DocumentIndex,
-  ranges: readonly (readonly [number, number])[]
+  ranges: ReadonlyArray<readonly [number, number]>
 ) => {
   const candidates = new Map<string, RelocationCandidate>();
 
@@ -281,8 +281,8 @@ export const deriveRootRelocations = (
 
       if (!targetGroup || targetGroup.candidates.length !== 1) continue;
 
-      const source = sourceGroup.candidates[0]!;
-      const target = targetGroup.candidates[0]!;
+      const source = sourceGroup.candidates[0];
+      const target = targetGroup.candidates[0];
 
       if (pathKey(source.path) === pathKey(target.path)) continue;
 
@@ -331,10 +331,12 @@ export const getRootChangeRelocations = (
   change: RootChange,
   before: DocumentIndex,
   after?: DocumentIndex
-): readonly Readonly<{
-  path: readonly number[];
-  targetPath: readonly number[];
-}>[] =>
+): ReadonlyArray<
+  Readonly<{
+    path: readonly number[];
+    targetPath: readonly number[];
+  }>
+> =>
   Object.freeze(
     deriveRootRelocations('main', change, before, after).map(
       ({ path, targetPath }) => Object.freeze({ path, targetPath })

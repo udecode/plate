@@ -8,7 +8,7 @@ import type {
   EditorCoreStateView,
   EditorDocumentValue,
 } from '@platejs/plite';
-import { ContentSlice } from '@platejs/plite';
+import { ContentSlice, ElementApi, NodeApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
@@ -79,14 +79,85 @@ export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
       'text/markdown': {
         scope: 'document',
         decode: ({ data, state }) => decode(data, state),
-        encode: ({ slice, state }) =>
-          serializeMdWithRuntime(
-            createMarkdownRuntime(editor, store.get(), state),
-            undefined,
-            {
-              children: [...slice.content],
+        encode: ({ slice, state }) => {
+          const runtime = createMarkdownRuntime(editor, store.get(), state);
+          const serialize = (children: readonly Descendant[]) =>
+            serializeMdWithRuntime(runtime, undefined, {
+              children: [...children],
+            });
+
+          if (slice.openStart === 0 && slice.openEnd === 0) {
+            return serialize(slice.content);
+          }
+
+          const paragraphType =
+            runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+
+          function serializeOpenNodes(
+            nodes: readonly Descendant[],
+            openStart: number,
+            openEnd: number
+          ): string {
+            const lastIndex = nodes.length - 1;
+
+            return nodes
+              .map((node, index) =>
+                serializeOpenNode(
+                  node,
+                  index === 0 ? openStart : 0,
+                  index === lastIndex ? openEnd : 0
+                )
+              )
+              .join('\n\n');
+          }
+
+          function serializeOpenNode(
+            node: Descendant,
+            openStart: number,
+            openEnd: number
+          ): string {
+            if (
+              (openStart === 0 && openEnd === 0) ||
+              !ElementApi.isElement(node)
+            ) {
+              return serialize([node]).trimEnd();
             }
-          ),
+
+            if (typeof node.rawCode === 'string') return node.rawCode;
+
+            const hasOnlyInlineChildren = node.children.every(
+              (child) =>
+                !ElementApi.isElement(child) || state.schema.isInline(child)
+            );
+
+            if (hasOnlyInlineChildren) {
+              return serialize([
+                {
+                  children: node.children,
+                  type: paragraphType,
+                },
+              ]).trimEnd();
+            }
+
+            const unwrapped = serializeOpenNodes(
+              node.children,
+              Math.max(0, openStart - 1),
+              Math.max(0, openEnd - 1)
+            );
+
+            return unwrapped.trim()
+              ? unwrapped
+              : node.children.map(NodeApi.string).join('\n');
+          }
+
+          if (slice.content.length === 0) return '';
+
+          return `${serializeOpenNodes(
+            slice.content,
+            slice.openStart,
+            slice.openEnd
+          )}\n`;
+        },
         query: ({ data, source }) => shouldParseMarkdown(data, source),
       },
       'text/plain': {

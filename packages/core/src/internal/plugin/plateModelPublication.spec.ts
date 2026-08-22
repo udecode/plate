@@ -91,7 +91,7 @@ describe('Plate model publication', () => {
       corrections: [
         {
           correct({ entry }) {
-            correctionRuns++;
+            correctionRuns += 1;
             correctionPaths.push([...entry[1]]);
             if (shouldThrow) throw new Error('bootstrap correction failed');
           },
@@ -160,7 +160,6 @@ describe('Plate model publication', () => {
   });
 
   it('invalidates specs minted before a supplied raw editor is bootstrapped', () => {
-    // oxlint-disable-next-line prefer-const -- The command closes over the spec produced after command construction.
     let spec!: TransactionSpec;
     const applyPreBootstrapSpec = defineCommand(
       'plate.apply-pre-bootstrap-spec',

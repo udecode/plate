@@ -1,3 +1,5 @@
+import { failInvariant } from '@platejs/plite/internal';
+
 type PluginCapabilityKind = 'api' | 'read' | 'update';
 
 type MergePluginCapabilitiesOptions = Readonly<{
@@ -39,29 +41,34 @@ const isValidFunctionIntrinsicDescriptor = (
   if (!('value' in descriptor) || descriptor.enumerable) return false;
 
   switch (key) {
-    case 'length':
+    case 'length': {
       return (
         typeof descriptor.value === 'number' && descriptor.writable === false
       );
-    case 'name':
+    }
+    case 'name': {
       return (
         typeof descriptor.value === 'string' && descriptor.writable === false
       );
+    }
     case 'arguments':
-    case 'caller':
+    case 'caller': {
       return (
         descriptor.value === null &&
         descriptor.writable === false &&
         descriptor.configurable === false
       );
-    case 'prototype':
+    }
+    case 'prototype': {
       return (
         typeof descriptor.value === 'object' &&
         descriptor.value !== null &&
         descriptor.configurable === false
       );
-    default:
+    }
+    default: {
       return false;
+    }
   }
 };
 
@@ -71,7 +78,9 @@ const getEnumerableCapabilityEntries = (
   path: readonly string[]
 ) =>
   Reflect.ownKeys(source).flatMap((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(source, key)!;
+    const descriptor =
+      Object.getOwnPropertyDescriptor(source, key) ??
+      failInvariant('Expected value to be defined');
 
     if (
       typeof source === 'function' &&

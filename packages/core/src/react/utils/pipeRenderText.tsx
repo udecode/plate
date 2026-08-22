@@ -1,5 +1,6 @@
 import { setDOMTextSyncRendererCapability } from '@platejs/plite-react/internal';
-import clsx from 'clsx';
+import { failInvariant } from '@platejs/plite/internal';
+import { clsx } from 'clsx';
 import React from 'react';
 
 import {
@@ -77,8 +78,10 @@ export const pipeRenderText = (
         const entry = {
           className: getPluginNodeClass(plugin.name) || undefined,
           plugin,
-          tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
-          textKey: binding.propertyKey!,
+          tag: plugin.render?.as ?? 'span',
+          textKey:
+            binding.propertyKey ??
+            failInvariant('Expected value to be defined'),
         };
 
         simpleRenderTexts.push(entry);
@@ -89,7 +92,9 @@ export const pipeRenderText = (
             plugin.render.node || plugin.render.nodeProps
           ),
           renderText: pluginRenderText(editor, plugin),
-          textKey: binding.propertyKey!,
+          textKey:
+            binding.propertyKey ??
+            failInvariant('Expected value to be defined'),
         };
 
         renderTexts.push(entry);
@@ -124,7 +129,8 @@ export const pipeRenderText = (
     !hasInjectNodeProps && !renderTextProp && textPropsEntries.length === 0;
 
   return setDOMTextSyncRendererCapability(
-    ({ attributes, ...props }) => {
+    ({ attributes: initialAttributes, ...props }) => {
+      let attributes = initialAttributes;
       const readOnly = editor.read.view.isReadOnly();
       const text = props.text as Record<string, unknown>;
       let hasActiveSimpleRenderText = false;
@@ -190,14 +196,14 @@ export const pipeRenderText = (
       }
 
       if (renderTextProp) {
-        return renderTextProp({ attributes, ...props } as any);
+        return renderTextProp({ attributes, ...props });
       }
 
       const ctxProps = getRenderNodeProps({
         editor,
         props: { attributes, ...props } as any,
         readOnly,
-      }) as any;
+      });
 
       return <PlateText {...ctxProps}>{props.children}</PlateText>;
     },

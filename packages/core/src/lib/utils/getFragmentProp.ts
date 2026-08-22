@@ -37,7 +37,7 @@ export const getFragmentProp = <TValue = unknown>(
         if (value === undefined) {
           value = nodeValue;
         } else if (value !== nodeValue) {
-          return;
+          return undefined;
         }
 
         if (mode === 'block') continue;
@@ -54,7 +54,7 @@ export const getFragmentProp = <TValue = unknown>(
           if (value === undefined) {
             value = textValue;
           } else if (value !== textValue) {
-            return;
+            return undefined;
           }
         } else if (mode === 'text') {
           return defaultValue;

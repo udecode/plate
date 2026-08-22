@@ -9,7 +9,6 @@ import type {
   JsonEditorValue,
   Range,
   TextSelection,
-  Value,
 } from '@platejs/plite';
 import { NodeApi, SelectionApi } from '@platejs/plite';
 import { runTrustedUpdate, toInternalRoot } from '@platejs/plite/internal';
@@ -28,7 +27,7 @@ export type YjsEditorAdapter = {
   readonly canonicalizeNode: (root: string, node: Descendant) => Descendant;
   readonly importing: () => boolean;
   readonly readChildren: (root: string) => readonly Descendant[];
-  readonly readValue: () => EditorDocumentValue<Value>;
+  readonly readValue: () => EditorDocumentValue;
 };
 
 export const YjsUpdatePolicy = Object.freeze({
@@ -58,7 +57,7 @@ const sanitizeImportSelection = (
   // Selection validation is read-only; avoid a second shallow copy of large
   // remote imports before the actual replace payload is copied.
   const root: Element = {
-    children: children as Element['children'],
+    children,
     type: SELECTION_ROOT_TYPE,
   };
 
@@ -88,7 +87,7 @@ export const createYjsEditorAdapter = (
 ): YjsEditorAdapter => {
   let importing = false;
 
-  const readValue = (): EditorDocumentValue<Value> => editor.read.value();
+  const readValue = (): EditorDocumentValue => editor.read.value();
   const readChildren = (root: string): readonly Descendant[] => {
     const value = readValue();
 
@@ -154,9 +153,7 @@ export const createYjsEditorAdapter = (
     applyRemote,
     canonicalize,
     canonicalizeDocument: (value) =>
-      editor.read.schema.fitDocument(
-        value as unknown as EditorDocumentValue<Value>
-      ),
+      editor.read.schema.fitDocument(value as unknown as EditorDocumentValue),
     canonicalizeNode,
     importing: () => importing,
     readChildren,

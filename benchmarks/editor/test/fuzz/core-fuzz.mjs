@@ -62,15 +62,15 @@ function runCase(testCase, id) {
     if (!isDeepStrictEqual(actual, testCase.expected)) {
       throw new Error(`case mismatch ${id}`);
     }
-    executed++;
+    executed += 1;
   } catch (error) {
     if (args.writeRepro) writeRepro(args.writeRepro, testCase, id, error);
     throw error;
   }
 }
 
-function buildGeneratedCase(index, rng) {
-  const category = pick(rng, [
+function buildGeneratedCase(index, innerRng) {
+  const category = pick(innerRng, [
     'large-document',
     'typing',
     'selection',
@@ -78,10 +78,10 @@ function buildGeneratedCase(index, rng) {
     'history',
     'evidence-readiness',
   ]);
-  const library = pick(rng, ['slate-v2', 'slate']);
-  const status = pick(rng, ['ok', 'partial', 'unsupported', 'timeout']);
-  const medianUs = Math.round((1 + rng() * 5000) * 100) / 100;
-  const p95Us = Math.round((medianUs + rng() * 5000) * 100) / 100;
+  const library = pick(innerRng, ['slate-v2', 'slate']);
+  const status = pick(innerRng, ['ok', 'partial', 'unsupported', 'timeout']);
+  const medianUs = Math.round((1 + innerRng() * 5000) * 100) / 100;
+  const p95Us = Math.round((medianUs + innerRng() * 5000) * 100) / 100;
 
   return {
     name: `generated-row-${index}`,
@@ -151,12 +151,12 @@ function writeRepro(outPath, testCase, id, error) {
   );
 }
 
-function pick(rng, values) {
-  return values[Math.floor(rng() * values.length)];
+function pick(innerRng2, values) {
+  return values[Math.floor(innerRng2() * values.length)];
 }
 
-function mulberry32(seed) {
-  let state = seed >>> 0;
+function mulberry32(innerSeed) {
+  let state = innerSeed >>> 0;
   return function next() {
     state += 0x6d_2b_79_f5;
     let t = state;
@@ -172,11 +172,11 @@ function parseArgs(argv) {
 
   while (i < argv.length) {
     const arg = argv[i];
-    i++;
+    i += 1;
     if (!arg.startsWith('--')) continue;
     const key = arg.slice(2);
     const value = argv[i] || true;
-    i++;
+    i += 1;
 
     if (key === 'writeRepro' || key === 'write-repro') out.writeRepro = value;
     else out[key] = value;

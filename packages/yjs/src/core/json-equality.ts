@@ -29,7 +29,7 @@ export const areJsonLikeValuesEqual = (
       if (!areJsonLikeValuesEqual(left[index], right[index])) {
         return false;
       }
-      index++;
+      index += 1;
     }
 
     return true;
@@ -56,7 +56,7 @@ export const areJsonLikeValuesEqual = (
       return false;
     }
 
-    leftDefinedKeyCount++;
+    leftDefinedKeyCount += 1;
   }
 
   let rightDefinedKeyCount = 0;
@@ -66,7 +66,7 @@ export const areJsonLikeValuesEqual = (
       continue;
     }
 
-    rightDefinedKeyCount++;
+    rightDefinedKeyCount += 1;
   }
 
   return leftDefinedKeyCount === rightDefinedKeyCount;

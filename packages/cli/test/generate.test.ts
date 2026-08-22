@@ -43,7 +43,9 @@ const waitFor = async (condition: () => boolean, timeout = 5000) => {
         'Timed out waiting for the watched editor to regenerate.'
       );
     }
-    await new Promise((resolve) => setTimeout(resolve, 25));
+    await new Promise((resolveInner) => {
+      setTimeout(resolveInner, 25);
+    });
   }
 };
 
@@ -82,19 +84,18 @@ const expectTypeScriptFilesCompile = async (
       openFiles: [...files],
       openProjects: [configPath],
     });
-    const project = await snapshot.getDefaultProjectForFile(files[0]!);
+    const project = await snapshot.getDefaultProjectForFile(files[0]);
 
     expect(project).toBeDefined();
+    const fileDiagnostics = await Promise.all(
+      files.flatMap((file) => [
+        project!.program.getSyntacticDiagnostics(file),
+        project!.program.getSemanticDiagnostics(file),
+      ])
+    );
     const diagnostics = [
       ...(await project!.program.getConfigFileParsingDiagnostics()),
-      ...(
-        await Promise.all(
-          files.flatMap((file) => [
-            project!.program.getSyntacticDiagnostics(file),
-            project!.program.getSemanticDiagnostics(file),
-          ])
-        )
-      ).flat(),
+      ...fileDiagnostics.flat(),
     ];
 
     expect(diagnostics.map(diagnosticText)).toEqual([]);
@@ -233,7 +234,7 @@ describe('plate generate', () => {
 
     writeFileSync(
       entryPath,
-      `${readFileSync(entryPath, 'utf8')}\nexport const AlternateKit = EditorKit;\n`
+      `${readFileSync(entryPath, 'utf-8')}\nexport const AlternateKit = EditorKit;\n`
     );
 
     await expect(generateEditor(entryPath)).rejects.toThrow(
@@ -246,7 +247,7 @@ describe('plate generate', () => {
 
     writeFileSync(
       entryPath,
-      `${readFileSync(entryPath, 'utf8').replace(
+      `${readFileSync(entryPath, 'utf-8').replace(
         'export const EditorKit =',
         'const EditorKit ='
       )}\nexport default EditorKit;\n`
@@ -254,7 +255,7 @@ describe('plate generate', () => {
 
     const generated = await generateEditor(entryPath);
 
-    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+    expect(readFileSync(generated.typesPath, 'utf-8')).toContain(
       'type EditorPlugins = (typeof EditorModule)["default"] &'
     );
   });
@@ -264,7 +265,7 @@ describe('plate generate', () => {
 
     writeFileSync(
       entryPath,
-      `${readFileSync(entryPath, 'utf8')}\nexport const AlternateSchema = EditorSchema;\n`
+      `${readFileSync(entryPath, 'utf-8')}\nexport const AlternateSchema = EditorSchema;\n`
     );
 
     await expect(generateEditor(entryPath)).rejects.toThrow(
@@ -277,7 +278,7 @@ describe('plate generate', () => {
 
     writeFileSync(
       entryPath,
-      `${readFileSync(entryPath, 'utf8').replace(
+      `${readFileSync(entryPath, 'utf-8').replace(
         'export const EditorSchema =',
         'const EditorSchema ='
       )}\nexport default EditorSchema;\n`
@@ -285,7 +286,7 @@ describe('plate generate', () => {
 
     const generated = await generateEditor(entryPath);
 
-    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+    expect(readFileSync(generated.typesPath, 'utf-8')).toContain(
       'readonly reviewState:'
     );
   });
@@ -295,7 +296,7 @@ describe('plate generate', () => {
 
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8').replace(
+      readFileSync(entryPath, 'utf-8').replace(
         /export const EditorSchema = \{[\s\S]*?\n\} as const;\n/,
         ''
       )
@@ -311,8 +312,8 @@ describe('plate generate', () => {
     const { directory, entryPath } = createFixture();
     const session = new NativeTypeScriptSession(packageRoot);
     const first = await generateEditor(entryPath, {}, session);
-    const firstTypes = readFileSync(first.typesPath, 'utf8');
-    const firstSchema = readFileSync(first.schemaPath, 'utf8');
+    const firstTypes = readFileSync(first.typesPath, 'utf-8');
+    const firstSchema = readFileSync(first.schemaPath, 'utf-8');
     const typesMtime = statSync(first.typesPath).mtimeMs;
     const schemaMtime = statSync(first.schemaPath).mtimeMs;
     const second = await generateEditor(entryPath, {}, session);
@@ -320,8 +321,8 @@ describe('plate generate', () => {
     expect(second.status).toBe('upToDate');
     expect(statSync(second.typesPath).mtimeMs).toBe(typesMtime);
     expect(statSync(second.schemaPath).mtimeMs).toBe(schemaMtime);
-    expect(readFileSync(second.typesPath, 'utf8')).toBe(firstTypes);
-    expect(readFileSync(second.schemaPath, 'utf8')).toBe(firstSchema);
+    expect(readFileSync(second.typesPath, 'utf-8')).toBe(firstTypes);
+    expect(readFileSync(second.schemaPath, 'utf-8')).toBe(firstSchema);
     expect(firstTypes).toContain('export interface CalloutCapabilityElement');
     expect(firstTypes).toContain(
       'import type * as EditorModule from "./editor";'
@@ -401,7 +402,7 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
   it('keeps virtual helpers in an explicitly listed editor project', async () => {
     const { directory, entryPath } = createFixture();
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as Record<
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<
       string,
       unknown
     >;
@@ -412,14 +413,14 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
     const generated = await generateEditor(entryPath);
 
-    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+    expect(readFileSync(generated.typesPath, 'utf-8')).toContain(
       'readonly tone: "info" | "warning"'
     );
   }, 60_000);
 
   it('keeps standalone generated headers independent of machine paths', async () => {
     const sourceFixture = createFixture();
-    const standaloneSource = readFileSync(sourceFixture.entryPath, 'utf8')
+    const standaloneSource = readFileSync(sourceFixture.entryPath, 'utf-8')
       .replace(
         '../../core/src/index',
         resolve(repoRoot, 'packages/core/src/index.ts')
@@ -429,7 +430,7 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
         resolve(repoRoot, 'packages/plite/src/index.ts')
       );
     const config = JSON.parse(
-      readFileSync(join(sourceFixture.directory, 'tsconfig.json'), 'utf8')
+      readFileSync(join(sourceFixture.directory, 'tsconfig.json'), 'utf-8')
     ) as { compilerOptions: Record<string, unknown> };
 
     config.compilerOptions.rootDir = '/';
@@ -452,8 +453,8 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
         });
       })
     );
-    const first = readFileSync(generated[0]!.typesPath, 'utf8');
-    const second = readFileSync(generated[1]!.typesPath, 'utf8');
+    const first = readFileSync(generated[0].typesPath, 'utf-8');
+    const second = readFileSync(generated[1].typesPath, 'utf-8');
 
     expect(first).toBe(second);
     expect(first).toStartWith(
@@ -473,7 +474,7 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { defineBasePlugin } from '../../core/src/index';",
           "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin } from '../../core/src/index';"
@@ -496,7 +497,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
     const generated = await generateEditor(entryPath);
 
-    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+    expect(readFileSync(generated.typesPath, 'utf-8')).toContain(
       'readonly type: "entry_relative_callout"'
     );
   }, 60_000);
@@ -506,7 +507,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
           `const evaluationGlobal = globalThis as typeof globalThis & { __plateEvaluationCount?: number };
@@ -522,11 +523,11 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     );
 
     const first = await generateEditor(entryPath);
-    const firstTypes = readFileSync(first.typesPath, 'utf8');
+    const firstTypes = readFileSync(first.typesPath, 'utf-8');
     const second = await generateEditor(entryPath);
 
     expect(firstTypes).toContain('readonly type: "callout_1"');
-    expect(readFileSync(second.typesPath, 'utf8')).toBe(firstTypes);
+    expect(readFileSync(second.typesPath, 'utf-8')).toBe(firstTypes);
   }, 60_000);
 
   it('preserves the generation cwd during evaluation', async () => {
@@ -537,7 +538,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     writeFileSync(join(directory, 'element-type.txt'), 'cwd_relative_callout');
     writeFileSync(
       nestedEntryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { defineBasePlugin } from '../../core/src/index';",
           "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin } from '../../../../core/src/index';"
@@ -557,7 +558,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       cwd: directory,
     });
 
-    expect(readFileSync(generated.typesPath, 'utf8')).toContain(
+    expect(readFileSync(generated.typesPath, 'utf-8')).toContain(
       'readonly type: "cwd_relative_callout"'
     );
   }, 60_000);
@@ -567,7 +568,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
     writeFileSync(
       entryPath,
-      `setInterval(() => {}, 60_000);\n${readFileSync(entryPath, 'utf8')}`
+      `setInterval(() => {}, 60_000);\n${readFileSync(entryPath, 'utf-8')}`
     );
 
     const generated = await generateEditor(entryPath);
@@ -583,13 +584,13 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       second.entryPath,
     ]);
     const previous = generated.flatMap(({ schemaPath, typesPath }) => [
-      [typesPath, readFileSync(typesPath, 'utf8')] as const,
-      [schemaPath, readFileSync(schemaPath, 'utf8')] as const,
+      [typesPath, readFileSync(typesPath, 'utf-8')] as const,
+      [schemaPath, readFileSync(schemaPath, 'utf-8')] as const,
     ]);
 
     writeFileSync(
       first.entryPath,
-      readFileSync(first.entryPath, 'utf8').replace('version: 2', 'version: 3')
+      readFileSync(first.entryPath, 'utf-8').replace('version: 2', 'version: 3')
     );
     writeFileSync(second.entryPath, 'export default this is invalid');
 
@@ -597,7 +598,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       generateEditors([first.entryPath, second.entryPath])
     ).rejects.toThrow();
     previous.forEach(([path, source]) => {
-      expect(readFileSync(path, 'utf8')).toBe(source);
+      expect(readFileSync(path, 'utf-8')).toBe(source);
     });
   }, 60_000);
 
@@ -605,12 +606,12 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     const first = createFixture();
     const second = createFixture();
     const initial = await generateEditors([first.entryPath, second.entryPath]);
-    const secondTypesMtime = statSync(initial[1]!.typesPath).mtimeMs;
-    const secondSchemaMtime = statSync(initial[1]!.schemaPath).mtimeMs;
+    const secondTypesMtime = statSync(initial[1].typesPath).mtimeMs;
+    const secondSchemaMtime = statSync(initial[1].schemaPath).mtimeMs;
 
     writeFileSync(
       first.entryPath,
-      readFileSync(first.entryPath, 'utf8').replace('version: 2', 'version: 3')
+      readFileSync(first.entryPath, 'utf-8').replace('version: 2', 'version: 3')
     );
     const regenerated = await generateEditors([
       first.entryPath,
@@ -621,8 +622,8 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       'generated',
       'upToDate',
     ]);
-    expect(statSync(initial[1]!.typesPath).mtimeMs).toBe(secondTypesMtime);
-    expect(statSync(initial[1]!.schemaPath).mtimeMs).toBe(secondSchemaMtime);
+    expect(statSync(initial[1].typesPath).mtimeMs).toBe(secondTypesMtime);
+    expect(statSync(initial[1].schemaPath).mtimeMs).toBe(secondSchemaMtime);
   }, 60_000);
 
   it('reports every stale artifact in a batch', async () => {
@@ -634,12 +635,12 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     ]);
 
     writeFileSync(
-      generated[0]!.typesPath,
-      `${readFileSync(generated[0]!.typesPath, 'utf8')}\n// stale`
+      generated[0].typesPath,
+      `${readFileSync(generated[0].typesPath, 'utf-8')}\n// stale`
     );
     writeFileSync(
-      generated[1]!.schemaPath,
-      `${readFileSync(generated[1]!.schemaPath, 'utf8')}\n`
+      generated[1].schemaPath,
+      `${readFileSync(generated[1].schemaPath, 'utf-8')}\n`
     );
     let message = '';
 
@@ -651,15 +652,15 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       message = error instanceof Error ? error.message : String(error);
     }
 
-    expect(message).toContain(generated[0]!.typesPath);
-    expect(message).toContain(generated[1]!.schemaPath);
+    expect(message).toContain(generated[0].typesPath);
+    expect(message).toContain(generated[1].schemaPath);
   }, 60_000);
 
   it('rejects entries that own the same output paths', async () => {
     const { directory, entryPath } = createFixture();
     const collidingEntry = join(directory, 'editor.tsx');
 
-    writeFileSync(collidingEntry, readFileSync(entryPath, 'utf8'));
+    writeFileSync(collidingEntry, readFileSync(entryPath, 'utf-8'));
 
     await expect(generateEditors([entryPath, collidingEntry])).rejects.toThrow(
       'produce the same generated artifact'
@@ -671,7 +672,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
   it('omits generic toggle from structural element mutations', async () => {
     const { directory, entryPath } = createFixture(false, false, false, false);
-    const entry = readFileSync(entryPath, 'utf8')
+    const entry = readFileSync(entryPath, 'utf-8')
       .replace(
         "const AlignPlugin = defineBasePlugin('align', {",
         `const ImagePlugin = defineBasePlugin('image', { schema: { element: { void: 'block' } } });\n\nconst AlignPlugin = defineBasePlugin('align', {`
@@ -683,7 +684,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
-    const generated = readFileSync(result.typesPath, 'utf8');
+    const generated = readFileSync(result.typesPath, 'utf-8');
     const mutationMap = generated.match(
       /export type Mutations = Readonly<\{([\s\S]*?)\n\}>;/
     )?.[1];
@@ -701,7 +702,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     );
     expect(generated).not.toContain('SchemaPropertyHandle');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: Record<string, unknown>;
     };
 
@@ -731,7 +732,7 @@ void invalidProperties;
 
   it('emits generic toggle only for default-constructible text blocks without authored toggle semantics', async () => {
     const { entryPath } = createFixture();
-    const entry = readFileSync(entryPath, 'utf8')
+    const entry = readFileSync(entryPath, 'utf-8')
       .replace(
         "const AlignPlugin = defineBasePlugin('align', {",
         `const HeadingPlugin = defineBasePlugin('heading', { schema: { element: s.element.textBlock() } });
@@ -752,7 +753,7 @@ const AlignPlugin = defineBasePlugin('align', {`
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
-    const generated = readFileSync(result.typesPath, 'utf8');
+    const generated = readFileSync(result.typesPath, 'utf-8');
     const mutationMap = generated.match(
       /export type Mutations = Readonly<\{([\s\S]*?)\n\}>;/
     )?.[1];
@@ -773,14 +774,14 @@ const AlignPlugin = defineBasePlugin('align', {`
     const { entryPath } = createFixture(false, true);
     const entry = `type Left = { leftOnly: string; right: Right };
 type Right = { left: Left; rightOnly: number };
-${readFileSync(entryPath, 'utf8').replace(
+${readFileSync(entryPath, 'utf-8').replace(
   "value is { id: string; tags: readonly ('a' | 'b')[] }",
   "value is { id: string; left: Left; right: Right; tags: readonly ('a' | 'b')[] }"
 )}`;
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
-    const generated = readFileSync(result.typesPath, 'utf8');
+    const generated = readFileSync(result.typesPath, 'utf-8');
 
     expect(generated).toContain('readonly raw?: unknown');
     expect(generated).toContain(
@@ -795,7 +796,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { entryPath } = createFixture(false, false, true);
     const result = await generateEditor(entryPath);
 
-    expect(readFileSync(result.typesPath, 'utf8')).toContain(
+    expect(readFileSync(result.typesPath, 'utf-8')).toContain(
       'readonly children: readonly (CalloutCapabilityElement)[]'
     );
   }, 60_000);
@@ -805,11 +806,11 @@ ${readFileSync(entryPath, 'utf8').replace(
     const globalsDirectory = join(directory, 'custom-types/fixture');
     const globalsPath = join(globalsDirectory, 'index.d.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: Record<string, unknown>;
       exclude?: string[];
     };
-    const entry = readFileSync(entryPath, 'utf8').replace(
+    const entry = readFileSync(entryPath, 'utf-8').replace(
       "value is { id: string; tags: readonly ('a' | 'b')[] }",
       'value is FixturePayload'
     );
@@ -826,21 +827,21 @@ ${readFileSync(entryPath, 'utf8').replace(
     writeFileSync(entryPath, entry);
     const initial = await generateEditor(entryPath);
 
-    expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+    expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
       'readonly payload?: { readonly id: string; readonly tags: readonly ("a" | "b")[]; }'
     );
     const watcher = await watchEditor(entryPath);
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === globalsPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory, files]) =>
+          files.some((file) => resolve(innerDirectory, file) === globalsPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner2) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner2();
         });
       });
 
@@ -849,7 +850,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         "declare type FixturePayload = { id: string; priority: number; tags: readonly ('a' | 'b')[] };\n"
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly priority: number'
       );
     } finally {
@@ -867,7 +868,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8').replace(
+      readFileSync(entryPath, 'utf-8').replace(
         "value is { id: string; tags: readonly ('a' | 'b')[] }",
         'value is GeneratedAmbientPayload'
       )
@@ -877,14 +878,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === ambientPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory2, files]) =>
+          files.some((file) => resolve(innerDirectory2, file) === ambientPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner3) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner3();
         });
       });
 
@@ -893,7 +894,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         'declare type GeneratedAmbientPayload = { readonly id: string; readonly ambientRevision: true };\n'
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly ambientRevision: true'
       );
     } finally {
@@ -905,7 +906,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { entryPath } = createFixture();
     const entry = `type UserId = \`user_\${string}\`;\n${readFileSync(
       entryPath,
-      'utf8'
+      'utf-8'
     ).replace(
       "value is { id: string; tags: readonly ('a' | 'b')[] }",
       "value is { id: UserId; restTuple: [string, ...number[]]; tags: readonly ('a' | 'b')[]; variant: ({ a: string } | { b: string }) & { c: string } }"
@@ -913,7 +914,7 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
-    const generated = readFileSync(result.typesPath, 'utf8');
+    const generated = readFileSync(result.typesPath, 'utf-8');
 
     expect(generated).toContain(`readonly id: \`user_\${string}\`;`);
     expect(generated).not.toContain('UserId');
@@ -927,14 +928,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
   it('reserves fixed generated type names', async () => {
     const { entryPath } = createFixture();
-    const entry = readFileSync(entryPath, 'utf8').replaceAll(
+    const entry = readFileSync(entryPath, 'utf-8').replaceAll(
       'calloutCapability',
       'editor'
     );
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
-    const generated = readFileSync(result.typesPath, 'utf8');
+    const generated = readFileSync(result.typesPath, 'utf-8');
 
     expect(generated).toContain('export interface EditorElement2');
     expect(generated).toContain(
@@ -944,14 +945,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
   it('publishes both schema identities owned by one element plugin', async () => {
     const { entryPath } = createFixture();
-    const entry = readFileSync(entryPath, 'utf8').replace(
+    const entry = readFileSync(entryPath, 'utf-8').replace(
       'payload: property.json({',
       'calloutCapability: property.string(),\n        payload: property.json({'
     );
 
     writeFileSync(entryPath, entry);
     const result = await generateEditor(entryPath);
-    const generated = readFileSync(result.typesPath, 'utf8');
+    const generated = readFileSync(result.typesPath, 'utf-8');
 
     expect(generated).toContain(
       'readonly calloutCapability: Readonly<{ readonly type: "callout_node"; readonly key: "calloutCapability"; }>;'
@@ -966,7 +967,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const configPath = join(directory, 'tsconfig.json');
     const baseConfigPath = join(directory, 'tsconfig.base.json');
     const referenceConfigPath = join(directory, 'tsconfig.reference.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as Record<
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<
       string,
       unknown
     >;
@@ -1001,7 +1002,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { directory, entryPath } = createFixture();
     const configPath = join(directory, 'tsconfig.json');
     const referenceConfigPath = join(directory, 'tsconfig.reference.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as Record<
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<
       string,
       unknown
     >;
@@ -1023,29 +1024,29 @@ ${readFileSync(entryPath, 'utf8').replace(
   it('preserves last-good output when entry evaluation fails', async () => {
     const { entryPath } = createFixture();
     const result = await generateEditor(entryPath);
-    const previousTypes = readFileSync(result.typesPath, 'utf8');
-    const previousSchema = readFileSync(result.schemaPath, 'utf8');
+    const previousTypes = readFileSync(result.typesPath, 'utf-8');
+    const previousSchema = readFileSync(result.schemaPath, 'utf-8');
 
     writeFileSync(entryPath, 'export default this is not valid TypeScript');
     await expect(generateEditor(entryPath)).rejects.toThrow();
-    expect(readFileSync(result.typesPath, 'utf8')).toBe(previousTypes);
-    expect(readFileSync(result.schemaPath, 'utf8')).toBe(previousSchema);
+    expect(readFileSync(result.typesPath, 'utf-8')).toBe(previousTypes);
+    expect(readFileSync(result.schemaPath, 'utf-8')).toBe(previousSchema);
   }, 60_000);
 
   it('watches a dependency discovered by a failed regeneration', async () => {
     const { directory, entryPath } = createFixture();
     const initial = await generateEditor(entryPath);
     const dependencyPath = join(directory, 'watch-dependency.ts');
-    const originalEntry = readFileSync(entryPath, 'utf8');
+    const originalEntry = readFileSync(entryPath, 'utf-8');
     const previousStderrWrite = process.stderr.write;
     let sawFailure = false;
     const watcher = await watchEditor(entryPath);
 
-    process.stderr.write = ((chunk: string | Uint8Array) => {
+    process.stderr.write = (chunk: string | Uint8Array) => {
       if (String(chunk).includes('watch-dependency.ts')) sawFailure = true;
 
       return true;
-    }) as typeof process.stderr.write;
+    };
     try {
       writeFileSync(dependencyPath, 'export const broken = ;\n');
       writeFileSync(
@@ -1063,10 +1064,10 @@ ${readFileSync(entryPath, 'utf8').replace(
       const unsubscribeGenerated = watcher.onGenerated(() => {
         generated = true;
       });
-      const regenerated = new Promise<void>((resolve) => {
+      const regenerated = new Promise<void>((resolveInner4) => {
         const unsubscribe = watcher.onChecked(() => {
           unsubscribe();
-          resolve();
+          resolveInner4();
         });
       });
 
@@ -1083,16 +1084,16 @@ ${readFileSync(entryPath, 'utf8').replace(
 
   it('recovers when the editor module is recreated', async () => {
     const { entryPath } = createFixture();
-    const originalEntry = readFileSync(entryPath, 'utf8');
+    const originalEntry = readFileSync(entryPath, 'utf-8');
     const previousStderrWrite = process.stderr.write;
     const watcher = await watchEditor(entryPath);
     let sawFailure = false;
 
-    process.stderr.write = ((chunk: string | Uint8Array) => {
+    process.stderr.write = (chunk: string | Uint8Array) => {
       if (String(chunk).includes('does not exist')) sawFailure = true;
 
       return true;
-    }) as typeof process.stderr.write;
+    };
     try {
       rmSync(entryPath);
       await waitFor(() => sawFailure);
@@ -1119,9 +1120,9 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     writeFileSync(
       entryPath,
-      `import './missing/deep/dependency';\n${readFileSync(entryPath, 'utf8')}`
+      `import './missing/deep/dependency';\n${readFileSync(entryPath, 'utf-8')}`
     );
-    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stderr.write = () => true;
     const watcher = await watchEditor(entryPath);
     let checked = 0;
     const unsubscribeChecked = watcher.onChecked(() => {
@@ -1130,7 +1131,9 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       writeFileSync(unrelatedPath, 'export {};\n');
-      await new Promise((resolveDelay) => setTimeout(resolveDelay, 75));
+      await new Promise((resolveDelay) => {
+        setTimeout(resolveDelay, 75);
+      });
       expect(checked).toBe(0);
 
       mkdirSync(dirname(dependencyPath), { recursive: true });
@@ -1163,7 +1166,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     writeFileSync(payloadPath, 'export type Payload = { readonly id: ; };\n');
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './invalid-type-payload';"
@@ -1173,15 +1176,15 @@ ${readFileSync(entryPath, 'utf8').replace(
           'value is Payload'
         )
     );
-    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stderr.write = () => true;
     let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
 
     try {
       watcher = await watchEditor(entryPath);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner5) => {
         const unsubscribe = watcher!.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner5();
         });
       });
 
@@ -1191,7 +1194,7 @@ ${readFileSync(entryPath, 'utf8').replace(
       );
       await generated;
       expect(
-        readFileSync(join(directory, 'editor.generated.ts'), 'utf8')
+        readFileSync(join(directory, 'editor.generated.ts'), 'utf-8')
       ).toContain('readonly recovered: true');
     } finally {
       process.stderr.write = previousStderrWrite;
@@ -1211,7 +1214,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './substituted-payload.js';"
@@ -1226,14 +1229,16 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === typescriptPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory3, files]) =>
+          files.some(
+            (file) => resolve(innerDirectory3, file) === typescriptPath
+          )
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner6) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner6();
         });
       });
 
@@ -1242,7 +1247,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         'export type Payload = { readonly id: string; readonly substituted: true };\n'
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly substituted: true'
       );
     } finally {
@@ -1255,7 +1260,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const payloadPath = join(directory, 'payload.ts');
     const typesPath = join(directory, 'types.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: { paths: Record<string, string[]> };
     };
     const initialPayload = `export type Payload = {
@@ -1270,7 +1275,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     writeFileSync(configPath, JSON.stringify(config));
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './types';"
@@ -1285,14 +1290,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === payloadPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory4, files]) =>
+          files.some((file) => resolve(innerDirectory4, file) === payloadPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner7) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner7();
         });
       });
 
@@ -1304,7 +1309,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         )
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly priority: number'
       );
     } finally {
@@ -1317,7 +1322,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const catchAllPath = join(directory, 'catch-all/@app/payload.ts');
     const actualPath = join(directory, 'actual/payload.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: { paths: Record<string, string[]> };
     };
 
@@ -1339,7 +1344,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     writeFileSync(configPath, JSON.stringify(config));
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
@@ -1354,14 +1359,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === actualPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory5, files]) =>
+          files.some((file) => resolve(innerDirectory5, file) === actualPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner8) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner8();
         });
       });
 
@@ -1370,7 +1375,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         'export type Payload = { readonly id: string; readonly priority: number };\n'
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly priority: number'
       );
     } finally {
@@ -1384,7 +1389,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const modelPath = join(sharedDirectory, 'model.ts');
     const payloadPath = join(directory, 'external-payload.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: { paths: Record<string, string[]> };
     };
     const modelImport = relative(
@@ -1405,7 +1410,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           `import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '${modelImport.startsWith('.') ? modelImport : `./${modelImport}`}';`
@@ -1420,14 +1425,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === payloadPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory6, files]) =>
+          files.some((file) => resolve(innerDirectory6, file) === payloadPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner9) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner9();
         });
       });
 
@@ -1436,7 +1441,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         'export type ExternalPayload = { readonly id: string; readonly externalRevision: true };\n'
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly externalRevision: true'
       );
     } finally {
@@ -1450,7 +1455,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const wildcardPath = join(directory, 'wildcard/payload.ts');
     const typesPath = join(directory, 'editor.generated.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: { paths: Record<string, string[]> };
     };
 
@@ -1467,7 +1472,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     writeFileSync(configPath, JSON.stringify(config));
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
@@ -1479,15 +1484,15 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     const previousStderrWrite = process.stderr.write;
 
-    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stderr.write = () => true;
     let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
 
     try {
       watcher = await watchEditor(entryPath);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner10) => {
         const unsubscribe = watcher!.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner10();
         });
       });
 
@@ -1497,10 +1502,10 @@ ${readFileSync(entryPath, 'utf8').replace(
         'export type Payload = { readonly id: string };\n'
       );
       await generated;
-      expect(readFileSync(typesPath, 'utf8')).toContain(
+      expect(readFileSync(typesPath, 'utf-8')).toContain(
         'readonly payload?: { readonly id: string; }'
       );
-      expect(readFileSync(typesPath, 'utf8')).not.toContain('readonly wrong');
+      expect(readFileSync(typesPath, 'utf-8')).not.toContain('readonly wrong');
     } finally {
       process.stderr.write = previousStderrWrite;
       await watcher?.close();
@@ -1512,7 +1517,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const configPath = join(directory, 'tsconfig.json');
     const baseConfigPath = join(directory, 'config/base.json');
     const payloadPath = join(directory, 'sources/actual/payload.ts');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: { paths: Record<string, string[]> };
       extends: string;
     };
@@ -1542,7 +1547,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
@@ -1557,14 +1562,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === payloadPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory7, files]) =>
+          files.some((file) => resolve(innerDirectory7, file) === payloadPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner11) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner11();
         });
       });
 
@@ -1573,7 +1578,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         'export type Payload = { readonly id: string; readonly priority: number };\n'
       );
       await generated;
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly priority: number'
       );
     } finally {
@@ -1592,7 +1597,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './payload';"
@@ -1606,7 +1611,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     try {
       const initial = await generateEditor(entryPath, {}, session);
 
-      expect(readFileSync(initial.typesPath, 'utf8')).not.toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).not.toContain(
         'readonly priority: number'
       );
       rmSync(payloadPath);
@@ -1618,7 +1623,7 @@ ${readFileSync(entryPath, 'utf8').replace(
       session.recordFileChange('add', payloadPath);
 
       await generateEditor(entryPath, {}, session);
-      expect(readFileSync(initial.typesPath, 'utf8')).toContain(
+      expect(readFileSync(initial.typesPath, 'utf-8')).toContain(
         'readonly priority: number'
       );
     } finally {
@@ -1630,7 +1635,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { directory, entryPath } = createFixture();
     const payloadPath = join(directory, 'payload.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: { paths: Record<string, string[]> };
     };
     const validPayload =
@@ -1640,7 +1645,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     writeFileSync(configPath, JSON.stringify(config));
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@fixture/payload';"
@@ -1655,10 +1660,10 @@ ${readFileSync(entryPath, 'utf8').replace(
     const watcher = await watchEditor(entryPath);
 
     try {
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner12) => {
         const unsubscribe = watcher.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner12();
         });
       });
 
@@ -1679,7 +1684,7 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport { Payload } from './ordinary-payload';"
@@ -1691,15 +1696,15 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     const previousStderrWrite = process.stderr.write;
 
-    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stderr.write = () => true;
     let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
 
     try {
       watcher = await watchEditor(entryPath);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner13) => {
         const unsubscribe = watcher!.onGenerated(() => {
           unsubscribe();
-          resolve();
+          resolveInner13();
         });
       });
 
@@ -1716,7 +1721,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { directory, entryPath } = createFixture();
     const payloadPath = join(directory, 'import-equals-payload.ts');
     const configPath = join(directory, 'tsconfig.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
       compilerOptions: Record<string, unknown>;
     };
 
@@ -1731,7 +1736,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8')
+      readFileSync(entryPath, 'utf-8')
         .replace(
           "import { property, schema as s, target } from '../../plite/src/index';",
           "import { property, schema as s, target } from '../../plite/src/index';\nimport type Payload = require('./import-equals-payload');"
@@ -1747,14 +1752,14 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     try {
       expect(
-        Object.entries(watcher.getWatched()).some(([directory, files]) =>
-          files.some((file) => resolve(directory, file) === payloadPath)
+        Object.entries(watcher.getWatched()).some(([innerDirectory8, files]) =>
+          files.some((file) => resolve(innerDirectory8, file) === payloadPath)
         )
       ).toBe(true);
-      const generated = new Promise<void>((resolve) => {
+      const generated = new Promise<void>((resolveInner14) => {
         const unsubscribe = watcher.onChecked(() => {
           unsubscribe();
-          resolve();
+          resolveInner14();
         });
       });
 
@@ -1774,7 +1779,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const dependencyPath = join(directory, 'runtime-schema.js');
     const declarationPath = join(directory, 'runtime-schema.d.ts');
     const schemaPath = join(directory, 'editor.schema.json');
-    const originalEntry = readFileSync(entryPath, 'utf8');
+    const originalEntry = readFileSync(entryPath, 'utf-8');
     const previousStderrWrite = process.stderr.write;
 
     writeFileSync(declarationPath, 'export const calloutType: string;\n');
@@ -1782,7 +1787,7 @@ ${readFileSync(entryPath, 'utf8').replace(
       entryPath,
       `import { calloutType } from './runtime-schema.js';\n${originalEntry.replace("type: 'callout_node'", 'type: calloutType')}`
     );
-    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stderr.write = () => true;
     let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
 
     try {
@@ -1795,14 +1800,14 @@ ${readFileSync(entryPath, 'utf8').replace(
       await waitFor(
         () =>
           existsSync(schemaPath) &&
-          readFileSync(schemaPath, 'utf8').includes('dynamic_one')
+          readFileSync(schemaPath, 'utf-8').includes('dynamic_one')
       );
       writeFileSync(
         dependencyPath,
         "export const calloutType = 'dynamic_two';\n"
       );
       await waitFor(() =>
-        readFileSync(schemaPath, 'utf8').includes('dynamic_two')
+        readFileSync(schemaPath, 'utf-8').includes('dynamic_two')
       );
     } finally {
       process.stderr.write = previousStderrWrite;
@@ -1823,16 +1828,16 @@ ${readFileSync(entryPath, 'utf8').replace(
     );
     writeFileSync(
       entryPath,
-      readFileSync(entryPath, 'utf8').replace(
+      readFileSync(entryPath, 'utf-8').replace(
         "value is { id: string; tags: readonly ('a' | 'b')[] }",
         'value is FixturePayload'
       )
     );
-    process.stderr.write = ((chunk: string | Uint8Array) => {
+    process.stderr.write = (chunk: string | Uint8Array) => {
       if (String(chunk).length > 0) sawFailure = true;
 
       return true;
-    }) as typeof process.stderr.write;
+    };
 
     let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
 
@@ -1859,12 +1864,12 @@ ${readFileSync(entryPath, 'utf8').replace(
   it('recovers after an initially invalid editor tsconfig is fixed', async () => {
     const { directory, entryPath } = createFixture();
     const configPath = join(directory, 'tsconfig.json');
-    const validConfig = readFileSync(configPath, 'utf8');
+    const validConfig = readFileSync(configPath, 'utf-8');
     const typesPath = join(directory, 'editor.generated.ts');
     const previousStderrWrite = process.stderr.write;
 
     writeFileSync(configPath, '{ invalid');
-    process.stderr.write = (() => true) as typeof process.stderr.write;
+    process.stderr.write = () => true;
     let watcher: Awaited<ReturnType<typeof watchEditor>> | undefined;
 
     try {
@@ -1887,7 +1892,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { directory, entryPath } = createFixture();
     const configPath = join(directory, 'tsconfig.json');
     const baseConfigPath = join(directory, 'watch-base.json');
-    const config = JSON.parse(readFileSync(configPath, 'utf8')) as Record<
+    const config = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<
       string,
       unknown
     >;
@@ -1915,10 +1920,10 @@ ${readFileSync(entryPath, 'utf8').replace(
       const unsubscribeGenerated = watcher.onGenerated(() => {
         generated = true;
       });
-      const regenerated = new Promise<void>((resolve) => {
+      const regenerated = new Promise<void>((resolveInner15) => {
         const unsubscribe = watcher.onChecked(() => {
           unsubscribe();
-          resolve();
+          resolveInner15();
         });
       });
 
@@ -1948,20 +1953,20 @@ ${readFileSync(entryPath, 'utf8').replace(
       await expect(
         watchEditors([second.entryPath, first.entryPath])
       ).rejects.toThrow('Another Plate watcher owns generated artifact');
-      writeFileSync(collidingEntry, readFileSync(first.entryPath, 'utf8'));
+      writeFileSync(collidingEntry, readFileSync(first.entryPath, 'utf-8'));
       await expect(watchEditor(collidingEntry)).rejects.toThrow(
         'Another Plate watcher owns generated artifact'
       );
-      const generated = new Promise<readonly string[]>((resolve) => {
+      const generated = new Promise<readonly string[]>((resolveInner16) => {
         const unsubscribe = watcher.onGenerated((entryPaths) => {
           unsubscribe();
-          resolve(entryPaths);
+          resolveInner16(entryPaths);
         });
       });
 
       writeFileSync(
         first.entryPath,
-        readFileSync(first.entryPath, 'utf8').replace(
+        readFileSync(first.entryPath, 'utf-8').replace(
           'version: 2',
           'version: 3'
         )
@@ -1999,19 +2004,19 @@ ${readFileSync(entryPath, 'utf8').replace(
       await waitFor(() => hasWatchOwnership(entryPath));
       writeFileSync(
         entryPath,
-        readFileSync(entryPath, 'utf8').replace('version: 2', 'version: 3')
+        readFileSync(entryPath, 'utf-8').replace('version: 2', 'version: 3')
       );
       await waitFor(
         () =>
           existsSync(outputPath) &&
-          readFileSync(outputPath, 'utf8').includes('Watching 1 editor'),
+          readFileSync(outputPath, 'utf-8').includes('Watching 1 editor'),
         15_000
       );
       await waitFor(
         () =>
           existsSync(schemaPath) &&
           (
-            JSON.parse(readFileSync(schemaPath, 'utf8')) as {
+            JSON.parse(readFileSync(schemaPath, 'utf-8')) as {
               identity: { version: number };
             }
           ).identity.version === 3
@@ -2045,7 +2050,7 @@ ${readFileSync(entryPath, 'utf8').replace(
       await waitFor(
         () =>
           existsSync(outputPath) &&
-          readFileSync(outputPath, 'utf8').includes('Watching 1 editor'),
+          readFileSync(outputPath, 'utf-8').includes('Watching 1 editor'),
         15_000
       );
       const typesMtime = statSync(initial.typesPath).mtimeMs;
@@ -2128,8 +2133,8 @@ ${readFileSync(entryPath, 'utf8').replace(
         }
       )
     ).toThrow('simulated interruption');
-    expect(readFileSync(first, 'utf8')).toBe('first-old');
-    expect(readFileSync(second, 'utf8')).toBe('second-old');
+    expect(readFileSync(first, 'utf-8')).toBe('first-old');
+    expect(readFileSync(second, 'utf-8')).toBe('second-old');
     const firstMtime = statSync(first).mtimeMs;
 
     expect(
@@ -2139,8 +2144,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       ])
     ).toBe(true);
     expect(statSync(first).mtimeMs).toBe(firstMtime);
-    expect(readFileSync(first, 'utf8')).toBe('first-old');
-    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expect(readFileSync(first, 'utf-8')).toBe('first-old');
+    expect(readFileSync(second, 'utf-8')).toBe('second-final');
   });
 
   it('uses the conventional package cache outside Git', () => {
@@ -2153,7 +2158,7 @@ ${readFileSync(entryPath, 'utf8').replace(
       relative(realpathSync(directory), artifactStateRoot(artifactPath))
     ).toBe('node_modules/.cache/plate/state');
     replaceArtifacts([{ content: 'export {};\n', path: artifactPath }]);
-    expect(readFileSync(artifactPath, 'utf8')).toBe('export {};\n');
+    expect(readFileSync(artifactPath, 'utf-8')).toBe('export {};\n');
     expect(readdirSync(dirname(artifactPath))).toEqual(['editor.generated.ts']);
   });
 
@@ -2220,8 +2225,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       { content: 'second-final', path: second },
     ]);
 
-    expect(readFileSync(first, 'utf8')).toBe('first-final');
-    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expect(readFileSync(first, 'utf-8')).toBe('first-final');
+    expect(readFileSync(second, 'utf-8')).toBe('second-final');
     expectOnlyFixtureFiles(directory, [first, second]);
   });
 
@@ -2248,8 +2253,8 @@ ${readFileSync(entryPath, 'utf8').replace(
         { content: 'first-final', path: first },
         { content: 'second-final', path: second },
       ]);
-      expect(readFileSync(first, 'utf8')).toBe('first-final');
-      expect(readFileSync(second, 'utf8')).toBe('second-final');
+      expect(readFileSync(first, 'utf-8')).toBe('first-final');
+      expect(readFileSync(second, 'utf-8')).toBe('second-final');
     });
     expectOnlyFixtureFiles(
       directory,
@@ -2263,8 +2268,8 @@ ${readFileSync(entryPath, 'utf8').replace(
   it('recovers an interrupted publication before check mode reads', async () => {
     const { entryPath } = createFixture();
     const generated = await generateEditor(entryPath);
-    const typesSource = readFileSync(generated.typesPath, 'utf8');
-    const schemaSource = readFileSync(generated.schemaPath, 'utf8');
+    const typesSource = readFileSync(generated.typesPath, 'utf-8');
+    const schemaSource = readFileSync(generated.schemaPath, 'utf-8');
 
     expect(() =>
       replaceArtifacts(
@@ -2277,8 +2282,8 @@ ${readFileSync(entryPath, 'utf8').replace(
     ).toThrow('simulated process interruption');
 
     await generateEditor(entryPath, { check: true });
-    expect(readFileSync(generated.typesPath, 'utf8')).toBe(typesSource);
-    expect(readFileSync(generated.schemaPath, 'utf8')).toBe(schemaSource);
+    expect(readFileSync(generated.typesPath, 'utf-8')).toBe(typesSource);
+    expect(readFileSync(generated.schemaPath, 'utf-8')).toBe(schemaSource);
   }, 60_000);
 
   it('recovers an interrupted batch before publishing an overlapping subset', () => {
@@ -2302,16 +2307,16 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     replaceArtifacts([{ content: 'first-subset', path: first }]);
 
-    expect(readFileSync(first, 'utf8')).toBe('first-subset');
-    expect(readFileSync(second, 'utf8')).toBe('second-old');
+    expect(readFileSync(first, 'utf-8')).toBe('first-subset');
+    expect(readFileSync(second, 'utf-8')).toBe('second-old');
 
     replaceArtifacts([
       { content: 'first-final', path: first },
       { content: 'second-final', path: second },
     ]);
 
-    expect(readFileSync(first, 'utf8')).toBe('first-final');
-    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expect(readFileSync(first, 'utf-8')).toBe('first-final');
+    expect(readFileSync(second, 'utf-8')).toBe('second-final');
     expectOnlyFixtureFiles(directory, [first, second]);
   });
 
@@ -2334,8 +2339,8 @@ ${readFileSync(entryPath, 'utf8').replace(
     ).toThrow('simulated process interruption');
     expectOnlyFixtureFiles(directory, [first, second]);
 
-    expect(readFileSync(first, 'utf8')).toBe('first-old');
-    expect(readFileSync(second, 'utf8')).toBe('second-old');
+    expect(readFileSync(first, 'utf-8')).toBe('first-old');
+    expect(readFileSync(second, 'utf-8')).toBe('second-old');
 
     replaceArtifacts([{ content: 'second-subset', path: second }]);
     replaceArtifacts([
@@ -2343,8 +2348,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       { content: 'second-final', path: second },
     ]);
 
-    expect(readFileSync(first, 'utf8')).toBe('first-final');
-    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expect(readFileSync(first, 'utf-8')).toBe('first-final');
+    expect(readFileSync(second, 'utf-8')).toBe('second-final');
     expectOnlyFixtureFiles(directory, [first, second]);
   });
 
@@ -2369,8 +2374,8 @@ ${readFileSync(entryPath, 'utf8').replace(
       },
     });
 
-    expect(readFileSync(first, 'utf8')).toBe('first-new');
-    expect(readFileSync(second, 'utf8')).toBe('second-new');
+    expect(readFileSync(first, 'utf-8')).toBe('first-new');
+    expect(readFileSync(second, 'utf-8')).toBe('second-new');
   });
 
   it('keeps committed artifacts consistent when backup cleanup fails', () => {
@@ -2382,11 +2387,11 @@ ${readFileSync(entryPath, 'utf8').replace(
 
     writeFileSync(first, 'first-old');
     writeFileSync(second, 'second-old');
-    process.stderr.write = ((chunk: string | Uint8Array) => {
+    process.stderr.write = (chunk: string | Uint8Array) => {
       warning += String(chunk);
 
       return true;
-    }) as typeof process.stderr.write;
+    };
     try {
       replaceArtifacts(
         [
@@ -2404,15 +2409,15 @@ ${readFileSync(entryPath, 'utf8').replace(
       process.stderr.write = previousStderrWrite;
     }
 
-    expect(readFileSync(first, 'utf8')).toBe('first-new');
-    expect(readFileSync(second, 'utf8')).toBe('second-new');
+    expect(readFileSync(first, 'utf-8')).toBe('first-new');
+    expect(readFileSync(second, 'utf-8')).toBe('second-new');
     expect(warning).toContain('simulated cleanup failure');
     replaceArtifacts([
       { content: 'first-final', path: first },
       { content: 'second-final', path: second },
     ]);
-    expect(readFileSync(first, 'utf8')).toBe('first-final');
-    expect(readFileSync(second, 'utf8')).toBe('second-final');
+    expect(readFileSync(first, 'utf-8')).toBe('first-final');
+    expect(readFileSync(second, 'utf-8')).toBe('second-final');
     expectOnlyFixtureFiles(directory, [first, second]);
   });
 
@@ -2420,7 +2425,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     const { entryPath } = createFixture();
 
     await generateEditor(entryPath);
-    const previousEntry = readFileSync(entryPath, 'utf8');
+    const previousEntry = readFileSync(entryPath, 'utf-8');
 
     writeFileSync(
       entryPath,
@@ -2432,14 +2437,14 @@ ${readFileSync(entryPath, 'utf8').replace(
         .replace('version: 2', 'version: 3')
     );
     const result = await createEditorMigration(entryPath, 'require-slug', {
-      readCommittedFile: (path) => readFileSync(path, 'utf8'),
+      readCommittedFile: (path) => readFileSync(path, 'utf-8'),
     });
-    const manifest = JSON.parse(readFileSync(result.manifestPath, 'utf8')) as {
+    const manifest = JSON.parse(readFileSync(result.manifestPath, 'utf-8')) as {
       diff: { requiresMigration: boolean };
       from: { fingerprint: string; version: number };
       to: { version: number };
     };
-    const migration = readFileSync(result.migrationPath, 'utf8');
+    const migration = readFileSync(result.migrationPath, 'utf-8');
     const fromTypesPath = join(result.directory, 'from.ts');
     const toTypesPath = join(result.directory, 'to.ts');
 
@@ -2452,7 +2457,7 @@ ${readFileSync(entryPath, 'utf8').replace(
     expect(migration).toContain('FromDocument');
     expect(migration).toContain('ToDocument');
     expect(migration).toContain('({ document })');
-    expect(readFileSync(result.paths[2]!, 'utf8')).toContain(
+    expect(readFileSync(result.paths[2], 'utf-8')).toContain(
       `export const fingerprint = "${manifest.from.fingerprint}"`
     );
     expect(existsSync(join(result.directory, 'from.schema.json'))).toBe(true);
@@ -2466,7 +2471,7 @@ ${readFileSync(entryPath, 'utf8').replace(
         toTypesPath,
       ])
     );
-    expect(readFileSync(fromTypesPath, 'utf8')).toContain(
+    expect(readFileSync(fromTypesPath, 'utf-8')).toContain(
       'EditorSchemaContract'
     );
 

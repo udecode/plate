@@ -5,8 +5,13 @@ import React from 'react';
 const useEditorPluginMock = mock();
 const useEditorMock = mock();
 const usePluginStoreMock = mock();
+let lastSelectionArea: SelectionAreaMock | null = null;
 
-mock.module('@platejs/core/react', () => ({
+const captureSelectionArea = (selectionArea: SelectionAreaMock) => {
+  lastSelectionArea = selectionArea;
+};
+
+void mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: useEditorMock,
   useEditorPlugin: useEditorPluginMock,
@@ -14,25 +19,26 @@ mock.module('@platejs/core/react', () => ({
 }));
 
 class SelectionAreaMock {
-  handlers = new Map<string, Function>();
+  handlers = new Map<string, (...args: unknown[]) => unknown>();
   clearSelection = mock();
   destroy = mock();
   options: unknown = null;
 
-  on(event: string, handler: Function) {
+  constructor() {
+    captureSelectionArea(this);
+  }
+
+  on(event: string, handler: (...args: unknown[]) => unknown) {
     this.handlers.set(event, handler);
     return this;
   }
 }
 
-let lastSelectionArea: SelectionAreaMock | null = null;
-
-mock.module('../SelectionArea', () => ({
+void mock.module('../SelectionArea', () => ({
   SelectionArea: class extends SelectionAreaMock {
     constructor(options: unknown) {
       super();
       this.options = options;
-      lastSelectionArea = this;
     }
   },
 }));
@@ -51,17 +57,22 @@ describe('useSelectionArea', () => {
     lastSelectionArea = null;
   });
 
-  it('blurs, deselects, and shows the selection area on start', async () => {
+  it('transfers focus before atomically clearing editor selection', async () => {
+    const order: string[] = [];
     const editable = document.createElement('div');
-    const blur = mock();
-    const clearSelection = mock();
+    const deselect = mock(() => order.push('clear'));
     const set = mock();
     const clear = mock();
+    const focus = mock(() => order.push('focus'));
+    const blurInput = mock();
+    const shadowInputRef = {
+      current: { blur: blurInput, focus } as unknown as HTMLInputElement,
+    };
 
     useEditorMock.mockReturnValue({
       id: 'editor',
       api: {
-        dom: { blur, editable: () => editable, scroll: () => editable },
+        dom: { deselect, editable: () => editable, scroll: () => editable },
       },
       read: {
         selection: () => ({
@@ -71,7 +82,6 @@ describe('useSelectionArea', () => {
         }),
         view: { isFocused: () => true },
       },
-      update: { selection: { clear: clearSelection } },
     });
     usePluginStoreMock.mockReturnValue(false);
     useEditorPluginMock.mockReturnValue({
@@ -83,7 +93,8 @@ describe('useSelectionArea', () => {
         get: mock(() => ({
           areaOptions: {},
           isSelectionAreaVisible: false,
-          selectedKeys: new Set(),
+          selectedKeys: new Set(['n0']),
+          shadowInputRef,
         })),
         set,
       },
@@ -101,13 +112,26 @@ describe('useSelectionArea', () => {
       event: { shiftKey: false },
     });
     lastSelectionArea!.handlers.get('stop')?.();
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => {
+        resolve();
+      });
+    });
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => {
+        resolve();
+      });
+    });
 
-    expect(blur).toHaveBeenCalled();
-    expect(clearSelection).toHaveBeenCalled();
+    expect(deselect).toHaveBeenCalledTimes(3);
     expect(clear).toHaveBeenCalled();
+    expect(focus).toHaveBeenCalledTimes(4);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(blurInput).not.toHaveBeenCalled();
     expect(set).toHaveBeenCalledWith({ isSelecting: false });
     expect(set).toHaveBeenCalledWith({ isSelectionAreaVisible: true });
     expect(set).toHaveBeenCalledWith({ isSelectionAreaVisible: false });
+    expect(order.indexOf('focus')).toBeLessThan(order.indexOf('clear'));
   });
 
   it('materializes immutable selector arrays at the SelectionArea boundary', async () => {
@@ -156,7 +180,7 @@ describe('useSelectionArea', () => {
     expect(options.selectables).not.toBe(selectables);
     expect(options.startAreas).not.toBe(startAreas);
     expect(options.behaviour.triggers).not.toBe(triggers);
-    expect(options.behaviour.triggers[0]!.modifiers).not.toBe(modifiers);
+    expect(options.behaviour.triggers[0].modifiers).not.toBe(modifiers);
   });
 
   it('binds defaults to an editable root without a DOM id', async () => {

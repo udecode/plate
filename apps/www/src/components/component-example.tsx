@@ -25,14 +25,14 @@ export function ComponentExample({
 }: ComponentExampleProps) {
   const [Example, Code, ...Children] = React.Children.toArray(
     children
-  ) as React.ReactElement<any>[];
+  ) as Array<React.ReactElement<any>>;
 
   let codeString: string | null = null;
 
   if (Code?.props['data-rehype-pretty-code-fragment'] !== undefined) {
-    const [, Button] = React.Children.toArray(
-      Code.props.children
-    ) as React.ReactElement<any>[];
+    const [, Button] = React.Children.toArray(Code.props.children) as Array<
+      React.ReactElement<any>
+    >;
 
     codeString = Button?.props?.value || Button?.props?.__rawString__ || null;
   }

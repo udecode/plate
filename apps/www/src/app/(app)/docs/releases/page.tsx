@@ -63,7 +63,7 @@ export default function ReleasesPage() {
 function OlderReleases({
   groups,
 }: {
-  groups: ReleaseMajorGroup<ReleaseIndexRelease>[];
+  groups: ReleaseMajorGroup[];
 }) {
   return (
     <section className="not-prose mt-12 border-border border-t pt-8">

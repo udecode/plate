@@ -20,6 +20,21 @@ import {
 
 import { ToolbarButton } from './toolbar';
 
+const MODE_ITEMS = {
+  editing: {
+    icon: <PenIcon />,
+    label: 'Editing',
+  },
+  suggestion: {
+    icon: <PencilLineIcon />,
+    label: 'Suggestion',
+  },
+  viewing: {
+    icon: <EyeIcon />,
+    label: 'Viewing',
+  },
+} satisfies Record<string, { icon: React.ReactNode; label: string }>;
+
 export function ModeToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
@@ -27,33 +42,18 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
 
   const isSuggesting = usePluginStore(SuggestionPlugin, 'isSuggesting');
 
-  let value = 'editing';
+  let value: keyof typeof MODE_ITEMS = 'editing';
 
   if (readOnly) value = 'viewing';
 
   if (isSuggesting) value = 'suggestion';
 
-  const item: Record<string, { icon: React.ReactNode; label: string }> = {
-    editing: {
-      icon: <PenIcon />,
-      label: 'Editing',
-    },
-    suggestion: {
-      icon: <PencilLineIcon />,
-      label: 'Suggestion',
-    },
-    viewing: {
-      icon: <EyeIcon />,
-      label: 'Viewing',
-    },
-  };
-
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip="Editing mode" isDropdown>
-          {item[value].icon}
-          <span className="hidden lg:inline">{item[value].label}</span>
+          {MODE_ITEMS[value].icon}
+          <span className="hidden lg:inline">{MODE_ITEMS[value].label}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
@@ -85,8 +85,8 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
             value="editing"
           >
             <Indicator />
-            {item.editing.icon}
-            {item.editing.label}
+            {MODE_ITEMS.editing.icon}
+            {MODE_ITEMS.editing.label}
           </DropdownMenuRadioItem>
 
           <DropdownMenuRadioItem
@@ -94,8 +94,8 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
             value="viewing"
           >
             <Indicator />
-            {item.viewing.icon}
-            {item.viewing.label}
+            {MODE_ITEMS.viewing.icon}
+            {MODE_ITEMS.viewing.label}
           </DropdownMenuRadioItem>
 
           <DropdownMenuRadioItem
@@ -103,8 +103,8 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
             value="suggestion"
           >
             <Indicator />
-            {item.suggestion.icon}
-            {item.suggestion.label}
+            {MODE_ITEMS.suggestion.icon}
+            {MODE_ITEMS.suggestion.label}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

@@ -42,8 +42,8 @@ export {
 } from '@platejs/plite/internal';
 
 export const inheritEditorExtensionRegistry = (
-  editor: EditorType<any, any>,
-  source: EditorType<any, any>
+  editor: EditorType,
+  source: EditorType
 ) => {
   inheritEditorExtensionRegistryCore(editor, source);
 };
@@ -80,4 +80,4 @@ export {
   void,
 } from '@platejs/plite/internal';
 
-export type Editor = EditorType<any, any>;
+export type Editor = EditorType;

@@ -102,7 +102,7 @@ mock.module('./editor-static', () => ({
 }));
 
 mock.module('@/components/ui/button', () => ({
-  Button: ({ children }: any) => <button>{children}</button>,
+  Button: ({ children }: any) => <button type="button">{children}</button>,
 }));
 
 mock.module('@/components/ui/command', () => ({
@@ -190,21 +190,28 @@ describe('AIMenu slow contracts', () => {
 
     usePluginStoreMock.mockImplementation((_plugin: unknown, key: string) => {
       switch (key) {
-        case 'mode':
+        case 'mode': {
           return 'insert';
-        case 'toolName':
+        }
+        case 'toolName': {
           return null;
-        case 'streaming':
+        }
+        case 'streaming': {
           return true;
-        case 'open':
+        }
+        case 'open': {
           return chatOpen;
-        case 'isSelectingSome':
+        }
+        case 'isSelectingSome': {
           return false;
-        case 'chat':
+        }
+        case 'chat': {
           return { messages: [], status: 'streaming' };
+        }
         default:
-          return;
       }
+
+      return undefined;
     });
 
     useEditorPluginMock.mockReturnValue({

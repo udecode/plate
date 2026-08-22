@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 105,
+  "latestVersion": 106,
   "versions": [
     {
       "version": 0,
@@ -1242,6 +1242,18 @@
         "Resolve editor.read.nodes.path(element) at interaction time when a command or event is the only path consumer.",
         "Use usePath() only when rendered output must react to movement, and include that subscription in repeated-node performance proof.",
         "Prove stable custom elements do not rerender for sibling-only path shifts and that explicit usePath consumers still receive live positions."
+      ]
+    },
+    {
+      "version": 106,
+      "date": "2026-08-21",
+      "doctrineFingerprint": "sha256:b50efe2877034cd48b5199b2e200bc39cb25202aeec2fdc0252245df14623ce2",
+      "summary": "Post-publication observer failures cannot make committed editor updates appear rejected.",
+      "migrationChecks": [
+        "Run fallible callbacks that may reject an update before authoritative state publication; do not reopen a transaction after EditorCommit exists.",
+        "Report post-publication observer failures through one optional host sink with exact owner and phase metadata without widening ordinary update call sites.",
+        "Prove pre-publication failures roll back, post-publication failures preserve the commit and later observers, and a follow-up update remains usable.",
+        "Regenerate Best API and related skill mirrors, verify doctrine fingerprints, and close agent-native plus P1 autoreview."
       ]
     }
   ],

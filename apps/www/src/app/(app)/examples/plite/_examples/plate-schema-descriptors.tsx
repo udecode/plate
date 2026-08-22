@@ -153,8 +153,8 @@ const PlateSchemaDescriptorControls = () => {
   const editor = useEditor();
   const [codecLabel, setCodecLabel] = useState('initial');
   const [encodedSlice, setEncodedSlice] = useState('');
-  const document = useEditorSelector((editor) =>
-    JSON.stringify(editor.read.children())
+  const document = useEditorSelector((innerEditor) =>
+    JSON.stringify(innerEditor.read.children())
   );
   const advancedMark = editor.read.schema.property({
     key: editor.plugin(AdvancedMarkPlugin).schema.key,
@@ -409,7 +409,9 @@ const PlateSchemaDescriptorControls = () => {
           <button
             className="rounded border px-3 py-1"
             key={kind}
-            onClick={() => insertCodecProof(kind)}
+            onClick={() => {
+              insertCodecProof(kind);
+            }}
             type="button"
           >
             {label}

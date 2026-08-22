@@ -132,10 +132,24 @@ export const usePliteLayout = <
         editor,
         deferLayoutRuntimeConnection(options)
       ),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the layout; the committed reconfiguration effect applies option changes without replacing subscriptions.
     [editor]
   );
   const committedConfigurationRef = useRef({ layout, options });
   const pageDependency = getPageSourceDependency(options.page);
+  const pageBreakMode = options.pageBreaks?.mode;
+  const pageBreakSource = options.pageBreaks?.source;
+  const pageBreakWriterId =
+    pageBreakMode === 'write' ? options.pageBreaks?.writerId : null;
+  const { textChangeRefresh } = options;
+  const textChangeRefreshDelay =
+    typeof textChangeRefresh === 'object'
+      ? textChangeRefresh.delayMs
+      : textChangeRefresh;
+  const textChangeRefreshMaxDelay =
+    typeof textChangeRefresh === 'object' ? textChangeRefresh.maxDelayMs : null;
+  const textChangeRefreshMode =
+    typeof textChangeRefresh === 'object' ? textChangeRefresh.mode : null;
 
   useEffect(() => connectLayoutRuntime(layout), [layout]);
 
@@ -151,24 +165,19 @@ export const usePliteLayout = <
 
     layout.reconfigure(options);
     committedConfigurationRef.current = { layout, options };
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The explicit dependency projection controls reconfiguration while the effect applies the latest complete options object.
   }, [
     layout,
     options.engine,
     options.nodeLayout,
     options.onError,
-    options.pageBreaks?.mode,
-    options.pageBreaks?.source,
-    options.pageBreaks?.mode === 'write' ? options.pageBreaks.writerId : null,
+    pageBreakMode,
+    pageBreakSource,
+    pageBreakWriterId,
     options.root,
-    typeof options.textChangeRefresh === 'object'
-      ? options.textChangeRefresh.delayMs
-      : options.textChangeRefresh,
-    typeof options.textChangeRefresh === 'object'
-      ? options.textChangeRefresh.maxDelayMs
-      : null,
-    typeof options.textChangeRefresh === 'object'
-      ? options.textChangeRefresh.mode
-      : null,
+    textChangeRefreshDelay,
+    textChangeRefreshMaxDelay,
+    textChangeRefreshMode,
     options.typography,
     pageDependency,
   ]);
@@ -185,10 +194,24 @@ export const usePlitePageLayout = <
 ): PlitePageLayout<PlitePageLayoutOptions<TSettings>> => {
   const layout = useMemo(
     () => createPlitePageLayout(editor, deferLayoutRuntimeConnection(options)),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the layout; the committed reconfiguration effect applies option changes without replacing subscriptions.
     [editor]
   );
   const committedConfigurationRef = useRef({ layout, options });
   const pageDependency = getPageSourceDependency(options.page);
+  const pageBreakMode = options.pageBreaks?.mode;
+  const pageBreakSource = options.pageBreaks?.source;
+  const pageBreakWriterId =
+    pageBreakMode === 'write' ? options.pageBreaks?.writerId : null;
+  const { textChangeRefresh } = options;
+  const textChangeRefreshDelay =
+    typeof textChangeRefresh === 'object'
+      ? textChangeRefresh.delayMs
+      : textChangeRefresh;
+  const textChangeRefreshMaxDelay =
+    typeof textChangeRefresh === 'object' ? textChangeRefresh.maxDelayMs : null;
+  const textChangeRefreshMode =
+    typeof textChangeRefresh === 'object' ? textChangeRefresh.mode : null;
 
   useEffect(() => connectLayoutRuntime(layout), [layout]);
 
@@ -204,24 +227,19 @@ export const usePlitePageLayout = <
 
     layout.reconfigure(options);
     committedConfigurationRef.current = { layout, options };
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The explicit dependency projection controls reconfiguration while the effect applies the latest complete options object.
   }, [
     layout,
     options.engine,
     options.nodeLayout,
     options.onError,
-    options.pageBreaks?.mode,
-    options.pageBreaks?.source,
-    options.pageBreaks?.mode === 'write' ? options.pageBreaks.writerId : null,
+    pageBreakMode,
+    pageBreakSource,
+    pageBreakWriterId,
     options.root,
-    typeof options.textChangeRefresh === 'object'
-      ? options.textChangeRefresh.delayMs
-      : options.textChangeRefresh,
-    typeof options.textChangeRefresh === 'object'
-      ? options.textChangeRefresh.maxDelayMs
-      : null,
-    typeof options.textChangeRefresh === 'object'
-      ? options.textChangeRefresh.mode
-      : null,
+    textChangeRefreshDelay,
+    textChangeRefreshMaxDelay,
+    textChangeRefreshMode,
     options.typography,
     pageDependency,
   ]);
@@ -430,7 +448,7 @@ const sameSelectedPaths = (
   (left != null &&
     right != null &&
     left.length === right.length &&
-    left.every((path, index) => samePath(path, right[index]!)));
+    left.every((path, index) => samePath(path, right[index])));
 
 const getSelectionPathsKey = (selection: EditorCommit['selectionAfter']) =>
   selection
@@ -686,7 +704,7 @@ export const PagedEditable = ({
       setCanTrackContentViewport(false);
       viewportStateRef.current = null;
       setViewport(null);
-      return;
+      return undefined;
     }
 
     const root = rootRef.current;
@@ -696,7 +714,7 @@ export const PagedEditable = ({
       setCanTrackContentViewport(false);
       viewportStateRef.current = null;
       setViewport(null);
-      return;
+      return undefined;
     }
 
     setCanTrackContentViewport(true);
@@ -747,7 +765,9 @@ export const PagedEditable = ({
         commit();
       }
     };
-    const updateAsync = () => update();
+    const updateAsync = () => {
+      update();
+    };
     const updateOnScroll = () => {
       lastViewportScrollAtRef.current = getNow();
       update({ sync: true });
@@ -949,21 +969,33 @@ export const PagedEditable = ({
       }}
     />
   );
+  const fragmentContextValue = useMemo(
+    () => ({
+      layout,
+      projectedLinesByFragment,
+      projectedUnitsByFragment,
+      projection,
+      selectedPaths,
+      snapshot,
+      tracksContentViewport: filtersContentViewport,
+      visibleContentRange,
+      visiblePageIndexes,
+    }),
+    [
+      filtersContentViewport,
+      layout,
+      projectedLinesByFragment,
+      projectedUnitsByFragment,
+      projection,
+      selectedPaths,
+      snapshot,
+      visibleContentRange,
+      visiblePageIndexes,
+    ]
+  );
 
   return (
-    <PliteLayoutFragmentContext
-      value={{
-        layout,
-        projectedLinesByFragment,
-        projectedUnitsByFragment,
-        projection,
-        selectedPaths,
-        snapshot,
-        tracksContentViewport: filtersContentViewport,
-        visibleContentRange,
-        visiblePageIndexes,
-      }}
-    >
+    <PliteLayoutFragmentContext value={fragmentContextValue}>
       <div
         data-plite-paged-editable
         data-plite-paged-editable-page-virtualization={

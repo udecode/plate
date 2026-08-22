@@ -23,7 +23,7 @@ export function mergeProps(
     handlerQuery = (key) => key.startsWith('on'),
   }: MergePropsOptions = {}
 ) {
-  const handlersByKey = new Map<string, ((...args: unknown[]) => void)[]>();
+  const handlersByKey = new Map<string, Array<(...args: unknown[]) => void>>();
   const handlerKeySet = handlerKeys ? new Set(handlerKeys) : null;
   const mergedProps: Record<string, unknown> = {};
 

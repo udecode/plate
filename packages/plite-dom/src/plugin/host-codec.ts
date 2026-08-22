@@ -44,7 +44,7 @@ const reportHostCodecError = <V extends Value>(
   registration: HostCodecRegistration<V>,
   phase: HostCodecPhase,
   cause: unknown
-) =>
+) => {
   reportEditorLifecycleError(
     Object.freeze({
       cause,
@@ -56,6 +56,7 @@ const reportHostCodecError = <V extends Value>(
       source: 'host-codec' as const,
     })
   );
+};
 
 /** Read-only host data exposed to pure codec callbacks. */
 export type HostDataSource = Readonly<{
@@ -169,9 +170,9 @@ const createPlainTextFallbackBlocks = <V extends Value>(
   blockType: string,
   lines: readonly string[],
   activeMarks: EditorMarks | null
-): readonly DescendantIn<V>[] | null => {
+): ReadonlyArray<DescendantIn<V>> | null => {
   const createText = (text: string) =>
-    Object.freeze({ ...(activeMarks ?? {}), text }) as DescendantIn<V>;
+    Object.freeze({ ...activeMarks, text }) as DescendantIn<V>;
 
   if (!state.schema.element(blockType)) {
     return lines.map(
@@ -244,7 +245,7 @@ const createPlainTextInlineSlice = <V extends Value>(
     return null;
   }
 
-  const textNode = Object.freeze({ ...(activeMarks ?? {}), text });
+  const textNode = Object.freeze({ ...activeMarks, text });
   const child = inlineSpine.reduceRight<DescendantIn<V>>((nested, [inline]) => {
     const { children: _children, type, ...properties } = inline;
     const wrapper = state.schema.create(type, properties);
@@ -316,7 +317,7 @@ const createDefaultPlainTextHostCodec = <V extends Value>() =>
               state,
               start,
               blockPath,
-              lines[0]!,
+              lines[0],
               activeMarks
             )
           : null;
@@ -347,7 +348,7 @@ const createDefaultHostCodecRegistration = <V extends Value>() =>
   });
 
 const withDefaultHostCodec = <V extends Value>(
-  registrations: readonly HostCodecRegistration<V>[]
+  registrations: ReadonlyArray<HostCodecRegistration<V>>
 ) => Object.freeze([createDefaultHostCodecRegistration<V>(), ...registrations]);
 
 type HostCodecDirection = 'parse' | 'serialize';
@@ -489,7 +490,7 @@ const compileHostCodecOwnershipTargets = <V extends Value>(
 };
 
 const compileHostCodecs = <V extends Value>(
-  registered: readonly HostCodecRegistration<V>[],
+  registered: ReadonlyArray<HostCodecRegistration<V>>,
   schema: CompiledEditorSchema | null
 ) => {
   const byKey = new Map<string, HostCodecRegistration<V>>();
@@ -541,7 +542,7 @@ type HostCodecsExtensionDefinition<TName extends string> = {
 /** Install one or more host codecs as a named editor extension. */
 export const hostCodecs = <const TName extends string, V extends Value = Value>(
   name: TName,
-  codecs: readonly HostCodec<V>[]
+  codecs: ReadonlyArray<HostCodec<V>>
 ): EditorExtension<HostCodecsExtensionDefinition<TName>> => {
   const registrations = Object.freeze(
     codecs.map((codec) =>
@@ -556,14 +557,14 @@ export const hostCodecs = <const TName extends string, V extends Value = Value>(
     validate(context) {
       compileHostCodecs(
         withDefaultHostCodec(
-          context.getContributions(
-            HOST_CODECS
-          ) as readonly HostCodecRegistration<V>[]
+          context.getContributions(HOST_CODECS) as ReadonlyArray<
+            HostCodecRegistration<V>
+          >
         ),
         getCompiledEditorSchemaFromApi(context.schema)
       );
     },
-  }) as EditorExtension<HostCodecsExtensionDefinition<TName>>;
+  });
 };
 
 // The registry key retains the editor-specific value type at runtime. The
@@ -575,13 +576,12 @@ const getHostCodecs = <V extends Value>(editor: Editor<V, any>) => {
   const registry = getExtensionRegistry(editor);
   const cached = COMPILED_HOST_CODECS.get(registry);
 
-  if (cached) return cached as readonly HostCodecRegistration<V>[];
+  if (cached) return cached as ReadonlyArray<HostCodecRegistration<V>>;
 
   const registered = withDefaultHostCodec(
-    getEditorExtensionContributions(
-      editor,
-      HOST_CODECS
-    ) as readonly HostCodecRegistration<V>[]
+    getEditorExtensionContributions(editor, HOST_CODECS) as ReadonlyArray<
+      HostCodecRegistration<V>
+    >
   );
   const compiled = compileHostCodecs(
     registered,
@@ -676,8 +676,8 @@ export const insertHostData = <V extends Value>(
         ) {
           continue;
         }
-      } catch (cause) {
-        reportHostCodecError(editor, registration, 'query', cause);
+      } catch (error) {
+        reportHostCodecError(editor, registration, 'query', error);
         continue;
       }
     }
@@ -690,8 +690,8 @@ export const insertHostData = <V extends Value>(
       );
 
       slice = parsed ? ContentSliceApi.fromJSON<V>(parsed) : null;
-    } catch (cause) {
-      reportHostCodecError(editor, registration, 'parse', cause);
+    } catch (error) {
+      reportHostCodecError(editor, registration, 'parse', error);
       continue;
     }
 
@@ -735,8 +735,8 @@ export const writeHostFragmentData = <V extends Value>(
           })
         )
       );
-    } catch (cause) {
-      reportHostCodecError(editor, registration, 'serialize', cause);
+    } catch (error) {
+      reportHostCodecError(editor, registration, 'serialize', error);
       continue;
     }
 

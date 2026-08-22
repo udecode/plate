@@ -97,9 +97,15 @@ export function CommentLeaf(props: PlateLeafProps<typeof CommentPlugin>) {
       )}
       attributes={{
         ...props.attributes,
-        onClick: () => store.set({ activeId: currentId ?? null }),
-        onMouseEnter: () => store.set({ hoverId: currentId ?? null }),
-        onMouseLeave: () => store.set({ hoverId: null }),
+        onClick: () => {
+          store.set({ activeId: currentId ?? null });
+        },
+        onMouseEnter: () => {
+          store.set({ hoverId: currentId ?? null });
+        },
+        onMouseLeave: () => {
+          store.set({ hoverId: null });
+        },
       }}
     >
       {children}
@@ -218,7 +224,7 @@ export function Comment(props: {
   const userInfo = usePluginStore(discussionPlugin, 'user', comment.userId);
   const currentUserId = usePluginStore(discussionPlugin, 'currentUserId');
 
-  const resolveDiscussion = async (id: string) => {
+  const resolveDiscussion = (id: string) => {
     const updatedDiscussions = editor
       .plugin(discussionPlugin)
       .store.get('discussions')
@@ -233,7 +239,7 @@ export function Comment(props: {
       .store.set({ discussions: updatedDiscussions });
   };
 
-  const removeDiscussion = async (id: string) => {
+  const removeDiscussion = (id: string) => {
     const updatedDiscussions = editor
       .plugin(discussionPlugin)
       .store.get('discussions')
@@ -243,7 +249,7 @@ export function Comment(props: {
       .store.set({ discussions: updatedDiscussions });
   };
 
-  const updateComment = async (input: {
+  const updateComment = (input: {
     id: string;
     contentRich: Value;
     discussionId: string;
@@ -254,16 +260,16 @@ export function Comment(props: {
       .store.get('discussions')
       .map((discussion) => {
         if (discussion.id === input.discussionId) {
-          const updatedComments = discussion.comments.map((comment) => {
-            if (comment.id === input.id) {
+          const updatedComments = discussion.comments.map((innerComment) => {
+            if (innerComment.id === input.id) {
               return {
-                ...comment,
+                ...innerComment,
                 contentRich: input.contentRich,
                 isEdited: true,
                 updatedAt: new Date(),
               };
             }
-            return comment;
+            return innerComment;
           });
           return { ...discussion, comments: updatedComments };
         }
@@ -294,7 +300,7 @@ export function Comment(props: {
   };
 
   const onSave = () => {
-    void updateComment({
+    updateComment({
       id: comment.id,
       contentRich: commentEditor.read.value().children,
       discussionId: comment.discussionId,
@@ -304,7 +310,7 @@ export function Comment(props: {
   };
 
   const onResolveComment = () => {
-    void resolveDiscussion(comment.discussionId);
+    resolveDiscussion(comment.discussionId);
     editor.plugin(commentPlugin).update.unsetMark({ id: comment.discussionId });
   };
 
@@ -317,8 +323,12 @@ export function Comment(props: {
 
   return (
     <div
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
+      onMouseEnter={() => {
+        setHovering(true);
+      }}
+      onMouseLeave={() => {
+        setHovering(false);
+      }}
     >
       <div className="relative flex items-center">
         <Avatar className="size-5">
@@ -361,7 +371,7 @@ export function Comment(props: {
                   editor
                     .plugin(commentPlugin)
                     .update.unsetMark({ id: comment.discussionId });
-                  void removeDiscussion(comment.discussionId);
+                  removeDiscussion(comment.discussionId);
                 }
               }}
               comment={comment}
@@ -403,7 +413,7 @@ export function Comment(props: {
                   className="size-[28px]"
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation();
-                    void onCancel();
+                    onCancel();
                   }}
                 >
                   <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-primary/40">
@@ -416,7 +426,7 @@ export function Comment(props: {
                   variant="ghost"
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation();
-                    void onSave();
+                    onSave();
                   }}
                 >
                   <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-brand">
@@ -454,8 +464,11 @@ function CommentMoreDropdown(props: {
   const selectedEditCommentRef = React.useRef<boolean>(false);
 
   const onDeleteComment = React.useCallback(() => {
-    if (!comment.id)
-      return alert('You are operating too quickly, please try again later.');
+    if (!comment.id) {
+      // oxlint-disable-next-line no-alert -- [P1 local-invariant] This copied UI deliberately uses the native blocking fallback.
+      alert('You are operating too quickly, please try again later.');
+      return;
+    }
 
     // Find and update the discussion
     const updatedDiscussions = editor
@@ -492,8 +505,11 @@ function CommentMoreDropdown(props: {
   const onEditComment = React.useCallback(() => {
     selectedEditCommentRef.current = true;
 
-    if (!comment.id)
-      return alert('You are operating too quickly, please try again later.');
+    if (!comment.id) {
+      // oxlint-disable-next-line no-alert -- [P1 local-invariant] This copied UI deliberately uses the native blocking fallback.
+      alert('You are operating too quickly, please try again later.');
+      return;
+    }
 
     setEditingId(comment.id);
   }, [comment.id, setEditingId]);
@@ -504,7 +520,12 @@ function CommentMoreDropdown(props: {
       onOpenChange={setDropdownOpen}
       modal={false}
     >
-      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+      <DropdownMenuTrigger
+        asChild
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
           <MoreHorizontalIcon className="size-4" />
         </Button>
@@ -517,7 +538,7 @@ function CommentMoreDropdown(props: {
             selectedEditCommentRef.current = false;
           }
 
-          return e.preventDefault();
+          e.preventDefault();
         }}
       >
         <DropdownMenuGroup>
@@ -549,12 +570,19 @@ export function CommentCreateForm({
   const discussions = usePluginStore(discussionPlugin, 'discussions');
 
   const editor = useEditor();
-  const commentId = useEditorSelector((editor) => {
-    if (!editor.read.selection() || editor.read.selection.isExpanded()) return;
-    const { api, read } = editor.plugin(BaseCommentPlugin);
+  const commentId = useEditorSelector((innerEditor) => {
+    if (
+      !innerEditor.read.selection() ||
+      innerEditor.read.selection.isExpanded()
+    ) {
+      return undefined;
+    }
+    const { api, read } = innerEditor.plugin(BaseCommentPlugin);
     const commentNode = read.node();
 
     if (commentNode) return api.id(commentNode[0]);
+
+    return undefined;
   });
   const discussionId = discussionIdProp ?? commentId;
 
@@ -575,7 +603,7 @@ export function CommentCreateForm({
     }
   }, [commentEditor, focusOnMount]);
 
-  const onAddComment = React.useCallback(async () => {
+  const onAddComment = React.useCallback(() => {
     if (!commentValue) return;
 
     replaceEditorValue(commentEditor, []);
@@ -673,7 +701,7 @@ export function CommentCreateForm({
       .plugin(discussionPlugin)
       .store.set({ discussions: [...discussions, newDiscussion] });
 
-    const id = newDiscussion.id;
+    const { id } = newDiscussion;
 
     editor.update((tx) => {
       commentsNodeEntry.forEach(([, path]) => {

@@ -4,7 +4,7 @@ describe('getPlainText', () => {
   const originalGetComputedStyle = globalThis.getComputedStyle;
 
   beforeEach(() => {
-    globalThis.getComputedStyle = ((element: Element) => {
+    globalThis.getComputedStyle = (element: Element) => {
       const display =
         element.tagName === 'P'
           ? 'block'
@@ -15,7 +15,7 @@ describe('getPlainText', () => {
       return {
         getPropertyValue: (name: string) => (name === 'display' ? display : ''),
       } as CSSStyleDeclaration;
-    }) as typeof globalThis.getComputedStyle;
+    };
   });
 
   afterEach(() => {

@@ -47,7 +47,7 @@ function isDependencyList(
 
 function isKeyCombinationList(
   keys: Exclude<Keys, string>
-): keys is Extract<Keys, readonly (readonly string[])[]> {
+): keys is Extract<Keys, ReadonlyArray<readonly string[]>> {
   return keys.length > 0 && keys.every((key) => Array.isArray(key));
 }
 
@@ -121,10 +121,13 @@ export default function useHotkeys<T extends HTMLElement>(
   const proxy = useBoundHotkeysProxy();
 
   useSafeLayoutEffect(() => {
-    const options = optionsRef.current;
+    const innerOptions = optionsRef.current;
 
-    if (explicitlyDisabled || !isScopeActive(activeScopes, options?.scopes)) {
-      return;
+    if (
+      explicitlyDisabled ||
+      !isScopeActive(activeScopes, innerOptions?.scopes)
+    ) {
+      return undefined;
     }
 
     const listener = (e: KeyboardEvent, isKeyUp = false) => {

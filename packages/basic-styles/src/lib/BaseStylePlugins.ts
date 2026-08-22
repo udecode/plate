@@ -11,15 +11,16 @@ import {
   schema,
   target,
 } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 
 const digitRegex = /\d+/;
 const getMarkdownStyleValue = (
-  attributes: readonly {
+  attributes: ReadonlyArray<{
     type: string;
     name?: string;
     value?: unknown;
-  }[],
+  }>,
   styleName: string
 ) => {
   const styleAttribute = attributes.find(
@@ -29,13 +30,15 @@ const getMarkdownStyleValue = (
       typeof attribute.value === 'string'
   );
 
-  if (typeof styleAttribute?.value !== 'string') return;
+  if (typeof styleAttribute?.value !== 'string') return undefined;
 
   for (const style of styleAttribute.value.split(';')) {
     const [name, value] = style.split(':').map((part) => part.trim());
 
     if (name === styleName) return value;
   }
+
+  return undefined;
 };
 
 export type Alignment =
@@ -327,7 +330,7 @@ export const BaseLineHeightPlugin = defineBasePlugin(PLUGINS.lineHeight, {
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          if (!element.style.lineHeight) return;
+          if (!element.style.lineHeight) return undefined;
 
           const value = Number(element.style.lineHeight);
 
@@ -345,7 +348,9 @@ export const BaseLineHeightPlugin = defineBasePlugin(PLUGINS.lineHeight, {
   },
   update: ({ editor, plugin, tx }) => ({
     set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-      const { defaultNodeValue } = editor.plugin(plugin).inject.nodeProps!;
+      const { defaultNodeValue } =
+        editor.plugin(plugin).inject.nodeProps ??
+        failInvariant('Expected value to be defined');
       const match = getInjectMatch(editor, plugin);
 
       if (value === defaultNodeValue) {
@@ -405,7 +410,9 @@ export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
   },
   update: ({ editor, plugin, tx }) => ({
     set: (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
-      const { defaultNodeValue } = editor.plugin(plugin).inject.nodeProps!;
+      const { defaultNodeValue } =
+        editor.plugin(plugin).inject.nodeProps ??
+        failInvariant('Expected value to be defined');
       const match = getInjectMatch(editor, plugin);
 
       if (value === defaultNodeValue) {
@@ -457,7 +464,7 @@ export const BaseTextIndentPlugin = defineBasePlugin(PLUGINS.textIndent, {
           const styleValue = element.style.textIndent;
 
           if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
-            return;
+            return undefined;
           }
 
           const numericValue = unit

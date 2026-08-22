@@ -47,9 +47,17 @@ const isFixtureFile = (file: string) =>
 
 const getFixtureName = (file: string) => file.replace(/\.(tsx|ts|js)$/u, '');
 
+type FixtureModule = {
+  input: any;
+  output: any;
+  run: (input: any) => any;
+  test: (input: any) => any;
+  withFallbackElement?: boolean;
+};
+
 const runFixtureTree = (
   path: string,
-  runFixture: (module: Record<string, any>, fixturePath: string) => void
+  runFixture: (module: FixtureModule, fixturePath: string) => void
 ) => {
   describe(basename(path), () => {
     for (const file of readdirSync(path).sort()) {
@@ -137,7 +145,7 @@ describe('@platejs/plite', () => {
                   TextApi.isText(child) || editor.read.schema.isInline(child)
               );
 
-              if (index < 0) return;
+              if (index === -1) return;
 
               tx.nodes.wrap(
                 { type: 'paragraph', children: [] },

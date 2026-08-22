@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-call, typescript/no-unsafe-member-access -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 
@@ -158,10 +157,10 @@ function getRegistryDependencyTarget(
 }
 
 function getImportSources(source: string) {
-  const program = parse(source, {
+  const { program } = parse(source, {
     plugins: ['jsx', 'typescript'],
     sourceType: 'unambiguous',
-  }).program;
+  });
   const imports = new Set<string>();
 
   for (const statement of program.body) {
@@ -190,15 +189,15 @@ function getImportSources(source: string) {
       const [argument] = (node.arguments as unknown[] | undefined) ?? [];
 
       if (argument && typeof argument === 'object') {
-        const source = argument as Record<string, unknown>;
+        const innerSource = argument as Record<string, unknown>;
 
         if (
-          source.type === 'StringLiteral' &&
-          typeof source.value === 'string' &&
+          innerSource.type === 'StringLiteral' &&
+          typeof innerSource.value === 'string' &&
           (callee?.type === 'Import' ||
             (callee?.type === 'Identifier' && callee.name === 'require'))
         ) {
-          imports.add(source.value);
+          imports.add(innerSource.value);
         }
       }
     }
@@ -213,13 +212,13 @@ function getImportSources(source: string) {
       }
     }
     if (node.type === 'ImportExpression') {
-      const source = node.source as Record<string, unknown> | undefined;
+      const innerSource2 = node.source as Record<string, unknown> | undefined;
 
       if (
-        source?.type === 'StringLiteral' &&
-        typeof source.value === 'string'
+        innerSource2?.type === 'StringLiteral' &&
+        typeof innerSource2.value === 'string'
       ) {
-        imports.add(source.value);
+        imports.add(innerSource2.value);
       }
     }
 

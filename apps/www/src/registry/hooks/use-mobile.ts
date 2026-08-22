@@ -9,7 +9,9 @@ export function useIsMobile() {
     const mql = window.matchMedia(MOBILE_MEDIA_QUERY);
     mql.addEventListener('change', onStoreChange);
 
-    return () => mql.removeEventListener('change', onStoreChange);
+    return () => {
+      mql.removeEventListener('change', onStoreChange);
+    };
   }, []);
 
   const getSnapshot = React.useCallback(

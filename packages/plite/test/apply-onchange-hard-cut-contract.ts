@@ -48,7 +48,8 @@ describe('apply/onChange hard cuts', () => {
 
   it('publishes one tagged commit for a transaction', () => {
     const editor = createEditor();
-    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
+      [];
     const unsubscribe = editor.subscribe((_snapshot, commit) => {
       if (commit) {
         commits.push(commit);

@@ -18,6 +18,8 @@ type ElementSelector<N extends Element, T> = (
   prev?: T
 ) => T;
 
+const strictEqual = <T>(a: T, b: T) => a === b;
+
 export function useElementSelector<T>(
   selector: ElementSelector<Element, T>,
   options?: UseElementSelectorOptions<T>
@@ -47,7 +49,7 @@ export function useElementSelector<T>(
   const options = (
     typeof pluginOrSelector === 'function' ? selectorOrOptions : pluginOptions
   ) as UseElementSelectorOptions<T> | undefined;
-  const equalityFn = options?.equalityFn ?? ((a: T, b: T) => a === b);
+  const equalityFn = options?.equalityFn ?? strictEqual<T>;
   const context = useElementStoreContext(plugin?.name ?? options?.scope);
   const cacheRef = React.useRef<{
     entry: NodeEntry<any> | null;

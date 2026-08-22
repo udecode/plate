@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/unbound-method -- Methods in this owner are already bound, invoked with an explicit receiver, or inspected by identity; wrapping them would change the receiver contract. */
 import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
 import { expect, test } from '@playwright/test';
 
@@ -55,7 +54,7 @@ test.describe('mobile input lab', () => {
       expect(payload.snapshots.at(-1)?.model.selection).toBeDefined();
 
       await page.evaluate(() => {
-        const createObjectURL = URL.createObjectURL;
+        const { createObjectURL } = URL;
 
         URL.createObjectURL = (blob) => {
           void blob.text().then((text) => {
@@ -97,14 +96,14 @@ test.describe('mobile input lab', () => {
       ).toEqual(['manual']);
 
       await page.evaluate(() => {
-        const editor = document.querySelector<HTMLElement>(
+        const innerEditor = document.querySelector<HTMLElement>(
           '[data-plite-editor="true"]'
         );
         const clear = document.querySelector<HTMLButtonElement>(
           '[data-test-id="mobile-lab-clear"]'
         );
 
-        editor?.dispatchEvent(
+        innerEditor?.dispatchEvent(
           new KeyboardEvent('keydown', { bubbles: true, key: 'x' })
         );
         clear?.click();

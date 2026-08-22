@@ -152,6 +152,12 @@ Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
 harness.
 
+For Plite model-based, generated, or differential cases, use canonical
+`DocumentChange` plus `EditorCommit` laws as the semantic oracle. Compare final
+document state, selection, commit metadata, error class, and follow-up
+usability. Do not require primitive operation-trace parity with Slate or Plate
+unless current product law explicitly preserves that trace.
+
 ### 3. Probe Before Scale
 
 Run the smallest test or route action that can falsify the highest-value
@@ -173,9 +179,38 @@ fixture, or route host.
 Read back Patch evidence. Run the owning executable test first, then the exact
 fresh-host case and only the breadth required by the claim.
 
+Once a requested or started package, browser, root, or CI gate fails, record it
+under `Gate failure closure`. A completed run must repair or classify the
+failure and rerun that exact gate on the final bytes. Never dismiss a red gate
+as unrelated and use partial progress from that run as completion evidence.
+
 Use retry-free warm repetitions for native input, lifecycle, selection, focus,
 DnD, compositor, flaky, or device risks. Default to five when those risks
 apply. One failure keeps the case open.
+
+Each required stability repetition must execute the proof command. Cached result
+reuse does not count toward the run total; force fresh execution or disable the
+cache before recording stability.
+
+If the first failure appears only during stability after an exact green run,
+freeze product bytes. Before another implementation attempt, add the smallest
+executable diagnostic that names the failing phase and distinguishes product
+nondeterminism from interaction, host, or oracle drift. Repair invalid proof
+machinery and restart baselines; do not tune product code against an unproved
+gesture or sampling path.
+
+For compositor repairs, never treat callback order as proof that paint occurred
+between two mutations. Before changing timing or phase ownership again, trace
+the material state at the mutation boundary: the relevant computed style, live
+range geometry, model/DOM endpoints, and callback identity. If that state is
+already final while the pixel oracle stays red, reject timing as the cause.
+Keep the pixel oracle blocking; callback traces prove execution, not paint.
+
+Before a pixel-diff oracle may block a case, run positive and negative controls
+through the same capture and classifier. The known-visible state must be
+detected, and the known-absent state must contain no classified signal. A failed
+control invalidates every result from that oracle and freezes product edits
+until the proof helper is repaired.
 
 Run final proof through `capture-proof-receipt.mjs`. It executes the command,
 fingerprints every named production/test/fixture/harness/config input before
@@ -184,6 +219,11 @@ and prints a tamper-evident
 Markdown receipt for the transient plan. After the last edit to any shared
 owner, replay every affected exact case in one combined command and bind the
 affected-corpus row to that receipt.
+
+Before changing a shared owner, run every already-executable affected case and
+record its `pass:` or `red:` pre-edit baseline in `Affected corpus replay`.
+Without that baseline, a later red cannot distinguish an introduced regression
+from inherited breakage, so Patch must not start.
 
 Decide:
 
@@ -295,6 +335,7 @@ Report:
 - plan path and selected executable test cases;
 - exact reproduction, fix, test commands, hosts, refs, and stability;
 - reporter oracle matrix, proof receipt, and affected-corpus replay;
+- every started gate failure and its passing final rerun;
 - keep/revert/quarantine/defer/block decisions;
 - failed-fix invalidation, automatic repair, and architecture escalation when
   any attempt failed;

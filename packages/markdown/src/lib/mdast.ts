@@ -3,7 +3,7 @@ export type {
   // Others
   Break as MdBreak,
   Code as MdCode,
-  Content as MdContent,
+  RootContent as MdContent,
   // Reference related
   Definition as MdDefinition,
   Delete as MdDelete,

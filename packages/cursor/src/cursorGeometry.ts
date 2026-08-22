@@ -38,7 +38,7 @@ export const getCursorOverlayState = <
 }: {
   cursors?: Record<string, CursorState<TCursorData>>;
   selectionRects: Record<string, readonly SelectionRect[]>;
-}): CursorOverlayState<TCursorData>[] => {
+}): Array<CursorOverlayState<TCursorData>> => {
   if (!cursors) return [];
 
   return Object.entries(cursors).map(([id, cursor]) => {

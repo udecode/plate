@@ -615,7 +615,7 @@ describe('migratePlateV55 profile', () => {
       },
       { editor, migrations }
     ).document;
-    const columnGroup = result.children[0] as Element;
+    const columnGroup = result.children[0];
 
     expect(columnGroup).not.toHaveProperty('layout');
     expect(columnGroup.children).toMatchObject([
@@ -900,7 +900,7 @@ describe('migratePlateV55 profile', () => {
       },
       { editor, migrations }
     ).document;
-    const table = result.children[0] as Element;
+    const table = result.children[0];
     const row = table.children[0] as Element;
     const cell = row.children[0] as Element;
 
@@ -948,9 +948,7 @@ describe('migratePlateV55 profile', () => {
       { editor, migrations }
     ).document;
 
-    expect((result.children[0] as Element).children[0]).not.toHaveProperty(
-      'label'
-    );
+    expect(result.children[0].children[0]).not.toHaveProperty('label');
     expect(result.children[1]).not.toHaveProperty('columnWidths');
   });
 });

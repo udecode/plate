@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const toggleValue = (
+export const toggleValue: Value = (
   <fragment>
     <hheading level={2}>折叠</hheading>
     <hp>创建具有多级缩进的折叠内容</hp>

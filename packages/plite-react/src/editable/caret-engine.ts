@@ -407,9 +407,13 @@ const moveSelectionAndRespectBoundaries = ({
 }) => {
   writePliteViewSelection(editor, null);
   if (updatePolicy) {
-    editor.update(updatePolicy, () => move());
+    editor.update(updatePolicy, () => {
+      move();
+    });
   } else {
-    editor.update(() => move());
+    editor.update(() => {
+      move();
+    });
   }
   restoreSelectionIfMovementEnteredBoundary({
     boundarySkipUnit,
@@ -785,7 +789,7 @@ export const applyEditableCaretMovement = ({
   if (horizontal) {
     event.preventDefault();
     const reverse = horizontal.direction === 'left';
-    const currentTarget = event.currentTarget;
+    const { currentTarget } = event;
     const directionHost = currentTarget?.closest<HTMLElement>('[dir]');
     const directionTarget =
       directionHost ?? currentTarget ?? editor.api.dom?.root();

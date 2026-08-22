@@ -98,27 +98,27 @@ export function ColumnElement({
   );
 }
 
-const ColumnDragHandle = React.memo(function ColumnDragHandle() {
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" className="h-5 !px-1">
-            <GripHorizontal
-              className="text-muted-foreground"
-              onClick={(event) => {
-                event.stopPropagation();
-                event.preventDefault();
-              }}
-            />
-          </Button>
-        </TooltipTrigger>
+const ColumnDragHandle = React.memo(() => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" className="h-5 !px-1">
+          <GripHorizontal
+            className="text-muted-foreground"
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+            }}
+          />
+        </Button>
+      </TooltipTrigger>
 
-        <TooltipContent>Drag to move column</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-});
+      <TooltipContent>Drag to move column</TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+));
+
+ColumnDragHandle.displayName = 'ColumnDragHandle';
 
 function DropLine() {
   const { dropLine } = useDropLine({ orientation: 'horizontal' });
@@ -156,8 +156,8 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   const readOnly = useEditorReadOnly();
   const element = useElement(ColumnPlugin);
   const selected = useElementSelected();
-  const isCollapsed = useEditorSelector((editor) =>
-    editor.read.selection.isCollapsed()
+  const isCollapsed = useEditorSelector((innerEditor) =>
+    innerEditor.read.selection.isCollapsed()
   );
   const isFocusedLast = useFocusedLast();
 
@@ -175,7 +175,9 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
       <PopoverAnchor>{children}</PopoverAnchor>
       <PopoverContent
         className="w-auto p-1"
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
         align="center"
         side="top"
         sideOffset={10}
@@ -184,35 +186,45 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
           <Button
             variant="ghost"
             className="size-8"
-            onClick={() => onColumnChange(['50%', '50%'])}
+            onClick={() => {
+              onColumnChange(['50%', '50%']);
+            }}
           >
             <DoubleColumnOutlined />
           </Button>
           <Button
             variant="ghost"
             className="size-8"
-            onClick={() => onColumnChange(['33%', '33%', '33%'])}
+            onClick={() => {
+              onColumnChange(['33%', '33%', '33%']);
+            }}
           >
             <ThreeColumnOutlined />
           </Button>
           <Button
             variant="ghost"
             className="size-8"
-            onClick={() => onColumnChange(['70%', '30%'])}
+            onClick={() => {
+              onColumnChange(['70%', '30%']);
+            }}
           >
             <RightSideDoubleColumnOutlined />
           </Button>
           <Button
             variant="ghost"
             className="size-8"
-            onClick={() => onColumnChange(['30%', '70%'])}
+            onClick={() => {
+              onColumnChange(['30%', '70%']);
+            }}
           >
             <LeftSideDoubleColumnOutlined />
           </Button>
           <Button
             variant="ghost"
             className="size-8"
-            onClick={() => onColumnChange(['25%', '50%', '25%'])}
+            onClick={() => {
+              onColumnChange(['25%', '50%', '25%']);
+            }}
           >
             <DoubleSideDoubleColumnOutlined />
           </Button>
@@ -221,8 +233,12 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
           <Button
             variant="ghost"
             className="size-8"
-            onClick={() => editor.update.nodes.remove({ at: element })}
-            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              editor.update.nodes.remove({ at: element });
+            }}
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
           >
             <Trash2Icon />
           </Button>

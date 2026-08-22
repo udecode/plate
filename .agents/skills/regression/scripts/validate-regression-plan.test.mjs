@@ -121,6 +121,8 @@ const oracleRows = ({
 
 const noFailedFixRow =
   '| none | 0 | N/A: no claimed fix failed | N/A: no prior claim | N/A: no repair | N/A: no repair test | no: no failure | N/A: no escalation | N/A: no resume |';
+const noGateFailureRow =
+  '| none | N/A: no started gate failed | N/A: no failure | N/A: no repair | N/A: no rerun required |';
 
 const failedFixRows = ({
   count = 1,
@@ -154,9 +156,12 @@ const fixture = ({
   failedRows,
   inputDigest = digest,
   missingAffectedCase = false,
+  missingAffectedBaseline = false,
   missingForbidden = false,
   preImplementation = false,
+  preImplementationBaseline = false,
   receiptIdOverride,
+  unresolvedGateFailure = false,
 } = {}) => {
   const host = exactChrome
     ? 'pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:exact-chrome:140'
@@ -200,12 +205,25 @@ Proof receipts:
 ${receipt}
 
 Affected corpus replay:
-| Owner | Affected cases | Last owner edit | Combined command | Receipt input digest | Result |
-|---|---|---|---|---|---|
+| Owner | Affected cases | Pre-edit baseline | Last owner edit | Combined command | Receipt input digest | Result |
+|---|---|---|---|---|---|---|
 ${
   preImplementation
-    ? '| pending | pending | pending | pending | pending | pending |'
-    : `| Regression validator | ${missingAffectedCase ? 'other-case' : 'case-complete'} | ${proofTimes.latestInput} | node --test semantic contracts | ${inputDigest} | pass: affected corpus replayed after final owner edit |`
+    ? preImplementationBaseline
+      ? '| Regression validator | case-complete | pass: executable case passed before the shared-owner edit | pending | pending | pending | pending |'
+      : '| pending | pending | pending | pending | pending | pending | pending |'
+    : `| Regression validator | ${missingAffectedCase ? 'other-case' : 'case-complete'} | ${missingAffectedBaseline ? 'N/A: baseline skipped' : 'pass: semantic contract passed before the owner edit'} | ${proofTimes.latestInput} | node --test semantic contracts | ${inputDigest} | pass: affected corpus replayed after final owner edit |`
+}
+
+Gate failure closure:
+| Gate | Failure signal | Classification | Resolution | Final rerun |
+|---|---|---|---|---|
+${
+  preImplementation
+    ? '| pending | pending | pending | pending | pending |'
+    : unresolvedGateFailure
+      ? '| pnpm check:plite | browser selection direction failed | shared selection owner | dismissed as unrelated | N/A: no final rerun |'
+      : noGateFailureRow
 }
 
 Failed fix history:
@@ -363,6 +381,39 @@ test('completion requires affected-corpus replay after the last owner edit', () 
       rootDir: root,
     }).join('\n'),
     /case-complete is missing from Affected corpus replay/
+  );
+});
+
+test('shared-owner work requires an executable pre-edit affected baseline', () => {
+  assert.match(
+    validateRegressionPlan(fixture({ missingAffectedBaseline: true }), {
+      complete: true,
+      rootDir: root,
+    }).join('\n'),
+    /affected corpus Regression validator requires Pre-edit baseline pass: or red:/
+  );
+});
+
+test('pre-implementation plans may record a baseline before final replay exists', () => {
+  assert.deepEqual(
+    validateRegressionPlan(
+      fixture({ preImplementation: true, preImplementationBaseline: true }),
+      {
+        complete: false,
+        rootDir: root,
+      }
+    ),
+    []
+  );
+});
+
+test('a started CI gate cannot be dismissed without a passing final rerun', () => {
+  assert.match(
+    validateRegressionPlan(fixture({ unresolvedGateFailure: true }), {
+      complete: true,
+      rootDir: root,
+    }).join('\n'),
+    /gate failure pnpm check:plite requires Final rerun pass/
   );
 });
 

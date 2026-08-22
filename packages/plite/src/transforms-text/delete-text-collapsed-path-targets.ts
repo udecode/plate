@@ -24,11 +24,11 @@ export const getEmptyEditableInlinePathAtPoint = (
     return null;
   }
 
-  if (!editorHasPath(editor, at.path as Path)) {
+  if (!editorHasPath(editor, at.path)) {
     return null;
   }
 
-  const currentNode = getCurrentNode(editor, at.path as Path);
+  const currentNode = getCurrentNode(editor, at.path);
 
   if (!isTextNode(currentNode)) {
     return null;

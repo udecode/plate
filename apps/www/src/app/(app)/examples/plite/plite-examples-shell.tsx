@@ -199,7 +199,7 @@ function PliteExamplesNavLinks({
 
 function getExampleLabel(examplePath: string | undefined) {
   if (!examplePath) {
-    return;
+    return undefined;
   }
 
   return getExampleDefinition(examplePath)?.[0];

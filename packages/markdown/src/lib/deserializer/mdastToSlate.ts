@@ -1,4 +1,5 @@
 import type { Descendant } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 import type { Root } from 'mdast';
 
@@ -47,7 +48,7 @@ const buildSlateRoot = (
 
   root.children?.forEach((child, index) => {
     const isFirstChild = index === 0;
-    const isLastChild = index === root.children!.length - 1;
+    const isLastChild = index === root.children.length - 1;
 
     if (child.position) {
       const emptyLinesBefore =
@@ -59,7 +60,10 @@ const buildSlateRoot = (
 
       if (isLastChild) {
         const emptyLinesAfter =
-          root.position!.end.line - child.position.end.line - 1;
+          (root.position ?? failInvariant('Expected value to be defined')).end
+            .line -
+          child.position.end.line -
+          1;
         addEmptyParagraphs(emptyLinesAfter);
       }
 

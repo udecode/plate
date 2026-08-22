@@ -1,7 +1,7 @@
 import { describe, expect, it, mock } from 'bun:test';
 
 mock.module('@/lib/highlight-code', () => ({
-  highlightFiles: (files: { content?: string }[]) =>
+  highlightFiles: (files: Array<{ content?: string }>) =>
     files.map((file) => ({
       ...file,
       highlightedContent: file.content ? `<pre>${file.content}</pre>` : '',

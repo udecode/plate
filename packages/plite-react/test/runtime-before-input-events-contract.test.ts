@@ -14,7 +14,7 @@ import {
 import type { PendingCompositionInput } from '../src/editable/input-state';
 import { beginEditableCompositionSession } from '../src/editable/input-state';
 import {
-  captureCompositionModelInput,
+  type captureCompositionModelInput,
   claimSettledCompositionInput,
   getDeferredNativeTextInputRepairPathKey,
   queuePendingCompositionModelInput,

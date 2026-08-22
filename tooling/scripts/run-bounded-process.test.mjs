@@ -31,7 +31,7 @@ test('reports exit 124 when a timed-out child handles SIGTERM cleanly', async ()
 });
 
 test('falls back to the owned child when process-group signaling is denied', async () => {
-  const kill = process.kill;
+  const { kill } = process;
 
   process.kill = (pid, signal) => {
     if (pid < 0) {

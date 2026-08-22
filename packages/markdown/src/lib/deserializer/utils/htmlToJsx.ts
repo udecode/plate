@@ -31,7 +31,7 @@ const BOOL_ATTR_REGEXES = Array.from(BOOL_ATTRS.entries()).map(
   })
 );
 
-const ATTR_RENAMES: [RegExp, string][] = [
+const ATTR_RENAMES: Array<[RegExp, string]> = [
   [/(\s)class=/g, '$1className='],
   [/(\s)for=/g, '$1htmlFor='],
 ];

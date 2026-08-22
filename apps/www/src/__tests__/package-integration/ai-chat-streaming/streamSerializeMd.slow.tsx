@@ -113,7 +113,7 @@ describe('AIChatPlugin read.serializeChunk', () => {
     const lastBlock = editor
       .plugin(AIChatPlugin)
       .api.deserializeChunk(chunk)
-      .at(-1) as any;
+      .at(-1);
 
     const output = editor
       .plugin(AIChatPlugin)

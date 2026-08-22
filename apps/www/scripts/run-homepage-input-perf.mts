@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { failInvariant } from '@platejs/plite/internal';
 import puppeteer from 'puppeteer';
 
 type ProbeRow = {
@@ -67,12 +68,12 @@ const hasArg = (name: string) => process.argv.includes(`--${name}`);
 const action = (getArg('action') ?? 'type') as ProbeAction;
 
 if (action !== 'enter' && action !== 'type') {
-  throw new Error(`Unknown homepage input action: ${action}`);
+  throw new Error(`Unknown homepage input action: ${String(action)}`);
 }
 
-const percentile = (samples: number[], percentile: number) => {
+const percentile = (samples: number[], innerPercentile: number) => {
   const sorted = [...samples].sort((a, b) => a - b);
-  const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+  const index = Math.ceil((innerPercentile / 100) * sorted.length) - 1;
 
   return sorted[Math.max(0, index)] ?? 0;
 };
@@ -139,21 +140,25 @@ try {
   });
 
   const targetIdentity = await page.evaluate(
-    ({ action, enterTargetSelector, enterTargetText }) => {
+    ({
+      action: innerAction,
+      enterTargetSelector: innerEnterTargetSelector,
+      enterTargetText: innerEnterTargetText,
+    }) => {
       const root = document.querySelector(
         '[contenteditable="true"][role="textbox"]'
       );
       const target =
-        action === 'enter'
-          ? [...(root?.querySelectorAll(enterTargetSelector) ?? [])].find(
-              (element) => element.textContent?.includes(enterTargetText)
+        innerAction === 'enter'
+          ? [...(root?.querySelectorAll(innerEnterTargetSelector) ?? [])].find(
+              (element) => element.textContent?.includes(innerEnterTargetText)
             )
           : [...(root?.querySelectorAll('[data-plite-path]') ?? [])].find(
               (element) => {
-                const path = element.getAttribute('data-plite-path');
+                const innerPath = element.getAttribute('data-plite-path');
                 const isTopLevelPath =
-                  !!path &&
-                  Array.from(path).every(
+                  !!innerPath &&
+                  Array.from(innerPath).every(
                     (character) => character >= '0' && character <= '9'
                   );
 
@@ -166,7 +171,7 @@ try {
       return target
         ? {
             path: target.getAttribute('data-plite-path'),
-            selector: action === 'enter' ? enterTargetSelector : null,
+            selector: innerAction === 'enter' ? innerEnterTargetSelector : null,
             text: target.textContent ?? '',
           }
         : null;
@@ -179,17 +184,18 @@ try {
   }
 
   await page.evaluate(
-    ({ targetIdentity }) => {
+    ({ targetIdentity: innerTargetIdentity }) => {
       const root = document.querySelector(
         '[contenteditable="true"][role="textbox"]'
       );
-      const target = targetIdentity.path
+      const target = innerTargetIdentity.path
         ? root?.querySelector(
-            `[data-plite-path="${CSS.escape(targetIdentity.path)}"]`
+            `[data-plite-path="${CSS.escape(innerTargetIdentity.path)}"]`
           )
         : [
-            ...(root?.querySelectorAll(targetIdentity.selector ?? '*') ?? []),
-          ].find((element) => element.textContent === targetIdentity.text);
+            ...(root?.querySelectorAll(innerTargetIdentity.selector ?? '*') ??
+              []),
+          ].find((element) => element.textContent === innerTargetIdentity.text);
 
       if (!(root instanceof HTMLElement) || !(target instanceof HTMLElement)) {
         throw new Error(
@@ -220,16 +226,20 @@ try {
     { targetIdentity }
   );
   await page.evaluate(
-    ({ action, diagnose, targetIdentity }) => {
+    ({
+      action: innerAction2,
+      diagnose: innerDiagnose,
+      targetIdentity: innerTargetIdentity2,
+    }) => {
       const probeWindow = window as ProbeWindow;
       const root = document.querySelector(
         '[contenteditable="true"][role="textbox"]'
       );
 
       if (!root) throw new Error('Homepage editor is not mounted.');
-      const targetSelector = targetIdentity.path
-        ? `[data-plite-path="${CSS.escape(targetIdentity.path)}"]`
-        : (targetIdentity.selector ?? '*');
+      const targetSelector = innerTargetIdentity2.path
+        ? `[data-plite-path="${CSS.escape(innerTargetIdentity2.path)}"]`
+        : (innerTargetIdentity2.selector ?? '*');
 
       probeWindow.__homepageInputProbe = {
         commandBlockers: [],
@@ -240,7 +250,7 @@ try {
         selectorCounts: {},
         rows: [],
       };
-      if (diagnose) {
+      if (innerDiagnose) {
         probeWindow.__PLITE_REACT_RENDER_PROFILER__ = {
           record(event) {
             if (
@@ -253,37 +263,57 @@ try {
             ) {
               const renderKey = `${event.kind}:${event.nodeKey ?? event.id ?? 'anonymous'}`;
 
-              probeWindow.__homepageInputProbe!.renderCounts[renderKey] =
-                (probeWindow.__homepageInputProbe!.renderCounts[renderKey] ??
-                  0) + 1;
+              (
+                probeWindow.__homepageInputProbe ??
+                failInvariant('Expected value to be defined')
+              ).renderCounts[renderKey] =
+                ((
+                  probeWindow.__homepageInputProbe ??
+                  failInvariant('Expected value to be defined')
+                ).renderCounts[renderKey] ?? 0) + 1;
             }
             if (event.kind === 'selector') {
               const selectorKey = `${event.id ?? 'anonymous'}:${event.nodeKey ?? 'global'}`;
 
-              probeWindow.__homepageInputProbe!.selectorCounts[selectorKey] =
-                (probeWindow.__homepageInputProbe!.selectorCounts[
-                  selectorKey
-                ] ?? 0) + 1;
+              (
+                probeWindow.__homepageInputProbe ??
+                failInvariant('Expected value to be defined')
+              ).selectorCounts[selectorKey] =
+                ((
+                  probeWindow.__homepageInputProbe ??
+                  failInvariant('Expected value to be defined')
+                ).selectorCounts[selectorKey] ?? 0) + 1;
             }
             if (event.duration !== undefined) {
               const key = `${event.kind}:${event.id ?? 'anonymous'}`;
 
-              probeWindow.__homepageInputProbe!.profileDurations[key] =
-                (probeWindow.__homepageInputProbe!.profileDurations[key] ?? 0) +
-                event.duration;
+              (
+                probeWindow.__homepageInputProbe ??
+                failInvariant('Expected value to be defined')
+              ).profileDurations[key] =
+                ((
+                  probeWindow.__homepageInputProbe ??
+                  failInvariant('Expected value to be defined')
+                ).profileDurations[key] ?? 0) + event.duration;
             }
             if (
               event.kind === 'runtime-time' &&
               event.id?.startsWith('beforeinput-command-material:')
             ) {
-              probeWindow.__homepageInputProbe!.commandBlockers.push(event.id);
+              (
+                probeWindow.__homepageInputProbe ??
+                failInvariant('Expected value to be defined')
+              ).commandBlockers.push(event.id);
             }
             if (
               event.kind === 'runtime-time' &&
               (event.id?.startsWith('beforeinput-native-demoted:') ||
                 event.id?.startsWith('beforeinput-native-blocked:'))
             ) {
-              probeWindow.__homepageInputProbe!.nativeBlockers.push(event.id);
+              (
+                probeWindow.__homepageInputProbe ??
+                failInvariant('Expected value to be defined')
+              ).nativeBlockers.push(event.id);
             }
           },
         };
@@ -291,7 +321,10 @@ try {
       if ('PerformanceObserver' in window) {
         const longTaskObserver = new PerformanceObserver((list) => {
           list.getEntries().forEach((entry) => {
-            probeWindow.__homepageInputProbe!.longTasks.push({
+            (
+              probeWindow.__homepageInputProbe ??
+              failInvariant('Expected value to be defined')
+            ).longTasks.push({
               duration: entry.duration,
               startTime: entry.startTime,
             });
@@ -305,7 +338,9 @@ try {
         'keydown',
         (event) => {
           const matchesAction =
-            action === 'enter' ? event.key === 'Enter' : event.key.length === 1;
+            innerAction2 === 'enter'
+              ? event.key === 'Enter'
+              : event.key.length === 1;
 
           if (!matchesAction || !root.contains(event.target as Node)) {
             return;
@@ -335,7 +370,10 @@ try {
             textBefore: target?.textContent ?? '',
           };
 
-          probeWindow.__homepageInputProbe!.rows.push(row);
+          (
+            probeWindow.__homepageInputProbe ??
+            failInvariant('Expected value to be defined')
+          ).rows.push(row);
           requestAnimationFrame((time) => {
             row.raf1 = time;
             requestAnimationFrame((nextTime) => {
@@ -348,11 +386,14 @@ try {
       document.addEventListener(
         'beforeinput',
         (event) => {
-          const row = probeWindow.__homepageInputProbe!.rows.at(-1);
+          const row = (
+            probeWindow.__homepageInputProbe ??
+            failInvariant('Expected value to be defined')
+          ).rows.at(-1);
 
           if (row && row.beforeinput === undefined) {
             row.beforeinput = performance.now();
-            row.inputType = (event as InputEvent).inputType;
+            row.inputType = event.inputType;
           }
         },
         true
@@ -360,7 +401,10 @@ try {
       document.addEventListener(
         'input',
         (event) => {
-          const row = probeWindow.__homepageInputProbe!.rows.at(-1);
+          const row = (
+            probeWindow.__homepageInputProbe ??
+            failInvariant('Expected value to be defined')
+          ).rows.at(-1);
 
           if (row && row.input === undefined) {
             row.input = performance.now();
@@ -370,10 +414,13 @@ try {
         true
       );
       new MutationObserver(() => {
-        const row = probeWindow.__homepageInputProbe!.rows.at(-1);
+        const row = (
+          probeWindow.__homepageInputProbe ??
+          failInvariant('Expected value to be defined')
+        ).rows.at(-1);
         const target = root.querySelector(targetSelector);
         const actionCompleted =
-          action === 'enter'
+          innerAction2 === 'enter'
             ? root.childElementCount > (row?.blockCountBefore ?? 0)
             : target?.textContent === `${row?.textBefore}${row?.key}`;
 
@@ -441,7 +488,9 @@ try {
         };
       }, targetIdentity.path);
       await page.evaluate(() => {
-        const probe = (window as ProbeWindow).__homepageInputProbe!;
+        const probe =
+          (window as ProbeWindow).__homepageInputProbe ??
+          failInvariant('Expected value to be defined');
 
         probe.longTaskObserver?.takeRecords();
         probe.longTasks = [];
@@ -465,22 +514,29 @@ try {
     }
     try {
       await page.waitForFunction(
-        ({ action, expectedRows, targetIdentity }) => {
+        ({
+          action: innerAction3,
+          expectedRows,
+          targetIdentity: innerTargetIdentity3,
+        }) => {
           const rows = (window as ProbeWindow).__homepageInputProbe?.rows;
           const row = rows?.[expectedRows - 1];
           const root = document.querySelector(
             '[contenteditable="true"][role="textbox"]'
           );
-          const target = targetIdentity.path
+          const target = innerTargetIdentity3.path
             ? root?.querySelector(
-                `[data-plite-path="${CSS.escape(targetIdentity.path)}"]`
+                `[data-plite-path="${CSS.escape(innerTargetIdentity3.path)}"]`
               )
             : [
-                ...(root?.querySelectorAll(targetIdentity.selector ?? '*') ??
-                  []),
-              ].find((element) => element.textContent === targetIdentity.text);
+                ...(root?.querySelectorAll(
+                  innerTargetIdentity3.selector ?? '*'
+                ) ?? []),
+              ].find(
+                (element) => element.textContent === innerTargetIdentity3.text
+              );
           const actionCompleted =
-            action === 'enter'
+            innerAction3 === 'enter'
               ? (root?.childElementCount ?? 0) > (row?.blockCountBefore ?? 0)
               : target?.textContent === `${row?.textBefore}${row?.key}`;
 
@@ -545,9 +601,11 @@ try {
         row.tableCountAfter = root.querySelectorAll('table').length;
       }, targetIdentity.selector ?? 'h1');
 
-      await page.keyboard.down('Meta');
+      const undoModifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+
+      await page.keyboard.down(undoModifier);
       await page.keyboard.press('z');
-      await page.keyboard.up('Meta');
+      await page.keyboard.up(undoModifier);
       await page.waitForFunction(
         ({ expectedRows, targetSelector, targetText }) => {
           const root = document.querySelector(
@@ -621,7 +679,7 @@ try {
   }
 
   const probe = await page.evaluate(
-    ({ targetIdentity }) => {
+    ({ targetIdentity: innerTargetIdentity4 }) => {
       const probeWindow = window as ProbeWindow;
       const root = document.querySelector(
         '[contenteditable="true"][role="textbox"]'
@@ -637,8 +695,10 @@ try {
           })
         | null;
       const handle = root?.__pliteBrowserHandle;
-      const targetIndex = Number.parseInt(targetIdentity.path ?? '', 10);
-      const liveProbe = probeWindow.__homepageInputProbe!;
+      const targetIndex = Number.parseInt(innerTargetIdentity4.path ?? '', 10);
+      const liveProbe =
+        probeWindow.__homepageInputProbe ??
+        failInvariant('Expected value to be defined');
 
       liveProbe.longTaskObserver?.takeRecords().forEach((entry) => {
         liveProbe.longTasks.push({
@@ -662,14 +722,17 @@ try {
         domSelection: handle?.getDOMSelection() ?? null,
         focusPreserved: root?.contains(document.activeElement) ?? false,
         finalCommitVersion: handle?.getLastCommit()?.version ?? null,
-        finalText: targetIdentity.path
+        finalText: innerTargetIdentity4.path
           ? document.querySelector(
-              `[data-plite-path="${CSS.escape(targetIdentity.path)}"]`
+              `[data-plite-path="${CSS.escape(innerTargetIdentity4.path)}"]`
             )?.textContent
           : [
-              ...(root?.querySelectorAll(targetIdentity.selector ?? '*') ?? []),
-            ].find((element) => element.textContent === targetIdentity.text)
-              ?.textContent,
+              ...(root?.querySelectorAll(
+                innerTargetIdentity4.selector ?? '*'
+              ) ?? []),
+            ].find(
+              (element) => element.textContent === innerTargetIdentity4.text
+            )?.textContent,
         inputState: handle?.getInputState() ?? null,
         longTasks: measuredLongTasks,
         modelSelection: handle?.getSelection() ?? null,
@@ -681,7 +744,7 @@ try {
     },
     { targetIdentity }
   );
-  const rows = probe.rows;
+  const { rows } = probe;
   const measuredRows = rows.slice(warmupSamples);
 
   if (measuredRows.length !== measuredSamples) {
@@ -712,20 +775,44 @@ try {
   }
   const beforeInput =
     action === 'type'
-      ? summarize(measuredRows.map((row) => row.beforeinput! - row.keydown))
+      ? summarize(
+          measuredRows.map(
+            (row) =>
+              (row.beforeinput ??
+                failInvariant('Expected value to be defined')) - row.keydown
+          )
+        )
       : null;
   const inputMutation =
     action === 'type'
-      ? summarize(measuredRows.map((row) => row.mutation! - row.beforeinput!))
+      ? summarize(
+          measuredRows.map(
+            (row) =>
+              (row.mutation ?? failInvariant('Expected value to be defined')) -
+              (row.beforeinput ?? failInvariant('Expected value to be defined'))
+          )
+        )
       : null;
   const firstPaint = summarize(
-    measuredRows.map((row) => row.raf1! - row.keydown)
+    measuredRows.map(
+      (row) =>
+        (row.raf1 ?? failInvariant('Expected value to be defined')) -
+        row.keydown
+    )
   );
   const mutation = summarize(
-    measuredRows.map((row) => row.mutation! - row.keydown)
+    measuredRows.map(
+      (row) =>
+        (row.mutation ?? failInvariant('Expected value to be defined')) -
+        row.keydown
+    )
   );
   const secondPaint = summarize(
-    measuredRows.map((row) => row.raf2! - row.keydown)
+    measuredRows.map(
+      (row) =>
+        (row.raf2 ?? failInvariant('Expected value to be defined')) -
+        row.keydown
+    )
   );
   const measuredLongTasks =
     action === 'enter'
@@ -734,7 +821,8 @@ try {
             (row) =>
               Number.isFinite(row.raf2) &&
               entry.startTime >= row.keydown &&
-              entry.startTime < row.raf2!
+              entry.startTime <
+                (row.raf2 ?? failInvariant('Expected value to be defined'))
           )
         )
       : probe.longTasks;

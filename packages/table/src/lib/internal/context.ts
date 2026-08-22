@@ -25,8 +25,10 @@ const createContext = (
   const anchorAt = (row: number, col: number) => grid.slots[row]?.[col] ?? null;
   const relativeCellPath = (path: Path) => {
     if (path.length === 2) return path;
-    if (path.length !== tablePath.length + 2) return;
-    if (!tablePath.every((index, offset) => path[offset] === index)) return;
+    if (path.length !== tablePath.length + 2) return undefined;
+    if (!tablePath.every((index, offset) => path[offset] === index)) {
+      return undefined;
+    }
 
     return path.slice(tablePath.length);
   };
@@ -42,11 +44,13 @@ const createContext = (
       const direct = grid.byCell.get(cell);
 
       if (direct) return direct;
+
+      return undefined;
     },
     entryAt: (row: number, col: number) => {
       const anchor = anchorAt(row, col);
 
-      if (!anchor) return;
+      if (!anchor) return undefined;
 
       return [
         anchor.cell,

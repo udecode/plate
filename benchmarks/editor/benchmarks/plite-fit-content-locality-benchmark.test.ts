@@ -77,14 +77,14 @@ describe('fitContent locality benchmark authority', () => {
 
     assert.equal(targets.length, 1);
     assert.match(
-      targets[0]!.command,
+      targets[0].command,
       /plite-fit-content-locality-benchmark\.ts/u
     );
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_fit_content_document_width_ratio'
     );
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/plite-fit-content-locality-benchmark.json',
         required: true,

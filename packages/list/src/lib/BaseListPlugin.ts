@@ -239,7 +239,7 @@ const getListSibling = (
 ): NodeEntry<Element> | undefined => {
   const getSiblingEntry = getNextEntry ?? getPreviousEntry;
 
-  if (!getSiblingEntry) return;
+  if (!getSiblingEntry) return undefined;
 
   let nextEntry = getSiblingEntry([node, path], state);
 
@@ -248,15 +248,15 @@ const getListSibling = (
     const indent = getListIndent(node);
     const nextIndent = getListIndent(nextNode);
 
-    if (breakQuery?.(nextNode, node)) return;
-    if (breakOnLowerIndent && nextIndent < indent) return;
+    if (breakQuery?.(nextNode, node)) return undefined;
+    if (breakOnLowerIndent && nextIndent < indent) return undefined;
     if (
       breakOnEqIndentNeqList &&
       nextIndent === indent &&
       (nextNode.listType !== node.listType ||
         getElementListStyle(nextNode) !== getElementListStyle(node))
     ) {
-      return;
+      return undefined;
     }
     if (
       (!query || query(nextNode, node)) &&
@@ -266,6 +266,8 @@ const getListSibling = (
     }
     nextEntry = getSiblingEntry(nextEntry, state);
   }
+
+  return undefined;
 };
 
 const listOrdinalsByState = new WeakMap<
@@ -283,7 +285,7 @@ const getListOrdinal = (
   options: Partial<GetSiblingListOptions> | undefined,
   headingType: string | undefined
 ): number | undefined => {
-  if (element.listType !== ListType.Numbered) return;
+  if (element.listType !== ListType.Numbered) return undefined;
 
   const stateKey = state.runtime.snapshot().index;
   let cache = listOrdinalsByState.get(stateKey);
@@ -325,7 +327,7 @@ const getListOrdinal = (
   const getPreviousEntry =
     sequenceOptions.getPreviousEntry ??
     (([, currentPath]: NodeEntry<Element>) => {
-      if (!PathApi.hasPrevious(currentPath)) return;
+      if (!PathApi.hasPrevious(currentPath)) return undefined;
       const previousPath = PathApi.previous(currentPath);
       const previousNode = state.nodes.get(previousPath, {
         match: ElementApi.isElement,
@@ -371,7 +373,7 @@ const getListOrdinal = (
   }
 
   for (const pendingElement of pending.reverse()) {
-    ordinal++;
+    ordinal += 1;
     ordinals.set(pendingElement, ordinal);
   }
 
@@ -430,7 +432,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
     const decodeListProperties = ({ element }: { element: HTMLElement }) => {
       const listParent = element.closest('ul, ol') as HTMLElement | null;
       const readNumber = (value: null | string | undefined) => {
-        if (!value) return;
+        if (!value) return undefined;
         const parsed = Number(value);
         return isListOrdinal(parsed) ? parsed : undefined;
       };
@@ -591,10 +593,10 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
 
             // First pass: flatten nested UL/OL that are inside LI elements
             // We need to move them to be siblings of their parent LI
-            const lisWithNestedLists: {
+            const lisWithNestedLists: Array<{
               li: globalThis.Element;
               nestedLists: globalThis.Element[];
-            }[] = [];
+            }> = [];
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
                 const nestedLists: globalThis.Element[] = [];
@@ -660,7 +662,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                   let parent = element.parentElement;
                   while (parent && parent !== body) {
                     if (parent.tagName === 'UL' || parent.tagName === 'OL') {
-                      indent++;
+                      indent += 1;
                     }
                     parent = parent.parentElement;
                   }
@@ -698,11 +700,11 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           },
           decode: decodeListProperties,
           encode: ({ content, node, state }) => {
-            const checked = node.checked;
-            const listStart = node.listStart;
-            const listRestart = node.listRestart;
-            const listStyle = node.listStyle;
-            const listType = node.listType;
+            const { checked } = node;
+            const { listStart } = node;
+            const { listRestart } = node;
+            const { listStyle } = node;
+            const { listType } = node;
             const ordinal = getListOrdinal(
               state,
               node,
@@ -783,7 +785,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             const ordered = Boolean(list.ordered);
 
             list.children.forEach((listItem, index) => {
-              const checked = listItem.checked;
+              const { checked } = listItem;
               const task = typeof checked === 'boolean';
               const listType = task
                 ? ListType.Task
@@ -878,13 +880,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
       ): NodeEntry<Element> | undefined =>
         getSibling(entry, {
           getPreviousEntry: ([, currentPath]) => {
-            if (!PathApi.hasPrevious(currentPath)) return;
+            if (!PathApi.hasPrevious(currentPath)) return undefined;
             const previousPath = PathApi.previous(currentPath);
             const previousNode = state.nodes.get(previousPath, {
               match: ElementApi.isElement,
             })?.[0];
 
-            if (!previousNode) return;
+            if (!previousNode) return undefined;
 
             return [previousNode, previousPath];
           },
@@ -905,7 +907,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
                 match: ElementApi.isElement,
               })?.[0];
 
-              if (!nextNode) return;
+              if (!nextNode) return undefined;
 
               return [nextNode, nextPath];
             },
@@ -924,8 +926,10 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             heading.installed ? heading.schema.type : undefined
           );
         },
-        expandItemsWithChildren: (entries: readonly NodeEntry<Element>[]) => {
-          const expandedEntries: NodeEntry<Element>[] = [];
+        expandItemsWithChildren: (
+          entries: ReadonlyArray<NodeEntry<Element>>
+        ) => {
+          const expandedEntries: Array<NodeEntry<Element>> = [];
           const processedKeys = new Set<NodeKey>();
 
           entries.forEach(([, path]) => {

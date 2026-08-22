@@ -1,19 +1,20 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 import { createTable } from './table-value';
 
 jsx;
 
-export const trailingBlockValue = (
+export const trailingBlockValue: Value = (
   <fragment>
     <hheading level={2}>尾随块</hheading>
     <hp>始终在编辑器末尾保留一个尾随段落。</hp>
   </fragment>
 );
 
-export const exitBreakValue = (
+export const exitBreakValue: Value = (
   <fragment>
     <hheading level={2}>退出换行</hheading>
     <hp>使用简单的规则配置退出换行（块之间的换行）的行为：</hp>

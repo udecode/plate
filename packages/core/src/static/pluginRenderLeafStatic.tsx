@@ -1,4 +1,5 @@
-import clsx from 'clsx';
+import { failInvariant } from '@platejs/plite/internal';
+import { clsx } from 'clsx';
 import React from 'react';
 
 import {
@@ -38,7 +39,7 @@ export const pluginRenderLeafStatic = (
         path: props.path,
         plugin,
         props: props as any,
-      }) as any;
+      });
 
       const defaultProps = Component ? {} : { as: plugin.render?.as };
 
@@ -61,15 +62,19 @@ export const pipeRenderLeafStatic = (
   const leafPropsEntries: Array<{ key: string; plugin: AnyBasePlugin }> = [];
 
   getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
 
     if (plugin) {
-      renderLeafs.push(pluginRenderLeafStatic(editor, plugin as any));
+      renderLeafs.push(pluginRenderLeafStatic(editor, plugin));
     }
   });
 
   getPlateRuntime(editor).pluginCache.node.leafProps.forEach((name) => {
-    const plugin = getCompiledPlatePlugin(editor, name)!;
+    const plugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
     const key = plugin
       ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
       : undefined;
@@ -79,8 +84,9 @@ export const pipeRenderLeafStatic = (
     }
   });
 
-  return function render({ attributes, ...props }) {
-    let children = props.children;
+  return function render({ attributes: initialAttributes, ...props }) {
+    let attributes = initialAttributes;
+    let { children } = props;
 
     renderLeafs.forEach((renderLeaf) => {
       const newChildren = renderLeaf({ ...props, children } as any);
@@ -118,7 +124,7 @@ export const pipeRenderLeafStatic = (
       editor,
       path: props.path,
       props: { attributes, ...props, children } as any,
-    }) as any;
+    });
 
     return <PliteLeaf {...ctxProps} />;
   };

@@ -254,6 +254,128 @@ const createDragEvent = (target: EventTarget, dataTransfer: FakeDataTransfer) =>
     target,
   }) as unknown as DragEvent<HTMLDivElement>;
 
+const runCrossEditorTextDrop = ({
+  copy = false,
+  dropPayload = 'source',
+  editSource = false,
+  failFirstDrop = false,
+}: {
+  copy?: boolean;
+  dropPayload?: 'empty' | 'external' | 'source';
+  editSource?: boolean;
+  failFirstDrop?: boolean;
+} = {}) => {
+  const source = createReactEditor({
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Alpha Bravo' }],
+      },
+    ],
+  });
+  const target = createReactEditor({
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Charlie' }],
+      },
+    ],
+  });
+  const bystander = createReactEditor({
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Echo' }],
+      },
+    ],
+  });
+
+  source.update.selection.set({
+    kind: 'text',
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 'Alpha '.length, path: [0, 0] },
+  });
+
+  const sourceRoot = mountEditorRoot(source);
+  const targetRoot = mountEditorRoot(target);
+  const bystanderRoot = mountEditorRoot(bystander);
+  const sourceNode = mountVisibleDragTarget(sourceRoot);
+  const sourceData = new FakeDataTransfer();
+  const dropData =
+    dropPayload === 'source' ? sourceData : new FakeDataTransfer();
+  const sourceState = {
+    draggedBlock: false,
+    draggedRange: null,
+    isDraggingInternally: false,
+  };
+  const targetState = {
+    draggedBlock: false,
+    draggedRange: null,
+    isDraggingInternally: false,
+  };
+  const dropRange: Range = {
+    kind: 'text',
+    anchor: { offset: 'Charlie'.length, path: [0, 0] },
+    focus: { offset: 'Charlie'.length, path: [0, 0] },
+  };
+  let resolvedDropRange: Range | null = failFirstDrop ? null : dropRange;
+  const resolveEventRange = jest
+    .spyOn(ReactEditor, 'resolveEventRange')
+    .mockImplementation(() => resolvedDropRange);
+
+  sourceNode.setAttribute('data-plite-path', '0');
+
+  if (dropPayload === 'external') {
+    dropData.setData('text/plain', 'Delta');
+  }
+  if (copy) {
+    dropData.dropEffect = 'copy';
+  }
+
+  try {
+    applyEditableDragStart({
+      editor: source,
+      event: createDragEvent(sourceNode, sourceData),
+      readOnly: false,
+      state: sourceState,
+    });
+
+    if (editSource) {
+      source.update((tx) => {
+        tx.text.insert('Zulu ', { at: { offset: 0, path: [0, 0] } });
+      });
+    }
+
+    applyEditableDrop({
+      editor: target,
+      event: createDragEvent(targetRoot, dropData),
+      readOnly: false,
+      state: targetState,
+    });
+
+    if (failFirstDrop) {
+      resolvedDropRange = dropRange;
+      applyEditableDrop({
+        editor: target,
+        event: createDragEvent(targetRoot, dropData),
+        readOnly: false,
+        state: targetState,
+      });
+    }
+
+    return {
+      bystander: editorString(bystander, []),
+      source: editorString(source, []),
+      target: editorString(target, []),
+    };
+  } finally {
+    resolveEventRange.mockRestore();
+    cleanupEditorRoot(source, sourceRoot);
+    cleanupEditorRoot(target, targetRoot);
+    cleanupEditorRoot(bystander, bystanderRoot);
+  }
+};
+
 describe('DOM coverage native bridge', () => {
   test('copy writes model-backed data when native selection crosses hidden content', () => {
     const editor = createHiddenSelectionEditor();
@@ -323,7 +445,7 @@ describe('DOM coverage native bridge', () => {
       });
 
       expect(state.isDraggingInternally).toBe(true);
-      expect(dataTransfer.effectAllowed).toBe('move');
+      expect(dataTransfer.effectAllowed).toBe('copyMove');
       expect(dataTransfer.getData('text/plain')).toBe('Hidden alpha');
       expect(dataTransfer.getData('text/html')).toContain('Hidden alpha');
     } finally {
@@ -463,7 +585,7 @@ describe('DOM coverage native bridge', () => {
       });
 
       let commits = 0;
-      const unsubscribe = editor.subscribeCommit(() => commits++);
+      const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
 
       applyEditableDrop({
         editor,
@@ -620,6 +742,54 @@ describe('DOM coverage native bridge', () => {
       resolveEventRange.mockRestore();
       cleanupEditorRoot(editor, root);
     }
+  });
+
+  test('cross-editor expanded text drop removes the captured source range', () => {
+    expect(runCrossEditorTextDrop()).toEqual({
+      bystander: 'Echo',
+      source: 'Bravo',
+      target: 'CharlieAlpha ',
+    });
+  });
+
+  test('cross-editor copy leaves the captured source range intact', () => {
+    expect(runCrossEditorTextDrop({ copy: true })).toEqual({
+      bystander: 'Echo',
+      source: 'Alpha Bravo',
+      target: 'CharlieAlpha ',
+    });
+  });
+
+  test('cross-editor move degrades to copy after a source document edit', () => {
+    expect(runCrossEditorTextDrop({ editSource: true })).toEqual({
+      bystander: 'Echo',
+      source: 'Zulu Alpha Bravo',
+      target: 'CharlieAlpha ',
+    });
+  });
+
+  test('empty transfer does not consume a pending cross-editor move', () => {
+    expect(runCrossEditorTextDrop({ dropPayload: 'empty' })).toEqual({
+      bystander: 'Echo',
+      source: 'Alpha Bravo',
+      target: 'Charlie',
+    });
+  });
+
+  test('external transfer does not consume a pending cross-editor move', () => {
+    expect(runCrossEditorTextDrop({ dropPayload: 'external' })).toEqual({
+      bystander: 'Echo',
+      source: 'Alpha Bravo',
+      target: 'CharlieDelta',
+    });
+  });
+
+  test('failed cross-editor landing clears source deletion authority', () => {
+    expect(runCrossEditorTextDrop({ failFirstDrop: true })).toEqual({
+      bystander: 'Echo',
+      source: 'Alpha Bravo',
+      target: 'CharlieAlpha ',
+    });
   });
 
   test('repeated external plain text drops preserve earlier inserted text', () => {

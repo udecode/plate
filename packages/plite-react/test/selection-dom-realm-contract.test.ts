@@ -98,7 +98,7 @@ test('selectionchange listener skips repair-induced model-owned history imports'
     await import('../src/editable/selection-reconciler');
   const { frame, frameDocument, frameWindow } = createFrameDocument();
   const scheduleOnDOMSelectionChange = vi.fn();
-  const state = createInputController().state;
+  const { state } = createInputController();
 
   state.activeIntent = 'history';
   state.selectionChangeOrigin = 'repair-induced';

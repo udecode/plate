@@ -78,14 +78,34 @@ export const CursorOverlayPlugin = definePlatePlugin(PLUGINS.cursorOverlay, {
     focus: () => {
       api.removeCursor('selection');
     },
+    mouseDown: ({ event }) => {
+      if (event.button !== 0 || !(event.target instanceof HTMLElement)) return;
+
+      const editable = event.target.closest('[contenteditable="true"]');
+
+      if (!editable || editable === event.currentTarget) return;
+
+      api.removeCursor('selection');
+    },
     commit({ commit, editor, store }) {
-      if (commit.selectionChanged && store.get().cursors?.selection) {
-        setTimeout(() => {
-          api.addCursor('selection', {
-            selection: editor.read.selection(),
-          });
-        }, 0);
+      if (
+        !store.get().cursors.selection ||
+        (!commit.selectionChanged && !commit.changed.hasAny('document'))
+      ) {
+        return;
       }
+
+      setTimeout(() => {
+        const cursor = store.get().cursors.selection;
+
+        if (!cursor) return;
+        const selection = editor.read.selection();
+
+        api.addCursor('selection', {
+          ...cursor,
+          selection: selection ? { ...selection } : null,
+        });
+      }, 0);
     },
   },
 }));

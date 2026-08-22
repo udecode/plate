@@ -19,7 +19,7 @@ import {
   mergeClientRects,
 } from './geometry';
 
-const mountEditor = async <E extends PlateEditorReference>(editor: E) => {
+const mountEditor = async (editor: PlateEditorReference) => {
   await act(async () => {
     render(
       React.createElement(PlateTest, {
@@ -297,7 +297,7 @@ describe('floating geometry', () => {
     await mountEditor(editor);
     let rectIndex = 0;
     globalThis.Range.prototype.getBoundingClientRect = () =>
-      rects[rectIndex++]!;
+      rects[(rectIndex += 1) - 1];
 
     expect(getBoundingClientRect(editor, [[0], [1]])).toMatchObject({
       bottom: 25,

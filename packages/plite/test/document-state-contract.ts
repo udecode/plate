@@ -116,14 +116,14 @@ describe('document meta contract', () => {
     let initialCalls = 0;
     const persisted = defineStateField({
       initial: () => {
-        initialCalls++;
+        initialCalls += 1;
 
         return { count: 0 };
       },
       key: 'document.counter',
       persist: defineValueCodec<{ count: number }>({
         decode(value) {
-          decodeCalls++;
+          decodeCalls += 1;
 
           return value as { count: number };
         },

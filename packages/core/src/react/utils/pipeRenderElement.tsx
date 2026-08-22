@@ -1,5 +1,6 @@
 import type { Element, Path } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import React from 'react';
 
 import {
@@ -132,7 +133,6 @@ function FastElementBody({
       as={plugin.render?.as ?? undefined}
       attributes={injectedAttributes}
       element={element}
-      path={path}
       slots={slots}
     >
       {children}
@@ -227,13 +227,15 @@ function FastIntrinsicElementBody({
       attributes: injectedAttributes,
       children,
       element,
-      path,
       slots,
     };
 
     getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
       const wrapperContext = createPluginContext(editor, name);
-      const wrap = wrapperContext.plugin.render.belowNodes!({
+      const wrap = (
+        wrapperContext.plugin.render.belowNodes ??
+        failInvariant('Expected value to be defined')
+      )({
         ...nodeProps,
         ...wrapperContext,
       });
@@ -323,8 +325,9 @@ function DefaultElementWithPath({
     readOnly,
   });
   const DefaultPlateElement = PlateElement as unknown as React.ComponentType<
-    typeof ctxProps & { children: React.ReactNode }
+    Omit<typeof ctxProps, 'path'> & { children: React.ReactNode }
   >;
+  const { path: _path, ...nodeProps } = ctxProps;
 
   return (
     <ElementProvider
@@ -333,10 +336,10 @@ function DefaultElementWithPath({
       path={path}
       scope={ctxProps.element.type ?? 'default'}
     >
-      <DefaultPlateElement {...ctxProps}>
+      <DefaultPlateElement {...nodeProps}>
         {props.children}
 
-        <BelowRootNodes {...ctxProps} />
+        <BelowRootNodes {...nodeProps} />
       </DefaultPlateElement>
     </ElementProvider>
   );

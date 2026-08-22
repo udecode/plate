@@ -49,7 +49,7 @@ export function ReleasePageContent({
                 <Button
                   aria-pressed={showPackageChanges}
                   className="shadow-none"
-                  onClick={() => setShowPackageChanges((value) => !value)}
+                  onClick={() =>{  setShowPackageChanges((value) => !value); }}
                   size="sm"
                   type="button"
                   variant={showPackageChanges ? 'secondary' : 'ghost'}
@@ -59,7 +59,7 @@ export function ReleasePageContent({
                 <Button
                   aria-pressed={showPlateUiChanges}
                   className="shadow-none"
-                  onClick={() => setShowPlateUiChanges((value) => !value)}
+                  onClick={() =>{  setShowPlateUiChanges((value) => !value); }}
                   size="sm"
                   type="button"
                   variant={showPlateUiChanges ? 'secondary' : 'ghost'}

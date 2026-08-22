@@ -93,7 +93,7 @@ export const createPlateTestEditor = async <
 
   if (debug) {
     subscribeCommit(editor, (commit) => {
-      console.log('EDITOR COMMIT', JSON.stringify(commit, null, 2));
+      console.info('EDITOR COMMIT', JSON.stringify(commit, null, 2));
     });
   }
 
@@ -101,16 +101,15 @@ export const createPlateTestEditor = async <
     act(async () => {
       const eventProps = parseHotkey(hotkey);
       const values = hotkey.split('+');
+      const eventInit = {
+        bubbles: true,
+        key: values.at(-1),
+        ...eventProps,
+      };
 
-      fireEvent(
-        element,
-        new KeyboardEvent('keydown', {
-          bubbles: true,
-          key: values.at(-1),
-          keyCode: eventProps.which,
-          ...eventProps,
-        })
-      );
+      Reflect.set(eventInit, 'keyCode', Reflect.get(eventProps, 'which'));
+
+      fireEvent(element, new KeyboardEvent('keydown', eventInit));
     });
 
   const type = async (text: string) =>

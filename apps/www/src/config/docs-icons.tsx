@@ -238,5 +238,9 @@ export const getDocIcon = (item: SidebarNavItem, category?: string) => {
 
   const icon = item.icon ?? item.href?.split('/').pop();
 
-  return (DocIcons as any)[icon!] ?? (category === 'api' ? CodeXmlIcon : null);
+  if (icon && icon in DocIcons) {
+    return DocIcons[icon as keyof typeof DocIcons];
+  }
+
+  return category === 'api' ? CodeXmlIcon : null;
 };

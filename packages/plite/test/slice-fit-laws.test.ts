@@ -34,10 +34,10 @@ const assertLaw = (
 
   try {
     void fc.assert(law, { numRuns: runs, seed, verbose: true });
-  } catch (cause) {
+  } catch (error) {
     throw new Error(
       `Slice-fit law failed. Replay with PLITE_SLICE_FIT_LAW_SEED=${lawSeed} PLITE_SLICE_FIT_LAW_RUNS=${runs} (law seed ${seed}).`,
-      { cause }
+      { cause: error }
     );
   }
 };
@@ -168,31 +168,36 @@ const validSliceArbitrary = fc
     let maxOpenStart: number;
 
     switch (family) {
-      case 0:
+      case 0: {
         content = [{ text: left }];
         maxOpenEnd = 0;
         maxOpenStart = 0;
         break;
-      case 1:
+      }
+      case 1: {
         content = [paragraph(left)];
         maxOpenEnd = 1;
         maxOpenStart = 1;
         break;
-      case 2:
+      }
+      case 2: {
         content = [section([paragraph(left)])];
         maxOpenEnd = 2;
         maxOpenStart = 2;
         break;
-      case 3:
+      }
+      case 3: {
         content = [section([paragraph(left)]), paragraph(right)];
         maxOpenEnd = 1;
         maxOpenStart = 2;
         break;
-      default:
+      }
+      default: {
         content = [paragraph(left), section([paragraph(right)])];
         maxOpenEnd = 2;
         maxOpenStart = 1;
         break;
+      }
     }
 
     return {
@@ -244,7 +249,7 @@ const targetRange = (
     { length: 'main-bravo'.length, path: [0, 1, 0], protected: 1 },
     { length: 'main-tail'.length, path: [1, 0], protected: 0 },
   ];
-  const target = targets[targetSeed % targets.length]!;
+  const target = targets[targetSeed % targets.length];
   const first = firstSeed % (target.length + 1);
   const second = secondSeed % (target.length + 1);
 
@@ -354,7 +359,7 @@ void describe('slice fitter generated model laws', () => {
             assert.equal(after.roots?.header, before.roots?.header);
             assert.ok(
               after.children.includes(
-                before.children[range.protectedTopIndex!]!
+                before.children[range.protectedTopIndex!]
               ),
               'an untouched top-level subtree must retain identity'
             );
@@ -460,23 +465,30 @@ void describe('slice fitter generated model laws', () => {
         (generated, kind) => {
           const malformed = (() => {
             switch (kind) {
-              case 'end-fraction':
+              case 'end-fraction': {
                 return { ...generated.input, openEnd: 0.5 };
-              case 'end-overflow':
+              }
+              case 'end-overflow': {
                 return {
                   ...generated.input,
                   openEnd: generated.maxOpenEnd + 1,
                 };
-              case 'extra-field':
+              }
+              case 'extra-field': {
                 return { ...generated.input, unexpected: true };
-              case 'negative-start':
+              }
+              case 'negative-start': {
                 return { ...generated.input, openStart: -1 };
-              case 'start-overflow':
+              }
+              case 'start-overflow': {
                 return {
                   ...generated.input,
                   openStart: generated.maxOpenStart + 1,
                 };
+              }
             }
+
+            return undefined;
           })();
 
           assert.throws(() => ContentSlice.fromJSON(malformed));
@@ -519,7 +531,7 @@ void describe('slice fitter generated model laws', () => {
           const beforeSelection = editor.read.selection();
           let commits = 0;
           let applied = true;
-          const unsubscribe = editor.subscribeCommit(() => commits++);
+          const unsubscribe = editor.subscribeCommit(() => (commits += 1) - 1);
 
           assert.equal(editor.read.slice.fit(slice, { at }), false);
           editor.update((tx) => {

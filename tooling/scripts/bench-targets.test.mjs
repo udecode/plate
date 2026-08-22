@@ -11,7 +11,7 @@ import {
   validateRegistry,
 } from './bench-targets.mjs';
 
-const target = ({ id, path, required = true }) => ({
+const target = ({ id, path: innerPath, required = true }) => ({
   id,
   question: `${id} question`,
   owner: 'plite',
@@ -27,7 +27,7 @@ const target = ({ id, path, required = true }) => ({
   correctness: {
     command: 'true',
   },
-  artifacts: [{ path, required }],
+  artifacts: [{ path: innerPath, required }],
   timeouts: { benchmarkMs: 5000, correctnessMs: 5000 },
 });
 
@@ -125,7 +125,9 @@ function fixtureWorkspace(t) {
   const workspace = fs.mkdtempSync(
     path.join(os.tmpdir(), 'plite-benchmark-target-')
   );
-  t.after(() => fs.rmSync(workspace, { force: true, recursive: true }));
+  t.after(() => {
+    fs.rmSync(workspace, { force: true, recursive: true });
+  });
 
   return {
     script(name, source) {

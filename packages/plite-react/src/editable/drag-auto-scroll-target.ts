@@ -136,7 +136,7 @@ export const getDragAutoScrollTarget = ({
   }
 
   const window = rootElement.ownerDocument.defaultView;
-  const scrollingElement = rootElement.ownerDocument.scrollingElement;
+  const { scrollingElement } = rootElement.ownerDocument;
 
   if (!window || !scrollingElement) {
     return null;

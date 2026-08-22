@@ -1,3 +1,5 @@
+import { failInvariant } from '@platejs/plite/internal';
+
 export type ListStyleType =
   | 'decimal'
   | 'decimal-bracket'
@@ -33,23 +35,31 @@ class ListStyleBuilder {
 
   getListStyleType(listType: ListStyleType | undefined): DocxListStyleType {
     switch (listType) {
-      case 'upper-roman':
+      case 'upper-roman': {
         return 'upperRoman';
-      case 'lower-roman':
+      }
+      case 'lower-roman': {
         return 'lowerRoman';
+      }
       case 'upper-alpha':
-      case 'upper-alpha-bracket-end':
+      case 'upper-alpha-bracket-end': {
         return 'upperLetter';
+      }
       case 'lower-alpha':
-      case 'lower-alpha-bracket-end':
+      case 'lower-alpha-bracket-end': {
         return 'lowerLetter';
+      }
       case 'decimal':
       case 'decimal-bracket':
-      case 'decimal-bracket-end':
+      case 'decimal-bracket-end': {
         return 'decimal';
-      default:
+      }
+      case undefined: {
         return this.defaults.defaultOrderedListStyleType;
+      }
     }
+
+    return failInvariant('Unexpected list style type');
   }
 
   getListPrefixSuffix(
@@ -67,17 +77,23 @@ class ListStyleBuilder {
       case 'upper-roman':
       case 'lower-roman':
       case 'upper-alpha':
-      case 'lower-alpha':
+      case 'lower-alpha': {
         return `%${lvl + 1}.`;
+      }
       case 'upper-alpha-bracket-end':
       case 'lower-alpha-bracket-end':
-      case 'decimal-bracket-end':
+      case 'decimal-bracket-end': {
         return `%${lvl + 1})`;
-      case 'decimal-bracket':
+      }
+      case 'decimal-bracket': {
         return `(%${lvl + 1})`;
-      default:
+      }
+      case 'decimal': {
         return `%${lvl + 1}.`;
+      }
     }
+
+    return failInvariant('Unexpected list style type');
   }
 }
 

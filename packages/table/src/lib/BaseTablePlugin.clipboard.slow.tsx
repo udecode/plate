@@ -99,7 +99,7 @@ describe('table clipboard slow contracts', () => {
 
         editor.update.fragment.replace(fragment);
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -181,7 +181,7 @@ describe('table clipboard slow contracts', () => {
 
         editor.update.fragment.replace(fragment);
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -267,7 +267,7 @@ describe('table clipboard slow contracts', () => {
         editor.update.fragment.delete();
         editor.update.fragment.replace(fragment);
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -353,7 +353,7 @@ describe('table clipboard slow contracts', () => {
 
       editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.children()).toMatchObject(output.children);
 
       expect(editor.read.selection()).toEqual(output.selection!);
     });
@@ -505,7 +505,7 @@ describe('table clipboard slow contracts', () => {
 
         editor.update.fragment.replace(fragment);
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(output.selection!);
       });
     });
@@ -599,7 +599,7 @@ describe('table clipboard slow contracts', () => {
 
       editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.children()).toMatchObject(output.children);
 
       expect(editor.read.selection()).toEqual(output.selection!);
     });
@@ -667,7 +667,7 @@ describe('table clipboard slow contracts', () => {
 
       editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.children()).toMatchObject(output.children);
     });
   });
 
@@ -769,7 +769,7 @@ describe('table clipboard slow contracts', () => {
 
       editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.children()).toMatchObject(output.children);
     });
 
     it('fills a non-rectangular fragment before pasting it', () => {
@@ -850,7 +850,7 @@ describe('table clipboard slow contracts', () => {
 
       editor.update.fragment.replace(fragment);
 
-      expect(editor.read.children()).toMatchObject(output.children!);
+      expect(editor.read.children()).toMatchObject(output.children);
     });
   });
 
@@ -912,7 +912,7 @@ describe('table clipboard slow contracts', () => {
 
         editor.update.fragment.replace(fragment);
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -1028,7 +1028,7 @@ describe('table clipboard slow contracts', () => {
 
       editor.update.fragment.replace([{ text: '?' }]);
 
-      assert.equal(NodeApi.string(editor.read.children()[0]!), 'a?b');
+      assert.equal(NodeApi.string(editor.read.children()[0]), 'a?b');
     });
 
     it('recognizes an open table slice from its retained content context', () => {
@@ -1125,8 +1125,8 @@ describe('table clipboard slow contracts', () => {
         ],
       });
 
-      assert(slice.openStart > 0);
-      assert(slice.openEnd > 0);
+      assert.ok(slice.openStart > 0);
+      assert.ok(slice.openEnd > 0);
       assert.equal((slice.content[0] as Element).type, 'table');
       target.update.slice.replace(slice);
 

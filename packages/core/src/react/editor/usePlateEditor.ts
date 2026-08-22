@@ -63,12 +63,13 @@ export function usePlateEditor<
 ): UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins, TSchema>> {
   const { enabled, ...editorOptions } = options;
 
-  return React.useMemo(() => {
-    if (enabled === false) return null;
+  return React.useMemo(
+    () => {
+      if (enabled === false) return null;
 
-    return createPlateEditor<TPlugins, TSchema>(editorOptions);
-  }, [editorOptions.id, enabled, ...deps]) as UsePlateEditorReturn<
-    TEnabled,
-    UsePlateEditorResult<TPlugins, TSchema>
-  >;
+      return createPlateEditor<TPlugins, TSchema>(editorOptions);
+    },
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] This API intentionally keys editor ownership by id plus caller-supplied dependencies; other option changes configure the owned editor instead of replacing it.
+    [editorOptions.id, enabled, ...deps]
+  ) as UsePlateEditorReturn<TEnabled, UsePlateEditorResult<TPlugins, TSchema>>;
 }

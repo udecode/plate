@@ -22,7 +22,8 @@ export const parseMarkdownBlocks = (
   let tokens = [...marked.lexer(content)];
 
   if (exclude.length > 0) {
-    tokens = tokens.filter((token) => !exclude.includes(token.type));
+    const excludedTypes = new Set(exclude);
+    tokens = tokens.filter((token) => !excludedTypes.has(token.type));
   }
   if (trim) {
     tokens = tokens.map((token) => ({

@@ -7,6 +7,7 @@ import {
   type Value,
 } from '../../../packages/plite/src/index';
 import { dispatchCommand } from '../../../packages/plite/src/internal/index';
+import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const HANDLER_DEPTHS = [0, 1, 8, 32] as const;
@@ -52,7 +53,7 @@ const strict = process.env.PLITE_COMMAND_DISPATCH_STRICT === '1';
 const round = (value: number) => Number(value.toFixed(3));
 
 const percentile = (sorted: readonly number[], ratio: number) =>
-  sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * ratio) - 1)]!;
+  sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * ratio) - 1)];
 
 const summarize = (values: readonly number[]) => {
   const sorted = [...values].sort((left, right) => left - right);
@@ -354,7 +355,7 @@ const measureLane = (kind: LaneKind, blocks: number, depth: number) => {
     actualLatencyUs,
     actualOperationsPerSample: actualOperations,
     actualToReferenceP50Ratio: round(
-      actualLatencyUs.p50 / Math.max(referenceLatencyUs.p50, 0.000_001)
+      actualLatencyUs.p50 / Math.max(referenceLatencyUs.p50, 0.000001)
     ),
     allocationFailures,
     blocks,
@@ -389,24 +390,28 @@ const lanes = LANE_KINDS.flatMap((kind) =>
 );
 const laneById = new Map(lanes.map((lane) => [lane.id, lane]));
 const simpleDocumentSizeRatios = HANDLER_DEPTHS.map((depth) => {
-  const small = laneById.get(`simple-blocks-100-handlers-${depth}`)!;
-  const large = laneById.get(`simple-blocks-20000-handlers-${depth}`)!;
+  const small = getDefined(laneById.get(`simple-blocks-100-handlers-${depth}`));
+  const large = getDefined(
+    laneById.get(`simple-blocks-20000-handlers-${depth}`)
+  );
 
   return {
     depth,
     p50: round(
-      large.actualLatencyUs.p50 / Math.max(small.actualLatencyUs.p50, 0.000_001)
+      large.actualLatencyUs.p50 / Math.max(small.actualLatencyUs.p50, 0.000001)
     ),
   };
 });
 const prefixDocumentSizeRatios = HANDLER_DEPTHS.map((depth) => {
-  const small = laneById.get(`prefix-blocks-100-handlers-${depth}`)!;
-  const large = laneById.get(`prefix-blocks-20000-handlers-${depth}`)!;
+  const small = getDefined(laneById.get(`prefix-blocks-100-handlers-${depth}`));
+  const large = getDefined(
+    laneById.get(`prefix-blocks-20000-handlers-${depth}`)
+  );
 
   return {
     depth,
     p50: round(
-      large.actualLatencyUs.p50 / Math.max(small.actualLatencyUs.p50, 0.000_001)
+      large.actualLatencyUs.p50 / Math.max(small.actualLatencyUs.p50, 0.000001)
     ),
   };
 });

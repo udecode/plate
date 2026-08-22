@@ -9,7 +9,7 @@ export const formatDateValue = (date: Date) =>
   ).padStart(2, '0')}`;
 
 export const parseCanonicalDateValue = (value: string) => {
-  if (!CANONICAL_DATE_REGEX.test(value)) return;
+  if (!CANONICAL_DATE_REGEX.test(value)) return undefined;
 
   const [yearString, monthString, dayString] = value.split('-');
   const year = Number(yearString);
@@ -17,13 +17,13 @@ export const parseCanonicalDateValue = (value: string) => {
   const day = Number(dayString);
   const parsed = new Date(year, month - 1, day, 12);
 
-  if (!isValidDate(parsed)) return;
+  if (!isValidDate(parsed)) return undefined;
   if (
     parsed.getFullYear() !== year ||
     parsed.getMonth() !== month - 1 ||
     parsed.getDate() !== day
   ) {
-    return;
+    return undefined;
   }
 
   return parsed;
@@ -31,16 +31,16 @@ export const parseCanonicalDateValue = (value: string) => {
 
 export const normalizeDateValue = (value?: Date | string) => {
   if (value instanceof Date) {
-    if (!isValidDate(value)) return;
+    if (!isValidDate(value)) return undefined;
 
     return formatDateValue(value);
   }
 
-  if (!value) return;
+  if (!value) return undefined;
 
   const trimmed = value.trim();
 
-  if (!trimmed) return;
+  if (!trimmed) return undefined;
 
   if (CANONICAL_DATE_REGEX.test(trimmed)) {
     return trimmed;

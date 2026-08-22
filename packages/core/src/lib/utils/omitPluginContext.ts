@@ -1,10 +1,6 @@
-import type { AnyBasePluginDefinition, BasePluginContext } from '../plugin';
+import type { BasePluginContext } from '../plugin';
 
-export const omitPluginContext = <
-  T extends BasePluginContext<AnyBasePluginDefinition>,
->(
-  ctx: T
-) => {
+export const omitPluginContext = <T extends BasePluginContext>(ctx: T) => {
   const {
     api,
     defineCodecs,

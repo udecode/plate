@@ -19,12 +19,7 @@ import { getPlateRuntimeOwner } from './plateRuntime';
 
 type PluginStoreBase<
   C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
-> = TBaseStateApi<
-  InferPluginStoreState<C>,
-  [['zustand/mutative-x', never]],
-  {},
-  {}
->;
+> = TBaseStateApi<InferPluginStoreState<C>, [['zustand/mutative-x', never]]>;
 
 export type InternalPluginStore<
   C extends AnyBasePluginDefinition = AnyBasePluginDefinition,

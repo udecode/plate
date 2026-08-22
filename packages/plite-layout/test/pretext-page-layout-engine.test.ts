@@ -11,7 +11,7 @@ class TestCanvasRenderingContext2D {
 
   measureText(text: string): { width: number } {
     const fontSize = Number(this.font.match(/(\d+(?:\.\d+)?)px/)?.[1] ?? 16);
-    const textWidth = /700/.test(this.font)
+    const textWidth = this.font.includes('700')
       ? fontSize * 0.65
       : /Menlo|monospace/.test(this.font)
         ? fontSize * 0.7
@@ -60,7 +60,7 @@ describe('pretextPageLayoutEngine', () => {
     });
 
     expect(output.fragments).toHaveLength(1);
-    expect(output.fragments[0]!.lines).toEqual([
+    expect(output.fragments[0].lines).toEqual([
       {
         end: 0,
         height: 24,
@@ -98,12 +98,12 @@ describe('pretextPageLayoutEngine', () => {
       version: 1,
     });
 
-    expect(output.fragments[0]!.lines[0]).toMatchObject({
+    expect(output.fragments[0].lines[0]).toMatchObject({
       end: block.text.length,
       start: 0,
       text: block.text,
     });
-    expect(output.fragments[0]!.lines[0]!.width).toBeGreaterThan(0);
+    expect(output.fragments[0].lines[0].width).toBeGreaterThan(0);
   });
 
   it('positions mixed inline runs with their own measured fonts', () => {
@@ -167,27 +167,27 @@ describe('pretextPageLayoutEngine', () => {
       settings,
       version: 1,
     });
-    const line = output.fragments[0]!.lines[0]!;
+    const line = output.fragments[0].lines[0];
 
     expect(line.runs).toHaveLength(3);
-    expect(line.runs![0]!).toMatchObject({
+    expect(line.runs![0]).toMatchObject({
       left: 0,
       path: [0, 0],
       text: 'one ',
     });
-    expect(line.runs![0]!.width).toBeCloseTo(34.08);
-    expect(line.runs![1]!).toMatchObject({
+    expect(line.runs![0].width).toBeCloseTo(34.08);
+    expect(line.runs![1]).toMatchObject({
       path: [0, 1],
       text: 'two',
     });
-    expect(line.runs![1]!.left).toBeCloseTo(34.08);
-    expect(line.runs![1]!.width).toBeCloseTo(31.2);
-    expect(line.runs![2]!).toMatchObject({
+    expect(line.runs![1].left).toBeCloseTo(34.08);
+    expect(line.runs![1].width).toBeCloseTo(31.2);
+    expect(line.runs![2]).toMatchObject({
       path: [0, 2],
       text: ' code',
     });
-    expect(line.runs![2]!.left).toBeCloseTo(65.28);
-    expect(line.runs![2]!.width).toBeCloseTo(50.08);
+    expect(line.runs![2].left).toBeCloseTo(65.28);
+    expect(line.runs![2].width).toBeCloseTo(50.08);
     expect(line.width).toBeCloseTo(115.36);
   });
 
@@ -222,11 +222,11 @@ describe('pretextPageLayoutEngine', () => {
     expect(output.fragments.every((fragment) => fragment.path[0] === 0)).toBe(
       true
     );
-    expect(output.fragments[0]!.lines.length).toBeGreaterThan(0);
-    expect(output.fragments[0]!.lines[0]!.end).toBeGreaterThan(
-      output.fragments[0]!.lines[0]!.start
+    expect(output.fragments[0].lines.length).toBeGreaterThan(0);
+    expect(output.fragments[0].lines[0].end).toBeGreaterThan(
+      output.fragments[0].lines[0].start
     );
-    expect(output.fragments[0]!.lines[0]!.top).toBe(page.content.top);
+    expect(output.fragments[0].lines[0].top).toBe(page.content.top);
   });
 
   it('paginates unit-owned blocks without text measurement', () => {
@@ -236,7 +236,7 @@ describe('pretextPageLayoutEngine', () => {
       font = '';
 
       measureText(text: string): { width: number } {
-        measureCalls++;
+        measureCalls += 1;
         return { width: text.length * 10 };
       }
     }
@@ -299,7 +299,7 @@ describe('pretextPageLayoutEngine', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const page = createPlitePage(settings);
     const engine = pretextPageLayoutEngine();
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -359,8 +359,8 @@ describe('pretextPageLayoutEngine', () => {
       expect(
         events.some((event) => event.id === 'measured-block-cache-hit')
       ).toBe(true);
-      expect(output.fragments[0]!.path).toEqual([1]);
-      expect(output.fragments[0]!.lines[0]!.runs![0]!.path).toEqual([1, 0]);
+      expect(output.fragments[0].path).toEqual([1]);
+      expect(output.fragments[0].lines[0].runs![0].path).toEqual([1, 0]);
     } finally {
       (
         globalThis as typeof globalThis & {
@@ -414,8 +414,8 @@ describe('pretextPageLayoutEngine', () => {
       version: 2,
     });
 
-    expect(output.fragments[0]!.path).toEqual([1]);
-    expect(output.fragments[0]!.lines[0]!.runs![0]!.path).toEqual([1, 0]);
+    expect(output.fragments[0].path).toEqual([1]);
+    expect(output.fragments[0].lines[0].runs![0].path).toEqual([1, 0]);
   });
 
   it('reuses measured boxed blocks across path shifts', () => {
@@ -423,7 +423,7 @@ describe('pretextPageLayoutEngine', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const page = createPlitePage(settings);
     const engine = pretextPageLayoutEngine();
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -496,8 +496,8 @@ describe('pretextPageLayoutEngine', () => {
       expect(
         events.some((event) => event.id === 'measured-block-cache-hit')
       ).toBe(true);
-      expect(output.fragments[0]!.path).toEqual([1]);
-      expect(output.fragments[0]!.lines[0]!.runs![0]!.path).toEqual([1, 0]);
+      expect(output.fragments[0].path).toEqual([1]);
+      expect(output.fragments[0].lines[0].runs![0].path).toEqual([1, 0]);
     } finally {
       (
         globalThis as typeof globalThis & {
@@ -512,7 +512,7 @@ describe('pretextPageLayoutEngine', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const page = createPlitePage(settings);
     const engine = pretextPageLayoutEngine({ estimateBlock: () => true });
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -563,7 +563,7 @@ describe('pretextPageLayoutEngine', () => {
       expect(
         events.some((event) => event.id === 'measured-block-cache-miss')
       ).toBe(false);
-      expect(output.fragments[0]!.path).toEqual([1]);
+      expect(output.fragments[0].path).toEqual([1]);
     } finally {
       (
         globalThis as typeof globalThis & {

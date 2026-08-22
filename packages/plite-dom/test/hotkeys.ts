@@ -349,8 +349,8 @@ describe('plite-dom hotkeys', () => {
         configurable: true,
         value: userAgent,
       });
-      button.addEventListener('keydown', (event) => {
-        result = Hotkeys.isUndo(event);
+      button.addEventListener('keydown', (innerEvent) => {
+        result = Hotkeys.isUndo(innerEvent);
       });
       button.dispatchEvent(
         new dom.window.KeyboardEvent('keydown', {

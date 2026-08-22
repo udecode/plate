@@ -300,7 +300,8 @@ describe('@platejs/yjs schema identity contract', () => {
     });
     const root = doc.get(rootName, Y.XmlElement);
     const metadata = doc.getMap(getYjsSchemaMetadataName(rootName));
-    const transactions: Readonly<{ content: boolean; schema: boolean }>[] = [];
+    const transactions: Array<Readonly<{ content: boolean; schema: boolean }>> =
+      [];
 
     doc.on('afterTransaction', (transaction) => {
       transactions.push({
@@ -320,7 +321,9 @@ describe('@platejs/yjs schema identity contract', () => {
       identity: editor.read.schema.identity(),
     });
     assert.equal(
-      transactions.some(({ content, schema }) => content && schema),
+      transactions.some(
+        ({ content, schema: innerSchema }) => content && innerSchema
+      ),
       true
     );
   });

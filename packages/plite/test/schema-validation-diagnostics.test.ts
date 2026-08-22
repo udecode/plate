@@ -83,8 +83,7 @@ const captureError = (run: () => void) => {
   return thrown;
 };
 
-const captureDiagnostic = (run: () => void) =>
-  captureError(run).diagnostics[0]!;
+const captureDiagnostic = (run: () => void) => captureError(run).diagnostics[0];
 
 const withoutMessage = ({
   message: _message,
@@ -172,7 +171,7 @@ describe('runtime schema validation diagnostics', () => {
         },
       ])
     );
-    const diagnostic = error.diagnostics[0]!;
+    const diagnostic = error.diagnostics[0];
 
     assert.ok(error.cause instanceof Error);
     assert.deepEqual(withoutMessage(diagnostic), {
@@ -222,7 +221,7 @@ describe('runtime schema validation diagnostics', () => {
         ids: candidates.map(({ id }) => id),
         key: 'tone',
         placement: 'text',
-        targets: candidates.map(({ target }) => target),
+        targets: candidates.map(({ target: innerTarget }) => innerTarget),
       },
       root: null,
     });
@@ -335,14 +334,14 @@ describe('runtime schema validation diagnostics', () => {
 
     assert.ok(thrown instanceof EditorSchemaValidationError);
     assert.ok(thrown.cause instanceof Error);
-    assert.deepEqual(withoutMessage(thrown.diagnostics[0]!), {
+    assert.deepEqual(withoutMessage(thrown.diagnostics[0]), {
       code: 'invalid-json',
       path: [],
       root: null,
     });
     assert.ok(Object.isFrozen(thrown.diagnostics));
     assert.ok(Object.isFrozen(thrown.diagnostics[0]));
-    assert.ok(Object.isFrozen(thrown.diagnostics[0]!.path));
+    assert.ok(Object.isFrozen(thrown.diagnostics[0].path));
 
     assert.throws(
       () => editor.read.schema.assertDocument(null),

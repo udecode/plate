@@ -193,7 +193,7 @@ describe('BaseColumnPlugin schema', () => {
   const getColumnGroup = (editor: ReturnType<typeof createEditor>) => {
     const entry = editor.read.nodes.get([0], { match: isColumnGroupNode });
 
-    assert(entry);
+    assert.ok(entry);
 
     return entry[0];
   };
@@ -291,7 +291,7 @@ describe('BaseColumnPlugin schema', () => {
           match: isColumnGroupNode,
         });
 
-        assert(entry);
+        assert.ok(entry);
         expect(BaseColumnPlugin.name).toBe('columnGroup');
         expect(BaseColumnPlugin.name).toBe(PLUGINS.columnGroup);
         expect(entry[0].type).toBe(editor.plugin(BaseColumnPlugin).schema.type);
@@ -354,7 +354,7 @@ describe('BaseColumnPlugin schema', () => {
           match: ElementApi.isElement,
         });
 
-        assert(entry);
+        assert.ok(entry);
         editor.update.column.moveMiddle(entry, { direction: 'left' });
 
         expect(getColumnGroup(editor).children).toHaveLength(2);
@@ -395,7 +395,7 @@ describe('BaseColumnPlugin schema', () => {
           match: ElementApi.isElement,
         });
 
-        assert(entry);
+        assert.ok(entry);
         expect(
           editor.update.column.moveMiddle(entry, { direction: 'left' })
         ).toBe(false);

@@ -18,6 +18,8 @@ import type { SidebarNavItem } from '@/types/nav';
 function nodeNameToString(name: React.ReactNode) {
   if (typeof name === 'string') return name;
   if (typeof name === 'number') return String(name);
+
+  return undefined;
 }
 
 function withDocsOverlay(item: SidebarNavItem): SidebarNavItem {

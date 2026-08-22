@@ -249,7 +249,7 @@ const rectsEqual = (a: DOMRect | null, b: DOMRect | null): boolean => {
     if (a[field] !== b[field]) {
       return false;
     }
-    index++;
+    index += 1;
   }
 
   return true;
@@ -260,7 +260,7 @@ const countOwnEnumerableKeys = (value: Record<string, unknown>): number => {
 
   for (const key in value) {
     if (Object.hasOwn(value, key)) {
-      count++;
+      count += 1;
     }
   }
 
@@ -284,7 +284,7 @@ const shallowEqual = (a: unknown, b: unknown): boolean => {
     if (!Object.hasOwn(b, key) || !Object.is(a[key], b[key])) {
       return false;
     }
-    keyCount++;
+    keyCount += 1;
   }
 
   return keyCount === countOwnEnumerableKeys(b);
@@ -334,7 +334,7 @@ const overlayDataEqual = (a: unknown, b: unknown): boolean => {
     if (!Object.hasOwn(b, key)) {
       return false;
     }
-    keyCount++;
+    keyCount += 1;
     if (key === 'cursor') {
       if (isRemoteCursorLike(a.cursor) || isRemoteCursorLike(b.cursor)) {
         if (!remoteCursorsEqual(a.cursor, b.cursor)) {
@@ -371,8 +371,8 @@ const overlayPositionsEqual = <
   TCursorData extends YjsRemoteCursorData,
   TPositionData,
 >(
-  a: readonly YjsRemoteCursorOverlayPosition<TCursorData, TPositionData>[],
-  b: readonly YjsRemoteCursorOverlayPosition<TCursorData, TPositionData>[]
+  a: ReadonlyArray<YjsRemoteCursorOverlayPosition<TCursorData, TPositionData>>,
+  b: ReadonlyArray<YjsRemoteCursorOverlayPosition<TCursorData, TPositionData>>
 ): boolean => {
   if (a.length !== b.length) {
     return false;
@@ -394,7 +394,7 @@ const overlayPositionsEqual = <
     ) {
       return false;
     }
-    index++;
+    index += 1;
   }
 
   return true;
@@ -413,16 +413,17 @@ const readYjsRemoteCursorOverlayPositions = <
         YjsCursorDataForRuntimeEditor<TEditor>,
         TPositionData
       >
-): readonly YjsRemoteCursorOverlayPosition<
-  YjsCursorDataForRuntimeEditor<TEditor>,
-  | TPositionData
-  | YjsRemoteCursorDecorationData<YjsCursorDataForRuntimeEditor<TEditor>>
->[] =>
+): ReadonlyArray<
+  YjsRemoteCursorOverlayPosition<
+    YjsCursorDataForRuntimeEditor<TEditor>,
+    | TPositionData
+    | YjsRemoteCursorDecorationData<YjsCursorDataForRuntimeEditor<TEditor>>
+  >
+> =>
   readYjsState(editor as unknown as Editor, (state) => {
-    const cursors =
-      state.remoteCursors() as unknown as readonly YjsRemoteCursor<
-        YjsCursorDataForRuntimeEditor<TEditor>
-      >[];
+    const cursors = state.remoteCursors() as unknown as ReadonlyArray<
+      YjsRemoteCursor<YjsCursorDataForRuntimeEditor<TEditor>>
+    >;
     const positions = new Array<
       YjsRemoteCursorOverlayPosition<
         YjsCursorDataForRuntimeEditor<TEditor>,
@@ -445,7 +446,7 @@ const readYjsRemoteCursorOverlayPositions = <
       const range = cursor.selection;
 
       if (range === null) {
-        index++;
+        index += 1;
         continue;
       }
 
@@ -461,8 +462,8 @@ const readYjsRemoteCursorOverlayPositions = <
         range,
         rect: resolveCursorRect(editor, range),
       };
-      writeIndex++;
-      index++;
+      writeIndex += 1;
+      index += 1;
     }
 
     positions.length = writeIndex;
@@ -535,7 +536,7 @@ export function useYjsRemoteCursors<
   TExtensions extends readonly unknown[] = readonly [],
 >(
   editor: Editor<V, TExtensions>
-): readonly YjsRemoteCursor<YjsCursorDataForEditor<V, TExtensions>>[] {
+): ReadonlyArray<YjsRemoteCursor<YjsCursorDataForEditor<V, TExtensions>>> {
   return useYjsAwarenessValue(editor, (state) => state.remoteCursors());
 }
 
@@ -624,11 +625,11 @@ export function useYjsRemoteCursorDecorationSource<
           const range = cursor.selection;
 
           if (range === null) {
-            index++;
+            index += 1;
             continue;
           }
 
-          const decorate = optionsRef.current.decorate;
+          const { decorate } = optionsRef.current;
           const data =
             decorate === undefined
               ? createCursorData(cursor)
@@ -639,8 +640,8 @@ export function useYjsRemoteCursorDecorationSource<
             key: `${id}:${cursor.clientId}`,
             range,
           };
-          writeIndex++;
-          index++;
+          writeIndex += 1;
+          index += 1;
         }
 
         slices.length = writeIndex;
@@ -668,10 +669,12 @@ export function useYjsRemoteCursorOverlayPositions<
     YjsCursorDataForRuntimeEditor<TEditor>
   >
 ): readonly [
-  readonly YjsRemoteCursorOverlayPosition<
-    YjsCursorDataForRuntimeEditor<TEditor>,
-    YjsRemoteCursorDecorationData<YjsCursorDataForRuntimeEditor<TEditor>>
-  >[],
+  ReadonlyArray<
+    YjsRemoteCursorOverlayPosition<
+      YjsCursorDataForRuntimeEditor<TEditor>,
+      YjsRemoteCursorDecorationData<YjsCursorDataForRuntimeEditor<TEditor>>
+    >
+  >,
   () => void,
 ];
 export function useYjsRemoteCursorOverlayPositions<
@@ -688,10 +691,12 @@ export function useYjsRemoteCursorOverlayPositions<
     ) => TPositionData;
   }
 ): readonly [
-  readonly YjsRemoteCursorOverlayPosition<
-    YjsCursorDataForRuntimeEditor<TEditor>,
-    TPositionData
-  >[],
+  ReadonlyArray<
+    YjsRemoteCursorOverlayPosition<
+      YjsCursorDataForRuntimeEditor<TEditor>,
+      TPositionData
+    >
+  >,
   () => void,
 ];
 export function useYjsRemoteCursorOverlayPositions<
@@ -703,10 +708,12 @@ export function useYjsRemoteCursorOverlayPositions<
     YjsCursorDataForEditor<V, TExtensions>
   >
 ): readonly [
-  readonly YjsRemoteCursorOverlayPosition<
-    YjsCursorDataForEditor<V, TExtensions>,
-    YjsRemoteCursorDecorationData<YjsCursorDataForEditor<V, TExtensions>>
-  >[],
+  ReadonlyArray<
+    YjsRemoteCursorOverlayPosition<
+      YjsCursorDataForEditor<V, TExtensions>,
+      YjsRemoteCursorDecorationData<YjsCursorDataForEditor<V, TExtensions>>
+    >
+  >,
   () => void,
 ];
 export function useYjsRemoteCursorOverlayPositions<
@@ -724,10 +731,12 @@ export function useYjsRemoteCursorOverlayPositions<
     ) => TPositionData;
   }
 ): readonly [
-  readonly YjsRemoteCursorOverlayPosition<
-    YjsCursorDataForEditor<V, TExtensions>,
-    TPositionData
-  >[],
+  ReadonlyArray<
+    YjsRemoteCursorOverlayPosition<
+      YjsCursorDataForEditor<V, TExtensions>,
+      TPositionData
+    >
+  >,
   () => void,
 ];
 export function useYjsRemoteCursorOverlayPositions<
@@ -744,11 +753,13 @@ export function useYjsRemoteCursorOverlayPositions<
         TPositionData
       > = {}
 ): readonly [
-  readonly YjsRemoteCursorOverlayPosition<
-    YjsCursorDataForRuntimeEditor<TEditor>,
-    | TPositionData
-    | YjsRemoteCursorDecorationData<YjsCursorDataForRuntimeEditor<TEditor>>
-  >[],
+  ReadonlyArray<
+    YjsRemoteCursorOverlayPosition<
+      YjsCursorDataForRuntimeEditor<TEditor>,
+      | TPositionData
+      | YjsRemoteCursorDecorationData<YjsCursorDataForRuntimeEditor<TEditor>>
+    >
+  >,
   () => void,
 ] {
   const awarenessRevision = useYjsAwarenessRevision(
@@ -820,7 +831,7 @@ export function useYjsRemoteCursorOverlayPositions<
 
   useEffect(() => {
     if (typeof window === 'undefined') {
-      return;
+      return undefined;
     }
 
     window.addEventListener('resize', refresh);

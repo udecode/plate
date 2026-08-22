@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const blockSelectionValue = (
+export const blockSelectionValue: Value = (
   <fragment>
     <hheading level={2}>Block Selection</hheading>
     <hp>

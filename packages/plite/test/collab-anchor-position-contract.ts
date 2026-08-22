@@ -142,7 +142,7 @@ describe('collab anchor position contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     });
-    assert.equal(editorString(editor, resolved!), 'lph');
+    assert.equal(editorString(editor, resolved), 'lph');
     assert.deepEqual(anchor.release(), resolved);
   });
 
@@ -164,7 +164,7 @@ describe('collab anchor position contract', () => {
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 0], offset: 8 },
     });
-    assert.equal(editorString(editor, resolved!), 'et');
+    assert.equal(editorString(editor, resolved), 'et');
     assert.deepEqual(anchor.release(), resolved);
   });
 
@@ -193,7 +193,7 @@ describe('collab anchor position contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     });
-    assert.equal(editorString(editor, resolved!), 'et');
+    assert.equal(editorString(editor, resolved), 'et');
     assert.deepEqual(anchor.release(), resolved);
   });
 
@@ -228,7 +228,7 @@ describe('collab anchor position contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [2, 0], offset: 2 },
     });
-    assert.equal(editorString(editor, resolved!), 'eroone-twoth');
+    assert.equal(editorString(editor, resolved), 'eroone-twoth');
     assert.deepEqual(anchor.release(), resolved);
   });
 });

@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const basicBlocksValue = (
+export const basicBlocksValue: Value = (
   <fragment>
     <hheading level={1}>Heading 1</hheading>
     <hp>

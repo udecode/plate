@@ -35,7 +35,7 @@ export function CommandMenu({
   navItems: MainNavItem[];
 }) {
   const locale = useLocale();
-  const content = i18n[locale as keyof typeof i18n];
+  const content = i18n[locale];
   const [open, setOpen] = React.useState(false);
   const isHydrated = React.useSyncExternalStore(
     subscribeHydration,
@@ -89,7 +89,9 @@ export function CommandMenu({
 
     document.addEventListener('keydown', down);
 
-    return () => document.removeEventListener('keydown', down);
+    return () => {
+      document.removeEventListener('keydown', down);
+    };
   }, [updateOpen]);
 
   return (
@@ -101,7 +103,9 @@ export function CommandMenu({
         className={cn(
           'relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card'
         )}
-        onClick={() => updateOpen(true)}
+        onClick={() => {
+          updateOpen(true);
+        }}
         {...props}
       >
         <span className="hidden xl:inline-flex">

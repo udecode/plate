@@ -45,7 +45,10 @@ export function useEditorRuntimeState<
     () =>
       editor.read((state) =>
         selector(
-          state as EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
+          state as unknown as EditorStateView<
+            ValueOf<TEditor>,
+            ExtensionsOf<TEditor>
+          >
         )
       ),
     [editor, selector]
@@ -79,7 +82,7 @@ export function useEditorRuntimeState<
     update();
 
     return editor.subscribeCommit((change) => {
-      updateWithCommit(change as EditorCommit<ValueOf<TEditor>>);
+      updateWithCommit(change);
     });
   }, [editor, update, updateWithCommit]);
 

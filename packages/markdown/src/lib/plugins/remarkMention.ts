@@ -73,12 +73,15 @@ export const remarkMention: Plugin = () => (tree: Node) => {
       // Matches @username but excludes trailing punctuation
       const atMentionPattern = /(?:^|\s)@([a-zA-Z0-9_-]+)(?=[\s.,;:!?)]|$)/g;
 
-      const parts: (MentionNode | Text)[] = [];
+      const parts: Array<MentionNode | Text> = [];
       let lastIndex = 0;
 
       const text = node.value;
-      const allMatches: { end: number; node: MentionNode; start: number }[] =
-        [];
+      const allMatches: Array<{
+        end: number;
+        node: MentionNode;
+        start: number;
+      }> = [];
 
       // Find all @username mentions
       let match: RegExpExecArray | null;

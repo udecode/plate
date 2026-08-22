@@ -40,7 +40,7 @@ type CodeBlockElementProps = PlateElementProps<typeof CodeBlockPlugin> & {
   showLanguageLabel?: boolean;
 };
 
-const codeBlockLanguages: { label: string; value: string }[] = [
+const codeBlockLanguages: Array<{ label: string; value: string }> = [
   { label: 'Auto', value: 'auto' },
   { label: 'Plain Text', value: 'plaintext' },
   { label: 'ABAP', value: 'abap' },
@@ -168,9 +168,9 @@ export function CodeBlockElement({
               size="icon"
               variant="ghost"
               className="size-6 text-xs"
-              onClick={() =>
-                editor.plugin(BaseCodeBlockPlugin).update.format({ element })
-              }
+              onClick={() => {
+                editor.plugin(BaseCodeBlockPlugin).update.format({ element });
+              }}
               title="Format code"
             >
               <BracesIcon className="!size-3.5 text-muted-foreground" />
@@ -236,13 +236,17 @@ function CodeBlockCombobox({
       <PopoverContent
         className="w-[200px] p-0"
         id="code-block-language-options"
-        onCloseAutoFocus={() => setSearchValue('')}
+        onCloseAutoFocus={() => {
+          setSearchValue('');
+        }}
       >
         <Command shouldFilter={false}>
           <CommandInput
             className="h-9"
             value={searchValue}
-            onValueChange={(value) => setSearchValue(value)}
+            onValueChange={(innerValue) => {
+              setSearchValue(innerValue);
+            }}
             placeholder="Search language..."
           />
           <CommandEmpty>No language found.</CommandEmpty>
@@ -254,15 +258,15 @@ function CodeBlockCombobox({
                   key={language.label}
                   className="cursor-pointer"
                   value={language.value}
-                  onSelect={(value) => {
+                  onSelect={(innerValue2) => {
                     const path = editor.read.nodes.path(element);
 
                     if (!path) return;
 
                     editor
                       .plugin(BaseCodeBlockPlugin)
-                      .update.set({ language: value }, { at: path });
-                    setSearchValue(value);
+                      .update.set({ language: innerValue2 }, { at: path });
+                    setSearchValue(innerValue2);
                     setOpen(false);
                   }}
                 >
@@ -304,13 +308,15 @@ function CopyButton({
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hasCopied) return;
+    if (!hasCopied) return undefined;
 
     const timeout = setTimeout(() => {
       setHasCopied(false);
     }, 2000);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [hasCopied]);
 
   return (

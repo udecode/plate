@@ -20,7 +20,7 @@ const headingVariants = cva('relative mb-1', {
 type HeadingProps = PliteElementProps<typeof BaseHeadingPlugin>;
 
 export function HeadingElementStatic(props: HeadingProps) {
-  const level = props.element.level;
+  const { level } = props.element;
   const tag = `h${level}` as const;
 
   return (

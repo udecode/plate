@@ -18,7 +18,7 @@ describe('@platejs/yjs editor adapter', () => {
       const editor = {
         read: {
           value: () => {
-            reads++;
+            reads += 1;
 
             return { children, roots: { header: children } };
           },

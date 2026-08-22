@@ -42,36 +42,51 @@ const ACTION_THREE_COLUMNS = 'action_three_columns';
 
 function getTurnIntoLabel(value: string) {
   switch (value) {
-    case 'disc':
+    case 'disc': {
       return 'Bulleted list';
-    case 'decimal':
+    }
+    case 'decimal': {
       return 'Numbered list';
-    case 'todo':
+    }
+    case 'todo': {
       return 'To-do list';
-    case 'heading-1':
+    }
+    case 'heading-1': {
       return 'Heading 1';
-    case 'heading-2':
+    }
+    case 'heading-2': {
       return 'Heading 2';
-    case 'heading-3':
+    }
+    case 'heading-3': {
       return 'Heading 3';
-    case 'heading-4':
+    }
+    case 'heading-4': {
       return 'Heading 4';
-    case 'heading-5':
+    }
+    case 'heading-5': {
       return 'Heading 5';
-    case 'heading-6':
+    }
+    case 'heading-6': {
       return 'Heading 6';
-    case PLUGINS.toggle:
+    }
+    case PLUGINS.toggle: {
       return 'Toggle list';
-    case PLUGINS.codeBlock:
+    }
+    case PLUGINS.codeBlock: {
       return 'Code';
-    case PLUGINS.codeDrawing:
+    }
+    case PLUGINS.codeDrawing: {
       return 'Code Drawing';
-    case PLUGINS.blockquote:
+    }
+    case PLUGINS.blockquote: {
       return 'Quote';
-    case ACTION_THREE_COLUMNS:
+    }
+    case ACTION_THREE_COLUMNS: {
       return '3 columns';
-    default:
+    }
+    default: {
       return 'Text';
+    }
   }
 }
 
@@ -102,13 +117,13 @@ function TurnIntoMenuItem({
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
-  const selectedDocumentValue = String(
-    useSelectionFragmentProp({
-      defaultValue: editor.plugin(PLUGINS.paragraph).schema.type,
-      getProp: (node) =>
-        ElementApi.isElement(node) ? getBlockType(node) : undefined,
-    }) ?? editor.plugin(PLUGINS.paragraph).schema.type
-  );
+  const documentValue = useSelectionFragmentProp({
+    defaultValue: editor.plugin(PLUGINS.paragraph).schema.type,
+    getProp: (node) =>
+      ElementApi.isElement(node) ? getBlockType(node) : undefined,
+  });
+  const selectedDocumentValue =
+    typeof documentValue === 'string' ? documentValue : PLUGINS.paragraph;
   const selectedValue =
     [
       PLUGINS.paragraph,
@@ -173,13 +188,13 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
             <TurnIntoMenuItem icon={<Heading6Icon />} value="heading-6">
               Heading 6
             </TurnIntoMenuItem>
-            <TurnIntoMenuItem icon={<ListIcon />} value={'disc'}>
+            <TurnIntoMenuItem icon={<ListIcon />} value="disc">
               Bulleted list
             </TurnIntoMenuItem>
-            <TurnIntoMenuItem icon={<ListOrderedIcon />} value={'decimal'}>
+            <TurnIntoMenuItem icon={<ListOrderedIcon />} value="decimal">
               Numbered list
             </TurnIntoMenuItem>
-            <TurnIntoMenuItem icon={<SquareIcon />} value={'todo'}>
+            <TurnIntoMenuItem icon={<SquareIcon />} value="todo">
               To-do list
             </TurnIntoMenuItem>
             <TurnIntoMenuItem

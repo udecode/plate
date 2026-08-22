@@ -2,6 +2,7 @@ import { resolveShouldMergeNodesRemovePrevNode } from '../core/editor-read-execu
 import { NodeApi } from '../interfaces';
 import { isEmpty as editorIsEmpty } from '../interfaces/editor';
 import type { EditorStaticApi } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 
 export const shouldMergeNodesRemovePrevNode: EditorStaticApi['shouldMergeNodesRemovePrevNode'] =
   (editor, previous, current) =>
@@ -15,6 +16,6 @@ export const shouldMergeNodesRemovePrevNode: EditorStaticApi['shouldMergeNodesRe
           editorIsEmpty(editor, previousNode)) ||
         (NodeApi.isText(previousNode) &&
           previousNode.text === '' &&
-          prevPath.at(-1)! !== 0)
+          getDefined(prevPath.at(-1)) !== 0)
       );
     });

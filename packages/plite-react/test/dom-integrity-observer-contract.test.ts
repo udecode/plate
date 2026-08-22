@@ -67,11 +67,11 @@ const createHarness = ({
       (task) => !task.cancelled && task.timing === timing
     );
 
-    if (index < 0) return false;
+    if (index === -1) return false;
 
     const [task] = tasks.splice(index, 1);
 
-    task!.callback();
+    task.callback();
     return true;
   };
 

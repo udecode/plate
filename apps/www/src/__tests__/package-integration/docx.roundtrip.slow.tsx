@@ -36,7 +36,9 @@ const importDocxBuffer = async (
   const arrayBuffer = new ArrayBuffer(buffer.byteLength);
   new Uint8Array(arrayBuffer).set(buffer);
 
-  return (await editor.plugin(DocxImportPlugin).api.import(arrayBuffer)).nodes;
+  const result = await editor.plugin(DocxImportPlugin).api.import(arrayBuffer);
+
+  return result.nodes;
 };
 
 const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {

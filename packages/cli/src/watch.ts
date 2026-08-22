@@ -70,10 +70,12 @@ export const watchEditors = async (
   };
   let initialError: unknown;
   const recordSources = (
-    results: readonly Readonly<{
-      entryPath: string;
-      sourceFiles: readonly string[];
-    }>[]
+    results: ReadonlyArray<
+      Readonly<{
+        entryPath: string;
+        sourceFiles: readonly string[];
+      }>
+    >
   ) => {
     results.forEach(({ entryPath, sourceFiles }) => {
       sourcesByEntry.set(
@@ -111,7 +113,7 @@ export const watchEditors = async (
     );
 
     discovered.forEach((sources, index) => {
-      const entryPath = entryPaths[index]!;
+      const entryPath = entryPaths[index];
 
       sourcesByEntry.set(entryPath, new Set([entryPath, ...sources]));
     });
@@ -134,7 +136,7 @@ export const watchEditors = async (
       await Promise.all(
         entryPaths.map(async (entry, index) => {
           try {
-            const entryPath = entryPaths[index]!;
+            const entryPath = entryPaths[index];
 
             sourcesByEntry.set(
               entryPath,
@@ -189,7 +191,7 @@ export const watchEditors = async (
   const checkedListeners = new Set<(entryPaths: readonly string[]) => void>();
   const generatedListeners = new Set<(entryPaths: readonly string[]) => void>();
 
-  const refreshWatchSet = async (nextPaths: readonly string[]) => {
+  const refreshWatchSet = (nextPaths: readonly string[]) => {
     const next = new Set([...entryPaths, ...nextPaths]);
     const nextTargets = watchTargets(next);
     const added = [...nextTargets].filter((path) => !watchedTargets.has(path));
@@ -199,11 +201,13 @@ export const watchEditors = async (
     const retainedAncestors = removed.filter((path) =>
       [...nextTargets].some((target) => target.startsWith(`${path}${sep}`))
     );
+    const retainedAncestorSet = new Set(retainedAncestors);
     const unwatchable = removed.filter(
-      (path) => !retainedAncestors.includes(path)
+      (path) => !retainedAncestorSet.has(path)
     );
 
-    if (unwatchable.length > 0) await watcher.unwatch(unwatchable);
+    // Chokidar 4 unwatch is synchronous; only close() awaits watcher cleanup.
+    if (unwatchable.length > 0) watcher.unwatch(unwatchable);
     if (added.length > 0) watcher.add(added);
     watched = next;
     watchedTargets = new Set([...nextTargets, ...retainedAncestors]);
@@ -216,7 +220,7 @@ export const watchEditors = async (
       const results = await generateEditors(targetEntries, { cwd }, session);
 
       recordSources(results);
-      await refreshWatchSet(allSources());
+      refreshWatchSet(allSources());
       const checkedEntries = results.map(({ entryPath }) => entryPath);
       const generatedEntries = results.flatMap(({ entryPath, status }) =>
         status === 'generated' ? [entryPath] : []
@@ -236,28 +240,24 @@ export const watchEditors = async (
         }
       }
     } catch (error) {
-      const attempted = (
-        await Promise.all(
-          targetEntries.map(async (entry) => {
-            try {
-              const sourceFiles = [...(await discoverAttemptedSources(entry))];
-              const entryPath = resolve(cwd, entry);
+      const attemptedSources = await Promise.all(
+        targetEntries.map(async (entry) => {
+          try {
+            const sourceFiles = [...(await discoverAttemptedSources(entry))];
+            const entryPath = resolve(cwd, entry);
 
-              sourcesByEntry.set(
-                entryPath,
-                new Set([entryPath, ...sourceFiles])
-              );
+            sourcesByEntry.set(entryPath, new Set([entryPath, ...sourceFiles]));
 
-              return [entryPath, ...sourceFiles];
-            } catch {
-              return [];
-            }
-          })
-        )
-      ).flat();
+            return [entryPath, ...sourceFiles];
+          } catch {
+            return [];
+          }
+        })
+      );
+      const attempted = attemptedSources.flat();
 
       if (attempted.length > 0) {
-        await refreshWatchSet([...watched, ...attempted]);
+        refreshWatchSet([...watched, ...attempted]);
       }
       process.stderr.write(`${errorMessage(error)}\n`);
     }
@@ -270,8 +270,9 @@ export const watchEditors = async (
     }
     running = true;
     let notify = notifyFirst;
+    let shouldContinue = true;
 
-    do {
+    while (shouldContinue) {
       followUp = false;
       const targetEntries =
         pendingEntries.size > 0 ? [...pendingEntries] : entryPaths;
@@ -279,7 +280,8 @@ export const watchEditors = async (
       pendingEntries.clear();
       await regenerate(targetEntries, notify);
       notify = true;
-    } while (!closed && followUp);
+      shouldContinue = !closed && followUp;
+    }
 
     running = false;
   };
@@ -340,12 +342,14 @@ export const watchEditors = async (
       };
       const onAbort = () => {
         cleanup();
+        // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- [P1 local-invariant] AbortSignal.reason is a host-owned value whose identity must survive the adapter.
         rejectReady(
           signal?.reason ?? new Error('Plate watch initialization stopped.')
         );
       };
       const onError = (error: unknown) => {
         cleanup();
+        // oxlint-disable-next-line typescript/prefer-promise-reject-errors -- [P1 local-invariant] Chokidar owns the emitted error contract; preserve its rejection value unchanged.
         rejectReady(error);
       };
       const onReady = () => {
@@ -372,7 +376,7 @@ export const watchEditors = async (
         )
       );
     });
-    await refreshWatchSet(allSources());
+    refreshWatchSet(allSources());
     readyForChanges = true;
     const changedDuringStartup = [...watched].filter(
       (path) => startupRevisions.get(path) !== sourceRevision(path)

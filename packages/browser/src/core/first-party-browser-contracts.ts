@@ -427,9 +427,11 @@ export const assertPliteBrowserFirstPartyParityContracts =
           `First-party parity family "${parityFamily.family}" is not registered.`
         );
       }
+      const routeSet = new Set(row.routes);
+      const assertionSet = new Set(row.assertions);
 
       for (const route of parityFamily.routes) {
-        if (!row.routes.includes(route)) {
+        if (!routeSet.has(route)) {
           throw new Error(
             `First-party parity family "${parityFamily.family}" is missing route "${route}".`
           );
@@ -437,7 +439,7 @@ export const assertPliteBrowserFirstPartyParityContracts =
       }
 
       for (const assertion of parityFamily.assertions) {
-        if (!row.assertions.includes(assertion)) {
+        if (!assertionSet.has(assertion)) {
           throw new Error(
             `First-party parity family "${parityFamily.family}" is missing assertion "${assertion}".`
           );

@@ -22,7 +22,7 @@ import {
 // NOTE: shadcn fork
 export function rehypeComponent() {
   return async (tree: UnistTree) => {
-    const promises: Promise<void>[] = [];
+    const promises: Array<Promise<void>> = [];
 
     visit(tree as any, (node: UnistNode) => {
       if (
@@ -68,10 +68,10 @@ export function rehypeComponent() {
                   const item = await getRegistryItem(name, true);
 
                   if (item?.files) {
-                    const [tree, highlightedFiles] = await Promise.all([
-                      createFileTreeForRegistryItemFiles(item.files),
-                      highlightFiles(item.files as any),
-                    ]);
+                    const innerTree = createFileTreeForRegistryItemFiles(
+                      item.files
+                    );
+                    const highlightedFiles = await highlightFiles(item.files);
 
                     node.attributes.push(
                       {
@@ -87,11 +87,15 @@ export function rehypeComponent() {
                       {
                         name: '__tree__',
                         type: 'mdxJsxAttribute',
-                        value: JSON.stringify(tree),
+                        value: JSON.stringify(innerTree),
                       }
                     );
                   }
-                  if (!node.attributes?.find((item) => item.name === 'name')) {
+                  if (
+                    !node.attributes?.find(
+                      (innerItem) => innerItem.name === 'name'
+                    )
+                  ) {
                     node.attributes?.push({
                       name: 'name',
                       type: 'mdxJsxAttribute',
@@ -207,10 +211,10 @@ export function rehypeComponent() {
                   const item = await getRegistryItem(name, true);
 
                   if (item?.files) {
-                    const [tree, highlightedFiles] = await Promise.all([
-                      createFileTreeForRegistryItemFiles(item.files),
-                      highlightFiles(item.files as any),
-                    ]);
+                    const innerTree2 = createFileTreeForRegistryItemFiles(
+                      item.files
+                    );
+                    const highlightedFiles = await highlightFiles(item.files);
 
                     node.attributes.push(
                       {
@@ -226,7 +230,7 @@ export function rehypeComponent() {
                       {
                         name: '__tree__',
                         type: 'mdxJsxAttribute',
-                        value: JSON.stringify(tree),
+                        value: JSON.stringify(innerTree2),
                       }
                     );
                   }

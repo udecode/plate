@@ -130,20 +130,20 @@ export function FloatingToolbar({
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
   const editor = useEditor({ id: editorId });
   const selectionExpanded = useEditorSelector(
-    (editor) => editor.read.selection.isExpanded(),
+    (innerEditor) => innerEditor.read.selection.isExpanded(),
     { id: editorId }
   );
   const selectionText = useEditorSelector(
-    (editor) => editor.read.text.string(),
+    (innerEditor2) => innerEditor2.read.text.string(),
     { id: editorId }
   );
   const selectionRange = useEditorSelector(
-    (editor) => editor.read.selection.primaryRange(),
+    (innerEditor3) => innerEditor3.read.selection.primaryRange(),
     { id: editorId }
   );
   const waitForCollapsedSelection = useEditorSelector(
-    (editor, previous = false) => {
-      if (!editor.read.selection.isExpanded()) return false;
+    (innerEditor4, previous = false) => {
+      if (!innerEditor4.read.selection.isExpanded()) return false;
       if (editorId !== focusedEditorId) return true;
 
       return previous;
@@ -172,8 +172,9 @@ export function FloatingToolbar({
       {
         open,
         getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
-        onOpenChange: (nextOpen) =>
-          setDismissedSelection(nextOpen ? null : selectionRange),
+        onOpenChange: (nextOpen) => {
+          setDismissedSelection(nextOpen ? null : selectionRange);
+        },
       },
       {
         middleware: [
@@ -200,8 +201,12 @@ export function FloatingToolbar({
   }, [open]);
 
   React.useEffect(() => {
-    const onMouseUp = () => setMouseDownOpen(null);
-    const onMouseDown = () => setMouseDownOpen(openStateRef.current);
+    const onMouseUp = () => {
+      setMouseDownOpen(null);
+    };
+    const onMouseDown = () => {
+      setMouseDownOpen(openStateRef.current);
+    };
 
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('mousedown', onMouseDown);
@@ -213,16 +218,19 @@ export function FloatingToolbar({
   }, []);
 
   const editorVersion = useEditorSelector(
-    (editor) => editor.read.lastCommit()?.version ?? 0,
+    (innerEditor5) => innerEditor5.read.lastCommit()?.version ?? 0,
     { id: editorId }
   );
+  const updateFloating = floating.update;
 
   React.useEffect(() => {
-    floating.update?.();
-  }, [editorVersion, floating.update]);
+    updateFloating?.();
+  }, [editorVersion, updateFloating]);
 
   const clickOutsideRef = useOnClickOutside(
-    () => setDismissedSelection(selectionRange),
+    () => {
+      setDismissedSelection(selectionRange);
+    },
     { ignoreClass: 'ignore-click-outside/toolbar' }
   );
 

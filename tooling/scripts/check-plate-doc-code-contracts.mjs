@@ -234,7 +234,7 @@ const readSchemaIdentity = (schemaProperty) => {
   if (!schemaProperty) return undefined;
   if (schemaProperty.shorthand) return { complete: true };
 
-  const value = schemaProperty.value;
+  const { value } = schemaProperty;
 
   if (value?.type !== 'ObjectExpression') return { complete: true };
 
@@ -756,7 +756,7 @@ const inspectContextualConfigure = (callback) => {
     if (node.type === 'ReturnStatement') {
       const value = unwrapTypedExpression(node.argument);
 
-      returnCount++;
+      returnCount += 1;
       if (value?.type === 'ObjectExpression') {
         properties.push(...value.properties);
       } else {

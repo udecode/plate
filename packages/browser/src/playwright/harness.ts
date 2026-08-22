@@ -391,11 +391,11 @@ export const createEditorHarness = (
         clickCount,
         offset,
         path,
-        waitForSelectionSync,
+        waitForSelectionSync: innerWaitForSelectionSync,
       }) => {
         await clickTextOffset(root, path, offset, {
           clickCount,
-          waitForSelectionSync,
+          waitForSelectionSync: innerWaitForSelectionSync,
         });
       },
       clickTextRange: async (options) => {

@@ -1,11 +1,10 @@
-// oxlint-disable unicorn/prefer-module -- [P1 compatibility] Changesets loads this hook through CommonJS.
 const { config } = require('dotenv');
 const { getInfo } = require('@changesets/get-github-info');
 
 config();
 
 module.exports = {
-  getDependencyReleaseLine: async () => '',
+  getDependencyReleaseLine: () => '',
   getReleaseLine: async (changeset, _type, options) => {
     if (!options || !options.repo) {
       throw new Error(
@@ -21,11 +20,11 @@ module.exports = {
 
     const links = await (async () => {
       if (changeset.commit) {
-        const { links } = await getInfo({
+        const { links: innerLinks } = await getInfo({
           repo: options.repo,
           commit: changeset.commit,
         });
-        return links;
+        return innerLinks;
       }
       return {
         commit: null,

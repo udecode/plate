@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-assignment -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import { defineExtension, schema } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -122,28 +121,37 @@ const syncedBlocks = () =>
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'block-quote':
+    case 'block-quote': {
       return (
         <BlockQuote {...(props as RenderElementProps<BlockQuoteElement>)} />
       );
-    case 'paragraph':
+    }
+    case 'paragraph': {
       return (
         <ParagraphElement
           {...(props as RenderElementProps<ParagraphElementType>)}
         />
       );
-    case 'synced-block':
+    }
+    case 'synced-block': {
       return (
         <SyncedBlock {...(props as RenderElementProps<SyncedBlockElement>)} />
       );
-    default:
+    }
+    default: {
       return <p {...props.attributes}>{props.children}</p>;
+    }
   }
 };
 
 const renderLeaf = (props: RenderLeafProps<CustomText>) => <Leaf {...props} />;
 
-const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
+const Leaf = ({
+  attributes,
+  children: initialChildren,
+  leaf,
+}: RenderLeafProps<CustomText>) => {
+  let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }

@@ -1,4 +1,3 @@
-/* oxlint-disable nextjs/no-img-element -- This image consumes a user or runtime URL and editor-owned dimensions that Next Image cannot statically authorize or preserve. */
 import { defineExtension } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
 import {
@@ -11,6 +10,7 @@ import {
   useElementSelected,
   usePliteEditor,
 } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
@@ -193,19 +193,23 @@ const image = () =>
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'paragraph':
+    case 'paragraph': {
       return <Paragraph {...(props as RenderElementProps<ParagraphElement>)} />;
-    default:
+    }
+    default: {
       return <p {...props.attributes}>{props.children}</p>;
+    }
   }
 };
 
 const renderVoid = ({ element }: RenderVoidProps<CustomElement>) => {
   switch (element.type) {
-    case 'image':
-      return <Image element={element as ImageElement} />;
-    default:
+    case 'image': {
+      return <Image element={element} />;
+    }
+    default: {
       return null;
+    }
   }
 };
 
@@ -228,6 +232,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
 
   return (
     <div className="plite-images-figure">
+      {/* oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] This editor example renders the document-owned image URL as a native selected void node. */}
       <img
         alt=""
         className={cn(
@@ -275,9 +280,9 @@ const InsertImageButton = () => {
         }
         if (url) insertImage(editor, url);
       }}
-      onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
-        event.preventDefault()
-      }
+      onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+      }}
     >
       <Icon>image</Icon>
     </Button>
@@ -288,7 +293,9 @@ const isImageUrl = (url: string): boolean => {
   if (!url) return false;
   if (!isUrl(url)) return false;
   const ext = new URL(url).pathname.split('.').pop();
-  return imageExtensions.includes(ext!);
+  return imageExtensions.includes(
+    ext ?? failInvariant('Expected value to be defined')
+  );
 };
 
 export default ImagesExample;

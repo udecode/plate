@@ -574,12 +574,12 @@ function auditSlateV2Docs() {
     }
 
     for (const { pattern, reason } of invalidBaseRendererDocPatterns) {
-      const match = pattern.exec(source);
+      const innerMatch = pattern.exec(source);
 
-      if (match?.index === undefined) continue;
+      if (innerMatch?.index === undefined) continue;
 
-      const lineNumber = source.slice(0, match.index).split('\n').length;
-      const line = source.split('\n')[lineNumber - 1]?.trim() ?? match[0];
+      const lineNumber = source.slice(0, innerMatch.index).split('\n').length;
+      const line = source.split('\n')[lineNumber - 1]?.trim() ?? innerMatch[0];
 
       failures.push(`${relativePath}:${lineNumber}: ${reason}: ${line}`);
     }

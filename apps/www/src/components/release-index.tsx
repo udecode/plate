@@ -25,13 +25,13 @@ import { cn } from '@/lib/utils';
 
 export type PlateUiReleaseChange = {
   date: string;
-  entries: {
+  entries: Array<{
     id: string;
     kind: string;
     migrationNotes: string[];
     summary: string;
     targets: string[];
-  }[];
+  }>;
   href: string;
   id: string;
   kind: string;
@@ -44,10 +44,10 @@ export type PlateUiReleaseChange = {
     tag?: string;
   };
   summary: string;
-  targets: {
+  targets: Array<{
     href?: string;
     name: string;
-  }[];
+  }>;
 };
 
 export type PlateUiReleaseChangesByTag = Record<string, PlateUiReleaseChange[]>;
@@ -109,7 +109,7 @@ export function ReleaseIndex({
   const latestPlateUiReleaseTag = messages.find(
     (release) => release.plateUiChanges.length > 0
   )?.tag;
-  const messageGroups: ReleaseMajorGroup<ReleaseIndexMessage>[] =
+  const messageGroups: Array<ReleaseMajorGroup<ReleaseIndexMessage>> =
     showMajorHeadings
       ? getReleaseMajorGroups(messages)
       : [{ major: '', releases: messages }];

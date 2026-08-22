@@ -18,7 +18,7 @@ type CodeBlockElementStaticProps = PliteElementProps<
   showLanguageLabel?: boolean;
 };
 
-const codeBlockLanguages: { label: string; value: string }[] = [
+const codeBlockLanguages: Array<{ label: string; value: string }> = [
   { label: 'Auto', value: 'auto' },
   { label: 'Plain Text', value: 'plaintext' },
   { label: 'ABAP', value: 'abap' },
@@ -240,10 +240,8 @@ const syntaxColors: Record<string, string> = {
 };
 
 // Convert regular spaces to non-breaking spaces to preserve indentation in Word
-const preserveSpaces = (text: string): string => {
-  // Replace regular spaces with non-breaking spaces
-  return text.replace(/ /g, '\u00A0');
-};
+// Replace regular spaces with non-breaking spaces
+const preserveSpaces = (text: string): string => text.replace(/ /g, '\u00A0');
 
 export function CodeSyntaxLeafDocx(
   props: PliteLeafProps<typeof BaseCodeHighlightPlugin>

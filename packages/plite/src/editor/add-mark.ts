@@ -24,9 +24,10 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
     const schema = getEditorSchema(editor);
     const root = selection.anchor.root ?? selection.focus.root ?? 'main';
 
-    const match = (node: Node, path: Path) => {
-      if (!NodeApi.isText(node)) {
-        return false; // marks can only be applied to text
+    const match = (innerNode: Node, path: Path) => {
+      if (!NodeApi.isText(innerNode)) {
+        // marks can only be applied to text
+        return false;
       }
       const [parentNode] = editorParent(editor, path);
       if (!NodeApi.isElement(parentNode)) {

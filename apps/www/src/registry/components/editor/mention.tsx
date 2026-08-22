@@ -101,11 +101,11 @@ export function MentionInputElement(
               <InlineComboboxItem
                 key={item.ref}
                 value={item.label}
-                onClick={() =>
+                onClick={() => {
                   editor
                     .plugin(MentionPlugin)
-                    .update.insert({ label: item.label, ref: item.ref })
-                }
+                    .update.insert({ label: item.label, ref: item.ref });
+                }}
               >
                 {item.label}
               </InlineComboboxItem>

@@ -29,7 +29,7 @@ import {
 const assertTableCellSelection: (
   selection: Selection
 ) => asserts selection is TableCellSelection = (selection) => {
-  assert(selection?.kind === 'table-cell');
+  assert.ok(selection?.kind === 'table-cell');
 };
 
 describe('table selection slow contracts', () => {
@@ -562,13 +562,13 @@ describe('table selection slow contracts', () => {
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .read.isCellSelected(editor.key([0, 0, 1])!)
+              .read.isCellSelected(editor.key([0, 0, 1]))
           ).toBe(true);
           expect(
             getFixtureId(
               editor
                 .plugin(BaseTablePlugin)
-                .read.getSelectedCell(editor.key([0, 1, 0])!)!
+                .read.getSelectedCell(editor.key([0, 1, 0]))!
             )
           ).toBe('c21');
         });
@@ -616,12 +616,12 @@ describe('table selection slow contracts', () => {
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .read.isCellSelected(editor.key([0, 0, 0])!)
+              .read.isCellSelected(editor.key([0, 0, 0]))
           ).toBe(false);
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .read.getSelectedCell(editor.key([0, 0, 0])!)
+              .read.getSelectedCell(editor.key([0, 0, 0]))
           ).toBeNull();
         });
 
@@ -657,7 +657,7 @@ describe('table selection slow contracts', () => {
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .read.getSelectedCell(editor.key([0, 0, 0])!)
+              .read.getSelectedCell(editor.key([0, 0, 0]))
           ).toMatchObject({
             backgroundColor: 'red',
             id: 'c11',
@@ -837,13 +837,13 @@ describe('table selection slow contracts', () => {
           getFixtureId(
             editor
               .plugin(BaseTablePlugin)
-              .read.getSelectedCell(editor.key([0, 1, 0])!)!
+              .read.getSelectedCell(editor.key([0, 1, 0]))!
           )
         ).toBe('c21');
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .read.isCellSelected(editor.key([0, 0, 0])!)
+            .read.isCellSelected(editor.key([0, 0, 0]))
         ).toBe(true);
         expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
           true
@@ -932,7 +932,7 @@ describe('table selection slow contracts', () => {
   describe('TableCellSelection mapping', () => {
     const createTable = (prefix: string) => ({
       children: Array.from({ length: 2 }, (_, row) => ({
-        children: Array.from({ length: 2 }, (_, col) => {
+        children: Array.from({ length: 2 }, (innerValue, col) => {
           const id = `${prefix}-${row}${col}`;
 
           return {
@@ -998,8 +998,8 @@ describe('table selection slow contracts', () => {
       const mainAnchor = editor.read.points.start([1, 0, 0]);
       const mainFocus = editor.read.points.end([1, 1, 1]);
 
-      assert(mainAnchor);
-      assert(mainFocus);
+      assert.ok(mainAnchor);
+      assert.ok(mainFocus);
 
       expect(editor.read.runtime.snapshot().index).not.toBe(
         rootEditor.read.runtime.snapshot().index
@@ -1009,7 +1009,7 @@ describe('table selection slow contracts', () => {
 
       const mainView = readMain();
 
-      assert(mainView);
+      assert.ok(mainView);
       expect(mainView.root).toBeUndefined();
       expect(readRoot()).toBeNull();
       expect(readMain()).toBe(mainView);
@@ -1017,18 +1017,18 @@ describe('table selection slow contracts', () => {
       const rootAnchor = rootEditor.read.points.start([0, 0, 0]);
       const rootFocus = rootEditor.read.points.end([0, 1, 1]);
 
-      assert(rootAnchor);
-      assert(rootFocus);
+      assert.ok(rootAnchor);
+      assert.ok(rootFocus);
 
       rootEditor.update.selection.set({ anchor: rootAnchor, focus: rootFocus });
 
       const rootView = readRoot();
 
-      assert(rootView);
+      assert.ok(rootView);
       expect(rootView.root).toBe(root);
       const mainReadOfRoot = readMain();
 
-      assert(mainReadOfRoot);
+      assert.ok(mainReadOfRoot);
       expect(mainReadOfRoot.root).toBe(root);
       expect(mainReadOfRoot).not.toBe(mainView);
       expect(mainReadOfRoot).not.toBe(rootView);
@@ -1091,19 +1091,19 @@ describe('table selection slow contracts', () => {
       }) as unknown as typeof editor;
       const mainAnchor = editor.read.points.start([1, 0, 0]);
       const mainFocus = editor.read.points.end([1, 0, 1]);
-      const target = rootEditor.read.nodes.get([0, 1, 0], {
+      const innerTarget = rootEditor.read.nodes.get([0, 1, 0], {
         type: BaseTableCellPlugin,
       });
 
-      assert(mainAnchor);
-      assert(mainFocus);
-      assert(target);
+      assert.ok(mainAnchor);
+      assert.ok(mainFocus);
+      assert.ok(innerTarget);
       editor.update.selection.set({ anchor: mainAnchor, focus: mainFocus });
 
       expect(
         editor
           .plugin(BaseTablePlugin)
-          .read.getSelectedCellsBoundingBox([target[0]])
+          .read.getSelectedCellsBoundingBox([innerTarget[0]])
       ).toEqual({ maxCol: 1, maxRow: 1, minCol: 1, minRow: 1 });
     });
 
@@ -1132,14 +1132,14 @@ describe('table selection slow contracts', () => {
         const anchor = editor.read.points.start([0, 0, 0]);
         const focus = editor.read.points.end([0, 0, ids.length - 1]);
 
-        assert(anchor);
-        assert(focus);
+        assert.ok(anchor);
+        assert.ok(focus);
 
         const tableSelection = editor
           .plugin(BaseTablePlugin)
           .read.createCellSelection({ anchor, focus });
 
-        assert(tableSelection);
+        assert.ok(tableSelection);
         editor.update.selection.set(tableSelection);
         editor.update((tx) => {
           tx.nodes.remove({ at: [0, 0, removedIndex] });
@@ -1164,7 +1164,7 @@ describe('table selection slow contracts', () => {
           expectedIds.map((_, index) => {
             const range = editor.read.ranges.get([0, 0, index]);
 
-            assert(range);
+            assert.ok(range);
 
             return range;
           })
@@ -1180,14 +1180,14 @@ describe('table selection slow contracts', () => {
       const anchor = editor.read.points.start([0, 0, 0]);
       const focus = editor.read.points.end([0, 1, 1]);
 
-      assert(anchor);
-      assert(focus);
+      assert.ok(anchor);
+      assert.ok(focus);
 
       const selection = editor
         .plugin(BaseTablePlugin)
         .read.createCellSelection({ anchor, focus });
 
-      assert(selection);
+      assert.ok(selection);
       editor.update.selection.set(selection);
       expect(() =>
         editor.update((tx) => {
@@ -1244,8 +1244,8 @@ describe('table selection slow contracts', () => {
       const anchor = rootEditor.read.points.start([0, 0, 0]);
       const focus = rootEditor.read.points.end([0, 1, 1]);
 
-      assert(anchor);
-      assert(focus);
+      assert.ok(anchor);
+      assert.ok(focus);
 
       const rootRange = Object.freeze({ anchor, focus });
       const rootSelectionView = rootEditor.read((state) =>
@@ -1261,8 +1261,8 @@ describe('table selection slow contracts', () => {
         })
       );
 
-      assert(rootSelectionView, 'root-scoped table selection view');
-      assert(baseSelectionView, 'explicit-root base table selection view');
+      assert.ok(rootSelectionView, 'root-scoped table selection view');
+      assert.ok(baseSelectionView, 'explicit-root base table selection view');
       expect(rootSelectionView.selection).toBe(rootRange);
       expect(baseSelectionView.selection).toBe(rootRange);
 
@@ -1279,12 +1279,12 @@ describe('table selection slow contracts', () => {
       const upperRightPoint = rootEditor.read.points.start([0, 0, 1]);
       const lowerRightPoint = rootEditor.read.points.start([0, 1, 1]);
 
-      assert(upperLeft);
-      assert(upperRight);
-      assert(upperRow);
-      assert(upperLeftPoint);
-      assert(upperRightPoint);
-      assert(lowerRightPoint);
+      assert.ok(upperLeft);
+      assert.ok(upperRight);
+      assert.ok(upperRow);
+      assert.ok(upperLeftPoint);
+      assert.ok(upperRightPoint);
+      assert.ok(lowerRightPoint);
       expect(
         editor
           .plugin(BaseTablePlugin)
@@ -1318,7 +1318,7 @@ describe('table selection slow contracts', () => {
         .plugin(BaseTablePlugin)
         .read.createCellSelection(rootRange);
 
-      assert(tableSelection);
+      assert.ok(tableSelection);
       rootEditor.update.selection.set(tableSelection);
 
       const assertMappedSelection = (tableIndex: number) => {
@@ -1376,7 +1376,7 @@ describe('table selection slow contracts', () => {
           tx.nodes.insert(createTable(`prefix-${prefixCount}`), { at: [0] });
         });
 
-        const version = rootEditor.read.runtime.snapshot().version;
+        const { version } = rootEditor.read.runtime.snapshot();
 
         expect(version).toBeGreaterThan(previousVersion);
         previousVersion = version;
@@ -1388,7 +1388,7 @@ describe('table selection slow contracts', () => {
           tx.nodes.remove({ at: [0] });
         });
 
-        const version = rootEditor.read.runtime.snapshot().version;
+        const { version } = rootEditor.read.runtime.snapshot();
 
         expect(version).toBeGreaterThan(previousVersion);
         previousVersion = version;
@@ -1405,7 +1405,7 @@ describe('table selection slow contracts', () => {
 
       const lastCell = rootEditor.read.points.end([0, 1, 1]);
 
-      assert(lastCell);
+      assert.ok(lastCell);
       rootEditor.update.selection.set(lastCell);
 
       expect(

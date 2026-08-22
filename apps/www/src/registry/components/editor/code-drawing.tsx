@@ -89,10 +89,10 @@ export function CodeDrawingElement(
         );
 
         if (!cancelled) setImage(imageData);
-      } catch (cause) {
+      } catch (error) {
         if (!cancelled) {
           const message =
-            cause instanceof Error ? cause.message : 'Rendering failed';
+            error instanceof Error ? error.message : 'Rendering failed';
 
           console.error(message);
           setImage('');
@@ -146,8 +146,8 @@ export function CodeDrawingElement(
 
   const { code, language, view } = element;
 
-  const selectionCollapsed = useEditorSelector((editor) =>
-    editor.read.selection.isCollapsed()
+  const selectionCollapsed = useEditorSelector((innerEditor) =>
+    innerEditor.read.selection.isCollapsed()
   );
 
   const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
@@ -185,7 +185,9 @@ export function CodeDrawingElement(
       <PopoverContent
         className="w-auto p-1"
         contentEditable={false}
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
       >
         <div className="flex items-center gap-1">
           {image && (
@@ -332,8 +334,11 @@ function CodeDrawingToolbar({
   return (
     <div
       role="toolbar"
+      tabIndex={-1}
       className={`${positionClass} transition-opacity ${opacityClass}`}
-      onMouseEnter={() => setToolbarVisible(true)}
+      onMouseEnter={() => {
+        setToolbarVisible(true);
+      }}
       onMouseLeave={() => {
         if (!languageSelectOpen && !viewSelectOpen) {
           setToolbarVisible(false);
@@ -355,9 +360,9 @@ function CodeDrawingToolbar({
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="z-[100]">
-            {CODE_DRAWING_LANGUAGES.map((language) => (
-              <SelectItem key={language} value={language}>
-                {languageLabels[language]}
+            {CODE_DRAWING_LANGUAGES.map((innerLanguage) => (
+              <SelectItem key={innerLanguage} value={innerLanguage}>
+                {languageLabels[innerLanguage]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -452,9 +457,7 @@ function CodeDrawingTextarea({
 
       <div className="relative flex-1 rounded-md">
         <pre
-          className={
-            'm-0 overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid'
-          }
+          className="m-0 overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid"
           style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px`, height: '100%' }}
         >
           <code className="block h-full w-full">
@@ -517,19 +520,17 @@ function CodeDrawingPreviewArea({
       )}
 
       {showPreview ? (
-        <div
-          className={
-            'flex flex-1 items-center justify-center rounded-md bg-muted/30 p-4'
-          }
-        >
+        <div className="flex flex-1 items-center justify-center rounded-md bg-muted/30 p-4">
           {loading && <div className="text-muted-foreground">Loading...</div>}
-          {!loading && image && (
-            <img
-              src={image}
-              alt="code drawing"
-              className="max-h-full max-w-full object-contain"
-            />
-          )}
+          {!loading &&
+            image && (
+              // oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] The renderer returns an ephemeral preview data URL; optimization and remote loading do not apply.
+              <img
+                src={image}
+                alt="code drawing"
+                className="max-h-full max-w-full object-contain"
+              />
+            )}
           {!loading && !image && renderError && (
             <div className="text-destructive" title={renderError}>
               Could not render preview. Edit the source to retry.

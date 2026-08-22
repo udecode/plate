@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-return -- This benchmark bridge consumes Puppeteer page-evaluation payloads whose cross-realm values cannot carry static runtime types. */
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -60,7 +59,7 @@ type PresetRunPayload = {
 function getArg(name: string) {
   const index = process.argv.indexOf(`--${name}`);
 
-  if (index === -1) return;
+  if (index === -1) return undefined;
 
   return process.argv[index + 1];
 }
@@ -337,7 +336,7 @@ async function runBenchmark(
 
   const runPromise = page
     .evaluate(
-      async ({ benchmark }: { benchmark: BenchmarkName }) => {
+      async ({ benchmark: innerBenchmark }: { benchmark: BenchmarkName }) => {
         const harness = (
           window as typeof window & {
             __editorPerfHarness?: {
@@ -350,7 +349,7 @@ async function runBenchmark(
           throw new Error('Editor perf harness not available on window');
         }
 
-        await harness.runBenchmark(benchmark);
+        await harness.runBenchmark(innerBenchmark);
       },
       { benchmark }
     )

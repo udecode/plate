@@ -131,12 +131,14 @@ const createPluginAccess = (
     !isNominalPluginDescriptor(descriptor) ||
     getPluginSchemaFamily(descriptor) === getPluginSchemaFamily(plugin);
   const getCandidate = () => {
-    if (!provided) return;
+    if (!provided) return undefined;
     if (isResolvingPlatePlugin(editor, provided)) return provided;
-    if (!hasCompiledPlatePluginCandidate(editor)) return;
+    if (!hasCompiledPlatePluginCandidate(editor)) return undefined;
     const compiled = getCompiledPlatePlugin(editor, name);
 
     if (provided === compiled) return provided;
+
+    return undefined;
   };
   const getPlugin = () => {
     const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
@@ -212,7 +214,7 @@ const createPluginAccess = (
     Object.create(null) as Record<PropertyKey, unknown>,
     {
       get(_target, localId) {
-        if (typeof localId !== 'string') return;
+        if (typeof localId !== 'string') return undefined;
 
         return getPendingPropertyHandle(localId);
       },
@@ -223,7 +225,7 @@ const createPluginAccess = (
     {
       get(_target, key) {
         if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-          return;
+          return undefined;
         }
         const binding = getCompiledPlateModelBinding(editor, getPlugin());
 
@@ -243,12 +245,14 @@ const createPluginAccess = (
         return Reflect.get(getPublishedBinding().schema, key);
       },
       getOwnPropertyDescriptor(_target, key) {
-        const descriptor = Object.getOwnPropertyDescriptor(
+        const innerDescriptor = Object.getOwnPropertyDescriptor(
           getPublishedBinding().schema,
           key
         );
 
-        return descriptor ? { ...descriptor, configurable: true } : undefined;
+        return innerDescriptor
+          ? { ...innerDescriptor, configurable: true }
+          : undefined;
       },
       has(_target, key) {
         return key in getPublishedBinding().schema;
@@ -320,14 +324,16 @@ const createPluginAccess = (
     {
       get(_target, key) {
         if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-          return;
+          return undefined;
         }
         if (key === 'type' || key === 'key') {
           return getConsumerSchemaIdentity(key);
         }
+
+        return undefined;
       },
       getOwnPropertyDescriptor(_target, key) {
-        if (key !== 'type' && key !== 'key') return;
+        if (key !== 'type' && key !== 'key') return undefined;
 
         return {
           configurable: true,
@@ -372,7 +378,7 @@ const createPluginAccess = (
       {
         get(target, key, receiver) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-            return;
+            return undefined;
           }
           if (key === 'toString' || key === 'valueOf') {
             return Reflect.get(target, key, receiver);
@@ -385,7 +391,7 @@ const createPluginAccess = (
   const api = new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
     get(_target, key) {
       if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-        return;
+        return undefined;
       }
 
       return createApiFacade([key]);
@@ -425,12 +431,12 @@ const createPluginAccess = (
       ) {
         return { owner: undefined, value: undefined };
       }
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      const innerDescriptor2 = Object.getOwnPropertyDescriptor(value, key);
 
-      if (!descriptor || !('value' in descriptor)) {
+      if (!innerDescriptor2 || !('value' in innerDescriptor2)) {
         return { owner: undefined, value: undefined };
       }
-      value = descriptor.value;
+      ({ value } = innerDescriptor2);
     }
 
     return { owner, value };
@@ -476,7 +482,7 @@ const createPluginAccess = (
       {
         get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-            return;
+            return undefined;
           }
           return createUpdateFacade([...path, key], policy);
         },
@@ -509,7 +515,7 @@ const createPluginAccess = (
       {
         get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-            return;
+            return undefined;
           }
           return createReadFacade([...path, key]);
         },
@@ -522,7 +528,7 @@ const createPluginAccess = (
       {
         get(_target, key) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
-            return;
+            return undefined;
           }
 
           return createUpdateFacade([key], policy);
@@ -530,11 +536,12 @@ const createPluginAccess = (
       }
     );
   const update = createScopedUpdateFacade();
-  const store: PluginStore<AnyBasePluginDefinition> = Object.freeze({
+  const store: PluginStore = Object.freeze({
     get(key?: PropertyKey, ...args: unknown[]) {
       const runtime = getStore();
 
       if (runtime) {
+        // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] Reflect.apply preserves the erased plugin-store receiver and variadic contract that a direct generic call cannot express.
         return Reflect.apply(runtime.public.get, runtime.public, [
           key,
           ...args,
@@ -563,6 +570,7 @@ const createPluginAccess = (
       const runtime = getStore();
 
       if (runtime) {
+        // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] Reflect.apply preserves the erased plugin-store receiver and runtime value contract that a direct generic call cannot express.
         Reflect.apply(runtime.public.set, runtime.public, [value]);
       }
     },
@@ -573,7 +581,7 @@ const createPluginAccess = (
         ? Reflect.apply(runtime.public.subscribe, runtime.public, [listener])
         : () => {};
     },
-  }) as PluginStore<AnyBasePluginDefinition>;
+  }) as PluginStore;
   const context = {} as Record<PropertyKey, unknown>;
   if (authoring) {
     context.defineCodecs = createDefinePluginCodecs<AnyBasePluginDefinition>();
@@ -659,7 +667,7 @@ const createPluginAccess = (
       if (Reflect.has(target, key)) {
         return Reflect.get(target, key, receiver);
       }
-      if (key === 'schema') return;
+      if (key === 'schema') return undefined;
 
       return Reflect.get(getPlugin(), key);
     },
@@ -667,7 +675,7 @@ const createPluginAccess = (
       const ownDescriptor = Reflect.getOwnPropertyDescriptor(target, key);
 
       if (ownDescriptor) return ownDescriptor;
-      if (key === 'schema') return;
+      if (key === 'schema') return undefined;
 
       const pluginDescriptor = Reflect.getOwnPropertyDescriptor(
         getPlugin(),

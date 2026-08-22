@@ -103,6 +103,10 @@ type ErasedPlateCallback<TResult = unknown> = {
 type ErasedRenderNodeWrapper = ErasedPlateCallback<
   ErasedPlateCallback<React.ReactNode> | undefined
 >;
+type ErasedRenderNodeWrapperDescriptor = Readonly<{
+  component: React.ComponentType<any>;
+  match?: ErasedPlateCallback<boolean>;
+}>;
 
 type AnyPlatePluginRender = Omit<
   AnyBasePlugin['render'],
@@ -114,7 +118,10 @@ type AnyPlatePluginRender = Omit<
   | 'belowNodes'
   | 'belowRootNodes'
 > & {
-  aboveNodes?: ErasedRenderNodeWrapper | null;
+  aboveNodes?:
+    | ErasedRenderNodeWrapper
+    | ErasedRenderNodeWrapperDescriptor
+    | null;
   afterContainer?: EditableSiblingComponent | null;
   afterEditable?: EditableSiblingComponent | null;
   beforeContainer?: EditableSiblingComponent | null;
@@ -194,7 +201,7 @@ export type Decorate<
   TDecoration extends object = InferPluginDecoration<C>,
 > = (
   context: PlatePluginContext<C> & { entry: NodeEntry }
-) => (DecoratedRange & TDecoration)[] | undefined;
+) => Array<DecoratedRange & TDecoration> | undefined;
 
 export type InjectNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -299,6 +306,23 @@ export type RenderNodeWrapper<TSource extends RenderNodeWrapperSource = never> =
     ): RenderNodeWrapperFunction<TSource>;
   }['bivarianceHack'];
 
+export type RenderNodeWrapperDescriptor<
+  TSource extends RenderNodeWrapperSource = never,
+> = Readonly<{
+  component: React.ComponentType<RenderNodeWrapperProps<TSource>>;
+  /** Cheap hook-free eligibility check run before wrapper props are composed. */
+  match?: (
+    props: Pick<
+      RenderNodeWrapperProps<TSource>,
+      'editor' | 'element' | 'renderPath'
+    >
+  ) => boolean;
+}>;
+
+export type RenderNodeWrapperConfig<
+  TSource extends RenderNodeWrapperSource = never,
+> = RenderNodeWrapper<TSource> | RenderNodeWrapperDescriptor<TSource>;
+
 export type RenderNodeWrapperFunction<
   TSource extends RenderNodeWrapperSource = never,
 > =
@@ -315,15 +339,18 @@ export type RenderNodeWrapperProps<
   RenderNodeWrapperDefinition<TSource> extends infer C extends
     AnyBasePluginDefinition
     ? PlateNodeProps<C> &
-        RenderElementProps<
-          [TSource] extends [never]
-            ? Element
-            : ElementWith<NoInfer<WithAnyName<C>>>
-        > & { path: Path }
+        Omit<
+          RenderElementProps<
+            [TSource] extends [never]
+              ? Element
+              : ElementWith<NoInfer<WithAnyName<C>>>
+          >,
+          'path'
+        > & { renderPath: Path }
     : never;
 
 type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
-  aboveNodes?: RenderNodeWrapper<C>;
+  aboveNodes?: RenderNodeWrapperConfig<C>;
   afterContainer?: EditableSiblingComponent;
   afterEditable?: EditableSiblingComponent;
   beforeContainer?: EditableSiblingComponent;
@@ -488,7 +515,7 @@ type PlatePluginStageInput<
   TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TShortcuts extends PlateShortcutRecord,
 > = Readonly<Record<TKeys, unknown>> &
   Pick<
@@ -639,10 +666,9 @@ export interface PlatePlugin<
   readonly schema: InferPluginSchema<C>;
   readonly selectors: InferSelectors<C>;
   readonly targetPlugins: C extends {
-    targetPlugins: infer TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[];
+    targetPlugins: infer TTargetPlugins extends ReadonlyArray<
+      PluginReference | string
+    >;
   }
     ? TTargetPlugins
     : readonly [];
@@ -682,7 +708,7 @@ type PlatePluginStageContribution<
   TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
-  TTargetPlugins extends readonly (PluginReference | string)[],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
 > = Readonly<{
   [TKey in Exclude<TKeys, PlatePluginStageSpecialKey>]: true;
 }> &
@@ -730,7 +756,7 @@ type PlatePluginStageDefinition<
   TDecoration extends object = {},
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
-  TTargetPlugins extends readonly (PluginReference | string)[] = readonly [],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
 > = MergePluginDefinitions<
   C,
   PlatePluginStageContribution<
@@ -806,7 +832,7 @@ interface PlatePluginMethods<
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (PluginReference | string)[] =
+    const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
       readonly [],
     const TShortcuts extends PlateShortcutRecord = {},
   >(
@@ -874,7 +900,7 @@ interface PlatePluginMethods<
     const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
-    const TTargetPlugins extends readonly (PluginReference | string)[] =
+    const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
       readonly [],
     const TShortcuts extends PlateShortcutRecord = {},
   >(

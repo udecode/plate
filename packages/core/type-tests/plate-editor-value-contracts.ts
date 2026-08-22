@@ -142,7 +142,7 @@ interface QuoteElement extends Element {
 }
 
 type BodyElement = ParagraphElement | QuoteElement;
-type GeneratedBodyValue = readonly (ParagraphElement | QuoteElement)[];
+type GeneratedBodyValue = ReadonlyArray<ParagraphElement | QuoteElement>;
 
 type GeneratedEditorPlugins = typeof EditorPlugins &
   GeneratedEditorTypeProvider<{

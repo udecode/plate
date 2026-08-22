@@ -325,9 +325,11 @@ export function getIconForLanguageExtension(language: string) {
     case 'jsx':
     case 'ts':
     case 'tsx':
-    case 'typescript':
+    case 'typescript': {
       return <Icons.codeblock />;
-    default:
+    }
+    default: {
       return <Icons.page />;
+    }
   }
 }

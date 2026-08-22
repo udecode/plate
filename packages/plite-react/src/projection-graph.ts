@@ -1,5 +1,6 @@
 import { type Path, PathApi, type Point, type RootKey } from '@platejs/plite';
 
+import { failInvariant } from './editable/runtime-editor-api';
 import { MAIN_ROOT_KEY } from './root-key';
 
 export type PliteProjectionOwner = Readonly<{
@@ -76,7 +77,7 @@ const cloneOwner = (
   owner
     ? Object.freeze({
         childRoot: owner.childRoot,
-        ownerPath: Object.freeze(clonePath(owner.ownerPath)) as Path,
+        ownerPath: Object.freeze(clonePath(owner.ownerPath)),
         ownerRoot: owner.ownerRoot,
       })
     : null;
@@ -84,9 +85,9 @@ const cloneOwner = (
 const clonePoint = (point: Point): Point =>
   Object.freeze({
     ...(point.root ? { root: point.root } : {}),
-    path: Object.freeze(clonePath(point.path)) as Path,
+    path: Object.freeze(clonePath(point.path)),
     offset: point.offset,
-  }) as Point;
+  });
 
 export const getPliteProjectionOwnerKey = (owner: PliteProjectionOwner) =>
   `${owner.ownerRoot}\u0000${pathKey(owner.ownerPath)}\u0000${owner.childRoot}`;
@@ -109,7 +110,7 @@ const createNode = (
 ): PliteProjectionGraphNode => {
   const owner = cloneOwner(input.owner);
   const ownerKey = owner ? getPliteProjectionOwnerKey(owner) : null;
-  const path = Object.freeze(clonePath(input.path)) as Path;
+  const path = Object.freeze(clonePath(input.path));
 
   return Object.freeze({
     index,
@@ -156,8 +157,7 @@ const getNode = (
     ? (graph.nodeByKey.get(nodeOrKey) ?? null)
     : (graph.nodeByKey.get(nodeOrKey.key) ?? null);
 
-const getPointRoot = (point: Point): RootKey =>
-  (point.root ?? MAIN_ROOT_KEY) as RootKey;
+const getPointRoot = (point: Point): RootKey => point.root ?? MAIN_ROOT_KEY;
 
 const isPointInsideNode = (point: Point, node: PliteProjectionGraphNode) =>
   PathApi.equals(point.path, node.path) ||
@@ -275,8 +275,9 @@ const createSegments = ({
 }): readonly PliteProjectionGraphRangeSegment[] =>
   Object.freeze(
     groups.map((group, index) => {
-      const firstNode = group.nodes[0]!;
-      const lastNode = group.nodes.at(-1)!;
+      const firstNode = group.nodes[0];
+      const lastNode =
+        group.nodes.at(-1) ?? failInvariant('Expected value to be defined');
       const isFirst = index === 0;
       const isLast = index === groups.length - 1;
 

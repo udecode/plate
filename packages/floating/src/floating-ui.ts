@@ -69,6 +69,7 @@ export {
   size,
   useClick,
   useDelayGroup,
+  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Keep the upstream legacy hook as a stable public re-export until a breaking release can remove it.
   useDelayGroupContext,
   useDismiss,
   useFloating,

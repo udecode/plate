@@ -18,6 +18,7 @@ import {
   point as editorPoint,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import {
   type DeletePathTarget,
   type DeleteRangePlan,
@@ -184,7 +185,7 @@ const collectDeleteMatchPaths = (editor: Editor, plan: DeleteRangePlan) => {
 
   for (const point of [plan.start, plan.end]) {
     for (let depth = point.path.length - 1; depth > 0; depth -= 1) {
-      maybeAddFullySelectedInline(point.path.slice(0, depth) as Path);
+      maybeAddFullySelectedInline(point.path.slice(0, depth));
     }
   }
 
@@ -216,7 +217,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
   let removedText = '';
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {
-    const point = startAnchor.resolve()!;
+    const point = getDefined(startAnchor.resolve());
     const [node] = editorLeaf(editor, point);
     const text = node.text.slice(plan.start.offset);
 

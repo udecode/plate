@@ -54,6 +54,7 @@ import {
   type CompiledEditorSchema,
   type EditorSchemaContributionRecord,
 } from '../../../packages/plite/src/internal/index';
+import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 import {
   measureCohortsRoundRobin,
@@ -123,7 +124,7 @@ const schemaTypecheckBudget =
 if (schemaTypecheckBudget) globalThis.gc?.();
 
 const percentile = (values: readonly number[], ratio: number) =>
-  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)]!;
+  values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
 const summarize = (samples: readonly number[]) => {
   const sorted = [...samples].sort((left, right) => left - right);
@@ -331,8 +332,8 @@ const measurePlateDescriptorStartup = (
   const startupMs = performance.now() - before;
 
   assert.equal(
-    editor.read.schema.element(plugins.at(-1)!)?.type,
-    plugins.at(-1)!.type
+    editor.read.schema.element(getDefined(plugins.at(-1)))?.type,
+    getDefined(plugins.at(-1)).type
   );
 
   return { editor, plugins, schemaId, startupMs };
@@ -368,9 +369,9 @@ const measurePlateDescriptorCohort = (
   count: (typeof PLATE_DESCRIPTOR_COHORTS)[number],
   cohortIndex: number
 ) => {
-  const measured = plateDescriptorMeasured.get(count)!;
+  const measured = getDefined(plateDescriptorMeasured.get(count));
   const startupSamplesMs =
-    plateDescriptorStartupMeasurements.samples[cohortIndex]!;
+    plateDescriptorStartupMeasurements.samples[cohortIndex];
   const cachedStartupSamplesMs = Array.from(
     { length: architectureIterations },
     () => {
@@ -429,7 +430,7 @@ const constructionIterations = argument('construction-iterations', 5000);
 const measureConstructionPropertyCohort = (
   properties: (typeof CONSTRUCTION_PROPERTY_COHORTS)[number]
 ) => {
-  const definition = defineEditorSchema(
+  const innerDefinition = defineEditorSchema(
     `schema:schema-construction-property-budget-${properties}`,
     {
       elements: {
@@ -459,7 +460,7 @@ const measureConstructionPropertyCohort = (
       version: 1,
     }
   );
-  const editor = createEditor({ extensions: [definition] });
+  const editor = createEditor({ extensions: [innerDefinition] });
   const compiledElement = getCompiledEditorSchema(editor)?.elements.byType.get(
     'construction_target'
   );
@@ -676,7 +677,7 @@ wrapperProfilerEvents.length = 0;
 const firstUnknownWrapperPlan = resolveCompiledSchemaWrapperPlan(
   unknownWrapperSchema,
   'root',
-  hostileWrapperTypes[0]!
+  hostileWrapperTypes[0]
 );
 const hostileWrapperPlans = hostileWrapperTypes.map((type) =>
   resolveCompiledSchemaWrapperPlan(unknownWrapperSchema, 'root', type)
@@ -686,7 +687,7 @@ const unknownWrapperWarmQueryNs = measureQuery(
     resolveCompiledSchemaWrapperPlan(
       unknownWrapperSchema,
       'root',
-      hostileWrapperTypes[index % hostileWrapperTypes.length]!
+      hostileWrapperTypes[index % hostileWrapperTypes.length]
     ) === firstUnknownWrapperPlan
 );
 const wrapperPlanSearchCount = wrapperProfilerEvents.filter(
@@ -886,8 +887,8 @@ const migrationRows = MIGRATION_DOCUMENT_COHORTS.map((blocks, index) => ({
   commits: migrationIterations,
   configurationDirtyCommits: migrationIterations,
   migrationCalls: migrationIterations,
-  migrationMs: summarize(migrationMeasurements.samples[index]!),
-  migrationSamplesMs: migrationMeasurements.samples[index]!,
+  migrationMs: summarize(migrationMeasurements.samples[index]),
+  migrationSamplesMs: migrationMeasurements.samples[index],
 }));
 const migrationDocumentWidthRatio =
   migrationRows[1].migrationMs.p50 /
@@ -977,9 +978,9 @@ const localityProfilerOwner = globalThis as typeof globalThis & {
 const previousLocalityProfiler =
   localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__;
 
-for (const key of Object.keys(
-  localityVisits
-) as (keyof typeof localityVisits)[]) {
+for (const key of Object.keys(localityVisits) as Array<
+  keyof typeof localityVisits
+>) {
   localityVisits[key] = 0;
 }
 localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
@@ -987,11 +988,11 @@ localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
 };
 
 try {
-  localityEditor.update((tx) =>
+  localityEditor.update((tx) => {
     tx.text.insert('!', {
       at: { offset: 1, path: [Math.floor(localityBlocks / 2), 0] },
-    })
-  );
+    });
+  });
 } finally {
   localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ =
     previousLocalityProfiler;
@@ -1211,10 +1212,10 @@ const invalidationMeasurements = measureCohortsRoundRobin(
   },
   measureSchemaInvalidationSample
 );
-const warmInvalidationSmallNs = summarize(invalidationMeasurements.samples[0]!);
-const warmInvalidationLargeNs = summarize(invalidationMeasurements.samples[1]!);
+const warmInvalidationSmallNs = summarize(invalidationMeasurements.samples[0]);
+const warmInvalidationLargeNs = summarize(invalidationMeasurements.samples[1]);
 const warmInvalidationManyTypesNs = summarize(
-  invalidationMeasurements.samples[2]!
+  invalidationMeasurements.samples[2]
 );
 const invalidationDocumentWidthRatio =
   warmInvalidationLargeNs.p50 / warmInvalidationSmallNs.p50;
@@ -1314,14 +1315,14 @@ const createProjectedClipboardEditor = (blocks: number) => {
       },
     },
   });
-  const editor = createEditorView(owner) as unknown as ReactRuntimeEditor;
+  const innerEditor = createEditorView(owner) as unknown as ReactRuntimeEditor;
   const graph = createPliteProjectionGraph([
     { path: [0], root: 'main' },
     { owner: projectedOwner, path: [0], root: PROJECTED_CLIPBOARD_ROOT },
   ]);
 
   writePliteViewSelection(
-    editor,
+    innerEditor,
     createPliteViewSelection(graph, {
       anchor: {
         point: projectedPoint(undefined, [0, 0], 'Bef'.length),
@@ -1334,7 +1335,7 @@ const createProjectedClipboardEditor = (blocks: number) => {
     })
   );
 
-  return editor;
+  return innerEditor;
 };
 const createProjectedClipboardData = () => {
   const values = new Map<string, string>();
@@ -1458,7 +1459,7 @@ profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
 };
 
 const equivalentDefinition = createSchemaArchitectureCorpus();
-const beforeReconfiguration = getCompiledEditorSchema(editor)!;
+const beforeReconfiguration = getCompiledEditorSchema(editor);
 let equivalentReconfigurationCommitCount = 0;
 
 editor.subscribeCommit(() => {
@@ -1479,7 +1480,7 @@ const reconfigurationSamples = Array.from(
     return performance.now() - before;
   }
 );
-const afterReconfiguration = getCompiledEditorSchema(editor)!;
+const afterReconfiguration = getCompiledEditorSchema(editor);
 const equivalentReconfigurationMs = summarize(reconfigurationSamples);
 const equivalentReconfigurationCompileCount = profilerEvents.filter(
   (id) => id === 'schema-compile'
@@ -1582,7 +1583,7 @@ const createMinimalValue = (): EditorDocumentValue => {
     ),
   };
 };
-const gc = globalThis.gc;
+const { gc } = globalThis;
 const forceGc = () => {
   if (!gc) return;
 
@@ -1746,7 +1747,7 @@ const result = {
     rows: migrationRows,
     sampling: {
       cohortOrder: migrationMeasurements.order.map((round) =>
-        round.map((index) => MIGRATION_DOCUMENT_COHORTS[index]!)
+        round.map((index) => MIGRATION_DOCUMENT_COHORTS[index])
       ),
       gcBeforeEachSample: typeof globalThis.gc === 'function',
       order: ROUND_ROBIN_SAMPLING_ORDER,
@@ -1764,7 +1765,7 @@ const result = {
     },
     startupSampling: {
       cohortOrder: plateDescriptorStartupMeasurements.order.map((round) =>
-        round.map((index) => PLATE_DESCRIPTOR_COHORTS[index]!)
+        round.map((index) => PLATE_DESCRIPTOR_COHORTS[index])
       ),
       gcBeforeEachSample: typeof globalThis.gc === 'function',
       order: ROUND_ROBIN_SAMPLING_ORDER,

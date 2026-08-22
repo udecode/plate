@@ -147,7 +147,7 @@ const getNumericDocumentSeed = (seed: string) =>
       );
 
 const generateInitialValue = (blocks: number, seed: string) => {
-  const initialValue: Value[number][] = [];
+  const initialValue: Array<Value[number]> = [];
   faker.seed(getNumericDocumentSeed(seed));
 
   for (let i = 0; i < blocks; i++) {
@@ -201,16 +201,20 @@ const toDOMStrategy = (config: Config): EditableProps['domStrategy'] => {
   switch (config.domStrategyMode) {
     case 'full':
     case 'staged':
-    case 'auto':
+    case 'auto': {
       return config.domStrategyMode;
-    case 'virtualized':
+    }
+    case 'virtualized': {
       return {
         estimatedBlockSize: config.virtualizedEstimatedBlockSize,
         overscan: config.domStrategyOverscan,
         threshold: config.domStrategyThreshold,
         type: 'virtualized',
       };
+    }
   }
+
+  return undefined;
 };
 
 const hasBoundedEditableScroller = (config: Config) =>
@@ -278,7 +282,7 @@ const HugeDocumentExample = () => {
     const initialValueKey = `${config.documentSeed}:${config.blocks}`;
 
     if (editorInitialValueKeyRef.current === initialValueKey) {
-      return;
+      return undefined;
     }
 
     let replaceTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -409,7 +413,7 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
   } satisfies CSSProperties;
 
   switch (element.type) {
-    case 'heading-one':
+    case 'heading-one': {
       return (
         <Heading
           {...attributes}
@@ -419,12 +423,14 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
           {children}
         </Heading>
       );
-    default:
+    }
+    default: {
       return (
         <Paragraph {...attributes} style={style}>
           {children}
         </Paragraph>
       );
+    }
   }
 };
 
@@ -459,7 +465,7 @@ const PerformanceControls = ({
   );
 
   useEffect(() => {
-    if (!SUPPORTS_EVENT_TIMING) return;
+    if (!SUPPORTS_EVENT_TIMING) return undefined;
 
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
@@ -481,11 +487,13 @@ const PerformanceControls = ({
       type: 'event',
     } as EventTimingObserverInit);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
-    if (!SUPPORTS_LOAF_TIMING) return;
+    if (!SUPPORTS_LOAF_TIMING) return undefined;
 
     let afterDocumentChange = false;
     const unsubscribe = editor.subscribeCommit((commit) => {
@@ -518,11 +526,11 @@ const PerformanceControls = ({
         <Label htmlFor="huge-document-blocks">Blocks:</Label>
         <NativeSelect
           id="huge-document-blocks"
-          onChange={(event) =>
+          onChange={(event) => {
             setConfig({
               blocks: Number.parseInt(event.target.value, 10),
-            })
-          }
+            });
+          }}
           value={config.blocks}
         >
           {visibleBlocksOptions.map((blocks) => (
@@ -547,13 +555,13 @@ const PerformanceControls = ({
             </Label>
             <NativeSelect
               id="huge-document-content-visibility"
-              onChange={(event) =>
+              onChange={(event) => {
                 setConfig({
                   contentVisibilityMode: toContentVisibilityMode(
                     event.target.value
                   ),
-                })
-              }
+                });
+              }}
               value={config.contentVisibilityMode}
             >
               <NativeSelectOption value="none">None</NativeSelectOption>
@@ -565,12 +573,12 @@ const PerformanceControls = ({
             <Label htmlFor="huge-document-dom-strategy">DOM strategy:</Label>
             <NativeSelect
               id="huge-document-dom-strategy"
-              onChange={(event) =>
+              onChange={(event) => {
                 setConfig({
                   domStrategyMode: event.target
                     .value as Config['domStrategyMode'],
-                })
-              }
+                });
+              }}
               value={config.domStrategyMode}
             >
               <NativeSelectOption value="auto">Auto</NativeSelectOption>
@@ -589,14 +597,14 @@ const PerformanceControls = ({
                 <Input
                   id="huge-document-overscan"
                   min={0}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setConfig({
                       domStrategyOverscan: Number.parseInt(
                         event.target.value,
                         10
                       ),
-                    })
-                  }
+                    });
+                  }}
                   type="number"
                   value={config.domStrategyOverscan}
                 />
@@ -607,14 +615,14 @@ const PerformanceControls = ({
                 <Input
                   id="huge-document-threshold"
                   min={1}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setConfig({
                       domStrategyThreshold: Number.parseInt(
                         event.target.value,
                         10
                       ),
-                    })
-                  }
+                    });
+                  }}
                   type="number"
                   value={config.domStrategyThreshold}
                 />
@@ -632,14 +640,14 @@ const PerformanceControls = ({
                   <Input
                     id="huge-document-estimated-block-size"
                     min={1}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setConfig({
                         virtualizedEstimatedBlockSize: Number.parseInt(
                           event.target.value,
                           10
                         ),
-                      })
-                    }
+                      });
+                    }}
                     type="number"
                     value={config.virtualizedEstimatedBlockSize}
                   />
@@ -653,11 +661,11 @@ const PerformanceControls = ({
                 <Input
                   id="huge-document-editor-height"
                   min={120}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setConfig({
                       editorHeight: Number.parseInt(event.target.value, 10),
-                    })
-                  }
+                    });
+                  }}
                   type="number"
                   value={config.editorHeight}
                 />
@@ -669,11 +677,11 @@ const PerformanceControls = ({
             <Switch
               checked={config.showSelectedHeadings}
               id="huge-document-show-selected-headings"
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked) => {
                 setConfig({
                   showSelectedHeadings: checked,
-                })
-              }
+                });
+              }}
             />
             <Label htmlFor="huge-document-show-selected-headings">
               Call <code>useElementSelected</code> in each heading
@@ -684,11 +692,11 @@ const PerformanceControls = ({
             <Switch
               checked={config.strictMode}
               id="huge-document-strict-mode"
-              onCheckedChange={(checked) =>
+              onCheckedChange={(checked) => {
                 setConfig({
                   strictMode: checked,
-                })
-              }
+                });
+              }}
             />
             <Label htmlFor="huge-document-strict-mode">
               React strict mode (only works in localhost)

@@ -8,6 +8,7 @@ import {
   type PlateNodeCodecContribution,
 } from '@platejs/core/internal';
 import type { Descendant } from '@platejs/plite';
+import { failInvariant } from '@platejs/plite/internal';
 import type { Node as UnistNode } from 'unist';
 
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
@@ -45,7 +46,7 @@ type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
 
 type ErasedMarkdownNodeCodec = Readonly<{
   decode?: BivariantCallback<
-    [MarkdownDecodeContext<UnistNode>],
+    [MarkdownDecodeContext],
     Descendant | Descendant[] | undefined
   >;
   encode?: BivariantCallback<
@@ -157,7 +158,7 @@ const createDecodeContext = (
     children: readonly MdRootContent[],
     nextDecoration: MdDecoration = decoration
   ) => convertChildrenDeserialize([...children], nextDecoration, options)
-): MarkdownDecodeContext<UnistNode> => ({
+): MarkdownDecodeContext => ({
   ...createCommonContext(options),
   build: (child, nextDecoration = decoration) =>
     buildSlateNode(child, nextDecoration, options),
@@ -242,17 +243,19 @@ const createRule = (compiled: CompiledMarkdownNodeCodec): MdNodeParser => ({
   ...(compiled.codec.decode
     ? {
         deserialize: (node, decoration, options) =>
-          compiled.codec.decode!(
-            createDecodeContext(compiled, node, decoration, options)
-          ),
+          (
+            compiled.codec.decode ??
+            failInvariant('Expected value to be defined')
+          )(createDecodeContext(compiled, node, decoration, options)),
       }
     : {}),
   ...(compiled.codec.encode
     ? {
         serialize: (node, options) => {
-          const encoded = compiled.codec.encode!(
-            createEncodeContext(compiled, node, options)
-          );
+          const encoded = (
+            compiled.codec.encode ??
+            failInvariant('Expected value to be defined')
+          )(createEncodeContext(compiled, node, options));
 
           if (!encoded) {
             throw new Error(
@@ -266,8 +269,8 @@ const createRule = (compiled: CompiledMarkdownNodeCodec): MdNodeParser => ({
     : {}),
 });
 
-export const compileMarkdownCodecs = <E extends BaseEditor>(
-  editor: E
+export const compileMarkdownCodecs = (
+  editor: BaseEditor
 ): CompiledMarkdownCodecs => {
   const cached = compiledMarkdownCodecsCache.get(editor);
 
@@ -290,7 +293,8 @@ export const compileMarkdownCodecs = <E extends BaseEditor>(
 
   contributions.forEach((compiled) => {
     if (compiled.codec.decode) {
-      const source = compiled.codec.from!;
+      const source =
+        compiled.codec.from ?? failInvariant('Expected value to be defined');
       const sourceCodecs = decodeBySource.get(source) ?? [];
       const duplicate = sourceCodecs.find(
         (candidate) =>
@@ -308,7 +312,10 @@ export const compileMarkdownCodecs = <E extends BaseEditor>(
       decodeBySource.set(source, sourceCodecs);
     }
     if (compiled.codec.encode || compiled.codec.mark) {
-      const documentIdentity = compiled.targetType ?? compiled.targetKey!;
+      const documentIdentity =
+        compiled.targetType ??
+        compiled.targetKey ??
+        failInvariant('Expected value to be defined');
 
       if (rules[documentIdentity]) {
         throw new Error(
@@ -368,7 +375,9 @@ export const runMarkdownDecodeCodecs = (
 
     if (overridden !== undefined) return overridden;
 
-    const decoded = codec.codec.decode!(
+    const decoded = (
+      codec.codec.decode ?? failInvariant('Expected value to be defined')
+    )(
       createDecodeContext(
         codec,
         node,

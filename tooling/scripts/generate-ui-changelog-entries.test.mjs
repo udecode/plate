@@ -263,51 +263,48 @@ test('write prunes stale generated changelog event files', () => {
 });
 
 test('rejects limited writes before pruning generated artifacts', () => {
-  assert.throws(
-    () => validateArgs({ limit: 1, write: true }),
-    /--write cannot be combined with --limit/
-  );
-  assert.doesNotThrow(() => validateArgs({ limit: 1, write: false }));
-  assert.doesNotThrow(() => validateArgs({ limit: null, write: true }));
+  assert.throws(() => {
+    validateArgs({ limit: 1, write: true });
+  }, /--write cannot be combined with --limit/);
+  assert.doesNotThrow(() => {
+    validateArgs({ limit: 1, write: false });
+  });
+  assert.doesNotThrow(() => {
+    validateArgs({ limit: null, write: true });
+  });
 });
 
 test('validates scaffold and check argument combinations', () => {
-  assert.throws(
-    () => validateArgs({ check: true, write: true }),
-    /--check cannot be combined with --write/
-  );
-  assert.throws(
-    () => validateArgs({ check: true, limit: 1, write: false }),
-    /--check cannot be combined with --limit/
-  );
-  assert.throws(
-    () =>
-      validateArgs({
-        check: false,
-        items: 'editor',
-        kind: 'fix',
-        limit: null,
-        newEntryId: 'bad-id',
-        source: 'apps/www/src/registry/changelog/entries',
-        summary: 'Fix editor',
-        write: false,
-      }),
-    /--new id must use YYYY-MM-DD-short-slug format/
-  );
-  assert.throws(
-    () =>
-      validateArgs({
-        check: false,
-        items: 'editor',
-        kind: 'wrong',
-        limit: null,
-        newEntryId: '2026-06-15-fix-editor',
-        source: 'apps/www/src/registry/changelog/entries',
-        summary: 'Fix editor',
-        write: false,
-      }),
-    /--kind must be one of/
-  );
+  assert.throws(() => {
+    validateArgs({ check: true, write: true });
+  }, /--check cannot be combined with --write/);
+  assert.throws(() => {
+    validateArgs({ check: true, limit: 1, write: false });
+  }, /--check cannot be combined with --limit/);
+  assert.throws(() => {
+    validateArgs({
+      check: false,
+      items: 'editor',
+      kind: 'fix',
+      limit: null,
+      newEntryId: 'bad-id',
+      source: 'apps/www/src/registry/changelog/entries',
+      summary: 'Fix editor',
+      write: false,
+    });
+  }, /--new id must use YYYY-MM-DD-short-slug format/);
+  assert.throws(() => {
+    validateArgs({
+      check: false,
+      items: 'editor',
+      kind: 'wrong',
+      limit: null,
+      newEntryId: '2026-06-15-fix-editor',
+      source: 'apps/www/src/registry/changelog/entries',
+      summary: 'Fix editor',
+      write: false,
+    });
+  }, /--kind must be one of/);
 });
 
 function commit(oid, date, subject) {

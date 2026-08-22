@@ -11,7 +11,7 @@ export function MentionElementStatic(
   }
 ) {
   const { prefix } = props;
-  const element = props.element;
+  const { element } = props;
   const label = element.label ?? element.ref;
 
   return (

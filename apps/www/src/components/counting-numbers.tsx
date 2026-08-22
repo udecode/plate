@@ -46,7 +46,10 @@ export const useCounting = ({
       }, interval);
     }
 
-    return () => clearInterval(timer); // Cleanup timer
+    return () => {
+      clearInterval(timer);
+      // Cleanup timer
+    };
   }, [end, increment, interval, isInView, reverse]);
 
   return number;

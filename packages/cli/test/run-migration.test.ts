@@ -38,7 +38,9 @@ const RuntimeMigrations = defineDocumentMigrations(RuntimeSchema, {
       children: document.children.map((element) => ({
         ...element,
         children: element.children.map((child) =>
-          'text' in child ? { ...child, text: `${child.text}55` } : child
+          'text' in child
+            ? { ...child, text: `${String(child.text)}55` }
+            : child
         ),
       })),
     }),
@@ -84,7 +86,7 @@ export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
   },
 });
 `,
-    'utf8'
+    'utf-8'
   );
   const document = { children: [{ children: [{ text: 'v' }], type: 'p' }] };
   const source = options.persistedSelection
@@ -104,7 +106,7 @@ export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
       }
     : document.children;
 
-  writeFileSync(documentPath, `${JSON.stringify(source, null, 2)}\n`, 'utf8');
+  writeFileSync(documentPath, `${JSON.stringify(source, null, 2)}\n`, 'utf-8');
 
   return { directory, documentPath, entryPath };
 };
@@ -118,7 +120,7 @@ afterEach(() => {
 describe('plate migrate run', () => {
   it('dry-runs then atomically writes the same v53-to-v55 chain', async () => {
     const fixture = createFixture();
-    const before = readFileSync(fixture.documentPath, 'utf8');
+    const before = readFileSync(fixture.documentPath, 'utf-8');
     const dryRun = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
@@ -127,14 +129,14 @@ describe('plate migrate run', () => {
 
     expect(dryRun.changed).toBe(1);
     expect(dryRun.files[0]?.applied).toEqual([54, 55]);
-    expect(readFileSync(fixture.documentPath, 'utf8')).toBe(before);
+    expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(before);
 
     const written = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
       { cwd: fixture.directory, write: true }
     );
-    const output = JSON.parse(readFileSync(fixture.documentPath, 'utf8'));
+    const output = JSON.parse(readFileSync(fixture.documentPath, 'utf-8'));
 
     expect(written.changed).toBe(1);
     expect(output.document.children).toEqual([
@@ -159,7 +161,7 @@ describe('plate migrate run', () => {
 
     const compact = JSON.stringify(output);
 
-    writeFileSync(fixture.documentPath, compact, 'utf8');
+    writeFileSync(fixture.documentPath, compact, 'utf-8');
     const beforeNoopWrite = statSync(fixture.documentPath, {
       bigint: true,
     }).mtimeNs;
@@ -170,7 +172,7 @@ describe('plate migrate run', () => {
     );
 
     expect(noopWrite.changed).toBe(0);
-    expect(readFileSync(fixture.documentPath, 'utf8')).toBe(compact);
+    expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(compact);
     expect(statSync(fixture.documentPath, { bigint: true }).mtimeNs).toBe(
       beforeNoopWrite
     );
@@ -187,7 +189,7 @@ describe('plate migrate run', () => {
 
   it('migrates one standard-input document without a file write', async () => {
     const fixture = createFixture();
-    const sourceText = readFileSync(fixture.documentPath, 'utf8');
+    const sourceText = readFileSync(fixture.documentPath, 'utf-8');
     const result = await runEditorMigrationInput(
       fixture.entryPath,
       sourceText,
@@ -198,7 +200,7 @@ describe('plate migrate run', () => {
     expect(JSON.parse(result.outputText).document.children).toEqual([
       { children: [{ text: 'v55' }], type: 'paragraph' },
     ]);
-    expect(readFileSync(fixture.documentPath, 'utf8')).toBe(sourceText);
+    expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(sourceText);
   });
 
   it('accepts a single empty exported plugin tuple', async () => {
@@ -220,7 +222,7 @@ describe('plate migrate run', () => {
       cwd: fixture.directory,
       write: true,
     });
-    const output = JSON.parse(readFileSync(fixture.documentPath, 'utf8'));
+    const output = JSON.parse(readFileSync(fixture.documentPath, 'utf-8'));
 
     expect(output.selection).toEqual({
       kind: 'text',
@@ -239,7 +241,7 @@ describe('plate migrate run', () => {
       );
     const before = migrationDirectories();
 
-    writeFileSync(fixture.entryPath, 'export default this is invalid', 'utf8');
+    writeFileSync(fixture.entryPath, 'export default this is invalid', 'utf-8');
     await expect(
       runEditorMigrations(fixture.entryPath, [fixture.documentPath], {
         cwd: fixture.directory,

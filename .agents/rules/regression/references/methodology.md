@@ -146,6 +146,12 @@ registry row.
 Treat prior behavior, older releases, upstream Slate, and recordings as
 evidence. Current accepted product/editor law decides the oracle.
 
+For Plite model-based, generated, or differential cases, the semantic oracle
+is canonical `DocumentChange` plus `EditorCommit`. Assert final document state,
+selection, commit metadata, error class, and follow-up usability. Primitive
+Slate or Plate operation traces are diagnostic evidence unless current product
+law explicitly preserves them.
+
 ## Reporter Oracle Matrix
 
 Translate every reporter sentence and observed state into the active plan
@@ -246,9 +252,39 @@ verdict, review result, and residual caveat.
 Run the owning test first. Then replay the exact case on a fresh host whenever
 the route/runtime owner changed.
 
+Once a requested or started package, browser, root, or CI gate fails, add it to
+`Gate failure closure` with the failure, classification, repair, and exact final
+rerun. Completion requires `pass: <evidence>` from that same gate on the final
+bytes. A failure called unrelated is still red; partial progress before it
+cannot authorize completion.
+
 Use repeated retry-free warm runs for flaky, native, lifecycle, compositor,
 focus, selection, DnD, or device risks. Default to five. One failure keeps the
 case open.
+
+When a case first fails during stability after an exact green run, freeze the
+product bytes and classify that failure before another implementation attempt.
+Add the smallest executable diagnostic that identifies the failing phase and
+separates product nondeterminism from interaction, host, or oracle drift. If
+the reporter action was replaced by a programmatic shortcut, restore the real
+interaction through the shared browser harness or prove the shortcut is
+behaviorally equivalent. Repair invalid proof machinery and restart every
+affected baseline and stability count.
+
+A compositor phase is not proved by callback names. Before another timing or
+phase change, instrument the exact mutation boundary and record the material
+state that should drive paint: relevant computed style, live range geometry,
+model/DOM endpoints, and callback identity. If those values are already final
+while the pixel oracle remains red, reject lifecycle ordering as the cause and
+change strategy. A timer or later animation-frame callback may prove that code
+ran; neither proves the intermediate state was painted.
+
+A pixel classifier needs an executable sentinel before it can judge product
+behavior. Capture one known-positive state and one known-negative state through
+the same screenshot path and classifier. The positive state must produce the
+expected signal, and the negative state must produce none. If either control
+fails, revoke every green or red derived from that classifier, repair the proof
+helper, and restart the affected baseline.
 
 Nothing issue-owned may change after final replay. If commit, rebase,
 generation, or push changes any proved bytes or runtime inputs, replay before
@@ -346,6 +382,11 @@ another. Record the owner, affected case IDs, last edit time, combined command,
 matching receipt input digest, and passing result under `Affected corpus
 replay`.
 
+Before the shared-owner edit, run each already-executable affected case and
+record `pass: <evidence>` or `red: <evidence>` as its pre-edit baseline. Patch
+cannot start with `pending`, N/A, or an inferred historical result. This keeps a
+new cross-invariant failure attributable to the current attempt.
+
 A separate green from before the final shared-owner edit is stale. A receipt
 whose proof starts before the latest named input edit is invalid. A nonzero
 retry count cannot certify stability.
@@ -395,7 +436,7 @@ The runtime plan must use these headings:
 Required runtime rows live in `Work Checklist` or `Completion Gates`.
 Supporting case tables cannot close the plan. Run `check-complete.mjs` only
 after every selected executable case passes its required red/green, fresh-host,
-stability, review, and methodology-delta gates.
+stability, review, methodology-delta, and started-gate rerun gates.
 
 Run `validate-regression-plan.mjs --complete` first. A structurally complete
 Autogoal plan with an incomplete reporter oracle is still an open Regression

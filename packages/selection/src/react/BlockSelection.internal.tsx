@@ -20,6 +20,17 @@ import {
 } from '../SelectionArea';
 import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
+const syncBlockSelectionFocus = (
+  input: HTMLInputElement | null,
+  active: boolean
+) => {
+  if (active) {
+    input?.focus({ preventScroll: true });
+  } else {
+    input?.blur();
+  }
+};
+
 const toMutableSelectionTargets = (
   value: readonly SelectionAreaTarget[] | SelectionAreaTarget | undefined
 ): SelectionAreaTarget[] | SelectionAreaTarget | undefined =>
@@ -75,11 +86,14 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
   const trsRef = React.useRef({ keys: new Set<NodeKey>() });
 
   React.useEffect(() => {
+    let finalSelectionClearFrame: number | undefined;
+    const clearEditorSelection = () => {
+      editor.api.dom.deselect();
+    };
     const onStart = () => {
-      if (editor.read.view.isFocused()) editor.api.dom.blur();
-      if (editor.read.selection()) editor.update.selection.clear();
-
       store.set({ isSelectionAreaVisible: true });
+      syncBlockSelectionFocus(store.get().shadowInputRef.current, true);
+      if (editor.read.selection()) clearEditorSelection();
     };
     const selectionAreaOptions = toMutableSelectionAreaOptions(areaOptions);
     const editable = editor.api.dom.editable();
@@ -156,7 +170,7 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
               at: block[1],
               match: (node): node is Element =>
                 ElementApi.isElement(node) &&
-                areaRef.current.keys.has(editor.key(node)!),
+                areaRef.current.keys.has(editor.key(node)),
             });
 
             if (!hasAncestor) {
@@ -179,6 +193,7 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
         const tableTypes = [table, tableRow, tableCell]
           .filter((plugin) => plugin.installed)
           .map((plugin) => plugin.schema.type);
+        const tableTypeSet = new Set(tableTypes);
         const tableType = table.installed ? table.schema.type : undefined;
         const isTableOnlySelection =
           tableTypes.length > 0 &&
@@ -188,7 +203,7 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
             if (!block) return false;
             if (block[1].length >= 3) return true;
 
-            return tableTypes.includes(block[0].type);
+            return tableTypeSet.has(block[0].type);
           });
 
         if (isTableOnlySelection) {
@@ -215,20 +230,21 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
                 (plugin) =>
                   plugin.installed && plugin.schema.type === block[0].type
               )
-            )
+            ) {
               return false;
+            }
 
-            const table = editor.read.nodes.above({
+            const innerTable = editor.read.nodes.above({
               at: block[1],
               match: ElementApi.isElement,
             });
 
-            if (!table) return false;
-            const tableKey = editor.key(table[0]);
+            if (!innerTable) return false;
+            const tableKey = editor.key(innerTable[0]);
 
             if (!tableKey) return false;
             next.add(tableKey);
-            table[0].children.forEach((row) => {
+            innerTable[0].children.forEach((row) => {
               if (!ElementApi.isElement(row)) return;
               const rowKey = editor.key(row);
 
@@ -243,15 +259,45 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
         }
 
         store.set({ selectedKeys: next });
+        if (editor.read.selection()) clearEditorSelection();
       })
       .on('stop', () => {
+        syncBlockSelectionFocus(
+          store.get().shadowInputRef.current,
+          store.get().selectedKeys.size > 0
+        );
+        finalSelectionClearFrame = window.requestAnimationFrame(() => {
+          if (store.get().selectedKeys.size > 0 && editor.read.selection()) {
+            clearEditorSelection();
+          }
+          syncBlockSelectionFocus(
+            store.get().shadowInputRef.current,
+            store.get().selectedKeys.size > 0
+          );
+          finalSelectionClearFrame = window.requestAnimationFrame(() => {
+            finalSelectionClearFrame = undefined;
+
+            if (store.get().selectedKeys.size > 0 && editor.read.selection()) {
+              clearEditorSelection();
+            }
+            syncBlockSelectionFocus(
+              store.get().shadowInputRef.current,
+              store.get().selectedKeys.size > 0
+            );
+            store.set({ isSelectionAreaVisible: false });
+          });
+        });
         areaRef.current = { keys: new Set() };
         trsRef.current = { keys: new Set() };
-        store.set({ isSelectionAreaVisible: false });
       });
 
-    return () => selection.destroy();
-    // The selection engine owns one lifecycle per mounted editor.
+    return () => {
+      if (finalSelectionClearFrame !== undefined) {
+        window.cancelAnimationFrame(finalSelectionClearFrame);
+      }
+      selection.destroy();
+    };
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The selection engine owns one lifecycle per mounted editor; plugin handles are stable and option changes are applied through that owner.
   }, [selectionAreaElement]);
 };
 
@@ -284,11 +330,30 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   }, [isSelectingSome, store]);
 
   React.useEffect(() => {
-    if (isSelectingSome) {
-      inputRef.current?.focus({ preventScroll: true });
-    } else {
-      inputRef.current?.blur();
-    }
+    const input = inputRef.current;
+
+    syncBlockSelectionFocus(input, isSelectingSome);
+    if (!isSelectingSome) return undefined;
+
+    const ownerDocument = input?.ownerDocument ?? document;
+    const clearNativeSelection = () => {
+      const selection = ownerDocument.getSelection();
+
+      if (selection?.rangeCount) selection.removeAllRanges();
+    };
+
+    clearNativeSelection();
+    ownerDocument.addEventListener('selectionchange', clearNativeSelection, {
+      capture: true,
+    });
+
+    return () => {
+      ownerDocument.removeEventListener(
+        'selectionchange',
+        clearNativeSelection,
+        { capture: true }
+      );
+    };
   }, [isSelectingSome]);
 
   const handleKeyDown = React.useCallback(
@@ -342,7 +407,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
             match: (node) =>
               ElementApi.isElement(node) &&
               tx.schema.isBlock(node) &&
-              selectedKeys.has(tx.key(node)!),
+              selectedKeys.has(tx.key(node)),
           });
 
           if (!entry) return;
@@ -353,7 +418,9 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
           tx.selection.set(end);
           handled = true;
-          afterCommit(() => editor.api.dom.focus());
+          afterCommit(() => {
+            editor.api.dom.focus();
+          });
         });
 
         if (handled) event.preventDefault();
@@ -437,7 +504,6 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
             style={{
               pointerEvents: 'none',
               position: 'fixed',
-              willChange: 'top, left, bottom, right, width, height',
             }}
           />,
           document.body

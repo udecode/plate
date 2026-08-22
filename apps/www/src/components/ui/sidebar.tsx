@@ -93,17 +93,22 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
+      // oxlint-disable-next-line unicorn/no-document-cookie -- [P0 compatibility] Sidebar persistence needs a synchronous cross-browser cookie write.
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [open, setOpenProp]
   );
 
   // Helper to toggle the sidebar.
-  const toggleSidebar = React.useCallback(
-    () =>
-      isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open),
-    [isMobile, setOpen]
-  );
+  const toggleSidebar = React.useCallback(() => {
+    if (isMobile) {
+      setOpenMobile((innerOpen) => !innerOpen);
+
+      return;
+    }
+
+    setOpen((innerOpen2) => !innerOpen2);
+  }, [isMobile, setOpen]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -118,22 +123,27 @@ function SidebarProvider({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [toggleSidebar]);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
   const state: 'expanded' | 'collapsed' = open ? 'expanded' : 'collapsed';
 
-  const contextValue = {
-    isMobile,
-    open,
-    openMobile,
-    setOpen,
-    setOpenMobile,
-    state,
-    toggleSidebar,
-  };
+  const contextValue = React.useMemo(
+    () => ({
+      isMobile,
+      open,
+      openMobile,
+      setOpen,
+      setOpenMobile,
+      state,
+      toggleSidebar,
+    }),
+    [isMobile, open, openMobile, setOpen, setOpenMobile, state, toggleSidebar]
+  );
 
   return (
     <SidebarContext.Provider value={contextValue}>
@@ -510,7 +520,7 @@ function SidebarMenuButton({
   className,
   isActive = false,
   size = 'default',
-  tooltip,
+  tooltip: initialTooltip,
   variant = 'default',
   ...props
 }: React.ComponentProps<'button'> & {
@@ -518,6 +528,7 @@ function SidebarMenuButton({
   isActive?: boolean;
   tooltip?: React.ComponentProps<typeof TooltipContent> | string;
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
+  let tooltip = initialTooltip;
   const Comp = asChild ? Slot : 'button';
   const { isMobile, state } = useSidebar();
 

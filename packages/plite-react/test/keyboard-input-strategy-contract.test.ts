@@ -13,13 +13,20 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { isSelectAllHotkey } from '../src/dom-strategy/dom-strategy-commands';
 import { getTextDirection } from '../src/editable/caret-engine';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
-import { resolveHistoryFocusEditor } from '../src/editable/history-focus';
+import {
+  getModelOwnedHistoryFocusRepair,
+  resolveHistoryFocusEditor,
+} from '../src/editable/history-focus';
 import {
   applyEditableKeyDown as applyRuntimeEditableKeyDown,
   shouldDeferBackspaceToNativeInput,
 } from '../src/editable/keyboard-input-strategy';
-import { applyEditableCommand } from '../src/editable/mutation-controller';
+import {
+  applyEditableCommand,
+  applyModelOwnedNativeHistoryEvent,
+} from '../src/editable/mutation-controller';
 import { isNativeVerticalKeyFastPathFullyMounted } from '../src/editable/runtime-keyboard-events';
+import { unregisterContentRootOwnerViewEditor } from '../src/hooks/use-plite-runtime';
 import { ReactEditor } from '../src/plugin/react-editor';
 import { createPliteProjectionGraph } from '../src/projection-graph';
 import {
@@ -662,7 +669,7 @@ describe('keyboard input strategy', () => {
     const event = reactKeyEvent({
       ...keyEvent('z'),
       metaKey: true,
-    } as KeyboardEvent);
+    });
 
     (editor as any).undo = undo;
     const hasEditableTarget = vi
@@ -817,8 +824,8 @@ describe('keyboard input strategy', () => {
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(false);
-    const getMountedViewEditor = vi.fn((root: string) =>
-      root === 'card:body' ? bodyEditor : null
+    const getMountedViewEditor = vi.fn((innerRoot: string) =>
+      innerRoot === 'card:body' ? bodyEditor : null
     );
 
     root.dataset.pliteEditor = 'true';
@@ -850,8 +857,8 @@ describe('keyboard input strategy', () => {
         editor: mainEditor,
         event,
         forceRender: vi.fn(),
-        getActiveContentRootOwner: (root) =>
-          root === 'card:body' ? owner : null,
+        getActiveContentRootOwner: (innerRoot2) =>
+          innerRoot2 === 'card:body' ? owner : null,
         getContentRootOwnerViewEditor: (candidate) =>
           candidate.childRoot === 'card:body' ? bodyEditor : null,
         getMountedViewEditor,
@@ -919,8 +926,8 @@ describe('keyboard input strategy', () => {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 0 },
       });
-    const getMountedViewEditor = vi.fn((root: string) =>
-      root === 'card:body' ? bodyEditor : null
+    const getMountedViewEditor = vi.fn((innerRoot3: string) =>
+      innerRoot3 === 'card:body' ? bodyEditor : null
     );
 
     root.dataset.pliteEditor = 'true';
@@ -954,8 +961,8 @@ describe('keyboard input strategy', () => {
         editor: mainEditor,
         event,
         forceRender: vi.fn(),
-        getActiveContentRootOwner: (root) =>
-          root === 'card:body' ? owner : null,
+        getActiveContentRootOwner: (innerRoot4) =>
+          innerRoot4 === 'card:body' ? owner : null,
         getContentRootOwnerViewEditor: (candidate) =>
           candidate.childRoot === 'card:body' ? bodyEditor : null,
         getMountedViewEditor,
@@ -1078,7 +1085,7 @@ describe('keyboard input strategy', () => {
     const event = reactKeyEvent({
       ...keyEvent('Enter'),
       isComposing: true,
-    } as KeyboardEvent);
+    });
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
@@ -1150,24 +1157,35 @@ describe('keyboard input strategy', () => {
     });
 
     try {
+      const results = [];
+
       for (let index = 0; index < 2; index++) {
         const event = reactKeyEvent(keyEvent('z', { ctrlKey: true }));
 
-        applyEditableKeyDown({
-          androidInputManagerRef: { current: null },
-          editor: mainEditor as ReactEditorType,
-          event,
-          forceRender: vi.fn(),
-          getMountedViewEditor,
-          inputController: {} as any,
-          readOnly: false,
-          domStrategyRuntime: null,
-          setComposing: vi.fn(),
-          setExplicitPartialDOMBackedSelection: vi.fn(),
-          partialDOMBackedSelection: false,
-        });
+        results.push(
+          applyEditableKeyDown({
+            androidInputManagerRef: { current: null },
+            editor: mainEditor as ReactEditorType,
+            event,
+            forceRender: vi.fn(),
+            getMountedViewEditor,
+            inputController: {} as any,
+            readOnly: false,
+            domStrategyRuntime: null,
+            setComposing: vi.fn(),
+            setExplicitPartialDOMBackedSelection: vi.fn(),
+            partialDOMBackedSelection: false,
+          })
+        );
       }
 
+      expect(
+        results.map((result) =>
+          result.repair && 'forceRender' in result.repair
+            ? result.repair.forceRender
+            : undefined
+        )
+      ).toEqual([true, true]);
       expect(getMountedViewEditor).toHaveBeenLastCalledWith('main');
       expect(mainEditor.read((state) => state.selection())).toEqual({
         kind: 'text',
@@ -1255,6 +1273,96 @@ describe('keyboard input strategy', () => {
       })
     ).toBe(historyEditor);
     expect(getMountedViewEditor).toHaveBeenLastCalledWith('header');
+  });
+
+  it('repairs history focus through the active content owner while the root registry transitions', () => {
+    const currentEditor = {} as any;
+    const ownerEditor = {} as any;
+    const owner = {
+      childRoot: 'shared',
+      ownerPath: [1],
+      ownerRoot: 'main',
+    };
+
+    expect(
+      resolveHistoryFocusEditor({
+        currentRoot: 'shared',
+        editor: currentEditor,
+        getActiveContentRootOwner: (root) => (root === 'shared' ? owner : null),
+        getContentRootOwnerViewEditor: (candidate) =>
+          candidate === owner ? ownerEditor : null,
+        getMountedViewEditor: () => null,
+        historyRoot: 'main',
+        selectionRoot: 'shared',
+      })
+    ).toBe(ownerEditor);
+  });
+
+  it('shares resolved focus ownership with native history beforeinput', () => {
+    const runtime = createEditor({
+      extensions: [history()],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+    const mainEditor = createEditorView(runtime);
+    const owner = {
+      childRoot: 'header',
+      ownerPath: [0],
+      ownerRoot: 'main',
+    };
+
+    headerEditor.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 'header'.length });
+      tx.text.insert('!');
+    });
+    mainEditor.update((tx) => {
+      tx.selection.set({ path: [0, 0], offset: 'body'.length });
+      tx.text.insert('?');
+    });
+
+    expect(
+      applyModelOwnedNativeHistoryEvent({
+        editor: headerEditor as ReactEditorType,
+        event: { inputType: 'historyUndo' } as InputEvent,
+      })
+    ).toBe(true);
+
+    expect(
+      getModelOwnedHistoryFocusRepair({
+        editor: headerEditor as ReactEditorType,
+        getActiveContentRootOwner: (root) => (root === 'header' ? owner : null),
+        getContentRootOwnerViewEditor: () => mainEditor as ReactEditorType,
+        getMountedViewEditor: () => null,
+      })
+    ).toEqual({
+      focusEditor: mainEditor,
+      repair: { forceRender: true, kind: 'force-render' },
+    });
+  });
+
+  it('does not let stale owner cleanup delete a newer view editor', () => {
+    const owner = {
+      childRoot: 'shared',
+      ownerPath: [1],
+      ownerRoot: 'main',
+    };
+    const staleEditor = {};
+    const newerEditor = {};
+    const ownerViewEditors = new Map([
+      ['main\u00001\u0000shared', newerEditor],
+    ]);
+
+    expect(
+      unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, staleEditor)
+    ).toBe(false);
+    expect([...ownerViewEditors.values()]).toEqual([newerEditor]);
+    expect(
+      unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, newerEditor)
+    ).toBe(true);
+    expect(ownerViewEditors.size).toBe(0);
   });
 
   it('runs raw keydown before model fallback', () => {
@@ -2410,7 +2518,7 @@ describe('keyboard input strategy', () => {
   it('routes printable expanded-selection fallback input through the model without beforeinput support', async () => {
     vi.resetModules();
 
-    const applyEditableCommand = vi.fn(() => true);
+    const innerApplyEditableCommand = vi.fn(() => true);
 
     vi.doMock('../src/editable/mutation-controller', async (importOriginal) => {
       const actual =
@@ -2420,18 +2528,21 @@ describe('keyboard input strategy', () => {
 
       return {
         ...actual,
-        applyEditableCommand,
+        applyEditableCommand: innerApplyEditableCommand,
       };
     });
 
     try {
-      const [{ createEditor }, { ReactEditor }, { applyEditableKeyDown }] =
-        await Promise.all([
-          import('@platejs/plite'),
-          import('../src/plugin/react-editor'),
-          import('../src/editable/keyboard-input-strategy'),
-        ]);
-      const editor = createEditor({
+      const [
+        { createEditor: innerCreateEditor },
+        { ReactEditor: innerReactEditor },
+        { applyEditableKeyDown: innerApplyEditableKeyDown },
+      ] = await Promise.all([
+        import('@platejs/plite'),
+        import('../src/plugin/react-editor'),
+        import('../src/editable/keyboard-input-strategy'),
+      ]);
+      const editor = innerCreateEditor({
         initialSelection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
@@ -2445,13 +2556,13 @@ describe('keyboard input strategy', () => {
       });
       const { event } = realmEvent;
       const hasEditableTarget = vi
-        .spyOn(ReactEditor, 'hasEditableTarget')
+        .spyOn(innerReactEditor, 'hasEditableTarget')
         .mockReturnValue(true);
       const isComposing = vi
-        .spyOn(ReactEditor, 'isComposing')
+        .spyOn(innerReactEditor, 'isComposing')
         .mockReturnValue(false);
 
-      const result = applyEditableKeyDown({
+      const result = innerApplyEditableKeyDown({
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -2466,7 +2577,7 @@ describe('keyboard input strategy', () => {
 
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(applyEditableCommand).toHaveBeenCalledWith({
+      expect(innerApplyEditableCommand).toHaveBeenCalledWith({
         command: { inputType: 'insertText', kind: 'insert-text', text: 'a' },
         editor,
       });
@@ -2483,7 +2594,7 @@ describe('keyboard input strategy', () => {
   it('routes printable expanded inline-void replacement through the model with beforeinput support', async () => {
     vi.resetModules();
 
-    const applyEditableCommand = vi.fn(() => true);
+    const innerApplyEditableCommand2 = vi.fn(() => true);
 
     vi.doMock('../src/editable/mutation-controller', async (importOriginal) => {
       const actual =
@@ -2493,28 +2604,32 @@ describe('keyboard input strategy', () => {
 
       return {
         ...actual,
-        applyEditableCommand,
+        applyEditableCommand: innerApplyEditableCommand2,
       };
     });
 
     try {
       const [
-        { createEditor, defineEditorSchema, schema },
-        { ReactEditor },
-        { applyEditableKeyDown },
+        {
+          createEditor: innerCreateEditor2,
+          defineEditorSchema: innerDefineEditorSchema,
+          schema: innerSchema,
+        },
+        { ReactEditor: innerReactEditor2 },
+        { applyEditableKeyDown: innerApplyEditableKeyDown2 },
       ] = await Promise.all([
         import('@platejs/plite'),
         import('../src/plugin/react-editor'),
         import('../src/editable/keyboard-input-strategy'),
       ]);
-      const editor = createEditor({
+      const editor = innerCreateEditor2({
         extensions: [
-          defineEditorSchema(
+          innerDefineEditorSchema(
             'schema:keyboard-input-strategy-inline-void-test',
             {
               elements: { mention: { void: 'markable-inline' } },
               id: 'keyboard-input-strategy-inline-void-test',
-              root: schema.content.not(schema.content.text()),
+              root: innerSchema.content.not(innerSchema.content.text()),
               unknown: 'preserve',
               version: 1,
             }
@@ -2542,13 +2657,13 @@ describe('keyboard input strategy', () => {
       });
       const { event } = realmEvent;
       const hasEditableTarget = vi
-        .spyOn(ReactEditor, 'hasEditableTarget')
+        .spyOn(innerReactEditor2, 'hasEditableTarget')
         .mockReturnValue(true);
       const isComposing = vi
-        .spyOn(ReactEditor, 'isComposing')
+        .spyOn(innerReactEditor2, 'isComposing')
         .mockReturnValue(false);
 
-      const result = applyEditableKeyDown({
+      const result = innerApplyEditableKeyDown2({
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -2563,7 +2678,7 @@ describe('keyboard input strategy', () => {
 
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(applyEditableCommand).toHaveBeenCalledWith({
+      expect(innerApplyEditableCommand2).toHaveBeenCalledWith({
         command: { inputType: 'insertText', kind: 'insert-text', text: 'Z' },
         editor,
       });
@@ -2580,7 +2695,7 @@ describe('keyboard input strategy', () => {
   it('keeps DeleteForward direction in the Chrome/WebKit void-node fallback', async () => {
     vi.resetModules();
 
-    const applyEditableCommand = vi.fn(() => true);
+    const innerApplyEditableCommand3 = vi.fn(() => true);
 
     vi.doMock('../src/editable/editing-kernel', async (importOriginal) => {
       const actual =
@@ -2599,26 +2714,30 @@ describe('keyboard input strategy', () => {
 
       return {
         ...actual,
-        applyEditableCommand,
+        applyEditableCommand: innerApplyEditableCommand3,
       };
     });
 
     try {
       const [
-        { createEditor, defineEditorSchema, schema },
-        { ReactEditor },
-        { applyEditableKeyDown },
+        {
+          createEditor: innerCreateEditor3,
+          defineEditorSchema: innerDefineEditorSchema2,
+          schema: innerSchema2,
+        },
+        { ReactEditor: innerReactEditor3 },
+        { applyEditableKeyDown: innerApplyEditableKeyDown3 },
       ] = await Promise.all([
         import('@platejs/plite'),
         import('../src/plugin/react-editor'),
         import('../src/editable/keyboard-input-strategy'),
       ]);
-      const editor = createEditor({
+      const editor = innerCreateEditor3({
         extensions: [
-          defineEditorSchema('schema:keyboard-input-strategy-void-test', {
+          innerDefineEditorSchema2('schema:keyboard-input-strategy-void-test', {
             elements: { image: { void: 'block' } },
             id: 'keyboard-input-strategy-void-test',
-            root: schema.content.not(schema.content.text()),
+            root: innerSchema2.content.not(innerSchema2.content.text()),
             unknown: 'preserve',
             version: 1,
           }),
@@ -2659,13 +2778,13 @@ describe('keyboard input strategy', () => {
       target.dispatchEvent(nativeEvent);
       const event = reactKeyEvent(nativeEvent);
       const hasEditableTarget = vi
-        .spyOn(ReactEditor, 'hasEditableTarget')
+        .spyOn(innerReactEditor3, 'hasEditableTarget')
         .mockReturnValue(true);
       const isComposing = vi
-        .spyOn(ReactEditor, 'isComposing')
+        .spyOn(innerReactEditor3, 'isComposing')
         .mockReturnValue(false);
 
-      const result = applyEditableKeyDown({
+      const result = innerApplyEditableKeyDown3({
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -2680,7 +2799,7 @@ describe('keyboard input strategy', () => {
 
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(applyEditableCommand).toHaveBeenCalledWith({
+      expect(innerApplyEditableCommand3).toHaveBeenCalledWith({
         command: { direction: 'forward', kind: 'delete', unit: 'block' },
         editor,
       });

@@ -40,7 +40,7 @@ console.log(JSON.stringify(payload, null, 2));
 function measureNormalization() {
   const rounds = readInt(args.rounds, 15);
   const iterations = readInt(args.iterations, 2000);
-  const samples = [];
+  const innerSamples = [];
 
   for (let round = 0; round < rounds; round++) {
     const start = performance.now();
@@ -57,10 +57,10 @@ function measureNormalization() {
       });
     }
 
-    samples.push(((performance.now() - start) * 1000) / iterations);
+    innerSamples.push(((performance.now() - start) * 1000) / iterations);
   }
 
-  return samples.sort((a, b) => a - b);
+  return innerSamples.sort((a, b) => a - b);
 }
 
 function percentile(sortedSamples, p) {
@@ -79,10 +79,10 @@ function parseArgs(argv) {
 
   while (i < argv.length) {
     const arg = argv[i];
-    i++;
+    i += 1;
     if (!arg.startsWith('--')) continue;
     out[arg.slice(2)] = argv[i] || true;
-    i++;
+    i += 1;
   }
   return out;
 }

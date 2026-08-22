@@ -31,6 +31,7 @@ export const isUrl = (string: unknown) => {
   }
 
   try {
+    // oxlint-disable-next-line no-new -- [P1 local-invariant] URL construction is the native validation operation.
     new URL(string);
   } catch {
     return false;

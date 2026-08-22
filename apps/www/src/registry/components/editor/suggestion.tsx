@@ -227,7 +227,7 @@ function SuggestionLineBreakElementAnchor({
 
 export function SuggestionLeaf(props: PlateLeafProps<typeof SuggestionPlugin>) {
   const { api, store } = useEditorPlugin(SuggestionPlugin);
-  const leaf = props.leaf;
+  const { leaf } = props;
 
   const leafId: string = api.id(leaf) ?? '';
   const activeSuggestionId = usePluginStore(SuggestionPlugin, 'activeId');
@@ -257,8 +257,12 @@ export function SuggestionLeaf(props: PlateLeafProps<typeof SuggestionPlugin>) {
       )}
       attributes={{
         ...props.attributes,
-        onMouseEnter: () => store.set({ hoverId: leafId }),
-        onMouseLeave: () => store.set({ hoverId: null }),
+        onMouseEnter: () => {
+          store.set({ hoverId: leafId });
+        },
+        onMouseLeave: () => {
+          store.set({ hoverId: null });
+        },
       }}
     >
       {props.children}
@@ -268,10 +272,10 @@ export function SuggestionLeaf(props: PlateLeafProps<typeof SuggestionPlugin>) {
 
 export const SuggestionLineBreak: RenderNodeWrapper = ({ editor, element }) => {
   if (!getSuggestionApi(editor).isBlockSuggestion(element)) {
-    return;
+    return undefined;
   }
 
-  const suggestionData = element.suggestion as SuggestionData;
+  const suggestionData = element.suggestion;
   const columnGroup = editor.plugin(PLUGINS.columnGroup);
   const isColumnGroup =
     columnGroup.installed && element.type === columnGroup.schema.type;
@@ -375,8 +379,12 @@ export function SuggestionLineBreakContent({
             isInsert,
             isRemove,
           })}
-          onMouseEnter={() => store.set({ hoverId: suggestionData.id })}
-          onMouseLeave={() => store.set({ hoverId: null })}
+          onMouseEnter={() => {
+            store.set({ hoverId: suggestionData.id });
+          }}
+          onMouseLeave={() => {
+            store.set({ hoverId: null });
+          }}
           data-block-suggestion="true"
         >
           {children}

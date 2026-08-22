@@ -48,9 +48,9 @@ export default function SingleBlockDemo() {
           <Checkbox
             id="single-block-mode"
             checked={isSingleBlock}
-            onCheckedChange={(checked) =>
-              setIsSingleBlock(checked === 'indeterminate' ? false : checked)
-            }
+            onCheckedChange={(checked) => {
+              setIsSingleBlock(checked === 'indeterminate' ? false : checked);
+            }}
           />
           <Label htmlFor="single-block-mode">
             {String.raw`Single Block Mode (allows line breaks as \n)`}

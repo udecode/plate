@@ -1,8 +1,8 @@
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 export type RoundRobinCohortMeasurements = Readonly<{
-  order: readonly (readonly number[])[];
-  samples: readonly (readonly number[])[];
+  order: ReadonlyArray<readonly number[]>;
+  samples: ReadonlyArray<readonly number[]>;
 }>;
 
 export const measureCohortsRoundRobin = <TCohort>(
@@ -24,7 +24,7 @@ export const measureCohortsRoundRobin = <TCohort>(
       const cohortIndex = (sampleIndex + orderIndex) % cohorts.length;
 
       collectGarbage();
-      samples[cohortIndex]!.push(measure(cohorts[cohortIndex]!));
+      samples[cohortIndex].push(measure(cohorts[cohortIndex]));
 
       return cohortIndex;
     })

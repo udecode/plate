@@ -36,21 +36,22 @@ const getListType = (action: string) =>
       ? ('numbered' as const)
       : ('bulleted' as const);
 
-const toggleCodeBlock = (editor: PlateEditor) =>
+const toggleCodeBlock = (editor: PlateEditor) => {
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
+};
 
-const runFootnoteAction = (editor: PlateEditor) =>
+const runFootnoteAction = (editor: PlateEditor) => {
   editor.plugin(BaseFootnotePlugin).update.insert({}, { select: true });
+};
 
 const createBlock = ({
   type,
   ...props
-}: { type: string } & Record<string, unknown>): Element =>
-  ({
-    ...props,
-    children: [{ text: '' }],
-    type,
-  }) as Element;
+}: { type: string } & Record<string, unknown>): Element => ({
+  ...props,
+  children: [{ text: '' }],
+  type,
+});
 
 const createBlockquote = (editor: PlateEditor): Element => ({
   children: [
@@ -104,11 +105,13 @@ const removeEmptySourceAfterInsert = (
 };
 
 const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
-  [PLUGINS.date]: (editor) =>
-    editor.plugin(BaseDatePlugin).update.insert({}, { select: true }),
+  [PLUGINS.date]: (editor) => {
+    editor.plugin(BaseDatePlugin).update.insert({}, { select: true });
+  },
   [ACTION_FOOTNOTE]: runFootnoteAction,
-  [PLUGINS.inlineEquation]: (editor) =>
-    editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true }),
+  [PLUGINS.inlineEquation]: (editor) => {
+    editor.plugin(BaseInlineEquationPlugin).update.insert({}, { select: true });
+  },
   [PLUGINS.link]: (editor) => {
     const link = editor.plugin(linkPlugin);
 
@@ -284,7 +287,7 @@ export const insertBlock = (
   editor.update((tx) => {
     const headingLevel = getHeadingLevel(action);
     const insertByAction: Record<string, () => void> = {
-      todo: () =>
+      todo: () => {
         tx.nodes.insert(
           createBlock({
             indent: 1,
@@ -292,8 +295,9 @@ export const insertBlock = (
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           }),
           { select: true }
-        ),
-      decimal: () =>
+        );
+      },
+      decimal: () => {
         tx.nodes.insert(
           createBlock({
             indent: 1,
@@ -301,8 +305,9 @@ export const insertBlock = (
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           }),
           { select: true }
-        ),
-      disc: () =>
+        );
+      },
+      disc: () => {
         tx.nodes.insert(
           createBlock({
             indent: 1,
@@ -310,14 +315,16 @@ export const insertBlock = (
             type: editor.plugin(PLUGINS.paragraph).schema.type,
           }),
           { select: true }
-        ),
+        );
+      },
     };
     const insert = headingLevel
-      ? () =>
+      ? () => {
           tx.nodes.insert(
             createBlock({ level: headingLevel, type: actionType }),
             { select: true }
-          )
+          );
+        }
       : insertByAction[action];
 
     if (insert) {
@@ -352,8 +359,9 @@ export const insertInlineElement = (editor: PlateEditor, action: string) => {
 };
 
 const setBlockActionMap: Record<string, (editor: PlateEditor) => void> = {
-  [ACTION_THREE_COLUMNS]: (editor) =>
-    editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 }),
+  [ACTION_THREE_COLUMNS]: (editor) => {
+    editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 });
+  },
   [PLUGINS.codeBlock]: toggleCodeBlock,
 };
 
@@ -417,9 +425,12 @@ export const applyBlockAction = (
           });
 
         if (!isActive) {
-          tx.nodes.wrap({ children: [], type: actionType } as Element, {
-            at: path,
-          });
+          tx.nodes.wrap(
+            { children: [], type: actionType },
+            {
+              at: path,
+            }
+          );
         }
 
         return;

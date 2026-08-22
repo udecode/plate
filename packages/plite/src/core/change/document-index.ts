@@ -1,3 +1,4 @@
+import { getDefined } from '../../internal/get-defined';
 import {
   createTreeIndex,
   createTreeIndexChildren,
@@ -116,7 +117,7 @@ export const decodeNodes = (
   };
 
   while (index < tokens.length) {
-    const token = tokens[index]!;
+    const token = tokens[index];
 
     if (token.kind === 'open') {
       if (stack.at(-1)?.kind === 'text') {
@@ -263,7 +264,7 @@ export const nodeAtPath = (
     children = isElementNode(node) ? node.children : [];
   }
 
-  return node!;
+  return getDefined(node);
 };
 
 export type IndexedValue = {
@@ -281,7 +282,7 @@ export const replaceIndexedChildren = (
 ): IndexedValue => {
   if (parentPath.length === 0) return replace(indexed.value, indexed.index);
 
-  const childIndex = parentPath[0]!;
+  const childIndex = parentPath[0];
   const node = indexed.value[childIndex];
   const nodeIndex = indexed.index.children[childIndex];
 
@@ -415,7 +416,7 @@ const updateIndexedNodeProperties = (
       nextNode = Object.freeze({
         ...nextNode,
         children: nested.value,
-      }) as JsonNode;
+      });
       nextIndex = {
         children: nested.index,
         kind: 'element',
@@ -426,10 +427,10 @@ const updateIndexedNodeProperties = (
     if (update.props) {
       nextNode = isTextNode(nextNode)
         ? cloneFrozen({ ...update.props, text: nextNode.text })
-        : (Object.freeze({
+        : Object.freeze({
             ...cloneFrozen(update.props),
             children: nextNode.children,
-          }) as JsonNode);
+          });
     }
 
     nextValue[index] = nextNode;
@@ -715,8 +716,8 @@ export class DocumentIndex {
         path,
         (node) =>
           isTextNode(node)
-            ? ({ ...props, text: node.text } as JsonNode)
-            : ({ ...props, children: node.children } as JsonNode)
+            ? { ...props, text: node.text }
+            : { ...props, children: node.children }
       )
     );
   }
@@ -801,7 +802,7 @@ export class DocumentIndex {
       spliceIndexedChildren(
         without,
         transformedTarget.slice(0, -1),
-        transformedTarget.at(-1)!,
+        getDefined(transformedTarget.at(-1)),
         0,
         [node]
       )
@@ -889,12 +890,12 @@ export class DocumentIndex {
     let node: TreeIndexNode | undefined;
 
     for (let depth = 0; depth < path.length; depth++) {
-      const index = path[depth]!;
+      const index = path[depth];
 
       node = children.children[index];
       if (!node) throw new Error(`Cannot resolve token range at [${path}].`);
 
-      position += children.offsets[index]!;
+      position += children.offsets[index];
 
       if (depth < path.length - 1) {
         if (!node.children) {
@@ -902,21 +903,21 @@ export class DocumentIndex {
         }
 
         position += 1;
-        children = node.children;
+        ({ children } = node);
       }
     }
 
     const from = position;
     const contentFrom = from + 1;
-    const contentTo = from + node!.length - 1;
+    const contentTo = from + getDefined(node).length - 1;
 
     return {
       contentFrom,
       contentTo,
       from,
-      kind: node!.kind,
+      kind: getDefined(node).kind,
       path,
-      to: from + node!.length,
+      to: from + getDefined(node).length,
     } satisfies IndexEntry;
   }
 }

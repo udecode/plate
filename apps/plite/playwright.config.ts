@@ -72,6 +72,13 @@ if (os.type() === 'Darwin') {
       ...devices['Desktop Safari'],
     },
   });
+  projects.push({
+    name: 'mobile-webkit',
+    testMatch: /mobile-input-proxy\.test\.ts/,
+    use: {
+      ...devices['iPhone 13'],
+    },
+  });
 }
 
 const config: PlaywrightTestConfig = {

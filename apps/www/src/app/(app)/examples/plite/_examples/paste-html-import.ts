@@ -1,6 +1,7 @@
 import { type Descendant, defineExtension, schema } from '@platejs/plite';
 import { clipboardHandler, parseDOMClipboardHtml } from '@platejs/plite-dom';
 import { jsx } from '@platejs/plite-hyperscript';
+import { failInvariant } from '@platejs/plite/internal';
 
 import type {
   CustomElement,
@@ -32,7 +33,11 @@ type DeserializedChild = string | Descendant;
 type DeserializedResult = DeserializedChild | DeserializedChild[] | null;
 
 const ELEMENT_TAGS: Record<string, (el: HTMLElement) => ElementAttributes> = {
-  A: (el) => ({ type: 'link', url: el.getAttribute('href')! }),
+  A: (el) => ({
+    type: 'link',
+    url:
+      el.getAttribute('href') ?? failInvariant('Expected value to be defined'),
+  }),
   BLOCKQUOTE: () => ({ type: 'block-quote' }),
   H1: () => ({ type: 'heading-one' }),
   H2: () => ({ type: 'heading-two' }),
@@ -40,7 +45,11 @@ const ELEMENT_TAGS: Record<string, (el: HTMLElement) => ElementAttributes> = {
   H4: () => ({ type: 'heading-four' }),
   H5: () => ({ type: 'heading-five' }),
   H6: () => ({ type: 'heading-six' }),
-  IMG: (el) => ({ type: 'image', url: el.getAttribute('src')! }),
+  IMG: (el) => ({
+    type: 'image',
+    url:
+      el.getAttribute('src') ?? failInvariant('Expected value to be defined'),
+  }),
   LI: () => ({ type: 'list-item' }),
   OL: () => ({ type: 'numbered-list' }),
   P: (el) => elementAttributes({ type: 'paragraph' }, el),
@@ -674,17 +683,17 @@ export const html = () =>
     contributions: [
       clipboardHandler({
         insertData(data, { next, tx }) {
-          const html = data.getData('text/html');
+          const innerHtml = data.getData('text/html');
 
-          if (!html) return next();
+          if (!innerHtml) return next();
 
           const hasPlainText = Array.from(data.types).includes('text/plain');
           const text = hasPlainText ? data.getData('text/plain') : '';
 
           // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
-          if (isPlainTextClipboardHtml(html, text)) return next();
+          if (isPlainTextClipboardHtml(innerHtml, text)) return next();
 
-          const parsed = parseDOMClipboardHtml(html);
+          const parsed = parseDOMClipboardHtml(innerHtml);
           const deserialized = deserialize(
             getCommentBoundedFragmentRoot(parsed.body)
           );

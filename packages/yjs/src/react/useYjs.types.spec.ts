@@ -32,7 +32,7 @@ const CursorYjs = yjs({
 
 type CursorEditor = ReactEditor<Value, readonly [typeof CursorYjs]>;
 
-const verifyCursorOutputTypes = (editor: CursorEditor) => {
+const useVerifyCursorOutputTypes = (editor: CursorEditor) => {
   editor.update((tx) => {
     const yjsTx = getEditorYjsTx(tx);
 
@@ -49,14 +49,16 @@ const verifyCursorOutputTypes = (editor: CursorEditor) => {
       decorate: (cursor) => ({ label: String(cursor.clientId) }),
     });
   const [defaultPositions]: readonly [
-    readonly YjsRemoteCursorOverlayPosition<
-      CursorData,
-      YjsRemoteCursorDecorationData<CursorData>
-    >[],
+    ReadonlyArray<
+      YjsRemoteCursorOverlayPosition<
+        CursorData,
+        YjsRemoteCursorDecorationData<CursorData>
+      >
+    >,
     () => void,
   ] = useYjsRemoteCursorOverlayPositions(editor);
   const [customPositions]: readonly [
-    readonly YjsRemoteCursorOverlayPosition<CursorData, LabelData>[],
+    ReadonlyArray<YjsRemoteCursorOverlayPosition<CursorData, LabelData>>,
     () => void,
   ] = useYjsRemoteCursorOverlayPositions(editor, {
     data: (cursor) => ({ label: String(cursor.clientId) }),
@@ -66,10 +68,9 @@ const verifyCursorOutputTypes = (editor: CursorEditor) => {
   const invalidSource: PliteDecorationSource<LabelData> =
     useYjsRemoteCursorDecorationSource(editor);
   // @ts-expect-error Default overlay data cannot become a custom result.
-  const invalidPositions: readonly YjsRemoteCursorOverlayPosition<
-    CursorData,
-    LabelData
-  >[] = useYjsRemoteCursorOverlayPositions(editor)[0];
+  const invalidPositions: ReadonlyArray<
+    YjsRemoteCursorOverlayPosition<CursorData, LabelData>
+  > = useYjsRemoteCursorOverlayPositions(editor)[0];
 
   return {
     customPositions,
@@ -81,4 +82,4 @@ const verifyCursorOutputTypes = (editor: CursorEditor) => {
   };
 };
 
-void verifyCursorOutputTypes;
+void useVerifyCursorOutputTypes;

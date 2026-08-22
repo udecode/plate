@@ -28,32 +28,32 @@ describe('command dispatch benchmark authority', () => {
     );
 
     assert.equal(targets.length, 1);
-    assert.match(targets[0]!.command, /PLITE_COMMAND_DISPATCH_STRICT=1/u);
-    assert.match(targets[0]!.command, /--expose-gc/u);
-    assert.match(targets[0]!.command, /plite-command-dispatch-benchmark\.ts/u);
+    assert.match(targets[0].command, /PLITE_COMMAND_DISPATCH_STRICT=1/u);
+    assert.match(targets[0].command, /--expose-gc/u);
+    assert.match(targets[0].command, /plite-command-dispatch-benchmark\.ts/u);
     assert.equal(
-      targets[0]!.metrics.primary,
+      targets[0].metrics.primary,
       'plite_command_dispatch_worst_budget_ratio'
     );
-    assert.equal(targets[0]!.metrics.printsMetric, true);
-    assert.equal(targets[0]!.metrics.unit, 'ratio');
-    assert.deepEqual(targets[0]!.artifacts, [
+    assert.equal(targets[0].metrics.printsMetric, true);
+    assert.equal(targets[0].metrics.unit, 'ratio');
+    assert.deepEqual(targets[0].artifacts, [
       {
         path: 'tmp/plite-command-dispatch-benchmark.json',
         required: true,
       },
     ]);
-    assert.match(targets[0]!.correctness.command, /command-spec\.test\.ts/u);
+    assert.match(targets[0].correctness.command, /command-spec\.test\.ts/u);
     assert.match(
-      targets[0]!.correctness.command,
+      targets[0].correctness.command,
       /extension-configuration\.test\.ts/u
     );
     assert.match(
-      targets[0]!.correctness.command,
+      targets[0].correctness.command,
       /plite-command-dispatch-benchmark\.test\.ts/u
     );
     assert.match(
-      targets[0]!.thresholds?.promotion ?? '',
+      targets[0].thresholds?.promotion ?? '',
       /simple 20k\/100-block p50 ratio<=2/u
     );
   });

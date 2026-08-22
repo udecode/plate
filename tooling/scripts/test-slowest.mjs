@@ -196,7 +196,7 @@ if (xml) {
       console.log('Tests in the warning zone:');
 
       for (const row of warnTests.filter(
-        (row) => row.milliseconds < FAST_TEST_SLOW_CASE_THRESHOLD_MS
+        (innerRow) => innerRow.milliseconds < FAST_TEST_SLOW_CASE_THRESHOLD_MS
       )) {
         const prefix = row.classname ? `${row.classname} > ` : '';
         const location = row.file ? `${row.file}: ` : '';

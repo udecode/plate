@@ -35,7 +35,7 @@ export function nodes<const TType extends NodeTypeSelector>(
 export function nodes(
   editor: Editor,
   options?: EditorNodesOptions<Node>
-): Generator<NodeEntry<Node>, void, undefined>;
+): Generator<NodeEntry, void, undefined>;
 export function* nodes<T extends Node>(
   editor: Editor,
   options: EditorNodesOptions<T> = {}
@@ -85,7 +85,7 @@ export function* nodes<T extends Node>(
     },
   });
 
-  const matches: NodeEntry<T>[] = [];
+  const matches: Array<NodeEntry<T>> = [];
   const shouldBuffer = reverse || universal;
   let hit: NodeEntry<T> | undefined;
 

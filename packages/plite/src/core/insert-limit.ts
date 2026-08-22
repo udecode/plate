@@ -25,7 +25,7 @@ const getRemainingLength = (
 ) => {
   const maxLength = getEditorMaxLength(editor);
 
-  if (maxLength === undefined) return;
+  if (maxLength === undefined) return undefined;
 
   return Math.max(
     0,
@@ -59,7 +59,7 @@ const limitNode = <TNode extends ElementOrTextIn<Value>>(
     const text = node.text.slice(0, remaining.value);
     remaining.value -= text.length;
 
-    return { ...node, text } as TNode;
+    return { ...node, text };
   }
 
   if (!ElementApi.isElement(node)) return null;
@@ -73,12 +73,12 @@ const limitNode = <TNode extends ElementOrTextIn<Value>>(
     .map((child) => limitNode(child, remaining))
     .filter((child): child is ElementOrTextIn<Value> => child !== null);
 
-  return { ...node, children } as TNode;
+  return { ...node, children };
 };
 
 export const limitFragmentInsert = <V extends Value>(
   editor: Editor<V>,
-  fragment: readonly DescendantIn<V>[],
+  fragment: ReadonlyArray<DescendantIn<V>>,
   options: { at?: Location } | undefined
 ) => {
   const remainingLength = getRemainingLength(editor, options);
@@ -100,7 +100,7 @@ export const limitFragmentInsert = <V extends Value>(
 };
 
 const getOpenEdgeDepth = (
-  content: readonly ElementOrTextIn<Value>[],
+  content: ReadonlyArray<ElementOrTextIn<Value>>,
   edge: 'end' | 'start'
 ) => {
   let children = content;
@@ -112,7 +112,7 @@ const getOpenEdgeDepth = (
     if (!ElementApi.isElement(node)) return depth;
 
     depth += 1;
-    children = node.children;
+    ({ children } = node);
   }
 };
 
@@ -122,7 +122,7 @@ export const limitSliceInsert = <V extends Value>(
   slice: ContentSlice<V>,
   options: { at?: Location } | undefined
 ): ContentSlice<V> => {
-  const content = slice.content as readonly DescendantIn<V>[];
+  const content = slice.content as ReadonlyArray<DescendantIn<V>>;
   const limited = limitFragmentInsert(editor, content, options);
 
   if (limited === content) return slice;
@@ -143,7 +143,7 @@ export const limitNodeInsert = <
   options: { at?: Location } | undefined
 ) => {
   const isList = Array.isArray(nodes);
-  const input = (isList ? nodes : [nodes]) as readonly DescendantIn<V>[];
+  const input = (isList ? nodes : [nodes]) as ReadonlyArray<DescendantIn<V>>;
   const limited = limitFragmentInsert(
     editor,
     input,

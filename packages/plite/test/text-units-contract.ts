@@ -401,8 +401,8 @@ describe('plite text-units contract', () => {
         }
 
         for (let index = 1; index < expectedOffsets.length; index++) {
-          const from = expectedOffsets[index - 1]!;
-          const to = expectedOffsets[index]!;
+          const from = expectedOffsets[index - 1];
+          const to = expectedOffsets[index];
           const deleteEditor = createTextEditor(testCase.text, from);
 
           deleteEditor.update((tx) => {

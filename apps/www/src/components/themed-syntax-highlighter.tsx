@@ -38,12 +38,8 @@ function normalizeTheme(theme: Record<string, React.CSSProperties>) {
   };
 }
 
-const lightTheme = normalizeTheme(
-  ghcolors as Record<string, React.CSSProperties>
-);
-const darkTheme = normalizeTheme(
-  coldarkDark as Record<string, React.CSSProperties>
-);
+const lightTheme = normalizeTheme(ghcolors);
+const darkTheme = normalizeTheme(coldarkDark);
 
 export function ThemedSyntaxHighlighter({
   children,
@@ -54,7 +50,7 @@ export function ThemedSyntaxHighlighter({
   const theme = mounted && resolvedTheme === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <SyntaxHighlighter {...props} style={theme as any}>
+    <SyntaxHighlighter {...props} style={theme}>
       {children}
     </SyntaxHighlighter>
   );

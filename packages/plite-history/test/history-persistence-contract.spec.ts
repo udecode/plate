@@ -170,8 +170,9 @@ describe('versioned history persistence', () => {
     const encodedSchema = encoded.schema;
 
     assert.equal(encodedSchema.kind, 'named');
-    if (encodedSchema.kind !== 'named')
+    if (encodedSchema.kind !== 'named') {
       throw new Error('Expected named schema.');
+    }
     const pollutedIdentity = {
       ...encodedSchema,
       validator: liveValidator,
@@ -197,7 +198,7 @@ describe('versioned history persistence', () => {
         encodeHistoryValue(editor, {
           ...editor.read.history(),
           schema: pollutedIdentity,
-        } as never),
+        }),
       /Invalid history schema identity/
     );
 
@@ -208,7 +209,7 @@ describe('versioned history persistence', () => {
         fingerprint: {
           enumerable: true,
           get: () => {
-            accessorReads++;
+            accessorReads += 1;
 
             return encodedSchema.fingerprint;
           },
@@ -236,7 +237,7 @@ describe('versioned history persistence', () => {
     const json = structuredClone(History.toJSON(source));
     const batch = json.undos[0];
 
-    assert(batch);
+    assert.ok(batch);
     (batch.effects as unknown[]).push({ key: 'must-not-decode' });
 
     const changedWithoutVersion = createEditor({
@@ -273,12 +274,12 @@ describe('versioned history persistence', () => {
 
     assert.equal(afterInsert.undos.length, 1);
     assert.equal(afterInsert.redos.length, 0);
-    assert(undoBatch?.change instanceof DocumentChange);
+    assert.ok(undoBatch?.change instanceof DocumentChange);
 
     const encoded = History.toJSON(editor);
     const encodedChange = encoded.undos[0]?.change;
 
-    assert(encodedChange);
+    assert.ok(encodedChange);
     assert.deepEqual(encodedChange, undoBatch.change.toJSON());
     assert.deepEqual(
       DocumentChange.fromJSON(encodedChange).toJSON(),
@@ -580,7 +581,7 @@ describe('versioned history persistence', () => {
     const json = structuredClone(History.toJSON(source));
     const batch = json.undos[0];
 
-    assert(batch);
+    assert.ok(batch);
     assert.equal(Object.hasOwn(batch, 'selectionAfterRoot'), false);
     assert.equal(Object.hasOwn(batch, 'selectionBeforeRoot'), false);
 
@@ -597,9 +598,9 @@ describe('versioned history persistence', () => {
     );
 
     const explicitPointRoot = structuredClone(json);
-    const selectionAfter = explicitPointRoot.undos[0]!.selectionAfter;
+    const { selectionAfter } = explicitPointRoot.undos[0];
 
-    assert(selectionAfter);
+    assert.ok(selectionAfter);
     (
       selectionAfter.value as {
         anchor: { root?: string };
@@ -617,7 +618,7 @@ describe('versioned history persistence', () => {
         ...decoded,
         undos: [
           {
-            ...decoded.undos[0]!,
+            ...decoded.undos[0],
             selectionAfterRoot: 'main',
           },
         ],
@@ -764,7 +765,7 @@ describe('versioned history persistence', () => {
     const json = structuredClone(History.toJSON(editor));
     const effect = json.undos[0]?.effects[0];
 
-    assert(effect);
+    assert.ok(effect);
     (effect as { key: string }).key = 'missing.effect';
     assert.throws(
       () => History.fromJSON(editor, json),

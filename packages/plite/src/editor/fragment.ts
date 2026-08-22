@@ -7,12 +7,12 @@ import { RangeApi } from '../interfaces/range';
 export const fragment = (<V extends Value>(
   editor: import('../interfaces/editor').Editor<V>,
   at: import('../interfaces').Location
-): DescendantIn<V>[] => {
+): Array<DescendantIn<V>> => {
   const range = editorRange(editor, at);
 
   if (RangeApi.isCollapsed(range)) {
     return [];
   }
 
-  return NodeApi.fragment(editor, range) as DescendantIn<V>[];
+  return NodeApi.fragment(editor, range) as Array<DescendantIn<V>>;
 }) satisfies EditorStaticApi['fragment'];

@@ -270,7 +270,7 @@ export type MarkdownDecodeContext<
     decoration: MarkdownDecoration;
     node: TNode;
     parseAttributes: (
-      attributes: readonly (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+      attributes: ReadonlyArray<MdxJsxAttribute | MdxJsxExpressionAttribute>
     ) => Record<string, unknown>;
     serializeUnknown: (node: MdxJsxFlowElement) => string;
     schema: MarkdownPluginSchemaContext<D>;
@@ -289,7 +289,7 @@ export type MarkdownEncodeContext<
     encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];
     encodeFlow: (
       nodes: readonly Descendant[]
-    ) => (BlockContent | DefinitionContent)[];
+    ) => Array<BlockContent | DefinitionContent>;
     encodePhrasing: (nodes: readonly Descendant[]) => PhrasingContent[];
     isFlow: (node: RootContent) => node is BlockContent | DefinitionContent;
     isPhrasing: (node: RootContent) => node is PhrasingContent;
@@ -337,4 +337,4 @@ export type MarkdownNodeCodec<D extends AnyBasePluginDefinition> =
 
 export type MarkdownNodeCodecInput<D extends AnyBasePluginDefinition> =
   | MarkdownNodeCodec<D>
-  | readonly [MarkdownNodeCodec<D>, ...MarkdownNodeCodec<D>[]];
+  | readonly [MarkdownNodeCodec<D>, ...Array<MarkdownNodeCodec<D>>];

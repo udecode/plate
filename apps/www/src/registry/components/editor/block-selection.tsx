@@ -41,8 +41,9 @@ export function BlockSelection(props: RenderNodeWrapperProps) {
     !isBlockSelected ||
     (tableRow.installed && props.element.type === tableRow.schema.type) ||
     (table.installed && props.element.type === table.schema.type)
-  )
+  ) {
     return null;
+  }
 
   return (
     <div
@@ -80,9 +81,9 @@ export const BlockSelectionKit = [
             return plugin.installed ? [plugin.schema.type] : [];
           })
           .includes(element.type),
-      onKeyDownSelecting: (editor, event) => {
+      onKeyDownSelecting: (innerEditor, event) => {
         if (isHotkey('mod+j')(event)) {
-          editor.plugin(AIChatPlugin).api.show();
+          innerEditor.plugin(AIChatPlugin).api.show();
         }
       },
     },

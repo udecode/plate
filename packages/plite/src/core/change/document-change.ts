@@ -116,7 +116,7 @@ export const callStructuralCollectionMethod = (
 
 export const readStructuralMap = (
   value: unknown
-): readonly (readonly [unknown, unknown])[] | null => {
+): ReadonlyArray<readonly [unknown, unknown]> | null => {
   const entries = readStructuralCollection(value, ['get', 'has', 'keys']);
 
   if (!entries || !isRecord(value)) return null;
@@ -194,10 +194,7 @@ export const freezeReadonlyMap = <K, V>(
 ): ReadonlyMap<K, V> => {
   const source = new Map(entries);
   Object.freeze(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let view!: ReadonlyMap<K, V>;
-
-  view = new Proxy(source, {
+  const view: ReadonlyMap<K, V> = new Proxy(source, {
     defineProperty() {
       throw new TypeError('Cannot mutate a published DocumentChange map.');
     },
@@ -214,10 +211,11 @@ export const freezeReadonlyMap = <K, V>(
         return (
           callback: (value: V, key: K, map: ReadonlyMap<K, V>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value, key) => {
             callback.call(thisArg, value, key, view);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);
@@ -235,10 +233,7 @@ export const freezeReadonlyMap = <K, V>(
 export const freezeReadonlySet = <T>(values: Iterable<T>): ReadonlySet<T> => {
   const source = new Set(values);
   Object.freeze(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let view!: ReadonlySet<T>;
-
-  view = new Proxy(source, {
+  const view: ReadonlySet<T> = new Proxy(source, {
     defineProperty() {
       throw new TypeError('Cannot mutate a published DocumentChange set.');
     },
@@ -255,10 +250,11 @@ export const freezeReadonlySet = <T>(values: Iterable<T>): ReadonlySet<T> => {
         return (
           callback: (value: T, valueAgain: T, set: ReadonlySet<T>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value) => {
             callback.call(thisArg, value, value, view);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);
@@ -485,7 +481,7 @@ export const getInternalDocumentChangeRanges = (
   change: DocumentChange,
   root: string
 ) => {
-  const ranges: (readonly [number, number, number, number])[] = [];
+  const ranges: Array<readonly [number, number, number, number]> = [];
 
   getInternalDocumentRootChange(change, root)?.iterChangedRanges((...range) => {
     ranges.push(Object.freeze(range));
@@ -690,7 +686,7 @@ export const createInternalRootChangeFromSections = (
         local.data[dataIndex] ?? null
       );
       sectionIndex += 2;
-      dataIndex++;
+      dataIndex += 1;
     }
 
     position = section.from + local.length;
@@ -881,7 +877,7 @@ export class DocumentChange {
 
       if (canonical.primary !== undefined) changeRoots.add('main');
 
-      const primaryClassification = value.primaryClassification;
+      const { primaryClassification } = value;
 
       if (primaryClassification !== null) {
         if (
@@ -1155,9 +1151,9 @@ export class DocumentChange {
     ) => void
   ) {
     for (const [root, change] of getInternalDocumentChangeEntries(this)) {
-      change.iterChangedRanges((...range) =>
-        visit(root === 'main' ? null : root, ...range)
-      );
+      change.iterChangedRanges((...range) => {
+        visit(root === 'main' ? null : root, ...range);
+      });
     }
   }
 
@@ -1258,7 +1254,7 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
   value: T,
   indexedAfter: ReadonlyMap<string, DocumentIndex> = new Map()
 ) => {
-  let children = value.children;
+  let { children } = value;
   let roots = value.roots ? { ...value.roots } : undefined;
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {

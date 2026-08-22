@@ -172,7 +172,7 @@ export const createPliteBrowserDestructiveEditingGauntlet = ({
             {
               kind: 'assertRenderedDOMShape' as const,
               label: `assert-dom-shape-after-word-delete-${index + 1}`,
-              shape: domShape.afterWordDeleteIterations[index]!,
+              shape: domShape.afterWordDeleteIterations[index],
             },
           ]
         : []),

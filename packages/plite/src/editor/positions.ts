@@ -298,7 +298,7 @@ const mapLogicalOffsetToPoint = (
   let consumed = 0;
 
   for (const segment of segments) {
-    const length = segment.text.length;
+    const { length } = segment.text;
     const end = consumed + length;
 
     if (logicalOffset < end) {
@@ -316,7 +316,7 @@ const mapLogicalOffsetToPoint = (
         };
       }
 
-      const next = segments[segments.indexOf(segment) + 1]!;
+      const next = segments[segments.indexOf(segment) + 1];
 
       return {
         path: next.path,

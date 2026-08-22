@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-20-format-version-history-values",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-20-format-version-history-values.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Format nested version history values",
+  "targets": [
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-20-format-version-history-values",
+      "kind": "fix",
+      "summary": "Show nested property values as JSON in version history updates.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["version-history-demo"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-20",
+          "entry": "2026-08-20-format-version-history-values",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -76,21 +76,26 @@ const runTsdown = (watch = false) => {
 let result;
 switch (command) {
   case 'p:build':
-  case 'p:tsdown':
+  case 'p:tsdown': {
     result = runTsdown(false);
     break;
-  case 'p:build:watch':
+  }
+  case 'p:build:watch': {
     result = runTsdown(true);
     break;
-  case 'p:clean':
+  }
+  case 'p:clean': {
     result = runPnpm('rimraf', ['dist', ...commandArgs]);
     break;
-  case 'p:lint':
+  }
+  case 'p:lint': {
     result = runPnpm('ultracite', ['check', '.', ...commandArgs]);
     break;
-  case 'p:lint:fix':
+  }
+  case 'p:lint:fix': {
     result = runPnpm('ultracite', ['fix', '.', ...commandArgs]);
     break;
+  }
   case 'p:test': {
     const bunTestArgs = createBunTestArgs({
       commandArgs,
@@ -110,13 +115,14 @@ switch (command) {
     result = runPnpm('bun', bunTestArgs);
     break;
   }
-  case 'p:typecheck':
+  case 'p:typecheck': {
     result = run(process.execPath, [
       path.join(PROJECT_CWD, 'tooling/scripts/typecheck-package-source.mjs'),
       path.join(INIT_CWD, 'tsconfig.json'),
       ...commandArgs,
     ]);
     break;
+  }
   case 'p:brl': {
     const sh = process.platform === 'win32' ? 'sh' : 'sh';
     result = run(
@@ -128,9 +134,10 @@ switch (command) {
     );
     break;
   }
-  default:
+  default: {
     console.error(`Unknown command: ${command}`);
     process.exit(1);
+  }
 }
 
 process.exit(result?.status ?? 1);

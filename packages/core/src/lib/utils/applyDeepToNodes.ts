@@ -10,14 +10,14 @@ export type ApplyDeepToNodesOptions<N extends Descendant> = {
   // Function to call on each node following the query.
   apply: (
     node: NodeOf<N>,
-    source: (() => Record<string, any>) | Record<string, any>
+    source: (() => Record<string, unknown>) | Record<string, unknown>
   ) => void;
   // The destination node object.
   node: N;
   // Match nodes to update.
   match?: NodeMatch<N>;
   // The source object. Can be a factory.
-  source: (() => Record<string, any>) | Record<string, any>;
+  source: (() => Record<string, unknown>) | Record<string, unknown>;
   path?: Path;
 };
 

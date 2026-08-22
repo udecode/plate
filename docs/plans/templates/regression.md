@@ -168,8 +168,21 @@ Work Checklist:
 - [ ] Final proof ran through `capture-proof-receipt.mjs`; its ref, input digest,
       host, timestamps, retry count, and receipt ID validate.
 - [ ] Required retry-free stability runs passed with no retry.
+- [ ] Any stability-only failure after an exact green run froze product edits,
+      gained a phase-specific executable diagnostic, and restarted baselines
+      after product-versus-proof classification.
+- [ ] Any compositor phase claim records computed style, live range geometry,
+      model/DOM endpoints, and callback identity at the mutation boundary. If
+      those are final while pixels stay red, timing is rejected as the cause.
+- [ ] Every blocking pixel classifier passes a known-positive and known-negative
+      control through the same capture path; a failed control invalidates prior
+      results and freezes product edits until the proof helper is repaired.
 - [ ] Every shared owner was replayed against its affected exact corpus after
       the final owner edit.
+- [ ] Every already-executable affected case has a `pass:` or `red:` pre-edit
+      baseline recorded before its shared owner changes.
+- [ ] Every requested or started package, browser, root, or CI gate that failed
+      is recorded and passes an exact final rerun on the final bytes.
 - [ ] Every selected case is kept, reverted, quarantined, deferred, or blocked
       honestly; only kept cases can satisfy goal success.
 - [ ] No sidecar case registry, TSV, JSON manifest, or duplicate behavior
@@ -202,6 +215,7 @@ Completion Gates:
 | Architecture pressure closure | pending | Prove every second failure or architecture trigger has Best API and layer-plan evidence | pending |
 | Proof receipt closure | pending | Validate generated final receipts against unchanged issue-owned inputs | pending |
 | Affected-corpus replay closure | pending | Replay all cases affected by the last shared-owner edit | pending |
+| Started-gate failure closure | pending | Rerun every requested or started gate that failed; completion requires the exact gate to pass on final bytes | pending |
 | Smallest-probe closure | pending | Record first falsifying probe and any host repair | pending |
 | Patch delegation closure | pending | Read back one-case root-cause/red/green/proof evidence | pending |
 | Focused verification closure | pending | Run owning test and exact final-case replay | pending |
@@ -259,9 +273,14 @@ Proof receipts:
 | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
 Affected corpus replay:
-| Owner | Affected cases | Last owner edit | Combined command | Receipt input digest | Result |
-|-------|----------------|-----------------|------------------|----------------------|--------|
-| pending | pending | pending | pending | pending | pending |
+| Owner | Affected cases | Pre-edit baseline | Last owner edit | Combined command | Receipt input digest | Result |
+|-------|----------------|-------------------|-----------------|------------------|----------------------|--------|
+| pending | pending | pending | pending | pending | pending | pending |
+
+Gate failure closure:
+| Gate | Failure signal | Classification | Resolution | Final rerun |
+|------|----------------|----------------|------------|-------------|
+| pending | pending | pending | pending | pending |
 
 Failed fix history:
 | Case ID | Attempt | Failure signal | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
@@ -328,6 +347,7 @@ Final handoff:
 - reporter oracles and forbidden states: pending
 - failed-fix invalidation and automatic repair: pending
 - proof receipts and affected-corpus replay: pending
+- started-gate failure closure: pending
 - changed files: pending
 - design decisions: pending
 - tests and proof: pending

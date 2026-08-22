@@ -12,6 +12,7 @@ import type { AnyEditor as Editor } from '../interfaces/editor';
 import { type Descendant, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
+import { getDefined } from '../internal/get-defined';
 import { getCharacterDistance } from '../utils/string';
 
 type Direction = 'backward' | 'forward';
@@ -129,7 +130,7 @@ const getNextTextStartPoint = (editor: Editor, path: Path): Point | null => {
     const parentPath = currentPath.slice(0, -1);
     const parent = getNodeAtPath(editor, parentPath);
     const children = getChildren(editor, parent);
-    const currentIndex = currentPath.at(-1)!;
+    const currentIndex = getDefined(currentPath.at(-1));
 
     if (children) {
       for (let index = currentIndex + 1; index < children.length; index += 1) {
@@ -154,7 +155,7 @@ const getPreviousTextEndPoint = (editor: Editor, path: Path): Point | null => {
     const parentPath = currentPath.slice(0, -1);
     const parent = getNodeAtPath(editor, parentPath);
     const children = getChildren(editor, parent);
-    const currentIndex = currentPath.at(-1)!;
+    const currentIndex = getDefined(currentPath.at(-1));
 
     if (children) {
       for (let index = currentIndex - 1; index >= 0; index -= 1) {

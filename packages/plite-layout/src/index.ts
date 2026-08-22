@@ -22,7 +22,7 @@ import {
   type Text,
   type Value,
 } from '@platejs/plite';
-import { toInternalRoot } from '@platejs/plite/internal';
+import { failInvariant, toInternalRoot } from '@platejs/plite/internal';
 
 import {
   connectLayoutRuntime,
@@ -984,8 +984,8 @@ export const getPlitePageLayoutGeometry = (
 
   if (pageLayoutMode === 'spread') {
     const rows = Math.ceil(pages.length / 2);
-    const rowTops: number[] = new Array(rows).fill(0);
-    const rowWidths: number[] = new Array(rows).fill(0);
+    const rowTops = Array.from({ length: rows }, () => 0);
+    const rowWidths = Array.from({ length: rows }, () => 0);
     let height = 0;
 
     for (let row = 0; row < rows; row++) {
@@ -1041,7 +1041,7 @@ const compareLayoutPaths = (left: Path, right: Path): number => {
 
   for (let index = 0; index < length; index++) {
     if (left[index] !== right[index]) {
-      return left[index]! < right[index]! ? -1 : 1;
+      return left[index] < right[index] ? -1 : 1;
     }
   }
 
@@ -1256,8 +1256,11 @@ export const getPlitePageLayoutProjection = (
 export const getPlitePageLayoutDecorations = <TData = unknown>(
   projection: PlitePageLayoutProjection,
   options: PlitePageLayoutDecorationOptions<TData> = {}
-): Map<string, PlitePageLayoutDecoration<TData>[]> => {
-  const decorations = new Map<string, PlitePageLayoutDecoration<TData>[]>();
+): Map<string, Array<PlitePageLayoutDecoration<TData>>> => {
+  const decorations = new Map<
+    string,
+    Array<PlitePageLayoutDecoration<TData>>
+  >();
   const blockByIndex = new Map(
     projection.blocks.map((block) => [block.blockIndex, block])
   );
@@ -1565,11 +1568,9 @@ const projectRangeThroughRuns = (
 };
 
 const getFirstLeaf = (element: Element): Text => {
-  for (const [leaf] of NodeApi.texts(element)) {
-    return leaf;
-  }
+  const [entry] = NodeApi.texts(element);
 
-  return { text: '' };
+  return entry?.[0] ?? { text: '' };
 };
 
 const getBlockStyle = (
@@ -1690,7 +1691,7 @@ const createLayoutBoxes = (
         ),
       ];
     }
-    case 'image':
+    case 'image': {
       return [
         createBox({
           height: lineHeight,
@@ -1699,9 +1700,11 @@ const createLayoutBoxes = (
           split: 'avoid',
         }),
       ];
-    case 'table':
+    }
+    case 'table': {
       return createTableLayoutBoxes(element, path);
-    case 'thematic-break':
+    }
+    case 'thematic-break': {
       return [
         createBox({
           height: lineHeight,
@@ -1710,8 +1713,10 @@ const createLayoutBoxes = (
           split: 'avoid',
         }),
       ];
-    default:
+    }
+    default: {
       return [];
+    }
   }
 };
 
@@ -2318,7 +2323,7 @@ const remapPretextMeasuredRun = (
   block: PlitePageLayoutBlock,
   measuredBlock: PlitePageLayoutMeasuredBlock
 ): PlitePageLayoutPlacedRun => {
-  const runPath = (run as PlitePageLayoutPlacedRun & { path?: Path }).path;
+  const runPath = run.path;
   const matchingRun = block.runs?.find(
     (blockRun) =>
       Array.isArray(blockRun.path) &&
@@ -2657,7 +2662,7 @@ export const pretextPageLayoutEngine = ({
     line: Omit<PlitePageLayoutMeasuredLine, 'runs'>
   ): PlitePageLayoutMeasuredLine => {
     if (block.runs?.length === 1) {
-      const run = block.runs[0]!;
+      const run = block.runs[0];
       const lineEnd =
         line.end === line.start && line.text.length > 0
           ? line.start + line.text.length
@@ -2696,7 +2701,9 @@ export const pretextPageLayoutEngine = ({
       return line;
     }
 
-    const width = runs.at(-1)!.left + runs.at(-1)!.width;
+    const width =
+      (runs.at(-1) ?? failInvariant('Expected value to be defined')).left +
+      (runs.at(-1) ?? failInvariant('Expected value to be defined')).width;
 
     return {
       ...line,
@@ -2900,17 +2907,17 @@ export const paginatePlitePageLayoutBlocks = ({
       let fragmentIndex = 0;
 
       while (consumedUnits < block.units.length) {
-        const page = pages[pageIndex]!;
-        const pageBottom = page.content.top + page.content.height;
+        const innerPage = pages[pageIndex];
+        const pageBottom = innerPage.content.top + innerPage.content.height;
         const fragmentTop = cursorTop;
         const fragmentUnits: PlitePageLayoutUnit[] = [];
         let fragmentHeight = 0;
 
         while (consumedUnits < block.units.length) {
-          const unit = block.units[consumedUnits]!;
+          const unit = block.units[consumedUnits];
           const unitHeight = Math.max(0, unit.rect.height);
           const remainingPageHeight = Math.max(0, pageBottom - cursorTop);
-          const pageIsEmpty = cursorTop === page.content.top;
+          const pageIsEmpty = cursorTop === innerPage.content.top;
 
           if (unitHeight > remainingPageHeight && !pageIsEmpty) {
             break;
@@ -2926,7 +2933,7 @@ export const paginatePlitePageLayoutBlocks = ({
           });
           fragmentHeight += unitHeight;
           cursorTop += unitHeight;
-          consumedUnits++;
+          consumedUnits += 1;
 
           if (unitHeight > remainingPageHeight && pageIsEmpty) {
             break;
@@ -2934,9 +2941,9 @@ export const paginatePlitePageLayoutBlocks = ({
         }
 
         if (fragmentUnits.length === 0) {
-          pageIndex++;
+          pageIndex += 1;
           pages[pageIndex] = createPlitePage(settings, pageIndex);
-          cursorTop = pages[pageIndex]!.content.top;
+          cursorTop = pages[pageIndex].content.top;
           continue;
         }
 
@@ -2957,12 +2964,12 @@ export const paginatePlitePageLayoutBlocks = ({
           units: fragmentUnits,
         });
         cursorTop += isLastFragment ? block.spacingAfter : 0;
-        fragmentIndex++;
+        fragmentIndex += 1;
 
         if (consumedUnits < block.units.length) {
-          pageIndex++;
+          pageIndex += 1;
           pages[pageIndex] = createPlitePage(settings, pageIndex);
-          cursorTop = pages[pageIndex]!.content.top;
+          cursorTop = pages[pageIndex].content.top;
         }
       }
 
@@ -2971,13 +2978,15 @@ export const paginatePlitePageLayoutBlocks = ({
 
     const measuredLines = createEstimatedLines(block);
     const lineTotal = Math.max(block.lineCount, measuredLines.length);
-    const page = pages[pageIndex]!;
+    const innerPage = pages[pageIndex];
     const blockContentHeight = lineTotal * block.lineHeight;
     const blockHeight = blockContentHeight + block.spacingAfter;
     const avoidSplitHeight =
-      blockHeight <= page.content.height ? blockHeight : blockContentHeight;
+      blockHeight <= innerPage.content.height
+        ? blockHeight
+        : blockContentHeight;
     const avoidsSplit =
-      avoidSplitHeight <= page.content.height &&
+      avoidSplitHeight <= innerPage.content.height &&
       block.boxes?.some(
         (box) =>
           box.split === 'avoid' &&
@@ -2985,14 +2994,14 @@ export const paginatePlitePageLayoutBlocks = ({
             getPlitePageLayoutPathKey(block.path)
       );
 
-    if (avoidsSplit && cursorTop !== page.content.top) {
-      const pageBottom = page.content.top + page.content.height;
+    if (avoidsSplit && cursorTop !== innerPage.content.top) {
+      const pageBottom = innerPage.content.top + innerPage.content.height;
       const remainingPageHeight = Math.max(0, pageBottom - cursorTop);
 
       if (avoidSplitHeight > remainingPageHeight) {
-        pageIndex++;
+        pageIndex += 1;
         pages[pageIndex] = createPlitePage(settings, pageIndex);
-        cursorTop = pages[pageIndex]!.content.top;
+        cursorTop = pages[pageIndex].content.top;
       }
     }
 
@@ -3001,18 +3010,21 @@ export const paginatePlitePageLayoutBlocks = ({
     let fragmentIndex = 0;
 
     while (remainingLines > 0) {
-      const page = pages[pageIndex]!;
-      const pageBottom = page.content.top + page.content.height;
+      const innerPage2 = pages[pageIndex];
+      const pageBottom = innerPage2.content.top + innerPage2.content.height;
       const remainingPageHeight = Math.max(0, pageBottom - cursorTop);
       const availableLines =
-        cursorTop === page.content.top
-          ? Math.max(1, Math.floor(page.content.height / block.lineHeight))
+        cursorTop === innerPage2.content.top
+          ? Math.max(
+              1,
+              Math.floor(innerPage2.content.height / block.lineHeight)
+            )
           : Math.floor(remainingPageHeight / block.lineHeight);
 
       if (availableLines <= 0) {
-        pageIndex++;
+        pageIndex += 1;
         pages[pageIndex] = createPlitePage(settings, pageIndex);
-        cursorTop = pages[pageIndex]!.content.top;
+        cursorTop = pages[pageIndex].content.top;
         continue;
       }
 
@@ -3042,12 +3054,12 @@ export const paginatePlitePageLayoutBlocks = ({
       cursorTop += height;
       consumedLines += lineCount;
       remainingLines -= lineCount;
-      fragmentIndex++;
+      fragmentIndex += 1;
 
       if (remainingLines > 0) {
-        pageIndex++;
+        pageIndex += 1;
         pages[pageIndex] = createPlitePage(settings, pageIndex);
-        cursorTop = pages[pageIndex]!.content.top;
+        cursorTop = pages[pageIndex].content.top;
       }
     }
   });
@@ -3121,8 +3133,8 @@ export const createPlitePageLayout = <
       editor.update((tx) => {
         tx.setField(write.source, write.snapshot);
       });
-    } catch (cause) {
-      reportError(write.options, 'page-break-write', write.reason, cause);
+    } catch (error) {
+      reportError(write.options, 'page-break-write', write.reason, error);
     }
   };
 
@@ -3133,8 +3145,8 @@ export const createPlitePageLayout = <
     for (const listener of listeners) {
       try {
         listener();
-      } catch (cause) {
-        reportError(currentOptions, 'notify', reason, cause);
+      } catch (error) {
+        reportError(currentOptions, 'notify', reason, error);
       }
     }
   };
@@ -3286,7 +3298,9 @@ export const createPlitePageLayout = <
     options = currentOptions;
     snapshot = nextSnapshot;
     metrics = nextMetrics;
-    profileLayoutDuration('notify', () => notify(currentOptions, reason));
+    profileLayoutDuration('notify', () => {
+      notify(currentOptions, reason);
+    });
 
     pendingPageBreakWrite =
       pageBreakResult.pageBreakSnapshotWriteSource &&
@@ -3392,7 +3406,7 @@ export const createPlitePageLayout = <
   const connect = () => {
     if (destroyed) return () => {};
 
-    activeConnections++;
+    activeConnections += 1;
 
     if (activeConnections === 1) {
       unsubscribeEditor = subscribeToEditor();
@@ -3414,7 +3428,7 @@ export const createPlitePageLayout = <
 
       if (destroyed) return;
 
-      activeConnections--;
+      activeConnections -= 1;
 
       if (activeConnections === 0) {
         cancelScheduledRefresh();
@@ -3445,14 +3459,18 @@ export const createPlitePageLayout = <
     getSnapshot() {
       return snapshot;
     },
-    projectRange(range, options) {
-      const rangeRoot = resolveProjectionRoot(range, snapshot.root, options);
+    projectRange(range, innerOptions) {
+      const rangeRoot = resolveProjectionRoot(
+        range,
+        snapshot.root,
+        innerOptions
+      );
 
       if (rangeRoot !== snapshot.root) {
         return [];
       }
 
-      const geometry = getPlitePageLayoutGeometry(snapshot.pages, options);
+      const geometry = getPlitePageLayoutGeometry(snapshot.pages, innerOptions);
       const projection = getPlitePageLayoutProjection(snapshot, {
         geometry,
         hitTesting: false,

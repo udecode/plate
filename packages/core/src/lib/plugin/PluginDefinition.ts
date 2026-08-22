@@ -17,7 +17,6 @@ import type {
   SchemaProperty,
   SchemaPropertyDefinition,
   SchemaPropertyHandle,
-  SchemaPropertyKey,
   SchemaTextPropertyOptions,
   SelectionValue,
   Text,
@@ -59,12 +58,12 @@ export type BasePluginDefinition = Readonly<{
   api?: object;
   codecs?: true;
   commands?: true;
-  conflicts?: readonly (EditorExtensionReference | PluginReference)[];
+  conflicts?: ReadonlyArray<EditorExtensionReference | PluginReference>;
   contributions?: true;
   corrections?: true;
   /** Exact transient payload merged into leaves by this plugin's decorator. */
   decorate?: object;
-  dependencies?: readonly (EditorExtensionReference | PluginReference)[];
+  dependencies?: ReadonlyArray<EditorExtensionReference | PluginReference>;
   editOnly?: true;
   effectTypes?: true;
   enabled?: boolean;
@@ -85,7 +84,7 @@ export type BasePluginDefinition = Readonly<{
   selectors?: object;
   shortcuts?: true;
   stateFields?: true;
-  targetPlugins?: readonly (PluginReference | string)[];
+  targetPlugins?: ReadonlyArray<PluginReference | string>;
   prepareDocument?: true;
   update?: object;
   useHooks?: true;
@@ -154,9 +153,7 @@ export type PluginConsumerSchemaView<
 
 type DynamicPluginAuthorSchemaView = Readonly<{
   key?: string;
-  properties?: Readonly<
-    Record<string, SchemaPropertyHandle<SchemaPropertyKey>>
-  >;
+  properties?: Readonly<Record<string, SchemaPropertyHandle>>;
   type?: string;
 }>;
 
@@ -229,9 +226,9 @@ export type PluginBase<
   dependencies: InferDependencies<C>;
   inject: Nullable<{
     /** Plugins whose element children are excluded. */
-    excludeBelowPlugins?: readonly (PluginReference | string)[];
+    excludeBelowPlugins?: ReadonlyArray<PluginReference | string>;
     /** Plugins whose elements are excluded. */
-    excludePlugins?: readonly (PluginReference | string)[];
+    excludePlugins?: ReadonlyArray<PluginReference | string>;
     /** Whether to filter blocks */
     isBlock?: boolean;
     /** Whether to filter elements */
@@ -715,30 +712,27 @@ export type InferEnabled<P> = P extends { enabled?: infer E }
 
 export type InferTargetPlugins<P extends AnyBasePluginDefinition> =
   string extends P['name']
-    ? readonly (PluginReference | string)[]
+    ? ReadonlyArray<PluginReference | string>
     : P extends {
-          targetPlugins: infer TPlugins extends readonly (
-            | PluginReference
-            | string
-          )[];
+          targetPlugins: infer TPlugins extends ReadonlyArray<
+            PluginReference | string
+          >;
         }
       ? TPlugins
       : readonly [];
 
 export type InferDependencies<P> = P extends {
-  dependencies?: infer D extends readonly (
-    | EditorExtensionReference
-    | PluginReference
-  )[];
+  dependencies?: infer D extends ReadonlyArray<
+    EditorExtensionReference | PluginReference
+  >;
 }
   ? D
   : readonly [];
 
 export type InferConflicts<P> = P extends {
-  conflicts?: infer D extends readonly (
-    | EditorExtensionReference
-    | PluginReference
-  )[];
+  conflicts?: infer D extends ReadonlyArray<
+    EditorExtensionReference | PluginReference
+  >;
 }
   ? D
   : readonly [];
@@ -787,7 +781,7 @@ export type PluginSelector<
 
 export type PluginSelectors<TState extends object = object> = Record<
   string,
-  PluginSelector<TState, never[], unknown>
+  PluginSelector<TState, never[]>
 >;
 
 type PluginSelectorMethod<TSelector> = TSelector extends (

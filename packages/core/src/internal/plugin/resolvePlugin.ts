@@ -375,7 +375,7 @@ const applyStage = (
   );
   const previousCapabilities = getResolvedPluginCapabilities(plugin);
   let apiContributions = previousCapabilities.api;
-  let nativeSources = previousCapabilities.nativeSources;
+  let { nativeSources } = previousCapabilities;
   let readContributions = previousCapabilities.read;
   let updateContributions = previousCapabilities.update;
 
@@ -497,7 +497,7 @@ const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
   editor: BaseEditor,
   plugin: P
 ): P => {
-  const nodeProps = plugin.inject.nodeProps;
+  const { nodeProps } = plugin.inject;
 
   if (nodeProps?.nodeKey && nodeProps.styleKey === undefined) {
     plugin.inject = {

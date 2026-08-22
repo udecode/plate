@@ -378,7 +378,7 @@ describe('schema', () => {
         ],
         type: 'taskList',
       });
-      expect(Reflect.get(taskList.children[0]!, 'checked')).toBe(false);
+      expect(Reflect.get(taskList.children[0], 'checked')).toBe(false);
     });
 
     it('resolves valid list-item child plugin names', () => {
@@ -2622,8 +2622,8 @@ describe('pasting', () => {
           editor.install(
             defineExtension(`list-root-delegation-${openDepth}`, {
               commands: ({ handle }) => [
-                handle(editorCommands.replaceSlice, ({ input }) => {
-                  seen.push(input.slice);
+                handle(editorCommands.replaceSlice, ({ input: innerInput }) => {
+                  seen.push(innerInput.slice);
 
                   return false;
                 }),

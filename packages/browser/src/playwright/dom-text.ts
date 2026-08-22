@@ -99,15 +99,15 @@ export const normalizeHtml = async (
       const container = element.ownerDocument.createElement('div');
       container.innerHTML = nextMarkup;
 
-      for (const element of Array.from(container.querySelectorAll('*'))) {
+      for (const innerElement of Array.from(container.querySelectorAll('*'))) {
         if (options.ignoreClasses) {
-          element.removeAttribute('class');
+          innerElement.removeAttribute('class');
         }
         if (options.ignoreInlineStyles) {
-          element.removeAttribute('style');
+          innerElement.removeAttribute('style');
         }
         if (options.ignoreDir) {
-          element.removeAttribute('dir');
+          innerElement.removeAttribute('dir');
         }
       }
 

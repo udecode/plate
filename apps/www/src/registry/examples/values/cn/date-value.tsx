@@ -1,12 +1,13 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
 const today = new Date().toISOString().split('T')[0];
 
-export const dateValue = (
+export const dateValue: Value = (
   <fragment>
     <hheading level={2}>日期</hheading>
     <hp>

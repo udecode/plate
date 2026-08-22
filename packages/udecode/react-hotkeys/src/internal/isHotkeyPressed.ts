@@ -54,9 +54,9 @@ export function pushToCurrentlyPressedKeys(key: string[] | string): void {
   Otherwise the set will hold all ever pressed keys while the meta key is down which leads to wrong results.
    */
   if (currentlyPressedKeys.has('meta')) {
-    for (const key of currentlyPressedKeys) {
-      if (!isHotkeyModifier(key)) {
-        currentlyPressedKeys.delete(key.toLowerCase());
+    for (const innerKey of currentlyPressedKeys) {
+      if (!isHotkeyModifier(innerKey)) {
+        currentlyPressedKeys.delete(innerKey.toLowerCase());
       }
     }
   }

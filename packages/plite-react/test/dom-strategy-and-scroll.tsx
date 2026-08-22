@@ -305,7 +305,7 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
         {
           type: 'paragraph',
           children: [{ text: 'replacement tail' }],
-        } as Descendant,
+        },
         { at: [7] }
       );
     });
@@ -756,7 +756,7 @@ test('Editable domStrategy experimental virtualized mode materializes layout-bac
     expect(
       DOMCoverage.materializeBoundary(
         editor,
-        boundary!.boundaryId,
+        boundary.boundaryId,
         'selection',
         {
           range: targetRange,
@@ -857,7 +857,7 @@ test('Editable domStrategy experimental virtualized mode materializes estimated 
     expect(
       DOMCoverage.materializeBoundary(
         editor,
-        boundary!.boundaryId,
+        boundary.boundaryId,
         'selection',
         {
           range: targetRange,
@@ -2347,7 +2347,7 @@ test('Editable staged materializes pending root groups through DOM coverage', as
 
   await act(async () => {
     expect(
-      DOMCoverage.materializeBoundary(editor, boundary!.boundaryId, 'selection')
+      DOMCoverage.materializeBoundary(editor, boundary.boundaryId, 'selection')
     ).toMatchObject({ status: 'handled' });
   });
 

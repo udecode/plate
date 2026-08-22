@@ -58,7 +58,7 @@ describe('plite-react editable behavior', () => {
     expect(editable).toBeInstanceOf(HTMLElement);
     expect((editable as HTMLElement).style.position).toBe('relative');
     expect((editable as HTMLElement).style.whiteSpace).toBe('pre-wrap');
-    expect((editable as HTMLElement).style.wordWrap).toBe('break-word');
+    expect((editable as HTMLElement).style.overflowWrap).toBe('break-word');
     expect((editable as HTMLElement).style.zIndex).toBe('0');
     expect(editable).not.toHaveAttribute('zindex');
   });
@@ -94,7 +94,7 @@ describe('plite-react editable behavior', () => {
     expect(editable).toBeInstanceOf(HTMLElement);
     expect((editable as HTMLElement).style.position).toBe('');
     expect((editable as HTMLElement).style.whiteSpace).toBe('');
-    expect((editable as HTMLElement).style.wordWrap).toBe('');
+    expect((editable as HTMLElement).style.overflowWrap).toBe('');
     expect((editable as HTMLElement).style.zIndex).toBe('');
   });
 
@@ -232,7 +232,7 @@ describe('plite-react editable behavior', () => {
     const onCommit = jest.fn();
     const onKeyDown = jest.fn((event, context) => {
       if (event.key !== 'x') {
-        return;
+        return undefined;
       }
 
       context.editor.update((tx) => {
@@ -281,7 +281,7 @@ describe('plite-react editable behavior', () => {
     const editor = createReactEditor({ initialValue });
     const onDOMBeforeInput = jest.fn((event, context) => {
       if (event.inputType !== 'formatBold') {
-        return;
+        return undefined;
       }
 
       expect(context.editor).toBe(editor);

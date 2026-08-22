@@ -173,6 +173,8 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         tx.fragment.replace(
           editor.api.markdown.deserializeInline(suggestionText)
         );
+
+        return undefined;
       },
       acceptNextWord: () => {
         const { getNextWord, suggestionNodeKey, suggestionText } = store.get();
@@ -189,6 +191,8 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
           text: remainingText,
         });
         tx.fragment.replace(editor.api.markdown.deserializeInline(firstWord));
+
+        return undefined;
       },
       reject: () => {
         const { abortController, suggestionText } = store.get();
@@ -203,6 +207,8 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
           store.set({ abortController: null });
           store.set({ completion: null });
         });
+
+        return undefined;
       },
       setBlockSuggestion: ({
         key = store.get().suggestionNodeKey,
@@ -257,13 +263,32 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         context.store.set({ abortController });
         context.store.set({ completion: '' });
 
+        const requestHeaders: Record<string, string> = {};
+
+        if (headers instanceof Headers) {
+          headers.forEach((value, key) => {
+            requestHeaders[key] = value;
+          });
+        } else if (Array.isArray(headers)) {
+          for (const [key, value] of headers) {
+            requestHeaders[key] = value;
+          }
+        } else if (headers) {
+          Object.assign(requestHeaders, headers);
+        }
+
+        if (
+          !Object.keys(requestHeaders).some(
+            (key) => key.toLowerCase() === 'content-type'
+          )
+        ) {
+          requestHeaders['Content-Type'] = 'application/json';
+        }
+
         const response = await fetcher(api, {
           body: JSON.stringify({ prompt, ...body }),
           credentials,
-          headers: {
-            'Content-Type': 'application/json',
-            ...headers,
-          },
+          headers: requestHeaders,
           method: 'POST',
           signal: abortController.signal,
         });
@@ -291,7 +316,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
             'text' in payload &&
             typeof payload.text === 'string'
           ) {
-            text = payload.text;
+            ({ text } = payload);
             context.store.set({ completion: text });
           }
         } else {
@@ -337,6 +362,8 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       } finally {
         context.store.set({ isLoading: false });
       }
+
+      return undefined;
     };
     async function triggerImmediately() {
       const { completeOptions, getPrompt, isLoading, triggerQuery } =
@@ -371,10 +398,10 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
 
       stop();
 
-      const headers = completeOptions.headers;
+      const { headers } = completeOptions;
       const isHeaderTupleList = (
         value: unknown
-      ): value is readonly (readonly [string, string])[] =>
+      ): value is ReadonlyArray<readonly [string, string]> =>
         Array.isArray(value);
 
       await callCompletion({
@@ -397,6 +424,8 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
           completeOptions.onFinish?.(sourcePrompt, completion);
         },
       });
+
+      return undefined;
     }
 
     debouncedTrigger = context.store.get().debounceDelay
@@ -418,7 +447,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         belowNodes: () => {
           const GhostText = context.store.get().renderGhostText;
 
-          if (!GhostText) return;
+          if (!GhostText) return undefined;
 
           return ({ children }) => (
             <>
@@ -494,7 +523,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       },
       commands: ({ around }) => [
         around(editorCommands.insertText, ({ input, state, next }) => {
-          const suggestionText = context.store.get().suggestionText;
+          const { suggestionText } = context.store.get();
 
           if (!suggestionText?.startsWith(input.text)) return next();
 

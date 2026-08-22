@@ -57,10 +57,10 @@ describe('useTableSelectionDOM', () => {
     table.innerHTML = `
       <tbody>
         <tr>
-          <td data-table-cell-key="${cellKeys.c1}"></td>
-          <td data-table-cell-key="${cellKeys.c2}"></td>
-          <td data-table-cell-key="${cellKeys.c3}"></td>
-          <td data-table-cell-key="${cellKeys.c4}"></td>
+          <td data-plite-node-key="${cellKeys.c1}"></td>
+          <td data-plite-node-key="${cellKeys.c2}"></td>
+          <td data-plite-node-key="${cellKeys.c3}"></td>
+          <td data-plite-node-key="${cellKeys.c4}"></td>
         </tr>
       </tbody>
     `;
@@ -69,10 +69,10 @@ describe('useTableSelectionDOM', () => {
     const cells = Object.fromEntries(
       Object.entries(cellKeys).map(([name, key]) => {
         const cell = table.querySelector<HTMLElement>(
-          `[data-table-cell-key="${key}"]`
+          `[data-plite-node-key="${key}"]`
         );
 
-        assert(cell);
+        assert.ok(cell);
 
         return [name, cell];
       })
@@ -109,14 +109,14 @@ describe('useTableSelectionDOM', () => {
     const anchor = editor.read.points.start([0, 0, 1]);
     const focus = editor.read.points.end([0, 0, 2]);
 
-    assert(anchor);
-    assert(focus);
+    assert.ok(anchor);
+    assert.ok(focus);
 
     const selection = editor
       .plugin(TablePlugin)
       .read.createCellSelection({ anchor, focus });
 
-    assert(selection);
+    assert.ok(selection);
 
     act(() => {
       editor.update.selection.set(selection);
@@ -140,7 +140,7 @@ describe('useTableSelectionDOM', () => {
       .plugin(TablePlugin)
       .read.createCellSelection({ anchor: focus, focus: anchor });
 
-    assert(backwardSelection);
+    assert.ok(backwardSelection);
 
     act(() => {
       editor.update.selection.set(backwardSelection);

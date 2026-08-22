@@ -1,6 +1,6 @@
 import type { Path } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import type React from 'react';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';

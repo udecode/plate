@@ -94,11 +94,11 @@ const createGenericSelectorStore = <T,>(
           selectedState: newSelectedState,
           subscriptionCallbackError: undefined,
         };
-      } catch (err) {
+      } catch (error) {
         committed = {
           ...committed,
           subscriptionCallbackError:
-            err instanceof Error ? err : new Error(String(err)),
+            error instanceof Error ? error : new Error(String(error)),
         };
       }
 
@@ -136,12 +136,12 @@ export function useGenericSelector<T>(
     } else {
       selectedState = committed.selectedState as T;
     }
-  } catch (err) {
-    if (committed.subscriptionCallbackError && isError(err)) {
-      err.message += `\nThe error may be correlated with this previous error:\n${committed.subscriptionCallbackError.stack}\n\n`;
+  } catch (error) {
+    if (committed.subscriptionCallbackError && isError(error)) {
+      error.message += `\nThe error may be correlated with this previous error:\n${committed.subscriptionCallbackError.stack}\n\n`;
     }
 
-    throw err;
+    throw error;
   }
 
   useIsomorphicLayoutEffect(() => {

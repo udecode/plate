@@ -1,3 +1,5 @@
+import { failInvariant } from '@platejs/plite/internal';
+
 import type { AnyBasePlugin } from '../../lib/plugin';
 import {
   type CompiledPlateModelBinding,
@@ -36,7 +38,10 @@ const getTargetPlugin = (
     );
   }
 
-  return getCompiledPlatePlugin(editor, target.name)!;
+  return (
+    getCompiledPlatePlugin(editor, target.name) ??
+    failInvariant('Expected value to be defined')
+  );
 };
 
 const collect = (editor: object) => {
@@ -44,7 +49,7 @@ const collect = (editor: object) => {
 
   getPlateRuntime(editor).pluginList.forEach((owner) => {
     if (!isRecord(owner.codecs)) return;
-    const codecs = owner.codecs;
+    const { codecs } = owner;
 
     Object.entries(codecs).forEach(([format, value]) => {
       const declarations = Array.isArray(value) ? value : [value];

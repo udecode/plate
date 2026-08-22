@@ -203,7 +203,9 @@ const SchemaControls = () => {
           <button
             className="rounded border px-3 py-1"
             key={profile}
-            onClick={() => applyProfile(profile)}
+            onClick={() => {
+              applyProfile(profile);
+            }}
             type="button"
           >
             {label}

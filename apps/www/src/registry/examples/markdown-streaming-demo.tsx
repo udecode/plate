@@ -350,7 +350,9 @@ export default function MarkdownStreamingDemo() {
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
       while (pausedRef.current) {
         if (sessionId !== streamSessionRef.current) return;
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 100);
+        });
       }
 
       if (sessionId !== streamSessionRef.current) return;
@@ -365,14 +367,21 @@ export default function MarkdownStreamingDemo() {
         },
       });
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, speed ?? chunk.delayInMs)
-      );
+      await new Promise((resolve) => {
+        setTimeout(resolve, speed ?? chunk.delayInMs);
+      });
 
       if (sessionId !== streamSessionRef.current) return;
     }
     setStreaming(false);
-  }, [editor, transformedCurrentChunks, speed, setPausedState]);
+  }, [
+    aiChat.store,
+    aiChat.update,
+    editor,
+    setPausedState,
+    speed,
+    transformedCurrentChunks,
+  ]);
 
   const onStreamingStatic = useCallback(async () => {
     let output = '';
@@ -384,7 +393,9 @@ export default function MarkdownStreamingDemo() {
     for (const chunk of transformedCurrentChunks) {
       while (pausedRef.current) {
         if (sessionId !== streamSessionRef.current) return;
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 100);
+        });
       }
 
       if (sessionId !== streamSessionRef.current) return;
@@ -395,9 +406,9 @@ export default function MarkdownStreamingDemo() {
       );
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
-      await new Promise((resolve) =>
-        setTimeout(resolve, speed ?? chunk.delayInMs)
-      );
+      await new Promise((resolve) => {
+        setTimeout(resolve, speed ?? chunk.delayInMs);
+      });
     }
     setStreaming(false);
   }, [editorStatic, speed, transformedCurrentChunks, setPausedState]);
@@ -417,8 +428,9 @@ export default function MarkdownStreamingDemo() {
 
   const onNavigate = (targetIndex: number) => {
     // Check if navigation is possible
-    if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length)
+    if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length) {
       return;
+    }
 
     if (isPlateStatic) {
       let output = '';
@@ -449,8 +461,12 @@ export default function MarkdownStreamingDemo() {
     }
   };
 
-  const onPrev = () => onNavigate(activeIndex - 1);
-  const onNext = () => onNavigate(activeIndex + 1);
+  const onPrev = () => {
+    onNavigate(activeIndex - 1);
+  };
+  const onNext = () => {
+    onNavigate(activeIndex + 1);
+  };
 
   return (
     <section className="h-full overflow-y-auto p-20">
@@ -488,9 +504,9 @@ export default function MarkdownStreamingDemo() {
               if (streaming) {
                 setPausedState(!pausedRef.current);
               } else if (isPlateStatic) {
-                onStreamingStatic();
+                void onStreamingStatic();
               } else {
-                onStreaming();
+                void onStreaming();
               }
             }}
           >
@@ -501,7 +517,11 @@ export default function MarkdownStreamingDemo() {
             <ChevronLastIcon />
           </Button>
 
-          <Button onClick={() => onReset()}>
+          <Button
+            onClick={() => {
+              onReset();
+            }}
+          >
             <RotateCcwIcon />
           </Button>
 
@@ -520,11 +540,11 @@ export default function MarkdownStreamingDemo() {
           <select
             className="rounded border px-2 py-1"
             value={speed ?? 'default'}
-            onChange={(e) =>
+            onChange={(e) => {
               setSpeed(
                 e.target.value === 'default' ? null : Number(e.target.value)
-              )
-            }
+              );
+            }}
           >
             {['default', 10, 100, 200].map((ms) => (
               <option key={ms} value={ms}>
@@ -622,16 +642,16 @@ export default function MarkdownStreamingDemo() {
 }
 
 type TChunks = {
-  chunks: {
+  chunks: Array<{
     index: number;
     text: string;
-  }[];
+  }>;
   linebreaks: number;
 };
 
 function splitChunksByLinebreak(chunks: string[]) {
   const result: TChunks[] = [];
-  let current: { index: number; text: string }[] = [];
+  let current: Array<{ index: number; text: string }> = [];
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
@@ -690,24 +710,24 @@ const Tokens = ({
     className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
     {...props}
   >
-    {chunks.map((chunk, index) => (
-      <div key={index} className="py-1">
-        {chunk.chunks.map((c, j) => {
+    {chunks.map((chunk) => (
+      <div key={chunk.chunks[0]?.index ?? 'empty'} className="py-1">
+        {chunk.chunks.map((c) => {
           const lineBreak = c.text.replaceAll('\n', '⤶');
           const space = lineBreak.replaceAll(' ', '␣');
 
           return (
-            <span
-              key={j}
-              role="button"
+            <button
+              key={c.index}
               className={cn(
                 'mx-1 inline-block rounded border p-1',
                 activeIndex && c.index < activeIndex && 'bg-amber-400'
               )}
               onClick={() => chunkClick?.(c.index + 1)}
+              type="button"
             >
               {space}
-            </span>
+            </button>
           );
         })}
       </div>

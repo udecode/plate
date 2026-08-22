@@ -412,7 +412,7 @@ describe('projected editable commands', () => {
         contributions: [
           clipboardHandler({
             insertData() {
-              insertCount++;
+              insertCount += 1;
 
               return false;
             },
@@ -537,7 +537,7 @@ describe('projected editable commands', () => {
         contributions: [
           clipboardHandler({
             insertData(_data, { tx }) {
-              insertCount++;
+              insertCount += 1;
               tx.text.insert('H');
 
               return true;
@@ -578,7 +578,7 @@ describe('projected editable commands', () => {
         contributions: [
           clipboardHandler({
             insertData(_data, { tx }) {
-              insertCount++;
+              insertCount += 1;
               tx.text.insert('H');
 
               return true;
@@ -1404,7 +1404,7 @@ describe('projected editable commands', () => {
       editor,
     });
 
-    const events: { id?: string | null }[] = [];
+    const events: Array<{ id?: string | null }> = [];
     const target = globalThis as typeof globalThis & {
       __PLITE_REACT_RENDER_PROFILER__?: {
         record: (event: { id?: string | null }) => void;

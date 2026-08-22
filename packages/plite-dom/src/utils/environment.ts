@@ -18,7 +18,6 @@ export type ResolvedDOMRootFacts = Readonly<{
 export type DOMRootFactOverrides = Partial<ResolvedDOMRootFacts>;
 
 const APPLE_PLATFORM_RE = /Mac|iPad|iPhone|iPod/;
-const APPLE_USER_AGENT_RE = /Mac OS X/;
 const ANDROID_USER_AGENT_RE = /\bAndroid\b/i;
 const BLINK_USER_AGENT_RE =
   /\b(?:Chrome|Chromium|CriOS|Edg|EdgA|EdgiOS|OPR|UCBrowser)\//i;
@@ -89,8 +88,7 @@ const resolveRealmDOMRootFacts = (
     (platformName === 'MacIntel' && (hostNavigator?.maxTouchPoints ?? 0) > 1);
   const platform: DOMRootPlatform = isAndroid
     ? 'android'
-    : APPLE_PLATFORM_RE.test(platformName) ||
-        APPLE_USER_AGENT_RE.test(userAgent)
+    : APPLE_PLATFORM_RE.test(platformName) || userAgent.includes('Mac OS X')
       ? 'apple'
       : 'other';
   const engine: DOMRootEngine = NON_BROWSER_DOM_USER_AGENT_RE.test(userAgent)
@@ -263,6 +261,6 @@ export const hasDOMHostQuirk = (source: unknown, quirk: DOMRootQuirk) =>
 /** True when the current environment exposes the browser DOM APIs Plite needs. */
 export const CAN_USE_DOM = !!(
   typeof window !== 'undefined' &&
-  typeof window.document !== 'undefined' &&
-  typeof window.document.createElement !== 'undefined'
+  window.document !== undefined &&
+  'createElement' in window.document
 );

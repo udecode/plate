@@ -63,7 +63,7 @@ export const countChangedTopLevelChildren = (
   let changed = 0;
 
   for (let index = 0; index < length; index++) {
-    if (!areJsonLikeValuesEqual(before[index], after[index])) changed++;
+    if (!areJsonLikeValuesEqual(before[index], after[index])) changed += 1;
   }
 
   return changed;
@@ -84,7 +84,7 @@ const findUnchangedPrefix = (
   let index = 0;
 
   while (index < limit && areJsonLikeValuesEqual(before[index], after[index])) {
-    index++;
+    index += 1;
   }
 
   return index;
@@ -102,7 +102,7 @@ const findUnchangedSuffix = (
     count < limit &&
     areJsonLikeValuesEqual(before.at(-1 - count), after.at(-1 - count))
   ) {
-    count++;
+    count += 1;
   }
 
   return count;
@@ -150,7 +150,7 @@ export const reconcileYjsRoot = (
     getYjsVisibleChildren(root, root).length > start
   ) {
     removeYjsChild(root, root, start);
-    removedVisible++;
+    removedVisible += 1;
   }
 
   for (let index = 0; index < inserted; index++) {

@@ -14,7 +14,7 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
 
   const packageRoot = path.resolve(config.cwd ?? process.cwd());
   const onBuildDone = config.hooks?.['build:done'];
-  const suppressWarnings = config.suppressWarnings;
+  const { suppressWarnings } = config;
 
   return {
     clean: true,

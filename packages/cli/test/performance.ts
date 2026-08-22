@@ -55,7 +55,7 @@ try {
 
     const result = await generateEditor(entryPath, { cwd: repoRoot }, session);
     runs.push((performance.now() - start) / 1000);
-    const emittedSchema = JSON.parse(readFileSync(schemaPath, 'utf8')) as {
+    const emittedSchema = JSON.parse(readFileSync(schemaPath, 'utf-8')) as {
       identity?: { version?: number };
     };
 
@@ -69,7 +69,7 @@ try {
     }
   }
   const sorted = [...runs].sort((left, right) => left - right);
-  const p95 = sorted[Math.ceil(sorted.length * 0.95) - 1]!;
+  const p95 = sorted[Math.ceil(sorted.length * 0.95) - 1];
   const typesMtime = statSync(typesPath).mtimeMs;
   const schemaMtime = statSync(schemaPath).mtimeMs;
 

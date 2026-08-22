@@ -198,7 +198,7 @@ describe('Android input manager phase scheduling', () => {
       {} as React.CompositionEvent<HTMLDivElement>
     );
 
-    expect(tasks[0]!.cancel).toHaveBeenCalledTimes(1);
+    expect(tasks[0].cancel).toHaveBeenCalledTimes(1);
   });
 
   it('coalesces action flush latency in the model phase', () => {
@@ -217,8 +217,8 @@ describe('Android input manager phase scheduling', () => {
       },
       phase: 'model',
     });
-    expect(tasks[0]!.cancel).toHaveBeenCalledTimes(1);
-    expect(tasks[1]!.cancel).not.toHaveBeenCalled();
+    expect(tasks[0].cancel).toHaveBeenCalledTimes(1);
+    expect(tasks[1].cancel).not.toHaveBeenCalled();
   });
 
   it('restores placeholder visibility as a scheduled DOM write', () => {
@@ -248,7 +248,7 @@ describe('Android input manager phase scheduling', () => {
       phase: 'dom-write',
     });
 
-    tasks[0]!.callback();
+    tasks[0].callback();
     expect(placeholder.style.display).toBe('');
     EDITOR_TO_PLACEHOLDER_ELEMENT.delete(editor);
   });
@@ -280,7 +280,7 @@ describe('Android input manager phase scheduling', () => {
     EDITOR_TO_PENDING_ACTION.set(editor, { run: vi.fn() });
     manager.flush();
 
-    expect(tasks[0]!.cancel).toHaveBeenCalledTimes(1);
+    expect(tasks[0].cancel).toHaveBeenCalledTimes(1);
     expect(tasks[1]).toMatchObject({
       label: 'android-flushing-reset',
       options: {

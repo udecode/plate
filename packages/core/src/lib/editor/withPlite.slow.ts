@@ -307,7 +307,7 @@ describe('createPlateEditor', () => {
         ],
         plugins: [
           ElementIdPlugin.configure({
-            initialState: { generateId: () => `generated-${++nextId}` },
+            initialState: { generateId: () => `generated-${(nextId += 1)}` },
           }),
         ],
       });
@@ -404,7 +404,7 @@ describe('createPlateEditor', () => {
     it('keeps the plugin capability name available through the transaction portal', () => {
       let calls = 0;
       const Plugin = defineBasePlugin('plugin', {
-        update: () => ({ run: () => calls++ }),
+        update: () => ({ run: () => (calls += 1) - 1 }),
       });
       const editor = createBaseEditor({ plugins: [Plugin] });
 
@@ -661,8 +661,10 @@ describe('createPlateEditor', () => {
       const editor = createBaseEditor({
         editor: createEditor(),
         plugins: [TransformHtmlPlugin, HtmlPlugin],
-        initialValue: ({ editor }) =>
-          editor.plugin(HtmlPlugin).api.deserialize({ element: '<p>html</p>' }),
+        initialValue: ({ editor: innerEditor }) =>
+          innerEditor
+            .plugin(HtmlPlugin)
+            .api.deserialize({ element: '<p>html</p>' }),
       });
 
       expect(transformedInput).toEqual({
@@ -1375,8 +1377,10 @@ describe('createPlateEditor', () => {
       const editor = createBaseEditor({
         editor: createEditor(),
         plugins: [TestBoldPlugin, HtmlPlugin],
-        initialValue: ({ editor }) =>
-          editor.plugin(HtmlPlugin).api.deserialize({ element: htmlString }),
+        initialValue: ({ editor: innerEditor2 }) =>
+          innerEditor2
+            .plugin(HtmlPlugin)
+            .api.deserialize({ element: htmlString }),
       });
 
       expect(editor.read.children()).toEqual([

@@ -3,6 +3,7 @@ import type {
   EditorTargetRuntime,
   Selection,
 } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 
 const TARGET_RUNTIME = new WeakMap<Editor, EditorTargetRuntime>();
 const TARGET_RUNTIME_ACTIVE = new WeakSet<Editor>();
@@ -68,7 +69,7 @@ export const withEditorTargetRuntime = <T>(
     return fn();
   } finally {
     if (hadPreviousRuntime) {
-      TARGET_RUNTIME.set(editor, previousRuntime!);
+      TARGET_RUNTIME.set(editor, getDefined(previousRuntime));
     } else {
       TARGET_RUNTIME.delete(editor);
     }

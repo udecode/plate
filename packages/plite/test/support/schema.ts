@@ -54,4 +54,5 @@ export const defineTestSchema = (
 export const extendTestSchema = (
   editor: Editor,
   elements: Readonly<Record<string, SchemaElementInput>>
-) => editor.install(defineTestSchema(`test-schema-${index++}`, elements));
+) =>
+  editor.install(defineTestSchema(`test-schema-${(index += 1) - 1}`, elements));

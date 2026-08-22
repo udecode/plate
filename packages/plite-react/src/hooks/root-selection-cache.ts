@@ -10,9 +10,7 @@ export const getSelectionRoot = (selection: Selection): RootKey | null => {
     return null;
   }
 
-  return (selection.anchor.root ??
-    selection.focus.root ??
-    MAIN_ROOT_KEY) as RootKey;
+  return selection.anchor.root ?? selection.focus.root ?? MAIN_ROOT_KEY;
 };
 
 export const createRootSelectionCache = () => {

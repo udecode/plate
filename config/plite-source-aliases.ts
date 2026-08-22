@@ -20,11 +20,13 @@ Bun.plugin({
       const sourceEntry = sourceEntryBySpecifier.get(args.path);
 
       if (sourceEntry) return { path: sourceEntry };
+
+      return undefined;
     });
     build.onLoad({ filter: workspaceDistEntryFilter }, (args) => {
       const sourceEntry = sourceEntryByDistEntry.get(args.path);
 
-      if (!sourceEntry) return;
+      if (!sourceEntry) return undefined;
 
       return {
         contents: `export * from ${JSON.stringify(sourceEntry)};`,

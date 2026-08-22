@@ -10,7 +10,7 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 
 const visuallyHiddenStyle: React.CSSProperties = {
   border: 0,
-  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
   height: 1,
   margin: -1,
   overflow: 'hidden',

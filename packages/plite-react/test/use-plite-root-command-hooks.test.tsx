@@ -15,7 +15,7 @@ const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
 describe('plite-react root and command hooks', () => {
   test('usePliteRootEffect runs after child layout effects with the committed root editor', () => {
     const editor = createReactEditor({ initialValue });
-    const calls: { childLayoutSeen: string | null; root: string }[] = [];
+    const calls: Array<{ childLayoutSeen: string | null; root: string }> = [];
 
     const Probe = () => {
       useLayoutEffect(() => {
@@ -55,9 +55,9 @@ describe('plite-react root and command hooks', () => {
         (rootEditor) => {
           calls.push(
             rootEditor.read((state) => {
-              const [firstBlock] = state.nodes.children() as {
-                children: { text: string }[];
-              }[];
+              const [firstBlock] = state.nodes.children() as Array<{
+                children: Array<{ text: string }>;
+              }>;
 
               return firstBlock?.children[0]?.text ?? '';
             })

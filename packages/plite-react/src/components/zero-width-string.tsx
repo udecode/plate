@@ -35,6 +35,7 @@ export const ZeroWidthString = ({
     }
 
     return (
+      // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] This fixed editor marker renders a trusted literal break, not external HTML.
       <span {...attributes} dangerouslySetInnerHTML={{ __html: '<br />' }} />
     );
   }

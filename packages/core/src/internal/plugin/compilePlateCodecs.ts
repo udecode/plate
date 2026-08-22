@@ -7,6 +7,7 @@ import type {
 } from '@platejs/plite-dom';
 import { hostCodecs } from '@platejs/plite-dom';
 import {
+  failInvariant,
   getCompiledSchemaPropertyId,
   reportEditorLifecycleError,
 } from '@platejs/plite/internal';
@@ -48,6 +49,16 @@ const declarationKeys = new Set([
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const formatUnknownValue = (value: unknown): string => {
+  if (typeof value === 'string') return value;
+
+  try {
+    return JSON.stringify(value) ?? typeof value;
+  } catch {
+    return typeof value;
+  }
+};
+
 const getClaims = (
   owner: string,
   scope: unknown,
@@ -58,7 +69,7 @@ const getClaims = (
   }
   if (scope !== undefined) {
     throw new Error(
-      `Plate codec owner "${owner}" has unknown scope "${String(scope)}".`
+      `Plate codec owner "${owner}" has unknown scope "${formatUnknownValue(scope)}".`
     );
   }
 
@@ -181,7 +192,7 @@ const assertPriorityClaims = (
   direction: 'decode' | 'encode'
 ) => {
   for (let index = 0; index < declarations.length; index++) {
-    const left = declarations[index]!;
+    const left = declarations[index];
 
     for (const right of declarations.slice(index + 1)) {
       if (
@@ -233,10 +244,10 @@ const compileFormat = (
               if (declaration.query) {
                 try {
                   if (!declaration.query(context)) continue;
-                } catch (cause) {
+                } catch (error) {
                   reportEditorLifecycleError(
                     Object.freeze({
-                      cause,
+                      cause: error,
                       editor,
                       extensionName: 'plate:codecs',
                       format,
@@ -252,14 +263,17 @@ const compileFormat = (
               let slice: ContentSlice | null;
 
               try {
-                const decoded = declaration.decode!(context);
+                const decoded = (
+                  declaration.decode ??
+                  failInvariant('Expected value to be defined')
+                )(context);
 
                 slice =
                   decoded === null ? null : ContentSlice.fromJSON(decoded);
-              } catch (cause) {
+              } catch (error) {
                 reportEditorLifecycleError(
                   Object.freeze({
-                    cause,
+                    cause: error,
                     editor,
                     extensionName: 'plate:codecs',
                     format,
@@ -285,11 +299,14 @@ const compileFormat = (
               let data: string | null;
 
               try {
-                data = declaration.encode!(context);
-              } catch (cause) {
+                data = (
+                  declaration.encode ??
+                  failInvariant('Expected value to be defined')
+                )(context);
+              } catch (error) {
                 reportEditorLifecycleError(
                   Object.freeze({
-                    cause,
+                    cause: error,
                     editor,
                     extensionName: 'plate:codecs',
                     format,
@@ -318,7 +335,7 @@ export const compilePlateCodecs = (
 ) => {
   const declarations = plugins.flatMap((plugin) => {
     if (!isRecord(plugin.codecs)) return [];
-    const codecs = plugin.codecs;
+    const { codecs } = plugin;
 
     return Object.entries(codecs).flatMap(([format, declaration]) => {
       if (format.trim().toLowerCase() === 'text/html') {

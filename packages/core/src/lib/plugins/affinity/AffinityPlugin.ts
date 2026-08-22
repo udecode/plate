@@ -12,6 +12,7 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
+import { failInvariant } from '@platejs/plite/internal';
 import isEqual from 'lodash/isEqual.js';
 
 import {
@@ -131,7 +132,10 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
     }
 
     const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
-      ? [parent!, PathApi.parent(cursor.path)]
+      ? [
+          parent ?? failInvariant('Expected value to be defined'),
+          PathApi.parent(cursor.path),
+        ]
       : [currentNode as Element | Text, cursor.path];
 
     if (
@@ -192,7 +196,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
     state: Pick<EditorStateView, 'marks' | 'selection'>
   ): 'backward' | 'forward' | undefined => {
     const selection = state.selection();
-    if (!selection) return;
+    if (!selection) return undefined;
 
     const currentMarks = state.marks();
     const boundaryMarks =
@@ -214,7 +218,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
         return leafEntry === backwardLeafEntry ? 'backward' : 'forward';
       }
 
-      return;
+      return undefined;
     }
 
     const marksDirection: 'backward' | 'forward' | null = boundaryMarks

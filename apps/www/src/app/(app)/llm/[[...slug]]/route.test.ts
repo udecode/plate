@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/await-thenable -- [P0 matcher-types] Bun's matcher declaration omits the runtime Promise returned by resolves/rejects. */
 import { describe, expect, it } from 'bun:test';
 
 import { GET } from './route';

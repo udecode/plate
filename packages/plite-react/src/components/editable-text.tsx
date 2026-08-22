@@ -164,7 +164,7 @@ const sameBoundText = (
 export type EditableTextSegment<T = unknown> = {
   end: number;
   marks: Omit<PliteTextNode, 'text'>;
-  slices: readonly PliteProjectionSlice<T>[];
+  slices: ReadonlyArray<PliteProjectionSlice<T>>;
   start: number;
   text: string;
 };
@@ -234,9 +234,9 @@ const RenderSegmentCallback = <T,>({
 
 const splitTextByProjections = <T,>(
   text: string,
-  slices: readonly PliteProjectionSlice<T>[],
+  slices: ReadonlyArray<PliteProjectionSlice<T>>,
   marks: Omit<PliteTextNode, 'text'>
-): EditableTextSegment<T>[] => {
+): Array<EditableTextSegment<T>> => {
   const clampOffset = (offset: number) =>
     Math.max(0, Math.min(text.length, offset));
   const zeroLengthSlices = slices.filter((slice) => slice.start === slice.end);
@@ -270,7 +270,7 @@ const splitTextByProjections = <T,>(
   });
 
   const sorted = Array.from(boundaries).sort((left, right) => left - right);
-  const segments: EditableTextSegment<T>[] = [];
+  const segments: Array<EditableTextSegment<T>> = [];
 
   const pushZeroLengthSegmentsAt = (offset: number) => {
     zeroLengthSlices
@@ -289,8 +289,8 @@ const splitTextByProjections = <T,>(
   pushZeroLengthSegmentsAt(0);
 
   for (let index = 0; index < sorted.length - 1; index += 1) {
-    const start = sorted[index]!;
-    const end = sorted[index + 1]!;
+    const start = sorted[index];
+    const end = sorted[index + 1];
 
     if (start === end) {
       continue;
@@ -365,7 +365,7 @@ const assignRef = (
 };
 
 type RenderEditableTextProps<T> = EditableTextProps<T> & {
-  projections: readonly PliteProjectionSlice<T>[];
+  projections: ReadonlyArray<PliteProjectionSlice<T>>;
   resolvedMarks: Omit<PliteTextNode, 'text'>;
   resolvedText: string;
   renderRevision?: number;
@@ -493,8 +493,14 @@ const RenderEditableText = <T,>({
               : undefined;
           const leafAttributes = getLeafAttributes(leafPosition);
 
+          const segmentKey = JSON.stringify([
+            renderRevision,
+            segment.start,
+            ...segment.slices.map((slice) => slice.key),
+          ]);
+
           return (
-            <React.Fragment key={`${renderRevision}:segment-${index}`}>
+            <React.Fragment key={segmentKey}>
               {renderLeaf ? (
                 <RenderCallback
                   props={{
@@ -552,7 +558,7 @@ const RenderEditableText = <T,>({
               length={zeroWidth?.length}
             />
           );
-          const content = placeholderNode ? (
+          const innerContent = placeholderNode ? (
             <span
               data-plite-placeholder-anchor="true"
               style={PLACEHOLDER_ANCHOR_STYLE}
@@ -574,7 +580,7 @@ const RenderEditableText = <T,>({
             <RenderCallback
               props={{
                 attributes: leafAttributes,
-                children: content,
+                children: innerContent,
                 leaf: leafNode,
                 path,
                 segment: leafSegment,
@@ -583,7 +589,7 @@ const RenderEditableText = <T,>({
               render={renderLeaf}
             />
           ) : (
-            <PliteLeaf>{content}</PliteLeaf>
+            <PliteLeaf>{innerContent}</PliteLeaf>
           );
         })();
 
@@ -730,7 +736,7 @@ const BoundEditableText = <T,>({
   });
   const projections = usePliteProjectionEntries(
     resolvedNodeKey
-  ) as readonly PliteProjectionSlice<T>[];
+  ) as ReadonlyArray<PliteProjectionSlice<T>>;
 
   const combinedRef = useCallback(
     (node: HTMLSpanElement | null) => {
@@ -765,9 +771,9 @@ const ProjectedEditableText = <T,>({
 }: EditableTextProps<T>) => {
   const editor = useEditor();
   const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
-  const projections = usePliteProjectionEntries(
-    nodeKey
-  ) as readonly PliteProjectionSlice<T>[];
+  const projections = usePliteProjectionEntries(nodeKey) as ReadonlyArray<
+    PliteProjectionSlice<T>
+  >;
 
   const combinedRef = useCallback(
     (node: HTMLSpanElement | null) => {

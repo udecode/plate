@@ -59,7 +59,8 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
       findText: string;
     }): Range | null => {
       const [blockNode, blockPath] = block;
-      const textSegments: { offset: number; path: Path; text: string }[] = [];
+      const textSegments: Array<{ offset: number; path: Path; text: string }> =
+        [];
       let fullText = '';
 
       for (const [textNode, textPath] of NodeApi.texts(blockNode)) {
@@ -282,8 +283,9 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
     };
 
     return {
-      clearPreviewNodes: (options?: EditorNodeUnsetOptions<Descendant>) =>
-        tx.nodes.unset(properties.preview, options),
+      clearPreviewNodes: (options?: EditorNodeUnsetOptions<Descendant>) => {
+        tx.nodes.unset(properties.preview, options);
+      },
       acceptPreview: () => {
         const preview = tx.getField(aiPreviewField);
 
@@ -370,12 +372,12 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
       insertNodes: (
         nodes: Descendant[],
         {
-          target,
+          target: innerTarget,
         }: {
           target?: Path;
         } = {}
       ) => {
-        const at = target ?? tx.selection()?.focus.path;
+        const at = innerTarget ?? tx.selection()?.focus.path;
 
         if (!at) return;
 

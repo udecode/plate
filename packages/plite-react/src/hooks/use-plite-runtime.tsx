@@ -115,6 +115,20 @@ const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
     owner.childRoot
   }`;
 
+export const unregisterContentRootOwnerViewEditor = <TEditor,>(
+  ownerViewEditors: Map<string, TEditor>,
+  owner: PliteContentRootOwner,
+  editor: TEditor
+) => {
+  const ownerKey = getContentRootOwnerKey(owner);
+
+  if (ownerViewEditors.get(ownerKey) !== editor) {
+    return false;
+  }
+
+  return ownerViewEditors.delete(ownerKey);
+};
+
 const createReactApi = (editor: object, domApi: DOMApi) =>
   Object.freeze({
     refreshDecorations: (options?: PliteProjectionStoreRefreshOptions) => {
@@ -286,7 +300,7 @@ export const createReactRuntimeViewEditor = <
   view: EditorView<V, TExtensions>
 ): ReactRuntimeViewEditor<V, TExtensions> => {
   const runtime = getEditorRuntime(view as any);
-  const runtimeOwner = getEditorRuntimeOwner(view as any);
+  const runtimeOwner = getEditorRuntimeOwner(view);
   const {
     api: _api,
     extension: _extension,
@@ -328,7 +342,7 @@ export const createReactRuntimeViewEditor = <
     },
     extension: {
       enumerable: true,
-      value: ((extension: ExtensionLike) => {
+      value: (extension: ExtensionLike) => {
         const portal = (
           view.extension as unknown as (extension: ExtensionLike) => {
             api: unknown;
@@ -351,7 +365,7 @@ export const createReactRuntimeViewEditor = <
                 return portal.update;
               },
             });
-      }) as unknown as typeof view.extension,
+      },
     },
   });
 
@@ -478,8 +492,10 @@ function OwnedPliteRuntime<
 
         contentRootOwnersRef.current.delete(editor);
         if (owner) {
-          contentRootOwnerViewEditorsRef.current.delete(
-            getContentRootOwnerKey(owner)
+          unregisterContentRootOwnerViewEditor(
+            contentRootOwnerViewEditorsRef.current,
+            owner,
+            editor
           );
         }
 
@@ -541,8 +557,10 @@ function OwnedPliteRuntime<
       return () => {
         if (contentRootOwnersRef.current.get(editor) === owner) {
           contentRootOwnersRef.current.delete(editor);
-          contentRootOwnerViewEditorsRef.current.delete(
-            getContentRootOwnerKey(owner)
+          unregisterContentRootOwnerViewEditor(
+            contentRootOwnerViewEditorsRef.current,
+            owner,
+            editor
           );
         }
       };
@@ -658,7 +676,9 @@ function OwnedPliteRuntime<
     const maybeBatchUpdates =
       REACT_MAJOR_VERSION < 18
         ? ReactDOM.unstable_batchedUpdates
-        : (callback: () => void) => callback();
+        : (callback: () => void) => {
+            callback();
+          };
 
     const onContextChange: Parameters<typeof runtime.subscribeCommit>[0] = (
       commit
@@ -786,7 +806,7 @@ export function usePliteRuntimeState<
     () =>
       runtime.read((state) =>
         selector(
-          state as EditorStateView<
+          state as unknown as EditorStateView<
             ValueOf<TRuntime['editor']>,
             ExtensionsOf<TRuntime['editor']>
           >
@@ -865,7 +885,7 @@ export function usePliteRootState<
     () =>
       getView({ root }).read((state) =>
         selector(
-          state as EditorStateView<
+          state as unknown as EditorStateView<
             ValueOf<TRuntime['editor']>,
             ExtensionsOf<TRuntime['editor']>
           >
@@ -1075,8 +1095,7 @@ export function usePliteRootEffect<
         cleanupCell.current = undefined;
 
         const mountedEditor =
-          (getMountedViewEditor(resolvedRoot) as unknown) ??
-          (fallbackEditor as unknown);
+          (getMountedViewEditor(resolvedRoot) as unknown) ?? fallbackEditor;
         const cleanup = effectCell.current(
           mountedEditor as PliteRootEditor<V, TExtensions>
         );
@@ -1123,7 +1142,7 @@ export function usePliteCommand<
 >(
   command: TCommand &
     CompatibleEditorCommand<
-      Editor<V, readonly [...TExtensions, DOMExtension<true>, ReactExtension]>,
+      Editor<V, readonly [...TExtensions, DOMExtension, ReactExtension]>,
       TCommand
     >,
   options: UsePliteCommandOptions<TRoot> = {}
@@ -1138,7 +1157,7 @@ export function usePliteCommand<
     (...input: PliteCommandArgs<TCommand>) => {
       const mountedEditor =
         (context.getMountedViewEditor(resolvedRoot) as unknown) ??
-        (fallbackEditor as unknown);
+        fallbackEditor;
       const commandEditor = mountedEditor as PliteRootEditor<V, TExtensions>;
 
       if (focus === 'restore-root') {

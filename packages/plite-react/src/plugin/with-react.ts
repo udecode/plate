@@ -29,7 +29,7 @@ import type { AnyEditor } from '../editable/runtime-editor-api';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
 type AnyDOMExtension =
-  | DOMExtension<true>
+  | DOMExtension
   | DOMExtension<false>
   | DOMExtension<boolean>;
 
@@ -84,7 +84,7 @@ const createReactExtension = <const TDOMExtension extends AnyDOMExtension>(
 
 /** React extension backed by one exact DOM dependency. */
 export type ReactExtension<
-  TDOMExtension extends AnyDOMExtension = DOMExtension<true>,
+  TDOMExtension extends AnyDOMExtension = DOMExtension,
 > = ReturnType<typeof createReactExtension<TDOMExtension>>;
 
 /**
@@ -98,7 +98,7 @@ export const react = <const TDOMExtension extends AnyDOMExtension>({
 
 type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
   ...TExtensions,
-  DOMExtension<true>,
+  DOMExtension,
   ReactExtension,
 ];
 type ReactEditorBase<
@@ -111,9 +111,9 @@ export type ReactEditor<
   TExtensions extends readonly unknown[] = readonly [],
 > = Omit<ReactEditorBase<V, TExtensions>, 'api' | 'update'> & {
   readonly api: ReactEditorBase<V, TExtensions>['api'] &
-    DOMExtensionTypes<true>['api'] & { react: ReactApi };
+    DOMExtensionTypes['api'] & { react: ReactApi };
   update: ReactEditorBase<V, TExtensions>['update'] &
-    DOMExtensionTypes<true>['update'];
+    DOMExtensionTypes['update'];
 };
 
 /** React-only editor context value used by lower-level provider internals. */

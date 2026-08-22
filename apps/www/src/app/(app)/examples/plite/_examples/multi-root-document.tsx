@@ -156,7 +156,7 @@ const RootEditor = ({
 };
 
 const MultiRootPanel = () => {
-  const history = usePliteHistory();
+  const innerHistory = usePliteHistory();
   const titleHistory = usePliteHistory({ focusPolicy: 'preserve' });
   const title = useStateFieldValue(documentTitle);
   const setTitleField = useSetStateField(documentTitle);
@@ -185,23 +185,25 @@ const MultiRootPanel = () => {
           />
         </Label>
         <Button
-          onClick={() => setTitle('Board Review Draft')}
+          onClick={() => {
+            setTitle('Board Review Draft');
+          }}
           type="button"
           variant="outline"
         >
           Set review title
         </Button>
         <Button
-          disabled={!history.canUndo}
-          onClick={history.undo}
+          disabled={!innerHistory.canUndo}
+          onClick={innerHistory.undo}
           type="button"
           variant="outline"
         >
           Undo document change
         </Button>
         <Button
-          disabled={!history.canRedo}
-          onClick={history.redo}
+          disabled={!innerHistory.canRedo}
+          onClick={innerHistory.redo}
           type="button"
           variant="outline"
         >

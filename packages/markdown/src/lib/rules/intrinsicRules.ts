@@ -18,7 +18,7 @@ const normalizeParagraphLineBreaks = (
     children[0].text === '';
 
   return children.flatMap((child): Descendant[] => {
-    const text = (child as { text?: unknown }).text;
+    const { text } = child as { text?: unknown };
 
     if (
       isEmptyParagraph &&

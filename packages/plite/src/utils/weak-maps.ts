@@ -1,3 +1,3 @@
 import type { Editor } from '..';
 
-export const FLUSHING: WeakMap<Editor, boolean> = new WeakMap();
+export const FLUSHING = new WeakMap<Editor, boolean>();

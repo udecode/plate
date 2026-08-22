@@ -54,14 +54,14 @@ export const usesImplicitSelectionLocation = (
 
 export const getExplicitRangeRoot = (value: unknown): string | undefined => {
   if (!RangeApi.isRange(value)) {
-    return;
+    return undefined;
   }
 
   const anchorRoot = value.anchor.root;
   const focusRoot = value.focus.root;
 
   if (anchorRoot && focusRoot && anchorRoot !== focusRoot) {
-    return;
+    return undefined;
   }
 
   return anchorRoot ?? focusRoot;
@@ -71,7 +71,7 @@ export const getPublicExplicitRangeRoot = (
   value: unknown
 ): string | undefined => {
   if (!RangeApi.isRange(value)) {
-    return;
+    return undefined;
   }
 
   const anchorRoot = value.anchor.root;
@@ -93,7 +93,7 @@ export const getPublicExplicitLocationRoot = (
   location: Location | undefined
 ): string | undefined => {
   if (!location || Array.isArray(location)) {
-    return;
+    return undefined;
   }
 
   if ('path' in location && 'offset' in location) {

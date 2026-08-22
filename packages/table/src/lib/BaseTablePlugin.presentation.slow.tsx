@@ -83,7 +83,7 @@ describe('table presentation slow contracts', () => {
           .plugin(BaseTablePlugin)
           .update.setBorderWidth(2, { border: 'top' });
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       });
 
       it('sets all borders by delegating to each side', () => {
@@ -105,7 +105,7 @@ describe('table presentation slow contracts', () => {
         const editor = createEditorInstance(input);
         let commits = 0;
 
-        editor.subscribeCommit(() => commits++);
+        editor.subscribeCommit(() => (commits += 1) - 1);
         editor
           .plugin(BaseTablePlugin)
           .update.setBorderWidth(2, { border: 'all' });
@@ -194,7 +194,7 @@ describe('table presentation slow contracts', () => {
           .plugin(BaseTablePlugin)
           .update.setBorderWidth(2, { border: 'left' });
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       });
 
       describe('when in cell 21', () => {
@@ -256,7 +256,7 @@ describe('table presentation slow contracts', () => {
             .plugin(BaseTablePlugin)
             .update.setBorderWidth(3, { border: 'left' });
 
-          expect(editor.read.children()).toMatchObject(output.children!);
+          expect(editor.read.children()).toMatchObject(output.children);
         });
 
         describe('set border top', () => {
@@ -320,7 +320,7 @@ describe('table presentation slow contracts', () => {
               .plugin(BaseTablePlugin)
               .update.setBorderWidth(2, { border: 'top' });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
           });
         });
 
@@ -383,7 +383,7 @@ describe('table presentation slow contracts', () => {
               .plugin(BaseTablePlugin)
               .update.setBorderWidth(1, { border: 'right' });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
           });
 
           describe('set border left', () => {
@@ -445,7 +445,7 @@ describe('table presentation slow contracts', () => {
                 .plugin(BaseTablePlugin)
                 .update.setBorderWidth(2, { border: 'left' });
 
-              expect(editor.read.children()).toMatchObject(output.children!);
+              expect(editor.read.children()).toMatchObject(output.children);
             });
           });
         });
@@ -509,7 +509,7 @@ describe('table presentation slow contracts', () => {
               .plugin(BaseTablePlugin)
               .update.setBorderWidth(4, { border: 'bottom' });
 
-            expect(editor.read.children()).toMatchObject(output.children!);
+            expect(editor.read.children()).toMatchObject(output.children);
           });
         });
       });
@@ -532,7 +532,7 @@ describe('table presentation slow contracts', () => {
       const entry = editor.read.nodes.get(path, {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };
@@ -574,7 +574,7 @@ describe('table presentation slow contracts', () => {
           .plugin(BaseTablePlugin)
           .update.setCellBackground({ color: 'red' });
 
-        expect(editorInstance.read.children()).toMatchObject(output.children!);
+        expect(editorInstance.read.children()).toMatchObject(output.children);
       });
 
       it('set background color for selected cells', () => {
@@ -615,7 +615,7 @@ describe('table presentation slow contracts', () => {
         const selection = editorInstance.read.selection();
         let commits = 0;
 
-        editorInstance.subscribeCommit(() => commits++);
+        editorInstance.subscribeCommit(() => (commits += 1) - 1);
         editorInstance.plugin(BaseTablePlugin).update.setCellBackground({
           color: 'red',
           selectedCells: [
@@ -624,7 +624,7 @@ describe('table presentation slow contracts', () => {
           ],
         });
 
-        expect(editorInstance.read.children()).toMatchObject(output.children!);
+        expect(editorInstance.read.children()).toMatchObject(output.children);
         expect(editorInstance.read.selection()).toEqual(selection);
         expect(commits).toBe(1);
       });
@@ -670,7 +670,7 @@ describe('table presentation slow contracts', () => {
           .plugin(BaseTablePlugin)
           .update.setCellBackground({ color: null });
 
-        expect(editorInstance.read.children()).toMatchObject(output.children!);
+        expect(editorInstance.read.children()).toMatchObject(output.children);
       });
 
       it('reset the background color to transparent for selected cells', () => {
@@ -713,7 +713,7 @@ describe('table presentation slow contracts', () => {
           ],
         });
 
-        expect(editorInstance.read.children()).toMatchObject(output.children!);
+        expect(editorInstance.read.children()).toMatchObject(output.children);
       });
     });
   });
@@ -828,7 +828,7 @@ describe('table presentation slow contracts', () => {
       const entry = editor.read.nodes.get(path, {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };

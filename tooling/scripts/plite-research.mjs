@@ -440,13 +440,13 @@ function renderLoopMarkdown(payload) {
   return `${lines.join('\n')}\n`;
 }
 
-function runSuggestLoops(args) {
-  const json = args.includes('--json');
-  const withChecks = args.includes('--with-checks');
-  const limitIndex = args.indexOf('--limit');
+function runSuggestLoops(innerArgs) {
+  const json = innerArgs.includes('--json');
+  const withChecks = innerArgs.includes('--with-checks');
+  const limitIndex = innerArgs.indexOf('--limit');
   const limit =
-    limitIndex >= 0 && args[limitIndex + 1]
-      ? Number(args[limitIndex + 1])
+    limitIndex !== -1 && innerArgs[limitIndex + 1]
+      ? Number(innerArgs[limitIndex + 1])
       : Number.POSITIVE_INFINITY;
   const latestReactCompare = latestArtifact(reactHugeCompareArtifactPattern);
   const loops = [

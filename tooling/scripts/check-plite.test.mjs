@@ -595,7 +595,7 @@ test('root scripts keep source-first typecheck and strict browser closure separa
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
   );
-  const scripts = packageJson.scripts;
+  const { scripts } = packageJson;
 
   assert.equal(
     scripts['check:plite'],

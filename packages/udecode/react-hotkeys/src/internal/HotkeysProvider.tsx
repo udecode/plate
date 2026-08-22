@@ -3,6 +3,7 @@ import React, {
   type ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from 'react';
 
@@ -22,7 +23,8 @@ export type HotkeysContextType = {
 
 // The context is only needed for special features like global scoping, so we use a graceful default fallback
 const HotkeysContext = createContext<HotkeysContextType>({
-  activeScopes: [], // This array has to be empty instead of containing '*' as default, to check if the provider is set or not
+  // This array has to be empty instead of containing '*' as default, to check if the provider is set or not
+  activeScopes: [],
   hotkeys: [],
   disableScope: () => {},
   enableScope: () => {},
@@ -78,17 +80,19 @@ export const HotkeysProvider = ({
   const removeBoundHotkey = useCallback((hotkey: Hotkey) => {
     setBoundHotkeys((prev) => prev.filter((h) => !deepEqual(h, hotkey)));
   }, []);
+  const contextValue = useMemo<HotkeysContextType>(
+    () => ({
+      activeScopes: internalActiveScopes,
+      disableScope,
+      enableScope,
+      hotkeys: boundHotkeys,
+      toggleScope,
+    }),
+    [boundHotkeys, disableScope, enableScope, internalActiveScopes, toggleScope]
+  );
 
   return (
-    <HotkeysContext
-      value={{
-        activeScopes: internalActiveScopes,
-        disableScope,
-        enableScope,
-        hotkeys: boundHotkeys,
-        toggleScope,
-      }}
-    >
+    <HotkeysContext value={contextValue}>
       <BoundHotkeysProxyProviderProvider
         addHotkey={addBoundHotkey}
         removeHotkey={removeBoundHotkey}

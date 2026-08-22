@@ -412,7 +412,7 @@ describe('schema declaration builders', () => {
     groups.push('mutated');
     slice.preserveContext = false;
     properties.alt = property.string({ default: 'mutated' });
-    const Image = ImageSchema.schema.elements.image!;
+    const Image = ImageSchema.schema.elements.image;
 
     assert.deepEqual(Image.groups, ['inline']);
     assert.deepEqual(Image.slice, { preserveContext: true });
@@ -644,7 +644,7 @@ describe('schema declaration builders', () => {
     rawElement.slice.preserveContext = false;
     elements.heading = {};
 
-    const paragraph = FrozenSchema.schema.elements.paragraph;
+    const { paragraph } = FrozenSchema.schema.elements;
 
     assert.equal(paragraph?.slice?.preserveContext, true);
     assert.equal(
@@ -732,7 +732,7 @@ describe('schema declaration builders', () => {
     assert.throws(
       () =>
         defineEditorSchema('schema:frozen-cycle', {
-          elements: { paragraph: cyclic as unknown as SchemaElement },
+          elements: { paragraph: cyclic },
           id: 'frozen-cycle',
           root: schema.content.type('paragraph'),
           unknown: 'reject',

@@ -2,6 +2,7 @@ import {
   createCompiledHotkeyMatcher,
   usesAppleDOMHotkeys,
 } from '@platejs/plite-dom/internal';
+import { failInvariant } from '@platejs/plite/internal';
 import type { HotkeysEvent } from '@udecode/react-hotkeys';
 
 import type { EditorShortcut } from '../../lib';
@@ -58,7 +59,7 @@ const normalizeShortcutKeys = (
       .filter(Boolean);
   }
 
-  return (keys as readonly string[])
+  return keys
     .flatMap((value) => value.split(delimiter))
     .map(normalize)
     .filter(Boolean);
@@ -94,7 +95,7 @@ const createHotkeysEvent = (
 
 const compileShortcutMatch = (shortcut: EditorShortcut) => {
   const specs = normalizeShortcutKeys(
-    shortcut.keys!,
+    shortcut.keys ?? failInvariant('Expected value to be defined'),
     shortcut.delimiter,
     shortcut.splitKey
   ).map((spec) => {

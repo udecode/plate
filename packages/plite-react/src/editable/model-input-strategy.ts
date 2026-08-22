@@ -22,6 +22,7 @@ import {
   applyModelOwnedNativeHistoryEvent,
   applyModelOwnedTextInput,
 } from './mutation-controller';
+import { failInvariant } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 
@@ -109,7 +110,7 @@ export const applyEditableInput = ({
     return inputResult();
   }
 
-  const nativeInput = event.nativeEvent as InputEvent;
+  const nativeInput = event.nativeEvent;
   const isModelOwnedTextInputGuardActive =
     (inputController.state.modelOwnedTextInputGuard ?? 0) > 0;
   const modelOwnsTextInput =
@@ -209,7 +210,8 @@ export const applyEditableInput = ({
             0,
             Math.min(
               pliteNode.text.length,
-              anchorOffset! - nativeInput.data.length
+              (anchorOffset ?? failInvariant('Expected value to be defined')) -
+                nativeInput.data.length
             )
           );
 
@@ -254,7 +256,7 @@ export const applyEditableInput = ({
     !ReactEditor.isFocused(editor) &&
     applyModelOwnedNativeHistoryEvent({
       editor,
-      event: event.nativeEvent as InputEvent,
+      event: event.nativeEvent,
       readOnly,
     })
   ) {
@@ -269,6 +271,7 @@ export const applyModelOwnedBeforeInputMutation = ({
   data,
   editor,
   inputType: type,
+  mergeHistory = false,
   native,
   preserveComposing = false,
   selection,
@@ -278,6 +281,7 @@ export const applyModelOwnedBeforeInputMutation = ({
   data: unknown;
   editor: ReactRuntimeEditor;
   inputType: string;
+  mergeHistory?: boolean;
   native: boolean;
   preserveComposing?: boolean;
   selection: Range | null;
@@ -399,6 +403,7 @@ export const applyModelOwnedBeforeInputMutation = ({
           data: textCommand.text,
           editor,
           inputType: textCommand.inputType ?? type,
+          mergeHistory,
           selection,
         });
       }

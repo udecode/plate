@@ -347,7 +347,7 @@ describe('rendered DOM shape contract', () => {
             toJSON() {
               return this;
             },
-          } as DOMRect;
+          };
         }
 
         return originalGetBoundingClientRect.call(this);
@@ -411,7 +411,7 @@ describe('rendered DOM shape contract', () => {
             toJSON() {
               return this;
             },
-          } as DOMRect;
+          };
         }
 
         return originalGetBoundingClientRect.call(this);
@@ -516,9 +516,7 @@ describe('rendered DOM shape contract', () => {
         for (let step = 0; step < 80; step++) {
           const value = editor.read.value();
           const blockIndex = Math.floor(random() * value.children.length);
-          const text = (
-            value.children[blockIndex]!.children[0] as { text: string }
-          ).text;
+          const { text } = value.children[blockIndex].children[0];
           const edit = Math.floor(random() * 5);
           const preservesPaths = edit <= 2;
           const untouchedIndex =

@@ -374,7 +374,9 @@ export const attachPliteBrowserHandle = ({
       forceRender();
     },
     createRangeAnchor: (selection, association) => {
-      const id = String(browserHandleNextId.current++);
+      const id = String(browserHandleNextId.current);
+
+      browserHandleNextId.current += 1;
       const rangeAnchor = editor.anchor(selection, {
         association,
         deletion: 'nearest',
@@ -395,9 +397,9 @@ export const attachPliteBrowserHandle = ({
     },
     deleteTextAt: (range, policy) => {
       if (policy) {
-        editor.update(policy, () =>
-          editorDeleteFragment(editor, { at: range })
-        );
+        editor.update(policy, () => {
+          editorDeleteFragment(editor, { at: range });
+        });
       } else {
         editorDeleteFragment(editor, { at: range });
       }
@@ -442,7 +444,7 @@ export const attachPliteBrowserHandle = ({
         return false;
       }
 
-      const anchorNode = selection.anchorNode;
+      const { anchorNode } = selection;
       const anchorElement =
         anchorNode && anchorNode.nodeType === Node.TEXT_NODE
           ? anchorNode.parentElement
@@ -507,14 +509,12 @@ export const attachPliteBrowserHandle = ({
     getKernelTrace: () => [...getEditableKernelTrace(editor)],
     getHistory: () =>
       editor.read((state) => {
-        const history = (
-          state as {
-            history?: {
-              redos?: () => readonly unknown[];
-              undos?: () => readonly unknown[];
-            };
-          }
-        ).history;
+        const { history } = state as {
+          history?: {
+            redos?: () => readonly unknown[];
+            undos?: () => readonly unknown[];
+          };
+        };
         const summarizeBatch = (batch: unknown) => {
           const record = batch as {
             change?: DocumentChange;
@@ -584,6 +584,7 @@ export const attachPliteBrowserHandle = ({
     },
     getInputState: () => ({
       activeIntent: inputController.state.activeIntent,
+      isProjectingSelection: inputController.state.isProjectingSelection,
       modelOwnedTextInputGuard:
         inputController.state.modelOwnedTextInputGuard ?? 0,
       modelSelectionPreference: inputController.state.modelSelectionPreference,
@@ -630,7 +631,7 @@ export const attachPliteBrowserHandle = ({
     getDOMPhaseSchedulerDiagnostics: () =>
       domPhaseScheduler?.diagnostics() ?? null,
     getText: () => editorString(editor, []),
-    getValue: () => editor.read((state) => state.value()) as JsonEditorValue,
+    getValue: () => editor.read((state) => state.value()),
     getViewSelection: () => readPliteViewSelection(editor),
     importDOMSelection: () => {
       flushPendingNativeTextInput?.();
@@ -700,7 +701,9 @@ export const attachPliteBrowserHandle = ({
     },
     insertTextAt: (text, at, policy) => {
       if (policy) {
-        editor.update(policy, () => editorInsertText(editor, text, { at }));
+        editor.update(policy, () => {
+          editorInsertText(editor, text, { at });
+        });
       } else {
         editorInsertText(editor, text, { at });
       }

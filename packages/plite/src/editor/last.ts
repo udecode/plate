@@ -22,7 +22,7 @@ const hasLocationPath = (
 
 export const last: EditorStaticApi['last'] = (editor, at, options = {}) => {
   if (!hasLocationPath(editor, at)) {
-    return;
+    return undefined;
   }
 
   const path = editorPath(editor, at, { edge: 'end' });

@@ -76,19 +76,21 @@ const parsePathname = (requestURL) => {
       pathname.includes('\\') ||
       pathname.split('/').includes('..')
     ) {
-      return;
+      return undefined;
     }
 
     return pathname;
   } catch {
     // Invalid request URLs do not map to a static pathname.
   }
+
+  return undefined;
 };
 
 export const resolveStaticAsset = (snapshot, requestURL) => {
   const pathname = parsePathname(requestURL);
 
-  if (!pathname) return;
+  if (!pathname) return undefined;
 
   const candidates = pathname.endsWith('/')
     ? [pathname, `${pathname}index.html`]
@@ -101,6 +103,8 @@ export const resolveStaticAsset = (snapshot, requestURL) => {
 
     if (asset) return asset;
   }
+
+  return undefined;
 };
 
 export const createStaticRequestHandler = (snapshot) => (request, response) => {

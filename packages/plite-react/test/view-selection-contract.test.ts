@@ -358,7 +358,7 @@ describe('plite view selection', () => {
         kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [3, 0], offset: 2 },
-      })!
+      })
     );
     source.refresh({ reason: 'external' });
 
@@ -368,7 +368,7 @@ describe('plite view selection', () => {
         kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [4, 0], offset: 2 },
-      })!
+      })
     );
     const result = source.refresh({ reason: 'external' });
 
@@ -395,7 +395,7 @@ describe('plite view selection', () => {
         kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [4, 0], offset: 2 },
-      })!
+      })
     );
 
     const snapshot = editorGetSnapshot(editor);

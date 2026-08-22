@@ -13,17 +13,16 @@ import {
 const cell = (
   id: string,
   options: Pick<TableCellElement, 'colSpan' | 'rowSpan'> = {}
-): TableCellElementWithId =>
-  ({
-    [TABLE_CELL_OPERATION_KEY]: id,
-    children: [{ text: id }],
-    id,
-    ...options,
-    type: 'tableCell',
-  }) as TableCellElementWithId;
+): TableCellElementWithId => ({
+  [TABLE_CELL_OPERATION_KEY]: id,
+  children: [{ text: id }],
+  id,
+  ...options,
+  type: 'tableCell',
+});
 
 const table = (
-  rows: readonly (readonly TableCellElement[])[]
+  rows: ReadonlyArray<readonly TableCellElement[]>
 ): TableElement => ({
   children: rows.map((children): TableRowElement => ({
     children: [...children],
@@ -122,7 +121,7 @@ describe('compileTableGrid', () => {
           let maxColSpan = 0;
 
           while (col + maxColSpan < width && !occupied[row][col + maxColSpan]) {
-            maxColSpan++;
+            maxColSpan += 1;
           }
 
           const colSpan = 1 + next(maxColSpan);
@@ -138,11 +137,11 @@ describe('compileTableGrid', () => {
               }
             }
             if (!clear) break;
-            maxRowSpan++;
+            maxRowSpan += 1;
           }
 
           const rowSpan = 1 + next(maxRowSpan);
-          const anchor = cell(`s${seed}:${id++}`, {
+          const anchor = cell(`s${seed}:${(id += 1) - 1}`, {
             ...(colSpan > 1 ? { colSpan } : {}),
             ...(rowSpan > 1 ? { rowSpan } : {}),
           });
@@ -165,8 +164,8 @@ describe('compileTableGrid', () => {
       expect(grid.byKey.size).toBe(grid.anchors.length);
 
       grid.anchors.forEach((anchor) => {
-        for (let row = anchor.row; row < anchor.row + anchor.rowSpan; row++) {
-          for (let col = anchor.col; col < anchor.col + anchor.colSpan; col++) {
+        for (let { row } = anchor; row < anchor.row + anchor.rowSpan; row++) {
+          for (let { col } = anchor; col < anchor.col + anchor.colSpan; col++) {
             expect(grid.slots[row][col]).toBe(anchor);
           }
         }
@@ -177,7 +176,7 @@ describe('compileTableGrid', () => {
   it('uses one weak identity compilation for repeated hot reads', () => {
     const input = table(
       Array.from({ length: 60 }, (_, row) =>
-        Array.from({ length: 60 }, (_, col) => cell(`${row}:${col}`))
+        Array.from({ length: 60 }, (innerValue, col) => cell(`${row}:${col}`))
       )
     );
     const before = readTableGridCompilerMetrics();
@@ -210,7 +209,9 @@ describe('compileTableGrid', () => {
 
     for (let attempt = 0; attempt < 5; attempt++) {
       runtime.Bun?.gc(true);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
     }
 
     const retained = references.filter(

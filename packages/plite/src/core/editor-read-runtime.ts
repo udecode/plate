@@ -63,7 +63,7 @@ import {
 
 const getQueryRoot = (
   editor: Editor,
-  locations: readonly (Location | Span | undefined)[],
+  locations: ReadonlyArray<Location | Span | undefined>,
   { selectionFallback = false }: { selectionFallback?: boolean } = {}
 ): string | undefined => {
   const root = getCommonLocationRoot(...locations);
@@ -83,7 +83,7 @@ const getQueryRoot = (
 
 const withQueryRoot = <T>(
   editor: Editor,
-  locations: readonly (Location | Span | undefined)[],
+  locations: ReadonlyArray<Location | Span | undefined>,
   fn: () => T,
   options?: { selectionFallback?: boolean }
 ): T => {
@@ -105,7 +105,7 @@ const usesImplicitSelectionLocation = (
 
 const withQueryRootGenerator = <T>(
   editor: Editor,
-  locations: readonly (Location | Span | undefined)[],
+  locations: ReadonlyArray<Location | Span | undefined>,
   create: () => Iterable<T>,
   options?: { selectionFallback?: boolean }
 ): Generator<T, void, undefined> =>
@@ -121,59 +121,59 @@ const withQueryRootGenerator = <T>(
   })();
 
 const withExplicitPointRoot = <TPoint extends Point | undefined>(
-  point: TPoint,
+  innerPoint: TPoint,
   root: string | undefined
 ): TPoint =>
-  root && point && point.root === undefined
-    ? ({ ...point, root } as TPoint)
-    : point;
+  root && innerPoint && innerPoint.root === undefined
+    ? { ...innerPoint, root }
+    : innerPoint;
 
 const withExplicitRangeRoot = <TRange extends Range>(
-  range: TRange,
+  innerRange: TRange,
   root: string | undefined
 ): TRange =>
   root
     ? ({
-        anchor: withExplicitPointRoot(range.anchor, root),
-        focus: withExplicitPointRoot(range.focus, root),
+        anchor: withExplicitPointRoot(innerRange.anchor, root),
+        focus: withExplicitPointRoot(innerRange.focus, root),
       } as TRange)
-    : range;
+    : innerRange;
 
 export const createEditorReadRuntime = <V extends Value>(
   editor: Editor<V>
 ): InternalEditorReadRuntime => ({
   above: <T extends Ancestor>(options?: EditorAboveOptions<T>) =>
-    (({ options }) =>
+    (({ options: innerOptions }) =>
       withOptionsQueryRoot(
         editor,
-        options,
-        () => above(editor, options as never),
+        innerOptions,
+        () => above(editor, innerOptions as never),
         {
-          selectionFallback: usesImplicitSelectionLocation(options),
+          selectionFallback: usesImplicitSelectionLocation(innerOptions),
         }
-      ))({ options }) as NodeEntry<T> | undefined,
+      ))({ options }),
   after: (at, options) =>
-    (({ at, options }) => {
-      const root = getQueryRoot(editor, [at]);
+    (({ at: innerAt, options: innerOptions2 }) => {
+      const root = getQueryRoot(editor, [innerAt]);
 
-      return withQueryRoot(editor, [at], () =>
-        withExplicitPointRoot(after(editor, at, options), root)
+      return withQueryRoot(editor, [innerAt], () =>
+        withExplicitPointRoot(after(editor, innerAt, innerOptions2), root)
       );
     })({ at, options }),
   before: (at, options) =>
-    (({ at, options }) => {
-      const root = getQueryRoot(editor, [at]);
+    (({ at: innerAt2, options: innerOptions3 }) => {
+      const root = getQueryRoot(editor, [innerAt2]);
 
-      return withQueryRoot(editor, [at], () =>
-        withExplicitPointRoot(before(editor, at, options), root)
+      return withQueryRoot(editor, [innerAt2], () =>
+        withExplicitPointRoot(before(editor, innerAt2, innerOptions3), root)
       );
     })({ at, options }),
   edges: (at) =>
-    (({ at }) => {
-      const root = getQueryRoot(editor, [at]);
+    (({ at: innerAt3 }) => {
+      const root = getQueryRoot(editor, [innerAt3]);
 
-      return withQueryRoot(editor, [at], () => {
-        const [start, end] = edges(editor, at);
+      return withQueryRoot(editor, [innerAt3], () => {
+        const [start, end] = edges(editor, innerAt3);
 
         return [
           withExplicitPointRoot(start, root),
@@ -182,15 +182,16 @@ export const createEditorReadRuntime = <V extends Value>(
       });
     })({ at }) ?? failInvariant('Static range read returned no result'),
   elementReadOnly: (options) =>
-    (({ options }) =>
+    (({ options: innerOptions4 }) =>
       withOptionsQueryRoot(
         editor,
-        options,
-        () => elementReadOnly(editor, options),
-        { selectionFallback: usesImplicitSelectionLocation(options) }
+        innerOptions4,
+        () => elementReadOnly(editor, innerOptions4),
+        { selectionFallback: usesImplicitSelectionLocation(innerOptions4) }
       ))({ options }),
   first: (at) =>
-    (({ at }) => withQueryRoot(editor, [at], () => first(editor, at)))({
+    (({ at: innerAt4 }) =>
+      withQueryRoot(editor, [innerAt4], () => first(editor, innerAt4)))({
       at,
     }) ?? failInvariant('Static first-node read returned no result'),
   fragment: (at) => {
@@ -205,85 +206,108 @@ export const createEditorReadRuntime = <V extends Value>(
       return withQueryRoot(editor, [location], () =>
         location && RangeApi.isCollapsed(location)
           ? []
-          : (getFragment(editor, options) as DescendantIn<V>[])
+          : (getFragment(editor, options) as Array<DescendantIn<V>>)
       );
     })({ options: { at: fragmentRange } });
   },
   hasBlocks: (element) =>
-    (({ element }) => hasBlocks(editor, element))({ element }),
+    (({ element: innerElement }) => hasBlocks(editor, innerElement))({
+      element,
+    }),
   hasInlines: (element) =>
-    (({ element }) => hasInlines(editor, element))({ element }),
-  hasPath: (path) => (({ path }) => hasPath(editor, path))({ path }),
+    (({ element: innerElement2 }) => hasInlines(editor, innerElement2))({
+      element,
+    }),
+  hasPath: (innerPath) =>
+    (({ path: innerPath2 }) => hasPath(editor, innerPath2))({
+      path: innerPath,
+    }),
   hasTexts: (element) =>
-    (({ element }) => hasTexts(editor, element))({ element }),
+    (({ element: innerElement3 }) => hasTexts(editor, innerElement3))({
+      element,
+    }),
   isBlock: (element) =>
-    (({ element }) => isBlock(editor, element))({ element }),
-  isEdge: (point, at) =>
-    (({ at, point }) =>
-      withQueryRoot(editor, [point, at], () => isEdge(editor, point, at)))({
+    (({ element: innerElement4 }) => isBlock(editor, innerElement4))({
+      element,
+    }),
+  isEdge: (innerPoint2, at) =>
+    (({ at: innerAt5, point: innerPoint3 }) =>
+      withQueryRoot(editor, [innerPoint3, innerAt5], () =>
+        isEdge(editor, innerPoint3, innerAt5)
+      ))({
       at,
-      point,
+      point: innerPoint2,
     }),
   isEmpty: (element) =>
-    (({ element }) => isEmpty(editor, element))({ element }),
-  isEnd: (point, at) =>
-    (({ at, point }) =>
-      withQueryRoot(editor, [point, at], () => isEnd(editor, point, at)))({
-      at,
-      point,
+    (({ element: innerElement5 }) => isEmpty(editor, innerElement5))({
+      element,
     }),
-  isStart: (point, at) =>
-    (({ at, point }) =>
-      withQueryRoot(editor, [point, at], () => isStart(editor, point, at)))({
+  isEnd: (innerPoint4, at) =>
+    (({ at: innerAt6, point: innerPoint5 }) =>
+      withQueryRoot(editor, [innerPoint5, innerAt6], () =>
+        isEnd(editor, innerPoint5, innerAt6)
+      ))({
       at,
-      point,
+      point: innerPoint4,
+    }),
+  isStart: (innerPoint6, at) =>
+    (({ at: innerAt7, point: innerPoint7 }) =>
+      withQueryRoot(editor, [innerPoint7, innerAt7], () =>
+        isStart(editor, innerPoint7, innerAt7)
+      ))({
+      at,
+      point: innerPoint6,
     }),
   last: (at, options) =>
-    (({ at, options }) =>
-      withQueryRoot(editor, [at], () => last(editor, at, options)))({
+    (({ at: innerAt8, options: innerOptions5 }) =>
+      withQueryRoot(editor, [innerAt8], () =>
+        last(editor, innerAt8, innerOptions5)
+      ))({
       at,
       options,
     }),
   leaf: (at, options) =>
-    (({ at, options }) =>
-      withQueryRoot(editor, [at], () => leaf(editor, at, options)))({
+    (({ at: innerAt9, options: innerOptions6 }) =>
+      withQueryRoot(editor, [innerAt9], () =>
+        leaf(editor, innerAt9, innerOptions6)
+      ))({
       at,
       options,
     }) ?? failInvariant('Static leaf read returned no result'),
   levels: <T extends Node>(options?: EditorLevelsOptions<T>) =>
-    (({ options }) =>
+    (({ options: innerOptions7 }) =>
       withQueryRootGenerator(
         editor,
-        [options?.at],
-        () => levels(editor, options as never),
-        { selectionFallback: usesImplicitSelectionLocation(options) }
+        [innerOptions7?.at],
+        () => levels(editor, innerOptions7 as never),
+        { selectionFallback: usesImplicitSelectionLocation(innerOptions7) }
       ))({
       options: options as EditorLevelsOptions<Node> | undefined,
-    }) as Generator<NodeEntry<T>, void, undefined>,
+    }),
   next: <T extends Descendant>(options?: EditorNextOptions<T>) =>
-    (({ options }) =>
+    (({ options: innerOptions8 }) =>
       withOptionsQueryRoot(
         editor,
-        options,
-        () => next(editor, options as never),
+        innerOptions8,
+        () => next(editor, innerOptions8 as never),
         {
-          selectionFallback: usesImplicitSelectionLocation(options),
+          selectionFallback: usesImplicitSelectionLocation(innerOptions8),
         }
       ))({ options: options as EditorNextOptions<Descendant> | undefined }) as
       | NodeEntry<T>
       | undefined,
   parent: ((at: Location, options?: EditorParentOptions) =>
-    (({ at, options }) => {
+    (({ at: innerAt10, options: innerOptions9 }) => {
       const filtered =
-        options?.type !== undefined || options?.match !== undefined;
-      const entry = withQueryRoot(editor, [at], () =>
+        innerOptions9?.type !== undefined || innerOptions9?.match !== undefined;
+      const entry = withQueryRoot(editor, [innerAt10], () =>
         (
           parent as (
             editor: unknown,
             at: Location,
             options?: unknown
           ) => NodeEntry<Ancestor> | undefined
-        )(editor, at, options)
+        )(editor, innerAt10, innerOptions9)
       );
 
       return filtered
@@ -294,85 +318,97 @@ export const createEditorReadRuntime = <V extends Value>(
       options,
     })) as InternalEditorReadRuntime['parent'],
   path: (at, options) =>
-    (({ at, options }) =>
-      withQueryRoot(editor, [at], () => path(editor, at, options)))({
+    (({ at: innerAt11, options: innerOptions10 }) =>
+      withQueryRoot(editor, [innerAt11], () =>
+        path(editor, innerAt11, innerOptions10)
+      ))({
       at,
       options,
     }) ?? failInvariant('Static path read returned no result'),
   point: (at, options) =>
-    (({ at, options }) => {
-      const root = getQueryRoot(editor, [at]);
+    (({ at: innerAt12, options: innerOptions11 }) => {
+      const root = getQueryRoot(editor, [innerAt12]);
 
-      return withQueryRoot(editor, [at], () =>
-        withExplicitPointRoot(point(editor, at, options), root)
+      return withQueryRoot(editor, [innerAt12], () =>
+        withExplicitPointRoot(point(editor, innerAt12, innerOptions11), root)
       );
     })({ at, options }) ??
     failInvariant('Static point read returned no result'),
   positions: (options) =>
-    (({ options }) => {
-      const root = getQueryRoot(editor, [options?.at], {
-        selectionFallback: usesImplicitSelectionLocation(options),
+    (({ options: innerOptions12 }) => {
+      const root = getQueryRoot(editor, [innerOptions12?.at], {
+        selectionFallback: usesImplicitSelectionLocation(innerOptions12),
       });
 
       return withQueryRootGenerator(
         editor,
-        [options?.at],
+        [innerOptions12?.at],
         function* readPositions() {
-          for (const point of positions(editor, options)) {
-            yield withExplicitPointRoot(point, root);
+          for (const innerPoint8 of positions(editor, innerOptions12)) {
+            yield withExplicitPointRoot(innerPoint8, root);
           }
         },
-        { selectionFallback: usesImplicitSelectionLocation(options) }
+        { selectionFallback: usesImplicitSelectionLocation(innerOptions12) }
       );
     })({ options }),
   previous: <T extends Node>(options?: EditorPreviousOptions<T>) =>
-    (({ options }) =>
+    (({ options: innerOptions13 }) =>
       withOptionsQueryRoot(
         editor,
-        options,
-        () => previous(editor, options as never),
+        innerOptions13,
+        () => previous(editor, innerOptions13 as never),
         {
-          selectionFallback: usesImplicitSelectionLocation(options),
+          selectionFallback: usesImplicitSelectionLocation(innerOptions13),
         }
-      ))({ options: options as EditorPreviousOptions<Node> | undefined }) as
-      | NodeEntry<T>
-      | undefined,
-  projectRange: (range) =>
-    (({ range }) =>
-      withQueryRoot(editor, [range], () => projectRange(editor, range)))({
-      range,
+      ))({ options: options as EditorPreviousOptions<Node> | undefined }),
+  projectRange: (innerRange2) =>
+    (({ range: innerRange3 }) =>
+      withQueryRoot(editor, [innerRange3], () =>
+        projectRange(editor, innerRange3)
+      ))({
+      range: innerRange2,
     }),
   range: (at, to) =>
-    (({ at, to }) => {
-      const root = getQueryRoot(editor, [at, to]);
+    (({ at: innerAt13, to: innerTo }) => {
+      const root = getQueryRoot(editor, [innerAt13, innerTo]);
 
-      return withQueryRoot(editor, [at, to], () =>
-        withExplicitRangeRoot(range(editor, at, to), root)
+      return withQueryRoot(editor, [innerAt13, innerTo], () =>
+        withExplicitRangeRoot(range(editor, innerAt13, innerTo), root)
       );
     })({ at, to }) ?? failInvariant('Static range read returned no result'),
-  shouldMergeNodesRemovePrevNode: (previous, current) =>
-    (({ current, previous }) =>
-      shouldMergeNodesRemovePrevNode(editor, previous, current))({
+  shouldMergeNodesRemovePrevNode: (innerPrevious, current) =>
+    (({ current: innerCurrent, previous: innerPrevious2 }) =>
+      shouldMergeNodesRemovePrevNode(editor, innerPrevious2, innerCurrent))({
       current,
-      previous,
+      previous: innerPrevious,
     }),
   string: (at, options) =>
-    (({ at, options }) =>
-      withQueryRoot(editor, [at], () => string(editor, at, options)))({
+    (({ at: innerAt14, options: innerOptions14 }) =>
+      withQueryRoot(editor, [innerAt14], () =>
+        string(editor, innerAt14, innerOptions14)
+      ))({
       at,
       options,
     }),
-  unhangRange: (range, options) =>
-    (({ options, range }) => {
-      const root = getQueryRoot(editor, [range]);
+  unhangRange: (innerRange4, options) =>
+    (({ options: innerOptions15, range: innerRange5 }) => {
+      const root = getQueryRoot(editor, [innerRange5]);
 
-      return withQueryRoot(editor, [range], () =>
-        withExplicitRangeRoot(unhangRange(editor, range, options), root)
+      return withQueryRoot(editor, [innerRange5], () =>
+        withExplicitRangeRoot(
+          unhangRange(editor, innerRange5, innerOptions15),
+          root
+        )
       );
-    })({ options, range }),
+    })({ options, range: innerRange4 }),
   void: (options) =>
-    (({ options }) =>
-      withOptionsQueryRoot(editor, options, () => getVoid(editor, options), {
-        selectionFallback: usesImplicitSelectionLocation(options),
-      }))({ options }),
+    (({ options: innerOptions16 }) =>
+      withOptionsQueryRoot(
+        editor,
+        innerOptions16,
+        () => getVoid(editor, innerOptions16),
+        {
+          selectionFallback: usesImplicitSelectionLocation(innerOptions16),
+        }
+      ))({ options }),
 });

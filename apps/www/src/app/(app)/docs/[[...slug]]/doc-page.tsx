@@ -36,7 +36,7 @@ import { registryEditor } from '@/registry/registry-editor';
 export type DocsLocale = 'cn' | 'en';
 
 type PlateDocFrontmatter = {
-  docs?: { route?: string; title?: string }[];
+  docs?: Array<{ route?: string; title?: string }>;
   links?: {
     api?: string;
     doc?: string;
@@ -59,7 +59,8 @@ const registryNames = new Set(registry.items.map((item) => item.name));
 const DEMO_SUFFIX_REGEX = /-demo$/;
 
 async function getDocFromParams({ params }: DocPageProps, locale: DocsLocale) {
-  const slugParam = (await params).slug;
+  const resolvedParams = await params;
+  const slugParam = resolvedParams.slug;
 
   return (
     source.getPage(slugParam ?? [], locale) ??
@@ -130,12 +131,13 @@ export async function generateDocMetadata(
   let description: string | undefined;
   let slug: string;
 
-  if (doc) {
-    slug = localizeDocsUrl(doc.url, locale);
-    title = doc.data.title;
+    if (doc) {
+      slug = localizeDocsUrl(doc.url, locale);
+      ({ title } = doc.data);
     description = doc.data.description ?? getDocsNavMeta(slug)?.description;
   } else {
-    const slugParam = (await props.params).slug;
+    const resolvedParams = await props.params;
+    const slugParam = resolvedParams.slug;
     const category = slugToCategory(slugParam);
     const { docName, file } = getRegistryFile({ category, slug: slugParam });
 
@@ -145,7 +147,7 @@ export async function generateDocMetadata(
 
     slug = getDocsPath(slugParam, locale);
     title = file.title || docName;
-    description = file.description;
+    ({ description } = file);
   }
 
   return {
@@ -254,11 +256,11 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
 
     return (
       <DocContent
-        category={category as any}
+        category={category}
         {...file}
         doc={{
           ...file.meta,
-          docs: docs as any,
+          docs,
           slug,
         }}
         neighbours={neighbours}
@@ -310,7 +312,7 @@ export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
 
   return (
     <DocContent
-      category={category as any}
+      category={category}
       doc={{
         description,
         copyMarkdown: await getPlateLLMPageMarkdownFromPage({
@@ -340,11 +342,11 @@ function getRegistryDocs({
   file,
   files,
   locale,
-  registryNames,
+  registryNames: innerRegistryNames,
 }: {
   docName: string;
   file: RegistryItem;
-  files: { name: string }[];
+  files: Array<{ name: string }>;
   locale: DocsLocale;
   registryNames: Set<string>;
 }) {
@@ -360,7 +362,7 @@ function getRegistryDocs({
       .map((f) => f.name.split('/').pop()?.replace('.tsx', ''))
       .filter(
         (fileName): fileName is string =>
-          !!fileName && registryNames.has(fileName) && fileName !== docName
+          !!fileName && innerRegistryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
         const uiItem = registryEditor.find((item) => item.name === fileName);
@@ -406,23 +408,23 @@ function getRegistryDocs({
       };
 
       if (doc.route.startsWith(siteConfig.links.platePro)) {
-        acc.external.push(titledDoc as any);
+        acc.external.push(titledDoc);
       } else if (
         titledDoc.route.startsWith(getDocsPath(['components'], locale))
       ) {
-        acc.components.push(titledDoc as any);
+        acc.components.push(titledDoc);
       } else if (titledDoc.route.startsWith(getDocsPath(['api'], locale))) {
         acc.docs.push({
           ...titledDoc,
           title: `${titledDoc.title} API`,
-        } as any);
+        });
       } else if (titledDoc.route.startsWith(getDocsPath([], locale))) {
         acc.docs.push({
           ...titledDoc,
           title: `${titledDoc.title} Plugin`,
-        } as any);
+        });
       } else {
-        acc.docs.push(titledDoc as any);
+        acc.docs.push(titledDoc);
       }
 
       return acc;

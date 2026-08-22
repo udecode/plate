@@ -279,16 +279,16 @@ describe('migratePlateV54 editor loading', () => {
           editor: createEditor<Value>(),
           ...migrationOptions,
           plugins: [plugin, BoldPlugin],
-          initialValue: ({ editor }) => [
+          initialValue: ({ editor: innerEditor }) => [
             {
               caption: [{ bold: true, text: 'Legacy caption' }],
               children: [{ text: '' }],
-              type: legacyType ?? editor.plugin(plugin).schema.type,
+              type: legacyType ?? innerEditor.plugin(plugin).schema.type,
               url: 'https://platejs.org/media',
             },
           ],
         });
-        const type = editor.plugin(plugin).schema.type;
+        const { type } = editor.plugin(plugin).schema;
 
         expect(editor.read.children()[0]).toEqual({
           children: [{ bold: true, text: 'Legacy caption' }],

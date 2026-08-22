@@ -2,10 +2,10 @@ import type { SidebarNavItem } from '@/types/nav';
 
 export function useDedupeNavItems(items: SidebarNavItem[]) {
   const dedupeItems = (
-    items: SidebarNavItem[],
+    innerItems: SidebarNavItem[],
     seen = new Set<string>()
   ): SidebarNavItem[] =>
-    items.map((item) => {
+    innerItems.map((item) => {
       const deduped = { ...item };
 
       if (deduped.items) {

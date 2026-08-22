@@ -16,6 +16,7 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import {
   above as editorAbove,
+  failInvariant,
   isBlock as editorIsBlock,
   before as editorBefore,
   after as editorAfter,
@@ -74,7 +75,10 @@ const measurePlainVerticalPhase = <T>(id: string, run: () => T): T => {
 };
 
 type DOMStrategyRuntimeLike = {
-  mountedTopLevelRanges?: readonly { endIndex: number; startIndex: number }[];
+  mountedTopLevelRanges?: ReadonlyArray<{
+    endIndex: number;
+    startIndex: number;
+  }>;
   type?: unknown;
 };
 
@@ -539,14 +543,14 @@ const getSingleTextPointInTopLevelBlock = ({
       return null;
     }
 
-    const block = children[blockIndex]!;
+    const block = children[blockIndex];
     const textEntries = Array.from(NodeApi.texts(block));
 
     if (textEntries.length !== 1) {
       return null;
     }
 
-    const [textNode, relativePath] = textEntries[0]!;
+    const [textNode, relativePath] = textEntries[0];
 
     return {
       path: [blockIndex, ...relativePath],
@@ -568,14 +572,14 @@ const getSingleTextInTopLevelBlock = ({
       return null;
     }
 
-    const block = children[blockIndex]!;
+    const block = children[blockIndex];
     const textEntries = Array.from(NodeApi.texts(block));
 
     if (textEntries.length !== 1) {
       return null;
     }
 
-    const [textNode, relativePath] = textEntries[0]!;
+    const [textNode, relativePath] = textEntries[0];
 
     return {
       path: [blockIndex, ...relativePath],
@@ -622,7 +626,10 @@ const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
     edge: reverse ? 'end' : 'start',
     sourceHost: sourceLineHost,
     text: adjacentText.text,
-    x: preferredXRect?.left ?? sourceCaretRect?.left ?? sourceRect!.left,
+    x:
+      preferredXRect?.left ??
+      sourceCaretRect?.left ??
+      (sourceRect ?? failInvariant('Expected value to be defined')).left,
   });
 
   return typeof offset === 'number'
@@ -700,7 +707,9 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
     }
 
     const targetX = clamp(
-      preferredXRect?.left ?? sourceCaretRect?.left ?? sourceRect!.left,
+      preferredXRect?.left ??
+        sourceCaretRect?.left ??
+        (sourceRect ?? failInvariant('Expected value to be defined')).left,
       targetLine.left + 1,
       Math.max(targetLine.left + 1, targetLine.right - 1)
     );
@@ -916,18 +925,19 @@ export const getPlainVerticalLargeDocumentExtension = ({
     }
 
     if (mountedRangeEdge && leavingRenderedLine) {
-      const adjacentVisualTarget = resolveAdjacentBlockVisualLineTargetPoint({
-        blockIndex: reverse ? focusBlockIndex - 1 : focusBlockIndex + 1,
-        editor,
-        preferredXPoint,
-        reverse,
-        sourcePoint: selection.focus,
-      });
+      const innerAdjacentVisualTarget =
+        resolveAdjacentBlockVisualLineTargetPoint({
+          blockIndex: reverse ? focusBlockIndex - 1 : focusBlockIndex + 1,
+          editor,
+          preferredXPoint,
+          reverse,
+          sourcePoint: selection.focus,
+        });
 
       return createPlainVerticalLargeDocumentExtension({
         reverse,
         selection,
-        target: adjacentVisualTarget ?? modelLineTarget,
+        target: innerAdjacentVisualTarget ?? modelLineTarget,
       });
     }
 

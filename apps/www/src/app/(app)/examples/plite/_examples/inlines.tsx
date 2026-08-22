@@ -105,6 +105,8 @@ const InlinesExample = () => {
         return true;
       }
     }
+
+    return undefined;
   };
 
   return (
@@ -314,26 +316,31 @@ const insertLinkedTextSegments = (
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
   switch (props.element.type) {
-    case 'badge':
+    case 'badge': {
       return (
         <BadgeComponent {...(props as RenderElementProps<BadgeElement>)} />
       );
-    case 'button':
+    }
+    case 'button': {
       return (
         <EditableButtonComponent
           {...(props as RenderElementProps<ButtonElement>)}
         />
       );
-    case 'link':
+    }
+    case 'link': {
       return <LinkComponent {...(props as RenderElementProps<LinkElement>)} />;
-    case 'paragraph':
+    }
+    case 'paragraph': {
       return (
         <ParagraphComponent
           {...(props as RenderElementProps<ParagraphElement>)}
         />
       );
-    default:
+    }
+    default: {
       return null;
+    }
   }
 };
 
@@ -419,7 +426,8 @@ const wrapButton = (editor: CustomEditor) => {
 // https://bugs.chromium.org/p/chromium/issues/detail?id=1249405
 const InlineChromiumBugfix = () => (
   <span className="plite-inlines-chromium-bugfix" contentEditable={false}>
-    {String.fromCodePoint(160) /* Non-breaking space */}
+    {/* Non-breaking space */}
+    {String.fromCodePoint(160)}
   </span>
 );
 
@@ -473,13 +481,14 @@ const EditableButtonComponent = ({
     {...attributes}
     // Margin is necessary to clearly show the cursor adjacent to the button
     className="plite-inlines-editable-button"
-    onClick={(ev) => ev.preventDefault()}
+    onClick={(ev) => {
+      ev.preventDefault();
+    }}
     onKeyDown={(event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
       }
     }}
-    // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- [P0 contenteditable] Native inline buttons have unresolved Chromium/WebKit editing behavior documented above.
     role="button"
     tabIndex={0}
   >
@@ -530,7 +539,7 @@ const InlineText = (props: RenderTextProps) => {
 
 const AddLinkButton = () => {
   const editor = useEditor();
-  const active = useEditorSelector((editor) => isLinkActive(editor));
+  const active = useEditorSelector((innerEditor) => isLinkActive(innerEditor));
   return (
     <Button
       active={active}
@@ -540,9 +549,9 @@ const AddLinkButton = () => {
 
         wrapLink(editor, url);
       }}
-      onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
-        event.preventDefault()
-      }
+      onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+      }}
     >
       <Icon>link</Icon>
     </Button>
@@ -551,7 +560,9 @@ const AddLinkButton = () => {
 
 const RemoveLinkButton = () => {
   const editor = useEditor();
-  const active = useEditorSelector((editor) => isLinkActive(editor));
+  const active = useEditorSelector((innerEditor2) =>
+    isLinkActive(innerEditor2)
+  );
 
   return (
     <Button
@@ -559,9 +570,9 @@ const RemoveLinkButton = () => {
       onClick={() => {
         unwrapLink(editor);
       }}
-      onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
-        event.preventDefault()
-      }
+      onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+      }}
     >
       <Icon>link_off</Icon>
     </Button>
@@ -573,10 +584,12 @@ const ToggleEditableButtonButton = () => {
   return (
     <Button
       active
-      onClick={() => wrapButton(editor)}
-      onPointerDown={(event: PointerEvent<HTMLButtonElement>) =>
-        event.preventDefault()
-      }
+      onClick={() => {
+        wrapButton(editor);
+      }}
+      onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+      }}
     >
       <Icon>smart_button</Icon>
     </Button>

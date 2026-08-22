@@ -209,6 +209,7 @@ const restoreMutation = (mutation: MutationRecord) => {
 
   for (const node of mutation.addedNodes) {
     if (node.parentNode === mutation.target) {
+      // oxlint-disable-next-line unicorn/prefer-dom-node-remove -- MutationRecord exposes Node, which does not implement ChildNode.remove().
       mutation.target.removeChild(node);
     }
   }
@@ -377,7 +378,7 @@ export class DOMIntegrityObserver {
   }
 
   private readonly handleMutations = (records: MutationRecord[]) => {
-    const root = this.root;
+    const { root } = this;
 
     if (!root || records.length === 0) return;
 
@@ -436,7 +437,7 @@ export class DOMIntegrityObserver {
   };
 
   private observe() {
-    const root = this.root;
+    const { root } = this;
     const MutationObserverConstructor =
       root?.ownerDocument.defaultView?.MutationObserver;
 
@@ -447,7 +448,7 @@ export class DOMIntegrityObserver {
   }
 
   private repairNow(notify = true) {
-    const root = this.root;
+    const { root } = this;
 
     if (!root || this.pendingMutations.length === 0) return;
 

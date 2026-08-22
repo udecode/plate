@@ -265,7 +265,7 @@ describe('slate cross-package contracts', () => {
       });
 
       const [, blockPath] = editor.read.nodes.block()!;
-      const selectionPath = editor.read.nodes.path(input.selection!);
+      const selectionPath = editor.read.nodes.path(input.selection);
 
       if (!selectionPath) {
         throw new Error('Expected the inline selection to resolve to a path');

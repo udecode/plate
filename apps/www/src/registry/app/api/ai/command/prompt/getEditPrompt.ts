@@ -232,8 +232,9 @@ export function getEditPrompt(
     tableCellRefs: AIChatRequestRefs['tableCells'];
   }
 ): [string, 'table' | 'multi-block' | 'selection'] {
-  if (!isSelecting)
+  if (!isSelecting) {
     throw new Error('Edit tool is only available when selecting');
+  }
 
   // Handle selection inside table cell
   if (isSelectionInTable(editor) && !isSingleCellSelection(editor)) {

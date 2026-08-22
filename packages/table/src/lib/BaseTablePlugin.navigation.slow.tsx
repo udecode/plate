@@ -52,7 +52,7 @@ describe('table navigation slow contracts', () => {
       const cellAbove = editor
         .plugin(BaseTablePlugin)
         .read.getAdjacentCell({ deltaRow: -1 });
-      expect((cellAbove?.[0].children as Element[])[0].children[0].text).toBe(
+      expect((cellAbove![0].children as Element[])[0].children[0].text).toBe(
         '12'
       );
     });

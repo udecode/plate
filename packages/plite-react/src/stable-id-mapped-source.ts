@@ -1,3 +1,5 @@
+import { failInvariant } from './editable/runtime-editor-api';
+
 type StableIdMappedOutput<TValue> = Readonly<{
   key: string;
   value: TValue;
@@ -10,7 +12,7 @@ export type StableIdMappedValue<
 > = Readonly<{
   entity?: TEntity;
   metadata?: TMetadata;
-  outputs: readonly StableIdMappedOutput<TValue>[];
+  outputs: ReadonlyArray<StableIdMappedOutput<TValue>>;
 }>;
 
 type StableIdMappedSourceOptions<TItem, TEntity, TValue, TMetadata> = Readonly<{
@@ -36,7 +38,7 @@ export type StableIdMappedSourceRefreshResult<TMetadata> = Readonly<{
   changedEntityIds: readonly string[];
   changedOutputKeys: readonly string[];
   fullFallback: boolean;
-  mapped: readonly Readonly<{ id: string; metadata?: TMetadata }>[];
+  mapped: ReadonlyArray<Readonly<{ id: string; metadata?: TMetadata }>>;
   orderChanged: boolean;
 }>;
 
@@ -53,7 +55,7 @@ export type StableIdMappedSource<TItem, TEntity, TValue, TMetadata> = Readonly<{
 type InternalMappedValue<TEntity, TValue, TMetadata> = Readonly<{
   entity?: TEntity;
   metadata?: TMetadata;
-  outputs: readonly StableIdMappedOutput<TValue>[];
+  outputs: ReadonlyArray<StableIdMappedOutput<TValue>>;
 }>;
 
 type InternalState<TItem, TEntity, TValue, TMetadata> = {
@@ -133,9 +135,9 @@ const getChangedOutputKeys = <T>(
   return changedKeys;
 };
 
-const getMappedMetadata = <TEntity, TValue, TMetadata>(
+const getMappedMetadata = <TMetadata>(
   id: string,
-  mapped: InternalMappedValue<TEntity, TValue, TMetadata>
+  mapped: InternalMappedValue<unknown, unknown, TMetadata>
 ) => ({
   id,
   ...(mapped.metadata === undefined ? {} : { metadata: mapped.metadata }),
@@ -176,7 +178,7 @@ export const createStableIdMappedSource = <
     >();
 
     items.forEach((item, index) => {
-      const id = allIds[index]!;
+      const id = allIds[index];
       const mapped = options.map(item);
       mappedById.set(id, mapped);
 
@@ -233,7 +235,11 @@ export const createStableIdMappedSource = <
       options.isOutputEqual
     );
     const mapped = nextState.allIds.map((id) =>
-      getMappedMetadata(id, nextState.mappedById.get(id)!)
+      getMappedMetadata(
+        id,
+        nextState.mappedById.get(id) ??
+          failInvariant('Expected value to be defined')
+      )
     );
 
     state = nextState;
@@ -292,7 +298,7 @@ export const createStableIdMappedSource = <
       }
 
       items.forEach((item, index) => {
-        if (!options.isItemEqual(state.inputs[index]!, item)) {
+        if (!options.isItemEqual(state.inputs[index], item)) {
           candidateIndexes.add(index);
         }
       });
@@ -312,13 +318,15 @@ export const createStableIdMappedSource = <
       const candidates = [...candidateIndexes]
         .sort((left, right) => left - right)
         .map((index) => {
-          const id = state.allIds[index]!;
+          const id = state.allIds[index];
 
           return {
             id,
             index,
-            next: options.map(items[index]!),
-            previous: state.mappedById.get(id)!,
+            next: options.map(items[index]),
+            previous:
+              state.mappedById.get(id) ??
+              failInvariant('Expected value to be defined'),
           };
         });
       const changedCandidates = candidates.filter(({ next, previous }) => {
@@ -417,18 +425,25 @@ export const createStableIdMappedSource = <
           } else {
             const index = ids.indexOf(id);
 
-            if (index >= 0) ids.splice(index, 1);
+            if (index !== -1) ids.splice(index, 1);
           }
         }
 
         ids.sort(
           (left, right) =>
-            state.indexById.get(left)! - state.indexById.get(right)!
+            (state.indexById.get(left) ??
+              failInvariant('Expected value to be defined')) -
+            (state.indexById.get(right) ??
+              failInvariant('Expected value to be defined'))
         );
         nextIdsByOutputKey.set(key, ids);
 
         const nextValues = ids.flatMap((id) =>
-          (nextMappedById.get(id) ?? state.mappedById.get(id)!).outputs
+          (
+            nextMappedById.get(id) ??
+            state.mappedById.get(id) ??
+            failInvariant('Expected value to be defined')
+          ).outputs
             .filter((output) => output.key === key)
             .map((output) => output.value)
         );

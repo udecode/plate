@@ -8,7 +8,7 @@ export const composeEventHandlers =
   (event: E) => {
     originalEventHandler?.(event);
 
-    if (checkForDefaultPrevented === false || !event.defaultPrevented) {
+    if (!checkForDefaultPrevented || !event.defaultPrevented) {
       return ourEventHandler?.(event);
     }
   };

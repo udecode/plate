@@ -5,6 +5,7 @@ import {
   type Selection,
 } from '@platejs/plite';
 import {
+  failInvariant,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRootKeys,
   MAIN_ROOT_KEY,
@@ -60,11 +61,11 @@ const getChangedRoot = (commit: EditorCommit): RootKey | null => {
     ...commit.changes.deleteRoots,
   ]);
 
-  return roots.size === 1 ? [...roots][0]! : null;
+  return roots.size === 1 ? [...roots][0] : null;
 };
 
 const getDeepestChangedPath = (
-  paths: readonly (readonly number[])[] | undefined
+  paths: ReadonlyArray<readonly number[]> | undefined
 ): readonly number[] | null => {
   if (!paths || paths.length === 0) return null;
 
@@ -75,7 +76,7 @@ const getDeepestChangedPath = (
       .map((path) => [pathKey(path), path] as const)
   );
 
-  return candidates.size === 1 ? [...candidates.values()][0]! : null;
+  return candidates.size === 1 ? [...candidates.values()][0] : null;
 };
 
 const getCollapsedPoint = (
@@ -120,7 +121,7 @@ const getTarget = (
 
   return Object.freeze({
     path: path ? pathKey(path) : '',
-    ...(nodeKeys.length === 1 ? { nodeKey: nodeKeys[0]! } : {}),
+    ...(nodeKeys.length === 1 ? { nodeKey: nodeKeys[0] } : {}),
   });
 };
 
@@ -170,7 +171,7 @@ export const createHistoryBatchGroup = (
     root
   );
 
-  const range = ranges.length === 1 ? ranges[0]! : null;
+  const range = ranges.length === 1 ? ranges[0] : null;
   const changedSpan = getChangedSpan(ranges);
   const changedPath = getDeepestChangedPath(commit.changed.paths(publicRoot));
   const replacedSelection = selectionIsExpandedInRoot(
@@ -226,7 +227,9 @@ export const createHistoryBatchGroup = (
       mode: 'structural-replace',
       replacedSelection: true,
       root,
-      target: getTarget(commit, root, afterPoint.path, 'text')!,
+      target:
+        getTarget(commit, root, afterPoint.path, 'text') ??
+        failInvariant('Expected value to be defined'),
       toAfter: changedSpan[3],
       toBefore: changedSpan[1],
     });

@@ -57,7 +57,7 @@ it('uses Plite DOM paths for sibling text nodes inside the same element', () => 
   `;
 
   const root = document.querySelector('[data-plite-editor="true"]')!;
-  const second = root.querySelectorAll('[data-plite-string]')[1]!
+  const second = root.querySelectorAll('[data-plite-string]')[1]
     .firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
@@ -94,7 +94,7 @@ it('fails closed instead of flattening nested text nodes without Plite DOM paths
   `;
 
   const root = document.querySelector('[data-plite-editor="true"]')!;
-  const second = root.querySelectorAll('[data-plite-string]')[1]!
+  const second = root.querySelectorAll('[data-plite-string]')[1]
     .firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();

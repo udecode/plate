@@ -29,9 +29,9 @@ export function ExcalidrawElement(
   );
 
   React.useEffect(() => {
-    void import('@excalidraw/excalidraw').then((module) =>
-      setExcalidraw(() => module.Excalidraw)
-    );
+    void import('@excalidraw/excalidraw').then((module) => {
+      setExcalidraw(() => module.Excalidraw);
+    });
   }, []);
 
   // Excalidraw treats initialData as an initialization boundary and mutates it.

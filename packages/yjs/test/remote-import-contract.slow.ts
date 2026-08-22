@@ -117,18 +117,18 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(source.doc));
 
-    const target = createPeer('target', targetDoc);
+    const innerTarget = createPeer('target', targetDoc);
 
-    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(target.doc));
+    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(innerTarget.doc));
 
     source.editor.update((tx) => {
       tx.setField(documentTitle, 'Q3 Plan');
     });
-    Y.applyUpdate(target.doc, Y.encodeStateAsUpdate(source.doc));
+    Y.applyUpdate(innerTarget.doc, Y.encodeStateAsUpdate(source.doc));
 
-    assert.equal(target.editor.read.getField(documentTitle), 'Q3 Plan');
+    assert.equal(innerTarget.editor.read.getField(documentTitle), 'Q3 Plan');
     source.cleanup();
-    target.cleanup();
+    innerTarget.cleanup();
   });
 
   it('transports registered domain effects exactly once', () => {
@@ -168,21 +168,21 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(source.doc));
 
-    const target = createPeer('target', targetDoc);
+    const innerTarget2 = createPeer('target', targetDoc);
 
-    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(target.doc));
+    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(innerTarget2.doc));
 
     source.editor.update((tx) => {
       tx.effects.emit(increment, 2);
     });
     const update = Y.encodeStateAsUpdate(source.doc);
 
-    Y.applyUpdate(target.doc, update);
-    Y.applyUpdate(target.doc, update);
+    Y.applyUpdate(innerTarget2.doc, update);
+    Y.applyUpdate(innerTarget2.doc, update);
 
-    assert.equal(target.editor.read.getField(counter), 2);
+    assert.equal(innerTarget2.editor.read.getField(counter), 2);
     source.cleanup();
-    target.cleanup();
+    innerTarget2.cleanup();
   });
 
   it('transports a shared effect without a state reducer', () => {
@@ -233,18 +233,18 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(source.doc));
 
-    const target = createPeer(targetDoc, true);
+    const innerTarget3 = createPeer(targetDoc, true);
 
-    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(target.doc));
+    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(innerTarget3.doc));
 
     source.editor.update((tx) => {
       tx.effects.emit(announce, 'saved');
     });
-    Y.applyUpdate(target.doc, Y.encodeStateAsUpdate(source.doc));
+    Y.applyUpdate(innerTarget3.doc, Y.encodeStateAsUpdate(source.doc));
 
-    assert.deepEqual(target.received, ['saved']);
+    assert.deepEqual(innerTarget3.received, ['saved']);
     source.cleanup();
-    target.cleanup();
+    innerTarget3.cleanup();
   });
 
   it('preserves effect type identity and deeply frozen values through Yjs', () => {
@@ -274,12 +274,12 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceDoc));
 
-    const received: EditorEffect<Payload>[] = [];
-    const target = createEditor({
+    const received: Array<EditorEffect<Payload>> = [];
+    const innerTarget4 = createEditor({
       extensions: [effects] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupRecorder = target.install(
+    const cleanupRecorder = innerTarget4.install(
       defineExtension('effect-codec-identity-recorder', {
         on: {
           commit({ commit }) {
@@ -294,7 +294,7 @@ describe('@platejs/yjs remote import contract', () => {
         },
       })
     );
-    const cleanupTarget = target.install(
+    const cleanupTarget = innerTarget4.install(
       yjs({ doc: targetDoc, rootName: 'effect-codec-identity' })
     );
     const input = { nested: { count: 1 } };
@@ -558,25 +558,25 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(source.doc));
 
-    const target = createPeer(targetDoc);
+    const innerTarget5 = createPeer(targetDoc);
 
-    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(target.doc));
+    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(innerTarget5.doc));
     source.editor.update((tx) => {
       tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
       tx.effects.emit(increment, 2);
     });
-    Y.applyUpdate(target.doc, Y.encodeStateAsUpdate(source.doc));
+    Y.applyUpdate(innerTarget5.doc, Y.encodeStateAsUpdate(source.doc));
 
-    assert.equal(target.editor.read.text.string([]), 'body!');
-    assert.equal(target.editor.read.getField(counter), 2);
-    assert.deepEqual(target.remoteCommits, [
+    assert.equal(innerTarget5.editor.read.text.string([]), 'body!');
+    assert.equal(innerTarget5.editor.read.getField(counter), 2);
+    assert.deepEqual(innerTarget5.remoteCommits, [
       {
         documentChanged: true,
         effectKeys: [increment.key],
       },
     ]);
     source.cleanup();
-    target.cleanup();
+    innerTarget5.cleanup();
   });
 
   it('retries shared effects after the matching codec is installed', () => {
@@ -741,9 +741,9 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(source.doc));
 
-    const target = createPeer(targetDoc);
+    const innerTarget6 = createPeer(targetDoc);
 
-    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(target.doc));
+    Y.applyUpdate(source.doc, Y.encodeStateAsUpdate(innerTarget6.doc));
     source.editor.update((tx) => {
       tx.effects.emit(focus, {
         point: { offset: 4, path: [0, 0] },
@@ -753,12 +753,12 @@ describe('@platejs/yjs remote import contract', () => {
         },
       });
     });
-    target.editor.update((tx) => {
+    innerTarget6.editor.update((tx) => {
       tx.text.insert('remote-', { at: { offset: 0, path: [0, 0] } });
     });
-    Y.applyUpdate(target.doc, Y.encodeStateAsUpdate(source.doc));
+    Y.applyUpdate(innerTarget6.doc, Y.encodeStateAsUpdate(source.doc));
 
-    assert.deepEqual(target.editor.read.getField(receivedFocus), {
+    assert.deepEqual(innerTarget6.editor.read.getField(receivedFocus), {
       point: { offset: 11, path: [0, 0] },
       range: {
         anchor: { offset: 8, path: [0, 0] },
@@ -766,7 +766,7 @@ describe('@platejs/yjs remote import contract', () => {
       },
     });
     source.cleanup();
-    target.cleanup();
+    innerTarget6.cleanup();
   });
 
   it('exports one deeply frozen remote policy', () => {
@@ -784,24 +784,24 @@ describe('@platejs/yjs remote import contract', () => {
   });
 
   it('imports remote Yjs updates through one canonical incremental commit', () => {
-    const [source, target] = createSeededYjsPeers({
+    const [source, innerTarget7] = createSeededYjsPeers({
       children: largeValue(),
       clientIds: ['source', 'target'],
       numericClientIds: { source: 101, target: 202 },
     });
 
     assert.ok(source);
-    assert.ok(target);
+    assert.ok(innerTarget7);
 
-    const remoteImportCommits = recordRemoteImportCommits(target.editor);
+    const remoteImportCommits = recordRemoteImportCommits(innerTarget7.editor);
 
-    clearYjsTrace(target);
+    clearYjsTrace(innerTarget7);
     source.editor.update.text.insert('!', {
       at: { path: [0, 0], offset: 'block-000'.length },
     });
-    syncConnectedPeers([source, target]);
+    syncConnectedPeers([source, innerTarget7]);
 
-    assert.equal(getPeerTopLevelTexts(target)[0], 'block-000!');
+    assert.equal(getPeerTopLevelTexts(innerTarget7)[0], 'block-000!');
     assert.deepEqual(remoteImportCommits, [
       {
         documentChanged: true,
@@ -809,7 +809,7 @@ describe('@platejs/yjs remote import contract', () => {
         tags: YjsUpdatePolicy.remote.tags,
       },
     ]);
-    assert.deepEqual(getYjsTrace(target), [
+    assert.deepEqual(getYjsTrace(innerTarget7), [
       {
         changedChildren: 1,
         changedRanges: 1,
@@ -925,8 +925,8 @@ describe('@platejs/yjs remote import contract', () => {
       version: 1,
     });
     const createPeer = (doc: Y.Doc) => {
-      const localChanges: ReturnType<DocumentChange['toJSON']>[] = [];
-      const remoteChanges: ReturnType<DocumentChange['toJSON']>[] = [];
+      const localChanges: Array<ReturnType<DocumentChange['toJSON']>> = [];
+      const remoteChanges: Array<ReturnType<DocumentChange['toJSON']>> = [];
       const editor = createEditor({
         extensions: [SetValuedSchema],
         initialSelection: {
@@ -979,7 +979,7 @@ describe('@platejs/yjs remote import contract', () => {
     };
     const operations = (change: ReturnType<DocumentChange['toJSON']>) =>
       change.primary?.flatMap(
-        (section) => section.properties?.operations ?? []
+        (innerSection) => innerSection.properties?.operations ?? []
       ) ?? [];
     const left = createPeer(new Y.Doc());
     const rightDoc = new Y.Doc();
@@ -1257,52 +1257,52 @@ describe('@platejs/yjs remote import contract', () => {
   });
 
   it('keeps remote imports out of installed History and preserves local undo', () => {
-    const [source, target] = createSeededYjsHistoryPeers({
+    const [source, innerTarget8] = createSeededYjsHistoryPeers({
       children: [paragraph('one')],
       clientIds: ['source', 'target'],
     });
 
     assert.ok(source);
-    assert.ok(target);
+    assert.ok(innerTarget8);
 
     source.editor.update.text.insert('!', {
       at: { path: [0, 0], offset: 3 },
     });
-    syncConnectedPeers([source, target]);
+    syncConnectedPeers([source, innerTarget8]);
 
-    assert.equal(getPeerTopLevelTexts(target)[0], 'one!');
+    assert.equal(getPeerTopLevelTexts(innerTarget8)[0], 'one!');
     assert.equal(
-      target.editor.read((state) => state.history.undos().length),
+      innerTarget8.editor.read((state) => state.history.undos().length),
       0
     );
 
-    target.editor.update.text.insert('?', {
+    innerTarget8.editor.update.text.insert('?', {
       at: { path: [0, 0], offset: 4 },
     });
     assert.equal(
-      target.editor.read((state) => state.history.undos().length),
+      innerTarget8.editor.read((state) => state.history.undos().length),
       1
     );
 
-    target.editor.update((tx) => {
+    innerTarget8.editor.update((tx) => {
       tx.history.undo();
     });
-    assert.equal(getPeerTopLevelTexts(target)[0], 'one!');
+    assert.equal(getPeerTopLevelTexts(innerTarget8)[0], 'one!');
   });
 
   it('converges a large remote document after distributed text edits', () => {
     const blockCount = 256;
     const middleIndex = Math.floor(blockCount / 2);
-    const [source, target] = createSeededYjsPeers({
+    const [source, innerTarget9] = createSeededYjsPeers({
       children: largeValue(blockCount),
       clientIds: ['source', 'target'],
       numericClientIds: { source: 101, target: 202 },
     });
 
     assert.ok(source);
-    assert.ok(target);
+    assert.ok(innerTarget9);
 
-    clearYjsTrace(target);
+    clearYjsTrace(innerTarget9);
     source.editor.update((tx) => {
       tx.text.insert('!', {
         at: { path: [0, 0], offset: 'block-000'.length },
@@ -1320,16 +1320,16 @@ describe('@platejs/yjs remote import contract', () => {
         },
       });
     });
-    syncConnectedPeers([source, target]);
+    syncConnectedPeers([source, innerTarget9]);
 
-    const targetTexts = getPeerTopLevelTexts(target);
+    const targetTexts = getPeerTopLevelTexts(innerTarget9);
 
     assert.equal(targetTexts.length, blockCount);
     assert.equal(targetTexts[0], 'block-000!');
     assert.equal(targetTexts[middleIndex], `block-${middleIndex}?`);
     assert.equal(targetTexts[blockCount - 1], `block-${blockCount - 1}.`);
     assert.deepEqual(getPeerTopLevelTexts(source), targetTexts);
-    assert.deepEqual(getYjsTrace(target), [
+    assert.deepEqual(getYjsTrace(innerTarget9), [
       {
         changedChildren: 3,
         changedRanges: 3,
@@ -1346,13 +1346,13 @@ describe('@platejs/yjs remote import contract', () => {
       paragraph('tail'),
       paragraph('remove'),
     ];
-    const [source, target] = createSeededYjsPeers({
+    const [source, innerTarget10] = createSeededYjsPeers({
       children,
       clientIds: ['source', 'target'],
     });
 
     assert.ok(source);
-    assert.ok(target);
+    assert.ok(innerTarget10);
 
     const root = source.editor.read.yjs.root();
     const sectionNode = getYjsNode(root, [0]);
@@ -1361,7 +1361,7 @@ describe('@platejs/yjs remote import contract', () => {
     assert.ok(sectionNode instanceof Y.XmlElement);
     assert.ok(text instanceof Y.XmlText);
 
-    clearYjsTrace(target);
+    clearYjsTrace(innerTarget10);
     source.doc.transact(() => {
       text.delete(0, 1);
       text.insert(text.length, '!');
@@ -1372,9 +1372,9 @@ describe('@platejs/yjs remote import contract', () => {
       root.insert(1, [createYjsNode(paragraph('middle'))]);
       root.delete(3, 1);
     });
-    syncConnectedPeers([source, target]);
+    syncConnectedPeers([source, innerTarget10]);
 
-    assert.deepEqual(readPeerChildren(target), [
+    assert.deepEqual(readPeerChildren(innerTarget10), [
       {
         children: [
           {
@@ -1389,7 +1389,7 @@ describe('@platejs/yjs remote import contract', () => {
       paragraph('middle'),
       paragraph('tail'),
     ]);
-    assert.deepEqual(getYjsTrace(target), [
+    assert.deepEqual(getYjsTrace(innerTarget10), [
       {
         changedChildren: 3,
         changedRanges: 3,
@@ -1487,29 +1487,29 @@ describe('@platejs/yjs remote import contract', () => {
   });
 
   it('keeps sparse event ranges narrow through concurrent reconnect', () => {
-    const [source, target] = createSeededYjsPeers({
+    const [source, innerTarget11] = createSeededYjsPeers({
       children: largeValue(256),
       clientIds: ['source', 'target'],
     });
 
     assert.ok(source);
-    assert.ok(target);
+    assert.ok(innerTarget11);
 
-    disconnectYjsPeer(target);
+    disconnectYjsPeer(innerTarget11);
     source.editor.update.text.insert('!', {
       at: { offset: 'block-000'.length, path: [0, 0] },
     });
-    target.editor.update.text.insert('?', {
+    innerTarget11.editor.update.text.insert('?', {
       at: { offset: 'block-255'.length, path: [255, 0] },
     });
-    clearYjsTrace(target);
-    connectYjsPeerAndSync(target, [source, target]);
+    clearYjsTrace(innerTarget11);
+    connectYjsPeerAndSync(innerTarget11, [source, innerTarget11]);
 
     assert.deepEqual(
-      getPeerTopLevelTexts(target),
+      getPeerTopLevelTexts(innerTarget11),
       getPeerTopLevelTexts(source)
     );
-    assert.deepEqual(getYjsTrace(target), [
+    assert.deepEqual(getYjsTrace(innerTarget11), [
       {
         changedChildren: 1,
         changedRanges: 1,
@@ -1530,13 +1530,13 @@ describe('@platejs/yjs remote import contract', () => {
 
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceDoc));
 
-    const target = createEditor({ initialValue: [paragraph('local')] });
-    const cleanupTarget = target.install(
+    const innerTarget12 = createEditor({ initialValue: [paragraph('local')] });
+    const cleanupTarget = innerTarget12.install(
       yjs({ doc: targetDoc, rootName: 'activation-cycle' })
     );
 
-    assert.deepEqual(target.read.children(), [paragraph('claimed')]);
-    assert.equal(target.read.yjs.root().length, 1);
+    assert.deepEqual(innerTarget12.read.children(), [paragraph('claimed')]);
+    assert.equal(innerTarget12.read.yjs.root().length, 1);
     cleanupSource();
     cleanupTarget();
   });
@@ -1557,16 +1557,19 @@ describe('@platejs/yjs remote import contract', () => {
       return { cleanup, doc, header, main };
     };
     const source = createPeer(new Y.Doc());
-    const target = createPeer(new Y.Doc(), Y.encodeStateAsUpdate(source.doc));
+    const innerTarget13 = createPeer(
+      new Y.Doc(),
+      Y.encodeStateAsUpdate(source.doc)
+    );
 
     source.header.update.text.insert('!', {
       at: { offset: 'header'.length, path: [0, 0] },
     });
-    Y.applyUpdate(target.doc, Y.encodeStateAsUpdate(source.doc));
+    Y.applyUpdate(innerTarget13.doc, Y.encodeStateAsUpdate(source.doc));
 
-    assert.equal(target.header.read.text.string([]), 'header!');
-    assert.equal(target.main.read.text.string([]), 'body');
-    assert.deepEqual(target.header.read.yjs.trace().at(-1), {
+    assert.equal(innerTarget13.header.read.text.string([]), 'header!');
+    assert.equal(innerTarget13.main.read.text.string([]), 'body');
+    assert.deepEqual(innerTarget13.header.read.yjs.trace().at(-1), {
       changedChildren: 1,
       changedRanges: 1,
       importKind: 'event-change',
@@ -1575,6 +1578,6 @@ describe('@platejs/yjs remote import contract', () => {
       root: 'header',
     });
     source.cleanup();
-    target.cleanup();
+    innerTarget13.cleanup();
   });
 });

@@ -94,6 +94,8 @@ export const imagePlugin = ImagePlugin.extend({
       open: (element: ImageNode, resolvedUrl = element.url) => {
         const currentKey = editor.key(element);
 
+        if (currentKey == null) return;
+
         store.set({
           preview: {
             ...createInitialPreviewState(),
@@ -103,12 +105,19 @@ export const imagePlugin = ImagePlugin.extend({
             },
             openEditorId: editor.id,
             previewList: Array.from(
-              editor.read.nodes.entries({ at: [], type: BaseImagePlugin }),
-              ([node, path]) => ({
-                key: editor.key(path)!,
-                url: editor.key(path) === currentKey ? resolvedUrl : node.url,
-              })
-            ),
+              editor.read.nodes.entries({ at: [], type: BaseImagePlugin })
+            ).flatMap(([node, path]) => {
+              const key = editor.key(path);
+
+              return key == null
+                ? []
+                : [
+                    {
+                      key,
+                      url: key === currentKey ? resolvedUrl : node.url,
+                    },
+                  ];
+            }),
           },
         });
       },
@@ -210,7 +219,7 @@ export function MediaPreviewDialog() {
   const downloadDisabled = !currentPreview?.url;
 
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     const onWheel = (event: WheelEvent) => {
       if (scale <= 1 || !boundingClientRect) return;
@@ -244,11 +253,13 @@ export function MediaPreviewDialog() {
 
     document.addEventListener('wheel', onWheel, { passive: false });
 
-    return () => document.removeEventListener('wheel', onWheel);
+    return () => {
+      document.removeEventListener('wheel', onWheel);
+    };
   }, [api.preview, boundingClientRect, isOpen, scale, translate]);
 
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (!isHotkey('escape')(event)) return;
@@ -259,7 +270,9 @@ export function MediaPreviewDialog() {
 
     document.addEventListener('keydown', onKeyDown);
 
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, [api.preview, isOpen]);
 
   const handleDownload = () => {
@@ -280,11 +293,16 @@ export function MediaPreviewDialog() {
         'fixed top-0 left-0 z-50 h-screen w-screen select-none',
         !isOpen && 'hidden'
       )}
-      onContextMenu={(e) => e.stopPropagation()}
-      onClick={api.preview.close}
+      onContextMenu={(e) => {
+        e.stopPropagation();
+      }}
     >
-      <div className="absolute inset-0 size-full bg-black opacity-30" />
-      <div className="absolute inset-0 size-full bg-black opacity-30" />
+      <button
+        aria-label="Close preview"
+        className="absolute inset-0 size-full border-0 bg-black p-0 opacity-60"
+        onClick={api.preview.close}
+        type="button"
+      />
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative flex max-h-screen w-full items-center">
           <PreviewImage
@@ -292,12 +310,10 @@ export function MediaPreviewDialog() {
               'mx-auto block max-h-[calc(100vh-4rem)] w-auto object-contain transition-transform'
             )}
           />
-          <div
-            className="absolute bottom-0 left-1/2 z-40 flex w-fit -translate-x-1/2 justify-center gap-4 p-2 text-center text-white"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="absolute bottom-0 left-1/2 z-40 flex w-fit -translate-x-1/2 justify-center gap-4 p-2 text-center text-white">
             <div className="flex gap-1">
               <button
+                aria-label="Previous image"
                 className={cn(
                   buttonVariants({
                     variant: prevDisabled ? 'disabled' : 'default',
@@ -311,6 +327,7 @@ export function MediaPreviewDialog() {
               </button>
               {(currentPreviewIndex ?? 0) + 1}
               <button
+                aria-label="Next image"
                 className={cn(
                   buttonVariants({
                     variant: nextDisabled ? 'disabled' : 'default',
@@ -325,6 +342,7 @@ export function MediaPreviewDialog() {
             </div>
             <div className="flex">
               <button
+                aria-label="Zoom out"
                 className={cn(
                   buttonVariants({
                     variant: zoomOutDisabled ? 'disabled' : 'default',
@@ -351,12 +369,20 @@ export function MediaPreviewDialog() {
                     <span>%</span>
                   </>
                 ) : (
-                  <span onClick={() => api.preview.setEditingScale(true)}>
+                  <button
+                    aria-label="Set zoom level"
+                    className="border-0 bg-transparent p-0 text-inherit"
+                    onClick={() => {
+                      api.preview.setEditingScale(true);
+                    }}
+                    type="button"
+                  >
                     {`${scale * 100}%`}
-                  </span>
+                  </button>
                 )}
               </div>
               <button
+                aria-label="Zoom in"
                 className={cn(
                   buttonVariants({
                     variant: zoomInDisabled ? 'disabled' : 'default',
@@ -370,6 +396,7 @@ export function MediaPreviewDialog() {
               </button>
             </div>
             <button
+              aria-label="Download image"
               className={cn(
                 buttonVariants({
                   variant: downloadDisabled ? 'disabled' : 'default',
@@ -382,6 +409,7 @@ export function MediaPreviewDialog() {
               <Download className="size-4" />
             </button>
             <button
+              aria-label="Close preview"
               className={cn(buttonVariants())}
               onClick={api.preview.close}
               type="button"
@@ -416,21 +444,28 @@ function PreviewImage({
   }, [preview.scale, preview.translate.x, preview.translate.y, store]);
 
   return (
-    <img
-      alt={alt}
-      ref={useComposedRef(imageRef, ref)}
-      draggable={false}
-      src={preview.currentPreview?.url}
-      style={{
-        cursor: isZoomIn ? 'zoom-in' : 'zoom-out',
-        transform: `translate(${`${preview.translate.x}px`}, ${`${preview.translate.y}px`}) scale(${preview.scale})`,
-      }}
+    <button
+      aria-label={isZoomIn ? 'Zoom in preview image' : 'Zoom out preview image'}
+      className="block border-0 bg-transparent p-0"
       onClick={(event) => {
         event.stopPropagation();
         api.preview[isZoomIn ? 'zoomIn' : 'zoomOut']();
       }}
-      {...props}
-    />
+      type="button"
+    >
+      {/* oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] The preview owns a runtime URL, imperative ref, and live CSS transform that Next Image cannot preserve. */}
+      <img
+        alt={alt}
+        ref={useComposedRef(imageRef, ref)}
+        draggable={false}
+        src={preview.currentPreview?.url}
+        style={{
+          cursor: isZoomIn ? 'zoom-in' : 'zoom-out',
+          transform: `translate(${preview.translate.x}px, ${preview.translate.y}px) scale(${preview.scale})`,
+        }}
+        {...props}
+      />
+    </button>
   );
 }
 
@@ -448,8 +483,12 @@ function ScaleInput({
     <input
       autoFocus
       value={value}
-      onChange={(event) => setValue(event.target.value)}
-      onFocus={(event) => event.currentTarget.select()}
+      onChange={(event) => {
+        setValue(event.target.value);
+      }}
+      onFocus={(event) => {
+        event.currentTarget.select();
+      }}
       onKeyDown={(event) => {
         if (!isHotkey('enter')(event)) return;
 
@@ -470,8 +509,8 @@ function ScaleInput({
 
 function getImageDownloadFilename(url: string) {
   try {
-    const pathname = new URL(url, window.location.href).pathname;
-    const filename = pathname.split('/').filter(Boolean).pop();
+    const { pathname } = new URL(url, window.location.href);
+    const filename = pathname.split('/').findLast(Boolean);
 
     return filename || DEFAULT_DOWNLOAD_FILENAME;
   } catch {

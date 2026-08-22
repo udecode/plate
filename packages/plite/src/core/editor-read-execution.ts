@@ -26,7 +26,8 @@ export const isEditorNodeSelectable = (editor: Editor, element: Node) =>
     editor,
     editorReads.nodes.isSelectable,
     { element },
-    ({ element }) => getEditorSchema(editor).isSelectable(element)
+    ({ element: innerElement }) =>
+      getEditorSchema(editor).isSelectable(innerElement)
   );
 
 export const projectEditorExportSlice = <V extends Value>(

@@ -13,8 +13,8 @@ describe('resolvePlugin', () => {
     const plugin = defineBasePlugin('orderedConfiguration', {
       initialState: { label: 'base', mode: 'base' },
     })
-      .extend(({ plugin }) => {
-        seen.push(plugin.initialState.label);
+      .extend(({ plugin: innerPlugin }) => {
+        seen.push(innerPlugin.initialState.label);
 
         return { initialState: { label: 'extension' } };
       })
@@ -108,9 +108,8 @@ describe('resolvePlugin', () => {
       inputRules: () => [configuredRule],
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const rules =
-      getPlateRuntime(editor).inputRules.plugins.configuredInputRulesFactory
-        .rules;
+    const { rules } =
+      getPlateRuntime(editor).inputRules.plugins.configuredInputRulesFactory;
 
     expect(rules).toHaveLength(1);
     expect(rules[0]?.target).toBe('insertText');

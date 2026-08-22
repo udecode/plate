@@ -20,8 +20,7 @@ export const resolveUsableRangeRect = (
 
   if (!root) return null;
 
-  const affinity = (range as Range & { affinity?: 'backward' | 'forward' })
-    .affinity;
+  const { affinity } = range as Range & { affinity?: 'backward' | 'forward' };
 
   return createDOMGeometryKernel({ root }).rangeRect(
     editor.api.dom.resolveDOMRange(range),

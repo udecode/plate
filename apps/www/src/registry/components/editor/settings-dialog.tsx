@@ -247,9 +247,7 @@ export function SettingsDialog() {
     setOpen(false);
 
     // Update AI complete options
-    const completeOptions = editor
-      .plugin(CopilotPlugin)
-      .store.get().completeOptions;
+    const { completeOptions } = editor.plugin(CopilotPlugin).store.get();
 
     if (completeOptions) {
       editor.plugin(CopilotPlugin).store.set({
@@ -273,7 +271,7 @@ export function SettingsDialog() {
     <div className="group relative">
       <div className="flex items-center justify-between">
         <label
-          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
+          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-[top,font-size,color] group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
           htmlFor={label}
         >
           <span className="inline-flex bg-background px-2">{label}</span>
@@ -304,9 +302,9 @@ export function SettingsDialog() {
         id={label}
         className="pr-10"
         value={tempKeys[service]}
-        onChange={(e) =>
-          setTempKeys((prev) => ({ ...prev, [service]: e.target.value }))
-        }
+        onChange={(e) => {
+          setTempKeys((prev) => ({ ...prev, [service]: e.target.value }));
+        }}
         placeholder=""
         data-1p-ignore
         type={showKey[service] ? 'text' : 'password'}
@@ -315,7 +313,9 @@ export function SettingsDialog() {
         size="icon"
         variant="ghost"
         className="absolute top-0 right-0 h-full"
-        onClick={() => toggleKeyVisibility(service)}
+        onClick={() => {
+          toggleKeyVisibility(service);
+        }}
         type="button"
       >
         {showKey[service] ? (
@@ -379,6 +379,7 @@ export function SettingsDialog() {
                       size="lg"
                       variant="outline"
                       className="w-full justify-between"
+                      aria-controls="settings-model-options"
                       aria-expanded={openModel}
                       role="combobox"
                     >
@@ -386,7 +387,10 @@ export function SettingsDialog() {
                       <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
+                  <PopoverContent
+                    className="w-full p-0"
+                    id="settings-model-options"
+                  >
                     <Command>
                       <CommandInput placeholder="Search model..." />
                       <CommandEmpty>No model found.</CommandEmpty>

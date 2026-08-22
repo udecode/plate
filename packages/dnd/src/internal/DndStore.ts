@@ -5,7 +5,7 @@ import { DndStorePlugin, type DndPluginState } from './DndStorePlugin';
 
 export const useDndPluginStore = <K extends keyof DndPluginState>(key: K) => {
   const editor = useEditor();
-  const store = editor.plugin(DndStorePlugin).store;
+  const { store } = editor.plugin(DndStorePlugin);
 
   return React.useSyncExternalStore(
     store.subscribe,
@@ -16,7 +16,7 @@ export const useDndPluginStore = <K extends keyof DndPluginState>(key: K) => {
 
 export const useDndPlugin = () => {
   const editor = useEditor();
-  const store = editor.plugin(DndStorePlugin).store;
+  const { store } = editor.plugin(DndStorePlugin);
 
   React.useEffect(() => {
     const handleDragLeave = (event: DragEvent) => {
@@ -30,7 +30,7 @@ export const useDndPlugin = () => {
         event.target instanceof HTMLElement
           ? event.target
           : event.target.parentElement;
-      const relatedTarget = event.relatedTarget;
+      const { relatedTarget } = event;
       const relatedElement =
         relatedTarget instanceof HTMLElement
           ? relatedTarget

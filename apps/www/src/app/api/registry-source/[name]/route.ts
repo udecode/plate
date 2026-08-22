@@ -21,7 +21,8 @@ export async function GET(
   _: Request,
   { params }: { params: Promise<{ name: string }> }
 ) {
-  const { name } = ParamsSchema.parse({ name: (await params).name });
+  const resolvedParams = await params;
+  const { name } = ParamsSchema.parse({ name: resolvedParams.name });
 
   try {
     const item = await getRegistryItem(name);

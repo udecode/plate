@@ -268,8 +268,8 @@ describe('focusPliteEditable', () => {
     const domSelection = document.getSelection();
     const selection = {
       kind: 'text',
-      anchor: { path: [0, 0], offset: firstLine.textContent!.length },
-      focus: { path: [0, 0], offset: firstLine.textContent!.length },
+      anchor: { path: [0, 0], offset: firstLine.textContent.length },
+      focus: { path: [0, 0], offset: firstLine.textContent.length },
     };
 
     if (!domSelection) {
@@ -329,8 +329,8 @@ describe('focusPliteEditable', () => {
     const secondLine = document.createTextNode('second line');
     const selection = {
       kind: 'text',
-      anchor: { path: [0, 0], offset: firstLine.textContent!.length },
-      focus: { path: [0, 0], offset: firstLine.textContent!.length },
+      anchor: { path: [0, 0], offset: firstLine.textContent.length },
+      focus: { path: [0, 0], offset: firstLine.textContent.length },
     };
 
     element.append(firstLine, secondLine);

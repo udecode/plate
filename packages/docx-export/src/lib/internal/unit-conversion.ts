@@ -52,7 +52,7 @@ export const inchToPoint = (inchValue: number): number =>
 export const inchToTWIP = (inchValue: number): number =>
   pointToTWIP(inchToPoint(inchValue));
 
-export const cmToInch = (cmValue: number): number => cmValue * 0.393_700_8;
+export const cmToInch = (cmValue: number): number => cmValue * 0.3937008;
 
 export const cmToTWIP = (cmValue: number): number =>
   inchToTWIP(cmToInch(cmValue));

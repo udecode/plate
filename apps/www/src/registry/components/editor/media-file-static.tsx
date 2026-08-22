@@ -31,7 +31,6 @@ export function FileElementStatic(
           download={name}
           href={url}
           rel="noopener noreferrer"
-          role="button"
           target="_blank"
         >
           <div

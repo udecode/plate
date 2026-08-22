@@ -118,7 +118,7 @@ describe('plite-dom public surface contract', () => {
     const sourceRoot = fileURLToPath(new URL('../src/', import.meta.url));
     const indexSource = readFileSync(
       fileURLToPath(new URL('../src/index.ts', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
     const exportPattern = /export \{([^}]+)\} from '([^']+)'/g;
     const missing: string[] = [];
@@ -126,7 +126,7 @@ describe('plite-dom public surface contract', () => {
     for (const match of indexSource.matchAll(exportPattern)) {
       const [, rawNames, sourceSpecifier] = match;
       const sourcePath = `${sourceRoot}${sourceSpecifier}.ts`;
-      const source = readFileSync(sourcePath, 'utf8');
+      const source = readFileSync(sourcePath, 'utf-8');
 
       for (const rawName of rawNames.split(',')) {
         const name = rawName
@@ -168,7 +168,7 @@ describe('plite-dom public surface contract', () => {
   it('keeps the package README aligned to the public DOM and coverage APIs', () => {
     const readme = readFileSync(
       fileURLToPath(new URL('../README.md', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
 
     assert.match(readme, readmeDomFocusPattern);
@@ -182,13 +182,13 @@ describe('plite-dom public surface contract', () => {
     const docs = [
       readFileSync(
         fileURLToPath(new URL('../README.md', import.meta.url)),
-        'utf8'
+        'utf-8'
       ),
       existsSync(pliteDomDocsPath)
-        ? readFileSync(pliteDomDocsPath, 'utf8')
+        ? readFileSync(pliteDomDocsPath, 'utf-8')
         : readFileSync(
             fileURLToPath(new URL('../src/index.ts', import.meta.url)),
-            'utf8'
+            'utf-8'
           ),
     ].join('\n');
 
@@ -263,7 +263,7 @@ describe('plite-dom public surface contract', () => {
   });
 
   it('publishes root export declarations through the export map', () => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
       description: string;
       exports: Record<string, unknown>;
       scripts: Record<string, string>;
@@ -290,7 +290,7 @@ describe('plite-dom public surface contract', () => {
   });
 
   it('keeps exported package subpaths backed by build entries', () => {
-    const tsdownConfig = readFileSync(tsdownConfigPath, 'utf8');
+    const tsdownConfig = readFileSync(tsdownConfigPath, 'utf-8');
 
     assert.match(tsdownConfig, tsdownRootEntryPattern);
     assert.match(tsdownConfig, tsdownInternalEntryPattern);
@@ -440,7 +440,7 @@ describe('plite-dom public surface contract', () => {
       return;
     }
 
-    const docs = readFileSync(reactEditorDocsPath, 'utf8');
+    const docs = readFileSync(reactEditorDocsPath, 'utf-8');
 
     assert.deepEqual(
       extractDocumentedCapabilityMethods(docs, 'dom'),
@@ -462,11 +462,11 @@ describe('plite-dom public surface contract', () => {
   it('publishes Hotkeys as a named export without a default-export alias', () => {
     const rootSource = readFileSync(
       fileURLToPath(new URL('../src/index.ts', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
     const hotkeySource = readFileSync(
       fileURLToPath(new URL('../src/utils/hotkeys.ts', import.meta.url)),
-      'utf8'
+      'utf-8'
     );
 
     assert.equal(typeof PliteDOM.Hotkeys, 'object');

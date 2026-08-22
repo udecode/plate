@@ -7,15 +7,15 @@ const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());
 const getCursorOverlayStateMock = mock();
 const getSelectionRectsMock = mock();
 
-mock.module('@platejs/core/react', () => ({
+void mock.module('@platejs/core/react', () => ({
   useEditor: useEditorMock,
 }));
 
-mock.module('@udecode/react-utils', () => ({
+void mock.module('@udecode/react-utils', () => ({
   useIsomorphicLayoutEffect: useIsomorphicLayoutEffectMock,
 }));
 
-mock.module('./cursorGeometry', () => ({
+void mock.module('./cursorGeometry', () => ({
   FROZEN_EMPTY_ARRAY: Object.freeze([]),
   getCursorOverlayState: getCursorOverlayStateMock,
   getSelectionRects: getSelectionRectsMock,
@@ -182,7 +182,7 @@ describe('cursor overlay hooks', () => {
     };
 
     const { result } = renderHook(() => {
-      renderCount++;
+      renderCount += 1;
 
       return useCursorOverlayPositions({ refreshOnResize: false });
     });
@@ -213,7 +213,7 @@ describe('cursor overlay hooks', () => {
     globalThis.requestAnimationFrame = () => 7;
 
     const { result } = renderHook(() => {
-      renderCount++;
+      renderCount += 1;
 
       return useCursorOverlayPositions({ refreshOnResize: false });
     });

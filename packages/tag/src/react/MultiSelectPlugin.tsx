@@ -1,8 +1,17 @@
 import { toPlatePlugin } from '@platejs/core/react';
-import { editorCommands, ElementApi, PathApi, TextApi } from '@platejs/plite';
+import {
+  editorCommands,
+  ElementApi,
+  type Node,
+  PathApi,
+  TextApi,
+} from '@platejs/plite';
 
 import { BaseTagPlugin } from '../lib';
 import type { TagElement } from '../lib/BaseTagPlugin';
+
+const isTagElement = (node: Node, type: string): node is TagElement =>
+  ElementApi.isElementType(node, type) && typeof node.value === 'string';
 
 export const MultiSelectPlugin = toPlatePlugin(
   BaseTagPlugin,
@@ -55,7 +64,7 @@ export const MultiSelectPlugin = toPlatePlugin(
         event: 'content',
         correct({ entry: [node, path], tx }) {
           if (
-            ElementApi.isElementType<TagElement>(node, type) &&
+            isTagElement(node, type) &&
             tx.nodes.some({
               at: [],
               type: plugin,

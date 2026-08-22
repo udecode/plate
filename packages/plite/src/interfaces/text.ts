@@ -38,7 +38,7 @@ type TextOfVariant<N> = N extends Text
         : Element extends N
           ? Text
           : N extends { getChildren: () => infer V }
-            ? V extends readonly (infer Child)[]
+            ? V extends ReadonlyArray<infer Child>
               ? TextOf<Child>
               : never
             : [SchemaTextInNode<N>] extends [never]
@@ -126,7 +126,7 @@ export interface TextInterface {
   decorations: (
     node: Text,
     decorations: DecoratedRange[]
-  ) => { leaf: Text; position?: LeafPosition }[];
+  ) => Array<{ leaf: Text; position?: LeafPosition }>;
 }
 
 const getOwnValue = (object: Record<PropertyKey, unknown>, key: string) =>
@@ -173,8 +173,8 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
   equals(text: Text, another: Text, options: TextEqualsOptions = {}): boolean {
     const { loose = false } = options;
 
-    function omitText(obj: Record<any, any>) {
-      const { text, ...rest } = obj;
+    function omitText(obj: Text) {
+      const { text: innerText, ...rest } = obj;
 
       return rest;
     }
@@ -205,7 +205,7 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
 
       if (
         !Object.hasOwn(text, key) ||
-        text[<keyof Text>key] !== props[<keyof Text>key]
+        text[key as keyof Text] !== props[key as keyof Text]
       ) {
         return false;
       }
@@ -217,8 +217,8 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
   decorations(
     node: Text,
     decorations: DecoratedRange[]
-  ): { leaf: Text; position?: LeafPosition }[] {
-    let leaves: { leaf: Text; position?: LeafPosition }[] = [
+  ): Array<{ leaf: Text; position?: LeafPosition }> {
+    let leaves: Array<{ leaf: Text; position?: LeafPosition }> = [
       { leaf: { ...node } },
     ];
 

@@ -1,10 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
-export const findReplaceValue = (
+export const findReplaceValue: Value = (
   <fragment>
     <hp>
       这是一段可以搜索的可编辑文本。当您进行搜索时，它会查找匹配的文本字符串，并实时为它们添加

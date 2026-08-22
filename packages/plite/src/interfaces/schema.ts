@@ -108,7 +108,7 @@ export interface PropertySetDescriptor<
     | PropertySetOptions<PropertyValueOf<TItemDescriptor>>
     | undefined = undefined,
 > extends PropertyValueDescriptor<
-  readonly PropertyValueOf<TItemDescriptor>[],
+  ReadonlyArray<PropertyValueOf<TItemDescriptor>>,
   'set',
   TOptions
 > {
@@ -228,9 +228,7 @@ export type SchemaElementProperty<
   value: TDescriptor;
 }>;
 
-export type SchemaProperty =
-  | SchemaElementProperty<SchemaPropertyKey, PropertyValueDescriptor>
-  | SchemaTextProperty<SchemaPropertyKey, PropertyValueDescriptor>;
+export type SchemaProperty = SchemaElementProperty | SchemaTextProperty;
 
 /** Element-property law before a keyed owner assigns persisted identity. */
 export type SchemaElementPropertyDefinition<
@@ -457,7 +455,7 @@ export type EditorSchemaDelta = Readonly<{
   elementTypes: readonly string[];
   propertyIds: readonly string[];
   /** `null` identifies the implicit primary root. */
-  roots: readonly (string | null)[];
+  roots: ReadonlyArray<string | null>;
 }>;
 
 /** One closed-composition element relationship override. */
@@ -1616,15 +1614,16 @@ type SchemaValueBrand<TSchema extends EditorSchemaExtension> = Readonly<{
  * Finite installed element vocabulary inferred from one complete schema.
  * Runtime schema validates primary and named-root grammar.
  */
-export type SchemaValue<TSchema extends EditorSchemaExtension> =
-  readonly (string extends SchemaElementTypes<TSchema>
+export type SchemaValue<TSchema extends EditorSchemaExtension> = ReadonlyArray<
+  string extends SchemaElementTypes<TSchema>
     ? BaseElement
     :
         | SchemaElementFor<TSchema>
         | (SchemaDefinitionOf<TSchema>['unknown'] extends 'preserve'
             ? PreservedSchemaElement<TSchema>
-            : never))[] &
-    SchemaValueBrand<TSchema>;
+            : never)
+> &
+  SchemaValueBrand<TSchema>;
 
 /**
  * Non-recursive schema descendant lookup for editor API generics.
@@ -1695,7 +1694,7 @@ type SchemaDeclarationGroups<TDeclaration> = TDeclaration extends {
   : Readonly<Record<never, never>>;
 
 type SchemaDeclarationContentRoot<TDeclaration> = TDeclaration extends {
-  contentRoots?: readonly (infer TContentRoot)[];
+  contentRoots?: ReadonlyArray<infer TContentRoot>;
 }
   ? Extract<TContentRoot, SchemaContentRootContribution>
   : never;
@@ -1707,7 +1706,7 @@ type SchemaDeclarationRoots<TDeclaration> = TDeclaration extends {
   : Readonly<Record<never, never>>;
 
 type SchemaDeclarationProperty<TDeclaration> = TDeclaration extends {
-  properties?: readonly (infer TProperty)[];
+  properties?: ReadonlyArray<infer TProperty>;
 }
   ? TProperty
   : never;
@@ -1751,12 +1750,12 @@ type SchemaComposedDefinition<
   TDeclarations = SchemaDeclarationOf<TInput>,
 > = Readonly<
   {
-    contentRoots: readonly SchemaDeclarationContentRoot<TDeclarations>[];
+    contentRoots: ReadonlyArray<SchemaDeclarationContentRoot<TDeclarations>>;
     elements: SchemaUnionToIntersection<
       SchemaDeclarationElements<TDeclarations>
     >;
     groups: SchemaUnionToIntersection<SchemaDeclarationGroups<TDeclarations>>;
-    properties: readonly SchemaDeclarationProperty<TDeclarations>[];
+    properties: ReadonlyArray<SchemaDeclarationProperty<TDeclarations>>;
     root: TComplete['root'];
     roots: SchemaUnionToIntersection<SchemaDeclarationRoots<TDeclarations>>;
     unknown: SchemaComposedUnknown<TComplete>;

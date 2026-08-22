@@ -10,7 +10,7 @@ export const MAIN_ROOT_KEY = 'main' as RootKey;
 export const getPointRoot = (
   point: Point,
   fallbackRoot: RootKey = MAIN_ROOT_KEY
-): RootKey => (point.root ?? fallbackRoot) as RootKey;
+): RootKey => point.root ?? fallbackRoot;
 
 export const toPublicRootOption = (root: RootKey): RootKey | undefined =>
   root === MAIN_ROOT_KEY ? undefined : root;

@@ -71,10 +71,7 @@ const immutableRegistryMutation = () => {
 
 const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   const map = new Map(source);
-  // oxlint-disable-next-line prefer-const -- The proxy traps close over the assigned proxy itself.
-  let immutable!: Map<TKey, TValue>;
-
-  immutable = new Proxy(map, {
+  const immutable: Map<TKey, TValue> = new Proxy(map, {
     get(target, property) {
       if (property === 'clear' || property === 'delete' || property === 'set') {
         return immutableRegistryMutation;
@@ -83,10 +80,11 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
         return (
           callback: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void,
           thisArg?: unknown
-        ) =>
+        ) => {
           target.forEach((value, key) => {
             callback.call(thisArg, value, key, immutable);
           });
+        };
       }
 
       const value = Reflect.get(target, property, target);

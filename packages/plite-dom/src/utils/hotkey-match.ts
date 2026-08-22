@@ -1,3 +1,5 @@
+import { failInvariant } from '@platejs/plite/internal';
+
 import { usesAppleDOMHotkeys } from './environment';
 
 export type HotkeyPlatform = 'apple' | 'other' | 'windows';
@@ -94,7 +96,7 @@ const resolveModifier = (
 ): ModifierKey | undefined => {
   const modifier = MODIFIER_TOKEN_NAMES[value];
 
-  if (!modifier) return;
+  if (!modifier) return undefined;
   if (modifier === 'mod') {
     return isApplePlatform(options?.platform) ? 'metaKey' : 'ctrlKey';
   }
@@ -155,7 +157,9 @@ const compileHotkey = (
 
   if (!compiled.key) {
     if (requiredModifierKeys.length === 1 && parts.length === 1) {
-      compiled.key = requiredModifierKeys[0]!;
+      compiled.key =
+        requiredModifierKeys[0] ??
+        failInvariant('Expected value to be defined');
       return compiled;
     }
 

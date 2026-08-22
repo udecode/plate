@@ -13,6 +13,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
+  failInvariant,
   getEditorCommitSnapshot,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
@@ -84,7 +85,7 @@ const getDescendantAt = (
 
   for (const index of path) {
     node = currentChildren[index];
-    if (!node) return;
+    if (!node) return undefined;
     currentChildren = ElementApi.isElement(node) ? node.children : [];
   }
 
@@ -177,7 +178,7 @@ export function migrateElementIds(
 
       locations.set(id, [...known, location]);
       let changed = rawId !== id || sourceKey !== 'id';
-      const children = node.children.map((child, index) => {
+      const innerChildren = node.children.map((child, index) => {
         const migrated = visit(child, [...path, index]);
 
         if (migrated !== child) changed = true;
@@ -186,8 +187,8 @@ export function migrateElementIds(
       });
 
       if (!changed) return node;
-      if (sourceKey === 'id') return { ...node, children, id } as Element;
-      const canonicalNode = { ...node, children, id } as Record<
+      if (sourceKey === 'id') return { ...node, children: innerChildren, id };
+      const canonicalNode = { ...node, children: innerChildren, id } as Record<
         string,
         unknown
       >;
@@ -209,7 +210,7 @@ export function migrateElementIds(
     return changed ? migrated : children;
   };
   const document: EditorDocumentValue = Array.isArray(value)
-    ? ({ children: value } as EditorDocumentValue)
+    ? { children: value }
     : (value as EditorDocumentValue);
   const children = migrateRoot(document.children, MAIN_ROOT_KEY) as Value;
   const roots = document.roots
@@ -235,9 +236,7 @@ export function migrateElementIds(
   return Object.freeze({
     duplicates: Object.freeze(duplicates),
     generated,
-    value: (Array.isArray(value)
-      ? migratedDocument.children
-      : migratedDocument) as EditorDocumentValue | Value,
+    value: Array.isArray(value) ? migratedDocument.children : migratedDocument,
   });
 }
 
@@ -372,12 +371,16 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
               const id = state.schema.getProperty(node, idProperty);
 
               if (typeof id !== 'string') continue;
-              const existing = runtimeIndex!.get(id);
+              const existing = (
+                runtimeIndex ?? failInvariant('Expected value to be defined')
+              ).get(id);
 
               if (existing && existing.nodeKey !== nodeKey) {
                 throw new Error(`Duplicate element ID "${id}".`);
               }
-              runtimeIndex!.set(id, { path, root, nodeKey });
+              (
+                runtimeIndex ?? failInvariant('Expected value to be defined')
+              ).set(id, { path, root, nodeKey });
               nodeKeys.set(nodeKey, id);
             }
           }
@@ -409,25 +412,25 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
       };
       function id(element: Element): string;
       function id(key: NodeKey): string | undefined;
-      function id(target: Element | NodeKey): string | undefined {
-        if (typeof target === 'string') {
-          if (!state.nodes.get(target)) return;
+      function id(innerTarget: Element | NodeKey): string | undefined {
+        if (typeof innerTarget === 'string') {
+          if (!state.nodes.get(innerTarget)) return undefined;
           ensureRuntimeIndex();
 
-          return nodeKeys.get(target);
+          return nodeKeys.get(innerTarget);
         }
 
         return assertElementId(
-          state.schema.getProperty(target, idProperty),
+          state.schema.getProperty(innerTarget, idProperty),
           'Element ID'
         );
       }
 
       return {
-        entry(id: string): ElementIdEntry | undefined {
-          const indexed = ensureRuntimeIndex().get(id);
+        entry(innerId: string): ElementIdEntry | undefined {
+          const indexed = ensureRuntimeIndex().get(innerId);
 
-          if (!indexed) return;
+          if (!indexed) return undefined;
           const value = state.value();
           const node = getDescendantAt(
             rootChildren(value, indexed.root),
@@ -452,11 +455,11 @@ export const ElementIdPlugin = defineBasePlugin('elementId', {
       });
 
       if (result.duplicates.length > 0) {
-        const duplicate = result.duplicates[0]!;
+        const duplicate = result.duplicates[0];
         const [first, second] = duplicate.locations;
 
         throw new Error(
-          `Duplicate element ID "${duplicate.id}" at ${first!.root}:[${first!.path}] and ${second!.root}:[${second!.path}].`
+          `Duplicate element ID "${duplicate.id}" at ${first.root}:[${first.path}] and ${second.root}:[${second.path}].`
         );
       }
       return result.value;

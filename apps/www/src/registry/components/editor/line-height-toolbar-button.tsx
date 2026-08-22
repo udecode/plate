@@ -19,11 +19,12 @@ import { ToolbarButton } from './toolbar';
 
 export function LineHeightToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();
-  const {
-    defaultNodeValue,
-    nodeKey,
-    validNodeValues = [],
-  } = editor.plugin(LineHeightPlugin).inject.nodeProps!;
+  const { nodeProps } = editor.plugin(LineHeightPlugin).inject;
+
+  if (!nodeProps) {
+    throw new Error('Line height node properties are not configured.');
+  }
+  const { defaultNodeValue, nodeKey, validNodeValues = [] } = nodeProps;
   const values = validNodeValues.filter((value) => typeof value === 'number');
 
   const value = useSelectionFragmentProp({
@@ -49,18 +50,18 @@ export function LineHeightToolbarButton(props: DropdownMenuProps) {
             editor.api.dom.focus();
           }}
         >
-          {values.map((value) => (
+          {values.map((innerValue) => (
             <DropdownMenuRadioItem
-              key={value}
+              key={innerValue}
               className="min-w-[180px] pl-2 *:first:[span]:hidden"
-              value={String(value)}
+              value={String(innerValue)}
             >
               <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
                 <DropdownMenuItemIndicator>
                   <CheckIcon />
                 </DropdownMenuItemIndicator>
               </span>
-              {value}
+              {innerValue}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

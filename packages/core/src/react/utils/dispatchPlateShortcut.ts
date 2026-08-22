@@ -19,7 +19,7 @@ const isFormTargetEnabled = (
   event: KeyboardEvent,
   enabled: boolean | readonly string[] | undefined
 ) => {
-  const target = event.target;
+  const { target } = event;
 
   if (!target || typeof target !== 'object' || !('tagName' in target)) {
     return true;
@@ -36,7 +36,7 @@ const isFormTargetEnabled = (
 };
 
 const isContentEditableTarget = (event: KeyboardEvent) => {
-  const target = event.target;
+  const { target } = event;
 
   return (
     !!target &&
@@ -76,12 +76,7 @@ export const dispatchPlateShortcut = (
     ) {
       continue;
     }
-    if (
-      !isFormTargetEnabled(
-        event,
-        shortcut.enableOnFormTags as boolean | readonly string[] | undefined
-      )
-    ) {
+    if (!isFormTargetEnabled(event, shortcut.enableOnFormTags)) {
       continue;
     }
     if (shortcut.ignoreEventWhen?.(event)) continue;

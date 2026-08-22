@@ -62,7 +62,9 @@ const readClipboard = (page: Page) =>
 
     for (const item of await navigator.clipboard.read()) {
       for (const type of item.types) {
-        values[type] = await (await item.getType(type)).text();
+        const blob = await item.getType(type);
+
+        values[type] = await blob.text();
       }
     }
 
@@ -331,7 +333,7 @@ const selectCellRectangle = async (
     startId,
   }: {
     expectedCount: number;
-    moves: readonly ('ArrowDown' | 'ArrowRight')[];
+    moves: ReadonlyArray<'ArrowDown' | 'ArrowRight'>;
     startId: string;
   }
 ) => {
@@ -378,8 +380,8 @@ const rewriteEmbeddedFragmentHtml = (
   mode: 'corrupt-model' | 'empty-model' | 'visible-conflict'
 ) =>
   page.evaluate(
-    ({ html, mode }) => {
-      const document = new DOMParser().parseFromString(html, 'text/html');
+    ({ html: innerHtml, mode: innerMode }) => {
+      const document = new DOMParser().parseFromString(innerHtml, 'text/html');
       const carrier = document.body.querySelector('[data-plite-fragment]');
       const encoded = carrier?.getAttribute('data-plite-fragment');
 
@@ -389,9 +391,9 @@ const rewriteEmbeddedFragmentHtml = (
         );
       }
 
-      if (mode === 'corrupt-model') {
+      if (innerMode === 'corrupt-model') {
         carrier.setAttribute('data-plite-fragment', 'not-valid-base64');
-      } else if (mode === 'empty-model') {
+      } else if (innerMode === 'empty-model') {
         const payload = JSON.parse(decodeURIComponent(atob(encoded))) as {
           slice?: {
             content?: Array<{ children?: unknown[] }>;
@@ -420,7 +422,7 @@ const rewriteEmbeddedFragmentHtml = (
 
       while (textNode) {
         if (textNode.textContent?.trim()) {
-          textNode.textContent = `HTML conflict ${++index}`;
+          textNode.textContent = `HTML conflict ${(index += 1)}`;
         }
 
         textNode = walker.nextNode();
@@ -568,11 +570,11 @@ test.describe('table registry demo', () => {
       await expect(table).toHaveCount(1);
       await page.evaluate(() => {
         const state = window as typeof window & {
-          __tableVerticalFrames?: {
+          __tableVerticalFrames?: Array<{
             cellId: string | null;
             defaultPrevented: boolean;
             key: string;
-          }[];
+          }>;
         };
 
         state.__tableVerticalFrames = [];
@@ -624,11 +626,11 @@ test.describe('table registry demo', () => {
             () =>
               (
                 window as typeof window & {
-                  __tableVerticalFrames?: {
+                  __tableVerticalFrames?: Array<{
                     cellId: string | null;
                     defaultPrevented: boolean;
                     key: string;
-                  }[];
+                  }>;
                 }
               ).__tableVerticalFrames ?? []
           )

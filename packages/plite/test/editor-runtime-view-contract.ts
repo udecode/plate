@@ -125,9 +125,9 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const commits: string[] = [];
     const unsubscribe = headerEditor.subscribe((snapshot) => {
-      const [block] = snapshot.children as {
-        children: { text: string }[];
-      }[];
+      const [block] = snapshot.children as Array<{
+        children: Array<{ text: string }>;
+      }>;
 
       commits.push(block?.children[0]?.text ?? '');
     });
@@ -418,7 +418,7 @@ describe('editor runtime/view contract', () => {
     const mainEditor = createEditorView(runtime);
     const snapshots: string[] = [];
     const getSnapshotText = (children: readonly Element[]) =>
-      (children[0]?.children[0] as { text: string }).text;
+      (children[0].children[0] as { text: string }).text;
 
     headerEditor.update((headerTx, { afterCommit }) => {
       afterCommit(({ snapshot }) => {
@@ -453,7 +453,7 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
     const getSnapshotText = (children: readonly Element[]) =>
-      (children[0]?.children[0] as { text: string }).text;
+      (children[0].children[0] as { text: string }).text;
     let snapshotText = '';
 
     mainEditor.update((mainTx) => {
@@ -902,7 +902,7 @@ describe('editor runtime/view contract', () => {
         focus: { path: [0, 0], offset: 2 },
       });
     });
-    const unsubscribe = runtime.subscribeCommit(() => commits++);
+    const unsubscribe = runtime.subscribeCommit(() => (commits += 1) - 1);
 
     assert.equal(
       headerEditor.read((state) => state.selection()),
@@ -1345,7 +1345,7 @@ describe('editor runtime/view contract', () => {
       anchor: { path: [0, 0], offset: 7 },
       focus: { path: [0, 0], offset: 7 },
     });
-    assert.equal(Object.hasOwn(range!.anchor, 'root'), false);
+    assert.equal(Object.hasOwn(range.anchor, 'root'), false);
     assert.deepEqual(
       runtime.read((state) => state.value()),
       {

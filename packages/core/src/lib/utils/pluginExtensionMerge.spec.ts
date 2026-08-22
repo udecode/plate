@@ -89,7 +89,7 @@ describe('plugin API projection', () => {
     let calls = 0;
     const StatefulPlugin = defineBasePlugin('stateful', {
       api: ({ store }) => {
-        calls++;
+        calls += 1;
 
         return {
           value: () => store.get().value,

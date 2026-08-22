@@ -43,6 +43,8 @@ export type {
   PlatePluginPortal,
   PlateShortcutRecord,
   RenderNodeWrapper,
+  RenderNodeWrapperConfig,
+  RenderNodeWrapperDescriptor,
   RenderNodeWrapperFunction,
   RenderNodeWrapperProps,
   ResolvedPlatePlugin,

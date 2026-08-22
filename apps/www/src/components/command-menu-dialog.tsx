@@ -1,5 +1,6 @@
 'use client';
 
+import { failInvariant } from '@platejs/plite/internal';
 import type { DialogProps } from '@radix-ui/react-dialog';
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import {
@@ -189,7 +190,7 @@ function getCommandMenuRegistryName(href: string) {
     .replace(CN_DOCS_PREFIX_REGEX, '');
   const slug = normalizedPath.split('/').findLast(Boolean);
 
-  if (!slug) return;
+  if (!slug) return undefined;
 
   const candidates = [
     commandMenuRegistryNameAliases[slug],
@@ -203,7 +204,7 @@ function getCommandMenuRegistryName(href: string) {
 }
 
 function getCommandMenuCopyCommand(href: string | undefined) {
-  if (!href) return;
+  if (!href) return undefined;
 
   const registryName = getCommandMenuRegistryName(href);
 
@@ -242,20 +243,23 @@ function CommandItems({
       {item.href && (
         <CommandMenuItem
           key={item.href}
-          onHighlight={() =>
+          onHighlight={() => {
             onHighlight(
               content.goToPage,
               copyCommand?.payload,
               copyCommand?.label
-            )
-          }
+            );
+          }}
           onSelect={() => {
-            runCommand(() =>
+            runCommand(() => {
               navigateToHref(
                 (href) => router.push(href),
-                hrefWithLocale(item.href!, locale)
-              )
-            );
+                hrefWithLocale(
+                  item.href ?? failInvariant('Expected value to be defined'),
+                  locale
+                )
+              );
+            });
           }}
           keywords={keywords}
           value={`${parentTitle} ${title ?? ''} ${item.titleCn ?? ''} ${
@@ -399,13 +403,13 @@ function SearchResults({
                 key={getSearchResultKey(item)}
                 data-search-group={group}
                 data-type={item.type}
-                onHighlight={() =>
+                onHighlight={() => {
                   onHighlight(
                     content.goToPage,
                     copyCommand?.payload,
                     copyCommand?.label
-                  )
-                }
+                  );
+                }}
                 onSelect={() => {
                   router.push(hrefWithLocale(item.url, locale));
                   setOpen(false);
@@ -497,7 +501,7 @@ export function CommandMenuDialog({
 }) {
   const router = useRouter();
   const locale = useLocale();
-  const content = i18n[locale as keyof typeof i18n];
+  const content = i18n[locale];
   const [renderDelayedGroups, setRenderDelayedGroups] = React.useState(false);
   const [copyLabel, setCopyLabel] = React.useState('');
   const [copyPayload, setCopyPayload] = React.useState('');
@@ -557,7 +561,7 @@ export function CommandMenuDialog({
 
   React.useLayoutEffect(() => {
     if (!open) {
-      return;
+      return undefined;
     }
 
     const frame = requestAnimationFrame(() => {
@@ -575,7 +579,9 @@ export function CommandMenuDialog({
       }
     });
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+    };
   }, [
     commandSearch,
     docsSearchState.shouldShowSearchResults,
@@ -595,20 +601,24 @@ export function CommandMenuDialog({
 
   React.useEffect(() => {
     if (!open) {
-      return;
+      return undefined;
     }
 
     const frame = requestAnimationFrame(() => {
       setRenderDelayedGroups(true);
     });
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+    };
   }, [open]);
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
       updateOpen(false);
       command();
+
+      return undefined;
     },
     [updateOpen]
   );
@@ -631,7 +641,9 @@ export function CommandMenuDialog({
 
     document.addEventListener('keydown', down);
 
-    return () => document.removeEventListener('keydown', down);
+    return () => {
+      document.removeEventListener('keydown', down);
+    };
   }, [copyPayload]);
 
   React.useEffect(
@@ -733,16 +745,20 @@ export function CommandMenuDialog({
                   return (
                     <CommandMenuItem
                       key={navItem.href}
-                      onHighlight={() =>
-                        setHighlightedCommand(content.goToPage)
-                      }
+                      onHighlight={() => {
+                        setHighlightedCommand(content.goToPage);
+                      }}
                       onSelect={() => {
-                        runCommand(() =>
+                        runCommand(() => {
                           navigateToHref(
                             (href) => router.push(href),
-                            hrefWithLocale(navItem.href!, locale)
-                          )
-                        );
+                            hrefWithLocale(
+                              navItem.href ??
+                                failInvariant('Expected value to be defined'),
+                              locale
+                            )
+                          );
+                        });
                       }}
                       keywords={[
                         'nav',
@@ -781,28 +797,34 @@ export function CommandMenuDialog({
                   className={commandMenuGroupClassName}
                 >
                   <CommandMenuItem
-                    onHighlight={() =>
-                      setHighlightedCommand(content.runCommand)
-                    }
-                    onSelect={() => runCommand(() => setTheme('light'))}
+                    onHighlight={() => {
+                      setHighlightedCommand(content.runCommand);
+                    }}
+                    onSelect={() => {
+                      runCommand(() => setTheme('light'));
+                    }}
                   >
                     <SunMedium />
                     {content.light}
                   </CommandMenuItem>
                   <CommandMenuItem
-                    onHighlight={() =>
-                      setHighlightedCommand(content.runCommand)
-                    }
-                    onSelect={() => runCommand(() => setTheme('dark'))}
+                    onHighlight={() => {
+                      setHighlightedCommand(content.runCommand);
+                    }}
+                    onSelect={() => {
+                      runCommand(() => setTheme('dark'));
+                    }}
                   >
                     <Moon />
                     {content.dark}
                   </CommandMenuItem>
                   <CommandMenuItem
-                    onHighlight={() =>
-                      setHighlightedCommand(content.runCommand)
-                    }
-                    onSelect={() => runCommand(() => setTheme('system'))}
+                    onHighlight={() => {
+                      setHighlightedCommand(content.runCommand);
+                    }}
+                    onSelect={() => {
+                      runCommand(() => setTheme('system'));
+                    }}
                   >
                     <Laptop />
                     {content.system}

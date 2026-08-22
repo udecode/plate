@@ -1,7 +1,6 @@
 import {
   DocumentChange,
   type Editor,
-  type EditorDocumentValue,
   type EditorEffectType,
   type EditorSchemaIdentity,
   type Value,
@@ -93,10 +92,10 @@ const assertSchemaIdentity = (
 
 const validateBatchSelections = <V extends Value>(
   editor: Editor<V>,
-  batches: readonly Batch<V>[],
+  batches: ReadonlyArray<Batch<V>>,
   direction: 'redo' | 'undo'
 ) => {
-  let value = editor.read.value() as EditorDocumentValue<V>;
+  let value = editor.read.value();
 
   for (const batch of batches.toReversed()) {
     const selectionAtBase =
@@ -119,7 +118,7 @@ const validateBatchSelections = <V extends Value>(
       value,
       selectionAtBaseRoot ?? 'main'
     );
-    value = batch.change.apply(value) as EditorDocumentValue<V>;
+    value = batch.change.apply(value);
     editor.read.schema.assertDocument(value);
     assertSelectionSupported(
       editor,
@@ -224,7 +223,7 @@ export const decodeHistoryValue = <V extends Value>(
 
   assertSchemaIdentity(editor, schema);
 
-  const effectTypes = getEditorExtensionRegistry(editor).effectTypes;
+  const { effectTypes } = getEditorExtensionRegistry(editor);
   const history = Object.freeze({
     redos: Object.freeze(
       json.redos.map((batch) =>

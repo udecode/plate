@@ -82,7 +82,7 @@ const syncEditableDOMSelectionToEditor = (
     testRuntimes.add(runtime);
   }
 
-  return syncRuntimeDOMSelectionToEditor(options);
+  syncRuntimeDOMSelectionToEditor(options);
 };
 
 afterEach(() => {
@@ -124,7 +124,7 @@ const markEditable = (element: HTMLElement) => {
 test('selection import executes only for import-dom policy', () => {
   let calls = 0;
   const importSelection = () => {
-    calls++;
+    calls += 1;
   };
 
   expect(
@@ -251,7 +251,7 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
 test('selection export executes only for export-model policy', () => {
   let calls = 0;
   const exportSelection = () => {
-    calls++;
+    calls += 1;
   };
 
   expect(
@@ -365,6 +365,68 @@ test('failed DOM selection export clears the updating guard', () => {
   }
 });
 
+test('forced model selection export rebuilds an unchanged native range', () => {
+  vi.useFakeTimers();
+
+  const editor = createReactEditor();
+  const editorElement = document.createElement('div');
+  const textNode = document.createTextNode('abc');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  editorElement.append(textNode);
+  document.body.append(editorElement);
+
+  const domRange = document.createRange();
+  domRange.setStart(textNode, 0);
+  domRange.setEnd(textNode, 1);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  domSelection.removeAllRanges();
+  domSelection.addRange(domRange);
+
+  vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+  vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
+  vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue(domRange);
+  const removeAllRanges = vi.spyOn(domSelection, 'removeAllRanges');
+  const addRange = vi.spyOn(domSelection, 'addRange');
+  const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+
+  try {
+    syncEditableDOMSelectionToEditor({
+      editor,
+      options: { forceModelExport: true },
+      scrollSelectionIntoView: vi.fn(),
+      partialDOMBackedSelection: false,
+      state: {
+        isUpdatingSelection: false,
+        outsideFocusBoundarySettleUntil: 0,
+        selectionChangeOrigin: null,
+      },
+    });
+
+    expect(removeAllRanges).toHaveBeenCalledTimes(1);
+    expect(addRange).toHaveBeenCalledWith(domRange);
+    expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 1);
+  } finally {
+    editorElement.remove();
+    domSelection.removeAllRanges();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
 test('view selection export clears stale native selection ranges', () => {
   vi.useFakeTimers();
 
@@ -383,7 +445,7 @@ test('view selection export clears stale native selection ranges', () => {
 
   const staleRange = document.createRange();
   staleRange.setStart(staleText, 0);
-  staleRange.setEnd(staleText, staleText.textContent!.length);
+  staleRange.setEnd(staleText, staleText.textContent.length);
   domSelection.removeAllRanges();
   domSelection.addRange(staleRange);
 
@@ -487,8 +549,8 @@ test('model selection export preserves preferred collapsed DOM point', () => {
   const domSelection = document.getSelection();
   const selection = {
     kind: 'text',
-    anchor: { path: [0, 0], offset: firstLine.textContent!.length },
-    focus: { path: [0, 0], offset: firstLine.textContent!.length },
+    anchor: { path: [0, 0], offset: firstLine.textContent.length },
+    focus: { path: [0, 0], offset: firstLine.textContent.length },
   };
 
   if (!domSelection) {
@@ -516,8 +578,8 @@ test('model selection export preserves preferred collapsed DOM point', () => {
   vi.spyOn(ReactEditor, 'resolveDOMRange').mockImplementation(() => {
     const fallbackRange = document.createRange();
 
-    fallbackRange.setStart(firstLine, firstLine.textContent!.length);
-    fallbackRange.setEnd(firstLine, firstLine.textContent!.length);
+    fallbackRange.setStart(firstLine, firstLine.textContent.length);
+    fallbackRange.setEnd(firstLine, firstLine.textContent.length);
 
     return fallbackRange;
   });
@@ -735,7 +797,8 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
     .spyOn(ReactEditor, 'resolvePliteRange')
     .mockReturnValue(nextSelection);
 
-  const commits: NonNullable<ReturnType<typeof editor.read.lastCommit>>[] = [];
+  const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
+    [];
   const unsubscribe = editor.subscribe((_snapshot, commit) => {
     if (commit) commits.push(commit);
   });
@@ -854,7 +917,8 @@ test('projected DOM selection import publishes its anchor selection commit', () 
     }
   );
 
-  const commits: NonNullable<ReturnType<typeof editor.read.lastCommit>>[] = [];
+  const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
+    [];
   const unsubscribe = editor.subscribe((_snapshot, commit) => {
     if (commit) commits.push(commit);
   });

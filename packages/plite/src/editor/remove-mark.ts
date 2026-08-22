@@ -18,9 +18,10 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
       return;
     }
 
-    const match = (node: Node, path: Path) => {
-      if (!NodeApi.isText(node)) {
-        return false; // marks can only be applied to text
+    const match = (innerNode: Node, path: Path) => {
+      if (!NodeApi.isText(innerNode)) {
+        // marks can only be applied to text
+        return false;
       }
       const [parentNode] = editorParent(editor, path);
       if (!NodeApi.isElement(parentNode)) {
@@ -58,7 +59,7 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
       });
     } else {
       const marks = { ...tx.marks };
-      delete marks[<keyof Node>key];
+      delete marks[key as keyof Node];
       tx.setMarks(marks);
     }
   });

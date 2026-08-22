@@ -111,7 +111,9 @@ export class DOMSyncMutationOwnership {
     this.cancelExpiry = this.schedule(
       'model',
       'expire-dom-sync-mutation-ownership',
-      () => this.clear(),
+      () => {
+        this.clear();
+      },
       { timing: 'timeout' }
     );
   }

@@ -42,10 +42,12 @@ export function TableToolbarButton(props: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
   const canMerge = useEditorSelector(
-    (editor) => !disableMerge && editor.plugin(TablePlugin).read.canMerge()
+    (innerEditor) =>
+      !disableMerge && innerEditor.plugin(TablePlugin).read.canMerge()
   );
   const canSplit = useEditorSelector(
-    (editor) => !disableMerge && editor.plugin(TablePlugin).read.canSplit()
+    (innerEditor2) =>
+      !disableMerge && innerEditor2.plugin(TablePlugin).read.canSplit()
   );
 
   return (
@@ -76,7 +78,11 @@ export function TableToolbarButton(props: DropdownMenuProps) {
               <span>Table</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="m-0 p-0">
-              <TablePicker onInsert={() => setOpen(false)} />
+              <TablePicker
+                onInsert={() => {
+                  setOpen(false);
+                }}
+              />
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
@@ -278,8 +284,9 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
         nextCell.rowIndex = Math.max(rowIndex - 1, 0);
         break;
       }
-      default:
+      default: {
         return;
+      }
     }
 
     event.preventDefault();
@@ -301,41 +308,52 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
       >
         {Array.from({ length: TABLE_PICKER_DIMENSION }, (_, rowIndex) => (
           <div key={rowIndex} className="contents" role="row">
-            {Array.from({ length: TABLE_PICKER_DIMENSION }, (_, colIndex) => {
-              const isActive =
-                activeCell.rowIndex === rowIndex &&
-                activeCell.colIndex === colIndex;
-              const isSelected =
-                rowIndex <= activeCell.rowIndex &&
-                colIndex <= activeCell.colIndex;
+            {Array.from(
+              { length: TABLE_PICKER_DIMENSION },
+              (innerValue, colIndex) => {
+                const isActive =
+                  activeCell.rowIndex === rowIndex &&
+                  activeCell.colIndex === colIndex;
+                const isSelected =
+                  rowIndex <= activeCell.rowIndex &&
+                  colIndex <= activeCell.colIndex;
 
-              return (
-                <button
-                  key={`(${rowIndex},${colIndex})`}
-                  ref={(element) => {
-                    cellRefs.current[
-                      rowIndex * TABLE_PICKER_DIMENSION + colIndex
-                    ] = element;
-                  }}
-                  aria-colindex={colIndex + 1}
-                  aria-label={`Insert ${rowIndex + 1} by ${colIndex + 1} table`}
-                  aria-rowindex={rowIndex + 1}
-                  aria-selected={isSelected}
-                  autoFocus={isActive}
-                  className={cn(
-                    'col-span-1 size-3 border border-solid bg-secondary',
-                    isSelected && 'border-current'
-                  )}
-                  onClick={() => insertTable(rowIndex, colIndex)}
-                  onFocus={() => activateCell(rowIndex, colIndex)}
-                  onKeyDown={(event) => moveFocus(event, rowIndex, colIndex)}
-                  onPointerMove={() => activateCell(rowIndex, colIndex)}
-                  role="gridcell"
-                  tabIndex={isActive ? 0 : -1}
-                  type="button"
-                />
-              );
-            })}
+                return (
+                  <button
+                    key={`(${rowIndex},${colIndex})`}
+                    ref={(element) => {
+                      cellRefs.current[
+                        rowIndex * TABLE_PICKER_DIMENSION + colIndex
+                      ] = element;
+                    }}
+                    aria-colindex={colIndex + 1}
+                    aria-label={`Insert ${rowIndex + 1} by ${colIndex + 1} table`}
+                    aria-rowindex={rowIndex + 1}
+                    aria-selected={isSelected}
+                    autoFocus={isActive}
+                    className={cn(
+                      'col-span-1 size-3 border border-solid bg-secondary',
+                      isSelected && 'border-current'
+                    )}
+                    onClick={() => {
+                      insertTable(rowIndex, colIndex);
+                    }}
+                    onFocus={() => {
+                      activateCell(rowIndex, colIndex);
+                    }}
+                    onKeyDown={(event) => {
+                      moveFocus(event, rowIndex, colIndex);
+                    }}
+                    onPointerMove={() => {
+                      activateCell(rowIndex, colIndex);
+                    }}
+                    role="gridcell"
+                    tabIndex={isActive ? 0 : -1}
+                    type="button"
+                  />
+                );
+              }
+            )}
           </div>
         ))}
       </div>

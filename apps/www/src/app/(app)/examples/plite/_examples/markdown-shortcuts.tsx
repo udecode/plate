@@ -276,32 +276,43 @@ const renderElement = ({
   element,
 }: RenderElementProps<CustomElement>) => {
   switch (element.type) {
-    case 'block-quote':
+    case 'block-quote': {
       return <blockquote {...attributes}>{children}</blockquote>;
-    case 'bulleted-list':
+    }
+    case 'bulleted-list': {
       return <ul {...attributes}>{children}</ul>;
-    case 'heading-five':
+    }
+    case 'heading-five': {
       return <h5 {...attributes}>{children}</h5>;
-    case 'heading-four':
+    }
+    case 'heading-four': {
       return <h4 {...attributes}>{children}</h4>;
-    case 'heading-one':
+    }
+    case 'heading-one': {
       return <h1 {...attributes}>{children}</h1>;
-    case 'heading-six':
+    }
+    case 'heading-six': {
       return <h6 {...attributes}>{children}</h6>;
-    case 'heading-three':
+    }
+    case 'heading-three': {
       return <h3 {...attributes}>{children}</h3>;
-    case 'heading-two':
+    }
+    case 'heading-two': {
       return <h2 {...attributes}>{children}</h2>;
-    case 'list-item':
+    }
+    case 'list-item': {
       return <li {...attributes}>{children}</li>;
-    case 'numbered-list':
+    }
+    case 'numbered-list': {
       return (
         <ol start={element.start} {...attributes}>
           {children}
         </ol>
       );
-    default:
+    }
+    default: {
       return <p {...attributes}>{children}</p>;
+    }
   }
 };
 

@@ -232,7 +232,7 @@ test('Editable domStrategy virtualized mode retains expanded selection endpoints
 });
 
 test('Editable domStrategy virtualized mode maps a selected split-table row path to its page item', () => {
-  const pageItems = createSplitTableVirtualizedLayout().pageItems;
+  const { pageItems } = createSplitTableVirtualizedLayout();
 
   expect(createPageItemIndexesForPath(pageItems, [1])).toEqual([0, 1, 2]);
   expect(createPageItemIndexesForPath(pageItems, [1, 2, 0, 0])).toEqual([2]);
@@ -375,8 +375,8 @@ test('Editable domStrategy metrics do not re-emit unchanged virtualized metrics 
       'virtualized'
     )
   );
-  await new Promise((resolve) => {
-    setTimeout(resolve, 25);
+  await new Promise((resolveInner) => {
+    setTimeout(resolveInner, 25);
   });
 
   expect(metrics).toHaveLength(1);

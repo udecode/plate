@@ -46,17 +46,22 @@ const usableStateRoot = (path: string, device: number) => {
 
   try {
     mkdirSync(path, { mode: 0o700, recursive: true });
-    if (!statSync(path).isDirectory() || statSync(path).dev !== device) return;
+    if (!statSync(path).isDirectory() || statSync(path).dev !== device) {
+      return undefined;
+    }
     descriptor = openSync(probe, 'wx', 0o600);
 
     return path;
   } catch {
+    // Unreadable state paths are treated as absent.
   } finally {
     if (descriptor !== undefined) {
       closeSync(descriptor);
       rmSync(probe, { force: true });
     }
   }
+
+  return undefined;
 };
 
 /** Private durable state on the artifact filesystem, never in tracked source. */

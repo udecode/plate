@@ -62,22 +62,10 @@ const assertVersion = (version: number, owner: string) => {
 };
 
 type MigrationInput<TMigration> =
-  TMigration extends DocumentMigration<
-    infer TInput,
-    EditorDocumentValue,
-    number,
-    number
-  >
-    ? TInput
-    : never;
+  TMigration extends DocumentMigration<infer TInput> ? TInput : never;
 
 type MigrationOutput<TMigration> =
-  TMigration extends DocumentMigration<
-    EditorDocumentValue,
-    infer TOutput,
-    number,
-    number
-  >
+  TMigration extends DocumentMigration<EditorDocumentValue, infer TOutput>
     ? TOutput
     : never;
 
@@ -85,8 +73,7 @@ type MigrationFrom<TMigration> =
   TMigration extends DocumentMigration<
     EditorDocumentValue,
     EditorDocumentValue,
-    infer TFrom,
-    number
+    infer TFrom
   >
     ? TFrom
     : number;

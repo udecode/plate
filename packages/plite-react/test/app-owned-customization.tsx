@@ -47,7 +47,7 @@ const TestEditorSurface = ({
 describe('plite-react app-owned customization', () => {
   test('usePliteDecorationSource owns source lifecycle while reading latest options', async () => {
     const editor = createReactEditor({ initialValue: createChildren() });
-    const sources: PliteDecorationSource<{ token: string }>[] = [];
+    const sources: Array<PliteDecorationSource<{ token: string }>> = [];
 
     const Probe = ({ token }: { token: string }) => {
       const source = usePliteDecorationSource(editor, {
@@ -71,10 +71,10 @@ describe('plite-react app-owned customization', () => {
         <Plite decorationSources={[source]} editor={editor}>
           <Editable
             renderSegment={(segment, children) => {
-              const token = segment.slices[0]?.data?.token;
+              const innerToken = segment.slices[0]?.data?.token;
 
-              return token ? (
-                <span data-hook-token={token}>{children}</span>
+              return innerToken ? (
+                <span data-hook-token={innerToken}>{children}</span>
               ) : (
                 children
               );
@@ -104,7 +104,7 @@ describe('plite-react app-owned customization', () => {
 
   test('usePliteDecorationSource refreshes from an explicit revision', async () => {
     const editor = createReactEditor({ initialValue: createChildren() });
-    const sources: PliteDecorationSource<{ token: string }>[] = [];
+    const sources: Array<PliteDecorationSource<{ token: string }>> = [];
 
     const Probe = ({ token }: { token: string }) => {
       const source = usePliteDecorationSource(editor, {
@@ -130,10 +130,10 @@ describe('plite-react app-owned customization', () => {
         <Plite decorationSources={[source]} editor={editor}>
           <Editable
             renderSegment={(segment, children) => {
-              const token = segment.slices[0]?.data?.token;
+              const innerToken2 = segment.slices[0]?.data?.token;
 
-              return token ? (
-                <span data-deps-token={token}>{children}</span>
+              return innerToken2 ? (
+                <span data-deps-token={innerToken2}>{children}</span>
               ) : (
                 children
               );
@@ -161,7 +161,7 @@ describe('plite-react app-owned customization', () => {
 
   test('usePliteRangeDecorationSource maps ranges and refreshes from a revision', async () => {
     const editor = createReactEditor({ initialValue: createChildren() });
-    const sources: PliteDecorationSource<{ token: string }>[] = [];
+    const sources: Array<PliteDecorationSource<{ token: string }>> = [];
 
     const Probe = ({ token }: { token: string }) => {
       const source = usePliteRangeDecorationSource(editor, {
@@ -179,10 +179,10 @@ describe('plite-react app-owned customization', () => {
         <Plite decorationSources={[source]} editor={editor}>
           <Editable
             renderSegment={(segment, children) => {
-              const token = segment.slices[0]?.data?.token;
+              const innerToken3 = segment.slices[0]?.data?.token;
 
-              return token ? (
-                <span data-range-token={token}>{children}</span>
+              return innerToken3 ? (
+                <span data-range-token={innerToken3}>{children}</span>
               ) : (
                 children
               );
@@ -379,7 +379,7 @@ describe('plite-react app-owned customization', () => {
         tx.nodes.wrap({
           type: 'bulleted-list',
           children: [],
-        } as never);
+        });
         return;
       }
 
@@ -410,14 +410,18 @@ describe('plite-react app-owned customization', () => {
         id="markdown-shortcuts-runtime"
         renderElement={({ children, element }) => {
           switch (element.type) {
-            case 'block-quote':
+            case 'block-quote': {
               return <blockquote>{children}</blockquote>;
-            case 'bulleted-list':
+            }
+            case 'bulleted-list': {
               return <ul>{children}</ul>;
-            case 'list-item':
+            }
+            case 'list-item': {
               return <li>{children}</li>;
-            default:
+            }
+            default: {
               return <EditableElement>{children}</EditableElement>;
+            }
           }
         }}
       />
@@ -523,10 +527,12 @@ describe('plite-react app-owned customization', () => {
         id="forced-layout-runtime"
         renderElement={({ children, element }) => {
           switch (element.type) {
-            case 'title':
+            case 'title': {
               return <h2>{children}</h2>;
-            default:
+            }
+            default: {
               return <EditableElement>{children}</EditableElement>;
+            }
           }
         }}
       />

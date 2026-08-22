@@ -43,7 +43,7 @@ const collectAsyncHighlightDecorations = (
     return [];
   }
 
-  const decorations: PliteDecoration<AsyncHighlightData>[] = [];
+  const decorations: Array<PliteDecoration<AsyncHighlightData>> = [];
   const pattern = /\b(?:here|there)\b/g;
   let match = pattern.exec(node.text);
 
@@ -93,7 +93,7 @@ const AsyncDecorationsExample = () => {
     revision: decoratedLength,
     read: ({ snapshot }) => {
       const root = { children: snapshot.children } as Ancestor;
-      const decorations: PliteDecoration<AsyncHighlightData>[] = [];
+      const decorations: Array<PliteDecoration<AsyncHighlightData>> = [];
 
       for (const [node, path] of NodeApi.nodes(root)) {
         if (path.length === 0) {
@@ -154,17 +154,16 @@ const AsyncDecorationsExample = () => {
           decorationMode === 'hook' ? [hookDecorationSource] : undefined
         }
         editor={editor}
-        onValueChange={({ value }) => scheduleAsyncDecorations(value)}
+        onValueChange={({ value }) => {
+          scheduleAsyncDecorations(value);
+        }}
       >
         <Editable
           className="plite-decorations-async-editor"
           decorate={decorationMode === 'prop' ? decorate : undefined}
           id="decorations-async"
           renderSegment={(segment, children) =>
-            segment.slices.some(
-              (slice) =>
-                (slice.data as AsyncHighlightData | undefined)?.asyncHighlight
-            ) ? (
+            segment.slices.some((slice) => slice.data?.asyncHighlight) ? (
               <span
                 className="plite-decorations-async-highlight"
                 data-cy="async-decoration-highlight"

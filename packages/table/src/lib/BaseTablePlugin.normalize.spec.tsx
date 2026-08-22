@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type Value } from '@platejs/plite';
+import type { Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
 import {

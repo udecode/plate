@@ -57,6 +57,7 @@ import {
   type PliteContentRootOwner,
   PliteRuntimeContext,
   type PliteRuntimeValue,
+  unregisterContentRootOwnerViewEditor,
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import { useRuntimeFocusState } from '../hooks/use-runtime-focus-state';
@@ -246,7 +247,7 @@ export type PliteProps<
   editor?: ReactEditorType<V, TExtensions>;
   annotationStore?: PliteAnnotationStore<any, any> | null;
   children: React.ReactNode;
-  decorationSources?: readonly PliteDecorationSource<any>[] | null;
+  decorationSources?: ReadonlyArray<PliteDecorationSource<any>> | null;
   onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
   onSelectionChange?: (
     context: PliteSelectionChangeContext<V, TExtensions>
@@ -443,7 +444,7 @@ const usePliteChangeCallbacks = <
       commit: EditorCommit,
       snapshot: EditorSnapshot<V>
     ) => {
-      const previousSnapshot = lastSnapshotRef.current as EditorSnapshot<V>;
+      const previousSnapshot = lastSnapshotRef.current;
       const valueChanged =
         isRootValueChanged(root, commit) &&
         previousSnapshot.children !== snapshot.children;
@@ -457,20 +458,23 @@ const usePliteChangeCallbacks = <
         editor,
         snapshot,
       } as unknown as PliteCommitContext<V, TExtensions>;
-      const { onCommit, onSelectionChange, onValueChange } =
-        changeCallbacksCell.current;
+      const {
+        onCommit: innerOnCommit,
+        onSelectionChange: innerOnSelectionChange,
+        onValueChange: innerOnValueChange,
+      } = changeCallbacksCell.current;
 
-      onCommit?.(context);
+      innerOnCommit?.(context);
 
       if (valueChanged) {
-        onValueChange?.({
+        innerOnValueChange?.({
           ...context,
-          value: snapshot.children as V,
+          value: snapshot.children,
         });
       }
 
       if (selectionChanged) {
-        onSelectionChange?.({
+        innerOnSelectionChange?.({
           ...context,
           selection: snapshot.selection,
         });
@@ -530,6 +534,7 @@ const PliteSingleEditor = <
     readOnly = false,
   } = props;
 
+  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- [P0 typecheck-boundary] Widening the deeply generic editor before the runtime guard prevents TypeScript from recursively comparing the full extension graph.
   if (!isEditor(editor as unknown)) {
     throw new Error('[Plite] editor is invalid!');
   }
@@ -612,8 +617,10 @@ const PliteSingleEditor = <
 
         contentRootOwnersRef.current.delete(viewEditor);
         if (owner) {
-          contentRootOwnerViewEditorsRef.current.delete(
-            getContentRootOwnerKey(owner)
+          unregisterContentRootOwnerViewEditor(
+            contentRootOwnerViewEditorsRef.current,
+            owner,
+            viewEditor
           );
         }
 
@@ -675,8 +682,10 @@ const PliteSingleEditor = <
       return () => {
         if (contentRootOwnersRef.current.get(viewEditor) === owner) {
           contentRootOwnersRef.current.delete(viewEditor);
-          contentRootOwnerViewEditorsRef.current.delete(
-            getContentRootOwnerKey(owner)
+          unregisterContentRootOwnerViewEditor(
+            contentRootOwnerViewEditorsRef.current,
+            owner,
+            viewEditor
           );
         }
       };
@@ -797,7 +806,9 @@ const PliteSingleEditor = <
       const maybeBatchUpdates =
         REACT_MAJOR_VERSION < 18
           ? ReactDOM.unstable_batchedUpdates
-          : (callback: () => void) => callback();
+          : (callback: () => void) => {
+              callback();
+            };
 
       maybeBatchUpdates(() => {
         const runtimeEditor = reactEditor as unknown as Editor;
@@ -823,15 +834,22 @@ const PliteSingleEditor = <
           syncMountedRootChangesToDOM(commit)
         );
         if (mainPathNodeKeys.length > 0) {
-          profileRuntimeDuration('dom-path-sync', () =>
-            syncPliteNodePathBindingsToDOM(runtimeEditor, mainPathNodeKeys)
-          );
+          profileRuntimeDuration('dom-path-sync', () => {
+            syncPliteNodePathBindingsToDOM(runtimeEditor, mainPathNodeKeys);
+          });
         }
         profileRuntimeDuration('change-callbacks', () => {
-          const { onCommit, onSelectionChange, onValueChange } =
-            changeCallbacksCell.current;
+          const {
+            onCommit: innerOnCommit2,
+            onSelectionChange: innerOnSelectionChange2,
+            onValueChange: innerOnValueChange2,
+          } = changeCallbacksCell.current;
 
-          if (!onCommit && !onSelectionChange && !onValueChange) {
+          if (
+            !innerOnCommit2 &&
+            !innerOnSelectionChange2 &&
+            !innerOnValueChange2
+          ) {
             return;
           }
 
@@ -844,24 +862,24 @@ const PliteSingleEditor = <
             snapshot,
           } as unknown as PliteCommitContext<V, TExtensions>;
 
-          onCommit?.(context);
+          innerOnCommit2?.(context);
 
           if (valueChanged) {
-            onValueChange?.({
+            innerOnValueChange2?.({
               ...context,
-              value: snapshot.children as V,
+              value: snapshot.children,
             });
           }
 
           if (selectionChanged) {
-            onSelectionChange?.({
+            innerOnSelectionChange2?.({
               ...context,
               selection: snapshot.selection,
             });
           }
         });
 
-        profileRuntimeDuration('selector-dispatch', () =>
+        profileRuntimeDuration('selector-dispatch', () => {
           handleSelectorChange(
             textSync.requiresGlobalRender || rootTextSync.requiresGlobalRender
               ? undefined
@@ -872,8 +890,8 @@ const PliteSingleEditor = <
               ...invalidatedNodeKeys,
               ...rootTextSync.invalidatedNodeKeys,
             ]
-          )
-        );
+          );
+        });
 
         if (viewEffectQueue.hasEffects()) {
           setViewEffectVersion((version) => version + 1);

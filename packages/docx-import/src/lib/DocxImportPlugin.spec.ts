@@ -4,7 +4,7 @@ import * as docx from '@platejs/docx-paste';
 const convertToHtmlMock = mock();
 let restoreCleanWordHtmlSpy: (() => void) | undefined;
 
-mock.module('mammoth', () => ({
+void mock.module('mammoth', () => ({
   default: {
     convertToHtml: convertToHtmlMock,
   },

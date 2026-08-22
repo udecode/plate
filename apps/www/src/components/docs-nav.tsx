@@ -97,7 +97,7 @@ function findNavItemByTitle(
   items: SidebarNavItem[] | undefined,
   section: SidebarNavItem
 ): SidebarNavItem | undefined {
-  if (!section.title) return;
+  if (!section.title) return undefined;
 
   for (const item of items ?? []) {
     if (item.href && item.title === section.title) return item;
@@ -106,6 +106,8 @@ function findNavItemByTitle(
 
     if (child) return child;
   }
+
+  return undefined;
 }
 
 function foldMatchingSectionsIntoItems(sections: SidebarNavItem[]) {
@@ -146,7 +148,7 @@ function getNavItemCount(items: SidebarNavItem[] | undefined): number {
 }
 
 function getActiveSectionKey(sections: SidebarNavItem[], pathname: string) {
-  if (sections.length === 0) return;
+  if (sections.length === 0) return undefined;
 
   const activeIndex = sections.findIndex((section) =>
     isNavItemActive(section, pathname)

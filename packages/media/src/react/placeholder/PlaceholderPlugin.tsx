@@ -187,6 +187,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
 
         try {
           const allowedTypes = Object.keys(uploadConfig) as AllowedFileType[];
+          const allowedTypeSet = new Set(allowedTypes);
           const filesByType: Record<AllowedFileType, File[]> = {
             audio: [],
             blob: [],
@@ -203,7 +204,8 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
             let fileType: AllowedFileType;
 
             if (!mimeType) {
-              if (!allowedTypes.includes('blob')) {
+              if (!allowedTypeSet.has('blob')) {
+                // oxlint-disable-next-line typescript/only-throw-error -- The public upload contract exposes typed data errors whose object identity must reach onError unchanged.
                 throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
                   allowedTypes,
                   files: [file],
@@ -218,11 +220,12 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
                   : mimeType.split('/')[0]
               ) as AllowedFileType;
 
-              if (allowedTypes.includes(matchedType)) {
+              if (allowedTypeSet.has(matchedType)) {
                 fileType = matchedType;
-              } else if (allowedTypes.includes('blob')) {
+              } else if (allowedTypeSet.has('blob')) {
                 fileType = 'blob';
               } else {
+                // oxlint-disable-next-line typescript/only-throw-error -- The public upload contract exposes typed data errors whose object identity must reach onError unchanged.
                 throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
                   allowedTypes,
                   files: [file],
@@ -250,6 +253,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
             } = itemConfig;
 
             if (typeFiles.length < minFileCount) {
+              // oxlint-disable-next-line typescript/only-throw-error -- The public upload contract exposes typed data errors whose object identity must reach onError unchanged.
               throw createUploadError(UploadErrorCode.TOO_LESS_FILES, {
                 fileType,
                 files: typeFiles,
@@ -257,6 +261,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
               });
             }
             if (typeFiles.length > maxFileCount) {
+              // oxlint-disable-next-line typescript/only-throw-error -- The public upload contract exposes typed data errors whose object identity must reach onError unchanged.
               throw createUploadError(UploadErrorCode.TOO_MANY_FILES, {
                 fileType,
                 files: typeFiles,
@@ -268,6 +273,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
             const match = fileSizePattern.exec(maxFileSize);
 
             if (!match) {
+              // oxlint-disable-next-line typescript/only-throw-error -- The public upload contract exposes typed data errors whose object identity must reach onError unchanged.
               throw createUploadError(UploadErrorCode.INVALID_FILE_SIZE, {
                 files: typeFiles,
               });
@@ -279,6 +285,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
 
             for (const file of typeFiles) {
               if (file.size > Math.floor(bytes)) {
+                // oxlint-disable-next-line typescript/only-throw-error -- The public upload contract exposes typed data errors whose object identity must reach onError unchanged.
                 throw createUploadError(UploadErrorCode.TOO_LARGE, {
                   fileType,
                   files: [file],
@@ -336,7 +343,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
           tx.tags.add('history-push');
         }
 
-        const insertedUploads: [NodeKey, File][] = [];
+        const insertedUploads: Array<[NodeKey, File]> = [];
 
         for (const [index, file] of Array.from(files).entries()) {
           if (index > 0) {
@@ -360,9 +367,9 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         }
 
         if (insertedUploads.length > 0) {
-          afterCommit(({ editor }) => {
+          afterCommit(({ editor: innerEditor }) => {
             for (const [nodeKey, file] of insertedUploads) {
-              const entry = editor.read.nodes.get(nodeKey);
+              const entry = innerEditor.read.nodes.get(nodeKey);
 
               if (
                 entry &&
@@ -423,7 +430,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
     on: {
       drop: ({ event }) => {
         // The DnD plugin owns file drops unless explicitly disabled.
-        if (!store.get('disableFileDrop')) return;
+        if (!store.get('disableFileDrop')) return undefined;
 
         const { files } = event.dataTransfer;
 

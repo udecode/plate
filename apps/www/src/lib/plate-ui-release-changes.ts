@@ -78,7 +78,7 @@ function getTargetDiffHref(
   const pullRequestUrl = event.change.pullRequest?.url;
   const file = target.files[0];
 
-  if (!pullRequestUrl || !file) return;
+  if (!pullRequestUrl || !file) return undefined;
 
   return `${pullRequestUrl}/files#diff-${hashGitHubDiffPath(file)}`;
 }

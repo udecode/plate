@@ -160,7 +160,7 @@ const structuralDocumentChange = (change: DocumentChange): DocumentChange =>
     primaryClassification: change.primaryClassification,
     rootClassifications: change.rootClassifications,
     toJSON: change.toJSON.bind(change),
-  }) as DocumentChange;
+  });
 
 describe('plite-history contract', () => {
   it('documents React-owned history setup through usePliteEditor', () => {
@@ -169,7 +169,7 @@ describe('plite-history contract', () => {
         '../../../content/docs/plite/libraries/plite-history/history-extension-setup.mdx',
         import.meta.url
       ),
-      'utf8'
+      'utf-8'
     );
 
     assert.match(docs, PLITE_IMPORT_RE);
@@ -210,8 +210,8 @@ describe('plite-history contract', () => {
     const blockKeys = [editor.key([0]), editor.key([1])];
     const textKeys = [editor.key([0, 0]), editor.key([1, 0])];
 
-    assert(blockKeys.every(Boolean));
-    assert(textKeys.every(Boolean));
+    assert.ok(blockKeys.every(Boolean));
+    assert.ok(textKeys.every(Boolean));
 
     editor.update.nodes.replaceChildren(
       [paragraph('next'), paragraph('again')],
@@ -224,7 +224,7 @@ describe('plite-history contract', () => {
     const encodedHistory = JSON.stringify(History.toJSON(editor));
 
     for (const nodeKey of [...blockKeys, ...textKeys]) {
-      assert(nodeKey);
+      assert.ok(nodeKey);
       assert.equal(encodedHistory.includes(nodeKey), false);
     }
 
@@ -267,7 +267,7 @@ describe('plite-history contract', () => {
       header.key([2, 0]),
     ];
 
-    assert(originalKeys.every(Boolean));
+    assert.ok(originalKeys.every(Boolean));
 
     header.update.nodes.replaceChildren(
       [paragraph('next'), paragraph('again')],
@@ -318,7 +318,7 @@ describe('plite-history contract', () => {
       extensions: [history()],
       initialValue: [paragraph('one'), paragraph('two')],
     });
-    const revived = editor.read.children()[0]!;
+    const revived = editor.read.children()[0];
     const revivedKey = editor.key(revived);
     const revivedClone = structuredClone(revived);
 
@@ -944,7 +944,7 @@ describe('plite-history contract', () => {
     write(editor, (tx) => {
       const entry = tx.nodes.get([0]);
 
-      assert(entry);
+      assert.ok(entry);
       tx.nodes.duplicate([entry]);
     });
 
@@ -1064,7 +1064,7 @@ describe('plite-history contract', () => {
         {
           type: 'quote',
           children: [oldChild, paragraph('tail')],
-        } as Descendant,
+        },
       ],
       {
         kind: 'text',
@@ -1400,7 +1400,7 @@ describe('plite-history contract', () => {
             { bold: true, text: 'rich' },
             { text: ' text, much better' },
           ],
-        } as Descendant,
+        },
       ],
       {
         kind: 'text',

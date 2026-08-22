@@ -28,7 +28,7 @@ export type DndPluginState = {
     key: NodeKey;
     dragItem: FileDragItemNode;
     editor: PlateEditor;
-    monitor: DropTargetMonitor<DragItemNode, unknown>;
+    monitor: DropTargetMonitor<DragItemNode>;
     nodeRef: React.RefObject<HTMLElement | null>;
     target?: Path;
   }) => void;
@@ -53,24 +53,6 @@ export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
       store.set({ dropTarget: { key: null, line: '' } });
     },
     dragEnter: ({ store }) => {
-      store.set({ _isOver: true });
-    },
-    dragStart: ({ event, store }) => {
-      if (!(event.target instanceof HTMLElement)) return;
-
-      const { dataTransfer } = event;
-
-      if (!dataTransfer) return;
-
-      dataTransfer.effectAllowed = 'move';
-      dataTransfer.dropEffect = 'move';
-
-      const key = event.target.dataset.pliteNodeKey as NodeKey | undefined;
-
-      if (!key) return;
-
-      store.set({ draggingKey: key });
-      store.set({ isDragging: true });
       store.set({ _isOver: true });
     },
     drop: ({ store }) => store.get().isDragging,

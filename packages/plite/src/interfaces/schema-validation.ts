@@ -24,7 +24,7 @@ export type EditorSchemaValidationPropertyContext = Readonly<{
   key: string;
   placement: 'element' | 'text';
   /** Candidate targets aligned with `ids`; `null` means universal. */
-  targets: readonly (SchemaTarget | null)[];
+  targets: ReadonlyArray<SchemaTarget | null>;
 }>;
 
 /** One immutable, path-aware runtime schema validation failure. */

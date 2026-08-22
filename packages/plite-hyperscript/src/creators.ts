@@ -13,7 +13,10 @@ import {
   type TextSelection,
   TextApi,
 } from '@platejs/plite';
-import { replace as replaceEditor } from '@platejs/plite/internal';
+import {
+  failInvariant,
+  replace as replaceEditor,
+} from '@platejs/plite/internal';
 
 import {
   AnchorToken,
@@ -39,6 +42,8 @@ type MutableTextDraft = {
   [key: string]: unknown;
   text: string;
 };
+
+export type HyperscriptAttributes = Record<string, unknown>;
 
 /**
  * Resolve the descendants of a node by normalizing the children that can be
@@ -84,7 +89,10 @@ const resolveDescendants = (children: any[]): Descendant[] => {
 
       if (!TextApi.isText(n)) {
         addChild('');
-        n = nodes.at(-1) as Text;
+        n = nodes.at(-1);
+      }
+      if (!TextApi.isText(n)) {
+        failInvariant('Expected a text node for the selection token');
       }
 
       if (normalizedChild instanceof AnchorToken) {
@@ -94,7 +102,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       }
     } else {
       throw new Error(
-        `Unexpected hyperscript child object: ${normalizedChild}`
+        `Unexpected hyperscript child object: ${JSON.stringify(normalizedChild)}`
       );
     }
   };
@@ -112,7 +120,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
 
 export function createAnchor(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   _children: any[]
 ): AnchorToken {
   return new AnchorToken(attributes);
@@ -124,7 +132,7 @@ export function createAnchor(
 
 export function createCursor(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   _children: any[]
 ): Token[] {
   return [new AnchorToken(attributes), new FocusToken(attributes)];
@@ -136,7 +144,7 @@ export function createCursor(
 
 export function createElement(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   children: any[]
 ): Element {
   const fixture = {
@@ -155,7 +163,7 @@ export function createElement(
 
 export function createFocus(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   _children: any[]
 ): FocusToken {
   return new FocusToken(attributes);
@@ -167,7 +175,7 @@ export function createFocus(
 
 export function createFragment(
   _tagName: string,
-  _attributes: { [key: string]: any },
+  _attributes: HyperscriptAttributes,
   children: any[]
 ): Descendant[] {
   return resolveDescendants(children);
@@ -179,7 +187,7 @@ export function createFragment(
 
 export function createSelection(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   children: any[]
 ): TextSelection {
   const anchor = children.find((c) => c instanceof AnchorToken);
@@ -217,7 +225,7 @@ export function createSelection(
 
 export function createText(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   children: any[]
 ): Text {
   const nodes = resolveDescendants(children);
@@ -308,7 +316,7 @@ const resolveEditorFixture = (children: any[]): HyperscriptEditorFixture => {
 
 export function createEditorFixture(
   _tagName: string,
-  attributes: { [key: string]: any },
+  attributes: HyperscriptAttributes,
   children: any[]
 ): HyperscriptEditorFixture {
   return {
@@ -325,7 +333,7 @@ export const createEditor =
   (makeEditor: () => Editor) =>
   (
     _tagName: string,
-    attributes: { [key: string]: any },
+    attributes: HyperscriptAttributes,
     children: any[]
   ): Editor => {
     const fixture = resolveEditorFixture(children);

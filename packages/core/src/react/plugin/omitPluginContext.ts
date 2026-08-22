@@ -1,11 +1,6 @@
-import type { AnyBasePluginDefinition } from '../../lib';
 import type { PlatePluginContext } from './PlatePlugin';
 
-export const omitPluginContext = <
-  T extends PlatePluginContext<AnyBasePluginDefinition>,
->(
-  ctx: T
-) => {
+export const omitPluginContext = <T extends PlatePluginContext>(ctx: T) => {
   const {
     api,
     defineCodecs,

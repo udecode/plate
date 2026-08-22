@@ -48,7 +48,7 @@ function parseArgs(argv) {
 
   while (i < argv.length) {
     const arg = argv[i];
-    i++;
+    i += 1;
     if (!arg.startsWith('--')) continue;
 
     const key = arg.slice(2);
@@ -58,7 +58,7 @@ function parseArgs(argv) {
     }
 
     out[key] = argv[i] || true;
-    i++;
+    i += 1;
   }
 
   return out;

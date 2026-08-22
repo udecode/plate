@@ -49,12 +49,12 @@ const readJsonArrayValues = (value: unknown[]): unknown[] | null => {
 
 const readJsonObjectEntries = (
   value: Record<string, unknown>
-): [string, unknown][] | null => {
+): Array<[string, unknown]> | null => {
   const keys = Object.keys(value);
 
   if (Reflect.ownKeys(value).length !== keys.length) return null;
 
-  const entries: [string, unknown][] = [];
+  const entries: Array<[string, unknown]> = [];
 
   for (const key of keys) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
@@ -174,7 +174,7 @@ const isValidatedRecord = (
 
   return (
     (!requireOne || keys.length > 0) &&
-    keys.every((key) => fields[key]?.(value[key]) === true)
+    keys.every((key) => fields[key]?.(value[key]))
   );
 };
 
@@ -709,8 +709,7 @@ const omitAbsentScenarioStepFields = (
     return step;
   }
 
-  const shape: ScenarioStepShape =
-    scenarioStepShapes[step.kind as ScenarioStepKind];
+  const shape: ScenarioStepShape = scenarioStepShapes[step.kind];
   const optional = { ...commonScenarioStepFields, ...shape.optional };
   const required = shape.required ?? {};
 
@@ -844,41 +843,51 @@ export const summarizeScenarioStep = (
   switch (step.kind) {
     case 'assertSelection':
     case 'select':
-    case 'selectDOM':
+    case 'selectDOM': {
       return `${label}: ${step.kind} ${summarizeSelectionPayload(
         step.selection
       )}`;
-    case 'assertSelectionContract':
+    }
+    case 'assertSelectionContract': {
       return `${label}: assertSelectionContract`;
+    }
     case 'assertSelectedText':
     case 'assertText':
     case 'insertText':
     case 'pasteText':
-    case 'type':
+    case 'type': {
       return `${label}: ${step.kind} ${summarizeTextPayload(step.text)}`;
-    case 'mutateTextDOM':
+    }
+    case 'mutateTextDOM': {
       return `${label}: mutateTextDOM ${step.path.join(
         '.'
       )} ${summarizeTextPayload(step.text)}`;
-    case 'composeText':
+    }
+    case 'composeText': {
       return `${label}: composeText ${summarizeTextPayload(step.text)} via ${
         step.transport ?? 'default'
       }`;
-    case 'press':
+    }
+    case 'press': {
       return `${label}: press ${step.key}`;
-    case 'clickSelector':
+    }
+    case 'clickSelector': {
       return `${label}: clickSelector ${step.selector}`;
-    case 'clickTestId':
+    }
+    case 'clickTestId': {
       return `${label}: clickTestId ${step.testId}`;
+    }
     case 'clickTextOffset':
-    case 'doubleClickTextOffset':
+    case 'doubleClickTextOffset': {
       return `${label}: ${step.kind} ${step.path.join('.')}:${step.offset}${
         step.kind === 'doubleClickTextOffset' && step.selectedText !== undefined
           ? ` selects ${summarizeTextPayload(step.selectedText)}`
           : ''
       }`;
-    case 'dragTextSelection':
+    }
+    case 'dragTextSelection': {
       return `${label}: dragTextSelection ${step.selector}`;
+    }
     case 'assertWindowSelectionText': {
       if (step.text !== undefined) {
         return `${label}: assertWindowSelectionText ${summarizeTextPayload(
@@ -895,8 +904,9 @@ export const summarizeScenarioStep = (
         step.notEmpty ? 'not empty' : 'current'
       }`;
     }
-    default:
+    default: {
       return `${label}: ${step.kind}`;
+    }
   }
 };
 
@@ -1109,7 +1119,7 @@ export const summarizeScenarioReductionCandidate = ({
 export const normalizeScenarioMetadata = (
   metadata: PliteBrowserScenarioMetadata = {}
 ): PliteBrowserNormalizedScenarioMetadata => ({
-  capabilities: Array.from(new Set(metadata.capabilities ?? [])).sort(),
+  capabilities: Array.from(new Set(metadata.capabilities)).sort(),
   claim: classifyScenarioTransportClaim(metadata),
   platform: metadata.platform ?? null,
   transport: metadata.transport ?? null,

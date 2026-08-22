@@ -79,11 +79,9 @@ describe('editor extension namespaces', () => {
     );
 
     editor.update((tx) => {
-      const selectionInfo = (
-        tx as typeof tx & {
-          selectionInfo: { selectedText(): string };
-        }
-      ).selectionInfo;
+      const { selectionInfo } = tx as typeof tx & {
+        selectionInfo: { selectedText(): string };
+      };
 
       assert.equal(selectionInfo.selectedText(), 'one');
       leakedRead = selectionInfo.selectedText;

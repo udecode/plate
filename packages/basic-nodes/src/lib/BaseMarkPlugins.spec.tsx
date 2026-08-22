@@ -40,23 +40,33 @@ const getMarkKey = (
   plugin: MarkPlugin
 ) => {
   switch (plugin.name) {
-    case BaseBoldPlugin.name:
+    case BaseBoldPlugin.name: {
       return editor.plugin(BaseBoldPlugin).schema.key;
-    case BaseCodePlugin.name:
+    }
+    case BaseCodePlugin.name: {
       return editor.plugin(BaseCodePlugin).schema.key;
-    case BaseHighlightPlugin.name:
+    }
+    case BaseHighlightPlugin.name: {
       return editor.plugin(BaseHighlightPlugin).schema.key;
-    case BaseItalicPlugin.name:
+    }
+    case BaseItalicPlugin.name: {
       return editor.plugin(BaseItalicPlugin).schema.key;
-    case BaseKbdPlugin.name:
+    }
+    case BaseKbdPlugin.name: {
       return editor.plugin(BaseKbdPlugin).schema.key;
-    case BaseScriptPlugin.name:
+    }
+    case BaseScriptPlugin.name: {
       return editor.plugin(BaseScriptPlugin).schema.key;
-    case BaseStrikethroughPlugin.name:
+    }
+    case BaseStrikethroughPlugin.name: {
       return editor.plugin(BaseStrikethroughPlugin).schema.key;
-    case BaseUnderlinePlugin.name:
+    }
+    case BaseUnderlinePlugin.name: {
       return editor.plugin(BaseUnderlinePlugin).schema.key;
+    }
   }
+
+  return undefined;
 };
 
 const getDecodedMarkReader = (plugin: MarkPlugin) => {
@@ -242,10 +252,10 @@ describe('BaseMarkPlugins', () => {
       );
       editor.api.dom.clipboard.writeSelection(data);
 
-      const body = new DOMParser().parseFromString(
+      const { body } = new DOMParser().parseFromString(
         data.getData('text/html'),
         'text/html'
-      ).body;
+      );
 
       expect(body.querySelector(`p > ${outputTag}`)?.textContent).toBe('text');
     }
@@ -287,10 +297,10 @@ describe('BaseMarkPlugins', () => {
 
     editor.api.dom.clipboard.writeSelection(data);
 
-    const body = new DOMParser().parseFromString(
+    const { body } = new DOMParser().parseFromString(
       data.getData('text/html'),
       'text/html'
-    ).body;
+    );
 
     expect(body.querySelector('strong')?.textContent).toBe('text');
     expect(body.querySelector('em')?.textContent).toBe('text');

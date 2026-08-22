@@ -17,7 +17,7 @@ import { IndentKit } from '@/registry/components/editor/indent';
 
 export function ToggleElement(props: PlateElementProps<typeof TogglePlugin>) {
   const editor = useEditor();
-  const element = props.element;
+  const { element } = props;
   const toggleKey = editor.key(element);
   const open = usePluginStore(BaseTogglePlugin, 'openKeys').has(toggleKey);
   const { api } = useEditorPlugin(BaseTogglePlugin);
@@ -33,7 +33,9 @@ export function ToggleElement(props: PlateElementProps<typeof TogglePlugin>) {
           event.preventDefault();
           api.toggleKeys([toggleKey]);
         }}
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
       >
         <ChevronRight
           className={

@@ -21,7 +21,9 @@ test('routes tooling slow contracts exclusively through the slow suite', (t) => 
   const fastFixture = 'tooling/scripts/fixture.test.mjs';
   const slowFixture = 'tooling/scripts/fixture.slow.test.mjs';
 
-  t.after(() => rmSync(fixtureRoot, { force: true, recursive: true }));
+  t.after(() => {
+    rmSync(fixtureRoot, { force: true, recursive: true });
+  });
   mkdirSync(toolingRoot, { recursive: true });
   mkdirSync(browserRoot, { recursive: true });
   writeFileSync(path.join(fixtureRoot, browserFixture), '');

@@ -65,7 +65,7 @@ const getPlainHeadingText = (value: string) =>
   value.replace(MARKDOWN_CODE_TICK_REGEX, '').trim();
 
 const getMarkdownHeadings = (markdown: string) => {
-  const headings: { depth: number; text: string }[] = [];
+  const headings: Array<{ depth: number; text: string }> = [];
 
   for (const line of markdown.split(MARKDOWN_LINE_BREAK_REGEX)) {
     const match = MARKDOWN_HEADING_REGEX.exec(line);
@@ -97,7 +97,7 @@ const isSearchResult = (value: unknown): value is SearchResult =>
 
 const searchSource = {
   ...source,
-  getPages: ((language?: string) => {
+  getPages: (language?: string) => {
     if (language) {
       return source.getPages(language);
     }
@@ -114,7 +114,7 @@ const searchSource = {
       }));
 
     return [...pages, ...cnFallbackPages];
-  }) as typeof source.getPages,
+  },
 };
 
 let docsApiAnchorUrlsPromise: Promise<Set<string>> | undefined;

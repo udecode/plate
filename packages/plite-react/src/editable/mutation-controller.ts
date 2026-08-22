@@ -213,7 +213,7 @@ const deleteProjectedRanges = (
 const deleteProjectedRangeAnchors = (
   editor: RuntimeEditor,
   tx: EditorUpdateTransaction<any, any>,
-  rangeAnchors: Anchor<Range>[]
+  rangeAnchors: Array<Anchor<Range>>
 ) => {
   const ranges = rangeAnchors
     .map((rangeAnchor) => rangeAnchor.release())
@@ -222,7 +222,7 @@ const deleteProjectedRangeAnchors = (
   deleteProjectedRanges(editor, tx, ranges);
 };
 
-const releaseProjectedRangeAnchors = (rangeAnchors: Anchor<Range>[]) => {
+const releaseProjectedRangeAnchors = (rangeAnchors: Array<Anchor<Range>>) => {
   for (const rangeAnchor of rangeAnchors) {
     rangeAnchor.release();
   }
@@ -659,7 +659,7 @@ export const applyEditableCommand = ({
   editor: RuntimeEditor;
 }) => {
   switch (command.kind) {
-    case 'delete':
+    case 'delete': {
       if (applyProjectedViewSelectionTextCommand({ editor })) {
         return true;
       }
@@ -670,8 +670,9 @@ export const applyEditableCommand = ({
         unit: command.unit,
       });
       return true;
+    }
 
-    case 'delete-both':
+    case 'delete-both': {
       if (applyProjectedViewSelectionTextCommand({ editor })) {
         return true;
       }
@@ -687,8 +688,9 @@ export const applyEditableCommand = ({
         unit: command.unit,
       });
       return true;
+    }
 
-    case 'delete-fragment':
+    case 'delete-fragment': {
       if (applyProjectedViewSelectionTextCommand({ editor })) {
         return true;
       }
@@ -708,14 +710,16 @@ export const applyEditableCommand = ({
         });
         return true;
       }
+    }
 
-    case 'history':
+    case 'history': {
       return applyModelOwnedHistoryIntent({
         direction: command.direction,
         editor,
       });
+    }
 
-    case 'insert-break':
+    case 'insert-break': {
       if (
         applyProjectedViewSelectionLineBreakCommand({
           editor,
@@ -730,8 +734,9 @@ export const applyEditableCommand = ({
         kind: command.variant,
       });
       return true;
+    }
 
-    case 'insert-data':
+    case 'insert-data': {
       if (
         applyProjectedViewSelectionDataCommand({
           data: command.data,
@@ -744,8 +749,9 @@ export const applyEditableCommand = ({
       return toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
         command.data
       );
+    }
 
-    case 'insert-text':
+    case 'insert-text': {
       if (
         applyProjectedViewSelectionTextCommand({
           editor,
@@ -757,12 +763,14 @@ export const applyEditableCommand = ({
 
       editorInsertText(editor, command.text);
       return true;
+    }
 
-    case 'transpose-character':
+    case 'transpose-character': {
       return applyModelOwnedTransposeCharacterIntent({
         editor,
         selection: readRuntimeSelection(editor),
       });
+    }
 
     case 'select':
     case 'select-all': {
@@ -799,7 +807,7 @@ export const applyEditableCommand = ({
       return true;
     }
 
-    case 'move-selection':
+    case 'move-selection': {
       if (
         applyContentRootSelectionMoveCommand({
           command,
@@ -811,7 +819,10 @@ export const applyEditableCommand = ({
       }
 
       return applyRootLocalSelectionMoveCommand({ command, editor });
+    }
   }
+
+  return undefined;
 };
 
 export const applyModelOwnedDataTransferInput = ({
@@ -863,17 +874,44 @@ export const executeEditableRepairPolicy = ({
   return true;
 };
 
+export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
+  try {
+    ReactEditor.focus(editor);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const applyModelOwnedTextInput = ({
   data,
   editor,
   inputType,
+  mergeHistory = false,
   selection,
 }: {
   data: string;
   editor: Editor;
   inputType: string;
+  mergeHistory?: boolean;
   selection?: Range | null;
 }): EditableRepairRequest => {
+  const insertAtSelection = (target: Range) => {
+    if (mergeHistory) {
+      editor.update({ tags: ['composition', 'history-merge'] }, (tx) => {
+        tx.command(editorCommands.insertText, {
+          options: { at: target },
+          text: data,
+        });
+      });
+      return;
+    }
+
+    dispatchCommand(editor, editorCommands.insertText, {
+      options: { at: target },
+      text: data,
+    });
+  };
   const hasExplicitTargetSelection =
     !!selection &&
     (RangeApi.isExpanded(selection) || inputType !== 'insertText');
@@ -906,11 +944,7 @@ export const applyModelOwnedTextInput = ({
   if (canUseSyncedCollapsedTarget) {
     profileEditableMutationDuration(
       'model-text-input-insert-at-selection',
-      () =>
-        dispatchCommand(editor, editorCommands.insertText, {
-          options: { at: selection },
-          text: data,
-        })
+      () => insertAtSelection(selection)
     );
   } else if (
     selection &&
@@ -919,11 +953,7 @@ export const applyModelOwnedTextInput = ({
     writePliteViewSelection(editor, null);
     profileEditableMutationDuration(
       'model-text-input-insert-at-target-selection',
-      () =>
-        dispatchCommand(editor, editorCommands.insertText, {
-          options: { at: selection },
-          text: data,
-        })
+      () => insertAtSelection(selection)
     );
   } else {
     profileEditableMutationDuration('model-text-input-apply-command', () =>
@@ -953,17 +983,21 @@ export const applyEditableRepairRequest = ({
   domPhaseScheduler,
   domRepairQueue,
   editor,
+  focusEditor,
   forceRender,
   inputController,
   request,
+  requestFocusAfterRender,
   syncDOMSelectionToEditor,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
   domRepairQueue: DOMRepairQueue;
   editor: ReactRuntimeEditor;
+  focusEditor?: ReactRuntimeEditor;
   forceRender: () => void;
   inputController: EditableInputController;
   request: EditableRepairRequest;
+  requestFocusAfterRender?: (editor: ReactRuntimeEditor) => void;
   syncDOMSelectionToEditor: () => void;
 }) => {
   if (request.kind === 'none' || request.kind === 'skip-dom-sync') {
@@ -1010,18 +1044,45 @@ export const applyEditableRepairRequest = ({
         }
       }
 
-      if (
-        'focus' in request &&
+      const focusTarget =
+        focusEditor ??
+        ('focus' in request &&
         request.focus &&
         !shouldSkipSelectionFocus(editor)
-      ) {
+          ? editor
+          : undefined);
+
+      if (focusTarget) {
         profileEditableMutationDuration('repair.focus-editor', () => {
-          ReactEditor.focus(editor);
+          focusEditableRepairTarget(focusTarget);
         });
       }
 
       if ('forceRender' in request && request.forceRender) {
+        if (focusTarget) {
+          requestFocusAfterRender?.(focusTarget);
+        }
+
         profileEditableMutationDuration('repair.force-render', forceRender);
+
+        if (focusTarget && !requestFocusAfterRender) {
+          domPhaseScheduler.schedule(
+            'dom-write',
+            'focus-editor-after-render',
+            () => {
+              profileEditableMutationDuration(
+                'repair.focus-editor-after-render',
+                () => {
+                  focusEditableRepairTarget(focusTarget);
+                }
+              );
+            },
+            {
+              key: 'focus-editor-after-render',
+              timing: 'animation-frame',
+            }
+          );
+        }
       }
 
       if (request.kind === 'sync-selection') {

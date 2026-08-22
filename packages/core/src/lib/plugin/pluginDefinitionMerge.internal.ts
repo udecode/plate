@@ -34,10 +34,9 @@ type ObjectField<TContribution, TKey extends PropertyKey> =
 
 type Conflicts<TContribution> =
   TContribution extends Readonly<{
-    conflicts: infer TConflicts extends readonly (
-      | EditorExtensionReference
-      | PluginReference
-    )[];
+    conflicts: infer TConflicts extends ReadonlyArray<
+      EditorExtensionReference | PluginReference
+    >;
   }>
     ? TConflicts
     : readonly [];
@@ -51,10 +50,9 @@ type Enabled<TContribution> =
 
 type TargetPlugins<TContribution> =
   TContribution extends Readonly<{
-    targetPlugins: infer TTargetPlugins extends readonly (
-      | PluginReference
-      | string
-    )[];
+    targetPlugins: infer TTargetPlugins extends ReadonlyArray<
+      PluginReference | string
+    >;
   }>
     ? TTargetPlugins
     : readonly [];

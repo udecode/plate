@@ -74,6 +74,7 @@ import {
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   after as editorAfter,
+  failInvariant,
   before as editorBefore,
   dispatchCommand,
   editorCommands,
@@ -139,7 +140,7 @@ const collapseNativeSelectionForProjectedSelection = (
   let document: Document;
 
   try {
-    document = domApi.getWindow().document;
+    ({ document } = domApi.getWindow());
   } catch {
     return;
   }
@@ -731,11 +732,10 @@ const getRootLocalVerticalModelSelectionTarget = ({
   sourceEditor: ReactRuntimeEditor;
 }): ContentRootNavigationTarget | null =>
   sourceEditor.read((state) => {
-    const children = (
+    const children =
       toInternalRoot(state.view.root()) === root
         ? state.nodes.children()
-        : readRootChildren(state, root)
-    ) as readonly Descendant[];
+        : readRootChildren(state, root);
     const blockIndex = point.path[0];
 
     if (blockIndex == null) {
@@ -918,7 +918,7 @@ const getProjectedGraphTerminalLineTarget = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   viewSelection: PliteViewSelection;
 }): ContentRootNavigationTarget | null => {
-  const focus = viewSelection.focus;
+  const { focus } = viewSelection;
   const root = getPliteViewBoundaryPointRoot(focus);
   const sourceEditor = getProjectedPointViewEditor({
     editor,
@@ -1387,7 +1387,7 @@ const applyContentRootViewSelectionAction = ({
       currentRoot,
       getActiveContentRootOwner,
       owners,
-      selection: selection!,
+      selection: selection ?? failInvariant('Expected value to be defined'),
     });
   let projectedSelection = createPliteViewSelection(graph, {
     anchor,
@@ -1488,7 +1488,9 @@ export const applyContentRootViewSelection = ({
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
     preferredX,
-    preventDefault: () => event.preventDefault(),
+    preventDefault: () => {
+      event.preventDefault();
+    },
     selection,
   });
 

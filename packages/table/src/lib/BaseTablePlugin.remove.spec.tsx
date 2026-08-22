@@ -126,7 +126,7 @@ describe('table removal', () => {
 
         editor.update.table.removeColumn();
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -183,7 +183,7 @@ describe('table removal', () => {
 
         editor.update.table.removeColumn();
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -240,7 +240,7 @@ describe('table removal', () => {
 
         editor.update.table.removeColumn();
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -303,7 +303,7 @@ describe('table removal', () => {
 
         editor.update.table.removeColumn();
 
-        expect(editor.read.children()).toMatchObject(output.children!);
+        expect(editor.read.children()).toMatchObject(output.children);
       }
     );
   });
@@ -474,7 +474,7 @@ describe('table removal', () => {
         editor.update.table.removeRow();
 
         const entry = editor.read.nodes.get([0], { type: BaseTablePlugin });
-        assert(entry);
+        assert.ok(entry);
         expect(entry[0].children).toHaveLength(1);
         expect(editor.read.text.string([0, 0, 0])).toBe('11');
       });

@@ -1,7 +1,6 @@
 import type { DocumentMigration } from '@platejs/core';
 import {
   type Descendant,
-  type EditorDocumentValue,
   type Element,
   ElementApi,
   TextApi,
@@ -28,7 +27,7 @@ const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
 const legacyCodeDrawingLanguage = (value: unknown) => {
-  if (typeof value !== 'string') return;
+  if (typeof value !== 'string') return undefined;
 
   const normalized = value.toLowerCase();
 
@@ -36,7 +35,7 @@ const legacyCodeDrawingLanguage = (value: unknown) => {
 };
 
 const legacyCodeDrawingView = (value: unknown) => {
-  if (typeof value !== 'string') return;
+  if (typeof value !== 'string') return undefined;
 
   const normalized = value.toLowerCase();
 
@@ -47,7 +46,7 @@ const legacyCodeDrawingView = (value: unknown) => {
 };
 
 const safeInteger = (value: unknown) => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
 
   const integer = Math.trunc(value);
 
@@ -163,7 +162,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
         return;
       }
 
-      element = { ...element, [key]: value } as Element;
+      element = { ...element, [key]: value };
     };
 
     if (dateType && element.type === dateType) {
@@ -209,14 +208,17 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
           ? String(rawLegacyKey)
           : undefined;
 
-      const legacyValue = isNonEmptyString(properties().value)
-        ? properties().value
+      const rawLegacyValue = properties().value;
+      const rawExistingLabel = properties().label;
+      const rawExistingRef = properties().ref;
+      const legacyValue = isNonEmptyString(rawLegacyValue)
+        ? rawLegacyValue
         : undefined;
-      const existingLabel = isNonEmptyString(properties().label)
-        ? properties().label
+      const existingLabel = isNonEmptyString(rawExistingLabel)
+        ? rawExistingLabel
         : undefined;
-      const existingRef = isNonEmptyString(properties().ref)
-        ? properties().ref
+      const existingRef = isNonEmptyString(rawExistingRef)
+        ? rawExistingRef
         : undefined;
 
       if (
@@ -285,7 +287,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
     }
 
     if (columnGroupType && element.type === columnGroupType) {
-      const layout = properties().layout;
+      const { layout } = properties();
 
       if (columnType) {
         const columnCount = element.children.filter(
@@ -293,7 +295,9 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
         ).length;
         const fallbackWidth = `${100 / Math.max(columnCount, 1)}%`;
         const nextChildren = element.children.map((child, index) => {
-          const width = Array.isArray(layout) ? layout[index] : undefined;
+          const width: unknown = Array.isArray(layout)
+            ? layout[index]
+            : undefined;
           const layoutWidth =
             typeof width === 'number' && Number.isFinite(width) && width > 0
               ? `${width}%`
@@ -318,13 +322,13 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
             return child;
           }
 
-          return { ...child, width: layoutWidth } as Element;
+          return { ...child, width: layoutWidth };
         });
 
         if (
           nextChildren.some((child, index) => child !== element.children[index])
         ) {
-          element = { ...element, children: nextChildren } as Element;
+          element = { ...element, children: nextChildren };
         }
       }
       without('layout');
@@ -340,7 +344,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
     }
 
     if (codeDrawingType && element.type === codeDrawingType) {
-      const data = properties().data;
+      const { data } = properties();
       const record =
         typeof data === 'object' && data !== null && !Array.isArray(data)
           ? (data as Record<string, unknown>)
@@ -418,7 +422,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
         if (value === undefined) {
           without(key);
         } else if (value !== properties()[key]) {
-          element = { ...element, [key]: value } as Element;
+          element = { ...element, [key]: value };
         }
       }
     }
@@ -432,7 +436,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
       if (indent === undefined || indent < 0) {
         without('indent');
       } else if (indent !== properties().indent) {
-        element = { ...element, indent } as Element;
+        element = { ...element, indent };
       }
     }
 
@@ -453,7 +457,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
         if (value === undefined || value <= 0) {
           without(key);
         } else if (value !== properties()[key]) {
-          element = { ...element, [key]: value } as Element;
+          element = { ...element, [key]: value };
         }
       }
     }
@@ -474,7 +478,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
       }
 
       if (Object.hasOwn(element, 'borders')) {
-        const borders = properties().borders;
+        const { borders } = properties();
 
         if (
           typeof borders === 'object' &&
@@ -529,7 +533,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
           );
 
           if (bordersChanged) {
-            element = { ...element, borders: nextBorders } as Element;
+            element = { ...element, borders: nextBorders };
           }
         } else {
           without('borders');
@@ -549,7 +553,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
     }
 
     if (tableType && element.type === tableType) {
-      const columnWidths = properties().columnWidths;
+      const { columnWidths } = properties();
 
       if (Array.isArray(columnWidths)) {
         let widthsChanged = false;
@@ -568,7 +572,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
           element = {
             ...element,
             columnWidths: nextColumnWidths,
-          } as Element;
+          };
         }
       } else if (Object.hasOwn(element, 'columnWidths')) {
         without('columnWidths');
@@ -591,7 +595,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
     return changed ? next : children;
   };
   const children = migrateChildren(document.children, 'main');
-  let roots = document.roots;
+  let { roots } = document;
 
   if (roots) {
     let changed = false;
@@ -616,5 +620,5 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
     ...document,
     children,
     ...(roots ? { roots } : {}),
-  } as EditorDocumentValue;
+  };
 };

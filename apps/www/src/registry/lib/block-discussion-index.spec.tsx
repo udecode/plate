@@ -11,6 +11,7 @@ import {
   type Element,
   type Node,
   type NodeEntry,
+  type NodeKey,
   type Text,
   createBaseEditor,
   defineBasePlugin,
@@ -23,6 +24,7 @@ import type { PlateEditor } from 'platejs/react';
 import {
   BLOCK_SUGGESTION_TOKEN,
   buildBlockDiscussionIndex,
+  sameBlockDiscussionSelection,
   shouldRefreshBlockDiscussionIndex,
 } from './block-discussion-index';
 
@@ -159,7 +161,55 @@ describe('shouldRefreshBlockDiscussionIndex', () => {
   });
 });
 
+describe('sameBlockDiscussionSelection', () => {
+  it('keeps empty blocks stable across structural path shifts', () => {
+    const empty = {
+      contentKey: '',
+      hasDraftComment: false,
+      isTopLevelBlock: true,
+      resolvedDiscussions: [],
+      resolvedSuggestions: [],
+    } as const;
+
+    expect(sameBlockDiscussionSelection(empty, { ...empty })).toBe(true);
+  });
+});
+
 describe('buildBlockDiscussionIndex', () => {
+  it('indexes block discussions by stable node key instead of numeric path', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext suggestion suggestion_1={suggestionData}>
+            body
+          </htext>
+        </hp>
+      </editor>
+    ) as TestEditorFixture;
+    const block = input.children[0];
+    const blockNodeKey = 'runtime:block' as NodeKey;
+    const index = buildBlockDiscussionIndex({
+      discussions: [],
+      entries: collectEntries(input.children),
+      getBlockNodeKey: (node) => {
+        expect(node).toBe(block);
+
+        return blockNodeKey;
+      },
+      getCommentId: () => {},
+      getSuggestionData,
+      getSuggestionDataList,
+      getSuggestionId,
+      getSuggestionKey,
+      isBlockSuggestion: () => false,
+    });
+
+    expect(index.topLevelNodeKeys.has(blockNodeKey)).toBe(true);
+    expect(index.suggestionsByNodeKey.get(blockNodeKey)?.[0]?.text).toBe(
+      'body'
+    );
+  });
+
   it('keeps inline void display text in remove summaries', () => {
     const input = (
       <editor>

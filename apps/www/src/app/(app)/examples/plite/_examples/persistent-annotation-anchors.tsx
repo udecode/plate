@@ -1,4 +1,3 @@
-/* oxlint-disable typescript/no-unsafe-argument -- This owner crosses an erased generated, provider, or editor-runtime boundary; runtime validation or the external contract is the evidence, and fabricating local types would launder it. */
 import type {
   Anchor,
   createEditor,
@@ -16,6 +15,7 @@ import {
   usePliteWidgetStore,
   usePliteWidgets,
 } from '@platejs/plite-react';
+import { failInvariant } from '@platejs/plite/internal';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,9 @@ type BlockRowDescriptor = {
   text: string;
 };
 
-const getBlockRows = (value: readonly Value[number][]): BlockRowDescriptor[] =>
+const getBlockRows = (
+  value: ReadonlyArray<Value[number]>
+): BlockRowDescriptor[] =>
   value.flatMap((node, index) => {
     if (!('children' in node)) {
       return [];
@@ -145,11 +147,11 @@ const getRangeInsideText = (
 };
 
 const getBlockRowByText = (
-  value: readonly Value[number][],
+  value: ReadonlyArray<Value[number]>,
   match: (text: string) => boolean
 ) => getBlockRows(value).find((row) => match(row.text)) ?? null;
 
-const getOutline = (value: readonly Value[number][]) =>
+const getOutline = (value: ReadonlyArray<Value[number]>) =>
   getBlockRows(value)
     .map((row) => row.text)
     .join('|');
@@ -238,7 +240,7 @@ const Outline = () => {
 };
 
 const formatPointInRows = (rows: BlockRowDescriptor[], point: Point) => {
-  const row = rows.find((row) => row.path[0] === point.path[0]);
+  const row = rows.find((innerRow) => innerRow.path[0] === point.path[0]);
 
   if (!row) {
     return `${point.path.join('.')}:${point.offset}`;
@@ -279,7 +281,9 @@ const AnnotationSidebar = () => {
           ? 'none'
           : snapshot.allIds
               .map((id) => {
-                const annotation = snapshot.byId.get(id)!;
+                const annotation =
+                  snapshot.byId.get(id) ??
+                  failInvariant('Expected value to be defined');
 
                 return `${annotation.id}:${
                   annotation.data?.label ?? 'none'
@@ -320,7 +324,9 @@ const WidgetPanel = ({
           ? 'none'
           : snapshot.allIds
               .map((id) => {
-                const widget = snapshot.byId.get(id)!;
+                const widget =
+                  snapshot.byId.get(id) ??
+                  failInvariant('Expected value to be defined');
 
                 return `${widget.id}:${widget.anchor.type}:${
                   widget.visible ? 'visible' : 'hidden'
@@ -355,8 +361,8 @@ const AnchoredProjectionContent = ({
   >;
 }) => {
   const alphaRow = useEditorSelector(
-    (editor) =>
-      getBlockRowByText(editor.read.children(), (text) =>
+    (innerEditor) =>
+      getBlockRowByText(innerEditor.read.children(), (text) =>
         text.includes('alpha')
       ) ?? null,
     {
@@ -368,9 +374,11 @@ const AnchoredProjectionContent = ({
     }
   );
   const betaRow = useEditorSelector(
-    (editor) =>
-      getBlockRowByText(editor.read.children(), (text) => text === 'beta') ??
-      null,
+    (innerEditor2) =>
+      getBlockRowByText(
+        innerEditor2.read.children(),
+        (text) => text === 'beta'
+      ) ?? null,
     {
       equalityFn: (left, right) =>
         left != null &&

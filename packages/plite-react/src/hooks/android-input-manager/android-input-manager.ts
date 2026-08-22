@@ -52,6 +52,7 @@ import type {
 import { applyEditableCommand } from '../../editable/mutation-controller';
 import {
   editorCommands,
+  failInvariant,
   probeCommandNativeEquivalent,
   range as editorRange,
   leaf as editorLeaf,
@@ -189,9 +190,9 @@ export function createAndroidInputManager({
         return;
       }
 
-      const targetRange = editorRange(editor, target);
+      const innerTargetRange = editorRange(editor, target);
       const selection = readRuntimeSelection(editor);
-      if (!selection || !RangeApi.equals(selection, targetRange)) {
+      if (!selection || !RangeApi.equals(selection, innerTargetRange)) {
         writeRuntimeSelection(editor, target);
       }
     }
@@ -339,7 +340,11 @@ export function createAndroidInputManager({
       selection &&
       !EDITOR_TO_PENDING_SELECTION.get(editor) &&
       (!readRuntimeSelection(editor) ||
-        !RangeApi.equals(selection, readRuntimeSelection(editor)!))
+        !RangeApi.equals(
+          selection,
+          readRuntimeSelection(editor) ??
+            failInvariant('Expected value to be defined')
+        ))
     ) {
       writeRuntimeSelection(editor, selection);
     }
@@ -478,10 +483,11 @@ export function createAndroidInputManager({
     const idx = pendingDiffs.findIndex((change) =>
       PathApi.equals(change.path, path)
     );
-    if (idx < 0) {
+    if (idx === -1) {
       const normalized = normalizeStringDiff(target.text, nextDiff);
       if (normalized) {
-        pendingDiffs.push({ path, diff: normalized, id: idCounter++ });
+        pendingDiffs.push({ path, diff: normalized, id: idCounter });
+        idCounter += 1;
       }
 
       updatePlaceholderVisibility();
@@ -664,7 +670,7 @@ export function createAndroidInputManager({
       selectionWasSyncedFromDOM ||
       (inputController.state.selectionSource === 'dom-current' &&
         inputController.state.selectionChangeOrigin !== 'native-user');
-    let targetRange: Range | null = preferRuntimeSelection
+    let innerTargetRange2: Range | null = preferRuntimeSelection
       ? readRuntimeSelection(editor)
       : null;
     const data: DataTransfer | string | undefined =
@@ -694,25 +700,29 @@ export function createAndroidInputManager({
       !preferRuntimeSelection;
     let nativeTargetRange: StaticRange | globalThis.Selection | undefined =
       preferLiveDOMSelection ? undefined : getInputEventTargetRanges(event)[0];
-    if (!targetRange && nativeTargetRange) {
-      targetRange = ReactEditor.resolvePliteRange(editor, nativeTargetRange, {
-        exactMatch: false,
-      });
+    if (!innerTargetRange2 && nativeTargetRange) {
+      innerTargetRange2 = ReactEditor.resolvePliteRange(
+        editor,
+        nativeTargetRange,
+        {
+          exactMatch: false,
+        }
+      );
     }
 
     // COMPAT: SelectionChange event is fired after the action is performed, so we
     // have to manually get the selection here to ensure it's up-to-date.
     const window = ReactEditor.getWindow(editor);
     const domSelection = window.getSelection();
-    if ((preferLiveDOMSelection || !targetRange) && domSelection) {
+    if ((preferLiveDOMSelection || !innerTargetRange2) && domSelection) {
       nativeTargetRange = domSelection;
-      targetRange = ReactEditor.resolvePliteRange(editor, domSelection, {
+      innerTargetRange2 = ReactEditor.resolvePliteRange(editor, domSelection, {
         exactMatch: false,
       });
     }
 
-    targetRange ??= readRuntimeSelection(editor);
-    if (!targetRange) {
+    innerTargetRange2 ??= readRuntimeSelection(editor);
+    if (!innerTargetRange2) {
       return;
     }
     // By default, the input manager tries to store text diffs so that we can
@@ -725,16 +735,16 @@ export function createAndroidInputManager({
       getEditableCommandFromBeforeInputType({
         data,
         inputType: type,
-        selection: targetRange,
+        selection: innerTargetRange2,
       });
 
     if (type.startsWith('delete')) {
       const direction = type.endsWith('Backward') ? 'backward' : 'forward';
-      let [start, end] = RangeApi.edges(targetRange);
+      let [start, end] = RangeApi.edges(innerTargetRange2);
       let [leaf, path] = editorLeaf(editor, start.path);
 
       if (
-        RangeApi.isExpanded(targetRange) &&
+        RangeApi.isExpanded(innerTargetRange2) &&
         leaf.text.length === start.offset &&
         end.offset === 0
       ) {
@@ -751,11 +761,11 @@ export function createAndroidInputManager({
           // if the node before is empty, this will look like a hanging range and get unhung later--which will take the break we want to remove out of the range
           // so to avoid this we collapse the target range to default to single character deletion
           if (direction === 'backward') {
-            targetRange = { anchor: end, focus: end };
+            innerTargetRange2 = { anchor: end, focus: end };
             start = end;
             [leaf, path] = next;
           } else {
-            targetRange = { anchor: start, focus: start };
+            innerTargetRange2 = { anchor: start, focus: start };
             end = start;
           }
         }
@@ -782,16 +792,22 @@ export function createAndroidInputManager({
         canStoreDiff = false;
       }
 
-      if (RangeApi.isExpanded(targetRange)) {
+      if (RangeApi.isExpanded(innerTargetRange2)) {
         if (
           canStoreDiff &&
-          PathApi.equals(targetRange.anchor.path, targetRange.focus.path)
+          PathApi.equals(
+            innerTargetRange2.anchor.path,
+            innerTargetRange2.focus.path
+          )
         ) {
-          const point = { path: targetRange.anchor.path, offset: start.offset };
+          const point = {
+            path: innerTargetRange2.anchor.path,
+            offset: start.offset,
+          };
           const range = editorRange(editor, point, point);
           handleUserSelect(range);
 
-          storeDiff(targetRange.anchor.path, {
+          storeDiff(innerTargetRange2.anchor.path, {
             text: '',
             end: end.offset,
             start: start.offset,
@@ -801,7 +817,7 @@ export function createAndroidInputManager({
 
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -813,15 +829,15 @@ export function createAndroidInputManager({
       case 'deleteByDrag': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
 
       case 'deleteContent':
       case 'deleteContentForward': {
-        const { anchor } = targetRange;
-        if (canStoreDiff && RangeApi.isCollapsed(targetRange)) {
+        const { anchor } = innerTargetRange2;
+        if (canStoreDiff && RangeApi.isCollapsed(innerTargetRange2)) {
           const targetNode = NodeApi.leaf(editor, anchor.path);
 
           if (anchor.offset < targetNode.text.length) {
@@ -836,13 +852,13 @@ export function createAndroidInputManager({
 
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
 
       case 'deleteContentBackward': {
-        const { anchor } = targetRange;
+        const { anchor } = innerTargetRange2;
 
         // If we have a mismatch between the native and Plite selection being collapsed
         // we are most likely deleting a zero-width placeholder and thus should perform it
@@ -854,7 +870,7 @@ export function createAndroidInputManager({
         if (
           canStoreDiff &&
           nativeCollapsed &&
-          RangeApi.isCollapsed(targetRange) &&
+          RangeApi.isCollapsed(innerTargetRange2) &&
           anchor.offset > 0
         ) {
           storeDiff(anchor.path, {
@@ -867,7 +883,7 @@ export function createAndroidInputManager({
 
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -875,7 +891,7 @@ export function createAndroidInputManager({
       case 'deleteEntireSoftLine': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -883,7 +899,7 @@ export function createAndroidInputManager({
       case 'deleteHardLineBackward': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -891,7 +907,7 @@ export function createAndroidInputManager({
       case 'deleteSoftLineBackward': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -899,7 +915,7 @@ export function createAndroidInputManager({
       case 'deleteHardLineForward': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -907,7 +923,7 @@ export function createAndroidInputManager({
       case 'deleteSoftLineForward': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -915,7 +931,7 @@ export function createAndroidInputManager({
       case 'deleteWordBackward': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -923,7 +939,7 @@ export function createAndroidInputManager({
       case 'deleteWordForward': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -931,7 +947,7 @@ export function createAndroidInputManager({
       case 'insertLineBreak': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -939,7 +955,7 @@ export function createAndroidInputManager({
       case 'insertParagraph': {
         const command = commandForTargetRange();
         if (command) {
-          scheduleCommand(command, { at: targetRange });
+          scheduleCommand(command, { at: innerTargetRange2 });
         }
         return;
       }
@@ -952,7 +968,10 @@ export function createAndroidInputManager({
       case 'insertReplacementText':
       case 'insertText': {
         if (isDataTransfer(data)) {
-          scheduleCommand({ data, kind: 'insert-data' }, { at: targetRange });
+          scheduleCommand(
+            { data, kind: 'insert-data' },
+            { at: innerTargetRange2 }
+          );
           return;
         }
 
@@ -993,19 +1012,24 @@ export function createAndroidInputManager({
               });
             },
             {
-              at: targetRange,
+              at: innerTargetRange2,
             }
           );
           return;
         }
 
-        if (PathApi.equals(targetRange.anchor.path, targetRange.focus.path)) {
-          canStoreDiff &&= canStoreDOMTextDiffAtRange(targetRange);
+        if (
+          PathApi.equals(
+            innerTargetRange2.anchor.path,
+            innerTargetRange2.focus.path
+          )
+        ) {
+          canStoreDiff &&= canStoreDOMTextDiffAtRange(innerTargetRange2);
           if (!canStoreDiff && event.cancelable) {
             event.preventDefault();
           }
 
-          const [start, end] = RangeApi.edges(targetRange);
+          const [start, end] = RangeApi.edges(innerTargetRange2);
 
           let diff = {
             start: start.offset,
@@ -1014,7 +1038,7 @@ export function createAndroidInputManager({
           };
 
           const repairedTextInsertOffset =
-            type === 'insertText' && RangeApi.isCollapsed(targetRange)
+            type === 'insertText' && RangeApi.isCollapsed(innerTargetRange2)
               ? getTextInsertRepairOffset(start.path, diff, {
                   trustRuntimeCaret: hasPendingChangesBeforeInput,
                 })
@@ -1057,7 +1081,7 @@ export function createAndroidInputManager({
               insertPositionHint = diff;
             } else if (
               insertPositionHint &&
-              RangeApi.isCollapsed(targetRange) &&
+              RangeApi.isCollapsed(innerTargetRange2) &&
               insertPositionHint.end + insertPositionHint.text.length ===
                 start.offset
             ) {
@@ -1067,7 +1091,7 @@ export function createAndroidInputManager({
               };
             } else if (
               insertPositionHint &&
-              RangeApi.isCollapsed(targetRange) &&
+              RangeApi.isCollapsed(innerTargetRange2) &&
               diff.start === insertPositionHint.start &&
               diff.end === insertPositionHint.start &&
               NodeApi.leaf(editor, start.path).text.slice(
@@ -1121,8 +1145,8 @@ export function createAndroidInputManager({
           {
             at: cloneRange(
               canStoreDiff
-                ? targetRange
-                : (readRuntimeSelection(editor) ?? targetRange)
+                ? innerTargetRange2
+                : (readRuntimeSelection(editor) ?? innerTargetRange2)
             ),
           }
         );

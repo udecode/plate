@@ -1,7 +1,6 @@
 import type {
   AnyEditor as Editor,
   EditorCommand,
-  EditorCommandDispatch,
   EditorCoreStateView,
   EditorCoreUpdateMethods,
   EditorRead,
@@ -11,7 +10,6 @@ import type {
   EditorUpdateMethods,
   EditorUpdatePolicy,
   EditorUpdateTransaction,
-  SelectionValue,
   Value,
 } from '../interfaces';
 import { getSemanticUpdateLowering } from './semantic-update-method';
@@ -118,8 +116,8 @@ const createReadExtensionPath = <
       });
     },
     get(_target, key) {
-      if (typeof key !== 'string') return;
-      if (key === 'then' || key === 'toJSON') return;
+      if (typeof key !== 'string') return undefined;
+      if (key === 'then' || key === 'toJSON') return undefined;
       return createReadExtensionPath(read, groupName, pathCache, [
         ...path,
         key,
@@ -190,8 +188,8 @@ const createUpdateExtensionPath = <
       return result;
     },
     get(_target, key) {
-      if (typeof key !== 'string') return;
-      if (key === 'then' || key === 'toJSON') return;
+      if (typeof key !== 'string') return undefined;
+      if (key === 'then' || key === 'toJSON') return undefined;
       return createUpdateExtensionPath(runUpdate, groupName, pathCache, [
         ...path,
         key,
@@ -210,7 +208,7 @@ export const createEditorReadApi = <
 >(
   runRead: RunEditorRead<V, TExtensions>
 ): EditorRead<V, TExtensions> => {
-  type RuntimeReadMethods = Omit<EditorCoreStateView<V, SelectionValue>, 'key'>;
+  type RuntimeReadMethods = Omit<EditorCoreStateView<V>, 'key'>;
   const extensionPathCache = new Map<string, unknown>();
   const read = (<T>(fn: (state: EditorStateView<V, TExtensions>) => T): T =>
     runRead(fn)) as EditorRead<V, TExtensions>;
@@ -222,8 +220,8 @@ export const createEditorReadApi = <
       {},
       {
         get(target, key, receiver) {
-          if (typeof key !== 'string') return;
-          if (key === 'toJSON') return;
+          if (typeof key !== 'string') return undefined;
+          if (key === 'toJSON') return undefined;
           if (key in target) {
             return Reflect.get(target, key, receiver);
           }
@@ -264,8 +262,8 @@ export const createEditorReadApi = <
         });
       },
       get(target, key, receiver) {
-        if (typeof key !== 'string') return;
-        if (key === 'toJSON') return;
+        if (typeof key !== 'string') return undefined;
+        if (key === 'toJSON') return undefined;
         if (key in target) {
           return Reflect.get(target, key, receiver);
         }
@@ -288,29 +286,20 @@ export const createEditorReadApi = <
     }) as RuntimeReadMethods[TGroup];
 
   const methods = {
-    children: ((...args) =>
-      read((state) =>
-        state.children(...args)
-      )) as RuntimeReadMethods['children'],
-    facet: ((...args) =>
-      read((state) => state.facet(...args))) as RuntimeReadMethods['facet'],
+    children: (...args) => read((state) => state.children(...args)),
+    facet: (...args) => read((state) => state.facet(...args)),
     fragment: createCallableGroup('fragment'),
     getField: ((...args) =>
       read((state) =>
         state.getField(...args)
       )) as RuntimeReadMethods['getField'],
-    lastCommit: ((...args) =>
-      read((state) =>
-        state.lastCommit(...args)
-      )) as RuntimeReadMethods['lastCommit'],
+    lastCommit: (...args) => read((state) => state.lastCommit(...args)),
     marks: createCallableGroup('marks'),
-    meta: ((...args) =>
-      read((state) => state.meta(...args))) as RuntimeReadMethods['meta'],
+    meta: (...args) => read((state) => state.meta(...args)),
     nodes: createGroup('nodes'),
     points: createGroup('points'),
     ranges: createGroup('ranges'),
-    root: ((...args) =>
-      read((state) => state.root(...args))) as RuntimeReadMethods['root'],
+    root: (...args) => read((state) => state.root(...args)),
     runtime: createGroup('runtime'),
     schema: createGroup('schema'),
     selection: createCallableGroup('selection'),
@@ -340,7 +329,7 @@ export const createEditorReadApi = <
 
       return createReadExtensionPath(read, groupName, extensionPathCache);
     },
-  }) as EditorRead<V, TExtensions>;
+  });
 };
 
 export const createEditorUpdateApi = <
@@ -363,7 +352,6 @@ export const createEditorUpdateApi = <
     object,
     EditorUpdateMethods<V, TExtensions>
   >();
-  // oxlint-disable-next-line prefer-const -- Facade methods close over the default facade assigned after construction.
   let defaultFacade!: EditorUpdate<V, TExtensions>;
 
   const getConfiguredFacade = (
@@ -461,8 +449,8 @@ export const createEditorUpdateApi = <
         {},
         {
           get(_target, key) {
-            if (typeof key !== 'string') return;
-            if (key === 'toJSON') return;
+            if (typeof key !== 'string') return undefined;
+            if (key === 'toJSON') return undefined;
 
             const existing = methodCache.get(key);
 
@@ -479,7 +467,7 @@ export const createEditorUpdateApi = <
                     string,
                     (...args: unknown[]) => unknown
                   >
-                )[key]!;
+                )[key];
                 const lower = getSemanticUpdateLowering(transactionMethod);
 
                 result = lower
@@ -509,7 +497,7 @@ export const createEditorUpdateApi = <
 
       switch (property) {
         case 'command': {
-          value = ((command: EditorCommand<unknown>, input?: unknown) => {
+          value = (command: EditorCommand<unknown>, input?: unknown) => {
             let handled = false;
 
             invoke((tx) => {
@@ -517,9 +505,10 @@ export const createEditorUpdateApi = <
             });
 
             return handled;
-          }) as EditorCommandDispatch;
+          };
           break;
         }
+
         case 'blocks':
         case 'break':
         case 'fragment':
@@ -532,32 +521,45 @@ export const createEditorUpdateApi = <
           value = createGroup(property);
           break;
         }
+
         case 'setField': {
           value = (
             ...args: Parameters<
               EditorCoreUpdateMethods<V, TExtensions>['setField']
             >
-          ) => invoke((tx) => tx.setField(...args));
+          ) => {
+            invoke((tx) => tx.setField(...args));
+          };
           break;
         }
+
         case 'value': {
           value = Object.freeze({
-            repair: () => apiOptions.repairValue(),
+            repair: () => {
+              apiOptions.repairValue();
+            },
             replace: (
               input: Parameters<
                 EditorCoreUpdateMethods<V, TExtensions>['value']['replace']
               >[0]
-            ) => invoke((tx) => tx.value.replace(input)),
-          }) as EditorCoreUpdateMethods<V, TExtensions>['value'];
+            ) => {
+              invoke((tx) => {
+                tx.value.replace(input);
+              });
+            },
+          });
           break;
         }
+
         default: {
           value = new Proxy(
             {},
             {
               get(_target, methodName) {
-                if (typeof methodName !== 'string') return;
-                if (methodName === 'then' || methodName === 'toJSON') return;
+                if (typeof methodName !== 'string') return undefined;
+                if (methodName === 'then' || methodName === 'toJSON') {
+                  return undefined;
+                }
                 return createUpdateExtensionPath(
                   invoke,
                   property,
@@ -580,11 +582,11 @@ export const createEditorUpdateApi = <
         if (typeof property !== 'string' || property in target) {
           return Reflect.get(target, property, receiver);
         }
-        if (property === 'then' || property === 'toJSON') return;
+        if (property === 'then' || property === 'toJSON') return undefined;
 
         return getUpdateProperty(property);
       },
-    }) as EditorUpdate<V, TExtensions>;
+    });
   };
 
   defaultFacade = createFacade();

@@ -215,6 +215,8 @@ const readPackageJson = (packageName: string) =>
       'utf-8'
     )
   ) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
     peerDependencies?: Record<string, string>;
     version: string;
   };
@@ -583,6 +585,17 @@ describe('plite-react surface contract', () => {
     expectRuntimePeerFloor(
       '@platejs/plite-dom',
       pliteReactPackage.peerDependencies?.['@platejs/plite-dom'] ?? ''
+    );
+  });
+
+  test('keeps history out of the runtime installation graph', () => {
+    const pliteReactPackage = readPackageJson('@platejs/plite-react');
+
+    expect(
+      pliteReactPackage.dependencies?.['@platejs/plite-history']
+    ).toBeUndefined();
+    expect(pliteReactPackage.devDependencies?.['@platejs/plite-history']).toBe(
+      'workspace:^'
     );
   });
 
@@ -1833,14 +1846,14 @@ describe('plite-react surface contract', () => {
     });
     const mounts = jest.fn();
 
-    const renderElement = ({ children }: RenderElementProps) => {
+    const RenderElement = ({ children }: RenderElementProps) => {
       useEffect(() => mounts(), []);
       return <div>{children}</div>;
     };
 
     const rendered = render(
       <Plite editor={editor}>
-        <Editable renderElement={renderElement} />
+        <Editable renderElement={RenderElement} />
       </Plite>
     );
 
@@ -1861,14 +1874,14 @@ describe('plite-react surface contract', () => {
     });
     const mergeMounts = jest.fn();
 
-    const mergeRenderElement = ({ children }: RenderElementProps) => {
+    const MergeRenderElement = ({ children }: RenderElementProps) => {
       useEffect(() => mergeMounts(), []);
       return <div>{children}</div>;
     };
 
     render(
       <Plite editor={mergeEditor}>
-        <Editable renderElement={mergeRenderElement} />
+        <Editable renderElement={MergeRenderElement} />
       </Plite>
     );
 
@@ -1894,12 +1907,12 @@ describe('plite-react surface contract', () => {
     const childMounts = jest.fn();
     const childUnmounts = jest.fn();
 
-    const renderElement = ({ children, element }: RenderElementProps) => {
-      const type = (element as { type?: string }).type;
+    const RenderElement = ({ children, element }: RenderElementProps) => {
+      const { type } = element as { type?: string };
 
       useEffect(() => {
         if (type !== 'child') {
-          return;
+          return undefined;
         }
 
         childMounts();
@@ -1911,7 +1924,7 @@ describe('plite-react surface contract', () => {
 
     render(
       <Plite editor={editor}>
-        <Editable renderElement={renderElement} />
+        <Editable renderElement={RenderElement} />
       </Plite>
     );
 
@@ -1945,7 +1958,7 @@ describe('plite-react surface contract', () => {
     const elementSelectedRenders: Record<string, boolean[] | undefined> = {};
     const latestElementSelected: Record<string, boolean | undefined> = {};
 
-    const renderElement = ({
+    const RenderElement = ({
       element,
       attributes,
       children,
@@ -1968,7 +1981,7 @@ describe('plite-react surface contract', () => {
 
     render(
       <Plite editor={editor}>
-        <Editable renderElement={renderElement} />
+        <Editable renderElement={RenderElement} />
       </Plite>
     );
 
@@ -2060,7 +2073,7 @@ describe('plite-react surface contract', () => {
       });
     });
 
-    expect(renderCounts.target ?? 0).toBe(1);
+    expect(renderCounts.target ?? 0).toBe(0);
     expect(readTargetPath()).toEqual([2]);
   });
 

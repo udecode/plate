@@ -25,11 +25,7 @@ function useThemedHtml(html: string, serverTheme?: string) {
     const doc = parser.parseFromString(html, 'text/html');
     const htmlElement = doc.documentElement;
 
-    if (resolvedTheme === 'dark') {
-      htmlElement.classList.add('dark');
-    } else {
-      htmlElement.classList.remove('dark');
-    }
+    htmlElement.classList.toggle('dark', resolvedTheme === 'dark');
 
     return doc.documentElement.outerHTML;
   }, [html, resolvedTheme, serverTheme]);
@@ -59,15 +55,11 @@ export function ExportHtmlButton({
   }, [themedHtml]);
 
   return (
-    <a
-      className={className}
-      download="export-plate.html"
-      href={url}
-      rel="noopener noreferrer"
-      role="button"
-    >
-      <Button>Export HTML</Button>
-    </a>
+    <Button asChild className={className}>
+      <a download="export-plate.html" href={url} rel="noopener noreferrer">
+        Export HTML
+      </a>
+    </Button>
   );
 }
 
@@ -81,7 +73,14 @@ export function HtmlIframe({
 } & React.ComponentProps<'iframe'>) {
   const content = useThemedHtml(html, serverTheme);
 
-  return <iframe title="Preview" srcDoc={content} {...props} />;
+  return (
+    <iframe
+      title="Preview"
+      sandbox="allow-same-origin"
+      srcDoc={content}
+      {...props}
+    />
+  );
 }
 
 export function EditorClient({ value }: { value: InitialValue }) {

@@ -1,5 +1,5 @@
 type TrustedHTMLPolicy = Readonly<{
-  createHTML: (html: string) => null | unknown;
+  createHTML: (html: string) => unknown;
 }>;
 
 type TrustedTypePolicyFactory = Readonly<{
@@ -50,7 +50,7 @@ const toTrustedHTML = (html: string) => {
 
   if (!factory) return html;
 
-  const defaultPolicy = factory.defaultPolicy;
+  const { defaultPolicy } = factory;
 
   if (defaultPolicy) return createTrustedHTML(defaultPolicy, html);
 

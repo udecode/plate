@@ -7,7 +7,10 @@ import * as React from 'react';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { createMultiEditorsValue } from '@/registry/examples/values/multi-editors-value';
 
-const values = createMultiEditorsValue();
+const editors = createMultiEditorsValue().map((value, index) => ({
+  id: String(index + 1),
+  value,
+}));
 
 function WithPlate({ id, value }: { id: string; value: Value }) {
   const editor = usePlateEditor({
@@ -29,10 +32,10 @@ function WithPlate({ id, value }: { id: string; value: Value }) {
 export default function HundredsEditorsDemo() {
   return (
     <div className="flex flex-col">
-      {values.map((value, idx) => (
-        <div key={idx} className="p-10">
-          <h3 className="mb-2 font-semibold">#{idx + 1}</h3>
-          <WithPlate id={String(idx + 1)} value={value} />
+      {editors.map(({ id, value }) => (
+        <div key={id} className="p-10">
+          <h3 className="mb-2 font-semibold">#{id}</h3>
+          <WithPlate id={id} value={value} />
         </div>
       ))}
     </div>

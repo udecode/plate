@@ -4,11 +4,8 @@ import {
   remarkMdxFiles,
   remarkStructure,
 } from 'fumadocs-core/mdx-plugins';
-import {
-  defineConfig,
-  defineDocs,
-  frontmatterSchema,
-} from 'fumadocs-mdx/config';
+import { pageSchema } from 'fumadocs-core/source/schema';
+import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import { createGenerator, remarkAutoTypeTable } from 'fumadocs-typescript';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
@@ -87,7 +84,7 @@ export const docs = defineDocs({
               includeProcessedMarkdown: true,
             },
           }),
-    schema: frontmatterSchema.extend({
+    schema: pageSchema.extend({
       component: z.boolean().default(false),
       docs: z.array(docPropertiesSchema).optional(),
       featured: z.boolean().default(false),

@@ -4,9 +4,9 @@ import path from 'node:path';
 import { cleanWordHtml } from './cleanWordHtml';
 
 const readTestFile = (filepath: string): string => {
-  const absoluteFilepath = path.resolve(__dirname, filepath);
+  const absoluteFilepath = path.resolve(import.meta.dirname, filepath);
 
-  return fs.readFileSync(absoluteFilepath, 'utf8');
+  return fs.readFileSync(absoluteFilepath, 'utf-8');
 };
 
 describe('cleanWordHtml fixtures', () => {

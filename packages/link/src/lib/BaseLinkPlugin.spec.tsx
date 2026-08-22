@@ -637,12 +637,12 @@ describe('editor.update.link.unwrap', () => {
       selection: { kind: 'text', anchor, focus },
       initialValue: value,
     });
-  const splitCases: {
+  const splitCases: Array<{
     anchor: Point;
     focus: Point;
     linked: string;
     plain: string;
-  }[] = [
+  }> = [
     {
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 4, path: [0, 1, 0] },

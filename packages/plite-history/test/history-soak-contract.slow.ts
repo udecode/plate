@@ -79,7 +79,7 @@ const assertUndoRedoRoundTrip = (
     trace.push(`round-trip:undo:${undoCount}`);
     undo(editor);
     assertEditorIntegrity(editor);
-    undoCount++;
+    undoCount += 1;
   }
 
   for (let index = 0; index < undoCount; index++) {
@@ -146,9 +146,9 @@ describe('plite-history seeded soak contract', () => {
           for (let step = 0; step < 240; step++) {
             const value = editor.read.value();
             const blockIndex = Math.floor(random() * value.children.length);
-            const text = (
-              value.children[blockIndex]!.children[0] as { text: string }
-            ).text;
+            const { text } = value.children[blockIndex].children[0] as {
+              text: string;
+            };
             const event = Math.floor(random() * 10);
 
             if (event <= 5) {

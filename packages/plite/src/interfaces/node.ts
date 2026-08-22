@@ -7,6 +7,7 @@ import {
   TextApi,
 } from '..';
 import { hasEditorRuntime } from '../core/editor-runtime';
+import { getDefined } from '../internal/get-defined';
 import { formatDebugValue } from '../utils/format-debug-value';
 import type { AnyEditor as EditorType, Value } from './editor';
 import {
@@ -28,16 +29,16 @@ import type { TextOf } from './text';
  * occur in a Plite document tree.
  */
 
-type AnyExtensionEditor = EditorType<any, any>;
+type AnyExtensionEditor = EditorType;
 
 export type BaseNode = AnyExtensionEditor | Element | Text;
 export type Node = AnyExtensionEditor | Element | Text;
 
 export type DescendantOf<N> = N extends { getChildren: () => infer V }
-  ? V extends readonly (infer Child)[]
+  ? V extends ReadonlyArray<infer Child>
     ? ElementOf<Child> | TextOf<Child>
     : never
-  : N extends EditorType<infer V, any>
+  : N extends EditorType<infer V>
     ? DescendantIn<V>
     : N extends Element
       ? ElementOf<N> | TextOf<N>
@@ -46,8 +47,8 @@ export type DescendantOf<N> = N extends { getChildren: () => infer V }
         : never;
 
 export type AncestorOf<N> = N extends { getChildren: () => infer V }
-  ? N | (V extends readonly (infer Child)[] ? ElementOf<Child> : never)
-  : N extends EditorType<infer V, any>
+  ? N | (V extends ReadonlyArray<infer Child> ? ElementOf<Child> : never)
+  : N extends EditorType<infer V>
     ? N | ElementIn<V>
     : N extends Element
       ? N | ElementOf<N>
@@ -86,7 +87,7 @@ export type NodeMatch<T extends Node = Node> = (node: T, path: Path) => boolean;
 export type NodeTypeSelector =
   | SchemaElementHandle<object, string>
   | string
-  | readonly (SchemaElementHandle<object, string> | string)[];
+  | ReadonlyArray<SchemaElementHandle<object, string> | string>;
 
 export interface NodeHasPropsOptions {
   ignore?: (key: string, value: unknown, node: Node) => boolean;
@@ -252,10 +253,7 @@ export interface NodeInterface {
   /**
    * Get the sliced fragment represented by a range inside a root node.
    */
-  fragment: <T extends Ancestor = AnyExtensionEditor>(
-    root: T,
-    range: Range
-  ) => readonly Descendant[];
+  fragment: (root: Ancestor, range: Range) => readonly Descendant[];
 
   /**
    * Find ranges for a text query inside text leaves or text-only ancestor
@@ -549,7 +547,7 @@ const isTextRangeMatch = (
   value.end <= textLength;
 
 const getTextOffsetPoint = (
-  entries: NodeEntry<Text>[],
+  entries: Array<NodeEntry<Text>>,
   offset: number,
   affinity: 'backward' | 'forward'
 ): Range['anchor'] => {
@@ -573,7 +571,7 @@ const getTextOffsetPoint = (
     current = end;
   }
 
-  const [node, path] = entries.at(-1)!;
+  const [node, path] = getDefined(entries.at(-1));
 
   return {
     offset: node.text.length,
@@ -582,7 +580,7 @@ const getTextOffsetPoint = (
 };
 
 const getTextEntryRanges = (
-  entries: NodeEntry<Text>[],
+  entries: Array<NodeEntry<Text>>,
   entry: NodeTextRangeEntry,
   query: NodeTextRangeQuery,
   options: NodeFindTextRangesOptions
@@ -615,11 +613,7 @@ function matchesNode<T extends Node>(
   match: NodeMatch<T>,
   path?: Path
 ): boolean;
-function matchesNode(
-  node: Node,
-  match: NodeMatch<Node>,
-  path: Path = []
-): boolean {
+function matchesNode(node: Node, match: NodeMatch, path: Path = []): boolean {
   return match(node, path);
 }
 
@@ -661,7 +655,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       throw new Error('Expected index to be a number');
     }
 
-    const c = getAncestorChildren(root)[index] as Descendant;
+    const c = getAncestorChildren(root)[index];
 
     if (c == null) {
       throw new Error(
@@ -777,10 +771,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
     return [n, p];
   },
 
-  fragment<T extends Ancestor = AnyExtensionEditor>(
-    root: T,
-    range: Range
-  ): Descendant[] {
+  fragment(root: Ancestor, range: Range): Descendant[] {
     const wholeTopLevelFragment = getWholeTopLevelChildFragment(root, range);
 
     if (wholeTopLevelFragment) {
@@ -864,13 +855,13 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       }
 
       if (NodeApi.isText(node)) {
-        return;
+        return undefined;
       }
 
       const child = getAncestorChildren(node)[p];
 
       if (!child) {
-        return;
+        return undefined;
       }
 
       node = child;
@@ -1016,7 +1007,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         !visited.has(n) &&
         !NodeApi.isText(n) &&
         getAncestorChildren(n).length !== 0 &&
-        (pass == null || pass([n, p]) === false)
+        (pass == null || !pass([n, p]))
       ) {
         visited.add(n);
         const children = getAncestorChildren(n);
@@ -1048,7 +1039,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       }
 
       // If we're going backward...
-      if (reverse && p.at(-1)! !== 0) {
+      if (reverse && getDefined(p.at(-1)) !== 0) {
         const newPath = PathApi.previous(p);
         p = newPath;
         n = NodeApi.get(root, p);

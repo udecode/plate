@@ -40,15 +40,18 @@ if (check) {
   }
 }
 
-function discoverEntries(packageJson) {
-  const entries = [];
-  if (packageJson.exports && typeof packageJson.exports === 'object') {
-    for (const exportName of Object.keys(packageJson.exports)) {
+function discoverEntries(innerPackageJson) {
+  const innerEntries = [];
+  if (
+    innerPackageJson.exports &&
+    typeof innerPackageJson.exports === 'object'
+  ) {
+    for (const exportName of Object.keys(innerPackageJson.exports)) {
       const specifier =
         exportName === '.'
-          ? packageJson.name
-          : `${packageJson.name}/${exportName.replace(/^\.\//, '')}`;
-      entries.push({
+          ? innerPackageJson.name
+          : `${innerPackageJson.name}/${exportName.replace(/^\.\//, '')}`;
+      innerEntries.push({
         fixture:
           exportName === '.'
             ? 'package-root'
@@ -56,28 +59,28 @@ function discoverEntries(packageJson) {
         specifier,
       });
     }
-  } else if (packageJson.main) {
-    entries.push({
+  } else if (innerPackageJson.main) {
+    innerEntries.push({
       fixture: 'package-main',
-      specifier: pathToFileURL(path.resolve(packageJson.main)).href,
+      specifier: pathToFileURL(path.resolve(innerPackageJson.main)).href,
     });
   }
-  if (entries.length === 0 && fs.existsSync('src/index.mjs')) {
-    entries.push({
+  if (innerEntries.length === 0 && fs.existsSync('src/index.mjs')) {
+    innerEntries.push({
       fixture: 'source-index',
       specifier: pathToFileURL(path.resolve('src/index.mjs')).href,
     });
   }
-  return entries.map((entry) => ({
+  return innerEntries.map((entry) => ({
     ...entry,
     budgetP95Ms: Number(args.p95Ms || 75),
     budgetExports: Number(args.exports || 100),
   }));
 }
 
-function measureEntry(entry, runs) {
+function measureEntry(entry, innerRuns) {
   const samples = [];
-  for (let i = 0; i < runs; i++) {
+  for (let i = 0; i < innerRuns; i++) {
     const child = spawnSync(
       process.execPath,
       [
@@ -148,13 +151,13 @@ function parseArgs(argv) {
 
   while (i < argv.length) {
     const arg = argv[i];
-    i++;
+    i += 1;
     if (!arg.startsWith('--')) continue;
     const key = arg.slice(2);
     if (key === 'check') out.check = true;
     else {
       out[key] = argv[i] || true;
-      i++;
+      i += 1;
     }
   }
   return out;

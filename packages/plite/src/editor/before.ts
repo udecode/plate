@@ -57,7 +57,7 @@ const beforeBase: EditorStaticApi['before'] = (editor, at, options = {}) => {
       target = p;
     }
 
-    d++;
+    d += 1;
   }
 
   return target;
@@ -86,10 +86,14 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
   const initialPoint = (() => {
     try {
       return editorPoint(editor, at, { edge: 'end' });
-    } catch {}
+    } catch {
+      // Missing or detached locations have no fallback endpoint.
+    }
+
+    return undefined;
   })();
 
-  if (!initialPoint) return;
+  if (!initialPoint) return undefined;
 
   const blockEntry = editorAbove(editor, {
     at: initialPoint,
@@ -97,12 +101,12 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
       NodeApi.isElement(node) && getEditorSchema(editor).isBlock(node),
   });
 
-  // oxlint-disable-next-line array-callback-return -- The infinite scan returns on every exit; a sentinel return is unreachable.
+  // oxlint-disable-next-line array-callback-return -- [P1 local-invariant] The infinite scan returns on every exit; a sentinel return is unreachable.
   matchStrings.some((currentMatchString) => {
     let beforeAt = at;
     let previousBeforePoint = initialPoint;
     const stackLength = currentMatchString.length + 1;
-    const stack: { point: Point; text: string }[] = Array.from({
+    const stack: Array<{ point: Point; text: string }> = Array.from({
       length: stackLength,
     });
     let count = 0;

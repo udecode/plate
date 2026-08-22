@@ -68,7 +68,7 @@ describe('model input strategy', () => {
       dom: {
         clipboard: {
           insertData(receivedData: DataTransfer) {
-            insertCount++;
+            insertCount += 1;
             expect(receivedData).toBe(data);
 
             return true;
@@ -95,7 +95,7 @@ describe('model input strategy', () => {
       dom: {
         clipboard: {
           insertData(receivedData: DataTransfer) {
-            insertCount++;
+            insertCount += 1;
             expect(receivedData).toBe(data);
 
             return true;
@@ -172,7 +172,7 @@ describe('model input strategy', () => {
 
   it('uses the direct collapsed insert path for empty marks', () => {
     const editor = createTextEditor('abcd', 2);
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -228,7 +228,7 @@ describe('model input strategy', () => {
 
   it('uses the direct collapsed insert path at the start of a plain leaf', () => {
     const editor = createTextEditor('', 0);
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -284,7 +284,7 @@ describe('model input strategy', () => {
 
   it('uses the direct collapsed insert path at the start of a nested plain leaf', () => {
     const editor = createEditor();
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -360,7 +360,7 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 4 },
       marks: {},
     };
-    const events: { id: string; kind: string }[] = [];
+    const events: Array<{ id: string; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;

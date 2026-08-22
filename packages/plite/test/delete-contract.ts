@@ -254,7 +254,7 @@ describe('plite delete contract', () => {
       tx.value.replace({ children: [inserted], selection: null });
     });
 
-    inserted.children[0]!.text = 'mutated';
+    inserted.children[0].text = 'mutated';
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('inserted'),
@@ -1224,9 +1224,9 @@ describe('plite delete contract', () => {
       Element,
       'children'
     > & {
-      readonly children: readonly {
+      readonly children: ReadonlyArray<{
         readonly children: readonly Element[];
-      }[];
+      }>;
     };
 
     assert.equal(tableNode.type, 'table');

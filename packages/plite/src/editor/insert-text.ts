@@ -48,7 +48,7 @@ const getExplicitRangeRoot = (range: Range) => {
   const focusRoot = range.focus.root;
 
   if (anchorRoot && focusRoot && anchorRoot !== focusRoot) {
-    return;
+    return undefined;
   }
 
   return anchorRoot ?? focusRoot;
@@ -58,7 +58,7 @@ const getExplicitLocationRoot = (
   at: TextInsertTextOptions['at']
 ): string | undefined => {
   if (!at || LocationApi.isPath(at)) {
-    return;
+    return undefined;
   }
 
   if (LocationApi.isPoint(at)) {
@@ -128,9 +128,9 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
   };
 
   if (transactionRoot) {
-    withEditorUpdateRoot(editor, transactionRoot, () =>
-      withEditorUpdateRootChildren(editor, transactionRoot, run)
-    );
+    withEditorUpdateRoot(editor, transactionRoot, () => {
+      withEditorUpdateRootChildren(editor, transactionRoot, run);
+    });
   } else {
     run();
   }

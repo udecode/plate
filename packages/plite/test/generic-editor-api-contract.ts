@@ -31,7 +31,7 @@ type CalloutElement = {
   icon: string;
 };
 
-type CustomValue = (CalloutElement | ParagraphElement | QuoteElement)[];
+type CustomValue = Array<CalloutElement | ParagraphElement | QuoteElement>;
 
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: '' }] },

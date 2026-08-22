@@ -463,7 +463,7 @@ export function downloadDocx(blob: Blob, filename: string): void {
 export const DocxExportPlugin = defineBasePlugin(PLUGINS.docxExport, {
   api: ({ plugin }) => ({
     toBlob: async (
-      value: readonly Value[number][],
+      value: ReadonlyArray<Value[number]>,
       options: DocxExportOptions = {}
     ): Promise<Blob> => {
       const { editorPlugins, editorStaticComponent, ...operationOptions } =

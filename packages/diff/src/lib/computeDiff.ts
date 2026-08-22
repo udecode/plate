@@ -11,7 +11,8 @@ import {
   type Text,
   TextApi,
 } from '@platejs/plite';
-import { DiffMatchPatch } from 'diff-match-patch-ts';
+import { failInvariant } from '@platejs/plite/internal';
+import { DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 import baseIsEqual from 'lodash/isEqual.js';
 import isPlainObject from 'lodash/isPlainObject.js';
 
@@ -69,6 +70,7 @@ export const computeDiff = (
   }: Partial<ComputeDiffOptions> = {}
 ): Descendant[] => {
   const stringCharMapping = new StringCharMapping();
+  const ignoredPropSet = ignoreProps ? new Set(ignoreProps) : null;
 
   const m0 = stringCharMapping.nodesToString(doc0);
   const m1 = stringCharMapping.nodesToString(doc1);
@@ -90,10 +92,11 @@ export const computeDiff = (
 
       // Ignore the update if only ignored props have changed
       if (
-        ignoreProps &&
-        [...changedKeys].every((key) => ignoreProps.includes(key))
-      )
+        ignoredPropSet &&
+        [...changedKeys].every((key) => ignoredPropSet.has(key))
+      ) {
         return {};
+      }
 
       return getUpdateProps(node, properties, newProperties);
     },
@@ -136,10 +139,15 @@ function* unusedCharGenerator({
   skipChars = '',
 }: {
   skipChars?: string;
-} = {}): Generator<string> {
+} = {}): Generator<string, never, void> {
   const skipSet = new Set(skipChars);
 
-  for (let code = 'A'.codePointAt(0)!; ; code++) {
+  for (
+    let code =
+      'A'.codePointAt(0) ?? failInvariant('Expected value to be defined');
+    ;
+    code++
+  ) {
     const char = String.fromCodePoint(code);
 
     if (skipSet.has(char)) continue;
@@ -150,7 +158,7 @@ function* unusedCharGenerator({
 
 class StringCharMapping {
   private readonly charGenerator = unusedCharGenerator();
-  private readonly mappedNodes: [Descendant, string][] = [];
+  private readonly mappedNodes: Array<[Descendant, string]> = [];
 
   nodesToString(nodes: readonly Descendant[]): string {
     return nodes.map((node) => this.nodeToChar(node)).join('');
@@ -187,13 +195,16 @@ type IsEqualOptions = {
   ignoreShallow?: string[];
 };
 
-const withoutIgnoredProperties = (
+const EMPTY_IGNORED_KEYS = new Set<string>();
+
+const withoutIgnoredPropertiesWithSets = (
   value: unknown,
-  { ignoreDeep = [], ignoreShallow = [] }: IsEqualOptions = {}
+  ignoreDeep: ReadonlySet<string>,
+  ignoreShallow: ReadonlySet<string>
 ): unknown => {
   if (Array.isArray(value)) {
     return value.map((item) =>
-      withoutIgnoredProperties(item, { ignoreDeep, ignoreShallow })
+      withoutIgnoredPropertiesWithSets(item, ignoreDeep, ignoreShallow)
     );
   }
   if (!isPlainObject(value)) return value;
@@ -203,13 +214,27 @@ const withoutIgnoredProperties = (
   for (const [key, propertyValue] of Object.entries(
     value as Record<string, unknown>
   )) {
-    if (ignoreShallow.includes(key) || ignoreDeep.includes(key)) continue;
+    if (ignoreShallow.has(key) || ignoreDeep.has(key)) continue;
 
-    result[key] = withoutIgnoredProperties(propertyValue, { ignoreDeep });
+    result[key] = withoutIgnoredPropertiesWithSets(
+      propertyValue,
+      ignoreDeep,
+      EMPTY_IGNORED_KEYS
+    );
   }
 
   return result;
 };
+
+const withoutIgnoredProperties = (
+  value: unknown,
+  { ignoreDeep = [], ignoreShallow = [] }: IsEqualOptions = {}
+) =>
+  withoutIgnoredPropertiesWithSets(
+    value,
+    new Set(ignoreDeep),
+    new Set(ignoreShallow)
+  );
 
 const isEqual = (value: unknown, other: unknown, options?: IsEqualOptions) =>
   baseIsEqual(
@@ -218,10 +243,10 @@ const isEqual = (value: unknown, other: unknown, options?: IsEqualOptions) =>
   );
 
 class InlineNodeCharMap {
-  private readonly charGenerator: Generator<string>;
+  private readonly charGenerator: Generator<string, never, void>;
   private readonly charToNode = new Map<string, Descendant>();
 
-  constructor(charGenerator: Generator<string>) {
+  constructor(charGenerator: Generator<string, never, void>) {
     this.charGenerator = charGenerator;
   }
 
@@ -539,7 +564,7 @@ const diffTextSpans = (
       sourceIndex < sourceSpans.length &&
       sourceOffset >= sourceSpans[sourceIndex].end
     ) {
-      sourceIndex++;
+      sourceIndex += 1;
     }
   };
   const advanceTarget = () => {
@@ -547,7 +572,7 @@ const diffTextSpans = (
       targetIndex < targetSpans.length &&
       targetOffset >= targetSpans[targetIndex].end
     ) {
-      targetIndex++;
+      targetIndex += 1;
     }
   };
 
@@ -558,7 +583,7 @@ const diffTextSpans = (
       advanceSource();
       advanceTarget();
 
-      if (operation === -1) {
+      if (operation === DiffOp.Delete) {
         const span = sourceSpans[sourceIndex];
         const length = Math.min(remaining, span.end - sourceOffset);
 
@@ -572,7 +597,7 @@ const diffTextSpans = (
         continue;
       }
 
-      if (operation === 1) {
+      if (operation === DiffOp.Insert) {
         const span = targetSpans[targetIndex];
         const length = Math.min(remaining, span.end - targetOffset);
 
@@ -690,7 +715,6 @@ const transformDiffTexts = (
   }
 
   const { lineBreakChar } = options;
-  const hasLineBreakChar = lineBreakChar !== undefined;
   const charGenerator = unusedCharGenerator({
     skipChars: nodes
       .concat(nextNodes)
@@ -698,28 +722,29 @@ const transformDiffTexts = (
       .map((node) => node.text)
       .join(''),
   });
-  const insertedLineBreakProxyChar = hasLineBreakChar
-    ? charGenerator.next().value
-    : undefined;
-  const deletedLineBreakProxyChar = hasLineBreakChar
-    ? charGenerator.next().value
-    : undefined;
+  const lineBreakProxyChars =
+    lineBreakChar === undefined
+      ? null
+      : {
+          inserted: charGenerator.next().value,
+          deleted: charGenerator.next().value,
+        };
   const inlineNodeCharMap = new InlineNodeCharMap(charGenerator);
   const texts = nodes
     .map((node) => inlineNodeCharMap.nodeToText(node))
-    .map((text) => encodeLineBreaks(text, deletedLineBreakProxyChar));
+    .map((text) => encodeLineBreaks(text, lineBreakProxyChars?.deleted));
   const nextTexts = nextNodes
     .map((node) => inlineNodeCharMap.nodeToText(node))
-    .map((text) => encodeLineBreaks(text, insertedLineBreakProxyChar));
+    .map((text) => encodeLineBreaks(text, lineBreakProxyChars?.inserted));
 
   let diffTexts = diffTextSpans(texts, nextTexts, options);
 
-  if (hasLineBreakChar) {
+  if (lineBreakProxyChars && lineBreakChar !== undefined) {
     diffTexts = diffTexts.map((node) => ({
       ...node,
       text: node.text
-        .replaceAll(insertedLineBreakProxyChar, `${lineBreakChar}\n`)
-        .replaceAll(deletedLineBreakProxyChar, lineBreakChar),
+        .replaceAll(lineBreakProxyChars.inserted, `${lineBreakChar}\n`)
+        .replaceAll(lineBreakProxyChars.deleted, lineBreakChar),
     }));
   }
 
@@ -729,7 +754,7 @@ const transformDiffTexts = (
 type DiffOperation = -1 | 0 | 1;
 
 const transformDiffDescendants = (
-  diff: readonly [DiffOperation, string][],
+  diff: ReadonlyArray<[DiffOperation, string]>,
   {
     stringCharMapping,
     ...options

@@ -526,7 +526,7 @@ void describe('compiled schema generated laws', () => {
           const transformed = DocumentChange.transform(left, right, before);
           const viaLeft = transformed.b.apply(left.apply(before));
           const viaRight = transformed.a.apply(right.apply(before));
-          const result = viaLeft.children[0]!;
+          const result = viaLeft.children[0];
 
           assert.deepEqual(viaLeft, viaRight);
           assert.deepEqual(

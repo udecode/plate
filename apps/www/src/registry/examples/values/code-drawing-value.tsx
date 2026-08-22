@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@platejs/test-utils';
+import type { Value } from 'platejs';
 
 jsx;
 
@@ -15,7 +16,7 @@ export const codeDrawingInitialData = {
   view: 'split',
 } as const;
 
-export const codeDrawingValue = (
+export const codeDrawingValue: Value = (
   <fragment>
     <hheading level={2}>Code Drawing</hheading>
     <hp>

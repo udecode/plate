@@ -7,6 +7,7 @@ export function downloadImage(
 ): void {
   const imageEl = new Image();
   imageEl.src = imageDataUrl;
+  // oxlint-disable-next-line unicorn/prefer-add-event-listener -- [P1 local-invariant] A fresh Image owns one replaceable load handler, so accumulation and cleanup are wrong here.
   imageEl.onload = () => {
     const canvas = document.createElement('canvas');
     canvas.width = imageEl.width;

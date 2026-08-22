@@ -164,6 +164,7 @@ export const Image = ({
   className,
   ...props
 }: React.ImgHTMLAttributes<HTMLImageElement>) => (
+  // oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] MDX supplies arbitrary native image attributes and runtime sources that this generic renderer must forward unchanged.
   <img className={cn('rounded-md', className)} alt={alt} {...props} />
 );
 

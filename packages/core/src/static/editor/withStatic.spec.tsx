@@ -198,9 +198,12 @@ describe('extendStaticEditor', () => {
       const editor = createStaticEditor();
 
       // Should have both core plugins from createBaseEditor and static plugins
-      expect(editor.read((state) => state.history())).toBeDefined(); // from HistoryPlugin
-      expect(editor.read.view.isReadOnly()).toBe(false); // from Plite view
-      expect(editor.plugin(ViewPlugin)).toBeDefined(); // static plugin
+      // from HistoryPlugin
+      expect(editor.read((state) => state.history())).toBeDefined();
+      // from Plite view
+      expect(editor.read.view.isReadOnly()).toBe(false);
+      // static plugin
+      expect(editor.plugin(ViewPlugin)).toBeDefined();
     });
 
     it('maintain plugin order with static plugins first', () => {

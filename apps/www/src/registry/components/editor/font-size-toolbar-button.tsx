@@ -45,14 +45,14 @@ export function FontSizeToolbarButton() {
   const [isFocused, setIsFocused] = React.useState(false);
   const editor = useEditor();
 
-  const cursorFontSize = useEditorSelector((editor) => {
-    const fontSize = editor.plugin(FontSizePlugin).read.value();
+  const cursorFontSize = useEditorSelector((innerEditor) => {
+    const fontSize = innerEditor.plugin(FontSizePlugin).read.value();
 
     if (fontSize) {
-      return toUnitLess(fontSize as string);
+      return toUnitLess(fontSize);
     }
 
-    const [block] = editor.read.nodes.block() ?? [];
+    const [block] = innerEditor.read.nodes.block() ?? [];
 
     if (!block?.type) return DEFAULT_FONT_SIZE;
 
@@ -89,7 +89,11 @@ export function FontSizeToolbarButton() {
 
   return (
     <div className="flex h-7 items-center gap-1 rounded-md bg-muted/60 p-0">
-      <ToolbarButton onClick={() => handleFontSizeChange(-1)}>
+      <ToolbarButton
+        onClick={() => {
+          handleFontSizeChange(-1);
+        }}
+      >
         <Minus />
       </ToolbarButton>
 
@@ -104,7 +108,9 @@ export function FontSizeToolbarButton() {
               setIsFocused(false);
               handleInputChange();
             }}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+            }}
             onFocus={() => {
               setIsFocused(true);
               setInputValue(toUnitLess(cursorFontSize));
@@ -121,7 +127,9 @@ export function FontSizeToolbarButton() {
         </PopoverTrigger>
         <PopoverContent
           className="w-10 px-px py-1"
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+          }}
         >
           {FONT_SIZES.map((size) => (
             <button
@@ -143,7 +151,11 @@ export function FontSizeToolbarButton() {
         </PopoverContent>
       </Popover>
 
-      <ToolbarButton onClick={() => handleFontSizeChange(1)}>
+      <ToolbarButton
+        onClick={() => {
+          handleFontSizeChange(1);
+        }}
+      >
         <Plus />
       </ToolbarButton>
     </div>

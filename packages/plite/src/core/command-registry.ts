@@ -12,6 +12,7 @@ import type {
   EditorStateView,
   TransactionSpec,
 } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import {
   getCommandRegistrationRuntime,
   getCommandRuntime,
@@ -64,7 +65,7 @@ const NATIVE_EQUIVALENT_PROBE = Object.freeze({
   nativeEquivalent: true,
 }) satisfies EditorCommandNativeProbe;
 
-const commandStacks = new WeakMap<Editor, EditorCommand<unknown>[]>();
+const commandStacks = new WeakMap<Editor, Array<EditorCommand<unknown>>>();
 const getCommandRegistry = (editor: Editor) =>
   getExtensionRegistry(editor).commands.byDescriptor as ReadonlyMap<
     object,
@@ -139,7 +140,7 @@ export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
     if (!current) return;
 
     const index = current.indexOf(compiled);
-    if (index >= 0) current.splice(index, 1);
+    if (index !== -1) current.splice(index, 1);
     if (current.length === 0) {
       byDescriptor.delete(command);
       byId.delete(command.id);
@@ -188,10 +189,10 @@ const evaluateCommandChainInRead = <
     (cachedReadState ??= (isBuildingTransactionSpec(owner) ||
     isInTransaction(owner)
       ? withTransactionSpecDraftRead(owner, () =>
-          editor.read((state) => state as EditorStateView)
+          editor.read((innerState) => innerState as EditorStateView)
         )
       : editor.read(
-          (state) => state as EditorStateView
+          (innerState2) => innerState2 as EditorStateView
         )) as unknown as EditorCommandContext<Input, TEditor>['state']);
   const tags = () => getActiveEditorUpdateTags(owner);
   let defaultResult: EditorCommandResult | undefined;
@@ -269,7 +270,7 @@ const evaluateCommandChainInRead = <
         }
         delegatedResult = dispatch(
           index + 1,
-          hasDifferentInput ? overrideInput[0]! : preparedInput,
+          hasDifferentInput ? getDefined(overrideInput[0]) : preparedInput,
           !hasDifferentInput
         );
         return delegatedResult;
@@ -287,7 +288,7 @@ const evaluateCommandChainInRead = <
 
             return dispatch(
               index + 1,
-              hasDifferentInput ? overrideInput[0]! : preparedInput,
+              hasDifferentInput ? getDefined(overrideInput[0]) : preparedInput,
               !hasDifferentInput
             );
           });
@@ -394,8 +395,8 @@ const evaluateCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   }
 };
 
-const applyCommandEvaluation = <TEditor extends BaseEditor<any, any>>(
-  editor: TEditor,
+const applyCommandEvaluation = (
+  editor: BaseEditor<any, any>,
   evaluation: EditorCommandEvaluation
 ) => {
   const { result } = evaluation;
@@ -408,9 +409,9 @@ const applyCommandEvaluation = <TEditor extends BaseEditor<any, any>>(
     getActiveEditorTransaction(owner)?.tags.add('semantic-command');
     applyTransactionSpec(owner, result);
   } else {
-    editor.update({ tags: 'semantic-command' }, () =>
-      applyTransactionSpec(owner, result)
-    );
+    editor.update({ tags: 'semantic-command' }, () => {
+      applyTransactionSpec(owner, result);
+    });
   }
 
   return true;
@@ -429,14 +430,14 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
  * @internal
  */
 export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
-  editor: Editor<any, any>,
+  editor: Editor,
   command: TCommand,
   ...input: [EditorCommandInput<TCommand>] extends [void]
     ? [] | [input: EditorCommandInput<TCommand>]
     : [input: EditorCommandInput<TCommand>]
 ): EditorCommandEvaluation =>
   evaluateCommandChain(
-    editor as Editor,
+    editor,
     command as unknown as EditorCommand<unknown, Editor>,
     input[0]
   );
@@ -449,14 +450,14 @@ export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
 export const probeCommandNativeEquivalent = <
   TCommand extends EditorCommandDescriptor,
 >(
-  editor: Editor<any, any>,
+  editor: Editor,
   command: TCommand,
   ...input: [EditorCommandInput<TCommand>] extends [void]
     ? [] | [input: EditorCommandInput<TCommand>]
     : [input: EditorCommandInput<TCommand>]
 ): EditorCommandNativeProbe => {
   const evaluation = evaluateCommandChain(
-    editor as Editor,
+    editor,
     command as unknown as EditorCommand<unknown, Editor>,
     input[0]
   );
@@ -475,14 +476,14 @@ export const probeCommandNativeEquivalent = <
  * @internal
  */
 export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
-  editor: Editor<any, any>,
+  editor: Editor,
   command: TCommand,
   ...input: [EditorCommandInput<TCommand>] extends [void]
     ? [] | [input: EditorCommandInput<TCommand>]
     : [input: EditorCommandInput<TCommand>]
 ): boolean =>
   runCommandChain(
-    editor as Editor,
+    editor,
     command as unknown as EditorCommand<unknown, Editor>,
     input[0]
   );

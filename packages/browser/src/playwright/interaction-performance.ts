@@ -47,10 +47,10 @@ export const measurePliteTrustedTyping = async ({
   root: Locator;
   text: string;
 }): Promise<PliteTrustedTypingResult> => {
-  const traceKey = `${TRACE_KEY_PREFIX}:${traceSequence++}`;
+  const traceKey = `${TRACE_KEY_PREFIX}:${(traceSequence += 1) - 1}`;
 
   await root.evaluate(
-    (element, { handleKey, traceKey }) => {
+    (element, { handleKey, traceKey: innerTraceKey }) => {
       const rows: Array<
         PliteTrustedTypingRow & {
           expectedText?: string;
@@ -163,8 +163,10 @@ export const measurePliteTrustedTyping = async ({
           return;
         }
 
-        row.observedDOMText = readDOMText(row.path);
-        const modelText = readModelText(row.path);
+        const rowPath = row.path;
+
+        row.observedDOMText = readDOMText(rowPath);
+        const modelText = readModelText(rowPath);
         const selection = handle?.getSelection();
         const kernelTrace = handle?.getKernelTrace() ?? [];
         const runtimeEvent = kernelTrace.findLast(
@@ -175,8 +177,8 @@ export const measurePliteTrustedTyping = async ({
             entry.command?.kind === 'insert-text' &&
             entry.command.text === row.key &&
             entry.selectionBefore?.kind === 'text' &&
-            pathsEqual(entry.selectionBefore.anchor.path, row.path!) &&
-            pathsEqual(entry.selectionBefore.focus.path, row.path!) &&
+            pathsEqual(entry.selectionBefore.anchor.path, rowPath) &&
+            pathsEqual(entry.selectionBefore.focus.path, rowPath) &&
             entry.selectionBefore.anchor.offset === row.offset &&
             entry.selectionBefore.focus.offset === row.offset
         );
@@ -188,8 +190,8 @@ export const measurePliteTrustedTyping = async ({
         row.modelTextInsertionMatched =
           modelText === row.expectedText &&
           selection?.kind === 'text' &&
-          pathsEqual(selection.anchor.path, row.path) &&
-          pathsEqual(selection.focus.path, row.path) &&
+          pathsEqual(selection.anchor.path, rowPath) &&
+          pathsEqual(selection.focus.path, rowPath) &&
           selection.anchor.offset === nextOffset &&
           selection.focus.offset === nextOffset;
 
@@ -334,7 +336,7 @@ export const measurePliteTrustedTyping = async ({
         }
         longTaskObserver?.disconnect();
       };
-      (globalThis as Record<string, unknown>)[traceKey] = {
+      (globalThis as Record<string, unknown>)[innerTraceKey] = {
         cleanup,
         waitForLatestReady: (expectedRowCount: number, expectedKey: string) =>
           new Promise<void>((resolve, reject) => {
@@ -420,14 +422,16 @@ export const measurePliteTrustedTyping = async ({
           {
             expectedKey,
             expectedRowCount,
-            traceKey,
+            traceKey: innerTraceKey2,
           }: {
             expectedKey: string;
             expectedRowCount: number;
             traceKey: string;
           }
         ) => {
-          const trace = (globalThis as Record<string, unknown>)[traceKey] as {
+          const trace = (globalThis as Record<string, unknown>)[
+            innerTraceKey2
+          ] as {
             waitForLatestReady(
               expectedRowCount: number,
               expectedKey: string
@@ -450,8 +454,8 @@ export const measurePliteTrustedTyping = async ({
         })
     );
 
-    return await root.evaluate((_element, traceKey) => {
-      const trace = (globalThis as Record<string, unknown>)[traceKey] as {
+    return await root.evaluate((_element, innerTraceKey3) => {
+      const trace = (globalThis as Record<string, unknown>)[innerTraceKey3] as {
         finish(): PliteTrustedTypingResult;
       };
 
@@ -459,12 +463,12 @@ export const measurePliteTrustedTyping = async ({
     }, traceKey);
   } finally {
     await root
-      .evaluate((_element, traceKey) => {
+      .evaluate((_element, innerTraceKey4) => {
         const target = globalThis as Record<string, unknown>;
-        const trace = target[traceKey] as { cleanup(): void } | undefined;
+        const trace = target[innerTraceKey4] as { cleanup(): void } | undefined;
 
         trace?.cleanup();
-        delete target[traceKey];
+        delete target[innerTraceKey4];
       }, traceKey)
       .catch(() => {});
   }

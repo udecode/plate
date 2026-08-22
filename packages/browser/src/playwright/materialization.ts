@@ -14,7 +14,7 @@ export const scrollTextPathIntoViewAndCheckMaterialized = async (
       {
         align,
         key,
-        path,
+        path: innerPath,
       }: {
         align: PliteBrowserDOMPathOptions['align'];
         key: string;
@@ -23,10 +23,10 @@ export const scrollTextPathIntoViewAndCheckMaterialized = async (
     ) => {
       const handle = (element as Record<string, any>)[key];
 
-      handle?.scrollPathIntoView?.(path, align ?? 'center');
+      handle?.scrollPathIntoView?.(innerPath, align ?? 'center');
 
       return !!element.querySelector(
-        `[data-plite-node="text"][data-plite-path="${path.join(',')}"]`
+        `[data-plite-node="text"][data-plite-path="${innerPath.join(',')}"]`
       );
     },
     { align: options.align, key: PLITE_BROWSER_HANDLE_KEY, path }

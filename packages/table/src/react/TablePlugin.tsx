@@ -1,7 +1,8 @@
 import { DebugPlugin, Hotkeys } from '@platejs/core';
 import { type PlateEditor, toPlatePlugin } from '@platejs/core/react';
-import { PathApi, type NodeKey } from '@platejs/plite';
+import { createEditorView, type NodeKey, PathApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
+import { failInvariant } from '@platejs/plite/internal';
 
 import {
   BaseTableCellPlugin,
@@ -50,7 +51,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
   on: {
     copy: ({ api, event }) => {
       if (!api.writeSelection(event.clipboardData)) {
-        return;
+        return undefined;
       }
 
       event.preventDefault();
@@ -58,7 +59,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     },
     cut: ({ api, editor, event }) => {
       if (!api.writeSelection(event.clipboardData)) {
-        return;
+        return undefined;
       }
 
       event.preventDefault();
@@ -80,12 +81,12 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           ?.closest?.('[data-table-cell-drag-handle="true"]')
           ?.getAttribute('data-table-cell-drag-for') ?? undefined;
 
-      if (!dragCellKey) return;
+      if (!dragCellKey) return undefined;
 
       const source = read.getSelection();
 
       if (!source || !source.cellKeys.includes(dragCellKey as NodeKey)) {
-        return;
+        return undefined;
       }
       if (!source.complete || source.grid.problems.length > 0) {
         consumeTableDragEvent(event);
@@ -99,7 +100,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
         return true;
       }
-      const tableKey = source.tableKey;
+      const { tableKey } = source;
 
       event.dataTransfer.effectAllowed = 'copyMove';
       event.dataTransfer.setData(TABLE_CELL_DRAG_MIME, '1');
@@ -115,11 +116,13 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           version: source.version,
         })
       );
+
+      return undefined;
     },
     drop: ({ api, editor, event, store }) => {
       const source = tableDragCaptures.get(editor);
 
-      if (!source) return;
+      if (!source) return undefined;
       if (
         !Array.from(event.dataTransfer.types ?? []).includes(
           TABLE_CELL_DRAG_MIME
@@ -127,12 +130,14 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       ) {
         tableDragCaptures.delete(editor);
 
-        return;
+        return undefined;
       }
 
       const at = editor.api.dom.resolveEventRange(event);
       const target = at
-        ? editor.read((state) =>
+        ? createEditorView(editor, {
+            ...(at.anchor.root === undefined ? {} : { root: at.anchor.root }),
+          }).read((state) =>
             readTableSelection(state, {
               at,
               cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
@@ -141,7 +146,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           )
         : null;
 
-      if (!target) return;
+      if (!target) return undefined;
 
       tableDragCaptures.delete(editor);
       consumeTableDragEvent(event);
@@ -183,28 +188,28 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         editor.api.dom.findDocumentOrShadowRoot()
       );
 
-      if (!domSelection || domSelection.rangeCount === 0) return;
+      if (!domSelection || domSelection.rangeCount === 0) return undefined;
 
       const range = editor.api.dom.resolvePliteRange(domSelection, {
         exactMatch: false,
       });
       const selection = range && read.createCellSelection(range);
 
-      if (!selection) return;
+      if (!selection) return undefined;
 
       editor.update.selection.set(selection);
 
       return true;
     },
     keyDown: ({ editor, event, read, update }) => {
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented) return undefined;
 
       const getMoveContext = (point = editor.read.selection()?.anchor) => {
         if (
           !point ||
           !editor.read.selection.isWithinBlock({ type: TableCellPlugin })
         ) {
-          return;
+          return undefined;
         }
 
         const cellEntry = editor.read.nodes.above({
@@ -213,7 +218,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         });
         const blockEntry = editor.read.nodes.block({ at: point });
 
-        if (!cellEntry || !blockEntry) return;
+        if (!cellEntry || !blockEntry) return undefined;
 
         return {
           blockPath: blockEntry[1],
@@ -274,7 +279,8 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           return isAtBlockEdge;
         }
 
-        const caretRect = caretRects.at(-1)!;
+        const caretRect =
+          caretRects.at(-1) ?? failInvariant('Expected value to be defined');
         const boundary = reverse
           ? Math.min(...blockRects.map((rect) => rect.top))
           : Math.max(...blockRects.map((rect) => rect.bottom));
@@ -324,6 +330,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       };
 
       if (
+        // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Safari IME exposes composition code 229 through which when cell selection is active.
         event.which === 229 &&
         editor.read.selection() &&
         editor.read.selection.isExpanded() &&
@@ -341,7 +348,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         'shift+up': Hotkeys.isExtendUpward(event),
       };
 
-      for (const key of Object.keys(extended) as (keyof typeof extended)[]) {
+      for (const key of Object.keys(extended) as Array<keyof typeof extended>) {
         if (!extended[key]) continue;
 
         const reverse = key === 'shift+up';
@@ -349,7 +356,9 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           update.moveSelection({ edge: edges[key], reverse }) ||
           (shouldMoveSingleCell(key) &&
             update.moveSelection({
-              at: editor.read.selection()!,
+              at:
+                editor.read.selection() ??
+                failInvariant('Expected value to be defined'),
               edge: edges[key],
               fromOneCell: true,
               reverse,
@@ -378,6 +387,8 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
         return true;
       }
+
+      return undefined;
     },
   },
 });

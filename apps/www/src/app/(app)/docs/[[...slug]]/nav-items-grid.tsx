@@ -1,5 +1,6 @@
 'use client';
 
+import { failInvariant } from '@platejs/plite/internal';
 import { createElement, useState } from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
@@ -56,9 +57,11 @@ const filterItems = (
     // If the parent item matches, include ALL its children without filtering
     // Otherwise, recursively filter nested items
     const filteredNestedItems = item.items
-      ? itemMatches
-        ? item.items // Show all children if parent matches
-        : filterItems(item.items, filter) // Filter children if parent doesn't match
+      ? (itemMatches
+        // Show all children if parent matches
+        ? item.items
+        // Filter children if parent doesn't match
+        : filterItems(item.items, filter))
       : undefined;
 
     // Include the item if it matches OR has matching nested items
@@ -90,7 +93,7 @@ export function NavItemCard({
     <Link
       key={item.href}
       className="rounded-lg"
-      href={hrefWithLocale(item.href!, locale)}
+      href={hrefWithLocale((item.href ?? failInvariant('Expected value to be defined')), locale)}
     >
       <Card className="h-full bg-muted/30 p-0 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
@@ -151,7 +154,7 @@ export function NavItemsGrid({
               'h-10 max-w-sm rounded-lg bg-muted/50 px-3 py-1 text-base text-muted-foreground shadow-none focus-visible:ring-transparent'
             )}
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) =>{  setFilter(e.target.value); }}
             placeholder="Filter..."
           />
         )}
@@ -169,7 +172,7 @@ export function NavItemsGrid({
                     className={cn(
                       'opacity-0 hover:opacity-100 group-hover:opacity-100'
                     )}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) =>{  e.stopPropagation(); }}
                     href={`#${group.title.toLowerCase().replace(/ /g, '-')}`}
                   >
                     <div className="-left-5 -translate-y-1/2 absolute top-1/2 pr-1 leading-none">

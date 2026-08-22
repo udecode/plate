@@ -81,6 +81,8 @@ export const PlateControllerEffect = ({
         );
       };
     }
+
+    return undefined;
   }, [id, primary, setPrimaryEditorIds]);
 
   // Set the editor as active when it becomes focused

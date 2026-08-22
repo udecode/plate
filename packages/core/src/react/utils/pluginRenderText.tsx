@@ -38,7 +38,7 @@ export const pluginRenderText = (
   editor: PlateEditor,
   plugin: AnyBasePlugin
 ): RenderText =>
-  function render(nodeProps) {
+  function RenderText(nodeProps) {
     const readOnly = useEditorReadOnly();
     const {
       render: { node },
@@ -56,8 +56,7 @@ export const pluginRenderText = (
         !plugin.render.nodeProps;
 
       if (canUsePlainText) {
-        const Tag = (plugin.render?.as ??
-          'span') as keyof HTMLElementTagNameMap;
+        const Tag = plugin.render?.as ?? 'span';
         const attributes = getSimpleTextAttributes(
           nodeProps,
           getPluginNodeClass(plugin.name) || undefined
@@ -73,7 +72,7 @@ export const pluginRenderText = (
         plugin,
         props: nodeProps as any,
         readOnly,
-      }) as any;
+      });
 
       const defaultProps = node ? {} : { as: plugin.render?.as };
 

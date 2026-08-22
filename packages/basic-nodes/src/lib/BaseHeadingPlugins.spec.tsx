@@ -52,10 +52,10 @@ describe('base heading plugin', () => {
 
       editor.api.dom.clipboard.writeSelection(data);
 
-      const body = new DOMParser().parseFromString(
+      const { body } = new DOMParser().parseFromString(
         data.getData('text/html'),
         'text/html'
-      ).body;
+      );
 
       expect(body.querySelector(`h${level}`)?.textContent).toBe('Heading');
     }
@@ -138,7 +138,7 @@ describe('heading input rules', () => {
         }),
       ],
     });
-    const inputRules = getPlateRuntime(editor).inputRules;
+    const { inputRules } = getPlateRuntime(editor);
 
     expect(inputRules.plugins.heading.rules.map((rule) => rule.id)).toEqual([
       'heading.0',

@@ -379,7 +379,7 @@ const createYjsIdentityReader = (peer: Peer) => {
 
     if (current !== undefined) return current;
 
-    const id = nextId++;
+    const id = (nextId += 1) - 1;
 
     ids.set(node, id);
 

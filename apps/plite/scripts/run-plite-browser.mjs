@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* oxlint-disable no-loop-func -- These callbacks close over the current block-scoped iteration binding; there is no shared var binding whose value can drift. */
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -26,6 +25,7 @@ import {
   DEFAULT_UNIT_WORKERS,
   fingerprintBrowserUnit,
   formatIntegrityFailureDetails,
+  getPliteBrowserProjects,
   getSelectionUniverseSelectors,
   MAX_BROWSER_WORKERS,
   parseJob,
@@ -227,6 +227,8 @@ const readJson = (file) => {
   } catch {
     // Missing or malformed result files have no recorded payload.
   }
+
+  return undefined;
 };
 
 const writeJson = (file, value) => {
@@ -410,7 +412,7 @@ const normalizeSelectors = (args) => {
       }
 
       normalized.push(`${value === '-g' ? '--grep' : value}=${expression}`);
-      index++;
+      index += 1;
       continue;
     }
 
@@ -563,12 +565,13 @@ const executableIdentity = (project) => {
     return customExecutableIdentity();
   }
 
-  const browserType =
-    project === 'firefox'
-      ? playwrightRuntime.firefox
-      : project === 'webkit'
-        ? playwrightRuntime.webkit
-        : playwrightRuntime.chromium;
+  let browserType = playwrightRuntime.chromium;
+
+  if (project === 'firefox') {
+    browserType = playwrightRuntime.firefox;
+  } else if (project === 'webkit' || project === 'mobile-webkit') {
+    browserType = playwrightRuntime.webkit;
+  }
 
   return snapshotFileIdentity(browserType.executablePath());
 };
@@ -731,12 +734,14 @@ const integrityFailure = async (proofSession, target) => {
       phase: lateChange.kind === 'target' ? 'target-changed' : 'source-changed',
     };
   }
+
+  return undefined;
 };
 
 const observedIntegrityFailure = async (proofSession) => {
   const changed = await proofSession.monitor.checkpoint();
 
-  if (!changed) return;
+  if (!changed) return undefined;
 
   return {
     eventType: changed.eventType,
@@ -781,7 +786,7 @@ const writeSummary = ({
   scope,
   selectedUnits,
   status,
-  unitWorkers,
+  unitWorkers: innerUnitWorkers,
 }) => {
   const summary = createBrowserRunSummary({
     completedUnits,
@@ -797,7 +802,7 @@ const writeSummary = ({
     selectedUnits,
     status,
     unitTimeoutFloorMs,
-    unitWorkers,
+    unitWorkers: innerUnitWorkers,
   });
 
   writeJson(summaryFile(project, scope), summary);
@@ -824,16 +829,18 @@ const runManagedProject = async (
   const scope = selectorFingerprint(selectors);
   const plan = await discoverTests(project, selectors, projectRun);
   projectRun?.throwIfCancelled();
+  const selectionPlan =
+    selectors.length === 0
+      ? null
+      : await discoverTests(
+          project,
+          getSelectionUniverseSelectors(plan),
+          projectRun
+        );
   const selectionUniverse =
     selectors.length === 0
       ? plan.selectionUniverse
-      : (
-          await discoverTests(
-            project,
-            getSelectionUniverseSelectors(plan),
-            projectRun
-          )
-        ).selectionUniverse;
+      : selectionPlan.selectionUniverse;
   projectRun?.throwIfCancelled();
   const units = applyWorkerCap(
     createTestUnits(plan.tests, projectMaxTestsPerProcess, {
@@ -1148,12 +1155,7 @@ const runManagedProject = async (
 };
 
 const runMatrix = async (selectors = []) => {
-  const projects = [
-    'chromium',
-    'firefox',
-    'mobile',
-    ...(process.platform === 'darwin' ? ['webkit'] : []),
-  ];
+  const projects = getPliteBrowserProjects();
 
   const serverStatus = await ensureServer();
 

@@ -104,7 +104,7 @@ describe('table grid queries', () => {
         createTableContext(state, [0])
       );
 
-      assert(context);
+      assert.ok(context);
 
       expect(context.grid.byKey.get(c11)).toMatchObject({ col: 0, row: 0 });
       expect(context.grid.byKey.get(c12)).toMatchObject({ col: 1, row: 0 });
@@ -118,7 +118,7 @@ describe('table grid queries', () => {
       const entry = editor.read.nodes.get([0, 0, 1], {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
       const [cell] = entry;
       const id = editor.key(cell);
 
@@ -169,7 +169,7 @@ describe('table grid queries', () => {
       const entry = editor.read.nodes.get([0, 0, 1], {
         type: BaseTableCellPlugin,
       });
-      assert(entry);
+      assert.ok(entry);
 
       return entry[0];
     };
@@ -364,7 +364,7 @@ describe('table grid queries', () => {
         const entry = editor.read.nodes.get([0, 1, 0], {
           type: BaseTableCellPlugin,
         });
-        assert(entry);
+        assert.ok(entry);
         const [cellNode] = entry;
 
         expect(

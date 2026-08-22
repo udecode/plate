@@ -15,12 +15,13 @@ export const getCachedRegistryItem = React.cache(
 );
 
 export const getCachedFileTree = React.cache(
-  (files: { path: string; target?: string }[]) =>
+  (files: Array<{ path: string; target?: string }>) =>
     createFileTreeForRegistryItemFiles(files)
 );
 
 export const getCachedHighlightedFiles = React.cache(
-  (files: z.infer<typeof registryItemFileSchema>[]) => highlightFiles(files)
+  (files: Array<z.infer<typeof registryItemFileSchema>>) =>
+    highlightFiles(files)
 );
 
 export const getCachedDependencies = React.cache((name: string) =>

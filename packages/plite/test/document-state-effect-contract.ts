@@ -46,8 +46,9 @@ describe('document state effect contract', () => {
         meta: { [documentTitle.key]: documentTitle.serialize('Q2 Plan') },
       },
     });
-    const stateCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
-      [];
+    const stateCommits: Array<
+      NonNullable<ReturnType<typeof editorGetLastCommit>>
+    > = [];
     const unsubscribe = editorSubscribeSource(
       editor,
       'state',
@@ -185,7 +186,7 @@ describe('document state effect contract', () => {
     });
     let commits = 0;
     const unsubscribe = editor.subscribe((_snapshot, commit) => {
-      if (commit) commits++;
+      if (commit) commits += 1;
     });
 
     editor.update((tx) => {

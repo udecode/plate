@@ -35,7 +35,7 @@ export const removeNodes = ((
     !LocationApi.isSpan(options.at) &&
     options.at.length > 0
   ) {
-    const at = options.at;
+    const { at } = options;
     const [node] = getNode(editor, at);
     const pathMatch =
       normalizeNodeMatch(options.type, options.match) ?? matchPath(editor, at);
