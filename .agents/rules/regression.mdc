@@ -195,6 +195,15 @@ nondeterminism from interaction, host, or oracle drift. Repair invalid proof
 machinery and restart baselines; do not tune product code against an unproved
 gesture or sampling path.
 
+For exact Chrome, a requested channel, project name, or handwritten host label
+is not browser proof. Attest the executable and version, verify the worker
+launches that exact path, and warm the local route/browser before counted
+stability. A navigation, unrelated-network, launcher, or browser-shutdown
+failure before the reporter assertion is a proof-host failure: revoke the run,
+record `repair-now`, repair the host, and restart the full count without
+changing product bytes. It does not increment the product-attempt number
+because the claimed behavior was never exercised.
+
 For compositor repairs, never treat callback order as proof that paint occurred
 between two mutations. Before changing timing or phase ownership again, trace
 the material state at the mutation boundary: the relevant computed style, live
@@ -241,6 +250,11 @@ A failed fix is a claimed `candidate-local`, `kept`, or `completed` repair that
 later fails its exact replay or final verification, or is contradicted by a
 fresh reporter result. Expected red-before-green reproduction is not a failed
 fix.
+
+A final-proof process failure counts as a failed fix only when the reporter
+assertion ran and failed. A pre-assertion proof-host failure still triggers the
+automatic Regression repair above, but it cannot fabricate a product failure
+or architecture escalation.
 
 Every failed claimed bug fix automatically repairs Regression. Do not wait for
 the user to ask and do not delegate another product patch first:

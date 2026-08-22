@@ -164,7 +164,7 @@ const fixture = ({
   unresolvedGateFailure = false,
 } = {}) => {
   const host = exactChrome
-    ? 'pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:exact-chrome:140'
+    ? 'pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:exact-chrome:140;browser-executable:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome;browser-version:Google Chrome 140.0'
     : 'host:none - deterministic Node workflow';
   let receipt = receiptRow({
     attempt: failedCount + 1,
@@ -363,7 +363,23 @@ test('browser-specific paint claims require exact Chrome proof', () => {
   }).join('\n');
 
   assert.match(errors, /requires Exact environment exact-chrome/);
-  assert.match(errors, /requires an exact Chrome proof receipt/);
+  assert.match(
+    errors,
+    /requires an executable-attested exact Chrome proof receipt/
+  );
+
+  const handwrittenLabel = fixture({ exactChrome: true }).replace(
+    ';browser-executable:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome;browser-version:Google Chrome 140.0',
+    ''
+  );
+
+  assert.match(
+    validateRegressionPlan(handwrittenLabel, {
+      complete: true,
+      rootDir: root,
+    }).join('\n'),
+    /requires an executable-attested exact Chrome proof receipt/
+  );
 
   assert.deepEqual(
     validateRegressionPlan(fixture({ exactChrome: true }), {

@@ -177,7 +177,11 @@ paint, performance, or follow-up usability.
 When the report names Chrome, Blink, a compositor, or browser-native behavior,
 record `exact-chrome: <environment>` and use exact Chrome for the full final
 replay. Playwright Chromium remains useful diagnosis but cannot certify that
-claim.
+claim. Pass the exact binary to `capture-proof-receipt.mjs` with
+`--browser-executable`; the helper runs that binary's version command and
+rejects a proof command that does not reference the same path. Confirm one
+worker launch trace before counting stability. A requested channel, project
+name, or handwritten host label is not executable attestation.
 
 ## Proof Selection
 
@@ -271,6 +275,14 @@ interaction through the shared browser harness or prove the shortcut is
 behaviorally equivalent. Repair invalid proof machinery and restart every
 affected baseline and stability count.
 
+Warm the attested browser and every local route once before the counted run.
+If navigation, unrelated external networking, launcher selection, or browser
+shutdown fails before the reporter assertion executes, classify it as a
+proof-host failure. Revoke the run, record `repair-now`, repair the host, and
+restart the full stability count on unchanged product bytes. Do not increment
+the product attempt or trigger architecture escalation for behavior the runner
+never exercised.
+
 A compositor phase is not proved by callback names. Before another timing or
 phase change, instrument the exact mutation boundary and record the material
 state that should drive paint: relevant computed style, live range geometry,
@@ -304,7 +316,8 @@ node .agents/skills/regression/scripts/capture-proof-receipt.mjs \
 ```
 
 For a managed route, replace `--host` with `--host-pid`, `--base-url`, and
-`--browser`. Repeat `--case-id` for one combined corpus command and `--input`
+`--browser`. Exact Chrome also requires `--browser-executable`, and the proof
+command must use that path. Repeat `--case-id` for one combined corpus command and `--input`
 for every production, test, fixture, harness, config, generated, or route-host
 input that owns the claim. Paste the emitted Markdown rows into `Proof
 receipts`. The helper records the ref, input digest/count, latest input mtime,
@@ -338,6 +351,11 @@ success through prose.
 A failed fix is not the expected red test. It is an attempted fix already
 claimed `candidate-local`, `kept`, or `completed` that fails exact replay/final
 verification, or a fresh reporter contradiction.
+
+The reporter assertion must execute before a process failure becomes a product
+failed-fix attempt. A pre-assertion proof-host failure still requires the
+automatic `repair-now`, but it restarts the same product attempt after the host
+repair.
 
 That event immediately interrupts product work:
 

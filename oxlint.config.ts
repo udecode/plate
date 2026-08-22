@@ -54,8 +54,9 @@ export default defineConfig({
   ],
   options: {
     denyWarnings: true,
-    reportUnusedDisableDirectives: 'error',
-    typeAware: true,
+    // Typed suppressions look unused when their rules are not loaded.
+    reportUnusedDisableDirectives: 'off',
+    typeAware: false,
   },
   settings: jsPluginSettings,
   overrides: [

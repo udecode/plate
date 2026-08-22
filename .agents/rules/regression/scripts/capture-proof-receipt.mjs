@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -59,6 +59,9 @@ const parseArgs = (argv) => {
       case '--browser':
         parsed.browser = value;
         break;
+      case '--browser-executable':
+        parsed.browserExecutable = value;
+        break;
       case '--case-id':
         parsed.caseIds.push(value);
         break;
@@ -109,6 +112,19 @@ const assertArgs = (args) => {
     throw new Error(
       'use --host "none: <reason>" or provide --host-pid, --base-url, and --browser'
     );
+  }
+
+  if (/^exact-chrome(?::|$)/i.test(args.browser ?? '')) {
+    if (!args.browserExecutable) {
+      throw new Error('exact Chrome proof requires --browser-executable');
+    }
+    if (
+      !args.command.some((part) => part.includes(args.browserExecutable))
+    ) {
+      throw new Error(
+        'exact Chrome proof command must reference --browser-executable'
+      );
+    }
   }
 };
 
@@ -179,7 +195,29 @@ const getHost = (args) => {
     throw new Error(`could not resolve start time for host process ${pid}`);
   }
 
-  return `pid:${pid};started:${started.toISOString()};base-url:${args.baseUrl};browser:${args.browser}`;
+  let browserAttestation = '';
+
+  if (args.browserExecutable) {
+    if (!existsSync(args.browserExecutable)) {
+      throw new Error(`browser executable does not exist: ${args.browserExecutable}`);
+    }
+
+    const executable = realpathSync(args.browserExecutable);
+    const versionResult = spawnSync(executable, ['--version'], {
+      encoding: 'utf8',
+    });
+    const version = versionResult.stdout.trim();
+
+    if (versionResult.status !== 0 || !/chrome/i.test(version)) {
+      throw new Error(
+        `browser executable did not attest a Chrome version: ${args.browserExecutable}`
+      );
+    }
+
+    browserAttestation = `;browser-executable:${executable};browser-version:${version}`;
+  }
+
+  return `pid:${pid};started:${started.toISOString()};base-url:${args.baseUrl};browser:${args.browser}${browserAttestation}`;
 };
 
 const safeCell = (value) =>

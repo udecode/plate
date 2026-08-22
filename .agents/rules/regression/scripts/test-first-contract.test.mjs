@@ -1,5 +1,13 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import {
+  chmodSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -116,6 +124,104 @@ test('stability-only failures freeze product edits until proof drift is classifi
     /programmatic shortcut[\s\S]*shared browser harness/
   );
   assert.match(template, /stability-only failure[\s\S]*froze product edits/);
+});
+
+test('exact Chrome proof attests the launched executable and separates proof-host failures', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const capture = join(
+    root,
+    '.agents/rules/regression/scripts/capture-proof-receipt.mjs'
+  );
+  const fixtureDir = mkdtempSync(join(tmpdir(), 'regression-chrome-'));
+  const fakeChrome = join(fixtureDir, 'chrome');
+
+  writeFileSync(fakeChrome, '#!/bin/sh\nprintf "Google Chrome 999.0\\n"\n');
+  chmodSync(fakeChrome, 0o755);
+
+  try {
+    const missingExecutable = spawnSync(
+      process.execPath,
+      [
+        capture,
+        '--case-id',
+        'chrome-case',
+        '--attempt',
+        '1',
+        '--claim',
+        'completed',
+        '--input',
+        '.agents/rules/regression/scripts/test-first-contract.test.mjs',
+        '--host-pid',
+        String(process.pid),
+        '--base-url',
+        'http://localhost:1',
+        '--browser',
+        'exact-chrome:test',
+        '--retries',
+        '0',
+        '--',
+        process.execPath,
+        '-e',
+        'process.exit(0)',
+      ],
+      { cwd: root, encoding: 'utf8' }
+    );
+
+    assert.equal(missingExecutable.status, 1);
+    assert.match(
+      missingExecutable.stderr,
+      /exact Chrome proof requires --browser-executable/
+    );
+
+    const attested = spawnSync(
+      process.execPath,
+      [
+        capture,
+        '--case-id',
+        'chrome-case',
+        '--attempt',
+        '1',
+        '--claim',
+        'completed',
+        '--input',
+        '.agents/rules/regression/scripts/test-first-contract.test.mjs',
+        '--host-pid',
+        String(process.pid),
+        '--base-url',
+        'http://localhost:1',
+        '--browser',
+        'exact-chrome:test',
+        '--browser-executable',
+        fakeChrome,
+        '--retries',
+        '0',
+        '--',
+        process.execPath,
+        '-e',
+        'process.exit(0)',
+        fakeChrome,
+      ],
+      { cwd: root, encoding: 'utf8' }
+    );
+
+    assert.equal(attested.status, 0, attested.stderr);
+    assert.match(attested.stdout, /browser:exact-chrome:test/);
+    assert.match(attested.stdout, /browser-executable:/);
+    assert.match(attested.stdout, /browser-version:Google Chrome 999\.0/);
+    assert.match(
+      regressionRule,
+      /pre-assertion proof-host failure[\s\S]*cannot fabricate a product failure/
+    );
+    assert.match(
+      methodology,
+      /Confirm one[\s\S]*worker launch trace before counting stability/
+    );
+  } finally {
+    rmSync(fixtureDir, { force: true, recursive: true });
+  }
 });
 
 test('stability counts fresh executions instead of cached proof reuse', () => {

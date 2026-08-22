@@ -806,11 +806,16 @@ export const validateRegressionPlan = (
       }
       if (
         complete &&
-        !receipts.some((receipt) =>
-          /(?:^|;)browser:exact-chrome(?::|;|$)/i.test(receipt.host)
+        !receipts.some(
+          (receipt) =>
+            /(?:^|;)browser:exact-chrome(?::|;|$)/i.test(receipt.host) &&
+            /(?:^|;)browser-executable:\S/i.test(receipt.host) &&
+            /(?:^|;)browser-version:[^;]*chrome\s+\S/i.test(receipt.host)
         )
       ) {
-        errors.push(`${caseId} requires an exact Chrome proof receipt`);
+        errors.push(
+          `${caseId} requires an executable-attested exact Chrome proof receipt`
+        );
       }
     }
   }
