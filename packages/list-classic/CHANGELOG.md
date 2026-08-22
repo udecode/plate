@@ -1,5 +1,37 @@
 # @platejs/list-classic
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Export complete `ListPluginState`, `ListItemPluginState`, `TaskListPluginState`, and `TodoListPluginState` contracts.
+
+  Move classic-list behavior to Plite transactions and scoped plugin updates. Preserve compound command targets after earlier edits in the same transaction.
+
+  **Migration:** Replace exported list queries and transforms with `editor.read` and the plugin-scoped commands:
+
+  ```ts
+  const list = editor.plugin(ListPlugin);
+
+  list.update.toggle({
+    type: editor.plugin(BulletedListPlugin).schema.type,
+  });
+  list.update.indent();
+  list.update.outdent();
+  ```
+
+  Configure additional list-item children through `ListItemPlugin.configure({ initialState: { validLiChildren } })`.
+
+  Classic list elements persist as `bulletedList`, `numberedList`, `listItem`, `listItemContent`, and `todoList`.
+
+  Infer classic-list renderer props from their owning descriptors. Copy `list-classic-node` for todo checkbox behavior and `list-classic-toolbar-button` for toolbar state and toggling.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define classic-list Markdown conversion on the list plugins.
+
 ## 53.0.0
 
 ### Patch Changes
@@ -60,7 +92,7 @@
   createListPlugin();
 
   // Toggle task list
-  editor.tf.toggle.list({ listType: 'taskList' });
+  editor.tf.toggle.list({ listType: "taskList" });
   ```
 
 ## 49.0.0
@@ -73,10 +105,10 @@
     - Example:
       ```tsx
       BulletedListPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+alt+5' } },
+        shortcuts: { toggle: { keys: "mod+alt+5" } },
       });
       NumberedListPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+alt+6' } },
+        shortcuts: { toggle: { keys: "mod+alt+6" } },
       });
       ```
   - Package `@udecode/plate-list` has been moved to `@platejs/list-classic`.

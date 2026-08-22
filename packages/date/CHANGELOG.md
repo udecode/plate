@@ -1,5 +1,24 @@
 # @platejs/date
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  - Move date insertion to `editor.update.date.insert(input?, nodeOptions?)`
+  - Register date element properties in compiled schemas
+  - Persist one required `value` string for canonical dates or authored date text
+  - Remove the standalone `insertDate` and unused `isPointNextToNode` helpers
+
+  **Migration:** Replace `insertDate(editor, options)` with `editor.update.date.insert(input?, nodeOptions?)` or `editor.plugin(BaseDatePlugin).update.insert(input?, nodeOptions?)`. Use Plite point and node reads directly for custom adjacency checks.
+
+  Replace Date node `date` / `rawDate` properties with `value` and pass `{ value }` to the insert update.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define date MDX conversion on the date plugin and derive its custom tag from the resolved application schema type.
+
 ## 53.0.0
 
 ### Patch Changes

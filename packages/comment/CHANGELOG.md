@@ -1,5 +1,21 @@
 # @platejs/comment
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Read comment marks through `editor.read.comment`, derive IDs with `editor.api.comment.nodeId`, and mutate comments through `editor.update.comment`. Register comment marks as boolean text properties in compiled schemas.
+
+  Keep comment ID selection in copied comment UI instead of importing `useCommentId` from the package.
+
+  Let comment leaf components inspect comment metadata without receiving the underlying text string.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define comment mark Markdown conversion on the comment plugin.
+
 ## 53.0.0
 
 ## 52.3.10
@@ -48,6 +64,7 @@
 - [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Enhanced comment plugin to support AI-generated comments.
 
   ### Changes:
+
   - Added a `transient` option to `tf.unsetMark` to allow removing all AI comments at once.
 
 ## 49.0.0

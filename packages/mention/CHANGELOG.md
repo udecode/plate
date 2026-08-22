@@ -1,5 +1,29 @@
 # @platejs/mention
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Export `MentionPluginState` as the complete mutable state contract for `BaseMentionPlugin`.
+
+  Move mention insertion to `editor.plugin(MentionPlugin).update.insert` and register mention values in compiled schemas. Preserve plugin capability and render-time node-context inference in typed component integrations.
+
+  Install the mention-input descriptor as a required plugin dependency. Its capability name and persisted element type are both `mentionInput`.
+
+  Remove `getMentionOnSelectItem`; selection handlers call the installed plugin update directly. The update accepts only persisted mention data (`ref` and optional `label`) in its first argument and generic node options in its second; combobox search text stays UI-local.
+
+  Use `TMentionItemBase<TRef = string>` to type application mention references.
+
+  **Migration:** Replace Mention node `key` / `value` with required `ref` and optional `label`. Render visible text from `label ?? ref`.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep block DnD ownership inside its React DnD adapter so native inline drags reach Plite's move transaction. Compose fitted slice replacement through a detached transaction spec so delete-and-reinsert moves publish atomically. Allow inline mentions to move with native drag-and-drop and serialize through HTML clipboard data.
+
+  Define mention Markdown conversion on the mention plugin. Conditional mention properties cannot replace decoded children or resolved schema identity.
+
 ## 53.0.0
 
 ## 52.3.10
