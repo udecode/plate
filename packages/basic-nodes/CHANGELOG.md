@@ -1,5 +1,43 @@
 # @platejs/basic-nodes
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Remove the Heading, Basic Blocks, and Basic Marks grouping descriptors and package-owned preset arrays. The package exports each Base and React capability plugin independently. Built-in marks expose semantic read and update methods. `ScriptPlugin` represents subscript and superscript through one `script: 'sub' | 'sup'` property. Paragraphs and horizontal rules persist under the canonical plugin identities `paragraph` and `horizontalRule`.
+
+  **Migration:** List the package plugins your editor supports, or install the matching app-owned Plate registry kit.
+
+  ```tsx
+  import { H1Plugin, H2Plugin } from "@platejs/basic-nodes/react";
+
+  const plugins = [H1Plugin, H2Plugin];
+  ```
+
+  Replace `SubscriptPlugin` and `SuperscriptPlugin` with `ScriptPlugin`. Toggle the requested position with `editor.update.script.toggle('sub' | 'sup')`. Toggle headings through their generic text-block commands. Toggle blockquotes through `editor.update.blockquote.toggle()`, which owns wrap and unwrap semantics.
+
+  Add the shared v54 document step while loading persisted v53 text marks:
+
+  ```tsx
+  import {
+    defineDocumentMigrations,
+    migratePlateV54,
+  } from "platejs/migrations";
+
+  const migrations = defineDocumentMigrations(EditorSchema, {
+    steps: { 54: migratePlateV54 },
+    unversioned: 53,
+  });
+  ```
+
+  Replace six heading plugins with one Heading plugin and required level.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define Markdown codecs beside headings, blockquotes, thematic breaks, and basic marks.
+
 ## 53.0.0
 
 ### Major Changes
@@ -77,25 +115,25 @@
     - Configure shortcuts manually via the `shortcuts` field in plugin configuration.
     - Example (Block Plugins):
       ```ts
-      H1Plugin.configure({ shortcuts: { toggle: { keys: 'mod+alt+1' } } });
+      H1Plugin.configure({ shortcuts: { toggle: { keys: "mod+alt+1" } } });
       BlockquotePlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+shift+period' } },
+        shortcuts: { toggle: { keys: "mod+shift+period" } },
       });
       ```
     - Example (Mark Plugins):
       ```ts
-      CodePlugin.configure({ shortcuts: { toggle: { keys: 'mod+e' } } });
+      CodePlugin.configure({ shortcuts: { toggle: { keys: "mod+e" } } });
       StrikethroughPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+shift+x' } },
+        shortcuts: { toggle: { keys: "mod+shift+x" } },
       });
       SubscriptPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+comma' } },
+        shortcuts: { toggle: { keys: "mod+comma" } },
       });
       SuperscriptPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+period' } },
+        shortcuts: { toggle: { keys: "mod+period" } },
       });
       HighlightPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+shift+h' } },
+        shortcuts: { toggle: { keys: "mod+shift+h" } },
       });
       ```
 

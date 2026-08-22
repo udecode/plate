@@ -1,5 +1,14 @@
 # @udecode/utils
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+  - Remove `getHandler`, `hexToBase64`, null-check helpers, and obsolete optional/deep utility types
+  - Tighten URL validation, property merging, function binding, and live utility types
+  - Publish bundled declarations that resolve under NodeNext
+
 ## 52.3.4
 
 ### Patch Changes

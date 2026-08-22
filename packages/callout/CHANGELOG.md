@@ -1,5 +1,20 @@
 # @platejs/callout
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Remove `useCalloutEmojiPicker`. Callout renderers compose `useEmojiPicker` directly with their local popover and node update.
+
+  - Insert callouts through the descriptor's standard `editor.plugin(BaseCalloutPlugin).update.insert(props?, nodeOptions?)` update.
+  - Register callout appearance properties and the materialized `💡` icon default in the compiled schema.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define the callout Markdown codec on the callout plugin and derive its custom MDX tag from the resolved callout schema type. Decode the external Markdown paragraph wrapper without requiring a Plate paragraph plugin. Decode its phrasing children directly so a block-producing paragraph codec cannot be silently unwrapped into invalid callout content.
+
 ## 53.0.0
 
 ## 52.3.10

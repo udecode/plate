@@ -1,5 +1,13 @@
 # @udecode/cn
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Export `cn` and the React utility re-exports. Remove `withCn`, `withProps`, and `withVariants`; write concrete components with visible defaults, variants, and React 19 ref props.
+
 ## 52.3.4
 
 ### Patch Changes

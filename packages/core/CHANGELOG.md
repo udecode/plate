@@ -1,5 +1,353 @@
 # @platejs/core
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep stable element renderers independent from sibling path shifts. Element components resolve event-time paths from their element and opt into `usePath()` only when output depends on live position. Plite node refs restore the live runtime path after any external React render so moved text DOM cannot retain stale coordinates. Node wrappers receive `renderPath` as a render-snapshot path for cheap depth and ancestor decisions without a live subscription. Descriptor wrappers can reject ineligible nodes before Plate composes plugin context or mounts their component.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Initialize prepared Plate values during schema publication to avoid an extra live whole-document replacement on mount.
+
+  Remove `withHOC`, `useEditableProps`, `usePlateRootProps`, and the public node-attribute hook. Compose concrete React 19 components directly and receive `ref` as a normal prop.
+
+  Export named `*PluginState` contracts for state-owning Core descriptors, including debug, DOM, navigation feedback, and persisted element IDs. Replace the default `NodeIdPlugin` with opt-in `ElementIdPlugin`. It assigns string IDs to block and inline elements through one `generateId` state option, indexes them across every document root, and never assigns IDs to text nodes. Use `migrateElementIds` before editor creation to fill missing IDs, report duplicates, and canonicalize a legacy property through `sourceKey`. Use editor-scoped `NodeKey` for live node targeting, selection, drag and drop, and temporary UI state; node keys cover text nodes and never enter serialized data. Convert a known runtime key at a persistence boundary through `editor.plugin(ElementIdPlugin).read.id(key)`.
+
+  Infer plugin-local node-property patches from the current plugin plus its required dependencies through a shallow capability graph. Use `nodes.set(props, options)` for typed atomic writes, the exact property handle key for aliases, `unset(key, options)` for removals, and semantic owner updates for prefix or cross-node behavior.
+
+  Rename Plate plugin identity from `key` to `name` across descriptor definitions, inferred contracts, installed descriptors, lookup parameters, transaction groups, targets, and overrides. Declare `definePlatePlugin('foo', definition)`, read `plugin.name`, and pass the plugin descriptor or a dynamic name string to descriptor-aware lookups. Use `name` solely for capability identity. Element plugins expose persisted identity through `schema.type`; primary-mark plugins expose persisted identity through `schema.key`. Behavior and aggregate-property plugins expose no consumer `schema`. Additional property handles stay in author callbacks and compiler APIs. Remove public reverse identity lookup and name/type translation. Publish every installed non-empty plugin API under its inferred plugin name on `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact generic portal. Both paths reference the same immutable API object. Reject plugin-name collisions with explicit editor API namespaces. Infer Plate node queries and transforms from plugin descriptors passed through the independent `type` option. Resolve descriptors through final application schema overrides, keep `match` function-only for additional conditions, and remove caller-selected node result generics. Replace `nodes.find<LinkElement>({ match: { type: linkType } })` with `nodes.find({ type: LinkPlugin, match: (link, path) => ... })`. Expose `editor.plugin(Plugin).installed` for optional package integrations. Call the scoped update portal with a transaction policy when an operation needs tagged history or another root update policy: `editor.plugin(Plugin).update(policy).method()`. The scoped call opens one root transaction and preserves its rollback and history behavior. Compose plugin commands inside an active transaction through `tx.plugin(Plugin).method()`. Generated editors retain direct `tx.pluginName.method()` groups. Raw Plite keeps direct extension groups and does not expose a descriptor transaction portal.
+
+  Give default-constructible, schema-compatible text-block descriptors a standard `toggle` update. Text blocks with required construction properties author their own domain-aware command when needed. Configure same-name keyboard shortcuts with keys only; Plate dispatches the plugin update automatically. Structural plugins keep authored toggle commands for wrapping, conversion, or child mutations. Rename the paragraph shortcut from `toggleParagraph` to `toggle`.
+
+  Contextually infer callbacks for contract-declared explicit transaction groups and plugin extension command transactions. Infer every root and scoped update callback from the editor's installed plugin graph; callers cannot augment the transaction contract with a type argument. Keep each input-rule factory's exact editor and rule-family contracts, infer only explicitly declared consumer options, and publish portable declarations while normalizing heterogeneous descriptor storage through an unknown-context rule reference. Infer callback-created plugin state from its return type without erasing constructor `read`, `update`, or other inferred capabilities.
+
+  Require plugin `read` factories to return callable method trees and build each tree once per published plugin configuration.
+
+  Compile API, read, and update capability trees with plain-record composition instead of descriptor merging.
+
+  Preserve exact custom selection payloads from installed Plate plugin descriptors across editor reads, transactions, and direct updates. Declare a custom selection once through `selectionKinds`; editors without that plugin do not accept its payload. Project installed DOM, React, and plugin capabilities once through the Plate plugin graph. Do not intersect complete DOM or React editor read/update surfaces back onto the resulting Plate editor.
+
+  Infer one exact definition for each Base and React plugin. Remove the `PluginConfig` family, including `AnyPluginConfig`, `SlatePluginConfig`, and `PlatePluginConfig`. Use `DefinitionOf<typeof Plugin>` as the sole public descriptor-definition extractor; remove the `InferConfig` alias. Name exported descriptor contracts `FooDefinition`; reserve `FooConfig` for real domain configuration. Keep fields omitted from an author definition absent from its inferred descriptor type. Keep Core's contextually typed author-source to canonical-lowered aliases internal. Public authoring is one object call that returns one exact descriptor without a caller-supplied generic list. Declare `api` through a factory at every Plite, Base, and React layer, including context-free APIs. Pass one context object rather than positional `editor` and `context` arguments; Base and React add their plugin fields to that same object. Declare Plite capabilities directly on the plugin root, and use one prefixless `on` family for lifecycle and every DOM event. Remove the separate `handlers` surface and names such as `onKeyDown`; use `keyDown`, `paste`, `nodeChange`, and the matching prefixless event names:
+
+  ```tsx
+  const AnalyticsPlugin = definePlatePlugin("analytics", {
+    on: {
+      commit: ({ commit }) => reportCommit(commit),
+      keyDown: ({ event }) => reportKey(event.key),
+    },
+    validate: ({ schema }) => validateAnalyticsSchema(schema),
+  });
+  ```
+
+  Replace Slate-era Core exports with Plite and Plate-owned names. Delete the dead `isType` wrapper; compare configured element types at the owning call site.
+
+  Replace `pipeInsertDataQuery` with `prepareHtmlParserQuery`, which compiles one resolved plugin query and runs it against an immutable editor state.
+
+  Replace plugin `transformInitialValue` with `prepareDocument` for installed current-schema invariants. Configure application schema upgrades through `defineDocumentMigrations(EditorSchema, { steps })`; Plate runs every required target-version step before plugin preparation and schema fitting for initial and deferred complete-document loads.
+
+  Persist `{ document, schema }` and pass the envelope to `initialValue` or `editor.update.value.replace(...)`. Use `migrateDocument` to run the same chain outside editor publication. Bind each supported historical envelope version to its generated schema fingerprint; use an explicit unversioned floor only for raw documents without identity metadata.
+
+  Remove exported whitespace character aliases in favor of native character literals. Preserve the first matching descendant returned by `someHtmlElement`.
+
+  Keep element-provider updates local to their own node while descriptor-scoped ancestor reads subscribe to the exact owning provider.
+
+  Remove `editor.meta.pluginList`, `editor.meta.isFallback`, `editor.getOptionsStore`, and public plugin `optionsStore` fields. Read installed plugins and editor-local state through `editor.plugin(Plugin)`. Keep callback-only `editor` and `defineCodecs` off the consumer portal.
+
+  Remove parallel plugin lookup APIs: `getBasePlugin`, `getEditorPlugin`, React `getPlugin`, `editor.getPlugin`, `getPluginType(s)`, `getPluginName(s)`, `getPluginByType`, `getContainerTypes`, `editor.getType`, and `editor.getInjectProps`. Use `editor.plugin(Plugin)` for an exact typed portal and `editor.plugin(plugin)` for an erased dynamic or family-agnostic runtime-name portal. Reject weak `{ name }` lookup objects. A missing runtime name reports `installed: false`; name-only portals keep non-optional `schema.type` and `schema.key` getters for package-decoupled code, while missing or wrong-kind access throws. Exact portals publish only their primary element or mark identity. React `useEditorPlugin` accepts the same descriptor-or-name inputs. Read compiled injection data from `editor.plugin(Plugin).inject.nodeProps`. The consumer portal exposes every resolved descriptor field directly beside scoped `api`, `read`, `update`, `store`, and `installed`; it has no nested `plugin` alias. Authoring callback contexts retain `plugin` for the current raw descriptor.
+
+  Pass each render wrapper its owning plugin portal context and forward Plite DOM strategy props through Plate content.
+
+  Preserve decoration rendering without coupling plugin identities to serialized mark names.
+
+  Skip autofocus, input rule, and override work when lifecycle targets are unavailable.
+
+  Preserve selections when application migrations or `prepareDocument` wrap selected text during editor setup and complete `editor.update.value.replace(...)` loads.
+
+  Install typed plugin-object dependencies recursively with deterministic overrides, dependency-first ordering, and graph validation. Remove global plugin `priority`. Independent plugins keep application order; use `dependencies` for installation requirements and resource-local `priority` for competing shortcuts, input rules, or codecs.
+
+  Declare document identity and element behavior through `schema.element`, marks through descriptor-backed `schema.mark`, ordinary node components through root-level `component`, advanced rendering through `render`, and trusted DOM projection through `render.nodeProps`.
+
+  Derive schema identity from compiled plugin semantics when editor creation omits `schema`. Pass `{ id, version }` only for application-named History, Yjs, or migration lineage. Editor factories derive identity when called without a `schema` option.
+
+  Seed one mutable editor-local plugin store through `initialState`. Put every independent author contribution in `defineBasePlugin()` or `definePlatePlugin()`: plugin-owned `api`, `read`, `update`, `selectors`, native Plite capabilities, format `codecs`, and ordinary static fields. Constructor callbacks receive the typed authoring context. Use `.extend()` only for an imported/prebuilt declaration, a shared factory the constructor cannot access, or an earlier-stage type dependency.
+
+  When `initialState` is an object, declare store-dependent fields in the same constructor. When `initialState` is a factory, stage fields that consume its inferred store type in a following `.extend()`:
+
+  ```tsx
+  const FeaturePlugin = definePlatePlugin("feature", {
+    initialState: ({ editor }) => ({ enabled: editor.read.isEmpty() }),
+  }).extend({
+    api: ({ store }) => ({
+      isEnabled: () => store.get("enabled"),
+    }),
+  });
+  ```
+
+  Move specialized builder contributions into the constructor:
+
+  | Before               | After                                                              |
+  | -------------------- | ------------------------------------------------------------------ |
+  | `.extendApi()`       | `api`                                                              |
+  | `.extendEditorApi()` | `api`                                                              |
+  | `.extendSelectors()` | `selectors`                                                        |
+  | `.extendTx()`        | `update`                                                           |
+  | `.extendTxGroup()`   | `update`                                                           |
+  | `.extendExtension()` | the matching root Plite field                                      |
+  | `.extendCodecs()`    | `codecs: ({ defineCodecs }) => defineCodecs(...)`                  |
+  | `.extendHtmlCodec()` | `codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': ... })` |
+
+  When upgrading from v53, move `.extendTransforms()` and `.extendEditorTransforms()` contributions to `update`. Replace ordinary `render.node` component registration with `.configure({ component: Component })`. Include `component` in that same terminal `.configure()` when other consumer overrides are needed. New Plate descriptors declare `component` directly. Base and Plate descriptors declare root-level `component` directly for static/RSC and live rendering. Base `.extend()` rejects `component`; terminal `.configure({ component: Component })` replaces it. Use `toPlatePlugin()` at the owning React adapter to publish a reusable Plate-layer descriptor or add genuine Plate-only authoring. A terminal consumer does not convert merely to set `component`. Independently reusable raw Plite descriptors use `defineExtension(...)`; Plate-owned capabilities stay on the plugin root. Apply at most one terminal consumer `.configure(...)` call per descriptor: object configuration can set descriptor fields, while contextual configuration can derive initial state, `on` events, foreign-plugin overrides, renderers, and shortcuts. Earlier authoring stages read the configured values, and consumer configuration remains the final override. Read and update live values through `editor.plugin(Plugin).store.get()` and `.store.set(...)`; subscribe in React through `usePluginStore` or its explicit-editor `useEditorPluginStore` variant. Pass the real plugin descriptor to store hooks. A name-only object cannot carry the state or selector contract and is rejected instead of requiring manual generic arguments. Named selectors are pure state-first functions. Remove `getOption`, `getOptions`, `setOption`, `setOptions`, and the option-named React hooks.
+
+  ```tsx
+  // Before
+  const Plugin = definePlatePlugin("counter", {
+    options: { count: 0 },
+    selectors: ({ getOptions }) => ({
+      doubled: () => getOptions().count * 2,
+    }),
+  });
+
+  editor.plugin(Plugin).setOption("count", 1);
+  const count = usePluginOption(Plugin, "count");
+
+  // After
+  const Plugin = definePlatePlugin("counter", {
+    initialState: { count: 0 },
+    selectors: {
+      doubled: (state) => state.count * 2,
+    },
+  });
+
+  editor.plugin(Plugin).store.set({ count: 1 });
+  const count = usePluginStore(Plugin, "count");
+  ```
+
+  Declare cross-plugin schema and render targets with the plugin's top-level `targetPlugins` field.
+
+  Register semantic command policy through root `commands: ({ handle, around }) => [...]` factories. Handlers return `false | TransactionSpec`; `handle` provides ordered fallback and `around` wraps or rewrites downstream behavior.
+
+  Resolve shortcut names against the owning plugin's `.update` and `.api` groups. Set `target: 'update' | 'api'` only when both groups define the same name; custom shortcut handlers do not accept `target`.
+
+  Initialize editors synchronously through `initialValue` or `({ editor }) => Value`. Observe published edits through `onCommit({ editor, commit, snapshot })`.
+
+  Make `useEditor()` strict and `useActiveEditor()` nullable. Resolve rendered elements and paths through descriptor-aware `useElement(FooPlugin)`, `useOptionalElement(FooPlugin)`, `usePath`, and `useOptionalPath` hooks. Infer component elements with `PlateElementProps<typeof FooPlugin>` and static/RSC elements with `PliteElementProps<typeof BaseFooPlugin>`. Infer live and static text and leaf component props from the same plugin descriptors with `PlateTextProps`, `PlateLeafProps`, `PliteTextProps`, and `PliteLeafProps`. Pass exactly one required plugin descriptor to these component prop aliases. Leaf props include optional transient fields inferred from the owning plugin's `decorate` callback; text props remain persisted-schema-only. Pass plugin descriptors directly to wrapper and element-selector contracts: `RenderNodeWrapper<typeof FooPlugin>`, `RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and `useElementSelector(FooPlugin, selector)` infer their element and plugin context without a manual `DefinitionOf` extraction. Use `RenderElementProps`, `RenderTextProps`, and `RenderLeafProps` for schema-agnostic renderer infrastructure. Remove the parallel `StyledPlate*Props` and `StyledPlite*Props` aliases; pass polymorphic HTML props directly to the matching node primitive. Remove unchecked type-only `useElement<FooElement>()` and `useOptionalElement<FooElement>()` calls. Context editor hooks reject caller-only generics and accept no plugin tuple or generated contract. Use `useEditor()` or nullable `useActiveEditor()` for the mounted editor, resolve exact plugin capabilities through `editor.plugin(FooPlugin)` or `useEditorPlugin(FooPlugin)`, and keep optional generated `Editor` and `Value` types at explicit static boundaries.
+
+  Render static HTML through `renderStaticHtml` from `platejs/static`.
+
+  **Migration:** Read installed plugin APIs from the inferred editor API in app code. Use the scoped portal when generic package code only knows the plugin descriptor:
+
+  ```tsx
+  // Before
+  editor.getApi(FooPlugin).foo.method();
+
+  // After
+  editor.api.foo.method();
+
+  // Generic package code
+  editor.plugin(FooPlugin).api.method();
+
+  // Compiled descriptor
+  const foo = editor.plugin(FooPlugin);
+  foo.name;
+  foo.schema.type; // element plugin
+  foo.inject.nodeProps;
+  foo.render;
+
+  const bold = editor.plugin(BoldPlugin);
+  bold.schema.key;
+  bold.read.isActive();
+  bold.update.toggle();
+
+  // Dynamic runtime name
+  const dynamicPlugin = editor.plugin(plugin);
+
+  if (dynamicPlugin.installed) {
+    dynamicPlugin.name;
+    dynamicPlugin.schema.type; // throws when the installed plugin is not an element
+  }
+  ```
+
+  Prepare parser queries once, then run them against read-only editor state:
+
+  ```tsx
+  const canInsert = prepareHtmlParserQuery(editor, MyPlugin);
+  const allowed = editor.read((state) => canInsert(state, options));
+  ```
+
+  Rename these exports:
+
+  - `Slate` to `Plite`
+  - `PlateSlate` to `PlateRoot`
+  - `useSlateProps` to `usePlateRootProps`
+  - `SlateRenderElementProps` to `PliteRenderElementProps`
+  - `SlateRenderLeafProps` to `PliteRenderLeafProps`
+  - `SlateRenderTextProps` to `PliteRenderTextProps`
+
+  Replace dependency names such as `dependencies: ['feature']` with the plugin object, for example `dependencies: [BaseFeaturePlugin]`.
+
+  Replace the overloaded `node` declaration with explicit model and render fields:
+
+  ```tsx
+  definePlatePlugin("link", {
+    schema: { element: { inline: true } },
+  }).configure({ component: LinkElement });
+  ```
+
+  Load asynchronous values before editor construction and pass a synchronous `initialValue`:
+
+  ```tsx
+  // Before
+  createPlateEditor({
+    value: () => loadDocument(),
+    onReady: ({ editor }) => activateEditor(editor),
+  });
+
+  // After
+  const initialValue = await loadDocument();
+  const editor = createPlateEditor({ initialValue });
+  activateEditor(editor);
+  ```
+
+  When editor construction cannot wait for the document, skip initialization and publish the loaded value once:
+
+  ```tsx
+  const editor = createPlateEditor({ plugins, skipInitialization: true });
+  const children = await loadDocument();
+
+  editor.update.value.replace({ children });
+  ```
+
+  Use strict provider hooks and provider-owned element paths:
+
+  ```tsx
+  // Before
+  const editor = useEditorRef();
+  const path = useNodePath(element);
+
+  // After
+  const editor = useEditor();
+  const path = usePath();
+  ```
+
+  Replace context-hook editor assertions with descriptor portals:
+
+  ```tsx
+  // Before
+  const editor = useEditor<PlateEditor<readonly [typeof FooPlugin]>>();
+
+  // After
+  const editor = useEditor();
+  const foo = editor.plugin(FooPlugin);
+  ```
+
+  Rename static HTML rendering:
+
+  ```tsx
+  // Before
+  import { serializeHtml } from "platejs/static";
+
+  // After
+  import { renderStaticHtml } from "platejs/static";
+  ```
+
+  Replace `inject.targetPlugins` with top-level `targetPlugins`:
+
+  ```tsx
+  definePlatePlugin("align", {
+    targetPlugins: [PLUGINS.paragraph],
+    inject: { nodeProps: { styleKey: "textAlign" } },
+  });
+  ```
+
+  Replace `inject.targetPluginToInject` with a typed foreign codec contribution, `codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': ... })`, or use `override.plugins[name]` for package-owned adaptation of an installed peer.
+
+  Classify plugin relationships explicitly:
+
+  - Use `dependencies` for required structure and capabilities.
+  - Include optional capabilities as ordinary entries in the consumer plugin array.
+  - Let an optional enhancement depend on its required base capability; do not make the base capability bundle the enhancement.
+
+  Configure or omit an optional capability through the ordinary plugin array:
+
+  ```tsx
+  const plugins = [
+    CodeBlockPlugin,
+    CodeHighlightPlugin.configure({
+      initialState: { lowlight },
+    }),
+  ];
+  ```
+
+  Repeat terminal configurations derived from the same authored plugin when a later consumer layer needs to configure an installed preset. Plate composes them in array order, preserves earlier non-overlapping fields, and lets later defined values win. Unrelated plugins and divergent authoring branches cannot share a name.
+
+  Remove `configurePlugin`, `extendPlugin`, `rootPlugin`, and `override.enabled`. Configure imported target descriptors directly. Package plugins that cannot import a foreign target or control the editor kit may use `override.plugins[name]` to adapt an already-installed peer; missing targets are ignored, topology is immutable, required dependencies cannot be disabled, and target configuration wins.
+
+  Replace `parsers.html.deserializer`, serializer declarations, and injected HTML node-rule projections with schema-inferred `codecs['text/html']` contributions in the constructor callback. Keep whole-input HTML hooks on the same codec:
+
+  ```tsx
+  definePlatePlugin("docx", {
+    codecs: ({ defineCodecs }) =>
+      defineCodecs({
+        "text/html": { query, transformData, transformFragment },
+      }),
+  });
+
+  const BoldPlugin = definePlatePlugin("bold", {
+    schema: { mark: property.boolean() },
+    codecs: ({ defineCodecs }) =>
+      defineCodecs({
+        "text/html": {
+          decode: () => true,
+          encode: ({ value }) => (value ? { tag: "strong" } : null),
+          match: [{ tag: ["strong", "b"] }],
+        },
+      }),
+  });
+  ```
+
+  Use the flat `PLUGINS` catalog for built-in capability names. Resolve persisted element types and property keys through schema-owning plugin context or the installed plugin's flat `schema.type` / `schema.key`; use explicit persisted literals only for copied registry data and document fixtures. Use typed node fields or semantic plugin methods for additional properties.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix shortcuts acting on stale selections during keyboard input.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Delete selected block voids without merging following content into them
+  - Expose plugin-owned one-shot command groups through `editor.plugin(Plugin).update`
+  - Check optional descriptor installation through `editor.plugin(Plugin).installed`
+  - Preserve exact dependency, API, read, update, selector, and store inference through plugin construction, conversion, and heterogeneous runtime publication
+  - Require standalone resolved-plugin lookup to return an installed descriptor; absent and disabled plugins throw instead of producing a fallback descriptor
+  - Infer plugin transaction groups in `createRuleFactory(plugin)`
+  - Preserve editor extension state types through `toPlatePlugin`
+  - Declare plugin element behavior, marks, properties, and targeted content roots through plugin `schema` contributions compiled by Plite
+  - Publish Plate schema installation and an empty primary-root default as one atomic extension migration
+  - Author MIME-keyed product codecs through context-bound constructor `codecs: ({ defineCodecs }) => defineCodecs(...)` declarations; infer same-plugin APIs in that callback and compile them to schema-bound exact-slice Plite DOM codecs
+  - Provide schema-inferred Markdown node codec contracts directly from `@platejs/core`, with one `defineCodecs` object for every format owned by a plugin
+  - Derive element and text property-capability types with `ElementWith` and `TextWith`, including authored aliases, prefixes, defaults, and value domains
+  - Treat Plate-owned custom MDX tag names as resolved schema identity while keeping fixed MDAST, HTML, and MDX syntax literal
+  - Allow product-specific node codec declarations to target the owning plugin while preserving schema inference
+  - Author schema-inferred bidirectional HTML codecs through `codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': ... })` for elements, marks, and targeted properties
+  - Project trusted DOM properties explicitly through `render.nodeProps`; remove plugin host attribute allowlists and automatic model-property mirroring
+  - Initialize Plate from a primary-root value or complete `EditorDocumentValue`, emit the complete document from `onValueChange`, and render typed interactive or static content-root slots
+  - Publish bundled declaration entrypoints with complete type dependencies that resolve under NodeNext
+  - Resolve navigation, normalization, and input-rule targets against the active transaction draft
+  - Own the default Plate placeholder presentation above Plite's structural DOM
+  - Keep inserted inline elements outside the default node-ID policy, including inline void elements inserted beside text
+  - Resolve plugin dependencies and conflicts by descriptor, install required dependencies transitively, and expose typed dependency APIs without string capability lookup
+  - Declare host clipboard insertion as typed Plite DOM extension contributions
+  - Publish static View rendering and Plite DOM strategy contributions under distinct extension identities
+  - Compile merge, selectability, and slice-export policy into typed Plite read middleware, and selection projection into `selectionKinds`
+  - Avoid reevaluating published plugin schema factories during plugin access
+  - Fix `PlateElement` and `PliteElement` composition across descriptor-owned component families
+  - Keep ordinary text input native when Plate renderers and command middleware are behaviorally inert
+  - Reuse plugin access and compiled decoration contexts so rich editor chrome stays inside frame budgets
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Type dynamic node patches and weak plugin overrides without broad dictionary escape hatches.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Align Plate plugin schemas with Plite. Schema publication derives identity internally, element membership uses `blockContent`, schema queries accept plugin descriptors directly, and plugin definitions expose the authored schema without public compiler witnesses. Metadata-aware HTML, node-id, and element-state behavior uses placement roles. Application-owned property targets retain their authored semantic identity when Plate lowers plugin names to persisted element types.
+
 ## 53.2.1
 
 ### Patch Changes
@@ -69,7 +417,7 @@
   - Added `normalizeStaticValue` to **`@platejs/core`** for normalizing example editor values with deterministic node IDs and stable numeric `createdAt` metadata before SSR hydration.
 
     ```ts
-    import { normalizeStaticValue } from '@platejs/core';
+    import { normalizeStaticValue } from "@platejs/core";
 
     const value = normalizeStaticValue(exampleValue);
     ```
@@ -139,14 +487,14 @@
   // Before
   MentionPlugin.configure({
     options: {
-      getUserId: (editor) => '123',
+      getUserId: (editor) => "123",
     },
   });
 
   // After
   const editor = usePlateEditor({
     plugins: [MentionPlugin],
-    userId: '123',
+    userId: "123",
   });
   ```
 
@@ -266,10 +614,10 @@
     // Usage via Plate component
     <Plate
       onNodeChange={({ editor, node, operation, previousNode }) => {
-        console.log('Node changed:', { node, operation, previousNode });
+        console.log("Node changed:", { node, operation, previousNode });
       }}
       onTextChange={({ editor, node, operation, previousText, text }) => {
-        console.log('Text changed:', { text, previousText, operation });
+        console.log("Text changed:", { text, previousText, operation });
       }}
     />;
 
@@ -342,11 +690,11 @@
   - Added `normalizeNodeId` pure function to normalize node IDs in a value without using editor operations.
 
     ```ts
-    import { normalizeNodeId } from '@platejs/core';
+    import { normalizeNodeId } from "@platejs/core";
 
     // Normalize a value without editor operations
     const normalizedValue = normalizeNodeId(value, {
-      idKey: 'id',
+      idKey: "id",
       idCreator: () => nanoid(10),
       filterInline: true,
       filterText: true,
@@ -477,12 +825,12 @@
   ```ts
   const editor = usePlateEditor({
     value: async () => {
-      const response = await fetch('/api/document');
+      const response = await fetch("/api/document");
       const data = await response.json();
       return data.content;
     },
     onReady: ({ editor, value }) => {
-      console.info('Editor ready with value:', value);
+      console.info("Editor ready with value:", value);
     },
   });
   ```
@@ -536,7 +884,7 @@
         MyPlugin.configure({
           shortcuts: {
             myAction: {
-              keys: 'mod+s',
+              keys: "mod+s",
               preventDefault: false, // Example: Allow browser's default save dialog
             },
           },
@@ -981,7 +1329,7 @@
   };
 
   export const InlineVoidPlugin = createSlatePlugin({
-    key: 'inlineVoid',
+    key: "inlineVoid",
     extendEditor: withInlineVoid,
   });
 
@@ -1019,7 +1367,7 @@
   };
 
   export const InlineVoidPlugin = createSlatePlugin({
-    key: 'inlineVoid',
+    key: "inlineVoid",
   }).overrideEditor(withInlineVoid);
   ```
 
@@ -1070,6 +1418,7 @@
 - [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – ## @udecode/plate-core@40.1.0
 
   ### Minor Changes
+
   - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
     - Add `PlateStatic`, `SlateElement`, `SlateLeaf` components for static rendering and server-side HTML serialization
     - Add `serializeHtml` function to serialize editor content to HTML. Deprecating `@udecode/plate-html` in favor of core serialization.
@@ -1204,11 +1553,11 @@
 
   ```ts
   const ImagePlugin = createPlatePlugin({
-    key: 'image',
+    key: "image",
     node: {
       isElement: true,
       isVoid: true,
-      dangerouslyAllowAttributes: ['alt'],
+      dangerouslyAllowAttributes: ["alt"],
     },
   });
   ```
@@ -1218,7 +1567,7 @@
   ```ts
   const MyImagePlugin = ImagePlugin.extend({
     node: {
-      dangerouslyAllowAttributes: ['alt'],
+      dangerouslyAllowAttributes: ["alt"],
     },
   });
   ```
@@ -1254,7 +1603,7 @@
 
   ```ts
   const plugin = createSlatePlugin({
-    key: 'test',
+    key: "test",
     options: { nested: { a: 1 } },
   }).extend({
     options: { nested: { b: 1 } },
@@ -1267,7 +1616,7 @@
 
   ```ts
   const plugin = createSlatePlugin({
-    key: 'test',
+    key: "test",
     options: { nested: { a: 1 } },
   }).extend(({ getOptions }) => ({
     options: {
@@ -1343,7 +1692,7 @@
 
   ```typescript
   const MyPluginFactory = createPluginFactory({
-    key: 'myPlugin',
+    key: "myPlugin",
     isElement: true,
     component: MyComponent,
   });
@@ -1354,7 +1703,7 @@
 
   ```typescript
   const plugin = createSlatePlugin({
-    key: 'myPlugin',
+    key: "myPlugin",
     node: {
       isElement: true,
       component: MyComponent,
@@ -1376,7 +1725,7 @@
       onKeyDown: onKeyDownToggleElement,
     },
     options: {
-      hotkey: ['mod+opt+0', 'mod+shift+0'],
+      hotkey: ["mod+opt+0", "mod+shift+0"],
     },
   });
   ```
@@ -1468,11 +1817,11 @@
     key: KEY_ALIGN,
     inject: {
       props: {
-        defaultNodeValue: 'start',
+        defaultNodeValue: "start",
         nodeKey: KEY_ALIGN,
-        styleKey: 'textAlign',
-        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
-        validTypes: ['p'],
+        styleKey: "textAlign",
+        validNodeValues: ["start", "left", "center", "right", "end", "justify"],
+        validTypes: ["p"],
       },
     },
     then: (_, plugin) =>
@@ -1494,10 +1843,10 @@
   export const AlignPlugin = createSlatePlugin({
     inject: {
       nodeProps: {
-        defaultNodeValue: 'start',
-        nodeKey: 'align',
-        styleKey: 'textAlign',
-        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+        defaultNodeValue: "start",
+        nodeKey: "align",
+        styleKey: "textAlign",
+        validNodeValues: ["start", "left", "center", "right", "end", "justify"],
       },
       targetPluginToInject: ({ editor, plugin }) => ({
         parsers: {
@@ -1514,7 +1863,7 @@
       }),
       targetPlugins: [ParagraphPlugin.key],
     },
-    key: 'align',
+    key: "align",
   });
   ```
 
@@ -1536,7 +1885,7 @@
   ```typescript
   type LinkConfig = PluginConfig<
     // key
-    'p',
+    "p",
     // options
     { defaultLinkAttributes?: any },
     // api
@@ -2378,17 +2727,15 @@
   ```tsx
   export interface PlateProviderProps<
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>,
-  >
-    extends
-      PlateProviderEffectsProps<V, E>,
-      Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
+    E extends PlateEditor<V> = PlateEditor<V>
+  > extends PlateProviderEffectsProps<V, E>,
+      Partial<Pick<PlateStoreState<V, E>, "id" | "editor">> {
     /**
      * Initial value of the editor.
      *
      * @default [{ children: [{ text: '' }] }]
      */
-    initialValue?: PlateStoreState<V>['value'];
+    initialValue?: PlateStoreState<V>["value"];
 
     /**
      * When `true`, it will normalize the initial value passed to the `editor`
@@ -2428,7 +2775,8 @@
   }
 
   export interface PlateEditableProps<V extends Value = Value>
-    extends Omit<TEditableProps<V>, 'id'>, PlateEditableExtendedProps {}
+    extends Omit<TEditableProps<V>, "id">,
+      PlateEditableExtendedProps {}
   ```
 
 ### Patch Changes
@@ -2740,7 +3088,7 @@ Those Slate functions should be replaced by the new typed ones:
     P = PluginOptions,
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
-    EE extends E = E,
+    EE extends E = E
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
 
@@ -3097,6 +3445,7 @@ Removing node props types in favor of element types (same props + extends `TElem
 - [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Breaking changes:
 
   ### `Plate`
+
   - removed `components` prop:
 
   ```tsx
@@ -3131,7 +3480,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 1: use the plugin factory
   let plugins = [
     createParagraphPlugin({
-      type: 'paragraph',
+      type: "paragraph",
     }),
   ];
 
@@ -3139,7 +3488,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   plugins = createPlugins(plugins, {
     overrideByKey: {
       [ELEMENT_PARAGRAPH]: {
-        type: 'paragraph',
+        type: "paragraph",
       },
     },
   });
@@ -3148,6 +3497,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   ```
 
   ### `PlatePlugin`
+
   - `key`
     - replacing `pluginKey`
     - is now required: each plugin needs a key to be retrieved by key.
@@ -3262,6 +3612,7 @@ Removing node props types in favor of element types (same props + extends `TElem
     - `isVoid` is a boolean that enables void rendering.
 
   ### General
+
   - `plugins` is not a parameter anymore as it can be retrieved in `editor.plugins`
   - `withInlineVoid` is now using plugins `isInline` and `isVoid` plugin fields.
 

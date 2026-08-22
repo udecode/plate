@@ -1,5 +1,31 @@
 # @platejs/layout
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Remove the one-consumer `useDebouncePopoverOpen` React hook.
+
+  Own group mutations through `BaseColumnPlugin` and item mutations through `BaseColumnItemPlugin`:
+
+  - `editor.plugin(BaseColumnPlugin).update.insert(input?, nodeOptions?)`
+  - `editor.plugin(BaseColumnPlugin).update.setColumns`
+  - `editor.plugin(BaseColumnPlugin).update.toggle`
+  - `editor.plugin(BaseColumnItemPlugin).update.moveMiddle`
+  - `editor.plugin(BaseColumnItemPlugin).update.selectAll`
+
+  The group transaction is available as `editor.update.columnGroup`; item operations are available as `editor.update.column`.
+
+  Remove the standalone column query, transform, resize, and width-helper exports. `BaseColumnPlugin` owns the `columnGroup` schema and installs `BaseColumnItemPlugin`. Group elements persist under `columnGroup`.
+
+  Remove the unused `columnGroup.layout` property. Each child Column remains the sole owner of its persisted `width`.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define column layout MDX conversion on the column plugins. Custom column and column-group tags follow their resolved application schema types. The column group owns width correction, so the column item remains independently installable. The column item declares its paragraph dependency so column creation never reads an uninstalled schema portal. Column MDX attributes cannot replace decoded children or resolved schema type.
+
 ## 53.0.0
 
 ## 52.3.10

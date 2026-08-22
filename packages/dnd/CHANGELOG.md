@@ -1,5 +1,39 @@
 # @platejs/dnd
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Keep DnD store selectors, plugin lifecycle hooks, and low-level drag/drop hooks private. The public React surface is `useDraggable` and `useDropLine`.
+
+  Fix cross-editor multi-block drops so every selected block is inserted before the source blocks are removed. Drag items carry the source editor identity plus editor-scoped `NodeKey` values; persisted element IDs are not used for drag state.
+
+  Keep the edge scroller reactive to plugin store state. Preserve plugin API inference in typed component integrations and expose DOM-compatible drag references.
+
+  Configure automatic scrolling with `DndScrollerOptions`; the scroller components and low-level `useDndNode` adapter are package-private.
+
+  Use `key` on element drag items and drop callbacks, `draggingKey` in plugin state, `{ key, line }` for drop targets, and `useDropLine({ key })` for an explicit live node target.
+
+  Remove the standalone `selectBlockById` helper. Table row integrations now keep their selection-and-focus flow in the owning pre-drop handler.
+
+  Remove the exported `getNewDirection` helper.
+
+  Replace `DndConfig` with the complete `DndPluginState` contract.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Respect caller-owned node and preview refs in `useDraggable`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve cross-editor block drag copy intent and remove source blocks only after the backend confirms a successful move.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep block DnD ownership inside its React DnD adapter so native inline drags reach Plite's move transaction. Compose fitted slice replacement through a detached transaction spec so delete-and-reinsert moves publish atomically. Allow inline mentions to move with native drag-and-drop and serialize through HTML clipboard data.
+
+  Define mention Markdown conversion on the mention plugin. Conditional mention properties cannot replace decoded children or resolved schema identity.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep an edited drag source intact while inserting the content captured when the cross-editor drag started.
+
 ## 53.1.0
 
 ### Patch Changes
