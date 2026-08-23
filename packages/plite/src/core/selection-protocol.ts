@@ -26,6 +26,7 @@ import {
   mapInternalDocumentChangePosition,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
+import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorSchema } from './editor-runtime';
 import {
@@ -83,23 +84,6 @@ const hasOnlyKeys = (
   return Object.keys(value).every((key) => keySet.has(key));
 };
 
-const isStrictPath = (value: unknown): value is Path =>
-  Array.isArray(value) &&
-  value.every(
-    (segment) => Number.isSafeInteger(segment) && (segment as number) >= 0
-  );
-
-const isStrictPoint = (value: unknown): value is Point =>
-  isRecord(value) &&
-  hasOnlyKeys(value, ['offset', 'path', 'root']) &&
-  Number.isSafeInteger(value.offset) &&
-  (value.offset as number) >= 0 &&
-  isStrictPath(value.path) &&
-  (value.root === undefined || typeof value.root === 'string');
-
-const isMarks = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  isRecord(value);
-
 const assertBuiltInSelection: (
   selection: SelectionValue
 ) => asserts selection is EditorSelection = (selection) => {
@@ -108,22 +92,7 @@ const assertBuiltInSelection: (
   }
 
   if (selection.kind === 'text') {
-    if (
-      !hasOnlyKeys(selection, [
-        'affinity',
-        'anchor',
-        'focus',
-        'kind',
-        'marks',
-      ]) ||
-      !isStrictPoint(selection.anchor) ||
-      !isStrictPoint(selection.focus) ||
-      (selection.affinity !== undefined &&
-        selection.affinity !== 'backward' &&
-        selection.affinity !== 'forward') ||
-      (selection.marks !== undefined && !isMarks(selection.marks)) ||
-      (selection.marks !== undefined && !RangeApi.isCollapsed(selection))
-    ) {
+    if (!SelectionApi.isText(selection)) {
       throw new Error('Invalid text editor selection.');
     }
     if (selection.marks !== undefined) {
@@ -132,13 +101,7 @@ const assertBuiltInSelection: (
     return;
   }
 
-  if (
-    selection.kind !== 'node' ||
-    !hasOnlyKeys(selection, ['anchor', 'focus', 'kind', 'path']) ||
-    !isStrictPoint(selection.anchor) ||
-    !isStrictPoint(selection.focus) ||
-    !isStrictPath(selection.path)
-  ) {
+  if (!SelectionApi.isNode(selection)) {
     throw new Error('Invalid node editor selection.');
   }
 };
@@ -293,30 +256,6 @@ export const decodeEditorSelection = (
   }
 
   return selection;
-};
-
-const rangeAssociations = (
-  document: DocumentIndex,
-  range: Range,
-  association: RangeMappingOptions['association']
-): readonly [-1 | 1, -1 | 1] => {
-  if (association === 'backward') return [-1, -1];
-  if (association === 'forward') return [1, 1];
-
-  const anchor = document.positionAt(range.anchor);
-  const focus = document.positionAt(range.focus);
-
-  if (anchor === focus) return [1, 1];
-
-  const forward = anchor < focus;
-
-  return association === 'outward'
-    ? forward
-      ? [-1, 1]
-      : [1, -1]
-    : forward
-      ? [1, -1]
-      : [-1, 1];
 };
 
 const createMapContext = (
@@ -529,9 +468,17 @@ const createMapContext = (
       throw new Error('An editor selection range cannot cross document roots.');
     }
 
-    const associations = rangeAssociations(
-      DocumentIndex.fromValue(rootValue(before, targetRoot)),
-      range,
+    const beforeDocument = DocumentIndex.fromValue(
+      rootValue(before, targetRoot)
+    );
+    const anchorPosition = beforeDocument.positionAt(range.anchor);
+    const focusPosition = beforeDocument.positionAt(range.focus);
+    const associations = getRangeEndpointAssociations(
+      anchorPosition === focusPosition
+        ? 'collapsed'
+        : anchorPosition < focusPosition
+          ? 'forward'
+          : 'backward',
       options.association
     );
     const anchor = mapPoint(range.anchor, {
@@ -631,7 +578,7 @@ export const assertSelectionSupported = (
   documentValue: EditorDocumentValue = editor.read.value(),
   fallbackRoot = 'main'
 ) => {
-  if (!selection) return;
+  if (selection === null) return;
   assertEditorJsonValue(selection, 'editor selection');
   if (!SelectionApi.isSelection(selection)) {
     throw new Error('Invalid editor selection.');
@@ -705,6 +652,22 @@ export const assertSelectionSupported = (
         `Node selection path points outside document root "${nodeRoot}".`
       );
     }
+  }
+};
+
+export const isValidEditorSelection = (
+  editor: Editor,
+  selection: unknown,
+  documentValue?: EditorDocumentValue,
+  fallbackRoot?: RootKey
+): selection is Selection => {
+  if (selection !== null && !SelectionApi.isSelection(selection)) return false;
+
+  try {
+    assertSelectionSupported(editor, selection, documentValue, fallbackRoot);
+    return true;
+  } catch {
+    return false;
   }
 };
 

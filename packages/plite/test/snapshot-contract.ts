@@ -2978,11 +2978,11 @@ it('keeps node keys injective when prepending sibling moves across parents', () 
   assert.ok(secondMovedId);
 
   editor.update((tx) => {
-    const first = tx.refs.path([0, 1, 1, 0], {
+    const first = tx.anchor([0, 1, 1, 0], {
       association: 'forward',
       deletion: 'drop',
     });
-    const second = tx.refs.path([0, 1, 1, 1], {
+    const second = tx.anchor([0, 1, 1, 1], {
       association: 'forward',
       deletion: 'drop',
     });

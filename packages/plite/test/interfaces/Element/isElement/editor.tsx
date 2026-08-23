@@ -6,6 +6,7 @@ export const input = {
   children: [],
   intents: [],
   selection: null,
+  type: 'paragraph',
   addMark() {},
   deleteBackward() {},
   deleteForward() {},

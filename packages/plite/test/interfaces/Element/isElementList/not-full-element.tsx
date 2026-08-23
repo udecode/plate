@@ -5,6 +5,7 @@ import { ElementApi } from '@platejs/plite';
 export const input = [
   {
     children: [],
+    type: 'paragraph',
   },
   {
     type: 'set_node',

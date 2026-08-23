@@ -19,6 +19,7 @@ jobs:
     if: >-
       (github.repository == 'udecode/plate' || vars.RELEASE_VERSION_PR_TEST == 'true') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') && !contains(github.event.head_commit.message, '[skip release]')
     permissions:
+      actions: read
       contents: write
       pull-requests: write
       id-token: write
@@ -183,6 +184,10 @@ jobs:
           NPM_CONFIG_TAG: ${{ steps.release_channel.outputs.npm_tag }}
           PLATE_DISABLE_PUBLISH: ${{ github.repository != 'udecode/plate' }}
           PLATE_RELEASE_CHANNEL: ${{ steps.release_channel.outputs.channel }}
+          PLITE_RELEASE_CLAIM_PROFILE: ${{ vars.PLITE_RELEASE_CLAIM_PROFILE }}
+          PLITE_RELEASE_EXPECTED_COMMIT: ${{ github.sha }}
+          PLITE_RELEASE_PROOF_GITHUB_TOKEN: ${{ github.token }}
+          PLITE_RELEASE_PROOF_RUN_ID: ${{ vars.PLITE_RELEASE_PROOF_RUN_ID }}
 
       - name: 🏷️ Push package tags
         if: ${{ github.repository == 'udecode/plate' && steps.changesets.outputs.published == 'true' }}

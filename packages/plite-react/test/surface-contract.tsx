@@ -1946,13 +1946,14 @@ describe('plite-react surface contract', () => {
         {
           id: '0',
           children: [
-            { id: '0.0', children: [{ text: '' }] },
-            { id: '0.1', children: [{ text: '' }] },
-            { id: '0.2', children: [{ text: '' }] },
+            { id: '0.0', children: [{ text: '' }], type: 'paragraph' },
+            { id: '0.1', children: [{ text: '' }], type: 'paragraph' },
+            { id: '0.2', children: [{ text: '' }], type: 'paragraph' },
           ],
+          type: 'section',
         },
-        { id: '1', children: [{ text: '' }] },
-        { id: '2', children: [{ text: '' }] },
+        { id: '1', children: [{ text: '' }], type: 'paragraph' },
+        { id: '2', children: [{ text: '' }], type: 'paragraph' },
       ],
     }) as ReactRuntimeEditor;
     const elementSelectedRenders: Record<string, boolean[] | undefined> = {};
@@ -2010,9 +2011,10 @@ describe('plite-react surface contract', () => {
 
     await act(async () => {
       editor.update((tx) => {
-        tx.nodes.insert({ id: 'new', children: [{ text: '' }] } as never, {
-          at: [2],
-        });
+        tx.nodes.insert(
+          { id: 'new', children: [{ text: '' }], type: 'paragraph' } as never,
+          { at: [2] }
+        );
       });
     });
 
@@ -2031,8 +2033,8 @@ describe('plite-react surface contract', () => {
   test('custom element handlers resolve the current path after leading inserts', async () => {
     const editor = createReactEditor({
       initialValue: [
-        { id: 'first', children: [{ text: '' }] },
-        { id: 'target', children: [{ text: '' }] },
+        { id: 'first', children: [{ text: '' }], type: 'paragraph' },
+        { id: 'target', children: [{ text: '' }], type: 'paragraph' },
       ],
     }) as ReactRuntimeEditor;
     const renderCounts: Record<string, number | undefined> = {};
@@ -2067,9 +2069,14 @@ describe('plite-react surface contract', () => {
 
     await act(async () => {
       editor.update((tx) => {
-        tx.nodes.insert({ id: 'inserted', children: [{ text: '' }] } as never, {
-          at: [0],
-        });
+        tx.nodes.insert(
+          {
+            id: 'inserted',
+            children: [{ text: '' }],
+            type: 'paragraph',
+          } as never,
+          { at: [0] }
+        );
       });
     });
 

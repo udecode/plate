@@ -116,6 +116,7 @@ const PLITE_PACKAGE_BOUNDARY_NAMES = new Set([
   '@platejs/plite',
   '@platejs/plite-dom',
   '@platejs/plite-react',
+  '@platejs/plite-layout',
   '@platejs/yjs',
 ]);
 
@@ -638,6 +639,27 @@ export function checkPliteReleaseArtifacts({
       })
     );
     verifyIsolatedPackedConsumer({
+      directory: join(isolatedConsumerRoot, 'plite-layout-without-react'),
+      forbiddenPackages: ['@platejs/plite-react', 'react', 'react-dom'],
+      packageNames: ['@platejs/plite', '@platejs/plite-layout'],
+      packedPackages,
+      specifiers: ['@platejs/plite-layout'],
+      typePackages: ['@types/node'],
+    });
+    verifyIsolatedPackedConsumer({
+      directory: join(isolatedConsumerRoot, 'plite-layout-react-adapter'),
+      forbiddenPackages: ['@platejs/plite-history'],
+      packageNames: [
+        '@platejs/plite',
+        '@platejs/plite-dom',
+        '@platejs/plite-react',
+        '@platejs/plite-layout',
+      ],
+      packedPackages,
+      specifiers: ['@platejs/plite-layout/react'],
+      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
+    });
+    verifyIsolatedPackedConsumer({
       directory: join(isolatedConsumerRoot, 'plite-react-without-history'),
       forbiddenPackages: ['@platejs/plite-history'],
       packageNames: [
@@ -660,7 +682,7 @@ export function checkPliteReleaseArtifacts({
 
     if (packageBoundariesOnly) {
       console.log(
-        'Verified isolated packed Plite React without History and Yjs core without Plate/React consumers.'
+        'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, and Yjs core without Plate/React consumers.'
       );
       return;
     }
@@ -739,7 +761,7 @@ export function checkPliteReleaseArtifacts({
       `Verified ${packedPackages.length} packed release packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
     );
     console.log(
-      'Verified isolated packed Plite React without History and Yjs core without Plate/React consumers.'
+      'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, and Yjs core without Plate/React consumers.'
     );
   } finally {
     if (keep) {

@@ -1,14 +1,17 @@
 ---
 title: "Selection API"
-description: "Serializable text and node selection helpers."
+description: "Serializable built-in and extension-owned selection validation."
 ---
 
-A Plite selection is `null` or a serializable text or node selection. Text
-selections carry a range and optional insertion marks. Node selections carry a
-range and the selected node path.
+A Plite selection is `null` or a serializable selection value. Core owns text
+and node selections; extensions can register additional kinds with their own
+validation and mapping behavior.
 
 ```typescript
-type Selection = TextSelection | NodeSelection | null;
+type EditorSelection = TextSelection | NodeSelection;
+type Selection<TSelection extends SelectionValue = SelectionValue> =
+  | TSelection
+  | null;
 ```
 
 `SelectionApi` is frozen. Compose a custom helper around it instead of
@@ -20,17 +23,19 @@ mutating the namespace.
 
 Compare complete selection values, including kind-specific fields.
 
-#### `SelectionApi.isSelection(value: unknown) => value is EditorSelection`
+#### `SelectionApi.isSelection(value: unknown) => value is SelectionValue`
 
-Check whether a value is a non-null editor selection.
+Check the common serializable selection fields. This predicate does not know
+which extension kinds are installed or whether the points exist in a document.
 
 #### `SelectionApi.isText(value: unknown) => value is TextSelection`
 
-Check whether a value is a text selection.
+Strictly check the built-in text-selection shape. Insertion marks are valid only
+on a collapsed text selection.
 
 #### `SelectionApi.isNode(value: unknown) => value is NodeSelection`
 
-Check whether a value is a node selection with a valid node path.
+Strictly check the built-in node-selection shape and node path syntax.
 
 #### `SelectionApi.text(range: Range, options?) => TextSelection`
 
@@ -39,6 +44,24 @@ Create a text selection from a range and optional affinity or insertion marks.
 #### `SelectionApi.node(path: Path, range: Range) => NodeSelection`
 
 Create a node selection from a node path and range.
+
+## Editor Validation
+
+#### `state.selection.isValid(value: unknown) => value is Selection`
+
+Validate a complete selection against the editor's installed selection kinds
+and current document. The direct read form is
+`editor.read.selection.isValid(value)`.
+
+```typescript
+if (editor.read.selection.isValid(input)) {
+  editor.update.selection.set(input);
+}
+```
+
+This check accepts `null`, rejects unsupported extension kinds, runs the
+installed kind validator, and verifies every projected range against its
+document root.
 
 In Plite React, node selection is model-only: the editor remains focused while
 the native browser selection has no range. See

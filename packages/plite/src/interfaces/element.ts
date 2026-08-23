@@ -125,6 +125,7 @@ const isElement = (
   ) {
     return false;
   }
+  if (typeof value.type !== 'string') return false;
 
   const isChildrenValid = deep
     ? NodeApi.isNodeList(value.children)

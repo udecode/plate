@@ -75,6 +75,11 @@ const range = (start: number, end = start) => ({
   focus: { path: [0, 0], offset: end },
 });
 
+const paragraph = (text: string) => ({
+  children: [{ text }],
+  type: 'paragraph',
+});
+
 const beforeInputEvent = (
   inputType: string,
   data: string,
@@ -491,7 +496,7 @@ describe('Android input manager stored text diffs', () => {
     vi.useFakeTimers();
 
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'abc' }] }],
+      initialValue: [paragraph('abc')],
     });
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
     const onDOMSelectionChange = createDebouncedSpy();
@@ -528,7 +533,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('drops a pending diff already applied by a recent text repair echo', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'Beta!' }] }],
+      initialValue: [paragraph('Beta!')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -565,7 +570,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps a real follow-up insertion at the repaired caret while the text repair echo is live', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'Beta!' }] }],
+      initialValue: [paragraph('Beta!')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -605,7 +610,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('stores real follow-up text at a pending native repair caret', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: '' }] }],
+      initialValue: [paragraph('')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -635,7 +640,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('flushes pending text diffs on input while selection is model-owned', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: '' }] }],
+      initialValue: [paragraph('')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -665,10 +670,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('yields a verified root-captured insert to canonical DOM repair', () => {
     const editor = createEditor({
-      initialValue: [
-        { children: [{ text: 'stale' }] },
-        { children: [{ text: 'ABCDE' }] },
-      ],
+      initialValue: [paragraph('stale'), paragraph('ABCDE')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -710,7 +712,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('declines input without applying a stale pending selection', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'abc' }] }],
+      initialValue: [paragraph('abc')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -734,7 +736,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps pending text diffs deferred while Android composition is active', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: '' }] }],
+      initialValue: [paragraph('')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -766,7 +768,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps DOM-current pending text diffs deferred on input', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: '' }] }],
+      initialValue: [paragraph('')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -798,7 +800,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('remaps follow-up text through a live repair echo when the native offset is stale', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'A' }] }],
+      initialValue: [paragraph('A')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -836,7 +838,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps a same-node native user caret over a live repair echo', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'Beta!' }] }],
+      initialValue: [paragraph('Beta!')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -876,7 +878,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('preserves native-user DOM order for same-offset inserts while a pending diff is live', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'abc' }] }],
+      initialValue: [paragraph('abc')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -923,7 +925,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps a fresh native caret over a trusted stale runtime caret while pending changes exist', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'abc' }] }],
+      initialValue: [paragraph('abc')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -961,7 +963,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('does not drop repair-echo-looking text after a fresh native caret move', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'Beta!' }] }],
+      initialValue: [paragraph('Beta!')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -998,7 +1000,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('remaps follow-up text through the repaired runtime caret before the echo is live', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'A' }] }],
+      initialValue: [paragraph('A')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -1034,7 +1036,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps a valid native target range when the model-owned caret is stale', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'ABCDE' }] }],
+      initialValue: [paragraph('ABCDE')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -1069,7 +1071,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('prefers the live DOM-current caret over a stale target range', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'ABCDE' }] }],
+      initialValue: [paragraph('ABCDE')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -1113,7 +1115,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('flushes a pending text insert before reading the next insert target', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: '' }] }],
+      initialValue: [paragraph('')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -1151,7 +1153,7 @@ describe('Android input manager stored text diffs', () => {
 
   it('keeps applying pending diffs after the text repair echo expires', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'Beta!' }] }],
+      initialValue: [paragraph('Beta!')],
     });
     const inputController = createInputController();
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
@@ -1190,7 +1192,7 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     vi.useFakeTimers();
 
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'a' }] }],
+      initialValue: [paragraph('a')],
     });
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
     const onDOMSelectionChange = createDebouncedSpy();
@@ -1222,7 +1224,10 @@ describe('Android input manager SwiftKey insert-position hint', () => {
 
     const snapshot = editorGetSnapshot(editor);
     expect(snapshot.children).toEqual([
-      { children: [{ text: 'a' }, { bold: true, text: 'w' }] },
+      {
+        children: [{ text: 'a' }, { bold: true, text: 'w' }],
+        type: 'paragraph',
+      },
     ]);
     expect(snapshot.selection).toEqual({
       kind: 'text',
@@ -1235,7 +1240,7 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     vi.useFakeTimers();
 
     const editor = createEditor({
-      initialValue: [{ children: [{ text: '' }] }],
+      initialValue: [paragraph('')],
     });
     const scheduleOnDOMSelectionChange = createDebouncedSpy();
     const onDOMSelectionChange = createDebouncedSpy();

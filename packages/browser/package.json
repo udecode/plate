@@ -55,7 +55,7 @@
     "typecheck": "plate-pkg p:typecheck",
     "test:core": "bun test --preload ../../config/plite-source-test-setup.ts test/core",
     "test:dom": "vitest run --config ./vitest.config.ts --project browser",
-    "test:proof": "bun test --preload ../../config/plite-source-test-setup.ts test/core/release-proof.test.ts test/core/scenario.test.ts",
+    "test:proof": "bun test --preload ../../config/plite-source-test-setup.ts test/core/raw-mobile-proof.test.ts test/core/scenario.test.ts",
     "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts"
   },
   "devDependencies": {

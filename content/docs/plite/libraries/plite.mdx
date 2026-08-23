@@ -156,7 +156,8 @@ Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`,
 `PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, and `TextApi`. These
 namespace objects are frozen; compose or wrap custom helpers instead of
 mutating them.
-Create mapped runtime locations with `editor.anchor` or `tx.anchor`.
+Create persistent mapped locations with `editor.anchor`. Use `tx.anchor` for a
+Path, Point, or Range needed only inside one transaction callback.
 
 Inside a live editor, use `editor.read.<group>.<method>()` and
 `editor.update.<group>.<method>()` for one-shot actions. Use grouped `state.*`

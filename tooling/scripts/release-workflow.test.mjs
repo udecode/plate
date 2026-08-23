@@ -867,12 +867,17 @@ test('package scripts expose CI version and release commands only', async () => 
   );
   assert.equal(
     packageJson.scripts.release,
-    'pnpm build && pnpm plite:release:artifacts && pnpm changeset publish'
+    'pnpm build && pnpm plite:release:packages && pnpm plite:release:proof && pnpm changeset publish'
   );
   assert.equal(
-    packageJson.scripts['plite:release:artifacts'],
+    packageJson.scripts['plite:release:packages'],
     'pnpm plite:packages:build && node tooling/scripts/check-plite-release-artifacts.mjs'
   );
+  assert.equal(
+    packageJson.scripts['plite:release:proof'],
+    'node tooling/scripts/check-plite-release-proof.mjs --from-env'
+  );
+  assert.equal(packageJson.scripts['plite:release:artifacts'], undefined);
   assert.equal(packageJson.scripts['g:release:next'], 'pnpm g:release:beta');
   assert.doesNotMatch(
     Object.values(packageJson.scripts).join('\n'),
@@ -883,6 +888,7 @@ test('package scripts expose CI version and release commands only', async () => 
 
 test('beta package release uses an explicit npm beta tag', async () => {
   const releasePackages = await readFile(releasePackagesPath, 'utf-8');
+  const workflow = await readFile(releaseWorkflowPath, 'utf-8');
 
   assert.equal(resolveReleaseChannel({ argv: [], env: {} }), 'latest');
   assert.equal(
@@ -906,9 +912,10 @@ test('beta package release uses an explicit npm beta tag', async () => {
   });
   assert.deepEqual(getReleasePlan('beta'), {
     build: ['pnpm', ['build']],
+    claimProof: ['pnpm', ['plite:release:proof']],
     hidePreStateForPublish: true,
+    packageProof: ['pnpm', ['plite:release:packages']],
     publish: ['pnpm', ['changeset', 'publish', '--tag', 'beta']],
-    verify: ['pnpm', ['plite:release:artifacts']],
   });
   assert.equal(
     isPublishDisabled({ env: { PLATE_DISABLE_PUBLISH: 'false' } }),
@@ -929,8 +936,30 @@ test('beta package release uses an explicit npm beta tag', async () => {
   );
   assert.match(
     releasePackages,
-    /runCommand\('pnpm', \['plite:release:artifacts'\]\)/
+    /runCommand\('pnpm', \['plite:release:packages'\]\)/
   );
+  assert.match(
+    releasePackages,
+    /runCommand\('pnpm', \['plite:release:proof'\]\)/
+  );
+  assert.match(workflow, /vars\.PLITE_RELEASE_CLAIM_PROFILE/);
+  assert.match(workflow, /vars\.PLITE_RELEASE_PROOF_RUN_ID/);
+  assert.match(workflow, /actions:\s*read/);
+  assert.doesNotMatch(workflow, /validatePliteReleaseProofRun/);
+  assert.doesNotMatch(workflow, /Download Plite release proof bundle/);
+  assert.match(
+    workflow,
+    /PLITE_RELEASE_EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/
+  );
+  assert.match(
+    workflow,
+    /PLITE_RELEASE_PROOF_GITHUB_TOKEN: \$\{\{ github\.token \}\}/
+  );
+  assert.match(
+    workflow,
+    /PLITE_RELEASE_PROOF_RUN_ID: \$\{\{ vars\.PLITE_RELEASE_PROOF_RUN_ID \}\}/
+  );
+  assert.doesNotMatch(workflow, /PLITE_RELEASE_PROOF_MANIFEST/);
 });
 
 test('beta pre-release guard requires active beta pre mode', () => {

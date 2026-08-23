@@ -67,6 +67,11 @@ donor checkout as proof after the transplant.
   become element identity handles; Plate may project their compiled property
   capabilities onto broad elements or text while preserving aliases, prefixes,
   defaults, and exact value domains from Plite descriptors.
+- Pure value predicates must honor the base model type they promise.
+  `ElementApi.isElement` owns editor exclusion, the `children` array, and the
+  required string `type`; `deep: true` additionally checks descendant shape.
+  Structural ancestor checks stay distinct. Schema assertions own complete
+  vocabulary, property, and content-grammar validation.
 - Static portals require a unique literal name and mutually assignable
   descriptor/installed capabilities. Runtime portals require exact installed
   descriptor identity, so a same-name object is not an interchangeable token.
@@ -75,6 +80,10 @@ donor checkout as proof after the transplant.
   Exact extension capabilities come from `editor.extension(Extension)`. Keep
   editor generics only on constructors or hooks whose typed input actually
   correlates with the result.
+- A mounted `Plite` or `PliteRuntime` binds one editor runtime owner. Replacing
+  that owner requires a keyed remount. Root views may change inside the same
+  runtime, but subscription cleanup retires queued work from the prior view
+  before descendants observe the next one.
 - Public generics must correlate with a typed input, installed descriptor, or
   descriptor-owned runtime validator. Update callbacks expose only installed
   transaction groups; commands infer from their descriptors; raw schema
@@ -181,9 +190,11 @@ donor checkout as proof after the transplant.
   exists report failure through `lifecycleErrorSink` and cannot make the
   committed update appear rejected.
 - Overlay architecture is split into Decoration, Annotation, and Widget lanes.
-- Anchors are live editor-scoped handles created through `editor.anchor` or
-  `tx.anchor`. Serialized durable positions are a separate concern; low-level
-  refs are runtime machinery.
+- `editor.anchor` creates a persistent Path, Point, or Range handle that its
+  owner releases. `tx.anchor` creates the same mapped value from draft state,
+  auto-releases it at the transaction boundary, and exposes only `resolve`.
+  Serialized durable positions are a separate concern; low-level tracking is
+  runtime machinery.
 - `NodeKey` is the sole live descendant identity. Resolve it with
   `editor.key`, coherent `state.key`, or active `tx.key`; resolve back through
   `nodes.path`. It covers elements and text, stays editor-local, and never
@@ -213,6 +224,17 @@ donor checkout as proof after the transplant.
 - Do not claim full selection/navigation coverage from one route row.
 - Native mobile, semantic mobile, Playwright mobile viewport, and Appium raw
   device proof are distinct claim classes.
+- Public proof APIs validate untrusted lane evidence and exact source identity.
+  Caller-provided success flags, transport names, and nonempty commit labels are
+  claims, not proof.
+- Package publication and broad release-readiness claims are separate. Package
+  proof may validate packed output alone; an explicit broad claim consumes one
+  authoritative, complete manifest bound to the exact release commit and fails
+  closed on missing, stale, failed, tampered, or non-canonical producer
+  evidence. Repository release tooling verifies the producer run, downloads
+  its one named artifact by ID, checks GitHub's archive digest, binds the live
+  run attempt, rejects dirty source, and owns aggregate claim policy;
+  `@platejs/browser` owns reusable lane-specific validators.
 
 ## Plite Runtime Loop
 

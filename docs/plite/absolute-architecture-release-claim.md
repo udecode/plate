@@ -261,3 +261,20 @@ Private-alpha closure requires these gates at the claim width being made:
 
 Release, publish, PR, and raw-device closure are separate lanes. They are not
 live unless the prompt explicitly asks for them.
+
+Package publication proves packed package and install behavior without
+claiming the broader closure matrix. An explicit `release-ready` claim consumes
+one authoritative manifest whose required lanes, results, environment,
+device/profile identity, artifact digests, and commit all match the exact
+release source. The manifest must come from the successful manual Plite CI run
+that owns the downloaded artifact; matching strings inside a caller-built
+manifest are not authority. The publication command resolves that run from live
+`udecode/plate` Actions metadata, requires exactly one unexpired named artifact,
+downloads it by artifact ID, verifies GitHub's archive digest, binds the
+manifest to the live run attempt, and rejects a declared source SHA that differs
+from a dirty or mismatched checkout. It never accepts a caller-local manifest.
+Repository release tooling owns that aggregate manifest; lane-specific
+validators and runners own the evidence it references.
+The current canonical Plite CI workflow does not emit the bundle. Broad
+release-ready approval therefore remains unavailable until a producer job
+assembles it from successful lane-owned outputs.

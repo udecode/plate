@@ -360,7 +360,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           );
 
           for (const codeLineAnchor of codeLineAnchors) {
-            const path = codeLineAnchor.release();
+            const path = codeLineAnchor.resolve();
             const codeLine = path
               ? tx.nodes.get(path, { type: BaseCodeLinePlugin })
               : undefined;

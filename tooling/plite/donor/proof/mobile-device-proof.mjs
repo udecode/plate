@@ -3,6 +3,7 @@
 // CLI reports proof scope and artifact paths.
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -14,11 +15,17 @@ const artifactPath = resolve(
     'test-results/release-proof/mobile-device-proof.json'
 );
 const rawRequired = process.env.PLITE_BROWSER_RAW_MOBILE_REQUIRED === '1';
+const expectedCommit =
+  process.env.PLITE_RELEASE_EXPECTED_COMMIT?.trim() ||
+  process.env.GITHUB_SHA?.trim() ||
+  execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  }).trim();
 
 const {
   assertPliteRawMobileProof,
-  createBrowserMobileReleaseProofArtifact,
-  validatePliteBrowserReleaseProof,
+  classifyBrowserMobileTransportProof,
   validatePliteRawMobileProof,
 } = await import(
   pathToFileURL(resolve(repoRoot, 'packages/browser/src/core/index.ts')).href
@@ -88,55 +95,42 @@ const verifyReadback = (bundle) => {
 if (rawRequired) {
   const bundle = readArtifacts();
 
-  assertPliteRawMobileProof(bundle);
+  assertPliteRawMobileProof({ bundle, expectedCommit });
   verifyReadback(bundle);
 
   console.log(
     `[plite-browser-mobile-proof] raw direct-Appium matrix and independent artifact readback passed: ${artifactPath}`
   );
 } else {
-  const scopedProxyResult = validatePliteBrowserReleaseProof({
-    artifacts: [
-      createBrowserMobileReleaseProofArtifact({
-        passed: true,
-        scenario: 'agent-browser-ios-proxy',
-        transport: 'agent-browser-ios',
-      }),
-    ],
-    claims: ['ios-safari-device-browser-ime-commit'],
-  });
+  const proxyProof = classifyBrowserMobileTransportProof('agent-browser-ios');
 
-  if (scopedProxyResult.ok) {
+  if (
+    proxyProof.releaseGateCapable ||
+    proxyProof.supportedClaims.includes('device-browser-ime-commit')
+  ) {
     throw new Error(
       'agent-browser iOS proxy evidence was incorrectly accepted as raw iOS Safari IME proof'
     );
   }
 
-  const scopedClipboardResult = validatePliteBrowserReleaseProof({
-    artifacts: [
-      createBrowserMobileReleaseProofArtifact({
-        passed: true,
-        scenario: 'appium-android-text-input',
-        transport: 'appium-android',
-      }),
-      createBrowserMobileReleaseProofArtifact({
-        passed: true,
-        scenario: 'appium-ios-text-input',
-        transport: 'appium-ios',
-      }),
-    ],
-    claims: ['native-mobile-clipboard'],
-  });
+  const directProof = [
+    classifyBrowserMobileTransportProof('appium-android'),
+    classifyBrowserMobileTransportProof('appium-ios'),
+  ];
 
-  if (scopedClipboardResult.ok) {
+  if (
+    directProof.some((proof) =>
+      proof.supportedClaims.includes('native-mobile-clipboard')
+    )
+  ) {
     throw new Error(
       'device text-input descriptors were incorrectly accepted as native mobile clipboard proof'
     );
   }
 
   const incompleteRawResult = validatePliteRawMobileProof({
-    receipts: [],
-    schemaVersion: 1,
+    bundle: { receipts: [], schemaVersion: 1 },
+    expectedCommit,
   });
 
   if (incompleteRawResult.ok) {
@@ -144,7 +138,7 @@ if (rawRequired) {
   }
 
   console.log(
-    '[plite-browser-mobile-proof] scoped release proof passed: semantic/proxy rows and incomplete receipts cannot satisfy raw mobile claims'
+    '[plite-browser-mobile-proof] scoped proof classification passed: proxy transports and incomplete receipts cannot satisfy raw mobile claims'
   );
   console.log(
     `[plite-browser-mobile-proof] set PLITE_BROWSER_RAW_MOBILE_REQUIRED=1 and provide ${artifactPath} to prove raw Android/iOS device claims`

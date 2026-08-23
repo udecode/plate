@@ -1,5 +1,6 @@
 import type { Path } from './path';
 import { PathApi } from './path';
+import type { Point } from './point';
 import { PointApi } from './point';
 import type { Range } from './range';
 
@@ -34,6 +35,35 @@ export type EditorSelection = NodeSelection | TextSelection;
 export type Selection<
   TSelection extends SelectionValue = SelectionValue,
 > = TSelection | null;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const hasOnlyKeys = (
+  value: Record<string, unknown>,
+  keys: readonly string[]
+) => {
+  const keySet = new Set(keys);
+
+  return Object.keys(value).every((key) => keySet.has(key));
+};
+
+const isStrictPath = (value: unknown): value is Path =>
+  Array.isArray(value) &&
+  value.every(
+    (segment) => Number.isSafeInteger(segment) && (segment as number) >= 0
+  );
+
+const isStrictPoint = (value: unknown): value is Point =>
+  isRecord(value) &&
+  hasOnlyKeys(value, ['offset', 'path', 'root']) &&
+  Number.isSafeInteger(value.offset) &&
+  (value.offset as number) >= 0 &&
+  isStrictPath(value.path) &&
+  (value.root === undefined || typeof value.root === 'string');
+
+const isMarks = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  isRecord(value);
 
 const equalValue = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true;
@@ -74,22 +104,41 @@ export const SelectionApi = Object.freeze({
   },
   isNode(value: unknown): value is NodeSelection {
     return (
-      SelectionApi.isSelection(value) &&
+      isRecord(value) &&
+      hasOnlyKeys(value, ['anchor', 'focus', 'kind', 'path']) &&
       value.kind === 'node' &&
-      PathApi.isPath((value as { path?: unknown }).path)
+      isStrictPoint(value.anchor) &&
+      isStrictPoint(value.focus) &&
+      isStrictPath(value.path)
     );
   },
   isSelection(value: unknown): value is SelectionValue {
+    if (!isRecord(value)) return false;
+
     return (
-      typeof value === 'object' &&
-      value !== null &&
-      typeof (value as { kind?: unknown }).kind === 'string' &&
-      PointApi.isPoint((value as { anchor?: unknown }).anchor) &&
-      PointApi.isPoint((value as { focus?: unknown }).focus)
+      typeof value.kind === 'string' &&
+      PointApi.isPoint(value.anchor) &&
+      PointApi.isPoint(value.focus) &&
+      (value.affinity === undefined ||
+        value.affinity === 'backward' ||
+        value.affinity === 'forward') &&
+      (value.marks === undefined || isMarks(value.marks)) &&
+      (value.path === undefined || PathApi.isPath(value.path))
     );
   },
   isText(value: unknown): value is TextSelection {
-    return SelectionApi.isSelection(value) && value.kind === 'text';
+    return (
+      isRecord(value) &&
+      hasOnlyKeys(value, ['affinity', 'anchor', 'focus', 'kind', 'marks']) &&
+      value.kind === 'text' &&
+      isStrictPoint(value.anchor) &&
+      isStrictPoint(value.focus) &&
+      (value.affinity === undefined ||
+        value.affinity === 'backward' ||
+        value.affinity === 'forward') &&
+      (value.marks === undefined || isMarks(value.marks)) &&
+      (value.marks === undefined || PointApi.equals(value.anchor, value.focus))
+    );
   },
   node(path: Path, range: Range): NodeSelection {
     return {

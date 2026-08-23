@@ -151,15 +151,16 @@ export function useEditorSelector<T>(
     return unsubscribe;
   }, [
     addEventListener,
-    update,
-    updateFromCommit,
     deferred,
-    profileId,
-    runtimeEventSource,
+    editor,
+    includeRootOrderChanges,
     nodeKey,
     nodeKeys,
-    includeRootOrderChanges,
+    profileId,
+    runtimeEventSource,
     shouldUpdateWithEditor,
+    update,
+    updateFromCommit,
   ]);
 
   return selectedState;

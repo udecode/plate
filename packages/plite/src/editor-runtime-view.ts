@@ -731,6 +731,7 @@ const withViewTransaction = <V extends Value>(
           state.selection.isAtBlockStart(options),
         isCollapsed: () => state.selection.isCollapsed(),
         isExpanded: () => state.selection.isExpanded(),
+        isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
         isWithinText: (options?: EditorSelectionTargetOptions) =>

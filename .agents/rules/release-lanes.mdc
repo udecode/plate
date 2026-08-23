@@ -49,6 +49,59 @@ complete only when the requested lane state is true and the template gates pass.
 - Patch changes may target `main`; use `next` patch changes only for active
   beta-lane fixes or direct-sync beta metadata.
 
+## Plite Release Claims
+
+Package publication runs `pnpm plite:release:packages` and does not imply broad
+Plite behavior readiness. When repository release input selects
+`PLITE_RELEASE_CLAIM_PROFILE=release-ready`, `pnpm plite:release:proof` must
+resolve the run named by `PLITE_RELEASE_PROOF_RUN_ID` from live GitHub Actions
+metadata. That run must be a successful manual
+`.github/workflows/plite-ci.yml` run in the same repository at the exact release
+SHA. The verifier requires exactly one unexpired `plite-release-proof`
+artifact, downloads it by GitHub artifact ID, verifies GitHub's SHA-256 archive
+digest, requires the manifest's run attempt to match the live run attempt, and
+reads no caller-local manifest. It also rejects tracked or untracked checkout
+changes before accepting the source claim. Missing, stale, incomplete, failed,
+tampered, dirty, or non-canonical evidence blocks that explicit claim. Do not
+infer broad readiness from source tests, historical artifacts, or package
+proof, and do not select the profile without that authoritative producer run.
+
+The current Plite CI workflow does not emit `plite-release-proof`, so the broad
+profile is unavailable. A future producer job must build the manifest from
+lane-owned outputs after those jobs pass; accepting an operator-supplied
+manifest would recreate the fake authority this gate rejects.
+
+The profile and run ID are repository-wide release inputs. Change them only
+when the user explicitly authorizes a broad release-ready claim. Preflight the
+producer from a clean checkout at the exact release SHA before setting them.
+The verifier reads and downloads from live `udecode/plate` Actions data and
+requires an Actions-read token even outside the release workflow:
+
+```bash
+gh run view <run-id> --json headSha,conclusion,event,workflowName,url
+PLITE_RELEASE_PROOF_GITHUB_TOKEN="$(gh auth token)" \
+  node tooling/scripts/check-plite-release-proof.mjs \
+  --profile release-ready \
+  --expected-commit <release-sha> \
+  --producer-run-id <run-id>
+```
+
+Then set both inputs before the target release begins:
+
+```bash
+gh variable set PLITE_RELEASE_CLAIM_PROFILE --body release-ready
+gh variable set PLITE_RELEASE_PROOF_RUN_ID --body <run-id>
+```
+
+After the target release finishes or fails, clear both inputs and read them
+back. Do not leave a broad claim armed for the next push:
+
+```bash
+gh variable delete PLITE_RELEASE_CLAIM_PROFILE
+gh variable delete PLITE_RELEASE_PROOF_RUN_ID
+gh variable list
+```
+
 ## Modes
 
 ### Status

@@ -58,6 +58,7 @@ import {
   PliteRuntimeContext,
   type PliteRuntimeValue,
   unregisterContentRootOwnerViewEditor,
+  useMountedEditorRuntimeOwner,
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import { useRuntimeFocusState } from '../hooks/use-runtime-focus-state';
@@ -244,6 +245,7 @@ export type PliteProps<
   TExtensions extends readonly unknown[] = readonly unknown[],
   TRoot extends RootKey = RootKey,
 > = {
+  /** Editor runtime owned for this provider's mounted lifetime. */
   editor?: ReactEditorType<V, TExtensions>;
   annotationStore?: PliteAnnotationStore<any, any> | null;
   children: React.ReactNode;
@@ -254,12 +256,15 @@ export type PliteProps<
   ) => void;
   onValueChange?: (context: PliteValueChangeContext<V, TExtensions>) => void;
   readOnly?: boolean;
+  /** Named root view within the mounted editor runtime. */
   root?: NamedRootKey<TRoot>;
 };
 
 /**
- * A wrapper around the provider to publish committed editor snapshots, because
- * the editor is a mutable singleton.
+ * Provide one mounted editor runtime to React descendants.
+ *
+ * Remount this provider with a different React key before replacing its editor
+ * runtime. Named root views may change within the same runtime.
  */
 
 export const Plite = <
@@ -270,6 +275,11 @@ export const Plite = <
   props: PliteProps<V, TExtensions, TRoot>
 ) => {
   const runtimeContext = useOptionalPliteRuntimeContext();
+
+  useMountedEditorRuntimeOwner(
+    'Plite',
+    props.editor ?? runtimeContext?.runtime.editor
+  );
 
   if (props.root === 'main') {
     throw new Error('[Plite] Omit root to render the primary document.');

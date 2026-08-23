@@ -8,6 +8,7 @@ import {
 } from '../../src/core';
 
 const hash = 'a'.repeat(64);
+const commit = 'b'.repeat(40);
 
 const receipt = (
   platform: 'android-chrome' | 'ios-safari',
@@ -20,7 +21,7 @@ const receipt = (
     name: platform === 'android-chrome' ? 'Chrome' : 'Safari',
     version: '1',
   },
-  build: { appUrl: 'https://device.example/mobile-lab', commit: 'abc123' },
+  build: { appUrl: 'https://device.example/mobile-lab', commit },
   capturedAt: '2026-08-01T12:00:00.000Z',
   device: {
     model: 'Device model',
@@ -59,33 +60,83 @@ const completeBundle = () => ({
 
 describe('raw mobile proof receipts', () => {
   test('accepts the complete direct-Appium Android and iOS matrix', () => {
-    expect(validatePliteRawMobileProof(completeBundle())).toEqual({
+    expect(
+      validatePliteRawMobileProof({
+        bundle: completeBundle(),
+        expectedCommit: commit,
+      })
+    ).toEqual({
       issues: [],
       ok: true,
     });
-    expect(() => assertPliteRawMobileProof(completeBundle())).not.toThrow();
+    expect(() =>
+      assertPliteRawMobileProof({
+        bundle: completeBundle(),
+        expectedCommit: commit,
+      })
+    ).not.toThrow();
+  });
+
+  test('rejects receipts captured from a different commit', () => {
+    const bundle = completeBundle();
+    bundle.receipts[0] = {
+      ...bundle.receipts[0],
+      build: {
+        ...bundle.receipts[0].build,
+        commit: 'c'.repeat(40),
+      },
+    };
+
+    const result = validatePliteRawMobileProof({
+      bundle,
+      expectedCommit: commit,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.issues[0]).toContain('was captured from commit');
+  });
+
+  test('decodes untrusted bundles without throwing', () => {
+    for (const bundle of [null, {}, { receipts: [], schemaVersion: 0 }]) {
+      expect(() =>
+        validatePliteRawMobileProof({ bundle, expectedCommit: commit })
+      ).not.toThrow();
+      expect(
+        validatePliteRawMobileProof({ bundle, expectedCommit: commit }).ok
+      ).toBe(false);
+    }
+
+    expect(
+      validatePliteRawMobileProof({
+        bundle: completeBundle(),
+        expectedCommit: 'not-a-commit',
+      }).issues
+    ).toEqual(['expectedCommit must be a 40-character Git commit']);
   });
 
   test('fails closed for missing, proxy, divergent, and duplicate receipts', () => {
     const bundle = completeBundle();
     const [first] = bundle.receipts;
     const result = validatePliteRawMobileProof({
-      ...bundle,
-      receipts: [
-        {
-          ...first,
-          directAppium: false,
-          snapshots: [
-            {
-              ...first.snapshots[0],
-              domText: 'diverged',
-              updateCount: 9,
-            },
-          ],
-          transport: 'agent-browser-ios',
-        } as unknown as PliteRawMobileReceipt,
-        first,
-      ],
+      bundle: {
+        ...bundle,
+        receipts: [
+          {
+            ...first,
+            directAppium: false,
+            snapshots: [
+              {
+                ...first.snapshots[0],
+                domText: 'diverged',
+                updateCount: 9,
+              },
+            ],
+            transport: 'agent-browser-ios',
+          } as unknown as PliteRawMobileReceipt,
+          first,
+        ],
+      },
+      expectedCommit: commit,
     });
 
     expect(result.ok).toBe(false);

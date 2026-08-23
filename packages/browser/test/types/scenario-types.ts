@@ -5,7 +5,6 @@ import type {
   EditableKernelTraceEntry,
 } from '../../../plite-react/src/editable/editing-kernel';
 import type { EditableRepairRequest } from '../../../plite-react/src/editable/mutation-controller';
-import type { PliteBrowserReleaseProofArtifact } from '../../src/core';
 import type {
   PliteBrowserKernelCommand,
   PliteBrowserKernelCommandDefinition,
@@ -16,7 +15,6 @@ import type {
   PliteBrowserScenarioStep,
   PliteBrowserSelectionContractExpectation,
   RenderedDOMShapeExpectation,
-  PliteBrowserImperativeScenarioResult,
 } from '../../src/playwright';
 
 type Equal<Left, Right> =
@@ -91,19 +89,6 @@ const contradictoryCount: PliteBrowserScenarioStep = {
   selector: '[data-editor]',
 };
 
-const imperativeScenario = {
-  kind: 'imperative-scenario',
-  name: 'experiment',
-  reducible: false,
-  releaseGateCapable: false,
-  replayable: false,
-  steps: [],
-} satisfies PliteBrowserImperativeScenarioResult;
-
-// @ts-expect-error imperative experiments cannot satisfy release proof
-const imperativeReleaseProof: PliteBrowserReleaseProofArtifact =
-  imperativeScenario;
-
 // @ts-expect-error false does not assert that a selection is non-empty
 const emptyWindowSelection: PliteBrowserScenarioStep = {
   kind: 'assertWindowSelectionText',
@@ -173,6 +158,5 @@ void [
   contradictoryRenderBudget,
   emptySelectionContract,
   emptyWindowSelection,
-  imperativeReleaseProof,
   validRenderBudgets,
 ];

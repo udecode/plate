@@ -23,6 +23,8 @@
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
 - Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks. Infer custom selection payloads only from the descriptors installed on each concrete editor, and keep the complete payload invariant even when two descriptors reuse the same `kind`; no global selection-kind augmentation exists.
+- Validate unknown selection values with strict built-in predicates or the installed editor selection protocol through `editor.read.selection.isValid(value)`
+- Track persistent Path, Point, and Range values with `editor.anchor`; use auto-released `tx.anchor` handles for locations needed only inside one update or transaction builder
 - Default bare public editor, read, update, transaction, and view types to the core-only extension tuple. Use the explicit internal `AnyEditor` boundary when runtime infrastructure intentionally erases installed capabilities.
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
 - Build extension read method trees once per published configuration, keep their methods live across document commits and transaction drafts, and reject document-derived read data properties
@@ -60,6 +62,7 @@
 - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
 - Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
 - Freeze pure descriptor namespaces and preserve exact custom property values and defaults from inline `validate` predicates paired with a positive-integer `validationVersion`
+- Reject values without a string `type` from `ElementApi.isElement` and transitive `NodeApi` predicates
 - Address compiled element and property identity through nominal `SchemaElementHandle` and `SchemaPropertyHandle` values. Property handles retain persisted key, placement, compiled id, and inferred value type.
 - Compile deterministic closed-application overrides before relationships. Element type, content, groups, and property targets may change; ambiguous overrides reject instead of using source order.
 - Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.

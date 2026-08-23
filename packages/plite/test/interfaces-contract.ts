@@ -123,6 +123,38 @@ describe('plite interfaces contract', () => {
     );
   });
 
+  it('rejects values outside the public selection types', () => {
+    const point = { offset: 0, path: [0, 0] };
+
+    for (const value of [
+      {
+        affinity: 'sideways',
+        anchor: point,
+        focus: point,
+        kind: 'text',
+      },
+      {
+        anchor: point,
+        focus: point,
+        kind: 'text',
+        marks: 42,
+      },
+    ]) {
+      assert.equal(SelectionApi.isSelection(value), false);
+      assert.equal(SelectionApi.isText(value), false);
+    }
+
+    assert.equal(
+      SelectionApi.isText({
+        anchor: point,
+        focus: { ...point, offset: 1 },
+        kind: 'text',
+        marks: { bold: true },
+      }),
+      false
+    );
+  });
+
   it('normalizes range edges and intersections by document order', () => {
     const backwardRange = {
       kind: 'text',

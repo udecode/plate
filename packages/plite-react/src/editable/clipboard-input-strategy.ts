@@ -843,7 +843,7 @@ export const applyEditableDrop = ({
         tx.text.delete({ at: draggedRange });
       }
 
-      const dropRange = dropAnchor.release();
+      const dropRange = dropAnchor.resolve();
 
       if (!dropRange) return;
 

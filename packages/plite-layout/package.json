@@ -71,5 +71,16 @@
     "@platejs/plite-react": ">=54.0.0-beta.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@platejs/plite-react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   }
 }

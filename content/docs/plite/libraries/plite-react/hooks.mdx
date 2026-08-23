@@ -171,6 +171,9 @@ Prefer `usePliteRootEditor(root)` when UI knows its root. Use
 Create a React runtime value, or read the nearest runtime from `PliteRuntime`.
 Most app code should use `Plite` directly.
 
+One mounted `PliteRuntime` owns one editor runtime. Remount the provider with a
+different React key before supplying a different editor runtime.
+
 #### `usePliteRuntimeState<T>(selector, options?): T`
 
 Subscribe to whole-runtime editor state. The selector runs in a read boundary and

@@ -247,6 +247,7 @@ export type PliteRuntimeProps<
   TExtensions extends readonly unknown[] = readonly [],
 > = {
   children: ReactNode;
+  /** Runtime owned for this provider's mounted lifetime. */
   runtime: PliteRuntimeValue<V, TExtensions>;
 };
 
@@ -419,12 +420,15 @@ export function useRequiredPliteRuntimeContext() {
  *
  * The provider owns selector delivery, root editor registration, focus state,
  * view effects, and active-root/editor resolution for descendant surfaces.
+ * Remount it with a different React key before replacing the runtime owner.
  */
 export function PliteRuntime<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
 >(props: PliteRuntimeProps<V, TExtensions>) {
   const parent = useOptionalPliteRuntimeContext();
+
+  useMountedEditorRuntimeOwner('PliteRuntime', props.runtime.editor);
 
   if (
     parent &&
@@ -436,6 +440,20 @@ export function PliteRuntime<
 
   return <OwnedPliteRuntime {...props} />;
 }
+
+export const useMountedEditorRuntimeOwner = (
+  component: 'Plite' | 'PliteRuntime',
+  editor: Parameters<typeof getEditorRuntimeOwner>[0] | undefined
+) => {
+  const owner = editor ? getEditorRuntimeOwner(editor) : null;
+  const [mountedOwner] = useState(() => owner);
+
+  if (mountedOwner !== owner) {
+    throw new Error(
+      `[${component}] Cannot replace the editor runtime of a mounted provider. Remount <${component}> with a different React key.`
+    );
+  }
+};
 
 function OwnedPliteRuntime<
   V extends Value = Value,

@@ -14,7 +14,7 @@ import {
   type EditorCommand,
   type EditorExtensionDefinitionInput,
   type EditorExtensionReference,
-  type EditorTransactionDraftRef,
+  type EditorTransactionAnchor,
   type Point,
   property,
   SelectionApi,
@@ -1408,12 +1408,12 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(runtime.read.selection(), selection);
   });
 
-  it('maps build-scoped refs through draft changes and expires them', () => {
-    let leakedRef: EditorTransactionDraftRef<Point> | undefined;
+  it('maps build-scoped anchors through draft changes and expires them', () => {
+    let leakedRef: EditorTransactionAnchor<Point> | undefined;
     const insertBeforeTarget = defineCommand('test.insert-before-target', {
       build: ({ state }) =>
         state.transaction((tx) => {
-          const target = tx.refs.point(
+          const target = tx.anchor(
             { offset: 2, path: [0, 0] },
             { association: 'forward', deletion: 'nearest' }
           );

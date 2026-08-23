@@ -57,6 +57,10 @@ standard:
 - Runtime verbs are `schema.create`, `schema.assertDocument`,
   `schema.assertFragment`, and `schema.isMarkableVoid`. Assertions accept
   `unknown` and narrow it.
+- A public predicate over `unknown` validates every required base field of its
+  promised narrowed type. A weaker structural candidate check must have a
+  distinct contract. Schema assertions retain complete vocabulary, property,
+  and content-grammar validation.
 - Raw Plite schema handles use `schema.handle.*`. Plate plugin callers pass the
   descriptor directly to `create`, `allowsElementType`, and
   `isElementTypeInGroup`; Plate does not add a second handle form.

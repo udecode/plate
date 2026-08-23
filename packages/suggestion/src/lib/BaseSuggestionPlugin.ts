@@ -1132,7 +1132,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         const { id, createdAt } =
           tx.suggestion.findIdentity({ at: from, type: 'remove' }) ??
           api.createIdentity();
-        const toRef = tx.refs.point(to, {
+        const toRef = tx.anchor(to, {
           association: 'forward',
           deletion: 'nearest',
         });

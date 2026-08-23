@@ -19,7 +19,7 @@ The package is subpath-only. Import exactly the layer you need:
 - `@platejs/browser/core`
   - pure selection helpers: `serializePoint`, `serializeRange`, `isCollapsed`
   - IME and placeholder proof classifiers: `evaluateImeInput`, `evaluatePlaceholderInput`
-  - release-proof helpers: `assertPliteBrowserReleaseProof`, `validatePliteBrowserReleaseProof`, `createReleaseDisciplineProofArtifact`, `createBrowserMobileReleaseProofArtifact`, `createPersistentBrowserSoakProofArtifact`
+  - raw-mobile receipt validation: `assertPliteRawMobileProof`, `validatePliteRawMobileProof`, `PLITE_RAW_MOBILE_SCENARIOS`
   - first-party parity contracts: `assertPliteBrowserFirstPartyParityContracts`
   - feature proof contracts: `definePliteBrowserFeatureContract`, `createPliteBrowserFeatureContractRegistry`
   - debug snapshot parsers for agent-browser and Appium proof artifacts
@@ -62,6 +62,7 @@ The package is subpath-only. Import exactly the layer you need:
 - `@platejs/browser/playwright` owns browser tests. It may depend on Playwright types and test fixtures.
 - `@platejs/browser/core` and `@platejs/browser/browser` stay small enough for pure assertions, capability classifiers, and DOM snapshots.
 - Raw-device identity belongs to the executable device runner. Automated device-browser input or IME proof closes only when that gate runs and records the resolved device, OS, and capability scope. Proxy browser evidence does not claim native mobile clipboard, human soft-keyboard, glide typing, or voice input proof.
+- The public package validates raw receipt structure and exact build identity. Repository release profiles, aggregate lane policy, artifact acquisition, and filesystem digest readback stay in release tooling.
 
 ## Raw Mobile Device Proof
 
@@ -73,7 +74,7 @@ bun test:mobile-device-proof:raw
 
 The runner reads `test-results/release-proof/mobile-device-proof.json`. The schema requires one receipt for every scenario on both platforms: tap, double tap, long press, forward and backward selection handles, cross-inline and cross-block selection, selection auto-scroll, collapsed and expanded swipes, inline-void boundaries, Enter, Backspace, autocapitalization, composition/IME, and native clipboard.
 
-Every receipt records real device, OS, browser, build, replay steps, native and semantic selection, model and DOM text, semantic update count, event trace, screenshots, video, and SHA-256 digests. The command independently reads every artifact back and verifies its digest. An incomplete matrix, viewport emulation, agent-browser proxy, or Appium descriptor without those artifacts fails closed and proves no raw-mobile claim.
+Every receipt records real device, OS, browser, the exact expected source commit, replay steps, native and semantic selection, model and DOM text, semantic update count, event trace, screenshots, video, and SHA-256 digests. The command independently reads every artifact back and verifies its digest. An incomplete matrix, stale commit, viewport emulation, agent-browser proxy, or Appium descriptor without those artifacts fails closed and proves no raw-mobile claim.
 
 ## First Playwright Test
 

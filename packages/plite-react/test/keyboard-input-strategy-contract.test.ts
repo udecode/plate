@@ -997,7 +997,7 @@ describe('keyboard input strategy', () => {
 
   it('applies model-owned keydown commands without a public onCommand hook', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'test' }] }],
+      initialValue: [paragraph('test')],
     }) as ReactEditorType;
     const event = reactKeyEvent(keyEvent('Enter'));
     const hasEditableTarget = vi
@@ -1035,7 +1035,7 @@ describe('keyboard input strategy', () => {
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
-      initialValue: [{ children: [{ text: 'test' }] }],
+      initialValue: [paragraph('test')],
     }) as ReactEditorType;
 
     editor.update.text.insert('!');
@@ -1080,7 +1080,7 @@ describe('keyboard input strategy', () => {
 
   it('keeps Enter during active composition browser-owned', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'test' }] }],
+      initialValue: [paragraph('test')],
     }) as ReactEditorType;
     const event = reactKeyEvent({
       ...keyEvent('Enter'),
@@ -1113,7 +1113,7 @@ describe('keyboard input strategy', () => {
       expect(onKeyDown).not.toHaveBeenCalled();
       expect(event.preventDefault).not.toHaveBeenCalled();
       expect(editor.read((state) => state.children())).toEqual([
-        { children: [{ text: 'test' }] },
+        paragraph('test'),
       ]);
     } finally {
       hasEditableTarget.mockRestore();
@@ -1367,7 +1367,7 @@ describe('keyboard input strategy', () => {
 
   it('runs raw keydown before model fallback', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'test' }] }],
+      initialValue: [paragraph('test')],
     }) as ReactEditorType;
     const event = reactKeyEvent(keyEvent('Tab'));
     const onKeyDown = vi.fn(() => true);
@@ -1408,9 +1408,9 @@ describe('keyboard input strategy', () => {
         focus: { path: [0, 0], offset: 0, root: 'caption' },
       },
       initialValue: {
-        children: [{ children: [{ text: 'main' }] }],
+        children: [paragraph('main')],
         roots: {
-          caption: [{ children: [{ text: 'caption' }] }],
+          caption: [paragraph('caption')],
         },
       },
     }) as ReactEditorType;

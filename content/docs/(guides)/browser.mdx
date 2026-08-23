@@ -16,8 +16,8 @@ npm install -D @platejs/browser @playwright/test
 The package is subpath-only:
 
 - `@platejs/browser/playwright` for Playwright editor harnesses.
-- `@platejs/browser/core` for pure proof contracts, release-proof artifacts,
-  capability classifiers, and selection serialization helpers.
+- `@platejs/browser/core` for pure proof contracts, raw-mobile receipt
+  validation, capability classifiers, and selection serialization helpers.
 - `@platejs/browser/browser` for DOM selection snapshots and zero-width
   placeholder inspection in browser-capable test environments.
 
@@ -97,7 +97,7 @@ spreading selectors through tests.
 ## Replayable And Imperative Scenarios
 
 Canonical scenarios contain serializable steps. They can be replayed, reduced,
-and attached to release proof.
+and attached as evidence to repository-owned release proof.
 
 Use `scenario.runImperative(...)` only when browser work cannot be represented
 by the canonical step union. The imperative lane preserves one trace for
@@ -124,8 +124,9 @@ browser events, model and DOM state, model and native selections, commit and
 kernel traces, viewport facts, user agent, language, and touch metadata.
 
 The route is an evidence collector. Its JSON explicitly does not certify a
-raw-device claim. A release proof still needs the real-device runner and its
-device/OS receipt.
+raw-device claim. A raw-device or broad release-ready claim needs the
+real-device runner, device/OS receipts, and evidence bound to the exact source
+commit.
 
 ## Commands
 

@@ -402,15 +402,15 @@ export default defineConfig({
     'typescript/no-explicit-any': 'off',
     // [P0 wrong-owner] Plate's deliberate existential any contracts propagate through heterogeneous editor, plugin, schema, and adapter APIs; these rules report every typed consumer rather than the declaration or runtime-validation boundary that owns safety, so enforcement produces casts and suppressions without recovering evidence.
     'typescript/no-unsafe-argument': 'off',
-    // [P0 wrong-owner] Assignments from existential editor and plugin contracts inherit deliberate erasure from their declaration; forcing consumer casts only launders the same value.
+    // [P0 re-enable-rejected] Assignments inherit deliberate existential erasure from editor and plugin declarations; re-enable only after those registries retain concrete generic evidence end to end, because consumer casts merely launder the same value.
     'typescript/no-unsafe-assignment': 'off',
     // [P0 wrong-owner] Heterogeneous callback registries intentionally erase callable signatures after registration-time validation; this rule reports invocation sites that cannot recover the erased generic.
     'typescript/no-unsafe-call': 'off',
     // [P0 wrong-owner] Runtime-checked plugin and adapter portals expose heterogeneous members after the owning boundary validates their shape; consumer assertions would duplicate neither validation nor evidence.
     'typescript/no-unsafe-member-access': 'off',
-    // [P0 wrong-owner] Framework adapters preserve caller-defined generic returns across type-erased registries; wrapper annotations would falsely narrow or cast those values instead of making them safer.
+    // [P0 re-enable-rejected] Framework adapters preserve caller-defined returns across type-erased registries; re-enable only after the registry owner retains that generic evidence, because return-site annotations or casts falsely narrow the value.
     'typescript/no-unsafe-return': 'off',
-    // [P0 type-system-conflict] Plate's public subtype-return hooks, generic type guards, phantom capability carriers, and exact-type equality encoding use a parameter once syntactically but preserve downstream inference or variance; enforcement would break contracts or require pervasive suppressions and fake type uses.
+    // [P0 re-enable-rejected] Public subtype-return hooks, type guards, phantom capability carriers, and exact-type encodings use parameters once syntactically while preserving inference or variance; re-enable only when the rule can model those contracts without fake type uses or broken APIs.
     'typescript/no-unnecessary-type-parameters': 'off',
     // [P0 false-positive] Every current report already has real teardown through a returned unsubscribe, a cleared timer set, a destroyed subscription owner, or an unmount cleanup ref; the heuristic cannot follow those cleanup contracts and would require duplicate teardown or suppressions.
     'react-doctor/effect-needs-cleanup': 'off',
@@ -424,7 +424,7 @@ export default defineConfig({
       'error',
       { allowDeclarations: true, allowDefinitionFiles: true },
     ],
-    // [P1 robustness] Defensive checks protect against external data that violates declared types.
+    // [P0 re-enable-rejected] The rule rejects runtime validation of raw receipts, nullable DOM values, compatibility inputs, and published JavaScript callers whose values can violate declarations; re-enable only after those boundaries model untrusted input separately, because deleting the checks weakens runtime safety.
     'typescript/no-unnecessary-condition': 'off',
     'typescript/restrict-template-expressions': [
       'error',
@@ -457,7 +457,7 @@ export default defineConfig({
     'typescript/require-await': 'error',
     // [P0 counterproductive] Returning an existing promise avoids an unnecessary async wrapper.
     'typescript/promise-function-async': 'off',
-    // [P0 counterproductive] Narrowed domain values make idiomatic truthiness safe; this rule adds coercion noise.
+    // [P0 re-enable-rejected] Plate deliberately uses false/object sentinels and collapses absent and empty domain values; re-enable only after those contracts disappear, because explicit coercions add syntax without recovering type or runtime evidence.
     'typescript/strict-boolean-expressions': 'off',
     // [P0 conflict] TypeScript intentionally accepts value-returning callbacks where void is expected.
     'typescript/strict-void-return': 'off',
@@ -487,8 +487,6 @@ export default defineConfig({
     'unicorn/no-object-as-default-parameter': 'off',
     // [P1 valid-pattern] A numeric Array constructor intentionally creates sparse or fixed-size indexed storage; alternatives allocate or change hole semantics.
     'unicorn/no-new-array': 'off',
-    // [P0 conflict] Static-only classes can intentionally express a constructless namespace or dependency-injection contract.
-    'unicorn/no-static-only-class': 'off',
     // [P1 valid-pattern] Explicit undefined can preserve tuple positions, object shape, and API intent.
     'unicorn/no-useless-undefined': 'off',
     // [P0 formatter-conflict] Oxlint fixes nested ternaries by adding parentheses that Oxfmt canonically removes, so the rule cannot reach an idempotent formatted state.
@@ -551,7 +549,7 @@ export default defineConfig({
     'typescript/no-invalid-void-type': 'off',
     // [P1 valid-pattern] Modern module-scoped declarations may intentionally close over branch-local state; moving them outward widens mutable ownership without fixing a runtime hazard.
     'no-inner-declarations': 'off',
-    // [P0 architecture-conflict] Direct cycles span generated public barrels, the editor transaction hub and its operations, mutually recursive Markdown traversal, and self-referential plugin hooks/components; the rule reports participants instead of an owning defect, while enforcement requires architecture rewrites or a suppression carpet.
+    // [P0 re-enable-rejected] Even a type-ignored depth-one trial rejects intentional recursive Markdown and self-referential plugin/component owners, while the rule has no structural allowlist; re-enable only after those owners remove the cycles or the rule can exempt them without exact-file suppressions.
     'import/no-cycle': 'off',
     // [P0 generated-owner] Repository barrels are generated by barrelsby, which cannot classify type-only exports; manual rewrites are regenerated while TypeScript already verifies the export graph.
     'typescript/consistent-type-exports': 'off',
@@ -575,8 +573,6 @@ export default defineConfig({
     'react/state-in-constructor': 'off',
     // [P0 semantic-change] Removing a spread can share object or array identity with later mutation even when the syntax-only rule calls the copy useless.
     'unicorn/no-useless-spread': 'off',
-    // [P1 valid-pattern] Assigning this to an owned variable is a legitimate callback or constructor-double bridge, not a correctness defect.
-    'unicorn/no-this-assignment': 'off',
     // [P0 false-positive] This syntax rule mistakes domain methods named slice for built-in Array or String slicing, where a negative index would change the input contract.
     'unicorn/prefer-negative-index': 'off',
     // [P0 false-positive] This syntax rule mistakes arbitrary callbacks or methods named match for RegExp matching and recommends an unrelated API.

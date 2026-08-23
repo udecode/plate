@@ -3,10 +3,11 @@ title: "Anchor API"
 description: "Root-aware live paths, points, and ranges mapped by canonical document changes."
 ---
 
-An anchor keeps a path, point, or range mapped across committed
-`DocumentChange` values.
+An anchor keeps a path, point, or range mapped through canonical
+`DocumentChange` values. Choose its API by lifetime: `editor.anchor` is
+persistent, while `tx.anchor` is limited to one transaction callback.
 
-## Create an anchor
+## Persistent Anchors
 
 #### `editor.anchor(value, options) => Anchor`
 
@@ -30,7 +31,7 @@ Paths and points accept `"backward"` or `"forward"` association. Ranges also
 accept `"inward"` and `"outward"`. Pass `root` for a rootless value that belongs
 to a named document root.
 
-## Resolve and release
+Persistent anchors remain active across commits until `release()` is called.
 
 ```typescript
 const current = target.resolve();
@@ -40,6 +41,35 @@ const finalValue = target.release();
 `resolve()` returns the current mapped value without ending tracking.
 `release()` returns the current value and permanently detaches the anchor.
 Both return `null` after a dropped target or release.
+
+Use persistent anchors for application-owned runtime state such as local
+annotations. Release them when their owner is removed.
+
+## Transaction Anchors
+
+#### `tx.anchor(value, options) => EditorTransactionAnchor`
+
+Transaction anchors track a location only while the update or detached
+transaction builder is active.
+
+```typescript
+editor.update((tx) => {
+  const target = tx.anchor(range, {
+    association: "inward",
+    deletion: "nearest",
+  });
+
+  tx.text.delete({ at: range });
+
+  const mapped = target.resolve();
+
+  if (mapped) tx.selection.set(mapped);
+});
+```
+
+`EditorTransactionAnchor` exposes only `resolve()`. The transaction releases
+its backing anchor automatically. Calling `resolve()` after the callback ends
+throws because the transaction is no longer active.
 
 Anchors are runtime values. Persist the resolved path, point, or range only when
 the application owns a durable serialization policy.

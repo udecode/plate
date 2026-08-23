@@ -79,24 +79,29 @@ test('builds every package before packing its release artifact', () => {
   }
 });
 
-test('owns focused packed proof for the Plite React and Yjs boundaries', () => {
+test('owns focused packed proof for Plite package boundaries', () => {
   const rootPackageJson = JSON.parse(
     readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
   );
+  const boundaryContracts = getPlitePackageBoundaryContracts();
+  const boundaryBuild = rootPackageJson.scripts['plite:release:boundaries'];
 
   assert.deepEqual(
-    getPlitePackageBoundaryContracts().map(({ name }) => name),
+    boundaryContracts.map(({ name }) => name),
     [
       '@platejs/plite',
       '@platejs/plite-dom',
       '@platejs/plite-react',
+      '@platejs/plite-layout',
       '@platejs/yjs',
     ]
   );
-  assert.match(
-    rootPackageJson.scripts['plite:release:boundaries'],
-    /--package-boundaries-only/
-  );
+
+  for (const { directory } of boundaryContracts) {
+    assert.match(boundaryBuild, new RegExp(`--filter=\\./${directory}(?: |$)`));
+  }
+
+  assert.match(boundaryBuild, /--package-boundaries-only/);
 });
 
 test('materializes an isolated dependency closure and rejects forbidden transitives', () => {

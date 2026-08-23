@@ -1,4 +1,3 @@
-import { getDefined } from '../internal/getDefined';
 import type {
   BrowserMobileProofPlatform,
   BrowserMobileTransportId,
@@ -89,44 +88,78 @@ export type PliteRawMobileProofResult = {
   ok: boolean;
 };
 
-const isSha256 = (value: string) => /^[\da-f]{64}$/i.test(value);
+/** Untrusted raw-mobile bundle and the exact source commit it must prove. */
+export type PliteRawMobileProofOptions = {
+  bundle: unknown;
+  expectedCommit: string;
+};
 
-const validatePointer = (
-  issues: string[],
-  label: string,
-  pointer: PliteRawMobileArtifactPointer | undefined
-) => {
-  if (!pointer?.path) issues.push(`${label} is missing an artifact path`);
-  if (!pointer || !isSha256(pointer.sha256)) {
+const isSha256 = (value: string) => /^[\da-f]{64}$/i.test(value);
+const isGitCommit = (value: string) => /^[\da-f]{40}$/i.test(value);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const validatePointer = (issues: string[], label: string, pointer: unknown) => {
+  if (!isRecord(pointer) || typeof pointer.path !== 'string' || !pointer.path) {
+    issues.push(`${label} is missing an artifact path`);
+  }
+  if (
+    !isRecord(pointer) ||
+    typeof pointer.sha256 !== 'string' ||
+    !isSha256(pointer.sha256)
+  ) {
     issues.push(`${label} is missing a SHA-256 digest`);
   }
 };
 
 /** Validate a complete direct-Appium Android and iOS raw-device matrix. */
-export const validatePliteRawMobileProof = (
-  bundle: PliteRawMobileReceiptBundle
-): PliteRawMobileProofResult => {
+export const validatePliteRawMobileProof = ({
+  bundle,
+  expectedCommit,
+}: PliteRawMobileProofOptions): PliteRawMobileProofResult => {
   const issues: string[] = [];
 
-  if (bundle.schemaVersion !== 1) {
+  if (!isGitCommit(expectedCommit)) {
+    return {
+      issues: ['expectedCommit must be a 40-character Git commit'],
+      ok: false,
+    };
+  }
+  if (!isRecord(bundle) || bundle.schemaVersion !== 1) {
     return {
       issues: ['Raw mobile proof bundle must use schemaVersion 1'],
+      ok: false,
+    };
+  }
+  if (!Array.isArray(bundle.receipts)) {
+    return {
+      issues: ['Raw mobile proof bundle must contain a receipts array'],
       ok: false,
     };
   }
 
   const seen = new Set<string>();
 
-  for (const receipt of bundle.receipts) {
-    const label = `${receipt.platform}/${receipt.scenario}`;
+  for (const [receiptIndex, receipt] of bundle.receipts.entries()) {
+    if (!isRecord(receipt)) {
+      issues.push(`Raw mobile receipt ${receiptIndex} must be an object`);
+      continue;
+    }
+
+    const { platform } = receipt;
+    const scenarioId = receipt.scenario;
+    const label =
+      typeof platform === 'string' && typeof scenarioId === 'string'
+        ? `${platform}/${scenarioId}`
+        : `receipt ${receiptIndex}`;
+    const isSupportedPlatform =
+      platform === 'android-chrome' || platform === 'ios-safari';
     const expectedTransport =
-      receipt.platform === 'android-chrome' ? 'appium-android' : 'appium-ios';
-    const expectedBrowser =
-      receipt.platform === 'android-chrome' ? 'Chrome' : 'Safari';
-    const expectedOs =
-      receipt.platform === 'android-chrome' ? 'Android' : 'iOS';
+      platform === 'android-chrome' ? 'appium-android' : 'appium-ios';
+    const expectedBrowser = platform === 'android-chrome' ? 'Chrome' : 'Safari';
+    const expectedOs = platform === 'android-chrome' ? 'Android' : 'iOS';
     const scenario = PLITE_RAW_MOBILE_SCENARIOS.find(
-      (candidate) => candidate.id === receipt.scenario
+      (candidate) => candidate.id === scenarioId
     );
 
     if (seen.has(label)) issues.push(`Duplicate raw mobile receipt ${label}`);
@@ -135,43 +168,70 @@ export const validatePliteRawMobileProof = (
     if (receipt.schemaVersion !== 1) {
       issues.push(`${label} must use receipt schemaVersion 1`);
     }
+    if (!isSupportedPlatform || !scenario) {
+      issues.push(`${label} has an unsupported platform or scenario`);
+    }
     if (!receipt.directAppium || receipt.transport !== expectedTransport) {
       issues.push(`${label} is not direct ${expectedTransport} proof`);
     }
+    const { device } = receipt;
     if (
-      !receipt.device?.realDevice ||
-      receipt.device?.osName !== expectedOs ||
-      !receipt.device?.name ||
-      !receipt.device?.model ||
-      !receipt.device?.osVersion
+      !isRecord(device) ||
+      device.realDevice !== true ||
+      device.osName !== expectedOs ||
+      typeof device.name !== 'string' ||
+      !device.name ||
+      typeof device.model !== 'string' ||
+      !device.model ||
+      typeof device.osVersion !== 'string' ||
+      !device.osVersion
     ) {
       issues.push(`${label} is missing real-device identity`);
     }
+    const { browser } = receipt;
     if (
-      receipt.browser?.name !== expectedBrowser ||
-      !receipt.browser?.version
+      !isRecord(browser) ||
+      browser.name !== expectedBrowser ||
+      typeof browser.version !== 'string' ||
+      !browser.version
     ) {
       issues.push(`${label} is missing ${expectedBrowser} identity`);
     }
+    const { build } = receipt;
     if (
-      !receipt.build?.appUrl ||
-      !receipt.build?.commit ||
+      !isRecord(build) ||
+      typeof build.appUrl !== 'string' ||
+      !build.appUrl ||
+      typeof build.commit !== 'string' ||
+      !build.commit ||
+      typeof receipt.capturedAt !== 'string' ||
       !Number.isFinite(Date.parse(receipt.capturedAt))
     ) {
       issues.push(`${label} is missing build or capture identity`);
+    } else if (build.commit.toLowerCase() !== expectedCommit.toLowerCase()) {
+      issues.push(
+        `${label} was captured from commit ${build.commit}; expected ${expectedCommit}`
+      );
     }
-    if (!isSha256(receipt.receiptSha256)) {
+    if (
+      typeof receipt.receiptSha256 !== 'string' ||
+      !isSha256(receipt.receiptSha256)
+    ) {
       issues.push(`${label} is missing a receipt SHA-256 digest`);
     }
-    if (receipt.replay.length === 0) {
+    if (!Array.isArray(receipt.replay) || receipt.replay.length === 0) {
       issues.push(`${label} is missing replay steps`);
     }
-    if (receipt.snapshots.length === 0) {
+    if (!Array.isArray(receipt.snapshots) || receipt.snapshots.length === 0) {
       issues.push(`${label} is missing semantic snapshots`);
     } else {
       receipt.snapshots.forEach((snapshot, index) => {
         const snapshotLabel = `${label} snapshot ${index}`;
 
+        if (!isRecord(snapshot)) {
+          issues.push(`${snapshotLabel} must be an object`);
+          return;
+        }
         if (
           !Array.isArray(snapshot.eventTrace) ||
           snapshot.eventTrace.length === 0
@@ -189,6 +249,7 @@ export const validatePliteRawMobileProof = (
           issues.push(`${snapshotLabel} is missing model or selection state`);
         }
         if (
+          typeof snapshot.updateCount !== 'number' ||
           !Number.isInteger(snapshot.updateCount) ||
           snapshot.updateCount < 0
         ) {
@@ -201,16 +262,25 @@ export const validatePliteRawMobileProof = (
         );
       });
 
-      const finalSnapshot = getDefined(receipt.snapshots.at(-1));
+      const finalSnapshot = receipt.snapshots.at(-1);
 
-      if (scenario && finalSnapshot.updateCount !== scenario.updateCount) {
+      if (
+        scenario &&
+        isRecord(finalSnapshot) &&
+        finalSnapshot.updateCount !== scenario.updateCount
+      ) {
         issues.push(
           `${label} expected ${scenario.updateCount} semantic updates, got ${finalSnapshot.updateCount}`
         );
       }
     }
 
-    validatePointer(issues, `${label} video`, receipt.artifacts?.video);
+    const { artifacts } = receipt;
+    validatePointer(
+      issues,
+      `${label} video`,
+      isRecord(artifacts) ? artifacts.video : undefined
+    );
   }
 
   for (const platform of [
@@ -229,9 +299,9 @@ export const validatePliteRawMobileProof = (
 
 /** Throw when a raw-device receipt bundle is incomplete or non-direct. */
 export const assertPliteRawMobileProof = (
-  bundle: PliteRawMobileReceiptBundle
+  options: PliteRawMobileProofOptions
 ) => {
-  const result = validatePliteRawMobileProof(bundle);
+  const result = validatePliteRawMobileProof(options);
 
   if (!result.ok) {
     throw new Error(

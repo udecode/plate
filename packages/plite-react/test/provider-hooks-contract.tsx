@@ -84,7 +84,7 @@ describe('plite-react provider hooks contract', () => {
     expect(result.current.read((state) => state.lastCommit())).toBe(null);
   });
 
-  test('useEditor updates when the provider editor changes', () => {
+  test('useEditor follows a keyed provider remount', () => {
     const editorA = createReactEditor({ initialValue });
     const editorB = createReactEditor({ initialValue });
     const seen: unknown[] = [];
@@ -110,7 +110,7 @@ describe('plite-react provider hooks contract', () => {
     expect(seen.at(-1)).toBe(editorA);
 
     rendered.rerender(
-      <Plite editor={editorB}>
+      <Plite editor={editorB} key="editor-b">
         <Editable />
         <ShowStaticEditor />
       </Plite>
@@ -118,6 +118,26 @@ describe('plite-react provider hooks contract', () => {
 
     expect(rendered.getByTestId('static-editor')).toHaveTextContent('B');
     expect(seen.at(-1)).toBe(editorB);
+  });
+
+  test('Plite rejects replacing a mounted editor runtime', () => {
+    const editorA = createReactEditor({ initialValue });
+    const editorB = createReactEditor({ initialValue });
+    const rendered = render(
+      <Plite editor={editorA}>
+        <Editable />
+      </Plite>
+    );
+
+    expect(() =>
+      rendered.rerender(
+        <Plite editor={editorB}>
+          <Editable />
+        </Plite>
+      )
+    ).toThrow(
+      '[Plite] Cannot replace the editor runtime of a mounted provider. Remount <Plite> with a different React key.'
+    );
   });
 
   test('multiple Editable views preserve the constructor maxLength', () => {
@@ -406,7 +426,6 @@ describe('plite-react provider hooks contract', () => {
 
   test('abandoned provider renders keep committed change callbacks', () => {
     const committedEditor = createReactEditor({ initialValue });
-    const abandonedEditor = createReactEditor({ initialValue });
     const committedOnCommit = jest.fn();
     const abandonedOnCommit = jest.fn();
     const suspended = new Promise<never>(() => {});
@@ -419,7 +438,7 @@ describe('plite-react provider hooks contract', () => {
     const tree = (abandoned: boolean) => (
       <Suspense fallback={<span>loading</span>}>
         <Plite
-          editor={abandoned ? abandonedEditor : committedEditor}
+          editor={committedEditor}
           onCommit={abandoned ? abandonedOnCommit : committedOnCommit}
         >
           <MaybeSuspend abandoned={abandoned} />

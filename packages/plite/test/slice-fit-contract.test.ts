@@ -1850,7 +1850,7 @@ describe('contextual schema slice fitting', () => {
 
       tx.text.delete({ at: draggedRange });
 
-      const dropRange = target.release();
+      const dropRange = target.resolve();
 
       assert.ok(dropRange);
       assert.equal(tx.slice.replace(slice, { at: dropRange }), true);

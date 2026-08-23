@@ -158,6 +158,11 @@ const renderProjectedEditor = (
   return { ...rendered, store };
 };
 
+const paragraph = (text: string) => ({
+  children: [{ text }],
+  type: 'paragraph',
+});
+
 const findTextRangesByText = (
   nodes: readonly Descendant[],
   text: string,
@@ -275,6 +280,7 @@ describe('plite-react projections and selection contract', () => {
             { fixtureLeaf: 'hello', text: 'Hello' },
             { fixtureLeaf: 'world', text: 'world' },
           ],
+          type: 'paragraph',
         },
       ],
       selection: null,
@@ -318,11 +324,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [
-        {
-          children: [{ text: 'Hello world' }],
-        },
-      ],
+      children: [paragraph('Hello world')],
       selection: null,
     });
 
@@ -351,7 +353,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'Hello world!' }] }],
+      children: [paragraph('Hello world!')],
       selection: null,
     });
 
@@ -388,7 +390,7 @@ describe('plite-react projections and selection contract', () => {
     let highlighted = false;
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'Hello world!' }] }],
+      children: [paragraph('Hello world!')],
       selection: null,
     });
 
@@ -435,7 +437,7 @@ describe('plite-react projections and selection contract', () => {
     let highlighted = false;
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'Hello world!' }] }],
+      children: [paragraph('Hello world!')],
       selection: null,
     });
 
@@ -491,6 +493,7 @@ describe('plite-react projections and selection contract', () => {
             },
             { text: 'def' },
           ],
+          type: 'paragraph',
         },
       ],
       selection: null,
@@ -564,7 +567,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
     const rendered = renderProjectedEditor(
       editor,
-      [{ children: [{ text: 'Hello world!' }] }],
+      [paragraph('Hello world!')],
       () => [
         {
           data: { bold: true },
@@ -600,7 +603,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
     const rendered = renderProjectedEditor(
       editor,
-      [{ children: [{ text: 'abcdef' }] }],
+      [paragraph('abcdef')],
       () => [
         {
           data: { widget: true },
@@ -627,7 +630,12 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ bold: true, text: 'Hello world!' }] }],
+      children: [
+        {
+          children: [{ bold: true, text: 'Hello world!' }],
+          type: 'paragraph',
+        },
+      ],
       selection: null,
     });
 
@@ -726,13 +734,10 @@ describe('plite-react projections and selection contract', () => {
             { fixtureLeaf: '1', text: '0.1' },
             { fixtureLeaf: '2', text: '0.2' },
           ],
+          type: 'paragraph',
         },
-        {
-          children: [{ text: '1.0' }],
-        },
-        {
-          children: [{ text: '2.0' }],
-        },
+        paragraph('1.0'),
+        paragraph('2.0'),
       ],
       () => [
         {
@@ -782,11 +787,8 @@ describe('plite-react projections and selection contract', () => {
       editor,
       [
         {
-          children: [
-            {
-              children: [{ text: 'Hello world!' }],
-            },
-          ],
+          children: [paragraph('Hello world!')],
+          type: 'section',
         },
       ],
       (snapshot) => {
@@ -864,7 +866,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
     const rendered = renderProjectedEditor(
       editor,
-      [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      [paragraph('A'), paragraph('B')],
       (snapshot) => findTextRangesByText(snapshot.children, 'B')
     );
 
@@ -875,7 +877,7 @@ describe('plite-react projections and selection contract', () => {
 
     await act(async () => {
       editor.update((tx) => {
-        tx.nodes.insert({ children: [{ text: '0' }] } as never, {
+        tx.nodes.insert({ ...paragraph('0') } as never, {
           at: [0],
         });
       });
@@ -894,7 +896,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      children: [paragraph('A'), paragraph('B')],
       selection: null,
     });
 
@@ -995,12 +997,9 @@ describe('plite-react projections and selection contract', () => {
       children: [
         {
           type: 'section',
-          children: [
-            { children: [{ text: 'A' }] },
-            { children: [{ text: 'B' }] },
-          ],
+          children: [paragraph('A'), paragraph('B')],
         },
-        { children: [{ text: 'C' }] },
+        paragraph('C'),
       ],
       selection: null,
     });
@@ -1077,7 +1076,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      children: [paragraph('A'), paragraph('B')],
       selection: null,
     });
 
@@ -1168,7 +1167,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      children: [paragraph('A'), paragraph('B')],
       selection: null,
     });
 
@@ -1273,7 +1272,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      children: [paragraph('A'), paragraph('B')],
       selection: null,
     });
 
@@ -1352,7 +1351,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      children: [paragraph('A'), paragraph('B')],
       selection: null,
     });
 
@@ -1409,7 +1408,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
+      children: [paragraph('A'), paragraph('B')],
       selection: null,
     });
 
@@ -1441,7 +1440,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }],
+      children: [paragraph('A')],
       selection: null,
     });
 
@@ -1508,6 +1507,7 @@ describe('plite-react projections and selection contract', () => {
     editorReplace(editor, {
       children: Array.from({ length: 5 }, (_, index) => ({
         children: [{ text: `block-${index}` }],
+        type: 'paragraph',
       })),
       selection: null,
     });
@@ -1578,8 +1578,8 @@ describe('plite-react projections and selection contract', () => {
   test('projection stores created from roots receive runtime source changes', async () => {
     const runtime = createReactEditor({
       initialValue: {
-        children: [{ children: [{ text: 'Body' }] }],
-        roots: { header: [{ children: [{ text: 'Header' }] }] },
+        children: [paragraph('Body')],
+        roots: { header: [paragraph('Header')] },
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
@@ -1654,7 +1654,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }],
+      children: [paragraph('A')],
       selection: null,
     });
 
@@ -1787,7 +1787,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }],
+      children: [paragraph('A')],
       selection: null,
     });
 
@@ -1848,7 +1848,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }],
+      children: [paragraph('A')],
       selection: null,
     });
 
@@ -1901,7 +1901,7 @@ describe('plite-react projections and selection contract', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [{ children: [{ text: 'A' }] }],
+      children: [paragraph('A')],
       selection: null,
     });
 

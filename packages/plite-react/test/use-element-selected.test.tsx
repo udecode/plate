@@ -21,13 +21,14 @@ const initialValue = () => [
   {
     id: '0',
     children: [
-      { id: '0.0', children: [{ text: '' }] },
-      { id: '0.1', children: [{ text: '' }] },
-      { id: '0.2', children: [{ text: '' }] },
+      { id: '0.0', children: [{ text: '' }], type: 'paragraph' },
+      { id: '0.1', children: [{ text: '' }], type: 'paragraph' },
+      { id: '0.2', children: [{ text: '' }], type: 'paragraph' },
     ],
+    type: 'section',
   },
-  { id: '1', children: [{ text: '' }] },
-  { id: '2', children: [{ text: '' }] },
+  { id: '1', children: [{ text: '' }], type: 'paragraph' },
+  { id: '2', children: [{ text: '' }], type: 'paragraph' },
 ];
 
 describe('useElementSelected', () => {
@@ -145,9 +146,10 @@ describe('useElementSelected', () => {
 
       await act(async () => {
         editor.update((tx) => {
-          tx.nodes.insert({ id: 'new', children: [{ text: '' }] } as any, {
-            at: [2],
-          });
+          tx.nodes.insert(
+            { id: 'new', children: [{ text: '' }], type: 'paragraph' } as any,
+            { at: [2] }
+          );
         });
       });
 
@@ -183,9 +185,10 @@ describe('useElementSelected', () => {
 
       await act(async () => {
         localEditor.update((tx) => {
-          tx.nodes.insert({ id: 'new', children: [{ text: '' }] } as any, {
-            at: [0],
-          });
+          tx.nodes.insert(
+            { id: 'new', children: [{ text: '' }], type: 'paragraph' } as any,
+            { at: [0] }
+          );
         });
       });
 

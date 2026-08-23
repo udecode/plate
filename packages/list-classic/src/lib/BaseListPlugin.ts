@@ -677,7 +677,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           .map((_, index) => fromListPath.concat(index))
           .slice(fromStartIndex)
           .map((path) =>
-            tx.refs.path(path, {
+            tx.anchor(path, {
               association: 'forward',
               deletion: 'drop',
             })
@@ -848,7 +848,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
           if (!tempLi) return undefined;
 
-          const tempLiRef = tx.refs.path(tempLi[1], {
+          const tempLiRef = tx.anchor(tempLi[1], {
             association: 'forward',
             deletion: 'drop',
           });
@@ -992,7 +992,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
               mode: 'all',
             }),
             ([, path]) =>
-              tx.refs.path(path, {
+              tx.anchor(path, {
                 association: 'forward',
                 deletion: 'nearest',
               })
@@ -1115,7 +1115,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
         }
 
         const refs = highestLicPaths.map((path) =>
-          tx.refs.path(path, {
+          tx.anchor(path, {
             association: 'forward',
             deletion: 'drop',
           })

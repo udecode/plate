@@ -39,6 +39,7 @@ export {
   assertPliteRawMobileProof,
   PLITE_RAW_MOBILE_SCENARIOS,
   type PliteRawMobileArtifactPointer,
+  type PliteRawMobileProofOptions,
   type PliteRawMobileProofResult,
   type PliteRawMobileReceipt,
   type PliteRawMobileReceiptBundle,
@@ -46,19 +47,6 @@ export {
   type PliteRawMobileSnapshot,
   validatePliteRawMobileProof,
 } from './raw-mobile-proof';
-export {
-  assertPliteBrowserReleaseProof,
-  createBrowserMobileReleaseProofArtifact,
-  createPersistentBrowserSoakProofArtifact,
-  createReleaseDisciplineProofArtifact,
-  PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
-  type PliteBrowserMobileDeviceProofArtifact,
-  type PliteBrowserReleaseClaim,
-  type PliteBrowserReleaseDisciplineProofArtifact,
-  type PliteBrowserReleaseProofArtifact,
-  type PliteBrowserReleaseProofResult,
-  validatePliteBrowserReleaseProof,
-} from './release-proof';
 export {
   isCollapsed,
   type Path,

@@ -490,6 +490,31 @@ describe('extensible selection protocol', () => {
     );
   });
 
+  it('validates installed selection kinds against the current document', () => {
+    const editor = createEditor({
+      extensions: [cellSelectionExtension],
+      initialValue,
+    });
+
+    assert.equal(editor.read.selection.isValid(null), true);
+    assert.equal(editor.read.selection.isValid(cellSelection()), true);
+    assert.equal(
+      editor.read.selection.isValid({ ...cellSelection(), cells: [] }),
+      false
+    );
+    assert.equal(
+      editor.read.selection.isValid({
+        ...cellSelection(),
+        anchor: { offset: 0, path: [9, 0] },
+      }),
+      false
+    );
+    assert.equal(
+      createEditor({ initialValue }).read.selection.isValid(cellSelection()),
+      false
+    );
+  });
+
   it('strictly validates built-in and custom selection shapes and versions', () => {
     const editor = createEditor({
       extensions: [cellSelectionExtension],

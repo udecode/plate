@@ -43,11 +43,11 @@ type PublicPackageNamedExports = [
   typeof import('@platejs/yjs/react').YjsPlugin,
   typeof import('@platejs/plite/internal').isObject,
   typeof import('@platejs/browser/browser').takeDOMSelectionSnapshot,
-  typeof import('@platejs/browser/core').assertPliteBrowserReleaseProof,
+  typeof import('@platejs/browser/core').assertPliteRawMobileProof,
   typeof import('@platejs/browser/core').createPliteBrowserFeatureContractRegistry,
   typeof import('@platejs/browser/core').definePliteBrowserFeatureContract,
   typeof import('@platejs/browser/core').classifyBrowserMobileTransportProof,
-  typeof import('@platejs/browser/core').validatePliteBrowserReleaseProof,
+  typeof import('@platejs/browser/core').validatePliteRawMobileProof,
   typeof import('@platejs/browser/playwright').assertPliteBrowserSelectionContract,
   typeof import('@platejs/plite-dom').DOMCoverage,
   typeof import('@platejs/plite-dom').Hotkeys,
@@ -159,6 +159,13 @@ type IsUnknownPredicateInput<T> =
         : false;
 type ExpectTrue<T extends true> = T;
 type ExpectAssignable<TExpected, _TActual extends TExpected> = true;
+type RawMobileProofInput = FirstArgument<
+  typeof import('@platejs/browser/core').validatePliteRawMobileProof
+>;
+type _PublicRawMobileProofInput = [
+  ExpectTrue<IsUnknownPredicateInput<RawMobileProofInput['bundle']>>,
+  ExpectAssignable<string, RawMobileProofInput['expectedCommit']>,
+];
 declare const editor: import('@platejs/plite').Editor;
 type _PublicEditorLifecycleMethods = [
   ExpectAssignable<string, ReturnType<typeof editor.read.text.string>>,

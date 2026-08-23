@@ -23,6 +23,7 @@ import {
   getInternalDocumentRootChange,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
+import { getRangeEndpointAssociations } from './change/range-association';
 import type { TrackMode } from './change/root-change';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
 import { getEditorRuntime } from './editor-runtime';
@@ -137,26 +138,6 @@ const mapTextOffset = (
     ? null
     : (DocumentIndex.fromValue(after.children).pointAt(mapped, association)
         ?.offset ?? null);
-};
-
-const rangeAssociations = (
-  range: Range,
-  association: RangeAnchorAssociation
-): readonly [-1 | 1, -1 | 1] => {
-  if (association === 'backward') return [-1, -1];
-  if (association === 'forward') return [1, 1];
-
-  if (PointApi.equals(range.anchor, range.focus)) return [1, 1];
-
-  const forward = PointApi.isBefore(range.anchor, range.focus);
-
-  return association === 'inward'
-    ? forward
-      ? [1, -1]
-      : [-1, 1]
-    : forward
-      ? [-1, 1]
-      : [1, -1];
 };
 
 const createPointState = (
@@ -464,7 +445,20 @@ export function createAnchor<TValue extends AnchorValue>(
       const associations =
         kind === 'point'
           ? ([association === 'backward' ? -1 : 1] as const)
-          : rangeAssociations(current as Range, association);
+          : getRangeEndpointAssociations(
+              PointApi.equals(
+                (current as Range).anchor,
+                (current as Range).focus
+              )
+                ? 'collapsed'
+                : PointApi.isBefore(
+                      (current as Range).anchor,
+                      (current as Range).focus
+                    )
+                  ? 'forward'
+                  : 'backward',
+              association
+            );
 
       const mappedPoints = pointStates.map((state, index) =>
         resolveMappedPoint(

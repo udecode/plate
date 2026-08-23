@@ -32,6 +32,7 @@ import {
   PliteRuntime,
   useEditor,
   useEditorFocused,
+  useEditorSelector,
   useEditorState,
   usePliteActiveRoot,
   usePliteChildRoot,
@@ -134,6 +135,57 @@ const createRootWrapper =
   };
 
 describe('PliteRuntime provider contract', () => {
+  test('rejects replacing a mounted runtime owner', () => {
+    const runtimeA = renderHook(() =>
+      usePliteRuntime({ initialValue: [paragraph('A')] })
+    ).result.current;
+    const runtimeB = renderHook(() =>
+      usePliteRuntime({ initialValue: [paragraph('B')] })
+    ).result.current;
+    const rendered = render(
+      <PliteRuntime runtime={runtimeA}>
+        <span>runtime</span>
+      </PliteRuntime>
+    );
+
+    expect(() =>
+      rendered.rerender(
+        <PliteRuntime runtime={runtimeB}>
+          <span>runtime</span>
+        </PliteRuntime>
+      )
+    ).toThrow(
+      '[PliteRuntime] Cannot replace the editor runtime of a mounted provider. Remount <PliteRuntime> with a different React key.'
+    );
+  });
+
+  test('provides a replacement runtime after a keyed remount', () => {
+    const runtimeA = renderHook(() =>
+      usePliteRuntime({ initialValue: [paragraph('A')] })
+    ).result.current;
+    const runtimeB = renderHook(() =>
+      usePliteRuntime({ initialValue: [paragraph('B')] })
+    ).result.current;
+    const Probe = () => (
+      <span data-testid="runtime-value">{usePliteRuntimeState(rootText)}</span>
+    );
+    const rendered = render(
+      <PliteRuntime key="runtime-a" runtime={runtimeA}>
+        <Probe />
+      </PliteRuntime>
+    );
+
+    expect(rendered.getByTestId('runtime-value')).toHaveTextContent('A');
+
+    rendered.rerender(
+      <PliteRuntime key="runtime-b" runtime={runtimeB}>
+        <Probe />
+      </PliteRuntime>
+    );
+
+    expect(rendered.getByTestId('runtime-value')).toHaveTextContent('B');
+  });
+
   test('publishes one React runtime revision for slot reconfiguration', async () => {
     const mode = defineFacet<string, string>({
       combine: (values) => values.at(-1) ?? 'missing',
@@ -822,6 +874,73 @@ describe('PliteRuntime provider contract', () => {
     rerender({ root: 'footer' });
 
     expect(result.current).toBe('footer');
+  });
+
+  test('root changes cancel deferred selector work from the previous view', async () => {
+    let runtime!: ReturnType<typeof usePliteRuntime>;
+    const selectRootText = (editor: ReturnType<typeof createReactEditor>) =>
+      editor.read(rootText);
+    const selector = vi.fn(selectRootText);
+
+    const Probe = () => (
+      <span data-testid="deferred-root-value">
+        {useEditorSelector(selector, { deferred: true })}
+      </span>
+    );
+    const RuntimeViews = ({ root }: { root: 'footer' | 'header' }) => {
+      runtime = usePliteRuntime({ initialValue: initialValue() });
+
+      return (
+        <PliteRuntime runtime={runtime}>
+          <Plite root={root}>
+            <Probe />
+          </Plite>
+        </PliteRuntime>
+      );
+    };
+
+    const rendered = render(<RuntimeViews root="header" />);
+    const headerEditor = createEditorView(runtime.editor, { root: 'header' });
+
+    expect(rendered.getByTestId('deferred-root-value')).toHaveTextContent(
+      'header'
+    );
+
+    act(() => {
+      headerEditor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+      });
+      rendered.rerender(<RuntimeViews root="footer" />);
+    });
+
+    const callsAfterRootChange = selector.mock.calls.length;
+
+    expect(rendered.getByTestId('deferred-root-value')).toHaveTextContent(
+      'footer'
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(selector).toHaveBeenCalledTimes(callsAfterRootChange);
+
+    const footerEditor = createEditorView(runtime.editor, { root: 'footer' });
+    const callsBeforeFooterCommit = selector.mock.calls.length;
+
+    act(() => {
+      footerEditor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
+      });
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(rendered.getByTestId('deferred-root-value')).toHaveTextContent(
+      'footer!'
+    );
+    expect(selector).toHaveBeenCalledTimes(callsBeforeFooterCommit + 1);
   });
 
   test('usePliteRuntimeState forwards commits to shouldUpdate filters', async () => {

@@ -63,7 +63,7 @@ describe('canonical anchor contract', () => {
 
     editor.update((tx) => {
       tx.nodes.insert(paragraph('two'), { at: [1] });
-      anchor = tx.anchor([1], {
+      anchor = editor.anchor([1], {
         association: 'forward',
         deletion: 'drop',
       });
@@ -71,6 +71,43 @@ describe('canonical anchor contract', () => {
     });
 
     assert.deepEqual(anchor!.release(), [2]);
+  });
+
+  it('maps transaction anchors and expires them with the callback', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const leaked: Array<Readonly<{ resolve: () => unknown }>> = [];
+
+    editor.update((tx) => {
+      const path = tx.anchor([0], {
+        association: 'forward',
+        deletion: 'drop',
+      });
+      const point = tx.anchor(
+        { offset: 1, path: [0, 0] },
+        { association: 'forward', deletion: 'nearest' }
+      );
+      const range = tx.anchor(
+        {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+        { association: 'inward', deletion: 'nearest' }
+      );
+
+      tx.nodes.insert(paragraph('zero'), { at: [0] });
+
+      assert.deepEqual(path.resolve(), [1]);
+      assert.deepEqual(point.resolve(), { offset: 1, path: [1, 0] });
+      assert.deepEqual(range.resolve(), {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      });
+      leaked.push(path, point, range);
+    });
+
+    for (const anchor of leaked) {
+      assert.throws(() => anchor.resolve(), /no longer active/);
+    }
   });
 
   it('maps point and range affinities through a draft text split', () => {
@@ -126,12 +163,12 @@ describe('canonical anchor contract', () => {
         match: NodeApi.isText,
       });
 
-      backwardPoints = backward.map((anchor) => anchor.release()!);
-      forwardPoints = forward.map((anchor) => anchor.release()!);
+      backwardPoints = backward.map((anchor) => anchor.resolve()!);
+      forwardPoints = forward.map((anchor) => anchor.resolve()!);
       ranges = [
-        selected.release()!,
-        outward.release()!,
-        backwardRange.release()!,
+        selected.resolve()!,
+        outward.resolve()!,
+        backwardRange.resolve()!,
       ];
     });
 

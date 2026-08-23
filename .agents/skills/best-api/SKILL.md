@@ -187,10 +187,33 @@ Identity names state ownership: `key` / `keys` hold live `NodeKey` values,
 persisted association tokens. Keep domain addresses such as `url` semantic
 instead of renaming every pointer-like field to `ref`.
 
+A provider that owns subscriptions, caches, or callbacks binds one runtime
+owner for its mounted lifetime unless a current user job requires replacement
+without remounting. Use a keyed remount to replace that owner. If live
+replacement is justified, retire every owner-bound resource atomically before
+publishing the next context; resetting selected caches is not a lifecycle.
+
 Derive fast-path eligibility from material behavior, never from registration
 or callback presence. Keep safety capabilities with the runtime owner, fail
 closed for unknown behavior, and do not make ordinary applications promise
 correctness through optimization flags.
+
+A public predicate that accepts `unknown` must validate every required base
+field and every present optional field of the type it promises to narrow. Keep
+weaker structural candidate checks distinct. When valid variants depend on an
+installed runtime registry or current document, expose an owner-aware full
+validator instead of pretending a pure predicate can prove that context.
+
+Mapped-location APIs must name lifetime, not location subtype. A persistent
+owner factory returns an explicitly released handle; a transaction factory
+auto-releases at the callback boundary and exposes only operations valid within
+that boundary. Do not add a parallel public `refs` namespace when the same
+engine tracks every supported location kind.
+
+A public proof or attestation API must validate untrusted evidence and exact
+owner identity. Caller-provided success flags, scope labels, transport names,
+or nonempty source identifiers are claims, not proof. Keep aggregate workflow
+policy internal until an independent external consumer earns a public contract.
 
 Extension `read` factories compile one callable method tree per published
 configuration. Live document values are method results; stable host values use

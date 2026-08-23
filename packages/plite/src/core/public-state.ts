@@ -138,7 +138,6 @@ import {
   seedNodeKeys,
 } from '../utils/node-keys';
 import { normalizeNodeMatch } from '../utils/node-match';
-import type { AnchorOptions } from './anchor';
 import {
   beginAnchorTransaction,
   commitAnchorTransaction,
@@ -233,6 +232,7 @@ import {
   getSelectionReplacementRange,
   getSelectionSpecMarks,
   getSelectionSpecSlice,
+  isValidEditorSelection,
   mapSelectionThroughChange,
 } from './selection-protocol';
 import {
@@ -314,7 +314,7 @@ type TransactionSnapshot = {
   documentState: Record<string, unknown> | undefined;
   discardedNodeKeys: Set<NodeKey>;
   dirtyStateKeys: Set<string>;
-  draftRefs: Set<{ release: () => unknown }>;
+  scopedAnchors: Set<{ release: () => unknown }>;
   effects: EditorEffect[];
   extensionReconfigurations: Map<
     string,
@@ -598,10 +598,10 @@ export const getActiveEditorUpdateTags = (
   ]);
 };
 
-const closeTransactionDraftRefs = (snapshot: TransactionSnapshot) => {
+const closeScopedTransactionAnchors = (snapshot: TransactionSnapshot) => {
   snapshot.token.active = false;
-  for (const ref of snapshot.draftRefs) ref.release();
-  snapshot.draftRefs.clear();
+  for (const anchor of snapshot.scopedAnchors) anchor.release();
+  snapshot.scopedAnchors.clear();
 };
 
 const getDocumentState = (editor: Editor) => {
@@ -2986,6 +2986,13 @@ const getStateView = <
 
           return !!selection && RangeApi.isExpanded(selection);
         },
+        isValid: (value: unknown) =>
+          isValidEditorSelection(
+            editor,
+            value,
+            getEditorDocumentValue(editor),
+            getCurrentChildrenRoot(editor)
+          ),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           isSelectionWithinBlock(state, getCurrentSelection(editor), options),
         isWithinText: (options?: EditorSelectionTargetOptions) =>
@@ -4153,7 +4160,20 @@ const getUpdateView = <
 
   const tx: EditorCoreUpdateTransaction<V> = {
     ...state,
-    anchor: (value, options) => runActive(() => editor.anchor(value, options)),
+    anchor: (value, options) =>
+      runActive(() => {
+        const anchor = editor.anchor(value, options);
+
+        transactionSnapshot.scopedAnchors.add(anchor);
+
+        return Object.freeze({
+          resolve: () => {
+            assertActive();
+
+            return anchor.resolve();
+          },
+        });
+      }),
     annotations: Object.freeze({
       get: <TValue>(annotation: EditorUpdateAnnotation<TValue>) =>
         runActive(
@@ -4392,36 +4412,6 @@ const getUpdateView = <
           wrapNodes(editor, element, resolvedOptions as never);
         }),
     }),
-    refs: Object.freeze({
-      path: (path: Path, options: AnchorOptions<Path>) =>
-        runActive(() => {
-          const anchor = editor.anchor(path, options);
-
-          transactionSnapshot.draftRefs.add(anchor);
-
-          return Object.freeze({
-            resolve: () => {
-              assertActive();
-
-              return anchor.resolve();
-            },
-          });
-        }),
-      point: (point: Point, options: AnchorOptions<Point>) =>
-        runActive(() => {
-          const anchor = editor.anchor(point, options);
-
-          transactionSnapshot.draftRefs.add(anchor);
-
-          return Object.freeze({
-            resolve: () => {
-              assertActive();
-
-              return anchor.resolve();
-            },
-          });
-        }),
-    }),
     roots: Object.freeze({
       create: (root, children) => {
         runActive(() => {
@@ -4526,6 +4516,7 @@ const getUpdateView = <
           state.selection.isAtBlockStart(options),
         isCollapsed: () => state.selection.isCollapsed(),
         isExpanded: () => state.selection.isExpanded(),
+        isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
         isWithinText: (options?: EditorSelectionTargetOptions) =>
@@ -4821,7 +4812,7 @@ const createTransactionSpecContext = (editor: Editor) => {
     dirtyStateKeys: new Set(),
     documentState: copyDocumentState(getDocumentState(editor)),
     discardedNodeKeys: new Set(),
-    draftRefs: new Set(),
+    scopedAnchors: new Set(),
     effects: [],
     extensionReconfigurations: new Map(),
     facet: createEditorFacetDraft(
@@ -4888,7 +4879,7 @@ const disposeTransactionSpecContext = (
   editor: Editor,
   context: TransactionSpecContext
 ) => {
-  closeTransactionDraftRefs(context.snapshot);
+  closeScopedTransactionAnchors(context.snapshot);
   const contexts = TRANSACTION_SPEC_CONTEXTS.get(editor);
 
   if (contexts?.at(-1) !== context) {
@@ -7218,7 +7209,7 @@ const createEditorUpdateDraftContext = (
     documentState,
     discardedNodeKeys: new Set(),
     dirtyStateKeys: new Set(),
-    draftRefs: new Set(),
+    scopedAnchors: new Set(),
     effects: [],
     extensionReconfigurations: new Map(),
     facet: createEditorFacetDraft(editor, getVersion(editor)),

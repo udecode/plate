@@ -195,7 +195,8 @@ and [Range API](../api/locations/range) for the full helper list.
 ## Anchors
 
 Use anchors for runtime locations that map through canonical document changes.
-Choose association and deletion policy explicitly.
+Choose association and deletion policy explicitly. `editor.anchor` creates a
+persistent handle that the owner must release.
 
 ```ts
 const anchor = editor.anchor(
@@ -209,3 +210,24 @@ const anchor = editor.anchor(
 const range = anchor.resolve();
 anchor.release();
 ```
+
+Use `tx.anchor` when the mapped location belongs only to one update or detached
+transaction builder. It supports paths, points, and ranges and expires when the
+callback ends.
+
+```ts
+editor.update((tx) => {
+  const target = tx.anchor(range, {
+    association: "inward",
+    deletion: "nearest",
+  });
+
+  tx.nodes.unwrap();
+
+  const mapped = target.resolve();
+
+  if (mapped) tx.selection.set(mapped);
+});
+```
+
+See [Anchor API](../api/locations/anchor) for the two handle contracts.

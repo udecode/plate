@@ -593,6 +593,7 @@ export type EditorStateSelectionApi<
   isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;
   isCollapsed: () => boolean;
   isExpanded: () => boolean;
+  isValid: (value: unknown) => value is Selection<TSelection>;
   isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;
   isWithinText: (options?: EditorSelectionTargetOptions) => boolean;
   primaryRange: () => Range | null;
@@ -664,20 +665,17 @@ export type EditorTransactionSelectionApi<
 };
 
 /** A mapped location whose lifetime is limited to one transaction callback. */
-export type EditorTransactionDraftRef<TValue extends Path | Point> = Readonly<{
+export type EditorTransactionAnchor<TValue extends AnchorValue> = Readonly<{
   resolve: () => TValue | null;
 }>;
 
-export type EditorTransactionRefsApi = {
-  path: <const TRoot extends RootKey>(
-    path: Path,
-    options: AnchorOptions<Path, TRoot>
-  ) => EditorTransactionDraftRef<Path>;
-  point: <const TRoot extends RootKey>(
-    point: Point,
-    options: AnchorOptions<Point, TRoot>
-  ) => EditorTransactionDraftRef<Point>;
-};
+export type EditorTransactionAnchorApi = <
+  TValue extends AnchorValue,
+  const TRoot extends RootKey,
+>(
+  value: TValue,
+  options: AnchorOptions<TValue, TRoot>
+) => EditorTransactionAnchor<TValue>;
 
 export type EditorStateMarksApi<V extends Value = Value> =
   () => EditorMarks<V> | null;
@@ -1539,8 +1537,8 @@ export type EditorCoreUpdateTransaction<
   EditorCoreStateView<V, TSelection>,
   'marks' | 'nodes' | 'selection' | 'slice' | 'text' | 'value'
 > & {
-  /** Create a live location from the transaction's current document state. */
-  anchor: EditorAnchorApi;
+  /** Track a location from the current draft until this transaction ends. */
+  anchor: EditorTransactionAnchorApi;
   annotations: EditorTransactionAnnotationsApi;
   blocks: EditorTransactionBlocksApi<V>;
   break: EditorTransactionBreakApi;
@@ -1550,7 +1548,6 @@ export type EditorCoreUpdateTransaction<
   fragment: EditorTransactionFragmentApi<V>;
   marks: EditorTransactionMarksApi<V>;
   nodes: EditorTransactionNodesApi<V>;
-  refs: EditorTransactionRefsApi;
   roots: EditorTransactionRootsApi<V>;
   slice: EditorTransactionSliceApi<V>;
   selection: EditorTransactionSelectionApi<TSelection>;
@@ -1581,7 +1578,7 @@ export type EditorTransactionSpecBuilder<
   TExtensions extends readonly unknown[] = readonly [],
 > = Omit<
   EditorCoreUpdateTransaction<V, EditorSelectionFromExtensions<TExtensions>>,
-  'anchor' | 'extensions' | 'key'
+  'extensions' | 'key'
 > &
   EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>> &
   EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>>;

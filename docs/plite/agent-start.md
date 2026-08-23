@@ -78,12 +78,31 @@ browser. Proof commands never download browsers implicitly.
 `check:plite` is the strict all-package plus Chromium handoff gate; the browser
 matrix remains closure-only.
 
-The publish path runs `pnpm plite:release:artifacts` after the release build.
-It packs every Plite-family package, consumes every public subpath from the
-tarballs under NodeNext and Bundler resolution, checks runtime dependency
-direction, and proves unused bare and named imports tree-shake to the empty
-consumer baseline. Keep this release-only; it validates built output and does
-not belong in the daily Plite loop.
+The publish path runs `pnpm plite:release:packages` after the release build.
+That command validates packed package/install behavior only. It packs every
+Plite-family package, consumes every public subpath from the tarballs under
+NodeNext and Bundler resolution, checks runtime dependency direction, and
+proves unused bare and named imports tree-shake to the empty consumer baseline.
+Keep this release-only; it validates built output and does not belong in the
+daily Plite loop.
+
+When `PLITE_RELEASE_CLAIM_PROFILE=release-ready`,
+`pnpm plite:release:proof` resolves
+the run named by `PLITE_RELEASE_PROOF_RUN_ID`, downloads its one unexpired
+`plite-release-proof` artifact by ID, verifies GitHub's archive digest, and
+checks the bundle against the exact release commit and live run attempt before
+publishing. The producer must be a successful manual
+`.github/workflows/plite-ci.yml` run from `udecode/plate` at the checkout commit.
+The release command rejects caller-local manifests plus tracked or untracked
+checkout changes, so direct beta/latest publication has the same boundary as
+the workflow. Those repository variables are one-release inputs: preflight the
+producer run from a clean checkout, set them only under explicit release
+authorization, and clear both after the target run. The `release-lanes` skill
+owns that lifecycle.
+
+Plite CI does not currently emit this bundle, so broad release-ready claims stay
+blocked. A producer job must assemble it from lane-owned outputs rather than
+accepting operator-authored results.
 
 From `plate-2`:
 

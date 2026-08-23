@@ -14,11 +14,15 @@ const runRootScript = (script: string, env = process.env) =>
 
 describe('mobile device proof command', () => {
   test('runs scoped proof from the repository root', () => {
-    const result = runRootScript('test:mobile-device-proof');
+    const result = runRootScript('test:mobile-device-proof', {
+      ...process.env,
+      GITHUB_SHA: 'a'.repeat(40),
+      PLITE_RELEASE_EXPECTED_COMMIT: '   ',
+    });
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
-      'scoped release proof passed: semantic/proxy rows and incomplete receipts cannot satisfy raw mobile claims'
+      'scoped proof classification passed: proxy transports and incomplete receipts cannot satisfy raw mobile claims'
     );
   });
 

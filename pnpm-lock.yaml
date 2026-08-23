@@ -197,6 +197,9 @@ importers:
       dotenv:
         specifier: 16.5.0
         version: 16.5.0
+      extract-zip:
+        specifier: 2.0.1
+        version: 2.0.1
       openai:
         specifier: 5.3.0
         version: 5.3.0(ws@8.19.0)(zod@4.1.12)

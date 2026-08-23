@@ -67,6 +67,19 @@ const MyEditor = () => {
 };
 ```
 
+`Plite` binds one editor runtime for the provider's mounted lifetime. Remount
+the provider with a different React key before replacing the editor instance.
+
+```tsx
+<Plite editor={editor} key={editorInstanceKey}>
+  <Editable />
+</Plite>
+```
+
+Change `editorInstanceKey` whenever the host intentionally supplies a different
+editor. Keep the key stable for ordinary document updates and named-root
+changes.
+
 Seed the editor with `initialValue` when the editor is created. `<Plite>` does
 not take an `initialValue` prop.
 
