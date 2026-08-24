@@ -130,6 +130,26 @@ time was 31m29s.
     - Repair: make the base store own an empty class string and lock that
       runtime contract with a focused package test. The existing Chromium
       cursor-overlay test is the user-visible regression proof.
+12. `packages/plite-react/src/editable/input-router.ts`
+    - Root cause: root CI rejected a block-bodied callback that only returned
+      `handleDrag(event)`.
+    - Repair: use the equivalent concise callback body required by Oxlint.
+13. `apps/plite/tests/plite-browser/donor/examples/synced-blocks.test.ts`
+    - Root cause: Chromium shard 1 could begin the synthetic selection drag
+      before the first hover/focus layout and pointer-down frame settled. The
+      editor then kept a null selection until the fixed eight-second poll
+      expired.
+    - Repair: settle the hover/focus layout for two animation frames and the
+      pointer-down state for one frame before measuring and moving. Assertions,
+      retries, and timeout budgets remain unchanged.
+14. `apps/www/vercel.json`, root `package.json`, and the www build config
+    - Root cause: the deployment used dashboard-owned `turbo run build` with
+      no package filter or concurrency bound, then Next's Turbopack compile was
+      OOM-killed on a 16 GB Enhanced Build Machine about one minute after
+      `Creating an optimized production build` began.
+    - Repair: make the repository own a `www...` Turbo graph at concurrency
+      two, compile www with Webpack, and enable Next's Webpack build worker and
+      memory optimizations. The registry remains CI-generated.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -186,6 +206,20 @@ from shard summaries and closes when shard 1 passes.
   the route rendered and the selection cursor interaction completed.
 - Five forced, retry-free replays of that exact Chromium row passed in
   1.9-2.7s per run.
+- `pnpm lint`: passed on the final seven-file repair packet.
+- `pnpm turbo typecheck --filter=./packages/plite-react`: 5/5 tasks passed.
+- `node --test tooling/scripts/ci-workflow.test.mjs`: 3/3 passed, including
+  the repository-owned bounded Vercel build contract.
+- `pnpm --filter www exec next typegen`: passed with the final Next config.
+- `pnpm turbo run build --filter=www... --concurrency=2 --dry=json`: selected
+  the intended 61-package dependency graph and final `www#build` task.
+- The exact failed synced-block drag row passed 100/100 retry-free stress
+  iterations with two Chromium workers.
+- The complete affected synced-block Chromium file passed 46/46 with two
+  workers.
+- `pnpm check:push`: passed on the final packet: lint, type-aware lint, 60
+  package builds, 60 package typechecks at concurrency two, 3,314 fast tests,
+  and 1,549 slow tests with 60 skips.
 
 ## Push scope
 
@@ -195,15 +229,19 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-Five repair commits have been pushed through
-`a525367f60000a33055e727db062ccc610880ea9`. The Block Selection store repair
-remains local. Merge is not authorized.
+The existing repair stack and Block Selection store repair are pushed through
+`168a4490e2ccf90dd9b1bd3230fb2f528460caa2`. The final lint, synced-block,
+and Vercel ownership packet is verified in the isolated `../plate-ci`
+checkout and remains unpushed. Merge is not authorized.
 
 ## Remaining risks and next action
 
-- Root CI is green on `a525367…`; Chromium shard 3 remains red until the current
-  Block Selection store repair is committed and pushed. The current Vercel
-  deployment is still building.
+- Root CI at `7d7b501…` failed only the concise-callback lint diagnostic. Plite
+  CI at that SHA failed only the stabilized synced-block drag row. The
+  docs-only `168a449…` head did not trigger those workflows.
+- Vercel at `168a449…` failed in 3m06s from the exact Turbopack compile OOM
+  described above. The repository-owned Webpack build lane is locally
+  contract-checked but requires the next deployment for runtime proof.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.

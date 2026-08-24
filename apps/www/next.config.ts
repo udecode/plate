@@ -146,6 +146,8 @@ const nextConfig = (_phase: string) => {
         validationLevel: 'manual-warning',
       },
       turbopackRustReactCompiler: true,
+      webpackBuildWorker: true,
+      webpackMemoryOptimizations: true,
     },
     logging: {
       browserToTerminal: true,

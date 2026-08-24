@@ -1591,9 +1591,7 @@ export const useEditableDragHandler = ({
   handleDrag: HandleEditableDrag;
 }) =>
   useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      return handleDrag(event);
-    },
+    (event: DragEvent<HTMLDivElement>) => handleDrag(event),
     [handleDrag]
   );
 

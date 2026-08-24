@@ -35,6 +35,7 @@
     "build": "pnpm g:build",
     "build:apps": "turbo --filter \"./apps/www\" build",
     "build:tw": "pnpm --filter www build:tw",
+    "build:www:ci": "turbo run build --filter=www... --concurrency=2",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm lint:type-aware && pnpm typecheck && pnpm test:all && pnpm test:slowest",
     "check:core": "node tooling/scripts/check-core.mjs",

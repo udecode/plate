@@ -11,6 +11,14 @@ const wwwPackageJsonPath = new URL(
   '../../apps/www/package.json',
   import.meta.url
 );
+const wwwNextConfigPath = new URL(
+  '../../apps/www/next.config.ts',
+  import.meta.url
+);
+const wwwVercelConfigPath = new URL(
+  '../../apps/www/vercel.json',
+  import.meta.url
+);
 
 test('root CI bounds Turbo concurrency without changing check coverage', async () => {
   const [workflow, packageJson] = await Promise.all([
@@ -27,6 +35,25 @@ test('root CI bounds Turbo concurrency without changing check coverage', async (
   assert.match(packageJson.scripts['check:push'], /pnpm typecheck/);
   assert.equal(packageJson.scripts.typecheck, 'pnpm g:typecheck');
   assert.match(packageJson.scripts['g:typecheck'], /--concurrency=2$/);
+});
+
+test('Vercel uses the repo-owned bounded www build', async () => {
+  const [nextConfig, packageJson, vercelConfig, wwwPackageJson] =
+    await Promise.all([
+      readFile(wwwNextConfigPath, 'utf-8'),
+      readFile(packageJsonPath, 'utf-8').then(JSON.parse),
+      readFile(wwwVercelConfigPath, 'utf-8').then(JSON.parse),
+      readFile(wwwPackageJsonPath, 'utf-8').then(JSON.parse),
+    ]);
+
+  assert.equal(vercelConfig.buildCommand, 'pnpm -w build:www:ci');
+  assert.equal(
+    packageJson.scripts['build:www:ci'],
+    'turbo run build --filter=www... --concurrency=2'
+  );
+  assert.match(wwwPackageJson.scripts.build, /next build --webpack$/);
+  assert.match(nextConfig, /webpackBuildWorker: true/);
+  assert.match(nextConfig, /webpackMemoryOptimizations: true/);
 });
 
 test('www typecheck refreshes complete Next route types', async () => {

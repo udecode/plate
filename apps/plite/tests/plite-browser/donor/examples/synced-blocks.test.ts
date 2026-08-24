@@ -1531,6 +1531,12 @@ test.describe('synced blocks example', () => {
         y: fromBox.height / 2,
       },
     });
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        )
+    );
     const stableFromBox = await from.boundingBox();
     const toBox = await to.boundingBox();
 
@@ -1549,6 +1555,9 @@ test.describe('synced blocks example', () => {
 
     await page.mouse.move(start.x, start.y);
     await page.mouse.down();
+    await page.evaluate(
+      () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+    );
     for (let step = 1; step <= 8; step++) {
       const progress = step / 8;
 
