@@ -36,7 +36,17 @@ type PersistedDocumentInput = {
 };
 ~~~
 
-The application schema decides which element types, marks, properties, content, and roots are valid. defineDocumentMigrations binds an ascending chain to that schema. Runtime loading and the CLI call the same migrateDocument runner before schema fitting.
+The application schema decides which element types, marks, properties, content, and roots are valid. Omit `root` for Plate's standard nonempty paragraph grammar. Declare a custom primary root with the existing descriptor-aware content builders:
+
+~~~ts
+const EditorSchema = {
+  root: schema.content.element(SectionPlugin, { min: 1 }),
+} as const;
+~~~
+
+The minimum is required and must be a positive integer. The descriptor must match an installed plugin, and the first descriptor in `schema.content.elements` is the default. Root grammar participates in the schema fingerprint and generated `Value`; cardinality remains runtime validation law.
+
+`defineDocumentMigrations` binds an ascending chain to the application schema. Runtime loading and the CLI call the same `migrateDocument` runner before schema fitting. Increment a named schema's version and migrate stored documents when its root grammar changes.
 
 Plate v55 runs `migratePlateV54` and `migratePlateV55` in order for documents from the frozen v53.3.6 profile. Existing v54 documents run only the v55 step.
 

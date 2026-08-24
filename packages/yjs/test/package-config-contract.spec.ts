@@ -181,7 +181,7 @@ describe('@platejs/yjs package config contract', () => {
     assert.equal(yjsPackage.peerDependencies?.yjs, '>=13.6.30');
   });
 
-  it('keeps Plate and React adapters optional for core consumers', () => {
+  it('keeps Plate and React peers optional for root consumers', () => {
     const packageRecord = readJsonRecord('../package.json');
     const peerDependenciesMeta = readOptionalRecord(
       packageRecord,
@@ -208,11 +208,14 @@ describe('@platejs/yjs package config contract', () => {
   it('does not resolve site Yjs imports through package-local node_modules', () => {
     const tsconfig = readTsConfigJson('../../../apps/www/tsconfig.json');
     const yjsAlias = tsconfig.compilerOptions?.paths?.yjs;
-    const plateYjsReactAlias =
+    const yjsPlateAlias =
+      tsconfig.compilerOptions?.paths?.['@platejs/yjs/plate'];
+    const yjsReactAlias =
       tsconfig.compilerOptions?.paths?.['@platejs/yjs/react'];
 
     assert.equal(yjsAlias, undefined);
-    assert.deepEqual(plateYjsReactAlias, ['../../packages/yjs/src/react']);
+    assert.deepEqual(yjsPlateAlias, ['../../packages/yjs/src/plate']);
+    assert.deepEqual(yjsReactAlias, ['../../packages/yjs/src/react']);
   });
 
   it('typechecks Plate adapters against Core source instead of stale build output', () => {
@@ -422,8 +425,8 @@ describe('@platejs/yjs package config contract', () => {
 
     assert.deepEqual(Object.keys(yjsPackage.exports ?? {}).sort(), [
       '.',
-      './core',
       './package.json',
+      './plate',
       './react',
     ]);
     assert.deepEqual(yjsPackage.exports?.['.'], {
@@ -431,10 +434,10 @@ describe('@platejs/yjs package config contract', () => {
       import: './dist/index.js',
       types: './dist/index.d.ts',
     });
-    assert.deepEqual(yjsPackage.exports?.['./core'], {
-      default: './dist/core/index.js',
-      import: './dist/core/index.js',
-      types: './dist/core/index.d.ts',
+    assert.deepEqual(yjsPackage.exports?.['./plate'], {
+      default: './dist/plate/index.js',
+      import: './dist/plate/index.js',
+      types: './dist/plate/index.d.ts',
     });
     assert.deepEqual(yjsPackage.exports?.['./react'], {
       default: './dist/react/index.js',

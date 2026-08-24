@@ -32,10 +32,12 @@ import { recordPliteReactRender } from '../render-profiler';
 import { clearCrossEditorDragSession } from './cross-editor-drag-session';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
-import type {
-  DOMInputRepairTarget,
-  EditableInputController,
-  RepairDOMInput,
+import {
+  clearEditablePendingNativeTextInputRepair,
+  type DOMInputRepairTarget,
+  type EditableInputController,
+  type RepairDOMInput,
+  setEditablePendingNativeTextInputRepair,
 } from './input-state';
 import { getNativeTextInsertDelta } from './native-text-input-delta';
 import { failInvariant } from './runtime-editor-api';
@@ -60,6 +62,17 @@ const DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS = 1;
 const DEFERRED_NATIVE_TEXT_INPUT_REPAIR_MAX_MS = 120;
 
 const now = () => globalThis.performance?.now?.() ?? Date.now();
+
+const assignForwardedRef = <T>(
+  ref: ForwardedRef<T> | undefined,
+  value: T | null
+) => {
+  if (typeof ref === 'function') {
+    ref(value);
+  } else if (ref) {
+    ref.current = value;
+  }
+};
 
 const profileDOMInputDuration = <T>(id: string, callback: () => T): T => {
   if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
@@ -880,11 +893,7 @@ export const useEditableRootRef = ({
         setEditorDOMEditableElement(editor, node);
       }
       runtime.setRoot(node);
-      if (typeof forwardedRef === 'function') {
-        forwardedRef(node);
-      } else if (forwardedRef) {
-        forwardedRef.current = node;
-      }
+      assignForwardedRef(forwardedRef, node);
     },
     [editor, forwardedRef, runtime]
   );
@@ -1004,8 +1013,7 @@ export const useEditableDOMInputHandler = ({
       return;
     }
 
-    inputController.state.pendingNativeTextInputRepairOffset = null;
-    inputController.state.pendingNativeTextInputRepairPathKey = null;
+    clearEditablePendingNativeTextInputRepair(inputController);
   }, [editor, inputController]);
   const flushDeferredTextInputRepairs = useCallback(() => {
     if (deferredTextInputRepairFrameRef.current !== null) {
@@ -1055,8 +1063,7 @@ export const useEditableDOMInputHandler = ({
       inputController &&
       (repairs.length === 0 || !repairedPendingNativeTextInputSelection)
     ) {
-      inputController.state.pendingNativeTextInputRepairOffset = null;
-      inputController.state.pendingNativeTextInputRepairPathKey = null;
+      clearEditablePendingNativeTextInputRepair(inputController);
     } else if (repairedPendingNativeTextInputSelection) {
       phaseScheduler.schedule(
         'selection-repair',
@@ -1179,9 +1186,10 @@ export const useEditableDOMInputHandler = ({
       });
 
       if (pathKey && inputController) {
-        inputController.state.pendingNativeTextInputRepairOffset =
-          target.selectionOffset;
-        inputController.state.pendingNativeTextInputRepairPathKey = pathKey;
+        setEditablePendingNativeTextInputRepair(inputController, {
+          offset: target.selectionOffset,
+          pathKey,
+        });
       }
 
       if (

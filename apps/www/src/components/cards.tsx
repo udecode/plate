@@ -16,6 +16,7 @@ import Link from 'next/link';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
+import { toLinkHref } from '@/lib/withLocale';
 
 // Icon registry for Card components
 const iconRegistry = {
@@ -101,7 +102,12 @@ export function Card({
 
   if (href) {
     return (
-      <Link {...props} className={cardClassName} data-card href={href}>
+      <Link
+        {...props}
+        className={cardClassName}
+        data-card
+        href={toLinkHref(href)}
+      >
         {content}
       </Link>
     );

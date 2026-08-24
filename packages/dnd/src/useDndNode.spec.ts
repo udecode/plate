@@ -8,7 +8,7 @@ import {
   NodeApi,
   type NodeKey,
 } from '@platejs/plite';
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import type {
   DragSourceHookSpec,
   DragSourceMonitor,
@@ -34,11 +34,14 @@ const dragSpecByItem = new WeakMap<
   object,
   DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }>
 >();
+const dropConnector = mock(() => null);
+const dragConnector = mock(() => null);
+const previewConnector = mock(() => null);
 const useDropMock = mock(
   (spec: DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }>) => {
     dropSpec = spec;
 
-    return [{ isOver: false }, () => null];
+    return [{ isOver: false }, dropConnector];
   }
 );
 let currentEditor: PlateEditor;
@@ -57,8 +60,8 @@ void mock.module('react-dnd', () => ({
 
     return [
       { isAboutToDrag: false, isDragging: false },
-      () => null,
-      () => null,
+      dragConnector,
+      previewConnector,
     ];
   },
   useDrop: useDropMock,
@@ -146,6 +149,14 @@ const callDragItem = (monitor: DragSourceMonitor) => {
   return item;
 };
 
+const callCanDrag = (monitor: DragSourceMonitor) => {
+  if (typeof dragSpec?.canDrag !== 'function') {
+    throw new Error('Expected the DnD canDrag callback.');
+  }
+
+  return dragSpec.canDrag(monitor);
+};
+
 const callDragEnd = (
   dragItem: DragItemNode,
   dropResult: Record<PropertyKey, unknown>
@@ -182,6 +193,90 @@ describe('Dnd node behavior', () => {
 
     expect(result.current.nodeRef).toBe(nodeRef);
     expect(result.current.previewRef).toBe(previewRef);
+  });
+
+  it('attaches and detaches drop and preview connectors in layout', () => {
+    dropConnector.mockClear();
+    previewConnector.mockClear();
+    currentEditor = createPlateEditor();
+    currentEditor.update.value.replace({
+      children: [{ children: [{ text: 'block' }], type: 'paragraph' }],
+      selection: null,
+    });
+    const element = getElement(currentEditor, [0]);
+    const nodeRef = { current: document.createElement('div') };
+    const previewRef = { current: document.createElement('div') };
+    const rendered = renderHook(() =>
+      useDraggable({ element, multiplePreviewRef: previewRef, nodeRef })
+    );
+
+    expect(dropConnector).toHaveBeenCalledWith(nodeRef);
+    expect(previewConnector).toHaveBeenCalledWith(previewRef);
+
+    rendered.unmount();
+
+    expect(dropConnector).toHaveBeenLastCalledWith(null);
+    expect(previewConnector).toHaveBeenLastCalledWith(null);
+  });
+
+  it('clears an attempted drag only when the monitor never starts it', async () => {
+    currentEditor = createPlateEditor();
+    currentEditor.update.value.replace({
+      children: [{ children: [{ text: 'block' }], type: 'paragraph' }],
+      selection: null,
+    });
+    const element = getElement(currentEditor, [0]);
+    const rendered = renderHook(() => useDraggable({ element }));
+    const monitor = {
+      isDragging: () => false,
+    } as unknown as DragSourceMonitor;
+
+    act(() => {
+      expect(callCanDrag(monitor)).toBe(true);
+    });
+
+    expect(rendered.result.current.isAboutToDrag).toBe(true);
+
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 5);
+      });
+    });
+
+    expect(rendered.result.current.isAboutToDrag).toBe(false);
+  });
+
+  it('keeps attempted-drag state through item creation and clears it at end', async () => {
+    currentEditor = createPlateEditor({ plugins: [DndPlugin] });
+    currentEditor.update.value.replace({
+      children: [{ children: [{ text: 'block' }], type: 'paragraph' }],
+      selection: null,
+    });
+    const element = getElement(currentEditor, [0]);
+    const rendered = renderHook(() => useDraggable({ element }));
+    const monitor = {
+      isDragging: () => false,
+    } as unknown as DragSourceMonitor;
+    let dragItem!: DragItemNode;
+
+    act(() => {
+      expect(callCanDrag(monitor)).toBe(true);
+      dragItem = callDragItem(monitor);
+    });
+
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 5);
+      });
+    });
+
+    expect(rendered.result.current.isAboutToDrag).toBe(true);
+
+    act(() => {
+      callDragEnd(dragItem, {});
+    });
+
+    expect(rendered.result.current.isAboutToDrag).toBe(false);
   });
 
   let clientOffset: null | { x: number; y: number };

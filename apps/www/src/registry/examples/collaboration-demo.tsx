@@ -8,13 +8,10 @@ import type {
   YjsProviderLike,
   YjsProviderStatus,
 } from '@platejs/yjs';
-import {
-  useYjsProviderStatus,
-  useYjsProviderSynced,
-  YjsPlugin,
-} from '@platejs/yjs/react';
+import { YjsPlugin } from '@platejs/yjs/plate';
+import { useYjsProviderStatus, useYjsProviderSynced } from '@platejs/yjs/react';
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import { createPlateEditor, Plate, useEditorSelector } from 'platejs/react';
+import { createPlateEditor, Plate } from 'platejs/react';
 import * as React from 'react';
 import * as Y from 'yjs';
 
@@ -706,12 +703,21 @@ function PeerControls({
   editor: DemoEditor;
   peer: DemoPeer;
 }) {
-  const undoDepth = useEditorSelector(
-    (currentEditor) => currentEditor.read.history.undos().length
+  const subscribeHistory = React.useCallback(
+    (onStoreChange: () => void) => editor.subscribeCommit(onStoreChange),
+    [editor]
   );
-  const redoDepth = useEditorSelector(
-    (currentEditor) => currentEditor.read.history.redos().length
+  const getHistorySnapshot = React.useCallback(
+    () => editor.read.history(),
+    [editor]
   );
+  const history = React.useSyncExternalStore(
+    subscribeHistory,
+    getHistorySnapshot,
+    getHistorySnapshot
+  );
+  const redoDepth = history.redos.length;
+  const undoDepth = history.undos.length;
 
   React.useEffect(() => {
     editor.update.yjs.sendCursorData({

@@ -9,7 +9,7 @@ Yjs collaboration bindings for Plate and Plite editors.
 Configure `YjsPlugin` with the app-owned document and provider.
 
 ```tsx
-import { YjsPlugin } from '@platejs/yjs/react';
+import { YjsPlugin } from '@platejs/yjs/plate';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
@@ -28,7 +28,7 @@ const editor = createPlateEditor({
 });
 ```
 
-`BaseYjsPlugin` provides the same extension for non-React Plate editors.
+Import `BaseYjsPlugin` from the same Plate subpath for non-React Plate editors.
 
 ## Plite
 
@@ -151,7 +151,7 @@ The durable tombstone releases only that generation's delivery obligation. A ret
 - Collaboration binds to the editor view root that installs the extension. Changes and selections from sibling Plite roots stay outside that Yjs document.
 - App code owns transport packages, authentication, persistence, room naming, server scaling, and provider-specific options.
 - Provider integrations are peer application code. The package does not depend on Hocuspocus, `y-websocket`, IndexedDB, WebRTC, or another transport package.
-- Public imports are `@platejs/yjs`, `@platejs/yjs/core`, and `@platejs/yjs/react`.
+- Public imports are `@platejs/yjs`, `@platejs/yjs/react`, and `@platejs/yjs/plate`.
 
 ## Related Docs
 

@@ -5,7 +5,11 @@ import pluginBabel from '@rollup/plugin-babel';
 import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
-import { withDirectPackageConfig } from './direct-package.config.mts';
+import {
+  type RuntimeImportBoundary,
+  withDirectPackageConfig,
+  withRuntimeImportBoundaryConfig,
+} from './direct-package.config.mts';
 
 export const resolvePlatePackageRoot = ({
   cwd = process.cwd(),
@@ -85,9 +89,11 @@ const enableSourcemaps = !process.env.CI;
 export const createPlatePackageConfig = ({
   additionalEntries = [],
   directDeclarations = false,
+  runtimeImportBoundaries = [],
 }: {
   additionalEntries?: string[];
   directDeclarations?: boolean;
+  runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
 } = {}) =>
   defineConfig((opts) => {
     const config = {
@@ -126,13 +132,19 @@ export const createPlatePackageConfig = ({
               test: TSX_FILE_RE,
             },
           ],
-          plugins: [['babel-plugin-react-compiler', { target: '18' }]],
+          plugins: [['babel-plugin-react-compiler', { target: '19' }]],
           extensions: ['.js', '.jsx', '.ts', '.tsx'],
         }),
       ],
     };
 
-    return [directDeclarations ? withDirectPackageConfig(config) : config];
+    return [
+      directDeclarations
+        ? withDirectPackageConfig(config, { runtimeImportBoundaries })
+        : withRuntimeImportBoundaryConfig(config, {
+            runtimeImportBoundaries,
+          }),
+    ];
   });
 
 export default createPlatePackageConfig();

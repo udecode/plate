@@ -1287,22 +1287,54 @@ const lowerApplicationContentRule = (
   }
 };
 
+const findApplicationContentDefaultReference = (
+  rule: SchemaContentRule,
+  type: string
+): SchemaElementSourceReference | null => {
+  switch (rule.kind) {
+    case 'type': {
+      return 'source' in rule && rule.source === type
+        ? (rule as SchemaElementSourceReference)
+        : null;
+    }
+    case 'all':
+    case 'any': {
+      for (const child of rule.rules) {
+        const reference = findApplicationContentDefaultReference(child, type);
+
+        if (reference) return reference;
+      }
+
+      return null;
+    }
+    case 'not': {
+      return findApplicationContentDefaultReference(rule.rule, type);
+    }
+    default: {
+      return null;
+    }
+  }
+};
+
 const lowerApplicationContent = (
   model: CompiledPlateModel,
   content: SchemaContent
 ): SchemaContent => {
-  const directReference =
-    content.allowed.kind === 'type' && 'source' in content.allowed
-      ? (content.allowed as SchemaElementSourceReference)
+  const defaultReference =
+    content.default !== undefined && content.default !== 'text'
+      ? findApplicationContentDefaultReference(
+          content.allowed,
+          content.default.type
+        )
       : null;
 
   return Object.freeze({
     ...content,
     allowed: lowerApplicationContentRule(model, content.allowed),
-    ...(directReference && content.default !== 'text'
+    ...(defaultReference
       ? {
           default: {
-            type: resolveApplicationElementSource(model, directReference),
+            type: resolveApplicationElementSource(model, defaultReference),
           },
         }
       : {}),
@@ -1383,8 +1415,27 @@ const lowerApplicationTarget = (
 export const compileEditorApplicationSchema = (
   model: CompiledPlateModel,
   policy: EditorApplicationSchema | undefined
-): EditorSchemaContribution | undefined => {
+):
+  | Readonly<{
+      contribution: EditorSchemaContribution;
+      root?: SchemaContent;
+    }>
+  | undefined => {
   if (!policy) return undefined;
+
+  const { root } = policy;
+
+  if (
+    root !== undefined &&
+    (typeof root !== 'object' ||
+      root === null ||
+      !Number.isInteger(root.min) ||
+      root.min < 1)
+  ) {
+    throw new TypeError(
+      'Editor application schema root min must be a positive integer.'
+    );
+  }
 
   const overrides: EditorSchemaOverride[] = [];
 
@@ -1471,8 +1522,15 @@ export const compileEditorApplicationSchema = (
   );
 
   return Object.freeze({
-    ...(overrides.length > 0 ? { overrides: Object.freeze(overrides) } : {}),
-    ...(properties.length > 0 ? { properties: Object.freeze(properties) } : {}),
+    contribution: Object.freeze({
+      ...(overrides.length > 0 ? { overrides: Object.freeze(overrides) } : {}),
+      ...(properties.length > 0
+        ? { properties: Object.freeze(properties) }
+        : {}),
+    }),
+    ...(root !== undefined
+      ? { root: lowerApplicationContent(model, root) }
+      : {}),
   });
 };
 

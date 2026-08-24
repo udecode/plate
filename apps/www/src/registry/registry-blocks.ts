@@ -155,6 +155,7 @@ export const registryBlocks: Registry['items'] = [
       'button',
       '@plate/editor-plugins',
       '@plate/editor-plugins-static',
+      '@plate/use-object-url',
     ],
     type: 'registry:block',
   },

@@ -74,7 +74,7 @@ function HomePlaygroundToolbar({
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const installCommand = getRegistryInstallCommand(item.name);
   const clipboardInstallCommand = getRegistryClipboardInstallCommand(item.name);
-  const previewUrl = `/view/${item.name}`;
+  const previewUrl = `/view/${item.name}` as const;
 
   return (
     <div className="flex w-full items-center gap-2 px-2">

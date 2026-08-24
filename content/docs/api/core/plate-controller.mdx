@@ -54,14 +54,14 @@ function SecondaryEditor() {
 
 ## Active Editor Lookup
 
-Hooks such as `useEditor()` and `useEditorMounted()` normally read the nearest
-`Plate` store. Inside `PlateController`, the same hooks can resolve a store
-outside a specific editor tree.
+Hooks such as `useEditor()` and `useEditorMounted()` normally read through the
+nearest `Plate` store. Inside `PlateController`, the same hooks can resolve an
+editor outside a specific editor tree.
 
 | Lookup | Behavior |
 |--------|----------|
-| `useEditor({ id: 'main' })` | Resolves the active store registered for `main`; throws when it is absent. |
-| `useEditor()` | Resolves the active editor store, then the first mounted primary editor store; throws when none exists. |
+| `useEditor({ id: 'main' })` | Resolves the active editor registered for `main`; throws when it is absent. |
+| `useEditor()` | Resolves the active editor, then the first mounted primary editor; throws when none exists. |
 | `useActiveEditor()` | Uses the same lookup and returns `null` when no editor is active. |
 | Missing store without controller | Throws `Plate hooks must be used inside a Plate or PlateController`. |
 

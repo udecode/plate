@@ -674,6 +674,23 @@ test('www package integration inherits the complete source map', () => {
   assert.equal(config.compilerOptions?.paths, undefined);
 });
 
+test('Plite package CI installs Chromium before browser-backed package tests', () => {
+  const workflow = fs.readFileSync(
+    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
+    'utf-8'
+  );
+  const packagesJob = workflow.match(
+    /\n {2}packages:(?<body>[\s\S]*?)(?=\n {2}[a-z][a-z0-9-]*:|$)/u
+  )?.groups?.body;
+
+  assert.ok(packagesJob, 'missing packages job');
+  assert.ok(
+    packagesJob.indexOf('run: pnpm plite:browser:install chromium') <
+      packagesJob.indexOf('run: pnpm plite:test'),
+    'packages job must install Chromium before browser-backed package tests'
+  );
+});
+
 test('affected dependency graph matches Plite-family package manifests', () => {
   const familyNames = new Set(plitePackages.map(({ name }) => name));
 

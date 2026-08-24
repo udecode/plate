@@ -12,6 +12,7 @@ import {
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { toLinkHref } from '@/lib/withLocale';
 
 export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
   const { element } = props;
@@ -33,7 +34,11 @@ export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
   );
 
   const content =
-    readOnly && element.url ? <Link href={element.url}>{badge}</Link> : badge;
+    readOnly && element.url ? (
+      <Link href={toLinkHref(element.url)}>{badge}</Link>
+    ) : (
+      badge
+    );
 
   return (
     <PlateElement

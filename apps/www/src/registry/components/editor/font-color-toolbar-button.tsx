@@ -201,13 +201,17 @@ export function FontColorToolbarButton({
 
   const onToggle = React.useCallback(
     (value = !open) => {
+      if (value && selectionDefined) {
+        setSelectedColor(color);
+      }
+
       setOpen(value);
 
       if (!value) {
         setUpdatedColor(undefined);
       }
     },
-    [open]
+    [color, open, selectionDefined]
   );
 
   const updateColor = React.useCallback(
@@ -243,13 +247,6 @@ export function FontColorToolbarButton({
     onToggle(false);
   }, [editor, onToggle, plugin]);
 
-  React.useEffect(() => {
-    if (selectionDefined) {
-      // Preserve the mark color while menu focus clears editor selection.
-      setSelectedColor(color);
-    }
-  }, [color, selectionDefined]);
-
   return (
     <DropdownMenu {...menuProps} modal onOpenChange={onToggle} open={open}>
       <DropdownMenuTrigger asChild>
@@ -279,7 +276,7 @@ export function FontColorToolbarButton({
   );
 }
 
-function PureColorPicker({
+function ColorPicker({
   className,
   clearColor: innerClearColor,
   color,
@@ -330,15 +327,6 @@ function PureColorPicker({
     </div>
   );
 }
-
-const ColorPicker = React.memo(
-  PureColorPicker,
-  (prev, next) =>
-    prev.color === next.color &&
-    prev.colors === next.colors &&
-    prev.recentColors === next.recentColors &&
-    prev.updatedColor === next.updatedColor
-);
 
 function ColorCustom({
   className,

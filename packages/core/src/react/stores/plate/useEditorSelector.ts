@@ -6,7 +6,6 @@ import React from 'react';
 
 import type { PlateEditor } from '../../editor';
 import { useEditor } from './createPlateStore';
-import type { PlateEditorWithStore } from './createPlateStore';
 
 export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
   T,
@@ -16,7 +15,7 @@ export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
 };
 
 export const useEditorSelector = <T>(
-  selector: (editor: PlateEditorWithStore, prev?: T) => T,
+  selector: (editor: PlateEditor, prev?: T) => T,
   { id, ...options }: UseEditorSelectorOptions<T> = {}
 ): T => {
   const editor = useEditor({ id });

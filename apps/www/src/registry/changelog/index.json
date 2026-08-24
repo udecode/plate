@@ -2,6 +2,56 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-24-keep-editor-contracts-app-owned",
+      "href": "/registry/changelog/2026-08-24-keep-editor-contracts-app-owned.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Keep exact editor contracts application-owned",
+      "change": {
+        "type": "source",
+        "date": "2026-08-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor-plugins"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-24-react-compiler-owned-editor-state",
+      "href": "/registry/changelog/2026-08-24-react-compiler-owned-editor-state.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep copied editor state compatible with React Compiler",
+      "change": {
+        "type": "source",
+        "date": "2026-08-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "font-color-toolbar-button",
+        "math",
+        "media-placeholder",
+        "plate-to-html",
+        "use-object-url",
+        "table",
+        "use-chat",
+        "ai-menu",
+        "column",
+        "dnd",
+        "editor",
+        "emoji-picker",
+        "inline-combobox"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-20-demand-driven-dnd",
       "href": "/registry/changelog/2026-08-20-demand-driven-dnd.json",
       "status": "draft",

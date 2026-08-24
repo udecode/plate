@@ -91,6 +91,12 @@ plugin arrays and their membership/order policy. When several plugins are truly
 inseparable, encode them as `dependencies` of one honest capability descriptor,
 not as a package-exported array.
 
+Package entrypoints must tell the truth about dependency reachability. A root
+may expose only code backed by its required dependencies. Code requiring an
+optional framework or runtime peer belongs behind an explicit subpath whose
+packed JavaScript and declarations are proved without unrelated peers. Do not
+use package-wide optional metadata to excuse a root or sibling subpath leak.
+
 ### 2. Reality check
 
 Then inspect current ownership, runtime truth, adoption, inference, and breaking
@@ -263,6 +269,9 @@ Ask:
 - Does any package root export a named plugin-array `*Kit` or equivalent
   preset? Reject it; route inseparable structure to descriptor dependencies and
   consumer policy to registry/app source.
+- Does every public entrypoint's packed JavaScript and declaration graph require
+  only its declared dependency set, with optional peers isolated behind honest
+  subpaths?
 - For two independently optional capabilities, do adapting-only, target-only,
   both, and both with explicit target configuration preserve independent
   membership and deterministic precedence?

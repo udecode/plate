@@ -6,6 +6,7 @@ import * as React from 'react';
 let selected = true;
 let selectionCollapsed = true;
 let readOnly = true;
+let popoverOnOpenChange: ((open: boolean) => void) | undefined;
 const renderEquation = mock();
 const setExpression = mock();
 let textareaProps: React.ComponentProps<'textarea'>;
@@ -89,11 +90,22 @@ mock.module('@/components/ui/button', () => ({
 }));
 
 mock.module('@/components/ui/popover', () => ({
-  Popover: ({ children, open }: React.PropsWithChildren<{ open: boolean }>) => (
-    <div data-open={open} data-testid="popover">
-      {children}
-    </div>
-  ),
+  Popover: ({
+    children,
+    onOpenChange,
+    open,
+  }: React.PropsWithChildren<{
+    open: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }>) => {
+    popoverOnOpenChange = onOpenChange;
+
+    return (
+      <div data-open={open} data-testid="popover">
+        {children}
+      </div>
+    );
+  },
   PopoverAnchor: ({ children }: React.PropsWithChildren) => <>{children}</>,
   PopoverContent: ({ children }: React.PropsWithChildren) => <>{children}</>,
   PopoverTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,
@@ -111,6 +123,7 @@ mock.module('@/registry/lib/suggestion', () => ({
 describe('InlineEquationElement', () => {
   beforeEach(() => {
     readOnly = true;
+    popoverOnOpenChange = undefined;
     selected = true;
     selectionCollapsed = true;
     element.latex = 'E=mc^2';
@@ -149,6 +162,30 @@ describe('InlineEquationElement', () => {
       expect.any(HTMLElement),
       expect.objectContaining({ displayMode: true })
     );
+  });
+
+  it('keeps an explicit dismissal closed until selection leaves and returns', async () => {
+    const { InlineEquationElement } = await import(
+      `./math?test=${Math.random().toString(36).slice(2)}`
+    );
+    const props = {
+      attributes: {},
+      children: <span />,
+      editor: {},
+      element,
+    } as any;
+    const view = render(<InlineEquationElement {...props} />);
+
+    act(() => popoverOnOpenChange?.(false));
+    expect(view.getByTestId('popover').dataset.open).toBe('false');
+
+    selected = false;
+    view.rerender(<InlineEquationElement {...props} />);
+    expect(view.getByTestId('popover').dataset.open).toBe('false');
+
+    selected = true;
+    view.rerender(<InlineEquationElement {...props} />);
+    expect(view.getByTestId('popover').dataset.open).toBe('true');
   });
 
   it('merges an escaped inline rollback into the edit history batch', async () => {

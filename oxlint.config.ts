@@ -61,6 +61,13 @@ export default defineConfig({
   settings: jsPluginSettings,
   overrides: [
     {
+      files: ['packages/plite-react/test/render-probes/**/*.{ts,tsx}'],
+      rules: {
+        // [P0 test-harness] These components synchronously publish render observations; effects would change the boundary under test.
+        'react/immutability': 'off',
+      },
+    },
+    {
       files: ['apps/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
       rules: {
         ...next.rules,
@@ -341,24 +348,24 @@ export default defineConfig({
     'react-doctor/prefer-useReducer': 'off',
     // [P0 semantic-change] Manual memoization can provide observable identity to subscriptions, imperative adapters, and third-party hooks; React Compiler optimization does not prove removing each boundary preserves that contract.
     'react-doctor/react-compiler-no-manual-memoization': 'off',
+    // Production components stay named even though copied registry components rely on Compiler optimization instead of display-name assignments.
+    'react/display-name': 'error',
     // [P0 lifecycle-conflict] Extra effect dependencies can intentionally trigger resubscription or synchronization when an external editor input changes; removing them changes observable lifecycle timing.
     'react/exhaustive-effect-dependencies': 'off',
     // [P0 public-API-conflict] Plate plugins expose hook functions as runtime extension values, and isomorphic hook aliases remain stable by construction; the standard rules-of-hooks owner still enforces call order.
     'react/hooks': 'off',
-    // [P0 compiler-boundary] Plate and Plite hooks return deliberately mutable editor engines, stores, adapters, and ref-backed cells; treating those imperative owners as React state would require false setters or architectural rewrites.
-    'react/immutability': 'off',
+    'react/immutability': 'error',
     // [P0 identity-conflict] Extra memo dependencies can deliberately invalidate values when external editor inputs change; removing them changes callback or object identity observed by subscriptions and consumers.
     'react/memo-dependencies': 'off',
     // [P0 compiler-policy-conflict] Precise production suppressions encode explicit dependency and ownership invariants; rejecting every React suppression would make the permitted narrow exception policy impossible.
     'react/rule-suppression': 'off',
-    // [P0 compiler-boundary] Ref-backed editor and DOM state is intentionally read during render without becoming reactive state; forcing state mirrors can stale native selection or add render loops while the compiler can safely skip optimization.
-    'react/refs': 'off',
-    // [P0 external-sync] Effects synchronize React with DOM, editor stores, drag monitors, and mount state; synchronous guarded updates are sometimes the required bridge, and deriving them during render changes lifecycle behavior.
-    'react/set-state-in-effect': 'off',
+    // Existing identity contracts remain valid; this native rule verifies that Compiler preserves them rather than banning them.
+    'react/preserve-manual-memoization': 'error',
+    'react/refs': 'error',
+    'react/set-state-in-effect': 'error',
     // [P0 compiler-limit] This rule exposes unsupported React Compiler syntax and HIR implementation gaps such as dynamic imports, accessors, logical assignment, and try/finally; source rewrites would change control flow solely for optimization eligibility.
     'react/todo': 'off',
-    // [P0 laundering] Passing a named factory to useMemo is valid React; requiring a behavior-equivalent inline wrapper adds syntax only so the compiler can inspect it.
-    'react/use-memo': 'off',
+    'react/use-memo': 'error',
     // [P0 owner-conflict] Coordinate rounding mutates canonical vector geometry without a visual tolerance or screenshot proof; SVG minification and compression, not source lint, own measured asset bytes.
     'react-doctor/rendering-svg-precision': 'off',
     // [P0 semantic-change] Forcing component arrows changes declaration hoisting and temporal availability; component ownership decides the form locally.

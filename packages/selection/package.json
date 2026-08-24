@@ -50,8 +50,7 @@
     "@platejs/plite": "workspace:^",
     "@platejs/plite-dom": "workspace:^",
     "@platejs/utils": "workspace:^",
-    "copy-to-clipboard": "^3.3.3",
-    "react-compiler-runtime": "^1.0.0"
+    "copy-to-clipboard": "^3.3.3"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",

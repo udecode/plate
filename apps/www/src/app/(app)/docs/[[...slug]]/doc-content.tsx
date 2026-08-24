@@ -16,6 +16,7 @@ import { badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { cn } from '@/lib/utils';
+import { toLinkHref } from '@/lib/withLocale';
 
 export type DocContentDoc = {
   copyMarkdown?: string;
@@ -141,7 +142,7 @@ export function DocContent({
                       variant="secondary"
                       className="extend-touch-target size-8 shadow-none md:size-7"
                     >
-                      <Link href={neighbours.previous.href}>
+                      <Link href={toLinkHref(neighbours.previous.href)}>
                         <IconArrowLeft />
                         <span className="sr-only">Previous</span>
                       </Link>
@@ -154,7 +155,7 @@ export function DocContent({
                       variant="secondary"
                       className="extend-touch-target size-8 shadow-none md:size-7"
                     >
-                      <Link href={neighbours.next.href}>
+                      <Link href={toLinkHref(neighbours.next.href)}>
                         <span className="sr-only">Next</span>
                         <IconArrowRight />
                       </Link>
@@ -195,7 +196,7 @@ export function DocContent({
                       badgeVariants({ variant: 'secondary' }),
                       'gap-1'
                     )}
-                    href={doc?.links.doc}
+                    href={toLinkHref(doc.links.doc)}
                     rel="noreferrer"
                     target="_blank"
                   >
@@ -209,7 +210,7 @@ export function DocContent({
                       badgeVariants({ variant: 'secondary' }),
                       'gap-1'
                     )}
-                    href={doc?.links.api}
+                    href={toLinkHref(doc.links.api)}
                     rel="noreferrer"
                     target="_blank"
                   >
@@ -227,7 +228,7 @@ export function DocContent({
                             variant: getItemVariant(item),
                           })
                         )}
-                        href={item.route}
+                        href={toLinkHref(item.route)}
                       >
                         {getDocTitle(item)}
                       </Link>
@@ -256,7 +257,7 @@ export function DocContent({
               variant="secondary"
               className="shadow-none"
             >
-              <Link href={neighbours.previous.href}>
+              <Link href={toLinkHref(neighbours.previous.href)}>
                 <IconArrowLeft /> {neighbours.previous.title}
               </Link>
             </Button>
@@ -268,7 +269,7 @@ export function DocContent({
               variant="secondary"
               className="ml-auto shadow-none"
             >
-              <Link href={neighbours.next.href}>
+              <Link href={toLinkHref(neighbours.next.href)}>
                 {neighbours.next.title} <IconArrowRight />
               </Link>
             </Button>

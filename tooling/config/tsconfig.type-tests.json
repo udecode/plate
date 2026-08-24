@@ -43,8 +43,13 @@
       ],
       "@platejs/table": ["../../packages/table/src/index.ts"],
       "@platejs/table/react": ["../../packages/table/src/react/index.ts"],
+      "@udecode/*": [
+        "../../packages/udecode/*/src/index.ts",
+        "../../packages/udecode/*/src/index.tsx",
+        "../../packages/udecode/*/src"
+      ],
       "@platejs/yjs": ["../../packages/yjs/src/index.ts"],
-      "@platejs/yjs/core": ["../../packages/yjs/src/core/index.ts"],
+      "@platejs/yjs/plate": ["../../packages/yjs/src/plate/index.ts"],
       "@platejs/yjs/react": ["../../packages/yjs/src/react/index.ts"],
       "www/*": ["../../apps/www/*"]
     }

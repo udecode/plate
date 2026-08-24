@@ -1,5 +1,6 @@
 'use client';
 
+import type { Route } from 'next';
 import Link, { type LinkProps } from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -231,10 +232,10 @@ export function MobileNav({
   );
 }
 
-interface MobileLinkProps extends Omit<LinkProps, 'href'> {
+interface MobileLinkProps extends Omit<LinkProps<string>, 'href'> {
   children: React.ReactNode;
   className?: string;
-  href: string;
+  href: Route;
   onOpenChange?: (open: boolean) => void;
   rel?: string;
   target?: string;

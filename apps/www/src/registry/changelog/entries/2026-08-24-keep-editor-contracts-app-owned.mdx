@@ -1,0 +1,14 @@
+---
+id: 2026-08-24-keep-editor-contracts-app-owned
+date: 2026-08-24
+status: draft
+kind: remove
+summary: 'Keep exact editor contracts application-owned'
+change: { 'type': 'source', 'date': '2026-08-24', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-08-24-keep-editor-contracts-app-owned","kind":"remove","migrationNotes":["Delete unused plugins.generated.ts and plugins.schema.json files. If the app needs exact contracts, install @platejs/cli, regenerate from its local plugin module, and enforce plate generate --check <entry> in CI."]} -->
+
+- **`editor-plugins`**: Install the authored editor kit without generated TypeScript or schema snapshots. Generate exact contracts from the application's customized plugin module and enforce `plate generate --check <entry>` in CI.

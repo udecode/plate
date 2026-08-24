@@ -1437,7 +1437,9 @@ type ApplicationSchemaMemberHasPolicy<TSchema> = TSchema extends undefined
     ? true
     : 'properties' extends keyof TSchema
       ? true
-      : false;
+      : 'root' extends keyof TSchema
+        ? true
+        : false;
 
 type HasApplicationSchemaPolicy<TSchema> =
   true extends ApplicationSchemaMemberHasPolicy<TSchema> ? true : false;

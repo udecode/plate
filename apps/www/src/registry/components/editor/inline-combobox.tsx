@@ -310,13 +310,13 @@ const InlineCombobox = ({
   );
 };
 
-const InlineComboboxInput = ({
+function InlineComboboxInput({
   className,
   ref: propRef,
   ...props
 }: React.HTMLAttributes<HTMLInputElement> & {
   ref?: React.RefObject<HTMLInputElement | null>;
-}) => {
+}) {
   const {
     inputProps,
     inputRef: contextRef,
@@ -363,9 +363,7 @@ const InlineComboboxInput = ({
       </span>
     </>
   );
-};
-
-InlineComboboxInput.displayName = 'InlineComboboxInput';
+}
 
 const InlineComboboxContent = ({
   className,

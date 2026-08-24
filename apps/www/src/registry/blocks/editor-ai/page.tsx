@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
+/* oxlint-disable react-doctor/nextjs-missing-metadata -- Registry source is client-loaded in docs, not routed by the App Router. */
 import { Toaster } from 'sonner';
 
 import { PlateEditor } from '@/registry/blocks/editor-ai/components/editor/plate-editor';
-
-export const metadata: Metadata = {
-  title: 'AI Editor',
-};
 
 export default function Page() {
   return (

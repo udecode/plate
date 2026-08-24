@@ -135,11 +135,13 @@ if (!Array.isArray(plugins) || !plugins.every(isNominalPluginDescriptor)) {
 }
 if (
   !schema || typeof schema !== 'object' || Array.isArray(schema) ||
-  !Object.keys(schema).every((key) => ['id', 'overrides', 'properties', 'version'].includes(key)) ||
+  !Object.keys(schema).every((key) => ['id', 'overrides', 'properties', 'root', 'version'].includes(key)) ||
   typeof schema.id !== 'string' || typeof schema.version !== 'number' ||
   (schema.overrides !== undefined && !Array.isArray(schema.overrides)) ||
   (schema.properties !== undefined &&
-    (!schema.properties || typeof schema.properties !== 'object' || Array.isArray(schema.properties)))
+    (!schema.properties || typeof schema.properties !== 'object' || Array.isArray(schema.properties))) ||
+  (schema.root !== undefined &&
+    (!schema.root || typeof schema.root !== 'object' || Array.isArray(schema.root)))
 ) {
   throw new Error('Plate migration entry must export EditorSchema as a named application schema.');
 }

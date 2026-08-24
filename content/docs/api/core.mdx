@@ -52,8 +52,9 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     Initial selection for the editor.
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
-    Application schema policy and optional named lineage. A migration plan
-    requires an exact `id` and `version` match.
+    Application schema policy and optional named lineage. Omit `root` for the
+    standard paragraph root. A migration plan requires an exact `id` and
+    `version` match.
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     When `true`, it normalizes the `initialValue` passed to the editor.
@@ -102,6 +103,21 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
 </API>
 
 For more details on editor configuration, refer to the [Editor Configuration](/docs/editor) guide.
+
+### `EditorApplicationSchema`
+
+Defines application-owned schema policy. Its optional fields are:
+
+- `root`: primary-root `SchemaContent` with an explicit positive integer
+  `min`. Descriptor sources must match the installed plugin family. The first
+  source in `schema.content.elements` is the default.
+- `overrides`: final application overrides for installed element schemas and
+  existing property targets.
+- `properties`: application-owned schema properties.
+- `id` and `version`: a paired persisted lineage. Supply both or neither.
+
+Omitting `root` preserves Plate's standard minimum-one paragraph grammar. Root
+grammar participates in the compiled fingerprint and generated value contract.
 
 ### `defineDocumentMigrations`
 
@@ -272,8 +288,8 @@ Get an installed plugin's flat consumer portal.
 
 ### `useEditor`
 
-Get the active Plate editor without re-rendering. The returned editor includes
-its `store`. The hook throws when no matching editor is active.
+Get the active Plate editor without re-rendering. The hook throws when no
+matching editor is active.
 
 <API name="useEditor">
 <APIParameters>
@@ -284,16 +300,16 @@ its `store`. The hook throws when no matching editor is active.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor & { store: PlateStore }">
-  The editor reference with attached store.
+<APIReturns type="PlateEditor">
+  The editor reference.
 </APIReturns>
 </API>
 
 ### `useActiveEditor`
 
 Use `useActiveEditor({ id? })` when no active editor is a valid UI state. It
-returns the same editor-and-store value as `useEditor()`, or `null` while the
-controller has no matching active editor.
+returns the same editor value as `useEditor()`, or `null` while the controller
+has no matching active editor.
 
 ### `useEditorSelector`
 

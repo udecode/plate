@@ -38,15 +38,17 @@ mock.module('platejs/react', () => ({
         },
       }
     );
+    const historySnapshot = { redos: [], revision: 0, undos: [] };
     const editor = {
       id: options.id,
       provider: yjsPlugin.initialState.provider,
       read: {
-        history: {
+        history: Object.assign(() => historySnapshot, {
           redos: () => [],
           undos: () => [],
-        },
+        }),
       },
+      subscribeCommit: () => () => {},
       update,
     };
 
@@ -59,8 +61,6 @@ mock.module('platejs/react', () => ({
   ),
   useEditor: () => React.useContext(EditorContext) ?? currentOverlayEditor,
   useEditorScrollElement: (editor: any) => editor.api.dom.scroll(),
-  useEditorSelector: (selector: (editor: unknown) => unknown) =>
-    selector(React.useContext(EditorContext)),
 }));
 
 mock.module('@platejs/yjs/react', () => ({
@@ -71,6 +71,9 @@ mock.module('@platejs/yjs/react', () => ({
   },
   useYjsProviderStatus: (editor: any) => editor.provider.status,
   useYjsProviderSynced: (editor: any) => editor.provider.synced,
+}));
+
+mock.module('@platejs/yjs/plate', () => ({
   YjsPlugin: {
     configure: ({ initialState }: any) => ({ initialState, name: 'yjs' }),
   },

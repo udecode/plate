@@ -3,9 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { getPlateLLMSource } from '@/lib/llm-source';
 
-export const revalidate = false;
-export const dynamic = 'force-static';
-
 export function GET() {
   const source = getPlateLLMSource();
 

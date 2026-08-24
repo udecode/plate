@@ -55,7 +55,7 @@ match by fingerprint. Use an explicit `id` and `version` for a durable room
 lineage, and migrate the room before bumping the version.
 
 ```tsx
-import { YjsPlugin } from "@platejs/yjs/react";
+import { YjsPlugin } from "@platejs/yjs/plate";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
@@ -83,10 +83,12 @@ const editor = createPlateEditor({
 ### Configure Provider And Cursors
 
 Wrap your provider as `YjsProviderLike`, then pass it through the plugin's
-`initialState`. The same React subpath exports remote cursor hooks.
+`initialState`. The Plate subpath exports the plugin; the React subpath exports
+remote cursor hooks.
 
 ```tsx
-import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";
+import { YjsPlugin } from "@platejs/yjs/plate";
+import { useYjsRemoteCursors } from "@platejs/yjs/react";
 import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({

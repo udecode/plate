@@ -43,8 +43,8 @@ Verification surface:
 - Source audits for rejected exports and call shapes across packages, apps,
   docs, tests, and agent rules.
 - Source-first typechecks for every modified package, `pnpm lint:fix`,
-  `pnpm check:plite:dev`, `pnpm docs:plite:audit`, and focused browser proof of
-  the persistent-annotation anchor demo when runnable.
+  `pnpm check:plite:dev`, the owning Plite docs audit, and focused browser
+  proof of the persistent-annotation anchor demo.
 - `best-api repair` source/generated parity, P1 autoreview, agent-native review,
   and final goal-plan validation.
 
@@ -86,10 +86,10 @@ Blocked condition:
   owner red with no smaller autonomous move.
 
 Plite Plan state:
-- status: active
-- phase: execute
-- next: add red contract proof
-- handoff: not-prepared
+- status: done
+- phase: prove-and-hand-off
+- next: none
+- handoff: prepared
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -107,32 +107,32 @@ Work Checklist:
 - [x] Every concept-level decision row has owner, adoption, proof, risk, and verdict.
 - [x] Public breaks and any private bridge have complete adoption/deletion answers.
 - [x] Execution slices and focused proof matrix are concrete.
-- [ ] Add failing predicate and transaction-anchor contract proof before the implementation cut.
-- [ ] Implement the API/lifetime hard cut and shared mapping owner without compatibility paths.
-- [ ] Adopt every direct caller, export, test, doc, generated owner, and package release artifact.
-- [ ] Run focused/broad verification, browser proof or exact blocked reason, P1 autoreview, and agent-native review.
-- [ ] Repair Best API and Plite Vision source doctrine, regenerate skills, and prove source/mirror parity.
-- [ ] Conditional work and final handoff are resolved without generic N/A matrices.
+- [x] Add failing predicate and transaction-anchor contract proof before the implementation cut.
+- [x] Implement the API/lifetime hard cut and shared mapping owner without compatibility paths.
+- [x] Adopt every direct caller, export, test, doc, generated owner, and package release artifact.
+- [x] Run focused/broad verification, browser proof or exact blocked reason, P1 autoreview, and agent-native review.
+- [x] Repair Best API and Plite Vision source doctrine, regenerate skills, and prove source/mirror parity.
+- [x] Conditional work and final handoff are resolved without generic N/A matrices.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
-| Binary readiness | pending | Resolve every readiness condition | pending |
-| Fresh source evidence | pending | Recheck decision-changing current claims | pending |
-| Best API review | pending | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | pending |
-| Conditional risk and adoption | pending | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | pending |
-| Verification recorded | pending | Record fresh planning proof and exact execution gates | pending |
-| Handoff prepared | pending | Prepare concise ownership, breaks, proof, risks, and execution order | pending |
-| P1 autoreview | pending | Run with `--max-priority P1` for implementation changes; P2/P3 are opt-in only, or record planning-only N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-23-unify-plite-selection-anchors.md` | pending |
+| Binary readiness | yes | Resolve every readiness condition | All scoped code, caller, docs, doctrine, generated, proof, and review rows pass. |
+| Fresh source evidence | yes | Recheck decision-changing current claims | Final bounded searches found zero rejected API matches and one shared mapping owner. |
+| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target implemented; final P1 autoreview found zero findings. |
+| Conditional risk and adoption | yes | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | All direct callers and the browser demo pass; Benchmark, release, public issue, and native-device proof do not apply to this claim. |
+| Verification recorded | yes | Record fresh planning proof and exact execution gates | Red/green, focused, package, docs, browser, broad, source-audit, and review evidence is recorded below. |
+| Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final ownership, break, proof boundary, and external commit state are explicit below. |
+| P1 autoreview | yes | Run with `--max-priority P1` for implementation changes; P2/P3 are opt-in only, or record planning-only N/A | Commit-mode P1 review of `33557a72` passed two chunks with zero findings. |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-23-unify-plite-selection-anchors.md` | Passed. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 | --- | --- | --- | --- |
 | Ground | completed | Live owners, callers, docs, and baseline tests audited in the item 5 review. | Execute |
 | Decide | completed | User accepted the Best API target with `ok go`; no bridge retained. | Execute |
-| Execute | in_progress | Predicate contract fails on the current false-positive guard at `interfaces-contract.ts:143`. | Make the predicate slice green, then add scoped-anchor red proof |
-| Prove and hand off | pending | | Final review and goal closure |
+| Execute | completed | Strict guards, editor validation, scoped anchors, shared mapping, callers, exports, docs, generated API, changeset, and doctrine are implemented. | Prove |
+| Prove and hand off | completed | Focused and broad checks, docs audit, Browser proof, source audit, agent-native review, and P1 autoreview pass. | Close goal |
 
 Decision brief:
 - outcome: one truthful selection-location contract with sound public narrowing.
@@ -163,11 +163,11 @@ Execution slices:
 Proof matrix:
 | Claim | Planning evidence | Execution proof | Status |
 | --- | --- | --- | --- |
-| Public predicates narrow soundly | Source guard/strict-ingress contradiction and direct runtime false-positive repro | Red/green contract tests and Plite typecheck | pending |
-| Transaction anchors are scoped and cover all location kinds | Current `tx.refs` and `tx.anchor` type/runtime audit | Update/spec-builder mapping and post-boundary expiry tests | pending |
-| Persistent anchors retain behavior | Existing 52 focused model tests passed before edits | Same focused anchor/rebase suite after edits | pending |
-| Rejected ref API is gone | Complete caller/export/docs search | Zero-match bounded source audit | pending |
-| Package/browser-facing behavior remains valid | Existing demo/browser corpus identified | `check:plite:dev`, docs audit, and focused demo/browser proof | pending |
+| Public predicates narrow soundly | Source guard/strict-ingress contradiction and direct runtime false-positive repro | Red/green contract tests, installed-kind/current-document tests, and Plite typecheck | passed |
+| Transaction anchors are scoped and cover all location kinds | Current `tx.refs` and `tx.anchor` type/runtime audit | Update/spec-builder Path/Point/Range mapping and post-boundary expiry tests | passed |
+| Persistent anchors retain behavior | Existing 52 focused model tests passed before edits | 54 focused anchor/rebase/selection tests and interactive persistent-anchor mapping pass | passed |
+| Rejected ref API is gone | Complete caller/export/docs search | Zero live matches for `tx.refs`, `EditorTransactionRefsApi`, or `EditorTransactionDraftRef` | passed |
+| Package/browser-facing behavior remains valid | Existing demo/browser corpus identified | `check:plite:dev`, docs build/audit, and interactive demo proof pass | passed |
 
 Conditional evidence:
 - High-risk scenarios: (1) scoped handle leaks past callback, (2) range direction
@@ -214,17 +214,33 @@ Decisions and tradeoffs:
 - Do not turn this source/API repair into a native-selection or release claim.
 
 Review fixes:
-- None yet.
+- None. The final P1 review of commit `33557a72` reported zero P0/P1 findings
+  across both complete chunks.
+
+Agent-native review:
+| User action | Route | Owner | Generated/teaching surface | Proof | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| Design or repair mapped-location public API | `best-api repair` | `.agents/rules/best-api.mdc` | `.agents/skills/best-api/SKILL.md` | `pnpm install`, exact source/mirror diff, zero rejected examples | pass |
+| Validate an unknown selection for one editor | `editor.read.selection.isValid(value)` | Plite selection protocol and editor state view | Anchor/selection API docs and generated API manifest | installed-kind/current-document contract test and package typecheck | pass |
+| Track a mapped location during one transaction | `tx.anchor(value, options)` | Plite transaction runtime | Anchor API and concepts docs | Path/Point/Range mapping, expiry, spec-builder, and direct-caller proof | pass |
+
+The forward-test also checked an unrelated real pure predicate:
+`PointApi.isPoint` accepted a valid string root and rejected a numeric optional
+root. No agent-only shortcut, hidden compatibility name, or stale teaching path
+remains.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 | --- | ---: | --- | --- |
 | Focused Bun grep was passed through the pnpm script without `--` | 1 | Run Bun directly with `--test-name-pattern` | Resolved; exact rows passed. |
 | First test-name patterns did not match the literal test names | 1 | Read the owning test declarations and rerun their exact names | Resolved; 2/2 exact rows passed. |
-| First Plite typecheck found one missing runtime-view delegate and one untyped local guard | 1 | Add the `isValid` delegate and Point predicate annotation | Repair applied; rerun pending. |
+| First Plite typecheck found one missing runtime-view delegate and one untyped local guard | 1 | Add the `isValid` delegate and Point predicate annotation | Resolved; Plite and all direct caller package typechecks passed. |
 | Best API mirror audit used unescaped backticks in one shell pattern | 1 | Rerun the bounded audit with a single-quoted pattern | Resolved; rejected names had zero matches. |
 | Agent-native forward-test preload invoked Bun test setup outside the runner | 1 | Import the source interface directly for the pure runtime probe | Resolved; valid root passed and invalid optional root failed. |
-| First root lint pass found the obsolete `AnchorOptions` import | 1 | Remove the dead type import and rerun the same lint gate | Repair applied; rerun pending. |
+| First root lint pass found the obsolete `AnchorOptions` import | 1 | Remove the dead type import and rerun the same lint gate | Resolved; `pnpm lint:fix` passed. |
+| First P1 autoreview detected a source change after snapshotting the 635,195-byte local bundle | 1 | Freeze edits and rerun against an immutable target | The checkout advanced externally to `33557a72`; commit-mode P1 review then passed. |
+| Browser navigation to the docs route timed out | 1 | Inspect the loaded tab, preserve the exact blocker, and use the built Plite package route | Docs UI was blocked by an unrelated `editor-ai/page.tsx` client-metadata build error; docs source proof and Plite demo proof passed. |
+| Root `docs:plite:audit` alias was absent | 1 | Run the owning audit script directly | `node tooling/scripts/check-plite-docs.mjs` passed. |
 
 Autoreview scope baseline:
 - original request: implement the accepted item 5 architecture cut for Plite
@@ -263,13 +279,66 @@ Verification evidence:
 - Installed-kind validation red: `pnpm --filter @platejs/plite test
   ./test/selection-protocol.test.ts` failed 1/16 because the read selection
   group had no `isValid` method.
+- Predicate green: `interfaces-contract.ts` passed 15/15.
+- Transaction-anchor green: `anchor-contract.ts` passed 12/12.
+- Installed selection validation green: `selection-protocol.test.ts` passed
+  16/16.
+- Focused mapping suite: anchor contract, anchor mapping, range anchor,
+  selection rebase, and selection protocol passed 54/54.
+- Source-first typechecks passed for `@platejs/plite`, `@platejs/plite-react`,
+  suggestion, list-classic, and code-block.
+- `pnpm --filter www api-reference` regenerated the public API manifest;
+  `pnpm --filter www check:docs` passed API validation, MDX build, and source
+  parity.
+- `node tooling/scripts/check-plite-docs.mjs` passed the Plite v2 docs audit.
+- `pnpm install` regenerated the Best API skill; exact source/mirror content
+  parity passed after generated headers, with zero stale rejected API examples.
+- `pnpm lint:fix` passed after removing the obsolete import.
+- `pnpm check:plite:dev` passed in 122.775 seconds: 54 affected workspace
+  typechecks, affected package tests, browser-core tests, 158 Plite contracts,
+  74 focused tests across ten files, 44 benchmark targets, public package
+  types/build, and Chromium smoke 3/3.
+- Browser proof at
+  `/examples/plite/persistent-annotation-anchors` rendered the editor, created
+  the `0:1|0:4` annotation, mapped it to `1:9|1:12` after a fragment insertion
+  and prefix insertion, kept the widget visible, then cleared the anchor and
+  returned the sidebar/widget to `none`.
+- The www docs UI route could not render because the current checkout has an
+  unrelated Next build error: `apps/www/src/registry/blocks/editor-ai/page.tsx`
+  exports `metadata` from a client component. This limits only manual docs-UI
+  proof; the docs source build and audit passed.
+- Final bounded audit found zero live `tx.refs`,
+  `EditorTransactionRefsApi`, or `EditorTransactionDraftRef` matches. Both
+  mapping consumers import the single
+  `getRangeEndpointAssociations` owner. Scoped `tx.anchor` has no release call.
+- `git diff --check` passed for the bounded item-5 owner set.
+- P1 review command:
+  `.agents/skills/autoreview/scripts/autoreview --mode commit --commit HEAD
+  --max-priority P1`. It reviewed the immutable `33557a72` commit in two
+  complete chunks, passed TruffleHog, and reported zero actionable findings.
+- `node .agents/skills/autogoal/scripts/check-complete.mjs
+  docs/plans/2026-08-23-unify-plite-selection-anchors.md` passed.
 
 Final handoff prepared:
-- Ownership and target API/runtime: pending.
-- Public breaks and Plate/collaboration adoption: pending.
-- Applicable browser/Benchmark/docs/provenance decisions: pending.
-- Proof and execution risks: pending.
-- Execution order and user attention: pending.
+- Ownership and target API/runtime: `editor.anchor` is persistent and manually
+  released; Path/Point/Range `tx.anchor` is transaction-scoped and resolve-only;
+  editor state owns complete installed-kind/current-document selection
+  validation; one internal helper owns range endpoint association.
+- Public breaks and Plate/collaboration adoption: the transaction `refs` types,
+  export, group, and call sites are deleted with no alias. Suggestion,
+  list-classic, code-block, Plite React, Plite tests, detached specs, docs, and
+  generated API are migrated. No collaboration wire format changed.
+- Applicable browser/Benchmark/docs/provenance decisions: package Browser and
+  docs source proof pass; docs UI is blocked by the unrelated build error above;
+  Benchmark, physical-device, release, and public provenance claims are out of
+  scope.
+- Proof and execution risks: scoped handles throw after their callback;
+  persistent anchors retain manual release and cross-commit mapping. All
+  identified mapping/deletion/custom-kind risks have direct contract proof.
+- Execution order and user attention: implementation is complete. The checkout
+  advanced externally to commit `33557a72` while review ran; this agent did not
+  create, push, or publish that commit. Only this updated proof plan remains a
+  local closeout artifact.
 
 Timeline:
 - 2026-08-23T10:11:46.348Z Plite Plan created.
@@ -277,11 +346,11 @@ Timeline:
 Reboot status:
 | Question | Answer |
 | --- | --- |
-| Where am I? | Accepted-plan execution, before red tests |
-| Where am I going? | Red proof, hard cut, adoption, doctrine repair, verification |
+| Where am I? | Completed local implementation and proof |
+| Where am I going? | Final goal-plan validation and goal closure |
 | What is the goal? | One scoped transaction-anchor API and sound selection predicates |
-| What have I learned? | The core engine is strong; public lifetime and guard contracts are not |
-| What have I done? | Completed Best API review, current-owner audit, goal, and execution ledger |
+| What have I learned? | Lifetime belongs in the API contract; full custom-selection truth belongs to the installed editor owner. |
+| What have I done? | Hard-cut the API, migrated callers/docs/doctrine, proved mapping and validation, and passed Browser plus P1 review. |
 
 Open risks:
 - Browser proof may require a dev-server/browser setup; failure will remain a

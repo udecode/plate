@@ -311,10 +311,7 @@
     },
     {
       "name": "editor-plugins",
-      "files": [
-        "apps/www/src/registry/components/editor/plugins.generated.ts",
-        "apps/www/src/registry/components/editor/plugins.ts"
-      ],
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },

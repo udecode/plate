@@ -291,6 +291,60 @@ describe('plate generate', () => {
     );
   });
 
+  it('discovers a root-only application schema and generates its exact root value', async () => {
+    const { entryPath } = createFixture();
+    const source = readFileSync(entryPath, 'utf-8')
+      .replace(
+        "const AlignPlugin = defineBasePlugin('align', {",
+        `const RootBlockPlugin = defineBasePlugin('rootBlock', {
+  schema: { element: s.element.textBlock() },
+});
+
+const AlignPlugin = defineBasePlugin('align', {`
+      )
+      .replace(
+        'export const EditorKit = [CalloutPlugin, AlignPlugin] as const;',
+        'export const EditorKit = [CalloutPlugin, RootBlockPlugin, AlignPlugin] as const;'
+      )
+      .replace(
+        /export const EditorSchema = \{[\s\S]*?\n\} as const;\n/,
+        `export const EditorSchema = {
+  root: s.content.element(RootBlockPlugin, { min: 1 }),
+} as const;
+`
+      );
+
+    writeFileSync(entryPath, source);
+    const generated = await generateEditor(entryPath);
+    const types = readFileSync(generated.typesPath, 'utf-8');
+
+    expect(types).toContain(
+      'export type Value = readonly (RootBlockElement)[];'
+    );
+  });
+
+  it('rejects invalid exported application roots', async () => {
+    for (const root of [
+      's.content.element(CalloutPlugin, { min: 0 })',
+      'null',
+    ]) {
+      const { entryPath } = createFixture();
+      const source = readFileSync(entryPath, 'utf-8').replace(
+        /export const EditorSchema = \{[\s\S]*?\n\} as const;\n/,
+        `export const EditorSchema = {
+  root: ${root},
+} as const;
+`
+      );
+
+      writeFileSync(entryPath, source);
+
+      await expect(generateEditor(entryPath)).rejects.toThrow(
+        'Editor application schema root min must be a positive integer.'
+      );
+    }
+  });
+
   it('ignores unrelated exports when no application schema is exported', async () => {
     const { entryPath } = createFixture();
 

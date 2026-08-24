@@ -1586,6 +1586,20 @@ describe('PliteRuntime provider contract', () => {
     expect(headerRenders.mock.calls.length).toBeGreaterThan(headerRenderCount);
     expect(screen.getByTestId('footer-epoch')).toHaveTextContent('0');
     expect(footerRenders).toHaveBeenCalledTimes(footerRenderCount);
+
+    const headerEpoch = screen.getByTestId('header-epoch').textContent;
+    const postReplaceHeaderRenderCount = headerRenders.mock.calls.length;
+
+    await act(async () => {
+      headerEditor.update((tx) => {
+        tx.text.insert('updated ', {
+          at: { offset: 0, path: [0, 0] },
+        });
+      });
+    });
+
+    expect(screen.getByTestId('header-epoch')).toHaveTextContent(headerEpoch);
+    expect(headerRenders).toHaveBeenCalledTimes(postReplaceHeaderRenderCount);
   });
 
   test('root-bound Plite renders Editable from the selected root', () => {

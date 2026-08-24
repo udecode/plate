@@ -11,6 +11,7 @@ import {
   Moon,
   SunMedium,
 } from 'lucide-react';
+import type { Route } from 'next';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -174,7 +175,7 @@ function getItemKeywords(item: NavItemWithChildren, parentTitle = '') {
   ].filter(isString);
 }
 
-function navigateToHref(push: Push, href: string) {
+function navigateToHref(push: Push, href: Route) {
   if (ABSOLUTE_HREF_REGEX.test(href)) {
     window.open(href, '_blank', 'noopener,noreferrer');
     return;

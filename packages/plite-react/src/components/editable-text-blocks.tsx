@@ -40,6 +40,7 @@ import { registerEditorDecorationRefreshSource } from '../decoration-refresh';
 import {
   composeProjectionSources,
   createDecorationSource,
+  type PliteDecorationSourceReadContext,
   type PliteRangeDecoration,
   type PliteOverlayProjectionStore,
 } from '../decoration-source';
@@ -142,6 +143,19 @@ import { Plite } from './plite';
 import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
 
 export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
+
+const createCommittedValue = <T,>(initialValue: T) => {
+  let value = initialValue;
+
+  return {
+    commit(nextValue: T) {
+      value = nextValue;
+    },
+    read() {
+      return value;
+    },
+  };
+};
 
 export type EditableDOMCoverageBoundaryScope =
   | {
@@ -1105,10 +1119,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   const inheritedReadOnly = useEditorReadOnly();
   const effectiveReadOnly = readOnly || inheritedReadOnly;
   const upstreamProjectionStore = React.useContext(ProjectionContext);
-  const [decorateCell] = React.useState(() => ({ current: decorate }));
-  decorateCell.current = decorate;
-  const autoDecorateRuntimeScopeRef = React.useRef<readonly NodeKey[] | null>(
-    null
+  const [decorateCell] = React.useState(() => createCommittedValue(decorate));
+  const [autoDecorateRuntimeScopeCell] = React.useState(() =>
+    createCommittedValue<readonly NodeKey[] | null>(null)
   );
 
   const activeDecorateRuntimeScope = React.useCallback(
@@ -1116,9 +1129,14 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       mergeMountedRuntimeScope(
         context.snapshot,
         resolveProjectionRuntimeScope(decorateRuntimeScope, context),
-        autoDecorateRuntimeScopeRef.current
+        autoDecorateRuntimeScopeCell.read()
       ),
-    [decorateRuntimeScope]
+    [autoDecorateRuntimeScopeCell, decorateRuntimeScope]
+  );
+  const readDecorations = React.useCallback(
+    (context: PliteDecorationSourceReadContext) =>
+      readEditableDecorations(editor, decorateCell.read(), context),
+    [decorateCell, editor]
   );
 
   const hasDecorate = Boolean(decorate);
@@ -1130,16 +1148,15 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     return createDecorationSource(editor, {
       dirtiness: decorateDirtiness,
       id: 'editable-decorate',
-      read: (context) =>
-        readEditableDecorations(editor, decorateCell.current, context),
+      read: readDecorations,
       runtimeScope: activeDecorateRuntimeScope,
     });
   }, [
     activeDecorateRuntimeScope,
-    decorateCell,
     decorateDirtiness,
     editor,
     hasDecorate,
+    readDecorations,
   ]);
   const viewSelectionDecorationSource = usePliteViewSelectionDecorationSource(
     editor,
@@ -1502,7 +1519,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     segmentPlan,
     virtualizedPlan,
   ]);
-  autoDecorateRuntimeScopeRef.current = autoDecorateRuntimeScope;
+  React.useLayoutEffect(() => {
+    autoDecorateRuntimeScopeCell.commit(autoDecorateRuntimeScope);
+  }, [autoDecorateRuntimeScope, autoDecorateRuntimeScopeCell]);
   const autoDecorateRuntimeScopeKey = React.useMemo(
     () => autoDecorateRuntimeScope?.join('|') ?? null,
     [autoDecorateRuntimeScope]
@@ -1643,8 +1662,8 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       unregisterViewSelectionSource?.();
     };
   }, [decorateSource, editor, viewSelectionDecorationSource]);
-  React.useEffect(() => {
-    decorateCell.current = decorate;
+  React.useLayoutEffect(() => {
+    decorateCell.commit(decorate);
     decorateSource?.refresh({
       reason: 'external',
       requiresDOMSelectionExport: ReactEditor.isFocused(editor),

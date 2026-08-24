@@ -12,12 +12,10 @@ export const usePublishedAndroidInputManager = ({
   runtime: EditableDOMRuntime;
 }) => {
   useIsomorphicLayoutEffect(() => {
-    runtime.androidInputManagerRef.current = inputManager;
+    runtime.publishAndroidInputManager(inputManager);
 
     return () => {
-      if (runtime.androidInputManagerRef.current === inputManager) {
-        runtime.androidInputManagerRef.current = null;
-      }
+      runtime.clearAndroidInputManager(inputManager);
     };
   }, [inputManager, runtime]);
 };

@@ -54,8 +54,7 @@
     "@platejs/table": "workspace:^",
     "@platejs/utils": "workspace:^",
     "fastest-levenshtein": "1.0.16",
-    "lodash": "^4.17.21",
-    "react-compiler-runtime": "^1.0.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@ai-sdk/react": "^3.0.0",

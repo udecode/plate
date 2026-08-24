@@ -6,7 +6,6 @@ import {
 } from '@platejs/core';
 import {
   type PlateEditor,
-  type PlateEditorWithStore,
   type PlateProps,
   type useEditor,
   createPlateEditor,
@@ -81,11 +80,13 @@ const exactDOMEditor: DOMEditor = exactInternalPlateEditor;
 const exactReactEditor: ReactEditor = exactInternalPlateEditor;
 type ExactPlateProps = PlateProps<ExactInternalPlateEditor>;
 declare const exactPlateProps: ExactPlateProps;
-declare const plateEditorWithStore: PlateEditorWithStore;
 declare const defaultUseEditorReturn: ReturnType<typeof useEditor>;
-const broadDOMEditor: DOMEditor<any, any> = plateEditorWithStore;
-const broadReactEditor: ReactEditor<any, any> = plateEditorWithStore;
-const broadUseEditorReturn: PlateEditorWithStore = defaultUseEditorReturn;
+const broadDOMEditor: DOMEditor<any, any> = defaultUseEditorReturn;
+const broadReactEditor: ReactEditor<any, any> = defaultUseEditorReturn;
+const broadUseEditorReturn: PlateEditor = defaultUseEditorReturn;
+
+// @ts-expect-error Store access is owned by usePlateStore(), not the editor.
+defaultUseEditorReturn.store;
 
 // @ts-expect-error Default Plate editors expose Core API groups only.
 defaultPlateBoundary.api.runtimePlugin.run();

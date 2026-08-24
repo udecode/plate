@@ -19,6 +19,7 @@ import { useFilePicker } from 'use-file-picker';
 import { z } from 'zod';
 
 import { cn } from '@/lib/utils';
+import { useObjectUrl } from '@/registry/hooks/use-object-url';
 import type { OurFileRouter } from '@/registry/lib/uploadthing';
 
 type UploadedFile = ClientUploadedFileData<unknown>;
@@ -282,24 +283,9 @@ export function ImageProgress({
   ) => void;
   progress?: number;
 }) {
-  const [preview, setPreview] = React.useState<null | {
-    file: File;
-    url: string;
-  }>(null);
+  const previewUrl = useObjectUrl(file);
 
-  React.useEffect(() => {
-    const url = URL.createObjectURL(file);
-    // Store the object URL tied to this File and revoke it on cleanup.
-    setPreview({ file, url });
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [file]);
-
-  if (!preview || preview.file !== file) {
-    return null;
-  }
+  if (!previewUrl) return null;
 
   return (
     <div className={cn('relative', className)} contentEditable={false}>
@@ -307,13 +293,13 @@ export function ImageProgress({
       <img
         className="h-auto w-full rounded-sm object-cover"
         alt={file.name}
-        onError={() => onNaturalSize?.(preview.file, null)}
+        onError={() => onNaturalSize?.(file, null)}
         onLoad={(event) => {
           const { naturalHeight, naturalWidth } = event.currentTarget;
 
-          onNaturalSize?.(preview.file, { naturalHeight, naturalWidth });
+          onNaturalSize?.(file, { naturalHeight, naturalWidth });
         }}
-        src={preview.url}
+        src={previewUrl}
       />
       {progress < 100 && (
         <div className="absolute right-1 bottom-1 flex items-center space-x-2 rounded-full bg-black/50 px-1 py-0.5">

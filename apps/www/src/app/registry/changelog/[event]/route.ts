@@ -5,8 +5,6 @@ import {
   getRegistryChangelogIndex,
 } from '@/lib/registry-changelog';
 
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return getRegistryChangelogIndex().events.map((event) => ({
     event: `${event.id}.json`,

@@ -264,7 +264,7 @@ function createHugeDocumentBenchmarkHref(config: Config) {
   searchParams.set('content_visibility', benchmarkConfig.contentVisibility);
   searchParams.set('scenario_workload', benchmarkConfig.scenarioWorkload);
 
-  return `/dev/editor-perf?${searchParams.toString()}`;
+  return `/dev/editor-perf?${searchParams.toString()}` as const;
 }
 
 const createEditor = ({

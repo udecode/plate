@@ -58,8 +58,6 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-static';
-
 export default async function IndexPage() {
   const content = i18n.en;
   const playgroundPreviewData = await getPlaygroundPreviewData();
@@ -77,7 +75,7 @@ export default async function IndexPage() {
         </PageHeaderDescription>
         <PageActions className="justify-center **:data-[slot=button]:shadow-none">
           <Button asChild size="sm" className="h-[31px] rounded-lg text-xs">
-            <Link href="/docs">{content.getStarted}</Link>
+            <Link href={{ pathname: '/docs' }}>{content.getStarted}</Link>
           </Button>
         </PageActions>
       </PageHeader>

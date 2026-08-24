@@ -12,13 +12,17 @@ import React, { startTransition, Suspense, useLayoutEffect } from 'react';
 import {
   Plite,
   type PliteWidget,
-  useEditorSelector,
   usePliteAnnotationStore,
   usePliteWidget,
   usePliteWidgetStore,
   usePliteWidgets,
 } from '../src';
 import { createPliteWidgetStore } from '../src/widget-store';
+import {
+  createRenderCounts,
+  type RenderCounts,
+  TextSlice,
+} from './render-probes/widget-render-probe';
 
 const createChildren = () => [
   {
@@ -31,37 +35,6 @@ const createChildren = () => [
   },
 ];
 
-const createRenderCounts = () => ({
-  left: 0,
-  right: 0,
-  selection: 0,
-});
-
-const TextSlice = ({
-  counts,
-  slot,
-}: {
-  counts: ReturnType<typeof createRenderCounts>;
-  slot: 'left' | 'right';
-}) => {
-  const value = useEditorSelector((snapshot) =>
-    snapshot?.children?.[slot === 'left' ? 0 : 1] &&
-    'children' in snapshot.children[slot === 'left' ? 0 : 1]
-      ? String(
-          (
-            snapshot.children[slot === 'left' ? 0 : 1] as {
-              children: Array<{ text: string }>;
-            }
-          ).children[0]?.text ?? ''
-        )
-      : ''
-  );
-
-  counts[slot] += 1;
-
-  return <span id={`${slot}-text`}>{value}</span>;
-};
-
 const MemoTextSlice = React.memo(TextSlice);
 
 const WidgetHarness = ({
@@ -69,7 +42,7 @@ const WidgetHarness = ({
   editor,
   widgets,
 }: {
-  counts: ReturnType<typeof createRenderCounts>;
+  counts: RenderCounts;
   editor: ReturnType<typeof createEditor>;
   widgets: ReadonlyArray<
     PliteWidget<{
@@ -100,7 +73,7 @@ const ProjectedWidgetHarness = ({
   editor,
   labels,
 }: {
-  counts: ReturnType<typeof createRenderCounts>;
+  counts: RenderCounts;
   editor: ReturnType<typeof createEditor>;
   labels: readonly string[];
 }) => {

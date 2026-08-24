@@ -1,16 +1,20 @@
 import { SelectionApi } from '@platejs/plite';
 import { hasPath as editorHasPath } from '@platejs/plite/internal';
 import { act, render } from '@testing-library/react';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
   createReactEditor,
   Editable,
   type ReactEditor,
-  type RenderElementProps,
   Plite,
   useElementSelected,
 } from '../src';
+import {
+  createExplicitPathRenderElement,
+  createSelectionRenderElement,
+  createSelfRemovingElement,
+} from './render-probes/element-selected-render-probes';
 
 let editor: ReactEditor;
 let latestSelectedById: Record<string, boolean | undefined>;
@@ -40,24 +44,11 @@ describe('useElementSelected', () => {
       latestCollapsedSelectedById = {};
       latestNodeSelectedById = {};
 
-      const RenderElement = ({
-        element,
-        attributes,
-        children,
-      }: RenderElementProps) => {
-        const selected = useElementSelected();
-
-        const collapsedSelected = useElementSelected({ mode: 'collapsed' });
-
-        const nodeSelected = useElementSelected({ mode: 'node' });
-        const { id } = element as any;
-
-        latestSelectedById[id] = selected;
-        latestCollapsedSelectedById[id] = collapsedSelected;
-        latestNodeSelectedById[id] = nodeSelected;
-
-        return <div {...attributes}>{children}</div>;
-      };
+      const RenderElement = createSelectionRenderElement({
+        collapsed: latestCollapsedSelectedById,
+        intersection: latestSelectedById,
+        node: latestNodeSelectedById,
+      });
 
       render(
         <Plite editor={editor}>
@@ -263,38 +254,12 @@ describe('useElementSelected', () => {
     const unmountedIds = new Set<string>();
     const selectedById: Record<string, boolean | undefined> = {};
 
-    const SelfRemovingElement = ({
-      element,
-      attributes,
-      children,
-    }: RenderElementProps) => {
-      const selected = useElementSelected();
-      const { id } = element as { id: string };
-
-      selectedById[id] = selected;
-
-      useEffect(
-        () => () => {
-          unmountedIds.add(id);
-        },
-        [id]
-      );
-
-      useEffect(() => {
-        if (id !== '2' || !selected || removedIds.has(id)) {
-          return;
-        }
-
-        removedIds.add(id);
-        editor.update((tx) => {
-          const path = editor.api.dom.assertPath(element);
-
-          tx.nodes.remove({ at: path });
-        });
-      }, [element, id, selected]);
-
-      return <div {...attributes}>{children}</div>;
-    };
+    const SelfRemovingElement = createSelfRemovingElement({
+      editor,
+      removedIds,
+      selectedById,
+      unmountedIds,
+    });
 
     render(
       <Plite editor={editor}>
@@ -366,20 +331,10 @@ describe('useElementSelected', () => {
 
     const watchedPath = [2];
     const selectedByHostId: Record<string, boolean | undefined> = {};
-    const RenderElement = ({
-      element,
-      attributes,
-      children,
-    }: RenderElementProps) => {
-      const selected = useElementSelected({ at: watchedPath });
-      const { id } = element as any;
-
-      if (id === '0') {
-        selectedByHostId[id] = selected;
-      }
-
-      return <div {...attributes}>{children}</div>;
-    };
+    const RenderElement = createExplicitPathRenderElement({
+      selectedByHostId,
+      watchedPath,
+    });
 
     render(
       <Plite editor={editor}>

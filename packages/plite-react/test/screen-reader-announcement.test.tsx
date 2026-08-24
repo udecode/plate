@@ -12,6 +12,7 @@ import {
   usePliteRootEditor,
   usePliteRuntime,
 } from '../src';
+import { EditorAnnouncementLiveRegion } from '../src/components/editor-announcement-live-region';
 
 const paragraph = (text: string): Descendant => ({
   type: 'paragraph',
@@ -156,5 +157,45 @@ describe('screen-reader announcement live region', () => {
     expect(
       rendered.container.querySelector('[data-plite-announcer]')
     ).toHaveTextContent('Read-only status');
+  });
+
+  it('starts a replacement editor from its current commit baseline', () => {
+    const firstEditor = createReactEditor({
+      initialValue: [paragraph('first')],
+    });
+    const secondEditor = createReactEditor({
+      initialValue: [paragraph('second')],
+    });
+    const rendered = render(
+      <EditorAnnouncementLiveRegion editor={firstEditor} />
+    );
+
+    act(() => {
+      firstEditor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'First editor');
+      });
+      secondEditor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Old second commit');
+      });
+    });
+
+    expect(rendered.container).toHaveTextContent('First editor');
+
+    rendered.rerender(<EditorAnnouncementLiveRegion editor={secondEditor} />);
+
+    expect(rendered.container).not.toHaveTextContent('First editor');
+    expect(rendered.container).not.toHaveTextContent('Old second commit');
+
+    act(() => {
+      firstEditor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Stale first editor');
+      });
+      secondEditor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Second editor');
+      });
+    });
+
+    expect(rendered.container).toHaveTextContent('Second editor');
+    expect(rendered.container).not.toHaveTextContent('Stale first editor');
   });
 });

@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-24-react-compiler-owned-editor-state",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-24-react-compiler-owned-editor-state.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep copied editor state compatible with React Compiler",
+  "targets": [
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder",
+      "files": [
+        "apps/www/src/registry/components/editor/media-placeholder.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "plate-to-html",
+      "files": [
+        "apps/www/src/registry/blocks/plate-to-html/page.tsx",
+        "apps/www/src/registry/components/editor/plate-to-html.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/discussion-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-object-url",
+      "files": ["apps/www/src/registry/hooks/use-object-url.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-24-react-compiler-owned-editor-state",
+      "kind": "fix",
+      "summary": "Preserve the active editor value while focus moves into a control, and reopen inline equations only after selection returns.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-color-toolbar-button", "math"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-react-compiler-owned-editor-state",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-24-react-compiler-owned-editor-state-2",
+      "kind": "behavior",
+      "summary": "Give each browser object URL one source lifetime and revoke it when that source is replaced or unmounted.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-placeholder", "plate-to-html", "use-object-url"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-react-compiler-owned-editor-state",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-24-react-compiler-owned-editor-state-3",
+      "kind": "behavior",
+      "summary": "Render the selected-cell drag handle at its cell owner and keep fake-stream cancellation inside its transport.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table", "use-chat"],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-react-compiler-owned-editor-state",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-24-react-compiler-owned-editor-state-4",
+      "kind": "behavior",
+      "summary": "Use named React Compiler components without manual memo wrappers or display-name assignments.",
+      "details": [],
+      "migrationNotes": [
+        "Use named React Compiler components without manual memo wrappers or display-name assignments."
+      ],
+      "targets": [
+        "ai-menu",
+        "column",
+        "dnd",
+        "editor",
+        "emoji-picker",
+        "inline-combobox"
+      ],
+      "source": {
+        "line": 17,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-react-compiler-owned-editor-state",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

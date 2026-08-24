@@ -84,14 +84,19 @@ test('app build inputs cover styles, config, local dependencies, and tooling', (
 });
 
 test('app build inputs cover every workspace package target aliased by Next', () => {
-  assert.equal(typeof nextConfig.webpack, 'function');
+  const config = nextConfig.turbopack?.resolveAlias
+    ? { resolve: { alias: nextConfig.turbopack.resolveAlias } }
+    : (() => {
+        assert.equal(typeof nextConfig.webpack, 'function');
 
-  const config = nextConfig.webpack({ resolve: { alias: {} } });
+        return nextConfig.webpack({ resolve: { alias: {} } });
+      })();
   const packagesRoot = path.join(repoRoot, 'packages');
-  const packageAliases = Object.entries(config.resolve.alias).filter(
-    (entry) =>
-      typeof entry[1] === 'string' && entryCoversPath(packagesRoot, entry[1])
-  );
+  const appRoot = path.join(repoRoot, 'apps/plite');
+  const packageAliases = Object.entries(config.resolve.alias)
+    .filter((entry) => typeof entry[1] === 'string')
+    .map(([alias, target]) => [alias, path.resolve(appRoot, target)])
+    .filter((entry) => entryCoversPath(packagesRoot, entry[1]));
 
   assert.ok(packageAliases.length > 0);
 

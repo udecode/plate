@@ -405,7 +405,7 @@ const intentionalProductionExtendStageChains = new Map([
     'packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts',
     [[['$factory:defineMediaPlugin']]],
   ],
-  ['packages/yjs/src/lib/BaseYjsPlugin.ts', [[['$factory:yjs']]]],
+  ['packages/yjs/src/plate/BaseYjsPlugin.ts', [[['$factory:yjs']]]],
 ]);
 const allowedSchemaFactoryBindings = new Set([
   'initialState',
@@ -454,7 +454,7 @@ const intentionalNamedSchemaLineages = new Map([
     new Map([['yjs-example@1', 1]]),
   ],
   [
-    'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
+    'packages/yjs/src/plate/BaseYjsPlugin.api.spec.ts',
     new Map([['plate:yjs-api-test@1', 4]]),
   ],
   [
@@ -468,7 +468,7 @@ const requiredNamedSchemaLineageFiles = new Set([
   'content/docs/(guides)/editor.mdx',
   'content/docs/(plugins)/(collaboration)/yjs.cn.mdx',
   'content/docs/(plugins)/(collaboration)/yjs.mdx',
-  'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
+  'packages/yjs/src/plate/BaseYjsPlugin.api.spec.ts',
   'packages/yjs/README.md',
 ]);
 

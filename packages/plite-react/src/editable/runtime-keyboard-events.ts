@@ -1,5 +1,8 @@
 import type { Point, Range, NodeKey } from '@platejs/plite';
-import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import {
+  createDOMGeometryKernel,
+  type DOMPhaseScheduler,
+} from '@platejs/plite-dom/internal';
 import { type KeyboardEvent, useCallback } from 'react';
 
 import type { EditableKeyDownHandler } from '../components/editable';
@@ -10,7 +13,6 @@ import { recordPliteReactRender } from '../render-profiler';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
 import { getKeyboardSelectableVerticalNavigationTarget } from './caret-engine';
-import { resolveUsableRangeRect } from './content-root-coordinate-navigation';
 import {
   getContentRootNavigationTarget,
   shouldModelOwnContentRootVerticalSelection,
@@ -22,7 +24,10 @@ import {
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
 import { useEditableKeyboardHandler } from './input-router';
-import type { EditableInputController } from './input-state';
+import {
+  type EditableInputController,
+  recordEditableInputIntent,
+} from './input-state';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
 import {
   getSnapshot as editorGetSnapshot,
@@ -57,12 +62,12 @@ const resolveVerticalGoalX = (
   focus: Point
 ): number | null => {
   try {
-    return (
-      resolveUsableRangeRect(editor, {
-        anchor: focus,
-        focus,
-      })?.left ?? null
-    );
+    const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);
+    const point = editor.api.dom.resolveDOMPoint(focus);
+
+    return root && point
+      ? createDOMGeometryKernel({ root }).verticalNavigationX(point)
+      : null;
   } catch {
     return null;
   }
@@ -402,7 +407,7 @@ export const useRuntimeKeyboardEvents = ({
         flushPendingNativeTextInput?.();
       }
 
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       if (shouldApplyKeyDownSelectionPolicy(decision, event, inputController)) {
         measureRuntimeKeyDownPhase('keydown.apply-selection-policy', () => {
           runtime.selection.applyKeyDownSelectionPolicy(decision);

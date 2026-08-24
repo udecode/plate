@@ -267,6 +267,7 @@ export const validatePliteRawMobileProof = ({
       if (
         scenario &&
         isRecord(finalSnapshot) &&
+        typeof finalSnapshot.updateCount === 'number' &&
         finalSnapshot.updateCount !== scenario.updateCount
       ) {
         issues.push(

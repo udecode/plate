@@ -235,6 +235,50 @@ describe('plite string coordinate placement', () => {
     });
   });
 
+  test('places a paragraph gap at the preceding block end', () => {
+    const editableRoot = document.createElement('div');
+    const beforeBlock = document.createElement('div');
+    const afterBlock = document.createElement('div');
+    const beforeText = createTextHost({ text: 'short tail' });
+    const afterText = createTextHost({ text: 'long next line' });
+
+    editableRoot.dataset.pliteEditor = 'true';
+    beforeBlock.dataset.pliteNode = 'element';
+    beforeBlock.dataset.plitePath = '0';
+    afterBlock.dataset.pliteNode = 'element';
+    afterBlock.dataset.plitePath = '1';
+    setBoundingRect(editableRoot, rect({ bottom: 220, right: 320 }));
+    setBoundingRect(
+      beforeBlock,
+      rect({ bottom: 100, left: 10, right: 300, top: 20 })
+    );
+    setBoundingRect(
+      afterBlock,
+      rect({ bottom: 200, left: 10, right: 300, top: 112 })
+    );
+    setClientRects(beforeText.string, [
+      rect({ bottom: 96, left: 10, right: 120, top: 80 }),
+    ]);
+    setClientRects(afterText.string, [
+      rect({ bottom: 130, left: 10, right: 280, top: 114 }),
+    ]);
+    beforeBlock.append(beforeText.textHost);
+    afterBlock.append(afterText.textHost);
+    editableRoot.append(beforeBlock, afterBlock);
+    document.body.append(editableRoot);
+
+    expect(
+      getEditableRootPliteStringCoordinatePlacement({
+        editableRoot,
+        event: { clientX: 200, clientY: 106 },
+      })
+    ).toMatchObject({
+      edge: 'end',
+      source: 'string-edge',
+      string: beforeText.string,
+    });
+  });
+
   test('maps RTL physical line edges to logical text offsets', () => {
     const { string, textHost } = createTextHost({
       direction: 'rtl',

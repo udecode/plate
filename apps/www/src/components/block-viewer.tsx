@@ -33,6 +33,7 @@ import {
 } from '@/lib/registry-install';
 import type { createFileTreeForRegistryItemFiles } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
+import { toLinkHref } from '@/lib/withLocale';
 
 export type BlockViewerContext = {
   activeFile: string | null;
@@ -278,7 +279,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
       {block && (
         <Link
           className="text-sm font-medium underline-offset-2 hover:underline"
-          href={description}
+          href={toLinkHref(description)}
           target={description.startsWith('/') ? '_self' : '_blank'}
         >
           {item.description}
@@ -317,7 +318,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 className="size-6 rounded-sm p-0"
                 title="Open in New Tab"
               >
-                <Link href={previewUrl} target="_blank">
+                <Link href={toLinkHref(previewUrl)} target="_blank">
                   <span className="sr-only">Open in New Tab</span>
                   <Fullscreen />
                 </Link>
@@ -385,7 +386,9 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 'transition-shadow duration-300 ease-out',
                 'h-[26px] px-2 text-xs'
               )}
-              href={item.meta?.descriptionSrc ?? siteConfig.links.potionIframe}
+              href={toLinkHref(
+                item.meta?.descriptionSrc ?? siteConfig.links.potionIframe
+              )}
               target="_blank"
             >
               <span

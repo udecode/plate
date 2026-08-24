@@ -1,6 +1,9 @@
 import { JSDOM } from 'jsdom';
 
-import { createDOMGeometryKernel } from '../src/plugin/dom-geometry';
+import {
+  createDOMGeometryKernel,
+  getVerticalNavigationCaretX,
+} from '../src/plugin/dom-geometry';
 
 const rect = (
   _window: Window,
@@ -71,6 +74,21 @@ const createTextHost = (
 };
 
 describe('Plite DOM geometry kernel', () => {
+  test('rounds the painted caret edge in local block coordinates', () => {
+    expect(
+      getVerticalNavigationCaretX({
+        boundaryX: 204.9375,
+        containerX: 144.5,
+      })
+    ).toBe(204.5);
+    expect(
+      getVerticalNavigationCaretX({
+        boundaryX: 212.4375,
+        containerX: 152,
+      })
+    ).toBe(212);
+  });
+
   test('scopes coordinate placement to one editable root and target', () => {
     const dom = new JSDOM('<!doctype html><html><body></body></html>');
     const { document } = dom.window;
@@ -319,7 +337,7 @@ describe('Plite DOM geometry kernel', () => {
     dom.window.close();
   });
 
-  test('quantizes measured fallback x like native CSS-pixel hit-testing', () => {
+  test('preserves the cached vertical caret x in measured fallback', () => {
     const dom = new JSDOM('<!doctype html><html><body></body></html>');
     const { document } = dom.window;
     const root = document.createElement('div');
@@ -332,6 +350,10 @@ describe('Plite DOM geometry kernel', () => {
       configurable: true,
       value: () => null,
     });
+    Object.defineProperty(document, 'caretPositionFromPoint', {
+      configurable: true,
+      value: () => ({ offset: 1, offsetNode: rendered.text }),
+    });
     Object.defineProperty(dom.window.Range.prototype, 'getClientRects', {
       configurable: true,
       value(this: Range) {
@@ -343,9 +365,48 @@ describe('Plite DOM geometry kernel', () => {
       createDOMGeometryKernel({ root }).pointInVisualLine({
         host: rendered.host,
         line: rect(dom.window, { left: 0, right: 10 }),
-        x: 4.9,
+        x: 5.1,
       })
-    ).toEqual([rendered.text, 0]);
+    ).toEqual([rendered.text, 1]);
+
+    dom.window.close();
+  });
+
+  test('measures unmounted vertical navigation from probe layout', () => {
+    const dom = new JSDOM('<!doctype html><html><body></body></html>');
+    const { document } = dom.window;
+    const root = document.createElement('div');
+    const source = createTextHost(document, 'source');
+
+    root.dataset.pliteEditor = 'true';
+    setBoundingRect(source.host, rect(dom.window, { left: 0, right: 100 }));
+    root.append(source.host);
+    document.body.append(root);
+    Object.defineProperty(dom.window.Range.prototype, 'getClientRects', {
+      configurable: true,
+      value(this: Range) {
+        if (this.collapsed) return [];
+        if (this.startContainer.nodeType === 1) {
+          return [rect(dom.window, { left: 0, right: 80 })];
+        }
+
+        return [
+          rect(dom.window, {
+            left: this.startOffset * 10,
+            right: this.endOffset * 10,
+          }),
+        ];
+      },
+    });
+
+    expect(
+      createDOMGeometryKernel({ root }).measureTextVisualLineOffset({
+        edge: 'start',
+        sourceHost: source.host,
+        text: 'measured',
+        x: 26,
+      })
+    ).toBe(3);
 
     dom.window.close();
   });

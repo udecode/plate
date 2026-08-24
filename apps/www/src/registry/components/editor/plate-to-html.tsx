@@ -8,6 +8,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Editor, EditorView } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
+import { useObjectUrl } from '@/registry/hooks/use-object-url';
 
 import { FixedToolbarPlugin } from './fixed-toolbar';
 import { FloatingToolbarPlugin } from './floating-toolbar';
@@ -41,22 +42,19 @@ export function ExportHtmlButton({
   serverTheme?: string;
 }) {
   const themedHtml = useThemedHtml(html, serverTheme);
-  const [url, setUrl] = React.useState<string>();
-
-  React.useEffect(() => {
-    const blob = new Blob([themedHtml], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
-    // Track browser object URL lifecycle for the generated export blob.
-    setUrl(blobUrl);
-
-    return () => {
-      URL.revokeObjectURL(blobUrl);
-    };
-  }, [themedHtml]);
+  const blob = React.useMemo(
+    () => new Blob([themedHtml], { type: 'text/html' }),
+    [themedHtml]
+  );
+  const url = useObjectUrl(blob);
 
   return (
     <Button asChild className={className}>
-      <a download="export-plate.html" href={url} rel="noopener noreferrer">
+      <a
+        download="export-plate.html"
+        href={url ?? undefined}
+        rel="noopener noreferrer"
+      >
         Export HTML
       </a>
     </Button>

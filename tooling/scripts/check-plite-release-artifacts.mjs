@@ -117,6 +117,7 @@ const PLITE_PACKAGE_BOUNDARY_NAMES = new Set([
   '@platejs/plite-dom',
   '@platejs/plite-react',
   '@platejs/plite-layout',
+  '@platejs/core',
   '@platejs/yjs',
 ]);
 
@@ -141,9 +142,16 @@ export function getPublicExports(packageJson) {
   }));
 }
 
-export function filterTypeScriptConsumerDiagnostics(output, consumerDirectory) {
+export function filterTypeScriptConsumerDiagnostics(
+  output,
+  consumerDirectory,
+  packageNames
+) {
   const kept = [];
   let keepCurrent = false;
+  const packagePaths = packageNames?.map((packageName) =>
+    join('node_modules', ...packageName.split('/'))
+  );
 
   for (const line of output.split('\n')) {
     const match = line.match(diagnosticStartPattern);
@@ -158,10 +166,19 @@ export function filterTypeScriptConsumerDiagnostics(output, consumerDirectory) {
           consumerDirectory,
           resolve(consumerDirectory, filePath)
         );
-        keepCurrent =
+        const isConsumerPath =
           relativePath !== '..' &&
           !relativePath.startsWith(`..${sep}`) &&
           !relativePath.startsWith(sep);
+        keepCurrent =
+          isConsumerPath &&
+          (!packagePaths ||
+            relativePath === 'consumer.ts' ||
+            packagePaths.some(
+              (packagePath) =>
+                relativePath === packagePath ||
+                relativePath.startsWith(`${packagePath}${sep}`)
+            ));
       }
     }
 
@@ -672,17 +689,51 @@ export function checkPliteReleaseArtifacts({
       typePackages: ['@types/node', '@types/react', '@types/react-dom'],
     });
     verifyIsolatedPackedConsumer({
-      directory: join(isolatedConsumerRoot, 'yjs-core-without-plate-react'),
-      forbiddenPackages: ['@platejs/core', '@platejs/plite-react', 'react'],
+      directory: join(isolatedConsumerRoot, 'yjs-root-without-plate-react'),
+      forbiddenPackages: [
+        '@platejs/core',
+        '@platejs/plite-react',
+        'react',
+        'react-dom',
+      ],
       packageNames: ['@platejs/plite', '@platejs/yjs'],
       packedPackages,
-      specifiers: ['@platejs/yjs/core'],
+      specifiers: ['@platejs/yjs'],
       typePackages: ['@types/node'],
+    });
+    verifyIsolatedPackedConsumer({
+      directory: join(isolatedConsumerRoot, 'yjs-react-without-plate'),
+      forbiddenPackages: ['@platejs/core'],
+      packageNames: [
+        '@platejs/plite',
+        '@platejs/plite-dom',
+        '@platejs/plite-react',
+        '@platejs/yjs',
+      ],
+      packedPackages,
+      specifiers: ['@platejs/yjs/react'],
+      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
+    });
+    verifyIsolatedPackedConsumer({
+      declarationPackageNames: ['@platejs/yjs'],
+      directory: join(isolatedConsumerRoot, 'yjs-plate-adapter'),
+      forbiddenPackages: [],
+      packageNames: [
+        '@platejs/plite',
+        '@platejs/plite-dom',
+        '@platejs/plite-react',
+        '@platejs/core',
+        '@platejs/yjs',
+      ],
+      packedPackages,
+      requiredOptionalPackages: ['use-sync-external-store'],
+      specifiers: ['@platejs/yjs/plate'],
+      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
     });
 
     if (packageBoundariesOnly) {
       console.log(
-        'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, and Yjs core without Plate/React consumers.'
+        'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, Yjs root without Plate/React, Yjs React without Plate, and the Yjs Plate adapter.'
       );
       return;
     }
@@ -761,7 +812,7 @@ export function checkPliteReleaseArtifacts({
       `Verified ${packedPackages.length} packed release packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
     );
     console.log(
-      'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, and Yjs core without Plate/React consumers.'
+      'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, Yjs root without Plate/React, Yjs React without Plate, and the Yjs Plate adapter.'
     );
   } finally {
     if (keep) {
@@ -774,10 +825,12 @@ export function checkPliteReleaseArtifacts({
 }
 
 function verifyIsolatedPackedConsumer({
+  declarationPackageNames,
   directory,
   forbiddenPackages,
   packageNames,
   packedPackages,
+  requiredOptionalPackages,
   specifiers,
   typePackages,
 }) {
@@ -850,6 +903,7 @@ function verifyIsolatedPackedConsumer({
     destinationNodeModules: join(directory, 'node_modules'),
     forbiddenPackages,
     requests: dependencyRequests,
+    requiredOptionalPackages,
   });
 
   const source = specifiers
@@ -862,8 +916,12 @@ function verifyIsolatedPackedConsumer({
   writeFileSync(join(directory, 'consumer.ts'), `${source}\n`);
   writeFileSync(join(directory, 'runtime.mjs'), `${source}\n`);
   writeTypeScriptConfigs(directory);
-  runTypeScriptConsumer(directory, 'tsconfig.nodenext.json');
-  runTypeScriptConsumer(directory, 'tsconfig.bundler.json');
+  runTypeScriptConsumer(directory, 'tsconfig.nodenext.json', {
+    packageNames: declarationPackageNames,
+  });
+  runTypeScriptConsumer(directory, 'tsconfig.bundler.json', {
+    packageNames: declarationPackageNames,
+  });
   runCommand(process.execPath, ['runtime.mjs'], { cwd: directory });
 }
 
@@ -871,10 +929,27 @@ export function materializeResolvedDependencyClosure({
   destinationNodeModules,
   forbiddenPackages,
   requests,
+  requiredOptionalPackages = [],
 }) {
   const forbidden = new Set(forbiddenPackages);
-  const queue = [...requests];
-  const resolvedPackages = new Map();
+  const packageNodes = new Map();
+  const requiredOptional = new Set(requiredOptionalPackages);
+  const rootSources = new Map();
+  const queue = requests.map((request) => ({ ...request, root: true }));
+  const copyResolvedPackage = (source, destination) => {
+    cpSync(source, destination, {
+      dereference: true,
+      filter: (sourcePath) => {
+        const sourceRelativePath = relative(source, sourcePath);
+
+        return (
+          sourceRelativePath === '' ||
+          !sourceRelativePath.split(sep).includes('node_modules')
+        );
+      },
+      recursive: true,
+    });
+  };
 
   while (queue.length > 0) {
     const request = queue.shift();
@@ -897,44 +972,95 @@ export function materializeResolvedDependencyClosure({
       );
     }
 
-    const existingSource = resolvedPackages.get(request.name);
+    if (request.root) {
+      const existingSource = rootSources.get(request.name);
 
-    if (existingSource) {
-      if (existingSource !== source) {
+      if (existingSource && existingSource !== source) {
         throw new Error(
           `${request.name} resolves to multiple versions in the isolated dependency closure.`
         );
       }
 
-      continue;
+      rootSources.set(request.name, source);
     }
 
-    resolvedPackages.set(request.name, source);
+    if (request.parentSource) {
+      packageNodes
+        .get(request.parentSource)
+        .dependencies.set(request.name, source);
+    }
+
+    if (packageNodes.has(source)) continue;
+
     const packageJson = readJson(join(source, 'package.json'));
     const optionalPeers = new Set(
       Object.entries(packageJson.peerDependenciesMeta ?? {})
         .filter(([, metadata]) => metadata?.optional === true)
         .map(([name]) => name)
     );
+    packageNodes.set(source, {
+      dependencies: new Map(),
+      source,
+    });
 
     for (const name of new Set([
       ...Object.keys(packageJson.dependencies ?? {}),
       ...Object.keys(packageJson.peerDependencies ?? {}).filter(
-        (peerName) => !optionalPeers.has(peerName)
+        (peerName) =>
+          !optionalPeers.has(peerName) || requiredOptional.has(peerName)
       ),
     ])) {
-      queue.push({ fromDirectory: source, name });
+      queue.push({ fromDirectory: source, name, parentSource: source });
     }
 
     for (const name of Object.keys(packageJson.optionalDependencies ?? {})) {
-      queue.push({ fromDirectory: source, name, optional: true });
+      queue.push({
+        fromDirectory: source,
+        name,
+        optional: true,
+        parentSource: source,
+      });
     }
   }
 
-  for (const [name, source] of resolvedPackages) {
+  for (const [name, source] of rootSources) {
     const destination = join(destinationNodeModules, ...name.split('/'));
     ensureDirectory(dirname(destination));
-    cpSync(source, destination, { dereference: true, recursive: true });
+    copyResolvedPackage(source, destination);
+  }
+
+  const installNestedOverrides = (source, destination, availableSources) => {
+    const packageNode = packageNodes.get(source);
+
+    if (!packageNode) return;
+
+    for (const [name, dependencySource] of packageNode.dependencies) {
+      if (availableSources.get(name) === dependencySource) continue;
+
+      const dependencyDestination = join(
+        destination,
+        'node_modules',
+        ...name.split('/')
+      );
+      ensureDirectory(dirname(dependencyDestination));
+      copyResolvedPackage(dependencySource, dependencyDestination);
+
+      const nestedSources = new Map(availableSources);
+      nestedSources.set(name, dependencySource);
+      installNestedOverrides(
+        dependencySource,
+        dependencyDestination,
+        nestedSources
+      );
+    }
+  };
+
+  for (const [name, source] of rootSources) {
+    installNestedOverrides(
+      source,
+      join(destinationNodeModules, ...name.split('/')),
+      rootSources
+    );
   }
 
   assertPhysicalDependencyTree(destinationNodeModules, forbidden);
@@ -1307,7 +1433,11 @@ function writeTypeScriptConfigs(consumerDirectory) {
   });
 }
 
-export function runTypeScriptConsumer(consumerDirectory, configName) {
+export function runTypeScriptConsumer(
+  consumerDirectory,
+  configName,
+  { packageNames } = {}
+) {
   const command = join(repoRoot, 'node_modules', '.bin', 'tsc');
   const args = ['-p', configName, '--pretty', 'false', '--noErrorTruncation'];
   const result = spawnSync(command, args, {
@@ -1328,7 +1458,8 @@ export function runTypeScriptConsumer(consumerDirectory, configName) {
     .join('\n');
   const ownedDiagnostics = filterTypeScriptConsumerDiagnostics(
     output,
-    consumerDirectory
+    consumerDirectory,
+    packageNames
   );
 
   if (!ownedDiagnostics) return;

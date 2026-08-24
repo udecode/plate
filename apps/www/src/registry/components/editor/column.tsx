@@ -98,27 +98,27 @@ export function ColumnElement({
   );
 }
 
-const ColumnDragHandle = React.memo(() => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" className="h-5 !px-1">
-          <GripHorizontal
-            className="text-muted-foreground"
-            onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-            }}
-          />
-        </Button>
-      </TooltipTrigger>
+function ColumnDragHandle() {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" className="h-5 !px-1">
+            <GripHorizontal
+              className="text-muted-foreground"
+              onClick={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+              }}
+            />
+          </Button>
+        </TooltipTrigger>
 
-      <TooltipContent>Drag to move column</TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-));
-
-ColumnDragHandle.displayName = 'ColumnDragHandle';
+        <TooltipContent>Drag to move column</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 function DropLine() {
   const { dropLine } = useDropLine({ orientation: 'horizontal' });

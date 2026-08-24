@@ -41,8 +41,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "workspace:*",
-    "react-compiler-runtime": "^1.0.0"
+    "@udecode/react-utils": "workspace:*"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*"

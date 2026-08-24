@@ -512,6 +512,7 @@ export const applyEditableCaretMovement = ({
   domPhaseScheduler,
   editor,
   event,
+  preferredX,
   selection,
   domStrategyRuntime,
 }: {
@@ -519,6 +520,7 @@ export const applyEditableCaretMovement = ({
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
   event: KeyboardEvent<HTMLDivElement>;
+  preferredX?: number;
   selection: Range | null;
 }): EditableCaretMovementResult => {
   const { nativeEvent } = event;
@@ -564,6 +566,7 @@ export const applyEditableCaretMovement = ({
         editor,
         event: nativeEvent,
         forceModelMovement: ownerlessViewSelectionRange !== null,
+        preferredX,
         selection: largeDocumentVerticalSelection,
       })
   );

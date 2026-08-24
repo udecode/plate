@@ -133,16 +133,24 @@ export function InlineEquationElement(
   const isCollapsed = useEditorSelector((editor) =>
     editor.read.selection.isCollapsed()
   );
-  const [open, setOpen] = React.useState(selected && isCollapsed);
+  const [popoverState, setPopoverState] = React.useState({
+    dismissed: false,
+    selected,
+  });
 
-  React.useEffect(() => {
-    if (selected && isCollapsed) {
-      // Open the inline equation popover when editor selection enters it.
-      setOpen(true);
-    } else if (!selected) {
-      setOpen(false);
-    }
-  }, [selected, isCollapsed]);
+  if (popoverState.selected !== selected) {
+    setPopoverState({ dismissed: false, selected });
+  }
+
+  const dismissed =
+    popoverState.selected === selected && popoverState.dismissed;
+  const open = selected && isCollapsed && !dismissed;
+  const setOpen = React.useCallback(
+    (nextOpen: boolean) => {
+      setPopoverState({ dismissed: !nextOpen, selected });
+    },
+    [selected]
+  );
 
   useEquation({
     element,
@@ -339,12 +347,6 @@ const EquationPopoverContent = ({
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const element = useElement(isInline ? InlineEquationPlugin : EquationPlugin);
-
-  React.useEffect(() => {
-    if (isInline && open) {
-      setOpen(true);
-    }
-  }, [isInline, open, setOpen]);
 
   if (readOnly) return null;
 

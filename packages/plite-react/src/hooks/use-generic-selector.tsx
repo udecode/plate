@@ -111,6 +111,8 @@ export function useGenericSelector<T>(
   selector: () => T,
   equalityFn: (a: T | null, b: T) => boolean
 ): [state: T, update: () => void] {
+  'use no memo';
+
   const [store] = useState(() => createGenericSelectorStore(equalityFn));
   const renderSnapshot = useSyncExternalStore(
     store.subscribe,

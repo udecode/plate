@@ -358,6 +358,13 @@ const main = () => {
   run('Plate schema adoption source audit', 'node', [
     'tooling/scripts/check-plate-schema-adoption.mjs',
   ]);
+  run('React Compiler contract tests', 'node', [
+    '--test',
+    'tooling/scripts/check-react-compiler-contract.test.mjs',
+  ]);
+  run('React Compiler source contract audit', 'node', [
+    'tooling/scripts/check-react-compiler-contract.mjs',
+  ]);
   run('Plate docs code contract tests', 'node', [
     '--test',
     'tooling/scripts/check-plate-doc-code-contracts.test.mjs',

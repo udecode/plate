@@ -2663,7 +2663,7 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
        createBaseEditor({ schemaIdentity: TestSchema });
        createBaseEditor({ schemaIdentity: TestSchema });
        createBaseEditor({ schemaIdentity: TestSchema });`,
-      'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
+      'packages/yjs/src/plate/BaseYjsPlugin.api.spec.ts',
     ],
     [
       `defineEditorSchema("schemaIdentity:document", { id: 'document', version: 1, elements: { paragraph: { content: schemaIdentity.content.text() } } })`,

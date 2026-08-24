@@ -53,7 +53,7 @@ npm install y-webrtc
 持久房间使用显式的 `id` 和 `version` 作为谱系；递增版本前先迁移房间。
 
 ```tsx
-import { YjsPlugin } from "@platejs/yjs/react";
+import { YjsPlugin } from "@platejs/yjs/plate";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
@@ -79,10 +79,11 @@ const editor = createPlateEditor({
 
 ### 配置提供者和光标
 
-把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。远程光标 hooks 从同一个 React 子路径导入。
+把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。Plate 插件从 Plate 子路径导入，远程光标 hooks 从 React 子路径导入。
 
 ```tsx
-import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";
+import { YjsPlugin } from "@platejs/yjs/plate";
+import { useYjsRemoteCursors } from "@platejs/yjs/react";
 import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({

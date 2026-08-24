@@ -127,7 +127,7 @@ const sourceFirstPaths = {
   '@platejs/slate-layout/react': ['../slate-layout/src/react.tsx'],
   '@platejs/slate-react': ['../slate-react/src/index.ts'],
   '@platejs/yjs': ['../yjs/src/index.ts'],
-  '@platejs/yjs/core': ['../yjs/src/core/index.ts'],
+  '@platejs/yjs/plate': ['../yjs/src/plate/index.ts'],
   '@platejs/yjs/react': ['../yjs/src/react/index.ts'],
 };
 
@@ -344,9 +344,6 @@ const updatePackageJson = (target, packageEntry) => {
     './package.json': './package.json',
   };
   const dependencies = rewriteDependencyMap(donorPackageJson.dependencies);
-  if (packageEntry.to === 'slate-react') {
-    dependencies['react-compiler-runtime'] = '^1.0.0';
-  }
   const devDependencies = {
     ...rewriteDependencyMap(donorPackageJson.devDependencies),
     '@plate/scripts': 'workspace:*',

@@ -8,8 +8,8 @@ import * as Y from 'yjs';
 
 import { FakeProvider } from '../../test/support/provider';
 import { yjs } from '../core/extension';
-import { YjsPlugin } from '../react/YjsPlugin';
 import { BaseYjsPlugin } from './BaseYjsPlugin';
+import { YjsPlugin } from './YjsPlugin';
 
 const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
 const paragraph = (text: string) => ({

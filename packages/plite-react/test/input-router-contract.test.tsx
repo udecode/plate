@@ -89,8 +89,6 @@ const useTestRuntimeFocusMouseEvents = (
   });
 };
 
-const cancelable = () => ({ cancel: () => {} });
-
 test('DOM input trace keeps an outer event handler duration bucket', () => {
   const source = readFileSync('src/editable/input-router.ts', 'utf-8');
 
@@ -108,7 +106,7 @@ const RootRefProbe = ({
     editor,
     readOnly: false,
   });
-  const lifecycle = useMemo(cancelable, []);
+  const lifecycle = useMemo(() => ({ cancel: () => {} }), []);
   const ref = useEditableRootRef({
     onDOMBeforeInput,
     onDOMInput: () => {},

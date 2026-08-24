@@ -9,4 +9,4 @@ export const input = [
   },
 ];
 export const test = (value) => NodeApi.isNodeList(value);
-export const output = true;
+export const output = false;

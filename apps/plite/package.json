@@ -3,8 +3,8 @@
   "version": "0.0.0-private",
   "private": true,
   "scripts": {
-    "build": "next build --webpack",
-    "dev:lan": "next dev --webpack --hostname 0.0.0.0",
+    "build": "next build",
+    "dev:lan": "next dev --hostname 0.0.0.0",
     "lint": "ultracite check .",
     "lint:fix": "ultracite fix .",
     "pretest:plite-browser": "node scripts/build-browser-if-stale.mjs",
@@ -24,10 +24,10 @@
   },
   "dependencies": {
     "@playwright/test": "1.61.0",
-    "next": "16.2.6",
+    "next": "16.3.2",
     "nuqs": "2.4.3",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@faker-js/faker": "9.8.0",

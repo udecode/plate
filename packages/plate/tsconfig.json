@@ -1,5 +1,20 @@
 {
   "extends": "../../tooling/config/tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@platejs/basic-nodes": ["../basic-nodes/src/index.ts"],
+      "@platejs/code-block": ["../code-block/src/index.ts"],
+      "@platejs/core": ["../core/src/index.ts"],
+      "@platejs/list": ["../list/src/index.ts"],
+      "@platejs/media": ["../media/src/index.ts"],
+      "@platejs/plite": ["../plite/src/index.ts"],
+      "@platejs/table": ["../table/src/index.ts"],
+      "@platejs/utils": ["../utils/src/index.ts"],
+      "@udecode/react-hotkeys": ["../udecode/react-hotkeys/src/index.tsx"],
+      "@udecode/react-utils": ["../udecode/react-utils/src/index.ts"],
+      "@udecode/utils": ["../udecode/utils/src/index.ts"]
+    }
+  },
   "include": ["src", "../../tooling/config/global.d.ts"],
   "exclude": []
 }

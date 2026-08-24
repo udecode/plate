@@ -52,8 +52,7 @@
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/utils": "workspace:^",
-    "katex": "0.16.22",
-    "react-compiler-runtime": "^1.0.0"
+    "katex": "0.16.22"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",

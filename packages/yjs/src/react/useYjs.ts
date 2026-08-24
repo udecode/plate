@@ -587,7 +587,10 @@ export function useYjsRemoteCursorDecorationSource<
   const awarenessRevision = useYjsAwarenessRevision(editor);
   const optionsRef = useRef(options);
   const id = options.id ?? DEFAULT_CURSOR_DECORATION_SOURCE_ID;
-  optionsRef.current = options;
+
+  useIsomorphicLayoutEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const source = usePliteRangeDecorationSource<
     V,
@@ -767,7 +770,10 @@ export function useYjsRemoteCursorOverlayPositions<
   );
   const animationFrameRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+
+  useIsomorphicLayoutEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const readPositions = useCallback(
     () =>
@@ -777,7 +783,9 @@ export function useYjsRemoteCursorOverlayPositions<
       ),
     [editor]
   );
-  const [positions, setPositions] = useState(readPositions);
+  const [positions, setPositions] = useState(() =>
+    readYjsRemoteCursorOverlayPositions<TPositionData, TEditor>(editor, options)
+  );
   const positionsRef = useRef(positions);
   const refresh = useCallback(() => {
     const next = readPositions();

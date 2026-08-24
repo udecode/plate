@@ -11,7 +11,10 @@ import {
   useEditableClipboardHandler,
   useEditablePasteHandler,
 } from './input-router';
-import type { EditableInputController } from './input-state';
+import {
+  type EditableInputController,
+  recordEditableInputIntent,
+} from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
 
 type ClipboardHandler = (
@@ -51,7 +54,7 @@ export const useRuntimeClipboardEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.beginKernelEventFrame({
         family: 'paste',
         intent: decision.intent,
@@ -102,7 +105,7 @@ export const useRuntimeClipboardEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.recordKernelEventTrace({
         family: 'copy',
         intent: decision.intent,
@@ -129,7 +132,7 @@ export const useRuntimeClipboardEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.beginKernelEventFrame({
         family: 'cut',
         intent: decision.intent,

@@ -40,7 +40,8 @@ description: \@platejs/core 的 API 参考文档。
     编辑器的初始选区。
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
-    应用 schema policy 和可选命名谱系。迁移计划要求 `id` 和 `version` 精确匹配。
+    应用 schema policy 和可选命名谱系。省略 `root` 时使用标准段落 root。迁移计划要求
+    `id` 和 `version` 精确匹配。
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     当 `true` 时，将规范化传递给 `editor` 的初始 `value`。
@@ -88,6 +89,19 @@ description: \@platejs/core 的 API 参考文档。
 </API>
 
 有关编辑器配置的更多详情，请参阅[编辑器配置](/docs/editor)指南。
+
+### `EditorApplicationSchema`
+
+定义应用拥有的 schema policy。可选字段包括：
+
+- `root`：带有显式正整数 `min` 的主 root `SchemaContent`。描述符来源必须匹配已安装的
+  插件系列。`schema.content.elements` 的第一个来源是默认值。
+- `overrides`：针对已安装元素 schema 和现有属性目标的最终应用覆盖。
+- `properties`：应用拥有的 schema 属性。
+- `id` 和 `version`：成对出现的持久化谱系；必须同时提供或同时省略。
+
+省略 `root` 时保留 Plate 标准的最少一个段落语法。Root 语法参与编译指纹和生成的值
+合约。
 
 ### `defineDocumentMigrations`
 
@@ -226,7 +240,7 @@ const result = migrateDocument(persisted, {
 
 ### `useEditor`
 
-获取活动 Plate editor 而不重新渲染。返回值包含 `store`。没有匹配的活动 editor 时抛出错误。
+获取活动 Plate editor 而不重新渲染。没有匹配的活动 editor 时抛出错误。
 
 <API name="useEditor">
 <APIParameters>
@@ -235,14 +249,14 @@ const result = migrateDocument(persisted, {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor & { store: PlateStore }">
-  带有附加存储的编辑器引用。
+<APIReturns type="PlateEditor">
+  编辑器引用。
 </APIReturns>
 </API>
 
 ### `useActiveEditor`
 
-没有活动 editor 是合法 UI state 时使用 `useActiveEditor({ id? })`。它返回与 `useEditor()` 相同的 editor-and-store value，没有匹配 editor 时返回 `null`。
+没有活动 editor 是合法 UI state 时使用 `useActiveEditor({ id? })`。它返回与 `useEditor()` 相同的 editor value，没有匹配 editor 时返回 `null`。
 
 ### `useEditorSelector`
 

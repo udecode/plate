@@ -1,6 +1,6 @@
 import type { EditorCommit, Path, NodeKey } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
-import { type ReactNode, useCallback, useMemo, useRef } from 'react';
+import { type ReactNode, useCallback, useMemo } from 'react';
 
 import { useEditor } from '../hooks/use-editor';
 import { useEditorSelector } from '../hooks/use-editor-selector';
@@ -216,21 +216,14 @@ export const useRootNodeKeys = () => {
 export const useRootDocumentEpoch = () => {
   const editor = useEditor();
   const root = toInternalRoot(editor.read((state) => state.view.root()));
-  const lastEpochRef = useRef({ root, value: 0 });
-
-  if (lastEpochRef.current.root !== root) {
-    lastEpochRef.current = { root, value: 0 };
-  }
   const selector = useCallback(
     (innerEditor2: ReactRuntimeEditor) =>
       innerEditor2.read((state) => {
         const commit = state.lastCommit();
 
-        if (commit?.changed.has('replace', toPublicRootOption(root))) {
-          lastEpochRef.current.value = commit.version;
-        }
-
-        return lastEpochRef.current.value;
+        return commit?.changed.has('replace', toPublicRootOption(root))
+          ? commit.version
+          : 0;
       }),
     [root]
   );

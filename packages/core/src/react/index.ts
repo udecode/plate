@@ -94,7 +94,6 @@ export {
   usePlateValue,
 } from './stores/plate/createPlateStore';
 export type {
-  PlateEditorWithStore,
   PlateStore,
   UseEditorOptions,
   UseEditorStateOptions,

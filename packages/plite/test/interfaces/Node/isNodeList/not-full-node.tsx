@@ -6,6 +6,7 @@ export const input = [
   {
     children: [],
     selection: null,
+    type: 'paragraph',
   },
   'a string',
 ];

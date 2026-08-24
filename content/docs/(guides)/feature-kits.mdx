@@ -124,6 +124,11 @@ names and install directly into `components/editor`.
 | `editor-plugins` | The full editable editor kit. |
 | `editor-plugins-static` | The full static/base kit. |
 
+`editor-plugins` installs the authored `EditorKit` source only. When an app
+needs exact generated `Editor` or `Value` contracts, generate them from its
+customized plugin module and run `plate generate --check <entry>` in CI. See
+[Exact Generated Editor Types](/docs/editor#exact-generated-editor-types).
+
 ## Next Steps
 
 | Task | Guide |

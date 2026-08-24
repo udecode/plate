@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 import { siteConfig } from '@/config/site';
 import releaseIndexData from '@/generated/release-index.json';
 
-export const revalidate = false;
-
 const maxRssItems = 50;
 const releasesUrl = `${siteConfig.url}/docs/releases`;
 

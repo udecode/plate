@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { createPlateRegistry, PLATE_REGISTRY_BASES } from './registry';
@@ -100,10 +100,26 @@ describe('Plate registry editor files', () => {
     );
   });
 
-  it('ships the generated editor contract only from the primary editor owner', () => {
-    const itemsByName = new Map(items.map((item) => [item.name, item]));
+  it('keeps generated preview entrypoints client-compatible', () => {
+    for (const item of items) {
+      const previewPath = item.files?.[0]?.path;
 
-    expect(itemsByName.has('plate-types')).toBe(false);
+      if (!previewPath || item.meta?.rsc) continue;
+
+      const source = readFileSync(join(import.meta.dir, previewPath), 'utf-8');
+
+      expect(source, item.name).not.toMatch(
+        /export\s+(?:const\s+metadata|function\s+generateMetadata)\b/
+      );
+    }
+  });
+
+  it('keeps generated editor contracts application-owned', () => {
+    expect(
+      items
+        .find((item) => item.name === 'editor-plugins')
+        ?.files?.map((file) => file.path)
+    ).toContain('components/editor/plugins.ts');
 
     const generatedEditorContracts = items.flatMap((item) =>
       (item.files ?? [])
@@ -117,18 +133,7 @@ describe('Plate registry editor files', () => {
         }))
     );
 
-    expect(generatedEditorContracts).toEqual([
-      {
-        item: 'editor-plugins',
-        path: 'components/editor/plugins.generated.ts',
-        target: '@components/editor/plugins.generated.ts',
-      },
-      {
-        item: 'editor-plugins',
-        path: 'components/editor/plugins.schema.json',
-        target: '@components/editor/plugins.schema.json',
-      },
-    ]);
+    expect(generatedEditorContracts).toEqual([]);
   });
 
   it('reuses the primary editor from derived registry items', () => {

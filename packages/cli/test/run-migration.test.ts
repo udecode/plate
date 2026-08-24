@@ -49,7 +49,11 @@ const RuntimeMigrations = defineDocumentMigrations(RuntimeSchema, {
 });
 
 const createFixture = (
-  options: { emptyKit?: boolean; persistedSelection?: boolean } = {}
+  options: {
+    applicationRoot?: boolean;
+    emptyKit?: boolean;
+    persistedSelection?: boolean;
+  } = {}
 ) => {
   const directory = mkdtempSync(join(packageRoot, 'tmp-migration-run-'));
   const entryPath = join(directory, 'editor.ts');
@@ -68,7 +72,11 @@ const ParagraphPlugin = defineBasePlugin('paragraph', {
 
 export const EditorKit = ${options.emptyKit ? '[]' : '[ParagraphPlugin]'} as const;
 export const OtherEmptyArray = [] as const;
-export const EditorSchema = { id: 'plate', version: 55 } as const;
+export const EditorSchema = {
+  id: 'plate',
+  ${options.applicationRoot ? 'root: schema.content.element(ParagraphPlugin, { min: 2 }),' : ''}
+  version: 55,
+} as const;
 export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
   sourceFingerprints: { 53: 'source-53' },
   unversioned: 53,
@@ -201,6 +209,35 @@ describe('plate migrate run', () => {
       { children: [{ text: 'v55' }], type: 'paragraph' },
     ]);
     expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(sourceText);
+  });
+
+  it('uses an explicit application root in migration validation and identity', async () => {
+    const defaultFixture = createFixture();
+    const rootFixture = createFixture({ applicationRoot: true });
+    const [defaultResult, rootResult] = await Promise.all([
+      runEditorMigrationInput(
+        defaultFixture.entryPath,
+        readFileSync(defaultFixture.documentPath, 'utf-8'),
+        { cwd: defaultFixture.directory }
+      ),
+      runEditorMigrationInput(
+        rootFixture.entryPath,
+        readFileSync(rootFixture.documentPath, 'utf-8'),
+        { cwd: rootFixture.directory }
+      ),
+    ]);
+    const defaultOutput = JSON.parse(defaultResult.outputText);
+    const rootOutput = JSON.parse(rootResult.outputText);
+
+    expect(rootResult.applied).toEqual([54, 55]);
+    expect(defaultOutput.document.children).toHaveLength(1);
+    expect(rootOutput.document.children).toEqual([
+      { children: [{ text: 'v55' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'paragraph' },
+    ]);
+    expect(rootOutput.schema.fingerprint).not.toBe(
+      defaultOutput.schema.fingerprint
+    );
   });
 
   it('accepts a single empty exported plugin tuple', async () => {

@@ -876,10 +876,17 @@ export const waitForSelectionSync = async (
             : null;
 
         const nativeSelection = getNativeSelectionSnapshot();
+        const hasProjectedSelectionMarkers = !!element.querySelector(
+          '[data-plite-view-selection="true"]'
+        );
         const modelBackedSelection =
           element.getAttribute('data-plite-dom-strategy-selection') ===
-            'partial-dom-backed' ||
-          !!element.querySelector('[data-plite-view-selection="true"]');
+            'partial-dom-backed' || hasProjectedSelectionMarkers;
+        const projectedSelectionMatches = (
+          candidateSelection: SelectionSnapshot
+        ) =>
+          !hasProjectedSelectionMarkers ||
+          selectionsEqual(projectedSelection, candidateSelection);
         const missingNativeSelectionAccepted =
           allowMissingNativeSelection &&
           !nativeSelectionInRoot &&
@@ -887,7 +894,7 @@ export const waitForSelectionSync = async (
             (!!handle?.getSelection &&
               selectionsEqual(handleSelection, innerExpectedSelection) &&
               (!modelBackedSelection ||
-                selectionsEqual(projectedSelection, innerExpectedSelection))));
+                projectedSelectionMatches(innerExpectedSelection))));
         const synced = missingNativeSelectionAccepted
           ? true
           : innerExpectedSelection
@@ -896,11 +903,12 @@ export const waitForSelectionSync = async (
                 (modelBackedSelection ||
                   selectionsEqual(nativeSelection, innerExpectedSelection)) &&
                 (!modelBackedSelection ||
-                  selectionsEqual(projectedSelection, innerExpectedSelection))
+                  projectedSelectionMatches(innerExpectedSelection))
               : selectionsEqual(nativeSelection, innerExpectedSelection)
             : handle?.getSelection
               ? modelBackedSelection
-                ? selectionsEqual(handleSelection, projectedSelection)
+                ? !!handleSelection &&
+                  projectedSelectionMatches(handleSelection)
                 : nativeSelection
                   ? selectionsEqual(handleSelection, nativeSelection)
                   : handleSelection === null && !nativeSelectionInRoot
@@ -909,6 +917,7 @@ export const waitForSelectionSync = async (
         return {
           expectedSelection: innerExpectedSelection,
           handleSelection,
+          hasProjectedSelectionMarkers,
           modelBackedSelection,
           nativeSelection,
           nativeSelectionInRoot,

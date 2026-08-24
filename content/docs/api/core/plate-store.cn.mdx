@@ -55,13 +55,10 @@ Plate shell 容器元素的引用。
 ## 访问存储
 
 ```ts
-import { useEditor, useEditorPlugin, usePlateStore } from 'platejs/react'
+import { useEditorPlugin, usePlateStore } from 'platejs/react'
 
 // 直接访问存储
 const store = usePlateStore(id?)
-
-// 通过编辑器引用访问
-const store = useEditor().store
 
 // 通过插件 portal 访问
 const store = useEditorPlugin(myPlugin).store

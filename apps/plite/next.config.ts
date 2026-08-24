@@ -53,13 +53,13 @@ const addAliasEntries = (
   const rootDir = path.join(packageDir, rootDirName);
   const rootEntry = getIndexEntry(rootDir);
 
-  if (rootEntry) aliases[`${importPath}$`] = toAppImportPath(rootEntry);
+  if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
 
   for (const subpath of WORKSPACE_ALIAS_SUBPATHS) {
     const subpathEntry = getIndexEntry(path.join(rootDir, subpath));
 
     if (subpathEntry) {
-      aliases[`${importPath}/${subpath}$`] = toAppImportPath(subpathEntry);
+      aliases[`${importPath}/${subpath}`] = toAppImportPath(subpathEntry);
     }
   }
 };
@@ -110,29 +110,31 @@ const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') => {
 const buildWorkspaceDevAliases = () => ({
   ...buildWorkspaceAliases('src'),
   '@': toAppImportPath(path.join(WWW_ROOT, 'src')),
-  '@platejs/plite/internal$': toAppImportPath(
+  '@platejs/plite/internal': toAppImportPath(
     path.join(PACKAGES_ROOT, 'plite/src/internal/index.ts')
   ),
-  '@platejs/plite-layout/react$': toAppImportPath(
+  '@platejs/plite-layout/react': toAppImportPath(
     path.join(PACKAGES_ROOT, 'plite-layout/src/react.tsx')
   ),
-  '@platejs/yjs/react$': toAppImportPath(
+  '@platejs/yjs/plate': toAppImportPath(
+    path.join(PACKAGES_ROOT, 'yjs/src/plate/index.ts')
+  ),
+  '@platejs/yjs/react': toAppImportPath(
     path.join(PACKAGES_ROOT, 'yjs/src/react/index.ts')
   ),
 });
-
-const buildWorkspaceDevWebpackAliases = () =>
-  Object.fromEntries(
-    Object.entries(buildWorkspaceDevAliases()).map(([key, value]) => [
-      key,
-      path.resolve(APP_ROOT, value),
-    ])
-  );
 
 const nextConfig: NextConfig = {
   distDir: '.next',
   experimental: {
     externalDir: true,
+    instantInsights: {
+      validationLevel: 'manual-warning',
+    },
+    turbopackRustReactCompiler: true,
+  },
+  logging: {
+    browserToTerminal: true,
   },
   output: 'export',
   reactCompiler: true,
@@ -141,14 +143,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      ...buildWorkspaceDevWebpackAliases(),
-    };
-
-    return config;
+  turbopack: {
+    root: REPO_ROOT,
+    resolveAlias: buildWorkspaceDevAliases(),
   },
+  typedRoutes: true,
 };
 
 export default nextConfig;

@@ -9,9 +9,10 @@ import {
 } from './clipboard-input-strategy';
 import { prepareEditableClipboardKernel } from './editing-kernel';
 import { useEditableDragHandler } from './input-router';
-import type {
-  EditableInputController,
-  EditableInputControllerState,
+import {
+  recordEditableInputIntent,
+  type EditableInputController,
+  type EditableInputControllerState,
 } from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
 
@@ -47,7 +48,7 @@ export const useRuntimeDragEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.recordKernelEventTrace({
         family: 'dragend',
         intent: decision.intent,
@@ -75,7 +76,7 @@ export const useRuntimeDragEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.recordKernelEventTrace({
         family: 'dragover',
         intent: decision.intent,
@@ -102,7 +103,7 @@ export const useRuntimeDragEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.recordKernelEventTrace({
         family: 'dragstart',
         intent: decision.intent,
@@ -130,7 +131,7 @@ export const useRuntimeDragEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.beginKernelEventFrame({
         family: 'drop',
         intent: decision.intent,

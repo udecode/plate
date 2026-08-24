@@ -1,5 +1,6 @@
 import type {
   EditorSchemaOverrideInput,
+  SchemaContent,
   SchemaProperty,
   SchemaPropertyDefinition,
 } from '@platejs/plite';
@@ -22,6 +23,12 @@ export type EditorApplicationSchema = Readonly<{
   properties?: Readonly<
     Record<string, SchemaProperty | SchemaPropertyDefinition>
   >;
+  /**
+   * Primary-root grammar with a positive integer minimum. Omit it for Plate's
+   * standard paragraph root. Descriptor sources must match the installed
+   * plugin family; the first source in `schema.content.elements` is default.
+   */
+  root?: SchemaContent & Readonly<{ min: number }>;
 }> &
   EditorSchemaLineage;
 

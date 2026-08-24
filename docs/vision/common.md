@@ -72,6 +72,9 @@ common doctrine after the lane is selected.
 - Do not hide a Plite primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
 - Product packaging matters, but it never gets to corrupt core/runtime layers.
+- Package roots expose only code backed by required dependencies. Optional
+  framework or runtime peers stay behind explicit subpaths whose packed runtime
+  and declarations prove entrypoint-specific dependency closure.
 
 ## Evidence Hierarchy
 

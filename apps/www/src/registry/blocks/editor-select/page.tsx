@@ -1,10 +1,5 @@
-import type { Metadata } from 'next';
-
+/* oxlint-disable react-doctor/nextjs-missing-metadata -- Registry source is client-loaded in docs, not routed by the App Router. */
 import EditorSelectForm from '@/registry/examples/select-editor-demo';
-
-export const metadata: Metadata = {
-  title: 'Select Editor',
-};
 
 export default function Page() {
   return (

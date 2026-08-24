@@ -423,6 +423,56 @@ export const clearEditableCompositionRuntimeState = (editor: AnyEditor) => {
 export const getEditableInputTimestamp = () =>
   globalThis.performance?.now?.() ?? Date.now();
 
+export const recordEditableInputIntent = (
+  inputController: EditableInputController,
+  intent: InputIntent | null
+) => {
+  inputController.state.activeIntent = intent;
+};
+
+export const clearEditablePendingNativeTextInputRepair = (
+  inputController: EditableInputController
+) => {
+  inputController.state.pendingNativeTextInputRepairOffset = null;
+  inputController.state.pendingNativeTextInputRepairPathKey = null;
+};
+
+export const setEditablePendingNativeTextInputRepair = (
+  inputController: EditableInputController,
+  { offset, pathKey }: { offset: number; pathKey: string }
+) => {
+  inputController.state.pendingNativeTextInputRepairOffset = offset;
+  inputController.state.pendingNativeTextInputRepairPathKey = pathKey;
+};
+
+export const clearEditablePendingRootDOMInput = (
+  inputController: EditableInputController
+) => {
+  inputController.state.pendingRootDOMInput = null;
+};
+
+export const prepareEditableModelSelection = (
+  inputController: EditableInputController,
+  { projecting }: { projecting: boolean }
+) => {
+  inputController.state.pendingDOMSelectionImport = false;
+  inputController.state.isProjectingSelection = projecting;
+  inputController.state.selectionChangeOrigin = 'programmatic-export';
+};
+
+export const finishEditableModelSelectionProjection = (
+  inputController: EditableInputController
+) => {
+  inputController.state.pendingDOMSelectionImport = false;
+  inputController.state.isProjectingSelection = false;
+};
+
+export const beginEditableNativeSelectionImport = (
+  inputController: EditableInputController
+) => {
+  inputController.state.selectionChangeOrigin = 'native-user';
+};
+
 export const clearExpiredTextInputRepairEcho = (
   inputController: EditableInputController,
   timestamp = getEditableInputTimestamp()

@@ -129,19 +129,12 @@ const buildWorkspaceDevAliases = () => {
   };
 };
 
-const buildWorkspaceDevWebpackAliases = () =>
-  Object.fromEntries(
-    Object.entries(buildWorkspaceDevAliases()).map(([key, value]) => [
-      `${key}$`,
-      path.resolve(APP_ROOT, value),
-    ])
-  );
-
 const withMDX = createMDX({});
 
 const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
+    cacheComponents: true,
     distDir: isPliteMode ? '.next-plite' : '.next',
     typescript: {
       ignoreBuildErrors: true,
@@ -149,8 +142,13 @@ const nextConfig = (_phase: string) => {
 
     experimental: {
       externalDir: isDev,
-      // The OOM came from the docs/import graph, not Turbopack's dev cache itself.
-      turbopackFileSystemCacheForDev: true,
+      instantInsights: {
+        validationLevel: 'manual-warning',
+      },
+      turbopackRustReactCompiler: true,
+    },
+    logging: {
+      browserToTerminal: true,
     },
     productionBrowserSourceMaps: false,
     // https://nextjs.org/docs/basic-features/image-optimization#domains
@@ -182,20 +180,25 @@ const nextConfig = (_phase: string) => {
       '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/examples/plate-to-html': ['./public/tailwind.css'],
     },
-    reactCompiler: !isDev,
+    partialPrefetching: true,
+    reactCompiler: true,
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
 
     staticPageGenerationTimeout: 1200,
 
-    turbopack: isDev
-      ? {
-          resolveAlias: buildWorkspaceDevAliases(),
-        }
-      : undefined,
+    turbopack: {
+      root: REPO_ROOT,
+      ...(isDev
+        ? {
+            resolveAlias: buildWorkspaceDevAliases(),
+          }
+        : {}),
+    },
 
     transpilePackages: ['ts-morph'],
+    typedRoutes: true,
 
     redirects() {
       return [
@@ -309,17 +312,6 @@ const nextConfig = (_phase: string) => {
           source: '/init.md',
         },
       ];
-    },
-
-    webpack: (innerConfig) => {
-      if (isDev) {
-        innerConfig.resolve.alias = {
-          ...innerConfig.resolve.alias,
-          ...buildWorkspaceDevWebpackAliases(),
-        };
-      }
-
-      return innerConfig;
     },
   };
 

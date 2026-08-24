@@ -7,8 +7,6 @@ import {
   renderDocPage,
 } from '@/app/(app)/docs/[[...slug]]/doc-page';
 
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return generateDocStaticParams('en');
 }

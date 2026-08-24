@@ -163,6 +163,39 @@ describe('playwright selection snapshots', () => {
     ).resolves.toBeUndefined();
   });
 
+  test('accepts an explicit partial-DOM selection without projected markers', async () => {
+    document.body.innerHTML = `
+      <div
+        data-plite-editor="true"
+        data-plite-dom-strategy-selection="partial-dom-backed"
+      >
+        <span data-plite-node="text" data-plite-path="0,0">first</span>
+      </div>
+    `;
+
+    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+    const text = root.querySelector('[data-plite-node="text"]')!.firstChild!;
+    const nativeRange = document.createRange();
+
+    nativeRange.setStart(text, 0);
+    nativeRange.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(nativeRange);
+
+    (root as any).__pliteBrowserHandle = {
+      getSelection: () => ({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [9999, 0] },
+        kind: 'text',
+      }),
+      getViewSelection: () => null,
+    };
+
+    await expect(
+      waitForSelectionSync(createRootLocator(root))
+    ).resolves.toBeUndefined();
+  });
+
   test('still waits for the expected model selection when virtualized DOM is absent', async () => {
     document.body.innerHTML = '<div data-plite-editor="true"></div>';
 

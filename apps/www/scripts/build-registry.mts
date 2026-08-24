@@ -16,14 +16,16 @@ import {
 } from '@/registry/registry';
 
 import { buildDocsRegistry } from './build-docs-registry.mts';
+import {
+  getRegistryBuildTargets,
+  REGISTRY_HOMEPAGE,
+} from './registry-build-targets.mts';
 import { toPublicRegistryDependencySpecifier } from './registry-dependencies.mts';
 
-const HOMEPAGE = 'https://platejs.org';
 const BASE_URL = 'src/';
 
 const isDev = process.env.NODE_ENV === 'development';
 const MERGE_DOCS = true;
-const OUTPUT_ROOT = isDev ? 'public/rd' : 'public/r';
 const REGISTRY_STYLES = [
   'new-york',
   'new-york-v4',
@@ -51,11 +53,8 @@ function getRegistryBase(style: string): PlateRegistryBase {
   return 'radix';
 }
 
-function createBuildRegistry(style: string): Registry {
-  const registryBaseUrl = isDev
-    ? `http://localhost:3000/rd/${style}`
-    : `${HOMEPAGE}/r/${style}`;
-  const sourceRegistry = createPlateRegistry(HOMEPAGE, {
+function createBuildRegistry(style: string, registryBaseUrl: string): Registry {
+  const sourceRegistry = createPlateRegistry(REGISTRY_HOMEPAGE, {
     base: getRegistryBase(style),
   });
 
@@ -208,26 +207,34 @@ async function buildRegistry(registryFile: string, outputDir: string) {
 }
 
 try {
-  const defaultRegistry = createBuildRegistry('new-york');
+  const buildTargets = getRegistryBuildTargets({
+    dev: isDev,
+    styles: REGISTRY_STYLES,
+  });
+  const defaultTarget = buildTargets[0];
+  const defaultRegistry = createBuildRegistry(
+    defaultTarget.style,
+    defaultTarget.registryBaseUrl
+  );
 
   if (!isDev) {
     console.info('🗂️ Building registry/__index__.tsx...');
     await buildRegistryIndex(defaultRegistry);
 
     // Clean up the entire public/r directory first
-    rimraf.sync(path.join(process.cwd(), OUTPUT_ROOT));
+    rimraf.sync(path.join(process.cwd(), defaultTarget.outputDir));
   }
 
   console.info('📖 Building registry-docs.json...');
   const docsItems = await buildDocsRegistry();
 
-  for (const style of REGISTRY_STYLES) {
-    const registry = createBuildRegistry(style);
-    const outputDir = `${OUTPUT_ROOT}/${style}`;
-    const registryFile = `${outputDir}/registry.json`;
-    const registryBaseUrl = isDev
-      ? `http://localhost:3000/rd/${style}`
-      : `${HOMEPAGE}/r/${style}`;
+  for (const {
+    outputDir,
+    registryBaseUrl,
+    registryFile,
+    style,
+  } of buildTargets) {
+    const registry = createBuildRegistry(style, registryBaseUrl);
 
     console.info(`💅 Building ${registryFile}...`);
     if (MERGE_DOCS) {

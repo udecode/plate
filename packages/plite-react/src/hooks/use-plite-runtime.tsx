@@ -1058,7 +1058,7 @@ const usePliteResolvedRoot = (root: NamedRootKey | undefined): RootKey => {
 const useLatestCallbackCell = <T extends (...args: any[]) => any>(
   callback: T
 ) => {
-  const [cell] = useState(() => ({ current: callback }));
+  const cell = useRef(callback);
 
   useIsomorphicLayoutEffect(() => {
     cell.current = callback;

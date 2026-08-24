@@ -1798,6 +1798,18 @@ const isInlineDescendant = (node: Descendant, state: EditorCoreStateView) => {
   return state.schema.element(node.type)?.behavior.inline === true;
 };
 
+const tryFitDecodedChildren = (
+  children: readonly Descendant[],
+  parent: PliteElement,
+  state: EditorCoreStateView
+): Descendant[] | null => {
+  const fitted = state.slice.fitContent(ContentSlice.closed(children), {
+    parent: { ...parent, children: [] },
+  });
+
+  return fitted ? [...fitted] : null;
+};
+
 const wrapRootInlineRuns = (
   descendants: readonly Descendant[],
   state: EditorCoreStateView
@@ -1809,7 +1821,13 @@ const wrapRootInlineRuns = (
     const fallback = state.schema.createDefaultRootChild();
 
     if (ElementApi.isElement(fallback)) {
-      result.push({ ...fallback, children: inlineRun });
+      const children = tryFitDecodedChildren(inlineRun, fallback, state);
+
+      if (children) {
+        result.push({ ...fallback, children });
+      } else {
+        result.push(...inlineRun);
+      }
     } else {
       result.push(...inlineRun);
     }
@@ -1858,18 +1876,6 @@ const coalesceAdjacentText = (
   }
 
   return result;
-};
-
-const tryFitDecodedChildren = (
-  children: readonly Descendant[],
-  parent: PliteElement,
-  state: EditorCoreStateView
-): Descendant[] | null => {
-  const fitted = state.slice.fitContent(ContentSlice.closed(children), {
-    parent: { ...parent, children: [] },
-  });
-
-  return fitted ? [...fitted] : null;
 };
 
 const fitDecodedChildren = (

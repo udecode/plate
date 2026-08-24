@@ -175,6 +175,30 @@ test.describe('paste html example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'Chromium Trusted Types');
 
+    await page.addInitScript(() => {
+      const factory = (
+        globalThis as typeof globalThis & {
+          trustedTypes?: {
+            createPolicy: (
+              name: string,
+              rules: {
+                createHTML: (input: string) => string | null;
+                createScript: (input: string) => string;
+                createScriptURL: (input: string) => string;
+              }
+            ) => unknown;
+          };
+        }
+      ).trustedTypes;
+
+      factory?.createPolicy('default', {
+        createHTML: (input) =>
+          input === '<strong>blocked</strong>' ? null : input,
+        createScript: (input) => input,
+        createScriptURL: (input) => input,
+      });
+    });
+
     await page.route('**/examples/plite/paste-html**', async (route) => {
       const response = await route.fetch();
 

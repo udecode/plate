@@ -3,11 +3,51 @@ import path from 'node:path';
 import type { UserConfig } from 'tsdown';
 import { defineConfig } from 'tsdown';
 
-import { assertPackageBuildArtifacts } from '../scripts/check-package-build-artifacts.mjs';
+import {
+  assertPackageBuildArtifacts,
+  assertPackageRuntimeImportBoundaries,
+} from '../scripts/check-package-build-artifacts.mjs';
 
 const typescript7Warning = 'TypeScript 7.0 does not yet have a stable API';
 
-export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
+export type RuntimeImportBoundary = Readonly<{
+  entry: string;
+  forbiddenPackages: readonly string[];
+}>;
+
+type RuntimeImportBoundaryOptions = Readonly<{
+  runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
+}>;
+
+export const withRuntimeImportBoundaryConfig = (
+  config: UserConfig,
+  { runtimeImportBoundaries = [] }: RuntimeImportBoundaryOptions = {}
+): UserConfig => {
+  if (typeof config.hooks === 'function') {
+    throw new Error('Runtime import boundary config requires object hooks.');
+  }
+
+  const packageRoot = path.resolve(config.cwd ?? process.cwd());
+  const onBuildDone = config.hooks?.['build:done'];
+
+  return {
+    ...config,
+    hooks: {
+      ...config.hooks,
+      'build:done': async (context) => {
+        await onBuildDone?.(context);
+        assertPackageRuntimeImportBoundaries(packageRoot, {
+          runtimeImportBoundaries,
+        });
+      },
+    },
+  };
+};
+
+export const withDirectPackageConfig = (
+  config: UserConfig,
+  { runtimeImportBoundaries = [] }: RuntimeImportBoundaryOptions = {}
+): UserConfig => {
   if (typeof config.hooks === 'function') {
     throw new Error('Direct package config requires object hooks.');
   }
@@ -35,7 +75,7 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
       ...config.hooks,
       'build:done': async (context) => {
         await onBuildDone?.(context);
-        assertPackageBuildArtifacts(packageRoot);
+        assertPackageBuildArtifacts(packageRoot, { runtimeImportBoundaries });
       },
     },
     suppressWarnings:
@@ -53,5 +93,7 @@ export const withDirectPackageConfig = (config: UserConfig): UserConfig => {
   };
 };
 
-export const defineDirectPackageConfig = (config: UserConfig) =>
-  defineConfig(withDirectPackageConfig(config));
+export const defineDirectPackageConfig = (
+  config: UserConfig,
+  options: RuntimeImportBoundaryOptions = {}
+) => defineConfig(withDirectPackageConfig(config, options));

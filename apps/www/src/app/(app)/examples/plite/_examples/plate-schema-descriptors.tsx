@@ -7,7 +7,7 @@ import { LinkPlugin } from '@platejs/link/react';
 import { ListPlugin } from '@platejs/list/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
-import { ContentSlice, property } from '@platejs/plite';
+import { ContentSlice, property, schema } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import { TablePlugin } from '@platejs/table/react';
 import {
@@ -148,6 +148,19 @@ const AdvancedMarkPlugin = definePlatePlugin('schemaAdvanced', {
 
   render: { as: 'mark' },
 });
+
+const ApplicationSectionPlugin = definePlatePlugin('applicationSection', {
+  schema: {
+    element: {
+      content: schema.content.element(ParagraphPlugin, { min: 1 }),
+    },
+  },
+  render: { as: 'section' },
+});
+
+const ApplicationRootSchema = {
+  root: schema.content.element(ApplicationSectionPlugin, { min: 1 }),
+} as const;
 
 const PlateSchemaDescriptorControls = () => {
   const editor = useEditor();
@@ -456,6 +469,60 @@ const PlateSchemaDescriptorControls = () => {
   );
 };
 
+const ApplicationRootControls = () => {
+  const editor = useEditor();
+  const document = useEditorSelector((innerEditor) =>
+    JSON.stringify(innerEditor.read.children())
+  );
+
+  return (
+    <>
+      <button
+        className="w-fit rounded border px-3 py-1"
+        contentEditable={false}
+        onClick={() => {
+          const children = editor.api.html.deserialize({
+            element: '<span>HTML inside the application root</span>',
+          });
+
+          if (!children) return;
+
+          editor.update.value.replace({ children, selection: null });
+        }}
+        type="button"
+      >
+        Import HTML into application root
+      </button>
+      <output
+        className="sr-only"
+        data-test-id="plate-application-root-document"
+      >
+        {document}
+      </output>
+    </>
+  );
+};
+
+const ApplicationRootEditor = () => {
+  const editor = usePlateEditor({
+    plugins: [ApplicationSectionPlugin],
+    schema: ApplicationRootSchema,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <div className="mt-4 flex flex-col gap-2">
+        <ApplicationRootControls />
+        <PlateContent
+          aria-label="Application root schema editor"
+          className="min-h-24 rounded border p-3"
+          id="plate-application-root-editor"
+        />
+      </div>
+    </Plate>
+  );
+};
+
 const PlateSchemaDescriptorsExample = () => {
   const editor = usePlateEditor({
     plugins: [
@@ -484,16 +551,19 @@ const PlateSchemaDescriptorsExample = () => {
   });
 
   return (
-    <Plate editor={editor}>
-      <div className="flex flex-col gap-2">
-        <PlateSchemaDescriptorControls />
-        <PlateContent
-          aria-label="Plate schema descriptor editor"
-          className="min-h-24 rounded border p-3"
-          id="plate-schema-descriptor-editor"
-        />
-      </div>
-    </Plate>
+    <>
+      <Plate editor={editor}>
+        <div className="flex flex-col gap-2">
+          <PlateSchemaDescriptorControls />
+          <PlateContent
+            aria-label="Plate schema descriptor editor"
+            className="min-h-24 rounded border p-3"
+            id="plate-schema-descriptor-editor"
+          />
+        </div>
+      </Plate>
+      <ApplicationRootEditor />
+    </>
   );
 };
 

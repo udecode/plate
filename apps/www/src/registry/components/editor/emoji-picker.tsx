@@ -888,18 +888,18 @@ function EmojiPickerPanel({ picker }: { picker: EmojiPickerController }) {
   );
 }
 
-const EmojiButton = React.memo(
-  ({
-    emoji,
-    index,
-    onMouseOver,
-    onSelect,
-  }: {
-    emoji: Emoji;
-    index: number;
-    onMouseOver: (emoji?: Emoji) => void;
-    onSelect: (emoji: Emoji) => void;
-  }) => (
+function EmojiButton({
+  emoji,
+  index,
+  onMouseOver,
+  onSelect,
+}: {
+  emoji: Emoji;
+  index: number;
+  onMouseOver: (emoji?: Emoji) => void;
+  onSelect: (emoji: Emoji) => void;
+}) {
+  return (
     <button
       className="group relative flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none"
       onClick={() => {
@@ -931,23 +931,18 @@ const EmojiButton = React.memo(
         {emoji.skins[0].native}
       </span>
     </button>
-  )
-);
+  );
+}
 
-EmojiButton.displayName = 'EmojiButton';
-
-const RowOfButtons = React.memo(
-  ({
-    emojiLibrary,
-    row,
-    onMouseOver,
-    onSelectEmoji,
-  }: {
-    row: GridRow;
-  } & Pick<
-    EmojiPickerState,
-    'emojiLibrary' | 'onMouseOver' | 'onSelectEmoji'
-  >) => (
+function RowOfButtons({
+  emojiLibrary,
+  row,
+  onMouseOver,
+  onSelectEmoji,
+}: {
+  row: GridRow;
+} & Pick<EmojiPickerState, 'emojiLibrary' | 'onMouseOver' | 'onSelectEmoji'>) {
+  return (
     <div key={row.id} className="flex" data-index={row.id}>
       {row.elements.map((emojiId, index) => {
         const emoji = emojiLibrary.getEmoji(emojiId);
@@ -965,10 +960,8 @@ const RowOfButtons = React.memo(
         );
       })}
     </div>
-  )
-);
-
-RowOfButtons.displayName = 'RowOfButtons';
+  );
+}
 
 function EmojiPickerContent({
   emojiLibrary,

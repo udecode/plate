@@ -80,6 +80,43 @@ editor.read.schema.identity();
 命名谱系的 schema 语义变化时递增 `version`。同一 ID 和版本对应不同指纹时，
 Plate 会将其视为身份不匹配。
 
+### 自定义主 Root
+
+Plate 的标准非空段落 root 不需要 `schema.root`。只有应用需要不同的顶层语法时才
+声明该字段。
+
+```ts
+import { schema } from 'platejs';
+import {
+  createPlateEditor,
+  definePlatePlugin,
+  ParagraphPlugin,
+} from 'platejs/react';
+
+const SectionPlugin = definePlatePlugin('section', {
+  schema: {
+    element: {
+      content: schema.content.element(ParagraphPlugin, { min: 1 }),
+    },
+  },
+});
+
+const editor = createPlateEditor({
+  plugins: [SectionPlugin],
+  schema: {
+    root: schema.content.element(SectionPlugin, { min: 1 }),
+  },
+});
+```
+
+`root.min` 必须显式提供正整数。Root 描述符必须匹配已安装的插件系列：
+`createPlateEditor` 使用 Plate 描述符，headless Base 插件元组使用 Base 描述符。
+对于 `schema.content.elements([...])`，第一个描述符负责构造默认 root 子节点。
+
+自定义 root 会改变编译指纹。使用命名持久化 schema 时，应先递增 `version` 并添加
+文档迁移，再加载使用旧 root 语法的文档。生成的 `Value` 类型包含所有合法 root
+变体；`min` 和 `max` 仍由运行时校验。
+
 ### 文档迁移
 
 将 schema 身份与文档一起持久化，并声明一条由应用拥有的迁移链。目标版本步骤会按
@@ -250,8 +287,18 @@ pnpm exec plate generate
 ```
 
 `plate generate` 会读取 `src/editor.ts`。一个应用有多个 editor module 时，直接
-传入各个 entry path。开发时使用 `--watch`，CI 中使用
-`--check`。
+传入各个 entry path。`@plate/editor-plugins` 注册表项只安装手写的 plugin
+module，不复制生成的 contract。
+
+开发时使用 `--watch`。在 CI 中校验已提交的生成产物：
+
+```json title="package.json"
+{
+  "scripts": {
+    "editor:check": "plate generate --check src/editor.ts"
+  }
+}
+```
 
 生成模块会导出精确的 editor/value 类型、静态 schema handle 和指纹。它不负责
 运行时插件组合：
@@ -289,8 +336,7 @@ export type DocumentEditorInstance = Editor;
 生成的 `Value` 和 `Editor` 只用于存储、协作和导出应用类型等静态边界。运行时
 constructor 和 hook 直接使用手写的 `EditorKit` 和 `EditorSchema`。
 
-在 CI 中使用同一命令并加上 `--check`。该命令重新编译 editor module，并在已提交
-的生成产物过期时失败。
+CI 命令会重新编译手写的 editor module，并在已提交的生成产物过期时失败。
 
 使用 migration scaffold 创建带类型的应用迁移步骤：
 

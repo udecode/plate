@@ -4,6 +4,16 @@ export const registryHooks: Registry['items'] = [
   {
     files: [
       {
+        path: 'hooks/use-object-url.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-object-url',
+    type: 'registry:hook',
+  },
+  {
+    files: [
+      {
         path: 'hooks/use-debounce.ts',
         type: 'registry:hook',
       },

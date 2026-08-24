@@ -39,6 +39,13 @@ standard:
   committed opt-in generated artifacts, never every
   `editor.api/read/update` access.
 
+- A Plate application schema declares `root` only when its primary structure
+  differs from the standard nonempty paragraph policy. Use existing
+  descriptor-aware `schema.content.*` builders with an explicit positive
+  `min`; the first descriptor in `elements` owns the default. Descriptors match
+  the installed Base or Plate family. Root grammar participates in generated
+  contracts and schema identity, so named persisted schemas version and
+  migrate a change.
 - A complete schema declares `root: SchemaContent` directly. Named `roots`
   map names directly to `SchemaContent`; a `{ content }` wrapper earns nothing.
 - Omitted complete-schema `elements` means `{}` and omitted `unknown` means

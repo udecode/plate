@@ -7,6 +7,7 @@ import {
 
 import { createBaseEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
+import { BaseParagraphPlugin } from '../paragraph';
 
 describe('OverridePlugin', () => {
   it('publishes a closed Plate schema for elements and text properties', () => {
@@ -140,6 +141,67 @@ describe('OverridePlugin', () => {
     ]);
   });
 
+  it('exits a structural application root with one undoable root sibling', () => {
+    const CalloutPlugin = defineBasePlugin('structuralExitCallout', {
+      schema: { element: schema.element.textBlock() },
+      rules: { break: { emptyLineEnd: 'deleteExit' } },
+    });
+    const SectionPlugin = defineBasePlugin('structuralExitSection', {
+      schema: {
+        element: {
+          content: schema.content.elements(
+            [BaseParagraphPlugin, CalloutPlugin],
+            { min: 1 }
+          ),
+        },
+      },
+    });
+    const initialValue = [
+      {
+        children: [
+          { children: [{ text: 'foo\n' }], type: 'structuralExitCallout' },
+        ],
+        type: 'structuralExitSection',
+      },
+    ];
+    const editor = createBaseEditor({
+      plugins: [CalloutPlugin, SectionPlugin],
+      schema: {
+        root: schema.content.element(SectionPlugin, { min: 1 }),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0, 0] },
+        focus: { offset: 4, path: [0, 0, 0] },
+      },
+      initialValue,
+    });
+
+    insertBreak(editor);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { children: [{ text: 'foo' }], type: 'structuralExitCallout' },
+        ],
+        type: 'structuralExitSection',
+      },
+      {
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
+        type: 'structuralExitSection',
+      },
+    ]);
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 0, path: [1, 0, 0] },
+      focus: { offset: 0, path: [1, 0, 0] },
+    });
+
+    editor.update((tx) => tx.history.undo());
+
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
   it('leaves document-start deletion inside nested blocks to their owner', () => {
     const WrapperPlugin = defineBasePlugin('wrapper', {
       schema: {
@@ -198,6 +260,57 @@ describe('OverridePlugin', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'paragraph' },
       { children: [{ text: 'foo' }], type: 'callout' },
+    ]);
+  });
+
+  it('resets a nested block to its parent content default', () => {
+    const CalloutPlugin = defineBasePlugin('nestedResetCallout', {
+      schema: { element: schema.element.textBlock() },
+      rules: { break: { splitReset: true } },
+    });
+    const SectionPlugin = defineBasePlugin('nestedResetSection', {
+      schema: {
+        element: {
+          content: schema.content.elements(
+            [BaseParagraphPlugin, CalloutPlugin],
+            { min: 1 }
+          ),
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [CalloutPlugin, SectionPlugin],
+      schema: {
+        root: schema.content.element(SectionPlugin, { min: 1 }),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'foo' }], type: 'nestedResetCallout' },
+          ],
+          type: 'nestedResetSection',
+        },
+      ],
+    });
+
+    insertBreak(editor);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { children: [{ text: '' }], type: 'paragraph' },
+          {
+            children: [{ text: 'foo' }],
+            type: 'nestedResetCallout',
+          },
+        ],
+        type: 'nestedResetSection',
+      },
     ]);
   });
 

@@ -75,6 +75,7 @@ type Context = {
   listInnerRef: React.RefObject<HTMLDivElement | null>;
   filter: () => boolean;
   getDisablePointerSelection: () => boolean;
+  getValue: (id: string) => string | undefined;
   group: (id: string) => () => void;
   item: (id: string, groupId?: string) => () => void;
   value: (id: string, value: string, keywords?: string[]) => void;
@@ -330,6 +331,7 @@ const Command = (props: CommandProps) => {
     filter: () => propsRef.current.shouldFilter !== false,
     getDisablePointerSelection: () =>
       propsRef.current.disablePointerSelection ?? false,
+    getValue: (id) => ids.current.get(id)?.value,
     // Track group lifecycle (mount, unmount)
     group: (id) => {
       if (!allGroups.current.has(id)) {
@@ -805,7 +807,7 @@ const Item = (props: ItemProps) => {
   const groupContext = React.useContext(GroupContext);
   const context = useCommand();
   const propsRef = useAsRef(props);
-  const forceMount = propsRef.current?.forceMount ?? groupContext?.forceMount;
+  const forceMount = props.forceMount ?? groupContext?.forceMount;
 
   useLayoutEffect(() => {
     if (!forceMount) {
@@ -815,11 +817,11 @@ const Item = (props: ItemProps) => {
     return undefined;
   }, [context, forceMount, groupContext?.id, id]);
 
-  const value = useValue(id, ref, [props.value, props.children, ref]);
+  useValue(id, ref, [props.value, props.children, ref]);
 
   const store = useStore();
   const selected = useCmdk(
-    (state) => state.value && state.value === value.current
+    (state) => state.value && state.value === context.getValue(id)
   );
   const render = useCmdk((state) =>
     forceMount
@@ -831,18 +833,20 @@ const Item = (props: ItemProps) => {
           : true
   );
   const select = React.useCallback(() => {
-    if (value.current !== undefined) {
-      store.setState('value', value.current, true);
+    const currentValue = context.getValue(id);
+
+    if (currentValue !== undefined) {
+      store.setState('value', currentValue, true);
     }
-  }, [store, value]);
+  }, [context, id, store]);
   const onSelect = React.useCallback(() => {
-    const currentValue = value.current;
+    const currentValue = context.getValue(id);
 
     if (currentValue === undefined) return;
 
     select();
     propsRef.current.onSelect?.(currentValue);
-  }, [propsRef, select, value]);
+  }, [context, id, propsRef, select]);
 
   React.useEffect(() => {
     const element = ref.current;
@@ -1290,20 +1294,18 @@ function useValue(
     ref.current?.setAttribute(VALUE_ATTR, value);
     valueRef.current = value;
   });
-
-  return valueRef;
 }
 
 /** Imperatively run a function on the next layout effect cycle. */
 const useScheduleLayoutEffect = () => {
   const [s, ss] = React.useState<object>();
-  const fns = useLazyRef(() => new Map<number | string, () => void>());
+  const fns = React.useRef(new Map<number | string, () => void>());
 
   useLayoutEffect(() => {
     for (const f of fns.current.values()) {
       f();
     }
-    fns.current = new Map();
+    fns.current.clear();
   }, [fns, s]);
 
   return React.useCallback(
@@ -1311,7 +1313,6 @@ const useScheduleLayoutEffect = () => {
       fns.current.set(id, cb);
       ss({});
     },
-    // oxlint-disable-next-line react/preserve-manual-memoization -- The callback identity is stable while `fns.current` is the mutable queue; depending on the queue value would rebuild the scheduler after every flush.
     [fns]
   );
 };

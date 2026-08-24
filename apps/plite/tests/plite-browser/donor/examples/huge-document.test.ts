@@ -735,6 +735,36 @@ test.describe('huge document example', {
     );
   });
 
+  test('materializes a staged remote browser-handle selection', async ({
+    page,
+  }) => {
+    const blockIndex = 600;
+    const editor = await openSmallHugeDocument(page, {
+      blocks: 1200,
+      editor_height: 420,
+      strategy: 'staged',
+      threshold: 1,
+    });
+
+    await expect
+      .poll(() =>
+        page.getByTestId('huge-document-effective-strategy').textContent()
+      )
+      .toBe('staged');
+
+    await editor.selection.select({
+      anchor: { offset: 4, path: [blockIndex, 0] },
+      focus: { offset: 4, path: [blockIndex, 0] },
+      kind: 'text',
+    });
+    await editor.dom.waitForTextPath([blockIndex, 0]);
+    await editor.assert.selection({
+      anchor: { offset: 4, path: [blockIndex, 0] },
+      focus: { offset: 4, path: [blockIndex, 0] },
+      kind: 'text',
+    });
+  });
+
   test('keeps staged middle-block editing, undo, Enter, and scroll stable', async ({
     page,
   }, testInfo) => {
@@ -1314,6 +1344,12 @@ test.describe('huge document example', {
     const fullSteps = await collectSteps('full');
     const stagedSteps = await collectSteps('staged');
 
+    await attachPliteBrowserJsonArtifact(
+      testInfo,
+      'staged-full-dom-vertical-selection-proof',
+      { fullSteps, stagedSteps }
+    );
+
     expect(stagedSteps.map((step) => step.selection)).toEqual(
       fullSteps.map((step) => step.selection)
     );
@@ -1325,11 +1361,6 @@ test.describe('huge document example', {
       finalStagedStep.selection!.focus.path.join(',')
     );
 
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'staged-full-dom-vertical-selection-proof',
-      { fullSteps, stagedSteps }
-    );
   });
 
   test('keeps staged 10k select-all delete, typing, paste, and undo bounded', async ({

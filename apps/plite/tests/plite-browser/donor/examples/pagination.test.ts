@@ -4995,7 +4995,7 @@ test.describe('pagination example', {
     const targetBlockPath = 43;
     const targetTextPrefix = 'This ';
     const targetText = 'This mixed block carries ';
-    const incrementalText = 'abcdefghijklmnop';
+    const incrementalText = 'abcdefghijklmnopqrst';
     const burstText = 'qrstuvwxyz12';
 
     await editor.dom.collapseAtTextPath(
@@ -5125,6 +5125,7 @@ test.describe('pagination example', {
       ),
       contentType: 'application/json',
     });
+    expect(samples.length).toBeGreaterThanOrEqual(20);
     expect(p95EventToPaint).toBeLessThanOrEqual(32);
     expect(maxEventToPaint).toBeLessThanOrEqual(50);
     expect(burstSettledMs).toBeLessThanOrEqual(250);
@@ -5173,7 +5174,7 @@ test.describe('pagination example', {
     const targetBlockPath = 43;
     const targetTextPrefix = 'This ';
     const targetText = 'This mixed block carries ';
-    const incrementalText = 'abcdefghijklmnop';
+    const incrementalText = 'abcdefghijklmnopqrst';
     const burstText = 'qrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     await editor.dom.collapseAtTextPath(
@@ -5310,6 +5311,7 @@ test.describe('pagination example', {
     });
     expect(finalProof.mountedRowCount).toBeLessThan(500);
     expect(finalProof.totalElementCount).toBeLessThan(1600);
+    expect(samples.length).toBeGreaterThanOrEqual(20);
     expect(p95EventToPaint).toBeLessThanOrEqual(32);
     expect(maxEventToPaint).toBeLessThanOrEqual(50);
     expect(burstSettledMs).toBeLessThanOrEqual(900);
@@ -5503,6 +5505,7 @@ test.describe('pagination example', {
     });
 
     expect(appReadyAfterDOMContentLoadedMs).toBeLessThanOrEqual(2500);
+    expect(samples.length).toBeGreaterThanOrEqual(20);
     expect(p95EventToPaint).toBeLessThanOrEqual(32);
     expect(maxEventToPaint).toBeLessThanOrEqual(50);
     expect(burstSample.inputEventCount).toBe(burstText.length);

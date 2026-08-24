@@ -832,6 +832,7 @@ export const applyEditableKeyDown = ({
         domStrategyRuntime,
         editor,
         event,
+        preferredX: preferredVerticalX,
         selection: largeDocumentVerticalSelection,
       });
 
@@ -884,6 +885,7 @@ export const applyEditableKeyDown = ({
       domStrategyRuntime,
       editor,
       event,
+      preferredX: preferredVerticalX,
       selection,
     });
 

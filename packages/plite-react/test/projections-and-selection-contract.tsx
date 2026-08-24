@@ -25,8 +25,6 @@ import {
   type PliteDecorationSource,
   type PliteProjection,
   type PliteProjectionSource,
-  useDecorationSelector,
-  usePliteProjectionEntries,
 } from '../src';
 import {
   toPliteRangeDecorations,
@@ -44,6 +42,10 @@ import {
   createPliteProjectionStore,
   type PliteProjectionRefreshListener,
 } from '../src/projection-store';
+import {
+  createDecorationRenderProbe,
+  createProjectionRenderProbe,
+} from './render-probes/projection-render-probes';
 
 type SegmentLike = {
   end: number;
@@ -862,6 +864,50 @@ describe('plite-react projections and selection contract', () => {
     rendered.store.destroy();
   });
 
+  test('remounts projected text across an A-to-B-to-A transition', async () => {
+    const editor = createEditor();
+    const rendered = renderProjectedEditor(editor, [paragraph('A')], () => []);
+    const initialSegment =
+      rendered.container.querySelector('[data-decorations]');
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.text.insert('B', {
+          at: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 1 },
+          },
+        });
+      });
+    });
+
+    const middleSegment =
+      rendered.container.querySelector('[data-decorations]');
+
+    expect(middleSegment).not.toBe(initialSegment);
+    expect(middleSegment).toHaveTextContent('B');
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.text.insert('A', {
+          at: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 1 },
+          },
+        });
+      });
+    });
+
+    const finalSegment = rendered.container.querySelector('[data-decorations]');
+
+    expect(finalSegment).not.toBe(middleSegment);
+    expect(finalSegment).toHaveTextContent('A');
+
+    rendered.store.destroy();
+  });
+
   test('keeps projection identity stable when paths shift after structural edits', async () => {
     const editor = createEditor();
     const rendered = renderProjectedEditor(
@@ -1119,19 +1165,7 @@ describe('plite-react projections and selection contract', () => {
       second: 0,
     };
 
-    const ProjectionProbe = ({
-      label,
-      nodeKey,
-    }: {
-      label: keyof typeof renders;
-      nodeKey: string;
-    }) => {
-      const projections = usePliteProjectionEntries(nodeKey);
-
-      renders[label] += 1;
-
-      return <span data-testid={label}>{projections.length}</span>;
-    };
+    const ProjectionProbe = createProjectionRenderProbe(renders);
 
     const rendered = render(
       <ProjectionContext value={store}>
@@ -1211,15 +1245,11 @@ describe('plite-react projections and selection contract', () => {
       projections.map((projection) => projection.data?.label).join(',')
     );
 
-    const ProjectionProbe = () => {
-      const label = useDecorationSelector(decorationSelector, undefined, {
-        nodeKey: firstNodeKey,
-      });
-
-      renders.first += 1;
-
-      return <span data-testid="first-decoration">{label}</span>;
-    };
+    const ProjectionProbe = createDecorationRenderProbe({
+      nodeKey: firstNodeKey,
+      renders,
+      selector: decorationSelector,
+    });
 
     const rendered = render(
       <ProjectionContext value={store}>

@@ -1552,14 +1552,9 @@ test.describe('synced blocks example', () => {
     await outer.assert.noDoubleSelectionHighlight();
   });
 
-  test('mouse drag from an existing synced root text selection into the owner document selects both sides', async ({
+  test('mouse drag after an existing synced root text selection into the owner document selects both sides', async ({
     page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'firefox',
-      'Firefox selected-text pointer drag leaves projected view selection null instead of selecting across synced roots'
-    );
-
+  }) => {
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -1599,7 +1594,7 @@ test.describe('synced blocks example', () => {
     }
 
     await page.mouse.move(
-      fromBox.x + fromBox.width / 2,
+      fromBox.x - 8,
       fromBox.y + fromBox.height / 2
     );
     await page.mouse.down();
@@ -1608,6 +1603,8 @@ test.describe('synced blocks example', () => {
     });
     await page.mouse.up();
 
+    await expect(firstEditor).toContainText('not so good!');
+    await expect(to).toHaveText('Between synced copies.');
     await expect
       .poll(() => getViewSelection(outerEditor))
       .toMatchObject({

@@ -1,5 +1,5 @@
 import type { Editor as EditorType, Value } from '@platejs/plite';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   createDecorationSource,
@@ -69,6 +69,19 @@ const getDirtinessFromIdentity = (
   );
 };
 
+const createCommittedValue = <T>(initialValue: T) => {
+  let value = initialValue;
+
+  return {
+    commit(nextValue: T) {
+      value = nextValue;
+    },
+    read() {
+      return value;
+    },
+  };
+};
+
 const useStableDirtiness = (dirtiness: PliteSourceDirtiness | undefined) => {
   const dirtinessIdentity = getDirtinessIdentity(dirtiness);
 
@@ -120,29 +133,22 @@ const useDecorationSourceCommit = <
 >(
   editor: EditorType<V, TExtensions>,
   source: PliteDecorationSource<T>,
-  options:
-    | UsePliteDecorationSourceOptions<T, V, TExtensions>
-    | UsePliteRangeDecorationSourceOptions<T, V, TExtensions>,
-  optionsCell: {
-    current:
-      | UsePliteDecorationSourceOptions<T, V, TExtensions>
-      | UsePliteRangeDecorationSourceOptions<T, V, TExtensions>;
-  }
+  revision: unknown
 ) => {
-  const [commit] = useState<{
+  const commitRef = useRef<{
     revision: unknown;
     source: PliteDecorationSource<T> | null;
-  }>(() => ({
+  }>({
     revision: Symbol('uninitialized'),
     source: null,
-  }));
+  });
 
   useIsomorphicLayoutEffect(() => {
-    optionsCell.current = options;
+    const commit = commitRef.current;
     const shouldRefresh =
-      commit.source !== source || !Object.is(commit.revision, options.revision);
+      commit.source !== source || !Object.is(commit.revision, revision);
 
-    commit.revision = options.revision;
+    commit.revision = revision;
     commit.source = source;
 
     if (shouldRefresh) {
@@ -168,7 +174,7 @@ export const usePliteDecorationSource = <
   editor: EditorType<V, TExtensions>,
   options: UsePliteDecorationSourceOptions<T, V, TExtensions>
 ): PliteDecorationSource<T> => {
-  const [optionsCell] = useState(() => ({ current: options }));
+  const [optionsCell] = useState(() => createCommittedValue(options));
   const optionsId = options.id;
   const dirtiness = useStableDirtiness(options.dirtiness);
   const hasRuntimeScope = options.runtimeScope !== undefined;
@@ -178,11 +184,11 @@ export const usePliteDecorationSource = <
       createDecorationSource<V, TExtensions, T>(editor, {
         dirtiness,
         id: optionsId,
-        onError: (error) => optionsCell.current.onError?.(error),
-        read: (context) => optionsCell.current.read(context),
+        onError: (error) => optionsCell.read().onError?.(error),
+        read: (context) => optionsCell.read().read(context),
         runtimeScope: hasRuntimeScope
           ? (context) => {
-              const { runtimeScope } = optionsCell.current;
+              const { runtimeScope } = optionsCell.read();
 
               if (!runtimeScope) {
                 return null;
@@ -198,7 +204,10 @@ export const usePliteDecorationSource = <
   );
 
   useDecorationSourceLifecycle(source);
-  useDecorationSourceCommit(editor, source, options, optionsCell);
+  useIsomorphicLayoutEffect(() => {
+    optionsCell.commit(options);
+  });
+  useDecorationSourceCommit(editor, source, options.revision);
 
   return source;
 };
@@ -215,7 +224,7 @@ export const usePliteRangeDecorationSource = <
   editor: EditorType<V, TExtensions>,
   options: UsePliteRangeDecorationSourceOptions<T, V, TExtensions>
 ): PliteDecorationSource<T> => {
-  const [optionsCell] = useState(() => ({ current: options }));
+  const [optionsCell] = useState(() => createCommittedValue(options));
   const optionsId = options.id;
   const dirtiness = useStableDirtiness(options.dirtiness);
   const hasRuntimeScope = options.runtimeScope !== undefined;
@@ -225,15 +234,15 @@ export const usePliteRangeDecorationSource = <
       createDecorationSource<V, TExtensions, T>(editor, {
         dirtiness,
         id: optionsId,
-        onError: (error) => optionsCell.current.onError?.(error),
+        onError: (error) => optionsCell.read().onError?.(error),
         read: (context) =>
-          toPliteRangeDecorations(optionsCell.current.read(context), {
-            data: optionsCell.current.data,
+          toPliteRangeDecorations(optionsCell.read().read(context), {
+            data: optionsCell.read().data,
             id: optionsId,
           }),
         runtimeScope: hasRuntimeScope
           ? (context) => {
-              const { runtimeScope } = optionsCell.current;
+              const { runtimeScope } = optionsCell.read();
 
               if (!runtimeScope) {
                 return null;
@@ -249,7 +258,10 @@ export const usePliteRangeDecorationSource = <
   );
 
   useDecorationSourceLifecycle(source);
-  useDecorationSourceCommit(editor, source, options, optionsCell);
+  useIsomorphicLayoutEffect(() => {
+    optionsCell.commit(options);
+  });
+  useDecorationSourceCommit(editor, source, options.revision);
 
   return source;
 };

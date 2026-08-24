@@ -60,7 +60,6 @@
     "lodash": "^4.17.21",
     "mermaid": "^11.6.1",
     "plantuml-encoder": "^1.4.0",
-    "react-compiler-runtime": "^1.0.0",
     "viz.js": "^2.1.2"
   },
   "devDependencies": {

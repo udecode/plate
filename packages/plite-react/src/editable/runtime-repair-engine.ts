@@ -102,7 +102,7 @@ export const useRuntimeRepairEngine = ({
     syncDOMSelectionToEditor();
   });
 
-  runtime.domRepairQueueRef.current = domRepairQueue;
+  runtime.publishDOMRepairQueue(domRepairQueue);
 
   runtime.updateDOMIntegrityRepairHandler(() => {
     forceRender();

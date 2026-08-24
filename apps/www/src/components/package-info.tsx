@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Separator } from '@/components/ui/separator';
 import { usePackageInfo } from '@/hooks/use-package-info';
+import { toLinkHref } from '@/lib/withLocale';
 
 export function PackageInfo({ children }: { children: React.ReactNode }) {
   const [packageInfo] = usePackageInfo();
@@ -24,7 +25,7 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
           <div>
             <Link
               className="flex gap-2 font-medium underline underline-offset-4"
-              href={packageInfo.source}
+              href={toLinkHref(packageInfo.source)}
               target="_blank"
             >
               View source
@@ -35,7 +36,7 @@ export function PackageInfo({ children }: { children: React.ReactNode }) {
           <div>
             <Link
               className="flex gap-2 font-medium underline underline-offset-4"
-              href={packageInfo.npm}
+              href={toLinkHref(packageInfo.npm)}
               target="_blank"
             >
               View on npm

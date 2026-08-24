@@ -76,7 +76,7 @@ export function getReleaseMajorGroups<
 }
 
 export function getReleaseMajorPath(major: string) {
-  return `/docs/releases/${major}`;
+  return `/docs/releases/${major}` as const;
 }
 
 export function getOlderReleaseMajorGroups(

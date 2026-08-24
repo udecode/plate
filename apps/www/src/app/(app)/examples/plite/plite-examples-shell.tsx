@@ -1,5 +1,6 @@
 import { ArrowLeftIcon, ChevronDownIcon } from 'lucide-react';
 import Link from 'next/link';
+import type { LinkProps } from 'next/link';
 import type { CSSProperties } from 'react';
 
 import {
@@ -22,13 +23,20 @@ type PliteExamplesShellProps = {
 
 type PliteExamplesNavLinksProps = {
   activeExample?: string;
-  backHref?: string;
+  backHref?: LinkProps<string>['href'];
   backLabel?: string;
   indexActive?: boolean;
-  indexHref?: string;
+  indexHref?: LinkProps<string>['href'];
   indexLabel?: string;
   showIndex?: boolean;
 };
+
+const PLITE_DOCS_HREF = {
+  pathname: '/docs/plite',
+} satisfies LinkProps<string>['href'];
+const PLITE_EXAMPLES_HREF = {
+  pathname: '/examples/plite',
+} satisfies LinkProps<string>['href'];
 
 export function PliteExamplesShell({
   activeExample,
@@ -126,10 +134,10 @@ function PliteExamplesMobileNav({ activeExample }: { activeExample?: string }) {
 
 function PliteExamplesNavLinks({
   activeExample,
-  backHref = '/docs/plite',
+  backHref = PLITE_DOCS_HREF,
   backLabel = 'Back to docs',
   indexActive,
-  indexHref = '/examples/plite',
+  indexHref = PLITE_EXAMPLES_HREF,
   indexLabel = 'Examples',
   showIndex = false,
 }: PliteExamplesNavLinksProps) {

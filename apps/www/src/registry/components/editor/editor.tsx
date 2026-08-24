@@ -88,31 +88,31 @@ const editorVariants = cva(
 export type EditorProps = PlateContentProps &
   VariantProps<typeof editorVariants>;
 
-export const Editor = ({
+export function Editor({
   className,
   disabled,
   focused,
   variant,
   ref,
   ...props
-}: EditorProps & { ref?: React.RefObject<HTMLDivElement | null> }) => (
-  <PlateContent
-    ref={ref}
-    className={cn(
-      editorVariants({
-        disabled,
-        focused,
-        variant,
-      }),
-      className
-    )}
-    disabled={disabled}
-    disableDefaultStyles
-    {...props}
-  />
-);
-
-Editor.displayName = 'Editor';
+}: EditorProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
+  return (
+    <PlateContent
+      ref={ref}
+      className={cn(
+        editorVariants({
+          disabled,
+          focused,
+          variant,
+        }),
+        className
+      )}
+      disabled={disabled}
+      disableDefaultStyles
+      {...props}
+    />
+  );
+}
 
 export function EditorView({
   className,
@@ -126,5 +126,3 @@ export function EditorView({
     />
   );
 }
-
-EditorView.displayName = 'EditorView';

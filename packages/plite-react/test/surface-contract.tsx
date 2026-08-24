@@ -18,9 +18,9 @@ import {
   type PliteCommitContext,
   type PliteSelectionChangeContext,
   type PliteValueChangeContext,
-  useElementSelected,
 } from '../src';
 import type { ReactRuntimeEditor } from '../src/plugin/react-editor';
+import { createElementSelectedHistoryRenderElement } from './render-probes/element-selected-render-probes';
 
 const cwd = process.cwd();
 const packageRoot = cwd.endsWith(`${sep}packages${sep}plite-react`)
@@ -1959,26 +1959,10 @@ describe('plite-react surface contract', () => {
     const elementSelectedRenders: Record<string, boolean[] | undefined> = {};
     const latestElementSelected: Record<string, boolean | undefined> = {};
 
-    const RenderElement = ({
-      element,
-      attributes,
-      children,
-    }: RenderElementProps) => {
-      const selected = useElementSelected();
-      const { id } = element as { id: string };
-      latestElementSelected[id] = selected;
-
-      let selectedRenders = elementSelectedRenders[id];
-
-      if (!selectedRenders) {
-        selectedRenders = [];
-        elementSelectedRenders[id] = selectedRenders;
-      }
-
-      selectedRenders.push(selected);
-
-      return <div {...attributes}>{children}</div>;
-    };
+    const RenderElement = createElementSelectedHistoryRenderElement({
+      history: elementSelectedRenders,
+      latest: latestElementSelected,
+    });
 
     render(
       <Plite editor={editor}>

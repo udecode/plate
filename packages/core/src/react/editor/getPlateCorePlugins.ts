@@ -1,12 +1,12 @@
-import type { ReactExtension } from '@platejs/plite-react';
+import { react, type ReactExtension } from '@platejs/plite-react';
 
-import { plateReactExtension } from '../../internal/plugin/plateNativeExtensions';
 import {
   defineBasePlugin,
   DOMPlugin,
   type CorePluginDefinition,
   type DefinitionOf,
 } from '../../lib';
+import { plateDOMExtension } from '../../lib/plugins/dom/plateDOMExtension.internal';
 import { toPlatePlugin } from '../plugin/toPlatePlugin';
 import { ParagraphPlugin } from '../plugins';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';
@@ -14,6 +14,9 @@ import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/Navigat
 import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 
 const ReactDOMPlugin = toPlatePlugin(DOMPlugin);
+const plateReactExtension: ReactExtension = react({
+  dom: plateDOMExtension,
+});
 const ReactPlugin = toPlatePlugin(
   defineBasePlugin('react', {
     dependencies: [DOMPlugin],

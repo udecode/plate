@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import type { RegistryItem } from 'shadcn/schema';
 
 import {
@@ -15,6 +16,9 @@ export type PlaygroundPreviewData = {
 };
 
 export async function getPlaygroundPreviewData(): Promise<PlaygroundPreviewData | null> {
+  'use cache';
+  cacheLife('max');
+
   const item = await getCachedRegistryItem('editor-ai', true);
 
   if (!item?.files) {

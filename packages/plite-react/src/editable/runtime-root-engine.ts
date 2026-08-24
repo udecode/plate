@@ -18,6 +18,11 @@ import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
 import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
 import { useEditableRootRef } from './input-router';
+import {
+  beginEditableNativeSelectionImport,
+  finishEditableModelSelectionProjection,
+  prepareEditableModelSelection,
+} from './input-state';
 import { useProjectionDOMRepairBridge } from './projection-repair-bridge';
 import { useEditableRootCommitWakeup } from './root-selector-sources';
 import { useRuntimeAndroidEngine } from './runtime-android-engine';
@@ -173,7 +178,7 @@ export const useEditableRootRuntime = ({
     inputController,
     requestEditableRepair: repairRuntime.requestEditableRepair,
   });
-  runtime.domRepairQueueRef.current = repairRuntime.domRepairQueue;
+  runtime.publishDOMRepairQueue(repairRuntime.domRepairQueue);
   const traceRuntime = useRuntimeKernelTraceEngine({
     domPhaseScheduler,
     domRepairQueue: repairRuntime.domRepairQueue,
@@ -189,17 +194,15 @@ export const useEditableRootRuntime = ({
 
       for (const mountedRuntime of mountedRuntimes) {
         mountedRuntime.cancelSelectionChangeHandlers();
-        mountedRuntime.inputController.state.pendingDOMSelectionImport = false;
-        mountedRuntime.inputController.state.isProjectingSelection =
-          projectedDrag;
+        prepareEditableModelSelection(mountedRuntime.inputController, {
+          projecting: projectedDrag,
+        });
         setEditableModelSelectionPreference({
           inputController: mountedRuntime.inputController,
           preferModelSelection: true,
           reason: 'programmatic-export',
           selectionSource: 'model-owned',
         });
-        mountedRuntime.inputController.state.selectionChangeOrigin =
-          'programmatic-export';
       }
     };
 
@@ -218,8 +221,9 @@ export const useEditableRootRuntime = ({
 
         for (const mountedRuntime of mountedRuntimes) {
           mountedRuntime.cancelSelectionChangeHandlers();
-          mountedRuntime.inputController.state.pendingDOMSelectionImport = false;
-          mountedRuntime.inputController.state.isProjectingSelection = false;
+          finishEditableModelSelectionProjection(
+            mountedRuntime.inputController
+          );
         }
       },
       importDOMSelection: () => {
@@ -228,7 +232,7 @@ export const useEditableRootRuntime = ({
           preferModelSelection: false,
           selectionSource: 'dom-current',
         });
-        inputController.state.selectionChangeOrigin = 'native-user';
+        beginEditableNativeSelectionImport(inputController);
         selectionImportController.syncDOMSelectionFromRuntime();
         selectionImportController.flushSelectionChange();
       },

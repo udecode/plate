@@ -1,0 +1,17 @@
+---
+id: 2026-08-24-react-compiler-owned-editor-state
+date: 2026-08-24
+status: draft
+kind: fix
+summary: 'Keep copied editor state compatible with React Compiler'
+change: { 'type': 'source', 'date': '2026-08-24', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-08-24-react-compiler-owned-editor-state","kind":"fix","migrationNotes":[]} -->
+
+- **`font-color-toolbar-button`**, **`math`**: Preserve the active editor value while focus moves into a control, and reopen inline equations only after selection returns.
+- **`media-placeholder`**, **`plate-to-html`**, **`use-object-url`**: Give each browser object URL one source lifetime and revoke it when that source is replaced or unmounted.
+- **`table`**, **`use-chat`**: Render the selected-cell drag handle at its cell owner and keep fake-stream cancellation inside its transport.
+- **`ai-menu`**, **`column`**, **`dnd`**, **`editor`**, **`emoji-picker`**, **`inline-combobox`**: Use named React Compiler components without manual memo wrappers or display-name assignments.

@@ -11,6 +11,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -489,6 +490,169 @@ const shouldSynchronizeViewportJump = (
   );
 };
 
+type PagedEditableViewportSnapshot = {
+  canTrackContentViewport: boolean;
+  viewport: PagedEditableViewport | null;
+};
+
+type PagedEditableViewportConfiguration = {
+  geometryHeight: number;
+  root: HTMLDivElement | null;
+  tracksContentViewport: boolean;
+  virtualizesPageSurfaces: boolean;
+};
+
+const INACTIVE_PAGED_EDITABLE_VIEWPORT: PagedEditableViewportSnapshot = {
+  canTrackContentViewport: false,
+  viewport: null,
+};
+
+const getInactivePagedEditableViewport = () => INACTIVE_PAGED_EDITABLE_VIEWPORT;
+
+const createPagedEditableViewportStore = () => {
+  const listeners = new Set<() => void>();
+  let configuration: PagedEditableViewportConfiguration = {
+    geometryHeight: 0,
+    root: null,
+    tracksContentViewport: false,
+    virtualizesPageSurfaces: false,
+  };
+  let cleanup: (() => void) | null = null;
+  let lastScrollAt = Number.NEGATIVE_INFINITY;
+  let snapshot = INACTIVE_PAGED_EDITABLE_VIEWPORT;
+
+  const getSnapshot = () => snapshot;
+  const publish = (
+    nextSnapshot: PagedEditableViewportSnapshot,
+    sync = false
+  ) => {
+    if (snapshot === nextSnapshot) return;
+
+    const commit = () => {
+      snapshot = nextSnapshot;
+      listeners.forEach((listener) => {
+        listener();
+      });
+    };
+
+    if (sync) {
+      flushSync(commit);
+    } else {
+      commit();
+    }
+  };
+  const start = ({
+    geometryHeight,
+    root,
+    tracksContentViewport,
+    virtualizesPageSurfaces,
+  }: PagedEditableViewportConfiguration) => {
+    if (!tracksContentViewport) {
+      publish(INACTIVE_PAGED_EDITABLE_VIEWPORT);
+      return () => {};
+    }
+
+    const scrollRoot = getPagedEditableScrollRoot(root);
+
+    if (!root || !scrollRoot) {
+      publish(INACTIVE_PAGED_EDITABLE_VIEWPORT);
+      return () => {};
+    }
+
+    const update = ({ sync = false }: { sync?: boolean } = {}) => {
+      const rootRect = root.getBoundingClientRect();
+      const scrollRootRect = scrollRoot.getBoundingClientRect();
+      const scrollRootIsInsideRoot =
+        scrollRoot === root || root.contains(scrollRoot);
+      const scrollOffset = scrollRootIsInsideRoot ? scrollRoot.scrollTop : 0;
+      const scale =
+        geometryHeight > 0 && rootRect.height > 0
+          ? rootRect.height / geometryHeight
+          : 1;
+      const top = Math.max(
+        0,
+        (scrollRootRect.top - rootRect.top + scrollOffset) / scale
+      );
+      const nextViewport = {
+        bottom: Math.max(
+          top,
+          (scrollRootRect.bottom - rootRect.top + scrollOffset) / scale
+        ),
+        top,
+      };
+      const previousViewport = snapshot.viewport;
+
+      if (
+        snapshot.canTrackContentViewport &&
+        previousViewport &&
+        Math.abs(previousViewport.top - nextViewport.top) < 1 &&
+        Math.abs(previousViewport.bottom - nextViewport.bottom) < 1
+      ) {
+        return;
+      }
+
+      publish(
+        { canTrackContentViewport: true, viewport: nextViewport },
+        sync &&
+          virtualizesPageSurfaces &&
+          shouldSynchronizeViewportJump(previousViewport, nextViewport)
+      );
+    };
+    const updateAsync = () => {
+      update();
+    };
+    const updateOnScroll = () => {
+      lastScrollAt = getNow();
+      update({ sync: true });
+    };
+
+    updateAsync();
+    scrollRoot.addEventListener('scroll', updateOnScroll, { passive: true });
+    root.ownerDocument.defaultView?.addEventListener('resize', updateAsync);
+
+    const observer =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(updateAsync);
+
+    observer?.observe(root);
+    observer?.observe(scrollRoot);
+
+    return () => {
+      scrollRoot.removeEventListener('scroll', updateOnScroll);
+      root.ownerDocument.defaultView?.removeEventListener(
+        'resize',
+        updateAsync
+      );
+      observer?.disconnect();
+    };
+  };
+  const restart = () => {
+    cleanup?.();
+    cleanup = listeners.size > 0 ? start(configuration) : null;
+  };
+
+  return {
+    configure: (nextConfiguration: PagedEditableViewportConfiguration) => {
+      configuration = nextConfiguration;
+      restart();
+    },
+    getLastScrollAt: () => lastScrollAt,
+    getSnapshot,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+
+      if (listeners.size === 1) restart();
+
+      return () => {
+        listeners.delete(listener);
+
+        if (listeners.size === 0) restart();
+      };
+    },
+  };
+};
+
 export type PagedEditableRenderPageProps = {
   attributes: {
     'data-plite-page': true;
@@ -610,9 +774,7 @@ export const PagedEditable = ({
   ...editableProps
 }: PagedEditableProps) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const lastViewportScrollAtRef = useRef(Number.NEGATIVE_INFINITY);
-  const viewportStateRef = useRef<PagedEditableViewport | null>(null);
-  const [viewport, setViewport] = useState<PagedEditableViewport | null>(null);
+  const [viewportStore] = useState(() => createPagedEditableViewportStore());
   const selectedPaths = useEditorState(
     (state) => {
       const selection = state.selection();
@@ -689,111 +851,31 @@ export const PagedEditable = ({
       ),
     [snapshot.fragments]
   );
-  const [canTrackContentViewport, setCanTrackContentViewport] = useState(
-    () => typeof window !== 'undefined'
-  );
   const tracksContentViewport =
     virtualizesPageSurfaces || hasViewportWindowedUnits;
+  useLayoutEffect(() => {
+    viewportStore.configure({
+      geometryHeight: geometry.height,
+      root: rootRef.current,
+      tracksContentViewport,
+      virtualizesPageSurfaces,
+    });
+  }, [
+    geometry.height,
+    tracksContentViewport,
+    viewportStore,
+    virtualizesPageSurfaces,
+  ]);
+  const { canTrackContentViewport, viewport } = useSyncExternalStore(
+    viewportStore.subscribe,
+    viewportStore.getSnapshot,
+    getInactivePagedEditableViewport
+  );
   const filtersContentViewport =
     tracksContentViewport && canTrackContentViewport;
   const pageSurfaceOverscan = getVirtualizedDOMStrategyOverscan(
     editableProps.domStrategy
   );
-  useEffect(() => {
-    if (!tracksContentViewport) {
-      setCanTrackContentViewport(false);
-      viewportStateRef.current = null;
-      setViewport(null);
-      return undefined;
-    }
-
-    const root = rootRef.current;
-    const scrollRoot = getPagedEditableScrollRoot(root);
-
-    if (!root || !scrollRoot) {
-      setCanTrackContentViewport(false);
-      viewportStateRef.current = null;
-      setViewport(null);
-      return undefined;
-    }
-
-    setCanTrackContentViewport(true);
-
-    const update = ({ sync = false }: { sync?: boolean } = {}) => {
-      const rootRect = root.getBoundingClientRect();
-      const scrollRootRect = scrollRoot.getBoundingClientRect();
-      const scrollRootIsInsideRoot =
-        scrollRoot === root || root.contains(scrollRoot);
-      const scrollOffset = scrollRootIsInsideRoot ? scrollRoot.scrollTop : 0;
-      const scale =
-        geometry.height > 0 && rootRect.height > 0
-          ? rootRect.height / geometry.height
-          : 1;
-      const top = Math.max(
-        0,
-        (scrollRootRect.top - rootRect.top + scrollOffset) / scale
-      );
-      const nextViewport = {
-        bottom: Math.max(
-          top,
-          (scrollRootRect.bottom - rootRect.top + scrollOffset) / scale
-        ),
-        top,
-      };
-      const commit = () => {
-        setViewport((previous) => {
-          if (
-            previous &&
-            Math.abs(previous.top - nextViewport.top) < 1 &&
-            Math.abs(previous.bottom - nextViewport.bottom) < 1
-          ) {
-            return previous;
-          }
-
-          viewportStateRef.current = nextViewport;
-          return nextViewport;
-        });
-      };
-
-      if (
-        sync &&
-        virtualizesPageSurfaces &&
-        shouldSynchronizeViewportJump(viewportStateRef.current, nextViewport)
-      ) {
-        flushSync(commit);
-      } else {
-        commit();
-      }
-    };
-    const updateAsync = () => {
-      update();
-    };
-    const updateOnScroll = () => {
-      lastViewportScrollAtRef.current = getNow();
-      update({ sync: true });
-    };
-
-    updateAsync();
-    scrollRoot.addEventListener('scroll', updateOnScroll, { passive: true });
-    root.ownerDocument.defaultView?.addEventListener('resize', updateAsync);
-
-    const observer =
-      typeof ResizeObserver === 'undefined'
-        ? null
-        : new ResizeObserver(updateAsync);
-
-    observer?.observe(root);
-    observer?.observe(scrollRoot);
-
-    return () => {
-      scrollRoot.removeEventListener('scroll', updateOnScroll);
-      root.ownerDocument.defaultView?.removeEventListener(
-        'resize',
-        updateAsync
-      );
-      observer?.disconnect();
-    };
-  }, [geometry.height, tracksContentViewport, virtualizesPageSurfaces]);
   const pageSurfaceItems = useMemo(
     () =>
       getPagedEditableVisiblePageMountItems(pageMountPlan, {
@@ -934,7 +1016,7 @@ export const PagedEditable = ({
     return ((editor, domRange) => {
       if (
         tracksContentViewport &&
-        getNow() - lastViewportScrollAtRef.current <
+        getNow() - viewportStore.getLastScrollAt() <
           USER_SCROLL_SELECTION_SCROLL_SUPPRESSION_MS
       ) {
         return;
@@ -953,7 +1035,11 @@ export const PagedEditable = ({
         domRange
       );
     }) satisfies NonNullable<EditableProps['scrollSelectionIntoView']>;
-  }, [editableProps.scrollSelectionIntoView, tracksContentViewport]);
+  }, [
+    editableProps.scrollSelectionIntoView,
+    tracksContentViewport,
+    viewportStore,
+  ]);
   const editable = (
     <Editable
       {...editableProps}

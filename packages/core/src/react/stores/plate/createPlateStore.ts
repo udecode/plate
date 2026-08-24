@@ -22,7 +22,6 @@ import {
 import type { PlateStoreEditor, PlateStoreState } from './PlateStore';
 
 export type PlateStore = ReturnType<typeof usePlateStore>;
-export type PlateEditorWithStore<E = PlateEditor> = E & { store: PlateStore };
 
 export const PLATE_SCOPE = 'plate';
 
@@ -77,10 +76,10 @@ const {
   usePlateValue: usePlateLocalValue,
 } = createPlateStore();
 
-let fallbackEditor: PlateStoreEditor | null = null;
+let fallbackEditor: PlateEditor | null = null;
 const fallbackEditors = new WeakSet<object>();
 
-const getFallbackEditor = (): PlateStoreEditor => {
+const getFallbackEditor = (): PlateEditor => {
   if (!fallbackEditor) {
     fallbackEditor = createPlateEditor();
     fallbackEditors.add(fallbackEditor);
@@ -190,21 +189,16 @@ export type UseEditorOptions = {
   id?: string;
 };
 
-const useInternalEditor = (id?: string): PlateEditorWithStore => {
+const useInternalEditor = (id?: string): PlateEditor => {
   const store = usePlateStore(id);
-  const editor = ((useAtomStoreValue(store, 'editor') as
-    | PlateEditor
-    | undefined) ?? getFallbackEditor()) as PlateEditorWithStore;
-
-  editor.store = store;
-
-  return editor;
+  return (
+    (useAtomStoreValue(store, 'editor') as PlateEditor | undefined) ??
+    getFallbackEditor()
+  );
 };
 
 /** Get the mounted editor, throwing while no matching editor is active. */
-export function useEditor(
-  options: UseEditorOptions = {}
-): PlateEditorWithStore {
+export function useEditor(options: UseEditorOptions = {}): PlateEditor {
   const editor = useInternalEditor(options.id);
 
   if (fallbackEditors.has(editor)) {
@@ -217,7 +211,7 @@ export function useEditor(
 /** Get the active editor, or `null` while its controller has no editor. */
 export function useActiveEditor(
   options: UseEditorOptions = {}
-): PlateEditorWithStore | null {
+): PlateEditor | null {
   const editor = useInternalEditor(options.id);
 
   if (fallbackEditors.has(editor)) return null;

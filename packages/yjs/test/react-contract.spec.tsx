@@ -11,12 +11,12 @@ import React, { act, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import type { YjsRemoteCursorDecorationData } from '../src';
+import { YjsPlugin } from '../src/plate';
 import {
   useYjsProviderStatus,
   useYjsProviderSynced,
   useYjsRemoteCursorDecorationSource,
   useYjsRemoteCursorOverlayPositions,
-  YjsPlugin,
 } from '../src/react';
 import {
   FakeAwareness,

@@ -1117,6 +1117,7 @@ test('selection reconciler collapses an endpoint-equal expanded DOM range to the
     extensions: [ProjectedTableCellSelectionExtension],
   });
   const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
@@ -1152,7 +1153,7 @@ test('selection reconciler collapses an endpoint-equal expanded DOM range to the
     });
 
     return (
-      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+      <div data-render-tick={renderTick} ref={rootRef}>
         <span>one</span>
         <span>two</span>
       </div>
@@ -1236,6 +1237,7 @@ test('selection reconciler clears native selection for a model-only projection',
     extensions: [ProjectedTableCellSelectionExtension],
   });
   const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
@@ -1262,7 +1264,7 @@ test('selection reconciler clears native selection for a model-only projection',
     });
 
     return (
-      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+      <div data-render-tick={renderTick} ref={rootRef}>
         <span>one</span>
         <span>two</span>
       </div>
@@ -1306,6 +1308,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
   const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
@@ -1328,7 +1331,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
     });
 
     return (
-      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+      <div data-render-tick={renderTick} ref={rootRef}>
         <span>abc</span>
       </div>
     );
@@ -1383,6 +1386,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
   const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
@@ -1405,7 +1409,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
     });
 
     return (
-      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+      <div data-render-tick={renderTick} ref={rootRef}>
         <span>abc</span>
       </div>
     );
@@ -1457,6 +1461,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
   const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
@@ -1497,7 +1502,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     });
 
     return (
-      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+      <div data-render-tick={renderTick} ref={rootRef}>
         <span>one</span>
         <button type="button">hidden shell</button>
         <span>two</span>
@@ -1679,6 +1684,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 
   const editor = createReactEditor();
   const runtime = new EditableDOMRuntime({ editor });
+  const { rootRef } = runtime;
   const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
@@ -1719,11 +1725,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     });
 
     return (
-      <div
-        data-render-tick={renderTick}
-        data-selection-test-root
-        ref={runtime.rootRef}
-      >
+      <div data-render-tick={renderTick} data-selection-test-root ref={rootRef}>
         <span data-plite-node="text" data-plite-path="0,0">
           <span data-plite-leaf="true">
             <span data-plite-string="true">one</span>

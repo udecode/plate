@@ -85,6 +85,46 @@ editor.read.schema.identity();
 Bump `version` whenever the named lineage changes schema semantics. Reusing an
 ID and version with a different fingerprint is an identity mismatch.
 
+### Custom Primary Root
+
+Omit `schema.root` for Plate's standard nonempty paragraph root. Declare it
+only when the application needs a different top-level grammar.
+
+```ts
+import { schema } from 'platejs';
+import {
+  createPlateEditor,
+  definePlatePlugin,
+  ParagraphPlugin,
+} from 'platejs/react';
+
+const SectionPlugin = definePlatePlugin('section', {
+  schema: {
+    element: {
+      content: schema.content.element(ParagraphPlugin, { min: 1 }),
+    },
+  },
+});
+
+const editor = createPlateEditor({
+  plugins: [SectionPlugin],
+  schema: {
+    root: schema.content.element(SectionPlugin, { min: 1 }),
+  },
+});
+```
+
+`root.min` is required and must be a positive integer. Root descriptors must
+match the installed plugin family: use Plate descriptors with
+`createPlateEditor` and Base descriptors with a headless Base plugin tuple.
+For `schema.content.elements([...])`, the first descriptor constructs the
+default root child.
+
+A custom root changes the compiled fingerprint. For a named persisted schema,
+increment `version` and add the document migration before loading documents
+that use the earlier root grammar. Generated `Value` types include every legal
+root variant; `min` and `max` remain runtime validation rules.
+
 ### Document Migrations
 
 Persist schema identity beside the document, then declare one application-owned
@@ -252,8 +292,18 @@ pnpm exec plate generate
 ```
 
 `plate generate` reads `src/editor.ts`. Pass entry paths when an app owns
-several editor modules. Add `--watch` during development
-or `--check` in CI.
+several editor modules. The `@plate/editor-plugins` registry item installs the
+authored plugin module only; it does not copy generated contracts.
+
+Add `--watch` during development. Gate committed artifacts in CI:
+
+```json title="package.json"
+{
+  "scripts": {
+    "editor:check": "plate generate --check src/editor.ts"
+  }
+}
+```
 
 The generated module exports exact editor/value types, static schema handles,
 and a fingerprint. It does not own runtime plugin composition:
@@ -292,8 +342,8 @@ Use generated `Value` and `Editor` only at static boundaries such as storage,
 collaboration, and exported application types. Runtime constructors and hooks
 consume the authored `EditorKit` and `EditorSchema` directly.
 
-Run the same command with `--check` in CI. It recompiles the authored module
-and fails when committed generated artifacts are stale.
+The CI command recompiles the authored module and fails when committed
+generated artifacts are stale.
 
 Create typed application steps with the migration scaffold:
 

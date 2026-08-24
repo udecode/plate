@@ -807,15 +807,6 @@ export const registryFeatures: Registry['items'] = [
         path: 'components/editor/plugins.ts',
         type: 'registry:component',
       },
-      {
-        path: 'components/editor/plugins.generated.ts',
-        type: 'registry:component',
-      },
-      {
-        path: 'components/editor/plugins.schema.json',
-        target: '@components/editor/plugins.schema.json',
-        type: 'registry:file',
-      },
     ],
     name: 'editor-plugins',
     registryDependencies: [

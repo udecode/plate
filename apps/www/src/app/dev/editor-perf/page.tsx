@@ -5609,19 +5609,13 @@ export default function EditorPerfPage() {
     ]
   );
 
-  const configureRunnerControlsRef = React.useRef(configureRunnerControls);
-  const runRunnerBenchmarkRef = React.useRef(runRunnerBenchmark);
-
-  configureRunnerControlsRef.current = configureRunnerControls;
-  runRunnerBenchmarkRef.current = runRunnerBenchmark;
-
   React.useEffect(() => {
     const runnerWindow = window as Window & {
       __editorPerfHarness?: EditorPerfRunnerHarness;
     };
     const harness: EditorPerfRunnerHarness = {
-      configure: (controls) => configureRunnerControlsRef.current(controls),
-      runBenchmark: (benchmark) => runRunnerBenchmarkRef.current(benchmark),
+      configure: configureRunnerControls,
+      runBenchmark: runRunnerBenchmark,
     };
 
     runnerWindow.__editorPerfHarness = harness;
@@ -5631,7 +5625,7 @@ export default function EditorPerfPage() {
         runnerWindow.__editorPerfHarness = undefined;
       }
     };
-  }, []);
+  }, [configureRunnerControls, runRunnerBenchmark]);
 
   React.useEffect(() => {
     const timeout = window.setTimeout(() => {

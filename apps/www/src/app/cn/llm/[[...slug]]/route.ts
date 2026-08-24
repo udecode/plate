@@ -8,10 +8,6 @@ import {
 import { getPlateLLMSource } from '@/lib/llm-source';
 import { hrefWithLocale } from '@/lib/withLocale';
 
-export const revalidate = false;
-export const dynamic = 'force-static';
-export const dynamicParams = true;
-
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug?: string[] }> }
@@ -38,5 +34,5 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-  return [];
+  return [{ slug: [] }];
 }

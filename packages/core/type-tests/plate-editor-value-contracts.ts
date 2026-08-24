@@ -1,3 +1,4 @@
+import type { EditorApplicationSchema } from '@platejs/core';
 import {
   createPlateEditor,
   definePlatePlugin,
@@ -388,6 +389,23 @@ const rawOverriddenPortal = rawOverriddenEditor.plugin(
 rawOverriddenPortal.update.toggle();
 // @ts-expect-error application policy needs generated construction properties
 rawOverriddenPortal.update.insert();
+
+const rawRootPolicyEditor = createPlateEditor({
+  plugins: overriddenPlugins,
+  schema: {
+    root: schema.content.element(OverriddenTextBlockPlugin, { min: 1 }),
+  },
+});
+
+// @ts-expect-error application root policy needs a generated contract for grammar-dependent mutations
+rawRootPolicyEditor.plugin(OverriddenTextBlockPlugin).update.toggle();
+
+const invalidApplicationRoot: EditorApplicationSchema = {
+  // @ts-expect-error an application root must state its non-empty minimum
+  root: schema.content.element(OverriddenTextBlockPlugin),
+};
+
+void invalidApplicationRoot;
 
 declare const useApplicationPolicy: boolean;
 const conditionalPolicyEditor = createPlateEditor({

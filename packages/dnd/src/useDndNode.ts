@@ -28,6 +28,10 @@ export const DRAG_ITEM_BLOCK = 'block';
 const canUseDomDnd = () =>
   typeof document !== 'undefined' && typeof window !== 'undefined';
 
+const useIsomorphicLayoutEffect = canUseDomDnd()
+  ? React.useLayoutEffect
+  : React.useEffect;
+
 const noopConnector: ConnectDragPreview &
   ConnectDragSource &
   ConnectDropTarget = () => null;
@@ -328,6 +332,7 @@ export const getDropPath = (
 const useDomDragNode = (
   editor: PlateEditor,
   {
+    canDrag: canDragOption,
     element: staleElement,
     end: onDragEnd,
     item,
@@ -340,13 +345,36 @@ const useDomDragNode = (
 ] => {
   const elementKey = editor.key(staleElement);
   const [isAboutToDrag, setIsAboutToDrag] = React.useState(false);
+  const cancelAttemptedDragResetRef = React.useRef<(() => void) | null>(null);
   const [collected, dragRef, preview] = useDrag<
     DragItemNode,
     unknown,
     { isDragging: boolean }
   >({
-    canDrag: () => {
+    canDrag: (monitor) => {
+      if (
+        canDragOption !== undefined &&
+        (typeof canDragOption === 'function'
+          ? !canDragOption(monitor)
+          : !canDragOption)
+      ) {
+        return false;
+      }
+
+      cancelAttemptedDragResetRef.current?.();
       setIsAboutToDrag(true);
+      const timeoutId = setTimeout(() => {
+        cancelAttemptedDragResetRef.current = null;
+
+        if (!monitor.isDragging()) {
+          setIsAboutToDrag(false);
+        }
+      }, 0);
+
+      cancelAttemptedDragResetRef.current = () => {
+        clearTimeout(timeoutId);
+        cancelAttemptedDragResetRef.current = null;
+      };
 
       return true;
     },
@@ -358,6 +386,7 @@ const useDomDragNode = (
         try {
           onDragEnd?.(dragItem, monitor);
         } finally {
+          cancelAttemptedDragResetRef.current?.();
           editor.plugin(DndStorePlugin).store.set({ isDragging: false });
           document.body.classList.remove('dragging');
           setIsAboutToDrag(false);
@@ -365,6 +394,7 @@ const useDomDragNode = (
       }
     },
     item(monitor) {
+      cancelAttemptedDragResetRef.current?.();
       const { store } = editor.plugin(DndStorePlugin);
 
       store.set({ isDragging: true });
@@ -425,12 +455,12 @@ const useDomDragNode = (
     ...options,
   });
 
-  React.useEffect(() => {
-    if (!collected.isDragging && isAboutToDrag) {
-      // oxlint-disable-next-line react-doctor/no-adjust-state-on-prop-change -- [P0 behavior-boundary] This bridges react-dnd monitor state and clears an attempted drag only when the external monitor never starts it.
-      setIsAboutToDrag(false);
-    }
-  }, [collected.isDragging, isAboutToDrag]);
+  React.useEffect(
+    () => () => {
+      cancelAttemptedDragResetRef.current?.();
+    },
+    []
+  );
 
   return [{ ...collected, isAboutToDrag }, dragRef, preview];
 };
@@ -738,15 +768,22 @@ export const useDndNode = ({
     ...dropOptions,
   });
 
-  drop(resolvedNodeRef);
+  useIsomorphicLayoutEffect(() => {
+    drop(resolvedNodeRef);
 
-  if (previewOptions.disable) {
-    preview(getEmptyImage(), { captureDraggingState: true });
-  } else if (previewOptions.ref) {
-    preview(previewOptions.ref);
-  } else {
-    preview(multiplePreviewRef ?? null);
-  }
+    if (previewOptions.disable) {
+      preview(getEmptyImage(), { captureDraggingState: true });
+    } else if (previewOptions.ref) {
+      preview(previewOptions.ref);
+    } else {
+      preview(multiplePreviewRef ?? null);
+    }
+
+    return () => {
+      drop(null);
+      preview(null);
+    };
+  }, [drop, multiplePreviewRef, preview, previewOptions, resolvedNodeRef]);
 
   return { dragRef, isAboutToDrag, isDragging, isOver };
 };

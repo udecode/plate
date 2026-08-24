@@ -675,6 +675,20 @@ export class EditableDOMRuntime {
     this.rootRuntime.setRoot(node);
   }
 
+  publishAndroidInputManager(inputManager: AndroidInputManager | null) {
+    this.androidInputManagerRef.current = inputManager;
+  }
+
+  clearAndroidInputManager(inputManager: AndroidInputManager | null) {
+    if (this.androidInputManagerRef.current === inputManager) {
+      this.androidInputManagerRef.current = null;
+    }
+  }
+
+  publishDOMRepairQueue(queue: DOMRepairQueue) {
+    this.domRepairQueueRef.current = queue;
+  }
+
   updateDOMIntegrityRepairHandler(
     handler: (evidence: DOMIntegrityRepairEvidence) => void
   ) {
@@ -718,6 +732,7 @@ export class EditableDOMRuntime {
   cancelSelectionChangeHandlers() {
     this.onDOMSelectionChange?.cancel();
     this.scheduleOnDOMSelectionChange?.cancel();
+    this.inputController.state.pendingDOMSelectionImport = false;
   }
 
   private attachNativeInputListeners() {

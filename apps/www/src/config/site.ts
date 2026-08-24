@@ -41,7 +41,7 @@ export const siteConfig = {
     process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'
       : 'https://platejs.org',
-};
+} as const;
 
 export type SiteConfig = typeof siteConfig;
 

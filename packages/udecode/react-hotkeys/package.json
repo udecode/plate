@@ -40,9 +40,7 @@
     "test:watch": "plate-pkg p:test:watch",
     "typecheck": "plate-pkg p:typecheck"
   },
-  "dependencies": {
-    "react-compiler-runtime": "^1.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@plate/scripts": "workspace:*"
   },

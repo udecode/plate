@@ -53,7 +53,7 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-export const AIChatEditor = React.memo(({ content }: { content: string }) => {
+export function AIChatEditor({ content }: { content: string }) {
   const aiEditor = usePlateEditor({
     plugins: BaseEditorKit,
   });
@@ -71,9 +71,7 @@ export const AIChatEditor = React.memo(({ content }: { content: string }) => {
   }, [aiEditor, document, store]);
 
   return <EditorStatic variant="aiChat" editor={aiEditor} />;
-});
-
-AIChatEditor.displayName = 'AIChatEditor';
+}
 
 export function AIMenu() {
   const editor = useEditor();

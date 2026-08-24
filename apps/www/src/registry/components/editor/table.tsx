@@ -44,7 +44,6 @@ import {
   useElementSelector,
 } from 'platejs/react';
 import * as React from 'react';
-import { createPortal } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -96,6 +95,7 @@ type TableResizeDragState = {
 type TableResizeContextValue = {
   colSizeOverrides: Map<number, number>;
   disableMarginLeft: boolean;
+  dragCellKey: string | null;
   marginLeftOverride: number | null;
   rowSizeOverrides: Map<number, number>;
   clearResizePreview: (handleKey: string) => void;
@@ -695,25 +695,6 @@ function TableElementContent({
 
     return view.cellKeys[0] ?? null;
   });
-  const [dragHandleHost, setDragHandleHost] =
-    React.useState<HTMLElement | null>(null);
-  React.useLayoutEffect(() => {
-    let nextHost: HTMLElement | null = null;
-
-    if (dragCellKey) {
-      const escapedCellKey = globalThis.CSS?.escape
-        ? globalThis.CSS.escape(dragCellKey)
-        : dragCellKey.replaceAll('"', '\\"');
-      nextHost =
-        tableRef.current?.querySelector<HTMLElement>(
-          `[data-plite-node-key="${escapedCellKey}"]`
-        ) ?? null;
-    }
-
-    setDragHandleHost((currentHost) =>
-      currentHost === nextHost ? currentHost : nextHost
-    );
-  }, [dragCellKey, props.element]);
   const resizeController = useTableResizeController({
     baseColSizes,
     controlColumnWidth,
@@ -732,10 +713,17 @@ function TableElementContent({
     () => ({
       ...resizeController,
       colSizeOverrides,
+      dragCellKey,
       marginLeftOverride,
       rowSizeOverrides,
     }),
-    [colSizeOverrides, marginLeftOverride, resizeController, rowSizeOverrides]
+    [
+      colSizeOverrides,
+      dragCellKey,
+      marginLeftOverride,
+      resizeController,
+      rowSizeOverrides,
+    ]
   );
   const resolvedColSizes = React.useMemo(() => {
     if (columnWidths && columnWidths.length > 0) {
@@ -837,22 +825,6 @@ function TableElementContent({
             )}
             <tbody className="min-w-full">{children}</tbody>
           </table>
-
-          {dragHandleHost &&
-            createPortal(
-              <button
-                aria-label="Move selected cells"
-                className="absolute top-1/2 left-6 z-40 flex h-6 w-4 -translate-y-1/2 cursor-grab items-center justify-center rounded-sm border bg-background text-muted-foreground shadow-sm active:cursor-grabbing"
-                contentEditable={false}
-                data-table-cell-drag-for={dragCellKey}
-                data-table-cell-drag-handle="true"
-                draggable
-                type="button"
-              >
-                <GripVertical className="size-3" />
-              </button>,
-              dragHandleHost
-            )}
 
           {isSelectingTable && (
             <div className={blockSelectionVariants()} contentEditable={false} />
@@ -1434,7 +1406,9 @@ export function TableCellElement(
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const { element } = props;
+  const { dragCellKey } = useTableResizeContext();
   const isHeader = element.header === true;
+  const cellKey = editor.key(element);
 
   const tableKey = useElementSelector(TablePlugin, ([node]) =>
     editor.key(node)
@@ -1512,6 +1486,20 @@ export function TableCellElement(
         {props.children}
       </div>
 
+      {!readOnly && dragCellKey === cellKey && (
+        <button
+          aria-label="Move selected cells"
+          className="absolute top-1/2 left-6 z-40 flex h-6 w-4 -translate-y-1/2 cursor-grab items-center justify-center rounded-sm border bg-background text-muted-foreground shadow-sm active:cursor-grabbing"
+          contentEditable={false}
+          data-table-cell-drag-for={dragCellKey}
+          data-table-cell-drag-handle="true"
+          draggable
+          type="button"
+        >
+          <GripVertical className="size-3" />
+        </button>
+      )}
+
       {!readOnly && !isSelectionAreaVisible && (
         <TableCellResizeControls colIndex={colIndex} rowIndex={rowIndex} />
       )}
@@ -1523,100 +1511,102 @@ export function TableCellElement(
   );
 }
 
-const TableCellResizeControls = React.memo(
-  ({ colIndex, rowIndex }: { colIndex: number; rowIndex: number }) => {
-    const {
-      clearResizePreview,
-      disableMarginLeft,
-      setResizePreview,
-      startResize,
-    } = useTableResizeContext();
-    const rightHandleKey = `right:${rowIndex}:${colIndex}`;
-    const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
-    const leftHandleKey = `left:${rowIndex}:${colIndex}`;
-    const isLeftHandle = colIndex === 0 && !disableMarginLeft;
+function TableCellResizeControls({
+  colIndex,
+  rowIndex,
+}: {
+  colIndex: number;
+  rowIndex: number;
+}) {
+  const {
+    clearResizePreview,
+    disableMarginLeft,
+    setResizePreview,
+    startResize,
+  } = useTableResizeContext();
+  const rightHandleKey = `right:${rowIndex}:${colIndex}`;
+  const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
+  const leftHandleKey = `left:${rowIndex}:${colIndex}`;
+  const isLeftHandle = colIndex === 0 && !disableMarginLeft;
 
-    return (
+  return (
+    <div
+      className="group/resize pointer-events-none absolute inset-0 z-30 select-none"
+      contentEditable={false}
+      suppressContentEditableWarning={true}
+    >
       <div
-        className="group/resize pointer-events-none absolute inset-0 z-30 select-none"
-        contentEditable={false}
-        suppressContentEditableWarning={true}
-      >
+        className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+        data-table-resize-handle="column-end"
+        onPointerEnter={(event) => {
+          setResizePreview(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerLeave={() => {
+          clearResizePreview(rightHandleKey);
+        }}
+        onPointerDown={(event) => {
+          startResize(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
+      />
+      <div
+        className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
+        onPointerEnter={(event) => {
+          setResizePreview(event, {
+            colIndex,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerLeave={() => {
+          clearResizePreview(bottomHandleKey);
+        }}
+        onPointerDown={(event) => {
+          startResize(event, {
+            colIndex,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
+            rowIndex,
+          });
+        }}
+      />
+      {isLeftHandle && (
         <div
-          className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
-          data-table-resize-handle="column-end"
+          className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
           onPointerEnter={(event) => {
             setResizePreview(event, {
               colIndex,
-              direction: 'right',
-              handleKey: rightHandleKey,
+              direction: 'left',
+              handleKey: leftHandleKey,
               rowIndex,
             });
           }}
           onPointerLeave={() => {
-            clearResizePreview(rightHandleKey);
+            clearResizePreview(leftHandleKey);
           }}
           onPointerDown={(event) => {
             startResize(event, {
               colIndex,
-              direction: 'right',
-              handleKey: rightHandleKey,
+              direction: 'left',
+              handleKey: leftHandleKey,
               rowIndex,
             });
           }}
         />
-        <div
-          className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
-          onPointerEnter={(event) => {
-            setResizePreview(event, {
-              colIndex,
-              direction: 'bottom',
-              handleKey: bottomHandleKey,
-              rowIndex,
-            });
-          }}
-          onPointerLeave={() => {
-            clearResizePreview(bottomHandleKey);
-          }}
-          onPointerDown={(event) => {
-            startResize(event, {
-              colIndex,
-              direction: 'bottom',
-              handleKey: bottomHandleKey,
-              rowIndex,
-            });
-          }}
-        />
-        {isLeftHandle && (
-          <div
-            className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
-            onPointerEnter={(event) => {
-              setResizePreview(event, {
-                colIndex,
-                direction: 'left',
-                handleKey: leftHandleKey,
-                rowIndex,
-              });
-            }}
-            onPointerLeave={() => {
-              clearResizePreview(leftHandleKey);
-            }}
-            onPointerDown={(event) => {
-              startResize(event, {
-                colIndex,
-                direction: 'left',
-                handleKey: leftHandleKey,
-                rowIndex,
-              });
-            }}
-          />
-        )}
-      </div>
-    );
-  }
-);
-
-TableCellResizeControls.displayName = 'TableCellResizeControls';
+      )}
+    </div>
+  );
+}
 
 export const TableKit = [
   TablePlugin.configure({ component: TableElement }),

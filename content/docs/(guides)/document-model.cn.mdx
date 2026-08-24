@@ -32,7 +32,23 @@ type PersistedDocumentInput = {
 };
 ~~~
 
-defineDocumentMigrations 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema 修复前调用同一个 migrateDocument。Plate v55 依次运行 migratePlateV54 和 migratePlateV55；已有 v54 文档只运行 v55 步骤。
+应用 Schema 决定合法的元素类型、mark、属性、内容和 root。Plate 的标准非空段落语法
+不需要 `root`。使用已有的描述符感知内容构造器声明自定义主 root：
+
+~~~ts
+const EditorSchema = {
+  root: schema.content.element(SectionPlugin, { min: 1 }),
+} as const;
+~~~
+
+最小值必须显式提供正整数。描述符必须匹配已安装的插件；
+`schema.content.elements` 的第一个描述符是默认值。Root 语法参与 schema 指纹和生成的
+`Value`，基数仍由运行时校验。
+
+`defineDocumentMigrations` 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema
+适配前调用同一个 `migrateDocument`。命名 Schema 的 root 语法变化时，应递增版本并迁移
+已存储文档。Plate v55 依次运行 `migratePlateV54` 和 `migratePlateV55`；已有 v54 文档只
+运行 v55 步骤。
 
 ## 代表性功能结构
 

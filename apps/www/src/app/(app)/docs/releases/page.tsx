@@ -14,9 +14,6 @@ import {
 } from '@/lib/releases';
 import { ReleasePageContent } from './release-page-content';
 
-export const dynamic = 'force-static';
-export const revalidate = false;
-
 const title = 'Releases';
 const description = 'Latest updates and announcements.';
 const releases = releaseIndexData as ReleaseIndexRelease[];

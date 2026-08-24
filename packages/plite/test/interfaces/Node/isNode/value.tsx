@@ -7,4 +7,4 @@ export const input = {
   selection: null,
 };
 export const test = (value) => NodeApi.isNode(value);
-export const output = true;
+export const output = false;

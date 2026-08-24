@@ -38,7 +38,7 @@ export type OverridePluginUpdate = {
 /** Override the editor based on resolved Plate plugin node behavior. */
 export const OverridePlugin = defineBasePlugin('override', {
   update: ({ tx }): OverridePluginUpdate => {
-    const getDefaultBlock = () => {
+    const getDefaultRootBlock = () => {
       const defaultBlock = tx.schema.createDefaultRootChild();
 
       if (!ElementApi.isElement(defaultBlock)) {
@@ -49,8 +49,31 @@ export const OverridePlugin = defineBasePlugin('override', {
 
       return defaultBlock;
     };
+    const getDefaultBlockAt = (at: Path) => {
+      if (at.length <= 1) return getDefaultRootBlock();
+      const parent = tx.nodes.parent(at, { match: ElementApi.isElement })?.[0];
+      const defaultChild =
+        parent && typeof parent.type === 'string'
+          ? tx.schema.element(parent.type)?.content?.default
+          : null;
+
+      if (!defaultChild || defaultChild === 'text') {
+        throw new Error(
+          `Plate schema must declare a default block child for element "${parent?.type ?? 'unknown'}".`
+        );
+      }
+      const defaultBlock = tx.schema.create(defaultChild.type);
+
+      if (!ElementApi.isElement(defaultBlock)) {
+        throw new Error(
+          `Plate schema default child "${defaultChild.type}" must be an element.`
+        );
+      }
+
+      return defaultBlock;
+    };
     const resetBlock = (at: Path) => {
-      tx.blocks.reset(NodeApi.extractProps(getDefaultBlock()), { at });
+      tx.blocks.reset(NodeApi.extractProps(getDefaultBlockAt(at)), { at });
     };
     const insertExitBreak = () => {
       const selection = tx.selection();
@@ -61,7 +84,7 @@ export const OverridePlugin = defineBasePlugin('override', {
 
       if (!block) return false;
 
-      const defaultBlock = getDefaultBlock();
+      const defaultBlock = getDefaultRootBlock();
       const target = tx.nodes.above({
         at: block[1],
         match: (node, path) =>

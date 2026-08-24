@@ -90,7 +90,7 @@ export function SetupMCPDialog() {
               onClick={() => {
                 setOpen(false);
               }}
-              href="/docs/installation/mcp"
+              href={{ pathname: '/docs/installation/mcp' }}
             >
               Learn more about our MCP registry
             </Link>

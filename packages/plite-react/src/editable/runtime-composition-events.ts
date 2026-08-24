@@ -9,7 +9,10 @@ import {
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableCompositionKernel } from './editing-kernel';
 import { useEditableCompositionHandler } from './input-router';
-import type { EditableInputController } from './input-state';
+import {
+  type EditableInputController,
+  recordEditableInputIntent,
+} from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
 
 type CompositionHandler = (
@@ -48,7 +51,7 @@ export const useRuntimeCompositionEvents = ({
         event,
         inputController,
       });
-      inputController.state.activeIntent = decision.intent;
+      recordEditableInputIntent(inputController, decision.intent);
       trace.recordKernelEventTrace({
         family: 'compositionend',
         intent: decision.intent,
@@ -96,7 +99,7 @@ export const useRuntimeCompositionEvents = ({
         inputController,
       });
       if (decision.intent !== 'composition') {
-        inputController.state.activeIntent = decision.intent;
+        recordEditableInputIntent(inputController, decision.intent);
       }
       trace.recordKernelEventTrace({
         family: 'compositionstart',
@@ -139,7 +142,7 @@ export const useRuntimeCompositionEvents = ({
         inputController,
       });
       if (decision.intent !== 'composition') {
-        inputController.state.activeIntent = decision.intent;
+        recordEditableInputIntent(inputController, decision.intent);
       }
       trace.recordKernelEventTrace({
         family: 'compositionupdate',

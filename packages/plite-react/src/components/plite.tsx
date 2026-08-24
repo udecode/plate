@@ -143,7 +143,7 @@ const useCommittedChangeCallbackCell = <
 >(
   callbacks: PliteChangeCallbacks<V, TExtensions>
 ) => {
-  const [cell] = useState(() => ({ current: callbacks }));
+  const cell = useRef(callbacks);
 
   useInsertionEffect(() => {
     cell.current = callbacks;

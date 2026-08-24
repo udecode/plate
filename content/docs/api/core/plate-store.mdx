@@ -60,13 +60,10 @@ Function to render text nodes in the editor.
 ## Accessing the Store
 
 ```ts
-import { useEditor, useEditorPlugin, usePlateStore } from 'platejs/react'
+import { useEditorPlugin, usePlateStore } from 'platejs/react'
 
 // Direct store access
 const store = usePlateStore(id?) 
-
-// Via editor reference
-const store = useEditor().store
 
 // Via the plugin portal
 const store = useEditorPlugin(myPlugin).store

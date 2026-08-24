@@ -7,7 +7,7 @@ import type { PlateEditorReference } from '@platejs/core/react';
 import { NodeApi } from '@platejs/plite';
 import type { Element, Value } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import { BaseYjsPlugin } from '@platejs/yjs';
+import { BaseYjsPlugin } from '@platejs/yjs/plate';
 
 import {
   createTestTableEditor,

@@ -5,8 +5,6 @@ import { highlightFiles } from '@/lib/highlight-code';
 import { getRegistryItem } from '@/lib/rehype-utils';
 import { registry } from '@/registry/registry';
 
-export const dynamic = 'force-static';
-
 const ParamsSchema = z.object({
   name: z.string().min(1, 'Name parameter is required'),
 });

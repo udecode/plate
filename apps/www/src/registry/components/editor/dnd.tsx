@@ -352,179 +352,171 @@ function Gutter({
   );
 }
 
-const DragHandle = React.memo(
-  ({
-    isDragging,
-    previewRef,
-    resetPreview,
-    setPreviewTop,
-  }: {
-    isDragging: boolean;
-    previewRef: React.RefObject<HTMLDivElement | null>;
-    resetPreview: () => void;
-    setPreviewTop: (top: number) => void;
-  }) => {
-    const editor = useEditor();
-    const { api, read } = useEditorPlugin(BlockSelectionPlugin);
-    const element = useElement();
-    const list = editor.plugin(ListPlugin);
+function DragHandle({
+  isDragging,
+  previewRef,
+  resetPreview,
+  setPreviewTop,
+}: {
+  isDragging: boolean;
+  previewRef: React.RefObject<HTMLDivElement | null>;
+  resetPreview: () => void;
+  setPreviewTop: (top: number) => void;
+}) {
+  const editor = useEditor();
+  const { api, read } = useEditorPlugin(BlockSelectionPlugin);
+  const element = useElement();
+  const list = editor.plugin(ListPlugin);
 
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className="flex size-full items-center justify-center"
-            onClick={(e) => {
-              e.preventDefault();
-              api.focus();
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter' && event.key !== ' ') return;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex size-full items-center justify-center"
+          onClick={(e) => {
+            e.preventDefault();
+            api.focus();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
 
-              event.preventDefault();
-              api.focus();
-            }}
-            onMouseDown={(e) => {
-              resetPreview();
+            event.preventDefault();
+            api.focus();
+          }}
+          onMouseDown={(e) => {
+            resetPreview();
 
-              if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;
+            if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;
 
-              const blockSelection = read.getNodes({
-                sort: true,
-              });
+            const blockSelection = read.getNodes({
+              sort: true,
+            });
 
-              let selectionNodes =
-                blockSelection.length > 0
-                  ? blockSelection
-                  : editor.read((state) =>
-                      state.nodes.toArray({
-                        match: (node): node is PliteElement =>
-                          ElementApi.isElement(node) &&
-                          state.schema.isBlock(node),
-                        mode: 'highest',
-                      })
-                    );
+            let selectionNodes =
+              blockSelection.length > 0
+                ? blockSelection
+                : editor.read((state) =>
+                    state.nodes.toArray({
+                      match: (node): node is PliteElement =>
+                        ElementApi.isElement(node) &&
+                        state.schema.isBlock(node),
+                      mode: 'highest',
+                    })
+                  );
 
-              // If current block is not in selection, use it as the starting point
-              const elementNodeKey = editor.key(element);
+            // If current block is not in selection, use it as the starting point
+            const elementNodeKey = editor.key(element);
 
-              if (
-                !selectionNodes.some(
-                  ([node]) => editor.key(node) === elementNodeKey
-                )
-              ) {
-                const path = editor.read.nodes.path(element);
+            if (
+              !selectionNodes.some(
+                ([node]) => editor.key(node) === elementNodeKey
+              )
+            ) {
+              const path = editor.read.nodes.path(element);
 
-                if (!path) return;
-                selectionNodes = [[element, path]];
-              }
+              if (!path) return;
+              selectionNodes = [[element, path]];
+            }
 
-              // Process selection nodes to include list children
-              const blocks = (
-                list.installed &&
-                selectionNodes.some(
-                  ([node]) => typeof node.listType === 'string'
-                )
-                  ? list.read.expandItemsWithChildren(selectionNodes)
-                  : selectionNodes
-              ).map(([node]) => node);
+            // Process selection nodes to include list children
+            const blocks = (
+              list.installed &&
+              selectionNodes.some(([node]) => typeof node.listType === 'string')
+                ? list.read.expandItemsWithChildren(selectionNodes)
+                : selectionNodes
+            ).map(([node]) => node);
 
-              if (blockSelection.length === 0) {
-                editor.api.dom.blur();
-                editor.update.selection.clear();
-              }
+            if (blockSelection.length === 0) {
+              editor.api.dom.blur();
+              editor.update.selection.clear();
+            }
 
-              const elements = createDragPreviewElements(editor, blocks);
-              previewRef.current?.append(...elements);
-              previewRef.current?.classList.remove('hidden');
-              previewRef.current?.classList.add('opacity-0');
-              editor
-                .plugin(DndPlugin)
-                .store.set({ multiplePreviewRef: previewRef });
+            const elements = createDragPreviewElements(editor, blocks);
+            previewRef.current?.append(...elements);
+            previewRef.current?.classList.remove('hidden');
+            previewRef.current?.classList.add('opacity-0');
+            editor
+              .plugin(DndPlugin)
+              .store.set({ multiplePreviewRef: previewRef });
 
-              api.set(blocks.map((block) => editor.key(block)));
-            }}
-            onMouseEnter={() => {
-              if (isDragging) return;
+            api.set(blocks.map((block) => editor.key(block)));
+          }}
+          onMouseEnter={() => {
+            if (isDragging) return;
 
-              const blockSelection = read.getNodes({
-                sort: true,
-              });
+            const blockSelection = read.getNodes({
+              sort: true,
+            });
 
-              let selectedBlocks =
-                blockSelection.length > 0
-                  ? blockSelection
-                  : editor.read((state) =>
-                      state.nodes.toArray({
-                        match: (node): node is PliteElement =>
-                          ElementApi.isElement(node) &&
-                          state.schema.isBlock(node),
-                        mode: 'highest',
-                      })
-                    );
+            let selectedBlocks =
+              blockSelection.length > 0
+                ? blockSelection
+                : editor.read((state) =>
+                    state.nodes.toArray({
+                      match: (node): node is PliteElement =>
+                        ElementApi.isElement(node) &&
+                        state.schema.isBlock(node),
+                      mode: 'highest',
+                    })
+                  );
 
-              // If current block is not in selection, use it as the starting point
-              const elementNodeKey = editor.key(element);
+            // If current block is not in selection, use it as the starting point
+            const elementNodeKey = editor.key(element);
 
-              if (
-                !selectedBlocks.some(
-                  ([node]) => editor.key(node) === elementNodeKey
-                )
-              ) {
-                const path = editor.read.nodes.path(element);
+            if (
+              !selectedBlocks.some(
+                ([node]) => editor.key(node) === elementNodeKey
+              )
+            ) {
+              const path = editor.read.nodes.path(element);
 
-                if (!path) {
-                  setPreviewTop(0);
-                  return;
-                }
-                selectedBlocks = [[element, path]];
-              }
-
-              // Process selection to include list children
-              const processedBlocks =
-                list.installed &&
-                selectedBlocks.some(
-                  ([node]) => typeof node.listType === 'string'
-                )
-                  ? list.read.expandItemsWithChildren(selectedBlocks)
-                  : selectedBlocks;
-
-              const keys = processedBlocks.map(([block]) => editor.key(block));
-
-              if (keys.length > 1 && keys.includes(elementNodeKey)) {
-                const previewTop = calculatePreviewTop(editor, {
-                  blocks: processedBlocks.map((block) => block[0]),
-                  element,
-                });
-                setPreviewTop(previewTop);
-              } else {
+              if (!path) {
                 setPreviewTop(0);
+                return;
               }
-            }}
-            onMouseUp={() => {
-              resetPreview();
-            }}
-            data-plate-prevent-deselect
-            role="button"
-            tabIndex={0}
-          >
-            <GripVertical className="text-muted-foreground" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>Drag to move</TooltipContent>
-      </Tooltip>
-    );
-  }
-);
+              selectedBlocks = [[element, path]];
+            }
 
-DragHandle.displayName = 'DragHandle';
+            // Process selection to include list children
+            const processedBlocks =
+              list.installed &&
+              selectedBlocks.some(([node]) => typeof node.listType === 'string')
+                ? list.read.expandItemsWithChildren(selectedBlocks)
+                : selectedBlocks;
 
-const DropLine = React.memo(
-  ({
-    className,
-    dropLine,
-    ...props
-  }: React.ComponentProps<'div'> & { dropLine: DropLineDirection }) => (
+            const keys = processedBlocks.map(([block]) => editor.key(block));
+
+            if (keys.length > 1 && keys.includes(elementNodeKey)) {
+              const previewTop = calculatePreviewTop(editor, {
+                blocks: processedBlocks.map((block) => block[0]),
+                element,
+              });
+              setPreviewTop(previewTop);
+            } else {
+              setPreviewTop(0);
+            }
+          }}
+          onMouseUp={() => {
+            resetPreview();
+          }}
+          data-plate-prevent-deselect
+          role="button"
+          tabIndex={0}
+        >
+          <GripVertical className="text-muted-foreground" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>Drag to move</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function DropLine({
+  className,
+  dropLine,
+  ...props
+}: React.ComponentProps<'div'> & { dropLine: DropLineDirection }) {
+  return (
     <div
       {...props}
       aria-hidden
@@ -539,10 +531,8 @@ const DropLine = React.memo(
       )}
       contentEditable={false}
     />
-  )
-);
-
-DropLine.displayName = 'DropLine';
+  );
+}
 
 const createDragPreviewElements = (
   editor: PlateEditor,

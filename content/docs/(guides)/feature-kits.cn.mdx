@@ -69,3 +69,22 @@ const editor = createPlateEditor({
 - **定制UI**：不使用[Plate UI](/docs/installation/plate-ui)组件时
 - **精简配置**：仅需套件中一两个插件时
 - **学习目的**：需要理解插件协作机制时
+
+## 注册表名称
+
+套件导出组合值。注册表项和文件使用功能名称，并直接安装到
+`components/editor`。
+
+| 注册表项 | 安装内容 |
+| --- | --- |
+| `basic-nodes` | `BasicNodesKit`、`BasicBlocksKit` 和 `BasicMarksKit` 的依赖项。 |
+| `table` | `TableKit` 和表格 UI 组件。 |
+| `media` | 不包含媒体上传 API route 的 `MediaKit`。 |
+| `media-uploadthing` | `media` 以及 UploadThing API route。 |
+| `editor-plugins` | 完整的可编辑 editor kit。 |
+| `editor-plugins-static` | 完整的 static/base kit。 |
+
+`editor-plugins` 只安装手写的 `EditorKit` 源码。应用需要精确生成的
+`Editor` 或 `Value` contract 时，应从已定制的 plugin module 生成，并在 CI
+中运行 `plate generate --check <entry>`。参阅
+[精确的生成编辑器类型](/docs/editor#精确的生成编辑器类型)。

@@ -173,6 +173,31 @@ describe('compilePlateHtmlCodec', () => {
     ]);
   });
 
+  it('wraps root inline HTML in the structural application root without document padding', () => {
+    const SectionPlugin = defineBasePlugin('htmlApplicationSection', {
+      schema: {
+        element: {
+          content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [SectionPlugin],
+      schema: {
+        root: schema.content.element(SectionPlugin, { min: 2 }),
+      },
+    });
+
+    expect(
+      editor.api.html.deserialize({ element: '<span>Root text</span>' })
+    ).toEqual([
+      {
+        children: [{ children: [{ text: 'Root text' }], type: 'paragraph' }],
+        type: 'htmlApplicationSection',
+      },
+    ]);
+  });
+
   it('materializes each unmatched root block with its applicable properties', () => {
     const AlignPlugin = defineBasePlugin('rootAlign', {
       schema: () => ({

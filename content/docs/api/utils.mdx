@@ -77,6 +77,11 @@ export function getImageUrl(element: ImageElement) {
 Use `ElementOf<typeof Plugin>` for one descriptor-owned element shape and
 `ValueOf<Editor>` for the complete installed document vocabulary.
 
+The `Editor` below is generated from the app's authored plugin module; it is
+not installed by `@plate/editor-plugins`. Follow
+[Exact Generated Editor Types](/docs/editor#exact-generated-editor-types) and
+enforce `plate generate --check <entry>` in CI.
+
 ```ts title="Derive an editor value"
 import type { ValueOf } from 'platejs';
 import type { Editor } from '@/components/editor/plugins.generated';

@@ -5,7 +5,6 @@ import React, {
   type Ref,
   useCallback,
   useContext,
-  useRef,
 } from 'react';
 
 import {
@@ -87,6 +86,23 @@ const sameMarks = (
     )
   );
 };
+
+const getTextRenderIdentity = ({
+  marks,
+  revision,
+  text,
+}: {
+  marks: Omit<PliteTextNode, 'text'>;
+  revision: number;
+  text: string;
+}) =>
+  JSON.stringify([
+    revision,
+    text,
+    Object.keys(marks)
+      .sort()
+      .map((key) => [key, (marks as Record<string, unknown>)[key]]),
+  ]);
 
 const samePath = (left: Path | null, right: Path | null) =>
   left === right ||
@@ -368,7 +384,7 @@ type RenderEditableTextProps<T> = EditableTextProps<T> & {
   projections: ReadonlyArray<PliteProjectionSlice<T>>;
   resolvedMarks: Omit<PliteTextNode, 'text'>;
   resolvedText: string;
-  renderRevision?: number;
+  renderRevision?: number | string;
 };
 
 const RenderEditableText = <T,>({
@@ -656,31 +672,17 @@ const RevisionedProjectedEditableText = <T,>({
     ? getTextMarks(currentText)
     : projectedText.resolvedMarks;
   const resolvedText = currentText?.text ?? projectedText.resolvedText;
-  const renderIdentity = useRef<{
-    revision: number;
-    sourceRevision: number;
-    sourceText: string;
-  } | null>(null);
-  const previousRenderIdentity = renderIdentity.current;
-
-  const nextRenderIdentity =
-    !previousRenderIdentity ||
-    previousRenderIdentity.sourceRevision !== projectedText.renderRevision ||
-    previousRenderIdentity.sourceText !== resolvedText
-      ? {
-          revision: (previousRenderIdentity?.revision ?? -1) + 1,
-          sourceRevision: projectedText.renderRevision,
-          sourceText: resolvedText,
-        }
-      : previousRenderIdentity;
-
-  renderIdentity.current = nextRenderIdentity;
+  const renderIdentity = getTextRenderIdentity({
+    marks: resolvedMarks,
+    revision: projectedText.renderRevision,
+    text: resolvedText,
+  });
 
   return (
     <RenderEditableText
       {...props}
       nodeKey={nodeKey}
-      renderRevision={nextRenderIdentity.revision}
+      renderRevision={renderIdentity}
       resolvedMarks={resolvedMarks}
       resolvedText={resolvedText}
     />

@@ -93,6 +93,7 @@ test('owns focused packed proof for Plite package boundaries', () => {
       '@platejs/plite-dom',
       '@platejs/plite-react',
       '@platejs/plite-layout',
+      '@platejs/core',
       '@platejs/yjs',
     ]
   );
@@ -102,6 +103,21 @@ test('owns focused packed proof for Plite package boundaries', () => {
   }
 
   assert.match(boundaryBuild, /--package-boundaries-only/);
+});
+
+test('proves each Yjs entrypoint in an isolated packed consumer', () => {
+  const source = readFileSync(
+    new URL('check-plite-release-artifacts.mjs', import.meta.url),
+    'utf-8'
+  );
+
+  for (const specifier of [
+    "specifiers: ['@platejs/yjs']",
+    "specifiers: ['@platejs/yjs/react']",
+    "specifiers: ['@platejs/yjs/plate']",
+  ]) {
+    assert.equal(source.includes(specifier), true, specifier);
+  }
 });
 
 test('materializes an isolated dependency closure and rejects forbidden transitives', () => {
@@ -150,6 +166,74 @@ test('materializes an isolated dependency closure and rejects forbidden transiti
         'utf-8'
       ),
       `${JSON.stringify({ name: 'allowed', version: '1.0.0' })}\n`
+    );
+  } finally {
+    rmSync(fixture, { force: true, recursive: true });
+  }
+});
+
+test('nests requested optional peer versions in isolated consumers', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'plite-boundary-versions-'));
+  const sourceNodeModules = join(fixture, 'source', 'node_modules');
+  const destinationNodeModules = join(fixture, 'consumer', 'node_modules');
+
+  try {
+    for (const [directory, manifest] of [
+      [
+        join(sourceNodeModules, 'parent'),
+        {
+          name: 'parent',
+          peerDependencies: { shared: '2.0.0' },
+          peerDependenciesMeta: { shared: { optional: true } },
+          version: '1.0.0',
+        },
+      ],
+      [join(sourceNodeModules, 'shared'), { name: 'shared', version: '1.0.0' }],
+      [
+        join(sourceNodeModules, 'node_modules', 'shared'),
+        { name: 'shared', version: '2.0.0' },
+      ],
+    ]) {
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(
+        join(directory, 'package.json'),
+        `${JSON.stringify(manifest)}\n`
+      );
+    }
+
+    materializeResolvedDependencyClosure({
+      destinationNodeModules,
+      forbiddenPackages: [],
+      requests: [
+        { fromDirectory: join(fixture, 'source'), name: 'shared' },
+        { fromDirectory: join(fixture, 'source'), name: 'parent' },
+      ],
+      requiredOptionalPackages: ['shared'],
+    });
+
+    assert.equal(
+      JSON.parse(
+        readFileSync(
+          join(destinationNodeModules, 'shared', 'package.json'),
+          'utf-8'
+        )
+      ).version,
+      '1.0.0'
+    );
+    assert.equal(
+      JSON.parse(
+        readFileSync(
+          join(
+            destinationNodeModules,
+            'parent',
+            'node_modules',
+            'shared',
+            'package.json'
+          ),
+          'utf-8'
+        )
+      ).version,
+      '2.0.0'
     );
   } finally {
     rmSync(fixture, { force: true, recursive: true });
@@ -220,6 +304,7 @@ test('keeps packed consumer diagnostics and ignores linked dependency noise', ()
   const consumerDirectory = '/repo/.tmp/release/consumer';
   const output = [
     'node_modules/@platejs/yjs/dist/index.d.ts(3,10): error TS2305: Missing export.',
+    'node_modules/@platejs/core/dist/index.d.ts(7,12): error TS2304: Dependency noise.',
     '../../../node_modules/playwright/types.d.ts(4,17): error TS1540: External syntax.',
     '../../../packages/core/dist/index.d.ts(4,15): error TS2834: Linked dependency.',
     'error TS2688: Cannot find type definition file for node.',
@@ -227,6 +312,16 @@ test('keeps packed consumer diagnostics and ignores linked dependency noise', ()
 
   assert.equal(
     filterTypeScriptConsumerDiagnostics(output, consumerDirectory),
+    [
+      'node_modules/@platejs/yjs/dist/index.d.ts(3,10): error TS2305: Missing export.',
+      'node_modules/@platejs/core/dist/index.d.ts(7,12): error TS2304: Dependency noise.',
+      'error TS2688: Cannot find type definition file for node.',
+    ].join('\n')
+  );
+  assert.equal(
+    filterTypeScriptConsumerDiagnostics(output, consumerDirectory, [
+      '@platejs/yjs',
+    ]),
     [
       'node_modules/@platejs/yjs/dist/index.d.ts(3,10): error TS2305: Missing export.',
       'error TS2688: Cannot find type definition file for node.',

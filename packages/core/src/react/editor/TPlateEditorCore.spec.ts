@@ -1,19 +1,20 @@
-import { property, createEditor } from '@platejs/plite';
+import { property, schema, createEditor } from '@platejs/plite';
 import { createReactEditor } from '@platejs/plite-react';
 
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
-import {
-  plateDOMExtension,
-  plateReactExtension,
-} from '../../internal/plugin/plateNativeExtensions';
 import { createBaseEditor } from '../../lib/editor/withPlite';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
+import { plateDOMExtension } from '../../lib/plugins/dom/plateDOMExtension.internal';
 import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
+import { getPlateCorePlugins } from './getPlateCorePlugins';
 import { createPlateEditor } from './withPlate';
 
 describe('PlateEditor core package', () => {
+  const ReactPlugin = getPlateCorePlugins()[1];
+
   const MyCustomPlugin = defineBasePlugin('myCustom', {
     api: () => ({ myCustomMethod: () => {} }),
   });
@@ -71,9 +72,42 @@ describe('PlateEditor core package', () => {
     expect(
       Reflect.apply(editor.extension, editor, [plateDOMExtension]).api
     ).toBe(editor.api.dom);
-    expect(
-      Reflect.apply(editor.extension, editor, [plateReactExtension]).api
-    ).toBe(editor.api.react);
+    expect(Reflect.apply(editor.extension, editor, [ReactPlugin]).api).toBe(
+      editor.api.react
+    );
+  });
+
+  it('keeps the paragraph shortcut valid inside a structural application root', () => {
+    const HeadingPlugin = definePlatePlugin('applicationHeading', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const SectionPlugin = definePlatePlugin('applicationSection', {
+      schema: {
+        element: {
+          content: schema.content.elements([HeadingPlugin, ParagraphPlugin], {
+            min: 1,
+          }),
+        },
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [HeadingPlugin, SectionPlugin],
+      schema: {
+        root: schema.content.element(SectionPlugin, { min: 1 }),
+      },
+    });
+
+    editor.update.selection.set({ offset: 0, path: [0, 0, 0] });
+    getPlateRuntime(editor).shortcuts['paragraph.toggle']?.handler?.({
+      editor,
+    } as never);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ children: [{ text: '' }], type: 'paragraph' }],
+        type: 'applicationSection',
+      },
+    ]);
   });
 
   it('reconfigures an existing React editor onto the canonical Plate graph', () => {
@@ -84,9 +118,9 @@ describe('PlateEditor core package', () => {
     expect(
       Reflect.apply(editor.extension, editor, [plateDOMExtension]).api
     ).toBe(editor.api.dom);
-    expect(
-      Reflect.apply(editor.extension, editor, [plateReactExtension]).api
-    ).toBe(editor.api.react);
+    expect(Reflect.apply(editor.extension, editor, [ReactPlugin]).api).toBe(
+      editor.api.react
+    );
   });
 
   describe('Core Plugins', () => {

@@ -96,6 +96,58 @@ export const getActiveRootGroupIds = (
 const sameStringSet = (left: ReadonlySet<string>, right: ReadonlySet<string>) =>
   left.size === right.size && [...left].every((value) => right.has(value));
 
+type MountedRootGroupState = {
+  documentEpoch: number | null;
+  groupIds: ReadonlySet<string>;
+  planKey: string | null;
+};
+
+const EMPTY_MOUNTED_ROOT_GROUP_STATE: MountedRootGroupState = {
+  documentEpoch: null,
+  groupIds: new Set(),
+  planKey: null,
+};
+
+const reconcileMountedRootGroupState = ({
+  activeGroupIds,
+  documentEpoch,
+  groups,
+  planKey,
+  previous,
+}: {
+  activeGroupIds: ReadonlySet<string>;
+  documentEpoch: number;
+  groups: readonly EditableRootGroupRecord[] | null;
+  planKey: string | null;
+  previous: MountedRootGroupState;
+}): MountedRootGroupState => {
+  if (!groups || !planKey) {
+    return previous.documentEpoch == null &&
+      previous.planKey == null &&
+      previous.groupIds.size === 0
+      ? previous
+      : EMPTY_MOUNTED_ROOT_GROUP_STATE;
+  }
+
+  const validGroupIds = new Set(groups.map((group) => group.groupId));
+  const nextGroupIds =
+    previous.documentEpoch === documentEpoch
+      ? new Set(
+          [...previous.groupIds].filter((groupId) => validGroupIds.has(groupId))
+        )
+      : new Set<string>();
+
+  for (const groupId of activeGroupIds) {
+    nextGroupIds.add(groupId);
+  }
+
+  return previous.documentEpoch === documentEpoch &&
+    previous.planKey === planKey &&
+    sameStringSet(previous.groupIds, nextGroupIds)
+    ? previous
+    : { documentEpoch, groupIds: nextGroupIds, planKey };
+};
+
 export const getRootGroupIdsForBoundary = (
   groups: readonly EditableRootGroupRecord[] | null,
   boundary: DOMCoverageBoundary,
@@ -139,20 +191,22 @@ export const useMountedRootGroupIds = ({
   groups: readonly EditableRootGroupRecord[] | null;
   planKey: string | null;
 }) => {
-  const [mountedState, setMountedState] = React.useState<{
-    documentEpoch: number | null;
-    groupIds: ReadonlySet<string>;
-    planKey: string | null;
-  }>(() => ({
-    documentEpoch: null,
-    groupIds: new Set(),
-    planKey: null,
-  }));
+  const [mountedState, setMountedState] = React.useState<MountedRootGroupState>(
+    EMPTY_MOUNTED_ROOT_GROUP_STATE
+  );
+  const reconciledMountedState = reconcileMountedRootGroupState({
+    activeGroupIds,
+    documentEpoch,
+    groups,
+    planKey,
+    previous: mountedState,
+  });
 
-  const mountedGroupIds =
-    mountedState.documentEpoch === documentEpoch
-      ? mountedState.groupIds
-      : new Set<string>();
+  if (reconciledMountedState !== mountedState) {
+    setMountedState(reconciledMountedState);
+  }
+
+  const mountedGroupIds = reconciledMountedState.groupIds;
   const mountGroupIds = React.useCallback(
     (groupIds: readonly string[]) => {
       if (!planKey || groupIds.length === 0) {
@@ -182,42 +236,6 @@ export const useMountedRootGroupIds = ({
     },
     [documentEpoch, planKey]
   );
-
-  React.useEffect(() => {
-    if (!groups || !planKey) {
-      setMountedState((previous) =>
-        previous.documentEpoch == null &&
-        previous.planKey == null &&
-        previous.groupIds.size === 0
-          ? previous
-          : { documentEpoch: null, groupIds: new Set(), planKey: null }
-      );
-
-      return;
-    }
-
-    setMountedState((previous) => {
-      const validGroupIds = new Set(groups.map((group) => group.groupId));
-      const nextGroupIds =
-        previous.documentEpoch === documentEpoch
-          ? new Set(
-              [...previous.groupIds].filter((groupId) =>
-                validGroupIds.has(groupId)
-              )
-            )
-          : new Set<string>();
-
-      for (const groupId of activeGroupIds) {
-        nextGroupIds.add(groupId);
-      }
-
-      return previous.documentEpoch === documentEpoch &&
-        previous.planKey === planKey &&
-        sameStringSet(previous.groupIds, nextGroupIds)
-        ? previous
-        : { documentEpoch, groupIds: nextGroupIds, planKey };
-    });
-  }, [activeGroupIds, documentEpoch, groups, planKey]);
 
   return { activeGroupIds, mountedGroupIds, mountGroupIds };
 };

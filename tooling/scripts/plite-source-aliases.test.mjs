@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import { plitePackages, repoRoot } from './check-plite.mjs';
+import { createTypeAwareLintSteps } from './lint-type-aware.mjs';
 
 const require = createRequire(import.meta.url);
 const {
@@ -28,7 +29,7 @@ test('workspace source entries cover every public runtime entry exactly once', (
   for (const specifier of [
     '@platejs/core/react',
     '@platejs/plite/internal',
-    '@platejs/yjs/core',
+    '@platejs/yjs/plate',
     'platejs/react',
   ]) {
     assert.equal(specifiers.has(specifier), true, specifier);
@@ -123,6 +124,42 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
   assert.doesNotMatch(rootManifest.scripts['plite:typecheck'], /--parallel/);
 });
 
+test('type-aware lint prepares exact package declarations before Oxlint', () => {
+  const rootManifest = JSON.parse(
+    readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
+  );
+  const steps = createTypeAwareLintSteps({ root: repoRoot });
+
+  assert.equal(
+    rootManifest.scripts['lint:type-aware'],
+    'node tooling/scripts/lint-type-aware.mjs'
+  );
+  assert.deepEqual(steps[0].args, ['g:build']);
+  assert.deepEqual(steps[1].args, [
+    '--type-aware',
+    '--report-unused-disable-directives-severity=error',
+    '.',
+  ]);
+  assert.equal(
+    steps[1].args.some((arg) => arg.startsWith('--tsconfig')),
+    false
+  );
+
+  const windowsSteps = createTypeAwareLintSteps({
+    platform: 'win32',
+    root: repoRoot,
+  });
+
+  assert.equal(windowsSteps[0].command, 'pnpm.cmd');
+  assert.equal(windowsSteps[0].shell, true);
+  assert.match(windowsSteps[1].command, /oxlint\.cmd$/);
+  assert.equal(windowsSteps[1].shell, true);
+  assert.equal(
+    steps.every((step) => !step.shell),
+    true
+  );
+});
+
 test('every Plite package typechecks against workspace source', () => {
   for (const { root } of plitePackages) {
     const manifest = JSON.parse(
@@ -173,4 +210,9 @@ test('type-test fixtures resolve the Plite React internal entry from source', ()
     config.compilerOptions.paths['@platejs/plite-react/internal'],
     ['../../packages/plite-react/src/internal/index.ts']
   );
+  assert.deepEqual(config.compilerOptions.paths['@udecode/*'], [
+    '../../packages/udecode/*/src/index.ts',
+    '../../packages/udecode/*/src/index.tsx',
+    '../../packages/udecode/*/src',
+  ]);
 });

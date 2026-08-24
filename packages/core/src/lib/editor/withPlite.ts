@@ -363,17 +363,10 @@ const normalizeBaseInitialValue = <V extends Value>(
       : currentValue;
   }
 
-  const defaultChild = editor.read.schema.createDefaultRootChild();
-
-  if (!defaultChild) {
-    throw new Error('Plate schema must declare a default primary-root child.');
-  }
+  const document = editor.read.schema.fitDocument(currentValue);
 
   return {
-    document: {
-      ...currentValue,
-      children: [defaultChild] as unknown as V,
-    },
+    document,
     schema: editor.read.schema.identity(),
   };
 };
@@ -440,10 +433,12 @@ const createPlateSchemaExtensions = (
 ) => {
   const definition = {
     groups: model.contribution.groups ?? {},
-    root: createPlateBlockContent({
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
+    root:
+      applicationSchema?.root ??
+      createPlateBlockContent({
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
   };
   const identity = identityOptions
     ? defineEditorSchema(`schema:${identityOptions.id}`, {
@@ -471,7 +466,7 @@ const createPlateSchemaExtensions = (
   );
   const applicationSchemaExtension = applicationSchema
     ? defineExtension(`schema:application:${applicationName ?? 'editor'}`, {
-        schema: applicationSchema,
+        schema: applicationSchema.contribution,
       })
     : undefined;
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
@@ -525,7 +520,7 @@ const createPlateConfiguration = (
     );
     const model = applyEditorApplicationSchema(
       authoredModel,
-      applicationSchema
+      applicationSchema?.contribution
     );
     const modelExtensions = createPlateSchemaExtensions(
       editor,

@@ -317,11 +317,13 @@ const createPlainVerticalLargeDocumentExtension = ({
 const resolveVisualLineTargetPoint = ({
   editor,
   point,
+  preferredX,
   preferredXPoint,
   reverse,
 }: {
   editor: ReactRuntimeEditor;
   point: Point;
+  preferredX?: number;
   preferredXPoint?: Point | null;
   reverse: boolean;
 }): Point | null => {
@@ -374,7 +376,8 @@ const resolveVisualLineTargetPoint = ({
 
     const targetRect = targetLine ?? currentLine;
     const targetX = clamp(
-      preferredXRect?.left ??
+      preferredX ??
+        preferredXRect?.left ??
         resolvePointCaretRect(editor, point)?.left ??
         pointRect.left,
       targetRect.left + 1,
@@ -590,6 +593,7 @@ const getSingleTextInTopLevelBlock = ({
 const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
   blockIndex,
   editor,
+  preferredX,
   preferredXPoint,
   reverse,
   sourceLineHost,
@@ -597,6 +601,7 @@ const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
 }: {
   blockIndex: number;
   editor: ReactRuntimeEditor;
+  preferredX?: number;
   preferredXPoint?: Point | null;
   reverse: boolean;
   sourceLineHost: HTMLElement;
@@ -615,7 +620,12 @@ const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
   const sourceRect = resolvePointProbeRect(editor, sourcePoint);
   const sourceCaretRect = resolvePointCaretRect(editor, sourcePoint);
 
-  if (!preferredXRect && !sourceCaretRect && !sourceRect) {
+  if (
+    preferredX == null &&
+    !preferredXRect &&
+    !sourceCaretRect &&
+    !sourceRect
+  ) {
     return null;
   }
 
@@ -627,6 +637,7 @@ const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
     sourceHost: sourceLineHost,
     text: adjacentText.text,
     x:
+      preferredX ??
       preferredXRect?.left ??
       sourceCaretRect?.left ??
       (sourceRect ?? failInvariant('Expected value to be defined')).left,
@@ -640,12 +651,14 @@ const resolveMeasuredAdjacentBlockVisualLineTargetPoint = ({
 const resolveAdjacentBlockVisualLineTargetPoint = ({
   blockIndex,
   editor,
+  preferredX,
   preferredXPoint,
   reverse,
   sourcePoint,
 }: {
   blockIndex: number;
   editor: ReactRuntimeEditor;
+  preferredX?: number;
   preferredXPoint?: Point | null;
   reverse: boolean;
   sourcePoint: Point;
@@ -672,6 +685,7 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
         ? resolveMeasuredAdjacentBlockVisualLineTargetPoint({
             blockIndex,
             editor,
+            preferredX,
             preferredXPoint,
             reverse,
             sourceLineHost,
@@ -702,12 +716,18 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
     const sourceRect = resolvePointProbeRect(editor, sourcePoint);
     const sourceCaretRect = resolvePointCaretRect(editor, sourcePoint);
 
-    if (!preferredXRect && !sourceCaretRect && !sourceRect) {
+    if (
+      preferredX == null &&
+      !preferredXRect &&
+      !sourceCaretRect &&
+      !sourceRect
+    ) {
       return null;
     }
 
     const targetX = clamp(
-      preferredXRect?.left ??
+      preferredX ??
+        preferredXRect?.left ??
         sourceCaretRect?.left ??
         (sourceRect ?? failInvariant('Expected value to be defined')).left,
       targetLine.left + 1,
@@ -725,6 +745,7 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
         ? resolveMeasuredAdjacentBlockVisualLineTargetPoint({
             blockIndex,
             editor,
+            preferredX,
             preferredXPoint,
             reverse,
             sourceLineHost,
@@ -747,12 +768,14 @@ export const getPlainVerticalLargeDocumentExtension = ({
   editor,
   event,
   forceModelMovement = false,
+  preferredX,
   selection = editor.read((state) => state.selection()),
 }: {
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
   event: VerticalExtensionEvent;
   forceModelMovement?: boolean;
+  preferredX?: number;
   selection?: Range | null;
 }): PlainVerticalDOMCoverageExtension | null => {
   const reverse = getPlainVerticalExtensionReverse(event);
@@ -818,6 +841,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
       resolveVisualLineTargetPoint({
         editor,
         point: selection.focus,
+        preferredX,
         preferredXPoint,
         reverse,
       })
@@ -848,6 +872,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
           resolveAdjacentBlockVisualLineTargetPoint({
             blockIndex: reverse ? focusBlockIndex - 1 : focusBlockIndex + 1,
             editor,
+            preferredX,
             preferredXPoint,
             reverse,
             sourcePoint: selection.focus,
@@ -929,6 +954,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
         resolveAdjacentBlockVisualLineTargetPoint({
           blockIndex: reverse ? focusBlockIndex - 1 : focusBlockIndex + 1,
           editor,
+          preferredX,
           preferredXPoint,
           reverse,
           sourcePoint: selection.focus,

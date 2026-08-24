@@ -15,6 +15,7 @@ import {
   useEditableInputHandler,
 } from './input-router';
 import {
+  clearEditablePendingRootDOMInput,
   type RepairDOMInput,
   type EditableInputController,
   runTrackedEditableCompositionMutation,
@@ -182,7 +183,7 @@ export const useRuntimeInputEvents = ({
           : null;
 
       if (pendingRootDOMInput) {
-        inputController.state.pendingRootDOMInput = null;
+        clearEditablePendingRootDOMInput(inputController);
       }
       const skipNativeTextInputRepair =
         compositionEndPending || rootHandledDOMInput;

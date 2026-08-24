@@ -16,10 +16,6 @@ type ReleaseMajorPageProps = {
   }>;
 };
 
-export const dynamic = 'force-static';
-export const dynamicParams = false;
-export const revalidate = false;
-
 const releases = releaseIndexData as ReleaseIndexRelease[];
 const olderMajorGroups = getOlderReleaseMajorGroups(releases);
 const plateUiChangesByTag = getPlateUiReleaseChangesByTag();

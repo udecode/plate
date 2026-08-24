@@ -1297,7 +1297,7 @@ export const editorNodes: Registry['items'] = [
       examples: ['media-demo', 'media-pro'],
     },
     name: 'media-placeholder',
-    registryDependencies: ['@plate/uploadthing'],
+    registryDependencies: ['@plate/uploadthing', '@plate/use-object-url'],
     title: 'Media Placeholder',
     type: 'registry:component',
   },

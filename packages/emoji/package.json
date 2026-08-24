@@ -48,8 +48,7 @@
     "@platejs/combobox": "workspace:*",
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
-    "@platejs/utils": "workspace:^",
-    "react-compiler-runtime": "^1.0.0"
+    "@platejs/utils": "workspace:^"
   },
   "devDependencies": {
     "@emoji-mart/data": "^1.2.1",

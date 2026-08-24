@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import RichTextExample from '../../../../www/src/app/(app)/examples/plite/_examples/richtext';
 
@@ -83,6 +90,22 @@ const EVENT_FAMILIES = [
   'paste',
 ] as const;
 const TRACE_LIMIT = 500;
+
+const subscribeHydration = () => () => {};
+const getHydratedSnapshot = () => true;
+const getServerHydratedSnapshot = () => false;
+const getEditorRootSnapshot = () =>
+  document.querySelector<HTMLElement>('[data-plite-editor="true"]');
+const getServerEditorRootSnapshot = () => null;
+const subscribeEditorRoot = (onStoreChange: () => void) => {
+  const observer = new MutationObserver(onStoreChange);
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return () => {
+    observer.disconnect();
+  };
+};
 
 const readDeviceMetadata = () => {
   if (typeof window === 'undefined') return null;
@@ -194,37 +217,32 @@ const createSnapshot = (
 };
 
 export function MobileLabClient() {
-  const [capturedAt, setCapturedAt] = useState('');
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    getHydratedSnapshot,
+    getServerHydratedSnapshot
+  );
+
+  if (!hydrated) return null;
+
+  return <HydratedMobileLabClient />;
+}
+
+function HydratedMobileLabClient() {
+  const [{ capturedAt, device }] = useState(() => ({
+    capturedAt: new Date().toISOString(),
+    device: readDeviceMetadata(),
+  }));
   const [capturing, setCapturing] = useState(true);
-  const [device, setDevice] =
-    useState<ReturnType<typeof readDeviceMetadata>>(null);
   const [events, setEvents] = useState<readonly LabEvent[]>([]);
   const [snapshots, setSnapshots] = useState<readonly LabSnapshot[]>([]);
-  const [root, setRoot] = useState<HTMLElement | null>(null);
+  const root = useSyncExternalStore(
+    subscribeEditorRoot,
+    getEditorRootSnapshot,
+    getServerEditorRootSnapshot
+  );
   const frameRef = useRef<number | null>(null);
   const snapshotsRef = useRef<readonly LabSnapshot[]>([]);
-
-  useEffect(() => {
-    setCapturedAt(new Date().toISOString());
-    setDevice(readDeviceMetadata());
-
-    const findRoot = () => {
-      const next = document.querySelector<HTMLElement>(
-        '[data-plite-editor="true"]'
-      );
-
-      if (next) setRoot(next);
-    };
-
-    findRoot();
-    const observer = new MutationObserver(findRoot);
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   const storeSnapshot = useCallback((snapshot: LabSnapshot) => {
     const next = [...snapshotsRef.current, snapshot].slice(-TRACE_LIMIT);

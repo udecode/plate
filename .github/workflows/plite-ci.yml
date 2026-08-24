@@ -182,6 +182,9 @@ jobs:
       - name: Typecheck www Plite adopters
         run: pnpm --filter www exec tsc --noEmit -p tsconfig.package-integration.json
 
+      - name: Install Chromium
+        run: pnpm plite:browser:install chromium
+
       - name: Test packages
         run: pnpm plite:test
 

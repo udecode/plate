@@ -98,7 +98,7 @@ describe('createPlateStore', () => {
 
     expect(result.current.editor).toBe(editor);
     expect(result.current.activeEditor).toBe(editor);
-    expect(result.current.editor.store.store).toBe(result.current.store.store);
+    expect(result.current.store.store).toBeDefined();
     expect(result.current.selection).toEqual(editor.read.selection());
     expect(result.current.value).toEqual(editor.read.children());
 
@@ -155,7 +155,6 @@ describe('createPlateStore', () => {
 
     expect(result.current.editor).toBe(editor);
     expect(result.current.value).toEqual(value);
-    expect(result.current.editor.store).toBeDefined();
     expect(editor.read.selection()).toEqual({
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },

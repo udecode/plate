@@ -1,7 +1,107 @@
 {
   "schemaVersion": 1,
   "components": {
-    "dnd": ["2026-08-20-demand-driven-dnd", "2026-08-17-flat-editor-registry"],
+    "editor-plugins": [
+      "2026-08-24-keep-editor-contracts-app-owned",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-18-separate-document-migrations",
+      "2026-08-17-automatic-document-migrations",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "font-color-toolbar-button": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-03-use-schema-handles",
+      "2026-07-24-configurable-color-controls",
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
+      "2025-11-20-biome-ultracite"
+    ],
+    "math": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-placeholder": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-18-inline-registry-hooks",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "plate-to-html": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-23-explicit-editor-kit-composition",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "use-object-url": ["2026-08-24-react-compiler-owned-editor-state"],
+    "table": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "use-chat": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-13-ai-request-refs",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ai-menu": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-03-use-schema-handles",
+      "2026-07-31-simplify-ai-chat-source-commands",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "column": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "dnd": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-20-demand-driven-dnd",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "editor": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-03-use-schema-handles",
+      "2026-07-24-own-editor-presentation",
+      "2026-06-15-editor-fix-preserved-space-wrapping",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "emoji-picker": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-inline-registry-hooks",
+      "2026-08-17-colocate-editor-component-families"
+    ],
+    "inline-combobox": [
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-12-15-add-option-editor-collaborative-features",
+      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
+      "2025-11-20-biome-ultracite"
+    ],
     "version-history-demo": [
       "2026-08-20-format-version-history-values",
       "2026-08-13-fix-registry-install-dependencies",
@@ -20,12 +120,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families",
       "2025-11-20-biome-ultracite"
-    ],
-    "media-placeholder": [
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-18-inline-registry-hooks",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "media-embed": [
       "2026-08-20-improve-editor-control-accessibility",
@@ -85,15 +179,7 @@
       "2026-08-18-align-v55-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "math": [
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "math-static": [
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "column": [
       "2026-08-18-align-v55-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
@@ -102,22 +188,8 @@
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
-    "table": [
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "list": [
       "2026-08-18-align-v55-ast-contracts",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "editor-plugins": [
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-18-separate-document-migrations",
-      "2026-08-17-automatic-document-migrations",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
@@ -139,10 +211,6 @@
     ],
     "find-replace-demo": ["2026-08-18-fix-editor-runtime-interactions"],
     "uploadthing": ["2026-08-18-inline-registry-hooks"],
-    "emoji-picker": [
-      "2026-08-18-inline-registry-hooks",
-      "2026-08-17-colocate-editor-component-families"
-    ],
     "fixed-toolbar": [
       "2026-08-18-isolate-docx-file-io",
       "2026-08-17-flat-editor-registry",
@@ -171,15 +239,6 @@
     "callout": [
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "inline-combobox": [
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-12-15-add-option-editor-collaborative-features",
-      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
-      "2025-11-20-biome-ultracite"
     ],
     "floating-toolbar": [
       "2026-08-17-colocate-editor-component-families",
@@ -230,12 +289,6 @@
     "copilot": [
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "plate-to-html": [
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-23-explicit-editor-kit-composition",
-      "2026-07-23-rich-media-caption-children"
     ],
     "basic-blocks": [
       "2026-08-17-finalize-v54-ast-profile",
@@ -338,27 +391,9 @@
     "tabbable": ["2026-08-17-flat-editor-registry"],
     "toc": ["2026-08-17-flat-editor-registry"],
     "toggle": ["2026-08-17-flat-editor-registry"],
-    "editor": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-03-use-schema-handles",
-      "2026-07-24-own-editor-presentation",
-      "2026-06-15-editor-fix-preserved-space-wrapping",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "editor-static": [
       "2026-08-17-flat-editor-registry",
       "2026-06-15-editor-fix-preserved-space-wrapping"
-    ],
-    "ai-menu": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-03-use-schema-handles",
-      "2026-07-31-simplify-ai-chat-source-commands",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
     ],
     "ai-toolbar-button": ["2026-08-17-flat-editor-registry"],
     "align-toolbar-button": ["2026-08-17-flat-editor-registry"],
@@ -383,17 +418,6 @@
       "2026-07-23-rich-media-caption-children"
     ],
     "caption-static": ["2026-08-17-flat-editor-registry"],
-    "font-color-toolbar-button": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-03-use-schema-handles",
-      "2026-07-24-configurable-color-controls",
-      "2026-07-24-feature-toolbar-plugin-portals",
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
-      "2025-11-20-biome-ultracite"
-    ],
     "comment-toolbar-button": [
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
@@ -746,13 +770,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state",
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
-      "2025-11-20-biome-ultracite"
-    ],
-    "use-chat": [
-      "2026-08-13-ai-request-refs",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
     ],
     "heading-node": [

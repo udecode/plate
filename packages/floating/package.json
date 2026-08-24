@@ -50,8 +50,7 @@
     "@platejs/plite": "workspace:^",
     "@platejs/plite-react": "workspace:^",
     "@udecode/react-utils": "workspace:^",
-    "@udecode/utils": "workspace:^",
-    "react-compiler-runtime": "^1.0.0"
+    "@udecode/utils": "workspace:^"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*"

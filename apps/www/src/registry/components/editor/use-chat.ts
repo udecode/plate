@@ -94,14 +94,13 @@ const getSelectedTableCells = (editor: PlateEditor): unknown[] => {
 
 function createChatTransport({
   api,
-  abortControllerRef,
   editor,
 }: {
   api: string;
-  abortControllerRef: React.RefObject<AbortController | null>;
   editor: PlateEditor;
 }) {
-  return new DefaultChatTransport({
+  let abortController: AbortController | null = null;
+  const transport = new DefaultChatTransport({
     api,
     // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: (async (input, init) => {
@@ -178,8 +177,9 @@ function createChatTransport({
           sample = null;
         }
 
-        const abortController = new AbortController();
-        abortControllerRef.current = abortController;
+        const requestAbortController = new AbortController();
+
+        abortController = requestAbortController;
 
         await new Promise((resolve) => {
           setTimeout(resolve, 400);
@@ -188,7 +188,7 @@ function createChatTransport({
         const stream = fakeStreamText({
           editor,
           sample,
-          signal: abortController.signal,
+          signal: requestAbortController.signal,
         });
 
         const response = new Response(stream, {
@@ -204,6 +204,14 @@ function createChatTransport({
       return res;
     }) as typeof fetch,
   });
+
+  return {
+    abortFakeStream: () => {
+      abortController?.abort();
+      abortController = null;
+    },
+    transport,
+  };
 }
 
 export const useChat = () => {
@@ -211,20 +219,10 @@ export const useChat = () => {
   const markdownApi = editor.plugin(MarkdownPlugin).api;
   const options = usePluginStore(AIChatTransportPlugin, 'chatOptions');
 
-  // remove when you implement the route /api/ai/command
-  const abortControllerRef = React.useRef<AbortController | null>(null);
-  const _abortFakeStream = React.useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-  }, []);
-
-  const transport = React.useMemo(
+  const chatTransport = React.useMemo(
     () =>
       createChatTransport({
         api: options.api || '/api/ai/command',
-        abortControllerRef,
         editor,
       }),
     [editor, options.api]
@@ -232,7 +230,7 @@ export const useChat = () => {
 
   const baseChat = useBaseChat<ChatMessage>({
     id: 'editor',
-    transport,
+    transport: chatTransport.transport,
     onData(data) {
       if (data.type === 'data-toolName') {
         editor
@@ -339,7 +337,7 @@ export const useChat = () => {
     ...baseChat,
     stop: async () => {
       await baseChat.stop();
-      _abortFakeStream();
+      chatTransport.abortFakeStream();
     },
   };
   const publishChat = React.useEffectEvent(() => {
@@ -348,7 +346,7 @@ export const useChat = () => {
 
   React.useEffect(() => {
     publishChat();
-  }, [chat.status, chat.messages, chat.error, _abortFakeStream]);
+  }, [chat.status, chat.messages, chat.error, chatTransport]);
 
   return chat;
 };

@@ -1,8 +1,10 @@
 import { failInvariant } from '@platejs/plite/internal';
 
 const CSS_BREAK_WHITESPACE_PATTERN = /^[\t\n\f\r ]+$/;
+const BLOCK_EDGE_HIT_SLOP = 16;
 const STRING_EDGE_HIT_SLOP = 3;
 const VISUAL_LINE_TOLERANCE = 2;
+const VERTICAL_NAVIGATION_CARET_WIDTH = 1;
 
 export type DOMGeometryAssociation = 'backward' | 'forward';
 
@@ -40,6 +42,16 @@ export const getRectVerticalCenterDistance = (rect: DOMRect, y: number) =>
 
 export const getRectHorizontalDistance = (rect: DOMRect, x: number) =>
   x < rect.left ? rect.left - x : x > rect.right ? x - rect.right : 0;
+
+export const getVerticalNavigationCaretX = ({
+  boundaryX,
+  containerX,
+}: {
+  boundaryX: number;
+  containerX: number;
+}) =>
+  containerX +
+  Math.round(boundaryX - containerX - VERTICAL_NAVIGATION_CARET_WIDTH / 2);
 
 const getPliteStringRectCandidates = ({
   event,
@@ -793,22 +805,43 @@ const getAdjacentGrapheme = (
     : { edge: 'start' as const, end: nextEnd, start: boundary };
 };
 
-const getNativeDOMPointAtCoordinates = (
+const getCaretPositionDOMPointAtCoordinates = (
+  document: Document,
+  x: number,
+  y: number
+): DOMGeometryPoint | null => {
+  const position = document.caretPositionFromPoint?.(x, y);
+
+  return position ? [position.offsetNode, position.offset] : null;
+};
+
+const getCaretRangeDOMPointAtCoordinates = (
   document: Document,
   x: number,
   y: number
 ): DOMGeometryPoint | null => {
   // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit exposes caretRangeFromPoint instead of the standard caretPositionFromPoint API.
-  if (document.caretRangeFromPoint) {
+  if (typeof document.caretRangeFromPoint === 'function') {
     // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Call the WebKit API only after its runtime presence check.
     const range = document.caretRangeFromPoint(x, y);
 
     return range ? [range.startContainer, range.startOffset] : null;
   }
 
-  const position = document.caretPositionFromPoint?.(x, y);
+  return null;
+};
 
-  return position ? [position.offsetNode, position.offset] : null;
+const getNativeDOMPointAtCoordinates = (
+  document: Document,
+  x: number,
+  y: number
+): DOMGeometryPoint | null => {
+  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] A present WebKit caret API owns the result, including null, instead of falling through to different hit-testing semantics.
+  if (typeof document.caretRangeFromPoint === 'function') {
+    return getCaretRangeDOMPointAtCoordinates(document, x, y);
+  }
+
+  return getCaretPositionDOMPointAtCoordinates(document, x, y);
 };
 
 const isPointInside = (point: DOMGeometryPoint, host: Element) => {
@@ -917,6 +950,67 @@ const getRootEdgeCoordinatePlacement = ({
   }
 
   return null;
+};
+
+const getTopLevelElement = (root: HTMLElement, string: HTMLElement) => {
+  const element = string.closest<HTMLElement>(
+    '[data-plite-node="element"][data-plite-path]:not([data-plite-path*=","])'
+  );
+  const owner = element?.closest<HTMLElement>('[data-plite-editor="true"]');
+
+  return element && owner === root ? element : null;
+};
+
+const getBlockEdgeCoordinatePlacement = ({
+  root,
+  strings,
+  x,
+  y,
+}: {
+  root: HTMLElement;
+  strings: HTMLElement[];
+  x: number;
+  y: number;
+}): PliteStringCoordinatePlacement => {
+  const candidates = Array.from(
+    new Set(strings.map((string) => getTopLevelElement(root, string)))
+  )
+    .filter((element): element is HTMLElement => element !== null)
+    .flatMap((element, order) => {
+      const rect = element.getBoundingClientRect();
+      const verticalDistance = getRectVerticalDistance(rect, y);
+
+      if (
+        verticalDistance === 0 ||
+        verticalDistance > BLOCK_EDGE_HIT_SLOP ||
+        x < rect.left ||
+        x > rect.right
+      ) {
+        return [];
+      }
+
+      return [{ element, order, rect, verticalDistance }];
+    })
+    .sort(
+      (left, right) =>
+        left.verticalDistance - right.verticalDistance ||
+        left.order - right.order
+    );
+  const nearest = candidates[0];
+
+  if (!nearest) return null;
+
+  const blockStrings = strings.filter(
+    (string) => getTopLevelElement(root, string) === nearest.element
+  );
+  const edge = y < nearest.rect.top ? 'start' : 'end';
+  const string = edge === 'start' ? blockStrings[0] : blockStrings.at(-1);
+  const rects = string
+    ? Array.from(string.getClientRects()).filter(hasUsableDOMRect)
+    : [];
+  const rect = edge === 'start' ? rects[0] : rects.at(-1);
+
+  return string && rect ? { edge, rect, source: 'string-edge', string } : null;
 };
 
 const getStringPlacementDOMPoint = (
@@ -1060,7 +1154,6 @@ const getTextOffsetInVisualLineByX = ({
   const offsets = getGraphemeBoundaryOffsets(text);
   const range = textNode.ownerDocument.createRange();
   const direction = getElementDirection(textNode.parentElement);
-  const hitX = Math.floor(x);
   let best: { distance: number; offset: number } | null = null;
 
   for (let index = 0; index < offsets.length - 1; index++) {
@@ -1077,12 +1170,12 @@ const getTextOffsetInVisualLineByX = ({
       const startX = direction === 'rtl' ? rect.right : rect.left;
       const endX = direction === 'rtl' ? rect.left : rect.right;
 
-      if (hitX >= rect.left && hitX <= rect.right) {
+      if (x >= rect.left && x <= rect.right) {
         return direction === 'rtl'
-          ? hitX > midpoint
+          ? x > midpoint
             ? start
             : end
-          : hitX <= midpoint
+          : x <= midpoint
             ? start
             : end;
       }
@@ -1091,7 +1184,7 @@ const getTextOffsetInVisualLineByX = ({
         { offset: start, x: startX },
         { offset: end, x: endX },
       ]) {
-        const distance = Math.abs(candidate.x - hitX);
+        const distance = Math.abs(candidate.x - x);
 
         if (!best || distance < best.distance) {
           best = { distance, offset: candidate.offset };
@@ -1242,7 +1335,9 @@ export const createDOMGeometryKernel = ({
         event: { clientX: x, clientY: y },
         includeInsideString,
         strings,
-      }) ?? getRootEdgeCoordinatePlacement({ root, strings, x, y })
+      }) ??
+      getBlockEdgeCoordinatePlacement({ root, strings, x, y }) ??
+      getRootEdgeCoordinatePlacement({ root, strings, x, y })
     );
   };
 
@@ -1429,6 +1524,26 @@ export const createDOMGeometryKernel = ({
     );
   };
 
+  const verticalNavigationX = (point: DOMGeometryPoint): number | null => {
+    const host = visualLineHost(point);
+    const boundary = pointRect(point);
+
+    if (!host || !boundary) return null;
+
+    const container = host.getBoundingClientRect();
+
+    if (!Number.isFinite(container.left) || !Number.isFinite(boundary.left)) {
+      return null;
+    }
+
+    // Bar-caret navigation uses the rounded leading edge of the painted caret;
+    // a collapsed DOM Range exposes the unrounded insertion boundary instead.
+    return getVerticalNavigationCaretX({
+      boundaryX: boundary.left,
+      containerX: container.left,
+    });
+  };
+
   const pointInVisualLine = ({
     host,
     line,
@@ -1513,12 +1628,12 @@ export const createDOMGeometryKernel = ({
     const sourceRect = sourceHost.getBoundingClientRect();
 
     copyTextMeasurementStyles(sourceHost, probe);
+    probe.style.color = 'transparent';
     probe.style.contain = 'layout style paint';
     probe.style.left = `${sourceRect.left}px`;
     probe.style.pointerEvents = 'none';
     probe.style.position = 'fixed';
     probe.style.top = '0';
-    probe.style.visibility = 'hidden';
     probe.style.width = `${sourceRect.width}px`;
     probe.append(textNode);
     document.body.append(probe);
@@ -1531,7 +1646,13 @@ export const createDOMGeometryKernel = ({
       const lines = groupVisualLineRects(getUsableRangeRects(range));
       const line = edge === 'start' ? lines[0] : lines.at(-1);
 
-      return line ? getTextOffsetInVisualLineByX({ line, textNode, x }) : null;
+      if (!line) return null;
+
+      return getTextOffsetInVisualLineByX({
+        line,
+        textNode,
+        x,
+      });
     } finally {
       probe.remove();
     }
@@ -1546,6 +1667,7 @@ export const createDOMGeometryKernel = ({
     pointInVisualLine,
     pointRect,
     rangeRect,
+    verticalNavigationX,
     visualLineHost,
     visualLines,
   };

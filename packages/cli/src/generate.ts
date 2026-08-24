@@ -249,15 +249,11 @@ const bundleEditor = async (
       contents: `import * as editorModule from 'plate:editor';
 import { createBaseEditor } from '@platejs/core';
 import {
-  compileEditorApplicationSchema,
   getPlateRuntime,
   isNominalPluginDescriptor,
 } from '@platejs/core/internal';
 import { createEditorSchemaContract } from '@platejs/plite';
-import {
-  compileEditorSchemaContributions,
-  getCompiledEditorSchema,
-} from '@platejs/plite/internal';
+import { getCompiledEditorSchema } from '@platejs/plite/internal';
 
 const entryLabel = ${JSON.stringify(`Plate editor entry "${entryPath}"`)};
 const exports = Object.entries(editorModule);
@@ -283,11 +279,11 @@ if (pluginCandidates.length !== 1) {
 const [pluginExportName, plugins] = pluginCandidates[0];
 const baseEditor = createBaseEditor({ plugins, skipInitialization: true });
 const baseRuntime = getPlateRuntime(baseEditor);
-const schemaFields = new Set(['id', 'overrides', 'properties', 'version']);
+const schemaFields = new Set(['id', 'overrides', 'properties', 'root', 'version']);
+const isRecord = (value) =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 const looksLikeApplicationSchema = (value) => {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return false;
-  }
+  if (!isRecord(value)) return false;
   const keys = Object.keys(value);
 
   if (
@@ -300,35 +296,27 @@ const looksLikeApplicationSchema = (value) => {
         typeof value.version !== 'number')) ||
     (value.overrides !== undefined && !Array.isArray(value.overrides)) ||
     (value.properties !== undefined &&
-      (typeof value.properties !== 'object' ||
-        value.properties === null ||
-        Array.isArray(value.properties)))
+      (!isRecord(value.properties) ||
+        Object.values(value.properties).some(
+          (property) => !isRecord(property)
+        )))
   ) {
     return false;
   }
 
   return true;
 };
-const schemaCandidates = exports.flatMap(([name, value]) => {
-  if (!looksLikeApplicationSchema(value)) return [];
+const schemaCandidates = exports
+  .filter(([, value]) => looksLikeApplicationSchema(value))
+  .map(([name, value]) => {
+    const candidateEditor = createBaseEditor({
+      plugins,
+      schema: value,
+      skipInitialization: true,
+    });
 
-  try {
-    compileEditorSchemaContributions([
-      {
-        contribution: baseRuntime.model.contribution,
-        extensionName: 'plate:plugins',
-      },
-      {
-        contribution: compileEditorApplicationSchema(baseRuntime.model, value),
-        extensionName: 'plate:application',
-      },
-    ]);
-
-    return [[name, value]];
-  } catch {
-    return [];
-  }
-});
+    return [name, value, candidateEditor];
+  });
 
 if (schemaCandidates.length > 1) {
   throw new TypeError(
@@ -340,13 +328,7 @@ if (schemaCandidates.length > 1) {
   );
 }
 const applicationSchema = schemaCandidates[0]?.[1];
-const editor = applicationSchema
-  ? createBaseEditor({
-      plugins,
-      schema: applicationSchema,
-      skipInitialization: true,
-    })
-  : baseEditor;
+const editor = schemaCandidates[0]?.[2] ?? baseEditor;
 const runtime = applicationSchema ? getPlateRuntime(editor) : baseRuntime;
 const schema = createEditorSchemaContract(getCompiledEditorSchema(editor));
 

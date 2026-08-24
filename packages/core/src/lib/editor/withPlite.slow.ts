@@ -18,6 +18,7 @@ import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorP
 import {
   AffinityPlugin,
   type BaseEditor,
+  BaseParagraphPlugin,
   defineBasePlugin,
   createBaseEditor,
   DebugPlugin,
@@ -68,6 +69,165 @@ const TextBlockElement = {
 
 describe('createPlateEditor', () => {
   describe('application schema', () => {
+    it('constructs an application-owned structural root', () => {
+      const SectionPlugin = defineBasePlugin('applicationSection', {
+        schema: {
+          element: {
+            content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: [SectionPlugin],
+        schema: {
+          root: schema.content.element(SectionPlugin, { min: 1 }),
+        },
+      });
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [{ children: [{ text: '' }], type: 'paragraph' }],
+          type: 'applicationSection',
+        },
+      ]);
+      expect(() =>
+        editor.read.schema.assertDocument(editor.read.value())
+      ).not.toThrow();
+    });
+
+    it('preserves the omitted application root exactly', () => {
+      const editor = createBaseEditor();
+
+      expect(editor.read.schema.identity()).toMatchObject({
+        fingerprint: 'fnv1a64:4164b9dbcdccb294',
+        kind: 'derived',
+      });
+      expect(editor.read.schema.createDefaultRootChild()).toEqual({
+        children: [{ text: '' }],
+        type: 'paragraph',
+      });
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: '' }], type: 'paragraph' },
+      ]);
+    });
+
+    it('constructs every required application root child', () => {
+      const editor = createBaseEditor({
+        schema: {
+          root: schema.content.element(BaseParagraphPlugin, { min: 2 }),
+        },
+      });
+
+      expect(editor.read.children()).toEqual([
+        { children: [{ text: '' }], type: 'paragraph' },
+        { children: [{ text: '' }], type: 'paragraph' },
+      ]);
+    });
+
+    it('lowers a multi-element root default through persisted type overrides', () => {
+      const CardPlugin = defineBasePlugin('applicationRootCard', {
+        schema: {
+          element: {
+            ...TextBlockElement,
+            type: 'authored_application_root_card',
+          },
+        },
+      });
+      const editor = createBaseEditor({
+        plugins: [CardPlugin],
+        schema: {
+          overrides: [
+            schema.override(CardPlugin, {
+              element: { type: 'persisted_application_root_card' },
+            }),
+          ],
+          root: schema.content.elements([CardPlugin, BaseParagraphPlugin], {
+            min: 1,
+          }),
+        },
+      });
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [{ text: '' }],
+          type: 'persisted_application_root_card',
+        },
+      ]);
+      editor.update.nodes.insert(
+        { children: [{ text: 'next' }], type: 'paragraph' },
+        { at: [1] }
+      );
+      expect(editor.read.children()[1]).toEqual({
+        children: [{ text: 'next' }],
+        type: 'paragraph',
+      });
+    });
+
+    it('rejects invalid application root minima', () => {
+      for (const min of [-1, 0, 1.5, Number.NaN]) {
+        const root = {
+          ...schema.content.element(BaseParagraphPlugin, { min: 1 }),
+          min,
+        } as never;
+
+        expect(() =>
+          createBaseEditor({
+            schema: {
+              root,
+            },
+            skipInitialization: true,
+          })
+        ).toThrow(
+          'Editor application schema root min must be a positive integer.'
+        );
+      }
+    });
+
+    it('rejects malformed application roots instead of treating them as omitted', () => {
+      for (const root of [null, false, 0, {}]) {
+        expect(() =>
+          createBaseEditor({
+            schema: { root } as never,
+            skipInitialization: true,
+          })
+        ).toThrow(
+          'Editor application schema root min must be a positive integer.'
+        );
+      }
+    });
+
+    it('rejects invalid application root descriptors', () => {
+      const InstalledPlugin = defineBasePlugin('applicationRootFamily', {
+        schema: { element: TextBlockElement },
+      });
+      const ForeignPlugin = defineBasePlugin('applicationRootFamily', {
+        schema: { element: TextBlockElement },
+      });
+      const BehaviorPlugin = defineBasePlugin('applicationRootBehavior', {});
+
+      expect(() =>
+        createBaseEditor({
+          plugins: [InstalledPlugin],
+          schema: {
+            root: schema.content.element(ForeignPlugin, { min: 1 }),
+          },
+          skipInitialization: true,
+        })
+      ).toThrow(
+        'Editor schema relationship descriptor "applicationRootFamily" does not match the installed plugin family.'
+      );
+      expect(() =>
+        createBaseEditor({
+          schema: {
+            root: schema.content.element(BehaviorPlugin, { min: 1 }),
+          },
+          skipInitialization: true,
+        })
+      ).toThrow(
+        'Editor schema relationship references missing element plugin "applicationRootBehavior".'
+      );
+    });
+
     it('publishes declared schema lineage', () => {
       const CalloutPlugin = defineBasePlugin('generatedCallout', {
         schema: { element: schema.element.textBlock() },

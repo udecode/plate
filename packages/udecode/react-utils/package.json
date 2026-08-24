@@ -43,8 +43,7 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "@udecode/utils": "workspace:*",
-    "clsx": "^2.1.1",
-    "react-compiler-runtime": "^1.0.0"
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*"

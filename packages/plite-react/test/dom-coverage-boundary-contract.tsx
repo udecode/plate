@@ -14,6 +14,7 @@ import {
   DOMCoverageSelfBoundary,
 } from '../src/components/dom-coverage-boundary';
 import { isPliteReactDevelopmentEnvironment } from '../src/components/editable-text-blocks';
+import { createLargeBoundarySurface } from './render-probes/dom-coverage-render-probe';
 
 const createNestedChildren = (): Descendant[] => [
   {
@@ -961,45 +962,11 @@ describe('DOM coverage private boundary harness', () => {
       selection: null,
     });
 
-    const Surface = ({ hidden }: { hidden: boolean }) => (
-      <Plite editor={editor}>
-        <Editable
-          id="dom-coverage-large-boundary-expand"
-          renderElement={({ children, element }) => {
-            const text = NodeApi.string(element);
-
-            if (text.startsWith('Hidden item ')) {
-              renderCounts.hiddenItems += 1;
-            }
-
-            if (text === 'Outside sibling') {
-              renderCounts.outsideSibling += 1;
-            }
-
-            if (element.type === 'section') {
-              const childNodes = React.Children.toArray(children);
-
-              return (
-                <EditableElement>
-                  {childNodes[0]}
-                  <DOMCoverageBoundaryRange
-                    boundaryId="large-section-body"
-                    content={childNodes.slice(1)}
-                    from={1}
-                    hidden={hidden}
-                    to={hiddenCount}
-                  >
-                    Large body collapsed
-                  </DOMCoverageBoundaryRange>
-                </EditableElement>
-              );
-            }
-
-            return <EditableElement>{children}</EditableElement>;
-          }}
-        />
-      </Plite>
-    );
+    const Surface = createLargeBoundarySurface({
+      editor,
+      hiddenCount,
+      renderCounts,
+    });
 
     const rendered = render(<Surface hidden />);
 

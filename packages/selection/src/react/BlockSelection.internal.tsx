@@ -31,6 +31,10 @@ const syncBlockSelectionFocus = (
   }
 };
 
+const subscribeMounted = () => () => {};
+const getMountedSnapshot = () => true;
+const getServerMountedSnapshot = () => false;
+
 const toMutableSelectionTargets = (
   value: readonly SelectionAreaTarget[] | SelectionAreaTarget | undefined
 ): SelectionAreaTarget[] | SelectionAreaTarget | undefined =>
@@ -314,15 +318,14 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   useSelectionArea(selectionAreaElement);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const [isMounted, setIsMounted] = React.useState(false);
+  const isMounted = React.useSyncExternalStore(
+    subscribeMounted,
+    getMountedSnapshot,
+    getServerMountedSnapshot
+  );
 
   React.useEffect(() => {
-    setIsMounted(true);
     store.set({ shadowInputRef: inputRef });
-
-    return () => {
-      setIsMounted(false);
-    };
   }, [store]);
 
   React.useEffect(() => {

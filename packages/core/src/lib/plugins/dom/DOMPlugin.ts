@@ -12,8 +12,8 @@ import type {
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
-import { plateDOMExtension } from '../../../internal/plugin/plateNativeExtensions';
 import { defineBasePlugin, type DefinitionOf } from '../../plugin';
+import { plateDOMExtension } from './plateDOMExtension.internal';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
 

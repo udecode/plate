@@ -10,3 +10,20 @@ description: \@platejs/utils 的 API 参考文档。
 | Hook | 返回值 | 用途 |
 | --- | --- | --- |
 | `useSelectionFragmentProp(options?)` | `unknown` | 从选择内容读取一个属性。 |
+
+## 类型工具
+
+使用 `ElementOf<typeof Plugin>` 获取单个 descriptor 拥有的 element shape，
+使用 `ValueOf<Editor>` 获取已安装 editor 的完整文档词汇表。
+
+下方的 `Editor` 从应用手写的 plugin module 生成，而不是由
+`@plate/editor-plugins` 安装。按照
+[精确的生成编辑器类型](/docs/editor#精确的生成编辑器类型)生成 contract，并在
+CI 中强制执行 `plate generate --check <entry>`。
+
+```ts title="推导编辑器值"
+import type { ValueOf } from 'platejs';
+import type { Editor } from '@/components/editor/plugins.generated';
+
+type MyValue = ValueOf<Editor>;
+```

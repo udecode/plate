@@ -85,7 +85,7 @@ export default function RSCPage() {
       <H3>Example: Generating Markdown in a React Server Component</H3>
       <P className="mb-8">
         Here's the output of Plate{' '}
-        <Link href="/docs/markdown">
+        <Link href={{ pathname: '/docs/markdown' }}>
           generating Markdown from a Plate value
         </Link>{' '}
         within a React Server Component:

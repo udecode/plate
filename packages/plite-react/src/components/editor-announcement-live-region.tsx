@@ -4,11 +4,13 @@ import {
   type EditorCommit,
   type Value,
 } from '@platejs/plite';
-import React, { useRef, useState } from 'react';
+import React, {
+  type CSSProperties,
+  useMemo,
+  useSyncExternalStore,
+} from 'react';
 
-import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-
-const visuallyHiddenStyle: React.CSSProperties = {
+const visuallyHiddenStyle: CSSProperties = {
   border: 0,
   clipPath: 'inset(50%)',
   height: 1,
@@ -39,6 +41,39 @@ const getCommitAnnouncement = <V extends Value>(
   return messages.length > 0 ? messages.join(' ') : null;
 };
 
+const createEditorAnnouncementStore = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>
+) => {
+  let announcement: Announcement | null = null;
+  let lastCommitVersion = editor.read.lastCommit()?.version ?? 0;
+
+  const getSnapshot = () => announcement;
+  const subscribe = (listener: () => void) => {
+    const onCommit = (commit: EditorCommit<V>) => {
+      if (commit.version <= lastCommitVersion) return;
+
+      lastCommitVersion = commit.version;
+      const message = getCommitAnnouncement(commit);
+
+      if (message === null) return;
+
+      announcement = { commitVersion: commit.version, message };
+      listener();
+    };
+    const unsubscribe = editor.subscribeCommit(onCommit);
+    const latestCommit = editor.read.lastCommit();
+
+    if (latestCommit) onCommit(latestCommit);
+
+    return unsubscribe;
+  };
+
+  return { getSnapshot, subscribe };
+};
+
 /** One polite live region owned by a logical Plite React editor runtime. */
 export const EditorAnnouncementLiveRegion = <
   V extends Value,
@@ -48,36 +83,12 @@ export const EditorAnnouncementLiveRegion = <
 }: {
   editor: Editor<V, TExtensions>;
 }) => {
-  const lastEditorRef = useRef(editor);
-  const lastCommitVersionRef = useRef(editor.read.lastCommit()?.version ?? 0);
-  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
-
-  if (lastEditorRef.current !== editor) {
-    lastEditorRef.current = editor;
-    lastCommitVersionRef.current = editor.read.lastCommit()?.version ?? 0;
-  }
-
-  useIsomorphicLayoutEffect(() => {
-    setAnnouncement(null);
-
-    const onCommit = (commit: EditorCommit<V>) => {
-      lastCommitVersionRef.current = commit.version;
-
-      const message = getCommitAnnouncement(commit);
-
-      if (message === null) return;
-
-      setAnnouncement({ commitVersion: commit.version, message });
-    };
-    const unsubscribe = editor.subscribeCommit(onCommit);
-    const latestCommit = editor.read.lastCommit();
-
-    if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
-      onCommit(latestCommit);
-    }
-
-    return unsubscribe;
-  }, [editor]);
+  const store = useMemo(() => createEditorAnnouncementStore(editor), [editor]);
+  const announcement = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
+  );
 
   return (
     <span

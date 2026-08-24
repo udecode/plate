@@ -402,6 +402,55 @@ describe('feature toolbar plugin portals', () => {
     expect(recentColorsChangeMock).toHaveBeenCalledWith(['#112233', '#445566']);
   });
 
+  it('uses the latest color callback after a parent rerender', async () => {
+    const firstRecentColorsChange = mock();
+    const secondRecentColorsChange = mock();
+    const colors = [
+      {
+        isBrightColor: false,
+        name: 'brand blue',
+        value: '#112233',
+      },
+    ];
+
+    currentEditor.read.marks = () => ({});
+    currentEditor.read.selection = () => ({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    });
+    pluginMock.mockReturnValue({
+      name: 'color',
+      read: { value: () => currentEditor.read.marks().color },
+      update: { clear: clearMock, set: setMock },
+    });
+    const { FontColorToolbarButton } = await import(
+      `./font-color-toolbar-button?callback=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <FontColorToolbarButton
+        colors={colors}
+        onRecentColorsChange={firstRecentColorsChange}
+        plugin={FontColorPlugin}
+      >
+        C
+      </FontColorToolbarButton>
+    );
+
+    view.rerender(
+      <FontColorToolbarButton
+        colors={colors}
+        onRecentColorsChange={secondRecentColorsChange}
+        plugin={FontColorPlugin}
+      >
+        C
+      </FontColorToolbarButton>
+    );
+    fireEvent.click(view.getByRole('gridcell', { name: 'brand blue' }));
+
+    expect(firstRecentColorsChange).not.toHaveBeenCalled();
+    expect(secondRecentColorsChange).toHaveBeenCalledWith(['#112233']);
+  });
+
   it('clears text color through the installed plugin portal', async () => {
     const preventDefaultMock = mock();
 
