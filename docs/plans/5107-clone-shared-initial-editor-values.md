@@ -92,10 +92,10 @@ Blocked condition:
 Task state:
 - task_type: ordinary one-shot regression bug
 - task_complexity: normal / non-trivial / measurable
-- current_phase: verification
+- current_phase: closeout
 - current_phase_status: complete
-- next_phase: PR and tracker sync
-- goal_status: active
+- next_phase: none
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -230,7 +230,7 @@ Completion Gates:
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: only implementation and test file added; no exported/public file or barrel layout changed |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifest, lockfile, or dependency change; lodash already belongs to core |
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no agent rule or skill change |
-| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All commands ran in `/Users/zbeyens/git/plate`; Browser used local www route from that checkout; GitHub sync remains pending |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Commands ran in `/Users/zbeyens/git/plate`; Browser used its local www route; `gh` created/read back PR #5110 and synced issue #5107 |
 | Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Final bundled Browser run loaded `/docs/examples/editable-voids`, found 2 editable roots, entered nested text, and logged zero errors |
 | Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Interaction/console proof recorded; screenshot N/A because no layout or visual-state claim |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no `templates/**` change; final status lists only four intended files |
@@ -241,15 +241,15 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling surface changed |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no invalid hook, mixed React, or unrelated persistent install failure; temporary dev errors came from concurrent full rebuild and disappeared after stable restart |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | `.agents/skills/autoreview/scripts/autoreview --mode local --parallel-tests "pnpm check" --stream-engine-output` exited clean with zero findings and 0.84 confidence |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | Full `pnpm check` passed before commit/push; PR #5110 created against `main` with the verified branch and final task handoff |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | `gh pr view 5110 --json body` confirms auto-release block, #5107 line, confidence, exact table header, required sections, and no PR self-link |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no screenshot needed for non-visual behavior; PR will use command/interaction proof |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| Tracker sync-back | yes | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Commented on #5107 with PR #5110, exact root cause, fix boundary, and QA proof: https://github.com/udecode/plate/issues/5107#issuecomment-5396604747 |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Completed below with exact PR, issue, confidence, tests, browser, outcome, caveat, design, and body readback |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `pnpm lint:fix` passed; formatted the new test; subsequent `pnpm check` lint passed with one pre-existing sidebar warning and zero errors |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Searches/reads were scoped; stopping the concurrently rebuilding dev server emitted oversized buffered logs once, tool truncated them, and recovery used a stable restart plus 4k caps with no further broad output |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5107-clone-shared-initial-editor-values.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5107-clone-shared-initial-editor-values.md` | Final run after ledger closure: pass |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -257,8 +257,8 @@ Phase / pass table:
 | Intake and source read | complete | issue/comments, rules, current owners, prior learning, Slate source, exact red repro | implementation |
 | Implementation | complete | static arrays cloned once inside `usePlateEditor`; focused test green; patch changeset added | verification |
 | Verification | complete | 852 core tests, focused test, package/full typecheck, lint, full check, browser smoke, and autoreview all clean | PR / tracker sync |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| PR / tracker sync | complete | PR #5110 opened/read back; issue #5107 comment posted | closeout |
+| Closeout | complete | plan evidence/final handoff filled; mechanical checker passes | final response |
 
 Findings:
 - No video or screenshot evidence exists.
@@ -300,6 +300,7 @@ Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | Dev server ran during full package rebuild, temporarily losing `@platejs/markdown` dist and emitting oversized buffered output on shutdown | 1 | Stop concurrent server/build use; restart only after full check with 4k output caps | Stable restart served editable-voids 200; final browser interaction passed with zero errors |
+| Goal checker run before closing its own evidence row and closeout phase | 1 | Resolve the two exact ledger fields reported, then rerun | Final checker passed after closing the row and phase |
 
 Verification evidence:
 - command, cwd `/Users/zbeyens/git/plate`: focused RED test -> 0 pass / 1 fail,
@@ -318,21 +319,30 @@ Verification evidence:
   changeset, and this plan; `git diff --check` passed.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: https://github.com/udecode/plate/pull/5110
+- Issue / tracker line: #5107 synced at https://github.com/udecode/plate/issues/5107#issuecomment-5396604747
+- Confidence line: 95-100% local-fix confidence; GitHub main CI still in progress
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: focused React test red with exact error; browser N/A for
+    reproduction because the failure is not browser-only
+  - Verified: focused 1/1, core 852/852, full `pnpm check`; browser route 200,
+    two editable roots, nested input accepted, zero console errors
+- Browser check: bundled Browser on local `/docs/examples/editable-voids` after
+  the full build; no screenshot because no visual claim
+- Outcome: Static values passed to multiple `usePlateEditor` hooks are isolated
+  per editor, preventing cross-editor Slate node path failures.
+- Caveat: One deep clone per static array/hook creation; value factories and
+  `createPlateEditor` reference behavior are unchanged. PR CI is still running.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: clone static array configuration inside `usePlateEditor`
+  - Why not quick patch: editor IDs cannot repair shared mutable node identity;
+    caller-side cloning repeats the same requirement across every consumer
+  - Why not broader change: cloning inside `createPlateEditor` would change its
+    tested imperative reference contract; factories already own custom creation
+- Verified: focused red/green, core suite, package/full typecheck, final lint,
+  full check, browser flow, clean autoreview, changeset, diff check
+- PR body verified: `gh pr view 5110 --json body` readback matches the task-style
+  contract exactly
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -355,10 +365,11 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: #5110 open against `main`; changeset policy check green; main CI running
+- Issue / tracker: #5107 synced with PR and proof
+- Browser proof: final local editable-voids interaction passed with zero errors
+- Caveats: static hook values incur one startup clone; CI completion is external
+  delivery evidence and is not claimed yet
 
 Timeline:
 - 2026-08-24T14:09:22.256Z Task goal plan created.
@@ -367,17 +378,21 @@ Timeline:
 - 2026-08-24 RED: `bun test packages/core/src/react/editor/usePlateEditor.spec.tsx` failed 0 pass / 1 fail with the exact reported path error.
 - 2026-08-24 GREEN: hook cloned static arrays and focused regression passed 1/1; core suite passed 852/852; package typecheck passed.
 - 2026-08-24 Final lint, full `pnpm check`, stable browser smoke, and structured autoreview all passed; autoreview reported zero findings.
+- 2026-08-24 Committed/pushed `a29c8b8e64`, opened and read back PR #5110, and synced issue #5107 with QA evidence.
+- 2026-08-24 Final goal ledger closed and mechanical completion checker passed.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Verified implementation, ready for PR and issue sync |
-| Where am I going? | Commit/push, create and verify task-style PR, sync #5107, close goal |
+| Where am I? | Goal complete after verified PR, issue sync, and mechanical checker |
+| Where am I going? | Commit/push final ledger, mark active goal complete, hand off |
 | What is the goal? | Fix #5107 shared initial-value crash with red/green proof and clean package/review gates |
 | What have I learned? | See Findings |
-| What have I done? | Implemented static-value isolation; closed focused, package, full check, browser, lint, changeset, and autoreview proof |
+| What have I done? | Implemented and verified static-value isolation; opened/read back PR #5110; synced #5107; recorded all evidence |
 
 Open risks:
 - Residual: static array values pay one deep clone per hook-created editor. This
   is intentional startup ownership cost; value factories remain available when
   callers need custom per-editor construction.
+- Delivery: PR #5110 main CI is still in progress. Local `pnpm check` is green;
+  this plan claims a ready PR, not merge or release.
