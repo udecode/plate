@@ -32,7 +32,8 @@ test('root CI bounds Turbo concurrency without changing check coverage', async (
   );
   assert.match(workflow, /name: ✅ Check PR[\s\S]{0,200}run: bun check/);
   assert.match(packageJson.scripts.check, /pnpm typecheck/);
-  assert.match(packageJson.scripts['check:push'], /pnpm typecheck/);
+  assert.doesNotMatch(packageJson.scripts.check, /test:slowest/);
+  assert.equal(packageJson.scripts['check:push'], 'pnpm check');
   assert.equal(packageJson.scripts.typecheck, 'pnpm g:typecheck');
   assert.match(packageJson.scripts['g:typecheck'], /--concurrency=2$/);
 });

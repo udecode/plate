@@ -389,7 +389,7 @@ test.describe('plaintext example', () => {
               }
 
               return {
-                x: rect.left + 1,
+                x: rect.left + rect.width / 2,
                 y: rect.top + rect.height / 2,
               };
             }

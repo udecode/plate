@@ -70,6 +70,10 @@ required check on that exact pushed SHA is terminal green.
 | Root CI (`32750535011`) at `1d54efe…` | success | 16m34s | the full root check, including the calibrated table benchmark, passed |
 | Full Plite matrix (`32751381712`) at `1d54efe…` | failure | 9m25s | Firefox exposed two vertical-selection geometry assumptions and WebKit exposed a non-focusable outside-click blur assumption; every other browser shard passed |
 | Vercel deployment `3jXgNo7wFNDsKCmxEQBQJigkuJTU` at `1d54efe…` | ready | 9m36s | build and `/blocks/editor-ai` passed, but Browser replay found registry-source `ENOENT` failures on `/view/plate-to-html`, both docs wrappers, and `/editors` |
+| Plite CI (`32753115328`) at `7f9fb79…` | success | about 7m | push package, adopter, build, Chromium, and coverage jobs passed |
+| Root CI (`32753178530`) at `7f9fb79…` | failure | 17m03s | every correctness test passed; the duplicate timing-only fast-suite run measured 41.53s against a 30s aggregate budget |
+| Full Plite matrix (`32753894023`) at `7f9fb79…` | failure | about 10m | WebKit exposed one model-owned caret import defect and one selected-range click edge; Firefox exposed one glyph-column assertion |
+| Vercel deployment `AMqD4fR5piY1GMSdVm99ERdKsRSo` at `7f9fb79…` | ready | 9m50s | global tracing passed and affected routes loaded, but `/view/plate-to-html` rejected heading `id` under its closed static schema |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -236,8 +240,34 @@ time was 31m29s.
      blur an editor after clicking non-focusable blank space. Those are not
      cross-browser laws.
    - Repair: measure up/down selection from the same collapsed point, retain
-     model/path/rendered-selection and no-double-highlight proof, accept the
-     existing minimum rendered prefix, and blur through a real outside button.
+   model/path/rendered-selection and no-double-highlight proof, accept the
+   existing minimum rendered prefix, and blur through a real outside button.
+27. Plate-to-HTML registry kit
+   - Root cause: the example value includes element ids, but both its static
+     server editor and client view used a closed kit without `ElementIdPlugin`.
+   - Repair: compose one shared Plate-to-HTML kit with `ElementIdPlugin`, use it
+     on both sides, register the copied helper, and publish registry changelog
+     metadata.
+28. Final Firefox/WebKit matrix assumptions
+   - Root cause: the clipboard row clicked the selected range edge, and the
+     multi-root vertical-selection row required two browser-dependent glyphs.
+   - Repair: click the target text midpoint and retain the stable semantic
+     prefix plus model/root/no-double-highlight assertions.
+29. Root local/remote CI command drift
+   - Root cause: push CI ran `check:push`, manual/PR CI ran `check`, and only
+     the latter repeated the complete fast suite solely to sum machine-speed
+     JUnit timings. The same checkout measured 41.53s remotely and 194.79s
+     locally without a correctness failure.
+   - Repair: make `check:push` an exact alias for `check` and remove the
+     duplicate timing-only rerun from the blocking correctness graph.
+     `test:profile` and `test:slowest` remain available for performance work.
+30. Virtualized WebKit insert-break burst
+   - Root cause: while the model owned a text insertion, selection import
+     rejected DOM carets behind the live model caret but accepted carets ahead
+     of it. A WebKit repair export could therefore move the next insertion one
+     character into the original suffix.
+   - Repair: when text-input ownership is explicitly model-owned, reject every
+     mismatched collapsed DOM offset until the model caret is exported.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -345,6 +375,26 @@ from shard summaries and closes when shard 1 passes.
 - The three final matrix rows passed 3/3, then 15/15 across five retry-free
   repeats. Full affected Firefox files passed 75 with 3 skips; the full WebKit
   images file passed 24/24.
+- The Plate-to-HTML kit contract failed with the base kit and passed 1/1 with
+  the shared `ElementIdPlugin` composition. Registry changelog source/generated
+  parity passed for 80 events.
+- `pnpm --filter www typecheck` passed editor generation, API reference, docs
+  and registry source parity, Next route type generation, and both TypeScript
+  programs.
+- The model-owned ahead-caret contract failed before the selection owner fix,
+  then the complete selection-controller contract passed 36/36.
+- The complete Plite React suite passed 1,093/1,093.
+- Exact final matrix replays passed: virtualized WebKit burst 20/20, WebKit
+  clipboard 10/10 serially, and Firefox multi-root selection 10/10.
+- `pnpm check:plite:dev` passed in 175.01s with 54 package typechecks, affected
+  package tests, 172 contracts, 74 tooling tests, public types, and Chromium
+  smoke.
+- The complete changed browser files passed: WebKit huge document 31/31 with
+  one skip, WebKit plaintext 39/39 with four skips, and Firefox synced blocks
+  46/46.
+- The exact shared `pnpm check` passed in about 4m27s with full formatting,
+  type-aware lint, 60 builds, 60 typechecks, 3,315 fast tests, and 1,549 slow
+  tests with 60 skips. `check:push` resolves to that exact command.
 
 ## Push scope
 
@@ -354,11 +404,11 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-The repair stack through the block-preview boundary, first cross-browser matrix
-packet, Vimeo runtime filter, and table CI budget is pushed as
-`1d54efe5b5941bc97da661ca5600733c7f7bc033`. The global Vercel trace repair and
-final browser-oracle packet are verified in the isolated `../plate-ci`
-checkout and remain unpushed. Merge is not authorized.
+The global Vercel trace repair and final browser-oracle packet are pushed as
+`7f9fb798e3966fa0dd0567f46d56f803f483d00e`. The Plate-to-HTML schema repair,
+final matrix closure, WebKit model-caret repair, and exact root CI command are
+verified in the isolated `../plate-ci` checkout and remain unpushed. Merge is
+not authorized.
 
 ## Remaining risks and next action
 

@@ -129,6 +129,7 @@
       "name": "plate-to-html",
       "files": [
         "apps/www/src/registry/blocks/plate-to-html/page.tsx",
+        "apps/www/src/registry/components/editor/plate-to-html-kit.ts",
         "apps/www/src/registry/components/editor/plate-to-html.tsx",
         "apps/www/src/registry/examples/values/align-value.tsx",
         "apps/www/src/registry/examples/values/basic-blocks-value.tsx",

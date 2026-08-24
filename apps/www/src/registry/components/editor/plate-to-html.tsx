@@ -12,7 +12,7 @@ import { useObjectUrl } from '@/registry/hooks/use-object-url';
 
 import { FixedToolbarPlugin } from './fixed-toolbar';
 import { FloatingToolbarPlugin } from './floating-toolbar';
-import { BaseEditorKit } from './plugins-static';
+import { PlateToHtmlEditorKit } from './plate-to-html-kit';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -100,7 +100,7 @@ export function EditorClient({ value }: { value: InitialValue }) {
 
 export const EditorViewClient = ({ value }: { value: InitialValue }) => {
   const editor = usePlateViewEditor({
-    plugins: BaseEditorKit,
+    plugins: PlateToHtmlEditorKit,
     initialValue: value,
   });
 

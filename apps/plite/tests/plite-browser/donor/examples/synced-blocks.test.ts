@@ -1275,7 +1275,7 @@ test.describe('synced blocks example', () => {
       });
     await expect
       .poll(() => getRenderedViewSelectionText(page))
-      .toContain('Separate sy');
+      .toContain('Separate');
     await expect.poll(() => getNativeSelectionText(page)).toBe('');
     await outer.assert.noDoubleSelectionHighlight();
   });

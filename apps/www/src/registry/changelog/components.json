@@ -9,6 +9,14 @@
       "2026-08-06-fix-block-selection-drag",
       "2026-07-26-plugin-store-state"
     ],
+    "plate-to-html": [
+      "2026-08-24-fix-plate-to-html-element-ids",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-23-explicit-editor-kit-composition",
+      "2026-07-23-rich-media-caption-children"
+    ],
     "tag": [
       "2026-08-24-fix-tag-link-install",
       "2026-08-17-flat-editor-registry"
@@ -62,13 +70,6 @@
       "2026-08-18-inline-registry-hooks",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
-    ],
-    "plate-to-html": [
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-23-explicit-editor-kit-composition",
-      "2026-07-23-rich-media-caption-children"
     ],
     "use-object-url": ["2026-08-24-react-compiler-owned-editor-state"],
     "table": [

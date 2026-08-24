@@ -223,6 +223,20 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
   expect(
     isStaleModelOwnedTextInputDOMRange({
       activeIntent: 'text-insert',
+      modelOwnedTextInputGuard: 1,
+      modelSelection,
+      range: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 9 },
+        focus: { path: [0, 0], offset: 9 },
+      },
+      selectionSource: 'model-owned',
+      textInputOwnership: 'model',
+    })
+  ).toBe(true);
+  expect(
+    isStaleModelOwnedTextInputDOMRange({
+      activeIntent: 'text-insert',
       modelOwnedTextInputGuard: 0,
       modelSelection,
       range: {

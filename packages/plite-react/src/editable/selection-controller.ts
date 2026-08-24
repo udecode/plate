@@ -384,6 +384,7 @@ export const isStaleModelOwnedTextInputDOMRange = ({
   range,
   recentTextInputRepairEcho,
   selectionSource,
+  textInputOwnership,
 }: {
   activeIntent?: InputIntent | null;
   modelOwnedTextInputGuard?: number;
@@ -391,6 +392,7 @@ export const isStaleModelOwnedTextInputDOMRange = ({
   range: Range;
   recentTextInputRepairEcho?: EditableInputController['state']['recentTextInputRepairEcho'];
   selectionSource?: SelectionSource;
+  textInputOwnership?: EditableInputController['state']['textInputOwnership'];
 }) => {
   const modelOwnsTextInput =
     activeIntent === 'composition' ||
@@ -427,7 +429,10 @@ export const isStaleModelOwnedTextInputDOMRange = ({
   return (
     (!samePath &&
       (activeIntent === 'composition' || activeIntent === 'text-insert')) ||
-    (samePath && range.anchor.offset < modelSelection.anchor.offset)
+    (samePath &&
+      (textInputOwnership === 'model'
+        ? range.anchor.offset !== modelSelection.anchor.offset
+        : range.anchor.offset < modelSelection.anchor.offset))
   );
 };
 
@@ -507,6 +512,7 @@ export const syncEditorSelectionFromDOM = ({
         recentTextInputRepairEcho:
           inputController.state.recentTextInputRepairEcho,
         selectionSource: inputController.state.selectionSource,
+        textInputOwnership: inputController.state.textInputOwnership,
       })
     ) {
       return;
@@ -1162,6 +1168,7 @@ export const applyEditableDOMSelectionChange = ({
         range,
         recentTextInputRepairEcho: state.recentTextInputRepairEcho,
         selectionSource: state.selectionSource,
+        textInputOwnership: state.textInputOwnership,
       })
     ) {
       return;

@@ -14,7 +14,7 @@ import {
   ExportHtmlButton,
   HtmlIframe,
 } from '@/registry/components/editor/plate-to-html';
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import { PlateToHtmlEditorKit } from '@/registry/components/editor/plate-to-html-kit';
 import { alignValue } from '@/registry/examples/values/align-value';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
@@ -101,7 +101,7 @@ const createValue = (): EditorDocumentValue => ({
 
 export default async function PlateToHtmlBlock() {
   const editor = createStaticEditor({
-    plugins: BaseEditorKit,
+    plugins: PlateToHtmlEditorKit,
     initialValue: createValue(),
   });
 

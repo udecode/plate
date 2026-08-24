@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-24-fix-plate-to-html-element-ids",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-24-fix-plate-to-html-element-ids.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix Plate-to-HTML rendering for values with element IDs",
+  "targets": [
+    {
+      "name": "plate-to-html",
+      "files": [
+        "apps/www/src/registry/blocks/plate-to-html/page.tsx",
+        "apps/www/src/registry/components/editor/plate-to-html-kit.ts",
+        "apps/www/src/registry/components/editor/plate-to-html.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/discussion-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-24-plate-to-html-fix-values-element-ids-bc4b2776",
+      "kind": "fix",
+      "summary": "Fix Plate-to-HTML rendering for values with element IDs",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["plate-to-html"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-fix-plate-to-html-element-ids",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
