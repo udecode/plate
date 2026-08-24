@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-24-fix-tag-link-install",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-24-fix-tag-link-install.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix tag link installation",
+  "targets": [
+    {
+      "name": "tag",
+      "files": ["apps/www/src/registry/components/editor/tag.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-24-tag-fix-link-installation-954221a5",
+      "kind": "fix",
+      "summary": "Resolve links without a website-only locale utility.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["tag"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-fix-tag-link-install",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

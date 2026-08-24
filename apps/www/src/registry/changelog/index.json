@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-24-fix-tag-link-install",
+      "href": "/registry/changelog/2026-08-24-fix-tag-link-install.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix tag link installation",
+      "change": {
+        "type": "source",
+        "date": "2026-08-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["tag"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-24-keep-editor-contracts-app-owned",
       "href": "/registry/changelog/2026-08-24-keep-editor-contracts-app-owned.json",
       "status": "draft",

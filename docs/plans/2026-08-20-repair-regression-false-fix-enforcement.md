@@ -278,9 +278,9 @@ Affected corpus replay:
 | Regression workflow source and generated mirror | regression-false-fix-enforcement | 2026-08-20T10:12:25.935Z | `node --test --test-reporter=dot` over source/generated contract and semantic tests | sha256:74bd3a2df71ab7bfe7423fb958a821464c68760bba40376dd127e9c978988a41 | pass: 42/42 after final owner edit |
 
 Failed fix history:
-| Case ID | Attempt | Failure signal | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
-|---------|---------|----------------|-------------------------|-------------------|---------------|----------------------|-----------------------|--------------|
-| regression-false-fix-enforcement | 1 | completed receipt failed final semantic validation because generator and validator sorted mixed paths differently | yes: attempt-1 receipt, green, and completion claim revoked | repair-now: `.agents/rules/regression/scripts/proof-receipt-contract.mjs` centralizes digest and receipt identity | pass: mixed root-and-dot input receipt validates end to end in source and generated corpus | no: first failure had a local duplicated-canonicalization owner | N/A: no public API or product layer architecture pressure | reproduced: exact mixed-path receipt mismatch became an executable test before attempt 2 |
+| Case ID | Attempt | Failure signal | Failure kind | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
+|---------|---------|----------------|--------------|-------------------------|-------------------|---------------|----------------------|-----------------------|--------------|
+| regression-false-fix-enforcement | 1 | completed receipt failed final semantic validation because generator and validator sorted mixed paths differently | final-verification | yes: attempt-1 receipt, green, and completion claim revoked | repair-now: `.agents/rules/regression/scripts/proof-receipt-contract.mjs` centralizes digest and receipt identity | pass: mixed root-and-dot input receipt validates end to end in source and generated corpus | no: first failure had a local duplicated-canonicalization owner | N/A: no public API or product layer architecture pressure | reproduced: exact mixed-path receipt mismatch became an executable test before attempt 2 |
 
 Architecture pressure:
 | Case ID | Failed fix count | Triggers | Verdict | Best API | Layer plan | Proof |

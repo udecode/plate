@@ -2,6 +2,7 @@
 
 import type { MultiSelectPlugin } from '@platejs/tag/react';
 import Link from 'next/link';
+import type { LinkProps } from 'next/link';
 import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
@@ -12,7 +13,16 @@ import {
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-import { toLinkHref } from '@/lib/withLocale';
+
+const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
+
+function toLinkHref(href: string): LinkProps<string>['href'] {
+  if (ABSOLUTE_HREF_REGEX.test(href)) return new URL(href);
+  if (href.startsWith('#')) return { hash: href.slice(1) };
+  if (href.startsWith('?')) return { search: href.slice(1) };
+
+  return { pathname: href };
+}
 
 export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
   const { element } = props;

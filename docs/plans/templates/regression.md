@@ -130,6 +130,7 @@ Start Gates:
 | Active goal checked or created | pending | pending |
 | Current source owner and tested ref recorded | pending | pending |
 | Executable test cases discovered | pending | pending |
+| Cumulative reporter evidence resolved | pending | Original report, acceptance criteria, recordings, and every later reporter delta are inventoried without dropping still-applicable claims. |
 | Reporter oracle matrix resolved | pending | pending |
 | Regression semantic validator ready | pending | pending |
 | Route/proof-host readiness plan recorded | pending | pending |
@@ -150,8 +151,16 @@ Work Checklist:
 - [ ] Every selected case has a stable ID, source reference, owner, setup,
       action, expected outcome, executable test path/command, tested ref, and
       required stability.
-- [ ] Every selected case has one reporter-oracle row for model, DOM/native,
-      focus, popup, geometry/paint, runtime errors, and follow-up input.
+- [ ] Every selected case inventories its base acceptance, recordings, and all
+      later reporter confirmations/contradictions as cumulative deltas. Every
+      still-applicable claim stays required; superseded claims cite the source
+      and reason that removed them.
+- [ ] Every required evidence row maps to a phase-specific executable oracle.
+      A final-state assertion never substitutes for a transient during-action
+      caret, overlay, popup, selection, or paint assertion.
+- [ ] Every selected case has one or more phase-specific reporter-oracle rows
+      for model, DOM/native, focus, popup, geometry/paint, runtime errors, and
+      follow-up input.
 - [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
       state, an executable layer/anchor, and an exact result; every inapplicable
       row has N/A reasons.
@@ -210,7 +219,8 @@ Completion Gates:
 | Current-source readiness | pending | Prove source owner and final tested ref/dirty boundary | pending |
 | Route/proof-host readiness | pending | Prove the runner/host observes current source | pending |
 | Executable regression coverage | pending | Record exact test file, red result, green result, and owning invariant | pending |
-| Reporter oracle closure | pending | Resolve positive and forbidden states for all seven observation rows per case | pending |
+| Cumulative reporter evidence closure | pending | Map every still-applicable base acceptance and later reporter delta to a phase-specific executable oracle | pending |
+| Reporter oracle closure | pending | Resolve positive and forbidden states for all seven observations and every applicable interaction phase per case | pending |
 | Failed-fix interrupt closure | pending | Prove every claimed-fix failure invalidated prior proof and completed automatic Regression repair | pending |
 | Architecture pressure closure | pending | Prove every second failure or architecture trigger has Best API and layer-plan evidence | pending |
 | Proof receipt closure | pending | Validate generated final receipts against unchanged issue-owned inputs | pending |
@@ -240,6 +250,7 @@ Phase / pass table:
 | Requirement extraction and goal setup | in_progress | template created | source/host readiness |
 | Current source and proof-host readiness | pending | | discover executable cases |
 | Executable case discovery and selection | pending | | smallest probe |
+| Cumulative reporter evidence inventory | pending | | reporter oracle expansion |
 | Reporter oracle expansion | pending | | semantic validation |
 | Pre-implementation semantic validation | pending | | smallest probe |
 | Smallest high-value probe | pending | | reproduce/classify |
@@ -256,16 +267,21 @@ Selected executable cases:
 |---------|------------------|----------------|------------------|-------------------|---------------------|--------|------------|------------|
 | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
+Reporter evidence inventory:
+| Case ID | Source role | Source reference | Phase | Claim | Disposition | Oracle anchors | Executable anchor | Result |
+|---------|-------------|------------------|-------|-------|-------------|----------------|-------------------|--------|
+| pending | pending | pending | pending | pending | pending | pending | pending | pending |
+
 Reporter oracle matrix:
-| Case ID | Observation | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
-|---------|-------------|---------|--------------------|-----------------|-------------|-------------------|--------|
-| pending | model | pending | pending | pending | pending | pending | pending |
-| pending | dom-native | pending | pending | pending | pending | pending | pending |
-| pending | focus | pending | pending | pending | pending | pending | pending |
-| pending | popup | pending | pending | pending | pending | pending | pending |
-| pending | geometry-paint | pending | pending | pending | pending | pending | pending |
-| pending | runtime-errors | pending | pending | pending | pending | pending | pending |
-| pending | follow-up-input | pending | pending | pending | pending | pending | pending |
+| Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
+|---------|-------------|-------|---------|--------------------|-----------------|-------------|-------------------|--------|
+| pending | model | pending | pending | pending | pending | pending | pending | pending |
+| pending | dom-native | pending | pending | pending | pending | pending | pending | pending |
+| pending | focus | pending | pending | pending | pending | pending | pending | pending |
+| pending | popup | pending | pending | pending | pending | pending | pending | pending |
+| pending | geometry-paint | pending | pending | pending | pending | pending | pending | pending |
+| pending | runtime-errors | pending | pending | pending | pending | pending | pending | pending |
+| pending | follow-up-input | pending | pending | pending | pending | pending | pending | pending |
 
 Proof receipts:
 | Case ID | Attempt | Claim | Command | Result | Ref | Input digest | Input count | Inputs | Host | Latest input mtime | Proof started | Proof ended | Retries | Receipt ID |
@@ -283,9 +299,9 @@ Gate failure closure:
 | pending | pending | pending | pending | pending |
 
 Failed fix history:
-| Case ID | Attempt | Failure signal | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
-|---------|---------|----------------|-------------------------|-------------------|---------------|----------------------|-----------------------|--------------|
-| pending | pending | pending | pending | pending | pending | pending | pending | pending |
+| Case ID | Attempt | Failure signal | Failure kind | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
+|---------|---------|----------------|--------------|-------------------------|-------------------|---------------|----------------------|-----------------------|--------------|
+| pending | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
 Architecture pressure:
 | Case ID | Failed fix count | Triggers | Verdict | Best API | Layer plan | Proof |
@@ -344,7 +360,7 @@ Verification evidence:
 
 Final handoff:
 - executable cases: pending
-- reporter oracles and forbidden states: pending
+- cumulative reporter evidence, phase-specific oracles, and forbidden states: pending
 - failed-fix invalidation and automatic repair: pending
 - proof receipts and affected-corpus replay: pending
 - started-gate failure closure: pending

@@ -154,8 +154,12 @@ Work Checklist:
       gaps.
 - [ ] Demos/previews are real registry entries or marked N/A with reason.
 - [ ] Links target real leaf pages and do not reinforce pages being displaced.
-- [ ] Anti-slop audit passed: no changelog voice, no fake APIs, no placeholder
-      comments, no TODOs, no dead anchors, no redundant summary section.
+- [ ] Every created or edited docs artifact completed the required `unslop`
+      file-edit pass after claims stabilized; evidence names each file and
+      confirms literal content and technical claims were preserved.
+- [ ] Requirement language, when present, separates hard compatibility,
+      layer-specific setup, recommendations, and repo-only implementation
+      details against live source owners.
 - [ ] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed docs.
 - [ ] Review/P1 autoreview target selected for non-trivial docs work, or marked
@@ -164,7 +168,7 @@ Work Checklist:
 Lane-Specific Shape Proof:
 | Lane | Applies | Required proof | Evidence |
 |------|---------|----------------|----------|
-| Install / get-started | pending | Opening has only the short lead before the first `##`; page has `## Installation`, `## Usage` or an equivalent first working path, and next-step links; procedural setup uses `<Steps>` when it is more than one real step; installed packages have an ownership table when more than one package/layer is involved; app-file snippets use titled code fences when file context matters. | pending |
+| Install / get-started | pending | Opening has only the short lead before the first `##`; hard requirements appear before the first install command and are classified against package, copied-source, or build owners; the page has `## Installation`, `## Usage` or an equivalent first working path, and next-step links; procedural setup uses `<Steps>` when it is more than one real step; installed packages have an ownership table when more than one package/layer is involved; app-file snippets use titled code fences when file context matters. | pending |
 | Component / registry item | pending | Real preview exists or is marked N/A; installation is CLI/manual shaped; usage has imports plus smallest JSX; examples are real variants; API reference is last when needed. | pending |
 | Guide / system | pending | Opening is short with sibling disambiguation when needed; ownership model appears early; quick start precedes deeper mechanics; reference material stays last. | pending |
 | Behavior / runtime concept | pending | Decision table or equivalent surface choice appears early; runtime pipeline has owner map; each stage is separated; recipes link to canonical references. | pending |
@@ -180,6 +184,8 @@ Completion Gates:
 | Named verification threshold | pending | Run the source audit, parser/build, link/demo check, or review named in this plan | pending |
 | Docs lane shape satisfied | pending | Resolve the selected row in `Lane-Specific Shape Proof`; do not close this gate from a generic shape assertion | pending |
 | Source-backed claim audit | pending | Verify every named API/option/transform/component/import/route against source | pending |
+| Required Unslop pass | pending | Run `unslop` in file-edit mode on every created or edited docs artifact after claims stabilize; name each file and confirm protected literal content and technical claims survived | pending |
+| Requirements disclosure | pending | For install/get-started work, classify hard compatibility, layer-specific setup, recommendations, and repo-only details against live owners; otherwise record N/A | pending |
 | Ownership map verified | pending | Confirm package/layer/kit/app-local ownership claims against source | pending |
 | MDX/content parser | pending | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | pending |
 | Links/routes/previews verified | pending | Check leaf links, routes, anchors, and `<ComponentPreview>` names or record N/A | pending |

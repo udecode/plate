@@ -1050,6 +1050,8 @@ export const usePendingInsertionMarksEffect = ({
       'model',
       'pending-insertion-marks',
       () => {
+        if (ReactEditor.isComposing(editor as ReactRuntimeEditor)) return;
+
         const selection = editor.read((state) => state.selection());
         if (selection) {
           const { anchor } = selection;

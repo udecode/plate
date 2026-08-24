@@ -1,6 +1,10 @@
 {
   "schemaVersion": 1,
   "components": {
+    "tag": [
+      "2026-08-24-fix-tag-link-install",
+      "2026-08-17-flat-editor-registry"
+    ],
     "editor-plugins": [
       "2026-08-24-keep-editor-contracts-app-owned",
       "2026-08-18-align-v55-ast-contracts",
@@ -543,7 +547,6 @@
     "paragraph": ["2026-08-17-flat-editor-registry"],
     "paragraph-static": ["2026-08-17-flat-editor-registry"],
     "search-highlight": ["2026-08-17-flat-editor-registry"],
-    "tag": ["2026-08-17-flat-editor-registry"],
     "block-draggable": [
       "2026-08-16-direct-react-component-families",
       "2026-08-13-fix-registry-install-dependencies",

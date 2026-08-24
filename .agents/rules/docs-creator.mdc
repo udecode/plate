@@ -73,6 +73,8 @@ contract.
 For install/get-started pages, the plan must explicitly prove:
 
 - only the short lead sits above the first `##`;
+- hard requirements appear before the first install command and are classified
+  against their literal package, copied-source, or build owner;
 - the page has `## Installation`, `## Usage` or an equivalent first working
   path, and exact next-step links;
 - real procedures use `<Steps>` when they are more than one step;
@@ -145,9 +147,51 @@ Use shadcn as the reference for density, MDX component grammar, and page
 scaffolding. Use Plate source as the authority for behavior, ownership, package
 names, and examples.
 
+## Requirements And Disclosures
+
+Installation and get-started docs must separate four different claims:
+
+1. hard compatibility requirements enforced by package manifests or runtime;
+2. layer-specific requirements for copied UI, app code, server code, or tooling;
+3. recommended configuration that improves the supported path but is not a
+   compatibility floor;
+4. repository implementation details that consumers do not configure.
+
+Read package peer dependencies, copied registry inputs, package build config,
+and the target app config before writing a requirement. Put hard requirements
+before the first install command. State what the CLI or package install does
+not configure when the reader must still change their app.
+
+For React setup, derive the React and React DOM floor from live peer
+dependencies. Derive React Compiler guidance separately: published compiled
+packages, copied app source, and the app's own build pipeline have different
+owners. Do not tell consumers to compile dependency code that Plate already
+ships compiled. Do not imply copied Plate UI source receives Compiler coverage
+unless the consuming app enables it.
+
 ## Style And Structure → [style-and-structure.md](./rules/style-and-structure.md)
 
 Read this reference before substantial prose or topology work. It owns voice, structure, examples, links, previews, agent affordances, and anti-slop law.
+
+## Required Unslop Pass
+
+Every created or edited docs artifact must run through `unslop` in file-edit
+mode after its technical claims and examples are stable, and before final
+parser, route, Browser, or review proof. This is required even when docs are a
+supporting surface under another task.
+
+- Read the whole artifact, not only the changed paragraph.
+- Preserve frontmatter, code, commands, identifiers, data, URLs, citations,
+  quotations, and Markdown link targets.
+- Remove only clear slop: leaked instructions, throat-clearing, repetition,
+  inflated claims, fake completeness, robotic structure, and unsupported
+  adjectives.
+- Recheck every technical claim after the pass. A smoother false claim is a
+  regression.
+- Record the touched docs and the Unslop result in the active plan or handoff.
+
+The bundled `audit-prose.mjs` script may find review candidates. It does not
+replace the human judgment required by the Unslop pass.
 
 ## Workflow
 
@@ -160,8 +204,9 @@ Read this reference before substantial prose or topology work. It owns voice, st
 7. Add deeper explanation and boundaries.
 8. Add API or reference material only where it earns its keep.
 9. Wire navigation, neighbor links, and metadata.
-10. Trim repetition, vague adjectives, and fake completeness.
-11. Verify every claim against the current repo.
+10. Verify every claim against the current repo.
+11. Run the required Unslop file-edit pass on every touched docs artifact.
+12. Recheck claims, then run parser, route, Browser, and review proof.
 
 ## Lane Map
 
@@ -205,6 +250,10 @@ Do not force `<ComponentPreview>`, `<PackageInfo>`, or a giant feature list just
 
 Before finishing a docs change:
 
+- Every created or edited docs artifact completed the required Unslop file-edit
+  pass, and the plan or handoff names those files.
+- Requirement language distinguishes hard compatibility, layer-specific setup,
+  recommendations, and repo-only implementation details.
 - `pnpm --filter www build:source` parses the MDX cleanly.
 - `pnpm --filter www check:docs` passes when docs source parity or generated
   source can be affected.

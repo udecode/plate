@@ -9,6 +9,7 @@ Load this reference whenever the `regression` skill runs.
 - [Start Contract](#start-contract)
 - [Current Source And Proof-Host Readiness](#current-source-and-proof-host-readiness)
 - [Atomic Executable Cases](#atomic-executable-cases)
+- [Cumulative Reporter Evidence](#cumulative-reporter-evidence)
 - [Reporter Oracle Matrix](#reporter-oracle-matrix)
 - [Proof Selection](#proof-selection)
 - [Probe Before Scale](#probe-before-scale)
@@ -152,10 +153,37 @@ selection, commit metadata, error class, and follow-up usability. Primitive
 Slate or Plate operation traces are diagnostic evidence unless current product
 law explicitly preserves them.
 
+## Cumulative Reporter Evidence
+
+Build one temporary evidence inventory in the active plan before writing the
+oracle. Read the original report, acceptance criteria, attached recordings or
+screenshots, and every later reporter confirmation or contradiction relevant
+to the current attempt.
+
+Reporter follow-ups are deltas:
+
+- a confirmed field stays required unless the reporter or accepted product law
+  explicitly removes it;
+- a residual field joins the still-applicable base acceptance instead of
+  replacing it;
+- a narrower green test cannot discard an original visual, transient, focus,
+  selection, popup, error, or follow-up requirement;
+- mark a claim superseded only with the exact source and reason.
+
+For each required statement, record its source reference, interaction phase,
+claim, oracle anchors, executable test anchor, and current result. Use phases
+`setup`, `during-action`, `after-action`, `after-release`, and `follow-up`.
+Held-pointer carets, drag marquees, drop cursors, open menus, and intermediate
+paint must be observed during the action; a clean state after pointer release
+does not prove they appeared or stayed absent at the required time.
+
+The inventory is transient coordination, not a durable registry. Executable
+tests remain the permanent behavior authority.
+
 ## Reporter Oracle Matrix
 
-Translate every reporter sentence and observed state into the active plan
-before Patch receives the case. For each case, fill exactly one row for every
+Translate every required inventory row into the active plan before Patch
+receives the case. For each case, fill one or more phase-specific rows for every
 observation:
 
 | Observation | Question |
@@ -168,11 +196,11 @@ observation:
 | `runtime-errors` | What error/overlay/console state is forbidden? |
 | `follow-up-input` | What next edit proves the editor remains usable, and what corruption/lost selection is forbidden? |
 
-Mark a row `yes` only with a positive assertion, a distinct forbidden state,
-an executable proof layer, a `test: <path>#<title>` anchor, and its result.
-Mark it `no` only with an N/A reason in every proof cell. “Moved,” “rendered,”
-or “did not crash” never implies selection shape, focus, popup exclusion,
-paint, performance, or follow-up usability.
+Mark a row `yes` only with a phase, positive assertion, distinct forbidden
+state, executable proof layer, `test: <path>#<title>` anchor, and result. Mark
+it `no` only with a phase and an N/A reason in every proof cell. “Moved,”
+“rendered,” or “did not crash” never implies selection shape, focus, popup
+exclusion, paint, performance, transient gesture state, or follow-up usability.
 
 When the report names Chrome, Blink, a compositor, or browser-native behavior,
 record `exact-chrome: <environment>` and use exact Chrome for the full final
@@ -357,6 +385,12 @@ failed-fix attempt. A pre-assertion proof-host failure still requires the
 automatic `repair-now`, but it restarts the same product attempt after the host
 repair.
 
+Record one explicit failure kind: `reporter-contradiction`, `exact-replay`, or
+`final-verification`. Every failed fix keeps a `base-acceptance` evidence row,
+which may be required or explicitly superseded. Only a reporter contradiction
+requires a required `latest-reporter-delta`; exact replay and final verification
+failures have no reporter delta unless one actually exists.
+
 That event immediately interrupts product work:
 
 1. Revoke the prior green, receipt, local completion, and public completion
@@ -371,8 +405,10 @@ That event immediately interrupts product work:
    `repair-now`; `no-change` and `defer` cannot resume it.
 4. Run focused workflow proof, `pnpm install`, source/generated parity, and
    agent-native review.
-5. Restart the reporter case from exact reproduction with attempt N+1. The new
-   proof receipt must use that attempt number; an old receipt cannot carry
+5. Rebuild the cumulative reporter evidence inventory and restart the reporter
+   case from exact reproduction with attempt N+1. Every still-applicable base
+   acceptance and latest delta needs a phase-specific executable oracle. The
+   new proof receipt must use that attempt number; an old receipt cannot carry
    forward.
 
 On attempt 2, or immediately when any architecture trigger applies, stop Patch

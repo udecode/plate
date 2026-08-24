@@ -137,12 +137,22 @@ plan or Patch packet:
   and follow-up-input fields;
 - tested ref, dirty-state boundary when applicable, and required stability.
 
-Before patching, expand every case into the template's reporter oracle matrix.
-For model, DOM/native state, focus, popup/toolbar, geometry/paint, runtime
-errors, and follow-up input, mark the observation applicable or give an N/A
-reason. Every applicable row needs both the positive assertion that must hold
-and the forbidden state that must not survive, plus an executable test anchor.
-Do not reduce a reporter sentence to the easiest neighboring assertion.
+Before patching, build the template's cumulative reporter evidence inventory
+from the issue body or original report, its acceptance criteria and recordings,
+and every later reporter confirmation or contradiction. A later reply is a
+delta, not a replacement oracle. Keep every earlier still-applicable claim
+required; mark one superseded only with the reporter or current product law
+that removed it. Map every required evidence row to an executable oracle.
+
+Then expand every case into the reporter oracle matrix. For model, DOM/native
+state, focus, popup/toolbar, geometry/paint, runtime errors, and follow-up input,
+mark the observation applicable or give an N/A reason. Record the interaction
+phase for every row: setup, during-action, after-action, after-release, or
+follow-up. One final-state assertion cannot prove a transient held-pointer,
+drag-overlay, caret, popup, or paint claim. Every applicable row needs both the
+positive assertion that must hold and the forbidden state that must not
+survive, plus an executable test anchor. Do not reduce a reporter sentence to
+the easiest neighboring assertion.
 
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
@@ -256,6 +266,11 @@ assertion ran and failed. A pre-assertion proof-host failure still triggers the
 automatic Regression repair above, but it cannot fabricate a product failure
 or architecture escalation.
 
+Classify each failed fix as `reporter-contradiction`, `exact-replay`, or
+`final-verification`. Keep base acceptance in the evidence inventory as
+required or explicitly superseded. Require a `latest-reporter-delta` only for
+`reporter-contradiction`; replay and verification failures cannot invent one.
+
 Every failed claimed bug fix automatically repairs Regression. Do not wait for
 the user to ask and do not delegate another product patch first:
 
@@ -270,8 +285,10 @@ the user to ask and do not delegate another product patch first:
 4. Run focused workflow proof, `pnpm install`, source/generated parity, and
    agent-native review. A failed-fix methodology decision must be `repair-now`;
    `no-change` and `defer` cannot resume the product attempt.
-5. Restart from exact reproduction with a new attempt number and a corrected
-   reporter oracle. Never carry the invalidated receipt into the new attempt.
+5. Rebuild the cumulative reporter evidence inventory, restart from exact
+   reproduction with a new attempt number, and map every still-applicable base
+   acceptance plus the latest delta to phase-specific executable oracles. Never
+   carry the invalidated receipt into the new attempt.
 
 On the second failed fix for one case, or immediately for cross-layer
 compensation, duplicated live identity, per-node hot work, timer/focus/blur

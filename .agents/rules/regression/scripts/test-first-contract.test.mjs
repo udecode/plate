@@ -108,6 +108,29 @@ test('failed claimed fixes interrupt Patch and automatically repair Regression',
   assert.match(methodology, /On attempt 2[\s\S]*run `best-api`/);
 });
 
+test('reporter follow-ups extend a cumulative phase-aware oracle', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /later reply is a\s+delta, not a replacement oracle[\s\S]*still-applicable claim[\s\S]*interaction\s+phase/
+  );
+  assert.match(
+    methodology,
+    /Cumulative Reporter Evidence[\s\S]*original report[\s\S]*Reporter follow-ups are deltas[\s\S]*during-action/
+  );
+  assert.match(template, /Reporter evidence inventory:/);
+  assert.match(
+    template,
+    /Every required evidence row maps to a phase-specific executable oracle/
+  );
+  assert.match(template, /\| Case ID \| Observation \| Phase \| Applies \|/);
+});
+
 test('stability-only failures freeze product edits until proof drift is classified', () => {
   const regressionRule = read('.agents/rules/regression.mdc');
   const methodology = read(
@@ -281,6 +304,7 @@ test('Regression routes semantic completion through executable helpers', () => {
 
   assert.match(rule, /validate-regression-plan\.mjs/);
   assert.match(rule, /capture-proof-receipt\.mjs/);
+  assert.match(template, /Reporter evidence inventory:/);
   assert.match(template, /Reporter oracle matrix:/);
   assert.match(template, /Failed fix history:/);
   assert.match(template, /Architecture pressure:/);

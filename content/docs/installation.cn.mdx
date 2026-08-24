@@ -3,7 +3,17 @@ title: 快速开始
 description: 选择适合的集成路径，将 Plate 富文本编辑器框架接入您的 React 项目。
 ---
 
-Plate 提供多种集成方案以适应不同项目需求。请根据您的开发环境和需求选择合适的接入方式。
+Plate 提供 UI 优先、无头 React、React 服务端组件和 Node.js 四条安装路径。需要完整编辑器界面时，从 Plate UI 开始；需要自行控制渲染或只在服务端处理内容时，选择对应的底层指南。
+
+## 环境要求
+
+| 使用范围 | 要求 |
+| --- | --- |
+| Plate React API 和 Plate UI | React 和 React DOM 19.2 或更高版本。Plate 的 React 包将 `>=19.2.0` 声明为 peer dependency。 |
+| 复制到项目中的 Plate UI 源码 | 在拥有这些组件的应用中启用 React Compiler。Registry 组件依赖 Compiler 负责记忆化。shadcn 命令会安装包和文件，但不会配置构建工具；请按框架参考 [React Compiler 安装指南](https://react.dev/learn/react-compiler/installation)。 |
+| 已发布的 Plate 包 | 导入包代码时不需要由应用再次运行 Compiler。Plate 在发布前已针对 React 19 runtime 编译这些包。 |
+
+这两个边界不能混为一谈：React 19.2 是包兼容性的最低版本；React Compiler 配置属于构建 Plate UI 本地源码的应用。
 
 ## 客户端集成
 

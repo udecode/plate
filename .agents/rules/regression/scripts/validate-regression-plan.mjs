@@ -20,6 +20,13 @@ export const REGRESSION_OBSERVATIONS = [
   'runtime-errors',
   'follow-up-input',
 ];
+export const REGRESSION_PHASES = [
+  'setup',
+  'during-action',
+  'after-action',
+  'after-release',
+  'follow-up',
+];
 
 const ARCHITECTURE_TRIGGERS = new Set([
   'cross-layer-compensation',
@@ -28,6 +35,11 @@ const ARCHITECTURE_TRIGGERS = new Set([
   'second-failed-fix',
   'timer-focus-correctness',
   'ui-repairs-substrate',
+]);
+const FAILED_FIX_KINDS = new Set([
+  'exact-replay',
+  'final-verification',
+  'reporter-contradiction',
 ]);
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
@@ -45,6 +57,7 @@ const isResolved = (value) =>
 
 const isNotApplicable = (value) => /^N\/A:\s*\S/i.test(value ?? '');
 const isPass = (value) => /^pass:\s*\S/i.test(value ?? '');
+const isSuperseded = (value) => /^superseded:\s*\S/i.test(value ?? '');
 const isSourceIdentity = (value) =>
   /^(?:commit|dirty):[a-f0-9]{40}$/i.test(value ?? '');
 const isSha256 = (value) => /^sha256:[a-f0-9]{64}$/i.test(value ?? '');
@@ -224,6 +237,19 @@ const splitInputs = (value) =>
     .map((part) => part.trim())
     .filter(Boolean);
 
+const splitOracleAnchors = (value) =>
+  (value ?? '')
+    .replaceAll('`', '')
+    .split(',')
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean);
+
+const parseOracleAnchor = (value) => {
+  const match = value.match(/^([a-z-]+)@([a-z-]+)$/);
+
+  return match ? { observation: match[1], phase: match[2] } : null;
+};
+
 const parseArchitectureTriggers = (value) => {
   if (/^none:\s*\S/i.test(value ?? '')) return [];
 
@@ -310,10 +336,128 @@ export const validateRegressionPlan = (
     cases.set(caseId, row);
   }
 
+  const evidenceTable = parseTable(markdown, 'Reporter evidence inventory');
+  const evidenceHeaders = [
+    'case_id',
+    'source_role',
+    'source_reference',
+    'phase',
+    'claim',
+    'disposition',
+    'oracle_anchors',
+    'executable_anchor',
+    'result',
+  ];
+  const evidenceByCase = new Map();
+
+  if (
+    requireHeaders(
+      evidenceTable,
+      'Reporter evidence inventory',
+      evidenceHeaders,
+      errors
+    )
+  ) {
+    const seenEvidence = new Set();
+
+    for (const row of evidenceTable.rows) {
+      const caseId = row.case_id;
+      const label = `reporter evidence ${caseId || '<missing>'}`;
+
+      if (!cases.has(caseId)) {
+        errors.push(`${label} references an unknown case`);
+        continue;
+      }
+      for (const field of ['source_role', 'source_reference', 'claim']) {
+        if (!isResolved(row[field])) {
+          errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
+        }
+      }
+      const phase = row.phase?.toLowerCase();
+
+      if (!REGRESSION_PHASES.includes(phase)) {
+        errors.push(`${label} requires a valid interaction Phase`);
+      }
+
+      const evidenceKey = [
+        caseId,
+        row.source_role,
+        row.source_reference,
+        phase,
+        row.claim,
+      ].join('|');
+
+      if (seenEvidence.has(evidenceKey)) {
+        errors.push(`${label} duplicates one reporter claim`);
+      }
+      seenEvidence.add(evidenceKey);
+
+      const disposition = row.disposition?.toLowerCase();
+
+      if (disposition === 'required') {
+        const anchors = splitOracleAnchors(row.oracle_anchors);
+
+        if (anchors.length === 0) {
+          errors.push(`${label} requires Oracle anchors`);
+        }
+        for (const anchor of anchors) {
+          const parsed = parseOracleAnchor(anchor);
+
+          if (
+            !parsed ||
+            !REGRESSION_OBSERVATIONS.includes(parsed.observation) ||
+            !REGRESSION_PHASES.includes(parsed.phase)
+          ) {
+            errors.push(
+              `${label} has invalid Oracle anchor ${anchor}; expected observation@phase`
+            );
+          }
+        }
+        validateTestAnchor(row.executable_anchor, rootDir, label, errors);
+        if (complete && !isPass(row.result)) {
+          errors.push(`${label} requires Result pass: <evidence>`);
+        } else if (!complete && !isResolved(row.result)) {
+          errors.push(`${label} requires a current Result`);
+        }
+      } else if (isSuperseded(row.disposition)) {
+        for (const field of [
+          'oracle_anchors',
+          'executable_anchor',
+          'result',
+        ]) {
+          if (!isNotApplicable(row[field])) {
+            errors.push(
+              `${label} superseded ${field.replaceAll('_', ' ')} requires N/A reason`
+            );
+          }
+        }
+      } else {
+        errors.push(
+          `${label} requires Disposition required or superseded: <reason>`
+        );
+      }
+
+      const rows = evidenceByCase.get(caseId) ?? [];
+      rows.push(row);
+      evidenceByCase.set(caseId, rows);
+    }
+
+    for (const caseId of cases.keys()) {
+      if (
+        !evidenceByCase
+          .get(caseId)
+          ?.some((row) => row.disposition?.toLowerCase() === 'required')
+      ) {
+        errors.push(`${caseId} requires at least one required reporter claim`);
+      }
+    }
+  }
+
   const oracleTable = parseTable(markdown, 'Reporter oracle matrix');
   const oracleHeaders = [
     'case_id',
     'observation',
+    'phase',
     'applies',
     'positive_assertion',
     'forbidden_state',
@@ -338,7 +482,8 @@ export const validateRegressionPlan = (
   for (const row of oracleTable.rows) {
     const caseId = row.case_id;
     const observation = row.observation?.toLowerCase();
-    const label = `${caseId || '<missing>'} ${observation || '<missing>'}`;
+    const phase = row.phase?.toLowerCase();
+    const label = `${caseId || '<missing>'} ${observation || '<missing>'}@${phase || '<missing>'}`;
 
     if (!cases.has(caseId)) {
       errors.push(`Reporter oracle matrix references unknown case ${caseId}`);
@@ -348,15 +493,20 @@ export const validateRegressionPlan = (
       errors.push(`${label} has invalid Observation`);
       continue;
     }
+    if (!REGRESSION_PHASES.includes(phase)) {
+      errors.push(`${label} has invalid Phase`);
+      continue;
+    }
 
     const caseRows = oracleByCase.get(caseId) ?? new Map();
+    const oracleKey = `${observation}@${phase}`;
 
-    if (caseRows.has(observation)) {
+    if (caseRows.has(oracleKey)) {
       errors.push(`${label} is duplicated`);
       continue;
     }
 
-    caseRows.set(observation, row);
+    caseRows.set(oracleKey, row);
     oracleByCase.set(caseId, caseRows);
 
     const applies = row.applies?.toLowerCase();
@@ -413,7 +563,11 @@ export const validateRegressionPlan = (
     const rows = oracleByCase.get(caseId);
 
     for (const observation of REGRESSION_OBSERVATIONS) {
-      if (!rows?.has(observation)) {
+      if (
+        !Array.from(rows?.values() ?? []).some(
+          (row) => row.observation?.toLowerCase() === observation
+        )
+      ) {
         errors.push(`${caseId} is missing oracle observation ${observation}`);
       }
     }
@@ -427,11 +581,34 @@ export const validateRegressionPlan = (
     }
   }
 
+  for (const [caseId, evidenceRows] of evidenceByCase) {
+    const caseOracles = oracleByCase.get(caseId);
+
+    for (const row of evidenceRows) {
+      if (row.disposition?.toLowerCase() !== 'required') continue;
+
+      for (const anchor of splitOracleAnchors(row.oracle_anchors)) {
+        const oracle = caseOracles?.get(anchor);
+
+        if (!oracle) {
+          errors.push(
+            `reporter evidence ${caseId} requires missing oracle ${anchor}`
+          );
+        } else if (oracle.applies?.toLowerCase() !== 'yes') {
+          errors.push(
+            `reporter evidence ${caseId} requires applicable oracle ${anchor}`
+          );
+        }
+      }
+    }
+  }
+
   const failedTable = parseTable(markdown, 'Failed fix history');
   const failedHeaders = [
     'case_id',
     'attempt',
     'failure_signal',
+    'failure_kind',
     'prior_claim_invalidated',
     'regression_repair',
     'workflow_test',
@@ -469,6 +646,7 @@ export const validateRegressionPlan = (
     }
 
     const attemptsByCase = new Map();
+    const failureKindsByCase = new Map();
 
     for (const row of failedRows) {
       const caseId = row.case_id;
@@ -485,6 +663,18 @@ export const validateRegressionPlan = (
       }
       if (!isResolved(row.failure_signal)) {
         errors.push(`${label} requires Failure signal`);
+      }
+      const failureKind = row.failure_kind?.toLowerCase();
+
+      if (!FAILED_FIX_KINDS.has(failureKind)) {
+        errors.push(
+          `${label} requires Failure kind exact-replay, final-verification, or reporter-contradiction`
+        );
+      } else {
+        const failureKinds = failureKindsByCase.get(caseId) ?? new Set();
+
+        failureKinds.add(failureKind);
+        failureKindsByCase.set(caseId, failureKinds);
       }
       if (!/^yes:\s*\S/i.test(row.prior_claim_invalidated ?? '')) {
         errors.push(`${label} must invalidate the prior claim`);
@@ -545,6 +735,40 @@ export const validateRegressionPlan = (
         errors.push(`${caseId} failed fix attempts must be sequential from 1`);
       }
       failedCountByCase.set(caseId, attempts.length);
+    }
+
+    for (const [caseId, failedCount] of failedCountByCase) {
+      if (failedCount === 0) continue;
+
+      const evidenceRows = evidenceByCase.get(caseId) ?? [];
+      const requiredRoles = new Set(
+        evidenceRows
+          .filter((row) => row.disposition?.toLowerCase() === 'required')
+          .map((row) => row.source_role?.toLowerCase())
+      );
+      const baseAcceptance = evidenceRows.filter(
+        (row) => row.source_role?.toLowerCase() === 'base-acceptance'
+      );
+
+      if (
+        !baseAcceptance.some(
+          (row) =>
+            row.disposition?.toLowerCase() === 'required' ||
+            isSuperseded(row.disposition)
+        )
+      ) {
+        errors.push(
+          `${caseId} failed fix requires base-acceptance evidence marked required or superseded`
+        );
+      }
+      if (
+        failureKindsByCase.get(caseId)?.has('reporter-contradiction') &&
+        !requiredRoles.has('latest-reporter-delta')
+      ) {
+        errors.push(
+          `${caseId} reporter contradiction requires required latest-reporter-delta evidence`
+        );
+      }
     }
   }
 
@@ -780,6 +1004,11 @@ export const validateRegressionPlan = (
   for (const [caseId, selected] of cases) {
     const receipts = receiptsByCase.get(caseId) ?? [];
     const oracleRows = oracleByCase.get(caseId);
+    const geometryPaintApplies = Array.from(oracleRows?.values() ?? []).some(
+      (row) =>
+        row.observation?.toLowerCase() === 'geometry-paint' &&
+        row.applies?.toLowerCase() === 'yes'
+    );
     const browserSpecific =
       /\b(?:chrome|blink|compositor|native browser)\b/i.test(
         [
@@ -787,7 +1016,7 @@ export const validateRegressionPlan = (
           selected.setup_action,
           selected.expected_outcome,
         ].join(' ')
-      ) || oracleRows?.get('geometry-paint')?.applies?.toLowerCase() === 'yes';
+      ) || geometryPaintApplies;
 
     if (complete && receipts.length === 0) {
       errors.push(`${caseId} is missing a completed Proof receipt`);
@@ -797,9 +1026,12 @@ export const validateRegressionPlan = (
         errors.push(`${caseId} requires Exact environment exact-chrome: <proof>`);
       }
       if (
-        oracleRows?.get('geometry-paint')?.applies?.toLowerCase() === 'yes' &&
-        !/\bexact-chrome\b/i.test(
-          oracleRows.get('geometry-paint').proof_layer ?? ''
+        geometryPaintApplies &&
+        !Array.from(oracleRows?.values() ?? []).some(
+          (row) =>
+            row.observation?.toLowerCase() === 'geometry-paint' &&
+            row.applies?.toLowerCase() === 'yes' &&
+            /\bexact-chrome\b/i.test(row.proof_layer ?? '')
         )
       ) {
         errors.push(`${caseId} geometry-paint requires proof layer exact-chrome`);

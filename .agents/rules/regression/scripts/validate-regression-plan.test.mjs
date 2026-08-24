@@ -109,23 +109,74 @@ const oracleRows = ({
 
   return rows
     .map(
-      (row) =>
-        `| case-complete | ${row.observation} | ${row.applies} | ${row.positive} | ${row.forbidden} | ${row.layer} | ${
+      (row) => {
+        const phase =
+          row.observation === 'follow-up-input'
+            ? 'follow-up'
+            : row.observation === 'geometry-paint'
+              ? 'during-action'
+              : 'after-action';
+
+        return `| case-complete | ${row.observation} | ${phase} | ${row.applies} | ${row.positive} | ${row.forbidden} | ${row.layer} | ${
           row.applies === 'yes'
             ? `test: ${semanticTestPath}#${semanticTestTitle}`
             : 'N/A: deterministic workflow case'
-        } | ${row.result} |`
+        } | ${row.result} |`;
+      }
     )
     .join('\n');
 };
 
+const reporterEvidenceRows = ({
+  anchorToInapplicableOracle = false,
+  failedCount = 0,
+  failureKind = 'reporter-contradiction',
+  missingBase = false,
+  missingLatestReporterDelta = false,
+  missingOracle = false,
+  preImplementation = false,
+  supersededBase = false,
+} = {}) => {
+  const result = preImplementation
+    ? 'red: reporter claim reproduced'
+    : 'pass: cumulative reporter claim proved';
+  const rows = [];
+
+  if (failedCount > 0 && !missingBase) {
+    rows.push(
+      supersededBase
+        ? '| case-complete | base-acceptance | issue body acceptance criteria | during-action | preserve the original visual interaction | superseded: current product law replaced this acceptance | N/A: superseded acceptance | N/A: superseded acceptance | N/A: superseded acceptance |'
+        : `| case-complete | base-acceptance | issue body acceptance criteria | after-action | preserve the original semantic result | required | model@after-action | test: ${semanticTestPath}#${semanticTestTitle} | ${result} |`
+    );
+  }
+  if (
+    failedCount === 0 ||
+    (failureKind === 'reporter-contradiction' && !missingLatestReporterDelta)
+  ) {
+    rows.push(
+      `| case-complete | ${
+        failedCount > 0 ? 'latest-reporter-delta' : 'current-report'
+      } | latest reporter evidence | after-action | semantic closure matches the cumulative report | required | ${
+        missingOracle
+          ? 'focus@during-action'
+          : anchorToInapplicableOracle
+            ? 'focus@after-action'
+            : 'model@after-action'
+      } | test: ${semanticTestPath}#${semanticTestTitle} | ${result} |`
+    );
+  }
+
+  return rows.join('\n');
+};
+
 const noFailedFixRow =
-  '| none | 0 | N/A: no claimed fix failed | N/A: no prior claim | N/A: no repair | N/A: no repair test | no: no failure | N/A: no escalation | N/A: no resume |';
+  '| none | 0 | N/A: no claimed fix failed | N/A: no failed-fix kind | N/A: no prior claim | N/A: no repair | N/A: no repair test | no: no failure | N/A: no escalation | N/A: no resume |';
 const noGateFailureRow =
   '| none | N/A: no started gate failed | N/A: no failure | N/A: no repair | N/A: no rerun required |';
 
 const failedFixRows = ({
   count = 1,
+  failureKind = 'reporter-contradiction',
   invalidate = true,
   repair = true,
 } = {}) =>
@@ -136,7 +187,7 @@ const failedFixRows = ({
         ? 'best-api: accepted durable API; plate-plan: accepted adoption plan'
         : 'N/A: first failed fix without architecture pressure';
 
-    return `| case-complete | ${attempt} | reporter contradiction after claimed candidate | ${
+    return `| case-complete | ${attempt} | reporter contradiction after claimed candidate | ${failureKind} | ${
       invalidate ? 'yes: prior green and completion receipt revoked' : 'no'
     } | ${
       repair
@@ -150,17 +201,23 @@ const failedFixRows = ({
   }).join('\n');
 
 const fixture = ({
+  anchorToInapplicableOracle = false,
   architectureVerdict = 'patch',
   exactChrome = false,
   failedCount = 0,
+  failureKind = 'reporter-contradiction',
   failedRows,
   inputDigest = digest,
+  missingBaseEvidence = false,
+  missingLatestReporterDelta = false,
   missingAffectedCase = false,
   missingAffectedBaseline = false,
   missingForbidden = false,
+  missingReporterOracle = false,
   preImplementation = false,
   preImplementationBaseline = false,
   receiptIdOverride,
+  supersededBaseEvidence = false,
   unresolvedGateFailure = false,
 } = {}) => {
   const host = exactChrome
@@ -194,9 +251,23 @@ Selected executable cases:
     preImplementation ? 'reproduced' : 'completed'
   } | commit:${'1'.repeat(40)} | Regression |
 
+Reporter evidence inventory:
+| Case ID | Source role | Source reference | Phase | Claim | Disposition | Oracle anchors | Executable anchor | Result |
+|---|---|---|---|---|---|---|---|---|
+${reporterEvidenceRows({
+  anchorToInapplicableOracle,
+  failedCount,
+  failureKind,
+  missingBase: missingBaseEvidence,
+  missingLatestReporterDelta,
+  missingOracle: missingReporterOracle,
+  preImplementation,
+  supersededBase: supersededBaseEvidence,
+})}
+
 Reporter oracle matrix:
-| Case ID | Observation | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
-|---|---|---|---|---|---|---|---|
+| Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
+|---|---|---|---|---|---|---|---|---|
 ${oracleRows({ exactChrome, missingForbidden })}
 
 Proof receipts:
@@ -227,9 +298,9 @@ ${
 }
 
 Failed fix history:
-| Case ID | Attempt | Failure signal | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
-|---|---|---|---|---|---|---|---|---|
-${failedRows ?? (failedCount ? failedFixRows({ count: failedCount }) : noFailedFixRow)}
+| Case ID | Attempt | Failure signal | Failure kind | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
+|---|---|---|---|---|---|---|---|---|---|
+${failedRows ?? (failedCount ? failedFixRows({ count: failedCount, failureKind }) : noFailedFixRow)}
 
 Architecture pressure:
 | Case ID | Failed fix count | Triggers | Verdict | Best API | Layer plan | Proof |
@@ -305,8 +376,71 @@ test('positive assertions cannot omit the forbidden end state', () => {
       complete: true,
       rootDir: root,
     }).join('\n'),
-    /model requires Forbidden state/
+    /model@after-action requires Forbidden state/
   );
+});
+
+test('a failed fix cannot drop the base acceptance when adding the latest reporter delta', () => {
+  const errors = validateRegressionPlan(
+    fixture({ failedCount: 1, missingBaseEvidence: true }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(
+    errors,
+    /failed fix requires base-acceptance evidence marked required or superseded/
+  );
+});
+
+test('superseded base acceptance remains inventoried without executable proof', () => {
+  assert.deepEqual(
+    validateRegressionPlan(
+      fixture({ failedCount: 1, supersededBaseEvidence: true }),
+      { complete: true, rootDir: root }
+    ),
+    []
+  );
+});
+
+test('only applicable phase-specific oracles satisfy reporter evidence', () => {
+  const errors = validateRegressionPlan(
+    fixture({ anchorToInapplicableOracle: true }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(errors, /requires applicable oracle focus@after-action/);
+});
+
+test('every cumulative reporter claim must map to an existing phase-specific oracle', () => {
+  const errors = validateRegressionPlan(
+    fixture({ missingReporterOracle: true }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(errors, /requires missing oracle focus@during-action/);
+});
+
+test('only reporter contradictions require a latest reporter delta', () => {
+  const reporterErrors = validateRegressionPlan(
+    fixture({ failedCount: 1, missingLatestReporterDelta: true }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(
+    reporterErrors,
+    /reporter contradiction requires required latest-reporter-delta evidence/
+  );
+
+  for (const failureKind of ['exact-replay', 'final-verification']) {
+    assert.deepEqual(
+      validateRegressionPlan(fixture({ failedCount: 1, failureKind }), {
+        complete: true,
+        rootDir: root,
+      }),
+      [],
+      failureKind
+    );
+  }
 });
 
 test('a failed claimed fix requires invalidation and automatic workflow repair', () => {
@@ -387,6 +521,26 @@ test('browser-specific paint claims require exact Chrome proof', () => {
       rootDir: root,
     }),
     []
+  );
+});
+
+test('phase-qualified paint oracles trigger exact Chrome without source keywords', () => {
+  const oracleOnly = fixture({ exactChrome: true })
+    .replace('Blink compositor report', 'local workflow report')
+    .replace(
+      'exact-chrome: installed Chrome 140 on the proof host',
+      'browser: generic browser proof'
+    )
+    .replace('browser:exact-chrome:140', 'browser:chromium:140');
+  const errors = validateRegressionPlan(oracleOnly, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires Exact environment exact-chrome/);
+  assert.match(
+    errors,
+    /requires an executable-attested exact Chrome proof receipt/
   );
 });
 

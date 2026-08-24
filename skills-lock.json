@@ -67,6 +67,11 @@
       "sourceType": "github",
       "computedHash": "8cbf2bf600f392d7260e476e3202932a876e2281cda3b15a8b6a5a43f383252d"
     },
+    "unslop": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "b3ce38b1f2141c8a5d2f5695a536dfc4478846901333543c331e2be700e07a2c"
+    },
     "vercel-composition-patterns": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",

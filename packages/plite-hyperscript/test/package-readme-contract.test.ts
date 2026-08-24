@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import * as PliteHyperscript from '../src/index';
 
 const packageReadmePath = fileURLToPath(
-  new URL('../Readme.md', import.meta.url)
+  new URL('../README.md', import.meta.url)
 );
 const expectedPliteHyperscriptRuntimeRootExports = [
   'createEditor',

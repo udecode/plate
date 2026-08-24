@@ -426,29 +426,28 @@ async function getAllItemFiles(
   return uniqueFiles;
 }
 
+export function resolveRegistrySourceFile(appRoot: string, filePath: string) {
+  const relativePath = filePath.replace(/^src\/registry\//, '');
+
+  if (
+    path.isAbsolute(relativePath) ||
+    relativePath.split(/[\\/]/).includes('..')
+  ) {
+    throw new Error(`Invalid registry file path: ${filePath}`);
+  }
+
+  return path.join(appRoot, 'src/registry', relativePath);
+}
+
 async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
-  // Try different path resolutions
-  const possiblePaths = [
-    file.path,
-    file.path.replace('src/registry/', ''),
-    `src/registry/${file.path}`,
-  ].map((p) => path.join(process.cwd(), p));
+  const filePath = resolveRegistrySourceFile(process.cwd(), file.path);
 
-  let raw: string | undefined;
-
-  // Try each path until we find one that exists
-  for (const filePath of possiblePaths) {
-    try {
-      raw = await fs.readFile(filePath, 'utf-8');
-      break;
-    } catch {
-      // Try the next supported source extension.
-    }
-  }
-
-  if (!raw) {
-    throw new Error(`File not found: ${file.path}`);
-  }
+  // Next config explicitly traces this subtree for every runtime consumer.
+  const raw = await fs.readFile(
+    /* turbopackIgnore: true */
+    filePath,
+    'utf-8'
+  );
 
   const project = new Project({
     compilerOptions: {},
