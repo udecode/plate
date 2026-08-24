@@ -2,6 +2,8 @@ import React from 'react';
 
 import type { Value } from '@platejs/slate';
 
+import cloneDeep from 'lodash/cloneDeep.js';
+
 import type { AnyPluginConfig } from '../../lib';
 
 import {
@@ -70,6 +72,9 @@ export function usePlateEditor<
 
       const editor = createPlateEditor({
         ...options,
+        value: Array.isArray(options.value)
+          ? cloneDeep(options.value)
+          : options.value,
         onReady: (ctx) => {
           if (ctx.isAsync && isMountedRef.current) {
             forceRender({});
