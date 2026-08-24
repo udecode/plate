@@ -98,10 +98,10 @@ Blocked condition:
 Task state:
 - task_type: ordinary one-shot regression bug
 - task_complexity: normal / non-trivial / measurable
-- current_phase: PR update
-- current_phase_status: in progress
-- next_phase: closeout
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: none
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -175,7 +175,7 @@ Work Checklist:
       clone that gives each editor distinct arrays and node objects.
 - [x] Strengthen focused proof for root, element, and text identity isolation.
 - [x] Prove the 10,000-block Bun/JSC clone median remains below 16 ms.
-- [ ] Rerun focused/core/typecheck/lint/check/browser/autoreview gates and update
+- [x] Rerun focused/core/typecheck/lint/check/browser/autoreview gates and update
       PR #5110 with the complete checkout.
 - [x] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
@@ -235,7 +235,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Performance follow-up implementation | yes | Replace `cloneDeep` with a targeted Slate-node graph clone while preserving static-array isolation | `usePlateEditor` now clones every Slate array, element, and text object recursively; focused test passes with root/element/text identity assertions |
 | 10,000-block JSC budget | yes | Run two warmups and five measured clones against the repo huge-document fixture; median must be below 16 ms | Final algorithm Bun/JSC: 0.44 ms median, 0.32-0.52 ms range, five runs after two warmups; pass |
-| Follow-up verification and PR sync | yes | Rerun affected proof, review, full check, browser smoke, then commit and push all checkout changes to PR #5110 | Focused test, benchmark, core suite/typecheck, lint, Browser smoke, clean final autoreview, and final `pnpm check` passed; commit/push pending |
+| Follow-up verification and PR sync | yes | Rerun affected proof, review, full check, browser smoke, then commit and push all checkout changes to PR #5110 | All gates passed; implementation/test follow-up committed/pushed as `c543b96bf1`; PR #5110 head/body read back with the targeted clone and 0.44 ms proof; final ledger is the only remaining checkout change |
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Focused red/green repro, 852 core tests, source-first core typecheck, full `pnpm check`, browser interaction, and clean autoreview recorded below |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid bug; ID/editable-void framing rejected; exact path error reproduced before implementation; hook boundary selected |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Focused real React render reproduced exact stack; repo-owned Playwright N/A; Browser used for package smoke; screenshot N/A because no visual claim |
@@ -275,7 +275,8 @@ Phase / pass table:
 | PR / tracker sync | complete | PR #5110 opened/read back; issue #5107 comment posted | closeout |
 | Closeout | complete | plan evidence/final handoff filled; mechanical checker passes | final response |
 | Performance follow-up | complete | Targeted clone implemented; final 10,000-block Bun/JSC median 0.44 ms; focused/core/typecheck/lint/browser/full-check/final-autoreview proof green | PR update |
-| Follow-up PR update | in progress | Entire checkout contains only the three intended follow-up files; diff check passes | commit and push |
+| Follow-up PR update | complete | Entire checkout committed/pushed as `c543b96bf1`; PR #5110 is OPEN at that head and its performance/design body was read back | closeout |
+| Follow-up closeout | complete | Final ledger records implementation, benchmark, checks, Browser, review fix, clean rerun, commit, and PR readback | final goal checker |
 
 Findings:
 - No video or screenshot evidence exists.
@@ -369,6 +370,9 @@ Verification evidence:
 - command, same cwd: final `pnpm check` after the review fix -> exit 0; lint,
   54-package build/typecheck, fast/slow/slowest tests passed with one existing
   sidebar hook warning and zero errors.
+- artifact, GitHub: entire checkout committed/pushed as `c543b96bf1`; PR #5110
+  is OPEN at that head; body readback names the targeted node-graph clone, final
+  0.44 ms benchmark, exact verification, and current caveat.
 - command, cwd `/Users/zbeyens/git/plate`: focused RED test -> 0 pass / 1 fail,
   exact Slate path error.
 - command, same cwd: focused GREEN test -> 1 pass / 0 fail.
@@ -455,15 +459,18 @@ Timeline:
 - 2026-08-24 Autoreview found and fixed element-level `text` metadata
   misclassification; final focused test, source-first typecheck, 0.44 ms
   benchmark, clean autoreview, and full `pnpm check` passed.
+- 2026-08-24 Committed/pushed the entire checkout as `c543b96bf1`; updated and
+  read back PR #5110 at that exact head with final performance/design proof.
+- 2026-08-24 Final follow-up ledger closed; mechanical goal checker passed.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | All follow-up implementation, performance, browser, check, and review gates are green |
-| Where am I going? | Commit/push the entire checkout, verify PR #5110 head/body, then close the ledger |
+| Where am I? | Follow-up complete after verified implementation, proof, commit, push, and PR readback |
+| Where am I going? | Push the mechanically verified final ledger and hand off |
 | What is the goal? | Preserve #5107 correctness with a 10,000-block Bun/JSC median below 16 ms |
 | What have I learned? | Generic `cloneDeep` has a 10,000-block JSC cliff; targeted Slate-node cloning avoids it |
-| What have I done? | Implemented and hardened the targeted clone; passed 0.44 ms budget, full check, browser smoke, and final clean autoreview |
+| What have I done? | Implemented and hardened the targeted clone; passed every gate; pushed `c543b96bf1`; verified PR #5110 head/body |
 
 Open risks:
 - Residual: static array values pay one O(node count) targeted clone per
