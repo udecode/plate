@@ -201,7 +201,9 @@ const nextConfig = (_phase: string) => {
         : {}),
     },
 
-    transpilePackages: ['ts-morph'],
+    ...(process.env.PLATE_WWW_WEBPACK
+      ? { serverExternalPackages: ['ts-morph'] }
+      : { transpilePackages: ['ts-morph'] }),
     typedRoutes: true,
 
     redirects() {

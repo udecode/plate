@@ -56,6 +56,8 @@ test('Vercel uses the repo-owned bounded www build', async () => {
     /PLATE_WWW_WEBPACK=1 next build --webpack$/
   );
   assert.match(nextConfig, /process\.env\.PLATE_WWW_WEBPACK/);
+  assert.match(nextConfig, /serverExternalPackages: \['ts-morph'\]/);
+  assert.match(nextConfig, /transpilePackages: \['ts-morph'\]/);
   assert.match(nextConfig, /webpackBuildWorker: true/);
   assert.match(nextConfig, /webpackMemoryOptimizations: true/);
 });

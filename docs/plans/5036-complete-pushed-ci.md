@@ -150,7 +150,9 @@ time was 31m29s.
     - Repair: make the repository own a `www...` Turbo graph at concurrency
       two, compile www with Webpack, and enable Next's Webpack build worker and
       memory optimizations. The explicit Webpack lane omits the existing
-      Turbopack-only React Compiler flag. The registry remains CI-generated.
+      Turbopack-only React Compiler flag and externalizes the Node-only
+      `ts-morph` route dependency instead of bundling its embedded TypeScript
+      runtime. The registry remains CI-generated.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -230,11 +232,11 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-The existing repair stack, lint fix, synced-block stabilization, and Vercel
-ownership packet are pushed through
-`40bb59c760984c4aec0eea5dffc099ccd9cf3d0b`. The Webpack/Turbopack
-conditional config repair is verified in the isolated `../plate-ci` checkout
-and remains unpushed. Merge is not authorized.
+The existing repair stack, lint fix, synced-block stabilization, Vercel
+ownership packet, and Webpack/Turbopack conditional config are pushed through
+`4f30c71cf905cf9880765166e6bf069646993961`. The `ts-morph` server
+externalization is verified in the isolated `../plate-ci` checkout and remains
+unpushed. Merge is not authorized.
 
 ## Remaining risks and next action
 
@@ -248,6 +250,11 @@ and remains unpushed. Merge is not authorized.
   build tasks, then rejected the existing Turbopack-only React Compiler flag.
   The final conditional config removes that flag only from the explicit
   Webpack lane.
+- Vercel at `4f30c71…` compiled with Webpack past the prior OOM point and
+  failed in 6m24s because bundled `ts-morph` could not resolve its optional
+  `source-map-support` require from the registry-source route. The final
+  Webpack lane uses Next's server externalization for that Node-only package;
+  the Turbopack lane retains its existing transpilation behavior.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.
