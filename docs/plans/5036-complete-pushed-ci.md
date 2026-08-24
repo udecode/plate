@@ -30,7 +30,7 @@ check is terminal green. Do not merge.
       local bytes.
 - [x] Record exact remote conclusions and timings.
 - [x] Preserve unrelated user changes.
-- [ ] Commit and push the entire checkout, then monitor the exact SHA.
+- [x] Commit and push the entire checkout, then monitor the exact SHA.
 - [ ] Finish with every required GitHub and Vercel check green.
 
 The goal is complete only when every remote failure has a source-backed repair,
@@ -407,8 +407,7 @@ workflow updates, and the user-authored plans already present in the checkout.
 The global Vercel trace repair and final browser-oracle packet are pushed as
 `7f9fb798e3966fa0dd0567f46d56f803f483d00e`. The Plate-to-HTML schema repair,
 final matrix closure, WebKit model-caret repair, and exact root CI command are
-verified in the isolated `../plate-ci` checkout and remain unpushed. Merge is
-not authorized.
+pushed as `3a111ec15f86c96f6125bf720d942b06cec0fb4f`. Merge is not authorized.
 
 ## Remaining risks and next action
 
