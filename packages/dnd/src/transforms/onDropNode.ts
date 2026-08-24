@@ -179,7 +179,7 @@ export const onDropNode = (
         sourceEditor.tf.removeNodes({ at: path });
       });
     } else {
-      editor.tf.insertNodes(dragItem.element, { at: to });
+      editor.tf.insertNodes([dragItem.element], { at: to });
     }
   }
 };
