@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.3.9
+
+### Patch Changes
+
+- [#5110](https://github.com/udecode/plate/pull/5110) by [@zbeyens](https://github.com/zbeyens) – Fix multiple `usePlateEditor` instances crashing when initialized with the same static value
+
 ## 53.3.7
 
 ### Patch Changes
