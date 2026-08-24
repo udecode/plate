@@ -612,67 +612,76 @@ describe('incremental schema validation', () => {
     assert.equal(content?.allowedElementTypes.has('paragraph'), false);
   });
 
-  it('keeps omitted-value root lookup and local edits sparse at 50k owners', () => {
-    const ownerCount = 50_000;
-    const editor = createEditor({
-      extensions: [ownedRootExtension],
-      initialValue: {
-        children: Array.from({ length: ownerCount }, (_, index) =>
-          ownedRootElement('paragraph-owner', OWNED_ROOT, `${index}`)
-        ),
-        roots: { [OWNED_ROOT]: [paragraph('projected')] },
-      },
-    });
-    const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
-        record: (event: { id: string }) => void;
+  it(
+    'keeps omitted-value root lookup and local edits sparse at 50k owners',
+    {
+      // This asserts visited-owner counts, not wall time. Shared CI hosts need
+      // headroom to construct the 50k-owner fixture.
+      timeout: 20_000,
+    },
+    () => {
+      const ownerCount = 50_000;
+      const editor = createEditor({
+        extensions: [ownedRootExtension],
+        initialValue: {
+          children: Array.from({ length: ownerCount }, (_, index) =>
+            ownedRootElement('paragraph-owner', OWNED_ROOT, `${index}`)
+          ),
+          roots: { [OWNED_ROOT]: [paragraph('projected')] },
+        },
+      });
+      const profilerGlobal = globalThis as typeof globalThis & {
+        __PLITE_REACT_RENDER_PROFILER__?: {
+          record: (event: { id: string }) => void;
+        };
       };
-    };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
-    const events: string[] = [];
+      const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+      const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
-      record: ({ id }) => events.push(id),
-    };
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+        record: ({ id }) => events.push(id),
+      };
 
-    try {
-      const content = getEditorSchema(editor).getRootContent(OWNED_ROOT);
+      try {
+        const content = getEditorSchema(editor).getRootContent(OWNED_ROOT);
 
-      assert.equal(content?.allowedElementTypes.has('paragraph'), true);
-      assert.equal(content?.allowedElementTypes.has('heading'), false);
-      editor.update((tx) =>
-        tx.text.insert('!', {
-          at: { offset: 1, path: [Math.floor(ownerCount / 2), 0] },
-        })
-      );
+        assert.equal(content?.allowedElementTypes.has('paragraph'), true);
+        assert.equal(content?.allowedElementTypes.has('heading'), false);
+        editor.update((tx) =>
+          tx.text.insert('!', {
+            at: { offset: 1, path: [Math.floor(ownerCount / 2), 0] },
+          })
+        );
 
-      assert.equal(
-        events.filter((id) => id === 'schema-root-ownership-index-owner-visit')
-          .length,
-        0,
-        JSON.stringify(
-          Object.fromEntries(
-            [...new Set(events)].map((id) => [
-              id,
-              events.filter((event) => event === id).length,
-            ])
+        assert.equal(
+          events.filter(
+            (id) => id === 'schema-root-ownership-index-owner-visit'
+          ).length,
+          0,
+          JSON.stringify(
+            Object.fromEntries(
+              [...new Set(events)].map((id) => [
+                id,
+                events.filter((event) => event === id).length,
+              ])
+            )
           )
-        )
-      );
-      assert.equal(
-        events.filter((id) => id === 'schema-root-ownership-index-build')
-          .length,
-        0
-      );
-      assert.equal(
-        events.filter((id) => id === 'schema-validation-global-root-fallback')
-          .length,
-        0
-      );
-    } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+        );
+        assert.equal(
+          events.filter((id) => id === 'schema-root-ownership-index-build')
+            .length,
+          0
+        );
+        assert.equal(
+          events.filter((id) => id === 'schema-validation-global-root-fallback')
+            .length,
+          0
+        );
+      } finally {
+        profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      }
     }
-  });
+  );
 
   it('deletes 10k sibling owners with linear prefix work', () => {
     const editor = createOwnedRootEditor();
