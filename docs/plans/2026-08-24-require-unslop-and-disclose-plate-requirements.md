@@ -110,10 +110,10 @@ Blocked condition:
 Task state:
 - task_type: agent-doctrine repair plus source-backed docs correction
 - task_complexity: normal
-- current_phase: intake
-- current_phase_status: in_progress
-- next_phase: implementation
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: final response
+- goal_status: complete
 
 Current verdict:
 - verdict: inspect source before choosing exact disclosure wording
@@ -175,120 +175,227 @@ Work Checklist:
       surface, and root-cause layer.
 - [x] Required video or screen-recording evidence is N/A: no video was supplied.
 - [x] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
       is recorded with reason.
-- [ ] Release artifact requirement recorded: changeset, registry changelog, or
-      N/A with reason.
-- [ ] Final handoff shape decided: bug/feature/testing/batch/review/tracker
+- [x] Release artifact requirement recorded: N/A because only agent doctrine,
+      goal templates, and installation reference prose changed.
+- [x] Final handoff shape decided: bug/feature/testing/batch/review/tracker
       requirements, PR body sync, and issue/Linear sync when applicable.
-- [ ] Branch handling recorded for code-changing work: dedicated branch used,
-      new branch needed, or N/A with reason.
-- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
-      reinstall/rerun evidence or N/A with reason.
-- [ ] Workspace authority recorded: every proof command names the cwd/tool that
+- [x] Branch handling recorded: N/A because no branch, commit, push, or PR was
+      requested; another checkout writer swept the implementation into commit
+      `6ae5c0390f8c0f20a24dceedb8b696fc1f922092` during verification.
+- [x] Local-env-rot retry policy recorded: N/A because no install-corruption
+      signal occurred.
+- [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed behavior.
-- [ ] High-risk note recorded for public API, runtime, package-boundary,
+- [x] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
-      N/A with reason.
-- [ ] Review/P1 autoreview target selected from actual diff state for non-trivial
-      implementation work, or marked N/A with reason.
-- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
+      N/A with reason. The agent-action risk was future docs bypassing Unslop or
+      publishing false compatibility claims; source/mirror/template checks and
+      contract/docs proof cover both.
+- [x] Review/P1 autoreview target selected from actual diff state for non-trivial
+      implementation work: exact commit `6ae5c0390f8c0f20a24dceedb8b696fc1f922092`
+      in an immutable temporary clone after shared-checkout races.
+- [x] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
 - [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context.
 - [x] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
-- [ ] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason.
-- [ ] Docs pack: docs use current-state reference voice, not changelog voice.
-- [ ] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason.
+- [x] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason. Only React, React DOM, React Compiler, shadcn, and existing installation routes are named; their owners were audited.
+- [x] Docs pack: docs use current-state reference voice, not changelog voice.
+- [x] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason. The only new link is the live official React Compiler installation guide; existing internal links were unchanged.
+- [x] Docs pack: every created or edited docs artifact completed the required `unslop` file-edit pass after claims stabilized, with protected literals and technical claims preserved.
+- [x] Docs pack: requirement language separates hard compatibility, layer-specific setup, recommendations, and repo-only implementation details against live owners.
 - [x] Agent-native pack: source-of-truth rule files are edited instead of generated skill mirrors; implementation will touch only the rule source before regeneration.
 - [x] Agent-native pack: the changed agent action is discoverable from the skill/rule text through the explicit required Unslop section and workflow/gate rows.
-- [ ] Agent-native pack: generated mirrors are synced when `.agents/rules/**` changed, or N/A reason is recorded.
-- [ ] Agent-native pack: accepted agent-native review findings are fixed or explicitly rejected with reason.
+- [x] Agent-native pack: generated mirrors are synced after `pnpm install`; source and mirror bodies compare equal.
+- [x] Agent-native pack: agent-native review passed with no findings.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
-| Browser final proof | pending | Attach Browser/Chrome/Computer proof or exact caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| P1 autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; pass `--max-priority P1` with dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>`; fix and rerun within the hard cap of three helper invocations for one unchanged scope, then stop and report any remaining accepted/actionable findings; use P2 or P3 only when explicitly requested, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-24-require-unslop-and-disclose-plate-requirements.md` | pending |
-| Docs source-backed claim audit | pending | Verify docs claims against current source or record N/A | pending |
-| Docs links / routes / previews | pending | Verify leaf links, routes, anchors, and preview names or record N/A | pending |
-| Docs MDX/content parser | pending | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | pending |
-| Plugin page specifics | pending | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | pending |
-| Agent source / generated sync | pending | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | pending |
-| Agent action discoverability | pending | Source-audit the skill/rule path an agent will read | pending |
-| Agent-native review | pending | Load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted findings, or record N/A | pending |
+| Named verification threshold | yes | Run the named proof | Compiler contract, six contract tests, docs checks, lint, Unslop audits, mirror parity, Browser attempt, agent-native review, and P1 autoreview completed |
+| Bug reproduced before fix | no | N/A | N/A: doctrine/reference correction, not a runtime bug |
+| Targeted behavior verification | yes | Verify changed workflow/docs | Source/mirror/template assertions and docs/Compiler checks passed |
+| TypeScript or typed config changed | no | N/A | N/A: no TypeScript or typed config changed |
+| Package exports or file layout changed | no | N/A | N/A: no exports or file layout changed; `pnpm brl` not required |
+| Package manifests, lockfile, or install graph changed | no | N/A | N/A: `pnpm install` regenerated agent mirrors but did not change the package contract for this task |
+| Agent rules or skills changed | yes | Regenerate and compare | `pnpm install` passed; docs-creator source/mirror bodies are equal |
+| Workspace authority proof | yes | Run in owning workspace | Every command ran in `/Users/zbeyens/git/plate-2`; Browser targeted the www server at `127.0.0.1:3000` |
+| Browser surface changed | yes | Test exact docs route | Browser reached `/docs/installation`; compilation stopped in pre-existing `apps/www/src/__registry__/index.tsx` missing generated registry imports |
+| Browser final proof | yes | Record proof or exact caveat | Exact Browser caveat recorded; `build:source` and `check:docs` passed |
+| CI-controlled template output changed | no | N/A | N/A: docs plan source templates changed intentionally; no CI-owned `templates/**` or registry output was edited |
+| Package behavior or public API changed | no | N/A | N/A: no package behavior/API change; no changeset |
+| Registry-only component work changed | no | N/A | N/A: no registry component work; no registry changelog |
+| Docs or content changed | yes | Run docs proof | Source claims audited; `pnpm --filter www check:docs` passed; Browser caveat recorded |
+| High-risk mini gate | yes | Prove agent-action boundary | Risk is bypassed prose cleanup or false requirements; mandatory gate, mirror parity, literal-preserving Unslop pass, and live contract audit cover it |
+| Agent-native review for agent/tooling changes | yes | Run capability review | PASS: both meaningful actions have discoverable routes, literal source owners, mirrors/docs, and owning proof; no findings |
+| Local install corruption suspected | no | N/A | N/A: no corruption signal; reinstall not used |
+| P1 autoreview for non-trivial implementation changes | yes | Run final P1 review | Third and final allowed invocation on immutable clone of commit `6ae5c0390f8c0f20a24dceedb8b696fc1f922092` was clean; first local run was a false alarm after an external commit, second was invalidated by shared-checkout mutation |
+| PR create or update | no | N/A | N/A: no PR requested |
+| Task-style PR body verified | no | N/A | N/A: no PR exists for this task |
+| PR proof image hosting | no | N/A | N/A: no PR or proof image |
+| Tracker sync-back | no | N/A | N/A: no issue or tracker |
+| Final handoff contract | yes | Fill fields below | Completed below with exact outcome, proof, caveat, and N/A external mutation lines |
+| Final lint | yes | Run lint fix and check | `pnpm lint:fix` and `pnpm lint` passed |
+| Output budget discipline | yes | Record accidental output and recovery | Two oversized generated-index outputs occurred; subsequent Browser/error reads were bounded and the server was stopped |
+| Timed checkpoint | no | N/A | N/A: no duration requested |
+| Goal plan complete | yes | Run final checker | `[autogoal] complete` |
+| Docs source-backed claim audit | yes | Audit live owners | Peers, compiler target, app config, registry metadata, contract checker, and official React docs agree |
+| Required Unslop pass | yes | Run file-edit pass and audit | Completed on the source rule, generated mirror, both docs templates, both installation pages, and this plan; literals and claims preserved; deterministic findings were deliberate heading style or quoted banned wording |
+| Requirements disclosure | yes | Classify claims | React/DOM 19.2 is hard compatibility; app Compiler is copied-source setup; published package compilation is package-owned; shadcn does not configure the app build tool |
+| Docs links / routes / previews | yes | Verify new link and routes | Official React Compiler link verified; internal routes unchanged; exact Browser compilation caveat recorded |
+| Docs MDX/content parser | yes | Run parser/check | `pnpm --filter www build:source` and `pnpm --filter www check:docs` passed |
+| Plugin page specifics | no | N/A | N/A: installation entry pages, not plugin pages |
+| Agent source / generated sync | yes | Regenerate and compare | `pnpm install` passed; source/mirror body equality and required sections passed |
+| Agent action discoverability | yes | Audit route | `docs-creator` now names the required Unslop step in its section, workflow, and closeout checklist; templates require evidence |
+| Agent-native review | yes | Run capability review | PASS; no P0-P3 findings |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | implementation |
-| Implementation | pending | | verification |
-| Verification | pending | | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| Intake and source read | complete | Exact owners and official React docs audited | implementation |
+| Implementation | complete | Rule, mirror, templates, and EN/CN installation pages contain the durable contract | verification |
+| Verification | complete | Compiler contract/tests, docs checks, lint, Unslop, mirror parity, Browser caveat, agent-native review, and P1 review closed | closeout |
+| PR / tracker sync | complete | N/A: no PR or tracker requested | final response |
+| Closeout | complete | Final plan checker passed | final response |
 
 Findings:
-- None yet.
+- Thirty-eight React package manifests declare both React and React DOM peers at
+  `>=19.2.0`; `packages/yjs` declares the React peer without React DOM.
+- Package compilation targets React 19. React 19 supplies the Compiler runtime,
+  so no compatibility shim is part of the package contract.
+- Both app configs enable React Compiler. Copied Plate UI source therefore needs
+  the consuming app's Compiler setup, while imported published package code does
+  not need consumer recompilation.
+- Registry metadata installs dependencies and source files but does not configure
+  the consuming build tool.
+- Browser rendering is blocked before page content by stale generated imports in
+  `apps/www/src/__registry__/index.tsx`. Repo policy forbids local registry builds;
+  parser/source parity is green and the blocker is outside this task's authored
+  sources.
 
 Decisions and tradeoffs:
-- None yet.
+- React and React DOM `>=19.2.0` are the hard consumer compatibility floor.
+- React Compiler is a consuming-app requirement only for copied Plate UI source.
+  Published Plate package code is compiled for React 19 before publication and
+  does not require consumer recompilation.
+- The shadcn registry command installs files and dependencies but does not own
+  the consuming app's build-tool configuration, so the install page says so.
+- The deterministic Unslop audit is evidence and a candidate finder, not a
+  substitute for the required file-edit judgment pass.
 
 Implementation notes:
-- None yet.
+- Added requirements/disclosure ownership and a mandatory Unslop file-edit pass
+  to `.agents/rules/docs-creator.mdc`, then regenerated its installed mirror.
+- Added the same completion evidence to both docs goal templates.
+- Added English and Chinese installation requirement tables before the first
+  install command.
+
+Review scope baseline:
+- Original request: require Unslop for every docs artifact and verify/disclose
+  Plate React 19 and React Compiler requirements.
+- Invariant: future docs work cannot close without a deliberate Unslop pass;
+  install docs cannot blur package compatibility, copied-source app setup, and
+  package-build implementation facts.
+- Target branch: current dirty checkout; no commit, push, or PR authorized.
+- Owner boundary: `.agents/rules/docs-creator.mdc`, its generated skill mirror,
+  docs plan templates, and the installation entry pages.
+- Relevant siblings: package peer manifests, compiler build config, app Next
+  configs, registry metadata, and the React Compiler contract checker.
+- Public/security/product contract: wording only; no runtime, API, package,
+  security, release, or external-state change.
+- Review target: only the Unslop/docs-creator/template/installation disclosure
+  changes above; unrelated checkout drift is outside this request.
 
 Review fixes:
-- None yet.
+- Rejected the first autoreview finding. It claimed implementation files were
+  absent because another checkout writer committed those files while local-mode
+  review was starting; exact commit inspection proved all six files present.
+- The exact-commit retry was invalidated by another shared-checkout mutation.
+- The third and final allowed invocation ran from an immutable temporary clone
+  of `6ae5c0390f8c0f20a24dceedb8b696fc1f922092` and returned clean with no P0/P1
+  findings.
+
+Agent-native review:
+
+### Verdict
+PASS
+
+### Capability Map
+| User action | Agent route | Source owner | Mirror/lock/doc | Proof | Status |
+|---|---|---|---|---|---|
+| Create or edit Plate docs | `docs-creator` then `unslop` file-edit mode | `.agents/rules/docs-creator.mdc` | `.agents/skills/docs-creator/SKILL.md` plus both docs goal templates | `pnpm install`, body equality, section/gate assertions, Unslop audit | pass |
+| Install Plate with the correct runtime/compiler setup | `docs-creator` install/get-started lane | package peers, `tooling/config/tsdown.config.ts`, app Next configs, registry metadata, Compiler contract | English and Chinese installation entry pages | Compiler contract and six tests, docs parser/parity, official React docs, Browser caveat | pass |
+
+### Findings
+- None.
+
+### Accepted / Rejected
+- Accepted: none.
+- Rejected: none; Browser limitation is a repo-generated-input caveat, not an
+  agent-route gap introduced by this task.
+
+### Verification
+- Source/mirror parity and template gate assertion: pass.
+- `pnpm install`: pass.
+- `pnpm --filter www check:docs`: pass.
+- React Compiler contract and six unit tests: pass.
+
+### Needs Attention
+- None for this action surface.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Next MCP compile response streamed the full generated-registry failure set | 1 | Use bounded Browser locators/log summaries | Exact owner and representative missing import captured; no registry generation run |
+| Stopping the dev server flushed its large buffered generated-index log | 1 | Keep final evidence to the bounded Browser summary | Server stopped; no further broad output |
+| Local autoreview saw only the goal plan after another checkout writer committed implementation files | 1 | Inspect the exact commit and switch to commit review | Finding rejected with file-list proof |
+| Exact-commit autoreview in the shared checkout detected concurrent source mutation | 1 | Run the last allowed invocation from an immutable temporary clone | Clean P1 result |
+| Temporary-clone removal command was rejected by command safety policy | 1 | Leave the isolated `/tmp` clone for normal system cleanup | No workspace or product impact |
 
 Verification evidence:
-- Pending.
+- `pnpm install` -> pass; generated docs-creator mirror refreshed.
+- Source/mirror body comparison plus required-section/template-gate assertions ->
+  all true.
+- `node tooling/scripts/check-react-compiler-contract.mjs` -> pass across 434
+  files.
+- `node --test tooling/scripts/check-react-compiler-contract.test.mjs` -> six
+  tests passed.
+- `pnpm --filter www build:source` -> pass.
+- `pnpm --filter www check:docs` -> API reference, MDX source, and docs parity
+  passed.
+- `pnpm lint:fix` and `pnpm lint` -> pass.
+- Final Unslop audits completed for all seven changed prose artifacts, including
+  the generated mirror and this plan. No actionable slop remained; reported
+  title-case headings follow the destination style, and `now supports` appears
+  only as quoted forbidden wording.
+- Browser -> `/docs/installation` reached a Next build error in the pre-existing
+  generated registry index; representative missing imports include
+  `editor-base-kit.tsx`, `editor-kit.tsx`, and registry UI files. The changed MDX
+  was not reached.
+- Agent-native review -> PASS, no findings.
+- P1 autoreview -> clean on immutable clone of commit
+  `6ae5c0390f8c0f20a24dceedb8b696fc1f922092`.
+- Goal-plan checker -> `[autogoal] complete`.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: N/A: no PR requested or created
+- Issue / tracker line: N/A: direct task with no tracker
+- Confidence line: high; source, generated mirror, docs, contract, lint, and review proof agree
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: N/A: no runtime bug; Browser reproduced the unrelated generated-index build blocker
+  - Verified: Compiler contract/tests, docs checks, lint, Unslop, mirror parity, agent-native review, and P1 review passed
+- Browser check: exact docs route attempted; blocked in CI-owned generated registry index before MDX render
+- Outcome: every docs artifact now requires an Unslop file-edit pass; installation docs distinguish the React 19.2 peer floor, app-owned Compiler setup for copied UI, and precompiled package code
+- Caveat: live rendered-page proof remains blocked by stale generated registry imports; local registry generation is prohibited
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: source docs-creator doctrine, installed mirror, goal templates, and owning installation entry pages
+  - Why not quick patch: prose cleanup advice alone would remain optional and unprovable
+  - Why not broader change: package/runtime/compiler behavior already satisfies the contract; only disclosure and docs workflow were missing
+- Verified: commands and reviews listed above
+- PR body verified: N/A: no PR
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -311,22 +418,28 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: N/A: no PR requested
+- Issue / tracker: N/A: none
+- Browser proof: exact route attempted with Browser; pre-existing generated registry imports blocked compilation before content render
+- Caveats: no runtime or API change; Chinese prose received the same literal-preserving pass, while the deterministic Unslop script is English-first and produced no Chinese-language findings
 
 Timeline:
 - 2026-08-24T09:09:46.609Z Task goal plan created.
+- 2026-08-24 Source owners audited; doctrine, templates, and installation pages updated.
+- 2026-08-24 `pnpm install`, compiler contract/tests, docs checks, lint, Unslop, mirror parity, and Browser attempt completed.
+- 2026-08-24 Another checkout writer committed the six implementation files in `6ae5c0390f8c0f20a24dceedb8b696fc1f922092` during verification.
+- 2026-08-24 Agent-native review passed; final P1 autoreview was clean from an immutable temporary clone.
+- 2026-08-24 Final Unslop audit, lint, and goal-plan checker passed.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Complete |
+| Where am I going? | Final response |
+| What is the goal? | Require Unslop for all docs work and disclose Plate React/compiler requirements accurately |
+| What have I learned? | React 19.2 is the peer floor; copied UI and published packages have different Compiler owners |
+| What have I done? | Updated doctrine/templates/docs and closed source, parser, contract, lint, Browser-caveat, agent-native, and P1 proof |
 
 Open risks:
-- Pending.
+- Rendered-page proof remains unavailable until CI refreshes the generated
+  registry index. This task did not edit or regenerate that CI-owned artifact.

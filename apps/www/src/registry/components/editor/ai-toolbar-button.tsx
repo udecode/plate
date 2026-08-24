@@ -17,9 +17,6 @@ export function AIToolbarButton(
       onClick={() => {
         api.show();
       }}
-      onMouseDown={(e) => {
-        e.preventDefault();
-      }}
     />
   );
 }

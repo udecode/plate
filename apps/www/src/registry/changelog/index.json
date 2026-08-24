@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-08-24-preserve-toolbar-focus",
+      "href": "/registry/changelog/2026-08-24-preserve-toolbar-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve editor focus through toolbar interactions",
+      "change": {
+        "type": "source",
+        "date": "2026-08-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toolbar", "floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-24-react-compiler-owned-editor-state",
       "href": "/registry/changelog/2026-08-24-react-compiler-owned-editor-state.json",
       "status": "draft",

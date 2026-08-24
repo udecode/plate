@@ -8,15 +8,88 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
+type ToolbarOverlayContextValue = (id: symbol, open: boolean) => void;
+
+const ToolbarOverlayContext = React.createContext<ToolbarOverlayContextValue>(
+  () => {}
+);
+
+type ToolbarOverlayTriggerProps = Pick<
+  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
+  'aria-expanded' | 'aria-haspopup'
+>;
+
+const isOverlayTrigger = ({
+  'aria-haspopup': hasPopup,
+}: ToolbarOverlayTriggerProps) => hasPopup !== undefined && hasPopup !== false;
+
+const isOverlayOpen = ({
+  'aria-expanded': expanded,
+}: ToolbarOverlayTriggerProps) => expanded === true || expanded === 'true';
+
+const useToolbarOverlayTrigger = (props: ToolbarOverlayTriggerProps) => {
+  const [overlayId] = React.useState(() => Symbol('toolbar-overlay'));
+  const reportOverlayOpen = React.useContext(ToolbarOverlayContext);
+  const ownsOverlay = isOverlayTrigger(props);
+  const open = isOverlayOpen(props);
+  const registeredRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (ownsOverlay) {
+      registeredRef.current = true;
+      reportOverlayOpen(overlayId, open);
+    } else if (registeredRef.current) {
+      registeredRef.current = false;
+      reportOverlayOpen(overlayId, false);
+    }
+  }, [open, overlayId, ownsOverlay, reportOverlayOpen]);
+
+  React.useEffect(
+    () => () => {
+      if (registeredRef.current) reportOverlayOpen(overlayId, false);
+    },
+    [overlayId, reportOverlayOpen]
+  );
+
+  return () => {
+    if (ownsOverlay) reportOverlayOpen(overlayId, true);
+  };
+};
+
 export function Toolbar({
   className,
+  onOverlayOpenChange,
   ...props
-}: React.ComponentProps<typeof ToolbarPrimitive.Root>) {
+}: React.ComponentProps<typeof ToolbarPrimitive.Root> & {
+  onOverlayOpenChange?: (open: boolean) => void;
+}) {
+  const openOverlayIdsRef = React.useRef(new Set<symbol>());
+  const overlayOpenRef = React.useRef(false);
+  const reportOverlayOpen = React.useCallback<ToolbarOverlayContextValue>(
+    (id, open) => {
+      if (open) {
+        openOverlayIdsRef.current.add(id);
+      } else {
+        openOverlayIdsRef.current.delete(id);
+      }
+
+      const nextOpen = openOverlayIdsRef.current.size > 0;
+
+      if (overlayOpenRef.current !== nextOpen) {
+        overlayOpenRef.current = nextOpen;
+        onOverlayOpenChange?.(nextOpen);
+      }
+    },
+    [onOverlayOpenChange]
+  );
+
   return (
-    <ToolbarPrimitive.Root
-      className={cn('relative flex select-none items-center', className)}
-      {...props}
-    />
+    <ToolbarOverlayContext.Provider value={reportOverlayOpen}>
+      <ToolbarPrimitive.Root
+        className={cn('relative flex select-none items-center', className)}
+        {...props}
+      />
+    </ToolbarOverlayContext.Provider>
   );
 }
 
@@ -94,6 +167,9 @@ export function ToolbarButton({
   children,
   className,
   isDropdown,
+  onKeyDown,
+  onMouseDown,
+  onPointerDown,
   pressed,
   size = 'sm',
   tooltip,
@@ -103,6 +179,8 @@ export function ToolbarButton({
   variant,
   ...props
 }: ToolbarButtonProps) {
+  const reportOverlayOpening = useToolbarOverlayTrigger(props);
+
   const button = (
     <ToolbarPrimitive.Button
       className={cn(
@@ -113,6 +191,27 @@ export function ToolbarButton({
       aria-pressed={pressed}
       data-state={pressed === undefined ? undefined : pressed ? 'on' : 'off'}
       {...props}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        onMouseDown?.(event);
+      }}
+      onKeyDown={(event) => {
+        if (
+          !props.disabled &&
+          ['Enter', ' ', 'ArrowDown'].includes(event.key)
+        ) {
+          reportOverlayOpening();
+        }
+
+        onKeyDown?.(event);
+      }}
+      onPointerDown={(event) => {
+        if (!props.disabled && event.button === 0 && !event.ctrlKey) {
+          reportOverlayOpening();
+        }
+
+        onPointerDown?.(event);
+      }}
     >
       {isDropdown ? (
         <>
@@ -175,10 +274,15 @@ type ToolbarSplitButtonPrimaryProps = Omit<
 export function ToolbarSplitButtonPrimary({
   children,
   className,
+  onKeyDown,
+  onMouseDown,
+  onPointerDown,
   size = 'sm',
   variant,
   ...props
 }: ToolbarSplitButtonPrimaryProps) {
+  const reportOverlayOpening = useToolbarOverlayTrigger(props);
+
   return (
     <ToolbarPrimitive.Button
       className={cn(
@@ -192,6 +296,27 @@ export function ToolbarSplitButtonPrimary({
       )}
       type="button"
       {...props}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        onMouseDown?.(event);
+      }}
+      onKeyDown={(event) => {
+        if (
+          !props.disabled &&
+          ['Enter', ' ', 'ArrowDown'].includes(event.key)
+        ) {
+          reportOverlayOpening();
+        }
+
+        onKeyDown?.(event);
+      }}
+      onPointerDown={(event) => {
+        if (!props.disabled && event.button === 0 && !event.ctrlKey) {
+          reportOverlayOpening();
+        }
+
+        onPointerDown?.(event);
+      }}
     >
       {children}
     </ToolbarPrimitive.Button>
@@ -200,11 +325,16 @@ export function ToolbarSplitButtonPrimary({
 
 export function ToolbarSplitButtonSecondary({
   className,
+  onKeyDown,
+  onMouseDown,
+  onPointerDown,
   size,
   variant,
   ...props
 }: React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button> &
   VariantProps<typeof dropdownArrowVariants>) {
+  const reportOverlayOpening = useToolbarOverlayTrigger(props);
+
   return (
     <ToolbarPrimitive.Button
       className={cn(
@@ -217,6 +347,27 @@ export function ToolbarSplitButtonSecondary({
       )}
       type="button"
       {...props}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        onMouseDown?.(event);
+      }}
+      onKeyDown={(event) => {
+        if (
+          !props.disabled &&
+          ['Enter', ' ', 'ArrowDown'].includes(event.key)
+        ) {
+          reportOverlayOpening();
+        }
+
+        onKeyDown?.(event);
+      }}
+      onPointerDown={(event) => {
+        if (!props.disabled && event.button === 0 && !event.ctrlKey) {
+          reportOverlayOpening();
+        }
+
+        onPointerDown?.(event);
+      }}
     >
       <ChevronDown className="size-3.5 text-muted-foreground" data-icon />
     </ToolbarPrimitive.Button>

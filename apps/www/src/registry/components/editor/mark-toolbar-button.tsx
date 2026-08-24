@@ -62,9 +62,6 @@ export function MarkToolbarButton({
 
         editor.api.dom.focus();
       }}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
     />
   );
 }

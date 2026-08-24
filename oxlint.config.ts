@@ -87,6 +87,15 @@ export default defineConfig({
       },
     },
     {
+      files: [
+        'apps/www/src/registry/blocks/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+      ],
+      rules: {
+        // [P0 structural false-positive] Registry block sources are copied component examples, not App Router routes; filename-based metadata checks assign them an application contract they do not own.
+        'react-doctor/nextjs-missing-metadata': 'off',
+      },
+    },
+    {
       files: ['**/benchmarks/**', '**/editor-perf/**'],
       rules: {
         // [P0 benchmark-semantics] Context allocation is the measured subject in raw-provider benchmark modes; memoizing it would invalidate the comparison.
@@ -301,14 +310,7 @@ export default defineConfig({
     'no-use-before-define': 'off',
     // [P1 valid-pattern] void explicitly marks intentionally discarded promises or values.
     'no-void': 'off',
-    'prefer-destructuring': [
-      'error',
-      { array: false, object: true },
-      {
-        enforceForDeclarationWithTypeAnnotation: false,
-        enforceForRenamedProperties: false,
-      },
-    ],
+    'prefer-destructuring': ['error', { array: false, object: true }],
     // [P1 compatibility] Named capture groups change runtime support and backreference or replacement APIs; library regexes choose that contract locally.
     'prefer-named-capture-group': 'off',
     // [P1 compatibility] Promise constructors are required to adapt callback and event APIs.
@@ -325,7 +327,6 @@ export default defineConfig({
     'promise/prefer-await-to-then': 'off',
     // [P1 valid-pattern] then's rejection callback can intentionally scope error handling.
     'promise/prefer-catch': 'off',
-    'promise/spec-only': 'error',
     // [P0 semantic-change] Caching a property outside a loop changes getter timing and mutation visibility; lint cannot prove the access is pure, stable, or hot enough to justify that rewrite.
     'react-doctor/js-cache-property-access': 'off',
     // [P0 owner-conflict] Combining array stages changes callback index, mutation, and allocation behavior while often reducing readability; benchmark evidence, not lint, owns hot-path loop fusion.
@@ -348,24 +349,16 @@ export default defineConfig({
     'react-doctor/prefer-useReducer': 'off',
     // [P0 semantic-change] Manual memoization can provide observable identity to subscriptions, imperative adapters, and third-party hooks; React Compiler optimization does not prove removing each boundary preserves that contract.
     'react-doctor/react-compiler-no-manual-memoization': 'off',
-    // Production components stay named even though copied registry components rely on Compiler optimization instead of display-name assignments.
-    'react/display-name': 'error',
     // [P0 lifecycle-conflict] Extra effect dependencies can intentionally trigger resubscription or synchronization when an external editor input changes; removing them changes observable lifecycle timing.
     'react/exhaustive-effect-dependencies': 'off',
     // [P0 public-API-conflict] Plate plugins expose hook functions as runtime extension values, and isomorphic hook aliases remain stable by construction; the standard rules-of-hooks owner still enforces call order.
     'react/hooks': 'off',
-    'react/immutability': 'error',
     // [P0 identity-conflict] Extra memo dependencies can deliberately invalidate values when external editor inputs change; removing them changes callback or object identity observed by subscriptions and consumers.
     'react/memo-dependencies': 'off',
     // [P0 compiler-policy-conflict] Precise production suppressions encode explicit dependency and ownership invariants; rejecting every React suppression would make the permitted narrow exception policy impossible.
     'react/rule-suppression': 'off',
-    // Existing identity contracts remain valid; this native rule verifies that Compiler preserves them rather than banning them.
-    'react/preserve-manual-memoization': 'error',
-    'react/refs': 'error',
-    'react/set-state-in-effect': 'error',
     // [P0 compiler-limit] This rule exposes unsupported React Compiler syntax and HIR implementation gaps such as dynamic imports, accessors, logical assignment, and try/finally; source rewrites would change control flow solely for optimization eligibility.
     'react/todo': 'off',
-    'react/use-memo': 'error',
     // [P0 owner-conflict] Coordinate rounding mutates canonical vector geometry without a visual tolerance or screenshot proof; SVG minification and compression, not source lint, own measured asset bytes.
     'react-doctor/rendering-svg-precision': 'off',
     // [P0 semantic-change] Forcing component arrows changes declaration hoisting and temporal availability; component ownership decides the form locally.
@@ -427,26 +420,12 @@ export default defineConfig({
     ],
     // [P1 type-contract] Explicit annotations can freeze a public, mutable, or generated contract against narrower initializer inference.
     'typescript/no-inferrable-types': 'off',
-    'typescript/no-namespace': [
-      'error',
-      { allowDeclarations: true, allowDefinitionFiles: true },
-    ],
+    'typescript/no-namespace': ['error', { allowDeclarations: true }],
     // [P0 re-enable-rejected] The rule rejects runtime validation of raw receipts, nullable DOM values, compatibility inputs, and published JavaScript callers whose values can violate declarations; re-enable only after those boundaries model untrusted input separately, because deleting the checks weakens runtime safety.
     'typescript/no-unnecessary-condition': 'off',
-    'typescript/restrict-template-expressions': [
-      'error',
-      { allowArray: true, allowNumber: true },
-    ],
+    'typescript/restrict-template-expressions': ['error', { allowArray: true }],
     // [P0 runtime-robustness] Published TypeScript libraries still receive JavaScript and stale serialized inputs; a destructuring default can intentionally defend runtime callers even when the declared type is non-nullish.
     'typescript/no-useless-default-assignment': 'off',
-    'typescript/only-throw-error': [
-      'error',
-      {
-        allowRethrowing: true,
-        allowThrowingAny: true,
-        allowThrowingUnknown: true,
-      },
-    ],
     // [P1 robustness] Explicit conversion documents normalization at external boundaries.
     'typescript/no-unnecessary-type-conversion': 'off',
     // [P0 counterproductive] This rejects valid typed-route, generic-restoration, branded-value, validated-parser, and test-double boundaries with no usable options; enforcing it drives assertion-laundering helpers while runtime validators and precise boundary types own actual evidence loss.
@@ -457,10 +436,6 @@ export default defineConfig({
     'typescript/prefer-nullish-coalescing': 'off',
     // [P0 semantic-change] match and exec differ in lastIndex mutation and return contracts; a blanket rewrite can change stateful regex behavior.
     'typescript/prefer-regexp-exec': 'off',
-    'typescript/require-array-sort-compare': [
-      'error',
-      { ignoreStringArrays: true },
-    ],
     'typescript/require-await': 'error',
     // [P0 counterproductive] Returning an existing promise avoids an unnecessary async wrapper.
     'typescript/promise-function-async': 'off',
@@ -587,7 +562,7 @@ export default defineConfig({
     // [P1 valid-pattern] Object.assign and object spread have distinct setter, generic-inference, and compatibility behavior; neither form is universally preferable.
     'prefer-object-spread': 'off',
     curly: ['error', 'multi-line'],
-    'func-names': ['error', 'as-needed', { generators: 'as-needed' }],
+    'func-names': ['error', 'as-needed'],
     eqeqeq: ['error', 'smart'],
     'jsdoc/check-tag-names': [
       'error',

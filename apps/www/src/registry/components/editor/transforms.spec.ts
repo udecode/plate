@@ -159,6 +159,23 @@ describe('editor block transforms', () => {
     ]);
   });
 
+  it('turns the block under an expanded selection into a heading', () => {
+    const selection = {
+      kind: 'text' as const,
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 3, path: [1, 0] },
+    };
+    const editor = createEditor({ selection });
+
+    applyBlockAction(editor, 'heading-1');
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], level: 1, type: 'heading' },
+    ]);
+    expect(editor.read.selection()).toEqual(selection);
+  });
+
   it('upserts a list action by its list identity', () => {
     const editor = createEditor({
       selection: {

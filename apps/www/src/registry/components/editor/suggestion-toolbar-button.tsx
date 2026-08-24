@@ -19,9 +19,6 @@ export function SuggestionToolbarButton() {
       onClick={() => {
         store.set({ isSuggesting: !isSuggesting });
       }}
-      onMouseDown={(e) => {
-        e.preventDefault();
-      }}
       tooltip={isSuggesting ? 'Turn off suggesting' : 'Suggestion edits'}
     >
       <PencilLineIcon />

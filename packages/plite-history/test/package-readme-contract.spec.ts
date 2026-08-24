@@ -17,7 +17,7 @@ describe('plite-history package README contract', () => {
 
   it('names the root history extension and History validator exports', () => {
     const readme = readFileSync(
-      fileURLToPath(new URL('../Readme.md', import.meta.url)),
+      fileURLToPath(new URL('../README.md', import.meta.url)),
       'utf-8'
     );
 

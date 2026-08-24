@@ -45,9 +45,6 @@ export function ToggleToolbarButton(
         toggle.update.toggle({ collapse: true });
         editor.api.dom.focus();
       }}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
       tooltip="Toggle"
     >
       <ListCollapseIcon />

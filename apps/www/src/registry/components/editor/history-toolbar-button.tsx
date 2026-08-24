@@ -12,15 +12,7 @@ export function RedoToolbarButton(
   const { canRedo, redo } = usePliteHistory();
 
   return (
-    <ToolbarButton
-      {...props}
-      disabled={!canRedo}
-      onClick={redo}
-      onMouseDown={(e) => {
-        e.preventDefault();
-      }}
-      tooltip="Redo"
-    >
+    <ToolbarButton {...props} disabled={!canRedo} onClick={redo} tooltip="Redo">
       <Redo2Icon />
     </ToolbarButton>
   );
@@ -32,15 +24,7 @@ export function UndoToolbarButton(
   const { canUndo, undo } = usePliteHistory();
 
   return (
-    <ToolbarButton
-      {...props}
-      disabled={!canUndo}
-      onClick={undo}
-      onMouseDown={(e) => {
-        e.preventDefault();
-      }}
-      tooltip="Undo"
-    >
+    <ToolbarButton {...props} disabled={!canUndo} onClick={undo} tooltip="Undo">
       <Undo2Icon />
     </ToolbarButton>
   );

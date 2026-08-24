@@ -39,9 +39,6 @@ export function BulletedListToolbarButton() {
           });
           editor.api.dom.focus();
         }}
-        onMouseDown={(event) => {
-          event.preventDefault();
-        }}
         data-state={pressed ? 'on' : 'off'}
       >
         <List className="size-4" />
@@ -116,9 +113,6 @@ export function NumberedListToolbarButton() {
             type: ListType.Numbered,
           });
           editor.api.dom.focus();
-        }}
-        onMouseDown={(event) => {
-          event.preventDefault();
         }}
         data-state={pressed ? 'on' : 'off'}
       >
@@ -203,9 +197,6 @@ export function TodoListToolbarButton(
       onClick={() => {
         editor.plugin(ListPlugin).update.toggle({ type: ListType.Task });
         editor.api.dom.focus();
-      }}
-      onMouseDown={(event) => {
-        event.preventDefault();
       }}
       tooltip="Todo"
     >

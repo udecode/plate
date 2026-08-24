@@ -3,11 +3,14 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
 
+let clickOutside: () => void;
 const floatingUpdate = mock();
 const setFloating = mock();
 let floatingOptions: { onOpenChange: (open: boolean) => void };
+let focusedEditorId: null | string = 'editor-1';
 let selectionExpanded = true;
 let selectionRange: unknown;
+let toolbarOverlayOpenChange: (open: boolean) => void;
 
 const editor = {
   read: {
@@ -53,7 +56,11 @@ mock.module('@udecode/cn', () => ({
 
 mock.module('@udecode/react-utils', () => ({
   useComposedRef: () => mock(),
-  useOnClickOutside: () => mock(),
+  useOnClickOutside: (callback: () => void) => {
+    clickOutside = callback;
+
+    return mock();
+  },
   useStableFn: <T extends (...args: never[]) => unknown>(fn: T) => fn,
 }));
 
@@ -71,7 +78,7 @@ mock.module('platejs/react', () => ({
   useEditorId: () => 'editor-1',
   useEditorReadOnly: () => false,
   useEditorSelector: (selector: (editor: any) => unknown) => selector(editor),
-  useEventEditorValue: () => 'editor-1',
+  useEventEditorValue: () => focusedEditorId,
   usePluginStore: () => false,
 }));
 
@@ -108,7 +115,17 @@ mock.module('./turn-into-toolbar-button', () => ({
 }));
 
 mock.module('./toolbar', () => ({
-  Toolbar: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+  Toolbar: ({
+    children,
+    onOverlayOpenChange,
+    ...props
+  }: React.ComponentProps<'div'> & {
+    onOverlayOpenChange?: (open: boolean) => void;
+  }) => {
+    toolbarOverlayOpenChange = onOverlayOpenChange ?? (() => {});
+
+    return <div {...props}>{children}</div>;
+  },
   ToolbarButton: ({ children }: React.PropsWithChildren) => (
     <button type="button">{children}</button>
   ),
@@ -119,6 +136,7 @@ mock.module('./toolbar', () => ({
 
 describe('FloatingToolbar', () => {
   beforeEach(() => {
+    focusedEditorId = 'editor-1';
     selectionExpanded = true;
     selectionRange = {
       anchor: { offset: 0, path: [0, 0] },
@@ -155,5 +173,31 @@ describe('FloatingToolbar', () => {
     view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
 
     expect(view.getByText('toolbar')).toBeTruthy();
+  });
+
+  it('keeps an owned toolbar interaction open across editor blur', async () => {
+    const { FloatingToolbar } = await import(
+      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <FloatingToolbar>
+        <button type="button">toolbar action</button>
+      </FloatingToolbar>
+    );
+
+    act(() => toolbarOverlayOpenChange(true));
+
+    focusedEditorId = null;
+    view.rerender(
+      <FloatingToolbar>
+        <button type="button">toolbar action</button>
+      </FloatingToolbar>
+    );
+
+    expect(view.getByText('toolbar action')).toBeTruthy();
+
+    act(() => clickOutside());
+
+    expect(view.queryByText('toolbar action')).toBeNull();
   });
 });

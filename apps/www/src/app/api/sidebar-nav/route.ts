@@ -14,8 +14,7 @@ export async function GET(request: Request) {
   });
 }
 
-// Next.js requires inline `use cache` functions to be async, even when their source is synchronous.
-// oxlint-disable-next-line typescript/require-await
+// oxlint-disable-next-line typescript/require-await -- Next.js requires inline `use cache` functions to be async even when their source is synchronous.
 async function getSidebarNav(locale: 'cn' | 'en') {
   'use cache';
   cacheLife('hours');

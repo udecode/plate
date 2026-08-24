@@ -14,6 +14,23 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
+    "toolbar": [
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-24-configurable-color-controls",
+      "2025-11-20-biome-ultracite"
+    ],
+    "floating-toolbar": [
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "font-color-toolbar-button": [
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-17-flat-editor-registry",
@@ -110,13 +127,6 @@
       "2026-08-20-format-version-history-values",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-08-12-canonical-node-props",
-      "2025-11-20-biome-ultracite"
-    ],
-    "toolbar": [
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-24-configurable-color-controls",
       "2025-11-20-biome-ultracite"
     ],
     "media-preview-dialog": [
@@ -243,14 +253,6 @@
     "callout": [
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "floating-toolbar": [
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "link": [
       "2026-08-17-colocate-editor-component-families",

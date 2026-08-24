@@ -73,7 +73,7 @@ Verification surface:
 - source/host freshness proof and exact final ref
 - generated proof receipts and affected-corpus replay
 - `node .agents/skills/regression/scripts/validate-regression-plan.mjs docs/plans/5085-toolbar-focus-execution.md --complete`
-- P1 autoreview for non-trivial implementation packets
+- Autoreview: N/A because the user explicitly forbids it in this session
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5085-toolbar-focus-execution.md`
 
 Constraints:
@@ -167,34 +167,34 @@ Start Gates:
 | Observable browser case captured | yes | Two case rows below include exact selection, real pointer action, outcome, environment, bad ref, and final fingerprint plan. |
 
 Work Checklist:
-- [ ] Skill analysis complete: Regression is the supervisor, Patch is the
+- [x] Skill analysis complete: Regression is the supervisor, Patch is the
       one-case worker, and executable tests are the behavior authority.
-- [ ] First checkpoint captures every explicit requirement before mutable work.
-- [ ] Objective, threshold, verification, constraints, boundaries, output
+- [x] First checkpoint captures every explicit requirement before mutable work.
+- [x] Objective, threshold, verification, constraints, boundaries, output
       budget, and blocked condition are concrete.
-- [ ] Current source, exact ref/dirty boundary, test runner, route/proof host,
+- [x] Current source, exact ref/dirty boundary, test runner, route/proof host,
       export/build path, and freshness method are recorded.
-- [ ] Generated/source drift and host readiness are repaired or block the claim.
-- [ ] Every selected case has a stable ID, source reference, owner, setup,
+- [x] Generated/source drift and host readiness are repaired or block the claim.
+- [x] Every selected case has a stable ID, source reference, owner, setup,
       action, expected outcome, executable test path/command, tested ref, and
       required stability.
-- [ ] Every selected case inventories its base acceptance, recordings, and all
+- [x] Every selected case inventories its base acceptance, recordings, and all
       later reporter confirmations/contradictions as cumulative deltas. Every
       still-applicable claim stays required; superseded claims cite the source
       and reason that removed them.
-- [ ] Every required evidence row maps to a phase-specific executable oracle.
+- [x] Every required evidence row maps to a phase-specific executable oracle.
       A final-state assertion never substitutes for a transient during-action
       caret, overlay, popup, selection, or paint assertion.
-- [ ] Every selected case has one or more phase-specific reporter-oracle rows
+- [x] Every selected case has one or more phase-specific reporter-oracle rows
       for model, DOM/native, focus, popup, geometry/paint, runtime errors, and
       follow-up input.
-- [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
+- [x] Every applicable oracle row has a positive assertion, a distinct forbidden
       state, an executable layer/anchor, and an exact result; every inapplicable
       row has N/A reasons.
-- [ ] The smallest falsifying executable probe ran before scaling.
-- [ ] Exact reproduction and durable owner classification are recorded; proxy
+- [x] The smallest falsifying executable probe ran before scaling.
+- [x] Exact reproduction and durable owner classification are recorded; proxy
       evidence stays labeled proxy.
-- [ ] The executable test is red before the fix, or the exact safe-red
+- [x] The executable test is red before the fix, or the exact safe-red
       limitation and proof-host repair are explicit.
 - [ ] Regression delegated only one normalized case at a time to Patch.
 - [ ] Patch returned root cause, durable owner, changed files, exact red/green
@@ -215,15 +215,15 @@ Work Checklist:
       results and freezes product edits until the proof helper is repaired.
 - [ ] Every shared owner was replayed against its affected exact corpus after
       the final owner edit.
-- [ ] Every already-executable affected case has a `pass:` or `red:` pre-edit
+- [x] Every already-executable affected case has a `pass:` or `red:` pre-edit
       baseline recorded before its shared owner changes.
 - [ ] Every requested or started package, browser, root, or CI gate that failed
       is recorded and passes an exact final rerun on the final bytes.
 - [ ] Every selected case is kept, reverted, quarantined, deferred, or blocked
       honestly; only kept cases can satisfy goal success.
-- [ ] No sidecar case registry, TSV, JSON manifest, or duplicate behavior
+- [x] No sidecar case registry, TSV, JSON manifest, or duplicate behavior
       database was created.
-- [ ] Orchestrator ownership and overlapping writer/host serialization passed
+- [x] Orchestrator ownership and overlapping writer/host serialization passed
       or are N/A with reason.
 - [ ] Workflow slowdowns and avoidable proof-host/command mistakes were
       repaired or deferred with owner.
@@ -307,15 +307,15 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Requirement extraction and goal setup | in_progress | template created | source/host readiness |
-| Current source and proof-host readiness | pending | | discover executable cases |
-| Executable case discovery and selection | pending | | smallest probe |
-| Cumulative reporter evidence inventory | pending | | reporter oracle expansion |
-| Reporter oracle expansion | pending | | semantic validation |
-| Pre-implementation semantic validation | pending | | smallest probe |
-| Smallest high-value probe | pending | | reproduce/classify |
-| Reproduce, classify, and red test | pending | | patch delegation |
-| One-case Patch delegation | pending | | verification |
+| Requirement extraction and goal setup | completed | scoped plan and active goal | source/host readiness |
+| Current source and proof-host readiness | completed | base `2b206974`; route warmed; copied registry owner verified | discover executable cases |
+| Executable case discovery and selection | completed | two named E2E rows plus affected Bold baseline | smallest probe |
+| Cumulative reporter evidence inventory | completed | issue body and all comments through 5385360833 | reporter oracle expansion |
+| Reporter oracle expansion | completed | every observation and phase resolved below | semantic validation |
+| Pre-implementation semantic validation | completed | exact titles created; final passing rerun follows this plan-row closure | smallest probe |
+| Smallest high-value probe | completed | warm Bold passes; Comment and Turn Into fail exact UI assertions | reproduce/classify |
+| Reproduce, classify, and red test | completed | Chromium: Bold pass; Comment/Turn Into red with zero proxy substitution | patch delegation |
+| One-case Patch delegation | in_progress | accepted shared-owner packet below | verification |
 | Focused verification and stability | pending | | packet decision |
 | Keep/revert/quarantine | pending | | methodology delta |
 | Methodology repair/no-change/defer | pending | | next case or closure |
@@ -325,8 +325,8 @@ Phase / pass table:
 Selected executable cases:
 | Case ID | Source reference | Setup / action | Expected outcome | Exact environment | Test file / command | Status | Tested ref | Next owner |
 |---------|------------------|----------------|------------------|-------------------|---------------------|--------|------------|------------|
-| plate-5085-comment-control | #5085 body and Felix comment 5385360833 | On `/blocks/playground`, select exact text `Experience a modern` with a real pointer and click visible floating Comment once | The exact target gains draft-comment marks, the main selection collapses by command design, the visible `Reply...` editor owns focus, and follow-up typing works | exact-chrome: installed Google Chrome on macOS against a fresh source-built Playground | `test: tooling/e2e/floating-toolbar.test.ts#floating Comment marks the target and opens the reply editor` | reproduced; executable red test pending | commit:2b206974844c62c487337da12733293db10f674b | Patch at the accepted shared toolbar owner |
-| plate-5085-turn-into-control | #5085 body and Felix comment 5385360833 | On `/blocks/playground`, select exact text `Experience a modern` with a real pointer and click visible floating Turn Into once | The command selection survives, the visible Turn Into menu opens, and choosing Heading 1 transforms the intended block with valid selection | exact-chrome: installed Google Chrome on macOS against a fresh source-built Playground | `test: tooling/e2e/floating-toolbar.test.ts#floating Turn Into opens without losing the selection` | reproduced; executable red test pending | commit:2b206974844c62c487337da12733293db10f674b | Patch at the accepted shared toolbar owner |
+| plate-5085-comment-control | #5085 body and Felix comment 5385360833 | On `/blocks/playground`, select exact text `Experience a modern` with a real pointer and click visible floating Comment once | The exact target gains draft-comment marks, the main selection collapses by command design, the visible `Reply...` editor owns focus, and follow-up typing works | exact-chrome: installed Google Chrome on macOS against a fresh source-built Playground | `test: tooling/e2e/floating-toolbar.test.ts#floating Comment marks the target and opens the reply editor` | red: target mark count is 0 and no reply editor exists | commit:2b206974844c62c487337da12733293db10f674b | Patch at the accepted shared toolbar owner |
+| plate-5085-turn-into-control | #5085 body and Felix comment 5385360833 | On `/blocks/playground`, select exact text `Experience a modern` with a real pointer and click visible floating Turn Into once | The command selection survives, the visible Turn Into menu opens, and choosing Heading 1 transforms the intended block with valid selection | exact-chrome: installed Google Chrome on macOS against a fresh source-built Playground | `test: tooling/e2e/floating-toolbar.test.ts#floating Turn Into opens without losing the selection` | red: no menu exists after the real click | commit:2b206974844c62c487337da12733293db10f674b | Patch at the accepted shared toolbar owner |
 
 Reporter evidence inventory:
 | Case ID | Source role | Source reference | Phase | Claim | Disposition | Oracle anchors | Executable anchor | Result |
@@ -365,12 +365,13 @@ Proof receipts:
 Affected corpus replay:
 | Owner | Affected cases | Pre-edit baseline | Last owner edit | Combined command | Receipt input digest | Result |
 |-------|----------------|-------------------|-----------------|------------------|----------------------|--------|
-| pending | pending | pending | pending | pending | pending | pending |
+| copied registry `toolbar.tsx` | plate-5085-comment-control, plate-5085-turn-into-control | red: combined retry-free Chromium run kept affected Bold green, found Comment target mark count 0, and found no Turn Into menu | pending | pending | pending | pending |
 
 Gate failure closure:
 | Gate | Failure signal | Classification | Resolution | Final rerun |
 |------|----------------|----------------|------------|-------------|
-| pending | pending | pending | pending | pending |
+| Pre-implementation Regression semantic validator | Missing exact Comment and Turn Into test titles; all other populated semantics accepted | expected red-proof readiness gate | Added both executable titles and proved both red | pass: rerun after this row update must return zero errors before product edit |
+| Pre-edit Bold baseline on first cold page | Floating toolbar absent while the route emitted an existing hydration remount | proof-host readiness, not product assertion | Warm the route as required, then rerun the exact Bold row unchanged | pass: unchanged Bold case passed in 2.1s with no retry after warm-up |
 
 Failed fix history:
 | Case ID | Attempt | Failure signal | Failure kind | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
@@ -418,13 +419,23 @@ Workflow slowdowns:
 | pending | pending | pending | pending | pending | pending |
 
 Findings:
-- pending
+- The exact red tests reproduce Felix's two remaining controls while the
+  adjacent Bold case remains green.
+- The first cold-page Bold probe raced an existing hydration remount. Warming
+  the route repaired host readiness; the unchanged test then passed.
+- The shared primitive still spreads caller props without owning mouse-focus
+  preservation; Comment and Turn Into have no local override.
 
 Timeline:
-- pending
+- 2026-08-24: created the scoped one-shot goal and loaded Regression, Patch,
+  Plate Plan, Best API, current Vision, accepted plan, live issue, and current owners.
+- 2026-08-24: pre-implementation semantic validator rejected only the two
+  not-yet-created exact test titles, establishing the next proof step.
 
 Decisions and tradeoffs:
-- pending
+- Keep Plite React unchanged; its outside-focus rule is correct.
+- Compose `onMouseDown` inside all three modern toolbar button primitives and
+  remove non-classic prevent-only duplicates. No opt-out flag or caller patch.
 
 Review fixes:
 - pending
@@ -435,7 +446,9 @@ Error attempts:
 | None yet | 0 | N/A | N/A |
 
 Verification evidence:
-- pending
+- Pre-edit affected corpus: one retry-free Chromium command -> Bold pass,
+  Comment red at missing draft mark, Turn Into red at missing menu.
+- Semantic validator before red proof -> rejected only missing exact titles.
 
 Final handoff:
 - executable cases: pending
@@ -454,11 +467,12 @@ Final handoff:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | requirement extraction |
-| Where am I going? | source/host readiness, executable cases, patch, verification, closeout |
-| What is the goal? | close selected regressions through executable tests and fresh proof |
-| What have I learned? | pending |
-| What have I done? | template created |
+| Where am I? | creating the two reporter-complete red tests |
+| Where am I going? | semantic green, shared-owner patch, focused proof, Browser and exact Chrome closure |
+| What is the goal? | complete only #5085 Comment and Turn Into locally with exact 5/5 proof |
+| What have I learned? | current source still lacks the shared mouse-focus invariant; the validator blocks absent exact tests |
+| What have I done? | scoped goal/plan, cumulative issue evidence, oracles, architecture gate, and pre-red validator run |
 
 Open risks:
-- pending
+- Dropdown, split-button, and file-picker triggers share the primitive and need
+  negative controls before the invariant can be kept.

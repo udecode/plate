@@ -789,7 +789,7 @@ describe('plite-react surface contract', () => {
 
     if (!allRepoFilesExist(docFiles)) {
       const packageReadme = readFileSync(
-        resolve(packageRoot, 'Readme.md'),
+        resolve(packageRoot, 'README.md'),
         'utf-8'
       );
       const packageIndex = readFileSync(
@@ -876,7 +876,7 @@ describe('plite-react surface contract', () => {
 
     if (docs.length === 0) {
       const packageReadme = readFileSync(
-        resolve(packageRoot, 'Readme.md'),
+        resolve(packageRoot, 'README.md'),
         'utf-8'
       );
 
@@ -1061,7 +1061,7 @@ describe('plite-react surface contract', () => {
     const hooks =
       readRepoFileIfExists(
         'content/docs/plite/libraries/plite-react/hooks.mdx'
-      ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf-8');
+      ) ?? readFileSync(resolve(packageRoot, 'README.md'), 'utf-8');
 
     if (
       readRepoFileIfExists(
@@ -1098,7 +1098,7 @@ describe('plite-react surface contract', () => {
   });
 
   test('package README names the current runtime and root hook family', () => {
-    const readme = readFileSync(resolve(packageRoot, 'Readme.md'), 'utf-8');
+    const readme = readFileSync(resolve(packageRoot, 'README.md'), 'utf-8');
 
     expect(readme).toContain(
       'Start with `usePliteEditor`, `Plite`, and `Editable`.'
@@ -1328,7 +1328,7 @@ describe('plite-react surface contract', () => {
     const readme =
       readRepoFileIfExists(
         'content/docs/plite/libraries/plite-react/README.md'
-      ) ?? readFileSync(resolve(packageRoot, 'Readme.md'), 'utf-8');
+      ) ?? readFileSync(resolve(packageRoot, 'README.md'), 'utf-8');
 
     if (
       readRepoFileIfExists(
@@ -1350,7 +1350,7 @@ describe('plite-react surface contract', () => {
 
   test('plite-react docs name public render primitives and advanced helper hooks', () => {
     const packageReadme = readFileSync(
-      resolve(packageRoot, 'Readme.md'),
+      resolve(packageRoot, 'README.md'),
       'utf-8'
     );
     const packageIndex = readFileSync(
@@ -1401,7 +1401,7 @@ describe('plite-react surface contract', () => {
     const docsFiles = listSourceFiles([
       'content/docs/plite/libraries/plite-react',
     ]);
-    const docs = [...docsFiles, resolve(packageRoot, 'Readme.md')]
+    const docs = [...docsFiles, resolve(packageRoot, 'README.md')]
       .map((absolutePath) => readFileSync(absolutePath, 'utf-8'))
       .join('\n');
     const undocumentedTypeExports = getRootTypeExports().filter((name) => {

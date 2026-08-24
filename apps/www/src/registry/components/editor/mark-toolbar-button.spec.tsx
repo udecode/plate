@@ -234,8 +234,13 @@ mock.module('./toolbar', () => ({
   ToolbarSplitButton: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),
-  ToolbarSplitButtonPrimary: ({ children }: React.PropsWithChildren) => (
-    <div>{children}</div>
+  ToolbarSplitButtonPrimary: ({
+    children,
+    ...props
+  }: React.ComponentProps<'button'>) => (
+    <button type="button" {...props}>
+      {children}
+    </button>
   ),
   ToolbarSplitButtonSecondary: () => <button type="button">More</button>,
 }));
@@ -288,7 +293,6 @@ describe('feature toolbar plugin portals', () => {
     const button = view.getByRole('button', { name: 'B' });
 
     expect(button.getAttribute('aria-pressed')).toBe('true');
-    expect(fireEvent.mouseDown(button)).toBe(false);
 
     fireEvent.click(button);
 
@@ -586,5 +590,18 @@ describe('feature toolbar plugin portals', () => {
       name: 'report.pdf',
       url: 'https://platejs.org/report.pdf',
     });
+  });
+
+  it('keeps the split primary file-picker action callable', async () => {
+    const { MediaToolbarButton } = await import(
+      `./media-toolbar-button?file-picker=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<MediaToolbarButton plugin={BaseFilePlugin} />);
+    const primary = view.getAllByRole('button')[0];
+
+    fireEvent.mouseDown(primary);
+    fireEvent.click(primary);
+
+    expect(openFilePickerMock).toHaveBeenCalledTimes(1);
   });
 });

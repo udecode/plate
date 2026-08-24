@@ -46,9 +46,6 @@ export function LinkToolbarButton(
           api.trigger({ focused: true });
         }
       }}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
       data-plate-focus
       tooltip="Link"
     >

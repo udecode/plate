@@ -156,15 +156,16 @@ export function FloatingToolbar({
   const [mouseDownOpen, setMouseDownOpen] = React.useState<boolean | null>(
     null
   );
+  const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
   const open =
     selectionExpanded &&
     !!selectionText &&
-    editorId === focusedEditorId &&
+    (editorId === focusedEditorId || ownedOverlayOpen) &&
     !isFloatingLinkOpen &&
     !isAIChatOpen &&
     !options?.hideToolbar &&
     (!readOnly || !!options?.showWhenReadOnly) &&
-    (!waitForCollapsedSelection || readOnly) &&
+    (!waitForCollapsedSelection || readOnly || ownedOverlayOpen) &&
     mouseDownOpen !== false &&
     dismissedSelection !== selectionRange;
   const floating = useVirtualFloating(
@@ -246,6 +247,7 @@ export function FloatingToolbar({
       <Toolbar
         {...props}
         ref={ref}
+        onOverlayOpenChange={setOwnedOverlayOpen}
         style={floating.style}
         className={cn(
           'scrollbar-hide absolute z-50 overflow-x-auto whitespace-nowrap rounded-md border bg-popover p-1 opacity-100 shadow-md print:hidden',

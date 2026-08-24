@@ -1016,9 +1016,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Merge cells"
               onClick={onMerge}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Merge cells"
             >
               <CombineIcon />
@@ -1028,9 +1025,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Split cell"
               onClick={onSplit}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Split cell"
             >
               <SquareSplitHorizontalIcon />
@@ -1054,9 +1048,6 @@ function TableFloatingToolbarContent({
               <ToolbarButton
                 aria-label="Delete table"
                 onClick={onDeleteTable}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                }}
                 tooltip="Delete table"
               >
                 <Trash2Icon />
@@ -1070,9 +1061,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert row before"
               onClick={onInsertRowBefore}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Insert row before"
             >
               <ArrowUp />
@@ -1080,9 +1068,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert row after"
               onClick={onInsertRowAfter}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Insert row after"
             >
               <ArrowDown />
@@ -1090,9 +1075,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Delete row"
               onClick={onDeleteRow}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Delete row"
             >
               <XIcon />
@@ -1105,9 +1087,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert column before"
               onClick={onInsertColumnBefore}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Insert column before"
             >
               <ArrowLeft />
@@ -1115,9 +1094,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Insert column after"
               onClick={onInsertColumnAfter}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Insert column after"
             >
               <ArrowRight />
@@ -1125,9 +1101,6 @@ function TableFloatingToolbarContent({
             <ToolbarButton
               aria-label="Delete column"
               onClick={onDeleteColumn}
-              onMouseDown={(e) => {
-                e.preventDefault();
-              }}
               tooltip="Delete column"
             >
               <XIcon />

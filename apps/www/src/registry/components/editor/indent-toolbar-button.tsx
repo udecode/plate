@@ -19,9 +19,6 @@ export function IndentToolbarButton(
       onClick={() => {
         update.increase();
       }}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
     >
       <IndentIcon />
     </ToolbarButton>
@@ -39,9 +36,6 @@ export function OutdentToolbarButton(
       tooltip="Outdent"
       onClick={() => {
         update.decrease();
-      }}
-      onMouseDown={(event) => {
-        event.preventDefault();
       }}
     >
       <OutdentIcon />
