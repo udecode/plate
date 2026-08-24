@@ -1,7 +1,9 @@
 # Clone shared initial editor values
 
 Objective:
-Fix #5107 shared initial-value crash; done when focused repro passes after fix and package checks/review pass; plan docs/plans/5107-clone-shared-initial-editor-values.md.
+Revise #5107 to a targeted Slate-node clone; done when 10k JSC median is below
+16 ms, regression/check/review pass, and PR #5110 is updated; plan
+docs/plans/5107-clone-shared-initial-editor-values.md.
 
 Flow mode:
 one-shot execution
@@ -41,6 +43,10 @@ Timed checkpoint:
 - final score / loop closure: N/A
 
 Completion threshold:
+- The static-value isolation implementation clones the Slate node graph without
+  generic `cloneDeep` overhead and preserves the exact shared-value regression.
+- The repo's 10,000-block fixture clones with a Bun/JSC median below 16 ms over
+  five measured runs after two warmups.
 - A focused behavior-level repro fails on the pre-fix implementation and passes
   after the fix for two independently created editors sharing one input value.
 - The owning package's focused tests, source-first typecheck, and lint pass; a
@@ -92,10 +98,10 @@ Blocked condition:
 Task state:
 - task_type: ordinary one-shot regression bug
 - task_complexity: normal / non-trivial / measurable
-- current_phase: closeout
-- current_phase_status: complete
-- next_phase: none
-- goal_status: complete
+- current_phase: PR update
+- current_phase_status: in progress
+- next_phase: closeout
+- goal_status: active
 
 Current verdict:
 - verdict: valid
@@ -165,6 +171,12 @@ Start Gates:
 | Output budget strategy recorded | yes | Owner-scoped searches/read caps recorded above |
 
 Work Checklist:
+- [x] Replace the generic deep clone with a targeted recursive Slate-node graph
+      clone that gives each editor distinct arrays and node objects.
+- [x] Strengthen focused proof for root, element, and text identity isolation.
+- [x] Prove the 10,000-block Bun/JSC clone median remains below 16 ms.
+- [ ] Rerun focused/core/typecheck/lint/check/browser/autoreview gates and update
+      PR #5110 with the complete checkout.
 - [x] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
@@ -221,6 +233,9 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
+| Performance follow-up implementation | yes | Replace `cloneDeep` with a targeted Slate-node graph clone while preserving static-array isolation | `usePlateEditor` now clones every Slate array, element, and text object recursively; focused test passes with root/element/text identity assertions |
+| 10,000-block JSC budget | yes | Run two warmups and five measured clones against the repo huge-document fixture; median must be below 16 ms | Final algorithm Bun/JSC: 0.44 ms median, 0.32-0.52 ms range, five runs after two warmups; pass |
+| Follow-up verification and PR sync | yes | Rerun affected proof, review, full check, browser smoke, then commit and push all checkout changes to PR #5110 | Focused test, benchmark, core suite/typecheck, lint, Browser smoke, clean final autoreview, and final `pnpm check` passed; commit/push pending |
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Focused red/green repro, 852 core tests, source-first core typecheck, full `pnpm check`, browser interaction, and clean autoreview recorded below |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid bug; ID/editable-void framing rejected; exact path error reproduced before implementation; hook boundary selected |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Focused real React render reproduced exact stack; repo-owned Playwright N/A; Browser used for package smoke; screenshot N/A because no visual claim |
@@ -259,6 +274,8 @@ Phase / pass table:
 | Verification | complete | 852 core tests, focused test, package/full typecheck, lint, full check, browser smoke, and autoreview all clean | PR / tracker sync |
 | PR / tracker sync | complete | PR #5110 opened/read back; issue #5107 comment posted | closeout |
 | Closeout | complete | plan evidence/final handoff filled; mechanical checker passes | final response |
+| Performance follow-up | complete | Targeted clone implemented; final 10,000-block Bun/JSC median 0.44 ms; focused/core/typecheck/lint/browser/full-check/final-autoreview proof green | PR update |
+| Follow-up PR update | in progress | Entire checkout contains only the three intended follow-up files; diff check passes | commit and push |
 
 Findings:
 - No video or screenshot evidence exists.
@@ -286,23 +303,72 @@ Decisions and tradeoffs:
 - Preserve `createPlateEditor`'s explicit by-reference behavior; first test
   whether `usePlateEditor` can isolate static input values at the React hook
   boundary without changing the lower-level imperative creator contract.
+- Reject generic `cloneDeep` for static hook values: the repo's 10,000-block
+  fixture measured 577.93 ms median on Bun/JSC despite 4.29 ms on V8.
+- Use a targeted recursive node clone: Slate React keys its path metadata by
+  Slate node object, so distinct arrays plus element/text objects are the
+  necessary ownership boundary; arbitrary non-node payload values retain their
+  existing reference behavior.
+
+### Performance
+
+- applicability: applied
+- Vercel rules used: N/A; editor creation has no React rerender or network path
+- extra rules used: cohort-segmentation, repeated-unit-budget, memory-dom-tagging
+- repeated unit: Slate node
+- cohorts: normal 100 blocks; large 1,000; stress 10,000; pathological 50,000
+- budgets: one array and one shallow object allocation per Slate node; 10,000
+  blocks below 16 ms median on Bun/JSC; no per-render or per-keystroke work
+- React/runtime primitives: existing `useMemo` retains one-time editor creation
+- interaction metrics: startup clone microbenchmark only; typing/select/paste unchanged
+- trace/CWV proof: browser smoke required; no production startup claim or CWV claim
+- memory tags: O(node count) editor-owned arrays/objects; no cache/listener/DOM growth
+- degradation contract: none; document structure and native editing remain unchanged
+- dashboard/RUM gap: no editor-initialization RUM exists; local benchmark is the proof boundary
+- plan delta: replace generic clone, add identity assertions and 10,000-block budget
 
 Implementation notes:
-- `usePlateEditor` deep-clones only array-valued static configuration before
-  calling `createPlateEditor`.
+- `usePlateEditor` recursively clones the Slate arrays, elements, and text nodes
+  in array-valued static configuration before calling `createPlateEditor`.
+- Non-node property values retain reference identity; Slate's mutable tree and
+  React path maps own only the arrays and Slate node objects cloned here.
 - HTML strings and value factories keep their prior behavior; lower-level
   `createPlateEditor` continues using direct value references.
 
 Review fixes:
 - Structured autoreview accepted zero findings; no review-triggered edits.
+- Follow-up autoreview accepted one P2: discriminating leaves with `text in
+  node` could misclassify a valid element carrying custom `text` metadata and
+  retain shared descendants. Fixed by recursing on structural `children`
+  arrays; the regression value now includes element-level `text` metadata.
+- Final autoreview rerun exited clean with zero accepted/actionable findings and
+  0.82 confidence; parallel focused test passed.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | Dev server ran during full package rebuild, temporarily losing `@platejs/markdown` dist and emitting oversized buffered output on shutdown | 1 | Stop concurrent server/build use; restart only after full check with 4k output caps | Stable restart served editable-voids 200; final browser interaction passed with zero errors |
 | Goal checker run before closing its own evidence row and closeout phase | 1 | Resolve the two exact ledger fields reported, then rerun | Final checker passed after closing the row and phase |
+| Character-by-character Browser input produced Slate DOM-point errors and mangled text | 1 | Use a fresh page and atomic contenteditable fill to distinguish synthetic input behavior from product behavior | Fresh Browser tab filled the nested editor exactly; two editable roots and zero console errors |
+| Stopping the dev server flushed roughly one million tokens of buffered request/error logs despite an explicit output cap | 1 | Stop broad process-output inspection; use only capped final commands and record the output-budget miss | No further dev-server output read; final check/review/status commands remained capped |
 
 Verification evidence:
+- command, cwd `/Users/zbeyens/git/plate`: final 10,000-block Bun/JSC
+  targeted-clone benchmark -> 0.44 ms median, 0.32-0.52 ms range, five runs after two warmups,
+  below the 16 ms budget.
+- command, same cwd: follow-up focused test -> 1 pass / 0 fail with seven
+  assertions covering render plus distinct root, element, children-array, and
+  text identities.
+- command, same cwd: follow-up `pnpm --filter @platejs/core test` -> 852 pass /
+  0 fail; source-first core typecheck -> 5/5 tasks; `pnpm lint:fix` -> pass.
+- browser, local www follow-up: fresh `/docs/examples/editable-voids` page ->
+  two editable roots, atomic nested-editor fill preserved exact text, zero
+  console errors.
+- command/review, same cwd: final autoreview local plus focused test -> zero
+  accepted/actionable findings, 0.82 confidence, test exit 0.
+- command, same cwd: final `pnpm check` after the review fix -> exit 0; lint,
+  54-package build/typecheck, fast/slow/slowest tests passed with one existing
+  sidebar hook warning and zero errors.
 - command, cwd `/Users/zbeyens/git/plate`: focused RED test -> 0 pass / 1 fail,
   exact Slate path error.
 - command, same cwd: focused GREEN test -> 1 pass / 0 fail.
@@ -331,8 +397,9 @@ Final handoff contract:
   the full build; no screenshot because no visual claim
 - Outcome: Static values passed to multiple `usePlateEditor` hooks are isolated
   per editor, preventing cross-editor Slate node path failures.
-- Caveat: One deep clone per static array/hook creation; value factories and
-  `createPlateEditor` reference behavior are unchanged. PR CI is still running.
+- Caveat: One O(node count) node-graph clone per static array/hook creation;
+  value factories and `createPlateEditor` reference behavior are unchanged. PR
+  CI is still running.
 - Design:
   - Chosen boundary: clone static array configuration inside `usePlateEditor`
   - Why not quick patch: editor IDs cannot repair shared mutable node identity;
@@ -380,19 +447,27 @@ Timeline:
 - 2026-08-24 Final lint, full `pnpm check`, stable browser smoke, and structured autoreview all passed; autoreview reported zero findings.
 - 2026-08-24 Committed/pushed `a29c8b8e64`, opened and read back PR #5110, and synced issue #5107 with QA evidence.
 - 2026-08-24 Final goal ledger closed and mechanical completion checker passed.
+- 2026-08-24 User accepted performance revision; active follow-up goal created
+  with a 10,000-block Bun/JSC median target below 16 ms.
+- 2026-08-24 Replaced `cloneDeep` with targeted Slate-node recursion; identity
+  test, 852 core tests, source-first typecheck, lint, 0.36 ms benchmark, and
+  fresh Browser smoke passed.
+- 2026-08-24 Autoreview found and fixed element-level `text` metadata
+  misclassification; final focused test, source-first typecheck, 0.44 ms
+  benchmark, clean autoreview, and full `pnpm check` passed.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Goal complete after verified PR, issue sync, and mechanical checker |
-| Where am I going? | Commit/push final ledger, mark active goal complete, hand off |
-| What is the goal? | Fix #5107 shared initial-value crash with red/green proof and clean package/review gates |
-| What have I learned? | See Findings |
-| What have I done? | Implemented and verified static-value isolation; opened/read back PR #5110; synced #5107; recorded all evidence |
+| Where am I? | All follow-up implementation, performance, browser, check, and review gates are green |
+| Where am I going? | Commit/push the entire checkout, verify PR #5110 head/body, then close the ledger |
+| What is the goal? | Preserve #5107 correctness with a 10,000-block Bun/JSC median below 16 ms |
+| What have I learned? | Generic `cloneDeep` has a 10,000-block JSC cliff; targeted Slate-node cloning avoids it |
+| What have I done? | Implemented and hardened the targeted clone; passed 0.44 ms budget, full check, browser smoke, and final clean autoreview |
 
 Open risks:
-- Residual: static array values pay one deep clone per hook-created editor. This
-  is intentional startup ownership cost; value factories remain available when
-  callers need custom per-editor construction.
+- Residual: static array values pay one O(node count) targeted clone per
+  hook-created editor. The 10,000-block Bun/JSC median is 0.44 ms; value
+  factories remain available for custom per-editor construction.
 - Delivery: PR #5110 main CI is still in progress. Local `pnpm check` is green;
   this plan claims a ready PR, not merge or release.

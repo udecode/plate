@@ -10,11 +10,22 @@ import { usePlateEditor } from './usePlateEditor';
 
 describe('usePlateEditor', () => {
   it('isolates a shared static value between editor instances', () => {
-    const value: Value = [{ children: [{ text: 'Shared text' }], type: 'p' }];
+    const value: Value = [
+      {
+        children: [{ text: 'Shared text' }],
+        text: 'Element metadata',
+        type: 'p',
+      },
+    ];
+    let firstValue: Value | undefined;
+    let secondValue: Value | undefined;
 
     const Editors = () => {
       const firstEditor = usePlateEditor({ value });
       const secondEditor = usePlateEditor({ value });
+
+      firstValue = firstEditor.children;
+      secondValue = secondEditor.children;
 
       return (
         <>
@@ -29,5 +40,11 @@ describe('usePlateEditor', () => {
     };
 
     expect(() => render(<Editors />)).not.toThrow();
+    expect(firstValue).not.toBe(value);
+    expect(secondValue).not.toBe(value);
+    expect(firstValue).not.toBe(secondValue);
+    expect(firstValue![0]).not.toBe(secondValue![0]);
+    expect(firstValue![0].children).not.toBe(secondValue![0].children);
+    expect(firstValue![0].children[0]).not.toBe(secondValue![0].children[0]);
   });
 });

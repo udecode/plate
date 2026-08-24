@@ -1,8 +1,6 @@
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
-
-import cloneDeep from 'lodash/cloneDeep.js';
+import type { Descendant, Value } from '@platejs/slate';
 
 import type { AnyPluginConfig } from '../../lib';
 
@@ -12,6 +10,17 @@ import {
   type TPlateEditor,
   createPlateEditor,
 } from '../editor';
+
+const cloneNode = <N extends Descendant>(node: N): N => {
+  if (!Array.isArray(node.children)) return { ...node };
+
+  return {
+    ...node,
+    children: node.children.map(cloneNode),
+  };
+};
+
+const cloneValue = <V extends Value>(value: V): V => value.map(cloneNode) as V;
 
 /**
  * Creates a memoized Plate editor for React components.
@@ -73,7 +82,7 @@ export function usePlateEditor<
       const editor = createPlateEditor({
         ...options,
         value: Array.isArray(options.value)
-          ? cloneDeep(options.value)
+          ? cloneValue(options.value)
           : options.value,
         onReady: (ctx) => {
           if (ctx.isAsync && isMountedRef.current) {
