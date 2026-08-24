@@ -2,7 +2,7 @@ import type { PackageInfoType } from '@/hooks/use-package-info';
 import type { RegistryItem } from 'shadcn/schema';
 
 import type { Metadata } from 'next';
-import type { ComponentType } from 'react';
+import { Suspense, type ComponentType } from 'react';
 
 import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 import { notFound } from 'next/navigation';
@@ -57,6 +57,12 @@ export type DocPageProps = {
 
 const registryNames = new Set(registry.items.map((item) => item.name));
 const DEMO_SUFFIX_REGEX = /-demo$/;
+const packageInfo: PackageInfoType = {
+  gzip: '',
+  name: '',
+  npm: '',
+  source: '',
+};
 
 async function getDocFromParams({ params }: DocPageProps, locale: DocsLocale) {
   const resolvedParams = await params;
@@ -202,18 +208,23 @@ export function generateDocStaticParams(locale: DocsLocale) {
   );
 }
 
-export async function renderDocPage(props: DocPageProps, locale: DocsLocale) {
+export function renderDocPage(props: DocPageProps, locale: DocsLocale) {
+  return (
+    <Suspense fallback={null}>
+      <DocPageContent locale={locale} {...props} />
+    </Suspense>
+  );
+}
+
+async function DocPageContent({
+  locale,
+  params: paramsPromise,
+}: DocPageProps & { locale: DocsLocale }) {
+  const props = { params: paramsPromise };
   const params = await props.params;
   const category = slugToCategory(params.slug);
 
   const doc = await getDocFromParams(props, locale);
-
-  const packageInfo: PackageInfoType = {
-    gzip: '',
-    name: '',
-    npm: '',
-    source: '',
-  };
 
   if (!doc) {
     const { docName, file } = getRegistryFile({

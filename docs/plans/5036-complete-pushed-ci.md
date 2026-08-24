@@ -59,6 +59,7 @@ required check on that exact pushed SHA is terminal green.
 | Plite CI (`32719362878`) at `57c2622…` | success | 7m19s | every package, adopter, build, Chromium shard, and coverage job passed |
 | Root CI (`32719381010`) at `57c2622…` | failure | 8m21s | `bun check` received SIGTERM during 61-package Turbo typecheck with no TypeScript diagnostic |
 | Vercel deployment `6nP7XjLxiT85mnAxMAoQ9hGUwivo` at `57c2622…` | failure | 2m51s | build container reported OOM and SIGKILL about 72s into `www:build` compilation |
+| Vercel deployment `4h5Psp7ziL4anbGJCTZxNDGiWwni` at `cfff64f…` | failure | 8m06s | Webpack compiled and began static generation, then `/cn/docs` rejected the shared docs renderer's `params` access outside Suspense |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -153,6 +154,12 @@ time was 31m29s.
       Turbopack-only React Compiler flag and externalizes the Node-only
       `ts-morph` route dependency instead of bundling its embedded TypeScript
       runtime. The registry remains CI-generated.
+15. `apps/www/src/app/(app)/docs/[[...slug]]/doc-page.tsx`
+    - Root cause: both locale catch-all pages awaited `params` in the shared
+      renderer before any Suspense boundary. Cache Components therefore
+      rejected `/cn/docs` during prerendering after the Webpack compile passed.
+    - Repair: keep the static route shell and move the async renderer behind a
+      shared Suspense boundary used by both `/docs` and `/cn/docs`.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -223,6 +230,13 @@ from shard summaries and closes when shard 1 passes.
 - `pnpm check:push`: passed on the final packet: lint, type-aware lint, 60
   package builds, 60 package typechecks at concurrency two, 3,314 fast tests,
   and 1,549 slow tests with 60 skips.
+- `pnpm --filter www exec next typegen`: passed after the shared docs Suspense
+  repair.
+- `pnpm --filter www exec tsc --noEmit -p tsconfig.json`: passed after the
+  shared docs Suspense repair.
+- Local Browser compilation reached the known CI-generated registry boundary:
+  `src/__registry__/index.tsx` imports absent registry source. Per repository
+  policy, local verification did not regenerate CI-owned registry output.
 
 ## Push scope
 
@@ -233,10 +247,11 @@ workflow updates, and the user-authored plans already present in the checkout.
 ## Public mutations
 
 The existing repair stack, lint fix, synced-block stabilization, Vercel
-ownership packet, and Webpack/Turbopack conditional config are pushed through
-`4f30c71cf905cf9880765166e6bf069646993961`. The `ts-morph` server
-externalization is verified in the isolated `../plate-ci` checkout and remains
-unpushed. Merge is not authorized.
+ownership packet, Webpack/Turbopack conditional config, and `ts-morph` server
+externalization are pushed through
+`cfff64f430998cbd566a7fad2b503602b9ce2d35`. The shared docs Suspense repair is
+verified in the isolated `../plate-ci` checkout and remains unpushed. Merge is
+not authorized.
 
 ## Remaining risks and next action
 
@@ -255,6 +270,10 @@ unpushed. Merge is not authorized.
   `source-map-support` require from the registry-source route. The final
   Webpack lane uses Next's server externalization for that Node-only package;
   the Turbopack lane retains its existing transpilation behavior.
+- Vercel at `cfff64f…` completed the Webpack compile and began generating 1,067
+  static pages. It failed in 8m06s because the shared docs renderer accessed
+  `params` outside Suspense. The local repair puts both locale routes behind
+  the same boundary and requires the next deployment for prerender proof.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.
