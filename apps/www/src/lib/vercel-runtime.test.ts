@@ -32,4 +32,21 @@ describe('Vercel runtime packaging', () => {
       '../../content/docs/**/*'
     );
   });
+
+  it('traces registry files into every production route', async () => {
+    const { default: getNextConfig } = await import('../../next.config');
+    const nextConfig = await getNextConfig('phase-production-build');
+    const tracingIncludes = nextConfig.outputFileTracingIncludes;
+
+    expect(tracingIncludes?.['/*']).toEqual([
+      './src/registry/**/*',
+      './public/r/**/*',
+    ]);
+    expect(tracingIncludes?.['/docs/examples/plate-to-html']).toContain(
+      './public/tailwind.css'
+    );
+    expect(tracingIncludes?.['/cn/docs/examples/plate-to-html']).toContain(
+      './public/tailwind.css'
+    );
+  });
 });

@@ -272,16 +272,27 @@ test.describe('images example', () => {
       });
       const images = editor.root.locator('img');
       const clickOutsideEditor = async () => {
-        const box = await editor.root.boundingBox();
+        await page.evaluate(() => {
+          const id = 'images-outside-focus-target';
+          let target = document.getElementById(id) as HTMLButtonElement | null;
 
-        if (!box) {
-          throw new Error('Expected images editor to have a bounding box');
-        }
-
-        await page.mouse.click(
-          Math.max(1, box.x - 12),
-          Math.max(1, box.y - 12)
-        );
+          if (!target) {
+            target = document.createElement('button');
+            target.id = id;
+            target.type = 'button';
+            target.textContent = 'outside editor';
+            target.style.cssText = [
+              'position:fixed',
+              'left:0',
+              'top:0',
+              'z-index:2147483647',
+              'width:32px',
+              'height:32px',
+            ].join(';');
+            document.body.appendChild(target);
+          }
+        });
+        await page.locator('#images-outside-focus-target').click();
       };
 
       await editor.selection.collapse({ path: [0, 0], offset: 0 });

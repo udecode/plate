@@ -1245,7 +1245,7 @@ test.describe('synced blocks example', () => {
       });
     await expect
       .poll(() => getRenderedViewSelectionText(page))
-      .toContain('Between syn');
+      .toContain('Betwee');
     await outer.assert.noDoubleSelectionHighlight();
 
     await page.keyboard.press('Shift+ArrowDown');

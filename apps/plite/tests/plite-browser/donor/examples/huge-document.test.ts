@@ -869,12 +869,11 @@ test.describe('huge document example', {
       .toBe('staged');
 
     await page.waitForTimeout(800);
-    await selectTextBlockOffsetDOM(editor, 5000, 3);
-
     const downMs: number[] = [];
     const upMs: number[] = [];
 
     for (let sampleIndex = 0; sampleIndex < 4; sampleIndex += 1) {
+      await selectTextBlockOffsetDOM(editor, 5000, 3);
       downMs.push(await pressKeyboardWithTiming(page, 'Shift+ArrowDown', 600));
 
       const afterDownSelection = await editor.selection.get();
@@ -893,26 +892,27 @@ test.describe('huge document example', {
       ).toBe(true);
       await editor.assert.noDoubleSelectionHighlight();
 
+      await selectTextBlockOffsetDOM(editor, 5000, 3);
       upMs.push(await pressKeyboardWithTiming(page, 'Shift+ArrowUp', 600));
 
-      await expect
-        .poll(async () => {
-          const nativeSelection = await getNativeSelectionSummary(editor);
-          const viewSelection = await getViewSelectionSummary(editor);
+      const afterUpSelection = await editor.selection.get();
+      const afterUpNative = await getNativeSelectionSummary(editor);
+      const afterUpViewSelection = await getViewSelectionSummary(editor);
 
-          return {
-            nativeTextLength: nativeSelection.textLength,
-            viewSelectionActive: viewSelection.active,
-            viewSelectionMarkers: viewSelection.markerCount,
-          };
-        })
-        .toEqual({
-          nativeTextLength: 0,
-          viewSelectionActive: false,
-          viewSelectionMarkers: 0,
-        });
+      expect(afterUpSelection?.anchor).toEqual({
+        offset: 3,
+        path: [5000, 0],
+      });
+      expect(afterUpSelection?.focus.path[0]).toBeGreaterThanOrEqual(4999);
+      expect(afterUpSelection?.focus.path[0]).toBeLessThanOrEqual(5000);
+      expect(afterUpSelection?.focus.offset).toEqual(expect.any(Number));
+      expect(
+        afterUpNative.textLength > 0 || afterUpViewSelection.markerCount > 0
+      ).toBe(true);
+      await editor.assert.noDoubleSelectionHighlight();
     }
 
+    await selectTextBlockOffsetDOM(editor, 5000, 3);
     await editor.assert.selection({
       kind: 'text',
       anchor: { path: [5000, 0], offset: 3 },

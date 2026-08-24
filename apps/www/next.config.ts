@@ -177,11 +177,9 @@ const nextConfig = (_phase: string) => {
       ],
     },
     outputFileTracingIncludes: {
+      '/*': ['./src/registry/**/*', './public/r/**/*'],
       '/api/search': ['../../content/docs/**/*'],
-      '/api/registry-source/[name]': ['./src/registry/**/*', './public/r/**/*'],
-      '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/cn/docs/examples/plate-to-html': ['./public/tailwind.css'],
-      '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/examples/plate-to-html': ['./public/tailwind.css'],
     },
     partialPrefetching: true,

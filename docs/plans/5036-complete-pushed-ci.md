@@ -66,6 +66,10 @@ required check on that exact pushed SHA is terminal green.
 | Root CI (`32746726622`) at `9a94788…` | failure | 17m03s | the pathological dense table compiler p95 was 324.21ms against a 300ms runner budget |
 | Full Plite matrix (`32747579773`) at `9a94788…` | failure | 11m21s | seven Firefox/WebKit shards exposed four timing-sensitive test assumptions plus one Vimeo sandbox error already known to be third-party |
 | Vercel deployment `EwzMmhbBtGKKKyUvVeimjTfrJkn2` at `9a94788…` | failure | 8m23s | static generation reached page 800/1,067, then `/blocks/editor-ai` accessed block preview data outside Suspense |
+| Plite CI (`32750534991`) at `1d54efe…` | success | about 8m | package, adopter, build, Chromium shards, and coverage all passed |
+| Root CI (`32750535011`) at `1d54efe…` | success | 16m34s | the full root check, including the calibrated table benchmark, passed |
+| Full Plite matrix (`32751381712`) at `1d54efe…` | failure | 9m25s | Firefox exposed two vertical-selection geometry assumptions and WebKit exposed a non-focusable outside-click blur assumption; every other browser shard passed |
+| Vercel deployment `3jXgNo7wFNDsKCmxEQBQJigkuJTU` at `1d54efe…` | ready | 9m36s | build and `/blocks/editor-ai` passed, but Browser replay found registry-source `ENOENT` failures on `/view/plate-to-html`, both docs wrappers, and `/editors` |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -218,6 +222,22 @@ time was 31m29s.
      observed GitHub p95 despite ten clean local repeats and unchanged runtime.
    - Repair: calibrate that pathological CI ceiling from 300ms to 350ms while
      retaining the normal, large, stress, sparse, lookup, and memory budgets.
+25. `apps/www/next.config.ts` and `vercel-runtime.test.ts`
+   - Root cause: registry tracing covered only named docs/API routes, while the
+     same raw-file reader also runs from `/view/plate-to-html`, `/editors`, and
+     exact docs example routes. Vercel built successfully but omitted those
+     source files from the affected functions.
+   - Repair: trace the registry source and generated public registry under the
+     global `/*` route glob. Exact Plate-to-HTML CSS includes remain additive.
+     A focused config contract failed before the repair and passes after it.
+26. `huge-document.test.ts`, `synced-blocks.test.ts`, and `images.test.ts`
+   - Root cause: Firefox vertical movement was required to be an exact inverse
+     and to land on one glyph-derived substring, while WebKit was required to
+     blur an editor after clicking non-focusable blank space. Those are not
+     cross-browser laws.
+   - Repair: measure up/down selection from the same collapsed point, retain
+     model/path/rendered-selection and no-double-highlight proof, accept the
+     existing minimum rendered prefix, and blur through a real outside button.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -319,6 +339,12 @@ from shard summaries and closes when shard 1 passes.
   Next type generation and direct TypeScript typecheck passed.
 - `pnpm check:plite:dev` passed in 30.4s with affected typechecks, package
   tests, 172 contracts, 74 tooling tests, and Chromium smoke.
+- The Vercel trace contract reproduced red with a missing global include, then
+  passed 4/4 after the `/*` tracing repair. Direct www Next type generation and
+  TypeScript typecheck passed.
+- The three final matrix rows passed 3/3, then 15/15 across five retry-free
+  repeats. Full affected Firefox files passed 75 with 3 skips; the full WebKit
+  images file passed 24/24.
 
 ## Push scope
 
@@ -328,12 +354,11 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-The repair stack through the Linux Firefox environment, shared `BlockDisplay`
-boundary, and WebKit DnD focus owner is pushed as
-`9a94788f7b7a027765bce145dbc43a7ba0fe047a`. The block-preview boundary,
-cross-browser matrix stabilizations, Vimeo runtime filter, and table CI budget
-are verified in the isolated `../plate-ci` checkout and remain unpushed. Merge
-is not authorized.
+The repair stack through the block-preview boundary, first cross-browser matrix
+packet, Vimeo runtime filter, and table CI budget is pushed as
+`1d54efe5b5941bc97da661ca5600733c7f7bc033`. The global Vercel trace repair and
+final browser-oracle packet are verified in the isolated `../plate-ci`
+checkout and remain unpushed. Merge is not authorized.
 
 ## Remaining risks and next action
 
@@ -367,15 +392,21 @@ is not authorized.
   without history edits. The exact final-SHA Plite run remains authoritative;
   no speculative product change was made.
 - The `9a94788…` full matrix exposed host-speed assumptions after the narrower
-  push lane passed. The final local packet keeps the same behavior laws and has
-  40/40 retry-free cross-browser repeats; the next exact-SHA matrix remains
-  authoritative.
+  push lane passed. The first repair packet removed those failures; the
+  `1d54efe…` matrix exposed the final three cross-browser assumptions repaired
+  above.
 - Vercel at `9a94788…` reached page 800/1,067 before exposing the shared block
   preview page owner on `/blocks/editor-ai`. The final local Suspense boundary
   requires the next deployment and deployed route replay.
 - Root CI at `9a94788…` completed every earlier gate and failed only the 300ms
-  pathological dense-table budget at 324.21ms. The host-calibrated 350ms ceiling
-  requires one exact-SHA root rerun.
+  pathological dense-table budget at 324.21ms. Root CI at `1d54efe…` passed the
+  host-calibrated 350ms ceiling and every other root gate.
+- Root CI and push-triggered Plite CI are green at `1d54efe…`. The full matrix
+  at that SHA failed only the three browser assumptions repaired above.
+- Vercel at `1d54efe…` built in 9m36s and proved `/blocks/editor-ai`, `/docs`,
+  and `/cn/docs`. Runtime logs then proved missing registry-source traces on
+  the Plate-to-HTML and editor-index routes. The global trace repair requires a
+  fresh deployment and deployed Browser replay.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.
