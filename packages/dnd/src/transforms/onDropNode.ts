@@ -40,21 +40,24 @@ export const getDropPath = (
   let dropEntry: NodeEntry<TElement> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = editor.api.findPath(dragItem.element);
+    let dragPath: Path | undefined;
+
+    if (dragItem.editorId === editor.id) {
+      dragPath = editor.api.findPath(dragItem.element);
+      if (!dragPath) return;
+    }
+
     const hoveredPath = editor.api.findPath(element);
+    if (!hoveredPath) return;
 
-    if (!dragPath || !hoveredPath) return;
-
-    dragEntry = [dragItem.element, dragPath];
+    dragEntry = dragPath && [dragItem.element, dragPath];
     dropEntry = [element, hoveredPath];
   } else {
     dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
   }
   if (!dropEntry) return;
   if (
-    (canDropNode &&
-      dragEntry &&
-      !canDropNode({ dragEntry, dragItem, dropEntry, editor })) ||
+    (canDropNode && !canDropNode({ dragEntry, dragItem, dropEntry, editor })) ||
     !monitor.canDrop()
   ) {
     return;
@@ -151,8 +154,6 @@ export const onDropNode = (
       });
     }
   } else {
-    editor.tf.insertNodes(dragItem.element, { at: to });
-
     const sourceEditor = dragItem.editor;
 
     if (sourceEditor) {
@@ -162,15 +163,23 @@ export const onDropNode = (
           ? [dragItem.id]
           : [];
 
-      const paths = draggedIds
+      const nodeEntries = draggedIds
         .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
-        .filter((entry): entry is NodeEntry<TElement> => !!entry)
+        .filter((entry): entry is NodeEntry<TElement> => !!entry);
+
+      const nodes = nodeEntries.map(([node]) => node);
+
+      editor.tf.insertNodes(nodes, { at: to });
+
+      const paths = nodeEntries
         .map(([, path]) => path)
         .sort((a, b) => PathApi.compare(b, a));
 
       paths.forEach((path) => {
         sourceEditor.tf.removeNodes({ at: path });
       });
+    } else {
+      editor.tf.insertNodes([dragItem.element], { at: to });
     }
   }
 };

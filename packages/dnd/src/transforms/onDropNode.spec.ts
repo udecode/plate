@@ -283,7 +283,7 @@ describe('onDropNode', () => {
         nodeRef,
       });
 
-      expect(editor.tf.insertNodes).toHaveBeenCalledWith(dragElement, {
+      expect(editor.tf.insertNodes).toHaveBeenCalledWith([dragElement], {
         at: [2],
       });
       expect(sourceEditor.api.node).toHaveBeenCalledWith({
@@ -322,6 +322,31 @@ describe('onDropNode', () => {
       });
 
       expect(removeNodes.mock.calls).toEqual([[{ at: [2] }], [{ at: [0] }]]);
+    });
+
+    it('does not insert or remove when canDropNode returns false', () => {
+      getHoverDirectionMock.mockReturnValue('bottom');
+
+      const sourceEditor = createSlateEditor();
+      sourceEditor.tf.removeNodes = mock() as any;
+      sourceEditor.api.node = mock().mockReturnValue([dragElement, [0]]) as any;
+
+      (editor.api.findPath as ReturnType<typeof mock>).mockReturnValueOnce([2]);
+
+      onDropNode(editor, {
+        canDropNode: () => false,
+        dragItem: {
+          ...dragItem,
+          editor: sourceEditor,
+          editorId: sourceEditor.id,
+        } as any,
+        element: hoverElement,
+        monitor,
+        nodeRef,
+      });
+
+      expect(editor.tf.insertNodes).not.toHaveBeenCalled();
+      expect(sourceEditor.tf.removeNodes).not.toHaveBeenCalled();
     });
   });
 
