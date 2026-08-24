@@ -67,7 +67,7 @@ export const registryBlocks: Registry['items'] = [
   },
   {
     categories: ['Serializers'],
-    dependencies: ['@platejs/test-utils', 'next-themes'],
+    dependencies: ['@platejs/core', '@platejs/test-utils', 'next-themes'],
     files: [
       {
         path: 'blocks/plate-to-html/page.tsx',

@@ -12,7 +12,10 @@ import { useObjectUrl } from '@/registry/hooks/use-object-url';
 
 import { FixedToolbarPlugin } from './fixed-toolbar';
 import { FloatingToolbarPlugin } from './floating-toolbar';
-import { PlateToHtmlEditorKit } from './plate-to-html-kit';
+import {
+  PlateToHtmlEditorKit,
+  PlateToHtmlSchemaKit,
+} from './plate-to-html-kit';
 
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
@@ -84,6 +87,7 @@ export function HtmlIframe({
 export function EditorClient({ value }: { value: InitialValue }) {
   const editor = usePlateEditor({
     plugins: [
+      ...PlateToHtmlSchemaKit,
       ...EditorKit,
       FixedToolbarPlugin.configure({ enabled: false }),
       FloatingToolbarPlugin.configure({ enabled: false }),

@@ -107,6 +107,9 @@ Phase / pass table:
 | Vercel deployment `AMqD4fR5piY1GMSdVm99ERdKsRSo` at `7f9fb79…` | ready | 9m50s | global tracing passed and affected routes loaded, but `/view/plate-to-html` rejected heading `id` under its closed static schema |
 | Full Plite matrix (`32759532878`) at `017737d…` | failure | 12m15s | WebKit imported an ahead DOM caret directly during `beforeinput`; Firefox restored the exact dragged inline range with the opposite direction from the test's browser-name guess |
 | Vercel deployment `6HcfQJ88xcqjLPse6xTPKZC7ULHC` at `017737d…` | success | terminal status | deployment completed; final runtime replay remains bound to the next repair SHA |
+| Root CI (`32762481488`) at `98bc0c0…` | success | 12m39s | exact manual-dispatch root graph passed |
+| Full Plite matrix (`32762484371`) at `98bc0c0…` | success | 11m36s | all 22 package, adopter, browser-matrix, and coverage jobs passed |
+| Vercel deployment `6068960434` at `98bc0c0…` | runtime failure | about 6m29s to deploy | deployment status passed, but Browser replay of `/view/plate-to-html` raised `EditorSchemaValidationError: Unknown element property "id" in closed editor schema` |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -313,6 +316,14 @@ time was 31m29s.
      pointer gesture. The model restored the exact range Firefox established.
    - Repair: capture the expanded dragged range before typing and require undo
      to restore that exact model selection, including its observed direction.
+33. Plate-to-HTML interactive editor schema
+   - Root cause: the server editor and read-only client used the dedicated
+     Plate-to-HTML static kit, but the interactive `EditorClient` composed the
+     general React `EditorKit` without the element-ID schema owner.
+   - Repair: keep the base `ElementIdPlugin` in the static kit, lift that same
+     descriptor through `toPlatePlugin` for the React kit, and prepend the
+     React schema kit to the interactive editor. A focused runtime contract
+     creates a client editor from a value containing an element ID.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -451,6 +462,16 @@ Verification evidence:
 - `fnm exec --using=22 pnpm check:plite:dev` passed in 135.51s with 49 scoped
   typechecks, 1,094 Plite React tests, 172 contracts, 74 tooling tests, public
   types, and Chromium smoke.
+- Exact remote proof at `98bc0c03a609e119ef519cc0ec49a8625b9f3daa`:
+  root CI passed in 12m39s and the full 22-job Plite matrix passed in 11m36s.
+- The Plate-to-HTML client schema contract passed 2/2, including creation of a
+  React editor from an initial element with `id` under the closed schema.
+- `pnpm --filter www typecheck` passed after the interactive schema repair,
+  including editor freshness, docs and registry parity, route type generation,
+  and both TypeScript programs.
+- Local Browser replay reached the known CI-generated registry boundary in
+  `src/__registry__/index.tsx`; it was not regenerated locally. The final
+  deployed Vercel replay remains the runtime authority.
 
 ## Push scope
 
@@ -465,6 +486,9 @@ The global Vercel trace repair and first browser-oracle packet are pushed as
 first matrix closure, WebKit selection-change repair, and exact root CI command
 are pushed as `3a111ec15f86c96f6125bf720d942b06cec0fb4f`. Plan bookkeeping is pushed as
 `017737d36e4fed9b70a618ccb3a6340411ffa493`. Merge is not authorized.
+The beforeinput and inline-undo matrix repairs are pushed as
+`98bc0c03a609e119ef519cc0ec49a8625b9f3daa`; root CI and the full Plite matrix
+are green on that exact SHA. Merge is not authorized.
 
 Reboot status:
 No machine reboot is required. The isolated checkout, Node 22 toolchain,
@@ -527,5 +551,8 @@ repair any such failure without merging.
 - The exact `017737d…` matrix completed every other package, adopter, browser,
   and coverage owner; only WebKit huge-document 1/4 and Firefox inlines 2/4
   failed. Both exact cases are repaired and green locally.
+- Root CI and the full Plite matrix are green at `98bc0c0…`. Vercel deployed
+  that SHA successfully, but exact-host Browser replay exposed the interactive
+  Plate-to-HTML schema omission repaired in the final local packet.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.
