@@ -27,6 +27,7 @@ import {
   type PliteProjectionSource,
 } from '../src';
 import {
+  composeProjectionSources,
   toPliteRangeDecorations,
   createDecorationSource,
   createRangeDecorationSource,
@@ -193,6 +194,33 @@ const findTextRangesByText = (
   });
 
 describe('plite-react projections and selection contract', () => {
+  test('reads source updates published before a composed store subscribes', () => {
+    const createSource = () => {
+      let snapshot = Object.freeze({});
+      const listeners = new Set<() => void>();
+
+      return {
+        getSnapshot: () => snapshot,
+        publish(nextSnapshot: Readonly<Record<string, readonly never[]>>) {
+          snapshot = nextSnapshot;
+          listeners.forEach((listener) => listener());
+        },
+        subscribe(listener: () => void) {
+          listeners.add(listener);
+
+          return () => listeners.delete(listener);
+        },
+      };
+    };
+    const primary = createSource();
+    const secondary = createSource();
+    const composed = composeProjectionSources([primary, secondary]);
+
+    primary.publish(Object.freeze({ node: Object.freeze([]) }));
+
+    expect(composed?.getSnapshot()).toHaveProperty('node');
+  });
+
   test('preserves legacy decorated-range data in projection slices', () => {
     const range = {
       anchor: { offset: 0, path: [0, 0] },

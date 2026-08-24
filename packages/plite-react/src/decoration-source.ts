@@ -252,20 +252,37 @@ export const composeProjectionSources = <T = unknown>(
     return sources[0];
   }
 
+  let sourceSnapshots = sources.map((source) => source.getSnapshot());
   let snapshot = mergeSnapshots(sources);
   const runtimeSnapshots = new Map<
     NodeKey,
     ReadonlyArray<PliteProjectionSlice<T>>
   >();
 
-  const invalidate = (listener: () => void) => () => {
+  const synchronizeSnapshot = () => {
+    const nextSourceSnapshots = sources.map((source) => source.getSnapshot());
+
+    if (
+      nextSourceSnapshots.every(
+        (nextSnapshot, index) => nextSnapshot === sourceSnapshots[index]
+      )
+    ) {
+      return;
+    }
+
+    sourceSnapshots = nextSourceSnapshots;
     snapshot = mergeSnapshots(sources);
     runtimeSnapshots.clear();
+  };
+
+  const invalidate = (listener: () => void) => () => {
+    synchronizeSnapshot();
     listener();
   };
 
   return {
     getRuntimeSnapshot(nodeKey: NodeKey) {
+      synchronizeSnapshot();
       const cached = runtimeSnapshots.get(nodeKey);
 
       if (cached) {
@@ -288,6 +305,7 @@ export const composeProjectionSources = <T = unknown>(
       return nextSnapshot;
     },
     getSnapshot() {
+      synchronizeSnapshot();
       return snapshot;
     },
     subscribe(listener: () => void) {

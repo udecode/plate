@@ -348,11 +348,19 @@ export const usePliteViewSelectionDecorationSource = (
       return undefined;
     }
 
-    return subscribePliteViewSelection(editor, () => {
+    const refresh = (
+      notification: Readonly<{ forceInvalidate?: boolean }> = {}
+    ) => {
       source.refresh({
+        forceInvalidate: notification.forceInvalidate,
         reason: 'external',
       });
-    });
+    };
+    const unsubscribe = subscribePliteViewSelection(editor, refresh);
+
+    refresh({ forceInvalidate: true });
+
+    return unsubscribe;
   }, [editor, source]);
 
   return source;

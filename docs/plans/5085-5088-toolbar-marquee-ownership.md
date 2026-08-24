@@ -37,8 +37,8 @@ Verification surface:
 - registry block-selection/editor owners and focused Browser/Chrome tests
 
 Constraints:
-- Planning only until the user explicitly accepts this exact plan and invokes
-  execution against it.
+- Planning-only until explicit acceptance. The user accepted and invoked only
+  the #5085 slices; #5088 remains a separate unexecuted packet.
 - Hard-cut dead API names; no aliases or dual fields.
 - Do not lint or run Autoreview in this session.
 - No commit, push, PR, release, issue close, or fixed/completed label.
@@ -64,9 +64,9 @@ Blocked condition:
 
 Plate Plan state:
 - status: ready
-- phase: prove and hand off
-- next: user acceptance
-- handoff: prepared
+- phase: #5085 executed; #5088 ready
+- next: reporter confirmation for #5085 or separate #5088 execution
+- handoff: #5085 complete on pushed `5104eb4`; #5088 prepared
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -165,6 +165,23 @@ Findings:
 - `rightSelectionAreaClassName` has no live consumer or implementation and can
   be replaced directly before stable release.
 
+#5085 execution delta:
+- The first shared focus fix exposed a second owner: Radix menu autofocus moved
+  focus into a portal and FloatingToolbar unmounted itself because its open gate
+  recognized only editor focus.
+- `Toolbar` now derives owned-overlay state from Radix ARIA trigger props,
+  aggregates open overlay IDs, and reports the aggregate state to
+  FloatingToolbar. FloatingToolbar stays mounted while its own overlay is open.
+- The visual `isDropdown` prop remains presentation-only. Comment, Turn Into,
+  icon-only dropdown, split secondary, keyboard, file-picker, and Bold paths
+  share the primitive contract without caller-specific exceptions.
+- Plite React remains unchanged because its outside-focus selection law is
+  correct.
+- Pushed ref `5104eb406fc8550c8527d89b829d4320ebf2f368` passed focused units,
+  toolbar variants, full `www` typecheck, Browser QA, focused Chromium 3/3,
+  exact headed Chrome receipt, and installed Chrome 151 at 5/5.
+- #5088 slices 3-5 were not executed in this run.
+
 Decisions and tradeoffs:
 - One intrinsic toolbar semantic across plain and split buttons beats caller
   patches and future repeats. Keyboard navigation remains native; only mouse
@@ -204,6 +221,8 @@ Timeline:
 - 2026-08-24: exact Chrome reproduced both non-mark controls and transparent
   marquee paint on current source.
 - 2026-08-24: Best API and Plate/Plite ownership decisions resolved.
+- 2026-08-24: user accepted #5085 execution; shared focus and owned-overlay
+  lifetime repairs completed and passed exact pushed-ref proof.
 
 Reboot status:
 | Question | Answer |

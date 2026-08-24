@@ -34,6 +34,7 @@ import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { getPliteRootBoundaryPoint } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
+  refreshPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
 import {
@@ -1549,7 +1550,10 @@ export const useRootInteractionController = ({
               clientY: event.clientY,
               editor: projectedDragEditor,
               endpoint: projectedDragEndpoint,
-              finish: () => selectionBridge?.finishProjectedDrag(),
+              finish: () => {
+                selectionBridge?.finishProjectedDrag();
+                refreshPliteViewSelection(projectedDragEditor);
+              },
               releaseCleanup: () => {},
             }
           : null;

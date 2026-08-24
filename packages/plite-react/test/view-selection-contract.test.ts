@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import type { Point } from '@platejs/plite';
+import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { getSnapshot as editorGetSnapshot } from '../src/editable/runtime-editor-api';
@@ -17,6 +18,7 @@ import {
   extendPliteViewSelection,
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
+  refreshPliteViewSelection,
   setPliteViewSelectionStoreKey,
   subscribePliteViewSelection,
   writePliteViewSelection,
@@ -24,6 +26,7 @@ import {
 import {
   createPliteViewSelectionDecorationSource,
   hasVisiblePliteViewSelectionDecoration,
+  usePliteViewSelectionDecorationSource,
 } from '../src/view-selection-decoration';
 
 const SHARED_ROOT = 'synced-block:shared:body';
@@ -261,6 +264,68 @@ describe('plite view selection', () => {
     writePliteViewSelection(runtimeEditor, selection);
 
     expect(events).toEqual([selection, null]);
+  });
+
+  it('forces one shared view-selection refresh after interaction settles', () => {
+    const runtimeEditor = {};
+    const viewEditor = {};
+    const notifications: unknown[] = [];
+
+    setPliteViewSelectionStoreKey(viewEditor, runtimeEditor);
+    const unsubscribe = subscribePliteViewSelection(
+      viewEditor,
+      (notification) => notifications.push(notification)
+    );
+
+    refreshPliteViewSelection(runtimeEditor);
+    unsubscribe();
+
+    expect(notifications).toEqual([{ forceInvalidate: true }]);
+  });
+
+  it('notifies the captured subscriber set when a listener unsubscribes another', () => {
+    const editor = {};
+    const notifications: string[] = [];
+    let unsubscribeSecond = () => {};
+    const unsubscribeFirst = subscribePliteViewSelection(editor, () => {
+      notifications.push('first');
+      unsubscribeSecond();
+    });
+
+    unsubscribeSecond = subscribePliteViewSelection(editor, () => {
+      notifications.push('second');
+    });
+
+    refreshPliteViewSelection(editor);
+    unsubscribeFirst();
+
+    expect(notifications).toEqual(['first', 'second']);
+  });
+
+  it('reconciles a view selection written before the decoration subscription attaches', () => {
+    const editor = createReactEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'hello' }] }],
+    });
+    const selection = createMainRootPliteViewSelection({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    let didWriteSelection = false;
+    const { result, unmount } = renderHook(() => {
+      const source = usePliteViewSelectionDecorationSource(editor, true);
+
+      if (!didWriteSelection) {
+        didWriteSelection = true;
+        writePliteViewSelection(editor, selection);
+      }
+
+      return source;
+    });
+
+    expect(Object.values(result.current?.getSnapshot() ?? {})).not.toEqual([]);
+
+    unmount();
   });
 
   it('renders selection decoration only for the addressed content-root owner copy', () => {

@@ -1507,25 +1507,60 @@ test.describe('synced blocks example', () => {
       outerEditor
     );
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
+    const first = createPliteBrowserEditorHarness(
+      page,
+      'synced-blocks-first-copy',
+      firstEditor
+    );
     const from = firstEditor.getByText(SHARED_BODY_FIRST, { exact: true });
     const to = outerEditor.getByText('Between synced copies.', {
       exact: true,
     });
-    const fromBox = await from.boundingBox();
-    const toBox = await to.boundingBox();
 
-    if (!fromBox || !toBox) {
+    await first.ready({ editor: 'visible' });
+
+    const fromBox = await from.boundingBox();
+
+    if (!fromBox) {
       throw new Error('Cannot drag from synced body into owner text');
     }
 
-    await page.mouse.move(
-      fromBox.x + fromBox.width * 0.45,
-      fromBox.y + fromBox.height / 2
-    );
-    await page.mouse.down();
-    await page.mouse.move(toBox.x + toBox.width * 0.45, toBox.y + 4, {
-      steps: 16,
+    await from.hover({
+      position: {
+        x: fromBox.width * 0.45,
+        y: fromBox.height / 2,
+      },
     });
+    const stableFromBox = await from.boundingBox();
+    const toBox = await to.boundingBox();
+
+    if (!stableFromBox || !toBox) {
+      throw new Error('Cannot drag from synced body into owner text');
+    }
+
+    const start = {
+      x: stableFromBox.x + stableFromBox.width * 0.45,
+      y: stableFromBox.y + stableFromBox.height / 2,
+    };
+    const end = {
+      x: toBox.x + toBox.width * 0.45,
+      y: toBox.y + 4,
+    };
+
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    for (let step = 1; step <= 8; step++) {
+      const progress = step / 8;
+
+      await page.mouse.move(
+        start.x + (end.x - start.x) * progress,
+        start.y + (end.y - start.y) * progress
+      );
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      );
+    }
     await page.mouse.up();
 
     await expect

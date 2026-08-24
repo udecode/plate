@@ -155,7 +155,7 @@ export const browserRunEntries = [
   proofInputsScript,
   path.join(repoRoot, 'packages/browser/dist'),
   path.join(repoRoot, 'package.json'),
-].filter(fs.existsSync);
+];
 
 const ignoredDirectories = new Set([
   '.next',

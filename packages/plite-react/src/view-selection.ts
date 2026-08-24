@@ -28,7 +28,13 @@ export type PliteViewSelectionCollapseEdge =
 
 const EDITOR_TO_VIEW_SELECTION = new WeakMap<object, PliteViewSelection>();
 const EDITOR_TO_VIEW_SELECTION_STORE_KEY = new WeakMap<object, object>();
-const VIEW_SELECTION_LISTENERS = new WeakMap<object, Set<() => void>>();
+type PliteViewSelectionNotification = Readonly<{
+  forceInvalidate?: boolean;
+}>;
+const VIEW_SELECTION_LISTENERS = new WeakMap<
+  object,
+  Set<(notification?: PliteViewSelectionNotification) => void>
+>();
 const HISTORY_BATCH_TO_VIEW_SELECTION = new WeakMap<
   object,
   Readonly<{
@@ -49,10 +55,15 @@ export const setPliteViewSelectionStoreKey = (
 const getViewSelectionStoreKey = (editor: object): object =>
   EDITOR_TO_VIEW_SELECTION_STORE_KEY.get(editor) ?? editor;
 
-const notifyViewSelectionListeners = (storeKey: object) => {
-  VIEW_SELECTION_LISTENERS.get(storeKey)?.forEach((listener) => {
-    listener();
-  });
+const notifyViewSelectionListeners = (
+  storeKey: object,
+  notification?: PliteViewSelectionNotification
+) => {
+  Array.from(VIEW_SELECTION_LISTENERS.get(storeKey) ?? []).forEach(
+    (listener) => {
+      listener(notification);
+    }
+  );
 };
 
 const getProjectedPointOwnerKey = (projectedPoint: PliteViewBoundaryPoint) =>
@@ -172,6 +183,12 @@ export const readPliteViewSelection = (
 ): PliteViewSelection | null =>
   EDITOR_TO_VIEW_SELECTION.get(getViewSelectionStoreKey(editor)) ?? null;
 
+export const refreshPliteViewSelection = (editor: object) => {
+  notifyViewSelectionListeners(getViewSelectionStoreKey(editor), {
+    forceInvalidate: true,
+  });
+};
+
 export const writePliteViewSelection = (
   editor: object,
   selection: PliteViewSelection | null,
@@ -197,10 +214,12 @@ export const writePliteViewSelection = (
 
 export const subscribePliteViewSelection = (
   editor: object,
-  listener: () => void
+  listener: (notification?: PliteViewSelectionNotification) => void
 ) => {
   const key = getViewSelectionStoreKey(editor);
-  const listeners = VIEW_SELECTION_LISTENERS.get(key) ?? new Set<() => void>();
+  const listeners =
+    VIEW_SELECTION_LISTENERS.get(key) ??
+    new Set<(notification?: PliteViewSelectionNotification) => void>();
 
   listeners.add(listener);
   VIEW_SELECTION_LISTENERS.set(key, listeners);
