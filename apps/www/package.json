@@ -7,7 +7,7 @@
     "api-reference": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-api-reference.mts",
     "api-reference:check": "pnpm api-reference --check",
     "prebuild": "PLATE_WWW_ASYNC_DOCS=1 pnpm build:source",
-    "build": "PLATE_WWW_ASYNC_DOCS=1 pnpm build:registry && PLATE_WWW_ASYNC_DOCS=1 next build --webpack",
+    "build": "PLATE_WWW_ASYNC_DOCS=1 pnpm build:registry && PLATE_WWW_ASYNC_DOCS=1 PLATE_WWW_WEBPACK=1 next build --webpack",
     "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:source": "fumadocs-mdx source.config.ts .source",
     "build:source:dev": "fumadocs-mdx source.config.ts .source-dev",

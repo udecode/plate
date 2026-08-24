@@ -145,7 +145,9 @@ const nextConfig = (_phase: string) => {
       instantInsights: {
         validationLevel: 'manual-warning',
       },
-      turbopackRustReactCompiler: true,
+      ...(process.env.PLATE_WWW_WEBPACK
+        ? {}
+        : { turbopackRustReactCompiler: true }),
       webpackBuildWorker: true,
       webpackMemoryOptimizations: true,
     },

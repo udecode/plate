@@ -149,7 +149,8 @@ time was 31m29s.
       `Creating an optimized production build` began.
     - Repair: make the repository own a `www...` Turbo graph at concurrency
       two, compile www with Webpack, and enable Next's Webpack build worker and
-      memory optimizations. The registry remains CI-generated.
+      memory optimizations. The explicit Webpack lane omits the existing
+      Turbopack-only React Compiler flag. The registry remains CI-generated.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -229,10 +230,11 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-The existing repair stack and Block Selection store repair are pushed through
-`168a4490e2ccf90dd9b1bd3230fb2f528460caa2`. The final lint, synced-block,
-and Vercel ownership packet is verified in the isolated `../plate-ci`
-checkout and remains unpushed. Merge is not authorized.
+The existing repair stack, lint fix, synced-block stabilization, and Vercel
+ownership packet are pushed through
+`40bb59c760984c4aec0eea5dffc099ccd9cf3d0b`. The Webpack/Turbopack
+conditional config repair is verified in the isolated `../plate-ci` checkout
+and remains unpushed. Merge is not authorized.
 
 ## Remaining risks and next action
 
@@ -242,6 +244,10 @@ checkout and remains unpushed. Merge is not authorized.
 - Vercel at `168a449…` failed in 3m06s from the exact Turbopack compile OOM
   described above. The repository-owned Webpack build lane is locally
   contract-checked but requires the next deployment for runtime proof.
+- Vercel at `40bb59c…` reached `Next.js 16.3.2 (webpack)` after 59/60 bounded
+  build tasks, then rejected the existing Turbopack-only React Compiler flag.
+  The final conditional config removes that flag only from the explicit
+  Webpack lane.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.

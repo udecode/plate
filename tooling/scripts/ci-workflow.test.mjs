@@ -51,7 +51,11 @@ test('Vercel uses the repo-owned bounded www build', async () => {
     packageJson.scripts['build:www:ci'],
     'turbo run build --filter=www... --concurrency=2'
   );
-  assert.match(wwwPackageJson.scripts.build, /next build --webpack$/);
+  assert.match(
+    wwwPackageJson.scripts.build,
+    /PLATE_WWW_WEBPACK=1 next build --webpack$/
+  );
+  assert.match(nextConfig, /process\.env\.PLATE_WWW_WEBPACK/);
   assert.match(nextConfig, /webpackBuildWorker: true/);
   assert.match(nextConfig, /webpackMemoryOptimizations: true/);
 });
