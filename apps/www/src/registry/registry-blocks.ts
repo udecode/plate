@@ -79,6 +79,10 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:component',
       },
       {
+        path: 'components/editor/plate-to-html-client-kit.ts',
+        type: 'registry:component',
+      },
+      {
         path: 'components/editor/plate-to-html-kit.ts',
         type: 'registry:component',
       },

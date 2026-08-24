@@ -110,6 +110,7 @@ Phase / pass table:
 | Root CI (`32762481488`) at `98bc0c0…` | success | 12m39s | exact manual-dispatch root graph passed |
 | Full Plite matrix (`32762484371`) at `98bc0c0…` | success | 11m36s | all 22 package, adopter, browser-matrix, and coverage jobs passed |
 | Vercel deployment `6068960434` at `98bc0c0…` | runtime failure | about 6m29s to deploy | deployment status passed, but Browser replay of `/view/plate-to-html` raised `EditorSchemaValidationError: Unknown element property "id" in closed editor schema` |
+| Vercel deployment `GyFoHjYLHEgT5rzC6FgVtcmKLNhh` at `fa25834…` | failure | 5m11s | the shared kit imported `@platejs/core/react` into the server component graph, and Webpack rejected React hooks from `plite-react` |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -324,6 +325,13 @@ time was 31m29s.
      descriptor through `toPlatePlugin` for the React kit, and prepend the
      React schema kit to the interactive editor. A focused runtime contract
      creates a client editor from a value containing an element ID.
+34. Plate-to-HTML server/client module boundary
+   - Root cause: the first interactive repair defined the React adapter in the
+     server-safe static kit. Webpack therefore followed `@platejs/core/react`
+     from the Plate-to-HTML server page into hook-bearing Plite React modules.
+   - Repair: keep the static kit React-free and move the adapter into an
+     explicit client-only registry file imported by `EditorClient`. Include
+     that file and its direct package dependency in the installable block.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -472,6 +480,9 @@ Verification evidence:
 - Local Browser replay reached the known CI-generated registry boundary in
   `src/__registry__/index.tsx`; it was not regenerated locally. The final
   deployed Vercel replay remains the runtime authority.
+- Authenticated Vercel build logs for `fa25834…` identified the exact RSC
+  import trace from `plate-to-html-kit.ts` through `@platejs/core/react` to
+  hook-bearing Plite React modules. The final module split removes that edge.
 
 ## Push scope
 
@@ -489,6 +500,9 @@ are pushed as `3a111ec15f86c96f6125bf720d942b06cec0fb4f`. Plan bookkeeping is pu
 The beforeinput and inline-undo matrix repairs are pushed as
 `98bc0c03a609e119ef519cc0ec49a8625b9f3daa`; root CI and the full Plite matrix
 are green on that exact SHA. Merge is not authorized.
+The first interactive schema repair is pushed as
+`fa25834ba1a195cfbfae305053c2c37b22a63d54`; its Vercel build exposed the
+server/client module-boundary defect repaired in the final local packet.
 
 Reboot status:
 No machine reboot is required. The isolated checkout, Node 22 toolchain,

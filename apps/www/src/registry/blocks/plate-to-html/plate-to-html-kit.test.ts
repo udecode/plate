@@ -2,10 +2,8 @@ import { describe, expect, it } from 'bun:test';
 
 import { createPlateEditor, ParagraphPlugin } from '@platejs/core/react';
 
-import {
-  PlateToHtmlEditorKit,
-  PlateToHtmlSchemaKit,
-} from '@/registry/components/editor/plate-to-html-kit';
+import { PlateToHtmlClientSchemaKit } from '@/registry/components/editor/plate-to-html-client-kit';
+import { PlateToHtmlEditorKit } from '@/registry/components/editor/plate-to-html-kit';
 
 describe('PlateToHtmlEditorKit', () => {
   const createValue = () => ({
@@ -27,7 +25,7 @@ describe('PlateToHtmlEditorKit', () => {
   it('accepts ids in the client editor value', () => {
     expect(() =>
       createPlateEditor({
-        plugins: [ParagraphPlugin, ...PlateToHtmlSchemaKit],
+        plugins: [ParagraphPlugin, ...PlateToHtmlClientSchemaKit],
         initialValue: createValue(),
       })
     ).not.toThrow();
