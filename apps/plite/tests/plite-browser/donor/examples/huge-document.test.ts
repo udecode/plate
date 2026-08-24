@@ -895,11 +895,22 @@ test.describe('huge document example', {
 
       upMs.push(await pressKeyboardWithTiming(page, 'Shift+ArrowUp', 600));
 
-      const afterUpNative = await getNativeSelectionSummary(editor);
-      const afterUpViewSelection = await getViewSelectionSummary(editor);
+      await expect
+        .poll(async () => {
+          const nativeSelection = await getNativeSelectionSummary(editor);
+          const viewSelection = await getViewSelectionSummary(editor);
 
-      expect(afterUpNative.textLength).toBe(0);
-      expect(afterUpViewSelection.active).toBe(false);
+          return {
+            nativeTextLength: nativeSelection.textLength,
+            viewSelectionActive: viewSelection.active,
+            viewSelectionMarkers: viewSelection.markerCount,
+          };
+        })
+        .toEqual({
+          nativeTextLength: 0,
+          viewSelectionActive: false,
+          viewSelectionMarkers: 0,
+        });
     }
 
     await editor.assert.selection({
@@ -2681,7 +2692,9 @@ test.describe('huge document example', {
     const expectedFirstBlock = beforeText.slice(0, offset) + firstText;
     const expectedSecondBlock = secondText + beforeText.slice(offset);
 
-    await page.keyboard.type(`${firstText}\n${secondText}`, { delay: 0 });
+    await page.keyboard.type(firstText, { delay: 0 });
+    await page.keyboard.press('Enter');
+    await page.keyboard.type(secondText, { delay: 0 });
     await waitForTextBlockMaterialized(editor, blockIndex + 1);
 
     await expect

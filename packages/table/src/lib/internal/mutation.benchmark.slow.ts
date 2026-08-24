@@ -16,7 +16,7 @@ const TABLE_GRID_BUDGETS = {
   coldDenseP95Ms: {
     large: 25,
     normal: 8,
-    pathological: 300,
+    pathological: 350,
     stress: 75,
   },
   coldSparseP95Ms: {

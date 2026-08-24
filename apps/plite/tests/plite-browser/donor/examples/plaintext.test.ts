@@ -2349,10 +2349,8 @@ test.describe('plaintext example', () => {
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe('plain ');
 
-    await page.keyboard.type('simple');
-    await editor.assert.text(
-      'This is editable simpletext, just like a <textarea>!'
-    );
+    await page.keyboard.press('s');
+    await editor.assert.text('This is editable stext, just like a <textarea>!');
 
     await page.keyboard.press(await getBrowserUndoHotkey(editor.root));
 

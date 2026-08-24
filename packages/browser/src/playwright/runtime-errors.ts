@@ -22,6 +22,8 @@ const isIgnoredRuntimeError = (text: string) =>
     text.includes('due to access control checks.')) ||
   (text.includes("Permission policy 'Fullscreen' check failed") &&
     text.includes('https://player.vimeo.com')) ||
+  (text.includes('SecurityError: Document.cookie getter: Forbidden') &&
+    text.includes('https://player.vimeo.com')) ||
   (text.includes('error loading dynamically imported module') &&
     text.includes('https://player.vimeo.com'));
 

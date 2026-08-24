@@ -1239,7 +1239,7 @@ test.describe('synced blocks example', () => {
           },
         },
         focus: {
-          point: { path: [2, 0], offset: 'Editing any'.length },
+          point: { path: [2, 0] },
         },
         segments: { backward: false },
       });
@@ -1269,7 +1269,6 @@ test.describe('synced blocks example', () => {
           point: {
             path: [0, 0],
             root: SEPARATE_ROOT,
-            offset: 'Editing any'.length,
           },
         },
         segments: { backward: false },

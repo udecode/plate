@@ -57,11 +57,19 @@ export function generateBlockPreviewStaticParams() {
   }));
 }
 
-export async function BlockPreviewPage({
-  params,
-}: {
+type BlockPreviewPageProps = {
   params: Promise<{ name: string }>;
-}) {
+};
+
+export function BlockPreviewPage(props: BlockPreviewPageProps) {
+  return (
+    <React.Suspense fallback={null}>
+      <BlockPreviewPageContent {...props} />
+    </React.Suspense>
+  );
+}
+
+async function BlockPreviewPageContent({ params }: BlockPreviewPageProps) {
   const { name } = await params;
   const item = await getCachedRegistryItem(name);
   const Component = getRegistryComponent(name);
