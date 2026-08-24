@@ -237,6 +237,13 @@ Inline means one coherent owner declaration, not a mandatory object-literal or
 chain spelling. Prefer the single inference-preserving shape with the fewest
 learned concepts; reject one public verb per compiler destination.
 
+When a headless package portals lifecycle-owned DOM outside the consumer's
+tree, the package owns that element's semantics and exposes at most one
+truthfully named presentation channel for a current customization job. The
+consumer applies literal product classes through that channel. Reject
+descendant selectors that cannot reach the portal, package-owned brand tokens,
+duplicate portals, and directional or unused styling knobs.
+
 ### Authoring And Inference → [authoring-and-inference.md](./rules/authoring-and-inference.md)
 
 Read this reference for builders, caller generics, extension shape, node-aware reads/updates, and inference ownership.

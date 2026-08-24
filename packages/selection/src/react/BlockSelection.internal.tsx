@@ -89,6 +89,7 @@ const useSelectionArea = (selectionAreaElement?: HTMLElement | null) => {
   const areaRef = React.useRef({ keys: new Set<NodeKey>() });
   const trsRef = React.useRef({ keys: new Set<NodeKey>() });
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- [P0 owned teardown] The returned cleanup cancels the pending frame and destroys SelectionArea, which owns its listeners.
   React.useEffect(() => {
     let finalSelectionClearFrame: number | undefined;
     const clearEditorSelection = () => {
@@ -310,6 +311,10 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const { api, store, update } = useEditorPlugin(BlockSelectionPlugin);
   const [selectionAreaElement, setSelectionAreaElement] =
     React.useState<HTMLDivElement | null>(null);
+  const selectionAreaClassName = usePluginStore(
+    BlockSelectionPlugin,
+    'selectionAreaClassName'
+  );
   const isSelectingSome = usePluginStore(
     BlockSelectionPlugin,
     'isSelectingSome'
@@ -502,7 +507,9 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           <div
             ref={setSelectionAreaElement}
             aria-hidden
-            className="plite-selection-area"
+            className={['plite-selection-area', selectionAreaClassName]
+              .filter(Boolean)
+              .join(' ')}
             data-slot="block-selection-area"
             style={{
               pointerEvents: 'none',

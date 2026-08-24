@@ -24,6 +24,20 @@ import { ToolbarButton } from './toolbar';
 
 const siteUrl = 'https://platejs.org';
 
+const downloadFile = async (url: string, filename: string) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = blobUrl;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+};
+
 export function ExportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
@@ -61,23 +75,6 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
     style.remove();
 
     return canvas;
-  };
-
-  const downloadFile = async (url: string, filename: string) => {
-    const response = await fetch(url);
-
-    const blob = await response.blob();
-    const blobUrl = window.URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename;
-    document.body.append(link);
-    link.click();
-    link.remove();
-
-    // Clean up the blob URL
-    window.URL.revokeObjectURL(blobUrl);
   };
 
   const exportToPdf = async () => {

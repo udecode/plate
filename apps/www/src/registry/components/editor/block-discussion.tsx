@@ -69,6 +69,27 @@ type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 const EMPTY_DISCUSSIONS = Object.freeze([]) as readonly TDiscussion[];
 const EMPTY_SUGGESTIONS = Object.freeze([]) as readonly ResolvedSuggestion[];
 
+const suggestionText2Array = (text: string) => {
+  if (text === BLOCK_SUGGESTION_TOKEN) return ['line breaks'];
+
+  return text.split(BLOCK_SUGGESTION_TOKEN).filter(Boolean);
+};
+
+const getRemoveSummaryItems = (text: string) => {
+  const items = suggestionText2Array(text).map((item) => {
+    if (item === 'columnGroup') return 'Column';
+    if (item === 'codeBlock') return 'Code Block';
+
+    return item;
+  });
+
+  if (items.includes('Table')) return ['Table'];
+  if (items.includes('Code Block')) return ['Code Block'];
+  if (items.includes('Column')) return ['Column'];
+
+  return items;
+};
+
 const discussionIndexCache = new WeakMap<
   PlateEditor,
   {
@@ -197,27 +218,6 @@ export function BlockSuggestionCard({
   };
 
   const [hovering, setHovering] = React.useState(false);
-
-  const suggestionText2Array = (text: string) => {
-    if (text === BLOCK_SUGGESTION_TOKEN) return ['line breaks'];
-
-    return text.split(BLOCK_SUGGESTION_TOKEN).filter(Boolean);
-  };
-
-  const getRemoveSummaryItems = (text: string) => {
-    const items = suggestionText2Array(text).map((item) => {
-      if (item === 'columnGroup') return 'Column';
-      if (item === 'codeBlock') return 'Code Block';
-
-      return item;
-    });
-
-    if (items.includes('Table')) return ['Table'];
-    if (items.includes('Code Block')) return ['Code Block'];
-    if (items.includes('Column')) return ['Column'];
-
-    return items;
-  };
 
   const [editingId, setEditingId] = React.useState<string | null>(null);
 

@@ -19,9 +19,12 @@ process.on('SIGTERM', () => process.exit(0));
 const execFilePromise = promisify(execFile);
 const VERSION_PREFIX_REGEX = /^\D*/;
 
+// oxlint-disable-next-line react-doctor/zod-v4-no-deprecated-schema-apis -- This published package targets Zod 3.25, whose passthrough API is the supported contract.
 const PackageJsonSchema = z
   .object({
+    // oxlint-disable-next-line react-doctor/zod-v4-no-deprecated-schema-apis -- This published package targets Zod 3.25, where record accepts one schema.
     dependencies: z.record(z.string()).optional(),
+    // oxlint-disable-next-line react-doctor/zod-v4-no-deprecated-schema-apis -- This published package targets Zod 3.25, where record accepts one schema.
     devDependencies: z.record(z.string()).optional(),
   })
   .passthrough();

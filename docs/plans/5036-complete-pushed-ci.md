@@ -56,6 +56,9 @@ required check on that exact pushed SHA is terminal green.
 | Sync auto-release checkbox | skipped | N/A | workflow decision |
 | Vercel Preview Comments | success | <1s | terminal status |
 | Vercel deployment `71DznEZVYUjqtKsa63bjbToPG24L` | failure | 31m29s | OOM/SIGKILL while `www:build` compiled |
+| Plite CI (`32719362878`) at `57c2622…` | success | 7m19s | every package, adopter, build, Chromium shard, and coverage job passed |
+| Root CI (`32719381010`) at `57c2622…` | failure | 8m21s | `bun check` received SIGTERM during 61-package Turbo typecheck with no TypeScript diagnostic |
+| Vercel deployment `6nP7XjLxiT85mnAxMAoQ9hGUwivo` at `57c2622…` | failure | 2m51s | build container reported OOM and SIGKILL about 72s into `www:build` compilation |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -99,6 +102,26 @@ time was 31m29s.
      classify failed fixes explicitly as `reporter-contradiction`,
      `exact-replay`, or `final-verification`; sync all generated mirrors and
      migrate existing plan tables.
+8. `apps/www/scripts/build-registry.mts`
+   - Root cause: the generated registry index created lazy component imports
+     for 240 entries, including 170 metadata-only UI, component, file, hook,
+     and library items. Every docs route therefore entered those modules into
+     both browser and SSR compilation graphs.
+   - Repair: preserve every registry metadata entry but generate component
+     loaders only for the 68 examples and three runnable blocks in current
+     source. RSC blocks remain excluded.
+9. `.github/workflows/ci.yml`
+   - Root cause: the root runner launched the package build and 61-package
+     typecheck at default Turbo concurrency and was externally terminated.
+   - Repair: bound Turbo typecheck concurrency to two in the shared
+     `g:typecheck` script. Local `pnpm check`, GitHub `bun check`, and push CI
+     therefore use the same check graph and scheduler limit.
+10. `apps/www/package.json`
+    - Root cause: selective Next production builds can leave a partial
+      `.next/types` route map, so later local www typechecks reject valid routes
+      that Vercel's full build discovers.
+    - Repair: regenerate the complete Next route types inside the shared www
+      typecheck script before both TypeScript programs run.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -130,6 +153,19 @@ from shard summaries and closes when shard 1 passes.
   resource sync passed.
 - Agent-native review: pass; source owner, route, mirrors, plan schema, and
   executable proof are complete.
+- Registry index and CI workflow contracts: 12 tests passed across the focused
+  registry and workflow files; script typecheck passed.
+- Current generated registry: 246 metadata entries and 240 loaders. Current
+  source with the repair: 232 metadata entries and 71 loaders (68 examples and
+  three blocks).
+- Selective production-build diagnosis: the Plite route completed at 2.55GB
+  RSS, while the docs route reached 11.25GB before the expected stale generated
+  registry import boundary.
+- `pnpm --filter www typecheck`: passed after regenerating the full typed-route
+  map; the seven stale selective-build route errors disappeared.
+- Shared no-drift root gate: `pnpm check` passed in 331.91s with 60 builds, 60
+  typechecks at concurrency two, 3,311 fast tests, 1,549 slow tests with 60
+  skips, and the slowest-test budget gate.
 - P1 autoreview cap: all three invocations used. The final bounded repair review
   was clean; three checkout-wide Regression findings from invocation 2 were
   accepted and deterministically repaired after the cap, so no further
@@ -143,12 +179,13 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-None yet. Commit and push are explicitly authorized; merge is not.
+Four repair commits have been pushed through `57c26226c65d2ccdb962b6a99d42ef6a8f5c4cc1`.
+The current registry/runner repair remains local. Merge is not authorized.
 
 ## Remaining risks and next action
 
-- The remote CI remains red on `2b206974…` until the full checkout is committed
-  and pushed.
+- Root CI and Vercel remain red on `57c2622…` until the current repair is
+  committed and pushed.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.

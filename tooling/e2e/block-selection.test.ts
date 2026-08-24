@@ -21,6 +21,16 @@ const recordRuntimeErrors = (page: Page) => {
   };
 };
 
+const selectedBlockPaths = (page: Page) =>
+  page.locator('[data-slot="block-selection"]').evaluateAll((elements) =>
+    elements
+      .map((element) =>
+        element.closest('[data-plite-path]')?.getAttribute('data-plite-path')
+      )
+      .filter((key): key is string => Boolean(key))
+      .sort()
+  );
+
 test('drags from the editor gutter to select whole blocks', async ({
   page,
 }) => {
@@ -30,12 +40,13 @@ test('drags from the editor gutter to select whole blocks', async ({
   );
   const heading = editor.locator('h1').first();
   const blocks = editor.locator('.plite-selectable[data-plite-node-key]');
+  const marquee = page.locator('[data-slot="block-selection-area"]');
   const floatingToolbar = page.getByRole('toolbar').filter({
     has: page.getByRole('button', { exact: true, name: 'Ask AI' }),
   });
 
   try {
-    await page.goto('/');
+    await page.goto('/blocks/playground');
     await expect(heading).toBeVisible();
     await heading.scrollIntoViewIfNeeded();
 
@@ -48,6 +59,7 @@ test('drags from the editor gutter to select whole blocks', async ({
 
             return {
               bottom: rect.bottom,
+              path: element.getAttribute('data-plite-path'),
               left: rect.left,
               top: rect.top,
               width: rect.width,
@@ -57,15 +69,24 @@ test('drags from the editor gutter to select whole blocks', async ({
             (rect) =>
               rect.top >= headingY - 2 && rect.bottom < window.innerHeight - 20
           )
-          .slice(0, 2),
+          .slice(0, 3),
       headingBox?.y ?? 0
     );
 
-    if (!headingBox || visibleBlockBoxes.length < 2) {
+    if (
+      !headingBox ||
+      visibleBlockBoxes.length < 3 ||
+      visibleBlockBoxes.some(({ path }) => !path)
+    ) {
       throw new Error('Expected visible block selection geometry');
     }
 
-    const lastBlockBox = visibleBlockBoxes.at(-1)!;
+    const draggedBlockBoxes = visibleBlockBoxes.slice(0, 2);
+    const expectedDraggedPaths = draggedBlockBoxes
+      .map(({ path }) => path!)
+      .sort();
+    const followUpPath = visibleBlockBoxes[2].path!;
+    const lastBlockBox = draggedBlockBoxes.at(-1)!;
 
     const start = {
       x: headingBox.x - 20,
@@ -73,7 +94,7 @@ test('drags from the editor gutter to select whole blocks', async ({
     };
     const end = {
       x: lastBlockBox.left + Math.min(80, lastBlockBox.width / 2),
-      y: lastBlockBox.bottom - 2,
+      y: (lastBlockBox.top + lastBlockBox.bottom) / 2,
     };
     const startArea = await page.evaluate(({ x, y }) => {
       const target = document.elementFromPoint(x, y);
@@ -88,9 +109,41 @@ test('drags from the editor gutter to select whole blocks', async ({
 
     await page.mouse.move(start.x, start.y);
     await page.mouse.down();
-    await page.mouse.move(end.x, end.y, { steps: 16 });
+    for (let step = 1; step <= 8; step++) {
+      const progress = step / 8;
 
-    await expect(page.locator('.plite-selection-area')).toBeVisible();
+      await page.mouse.move(
+        start.x + (end.x - start.x) * progress,
+        start.y + (end.y - start.y) * progress
+      );
+      await page.waitForTimeout(20);
+    }
+
+    await expect
+      .poll(() => selectedBlockPaths(page))
+      .toEqual(expectedDraggedPaths);
+    await expect(marquee).toBeVisible();
+    const marqueePaint = await marquee.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const isTransparent = (color: string) =>
+        color === 'transparent' || color === 'rgba(0, 0, 0, 0)';
+
+      return {
+        borderPainted:
+          style.borderStyle !== 'none' &&
+          style.borderWidth !== '0px' &&
+          !isTransparent(style.borderColor),
+        fillPainted: !isTransparent(style.backgroundColor),
+        height: rect.height,
+        width: rect.width,
+      };
+    });
+
+    expect(marqueePaint.width).toBeGreaterThan(0);
+    expect(marqueePaint.height).toBeGreaterThan(0);
+    expect(marqueePaint.fillPainted).toBe(true);
+    expect(marqueePaint.borderPainted).toBe(true);
     await expect
       .poll(() =>
         page.evaluate(() =>
@@ -101,18 +154,43 @@ test('drags from the editor gutter to select whole blocks', async ({
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe('');
+    await expect(floatingToolbar).toHaveCount(0);
 
-    await page.mouse.up();
+    await page.evaluate(({ x, y }) => {
+      document.dispatchEvent(
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: y,
+        })
+      );
+    }, end);
 
     await expect
-      .poll(() => editor.locator('[data-slot="block-selection"]').count())
-      .toBeGreaterThanOrEqual(2);
+      .poll(() => selectedBlockPaths(page))
+      .toEqual(expectedDraggedPaths);
+    await expect(marquee).toBeHidden();
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe('');
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.activeElement?.classList.contains('plite-shadow-input')
+        )
+      )
+      .toBe(true);
     await expect(floatingToolbar).toHaveCount(0);
+
+    await page.keyboard.press('ArrowDown');
+    await expect.poll(() => selectedBlockPaths(page)).toEqual([followUpPath]);
+    await expect
+      .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
+      .toBe('');
     runtimeErrors.assertNone();
   } finally {
+    await page.mouse.up().catch(() => {});
     runtimeErrors.stop();
   }
 });

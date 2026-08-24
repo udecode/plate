@@ -341,8 +341,6 @@ export default defineConfig({
     'react-doctor/no-json-parse-stringify-clone': 'off',
     // [P0 architecture-conflict] Component modules intentionally colocate variants, hooks, schemas, and styling contracts; splitting public owners solely for development Fast Refresh fragments the API without changing production behavior.
     'react-doctor/only-export-components': 'off',
-    // [P0 counterproductive] Hoisting one-owner helpers out of components harms locality and can broaden accidental reuse; pure function placement is an ownership decision, not a render-correctness law.
-    'react-doctor/prefer-module-scope-pure-function': 'off',
     // [P0 counterproductive] Boolean count does not reveal invalid state combinations; forcing variants or component splits without a proven state invariant fragments otherwise clear internal APIs.
     'react-doctor/no-many-boolean-props': 'off',
     // [P0 counterproductive] The number of setState calls does not establish one state machine; reducer adoption belongs to coupled transition invariants, not a numeric threshold.
@@ -371,8 +369,6 @@ export default defineConfig({
     'react/jsx-handler-names': 'off',
     // [P0 valid-pattern] React.Children is the supported traversal API for opaque children; array coercion or direct iteration does not preserve fragments, keys, or non-array child shapes.
     'react/no-react-children': 'off',
-    // [P0 lifecycle-false-positive] Class components remain required for error boundaries and commit lifecycles that have no function-component equivalent.
-    'react/prefer-function-component': 'off',
     // [P0 counterproductive] React already escapes JSX text; entity spelling damages prose and literal editor fixtures without adding an XSS boundary.
     'react/no-unescaped-entities': 'off',
     // [P0 duplicate-owner] The type-aware TypeScript rule is more accurate and owns this check for repository TypeScript.
@@ -412,8 +408,6 @@ export default defineConfig({
     'typescript/no-unsafe-return': 'off',
     // [P0 re-enable-rejected] Public subtype-return hooks, type guards, phantom capability carriers, and exact-type encodings use parameters once syntactically while preserving inference or variance; re-enable only when the rule can model those contracts without fake type uses or broken APIs.
     'typescript/no-unnecessary-type-parameters': 'off',
-    // [P0 false-positive] Every current report already has real teardown through a returned unsubscribe, a cleared timer set, a destroyed subscription owner, or an unmount cleanup ref; the heuristic cannot follow those cleanup contracts and would require duplicate teardown or suppressions.
-    'react-doctor/effect-needs-cleanup': 'off',
     'typescript/no-extraneous-class': [
       'error',
       { allowEmpty: true, allowStaticOnly: true, allowWithDecorator: true },
@@ -547,8 +541,6 @@ export default defineConfig({
     'react-doctor/no-pass-live-state-to-parent': 'off',
     // [P0 public-api-conflict] Render-prop children are a deliberate public composition contract; renaming the slot does not improve correctness and breaks the API.
     'react-doctor/no-render-prop-children': 'off',
-    // [P0 dependency-mismatch] This repository compiles against Zod 3, so the reported Zod 4 replacement APIs do not exist in the installed owner version.
-    'react-doctor/zod-v4-no-deprecated-schema-apis': 'off',
     // [P1 valid-pattern] cloneElement is the standard API for preserving a supplied element while injecting owned accessibility, style, or command props.
     'react/no-clone-element': 'off',
     // [P1 valid-pattern] Class fields are the repository's standard state initialization syntax; forcing constructor assignment is obsolete ceremony.

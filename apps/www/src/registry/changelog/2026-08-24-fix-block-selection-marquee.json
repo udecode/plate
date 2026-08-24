@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-24-fix-block-selection-marquee",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-24-fix-block-selection-marquee.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Paint the block-selection marquee during gutter drags",
+  "targets": [
+    {
+      "name": "block-selection",
+      "files": ["apps/www/src/registry/components/editor/block-selection.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-24-block-selection-paint-marquee-during-gutter-63ab8b60",
+      "kind": "fix",
+      "summary": "Paint the block-selection marquee during gutter drags",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-selection"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-fix-block-selection-marquee",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

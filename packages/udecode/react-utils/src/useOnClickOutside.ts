@@ -95,6 +95,7 @@ export const useOnClickOutside = (
   }, []);
   const eventTypesKey = eventTypes.join('\u0000');
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- [P0 owned teardown] The returned cleanup removes every active listener and clears every pending blur timer.
   React.useEffect(() => {
     if (!refsOpt?.length && !element) return undefined;
 

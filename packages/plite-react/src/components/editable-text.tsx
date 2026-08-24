@@ -387,6 +387,14 @@ type RenderEditableTextProps<T> = EditableTextProps<T> & {
   renderRevision?: number | string;
 };
 
+const getLeafAttributes = <T,>(
+  leafPosition?: RenderLeafProps<T>['leafPosition']
+) => ({
+  'data-plite-leaf': true as const,
+  'data-plite-leaf-end': leafPosition?.end,
+  'data-plite-leaf-start': leafPosition?.start,
+});
+
 const RenderEditableText = <T,>({
   placeholder,
   placeholderAs,
@@ -431,13 +439,6 @@ const RenderEditableText = <T,>({
       ? splitTextByProjections(resolvedText, projections, resolvedMarks)
       : [];
 
-  const getLeafAttributes = (
-    leafPosition?: RenderLeafProps<T>['leafPosition']
-  ) => ({
-    'data-plite-leaf': true as const,
-    'data-plite-leaf-end': leafPosition?.end,
-    'data-plite-leaf-start': leafPosition?.start,
-  });
   const textNode = {
     text: resolvedText,
     ...resolvedMarks,

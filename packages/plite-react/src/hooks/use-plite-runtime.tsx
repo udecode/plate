@@ -851,6 +851,7 @@ export function usePliteRuntimeState<
     []
   );
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.
   useIsomorphicLayoutEffect(() => {
     const unsubscribe = selectorContext.addEventListener(update, {
       deferred,
@@ -937,6 +938,7 @@ export function usePliteRootState<
     [internalRoot]
   );
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.
   useIsomorphicLayoutEffect(() => {
     const unsubscribe = selectorContext.addEventListener(update, {
       deferred,

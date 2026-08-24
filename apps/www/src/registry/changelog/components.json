@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "components": {
+    "block-selection": [
+      "2026-08-24-fix-block-selection-marquee",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-06-fix-block-selection-drag",
+      "2026-07-26-plugin-store-state"
+    ],
     "tag": [
       "2026-08-24-fix-tag-link-install",
       "2026-08-17-flat-editor-registry"
@@ -284,13 +292,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-08-13-fix-registry-install-dependencies",
       "2025-11-20-biome-ultracite"
-    ],
-    "block-selection": [
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-06-fix-block-selection-drag",
-      "2026-07-26-plugin-store-state"
     ],
     "copilot": [
       "2026-08-17-colocate-editor-component-families",

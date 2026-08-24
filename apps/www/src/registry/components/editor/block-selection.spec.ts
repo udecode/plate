@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test';
 
-import { hasSelectableClass } from './block-selection';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { createPlateEditor } from 'platejs/react';
+
+import { BlockSelectionKit, hasSelectableClass } from './block-selection';
 
 describe('hasSelectableClass', () => {
   it('returns true when plite-selectable is on props.className', () => {
@@ -27,5 +30,15 @@ describe('hasSelectableClass', () => {
         className: 'font-semibold',
       })
     ).toBe(false);
+  });
+});
+
+describe('BlockSelectionKit', () => {
+  it('owns the portal presentation classes', () => {
+    const editor = createPlateEditor({ plugins: [...BlockSelectionKit] });
+
+    expect(
+      editor.plugin(BlockSelectionPlugin).store.get('selectionAreaClassName')
+    ).toBe('z-50 border border-brand/25 bg-brand/15');
   });
 });

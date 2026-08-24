@@ -70,7 +70,7 @@
     "g:rd": "pnpm --filter www rd",
     "g:release:beta": "node tooling/scripts/release-packages.mjs --channel beta",
     "g:release:next": "pnpm g:release:beta",
-    "g:typecheck": "pnpm g:build && turbo --filter \"./packages/**\" typecheck --only",
+    "g:typecheck": "pnpm g:build && turbo --filter \"./packages/**\" typecheck --only --concurrency=2",
     "g:typecheck:all": "(pnpm build || pnpm build) && turbo typecheck --only",
     "lint": "ultracite check",
     "lint:fix": "ultracite fix",

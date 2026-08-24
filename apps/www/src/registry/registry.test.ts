@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { getRegistryIndexComponentPath } from '../../scripts/registry-index.mts';
 import { createPlateRegistry, PLATE_REGISTRY_BASES } from './registry';
 
 describe('Plate registry editor files', () => {
@@ -102,9 +103,11 @@ describe('Plate registry editor files', () => {
 
   it('keeps generated preview entrypoints client-compatible', () => {
     for (const item of items) {
-      const previewPath = item.files?.[0]?.path;
+      const componentPath = getRegistryIndexComponentPath(item);
 
-      if (!previewPath || item.meta?.rsc) continue;
+      if (!componentPath) continue;
+
+      const previewPath = componentPath.slice('@/registry/'.length);
 
       const source = readFileSync(join(import.meta.dir, previewPath), 'utf-8');
 

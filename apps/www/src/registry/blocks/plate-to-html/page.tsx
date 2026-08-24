@@ -78,28 +78,28 @@ const createHtmlDocument = ({
   </body>
 </html>`;
 
-export default async function PlateToHtmlBlock() {
-  const createValue = (): EditorDocumentValue => ({
-    children: [
-      ...basicBlocksValue,
-      ...basicMarksValue,
-      ...tocPlaygroundValue,
-      ...linkValue,
-      ...tableValue,
-      ...equationValue,
-      ...columnValue,
-      ...mentionValue,
-      ...dateValue,
-      ...fontValue,
-      ...discussionValue,
-      ...alignValue,
-      ...lineHeightValue,
-      ...indentValue,
-      ...listValue,
-      ...mediaValue.children,
-    ],
-  });
+const createValue = (): EditorDocumentValue => ({
+  children: [
+    ...basicBlocksValue,
+    ...basicMarksValue,
+    ...tocPlaygroundValue,
+    ...linkValue,
+    ...tableValue,
+    ...equationValue,
+    ...columnValue,
+    ...mentionValue,
+    ...dateValue,
+    ...fontValue,
+    ...discussionValue,
+    ...alignValue,
+    ...lineHeightValue,
+    ...indentValue,
+    ...listValue,
+    ...mediaValue.children,
+  ],
+});
 
+export default async function PlateToHtmlBlock() {
   const editor = createStaticEditor({
     plugins: BaseEditorKit,
     initialValue: createValue(),

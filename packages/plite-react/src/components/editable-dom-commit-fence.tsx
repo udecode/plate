@@ -1,4 +1,3 @@
-// getSnapshotBeforeUpdate has no function-component equivalent.
 import React, {
   Component,
   type ReactNode,
@@ -24,6 +23,7 @@ const EMPTY_PROJECTION_SNAPSHOT = Object.freeze(Object.create(null));
 const subscribeEmpty = () => () => {};
 const getEmptyProjectionSnapshot = () => EMPTY_PROJECTION_SNAPSHOT;
 
+// oxlint-disable-next-line react/prefer-function-component -- [P0 React lifecycle] getSnapshotBeforeUpdate has no function-component equivalent.
 class EditableDOMCommitFenceComponent extends Component<EditableDOMCommitFenceStateProps> {
   componentDidMount() {
     this.props.runtime.completeReactCommit();

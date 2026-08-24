@@ -555,6 +555,7 @@ function useTableResizeController({
         stopResize();
       };
 
+      // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- [P0 owned teardown] The ref-owned cleanup runs before restart, on pointer end, and on unmount.
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerEnd);
       window.addEventListener('pointercancel', handlePointerEnd);

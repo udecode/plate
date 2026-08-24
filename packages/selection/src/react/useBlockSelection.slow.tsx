@@ -224,4 +224,29 @@ describe('useSelectionArea', () => {
     root.append(second);
     expect(options.selectables()).toEqual([first, second]);
   });
+
+  it('applies the consumer class to the portaled selection area', async () => {
+    useEditorMock.mockReturnValue({
+      id: 'editor',
+      api: { dom: { editable: () => null, scroll: () => null } },
+    });
+    usePluginStoreMock.mockImplementation((_plugin, selector) =>
+      selector === 'selectionAreaClassName' ? 'consumer-marquee' : false
+    );
+    useEditorPluginMock.mockReturnValue({
+      api: { clear: mock() },
+      update: {},
+      store: {
+        get: mock(() => ({ areaOptions: {} })),
+        set: mock(),
+      },
+    });
+
+    const { BlockSelectionAfterEditable } = await loadModule();
+    render(<BlockSelectionAfterEditable />);
+
+    expect(
+      document.querySelector('[data-slot="block-selection-area"]')?.className
+    ).toBe('plite-selection-area consumer-marquee');
+  });
 });

@@ -73,6 +73,7 @@ export const BlockSelectionKit = [
   BlockSelectionPlugin.configure(({ editor }) => ({
     initialState: {
       enableContextMenu: true,
+      selectionAreaClassName: 'z-50 border border-brand/25 bg-brand/15',
       isSelectable: (element) =>
         ![PLUGINS.column, PLUGINS.codeLine, PLUGINS.tableCell]
           .flatMap((name) => {
