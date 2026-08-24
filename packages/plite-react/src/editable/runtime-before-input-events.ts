@@ -847,6 +847,7 @@ export const useRuntimeBeforeInputEvents = ({
                 selectionChangeOrigin:
                   inputController.state.selectionChangeOrigin,
                 selection: currentSelection,
+                textInputOwnership: inputController.state.textInputOwnership,
               });
             }
           );

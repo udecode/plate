@@ -556,6 +556,7 @@ export const syncSelectionForBeforeInput = ({
   root,
   selectionChangeOrigin = null,
   selection,
+  textInputOwnership = null,
 }: {
   allowDOMSelectionImport?: boolean;
   data: unknown;
@@ -572,6 +573,7 @@ export const syncSelectionForBeforeInput = ({
   root: Document | ShadowRoot;
   selectionChangeOrigin?: SelectionChangeOrigin | null;
   selection: Range | null;
+  textInputOwnership?: EditableInputController['state']['textInputOwnership'];
 }): {
   native: boolean;
   nativeBlocker?: string;
@@ -803,6 +805,15 @@ export const syncSelectionForBeforeInput = ({
       RangeApi.isCollapsed(nextSelection) &&
       PathApi.equals(range.anchor.path, nextSelection.anchor.path) &&
       range.anchor.offset < nextSelection.anchor.offset;
+    const modelOwnedMismatchedSamePathTextInputDOMSelection =
+      textInputOwnership === 'model' &&
+      selectionChangeOrigin !== 'native-user' &&
+      !!range &&
+      RangeApi.isCollapsed(range) &&
+      !!nextSelection &&
+      RangeApi.isCollapsed(nextSelection) &&
+      PathApi.equals(range.anchor.path, nextSelection.anchor.path) &&
+      range.anchor.offset !== nextSelection.anchor.offset;
     const staleBackwardTextInputDOMSelection =
       pendingNativeTextInputRepairOwnsSelection &&
       staleBackwardSamePathTextInputDOMSelection;
@@ -811,19 +822,22 @@ export const syncSelectionForBeforeInput = ({
       staleBackwardSamePathTextInputDOMSelection;
 
     if (
+      modelOwnedMismatchedSamePathTextInputDOMSelection ||
       staleRepairInducedTextInputDOMSelection ||
       pendingNativeTextInputRepairOwnsDifferentPath ||
       pendingNativeTextInputRepairOwnsDifferentOffset ||
       staleBackwardTextInputDOMSelection
     ) {
       nextNative = false;
-      nativeBlocker = staleRepairInducedTextInputDOMSelection
-        ? 'stale-repair-selection'
-        : pendingNativeTextInputRepairOwnsDifferentPath
-          ? 'pending-repair-path'
-          : pendingNativeTextInputRepairOwnsDifferentOffset
-            ? 'pending-repair-offset'
-            : 'stale-dom-selection';
+      nativeBlocker = modelOwnedMismatchedSamePathTextInputDOMSelection
+        ? 'model-owned-dom-selection'
+        : staleRepairInducedTextInputDOMSelection
+          ? 'stale-repair-selection'
+          : pendingNativeTextInputRepairOwnsDifferentPath
+            ? 'pending-repair-path'
+            : pendingNativeTextInputRepairOwnsDifferentOffset
+              ? 'pending-repair-offset'
+              : 'stale-dom-selection';
     } else if (
       pendingNativeTextInputRepairOwnsSelection &&
       pendingNativeTextInputRepairPath &&

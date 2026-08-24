@@ -551,6 +551,95 @@ test('beforeinput imports backward native text caret when no pending repair owns
   }
 });
 
+test('beforeinput ignores an ahead DOM caret while text input is model-owned', () => {
+  const editor = createReactEditor();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('abcdef');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-path', '0,0');
+  string.setAttribute('data-plite-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abcdef' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+
+  const modelSelection = editorGetSelection(editor);
+
+  try {
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 3, text, 3);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'd',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+      textInputOwnership: 'model',
+    });
+
+    expect(result).toEqual({
+      native: false,
+      nativeBlocker: 'model-owned-dom-selection',
+      selection: modelSelection,
+    });
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+
+    const nativeUserResult = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'd',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+      selectionChangeOrigin: 'native-user',
+      textInputOwnership: 'model',
+    });
+
+    expect(nativeUserResult).toEqual({
+      native: false,
+      nativeBlocker: 'dom-selection-import',
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+  } finally {
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
 test('beforeinput ignores repair-induced backward text caret when no pending repair owns it', () => {
   const editor = createReactEditor();
   const root = document.createElement('div');

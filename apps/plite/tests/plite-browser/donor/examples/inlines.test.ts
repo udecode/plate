@@ -1371,6 +1371,18 @@ test.describe('Inlines example', {
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe(text);
+    const draggedSelection = await editor.get.selection();
+
+    expect(draggedSelection).toMatchObject({
+      kind: 'text',
+      anchor: { path: [0, 1, 0] },
+      focus: { path: [0, 1, 0] },
+    });
+    expect(
+      [draggedSelection?.anchor.offset, draggedSelection?.focus.offset].sort(
+        (a, b) => (a ?? 0) - (b ?? 0)
+      )
+    ).toEqual([0, text.length]);
 
     await page.keyboard.type('wiki');
     await expect(editor.root.locator('a').first()).toHaveText('wiki');
@@ -1385,24 +1397,7 @@ test.describe('Inlines example', {
     );
 
     await expect(editor.root.locator('a').first()).toHaveText(text);
-    const expectedSelection =
-      testInfo.project.name === 'firefox'
-        ? {
-            kind: 'text',
-            anchor: { path: [0, 1, 0], offset: text.length },
-            focus: { path: [0, 1, 0], offset: 0 },
-          }
-        : {
-            kind: 'text',
-            anchor: { path: [0, 1, 0], offset: 0 },
-            focus: { path: [0, 1, 0], offset: text.length },
-          };
-
-    await editor.assert.selection({
-      kind: 'text',
-      anchor: expectedSelection.anchor,
-      focus: expectedSelection.focus,
-    });
+    await expect.poll(() => editor.get.selection()).toEqual(draggedSelection);
     await expect.poll(() => editor.get.selectedText()).toBe(text);
   });
 
