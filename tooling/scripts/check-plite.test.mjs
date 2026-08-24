@@ -470,6 +470,16 @@ test('Plite CI cache action inputs do not duplicate their exact key', () => {
   assert.equal(restore.match(/^\s+key:/gmu)?.length, 1);
 });
 
+test('Plite CI browser containers use a root-owned home', () => {
+  const workflow = fs.readFileSync(
+    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
+    'utf-8'
+  );
+
+  assert.match(workflow, /project: \[firefox, mobile\]/u);
+  assert.equal(workflow.match(/^\s+HOME: \/root$/gmu)?.length, 2);
+});
+
 test('Plite CI watches every benchmark authority root through cheap contracts', () => {
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),

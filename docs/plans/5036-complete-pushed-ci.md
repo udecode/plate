@@ -60,6 +60,8 @@ required check on that exact pushed SHA is terminal green.
 | Root CI (`32719381010`) at `57c2622…` | failure | 8m21s | `bun check` received SIGTERM during 61-package Turbo typecheck with no TypeScript diagnostic |
 | Vercel deployment `6nP7XjLxiT85mnAxMAoQ9hGUwivo` at `57c2622…` | failure | 2m51s | build container reported OOM and SIGKILL about 72s into `www:build` compilation |
 | Vercel deployment `4h5Psp7ziL4anbGJCTZxNDGiWwni` at `cfff64f…` | failure | 8m06s | Webpack compiled and began static generation, then `/cn/docs` rejected the shared docs renderer's `params` access outside Suspense |
+| Vercel deployment `2uoyAthH1XsrJLbEdm1K5qWYi4Wt` at `12f693f…` | failure | 8m24s | the shared catch-all passed; static generation reached 800/1,067 before async `BlockDisplay` failed `/editors` and `/cn/docs/examples/plate-to-html` outside Suspense |
+| Plite CI (`32743163175`) at `12f693f…` | failure | 7m48s | Firefox shards could not launch with a `pwuser`-owned HOME; two history rows failed once but passed 6/6 locally unchanged; held block drag reproduced a WebKit focus defect |
 
 The GitHub-hosted suite reached its last terminal job 9m11s after the run
 started. Vercel failed 22m18s later, so the original end-to-end red feedback
@@ -160,6 +162,25 @@ time was 31m29s.
       rejected `/cn/docs` during prerendering after the Webpack compile passed.
     - Repair: keep the static route shell and move the async renderer behind a
       shared Suspense boundary used by both `/docs` and `/cn/docs`.
+16. `.github/workflows/plite-ci.yml`
+    - Root cause: workflow-dispatched Firefox shards ran the Playwright
+      container as root while `HOME=/github/home` remained owned by `pwuser`.
+      Firefox refused to launch before any browser assertion ran.
+    - Repair: give both Linux Playwright container jobs the root-owned
+      `HOME=/root` and lock the environment contract in the Plite checker.
+17. `apps/www/src/components/block-display.tsx`
+    - Root cause: `BlockDisplay` exported its async registry reads directly, so
+      every caller had to know the Cache Components boundary law. Vercel
+      reported the same owner on `/editors` and the CN Plate-to-HTML page.
+   - Repair: make `BlockDisplay` own Suspense and keep the async registry work
+     in its private content component. Every current and future caller gets
+     the same safe boundary.
+18. `packages/dnd/src/useDndNode.ts`
+   - Root cause: Chrome focuses a pressed drag-handle button, but WebKit leaves
+     the source contenteditable focused. The DnD hook relied on that browser
+     difference instead of owning focus when a block drag actually starts.
+   - Repair: when drag-item creation confirms a live element, blur the editor
+     if it is focused. The existing selection and drag payload remain intact.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -237,6 +258,20 @@ from shard summaries and closes when shard 1 passes.
 - Local Browser compilation reached the known CI-generated registry boundary:
   `src/__registry__/index.tsx` imports absent registry source. Per repository
   policy, local verification did not regenerate CI-owned registry output.
+- `node --test tooling/scripts/check-plite.test.mjs`: passed with the Linux
+  Playwright container HOME contract.
+- Exact WebKit history rows passed 6/6 each on unchanged input/history source;
+  the combined three-case WebKit replay passed 3/3 with retries disabled.
+- Held block-drag focus reproduced red in WebKit before the DnD owner fix, then
+  passed 6/6 retry-free WebKit runs after it.
+- `bun test ./packages/dnd/src`: 34/34 passed; focused DnD slow proof passed
+  5/5; source-first DnD typecheck passed 12/12 tasks.
+- Installed Google Chrome 151.0.7922.173 passed the full cross-editor DnD
+  fixture 15/15, including the held-focus row 5/5.
+- `pnpm check:plite:dev`: passed in 17.9s with DnD typecheck/tests and all
+  affected Plite contracts.
+- Final local `pnpm check:push`: passed with 60 builds, 60 typechecks, 3,315
+  fast tests, and 1,549 slow tests with 60 skips.
 
 ## Push scope
 
@@ -247,10 +282,11 @@ workflow updates, and the user-authored plans already present in the checkout.
 ## Public mutations
 
 The existing repair stack, lint fix, synced-block stabilization, Vercel
-ownership packet, Webpack/Turbopack conditional config, and `ts-morph` server
-externalization are pushed through
-`cfff64f430998cbd566a7fad2b503602b9ce2d35`. The shared docs Suspense repair is
-verified in the isolated `../plate-ci` checkout and remains unpushed. Merge is
+ownership packet, Webpack/Turbopack conditional config, `ts-morph` server
+externalization, and shared docs Suspense repair are pushed through
+`12f693f5a80e4f45672f621cca0d813f5b3ec22f`. The Linux Firefox environment and
+shared `BlockDisplay` boundary repairs plus the WebKit DnD focus repair are
+verified in the isolated `../plate-ci` checkout and remain unpushed. Merge is
 not authorized.
 
 ## Remaining risks and next action
@@ -274,6 +310,16 @@ not authorized.
   static pages. It failed in 8m06s because the shared docs renderer accessed
   `params` outside Suspense. The local repair puts both locale routes behind
   the same boundary and requires the next deployment for prerender proof.
+- The exact-SHA workflow dispatch exposed a Linux Firefox launch failure before
+  tests: root ran with a `pwuser`-owned HOME. The final workflow packet owns a
+  root HOME for both Playwright container jobs and requires a fresh dispatch.
+- Vercel at `12f693f…` proved the shared catch-all repair by advancing through
+  800 of 1,067 pages. It then exposed the reusable async `BlockDisplay` owner on
+  `/editors` and `/cn/docs/examples/plate-to-html`; the final local packet puts
+  that owner behind Suspense and requires the next deployment for proof.
+- The two one-off WebKit history failures at `12f693f…` are 6/6 green locally
+  without history edits. The exact final-SHA Plite run remains authoritative;
+  no speculative product change was made.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.

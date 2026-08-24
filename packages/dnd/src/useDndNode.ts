@@ -408,6 +408,10 @@ const useDomDragNode = (
 
       if (!element) return null;
 
+      if (editor.api.dom.isFocused()) {
+        editor.api.dom.blur();
+      }
+
       const currentDraggingKey = store.get('draggingKey');
       let key: NodeKey[] | NodeKey;
 

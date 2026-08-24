@@ -279,6 +279,27 @@ describe('Dnd node behavior', () => {
     expect(rendered.result.current.isAboutToDrag).toBe(false);
   });
 
+  it('blurs a focused editor when block dragging starts', () => {
+    currentEditor = createPlateEditor({ plugins: [DndPlugin] });
+    currentEditor.update.value.replace({
+      children: [{ children: [{ text: 'block' }], type: 'paragraph' }],
+      selection: null,
+    });
+    const element = getElement(currentEditor, [0]);
+    const isFocused = spyOn(currentEditor.api.dom, 'isFocused').mockReturnValue(
+      true
+    );
+    const blur = spyOn(currentEditor.api.dom, 'blur').mockImplementation(
+      () => {}
+    );
+
+    renderHook(() => useDraggable({ element }));
+    callDragItem({} as DragSourceMonitor);
+
+    expect(isFocused).toHaveBeenCalledTimes(1);
+    expect(blur).toHaveBeenCalledTimes(1);
+  });
+
   let clientOffset: null | { x: number; y: number };
   const monitor = {
     canDrop: () => true,

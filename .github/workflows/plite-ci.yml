@@ -259,6 +259,7 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     env:
+      HOME: /root
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
       PLITE_BROWSER_JOB: ${{ matrix.shard }}/4
       PLITE_BROWSER_UNIT_WORKERS: 2
@@ -366,6 +367,7 @@ jobs:
         project: [firefox, mobile]
         shard: [1, 2, 3, 4]
     env:
+      HOME: /root
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
       PLITE_BROWSER_JOB: ${{ matrix.shard }}/4
       PLITE_BROWSER_UNIT_WORKERS: 2
