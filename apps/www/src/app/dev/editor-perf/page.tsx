@@ -242,6 +242,7 @@ type EditorPerfRunnerControls = {
   coreMountElementId?: string;
   fanoutSubscribers?: string;
   pluginCensusEntry?: CorePluginCensusEntryId | 'all';
+  scenario?: ScenarioId;
   scenarioWorkload: ScenarioWorkloadId;
   visibility: BenchmarkConfig['contentVisibility'];
 };
@@ -565,6 +566,27 @@ const SCENARIOS: Scenario[] = [
     plugins: 'code-only',
   },
 ];
+
+function getRunnerScenarios(scenarioId?: ScenarioId) {
+  if (!scenarioId) return SCENARIOS;
+
+  const scenario = SCENARIOS.find((item) => item.id === scenarioId);
+
+  if (!scenario) {
+    throw new Error(`Unknown editor perf scenario: ${scenarioId}`);
+  }
+
+  return [scenario];
+}
+
+function getInitialScenarioId() {
+  return parseEnum({
+    defaultValue: 'slate' as const,
+    key: 'scenario',
+    options: SCENARIOS.map(({ id }) => id),
+    searchParams: getDocumentSearchParams(),
+  });
+}
 
 const DISSECTION_CASES: DissectionCase[] = [
   {
@@ -1985,7 +2007,7 @@ function BenchmarkElement({
   };
 
   switch (element.type) {
-    case 'h1': {
+    case 'heading': {
       return (
         <h1
           {...attributes}
@@ -4593,6 +4615,7 @@ export default function EditorPerfPage() {
   const pluginCensusDurationRef = React.useRef<
     Partial<Record<PluginCensusScenarioId, number>>
   >({});
+  const runnerScenarioIdRef = React.useRef<ScenarioId | undefined>(undefined);
   const activeScenario = React.useMemo(
     () =>
       SCENARIOS.find((scenario) => scenario.id === activeScenarioId) ??
@@ -4946,10 +4969,10 @@ export default function EditorPerfPage() {
     const MEASURED_RUNS = 10;
     const COOLDOWN_MS = 120;
 
-    setRunningLabel('Running mount benchmark across all scenarios');
+    setRunningLabel('Running mount benchmark');
 
     try {
-      for (const scenario of SCENARIOS) {
+      for (const scenario of getRunnerScenarios(runnerScenarioIdRef.current)) {
         const samples: number[] = [];
 
         for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
@@ -4986,10 +5009,10 @@ export default function EditorPerfPage() {
     const WARMUP_RUNS = 10;
     const MEASURED_RUNS = 50;
 
-    setRunningLabel('Running construction benchmark across all scenarios');
+    setRunningLabel('Running construction benchmark');
 
     try {
-      for (const scenario of SCENARIOS) {
+      for (const scenario of getRunnerScenarios(runnerScenarioIdRef.current)) {
         const samples: number[] = [];
 
         for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
@@ -5036,10 +5059,10 @@ export default function EditorPerfPage() {
     const MEASURED_RUNS = 10;
     const COOLDOWN_MS = 120;
 
-    setRunningLabel('Running prebuilt mount benchmark across all scenarios');
+    setRunningLabel('Running prebuilt mount benchmark');
 
     try {
-      for (const scenario of SCENARIOS) {
+      for (const scenario of getRunnerScenarios(runnerScenarioIdRef.current)) {
         const samples: number[] = [];
 
         for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
@@ -5461,10 +5484,10 @@ export default function EditorPerfPage() {
     const WARMUP_SAMPLES = 5;
     const MEASURED_SAMPLES = 20;
 
-    setRunningLabel('Running input latency benchmark across all scenarios');
+    setRunningLabel('Running input latency benchmark');
 
     try {
-      for (const scenario of SCENARIOS) {
+      for (const scenario of getRunnerScenarios(runnerScenarioIdRef.current)) {
         const samples: number[] = [];
 
         await remountScenario(scenario.id);
@@ -5522,9 +5545,12 @@ export default function EditorPerfPage() {
       coreMountElementId,
       fanoutSubscribers,
       pluginCensusEntry,
+      scenario,
       scenarioWorkload,
       visibility,
     }: EditorPerfRunnerControls) => {
+      getRunnerScenarios(scenario);
+      runnerScenarioIdRef.current = scenario;
       setDisplayMode('live');
       setPrebuiltEditor(null);
       setFanoutEditor(null);
@@ -5630,6 +5656,7 @@ export default function EditorPerfPage() {
   React.useEffect(() => {
     const timeout = window.setTimeout(() => {
       setConfig(getInitialHugeDocumentBenchmarkConfig());
+      setActiveScenarioId(getInitialScenarioId());
       setDidLoadSearchParams(true);
     }, 0);
 
@@ -5646,6 +5673,15 @@ export default function EditorPerfPage() {
 
   return (
     <main className="container mx-auto space-y-6 p-8">
+      <span className="sr-only" data-test-id="editor-perf-active-scenario">
+        {activeScenarioId}
+      </span>
+      <span className="sr-only" data-test-id="huge-document-effective-strategy">
+        {getBenchmarkDOMStrategy(config)}
+      </span>
+      <span className="sr-only" data-test-id="huge-document-requested-strategy">
+        {getBenchmarkDOMStrategy(config)}
+      </span>
       <section className="space-y-3">
         <h1 className="text-3xl font-bold">Plate vs Plite Editor Perf</h1>
         <p className="max-w-4xl text-muted-foreground">

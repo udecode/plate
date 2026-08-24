@@ -27,6 +27,13 @@ type PresetName =
   | 'layer-3-core-stress'
   | 'public-slate-vs-plate';
 type ScenarioWorkloadId = EditorPerfWorkloadId;
+type ScenarioId =
+  | 'slate'
+  | 'plate-core'
+  | 'plate-core-element-id'
+  | 'plate-core-element-id-seeded'
+  | 'plate-basic'
+  | 'plate-code-only';
 type VisibilityMode = 'chunk' | 'element' | 'none';
 type RunnerJob = {
   benchmarks: BenchmarkName[];
@@ -38,6 +45,7 @@ type RunnerJob = {
   fanoutSubscribers?: string;
   id: string;
   pluginCensusEntry?: CorePluginCensusEntryId | 'all';
+  scenario?: ScenarioId;
   scenarioWorkload: ScenarioWorkloadId;
   timeoutMs?: number;
   visibility: VisibilityMode;
@@ -51,6 +59,7 @@ type PresetRunPayload = {
     blocks: number;
     chunkSize: number;
     chunking: boolean;
+    scenario?: ScenarioId;
     scenarioWorkload: ScenarioWorkloadId;
     visibility: VisibilityMode;
   };
@@ -295,6 +304,7 @@ async function configurePage(
     | 'coreMountElementId'
     | 'fanoutSubscribers'
     | 'pluginCensusEntry'
+    | 'scenario'
     | 'scenarioWorkload'
     | 'visibility'
   >
@@ -311,6 +321,7 @@ async function configurePage(
             coreMountElementId?: string;
             fanoutSubscribers?: string;
             pluginCensusEntry?: CorePluginCensusEntryId | 'all';
+            scenario?: ScenarioId;
             scenarioWorkload: ScenarioWorkloadId;
             visibility: VisibilityMode;
           }) => Promise<void>;
@@ -440,6 +451,7 @@ async function runBenchmarksWithRecovery(
     coreMountElementId,
     fanoutSubscribers,
     pluginCensusEntry,
+    scenario,
     scenarioWorkload,
     timeoutMs,
     visibility,
@@ -452,6 +464,7 @@ async function runBenchmarksWithRecovery(
     coreMountElementId?: string;
     fanoutSubscribers?: string;
     pluginCensusEntry?: CorePluginCensusEntryId | 'all';
+    scenario?: ScenarioId;
     scenarioWorkload: ScenarioWorkloadId;
     timeoutMs: number;
     visibility: VisibilityMode;
@@ -469,6 +482,7 @@ async function runBenchmarksWithRecovery(
         coreMountElementId,
         fanoutSubscribers,
         pluginCensusEntry,
+        scenario,
         scenarioWorkload,
         visibility,
       });
@@ -734,6 +748,7 @@ async function main() {
     | CorePluginCensusEntryId
     | 'all'
     | undefined;
+  const scenario = getArg('scenario') as ScenarioId | undefined;
   const scenarioWorkload =
     (getArg('scenario-workload') as ScenarioWorkloadId | undefined) ??
     'huge-mixed-block';
@@ -770,6 +785,7 @@ async function main() {
           chunkSize: number;
           chunking: boolean;
           pluginCensusEntry?: CorePluginCensusEntryId | 'all';
+          scenario?: ScenarioId;
           scenarioWorkload: ScenarioWorkloadId;
           visibility: VisibilityMode;
         };
@@ -785,6 +801,7 @@ async function main() {
             chunkSize: job.chunkSize,
             chunking: job.chunking,
             pluginCensusEntry: job.pluginCensusEntry,
+            scenario: job.scenario,
             scenarioWorkload: job.scenarioWorkload,
             visibility: job.visibility,
           },
@@ -820,6 +837,7 @@ async function main() {
         coreMountElementId,
         fanoutSubscribers,
         pluginCensusEntry,
+        scenario,
         scenarioWorkload,
         timeoutMs,
         visibility: contentVisibility,
@@ -827,6 +845,7 @@ async function main() {
       payload = {
         benchmarks,
         capturedAt: new Date().toISOString(),
+        scenario: scenario ?? 'all',
         url,
         ...results,
       };

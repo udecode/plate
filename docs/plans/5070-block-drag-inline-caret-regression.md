@@ -1,9 +1,9 @@
 # block drag inline caret regression
 
 Objective:
-Resolve Plate #5070's residual inline caret during homepage block drag; done
-when the exact Chrome case has durable red/green browser coverage and passes
-five retry-free final runs.
+Fix Plate #5070's held-drag Plite cursor; done when the cumulative reporter
+case has durable red/green proof, final receipts, and five retry-free Chrome
+runs on the current local source.
 
 Flow mode:
 one-shot execution
@@ -22,15 +22,16 @@ Applied packs:
 
 Regression source:
 - target bug / surface / corpus: Felix's 2026-08-17 retest on Plate #5070;
-  the original `removeChild` crash is gone, but an unexpected inline caret is
-  visible during the same homepage Welcome-block drag/drop workflow
-- lane and current source owner: Plate copied registry DnD/selection paint
-  boundary; the exact owner remains to be classified from the red browser case
+  the original `removeChild` crash is gone, but Felix's 2026-08-23 Beta retest
+  still shows a blue inline insertion indicator during the held drag
+- lane and current source owner: Plite React owns its text drop-cursor
+  affordance and handled-event propagation; Plate DnD owns whether an active
+  block drag claims `dragOver`
 - selected executable test cases: `homepage:block-drag-inline-caret`; preserve
   the existing `tooling/e2e/homepage-dnd.test.ts` crash/order/edit/selection
   assertions while adding the missing caret oracle
 - tested ref or dirty-state boundary: `HEAD` and `origin/next` are
-  `1fb72c581095f23ddba3f597f41e8b10608283ef`; issue-owned dirty files and final
+  `a525367f60000a33055e727db062ccc610880ea9`; issue-owned dirty files and final
   fingerprints must be captured before behavior claims
 - route / proof host and freshness method: reporter route `/` in exact Chrome
   from a newly started source-built `www` host; repair route readiness before
@@ -45,9 +46,9 @@ First checkpoint:
 - Do not create a TSV, JSON, database, manifest, or manual case registry.
 
 Completion threshold:
-- The exact Welcome-block drag case reproduces the unexpected inline caret on
-  current source and an executable browser test fails on the same visible
-  invariant before the fix and passes after it.
+- The exact Welcome-block drag case reproduces the visible
+  `data-plite-drop-cursor` on current source and executable package/browser
+  tests fail on that same held-drag affordance before the fix and pass after it.
 - The original #5070 crash, resulting block order, absence of runtime errors,
   follow-up typing, and follow-up selection remain green.
 - Exact final Chrome proof passes 5/5 retry-free warm runs on a fresh host with
@@ -97,9 +98,8 @@ Constraints:
   pushed-ref replay and is not authorized by local proof.
 
 Boundaries:
-- allowed source owners: the smallest causally proven copied registry DnD,
-  selection, or DOM integration owner; package/runtime code only if the exact
-  red case proves registry code is not the owner
+- allowed source owners: Plite React drag runtime/drop-cursor projection and
+  Plate DnD's existing handled-event declaration only
 - allowed proof/test owners: existing homepage DnD E2E row, exact route fixture,
   browser helper needed to assert the visible caret, and this goal plan
 - generated/source boundary: registry source is authoritative; no generated
@@ -107,7 +107,7 @@ Boundaries:
   final proof
 - browser/device claim width: macOS desktop Chrome homepage block DnD only;
   Playwright is durable support but cannot replace exact Chrome paint proof
-- forbidden product/API/release/public mutations: no public API redesign,
+- forbidden product/API/release/public mutations: no new public API,
   commit, push, PR, merge, release, issue close, or `completed` mutation; one
   proof-backed local-status comment is allowed by standing instruction
 - orchestration mode and writer ownership: orchestrator inactive; this main
@@ -127,13 +127,12 @@ Blocked condition:
   hosts before treating them as product blockers.
 
 Regression state:
-- current phase: verified-local handoff; pushed-ref integration remains open
+- current phase: attempt 2 verified-local closeout
 - current executable case: `homepage:block-drag-inline-caret`
-- current case status: exact `/` red is repaired locally and passes 5/5 clean
-  Chromium plus 5/5 exact Chrome with a held-drag caret oracle
-- next owner: push only when authorized, then replay on that exact pushed ref
-  before fixed/completed wording or label mutation
-- goal status: complete locally; public/integration state remains open
+- current case status: `kept`; the Plite owner fixture and exact Chrome replay
+  show zero text cursors during an active same-editor block drag
+- next owner: pushed-ref integration replay when the shared checkout is pushed
+- goal status: closing
 
 Completion rule:
 - Do not call `update_goal(status: complete)` with unchecked Work Checklist
@@ -148,8 +147,11 @@ Start Gates:
 | Prompt requirements captured | yes | One next Felix issue only; Regression loop; no lint; no Autoreview; durable executable proof; five exact Chrome runs; honest local/pushed/public status boundaries |
 | Regression methodology loaded | yes | `.agents/skills/regression/references/methodology.md` read completely before goal setup or source mutation |
 | Active goal checked or created | yes | `get_goal` returned null; matching goal created for this exact plan |
-| Current source owner and tested ref recorded | yes | copied registry DnD drag-handle selection-mode transition; `HEAD == origin/next == 1fb72c5` |
+| Current source owner and tested ref recorded | yes | Plite React handled drag-over/drop-cursor projection plus Plate DnD's active-drag claim; `HEAD == origin/next == a525367f60000a33055e727db062ccc610880ea9` |
 | Executable test cases discovered | yes | Existing `tooling/e2e/homepage-dnd.test.ts`; selected residual case `homepage:block-drag-inline-caret` |
+| Cumulative reporter evidence resolved | yes | Original crash/order/error/follow-up acceptance remains required; Felix's 2026-08-17 and 2026-08-23 cursor deltas add the held-drag paint requirement. |
+| Reporter oracle matrix resolved | yes | Attempt 2 observes the visible `data-plite-drop-cursor` during the held phase and retains the original after-release/follow-up assertions; all seven observation families are mapped below. |
+| Regression semantic validator ready | yes | The repaired validator rejects attempt 1's stale plan; current attempt uses the required case/evidence/oracle/failure/architecture tables before product edits. |
 | Route/proof-host readiness plan recorded | yes | Fresh source-built `www` host, reporter `/` first, exact Chrome, then Playwright support |
 | Patch delegation boundary recorded | yes | Exactly one caret case; smallest proven DnD/selection owner; preserve crash/order/edit/selection behavior; 5/5 exact Chrome required |
 | Orchestrator writer ownership recorded | yes | Orchestrator inactive; single main writer and one managed host |
@@ -173,6 +175,24 @@ Work Checklist:
 - [x] Every selected case has a stable ID, source reference, owner, setup,
       action, expected outcome, executable test path/command, tested ref, and
       required stability.
+- [x] Every selected case inventories its base acceptance, recordings, and all
+      later reporter confirmations/contradictions as cumulative deltas.
+- [x] Every required evidence row maps to a phase-specific executable oracle;
+      the held-drag cursor is observed during-action, not inferred after release.
+- [x] Every selected case has phase-specific reporter-oracle rows for model,
+      DOM/native, focus, popup, geometry/paint, runtime errors, and follow-up
+      input, with explicit N/A reasons where applicable.
+- [x] Attempt 2's executable package and exact browser proofs are red on the
+      visible Plite cursor before product source changes.
+- [x] Final proof runs through `capture-proof-receipt.mjs` on unchanged named
+      production, test, fixture, harness, and host inputs.
+- [x] Every already-executable case affected by Plite React or DnD has a
+      recorded pre-edit `pass:` or `red:` baseline.
+- [x] The final shared-owner edit is followed by one affected-corpus replay.
+- [x] The reporter contradiction revoked attempt 1 proof and local completion;
+      the repaired Regression validator rejects that stale plan.
+- [x] Architecture pressure is satisfied by the accepted Best API verdict and
+      `docs/plans/5070-suppress-claimed-drop-cursor.md` before attempt 2.
 - [x] The smallest falsifying executable probe ran before scaling.
 - [x] Exact reproduction and durable owner classification are recorded; proxy
       evidence stays labeled proxy.
@@ -182,10 +202,9 @@ Work Checklist:
 - [x] Patch returned root cause, durable owner, changed files, exact red/green
       commands, final ref/dirty fingerprints, stability, architecture verdict,
       P1 review, and caveat.
-- [x] Focused green proof and exact final fresh-host replay passed. Chromium and
-      exact Chrome both cover the final matching-fingerprint candidate.
-- [x] Required retry-free stability runs passed with no retry: Chromium 5/5 and
-      exact Chrome held-drag 5/5.
+- [x] Focused green proof and exact final fresh-host replay passed on the
+      current attempt-2 bytes.
+- [x] Required retry-free stability runs passed with no retry on attempt 2.
 - [x] Every selected case is kept, reverted, quarantined, deferred, or blocked
       honestly; only kept cases can satisfy goal success.
 - [x] No sidecar case registry, TSV, JSON manifest, or duplicate behavior
@@ -231,80 +250,219 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named completion threshold | yes | Close every selected executable case and methodology row | one case is verified-local with red/green executable coverage and exact Chrome 5/5 |
-| Current-source readiness | yes | Prove source owner and final tested ref/dirty boundary | final local DnD/test/harness fingerprints match the clean proof host; unrelated shared linter edits are excluded and block only a whole-checkout integration claim |
-| Route/proof-host readiness | yes | Prove the runner/host observes current source | clean `1fb72c5` webpack host on `:3107`, with matching DnD/test fingerprints; Turbopack Shiki failure excluded |
-| Executable regression coverage | yes | Record exact test file, red result, green result, and owning invariant | `tooling/e2e/homepage-dnd.test.ts`; red inline caret; green clear-selection transition |
-| Smallest-probe closure | yes | Record first falsifying probe and any host repair | exact Chrome selection path `32,0`; stale selector and host repairs recorded |
-| Patch delegation closure | yes | Read back one-case root-cause/red/green/proof evidence | Plate registry DnD owner; collapse -> clear; two changed files |
-| Focused verification closure | yes | Run owning test and exact final-case replay | Chromium full case green; exact Chrome held-drag full case green on matching final fingerprints |
-| Stability closure | yes | Record retry-free warm runs or evidence-backed N/A | Chromium 5/5 and exact Chrome held-drag 5/5, both retry-free |
-| Packet decision closure | yes | Keep/revert/quarantine/defer/block every selected case honestly | keep `verified-local`; pushed/public completion remains unauthorized |
+| Named completion threshold | yes | Close every selected executable case and methodology row | pass: package red/green, affected-corpus replay, final receipt, and exact Chrome 5/5 complete |
+| Current-source readiness | yes | Prove source owner and final tested ref/dirty boundary | pass: dirty `a525367f60000a33055e727db062ccc610880ea9`; final 16-input digest `sha256:f5355c53090057b17560ad1f97b323cbb702672cf1569bc3cb2cac31af85f04d` |
+| Route/proof-host readiness | yes | Prove the runner/host observes current source | pass: fresh `apps/plite` production build served the direct Plate-DnD owner fixture; exact homepage host is blocked by pre-existing generated imports to absent source and is not claimed green |
+| Executable regression coverage | yes | Record exact test file, red result, green result, and owning invariant | pass: Plite React ownership 25/25, DnD slow 5/5, owner fixture green, and homepage held-cursor assertion retained |
+| Cumulative reporter evidence closure | yes | Map every still-applicable base acceptance and later reporter delta to phase-specific executable oracles | inventory below includes original crash/order/error/follow-up claims plus both cursor deltas |
+| Reporter oracle closure | yes | Resolve positive and forbidden states for all seven observations and every applicable interaction phase per case | pass: model, native selection, focus, paint, runtime-error, and follow-up-input fields green; popup N/A |
+| Failed-fix interrupt closure | yes | Prove every claimed-fix failure invalidated prior proof and completed automatic Regression repair | pass: attempt 1 invalidated; repaired validator rejects the stale plan; Regression workflow 49/49 and resource sync exact |
+| Architecture pressure closure | yes | Prove every second failure or architecture trigger has Best API and layer-plan evidence | `ui-repairs-substrate`; Best API keeps the existing handled signal; accepted Plite plan `docs/plans/5070-suppress-claimed-drop-cursor.md` |
+| Proof receipt closure | yes | Validate generated final receipts against unchanged issue-owned inputs | pass: final exact-Chrome receipt row below; rerun after final naming-only source edit |
+| Affected-corpus replay closure | yes | Replay all cases affected by the last shared-owner edit | pass: Plite React 1093/1093 serial, DnD 33/33 plus slow 5/5, typecheck 13/13, exact Chrome fixture 15/15 |
+| Started-gate failure closure | yes | Rerun every requested or started gate that failed; completion requires the exact gate to pass on final bytes | pass: serial full suite closes default-runner timeouts; direct receipt mode closes rejected managed-runner options; exact homepage remains an explicit unrelated-host caveat, not a green claim |
+| Smallest-probe closure | yes | Record first falsifying probe and any host repair | pass: package ownership returned `undefined`; exact `/` red rendered one visible Plite cursor |
+| Patch delegation closure | yes | Read back one-case root-cause/red/green/proof evidence | pass: custom handled result was discarded before Plite cursor paint; boolean ownership now reaches the projection and DnD claims only active block drags |
+| Focused verification closure | yes | Run owning test and exact final-case replay | pass: focused package tests plus the direct same-editor Plate-DnD fixture in Chrome |
+| Stability closure | yes | Record retry-free warm runs or evidence-backed N/A | pass: Chrome extension native ledger 5/5 and extension-free Chrome 151 full fixture 15/15, retries 0 |
+| Packet decision closure | yes | Keep/revert/quarantine/defer/block every selected case honestly | keep: verified-local owner fix; no pushed/shipped claim |
+| Local completion status | yes | Mark every fully proved kept case and run `completed`; record local ref/fingerprints and uncommitted/unpushed state | pass: candidate-local on dirty `a525367f`; uncommitted, unpushed, issue stays open and unlabeled by this run |
 | No duplicate registry | yes | Prove no sidecar behavior manifest/database was created | only executable test and transient goal plan |
-| Generated/source and host repair | yes | Repair drift/host methodology or record blocked claim | webpack host used; no alias/generated edit counted |
+| Generated/source and host repair | yes | Repair drift/host methodology or record blocked claim | pass with caveat: `www` cannot freshly compile because its tracked generated index imports absent tracked source; direct owner fixture used without alias, stub, or generated edit |
 | Orchestrator writer closure | yes | Prove one shared-state writer and serialized overlapping owners/hosts, or N/A | orchestrator inactive; one source/test writer |
-| Workflow slowdown closure | yes | Repair avoidable slow/stale/noisy proof paths or defer with owner | filtered host logs, port 3107, webpack, live post-hover coordinates |
-| Methodology delta closure | yes | Resolve repair-now/no-change/defer for every case | no skill change; executable case repaired under existing doctrine |
+| Workflow slowdown closure | yes | Repair avoidable slow/stale/noisy proof paths or defer with owner | pass: isolated Plite host, serial full suite, live geometry, native CDP held-state reads, direct receipt mode |
+| Methodology delta closure | yes | Resolve repair-now/no-change/defer for every case | pass: `repair-now`; repaired validator/workflow proof passed before attempt 2 resumed |
 | Source/generated sync | yes | Run `pnpm install` and parity audit when agent sources changed, otherwise N/A | N/A: no agent source changed; full install completed in clean host |
 | Agent-native review | yes | Run for changed agent workflows or record N/A | N/A: no agent workflow changed |
-| Final handoff contract | yes | Record tests, decisions, proof, sync, reviews, risks, and next owner | evidence and public candidate comment recorded |
+| Final handoff contract | yes | Record tests, decisions, proof, sync, reviews, risks, and next owner | pass: current findings, proof, caveat, changeset, local status, and pushed-ref next owner recorded below |
 | Autoreview | yes | Run P1 autoreview for non-trivial implementation changes or record N/A | N/A by explicit user instruction to stop Autoreview this session |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5070-block-drag-inline-caret-regression.md` | canonical rows resolved; command receipt added after the final check |
-| Browser interaction proof | yes | Exercise target route/interaction with Browser for normal app surfaces or Chrome/Computer for native browser/OS surfaces; otherwise record blocker | Browser confirmed the route; Chromium 5/5; exact Chrome held-drag 5/5 |
-| Browser console/network check | yes | Record console/network state or why it is not applicable | focused test asserts zero page/console errors; Chrome profile extension errors excluded by source URL and named |
-| Browser final proof artifact | yes | Record screenshot/trace/route/native proof or exact caveat | exact Chrome screenshots, live post-hover hit geometry, native held-drag state, final DOM state, and 5/5 ledger recorded |
-| Exact case replay | yes | For report-backed behavior, prove the exact case and all applicable end-state claim fields; otherwise N/A with reason | held drag, order, caret, focus, scroll, drop UI, runtime errors, typing, and selection pass 5/5 in exact Chrome |
-| Final ref and fingerprints | yes | Record the replayed commit/ref and issue-owned production/test/fixture/harness SHA-256 fingerprints; any later code or generated change invalidates the result | dirty base `1fb72c5`; matching production/test/harness fingerprints recorded after final replay |
+| Regression semantic plan | yes | Run `node .agents/skills/regression/scripts/validate-regression-plan.mjs docs/plans/5070-block-drag-inline-caret-regression.md --complete` | pass required after this final plan write |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5070-block-drag-inline-caret-regression.md` | pass required after semantic validation |
+| Browser interaction proof | yes | Exercise target route/interaction with Browser for normal app surfaces or Chrome/Computer for native browser/OS surfaces; otherwise record blocker | pass: exact Chrome native mouse dispatch on fresh direct owner fixture; exact homepage final host caveat recorded |
+| Browser console/network check | yes | Record console/network state or why it is not applicable | pass: extension-free Chrome fixture asserts zero page/console errors; profile-only extension listener noise named and excluded |
+| Browser final proof artifact | yes | Record screenshot/trace/route/native proof or exact caveat | pass: native Chrome held-state ledger records `bodyDragging=true`, cursor 0, native selection false, focus false, and clean release 5/5 |
+| Exact case replay | yes | For report-backed behavior, prove the exact case and all applicable end-state claim fields; otherwise N/A with reason | pass at owning interaction boundary: same-editor Plate block drag with the exact rendered cursor/native-selection fields; homepage `/` final rerun is not claimed because its generated registry is broken independently |
+| Final ref and fingerprints | yes | Record the replayed commit/ref and issue-owned production/test/fixture/harness SHA-256 fingerprints; any later code or generated change invalidates the result | pass required by final receipt rerun after the naming-only edit |
 | Clean final runtime | N/A | Before fixed/completed wording, start a fresh process from a clean checkout at the exact final pushed ref or immutable CI artifact and prove zero tracked/untracked issue-owned runtime-input differences; local candidates record N/A with exact unpushed status | no push authorized; verified-local only, with fixed/completed wording and label explicitly forbidden |
-| Retry-free stability | yes | For native selection/paint, focus, DnD, compositor, or React DOM lifecycle, record 5/5 warm runs with no retry in the exact reported browser/device; otherwise N/A with reason | exact Chrome held-drag 5/5, zero retry and zero product-origin errors |
+| Retry-free stability | yes | For native selection/paint, focus, DnD, compositor, or React DOM lifecycle, record 5/5 warm runs with no retry in the exact reported browser/device; otherwise N/A with reason | pass: Google Chrome 151.0.7922.173, 5/5 direct native ledger and 15/15 full-fixture runs, retries 0 |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Requirement extraction and goal setup | complete | explicit requirements, methodology, issue, goal, and plan captured before product mutation | source/host readiness |
-| Current source and proof-host readiness | complete | `HEAD == origin/next == 1fb72c5`; clean exact-ref `/` runs on webpack at port 3107 with final matching DnD/test/harness fingerprints; unrelated shared linter edits stay outside the claim | exact Chrome stability |
-| Executable case discovery and selection | complete | existing homepage DnD E2E plus one residual reporter case selected | smallest probe |
-| Smallest high-value probe | complete | exact `/` Chrome and focused Chromium both expose the collapsed inline caret when the drag starts from a live post-hover handle | reproduce/classify |
-| Reproduce, classify, and red test | complete | exact route red plus executable post-drop caret red; Plate registry drag-handle selection-mode owner | patch delegation |
-| One-case Patch delegation | complete | collapse replaced with clear; test selectors/input/oracle repaired | verification |
-| Focused verification and stability | complete | focused green, direct TypeScript green, Chromium 5/5, exact Chrome held-drag 5/5 | packet decision |
-| Keep/revert/quarantine | complete | keep as `verified-local`; pushed/public completion remains unauthorized | methodology delta |
-| Methodology repair/no-change/defer | complete | no skill change: existing exact/native/freshness law caught both stale selectors and stale hover coordinates; durable test repaired | final handoff |
-| Reviews and final handoff | complete | public local-status comment posted; no lint or Autoreview by instruction | goal-plan check after exact Chrome |
-| Final goal-plan check | complete | canonical gates resolved; command receipt recorded below | final response |
+| Requirement extraction and goal setup | complete | current request, no-lint/no-Autoreview/public boundaries, live issue, current goal, and existing plan captured | current source readiness |
+| Current source and proof-host readiness | complete | `HEAD == origin/next == a525367f60000a33055e727db062ccc610880ea9`; fresh direct Plite owner fixture; exact homepage host caveat recorded | executable case discovery |
+| Executable case discovery and selection | complete | package ownership tests plus `tooling/e2e/homepage-dnd.test.ts` selected | cumulative evidence |
+| Cumulative reporter evidence inventory | complete | original crash/order/errors/follow-up acceptance plus both Felix cursor deltas preserved | reporter oracle expansion |
+| Reporter oracle expansion | complete | visible Plite cursor gets a during-action paint/DOM oracle; all seven fields mapped | semantic validation |
+| Pre-implementation semantic validation | complete | `validate-regression-plan.mjs` reports structurally valid before product source edits | smallest probe |
+| Smallest high-value probe | complete | Plite React returns `undefined`; DnD has no `dragOver` claim; exact `/` Chromium paints one visible Plite cursor while held | reproduce/classify |
+| Reproduce, classify, and red test | complete | Plite React 2 red, DnD slow 2 red, exact homepage cursor 1 red on the visible reporter invariant | Patch |
+| One-case Patch delegation | complete | owning-package fix and red/green packet below | verification |
+| Focused verification and stability | complete | package corpus, typecheck, direct Plite fixture, Chrome 5/5, and receipt green | packet decision |
+| Keep/revert/quarantine | complete | keep as candidate-local; no pushed/shipped claim | methodology delta |
+| Methodology repair/no-change/defer | complete | repair-now workflow proof passed before Patch resumed | review |
+| Reviews and final handoff | complete | Autoreview N/A by user instruction; local status comment required after final checks | goal-plan check |
+| Final goal-plan check | complete | semantic and structural checks required on final plan bytes | final response |
 
 Selected executable cases:
-| Case ID | Source reference | Test file / command | Status | Tested ref | Next owner |
-|---------|------------------|---------------------|--------|------------|------------|
-| `homepage:block-drag-inline-caret` | Plate #5070, Felix `#issuecomment-5314465244` | `tooling/e2e/homepage-dnd.test.ts`; exact Chrome `/` held drag | `verified-local`: exact red/green, Chromium 5/5, exact Chrome held-drag 5/5 | `dirty:1fb72c581095f23ddba3f597f41e8b10608283ef`; production `fc07d822...`; test `66ccb0bf...` | pushed-ref replay when authorized |
+| Case ID | Source reference | Setup / action | Expected outcome | Exact environment | Test file / command | Status | Tested ref | Next owner |
+|---------|------------------|----------------|------------------|-------------------|---------------------|--------|------------|------------|
+| homepage:block-drag-inline-caret | Plate #5070 body/video; Felix `#issuecomment-5314465244` and `#issuecomment-5385433072` | Open `/`; hover Welcome; press its live drag handle; move across the intro block; observe while held; release; type and select. Final owner replay uses the same held same-editor block drag in `plate-dnd-cross-editor`. | Block drag reorders without RuntimeError; block drag stays active; no Plite text cursor/native caret/focus theft; follow-up editing works | exact-chrome: Google Chrome 151.0.7922.173 on macOS with native held-mouse state; package and Playwright support | package ownership tests; homepage E2E; direct Plite owner fixture | kept | dirty:a525367f60000a33055e727db062ccc610880ea9 | pushed-ref integration replay |
+
+Reporter evidence inventory:
+| Case ID | Source role | Source reference | Phase | Claim | Disposition | Oracle anchors | Executable anchor | Result |
+|---------|-------------|------------------|-------|-------|-------------|----------------|-------------------|--------|
+| homepage:block-drag-inline-caret | base-acceptance | issue body/video and `#issuecomment-5181191082` | after-release | Welcome moves to the chosen position without `removeChild`/RuntimeError | required | model@after-release,runtime-errors@after-release | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#moves after target insertion and leaves a third editor isolated` | pass: exact Chrome fixture reorders `source|keep` to `keep|source`; full fixture reports zero product errors 5/5 |
+| homepage:block-drag-inline-caret | base-acceptance | issue acceptance criteria | follow-up | typing and selection remain usable after drop | required | follow-up-input@follow-up | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#moves after target insertion and leaves a third editor isolated` | pass: follow-up editing green in every one of five exact-Chrome fixture repetitions |
+| homepage:block-drag-inline-caret | reporter-confirmation | `#issuecomment-5314465244` | after-release | original crash is gone and block drag works | required | model@after-release,runtime-errors@after-release | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#moves after target insertion and leaves a third editor isolated` | pass: block drag completes and runtime error recorder stays empty 5/5 |
+| homepage:block-drag-inline-caret | reporter-delta | `#issuecomment-5314465244` | during-action | no unexpected inline caret appears during drag/drop | required | dom-native@during-action,geometry-paint@during-action | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#does not paint a text cursor while a same-editor block drag is held` | pass: native selection false and visible Plite cursor count 0 in Chrome 5/5; pre-fix package and homepage probes were red |
+| homepage:block-drag-inline-caret | latest-reporter-delta | `#issuecomment-5385433072` and screenshot asset `6a631ebf-8782-4591-b013-0494e0d47d40` | during-action | the blue line at the heading/next-block boundary must not appear during the held drag | required | geometry-paint@during-action | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#does not paint a text cursor while a same-editor block drag is held` | pass: exact Chrome cursor count 0 while `body.dragging=true` in 5/5 native held-state runs |
+
+Reporter oracle matrix:
+| Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
+|---------|-------------|-------|---------|--------------------|-----------------|-------------|-------------------|--------|
+| homepage:block-drag-inline-caret | model | after-release | yes | target order changes once without document corruption | unchanged/reversed order or corrupted document | browser: Playwright plus exact-chrome | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#moves after target insertion and leaves a third editor isolated` | pass: direct fixture ends `keep|source` 5/5; homepage assertion retained but final host blocked independently |
+| homepage:block-drag-inline-caret | dom-native | during-action | yes | native selection is empty and block-drag DOM remains active | collapsed text selection/caret inside the editor | browser: Playwright plus exact-chrome | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#does not paint a text cursor while a same-editor block drag is held` | pass: `bodyDragging=true`, native selection inside false, 5/5 |
+| homepage:block-drag-inline-caret | focus | during-action | yes | editor is unfocused while the block drag owns input | editor or unrelated control steals focus | exact-chrome | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#does not paint a text cursor while a same-editor block drag is held` | pass: source editor unfocused in 5/5 native held-state runs |
+| homepage:block-drag-inline-caret | popup | during-action | no | N/A: #5070 does not involve a popup or toolbar | N/A: no popup/toolbar state exists in this workflow | N/A: issue scope has no popup | N/A: issue scope has no popup | N/A: issue scope has no popup |
+| homepage:block-drag-inline-caret | geometry-paint | during-action | yes | Plate's block drop line may show at the target and zero visible Plite text cursors exist | any visible `[data-plite-drop-cursor]`, including the blue line in Felix's screenshot | exact-chrome | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#does not paint a text cursor while a same-editor block drag is held` | pass: visible cursor count 0 in Chrome 5/5 and Playwright 5/5 |
+| homepage:block-drag-inline-caret | runtime-errors | after-release | yes | zero product-origin console/page errors and no RuntimeError screen | `removeChild`, React DOM, or other product-origin runtime error | browser: Playwright plus exact-chrome | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#moves after target insertion and leaves a third editor isolated` | pass: extension-free exact Chrome runtime recorder empty 5/5; Chrome profile noise is extension-owned and named |
+| homepage:block-drag-inline-caret | follow-up-input | follow-up | yes | editing remains usable after the moved block | lost focus, failed edit, wrong text, or unusable selection | browser: Playwright plus exact-chrome | `test: apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts#moves after target insertion and leaves a third editor isolated` | pass: move-and-edit test green in exact Chrome 5/5 |
+
+Proof receipts:
+| Case ID | Attempt | Claim | Command | Result | Ref | Input digest | Input count | Inputs | Host | Latest input mtime | Proof started | Proof ended | Retries | Receipt ID |
+|---------|---------|-------|---------|--------|-----|--------------|-------------|--------|------|--------------------|---------------|-------------|---------|------------|
+| homepage:block-drag-inline-caret | 2 | completed | "/usr/bin/env" "PLAYWRIGHT_BASE_URL=http://127.0.0.1:3102" "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "PLAYWRIGHT_WORKERS=1" "pnpm" "--filter" "plite" "exec" "playwright" "test" "tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts" "--config" "playwright.config.ts" "--project" "chromium" "--repeat-each=5" "--workers=1" | pass: exit 0 in 20492ms | dirty:a525367f60000a33055e727db062ccc610880ea9 | sha256:f5355c53090057b17560ad1f97b323cbb702672cf1569bc3cb2cac31af85f04d | 16 | apps/plite/next.config.ts,apps/plite/playwright.config.ts,apps/plite/scripts/plite-browser-runner.mjs,apps/plite/scripts/run-plite-browser.mjs,apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts,apps/www/src/app/(app)/examples/plite/_examples/plate-dnd-cross-editor.tsx,apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx,apps/www/src/app/(app)/examples/plite/plite-example-registry.ts,packages/dnd/src/DndPlugin.slow.tsx,packages/dnd/src/internal/DndStorePlugin.ts,packages/plite-react/src/components/editable.tsx,packages/plite-react/src/editable/clipboard-input-strategy.ts,packages/plite-react/src/editable/input-router.ts,packages/plite-react/src/editable/runtime-drag-events.ts,packages/plite-react/test/dom-coverage-native-bridge-contract.test.ts,tooling/e2e/homepage-dnd.test.ts | pid:63269;started:2026-08-24T12:58:18.000Z;base-url:http://127.0.0.1:3102;browser:exact-chrome:macos;browser-executable:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome;browser-version:Google Chrome 151.0.7922.173 | 2026-08-24T12:52:16.343Z | 2026-08-24T13:01:04.838Z | 2026-08-24T13:01:25.332Z | 0 | sha256:db76a1903e2ccf4b604ecd891b3c7b2c073e5734456d0bfd1d321cb434cd6c8e |
+
+Affected corpus replay:
+| Owner | Affected cases | Pre-edit baseline | Last owner edit | Combined command | Receipt input digest | Result |
+|-------|----------------|-------------------|-----------------|------------------|----------------------|--------|
+| Plite React drag runtime/drop-cursor projection plus Plate DnD handled declaration | `homepage:block-drag-inline-caret` | pass: Plite React 24/24, DnD 33/33, and existing homepage DnD 1/1 on base `a525367f` | 2026-08-24T12:52:16.343Z | Plite React 1093/1093 serial; focused Plite React 25/25; DnD 33/33 and slow 5/5; turbo typecheck 13/13; exact Chrome full fixture 15/15 | sha256:f5355c53090057b17560ad1f97b323cbb702672cf1569bc3cb2cac31af85f04d | pass: all affected behavior and types green on final bytes |
+
+Gate failure closure:
+| Gate | Failure signal | Classification | Resolution | Final rerun |
+|------|----------------|----------------|------------|-------------|
+| DnD focused command | `pnpm --filter @platejs/dnd test -- DndPlugin.slow.tsx` matched no test file | command-shape proof-host failure before product assertion | use the owning package test command without the invalid filter | pass: `pnpm --filter @platejs/dnd test` ran 33/33 |
+| fresh www host | attempted webpack commands were invalid; isolated Turbopack `/` and `/view/editor-ai` return 500 because tracked `apps/www/src/__registry__/index.tsx` imports many source files absent even at `HEAD` | pre-existing proof-host/source-registry failure before final assertion | preserve unrelated servers and generated output; use the fresh direct Plite owner fixture, and do not claim final homepage green | pass: owning fixture is fresh and exact homepage remains an explicit caveat that cannot authorize public fixed/completed wording |
+| homepage E2E final | current `/` renders its shell but the preview has no editor because `/view/editor-ai` hits the same generated import failure | pre-assertion host failure, not product failure | retain the exact homepage test and run the direct package-owned same-editor Plate-DnD fixture | pass: direct Chrome owner fixture 5/5; homepage not claimed green |
+| Plite React full default runner | first run failed 26 unrelated DOM-strategy cases and second failed 4, almost all timeouts under shared-machine parallel load | runner oversubscription; focused drag test stayed green and failures shrank when load dropped | rerun the complete suite with one file worker | pass: 75 files, 1093 tests, 0 failures in 105.74s |
+| managed proof receipt | managed runner rejected diagnostic `--repeat-each=5` and `--workers=1` before opening the case | command-shape failure | use documented direct Playwright mode against the fresh managed static host | pass: final receipt command ran 15/15 and emitted `sha256:3357e62e1e0ed75bb867b8a7b95d17d216cbf79874c130c683d6dc9b02bd3820` |
+
+Failed fix history:
+| Case ID | Attempt | Failure signal | Failure kind | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
+|---------|---------|----------------|--------------|-------------------------|-------------------|---------------|----------------------|-----------------------|--------------|
+| homepage:block-drag-inline-caret | 1 | Felix's 2026-08-23 Beta screenshot still shows the blue insertion line after the 2026-08-19 verified-local 5/5 claim | reporter-contradiction | yes: attempt-1 red/green, receipts, local completion, and status authority revoked | repair-now: `.agents/rules/regression/scripts/validate-regression-plan.mjs` requires cumulative reporter evidence, phase-specific visible oracles, and failed-fix architecture proof | pass: Regression workflow suite 49/49 and resource sync exact on 2026-08-24 | yes: ui-repairs-substrate because Plate UI selection work tried to repair Plite cursor ownership | best-api: existing handled signal accepted; plite-plan: `docs/plans/5070-suppress-claimed-drop-cursor.md` accepted for execution | reproduced: Plite React 2 red, DnD slow 2 red, and exact homepage held-drag cursor 1 red |
+
+Architecture pressure:
+| Case ID | Failed fix count | Triggers | Verdict | Best API | Layer plan | Proof |
+|---------|------------------|----------|---------|----------|------------|-------|
+| homepage:block-drag-inline-caret | 1 | ui-repairs-substrate | escalate | required: best-api keeps the existing public handled-event signal; no new flag, API, or compatibility path | plite-plan: `docs/plans/5070-suppress-claimed-drop-cursor.md` | accepted: current source shows `pipeHandler` returns handled, Plite runtime discards it before cursor paint, and DnD claims only `drop` |
 
 Proof-host readiness:
 | Case ID | Source owner | Runner / route / host | Freshness evidence | Generated/export boundary | Result |
 |---------|--------------|-----------------------|--------------------|---------------------------|--------|
-| `homepage:block-drag-inline-caret` | copied registry DnD drag-handle selection-mode transition | shared checkout `/` fails on unrelated linter-migration compile errors; clean exact-ref `/` runs with Next webpack on port 3107 | clean detached worktree at `1fb72c5`; current DnD/test/harness match SHA-256; fresh webpack process | Turbopack `/` cannot resolve transitive `@shikijs/core`; no alias/stub counted; webpack is the honest source-built host | ready; Chromium and exact Chrome complete |
+| homepage:block-drag-inline-caret | Plite React drag runtime/drop-cursor projection plus Plate DnD handled-event declaration | package Vitest/Bun tests; fresh source-built `apps/plite` direct Plate-DnD owner fixture; exact homepage red before fix | `HEAD == origin/next == a525367f60000a33055e727db062ccc610880ea9`; final receipt fingerprints all 16 inputs | source packages and direct fixture are authoritative; no generated/template edit, alias, stub, or route bypass counted | pass for owner-level local candidate; exact homepage final host caveat blocks pushed/fixed claim |
 
 Patch delegation:
 | Case ID | Red test | Allowed owner/files | Required proof/stability | Patch return evidence | Result |
 |---------|----------|---------------------|--------------------------|-----------------------|--------|
-| `homepage:block-drag-inline-caret` | focused Chromium failed `Expected false, Received true` on the post-drop inline-caret oracle; exact Chrome showed collapsed selection at `32,0` | `apps/www/src/registry/components/editor/dnd.tsx`; `tooling/e2e/homepage-dnd.test.ts` | focused red/green, Chromium 5/5, exact Chrome required; crash/order/error/edit/selection preserved | Plate focus/selection owner; collapse -> clear; fingerprints below; keep architecture; Autoreview N/A by instruction | verified-local returned |
+| homepage:block-drag-inline-caret | Plite React: 2 red (`undefined` versus true/false ownership); DnD slow: 2 red (`undefined` versus owned/unowned); exact `/` Chromium: visible cursor count 1 versus 0 | Plite React drag runtime/projection; DnD store declaration; package tests; homepage and direct fixture E2E | package red/green; owner fixture Chrome 5/5; original order/error/follow-up claims preserved | root cause: Plite discarded handled `dragOver` before cursor projection; durable fix propagates ownership and DnD claims only active block drags; one `@platejs/dnd` patch changeset; Autoreview N/A; homepage host caveat | pass: candidate-local packet returned complete evidence |
 
 Stability:
 | Case ID | Executable proof / host | Required runs | Results | Retry count | Decision |
 |---------|-------------------------|---------------|---------|-------------|----------|
-| `homepage:block-drag-inline-caret` | exact `/`; focused Playwright Chromium | 5 | `5/5` retry-free in 57.6s on final matching DnD/test fingerprints | 0 | pass for Chromium only |
-| `homepage:block-drag-inline-caret` | exact `/`; exact Chrome profile | 5 | `5/5` retry-free held-drag ledger: while held, `body.dragging=true`, caret false, editor unfocused, scroll 0; after drop order/paint clean; follow-up typing/selection clean | 0 behavior retries; pre-action proof-host readiness failures did not execute a case and reset the earlier ledger | pass |
+| homepage:block-drag-inline-caret | direct same-editor Plate-DnD owner fixture; extension-free Google Chrome 151 | 5 full-fixture repetitions | pass: 15/15 tests; held-drag row 5/5 | 0 | keep |
+| homepage:block-drag-inline-caret | direct same-editor Plate-DnD owner fixture; connected exact Google Chrome 151 native CDP ledger | 5 held-drag repetitions | pass: body dragging true, visible cursor 0, native selection false, editor focus false; clean reorder/teardown 5/5 | 0 | keep |
 
 Packet decisions:
 | Case | Executable evidence | Decision | Claim width | Residual risk | Next owner |
 |------|---------------------|----------|-------------|---------------|------------|
-| `homepage:block-drag-inline-caret` | exact red; focused red/green; Chromium 5/5; exact Chrome held-drag 5/5 | keep `verified-local` | final local issue-owned code/test candidate only; not pushed, fixed, shipped, or completed | final pushed ref and whole-checkout integration are not certified | pushed-ref replay owner |
+| homepage:block-drag-inline-caret | attempt 2 package red/green, affected corpus, direct owner fixture, Chrome 5/5, and final receipt | keep as candidate-local | current checkout and direct Plite owner fixture only; no pushed/integration/shipment/public completion claim | exact homepage cannot freshly compile because of a pre-existing generated-registry violation; pushed-ref replay remains required | integration owner after push |
 
 Methodology deltas:
 | Case | Miss or owner checked | Decision | Durable owner/change | Focused proof | Trigger/result |
 |------|-----------------------|----------|----------------------|---------------|----------------|
-| `homepage:block-drag-inline-caret` | prior coverage used removed `data-block-id` selectors and `dragTo` alone, so it never reached the native caret oracle | `no-change` to skill doctrine; repair test now | current selectors, prior text selection, mouse start, post-drop native caret, order, errors, typing, and selection | existing Regression exact/native/freshness rules caught the miss; post-hover coordinates are re-read before Chrome input |
+| homepage:block-drag-inline-caret | attempt 1 asserted native selection while the reported blue line was a separate Plite cursor DOM node | repair-now | `.agents/rules/regression/scripts/validate-regression-plan.mjs` requires cumulative reporter deltas, phase-specific visible paint/DOM oracles, failed-fix invalidation, and architecture pressure | pass: stale attempt-1 plan fails semantic validation; Regression workflow suite passes 49/49; resources exact | reporter contradiction on 2026-08-23; attempt 2 uses the rendered cursor owner |
 
-Workflow slowdowns:
+Attempt 2 final findings:
+- The reported blue line is Plite's rendered `data-plite-drop-cursor`, not a
+  native selection caret. Attempt 1 cleared native selection and therefore
+  proved the wrong field.
+- Plate's handler pipeline already returns whether a plugin handled a drag
+  event. Plite React called that pipeline during `dragOver` but discarded its
+  result, then painted its own text cursor unconditionally.
+- The durable owner fix propagates that existing boolean through the internal
+  drag runtime to `EditableDOMRoot`. A handled `dragOver` clears and suppresses
+  Plite's cursor. Plate DnD returns handled only while its store reports an
+  active React-DnD block drag, so unrelated native drags keep Plite behavior.
+- This adds no public API, flag, timer, CSS exception, or app-owned workaround.
+  The internal `HandleEditableDrag` return widens only to carry the existing
+  handler contract through private Plite React modules.
+- Fresh `www` compilation is independently blocked because its tracked
+  generated registry imports many source files absent even at `HEAD`. No
+  generated file, alias, stub, or unrelated source was changed to hide that.
+  Final browser proof therefore uses the fresh direct Plite Plate-DnD fixture
+  at the same owning package/runtime boundary. The exact homepage test remains
+  in place and its final route is not claimed green.
+
+Verification evidence:
+- Red: focused Plite React returned `undefined` instead of `true`/`false` in
+  two ownership cases; DnD slow returned `undefined` in two active/inactive
+  cases; exact homepage Chromium rendered one visible Plite cursor while held.
+- Green: Plite React ownership 25/25; DnD fast 33/33; DnD slow 5/5 with 29
+  assertions; source-first Turbo typecheck 13/13.
+- Affected corpus: Plite React 75 files and 1093 tests pass with one file
+  worker. The default parallel runner timed out unrelated DOM-strategy tests
+  twice under shared-machine load; the complete serial replay closed that gate.
+- Browser: the fresh direct Plite fixture passed once in managed Chromium.
+  Connected Chrome native mouse/CDP proof passed 5/5 with
+  `body.dragging=true`, visible cursor count 0, native selection outside the
+  editor, editor unfocused, correct reorder, and clean teardown.
+- Exact Chrome 151.0.7922.173 then ran the full three-test Plate-DnD fixture
+  five times: 15/15, retries 0. That includes move, held-cursor, runtime-error,
+  follow-up editing, copy-intent, and bystander-isolation coverage.
+- Chrome profile logs contained one extension-owned `removeChild` error and
+  two extension message-channel errors. The extension-free Chrome run's
+  product runtime recorder was empty in every repetition.
+- Changeset: `.changeset/prevent-text-cursor-block-drag.md` applies one patch
+  entry to `@platejs/dnd`. `@platejs/plite-react` is absent on `origin/main`,
+  so a second branch-relative release note would violate Changeset policy.
+- Lint and Autoreview were not run by explicit user instruction.
+
+Final handoff:
+- decision: keep as `candidate-local` on dirty ref
+  `a525367f60000a33055e727db062ccc610880ea9`.
+- product owners: four private Plite React drag/projection files and Plate
+  DnD's private store declaration.
+- durable proof: package ownership tests, homepage regression assertion, and
+  the direct same-editor Plate-DnD browser fixture.
+- architecture verdict: use the existing handled-event law end to end; do not
+  add public surface or app-specific suppression.
+- public claim: local, uncommitted, unpushed, and not shipped. Keep #5070 open;
+  do not add `completed`. The exact pushed ref requires a new homepage replay
+  after the independent registry build violation is repaired. Local status:
+  `https://github.com/udecode/plate/issues/5070#issuecomment-5395578051`.
+- next owner: shared-checkout CI coordinator may include these stable bytes;
+  integration proof must use its resulting pushed ref.
+
+Reboot status:
+| Question | Answer |
+|----------|--------|
+| Where am I? | attempt 2 is complete as a verified local regression packet |
+| Where am I going? | comment the local candidate, freeze writes, and hand the exact bytes to the shared-checkout CI coordinator |
+| What is the goal? | suppress Plite's text cursor only while Plate DnD owns an active block drag |
+| What have I learned? | the existing handled-event result was lost before cursor paint; native selection was never the residual line |
+| What have I done? | repaired ownership propagation, added package and browser regression tests, passed affected corpus and exact Chrome 5/5, and captured a matching receipt |
+
+Open risks:
+- The exact homepage cannot freshly compile because its tracked generated
+  registry imports source files absent at `HEAD`. The package-owned interaction
+  is proved; the exact homepage is not claimed green on final bytes.
+- The candidate is uncommitted and unpushed. Public fixed/completed wording,
+  the `completed` label, and shipment claims remain forbidden until a pushed
+  ref replays the exact homepage with matching fingerprints.
+
+Attempt 1 invalidated workflow history:
 | Step / command | Owner | Elapsed / expected | Cause | Evidence value | Repair/result |
 |----------------|-------|--------------------|-------|----------------|---------------|
 | shared-checkout `www` host | concurrent linter-migration session | much slower than expected; stop output exceeded the intended cap | unrelated invalid `const` rewrites prevented compilation and emitted accumulated server logs | proves shared host is not current-route ready; no issue evidence | moved proof to a clean exact-ref checkout; do not repeat or touch the other session's files |
@@ -312,7 +470,7 @@ Workflow slowdowns:
 | exact Chrome DnD setup | Browser/Chrome host | two instrumented probes | Browser read-only evaluation omits `document.getSelection`; first failed probe left the mouse pressed until the next call | direct proxy visibly reproduces the caret and CDP can read native selection | released the mouse immediately; switched native selection reads to CDP `Runtime.evaluate`; do not repeat the unsupported API |
 | exact Chrome final ledger | Chrome extension profile | several pre-action readiness failures before the final ledger | Playwright isolated-world setup and the Chrome helper's fixed mouse deadline stalled under extension-injected work | proves the proof host, not Plate, was the remaining blocker | raw CDP state reads plus native `Input.dispatchMouseEvent`, live-handle hit checks, explicit route readiness polling, and held-mouse cleanup produced the final 5/5 ledger |
 
-Findings:
+Attempt 1 invalidated findings:
 - Live #5070 is OPEN and still carries `completed`, but Felix's latest retest
   confirms the original crash is gone and reports a residual inline caret.
   The old crash proof remains valid; the blanket completed status does not.
@@ -385,7 +543,7 @@ Error attempts:
 | Raw CDP keyboard dispatch is unsupported | 1 | retain Chrome CUA keypress for End, `!`, and selection after raw native mouse input | resolved; follow-up input 5/5 |
 | `pnpm --filter www typecheck` could not find the unbuilt `plate` CLI | 1 | run direct app `tsc --noEmit` after focused browser proof | resolved; direct TypeScript passes |
 
-Verification evidence:
+Attempt 1 invalidated verification evidence:
 - Goal closure: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5070-block-drag-inline-caret-regression.md` returned `[autogoal] complete`.
 - Red: `PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm exec playwright test tooling/e2e/homepage-dnd.test.ts --config tooling/config/playwright.config.ts --project chromium` failed the post-drop native caret oracle with `Expected: false`, `Received: true` before the selection fix.
 - Focused green: the same case passed after `selection.clear()`.
@@ -408,7 +566,7 @@ Verification evidence:
   verified-local 5/5 update
   https://github.com/udecode/plate/issues/5070#issuecomment-5344392260.
 
-Final handoff:
+Attempt 1 invalidated handoff:
 - executable cases: one case, `homepage:block-drag-inline-caret`; keep as `verified-local`.
 - changed files: `apps/www/src/registry/components/editor/dnd.tsx`; `tooling/e2e/homepage-dnd.test.ts`; this transient goal plan.
 - design decisions: Plate registry owns the behavior; clear text selection before block selection; no package/runtime/API change.
@@ -420,7 +578,7 @@ Final handoff:
   `completed` label removed; no fixed/completed wording used.
 - residual risks and next owner: work is unpushed. Replay on the exact pushed ref with matching whole-tree inputs before fixed/completed wording; the shared linter migration remains outside this packet.
 
-Reboot status:
+Attempt 1 invalidated reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | verified-local handoff with pushed-ref integration open |
@@ -429,7 +587,7 @@ Reboot status:
 | What have I learned? | collapse preserved the caret; stale selectors, stale post-hover geometry, and broken hosts can each fabricate or hide DnD proof |
 | What have I done? | repaired the owner and durable test, passed focused red/green, 5/5 Chromium, TypeScript, and 5/5 exact Chrome held-drag proof, while keeping the issue open and the claim local |
 
-Open risks:
+Attempt 1 invalidated risks:
 - The verified candidate is unpushed. No fixed, shipped, or completed claim is
   valid until the exact pushed ref passes the same proof.
 - Unrelated concurrent linter-migration edits prevent a whole-current-checkout

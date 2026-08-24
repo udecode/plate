@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 
-import { getHugeDocumentBlocks } from '@/registry/examples/values/huge-document-value';
+import {
+  createHugeDocumentValue,
+  getHugeDocumentBlocks,
+} from '@/registry/examples/values/huge-document-value';
 
 import {
   EDITOR_PERF_WORKLOADS,
@@ -21,6 +24,20 @@ describe('editor perf workloads', () => {
 });
 
 describe('getHugeDocumentBlocks', () => {
+  it('emits the current Plate heading and paragraph schema', () => {
+    const value = createHugeDocumentValue({ blocks: 2 });
+
+    expect(value[0]).toEqual({
+      children: [{ text: expect.any(String) }],
+      level: 1,
+      type: 'heading',
+    });
+    expect(value[1]).toEqual({
+      children: [{ text: expect.any(String) }],
+      type: 'paragraph',
+    });
+  });
+
   it('extends the cache with the same sequence as a fresh larger build', () => {
     faker.seed(1);
 

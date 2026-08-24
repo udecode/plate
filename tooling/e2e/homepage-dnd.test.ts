@@ -72,6 +72,12 @@ test.describe('homepage block drag', () => {
       );
       await page.mouse.down();
       try {
+        await page.mouse.move(
+          introBox.x + introBox.width / 2,
+          introBox.y + introBox.height * 0.84,
+          { steps: 12 }
+        );
+        await expect(page.locator('body')).toHaveClass(/\bdragging\b/);
         await expect
           .poll(() =>
             editor.evaluate((element) => {
@@ -85,6 +91,9 @@ test.describe('homepage block drag', () => {
             })
           )
           .toBe(false);
+        await expect(
+          editor.locator('[data-plite-drop-cursor]:visible')
+        ).toHaveCount(0);
       } finally {
         await page.mouse.up();
       }

@@ -84,6 +84,62 @@ test.describe('Plate cross-editor block drag', () => {
     }
   });
 
+  test('does not paint a text cursor while a same-editor block drag is held', async ({
+    page,
+  }) => {
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+
+    try {
+      const { source, sourceHandle } = await openPlateDndEditors(page);
+      const keepBlock = page.locator(
+        '[data-dnd-editor="plate-dnd-source"][data-dnd-path="1"]'
+      );
+
+      const sourceHandleBox = await sourceHandle.boundingBox();
+      const keepBlockBox = await keepBlock.boundingBox();
+
+      if (!sourceHandleBox) throw new Error('Expected a visible drag handle');
+      if (!keepBlockBox) throw new Error('Expected a visible target block');
+
+      await page.mouse.move(
+        sourceHandleBox.x + sourceHandleBox.width / 2,
+        sourceHandleBox.y + sourceHandleBox.height / 2
+      );
+      await page.mouse.down();
+      try {
+        await page.mouse.move(
+          keepBlockBox.x + keepBlockBox.width / 2,
+          keepBlockBox.y + keepBlockBox.height * 0.84,
+          { steps: 12 }
+        );
+
+        await expect(page.locator('body')).toHaveClass(/\bdragging\b/);
+        await expect(
+          source.locator('[data-plite-drop-cursor]:visible')
+        ).toHaveCount(0);
+        await expect
+          .poll(() =>
+            source.evaluate((element) => {
+              const selection = document.getSelection();
+
+              return (
+                !!selection?.isCollapsed &&
+                !!selection.anchorNode &&
+                element.contains(selection.anchorNode)
+              );
+            })
+          )
+          .toBe(false);
+        await expect(source).not.toBeFocused();
+        runtimeErrors.assertNone();
+      } finally {
+        await page.mouse.up();
+      }
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
   test('copies when the HTML5 backend resolves the modifier intent', async ({
     page,
   }) => {

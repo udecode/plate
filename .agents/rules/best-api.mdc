@@ -83,6 +83,33 @@ Do not review a call expression in isolation. Resolve where every public noun is
 owned and imported from: runtime/core, feature package, registry, or app. A
 short call site with the wrong owner is still a bad API.
 
+### Maximum-Value Hard-Cut Gate
+
+Before proposing a local improvement, pressure-test the whole touched ontology.
+Current and proposed nouns, namespaces, plugins, abstractions, owners, layers,
+and packages are candidates for deletion, not protected planning boundaries.
+
+For every touched concept:
+
+1. Test deleting it and routing its current jobs through an existing canonical
+   owner.
+2. Test merging or inlining it when deletion would leave only private mechanics.
+3. Look one owner above the named surface. Ask whether the capability is merely
+   an input adapter, view, query, policy, or payload of an authority that already
+   exists.
+4. Keep it only when a hard correctness, security, serialized-data,
+   native-behavior, or runtime law requires the boundary; the user explicitly
+   requires it; or source proves an independent current user job.
+5. Select the largest deletion cone that preserves those laws and jobs. Name the
+   single surviving authority and any private adapter that still earns its keep.
+
+Call count, implementation size, tests, docs, compatibility, migration cost,
+and an accepted plan do not prove independent ownership. They may change the
+adoption sequence only. A review is incomplete if it recommends renaming,
+moving, or wrapping a surface that can disappear. When the user asks for harsh
+honest feedback, lead with this strongest materially justified cut even when it
+invalidates the current plan or creates a large blast radius.
+
 Apply the package-kit gate before approving any `*Kit` call site: a package root
 must not export a named plugin-array preset. Feature and facade packages export
 individual descriptors, operations, and types; a facade may reexport them but
@@ -292,6 +319,10 @@ Ask:
 - Does the API remain coherent after three plausible future additions?
 - Can an agent find the canonical path from types, JSDoc, and one example?
 - What should be deleted if this target is accepted?
+- What is the maximum justified deletion cone, and which survivor has hard-law
+  or independent-current-job evidence?
+- Am I treating the named namespace, plugin, abstraction, layer, or package as
+  the scope boundary when its behavior could move into an existing authority?
 - Am I selecting a workaround because the durable owner repair is harder? If
   so, keep the long-term target and route the real repair instead.
 
@@ -300,15 +331,18 @@ more observable, or already documented.
 
 ## Output Contract
 
-Lead with one recommendation, not a menu.
+Lead with one recommendation, not a menu. For harsh honest feedback, the first
+sentence states the maximum materially justified cut; do not lead with the
+easier local improvement or migration sequence.
 
 For `design` and `review`, return:
 
-1. verdict;
+1. verdict and maximum justified deletion cone;
 2. ideal call sites with exact public import paths;
 3. current source and caller evidence;
 4. why this is the simplest truthful model;
-5. machinery or alternatives rejected;
+5. machinery or alternatives rejected, plus retention evidence for every
+   surviving public concept;
 6. ownership by layer and non-negotiable runtime/safety laws;
 7. breaking/adoption impact;
 8. verification performed or explicit N/A;

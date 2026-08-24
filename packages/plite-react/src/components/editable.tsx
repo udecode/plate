@@ -519,7 +519,13 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
         propsOnDragLeave?.(event);
       },
       onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
-        editableEventBindings.onDragOver?.(event);
+        const shouldHandleDragOver = editableEventBindings.onDragOver?.(event);
+
+        if (shouldHandleDragOver === false) {
+          clearEditableDropCursor(event.currentTarget);
+          return;
+        }
+
         updateEditableDropCursor(
           event.currentTarget,
           getEditableDropCursorRect({

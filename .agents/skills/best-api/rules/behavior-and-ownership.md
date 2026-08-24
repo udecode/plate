@@ -36,6 +36,25 @@ Without that evidence, keep the normal path simple and delete tests that imply
 the isolated guarantee. Relative benchmark percentages do not outweigh
 negligible absolute cost or permanent machinery by themselves.
 
+## Public Concept Survival
+
+Promotion is not the only decision. Every public noun, namespace, plugin,
+abstraction, owner, layer, and package touched by a design or review must also
+prove that it should survive.
+
+Evaluate the system with that concept removed and its real jobs routed through
+the nearest canonical owner. Delete it when no job remains. Merge or inline it
+when only private mechanics remain. Keep it only for a hard law, an explicit
+user constraint, or a source-proven independent current user job. Multiple
+calls, files, tests, or consumers inside one behavior family still prove one
+owner, not another public authority.
+
+Do not promote an input gesture, view, query, policy, or payload into a parallel
+authority when the editor or runtime already owns the state. Keep the adapter
+private and write through the existing authority. Existing compatibility and
+implementation weight affect rollout order; they never earn the public concept
+another lifetime.
+
 ## Behavior Promotion
 
 Do not infer public composition boundaries from callbacks, events, native

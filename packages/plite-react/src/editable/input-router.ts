@@ -391,7 +391,9 @@ export type HandleEditableClipboard = (
   event: ClipboardEvent<HTMLDivElement>
 ) => void;
 
-export type HandleEditableDrag = (event: DragEvent<HTMLDivElement>) => void;
+export type HandleEditableDrag = (
+  event: DragEvent<HTMLDivElement>
+) => boolean | void;
 
 export type HandleEditableComposition = (
   event: CompositionEvent<HTMLDivElement>
@@ -1590,7 +1592,7 @@ export const useEditableDragHandler = ({
 }) =>
   useCallback(
     (event: DragEvent<HTMLDivElement>) => {
-      handleDrag(event);
+      return handleDrag(event);
     },
     [handleDrag]
   );

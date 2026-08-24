@@ -372,6 +372,10 @@ For each suspicious local shape, answer:
   serialization, and reconfiguration?
 - What existing API, helper, loop, bridge, or test disappears under the right
   owner?
+- What is the maximum local deletion cone even when no reference editor models
+  it? Test removing the namespace, plugin, abstraction, layer, or package and
+  routing its real jobs through the nearest canonical owner. The donor and the
+  named audit surface are evidence, not scope limits.
 - What does the reference do better inside this concept even if Plite/Plate is
   the preferred base?
 - Which harvested reference tests encode portable behavior or proof topology,
@@ -413,10 +417,12 @@ rubric here. If architecture evidence changes reusable API doctrine, run
 
 Lead with:
 
-1. strongest local mechanisms to keep;
-2. materially valuable changes ranked by priority and architectural value;
-3. rejected reference machinery and why;
-4. unresolved evidence gates.
+1. strongest materially justified local hard cut and its surviving authority;
+2. local mechanisms that have hard-law or independent-current-job evidence to
+   keep;
+3. materially valuable changes ranked by priority and architectural value;
+4. rejected reference machinery and why;
+5. unresolved evidence gates.
 
 Use the canonical strict concept matrix from
 `.agents/rules/editor-audit/references/feature-matrix.md`. Keep each reference's

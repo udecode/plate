@@ -29,6 +29,10 @@ Handle $ARGUMENTS. Use this for architectural, comparative, migration, or propos
 - If the task turns into code-changing execution, prefer the best long-term
   durable architecture with material value over the nearest compatible or
   local patch.
+- For API or architecture planning and feedback, run `best-api`'s
+  maximum-value hard-cut counterfactual before presenting a local improvement.
+  Treat current namespaces, plugins, abstractions, owners, layers, and packages
+  as deletable; compatibility and implementation difficulty only order adoption.
 
 ## Use This For
 
@@ -212,12 +216,15 @@ Apply this section only when the task source is a tracker item.
    jump straight to a refactor.
 3. When public call shape is unresolved, use `best-api` before locking the
    architecture target.
-4. Find what already exists before proposing new structure.
-5. Prefer changing the ownership boundary over papering around it at each call site.
-6. Call out blast radius explicitly when the recommendation changes public API or package contracts.
-7. If recommending migration, include adoption and rollback. Add compatibility
+4. Run the maximum-value hard-cut gate across every touched public concept and
+   the owner above it. Lead with the largest justified deletion cone, not the
+   easiest compatible patch.
+5. Find what already exists before proposing new structure.
+6. Prefer changing the ownership boundary over papering around it at each call site.
+7. Call out blast radius explicitly when the recommendation changes public API or package contracts.
+8. If recommending migration, include adoption and rollback. Add compatibility
    only when it wins after the ideal target is selected.
-8. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now.
+9. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now. Implementation size cannot make the smaller target win.
 
 ### Performance Architecture After Benchmark
 

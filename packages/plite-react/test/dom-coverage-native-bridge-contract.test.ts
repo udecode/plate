@@ -461,7 +461,7 @@ describe('DOM coverage native bridge', () => {
     const event = createDragEvent(target, dataTransfer);
 
     try {
-      applyEditableDragOver({
+      const handled = applyEditableDragOver({
         editor,
         event,
         state: {
@@ -471,7 +471,34 @@ describe('DOM coverage native bridge', () => {
         },
       });
 
+      expect(handled).toBe(true);
       expect(dataTransfer.dropEffect).toBe('move');
+    } finally {
+      cleanupEditorRoot(editor, root);
+    }
+  });
+
+  test('custom dragover ownership suppresses Plite built-ins', () => {
+    const editor = createHiddenSelectionEditor();
+    const root = mountEditorRoot(editor);
+    const target = mountVisibleDragTarget(root);
+    const dataTransfer = new FakeDataTransfer();
+    const event = createDragEvent(target, dataTransfer);
+
+    try {
+      const handled = applyEditableDragOver({
+        editor,
+        event,
+        onDragOver: () => true,
+        state: {
+          draggedBlock: false,
+          draggedRange: null,
+          isDraggingInternally: true,
+        },
+      });
+
+      expect(handled).toBe(false);
+      expect(dataTransfer.dropEffect).toBe('none');
     } finally {
       cleanupEditorRoot(editor, root);
     }

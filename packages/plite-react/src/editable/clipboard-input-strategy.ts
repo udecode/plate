@@ -646,27 +646,29 @@ export const applyEditableDragOver = ({
   onDragOver?: EditableDragHandler;
   state: EditableDragState;
 }) => {
-  if (
-    shouldHandleEditorDragEvent({
-      editor,
-      event,
-      handler: onDragOver,
-    })
-  ) {
-    if (state.isDraggingInternally) {
-      event.dataTransfer.dropEffect = 'move';
-    }
+  const shouldHandleDragOver = shouldHandleEditorDragEvent({
+    editor,
+    event,
+    handler: onDragOver,
+  });
 
-    // Only when the target is void, call `preventDefault` to signal
-    // that drops are allowed. Editable content is droppable by
-    // default, and calling `preventDefault` hides the cursor.
-    const target = resolveDragTarget(editor, event.target);
-    const node = target?.node;
+  if (!shouldHandleDragOver) return false;
 
-    if (node && NodeApi.isElement(node) && editorIsVoid(editor, node)) {
-      event.preventDefault();
-    }
+  if (state.isDraggingInternally) {
+    event.dataTransfer.dropEffect = 'move';
   }
+
+  // Only when the target is void, call `preventDefault` to signal
+  // that drops are allowed. Editable content is droppable by
+  // default, and calling `preventDefault` hides the cursor.
+  const target = resolveDragTarget(editor, event.target);
+  const node = target?.node;
+
+  if (node && NodeApi.isElement(node) && editorIsVoid(editor, node)) {
+    event.preventDefault();
+  }
+
+  return true;
 };
 
 export const applyEditableDragStart = ({

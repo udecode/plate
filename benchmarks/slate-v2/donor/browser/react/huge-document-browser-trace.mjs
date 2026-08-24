@@ -36,6 +36,9 @@ const selectAllDeleteInputMode =
   process.env.PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE || 'type';
 const selectAllDeleteInputModes = new Set(['insertText', 'type']);
 const runLabel = process.env.PLITE_BROWSER_TRACE_RUN_LABEL || '';
+const externalBaseUrl = (
+  process.env.PLITE_BROWSER_TRACE_BASE_URL || ''
+).replace(/\/$/, '');
 const runStartedAt = new Date().toISOString();
 
 if (!selectAllDeleteInputModes.has(selectAllDeleteInputMode)) {
@@ -54,6 +57,7 @@ const selectedSurfaces = new Set(
 );
 
 const latestArtifactPath =
+  process.env.PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH ||
   'tmp/slate-react-huge-document-browser-trace-benchmark.json';
 
 const hashArtifactSegment = (value) => {
@@ -96,6 +100,14 @@ const runArtifactPath = `${[
 const typeText = 'X'.repeat(typeOps);
 
 const surfaces = [
+  {
+    expectedScenario: 'plate-basic',
+    expectedStrategy: 'full',
+    key: 'plateFull',
+    label: 'Plate basic full DOM',
+    measureTopLevelDOM: true,
+    path: `/dev/editor-perf?blocks=${blocks}&chunking=false&chunk_size=1000&content_visibility=none&scenario_workload=huge-mixed-block&scenario=plate-basic`,
+  },
   {
     key: 'defaultAuto',
     label: 'v2 auto',
@@ -190,7 +202,7 @@ const startStaticServer = async () => {
 };
 
 const buildSite = async () => {
-  if (skipBuild) {
+  if (externalBaseUrl || skipBuild) {
     return;
   }
 
@@ -492,12 +504,17 @@ const waitForEditorReady = async (page) => {
   );
 };
 
-const waitForNativeSurface = async (page) => {
+const waitForNativeSurface = async (page, surface) => {
   const start = await page.evaluate(() => performance.now());
 
   await page
     .waitForFunction(
-      ({ expectedBlocks }) => {
+      ({
+        expectedBlocks,
+        expectedScenario,
+        expectedStrategy,
+        measureTopLevelDOM,
+      }) => {
         const root = document.querySelector('[data-plite-editor="true"]');
 
         if (!root) {
@@ -515,9 +532,20 @@ const waitForNativeSurface = async (page) => {
         const effectiveStrategy = document.querySelector(
           '[data-test-id="huge-document-effective-strategy"]'
         )?.textContent;
-        const mountedTopLevelCount = readNumber(
-          'huge-document-mounted-top-level-count'
-        );
+        const activeScenario = document.querySelector(
+          '[data-test-id="editor-perf-active-scenario"]'
+        )?.textContent;
+        const mountedTopLevelCount = measureTopLevelDOM
+          ? root.querySelectorAll(':scope > [data-plite-node="element"]')
+              .length
+          : readNumber('huge-document-mounted-top-level-count');
+
+        if (expectedScenario && activeScenario !== expectedScenario) {
+          return false;
+        }
+        if (expectedStrategy && effectiveStrategy !== expectedStrategy) {
+          return false;
+        }
 
         const bounded =
           effectiveStrategy === 'partial-dom' ||
@@ -533,7 +561,12 @@ const waitForNativeSurface = async (page) => {
           expectedBlocks
         );
       },
-      { expectedBlocks: blocks },
+      {
+        expectedBlocks: blocks,
+        expectedScenario: surface.expectedScenario,
+        expectedStrategy: surface.expectedStrategy,
+        measureTopLevelDOM: surface.measureTopLevelDOM,
+      },
       { timeout: nativeSurfaceTimeoutMs }
     )
     .then(() => true)
@@ -542,7 +575,7 @@ const waitForNativeSurface = async (page) => {
   const end = await nextPaint(page);
   const domTags = await getMemoryAndDomTags(page);
   const state = await page.evaluate(
-    ({ expectedBlocks }) => {
+    ({ expectedBlocks, measureTopLevelDOM }) => {
       const root = document.querySelector('[data-plite-editor="true"]');
       const readText = (testId) =>
         document.querySelector(`[data-test-id="${testId}"]`)?.textContent ??
@@ -555,29 +588,36 @@ const waitForNativeSurface = async (page) => {
       const effectiveStrategy = readText('huge-document-effective-strategy');
       const editorTextNodeCount =
         root?.querySelectorAll('[data-plite-node="text"]').length ?? 0;
+      const mountedTopLevelCount = measureTopLevelDOM
+        ? (root?.querySelectorAll(':scope > [data-plite-node="element"]')
+            .length ?? 0)
+        : readNumber('huge-document-mounted-top-level-count');
       const bounded =
         effectiveStrategy === 'partial-dom' ||
         effectiveStrategy === 'virtualized' ||
         effectiveStrategy === 'staged';
 
       return {
+        activeScenario: readText('editor-perf-active-scenario'),
         bounded,
         complete: !bounded && editorTextNodeCount >= expectedBlocks,
         editorTextNodeCount,
         effectiveStrategy,
-        mountedTopLevelCount: readNumber(
-          'huge-document-mounted-top-level-count'
-        ),
-        pendingTopLevelCount: readNumber(
-          'huge-document-pending-top-level-count'
-        ),
+        mountedTopLevelCount,
+        pendingTopLevelCount: measureTopLevelDOM
+          ? Math.max(0, expectedBlocks - mountedTopLevelCount)
+          : readNumber('huge-document-pending-top-level-count'),
         requestedStrategy: readText('huge-document-requested-strategy'),
       };
     },
-    { expectedBlocks: blocks }
+    {
+      expectedBlocks: blocks,
+      measureTopLevelDOM: surface.measureTopLevelDOM,
+    }
   );
 
   return {
+    activeScenario: state.activeScenario,
     bounded: state.bounded,
     complete: state.complete,
     durationMs: end - start,
@@ -1360,6 +1400,17 @@ const summarizeTracePhase = async (page) => {
 
 const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
   await resetTrace(page);
+  const focused = await page.evaluate(() => {
+    const root = document.querySelector('[data-plite-editor="true"]');
+
+    root?.focus();
+
+    return document.activeElement === root;
+  });
+
+  if (!focused) {
+    throw new Error(`Select-all/delete could not focus ${surfaceKey}`);
+  }
 
   const firstText = await readModelBlockText(page, 0);
   const lastIndex = blocks - 1;
@@ -2335,11 +2386,15 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
   try {
     for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
       const url = `${baseUrl}${surface.path}`;
+      const navigationStartedAt = performance.now();
 
       await page.goto(url, { waitUntil: 'networkidle' });
       await waitForEditorReady(page);
       await installTraceObserver(page);
-      nativeSurfaceSamples.push(await waitForNativeSurface(page));
+      nativeSurfaceSamples.push({
+        ...(await waitForNativeSurface(page, surface)),
+        navigationToReadyMs: performance.now() - navigationStartedAt,
+      });
 
       for (const lane of lanes) {
         const sample = await measureInteraction(page, lane, {
@@ -2356,11 +2411,15 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
     if (selectAllDeleteEnabled) {
       const selectAllPage = await context.newPage();
       const url = `${baseUrl}${surface.path}`;
+      const navigationStartedAt = performance.now();
 
       await selectAllPage.goto(url, { waitUntil: 'networkidle' });
       await waitForEditorReady(selectAllPage);
       await installTraceObserver(selectAllPage);
-      selectAllDeleteSurfaceState = await waitForNativeSurface(selectAllPage);
+      selectAllDeleteSurfaceState = {
+        ...(await waitForNativeSurface(selectAllPage, surface)),
+        navigationToReadyMs: performance.now() - navigationStartedAt,
+      };
       selectAllDeleteSample = await measureSelectAllDeleteFlow(
         selectAllPage,
         surface.key
@@ -2390,16 +2449,22 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
         nativeSurfaceSamples.slice(1),
         'durationMs'
       ),
+      navigationToReadyMs: summarizeNumberSamples(
+        nativeSurfaceSamples.slice(1),
+        'navigationToReadyMs'
+      ),
       observedBlocks: summarizeNumberSamples(
         nativeSurfaceSamples.slice(1),
         'observedBlocks'
       ),
       samples: nativeSurfaceSamples.slice(1).map((sample) => ({
+        activeScenario: sample.activeScenario,
         bounded: sample.bounded,
         complete: sample.complete,
         editorTextNodeCount: sample.editorTextNodeCount,
         effectiveStrategy: sample.effectiveStrategy,
         mountedTopLevelCount: sample.mountedTopLevelCount,
+        navigationToReadyMs: sample.navigationToReadyMs,
         observedBlocks: sample.observedBlocks,
         pendingTopLevelCount: sample.pendingTopLevelCount,
         requestedStrategy: sample.requestedStrategy,
@@ -2426,7 +2491,9 @@ const run = async () => {
 
   await buildSite();
 
-  const server = await startStaticServer();
+  const server = externalBaseUrl
+    ? { close: async () => {}, url: externalBaseUrl }
+    : await startStaticServer();
   const browser = await chromium.launch({ headless });
 
   try {
@@ -2438,6 +2505,7 @@ const run = async () => {
       meta: {
         blocks,
         browser: 'chromium',
+        externalBaseUrl: externalBaseUrl || null,
         headless,
         iterations,
         runLabel: runLabel || null,
@@ -2462,7 +2530,7 @@ const run = async () => {
     for (const [key, surface] of Object.entries(summary.surfaces)) {
       console.log(`\n${key} (${surface.label})`);
       console.log(
-        `nativeSurface durationMs p95=${surface.nativeSurface.durationMs.p95}, complete=${surface.nativeSurface.completeCount}, bounded=${surface.nativeSurface.boundedCount}, timedOut=${surface.nativeSurface.timeoutCount}, observedBlocks p95=${surface.nativeSurface.observedBlocks.p95}`
+        `nativeSurface navigationToReadyMs p95=${surface.nativeSurface.navigationToReadyMs.p95}, settleDurationMs p95=${surface.nativeSurface.durationMs.p95}, complete=${surface.nativeSurface.completeCount}, bounded=${surface.nativeSurface.boundedCount}, timedOut=${surface.nativeSurface.timeoutCount}, observedBlocks p95=${surface.nativeSurface.observedBlocks.p95}`
       );
 
       for (const [laneKey, lane] of Object.entries(surface.lanes)) {
@@ -3480,6 +3548,7 @@ const run = async () => {
       )}`
     );
     printSurfaceMetrics('defaultAuto', 'react_huge_doc_auto');
+    printSurfaceMetrics('plateFull', 'react_huge_doc_plate_full');
     printSurfaceMetrics('stagedActiveDOMGroup', 'react_huge_doc_staged');
     printSurfaceMetrics('stagedDefault', 'react_huge_doc_staged_default');
     printSurfaceMetrics(

@@ -141,6 +141,14 @@ wrappers, components, kits, registry, app-facing docs, and product UX.
 Inspect at least five candidate areas unless the prompt names a smaller
 surface. Every candidate gets four tests:
 
+Before those tests, challenge the candidate boundary itself. Treat the current
+namespace, plugin, abstraction, owner, layer, and package as deletable. Look one
+owner higher and test whether deleting, merging, or inlining the whole concept
+lets an existing canonical owner carry every real job and hard law. A large
+blast radius is not a reason to downgrade the recommendation. Retain the concept
+only for an explicit user constraint, a hard law, or a source-proven independent
+current user job.
+
 1. **Deletion test:** if deleting the module makes complexity disappear, it is
    probably shallow; if deletion spreads complexity across callers, it may be
    earning its keep.

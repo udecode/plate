@@ -168,6 +168,12 @@ Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
   the same decision.
 - A break row must name callers, docs/example adoption, and proof.
 - `defer` must name missing evidence and the next owner.
+- Before locking any row, apply `best-api`'s maximum-value hard-cut gate to the
+  concept and the owner above it. If a namespace, plugin, abstraction, layer, or
+  package can disappear while an existing Plate or Plite authority preserves
+  every hard law and independent current job, the verdict is `cut`. Do not plan
+  around rejected machinery; compatibility and implementation cost only order
+  adoption.
 - Prefer delete, merge, or inline over wrappers and file churn.
 - Rank worthwhile changes by long-term architectural value. Order execution
   slices separately by dependency; implementation order is not the value rank.

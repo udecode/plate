@@ -2,6 +2,7 @@
 - Be concise in all interactions and commit messages. Never sacrifice precision or readability for brevity.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the best long-term durable architecture that materially fixes the owning problem over the nearest compatible or local patch. Before stability, break APIs and abstractions when that buys materially better lasting value; preserve only hard correctness, security, serialized-data, native-behavior, or runtime laws.
+- For every API or architecture plan, review, or feedback request, run the maximum-value hard-cut counterfactual before presenting a local improvement. Treat each current or proposed public noun, namespace, plugin, abstraction, owner, layer, and package as deletable; test delete, merge, inline, and reuse of an existing canonical owner. Retain one only for a hard law, an explicit user constraint, or a proven independent current user job. Compatibility and implementation difficulty affect adoption order, never the target. Lead harsh honest feedback with the strongest materially justified cut even when its blast radius is large. This rule applies repo-wide, not only to packages.
 
 ## Technical prose
 

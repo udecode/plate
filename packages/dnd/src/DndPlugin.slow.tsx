@@ -25,12 +25,16 @@ describe('DndPlugin', () => {
 
     pipeHandler(editor, { handlerKey: 'onDragStart' })?.(event);
     pipeHandler(editor, { handlerKey: 'onDragEnter' })?.(event);
+    const dragOverResult: unknown = pipeHandler(editor, {
+      handlerKey: 'onDragOver',
+    })?.(event);
 
     expect(dataTransfer.effectAllowed).toBe('none');
     expect(dataTransfer.dropEffect).toBe('none');
     expect(context.store.get('draggingKey')).toBeNull();
     expect(context.store.get('isDragging')).toBe(false);
     expect(context.store.get('_isOver')).toBe(true);
+    expect(dragOverResult).toBe(false);
     const dropResult: unknown = pipeHandler(editor, {
       handlerKey: 'onDrop',
     })?.(event);
@@ -50,10 +54,14 @@ describe('DndPlugin', () => {
       isDragging: true,
     });
 
+    const dragOverResult: unknown = pipeHandler(editor, {
+      handlerKey: 'onDragOver',
+    })?.(event);
     const dropResult: unknown = pipeHandler(editor, {
       handlerKey: 'onDrop',
     })?.(event);
 
+    expect(dragOverResult).toBe(true);
     expect(dropResult).toBe(true);
 
     pipeHandler(editor, { handlerKey: 'onDragEnd' })?.(event);

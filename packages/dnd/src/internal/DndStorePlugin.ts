@@ -55,6 +55,7 @@ export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
     dragEnter: ({ store }) => {
       store.set({ _isOver: true });
     },
+    dragOver: ({ store }) => store.get().isDragging,
     drop: ({ store }) => store.get().isDragging,
     focus: ({ store }) => {
       store.set({ isDragging: false });

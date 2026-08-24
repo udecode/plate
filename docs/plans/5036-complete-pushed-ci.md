@@ -122,6 +122,14 @@ time was 31m29s.
       that Vercel's full build discovers.
     - Repair: regenerate the complete Next route types inside the shared www
       typecheck script before both TypeScript programs run.
+11. `packages/selection/src/react/BlockSelectionPlugin.tsx`
+    - Root cause: the public plugin state type declared
+      `selectionAreaClassName`, but the base initial state did not own that key.
+      The unconfigured Plite example therefore crashed when
+      `BlockSelectionAfterEditable` subscribed to it.
+    - Repair: make the base store own an empty class string and lock that
+      runtime contract with a focused package test. The existing Chromium
+      cursor-overlay test is the user-visible regression proof.
 
 The chromium coverage failure needs no separate source edit; it is generated
 from shard summaries and closes when shard 1 passes.
@@ -170,6 +178,14 @@ from shard summaries and closes when shard 1 passes.
   was clean; three checkout-wide Regression findings from invocation 2 were
   accepted and deterministically repaired after the cap, so no further
   autoreview invocation is allowed.
+- `bun test packages/selection/src/react/BlockSelectionPlugin.spec.tsx -t
+  "exposes the selection area class"`: failed before the owner fix
+  with the exact missing-state-field exception, then passed after it.
+- `pnpm --filter plite test:plite-browser:chromium
+  tests/plite-browser/donor/examples/cursor-overlay-ordering.test.ts`: passed;
+  the route rendered and the selection cursor interaction completed.
+- Five forced, retry-free replays of that exact Chromium row passed in
+  1.9-2.7s per run.
 
 ## Push scope
 
@@ -179,13 +195,15 @@ workflow updates, and the user-authored plans already present in the checkout.
 
 ## Public mutations
 
-Four repair commits have been pushed through `57c26226c65d2ccdb962b6a99d42ef6a8f5c4cc1`.
-The current registry/runner repair remains local. Merge is not authorized.
+Five repair commits have been pushed through
+`a525367f60000a33055e727db062ccc610880ea9`. The Block Selection store repair
+remains local. Merge is not authorized.
 
 ## Remaining risks and next action
 
-- Root CI and Vercel remain red on `57c2622…` until the current repair is
-  committed and pushed.
+- Root CI is green on `a525367…`; Chromium shard 3 remains red until the current
+  Block Selection store repair is committed and pushed. The current Vercel
+  deployment is still building.
 - The PR merge conflict is independent of CI and remains unresolved.
 - After push, monitor the exact SHA, repair any new failures, and repeat until
   GitHub and Vercel are green. Do not merge.

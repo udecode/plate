@@ -83,7 +83,7 @@ export const useRuntimeDragEvents = ({
         ownership: decision.ownership,
         target: event.target,
       });
-      applyEditableDragOver({
+      return applyEditableDragOver({
         editor,
         event,
         onDragOver,

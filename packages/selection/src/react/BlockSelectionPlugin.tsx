@@ -79,7 +79,7 @@ export type BlockSelectionPluginState = {
   isSelecting: boolean;
   isSelectionAreaVisible: boolean;
   /** Class name applied to the portaled selection marquee. */
-  selectionAreaClassName?: string;
+  selectionAreaClassName: string;
   selectedKeys: Set<NodeKey>;
   shadowInputRef: React.RefObject<HTMLInputElement | null>;
   /** Check if a block is selectable. */
@@ -100,6 +100,7 @@ const initialState: BlockSelectionPluginState = {
   disableSelectAll: false,
   isSelecting: false,
   isSelectionAreaVisible: false,
+  selectionAreaClassName: '',
   selectedKeys: new Set(),
   shadowInputRef: { current: null },
   isSelectable: () => true,

@@ -197,6 +197,14 @@ describe('BlockSelectionPlugin', () => {
     expect(getPlateRuntime(editor).plugins.blockMenu).toBeUndefined();
   });
 
+  it('exposes the selection area class in its default store', () => {
+    const editor = createBlockSelectionEditor();
+
+    expect(
+      editor.plugin(BlockSelectionPlugin).store.get('selectionAreaClassName')
+    ).toBe('');
+  });
+
   it('progresses from the current block to every selectable block', () => {
     const editor = createBlockSelectionEditor();
 

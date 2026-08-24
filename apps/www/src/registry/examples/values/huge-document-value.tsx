@@ -31,10 +31,18 @@ const buildHugeDocumentBlocks = (blocks: number): HugeDocumentBlock[] => {
 };
 
 const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
-  blocks.map(({ text, type }) => ({
-    children: [{ text }],
-    type: type === 'heading-one' ? 'h1' : 'p',
-  }));
+  blocks.map(({ text, type }) =>
+    type === 'heading-one'
+      ? {
+          children: [{ text }],
+          level: 1,
+          type: 'heading',
+        }
+      : {
+          children: [{ text }],
+          type: 'paragraph',
+        }
+  );
 
 const toPliteValue = (blocks: HugeDocumentBlock[]): Value =>
   blocks.map(({ text, type }) => ({
