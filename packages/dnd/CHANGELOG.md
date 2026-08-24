@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 53.3.8
+
+### Patch Changes
+
+- [#5103](https://github.com/udecode/plate/pull/5103) by [@delijah](https://github.com/delijah) – Repair editor to editor dnd by providing a drop path
+
 ## 53.1.0
 
 ### Patch Changes
