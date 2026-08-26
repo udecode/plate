@@ -225,11 +225,13 @@ range geometry, model/DOM endpoints, and callback identity. If that state is
 already final while the pixel oracle stays red, reject timing as the cause.
 Keep the pixel oracle blocking; callback traces prove execution, not paint.
 
-Before a pixel-diff oracle may block a case, run positive and negative controls
-through the same capture and classifier. The known-visible state must be
-detected, and the known-absent state must contain no classified signal. A failed
-control invalidates every result from that oracle and freezes product edits
-until the proof helper is repaired.
+Before a pixel-diff oracle may block a case, run three controls through the same
+capture and classifier: a known-correct single-layer state, a known-absent state,
+and a known-invalid duplicate-layer state. The single layer must be classified as
+exactly one layer, the absent state must contain no classified signal, and the
+duplicate state must be rejected. Width or outer geometry alone cannot certify
+layer count. A failed control invalidates every result from that oracle and
+freezes product edits until the proof helper is repaired.
 
 Run final proof through `capture-proof-receipt.mjs`. It executes the command,
 fingerprints every named production/test/fixture/harness/config input before

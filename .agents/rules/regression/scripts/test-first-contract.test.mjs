@@ -277,7 +277,7 @@ test('compositor repairs require material-state traces and pixel proof', () => {
   );
 });
 
-test('blocking pixel classifiers require positive and negative controls', () => {
+test('blocking pixel classifiers reject absent and duplicate layers', () => {
   const regressionRule = read('.agents/rules/regression.mdc');
   const methodology = read(
     '.agents/rules/regression/references/methodology.md'
@@ -286,15 +286,15 @@ test('blocking pixel classifiers require positive and negative controls', () => 
 
   assert.match(
     regressionRule,
-    /pixel-diff oracle[\s\S]*positive and negative controls[\s\S]*known-absent state[\s\S]*invalidates every result/
+    /pixel-diff oracle[\s\S]*known-correct single-layer state[\s\S]*known-absent state[\s\S]*known-invalid duplicate-layer state[\s\S]*Width or outer geometry alone cannot certify[\s\S]*layer count[\s\S]*invalidates every result/
   );
   assert.match(
     methodology,
-    /known-positive state[\s\S]*known-negative state[\s\S]*revoke every green or red/
+    /known-correct single-layer state[\s\S]*known-absent state[\s\S]*known-invalid duplicate-layer state[\s\S]*Width[\s\S]*or outer geometry alone cannot certify[\s\S]*layer count[\s\S]*revoke[\s\S]*every green or red/
   );
   assert.match(
     template,
-    /blocking pixel classifier[\s\S]*known-positive and known-negative[\s\S]*freezes product edits/
+    /blocking pixel classifier[\s\S]*known-correct single-layer[\s\S]*known-absent[\s\S]*known-invalid duplicate-layer[\s\S]*width or outer geometry alone cannot certify layer count[\s\S]*freezes product edits/i
   );
 });
 

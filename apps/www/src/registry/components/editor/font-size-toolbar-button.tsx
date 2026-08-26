@@ -68,21 +68,16 @@ export function FontSizeToolbarButton() {
       Number.parseInt(newSize, 10) < 1 ||
       Number.parseInt(newSize, 10) > 100
     ) {
-      editor.api.dom.focus();
-
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
       editor.plugin(FontSizePlugin).update.set(`${newSize}px`);
     }
-
-    editor.api.dom.focus();
   };
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
     editor.plugin(FontSizePlugin).update.set(`${newSize}px`);
-    editor.api.dom.focus();
   };
 
   const displayValue = isFocused ? inputValue : cursorFontSize;
@@ -139,7 +134,6 @@ export function FontSizeToolbarButton() {
               )}
               onClick={() => {
                 editor.plugin(FontSizePlugin).update.set(`${size}px`);
-                editor.api.dom.focus();
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

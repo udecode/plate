@@ -62,6 +62,7 @@ const receiptRow = ({
 const oracleRows = ({
   exactChrome = false,
   missingForbidden = false,
+  missingPixelControls = false,
 } = {}) => {
   const rows = [
     {
@@ -95,7 +96,9 @@ const oracleRows = ({
           layer: 'exact-chrome',
           observation: 'geometry-paint',
           positive: 'paint matches final geometry',
-          result: 'pass: exact Chrome pixel oracle',
+          result: missingPixelControls
+            ? 'pass: exact Chrome pixel oracle'
+            : 'pass: exact Chrome pixel oracle; positive-control: pass known single-layer state; negative-control: pass known-absent state; duplicate-control: pass known duplicate-layer state rejected',
         }
       : {
           applies: 'no',
@@ -213,6 +216,7 @@ const fixture = ({
   missingAffectedCase = false,
   missingAffectedBaseline = false,
   missingForbidden = false,
+  missingPixelControls = false,
   missingReporterOracle = false,
   preImplementation = false,
   preImplementationBaseline = false,
@@ -268,7 +272,7 @@ ${reporterEvidenceRows({
 Reporter oracle matrix:
 | Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
 |---|---|---|---|---|---|---|---|---|
-${oracleRows({ exactChrome, missingForbidden })}
+${oracleRows({ exactChrome, missingForbidden, missingPixelControls })}
 
 Proof receipts:
 | Case ID | Attempt | Claim | Command | Result | Ref | Input digest | Input count | Inputs | Host | Latest input mtime | Proof started | Proof ended | Retries | Receipt ID |
@@ -541,6 +545,26 @@ test('phase-qualified paint oracles trigger exact Chrome without source keywords
   assert.match(
     errors,
     /requires an executable-attested exact Chrome proof receipt/
+  );
+});
+
+test('pixel classifiers cannot complete without single-layer, absent, and duplicate controls', () => {
+  const errors = validateRegressionPlan(
+    fixture({ exactChrome: true, missingPixelControls: true }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(
+    errors,
+    /pixel classifier requires positive-control: pass, negative-control: pass, and duplicate-control: pass evidence/
+  );
+
+  assert.deepEqual(
+    validateRegressionPlan(fixture({ exactChrome: true }), {
+      complete: true,
+      rootDir: root,
+    }),
+    []
   );
 });
 

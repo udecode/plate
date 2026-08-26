@@ -183,9 +183,11 @@ Work Checklist:
 - [ ] Any compositor phase claim records computed style, live range geometry,
       model/DOM endpoints, and callback identity at the mutation boundary. If
       those are final while pixels stay red, timing is rejected as the cause.
-- [ ] Every blocking pixel classifier passes a known-positive and known-negative
-      control through the same capture path; a failed control invalidates prior
-      results and freezes product edits until the proof helper is repaired.
+- [ ] Every blocking pixel classifier passes known-correct single-layer,
+      known-absent, and known-invalid duplicate-layer controls through the same
+      capture path; width or outer geometry alone cannot certify layer count.
+      A failed control invalidates prior results and freezes product edits until
+      the proof helper is repaired.
 - [ ] Every shared owner was replayed against its affected exact corpus after
       the final owner edit.
 - [ ] Every already-executable affected case has a `pass:` or `red:` pre-edit

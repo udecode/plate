@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-25-fix-font-size-selection-overlay",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-25-fix-font-size-selection-overlay.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve one selection highlight while changing font size",
+  "targets": [
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-25-font-size-toolbar-preserve-one-selection-highlight-88bdc622",
+      "kind": "fix",
+      "summary": "Preserve one selection highlight while changing font size",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-size-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-fix-font-size-selection-overlay",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

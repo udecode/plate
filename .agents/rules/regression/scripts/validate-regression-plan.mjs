@@ -61,6 +61,19 @@ const isSuperseded = (value) => /^superseded:\s*\S/i.test(value ?? '');
 const isSourceIdentity = (value) =>
   /^(?:commit|dirty):[a-f0-9]{40}$/i.test(value ?? '');
 const isSha256 = (value) => /^sha256:[a-f0-9]{64}$/i.test(value ?? '');
+const isPixelClassifierOracle = (row) =>
+  /\b(?:pixel|classifier|image diff|screenshot diff)\b/i.test(
+    [
+      row.positive_assertion,
+      row.forbidden_state,
+      row.proof_layer,
+      row.result,
+    ].join(' ')
+  );
+const hasPixelClassifierControls = (value) =>
+  /\bpositive-control:\s*pass\b/i.test(value ?? '') &&
+  /\bnegative-control:\s*pass\b/i.test(value ?? '') &&
+  /\bduplicate-control:\s*pass\b/i.test(value ?? '');
 const parseTimestamp = (value) => {
   const timestamp = Date.parse(value ?? '');
 
@@ -556,6 +569,16 @@ export const validateRegressionPlan = (
       errors.push(`${label} requires Result pass: <evidence>`);
     } else if (!complete && !isResolved(row.result)) {
       errors.push(`${label} requires a current Result`);
+    }
+    if (
+      complete &&
+      observation === 'geometry-paint' &&
+      isPixelClassifierOracle(row) &&
+      !hasPixelClassifierControls(row.result)
+    ) {
+      errors.push(
+        `${label} pixel classifier requires positive-control: pass, negative-control: pass, and duplicate-control: pass evidence`
+      );
     }
   }
 

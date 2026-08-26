@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-25-fix-font-size-selection-overlay",
+      "href": "/registry/changelog/2026-08-25-fix-font-size-selection-overlay.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve one selection highlight while changing font size",
+      "change": {
+        "type": "source",
+        "date": "2026-08-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["font-size-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-24-fix-block-selection-marquee",
       "href": "/registry/changelog/2026-08-24-fix-block-selection-marquee.json",
       "status": "draft",

@@ -15,6 +15,7 @@ import {
 import * as actualPlite from '@platejs/plite';
 import * as actualUtils from '@platejs/utils';
 import { act, fireEvent, render, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import * as actualUdecodeUtils from '@udecode/utils';
 import * as React from 'react';
 
@@ -322,7 +323,7 @@ describe('feature toolbar plugin portals', () => {
     expect(focusMock).toHaveBeenCalledTimes(2);
   });
 
-  it('sets font size through the installed plugin portal', async () => {
+  it('changes font size without refocusing from the step buttons', async () => {
     currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
@@ -335,14 +336,40 @@ describe('feature toolbar plugin portals', () => {
     const view = render(<FontSizeToolbarButton />);
     const buttons = view.getAllByRole('button');
 
+    fireEvent.click(buttons[0]!);
     fireEvent.click(buttons.at(-1)!);
 
     expect(pluginMock).toHaveBeenCalledWith(FontSizePlugin);
-    expect(setMock).toHaveBeenCalledWith('17px');
-    expect(focusMock).toHaveBeenCalledTimes(1);
+    expect(setMock).toHaveBeenNthCalledWith(1, '15px');
+    expect(setMock).toHaveBeenNthCalledWith(2, '17px');
+    expect(focusMock).not.toHaveBeenCalled();
   });
 
-  it('restores editor focus after picking a font size', async () => {
+  it('changes font size without refocusing from the input', async () => {
+    currentPluginName = 'fontSize';
+    currentEditor.read.marks = () => ({ fontSize: '16px' });
+    pluginMock.mockReturnValue({
+      read: { value: () => '16px' },
+      update: { set: setMock },
+    });
+    const { FontSizeToolbarButton } = await import(
+      `./font-size-toolbar-button?input=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FontSizeToolbarButton />);
+    const input = view.getByRole('textbox');
+    const user = userEvent.setup();
+
+    await user.click(input);
+    await user.clear(input);
+    await user.type(input, '12');
+    expect((input as HTMLInputElement).value).toBe('12');
+    await user.tab();
+
+    expect(setMock).toHaveBeenCalledWith('12px');
+    expect(focusMock).not.toHaveBeenCalled();
+  });
+
+  it('changes font size without refocusing from the popover', async () => {
     currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
@@ -357,7 +384,7 @@ describe('feature toolbar plugin portals', () => {
     fireEvent.click(view.getByRole('button', { name: '10' }));
 
     expect(setMock).toHaveBeenCalledWith('10px');
-    expect(focusMock).toHaveBeenCalledTimes(1);
+    expect(focusMock).not.toHaveBeenCalled();
   });
 
   it('uses caller colors without traversing a 5,000-block document', async () => {

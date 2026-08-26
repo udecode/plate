@@ -319,12 +319,14 @@ while the pixel oracle remains red, reject lifecycle ordering as the cause and
 change strategy. A timer or later animation-frame callback may prove that code
 ran; neither proves the intermediate state was painted.
 
-A pixel classifier needs an executable sentinel before it can judge product
-behavior. Capture one known-positive state and one known-negative state through
-the same screenshot path and classifier. The positive state must produce the
-expected signal, and the negative state must produce none. If either control
-fails, revoke every green or red derived from that classifier, repair the proof
-helper, and restart the affected baseline.
+A pixel classifier needs executable sentinels before it can judge product
+behavior. Capture a known-correct single-layer state, a known-absent state, and
+a known-invalid duplicate-layer state through the same screenshot path and
+classifier. The single-layer state must classify as exactly one layer, the
+absent state must produce none, and the duplicate state must be rejected. Width
+or outer geometry alone cannot certify layer count. If any control fails, revoke
+every green or red derived from that classifier, repair the proof helper, and
+restart the affected baseline.
 
 Nothing issue-owned may change after final replay. If commit, rebase,
 generation, or push changes any proved bytes or runtime inputs, replay before

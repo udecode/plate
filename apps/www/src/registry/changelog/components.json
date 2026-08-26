@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "components": {
+    "font-size-toolbar-button": [
+      "2026-08-25-fix-font-size-selection-overlay",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-12-fix-font-size-selection-highlight",
+      "2026-08-03-use-schema-handles",
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2025-11-20-biome-ultracite"
+    ],
     "block-selection": [
       "2026-08-24-fix-block-selection-marquee",
       "2026-08-17-colocate-editor-component-families",
@@ -528,13 +536,6 @@
     "code": ["2026-08-17-flat-editor-registry"],
     "code-static": ["2026-08-17-flat-editor-registry"],
     "equation-toolbar-button": ["2026-08-17-flat-editor-registry"],
-    "font-size-toolbar-button": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-12-fix-font-size-selection-highlight",
-      "2026-08-03-use-schema-handles",
-      "2026-07-24-feature-toolbar-plugin-portals",
-      "2025-11-20-biome-ultracite"
-    ],
     "highlight": ["2026-08-17-flat-editor-registry"],
     "highlight-static": ["2026-08-17-flat-editor-registry"],
     "horizontal-rule": ["2026-08-17-flat-editor-registry"],
