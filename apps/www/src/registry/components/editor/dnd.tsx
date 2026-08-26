@@ -11,21 +11,20 @@ import { ListPlugin } from '@platejs/list/react';
 import { PlaceholderPlugin } from '@platejs/media/react';
 import type { NodeKey, Path, Element as PliteElement } from '@platejs/plite';
 import { failInvariant } from '@platejs/plite/internal';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@platejs/table';
 import { GripVertical } from 'lucide-react';
-import { ElementApi } from 'platejs';
+import { ElementApi, PathApi } from 'platejs';
 import {
   type PlateEditor,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   MemoizedChildren,
   useEditor,
-  useEditorPlugin,
+  useEditorSelector,
   useElement,
   usePluginStore,
 } from 'platejs/react';
@@ -49,7 +48,6 @@ const UNDRAGGABLE_PLUGINS = [
 const DndInteractionContext = React.createContext({
   activate: () => {},
   active: false,
-  isSelectionAreaVisible: false,
 });
 
 const isBlockDraggable: NonNullable<
@@ -82,7 +80,6 @@ const BlockDraggableComponent = (props: RenderNodeWrapperProps) => {
       activate={interaction.activate}
       active={interaction.active}
       container={container}
-      hideGutter={interaction.isSelectionAreaVisible}
     />
   );
 };
@@ -97,18 +94,10 @@ type DraggableProps = RenderNodeWrapperProps & {
   activate: () => void;
   active: boolean;
   container: DraggableContainer;
-  hideGutter: boolean;
 };
 
-function Draggable({
-  activate,
-  active,
-  container,
-  hideGutter,
-  ...props
-}: DraggableProps) {
+function Draggable({ activate, active, container, ...props }: DraggableProps) {
   const { children, editor, element } = props;
-  const blockSelectionApi = editor.plugin(BlockSelectionPlugin).api;
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
   const [dropLine, setDropLine] = React.useState<DropLineDirection>('');
   const [isPointerActive, setIsPointerActive] = React.useState(false);
@@ -125,6 +114,13 @@ function Draggable({
   }, []);
   const isInColumn = container === 'column';
   const isInTable = container === 'table';
+  const hasTableCellSelection = useEditorSelector((innerEditor) => {
+    const table = innerEditor.plugin(BaseTablePlugin);
+
+    return (
+      table.installed && (table.read.selection()?.cellKeys.length ?? 0) > 1
+    );
+  });
   const isContainer =
     ElementApi.isElement(element.children[0]) &&
     editor.read.schema.isBlock(element.children[0]);
@@ -153,12 +149,8 @@ function Draggable({
         />
       )}
 
-      {!isInTable && (
-        <Gutter
-          active={isPointerActive}
-          hidden={hideGutter}
-          isContainer={isContainer}
-        >
+      {!isInTable && !hasTableCellSelection && (
+        <Gutter active={isPointerActive} isContainer={isContainer}>
           <button
             ref={dragButtonRef}
             aria-label="Drag block"
@@ -206,13 +198,7 @@ function Draggable({
 
       <DropLine dropLine={dropLine} />
 
-      <div
-        ref={nodeRef}
-        className="plite-blockWrapper flow-root"
-        onContextMenu={(event) => {
-          blockSelectionApi.addOnContextMenu({ element, event });
-        }}
-      >
+      <div ref={nodeRef} className="plite-blockWrapper flow-root">
         <MemoizedChildren>{children}</MemoizedChildren>
       </div>
     </div>
@@ -267,15 +253,11 @@ function DraggableRuntime({
   previewRef: React.RefObject<HTMLDivElement | null>;
   resetPreview: () => void;
 }) {
-  const { api: blockSelectionApi } = useEditorPlugin(BlockSelectionPlugin);
   const { handleRef, isAboutToDrag, isDragging } = useDraggable({
     element,
     multiplePreviewRef: previewRef,
     nodeRef,
-    onDropHandler: (_, { dragItem }) => {
-      if ('key' in dragItem) {
-        blockSelectionApi.add(dragItem.key);
-      }
+    onDropHandler: () => {
       resetPreview();
     },
   });
@@ -322,12 +304,10 @@ function Gutter({
   active,
   children,
   className,
-  hidden,
   isContainer,
   ...props
 }: React.ComponentProps<'div'> & {
   active: boolean;
-  hidden: boolean;
   isContainer: boolean;
 }) {
   return (
@@ -335,13 +315,12 @@ function Gutter({
       {...props}
       className={cn(
         'plite-gutterLeft',
-        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text hover:opacity-100 sm:opacity-0',
+        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none hover:opacity-100 sm:opacity-0',
         isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         'focus-within:opacity-100',
         active && 'opacity-100',
-        hidden && 'hidden',
         className
       )}
       contentEditable={false}
@@ -364,9 +343,22 @@ function DragHandle({
   setPreviewTop: (top: number) => void;
 }) {
   const editor = useEditor();
-  const { api, read } = useEditorPlugin(BlockSelectionPlugin);
   const element = useElement();
   const list = editor.plugin(ListPlugin);
+  const selectElement = () => {
+    const path = editor.read.nodes.path(element);
+
+    if (!path) return;
+
+    if (
+      !editor.read.selection
+        .nodes()
+        .some(([, selectedPath]) => PathApi.equals(selectedPath, path))
+    ) {
+      editor.update.selection.setNodes([element]);
+    }
+    editor.api.dom.focus();
+  };
 
   return (
     <Tooltip>
@@ -375,34 +367,21 @@ function DragHandle({
           className="flex size-full items-center justify-center"
           onClick={(e) => {
             e.preventDefault();
-            api.focus();
+            selectElement();
           }}
           onKeyDown={(event) => {
             if (event.key !== 'Enter' && event.key !== ' ') return;
 
             event.preventDefault();
-            api.focus();
+            selectElement();
           }}
           onMouseDown={(e) => {
             resetPreview();
 
             if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;
 
-            const blockSelection = read.getNodes({
-              sort: true,
-            });
-
-            let selectionNodes =
-              blockSelection.length > 0
-                ? blockSelection
-                : editor.read((state) =>
-                    state.nodes.toArray({
-                      match: (node): node is PliteElement =>
-                        ElementApi.isElement(node) &&
-                        state.schema.isBlock(node),
-                      mode: 'highest',
-                    })
-                  );
+            const selectedBlocks = editor.read.nodes.blocks();
+            let selectionNodes = selectedBlocks;
 
             // If current block is not in selection, use it as the starting point
             const elementNodeKey = editor.key(element);
@@ -419,17 +398,12 @@ function DragHandle({
             }
 
             // Process selection nodes to include list children
-            const blocks = (
+            const processedEntries =
               list.installed &&
               selectionNodes.some(([node]) => typeof node.listType === 'string')
                 ? list.read.expandItemsWithChildren(selectionNodes)
-                : selectionNodes
-            ).map(([node]) => node);
-
-            if (blockSelection.length === 0) {
-              editor.api.dom.blur();
-              editor.update.selection.clear();
-            }
+                : selectionNodes;
+            const blocks = processedEntries.map(([node]) => node);
 
             const elements = createDragPreviewElements(editor, blocks);
             previewRef.current?.append(...elements);
@@ -438,27 +412,14 @@ function DragHandle({
             editor
               .plugin(DndPlugin)
               .store.set({ multiplePreviewRef: previewRef });
-
-            api.set(blocks.map((block) => editor.key(block)));
+            editor.update.selection.setNodes(
+              processedEntries.map(([node]) => node)
+            );
           }}
           onMouseEnter={() => {
             if (isDragging) return;
 
-            const blockSelection = read.getNodes({
-              sort: true,
-            });
-
-            let selectedBlocks =
-              blockSelection.length > 0
-                ? blockSelection
-                : editor.read((state) =>
-                    state.nodes.toArray({
-                      match: (node): node is PliteElement =>
-                        ElementApi.isElement(node) &&
-                        state.schema.isBlock(node),
-                      mode: 'highest',
-                    })
-                  );
+            let selectedBlocks = editor.read.nodes.blocks();
 
             // If current block is not in selection, use it as the starting point
             const elementNodeKey = editor.key(element);
@@ -707,10 +668,6 @@ const calcDragButtonTop = (
 
 const DndRoot = ({ children }: { children: React.ReactNode }) => {
   const isDragging = usePluginStore(DndPlugin, 'isDragging');
-  const isSelectionAreaVisible = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
   const [active, setActive] = React.useState(false);
   const activate = React.useCallback(() => {
     setActive(true);
@@ -735,9 +692,8 @@ const DndRoot = ({ children }: { children: React.ReactNode }) => {
     () => ({
       activate,
       active: active || isDragging,
-      isSelectionAreaVisible,
     }),
-    [activate, active, isDragging, isSelectionAreaVisible]
+    [activate, active, isDragging]
   );
 
   return (

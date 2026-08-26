@@ -3,7 +3,7 @@ import {
   createRuleFactory,
   defineBasePlugin,
 } from '@platejs/core';
-import { ElementApi, property, schema } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -75,37 +75,7 @@ export const BaseHeadingPlugin = defineBasePlugin(PLUGINS.heading, {
   rules,
   update: ({ tx, schema: { type } }) => ({
     toggle: ({ level }: ToggleHeadingOptions) => {
-      const at = tx.selection() ?? undefined;
-      const isActive = tx.nodes.some({
-        at,
-        match: (node) =>
-          ElementApi.isElement(node) &&
-          node.type === type &&
-          node.level === level,
-      });
-
-      tx.blocks.toggle(type, {
-        at,
-        someOptions: {
-          match: (node) => ElementApi.isElement(node) && node.level === level,
-        },
-      });
-
-      if (isActive) {
-        tx.nodes.unset('level', {
-          at,
-          match: (node) => ElementApi.isElement(node) && node.type !== type,
-        });
-        return;
-      }
-
-      tx.nodes.set(
-        { level },
-        {
-          at,
-          match: (node) => ElementApi.isElement(node) && node.type === type,
-        }
-      );
+      tx.blocks.toggle({ level, type });
     },
   }),
 });

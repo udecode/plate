@@ -27,7 +27,10 @@ import {
 import { updateNativeTextInput } from './input-history';
 import type { EditableInputController } from './input-state';
 import { readRuntimeText } from './runtime-live-state';
-import { readRuntimeSelection } from './runtime-selection-state';
+import {
+  readRuntimeSelection,
+  readRuntimeSelectionRange,
+} from './runtime-selection-state';
 import {
   armModelOwnedTextInputGuard,
   setEditableModelSelectionPreference,
@@ -219,7 +222,7 @@ export const createDOMRepairQueue = ({
     }
 
     const selection = profileDOMRepairDuration('captured-read-selection', () =>
-      readRuntimeSelection(editor)
+      readRuntimeSelectionRange(editor)
     );
 
     if (
@@ -406,7 +409,7 @@ export const createDOMRepairQueue = ({
         selectionOffset == null ||
         textHostText == null
       ) {
-        const selection = readRuntimeSelection(editor);
+        const selection = readRuntimeSelectionRange(editor);
 
         if (selection && RangeApi.isCollapsed(selection)) {
           const fallbackPath = selection.anchor.path;
@@ -434,7 +437,7 @@ export const createDOMRepairQueue = ({
         textHostText != null
       ) {
         if (textHostText === pliteNode.text) {
-          const currentSelection = readRuntimeSelection(editor);
+          const currentSelection = readRuntimeSelectionRange(editor);
           const liveDOMSelectionBelongsToRepairPath = nativeInput.target
             ? textHost === liveDOMTextHost ||
               (!!liveDOMPath &&
@@ -476,7 +479,7 @@ export const createDOMRepairQueue = ({
           return;
         }
 
-        const currentSelection = readRuntimeSelection(editor);
+        const currentSelection = readRuntimeSelectionRange(editor);
         const targetInsert = nativeInput.target?.insert;
         const shouldPreferCurrentModelInsert =
           !!nativeInput.target?.preferCapturedInsert &&
@@ -735,7 +738,7 @@ export const createDOMRepairQueue = ({
             return true;
           };
 
-          const selection = readRuntimeSelection(editor);
+          const selection = readRuntimeSelectionRange(editor);
 
           if (!selection || !RangeApi.isCollapsed(selection)) {
             return scrollCurrentDOMSelectionIntoView();

@@ -135,7 +135,6 @@ test.describe('Plite app example routes', () => {
       const focusOffset = 'This is editable'.length;
 
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: focusOffset },
       });
@@ -147,7 +146,6 @@ test.describe('Plite app example routes', () => {
         .poll(() => page.evaluate(() => window.getSelection()?.toString()))
         .toBe('This is editable');
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: focusOffset },
       });
@@ -173,7 +171,6 @@ test.describe('Plite app example routes', () => {
 
       if (testInfo.project.name === 'mobile') {
         await editor.selection.select({
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });

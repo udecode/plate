@@ -16,7 +16,8 @@ Regression owns a self-improving test-first loop:
 ```txt
 source and proof host ready -> reporter oracle -> smallest falsifying probe
 -> exact reproduction -> failing executable test -> one-case patch
--> focused green -> fresh-host receipt -> affected-corpus stability
+-> focused green -> final receipt -> conditional Browser/E2E proof
+-> affected-corpus stability
 -> keep/revert/quarantine or failed-fix interrupt
 -> methodology delta -> next executable case or honest stop
 ```
@@ -131,10 +132,13 @@ One case is one observable setup, action, and outcome. Record in the active
 plan or Patch packet:
 
 - stable case ID and source issue/reference;
-- owner, route/surface, setup, action, and expected outcome;
+- owner, route/surface, setup, action, expected outcome, and the exact authority
+  for that positive outcome;
 - executable test path and exact command;
-- applicable model, DOM/native, focus, popup, geometry/paint, runtime-error,
-  and follow-up-input fields;
+- red-test escalation as `unit-red: <test>` or
+  `e2e-required: <why no exact unit/package RED is possible>`;
+- applicable model, DOM/native, pointer-feedback, focus, popup,
+  geometry/paint, runtime-error, and follow-up-input fields;
 - tested ref, dirty-state boundary when applicable, and required stability.
 
 Before patching, build the template's cumulative reporter evidence inventory
@@ -144,19 +148,76 @@ delta, not a replacement oracle. Keep every earlier still-applicable claim
 required; mark one superseded only with the reporter or current product law
 that removed it. Map every required evidence row to an executable oracle.
 
+When a reporter names rerendering, a render storm, or repeated component work,
+performance diagnosis stays with Benchmark, but the reporter oracle must keep
+the route-wide symptom. Before any route-wide green or completion claim,
+capture an exact-route, phase-specific repeated-component inventory. Count
+component families and repeated visible units before and during the named
+action. A wrapper-local Profiler, one optimized component, or pointer latency
+alone is a proxy and cannot close the claim. The Benchmark packet must account
+for every family above 5% of added render or commit work and at least 90%
+overall; unattributed work stays open.
+
+A negative report only authorizes the forbidden state. It does not choose among
+multiple positive outcomes that avoid that state. Record one
+`Expected-outcome authority` for every selected case as `reporter: <source>`,
+`accepted-product-law: <source>`, `existing-contract: <source>`, or
+`upstream-contract: <source>`. If two materially different outcomes satisfy the
+report and no authority distinguishes them, keep the case `needs-oracle` and
+ask the reporter before writing the product test or patch.
+
+Treat a reporter's plain UI noun as a user job, not as one implementation
+label. Before narrowing words such as handle, toolbar, control, cursor, or
+button, inventory every currently rendered affordance that performs or
+advertises that job from source and the exact route. An applicable
+`pointer-feedback` row records both `reporter-noun: <plain noun>` and
+`affordance-inventory: <accessible labels, selectors, or owners>` in its
+positive assertion. Exclude one only with explicit reporter or accepted-product
+authority. A green oracle that preserves an uninventoried matching affordance
+is invalid.
+
 Then expand every case into the reporter oracle matrix. For model, DOM/native
-state, focus, popup/toolbar, geometry/paint, runtime errors, and follow-up input,
-mark the observation applicable or give an N/A reason. Record the interaction
-phase for every row: setup, during-action, after-action, after-release, or
-follow-up. One final-state assertion cannot prove a transient held-pointer,
-drag-overlay, caret, popup, or paint claim. Every applicable row needs both the
-positive assertion that must hold and the forbidden state that must not
-survive, plus an executable test anchor. Do not reduce a reporter sentence to
-the easiest neighboring assertion.
+state, pointer feedback, focus, popup/toolbar, geometry/paint, runtime errors,
+and follow-up input, mark the observation applicable or give an N/A reason.
+Record the interaction phase for every row: setup, during-action, after-action,
+after-release, or follow-up. One final-state assertion cannot prove a transient
+held-pointer, drag-overlay, caret, popup, pointer affordance, or paint claim.
+Every applicable row needs both the positive assertion that must hold and the
+forbidden state that must not survive, plus an executable test anchor. Do not
+reduce a reporter sentence to the easiest neighboring assertion.
+
+Pointer, mouse, cursor, hover, and resize/drag-handle cases require an
+applicable `pointer-feedback` row in the named interaction phase. Assert the
+cursor and relevant hover, active, tooltip, or drag affordance independently
+from model state, DOM selection, preview state, and the eventual action. A
+control can be semantically ignored while still advertising the wrong action.
+Completion also proves the event path that produced the pointer feedback. The
+row result records `interaction-trace: pass`, the actual `target:`, delivered
+`event:`, and `buttons:` state. A computed cursor assertion reached through
+a different boundary event does not prove the reporter's held-pointer path.
+When the report names a flash, flicker, or wrong cursor for one frame, the
+correct state must exist before the target component processes the event. Use
+a target-capture or equivalent pre-handler oracle and record
+`pre-handler-state: pass`. A post-handler computed-style assertion is red for
+that claim even when the eventual cursor is correct.
 
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
 harness.
+
+Test escalation is strict. Start with the smallest owner-level unit or package
+test that can express the reported invariant. When an exact owner-level unit or
+package test is RED, that test owns the durable regression. Do not add a new E2E
+test, expand E2E coverage for the case, or make E2E a completion gate. Record
+`unit-red: <test>` in `Red-test escalation` and stop test creation at that layer.
+
+E2E is the fallback only when the exact regression cannot be reproduced RED in
+an owner-level unit or package test. Record
+`e2e-required: <specific lower-layer limitation>` before creating the E2E test.
+Repository-required Browser verification may still inspect the final route,
+focus, selection, DOM, and errors, but that verification is evidence, not a
+second permanent regression test. Existing E2E tests remain affected-corpus
+inputs; their existence does not authorize new E2E coverage.
 
 For Plite model-based, generated, or differential cases, use canonical
 `DocumentChange` plus `EditorCommit` laws as the semantic oracle. Compare final
@@ -182,8 +243,10 @@ fixture, or route host.
 
 ### 5. Verify And Decide
 
-Read back Patch evidence. Run the owning executable test first, then the exact
-fresh-host case and only the breadth required by the claim.
+Read back Patch evidence. Run the owning executable test first. If the case is
+`unit-red:`, stop durable test escalation there and use Browser only when the
+repo or final claim requires route verification. Run an E2E replay only for an
+`e2e-required:` case or an already-existing affected E2E test.
 
 Once a requested or started package, browser, root, or CI gate fails, record it
 under `Gate failure closure`. A completed run must repair or classify the
@@ -229,6 +292,12 @@ duplicate state must be rejected. Width or outer geometry alone cannot certify
 layer count. A failed control invalidates every result from that oracle and
 freezes product edits until the proof helper is repaired.
 
+A completed applicable `geometry-paint` row must name actual pixel capture and
+classification in its proof layer and record `positive-control: pass` plus
+`negative-control: pass` and `duplicate-control: pass` in its result. Computed
+style, DOM attributes, callback traces, selection text, and an unclassified
+screenshot are diagnostics only; none can close a visible-paint claim.
+
 Run final proof through `capture-proof-receipt.mjs`. It executes the command,
 fingerprints every named production/test/fixture/harness/config input before
 and after the run, lists those exact inputs, records the ref and host identity,
@@ -241,6 +310,13 @@ Before changing a shared owner, run every already-executable affected case and
 record its `pass:` or `red:` pre-edit baseline in `Affected corpus replay`.
 Without that baseline, a later red cannot distinguish an introduced regression
 from inherited breakage, so Patch must not start.
+
+For a shared CSS selector, marker, class map, or style expansion, inventory
+every current consumer before changing product bytes. Include consumers that
+explicitly neutralize or override the shared style, such as transparent,
+borderless, shadowless, or ringless wrappers. Add each affected consumer to the
+corpus and give it a negative geometry/paint oracle for duplicate or inherited
+paint; proving only the newly visible positive surface is incomplete.
 
 Decide:
 
@@ -289,8 +365,10 @@ the user to ask and do not delegate another product patch first:
    `no-change` and `defer` cannot resume the product attempt.
 5. Rebuild the cumulative reporter evidence inventory, restart from exact
    reproduction with a new attempt number, and map every still-applicable base
-   acceptance plus the latest delta to phase-specific executable oracles. Never
-   carry the invalidated receipt into the new attempt.
+   acceptance plus the latest delta to phase-specific executable oracles.
+   Re-resolve the expected-outcome authority instead of carrying an inferred
+   positive target from the failed attempt. Never carry the invalidated receipt
+   into the new attempt.
 
 On the second failed fix for one case, or immediately for cross-layer
 compensation, duplicated live identity, per-node hot work, timer/focus/blur

@@ -735,7 +735,6 @@ test.describe('multi-root document example', () => {
 
     await focusRootByLabel(page, 'Header editor', headerEditor);
     await headerEditor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: headerText.length },
       focus: { path: [0, 0], offset: headerText.length },
     });
@@ -783,7 +782,6 @@ test.describe('multi-root document example', () => {
 
     await focusRootByLabel(page, 'Header editor', headerEditor);
     await headerEditor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: headerTextWithTail.length },
       focus: { path: [0, 0], offset: headerTextWithTail.length },
     });
@@ -886,7 +884,6 @@ test.describe('multi-root document example', () => {
     }
 
     await bodyEditor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 4 },
     });

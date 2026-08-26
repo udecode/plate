@@ -7,7 +7,6 @@ import {
 } from '@platejs/plite';
 import {
   getInternalDocumentChangeRootKeys,
-  getRangeRoot as getRangeRootMeta,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
 
@@ -23,28 +22,36 @@ export const clonePoint = (point: Point, root?: string): Point => {
   };
 };
 
-export const cloneRange = (range: Selection, root?: string): Selection =>
-  range
-    ? {
-        ...range,
-        anchor: clonePoint(range.anchor, root),
-        focus: clonePoint(range.focus, root),
-      }
-    : null;
+export const cloneSelection = (
+  selection: Selection,
+  root?: string
+): Selection => {
+  if (!selection) return null;
 
-export const getRangeRoot = (range: Selection): string | undefined => {
-  if (!range) return undefined;
+  if (SelectionApi.isNode(selection)) {
+    const selectionRoot = selection.root ?? root;
 
-  const meta = getRangeRootMeta(range);
+    return SelectionApi.nodes(
+      selection.paths,
+      selectionRoot && selectionRoot !== MAIN_ROOT_KEY
+        ? {
+            anchorPath: selection.anchorPath,
+            focusPath: selection.focusPath,
+            root: selectionRoot,
+          }
+        : {
+            anchorPath: selection.anchorPath,
+            focusPath: selection.focusPath,
+          }
+    );
+  }
 
-  return meta.anchor.visibility === 'implicit' &&
-    meta.focus.visibility === 'implicit'
-    ? undefined
-    : (meta.root ?? undefined);
+  return {
+    ...selection,
+    anchor: clonePoint(selection.anchor, root),
+    focus: clonePoint(selection.focus, root),
+  };
 };
-
-export const getRangeRootOrMain = (range: Selection): string =>
-  getRangeRoot(range) ?? MAIN_ROOT_KEY;
 
 const getBatchRoots = <V extends Value>(batch: Batch<V>) =>
   new Set([
@@ -67,7 +74,7 @@ export const getHistoricSelectionRoot = <V extends Value>(
 ): string | undefined => {
   const selection =
     target === 'before' ? batch.selectionBefore : batch.selectionAfter;
-  const explicitRoot = getRangeRoot(selection);
+  const explicitRoot = SelectionApi.root(selection);
 
   if (explicitRoot) return explicitRoot;
   if (selection == null) return getBatchChangeRoot(batch);
@@ -103,13 +110,12 @@ export const restoreHistoricSelection = <V extends Value>(
   const selection =
     target === 'before' ? batch.selectionBefore : batch.selectionAfter;
   const root =
-    getHistoricSelectionRoot(batch, target) ?? getRangeRootOrMain(selection);
-  const restoredSelection = cloneRange(selection, root);
+    getHistoricSelectionRoot(batch, target) ??
+    SelectionApi.root(selection) ??
+    MAIN_ROOT_KEY;
+  const restoredSelection = cloneSelection(selection, root);
 
-  if (
-    root === viewRoot &&
-    !SelectionApi.equals(tx.selection(), restoredSelection)
-  ) {
+  if (root === viewRoot) {
     (tx.selection.set as (selection: Selection) => void)(restoredSelection);
   }
 };

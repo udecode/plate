@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
+import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 export function DateElement(props: PlateElementProps<typeof DatePlugin>) {
   const { editor, element } = props;

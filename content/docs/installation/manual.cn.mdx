@@ -19,16 +19,13 @@ description: 在不依赖UI组件库的情况下，在React项目中安装配置
 npm create vite@latest
 ```
 
-### 安装核心依赖
+### 安装Plate
 
-首先安装必要的Plate包。这些包提供了编辑器核心功能、React集成以及基础的标记和元素插件。
+安装`platejs`以使用编辑器核心功能和React组件。
 
 ```bash
-npm install platejs @platejs/basic-nodes
+npm install platejs
 ```
-
--   `platejs`: Plate核心引擎和React组件
--   `@platejs/basic-nodes`: 基础节点插件（如标题、加粗、斜体、下划线等）
 
 ### TypeScript配置
 
@@ -82,6 +79,12 @@ export default function App() {
 此时您将获得一个能显示和编辑纯文本的基础编辑器。
 
 ### 添加基础标记
+
+安装基础节点包，然后添加标记插件：
+
+```bash
+npm install @platejs/basic-nodes
+```
 
 现在添加对基础文本格式（如加粗、斜体和下划线）的支持。
 

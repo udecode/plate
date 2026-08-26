@@ -467,12 +467,6 @@ Specifies the HTML tag name used when no component is bound through
   Derived state providers.
 </APIItem>
 
-<APIItem name="selectionKinds" type="readonly EditorSelectionSpec[]">
-  Installed custom selection payloads, codecs, and behavior. Concrete editor
-  reads and updates infer each payload from the installed plugin descriptor;
-  no module augmentation is required.
-</APIItem>
-
 <APIItem name="contributions" type="readonly EditorExtensionContribution[]">
   Ordered values bound to typed extension points. Host clipboard insertion is
   a direct `clipboardHandler(...)` contribution, never a root `clipboard`
@@ -595,7 +589,7 @@ The contribution fields have distinct owners:
 - `selectors`: pure projections of editor-local plugin state
 - `update`: plugin-scoped transaction-bound mutations
 - `readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
-  `facetProviders`, `selectionKinds`, `contributions`, `on`, `activate`, and
+  `facetProviders`, `contributions`, `on`, `activate`, and
   `validate`: native Plite capabilities declared directly on the plugin
 - `codecs`: the declaration returned by context-bound `defineCodecs`
 

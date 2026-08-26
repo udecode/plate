@@ -12,7 +12,7 @@ import { PLUGINS, type PluginReference } from 'platejs';
 import { useEditor, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
-import { ToolbarButton } from './toolbar';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const pluginMap: Record<string, { icon: React.JSX.Element; label: string }> = {
   [PLUGINS.numberedList]: {

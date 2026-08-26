@@ -867,7 +867,6 @@ describe('plite-history contract', () => {
     assert.deepEqual(
       mainEditor.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       }
@@ -942,10 +941,7 @@ describe('plite-history contract', () => {
     const rootEditor = createEditorView(editor, { root: 'portal:1' });
 
     write(editor, (tx) => {
-      const entry = tx.nodes.get([0]);
-
-      assert.ok(entry);
-      tx.nodes.duplicate([entry]);
+      tx.blocks.duplicate({ at: [0] });
     });
 
     assert.deepEqual(
@@ -980,7 +976,6 @@ describe('plite-history contract', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
       focus: { offset: 3, path: [0, 0], root: 'portal:1' },
-      kind: 'text',
     });
 
     write(editor, (tx) => tx.nodes.remove({ at: [0] }));
@@ -994,7 +989,6 @@ describe('plite-history contract', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
       focus: { offset: 3, path: [0, 0], root: 'portal:1' },
-      kind: 'text',
     });
 
     redo(rootEditor);
@@ -1156,7 +1150,6 @@ describe('plite-history contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },
       }
@@ -1888,12 +1881,10 @@ describe('plite-history contract', () => {
 
     editor.update((tx) => {
       tx.text.insert('A', { at: { path: [0, 0], offset: 0 } });
-      tx.selection.setRange({
-        focus: { path: [0, 0], offset: 0 },
-      });
+      tx.selection.setPoint({ path: [0, 0], offset: 0 }, { edge: 'focus' });
     });
     write(editor, (tx) => {
-      tx.selection.clear();
+      tx.selection.set(null);
     });
 
     undo(editor);
@@ -1977,7 +1968,7 @@ describe('plite-history contract', () => {
       editorDeleteFragment(editor);
     });
     write(editor, (tx) => {
-      tx.selection.clear();
+      tx.selection.set(null);
     });
     write(editor, (tx) => {
       tx.selection.set({

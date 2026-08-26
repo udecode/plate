@@ -14,7 +14,6 @@ Add Plite React integration with strict editor and element hooks, typed `usePlit
 - Re-export the model-owned caret after composition repair renders only while the focused snapshot version and selection remain current
 - Refresh expanded Blink selections after document changes so formatting updates cannot retain stale painted highlight geometry
 - Keep `NodeSelection` model-only with no native browser range, and expose exact node selection through `useElementSelected({ mode: 'node' })`
-- Project custom structural selections through their declared DOM range and restore model-owned projections after document updates
 - Let non-void `keyboardSelectable` owners receive node focus from non-editable chrome, enter editable children with ArrowDown, and regain owner focus with ArrowUp at the leading boundary
 - Isolate optional decoration, annotation, widget, and render-callback failures
 - Preserve inline decorated-range data in projection slices

@@ -49,4 +49,13 @@ describe('Vercel runtime packaging', () => {
       './public/tailwind.css'
     );
   });
+
+  it('traces sparse provider/style overlays into the style route', async () => {
+    const { default: getNextConfig } = await import('../../next.config');
+    const nextConfig = await getNextConfig('phase-production-build');
+
+    expect(nextConfig.outputFileTracingIncludes?.['/r/[style]/[name]']).toEqual(
+      ['./public/r/*.json', './src/__registry__/overlays/**/*.json']
+    );
+  });
 });

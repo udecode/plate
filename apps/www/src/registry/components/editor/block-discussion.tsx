@@ -39,15 +39,14 @@ import * as React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
   type TDiscussion,
   discussionPlugin,
 } from '@/registry/components/editor/discussion';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 import { suggestionPlugin } from '@/registry/components/editor/suggestion';
 import {
   BLOCK_SUGGESTION_TOKEN,
@@ -533,7 +532,7 @@ const BlockCommentDetails = ({
 
   return (
     <div className="flex w-full justify-between">
-      <Popover
+      <FloatingPopover
         open={open}
         onOpenChange={(_open_) => {
           if (!_open_ && isCommenting && draftCommentNode) {
@@ -549,15 +548,15 @@ const BlockCommentDetails = ({
       >
         <div className="w-full">{children}</div>
         {popoverAnchorElement && (
-          <PopoverAnchor virtualRef={{ current: popoverAnchorElement }} />
+          <FloatingPopoverAnchor element={popoverAnchorElement} />
         )}
 
-        <PopoverContent
-          className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
-          onCloseAutoFocus={(e) => {
+        <FloatingPopoverContent
+          className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
+          onFinalFocus={(e) => {
             e.preventDefault();
           }}
-          onOpenAutoFocus={(e) => {
+          onInitialFocus={(e) => {
             e.preventDefault();
           }}
           align="center"
@@ -598,36 +597,35 @@ const BlockCommentDetails = ({
               )}
             </>
           )}
-        </PopoverContent>
+        </FloatingPopoverContent>
 
         {totalCount > 0 && (
           <div className="relative left-0 size-0 select-none">
-            <PopoverTrigger asChild>
-              <Button
-                ref={setTriggerElement}
-                variant="ghost"
-                className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
-                data-active={open}
-                contentEditable={false}
-              >
-                {suggestionsCount > 0 && discussionsCount === 0 && (
-                  <PencilLineIcon className="size-4 shrink-0" />
-                )}
+            <Button
+              ref={setTriggerElement}
+              variant="ghost"
+              className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+              data-active={open}
+              contentEditable={false}
+              onClick={() => setOpen(!open)}
+            >
+              {suggestionsCount > 0 && discussionsCount === 0 && (
+                <PencilLineIcon className="size-4 shrink-0" />
+              )}
 
-                {suggestionsCount === 0 && discussionsCount > 0 && (
-                  <MessageSquareTextIcon className="size-4 shrink-0" />
-                )}
+              {suggestionsCount === 0 && discussionsCount > 0 && (
+                <MessageSquareTextIcon className="size-4 shrink-0" />
+              )}
 
-                {suggestionsCount > 0 && discussionsCount > 0 && (
-                  <MessagesSquareIcon className="size-4 shrink-0" />
-                )}
+              {suggestionsCount > 0 && discussionsCount > 0 && (
+                <MessagesSquareIcon className="size-4 shrink-0" />
+              )}
 
-                <span className="text-xs font-semibold">{totalCount}</span>
-              </Button>
-            </PopoverTrigger>
+              <span className="text-xs font-semibold">{totalCount}</span>
+            </Button>
           </div>
         )}
-      </Popover>
+      </FloatingPopover>
     </div>
   );
 };

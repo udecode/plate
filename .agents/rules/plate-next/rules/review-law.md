@@ -83,7 +83,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
   API/source typing so the call site stays inferred.
 - Never annotate local variables whose initializer should infer the type. A
   line like `const selectedEntries: NodeEntry<Element>[] =
-editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
+editor.read.selection.nodes()` is a regression: it
   hides whether the owner API infers correctly. Remove the annotation and fix
   the source API if inference is weak. Keep annotations only for genuinely
   uninferrable locals such as empty arrays, deliberate narrowing/widening,

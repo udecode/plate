@@ -395,7 +395,7 @@ const InlineComboboxContent = ({
     <Portal>
       <ComboboxPopover
         className={cn(
-          'z-500 max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md',
+          'cn-command cn-command-list z-500 w-[300px] overflow-x-hidden overflow-y-auto shadow-md',
           className
         )}
         onKeyDownCapture={handleKeyDown}
@@ -406,18 +406,7 @@ const InlineComboboxContent = ({
 };
 
 const comboboxItemVariants = cva(
-  'relative mx-1 flex h-[28px] select-none items-center rounded-sm px-2 text-foreground text-sm outline-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
-  {
-    defaultVariants: {
-      interactive: true,
-    },
-    variants: {
-      interactive: {
-        false: '',
-        true: 'cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground',
-      },
-    },
-  }
+  'cn-command-item mx-1 h-7 cursor-pointer text-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[active-item=true]:bg-accent data-[active-item=true]:text-accent-foreground'
 );
 
 const InlineComboboxItem = ({
@@ -482,13 +471,7 @@ const InlineComboboxEmpty = ({
 
   if (items.length > 0) return null;
 
-  return (
-    <div
-      className={cn(comboboxItemVariants({ interactive: false }), className)}
-    >
-      {children}
-    </div>
-  );
+  return <div className={cn('cn-command-empty', className)}>{children}</div>;
 };
 
 function InlineComboboxGroup({
@@ -499,7 +482,7 @@ function InlineComboboxGroup({
     <ComboboxGroup
       {...props}
       className={cn(
-        'hidden not-last:border-b py-1.5 [&:has([role=option])]:block',
+        'cn-command-group hidden not-last:border-b [&:has([role=option])]:block',
         className
       )}
     />

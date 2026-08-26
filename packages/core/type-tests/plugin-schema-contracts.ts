@@ -81,6 +81,10 @@ const configuredPlateTargetElement =
   configuredPlateTargetEditor.read.schema.create(ConfiguredPlateTargetPlugin);
 const exactConfiguredPlateTargetType: 'schemaTarget' =
   configuredPlateTargetElement.type;
+const configuredPlateTargetIsBlockContent: boolean =
+  configuredPlateTargetEditor.read.schema.isBlockContent(
+    configuredPlateTargetElement
+  );
 
 configuredTargetEditor.read.schema.isElementTypeInGroup(
   ConfiguredTargetPlugin,
@@ -91,6 +95,7 @@ void configuredTargetReference;
 void canonicalTargetReference;
 void exactConfiguredTargetType;
 void configuredPlateTargetName;
+void configuredPlateTargetIsBlockContent;
 void exactConfiguredPlateTargetType;
 void configuredTargetName;
 void exactExtendedTargetName;
@@ -892,7 +897,9 @@ const unknownElementIdProperty: unknown = elementIdProperty;
 const typedElementIdProperty: PropertyJsonValue | undefined = elementIdProperty;
 const semanticElementIdProperty: string | undefined = elementIdEditor
   .plugin(ElementIdPlugin)
-  .read.id(targetElement);
+  .read.id(elementIdEditor.key(targetElement));
+// @ts-expect-error Persisted ID lookup at an erased boundary requires NodeKey.
+elementIdEditor.plugin(ElementIdPlugin).read.id(targetElement);
 editor.read.schema.element(TargetPlugin);
 void configuredSchemaProperty;
 void typedConfiguredProperty;

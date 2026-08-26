@@ -37,8 +37,7 @@ import {
   shouldMergeExplicitBatch,
 } from './history-merge-policy';
 import {
-  cloneRange,
-  getRangeRoot,
+  cloneSelection,
   restoreHistoricSelection,
   shouldPreserveHistoricDOMSelection,
   shouldRestoreHistoricSelection,
@@ -367,19 +366,22 @@ const prepareHistoryBatch = <V extends Value>(
   group: HistoryBatchGroup | null;
 }> | null => {
   const group = createHistoryBatchGroup(commit);
-  const getSelectionRoot = (selection: Selection, fallback?: string) => {
+  const resolveSelectionRoot = (
+    selection: Selection,
+    fallback?: string
+  ): string | undefined => {
     if (!selection) return undefined;
 
-    const root = getRangeRoot(selection) ?? fallback;
+    const root = SelectionApi.root(selection) ?? fallback;
 
     return root === MAIN_ROOT_KEY ? undefined : root;
   };
-  let batchSelectionBefore = cloneRange(commit.selectionBefore);
-  let batchSelectionBeforeRoot = getSelectionRoot(
+  let batchSelectionBefore = cloneSelection(commit.selectionBefore);
+  let batchSelectionBeforeRoot = resolveSelectionRoot(
     batchSelectionBefore,
     commit.selectionBeforeRoot
   );
-  const batchSelectionAfterRoot = getSelectionRoot(
+  const batchSelectionAfterRoot = resolveSelectionRoot(
     commit.selectionAfter,
     commit.selectionAfterRoot
   );
@@ -405,7 +407,7 @@ const prepareHistoryBatch = <V extends Value>(
     batch: {
       change: action,
       effects: effects.toReversed().map(invertEffect),
-      selectionAfter: cloneRange(commit.selectionAfter),
+      selectionAfter: cloneSelection(commit.selectionAfter),
       selectionBefore: batchSelectionBefore,
       ...(batchSelectionAfterRoot !== undefined
         ? { selectionAfterRoot: batchSelectionAfterRoot }

@@ -36,7 +36,7 @@ every rendered node in a large document.
 
 Get whether the current editor is read-only.
 
-#### `useEditorSelection(): Selection`
+#### `useEditorSelection(): Range | null`
 
 Get the current editor selection. This hook re-renders when the selection
 changes, so keep it out of large rendered node trees.

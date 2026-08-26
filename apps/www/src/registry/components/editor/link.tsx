@@ -20,16 +20,18 @@ import {
   useEditorPlugin,
   useEditorReadOnly,
   useEditorSelection,
+  useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
 
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { commentPlugin } from '@/registry/components/editor/comment';
 import { suggestionPlugin } from '@/registry/components/editor/suggestion';
-import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
+import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
   return (
@@ -43,7 +45,7 @@ export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
       attributes={{
         ...props.attributes,
         ...props.editor.plugin(LinkPlugin).api.getAttributes(props.element),
-        onMouseOver: (event) => {
+        onMouseOver: (event: React.MouseEvent<HTMLAnchorElement>) => {
           event.stopPropagation();
         },
       }}
@@ -54,11 +56,7 @@ export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
 }
 
 const popoverVariants = cva(
-  'z-50 w-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden'
-);
-
-const inputVariants = cva(
-  'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-transparent md:text-sm'
+  'cn-popover-content z-50 w-auto p-1 outline-hidden'
 );
 
 const percentEscapeCapture = /(%[\dA-Fa-f]{2})/;
@@ -248,7 +246,7 @@ function FloatingLinkUrlInput({
   }, [api, store, updated]);
 
   return (
-    <input
+    <Input
       ref={useComposedRef(inputRef, ref)}
       defaultValue={store.get().url}
       onChange={(event) => {
@@ -289,7 +287,24 @@ export function LinkFloatingToolbar({
   );
   const readOnly = useEditorReadOnly();
   const isEditing = usePluginStore(linkPlugin, 'isEditing');
-  const selection = useEditorSelection();
+  const selectedLinkKey = useEditorSelector(
+    (innerEditor) => {
+      const selection = innerEditor.read.selection();
+
+      if (!selection || !innerEditor.read.selection.isCollapsed()) return null;
+
+      const entry = innerEditor.read.nodes.above({
+        at: selection,
+        type: linkPlugin,
+      });
+
+      return entry ? innerEditor.key(entry[0]) : null;
+    },
+    {
+      shouldUpdate: (change) =>
+        !change || change.selectionChanged || change.changed.hasAny('document'),
+    }
+  );
   const mode = usePluginStore(linkPlugin, 'mode');
   const open = usePluginStore(linkPlugin, 'isOpen', editor.id);
   const { api, store, update } = useEditorPlugin(linkPlugin);
@@ -340,13 +355,7 @@ export function LinkFloatingToolbar({
       return;
     }
 
-    const currentSelection = editor.read.selection();
-
-    if (
-      currentSelection &&
-      editor.read.selection.isCollapsed() &&
-      editor.read.nodes.some({ at: currentSelection, type: linkPlugin })
-    ) {
+    if (selectedLinkKey) {
       api.show('edit', editor.id);
       updateEditFloating();
       return;
@@ -354,7 +363,7 @@ export function LinkFloatingToolbar({
     if (store.get().mode === 'edit') api.hide();
     // `update` is stable; depending on the floating result object would rerun
     // this effect on every render.
-  }, [api, editor, readOnly, selection, store, updateEditFloating]);
+  }, [api, editor, readOnly, selectedLinkKey, store, updateEditFloating]);
 
   useHotkeys(
     triggerHotkeys ?? 'meta+k, ctrl+k',
@@ -469,7 +478,7 @@ export function LinkFloatingToolbar({
         </div>
 
         <FloatingLinkUrlInput
-          className={inputVariants()}
+          className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Paste link"
           data-plate-focus
         />
@@ -479,8 +488,8 @@ export function LinkFloatingToolbar({
         <div className="flex items-center pr-1 pl-2 text-muted-foreground">
           <Text className="size-4" />
         </div>
-        <input
-          className={inputVariants()}
+        <Input
+          className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Text to display"
           data-plate-focus
           {...textInputProps}
@@ -493,13 +502,9 @@ export function LinkFloatingToolbar({
     input
   ) : (
     <div className="box-content flex items-center">
-      <button
-        className={buttonVariants({ size: 'sm', variant: 'ghost' })}
-        type="button"
-        {...editButtonProps}
-      >
+      <Button size="sm" type="button" variant="ghost" {...editButtonProps}>
         Edit link
-      </button>
+      </Button>
 
       <Separator orientation="vertical" />
 
@@ -507,26 +512,27 @@ export function LinkFloatingToolbar({
 
       <Separator orientation="vertical" />
 
-      <button
-        className={buttonVariants({
-          size: 'sm',
-          variant: 'ghost',
-        })}
-        type="button"
-        {...unlinkButtonProps}
-      >
+      <Button size="sm" type="button" variant="ghost" {...unlinkButtonProps}>
         <Unlink width={18} />
-      </button>
+      </Button>
     </div>
   );
 
   return (
     <>
-      <div ref={insertRef} className={popoverVariants()} {...insertProps}>
+      <div
+        ref={insertRef}
+        className={cn(popoverVariants(), 'p-0')}
+        {...insertProps}
+      >
         {input}
       </div>
 
-      <div ref={editRef} className={popoverVariants()} {...editProps}>
+      <div
+        ref={editRef}
+        className={cn(popoverVariants(), isEditing && 'p-0')}
+        {...editProps}
+      >
         {editContent}
       </div>
     </>

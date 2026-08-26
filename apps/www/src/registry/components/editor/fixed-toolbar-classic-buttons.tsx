@@ -33,6 +33,8 @@ import { PLUGINS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
 import * as React from 'react';
 
+import { ToolbarGroup } from '@/registry/components/editor/toolbar';
+
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -55,7 +57,6 @@ import { ModeToolbarButton } from './mode-toolbar-button';
 import { MoreToolbarButton } from './more-toolbar-button';
 import { TableToolbarButton } from './table-toolbar-button';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
-import { ToolbarGroup } from './toolbar';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-classic-button';
 
 export function FixedToolbarButtons() {

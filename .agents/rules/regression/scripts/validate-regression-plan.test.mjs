@@ -77,6 +77,7 @@ const oracleRows = ({
     },
     ...[
       'dom-native',
+      'pointer-feedback',
       'focus',
       'popup',
       'runtime-errors',
@@ -93,7 +94,7 @@ const oracleRows = ({
       ? {
           applies: 'yes',
           forbidden: 'stale Blink paint remains visible',
-          layer: 'exact-chrome',
+          layer: 'exact-chrome pixel classifier',
           observation: 'geometry-paint',
           positive: 'paint matches final geometry',
           result: missingPixelControls
@@ -116,7 +117,7 @@ const oracleRows = ({
         const phase =
           row.observation === 'follow-up-input'
             ? 'follow-up'
-            : row.observation === 'geometry-paint'
+            : ['geometry-paint', 'pointer-feedback'].includes(row.observation)
               ? 'during-action'
               : 'after-action';
 
@@ -215,12 +216,15 @@ const fixture = ({
   missingLatestReporterDelta = false,
   missingAffectedCase = false,
   missingAffectedBaseline = false,
+  missingExpectedOutcomeAuthority = false,
   missingForbidden = false,
   missingPixelControls = false,
   missingReporterOracle = false,
   preImplementation = false,
   preImplementationBaseline = false,
   receiptIdOverride,
+  redTestEscalation = 'unit-red: semantic validator test fails before repair',
+  selectedTestCommand = `${semanticTestPath}; node --test`,
   supersededBaseEvidence = false,
   unresolvedGateFailure = false,
 } = {}) => {
@@ -245,13 +249,17 @@ const fixture = ({
 
   return `
 Selected executable cases:
-| Case ID | Source reference | Setup / action | Expected outcome | Exact environment | Test file / command | Status | Tested ref | Next owner |
-|---|---|---|---|---|---|---|---|---|
+| Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
+|---|---|---|---|---|---|---|---|---|---|---|
 | case-complete | ${exactChrome ? 'Blink compositor report' : 'local workflow report'} | validate one complete plan | semantic closure is accepted | ${
+    missingExpectedOutcomeAuthority
+      ? 'pending'
+      : 'accepted-product-law: Regression semantic closure contract'
+  } | ${redTestEscalation} | ${
     exactChrome
       ? 'exact-chrome: installed Chrome 140 on the proof host'
       : 'N/A: deterministic Node workflow'
-  } | ${semanticTestPath}; node --test | ${
+  } | ${selectedTestCommand} | ${
     preImplementation ? 'reproduced' : 'completed'
   } | commit:${'1'.repeat(40)} | Regression |
 
@@ -384,6 +392,40 @@ test('positive assertions cannot omit the forbidden end state', () => {
   );
 });
 
+test('a negative-only report cannot authorize an invented positive outcome', () => {
+  const errors = validateRegressionPlan(
+    fixture({ missingExpectedOutcomeAuthority: true }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(errors, /requires Expected-outcome authority/);
+});
+
+test('an exact unit RED rejects redundant E2E test escalation', () => {
+  const errors = validateRegressionPlan(
+    fixture({
+      selectedTestCommand:
+        'apps/plite/tests/plite-browser/redundant-regression.test.ts; pnpm --filter plite test:plite-browser:chromium',
+    }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.match(errors, /unit RED.*must not add a new E2E test/i);
+});
+
+test('E2E escalation requires a lower-layer reproduction limitation', () => {
+  const errors = validateRegressionPlan(
+    fixture({
+      redTestEscalation: 'e2e-required: native selection cannot be RED in unit',
+      selectedTestCommand:
+        'tooling/e2e/native-selection.test.ts; pnpm e2e',
+    }),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.doesNotMatch(errors, /Red-test escalation|must not add a new E2E/i);
+});
+
 test('a failed fix cannot drop the base acceptance when adding the latest reporter delta', () => {
   const errors = validateRegressionPlan(
     fixture({ failedCount: 1, missingBaseEvidence: true }),
@@ -445,6 +487,113 @@ test('only reporter contradictions require a latest reporter delta', () => {
       failureKind
     );
   }
+});
+
+test('pointer-driven cases require an applicable pointer-feedback oracle', () => {
+  const pointerCase = fixture()
+    .replace(
+      'validate one complete plan',
+      'drag pointer over an ignored resize handle'
+    )
+    .replace(
+      'semantic closure is accepted',
+      'the cursor stays text while resize remains ignored'
+    );
+  const errors = validateRegressionPlan(pointerCase, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires an applicable pointer-feedback oracle/);
+});
+
+test('pointer-feedback completion requires an interaction trace', () => {
+  const pointerCase = fixture()
+    .replace(
+      'validate one complete plan',
+      'drag pointer over an ignored resize handle'
+    )
+    .replace(
+      'semantic closure is accepted',
+      'the cursor stays text while resize remains ignored'
+    )
+    .replace(
+      '| case-complete | pointer-feedback | during-action | no | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case |',
+      `| case-complete | pointer-feedback | during-action | yes | held pointer keeps the text cursor | resize cursor appears | browser pointer event oracle | test: ${semanticTestPath}#${semanticTestTitle} | pass: computed cursor is text |`
+    );
+  const errors = validateRegressionPlan(pointerCase, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires interaction-trace: pass/);
+});
+
+test('no-flash pointer feedback requires pre-handler state', () => {
+  const pointerCase = fixture()
+    .replace(
+      'validate one complete plan',
+      'drag pointer over an ignored resize handle without a one-frame cursor flash'
+    )
+    .replace(
+      'semantic closure is accepted',
+      'the cursor is text before the resize handle processes pointer movement'
+    )
+    .replace(
+      '| case-complete | pointer-feedback | during-action | no | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case |',
+      `| case-complete | pointer-feedback | during-action | yes | reporter-noun: resize handle; affordance-inventory: column-end; held pointer keeps the text cursor without a frame flash | resize cursor appears before the handle processes pointer movement | browser target-capture oracle | test: ${semanticTestPath}#${semanticTestTitle} | pass: interaction-trace: pass; target: resize-handle; event: pointermove; buttons: 1; computed cursor is text |`
+    );
+  const errors = validateRegressionPlan(pointerCase, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires pre-handler-state: pass/);
+
+  const resolvedErrors = validateRegressionPlan(
+    pointerCase.replace(
+      'computed cursor is text',
+      'pre-handler-state: pass; computed cursor is text'
+    ),
+    { complete: true, rootDir: root }
+  ).join('\n');
+
+  assert.doesNotMatch(resolvedErrors, /pre-handler-state|proof layer/);
+});
+
+test('pointer-feedback cannot narrow a reporter UI noun to one affordance', () => {
+  const missingInventory = fixture()
+    .replace(
+      'validate one complete plan',
+      'drag pointer over a visible drag handle'
+    )
+    .replace(
+      'semantic closure is accepted',
+      'every matching drag affordance stays hidden'
+    )
+    .replace(
+      '| case-complete | pointer-feedback | during-action | no | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case |',
+      `| case-complete | pointer-feedback | during-action | yes | matching controls stay hidden | a selected-cell drag control remains visible | browser pointer event oracle | test: ${semanticTestPath}#${semanticTestTitle} | pass: interaction-trace: pass; target: table-cell; event: pointermove; buttons: 1 |`
+    );
+  const missingErrors = validateRegressionPlan(missingInventory, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(missingErrors, /requires reporter-noun: <plain UI noun>/);
+  assert.match(missingErrors, /requires affordance-inventory:/);
+
+  const inventoried = missingInventory.replace(
+    'matching controls stay hidden',
+    'reporter-noun: drag handle; affordance-inventory: Drag block, Move selected cells, Select or move row; matching controls stay hidden'
+  );
+  const inventoriedErrors = validateRegressionPlan(inventoried, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.doesNotMatch(inventoriedErrors, /requires reporter-noun:/);
+  assert.doesNotMatch(inventoriedErrors, /requires affordance-inventory:/);
 });
 
 test('a failed claimed fix requires invalidation and automatic workflow repair', () => {
@@ -566,6 +715,23 @@ test('pixel classifiers cannot complete without single-layer, absent, and duplic
     }),
     []
   );
+});
+
+test('geometry-paint completion rejects computed-style-only evidence', () => {
+  const computedStyleOnly = fixture({ exactChrome: true })
+    .replace('exact-chrome pixel classifier', 'exact-chrome computed style')
+    .replace(
+      'pass: exact Chrome pixel oracle; positive-control: pass known single-layer state; negative-control: pass known-absent state; duplicate-control: pass known duplicate-layer state rejected',
+      'pass: computed selection background is transparent'
+    );
+  const errors = validateRegressionPlan(computedStyleOnly, {
+    complete: true,
+    rootDir: root,
+  }).join('\n');
+
+  assert.match(errors, /requires actual pixel capture\/classification/);
+  assert.match(errors, /requires positive-control: pass/);
+  assert.match(errors, /requires negative-control: pass/);
 });
 
 test('completion requires affected-corpus replay after the last owner edit', () => {

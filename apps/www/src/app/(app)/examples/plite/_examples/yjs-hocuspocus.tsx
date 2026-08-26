@@ -6,6 +6,7 @@ import {
   NodeApi,
   type Path,
   type Range,
+  RangeApi,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 import {
@@ -389,8 +390,7 @@ const pointAtTextEnd = (entry: TextEntry) => ({
   offset: entry.text.length,
 });
 
-const readEditorSelection = (editor: YjsEditor) =>
-  editor.read.selection() as Range | null;
+const readEditorSelection = (editor: YjsEditor) => editor.read.selection();
 
 const isCollapsedSelection = (selection: Range) =>
   selection.anchor.path.join('.') === selection.focus.path.join('.') &&
@@ -641,11 +641,7 @@ const insertExclamation = (tx: PeerCommandTx) => {
 const selectDefaultBoldRange = (tx: PeerCommandTx) => {
   const selection = tx.selection();
 
-  if (
-    selection &&
-    (selection.anchor.path.join('.') !== selection.focus.path.join('.') ||
-      selection.anchor.offset !== selection.focus.offset)
-  ) {
+  if (selection && !RangeApi.isCollapsed(selection)) {
     return;
   }
 
@@ -839,9 +835,9 @@ const splitFirstText = (bumpRender: () => void, tx: PeerCommandTx) => {
 };
 
 const wrapFirstBlock = (tx: PeerCommandTx) => {
-  tx.selection.clear();
+  tx.selection.set(null);
   tx.nodes.wrap({ children: [], type: 'block-quote' }, { at: [0] });
-  tx.selection.clear();
+  tx.selection.set(null);
 };
 
 const ensureParagraphCount = (count: number, tx: PeerCommandTx) => {

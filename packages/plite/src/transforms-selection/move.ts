@@ -18,7 +18,7 @@ export const applyMove: SelectionMutationMethods['move'] = (
   const { distance = 1, unit = 'character', reverse = false } = options;
   let { edge = null } = options;
 
-  if (!selection) {
+  if (!selection || !RangeApi.isRange(selection)) {
     return;
   }
 

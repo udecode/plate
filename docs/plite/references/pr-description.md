@@ -322,8 +322,8 @@ Accepted current shape:
 - State node queries expose `state.nodes.entries(...)` for lazy all-match
   traversal, `state.nodes.find(...)` for first-match reads, and
   `state.nodes.some(...)` for boolean active checks. Use
-  `state.nodes.toArray(options, map?)` only when a read or update callback needs
-  an explicit materialized array.
+  `state.nodes.toArray(options)` only when a read or update callback needs an
+  explicit materialized array. Chain native array methods for projection.
 - Element void config is string-only: `void: 'block'`,
   `void: 'inline'`, `void: 'markable-inline'`, or
   `void: 'editable-island'`. Absence means non-void; `void: true` is fixture

@@ -399,7 +399,6 @@ export const clickTextOffset = async (
         ? {
             anchor: { offset, path },
             focus: { offset, path },
-            kind: 'text',
           }
         : undefined
     ).catch(async (error: unknown) => {
@@ -424,7 +423,7 @@ export const collapseDOMAtTextPath = async (
   point: SelectionPoint,
   options: PliteBrowserDOMPathOptions = {}
 ) => {
-  const selection = { anchor: point, focus: point, kind: 'text' as const };
+  const selection = { anchor: point, focus: point };
 
   if (
     !(await scrollTextPathIntoViewAndCheckMaterialized(

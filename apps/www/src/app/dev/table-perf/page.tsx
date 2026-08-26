@@ -1,6 +1,5 @@
 'use client';
 
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import type {
   TableCellElement,
   TableElement,
@@ -231,19 +230,20 @@ export default function TablePerfPage() {
         'cols' | 'rows'
       > = selectionSimulationRef.current
     ) => {
-      const range = {
-        anchor: cellPoint(0, 0),
-        focus: cellPoint(selection.rows - 1, selection.cols - 1),
-      };
-      const tableSelection = editor
-        .plugin(TablePlugin)
-        .read.createCellSelection(range);
+      const paths = Array.from({ length: selection.rows }, (_, row) =>
+        Array.from({ length: selection.cols }, (innerValue, col) => [
+          0,
+          row,
+          col,
+        ])
+      ).flat();
 
-      if (!tableSelection) {
-        throw new Error('Table performance selection could not be projected');
-      }
-
-      editor.update.selection.set(tableSelection);
+      editor.update((tx) => {
+        tx.selection.setNodes(paths, {
+          anchor: [0, 0, 0],
+          focus: [0, selection.rows - 1, selection.cols - 1],
+        });
+      });
     },
     []
   );
@@ -435,7 +435,7 @@ function TablePerfEditor({
   const initialValue: Value = [table];
   const editor = usePlateEditor({
     initialValue,
-    plugins: [...BasicBlocksKit, BlockSelectionPlugin, ...DndKit, ...TableKit],
+    plugins: [...BasicBlocksKit, ...DndKit, ...TableKit],
   });
 
   React.useLayoutEffect(() => {

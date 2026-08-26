@@ -197,18 +197,41 @@ editor.update.blocks.insertAfter(
 
 Duplicate the targeted blocks after the last matching block.
 
-#### `tx.blocks.lift(options?)`
+#### `tx.blocks.reset(options?)`
 
-Lift the targeted blocks one structural level.
+Reset each targeted block to the default element declared by its immediate
+parent, or by its document root for a top-level block. The mutation preserves
+the block's children, selection, and live node key. Element properties survive
+only when their schema lifecycle uses `typeChange: "preserve-if-allowed"` and
+the destination element accepts them.
 
-#### `tx.blocks.reset(props, options?)`
+Options:
 
-Reset a block to `props`, removing other block properties unless their keys
-are listed in `options.preserve`.
+- `at`: A document location, live node or key, or exact node selection.
+  Defaults to the active text or exact node selection.
 
-#### `tx.blocks.toggle(type, options?)`
+```typescript
+editor.update.blocks.reset();
+```
 
-Toggle targeted blocks between `type` and the editor default block type.
+The parent or root grammar must declare an element default.
+
+#### `tx.blocks.set(props, options?)`
+
+Set properties on the targeted schema blocks. When `at` is omitted, the active
+selection is the target. Use `tx.nodes.set` when the target is not specifically
+a block.
+
+#### `tx.blocks.toggle(props, options?)`
+
+Toggle targeted blocks between the complete `props` shape and their immediate
+parent or document-root default block shape.
+
+```typescript
+editor.update.blocks.toggle({ type: "heading", level: 2 });
+```
+
+Pass `{ wrap: true }` to wrap or unwrap the targeted blocks instead.
 
 ## Break methods
 
@@ -346,7 +369,7 @@ Options:
 
 `tx.selection` reads the transaction selection and exposes the same query
 predicates as `editor.read.selection`: `contains(target)`,
-`intersects(target)`, `isCollapsed()`, `isExpanded()`, `isWithinText()`,
+`intersects(target)`, `isCollapsed()`, `isExpanded()`,
 `isWithinBlock(options?)`, `isAcrossBlocks(options?)`,
 `isAtBlockStart(options?)`, and `isAtBlockEnd(options?)`.
 
@@ -363,7 +386,20 @@ editor.update((tx) => {
 });
 ```
 
-#### `tx.selection.clear()`
+#### `tx.selection.setNodes(targets: readonly (Path | NodeKey | Descendant)[])`
+
+Select live nodes in the transaction draft. The transaction resolves every
+target in one root and canonicalizes exact membership. An empty collection
+clears the selection.
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.insert(blocks, { at: [2] });
+  tx.selection.setNodes(blocks);
+});
+```
+
+#### `tx.selection.set(null)`
 
 Clear the selection.
 
@@ -393,10 +429,6 @@ Set properties on one selection point.
 Options:
 
 - `edge?: 'anchor' | 'focus' | 'start' | 'end'`: Selection edge to update.
-
-#### `tx.selection.setRange(props: Partial<Range>)`
-
-Set properties on an active selection.
 
 ## Mark methods
 

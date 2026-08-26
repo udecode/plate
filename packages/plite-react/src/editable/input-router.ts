@@ -42,7 +42,7 @@ import {
 import { getNativeTextInsertDelta } from './native-text-input-delta';
 import { failInvariant } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
-import { readRuntimeSelection } from './runtime-selection-state';
+import { readRuntimeSelectionRange } from './runtime-selection-state';
 import { armModelOwnedTextInputGuard } from './selection-controller';
 
 type CancelableCallback = {
@@ -350,7 +350,7 @@ export const repairPendingNativeTextInputModelSelection = ({
     return false;
   }
 
-  const selection = readRuntimeSelection(editor);
+  const selection = readRuntimeSelectionRange(editor);
 
   if (
     !selection ||
@@ -628,7 +628,7 @@ const shouldPreferRuntimeTextInputRepairTarget = ({
     return true;
   }
 
-  const selection = readRuntimeSelection(editor);
+  const selection = readRuntimeSelectionRange(editor);
 
   if (!selection || !RangeApi.isCollapsed(selection)) {
     return false;
@@ -680,7 +680,7 @@ export const getDOMInputRepairTarget = (
       ? anchorNode.closest('[data-plite-node="text"]')
       : null;
   const path = textHost ? getPliteNodePathFromDOMElement(textHost) : null;
-  const runtimeSelection = readRuntimeSelection(editor);
+  const runtimeSelection = readRuntimeSelectionRange(editor);
   const runtimePath =
     runtimeSelection && RangeApi.isCollapsed(runtimeSelection)
       ? runtimeSelection.anchor.path
@@ -960,7 +960,7 @@ export const useEditableDOMInputHandler = ({
       return;
     }
 
-    const selection = readRuntimeSelection(editor);
+    const selection = readRuntimeSelectionRange(editor);
 
     if (
       !selection ||

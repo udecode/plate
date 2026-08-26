@@ -32,7 +32,7 @@ export const above = ((
     type,
   } = options;
 
-  if (!at) {
+  if (!at || !LocationApi.isLocation(at)) {
     return undefined;
   }
 

@@ -84,7 +84,7 @@ export const MultiSelectPlugin = toPlatePlugin(
             if (leadingWhitespace > 0) {
               const selection = tx.selection();
               const selectionAnchor = selection
-                ? editor.anchor(selection, {
+                ? tx.anchor(selection, {
                     association: 'inward',
                     deletion: 'nearest',
                   })
@@ -97,9 +97,9 @@ export const MultiSelectPlugin = toPlatePlugin(
                 },
               });
 
-              const nextSelection = selectionAnchor?.release();
+              const nextSelection = selectionAnchor?.resolve();
 
-              if (nextSelection) tx.selection.setRange(nextSelection);
+              if (nextSelection) tx.selection.set(nextSelection);
             }
           }
         },

@@ -2,8 +2,11 @@
 
 import { schema, property } from '@platejs/plite';
 import { deleteBackward, insertText, move } from '@platejs/plite/internal';
-import type { TestEditor } from '@platejs/test-utils';
-import { jsxt } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 
 import type { BaseEditor } from '../../editor';
 import { createBaseEditor } from '../../editor';
@@ -953,7 +956,7 @@ describe('AffinityPlugin', () => {
         insertText(editor, 'x');
 
         expectChildren(editor, output);
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
       });
 
       it('use offset movement when moving left at hard edge boundary', () => {
@@ -1001,7 +1004,7 @@ describe('AffinityPlugin', () => {
         insertText(editor, 'x');
 
         expectChildren(editor, output);
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
       });
 
       it('move block start', () => {
@@ -1143,7 +1146,7 @@ describe('AffinityPlugin', () => {
 
         move(editor, { distance: 1, unit: 'character' });
 
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
       });
 
       it('handle hard edge with regular marks correctly', () => {
@@ -1186,7 +1189,7 @@ describe('AffinityPlugin', () => {
 
         move(editor, { distance: 1, unit: 'character' });
 
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
       });
 
       it('does not interfere with normal character movement inside hard edge marks', () => {
@@ -1229,7 +1232,7 @@ describe('AffinityPlugin', () => {
 
         move(editor, { distance: 1, unit: 'character' });
 
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
       });
     });
   });

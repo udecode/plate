@@ -3,7 +3,13 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 import type { PlateContentProps, PlateViewProps } from 'platejs/react';
-import { PlateContainer, PlateContent, PlateView } from 'platejs/react';
+import {
+  NodeSelectionDrag,
+  NodeSelectionHighlight,
+  PlateContainer,
+  PlateContent,
+  PlateView,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -97,20 +103,24 @@ export function Editor({
   ...props
 }: EditorProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   return (
-    <PlateContent
-      ref={ref}
-      className={cn(
-        editorVariants({
-          disabled,
-          focused,
-          variant,
-        }),
-        className
-      )}
-      disabled={disabled}
-      disableDefaultStyles
-      {...props}
-    />
+    <>
+      <PlateContent
+        ref={ref}
+        className={cn(
+          editorVariants({
+            disabled,
+            focused,
+            variant,
+          }),
+          className
+        )}
+        disabled={disabled}
+        disableDefaultStyles
+        {...props}
+      />
+      <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
+      <NodeSelectionDrag className="z-50 border border-brand/25 bg-brand/15" />
+    </>
   );
 }
 

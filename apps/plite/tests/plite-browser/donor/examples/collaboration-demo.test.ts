@@ -1,8 +1,20 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Locator, test } from '@playwright/test';
 import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
 
 const INITIAL_TEXT =
   'Ada and Lin edit independent documents through a local Yjs room.';
+
+const selectEditorPoint = (editor: Locator, offset: number) =>
+  editor.evaluate((element: HTMLElement, nextOffset) => {
+    const handle = (element as Record<string, any>).__pliteBrowserHandle;
+    const point = { offset: nextOffset, path: [0, 0] };
+
+    if (!handle?.selectRange) {
+      throw new Error('Missing Plite browser handle');
+    }
+
+    handle.selectRange({ anchor: point, focus: point });
+  }, offset);
 
 test.describe('Plate collaboration registry example', () => {
   test('proves independent peers, cursors, reconnect, history, schema, and teardown', async ({
@@ -69,8 +81,7 @@ test.describe('Plate collaboration registry example', () => {
       await linEditor.click();
       await linEditor.press('End');
       await linEditor.type('L');
-      await adaEditor.click();
-      await adaEditor.press('Home');
+      await selectEditorPoint(adaEditor, 0);
       await adaEditor.type('A');
 
       await expect(adaEditor).toHaveText(`A${INITIAL_TEXT}!`);
@@ -112,8 +123,7 @@ test.describe('Plate collaboration registry example', () => {
       );
       await expect(page.locator('[contenteditable="true"]')).toHaveCount(2);
 
-      await adaEditor.click();
-      await adaEditor.press('End');
+      await selectEditorPoint(adaEditor, INITIAL_TEXT.length + 2);
       await page.setViewportSize({ height: 844, width: 390 });
 
       const cardLocator = page.locator('[data-peer]');
@@ -128,8 +138,10 @@ test.describe('Plate collaboration registry example', () => {
       const remoteCaret = page.locator(
         '[data-remote-caret][data-client-id="101"]'
       );
+      const remoteLabel = remoteCaret.locator('[data-remote-cursor-label]');
       const linOverlay = linCard.locator('[data-remote-cursor-overlay]');
       const caretBeforeScroll = await remoteCaret.boundingBox();
+      const labelBeforeScroll = await remoteLabel.boundingBox();
       const overlayBeforeScroll = await linOverlay.boundingBox();
       const rootSize = await root.evaluate((element) => ({
         clientWidth: element.clientWidth,
@@ -154,7 +166,15 @@ test.describe('Plate collaboration registry example', () => {
         overlayBeforeScroll?.x ?? Number.POSITIVE_INFINITY
       );
       expect(
-        (caretBeforeScroll?.x ?? 391) + (caretBeforeScroll?.width ?? 0)
+        caretBeforeScroll?.x ?? Number.POSITIVE_INFINITY
+      ).toBeLessThanOrEqual(
+        (overlayBeforeScroll?.x ?? -1) + (overlayBeforeScroll?.width ?? 0)
+      );
+      expect(labelBeforeScroll?.x).toBeGreaterThanOrEqual(
+        overlayBeforeScroll?.x ?? Number.POSITIVE_INFINITY
+      );
+      expect(
+        (labelBeforeScroll?.x ?? 391) + (labelBeforeScroll?.width ?? 0)
       ).toBeLessThanOrEqual(
         (overlayBeforeScroll?.x ?? -1) + (overlayBeforeScroll?.width ?? 0)
       );

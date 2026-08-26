@@ -46,6 +46,7 @@ import type {
   NodeIn,
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
+  NodeSelection,
   NodeSetNodesOptions,
   NodeTarget,
   NodeTypeSelector,
@@ -66,7 +67,6 @@ import type {
   SchemaTextProperties,
   SchemaExtensionsOf,
   SchemaTypesTarget,
-  SelectionValue,
   TransactionSpec,
   Value,
 } from '@platejs/plite';
@@ -86,7 +86,6 @@ import type {
   InferDependencies,
   InferEnabled,
   InferRead,
-  InferSelection,
   InferTargetPlugins,
   InferUpdate,
   PluginDependencySource,
@@ -124,10 +123,16 @@ type PluginDefinitionOf<P> =
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
 type InstalledNames<D> =
-  D extends Readonly<{ name: infer TName extends string }> ? TName : never;
+  D extends Readonly<{
+    name: infer TName extends string;
+  }>
+    ? TName
+    : never;
 
 type ExcludeInstalledNames<D, TNames extends PropertyKey> =
-  D extends Readonly<{ name: infer TName extends PropertyKey }>
+  D extends Readonly<{
+    name: infer TName extends PropertyKey;
+  }>
     ? TName extends TNames
       ? never
       : D
@@ -164,11 +169,6 @@ type NormalizeInstalledCapability<
           : {}) &
         (TCapability extends Readonly<{ read: infer TRead extends object }>
           ? Readonly<{ read: TRead }>
-          : {}) &
-        (TCapability extends Readonly<{
-          selectionKinds: infer TSelection extends SelectionValue;
-        }>
-          ? Readonly<{ selectionKinds: TSelection }>
           : {}) &
         (TCapability extends Readonly<{ markValue: infer TMarkValue }>
           ? Readonly<{ markValue: TMarkValue }>
@@ -217,9 +217,6 @@ type CompactAuthoredPluginDefinition<D extends AnyBasePluginDefinition> =
     ([keyof InferRead<D>] extends [never]
       ? {}
       : Readonly<{ read: InferRead<D> }>) &
-    ([InferSelection<D>] extends [never]
-      ? {}
-      : Readonly<{ selectionKinds: InferSelection<D> }>) &
     ([InferPluginMarkValue<D>] extends [never]
       ? {}
       : Readonly<{ markValue: InferPluginMarkValue<D> }>) &
@@ -414,11 +411,6 @@ type NormalizeInstalledRuntimeCapability<
         (TCapability extends Readonly<{ read: infer TRead extends object }>
           ? Readonly<{ read: TRead }>
           : {}) &
-        (TCapability extends Readonly<{
-          selectionKinds: infer TSelection extends SelectionValue;
-        }>
-          ? Readonly<{ selectionKinds: TSelection }>
-          : {}) &
         (TCapability extends Readonly<{ markValue: infer TMarkValue }>
           ? Readonly<{ markValue: TMarkValue }>
           : {}) &
@@ -444,9 +436,6 @@ type CompactAuthoredRuntimePluginDefinition<D extends AnyBasePluginDefinition> =
     ([keyof InferRead<D>] extends [never]
       ? {}
       : Readonly<{ read: InferRead<D> }>) &
-    ([InferSelection<D>] extends [never]
-      ? {}
-      : Readonly<{ selectionKinds: InferSelection<D> }>) &
     ([InferPluginMarkValue<D>] extends [never]
       ? {}
       : Readonly<{ markValue: InferPluginMarkValue<D> }>) &
@@ -709,7 +698,7 @@ type EditorElementMutation = Readonly<{
 }>;
 
 type ElementToggleUpdate = Readonly<{
-  toggle: (options?: Omit<EditorToggleBlockOptions<Element>, 'wrap'>) => void;
+  toggle: (options?: Omit<EditorToggleBlockOptions, 'wrap'>) => void;
 }>;
 
 type PlateGeneratedElementForSelector<TMutations, TSelector> =
@@ -1863,12 +1852,17 @@ type PlateRawStateSchemaApi<V extends Value> = Omit<
   isElementTypeInGroup: PlateRawSchemaIsElementTypeInGroup;
 };
 
-type PlateEditorStateSchemaApi<V extends Value, D> =
-  IsAny<D> extends true
+type PlateSchemaRead = {
+  /** Whether an element participates in Plate's normal-flow block content. */
+  isBlockContent: (element: Node) => boolean;
+};
+
+type PlateEditorStateSchemaApi<V extends Value, D> = PlateSchemaRead &
+  (IsAny<D> extends true
     ? EditorStateSchemaApi<V>
     : D extends InternalEditorMutationProvider<infer TMutations>
       ? PlateMutationStateSchemaApi<V, TMutations>
-      : PlateRawStateSchemaApi<V>;
+      : PlateRawStateSchemaApi<V>);
 
 type InstalledPluginApi<D> =
   IsAny<D> extends true
@@ -1912,25 +1906,8 @@ type PlateSchemaInstalledExtension<D> = {
   name: 'plate';
 } & EditorSchemaExtensionProvider<PlateSchemaExtension<D>>;
 
-type InstalledPluginSelection<D> =
-  string extends InstalledNames<D>
-    ? SelectionValue
-    : D extends Readonly<{
-          selectionKinds: infer TSelection extends SelectionValue;
-        }>
-      ? TSelection
-      : never;
-
-type PlateInstalledSelection<D> = EditorSelection | InstalledPluginSelection<D>;
-
-type PlateSelectionTypeExtension<D> = Readonly<{
-  name: 'plate-selection-types';
-  selectionKinds: InstalledPluginSelection<D>;
-}>;
-
 type PlateInstalledExtension<V extends Value, D, S = D> = Readonly<{
   name: 'plate';
-  selectionKinds: InstalledPluginSelection<D>;
 }> &
   EditorExtensionTypeProvider<
     EditorExtensionCapabilities<{
@@ -1962,7 +1939,6 @@ type PlatePluginExtensionPortal<D> = <
 
 type PlatePluginDependencyExtension<D, S = D> = {
   name: 'plate-dependencies';
-  selectionKinds: InstalledPluginSelection<D>;
 } & EditorExtensionTypeProvider<
   EditorExtensionCapabilities<{
     api: InstalledPluginApi<D>;
@@ -2064,7 +2040,9 @@ type PluginWritablePropertyKey<D> =
     : never;
 
 type ExactWritablePropertyEntry<TEntry> =
-  TEntry extends Readonly<{ key: infer TKey extends string }>
+  TEntry extends Readonly<{
+    key: infer TKey extends string;
+  }>
     ? TEntry & Readonly<{ key: TKey }>
     : never;
 
@@ -2170,7 +2148,7 @@ type PlatePluginNodeSetProps<D> = Partial<Omit<Element, 'children'>> &
   PluginForbiddenWritablePropertyPatch<D>;
 
 type PlatePluginNodeSetOptions = Omit<NodeSetNodesOptions<any>, 'at'> & {
-  at?: Descendant | Location | NodeKey;
+  at?: Descendant | Location | NodeKey | NodeSelection;
 };
 
 type PlateNodeSelectorOptions<TOptions, TNode extends Node, TSelector> = Omit<
@@ -2359,7 +2337,7 @@ type WithPluginWritableNodes<TTransaction, D, S = D> = Omit<
   Readonly<{
     nodes: PlatePluginTransactionNodes<D, S>;
     selection: PlateSelectionQueries<
-      EditorTransactionSelectionApi<PlateInstalledSelection<D>>,
+      EditorTransactionSelectionApi<EditorSelection>,
       S
     >;
   }>;
@@ -2403,10 +2381,7 @@ type PlateEditorStateView<V extends Value, D, S = D> = Omit<
   'nodes' | 'selection' | 'transaction'
 > & {
   nodes: PlateEditorStateNodes<V, S>;
-  selection: PlateSelectionQueries<
-    EditorStateSelectionApi<PlateInstalledSelection<D>>,
-    S
-  >;
+  selection: PlateSelectionQueries<EditorStateSelectionApi<EditorSelection>, S>;
   transaction: ((
     fn: (transaction: PlateEditorTransactionBuilder<V, D, S>) => void
   ) => TransactionSpec) & {
@@ -2432,7 +2407,7 @@ type PlateEditorRead<V extends Value, D, S = D> = Omit<
   Readonly<{
     nodes: PlateEditorStateNodes<V, S>;
     selection: PlateSelectionQueries<
-      EditorStateSelectionApi<PlateInstalledSelection<D>>,
+      EditorStateSelectionApi<EditorSelection>,
       S
     >;
   }> &
@@ -2548,10 +2523,7 @@ type PlateEditorUpdateMethods<V extends Value, D, S = D> = Omit<
   'nodes' | 'selection'
 > & {
   nodes: PlateEditorUpdateNodes<V, D, S>;
-  selection: EditorUpdateMethods<
-    V,
-    readonly [PlateSelectionTypeExtension<D>]
-  >['selection'];
+  selection: EditorUpdateMethods<V>['selection'];
 };
 
 type PlateEditorUpdatePolicy<V extends Value, D, S = D> = Readonly<
@@ -2739,10 +2711,7 @@ export type InternalPliteEditorWithInstalledPlateDefinitions<
   EditorUpdateTransactionProvider<
     () => PlatePluginTransactionForInstalledDefinitions<D, S, V>
   > &
-  Omit<
-    PliteRuntimeBaseEditor<V, readonly [PlateSelectionTypeExtension<D>]>,
-    'api' | 'extension' | 'read' | 'update'
-  >;
+  Omit<PliteRuntimeBaseEditor<V>, 'api' | 'extension' | 'read' | 'update'>;
 
 export type PliteEditorWithPlatePlugins<
   V extends Value,

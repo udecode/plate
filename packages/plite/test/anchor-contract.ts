@@ -223,7 +223,6 @@ describe('canonical anchor contract', () => {
 
     assert.deepEqual(anchor.release(), [2]);
     assert.deepEqual(target.read.selection(), {
-      kind: 'text',
       anchor: { path: [2, 0], offset: 2 },
       focus: { path: [2, 0], offset: 2 },
     });
@@ -261,7 +260,6 @@ describe('canonical anchor contract', () => {
     });
 
     assert.deepEqual(target.read.selection(), {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });

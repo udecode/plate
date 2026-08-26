@@ -42,7 +42,7 @@ These rules apply to user-facing technical prose: docs, commit messages, PR desc
 
 ## Tooling
 
-- Never run `build:registry` outside CI. Registry build output is automated by CI and does not belong in local agent commits.
+- On `next`, run `pnpm --filter www build:registry` when registry source changes or current generated registry output is required for verification, and include its generated registry output. Do not edit generated registry files by hand. Other branches keep registry generation in CI unless the user explicitly authorizes it.
 - If typecheck/build/dev suddenly blows up with missing-module or package-resolution garbage that does not match the current diff, run `pnpm run reinstall` once before deeper debugging.
 - Treat local-only React runtime weirdness as install corruption first, not product code:
   - `Invalid hook call`
@@ -117,6 +117,7 @@ Primary user-facing entrypoints:
   editor architectures against live Plite and Plate.
 - `sync-vision` for updating reusable taste from changed inputs.
 - `openclaw-sync` for syncing agent setup from OpenClaw.
+- Never run `autoreview` while the current branch is `next`.
 - `autoreview` for review. Plate passes `--max-priority P1` by default; an
   explicit P2 or P3 request passes that wider priority instead. Reviewer persona
   skills are lenses behind P1 `autoreview`, not normal prompt targets. A Plate

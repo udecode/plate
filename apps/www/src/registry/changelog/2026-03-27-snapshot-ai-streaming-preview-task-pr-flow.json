@@ -58,7 +58,6 @@
     {
       "name": "ai-demo",
       "files": [
-        "apps/www/src/registry/components/editor/ai.tsx",
         "apps/www/src/registry/examples/demo.tsx",
         "apps/www/src/registry/examples/values/ai-value.tsx"
       ],

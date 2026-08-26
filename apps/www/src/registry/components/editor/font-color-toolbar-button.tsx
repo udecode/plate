@@ -4,10 +4,6 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
 } from '@platejs/basic-styles/react';
-import type {
-  DropdownMenuItemProps,
-  DropdownMenuProps,
-} from '@radix-ui/react-dropdown-menu';
 import { useComposedRef } from '@udecode/cn';
 import debounce from 'lodash/debounce.js';
 import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
@@ -16,20 +12,22 @@ import React from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-
-import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/registry/components/editor/dropdown-menu';
+import {
+  ToolbarButton,
+  ToolbarMenuGroup,
+} from '@/registry/components/editor/toolbar';
 
 const COLOR_GRID_COLUMNS = 10;
 const MAX_RECENT_COLORS = 19;
@@ -136,14 +134,14 @@ export function FontColorToolbarButton({
   plugin,
   recentColors,
   tooltip,
-  ...menuProps
 }: {
+  children: React.ReactNode;
   colors: readonly ColorOption[];
   onRecentColorsChange?: (colors: string[]) => void;
   plugin: ColorPlugin;
   recentColors?: readonly string[];
   tooltip?: string;
-} & DropdownMenuProps) {
+}) {
   const editor = useEditor();
 
   const selectionDefined = useEditorSelector(
@@ -248,8 +246,8 @@ export function FontColorToolbarButton({
   }, [editor, onToggle, plugin]);
 
   return (
-    <DropdownMenu {...menuProps} modal onOpenChange={onToggle} open={open}>
-      <DropdownMenuTrigger asChild>
+    <DropdownMenu modal onOpenChange={onToggle} open={open}>
+      <DropdownMenuTrigger>
         <ToolbarButton pressed={open} tooltip={tooltip}>
           {children}
         </ToolbarButton>
@@ -257,7 +255,7 @@ export function FontColorToolbarButton({
 
       <DropdownMenuContent
         align="start"
-        onCloseAutoFocus={(event) => {
+        onFinalFocus={(event) => {
           event.preventDefault();
           editor.api.dom.focus();
         }}
@@ -472,7 +470,7 @@ function ColorDropdownMenuItem({
   updateColor: (color: string) => void;
   name?: string;
   ref?: React.Ref<HTMLDivElement>;
-} & DropdownMenuItemProps) {
+} & React.ComponentProps<typeof DropdownMenuItem>) {
   const content = (
     <DropdownMenuItem
       aria-label={name ?? value}

@@ -1,7 +1,6 @@
 'use client';
 
 import type { MediaPlugin } from '@platejs/media/react';
-import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
 import {
   useEditor,
@@ -12,18 +11,15 @@ import {
 import * as React from 'react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 
 import { CaptionButton } from './caption';
-
-const inputVariants = cva(
-  'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-transparent md:text-sm'
-);
 
 function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
   const editor = useEditor();
@@ -43,8 +39,8 @@ function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
             <Link className="size-4" />
           </div>
 
-          <input
-            className={inputVariants()}
+          <Input
+            className="h-7 border-none bg-transparent px-1.5 py-1 focus-visible:ring-transparent"
             value={url}
             placeholder="Paste the embed link..."
             onChange={(event) => {
@@ -122,7 +118,7 @@ export function MediaToolbar({
   plugin,
   selected,
 }: {
-  children: React.ReactNode;
+  children: React.ReactElement;
   disabled?: boolean;
   plugin: MediaPlugin;
   selected: boolean;
@@ -132,17 +128,17 @@ export function MediaToolbar({
   const open = isFocusedLast && !readOnly && selected && !disabled;
 
   return (
-    <Popover open={open} modal={false}>
-      <PopoverAnchor>{children}</PopoverAnchor>
+    <FloatingPopover open={open} modal={false}>
+      <FloatingPopoverAnchor element={children} />
 
-      <PopoverContent
+      <FloatingPopoverContent
         className="w-auto p-1"
-        onOpenAutoFocus={(e) => {
+        onInitialFocus={(e) => {
           e.preventDefault();
         }}
       >
         {open ? <MediaToolbarContent plugin={plugin} /> : null}
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }

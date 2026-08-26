@@ -25,6 +25,7 @@ import {
   Plite,
   type RenderElementProps,
   useEditor,
+  useEditorSelection,
   useEditorSelector,
   useEditorState,
   useElementPath,
@@ -71,6 +72,29 @@ class SelectorErrorBoundary extends Component<
 }
 
 describe('plite-react provider hooks contract', () => {
+  test('useEditorSelection exposes only the public range projection', () => {
+    const editor = createReactEditor({
+      initialSelection: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+        kind: 'text',
+        marks: { bold: true },
+      },
+      initialValue,
+    });
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <Plite editor={editor}>{children}</Plite>
+    );
+    const { result } = renderHook(() => useEditorSelection(), { wrapper });
+
+    expect(result.current).toEqual({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    expect(result.current).not.toHaveProperty('kind');
+    expect(result.current).not.toHaveProperty('marks');
+  });
+
   test('usePliteEditor creates a React editor with initialized value', () => {
     const { result } = renderHook(() =>
       usePliteEditor({
@@ -850,7 +874,6 @@ describe('plite-react provider hooks contract', () => {
 
     expect(selector).toBeCalledTimes(3);
     expect(result.current).toEqual({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     });

@@ -171,13 +171,13 @@ declare const editor: import('@platejs/plite').Editor;
 type _PublicEditorLifecycleMethods = [
   ExpectAssignable<string, ReturnType<typeof editor.read.text.string>>,
   ExpectAssignable<
-    import('@platejs/plite').Selection,
+    import('@platejs/plite').Range | null,
     ReturnType<typeof editor.read.selection>
   >,
   ExpectAssignable<boolean, ReturnType<typeof editor.read.schema.isBlock>>,
-  ExpectAssignable<void, ReturnType<typeof editor.update.blocks.reset>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.blocks.set>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.toggle>>,
-  ExpectAssignable<void, ReturnType<typeof editor.update.blocks.lift>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.nodes.lift>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.blocks.insertAfter>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.text.insert>>,
   ExpectAssignable<void, ReturnType<typeof editor.update.nodes.insert>>,
@@ -187,6 +187,7 @@ type _PublicEditorLifecycleMethods = [
     ReturnType<typeof editor.update.nodes.replaceChildren>
   >,
   ExpectAssignable<void, ReturnType<typeof editor.update.marks.toggle>>,
+  ExpectAssignable<void, ReturnType<typeof editor.update.selection.setNodes>>,
 ];
 type PublicUnknownPredicateInputs = [
   ExpectTrue<
@@ -321,6 +322,11 @@ declare const runtime: import('@platejs/plite').Editor;
 declare const slice: import('@platejs/plite').ContentSlice;
 declare const publicParent: import('@platejs/plite').Element;
 declare const transaction: import('@platejs/plite').EditorUpdateTransaction;
+
+editor.update.selection.setNodes([[0]]);
+transaction.selection.setNodes([[0], [2]]);
+editor.update.selection.setNodes([]);
+transaction.selection.setNodes([]);
 
 const publicAnchor = editor.anchor([], { deletion: 'nearest' });
 editor.anchor([], { deletion: 'nearest', root: 'header' });

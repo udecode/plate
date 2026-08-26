@@ -11,7 +11,10 @@ import {
   NodeApi,
   type NodeEntry,
   type Path,
+  property,
   schema,
+  SelectionApi,
+  target as schemaTarget,
   TextApi,
 } from '@platejs/plite';
 import {
@@ -35,6 +38,8 @@ const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
+
+const disjointNodeSelection = () => SelectionApi.nodes([[0], [2]]);
 
 const getNodeEntry = <T extends Descendant>(
   editor: Editor<any, any>,
@@ -203,7 +208,10 @@ describe('plite transforms contract', () => {
       tx.nodes.move({ at: [0, 1], to: [1] });
     });
 
-    assert.deepEqual(editor.read.selection(), collapsedSelection([1, 0], 0));
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 0 },
+    });
   });
 
   it('preserves descendant node key after replacing then moving across levels', () => {
@@ -256,10 +264,7 @@ describe('plite transforms contract', () => {
         match: (node) => NodeApi.isElement(node) && node.type === 'list',
         split: true,
       });
-      tx.nodes.set(
-        { type: 'paragraph' },
-        { match: (node) => NodeApi.isElement(node) && tx.nodes.isBlock(node) }
-      );
+      tx.blocks.set({ type: 'paragraph' });
     });
 
     assert.deepEqual(editor.read.children(), [
@@ -268,7 +273,7 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('duplicateNodes duplicates explicit node entries after the last entry', () => {
+  it('blocks.duplicate duplicates the target block after itself', () => {
     const editor = createEditor();
 
     editorReplace(editor, {
@@ -280,9 +285,7 @@ describe('plite transforms contract', () => {
     });
 
     editor.update((tx) => {
-      const entry = tx.nodes.get([0]);
-      assert.ok(entry && NodeApi.isElement(entry[0]));
-      tx.nodes.duplicate([entry as NodeEntry<Element>]);
+      tx.blocks.duplicate({ at: [0] });
     });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -336,6 +339,25 @@ describe('plite transforms contract', () => {
     ]);
   });
 
+  it('blocks.duplicate preserves exact node-selection membership', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [paragraph('one'), paragraph('middle'), paragraph('three')],
+      selection: disjointNodeSelection(),
+    });
+
+    editor.update.blocks.duplicate();
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('one'),
+      paragraph('middle'),
+      paragraph('three'),
+      paragraph('one'),
+      paragraph('three'),
+    ]);
+  });
+
   it('blocks.insertAfter inserts after the target block', () => {
     const editor = createEditor();
 
@@ -370,6 +392,45 @@ describe('plite transforms contract', () => {
       { type: 'paragraph', children: [{ text: 'inserted' }] },
       { type: 'paragraph', children: [{ text: 'three' }] },
       { type: 'paragraph', children: [{ text: 'after target' }] },
+    ]);
+  });
+
+  it('blocks.insertAfter uses the last exact node-selection member', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [paragraph('one'), paragraph('middle'), paragraph('three')],
+      selection: disjointNodeSelection(),
+    });
+
+    editor.update.blocks.insertAfter(paragraph('inserted'));
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('one'),
+      paragraph('middle'),
+      paragraph('three'),
+      paragraph('inserted'),
+    ]);
+  });
+
+  it('blocks.insertAfter resolves a named-root node key in its owner root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header'), paragraph('tail')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const target = header.key([0]);
+
+    assert.ok(target);
+    editor.update.blocks.insertAfter(paragraph('inserted'), { at: target });
+
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [
+      paragraph('header'),
+      paragraph('inserted'),
+      paragraph('tail'),
     ]);
   });
 
@@ -646,6 +707,74 @@ describe('plite transforms contract', () => {
       },
     ]);
     assert.deepEqual(after.selection, collapsedSelection([0, 0], 4));
+  });
+
+  it('node selection text replacement removes only exact selected blocks', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:node-selection-text-replacement', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
+
+    editorReplace(editor, {
+      children: [paragraph('first'), paragraph('middle'), paragraph('third')],
+      selection: null,
+    });
+    editor.update.selection.set(disjointNodeSelection());
+
+    editor.update.text.insert('replacement');
+
+    const after = editorGetSnapshot(editor);
+
+    assert.deepEqual(after.children, [
+      paragraph('replacement'),
+      paragraph('middle'),
+    ]);
+    assert.deepEqual(
+      after.selection,
+      collapsedSelection([0, 0], 'replacement'.length)
+    );
+  });
+
+  it('node selection marks and node transforms skip aggregate-range gaps', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [paragraph('first'), paragraph('middle'), paragraph('third')],
+      selection: null,
+    });
+    editor.update.selection.set(disjointNodeSelection());
+
+    editor.update((tx) => {
+      tx.marks.add('bold', true);
+      tx.nodes.set({ selected: true });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        children: [{ bold: true, text: 'first' }],
+        selected: true,
+        type: 'paragraph',
+      },
+      paragraph('middle'),
+      {
+        children: [{ bold: true, text: 'third' }],
+        selected: true,
+        type: 'paragraph',
+      },
+    ]);
+
+    editor.update.nodes.remove();
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('middle')]);
   });
 
   it('mergeNodes does not cross an isolating block boundary', () => {
@@ -1102,34 +1231,6 @@ describe('plite transforms contract', () => {
     ]);
   });
 
-  it('blocks.reset strips block props while preserving requested keys', () => {
-    const editor = createEditor();
-
-    editorReplace(editor, {
-      children: [
-        {
-          type: 'heading-one',
-          key: 'keep-me',
-          foo: 'drop-me',
-          children: [{ text: 'Title' }],
-        },
-      ],
-      selection: collapsedSelection([0, 0], 0),
-    });
-
-    editor.update((tx) => {
-      tx.blocks.reset({ type: 'paragraph' }, { at: [0], preserve: ['key'] });
-    });
-
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      {
-        type: 'paragraph',
-        key: 'keep-me',
-        children: [{ text: 'Title' }],
-      },
-    ]);
-  });
-
   it('blocks.toggle uses the grammar default block type', () => {
     const editor = createEditor({
       extensions: [
@@ -1151,37 +1252,419 @@ describe('plite transforms contract', () => {
       selection: collapsedSelection([0, 0], 0),
     });
 
-    editor.update.blocks.toggle('blockquote');
+    editor.update.blocks.toggle({ type: 'blockquote' });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'blockquote', children: [{ text: 'one' }] },
     ]);
 
-    editor.update.blocks.toggle('blockquote');
+    editor.update.blocks.toggle({ type: 'blockquote' });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'paragraph', children: [{ text: 'one' }] },
     ]);
   });
 
-  it('blocks.lift exposes the semantic block lift API directly', () => {
-    const editor = createEditor();
+  it('blocks.toggle owns target properties with the type', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-block-props', {
+          elements: {
+            heading: {
+              content: schema.content.text(),
+              properties: { level: property.number() },
+            },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'heading'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+      selection: collapsedSelection([0, 0], 0),
+    });
+
+    editor.update.blocks.toggle({ level: 2, type: 'heading' });
+
+    assert.deepEqual(editor.read.children()[0], {
+      level: 2,
+      type: 'heading',
+      children: [{ text: 'one' }],
+    });
+
+    editor.update.blocks.toggle({ level: 2, type: 'heading' });
+
+    assert.deepEqual(editor.read.children()[0], {
+      type: 'paragraph',
+      children: [{ text: 'one' }],
+    });
+  });
+
+  it('blocks.toggle uses the immediate parent default when deactivating', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-nested-default', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+            section: {
+              content: schema.content.types(['paragraph', 'quote'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+            },
+          },
+          root: schema.content.types(['section', 'paragraph'], {
+            default: { type: 'section' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
 
     editorReplace(editor, {
       children: [
         {
-          type: 'quote',
-          children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+          type: 'section',
+          children: [{ type: 'quote', children: [{ text: 'one' }] }],
         },
       ],
-      selection: null,
+      selection: collapsedSelection([0, 0, 0], 0),
     });
 
-    editor.update.blocks.lift({ at: [0, 0] });
+    editor.update.blocks.toggle({ type: 'quote' });
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'section',
+        children: [paragraph('one')],
+      },
+    ]);
+  });
+
+  it('blocks.reset uses the immediate schema default', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:reset-immediate-default', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+            section: {
+              content: schema.content.types(['paragraph', 'quote'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+            },
+          },
+          properties: [
+            schema.elementProperty('shared', property.string(), {
+              target: schemaTarget.types(['paragraph', 'quote']),
+              typeChange: 'preserve-if-allowed',
+            }),
+            schema.elementProperty('quoteOnly', property.string(), {
+              target: schemaTarget.type('quote'),
+            }),
+            schema.elementProperty(
+              'tone',
+              property.string({ default: 'plain' }),
+              { target: schemaTarget.type('paragraph') }
+            ),
+            schema.elementProperty(
+              'sectionTone',
+              property.string({ default: 'nested' }),
+              {
+                target: schemaTarget.and(
+                  schemaTarget.type('paragraph'),
+                  schemaTarget.parent(schemaTarget.type('section'))
+                ),
+              }
+            ),
+          ],
+          root: schema.content.types(['section', 'paragraph', 'quote'], {
+            default: { type: 'section' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'section',
+          children: [
+            {
+              type: 'quote',
+              quoteOnly: 'remove',
+              shared: 'keep',
+              children: [{ text: 'one' }],
+            },
+          ],
+        },
+      ],
+      selection: collapsedSelection([0, 0, 0], 1),
+    });
+    const blockKey = editor.key([0, 0]);
+
+    editor.update.blocks.reset({ at: [0, 0] });
 
     assert.deepEqual(editorGetSnapshot(editor).children, [
-      { type: 'paragraph', children: [{ text: 'one' }] },
+      {
+        type: 'section',
+        children: [
+          {
+            type: 'paragraph',
+            sectionTone: 'nested',
+            shared: 'keep',
+            tone: 'plain',
+            children: [{ text: 'one' }],
+          },
+        ],
+      },
     ]);
+    assert.equal(editor.key([0, 0]), blockKey);
+    assert.deepEqual(
+      editorGetSnapshot(editor).selection,
+      collapsedSelection([0, 0, 0], 1)
+    );
+
+    editor.update.text.insert('X');
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'section',
+        children: [
+          {
+            type: 'paragraph',
+            sectionTone: 'nested',
+            shared: 'keep',
+            tone: 'plain',
+            children: [{ text: 'oXne' }],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('blocks.reset changes only exact disjoint node selections', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:reset-disjoint-selection', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
+
+    editorReplace(editor, {
+      children: [
+        { type: 'quote', children: [{ text: 'first' }] },
+        { type: 'quote', children: [{ text: 'middle' }] },
+        { type: 'quote', children: [{ text: 'third' }] },
+      ],
+      selection: disjointNodeSelection(),
+    });
+
+    editor.update.blocks.reset();
+
+    const after = editorGetSnapshot(editor);
+
+    assert.deepEqual(after.children, [
+      paragraph('first'),
+      { type: 'quote', children: [{ text: 'middle' }] },
+      paragraph('third'),
+    ]);
+    assert.deepEqual(after.selection, disjointNodeSelection());
+  });
+
+  it('blocks.reset uses the editor view root default', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:reset-view-root', {
+          elements: {
+            heading: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['heading', 'paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          roots: {
+            header: schema.content.types(['heading', 'quote'], {
+              default: { type: 'quote' },
+              min: 1,
+            }),
+          },
+        }),
+      ],
+      initialValue: {
+        children: [{ type: 'heading', children: [{ text: 'body' }] }],
+        roots: {
+          header: [{ type: 'heading', children: [{ text: 'header' }] }],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.update.blocks.reset({ at: [0] });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'heading', children: [{ text: 'body' }] },
+    ]);
+    assert.deepEqual(header.read.children(), [
+      { type: 'quote', children: [{ text: 'header' }] },
+    ]);
+  });
+
+  it('blocks.reset rejects a parent without an element default', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:reset-missing-default', {
+          elements: {
+            paragraph: { content: schema.content.text() },
+            quote: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'quote'], { min: 0 }),
+        }),
+      ],
+      initialValue: [{ type: 'quote', children: [{ text: 'one' }] }],
+    });
+
+    assert.throws(
+      () => editor.update.blocks.reset({ at: [0] }),
+      /element default/
+    );
+  });
+
+  it('blocks.toggle changes only exact disjoint node selections', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-disjoint-node-selection', {
+          elements: {
+            blockquote: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'blockquote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        }),
+      ],
+    });
+
+    editorReplace(editor, {
+      children: [paragraph('first'), paragraph('middle'), paragraph('third')],
+      selection: null,
+    });
+    editor.update.selection.set(disjointNodeSelection());
+
+    editor.update.blocks.toggle({ type: 'blockquote' });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'blockquote', children: [{ text: 'first' }] },
+      paragraph('middle'),
+      { type: 'blockquote', children: [{ text: 'third' }] },
+    ]);
+
+    editor.update.blocks.toggle({ type: 'blockquote' });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('first'),
+      paragraph('middle'),
+      paragraph('third'),
+    ]);
+  });
+
+  it('blocks.toggle keeps a named-root node selection in that root', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-named-root-node-selection', {
+          elements: {
+            blockquote: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'blockquote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          roots: {
+            header: schema.content.types(['paragraph', 'blockquote'], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        }),
+      ],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.update.selection.setNodes([[0]]);
+    editor.update.blocks.toggle({ type: 'blockquote' });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: {
+        header: [{ type: 'blockquote', children: [{ text: 'header' }] }],
+      },
+    });
+  });
+
+  it('blocks.toggle unwraps a named-root node selection in that root', () => {
+    const editor = createEditor({
+      extensions: [
+        defineEditorSchema('schema:toggle-named-root-node-wrapper', {
+          elements: {
+            'code-block': {
+              content: schema.content.type('paragraph', { min: 1 }),
+            },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['paragraph', 'code-block'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          roots: {
+            header: schema.content.types(['paragraph', 'code-block'], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        }),
+      ],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.update.selection.setNodes([[0]]);
+    editor.update.blocks.toggle({ type: 'code-block' }, { wrap: true });
+
+    assert.deepEqual(header.read.children(), [
+      { type: 'code-block', children: [paragraph('header')] },
+    ]);
+
+    editor.update.blocks.toggle({ type: 'code-block' }, { wrap: true });
+
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [paragraph('header')]);
   });
 
   it('insertNodes can split the highest selected block for root-level insertion', () => {
@@ -1456,81 +1939,6 @@ describe('plite transforms contract', () => {
           { text: '' },
         ],
       },
-    ]);
-  });
-
-  it('toggleNodes switches an inactive block to the target type', () => {
-    const editor = createEditor();
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: collapsedSelection([0, 0], 0),
-    });
-
-    editor.update((tx) => {
-      tx.nodes.toggle('blockquote');
-    });
-
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      { type: 'blockquote', children: [{ text: 'one' }] },
-    ]);
-  });
-
-  it('toggleNodes switches an active block to the default type', () => {
-    const editor = createEditor({
-      extensions: [
-        defineEditorSchema('schema:toggle-node-default', {
-          elements: {
-            blockquote: { content: schema.content.text() },
-            paragraph: { content: schema.content.text() },
-          },
-          root: schema.content.types(['paragraph', 'blockquote'], {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-        }),
-      ],
-    });
-
-    editorReplace(editor, {
-      children: [{ type: 'blockquote', children: [{ text: 'one' }] }],
-      selection: collapsedSelection([0, 0], 0),
-    });
-
-    editor.update((tx) => {
-      tx.nodes.toggle('blockquote');
-    });
-
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      { type: 'paragraph', children: [{ text: 'one' }] },
-    ]);
-  });
-
-  it('toggleNodes wraps and unwraps an active block when wrap is true', () => {
-    const editor = createEditor();
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: collapsedSelection([0, 0], 0),
-    });
-
-    editor.update((tx) => {
-      tx.nodes.toggle('code-block', { wrap: true });
-    });
-
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      {
-        type: 'code-block',
-        children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      },
-    ]);
-
-    editor.update((tx) => {
-      tx.nodes.toggle('code-block', { wrap: true });
-    });
-
-    assert.deepEqual(editorGetSnapshot(editor).children, [
-      { type: 'paragraph', children: [{ text: 'one' }] },
     ]);
   });
 

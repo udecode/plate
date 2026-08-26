@@ -17,6 +17,7 @@ import {
   type EditorTransactionAnchor,
   type Point,
   property,
+  type Range,
   SelectionApi,
   schema,
   type TransactionSpec,
@@ -25,6 +26,7 @@ import {
 import {
   dispatchCommand,
   evaluateCommand,
+  getEditorLiveSelection,
   probeCommandNativeEquivalent,
 } from '@platejs/plite/internal';
 import fc from 'fast-check';
@@ -42,6 +44,8 @@ import { defineTestSchema } from './support/schema';
 type InsertCommand = {
   text: string;
 };
+
+const publicRange = ({ anchor, focus }: Range): Range => ({ anchor, focus });
 
 const createTextEditorWithExtensions = (
   extensions: readonly EditorExtensionReference[] = []
@@ -135,8 +139,10 @@ describe('pure command transaction specs', () => {
     }> = [];
     const editor = createTextEditor(({ around }) => [
       around(editorCommands.insertText, ({ next, state }) => {
+        const selection = state.selection();
+
         observed.push({
-          selectionOffset: state.selection()?.anchor.offset,
+          selectionOffset: selection?.anchor.offset,
           text: state.text.string([]),
           version: state.runtime.snapshot().version,
         });
@@ -607,7 +613,7 @@ describe('pure command transaction specs', () => {
       [
         editorCommands.toggleBlock.id,
         () => {
-          editor.update.blocks.toggle('p');
+          editor.update.blocks.toggle({ type: 'p' });
         },
       ],
       [
@@ -686,7 +692,10 @@ describe('pure command transaction specs', () => {
       ],
       [
         editorCommands.setSelection.id,
-        () => editor.update.selection.setRange({ anchor: point }),
+        () =>
+          editor.update.command(editorCommands.setSelection, {
+            props: { anchor: point },
+          }),
       ],
       [
         editorCommands.replaceSlice.id,
@@ -924,6 +933,58 @@ describe('pure command transaction specs', () => {
     assert.equal(editor.read.text.string([]), 'aXyb');
   });
 
+  it('keeps a node selection intact when a replacement slice cannot fit', () => {
+    const selection = SelectionApi.nodes([[0], [2]]);
+    const editor = createEditor({
+      extensions: [CommandScriptSchema],
+      initialSelection: selection,
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'middle' }] },
+        { type: 'paragraph', children: [{ text: 'three' }] },
+      ],
+    });
+    const before = editor.read.value();
+    const result = dispatchCommand(editor, editorCommands.replaceSlice, {
+      slice: ContentSlice.closed([
+        { type: 'quote', children: [{ text: 'cannot fit' }] },
+      ]),
+    });
+
+    assert.equal(result, false);
+    assert.deepEqual(editor.read.value(), before);
+    assert.deepEqual(getEditorLiveSelection(editor), selection);
+  });
+
+  it('removes the remaining selected nodes after an open slice fits', () => {
+    const editor = createEditor({
+      extensions: [CommandScriptSchema],
+      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'middle' }] },
+        { type: 'paragraph', children: [{ text: 'three' }] },
+      ],
+    });
+    const result = dispatchCommand(editor, editorCommands.replaceSlice, {
+      slice: ContentSlice.fromJSON({
+        content: [{ type: 'paragraph', children: [{ text: 'replacement' }] }],
+        openEnd: 1,
+        openStart: 1,
+      }),
+    });
+
+    assert.equal(result, true);
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'replacement' }] },
+      { type: 'paragraph', children: [{ text: 'middle' }] },
+    ]);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 11, path: [0, 0] },
+      focus: { offset: 11, path: [0, 0] },
+    });
+  });
+
   it('removes an empty block after a block void before deleting the void', () => {
     const createBlockVoidEditor = () =>
       createEditor({
@@ -951,7 +1012,6 @@ describe('pure command transaction specs', () => {
       { type: 'paragraph', children: [{ text: 'after' }] },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -1024,7 +1084,6 @@ describe('pure command transaction specs', () => {
       },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -1052,7 +1111,6 @@ describe('pure command transaction specs', () => {
       },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: boundaryOffset, path: [0, 0] },
       focus: { offset: boundaryOffset, path: [0, 0] },
     });
@@ -1125,7 +1183,6 @@ describe('pure command transaction specs', () => {
 
     assert.equal(editor.read.text.string([]), 'IS');
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -1176,13 +1233,10 @@ describe('pure command transaction specs', () => {
         { text: '!' },
       ],
     });
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text({
-        anchor: { offset: 'This is example'.length, path: [0, 0] },
-        focus: { offset: 'This is example'.length, path: [0, 0] },
-      })
-    );
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 'This is example'.length, path: [0, 0] },
+      focus: { offset: 'This is example'.length, path: [0, 0] },
+    });
   });
 
   it('dispatches collapse and block toggle as pure semantic commands', () => {
@@ -1222,10 +1276,10 @@ describe('pure command transaction specs', () => {
     });
 
     dispatchCommand(editor, editorCommands.toggleBlock, {
-      blockType: 'heading-one',
       options: {
         collapse: { edge: 'end' },
       },
+      props: { type: 'heading-one' },
     });
 
     dispatchCommand(editor, editorCommands.select, {
@@ -1240,7 +1294,6 @@ describe('pure command transaction specs', () => {
 
     assert.deepEqual(seen, ['block.toggle', 'selection.collapse']);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -1279,7 +1332,6 @@ describe('pure command transaction specs', () => {
       },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
@@ -1405,7 +1457,7 @@ describe('pure command transaction specs', () => {
 
     header.update.selection.set(null);
 
-    assert.deepEqual(runtime.read.selection(), selection);
+    assert.deepEqual(runtime.read.selection(), publicRange(selection));
   });
 
   it('maps build-scoped anchors through draft changes and expires them', () => {
@@ -1432,13 +1484,10 @@ describe('pure command transaction specs', () => {
     dispatchCommand(editor, insertBeforeTarget);
 
     assert.equal(editor.read.text.string([]), 'axb');
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text({
-        anchor: { offset: 3, path: [0, 0] },
-        focus: { offset: 3, path: [0, 0] },
-      })
-    );
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
     assert.throws(() => leakedRef?.resolve(), /no longer active/);
   });
 
@@ -1762,7 +1811,6 @@ describe('pure command transaction specs', () => {
       { type: 'paragraph', children: [{ text: 'b' }] },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -1839,7 +1887,6 @@ describe('pure command transaction specs', () => {
       },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 1, path: [0, 0, 0] },
       focus: { offset: 1, path: [0, 1, 0] },
     });
@@ -1964,7 +2011,7 @@ describe('pure command transaction specs', () => {
       { type: 'paragraph', children: [{ text: 'inserted' }] },
       { type: 'paragraph', children: [{ text: 'after' }] },
     ]);
-    assert.deepEqual(editor.read.selection(), selection);
+    assert.deepEqual(editor.read.selection(), publicRange(selection));
   });
 
   it('selects the remaining sibling after deleting a fully selected block', () => {
@@ -1988,13 +2035,10 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(editor.read.children(), [
       { type: 'paragraph', children: [{ text: 'beta' }] },
     ]);
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text({
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      })
-    );
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
   });
 
   it('uses the schema root default after deleting every selected block', () => {
@@ -2032,13 +2076,10 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(editor.read.children(), [
       { type: 'paragraph', children: [{ text: '' }] },
     ]);
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text({
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      })
-    );
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
   });
 
   it('uses the schema root default when text replaces a structural block', () => {
@@ -2091,13 +2132,10 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(editor.read.children(), [
       { type: 'paragraph', children: [{ text: 'Z' }] },
     ]);
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text({
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      })
-    );
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
   });
 
   it('roots explicit paths in command specs to the dispatching view', () => {

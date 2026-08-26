@@ -22,6 +22,13 @@ Work Checklist:
 - [ ] Browser pack: console and network errors are checked or explicitly out of scope.
 - [ ] Browser pack: screenshot or visual waiver happens only after the
       applicable Browser->Chrome->Computer path cannot inspect the state.
+- [ ] Browser pack: a reporter-visible paint claim is proved from classified
+      pixels captured in the named interaction phase, with known-correct
+      single-layer, known-absent, and known-invalid duplicate-layer controls
+      through the identical capture path. The proof records
+      `positive-control: pass`, `negative-control: pass`, and
+      `duplicate-control: pass`. Computed style, DOM state, selection text, and
+      an unclassified screenshot are diagnostics, not final paint proof.
 - [ ] Browser pack: report-backed proof fails on the exact observable case
       before the fix; a proxy route/action/outcome is classified `needs-repro`.
 - [ ] Browser pack: final proof uses a fresh page/session on the final code

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-26-schema-driven-block-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-26-schema-driven-block-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Select schema-defined blocks",
+  "targets": [
+    {
+      "name": "block-selection",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-selection."
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-26-block-selection-select-schema-defined-blocks-b5c05fe2",
+      "kind": "behavior",
+      "summary": "Select custom Plate block content from its schema and let tables render their own selection geometry.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-selection", "table"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-26",
+          "entry": "2026-08-26-schema-driven-block-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

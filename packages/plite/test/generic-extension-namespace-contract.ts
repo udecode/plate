@@ -61,7 +61,7 @@ const MediaExtension = defineExtension('media', {
 
 const TableExtension = defineExtension('table', {
   read: ({ state }) => ({
-    isInTable: () => state.nodes.hasPath([0]),
+    isInTable: () => state.nodes.get([0]) !== undefined,
     rowCount: () => state.children().length,
   }),
   update: ({ tx }) => ({
@@ -114,7 +114,8 @@ const runtimeExtension = defineExtension('runtimeTable', {
     const mode = getRuntimeMode(editor);
 
     return {
-      isInTable: () => mode.get() === 'cell' && state.nodes.hasPath([0]),
+      isInTable: () =>
+        mode.get() === 'cell' && state.nodes.get([0]) !== undefined,
       rowCount: () => state.children().length,
     };
   },

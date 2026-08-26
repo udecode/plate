@@ -195,7 +195,7 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
       collapsible="none"
     >
       <div className="h-9" />
-      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
+      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) gap-0 overflow-x-hidden px-2.5">
         {docsRoot === 'plite'
           ? navSections.map((section, index) => (
               <DocsNavStaticGroup
@@ -246,7 +246,7 @@ function DocsNavStaticGroup({
 
   return section.items?.length ? (
     <SidebarGroup
-      className={cn('shrink-0', index === 0 && sectionTitle && 'pt-6')}
+      className={cn('shrink-0 py-0', index === 0 && sectionTitle && 'pt-6')}
     >
       {standalone || !sectionTitle ? null : (
         <SidebarGroupLabel className="font-medium text-muted-foreground">
@@ -284,7 +284,7 @@ function DocsNavGroup({
   return (
     <SidebarGroup
       className={cn(
-        'min-h-0',
+        'min-h-0 py-0',
         index === 0 && 'pt-6',
         open && scrollable ? 'flex-1' : 'shrink-0'
       )}

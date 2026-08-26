@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-object-url",
+  "files": [
+    {
+      "path": "src/registry/hooks/use-object-url.ts",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nconst getServerSnapshot = () => null;\n\nfunction createObjectUrlStore(source: Blob | null) {\n  let snapshot: string | null = null;\n\n  return {\n    getSnapshot: () => snapshot,\n    subscribe: (onStoreChange: () => void) => {\n      if (!source) return () => {};\n\n      const url = URL.createObjectURL(source);\n\n      snapshot = url;\n      onStoreChange();\n\n      return () => {\n        URL.revokeObjectURL(url);\n\n        if (snapshot === url) snapshot = null;\n      };\n    },\n  };\n}\n\nexport function useObjectUrl(source: Blob | null) {\n  const store = React.useMemo(() => createObjectUrlStore(source), [source]);\n\n  return React.useSyncExternalStore(\n    store.subscribe,\n    store.getSnapshot,\n    getServerSnapshot\n  );\n}\n",
+      "type": "registry:hook"
+    }
+  ],
+  "type": "registry:hook"
+}

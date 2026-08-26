@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "paragraph-static",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/paragraph-static.tsx",
+      "content": "import type { BaseParagraphPlugin } from 'platejs';\nimport type { PliteElementProps } from 'platejs/static';\nimport { PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElementStatic(\n  props: PliteElementProps<typeof BaseParagraphPlugin>\n) {\n  return (\n    <PliteElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </PliteElement>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/paragraph-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

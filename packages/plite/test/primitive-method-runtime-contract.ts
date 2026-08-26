@@ -1,7 +1,12 @@
-import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 
-import { createEditor, type Element, NodeApi } from '@platejs/plite';
+import {
+  createEditor,
+  type Element,
+  NodeApi,
+  SelectionApi,
+} from "@platejs/plite";
 import {
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
@@ -16,17 +21,17 @@ import {
   runTrustedUpdate,
   string as editorString,
   setEditorTargetRuntime,
-} from '@platejs/plite/internal';
+} from "@platejs/plite/internal";
 
-import { extendTestSchema } from './support/schema';
+import { extendTestSchema } from "./support/schema";
 
 const paragraph = (text: string): Element => ({
-  type: 'paragraph',
+  type: "paragraph",
   children: [{ text }],
 });
 
 const quote = (text: string): Element => ({
-  type: 'quote',
+  type: "quote",
   children: [paragraph(text)],
 });
 
@@ -34,9 +39,9 @@ const setupEditor = () => {
   const editor = createEditor();
 
   editorReplace(editor, {
-    children: [paragraph('one'), paragraph('two')],
+    children: [paragraph("one"), paragraph("two")],
     selection: {
-      kind: 'text' as const,
+      kind: "text" as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -49,9 +54,9 @@ const setupCollapsedEditor = () => {
   const editor = createEditor();
 
   editorReplace(editor, {
-    children: [paragraph('one'), paragraph('two')],
+    children: [paragraph("one"), paragraph("two")],
     selection: {
-      kind: 'text' as const,
+      kind: "text" as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     },
@@ -64,9 +69,9 @@ const setupWrappedEditor = () => {
   const editor = createEditor();
 
   editorReplace(editor, {
-    children: [quote('one'), quote('two')],
+    children: [quote("one"), quote("two")],
     selection: {
-      kind: 'text' as const,
+      kind: "text" as const,
       anchor: { path: [0, 0, 0], offset: 0 },
       focus: { path: [0, 0, 0], offset: 3 },
     },
@@ -79,9 +84,9 @@ const setupThreeBlockEditor = () => {
   const editor = createEditor();
 
   editorReplace(editor, {
-    children: [paragraph('one'), paragraph('two'), paragraph('three')],
+    children: [paragraph("one"), paragraph("two"), paragraph("three")],
     selection: {
-      kind: 'text' as const,
+      kind: "text" as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     },
@@ -97,12 +102,12 @@ const setupSplitTextEditor = () => {
     tx.value.replace({
       children: [
         {
-          type: 'paragraph',
-          children: [{ bold: true, text: 'one' }, { text: 'two' }],
+          type: "paragraph",
+          children: [{ bold: true, text: "one" }, { text: "two" }],
         },
       ],
       selection: {
-        kind: 'text' as const,
+        kind: "text" as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -112,8 +117,8 @@ const setupSplitTextEditor = () => {
   return editor;
 };
 
-describe('primitive method runtime contract', () => {
-  it('wrapNodes uses the transaction target when at is omitted inside editor.update', () => {
+describe("primitive method runtime contract", () => {
+  it("wrapNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupEditor();
     let calls = 0;
 
@@ -122,7 +127,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -130,17 +135,17 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.wrap({ type: 'quote', children: [] });
+      tx.nodes.wrap({ type: "quote", children: [] });
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      quote('two'),
+      paragraph("one"),
+      quote("two"),
     ]);
   });
 
-  it('removeNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("removeNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupEditor();
     let calls = 0;
 
@@ -149,7 +154,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -161,10 +166,10 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(editorGetChildren(editor), [paragraph('one')]);
+    assert.deepEqual(editorGetChildren(editor), [paragraph("one")]);
   });
 
-  it('splitNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("splitNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -173,7 +178,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -186,13 +191,13 @@ describe('primitive method runtime contract', () => {
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('t'),
-      paragraph('wo'),
+      paragraph("one"),
+      paragraph("t"),
+      paragraph("wo"),
     ]);
   });
 
-  it('insertText uses the transaction target when at is omitted inside editor.update', () => {
+  it("insertText uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -201,7 +206,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -209,87 +214,87 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.text.insert('X');
+      tx.text.insert("X");
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('tXwo'),
+      paragraph("one"),
+      paragraph("tXwo"),
     ]);
     assert.deepEqual(editorGetSelection(editor), {
-      kind: 'text',
+      kind: "text",
       anchor: { path: [1, 0], offset: 2 },
       focus: { path: [1, 0], offset: 2 },
     });
   });
 
-  it('insertText appends at the document end when selection is null and at is omitted', () => {
+  it("insertText appends at the document end when selection is null and at is omitted", () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [paragraph('one'), paragraph('two')],
+      children: [paragraph("one"), paragraph("two")],
       selection: null,
     });
 
-    editorInsertText(editor, '!');
+    editorInsertText(editor, "!");
 
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('two!'),
+      paragraph("one"),
+      paragraph("two!"),
     ]);
     assert.deepEqual(editorGetSelection(editor), {
-      kind: 'text',
+      kind: "text",
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     });
   });
 
-  it('insertText keeps null selection when an explicit full-document range is used on a deselected editor', () => {
+  it("insertText keeps null selection when an explicit full-document range is used on a deselected editor", () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [paragraph('one'), paragraph('two')],
+      children: [paragraph("one"), paragraph("two")],
       selection: null,
     });
 
-    editorInsertText(editor, 'replacement', {
+    editorInsertText(editor, "replacement", {
       at: editorRange(editor, []),
     });
 
-    assert.deepEqual(editorGetChildren(editor), [paragraph('replacement')]);
+    assert.deepEqual(editorGetChildren(editor), [paragraph("replacement")]);
     assert.equal(editorGetSelection(editor), null);
   });
 
-  it('insertText in an empty block remains a text change, not a replacement', () => {
+  it("insertText in an empty block remains a text change, not a replacement", () => {
     const editor = createEditor();
 
     editorReplace(editor, {
-      children: [paragraph('')],
+      children: [paragraph("")],
       selection: {
-        kind: 'text' as const,
+        kind: "text" as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
     });
 
     editor.update((tx) => {
-      tx.text.insert('U');
+      tx.text.insert("U");
     });
 
     const commit = editorGetLastCommit(editor);
 
-    assert.equal(editorString(editor, []), 'U');
-    assert.equal(commit?.changed.has('text'), true);
-    assert.equal(commit?.changed.has('replace'), false);
+    assert.equal(editorString(editor, []), "U");
+    assert.equal(commit?.changed.has("text"), true);
+    assert.equal(commit?.changed.has("replace"), false);
   });
 
-  it('insertText with active marks advances selection so follow-up text stays marked', () => {
+  it("insertText with active marks advances selection so follow-up text stays marked", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
     editor.update((tx) => {
-      tx.marks.add('bold', true);
+      tx.marks.add("bold", true);
     });
 
     setEditorTargetRuntime(editor, {
@@ -297,7 +302,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -305,88 +310,88 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.text.insert('M');
+      tx.text.insert("M");
     });
 
     setEditorTargetRuntime(editor, null);
 
     editor.update((tx) => {
-      tx.text.insert('ARK');
+      tx.text.insert("ARK");
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
+      paragraph("one"),
       {
-        type: 'paragraph',
-        children: [{ text: 't' }, { bold: true, text: 'MARK' }, { text: 'wo' }],
+        type: "paragraph",
+        children: [{ text: "t" }, { bold: true, text: "MARK" }, { text: "wo" }],
       },
     ]);
     assert.deepEqual(editorGetSelection(editor), {
-      kind: 'text',
+      kind: "text",
       anchor: { path: [1, 1], offset: 4 },
       focus: { path: [1, 1], offset: 4 },
     });
   });
 
-  it('insertText inherits consistent marks from a replaced selected range', () => {
+  it("insertText inherits consistent marks from a replaced selected range", () => {
     const editor = createEditor();
 
     editorReplace(editor, {
       children: [
         {
-          type: 'paragraph',
+          type: "paragraph",
           children: [
-            { text: 'hello ' },
-            { bold: true, text: 'bold' },
-            { text: ' text' },
+            { text: "hello " },
+            { bold: true, text: "bold" },
+            { text: " text" },
           ],
         },
       ],
       selection: {
-        kind: 'text' as const,
+        kind: "text" as const,
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 4 },
       },
     });
 
     editor.update((tx) => {
-      tx.text.insert('strong');
+      tx.text.insert("strong");
     });
 
     assert.deepEqual(editorGetChildren(editor), [
       {
-        type: 'paragraph',
+        type: "paragraph",
         children: [
-          { text: 'hello ' },
-          { bold: true, text: 'strong' },
-          { text: ' text' },
+          { text: "hello " },
+          { bold: true, text: "strong" },
+          { text: " text" },
         ],
       },
     ]);
     assert.deepEqual(editorGetSelection(editor), {
-      kind: 'text',
+      kind: "text",
       anchor: { path: [0, 1], offset: 6 },
       focus: { path: [0, 1], offset: 6 },
     });
   });
 
-  it('insertText with active marks ignores the transaction-resolved read-only target', () => {
+  it("insertText with active marks ignores the transaction-resolved read-only target", () => {
     const editor = createEditor();
     let calls = 0;
 
-    extendTestSchema(editor, { 'read-only': { readOnly: true } });
+    extendTestSchema(editor, { "read-only": { readOnly: true } });
 
     editorReplace(editor, {
       children: [
-        paragraph('one'),
+        paragraph("one"),
         {
-          type: 'read-only',
-          children: [{ text: 'two' }],
+          type: "read-only",
+          children: [{ text: "two" }],
         },
       ],
       selection: {
-        kind: 'text' as const,
+        kind: "text" as const,
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
         marks: { bold: true },
@@ -398,7 +403,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -406,20 +411,20 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.text.insert('X');
+      tx.text.insert("X");
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
+      paragraph("one"),
       {
-        type: 'read-only',
-        children: [{ text: 'two' }],
+        type: "read-only",
+        children: [{ text: "two" }],
       },
     ]);
   });
 
-  it('setNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("setNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupEditor();
     let calls = 0;
 
@@ -428,7 +433,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -436,27 +441,27 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.set({ type: 'heading-one' } as never);
+      tx.nodes.set({ type: "heading-one" } as never);
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      { type: 'heading-one', children: [{ text: 'two' }] },
+      paragraph("one"),
+      { type: "heading-one", children: [{ text: "two" }] },
     ]);
   });
 
-  it('unsetNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("unsetNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = createEditor();
     let calls = 0;
 
     editorReplace(editor, {
       children: [
-        paragraph('one'),
-        { type: 'paragraph', align: 'center', children: [{ text: 'two' }] },
+        paragraph("one"),
+        { type: "paragraph", align: "center", children: [{ text: "two" }] },
       ],
       selection: {
-        kind: 'text' as const,
+        kind: "text" as const,
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -467,7 +472,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -475,17 +480,17 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.unset('align' as never);
+      tx.nodes.unset("align" as never);
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('two'),
+      paragraph("one"),
+      paragraph("two"),
     ]);
   });
 
-  it('delete uses the transaction target when at is omitted inside editor.update', () => {
+  it("delete uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupEditor();
     let calls = 0;
 
@@ -494,7 +499,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -507,12 +512,12 @@ describe('primitive method runtime contract', () => {
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph(''),
+      paragraph("one"),
+      paragraph(""),
     ]);
   });
 
-  it('slice replacement uses the transaction target when at is omitted inside editor.update', () => {
+  it("slice replacement uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -521,7 +526,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -529,17 +534,17 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.fragment.replace([{ text: 'X' }]);
+      tx.fragment.replace([{ text: "X" }]);
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('tXwo'),
+      paragraph("one"),
+      paragraph("tXwo"),
     ]);
   });
 
-  it('unwrapNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("unwrapNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupWrappedEditor();
     let calls = 0;
 
@@ -548,7 +553,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0, 0], offset: 0 },
           focus: { path: [1, 0, 0], offset: 3 },
         };
@@ -557,18 +562,18 @@ describe('primitive method runtime contract', () => {
 
     editor.update((tx) => {
       tx.nodes.unwrap({
-        match: (node) => NodeApi.isElement(node) && node.type === 'quote',
+        match: (node) => NodeApi.isElement(node) && node.type === "quote",
       });
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      quote('one'),
-      paragraph('two'),
+      quote("one"),
+      paragraph("two"),
     ]);
   });
 
-  it('liftNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("liftNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupWrappedEditor();
     let calls = 0;
 
@@ -577,7 +582,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0, 0], offset: 0 },
           focus: { path: [1, 0, 0], offset: 3 },
         };
@@ -586,18 +591,18 @@ describe('primitive method runtime contract', () => {
 
     editor.update((tx) => {
       tx.nodes.lift({
-        match: (node) => NodeApi.isElement(node) && node.type === 'paragraph',
+        match: (node) => NodeApi.isElement(node) && node.type === "paragraph",
       });
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      quote('one'),
-      paragraph('two'),
+      quote("one"),
+      paragraph("two"),
     ]);
   });
 
-  it('moveNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("moveNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupThreeBlockEditor();
     let calls = 0;
 
@@ -606,7 +611,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -619,13 +624,13 @@ describe('primitive method runtime contract', () => {
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('two'),
-      paragraph('one'),
-      paragraph('three'),
+      paragraph("two"),
+      paragraph("one"),
+      paragraph("three"),
     ]);
   });
 
-  it('mergeNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("mergeNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupSplitTextEditor();
     let calls = 0;
 
@@ -634,7 +639,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [0, 1], offset: 0 },
           focus: { path: [0, 1], offset: 0 },
         };
@@ -648,13 +653,13 @@ describe('primitive method runtime contract', () => {
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
       {
-        type: 'paragraph',
-        children: [{ bold: true, text: 'onetwo' }],
+        type: "paragraph",
+        children: [{ bold: true, text: "onetwo" }],
       },
     ]);
   });
 
-  it('insertNodes uses the transaction target when at is omitted inside editor.update', () => {
+  it("insertNodes uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -663,7 +668,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -671,20 +676,20 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      tx.nodes.insert({ text: 'X' });
+      tx.nodes.insert({ text: "X" });
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
+      paragraph("one"),
       {
-        type: 'paragraph',
-        children: [{ text: 'tXwo' }],
+        type: "paragraph",
+        children: [{ text: "tXwo" }],
       },
     ]);
   });
 
-  it('insertBreak uses the transaction target when at is omitted inside editor.update', () => {
+  it("insertBreak uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -693,7 +698,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -706,13 +711,13 @@ describe('primitive method runtime contract', () => {
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('t'),
-      paragraph('wo'),
+      paragraph("one"),
+      paragraph("t"),
+      paragraph("wo"),
     ]);
   });
 
-  it('deleteBackward uses the transaction target when at is omitted inside editor.update', () => {
+  it("deleteBackward uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupEditor();
     let calls = 0;
 
@@ -721,7 +726,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -729,17 +734,17 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((_tx) => {
-      editorDeleteBackward(editor, { unit: 'character' });
+      editorDeleteBackward(editor, { unit: "character" });
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('wo'),
+      paragraph("one"),
+      paragraph("wo"),
     ]);
   });
 
-  it('deleteForward uses the transaction target when at is omitted inside editor.update', () => {
+  it("deleteForward uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupEditor();
     let calls = 0;
 
@@ -748,7 +753,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 1 },
           focus: { path: [1, 0], offset: 1 },
         };
@@ -756,17 +761,17 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((_tx) => {
-      editorDeleteForward(editor, { unit: 'character' });
+      editorDeleteForward(editor, { unit: "character" });
     });
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph('to'),
+      paragraph("one"),
+      paragraph("to"),
     ]);
   });
 
-  it('deleteFragment uses the transaction target when at is omitted inside editor.update', () => {
+  it("deleteFragment uses the transaction target when at is omitted inside editor.update", () => {
     const editor = setupCollapsedEditor();
     let calls = 0;
 
@@ -775,7 +780,7 @@ describe('primitive method runtime contract', () => {
         calls += 1;
 
         return {
-          kind: 'text' as const,
+          kind: "text" as const,
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 3 },
         };
@@ -788,8 +793,25 @@ describe('primitive method runtime contract', () => {
 
     assert.equal(calls, 1);
     assert.deepEqual(editorGetChildren(editor), [
-      paragraph('one'),
-      paragraph(''),
+      paragraph("one"),
+      paragraph(""),
     ]);
+  });
+
+  it("deleteFragment deletes only exact node-selection members", () => {
+    const editor = setupThreeBlockEditor();
+
+    setEditorTargetRuntime(editor, {
+      resolveImplicitTarget() {
+        return SelectionApi.nodes([[0], [2]]);
+      },
+    });
+
+    editor.update((_tx) => {
+      editorDeleteFragment(editor);
+    });
+
+    assert.deepEqual(editorGetChildren(editor), [paragraph("two")]);
+    assert.equal(editorGetSelection(editor), null);
   });
 });

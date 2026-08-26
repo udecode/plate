@@ -110,9 +110,7 @@ export const getBoundingClientRect = (
 ): DOMRect | undefined => {
   const atRanges: Range[] = (() => {
     if (!at) {
-      const selection = editor.read.selection();
-
-      return selection ? [selection] : [];
+      return [...editor.read.selection.ranges()];
     }
 
     const atArray = Array.isArray(at) && !PathApi.isPath(at) ? at : [at];

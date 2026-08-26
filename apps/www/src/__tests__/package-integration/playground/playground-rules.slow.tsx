@@ -104,7 +104,6 @@ describe('playground rules current contract', () => {
         type: 'heading',
       });
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -120,7 +119,6 @@ describe('playground rules current contract', () => {
         type: 'blockquote',
       });
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       });
@@ -261,7 +259,6 @@ describe('playground rules current contract', () => {
         children: [{ text: '' }],
       });
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -333,7 +330,6 @@ describe('playground rules current contract', () => {
         type: 'paragraph',
       });
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });

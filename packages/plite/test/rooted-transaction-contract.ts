@@ -7,6 +7,7 @@ import {
   defineEditorSchema,
   type Element,
   schema,
+  SelectionApi,
 } from '@platejs/plite';
 import { insertNodes as editorInsertNodes } from '@platejs/plite/internal';
 
@@ -79,7 +80,7 @@ describe('rooted transaction contract', () => {
 
     assert.deepEqual(
       editor.read((state) => state.selection()),
-      selection
+      { anchor: selection.anchor, focus: selection.focus }
     );
   });
 
@@ -305,7 +306,131 @@ describe('rooted transaction contract', () => {
     });
     assert.deepEqual(
       editor.read((state) => state.selection()),
-      selection
+      { anchor: selection.anchor, focus: selection.focus }
     );
+  });
+
+  it('routes exact node removals through their named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [paragraph('one'), paragraph('middle'), paragraph('three')],
+        },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.remove({
+        at: SelectionApi.nodes([[0], [2]], { root: 'header' }),
+      });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: { header: [paragraph('middle')] },
+    });
+  });
+
+  it('routes exact node merges through their named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('one'), paragraph('two')] },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.merge({ at: SelectionApi.nodes([[1]], { root: 'header' }) });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: { header: [paragraph('onetwo')] },
+    });
+  });
+
+  it('routes exact node moves through their named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('one'), paragraph('two')] },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.move({
+        at: SelectionApi.nodes([[0]], { root: 'header' }),
+        to: [2],
+      });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: { header: [paragraph('two'), paragraph('one')] },
+    });
+  });
+
+  it('routes exact node wraps through their named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.wrap(
+        { type: 'quote', children: [] },
+        { at: SelectionApi.nodes([[0]], { root: 'header' }) }
+      );
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: {
+        header: [{ type: 'quote', children: [paragraph('header')] }],
+      },
+    });
+  });
+
+  it('routes exact node unwraps through their named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [{ type: 'quote', children: [paragraph('header')] }],
+        },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.unwrap({ at: SelectionApi.nodes([[0]], { root: 'header' }) });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: { header: [paragraph('header')] },
+    });
+  });
+
+  it('routes exact node lifts through their named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [{ type: 'quote', children: [paragraph('header')] }],
+        },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.lift({ at: SelectionApi.nodes([[0, 0]], { root: 'header' }) });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('body')],
+      roots: { header: [paragraph('header')] },
+    });
   });
 });

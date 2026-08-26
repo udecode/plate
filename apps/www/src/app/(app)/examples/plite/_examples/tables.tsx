@@ -132,7 +132,7 @@ const TablesExample = () => {
       if (reverse) {
         const previousCellPath = [...rowPath, cellIndex - 1];
 
-        if (cellIndex > 0 && tx.nodes.hasPath(previousCellPath)) {
+        if (cellIndex > 0 && tx.nodes.get(previousCellPath)) {
           targetPath = previousCellPath;
         } else if (rowIndex > 0) {
           const previousRowPath = [...tablePath, rowIndex - 1];
@@ -146,12 +146,12 @@ const TablesExample = () => {
       } else {
         const nextCellPath = [...rowPath, cellIndex + 1];
 
-        if (tx.nodes.hasPath(nextCellPath)) {
+        if (tx.nodes.get(nextCellPath)) {
           targetPath = nextCellPath;
         } else {
           const nextRowPath = [...tablePath, rowIndex + 1];
 
-          if (tx.nodes.hasPath(nextRowPath)) {
+          if (tx.nodes.get(nextRowPath)) {
             targetPath = [...nextRowPath, 0];
           }
         }

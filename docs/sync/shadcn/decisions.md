@@ -1,4 +1,4 @@
-# Sync Shadcn Decisions
+# Sync shadcn decisions
 
 These are the default decisions for future upstream shadcn syncs. Change
 them only with an explicit user decision and record the reason in the sync plan.
@@ -20,12 +20,13 @@ them only with an explicit user decision and record the reason in the sync plan.
 | Homepage | keep Plate | Keep a Plate-centered homepage without old themes/customizer/project state. |
 | Editor demos | keep Plate | Preserve editor demos, block previews, and `/view/[name]` rendering. |
 | `/blocks` gallery | fork selectively | Keep Plate demo routes where useful; do not import upstream block gallery product pages by default. |
-| `/create` | exclude upstream | Do not support `ui.shadcn.com/create` as a Plate product surface unless the user explicitly asks for a Plate create flow. |
+| `/create` | keep thin Plate fork | Select a Plate editor preset, Base or Radix, and one of the eight pinned upstream code styles. Shadcn owns the command and preset protocol; do not copy its full project designer. Prove Base/Nova and Radix/Luma against fresh local Plate artifacts before exposing changed commands. |
 | `/charts` | exclude upstream | Do not add public charts pages by default. |
 | `/colors` | exclude upstream | Do not add public colors pages by default. |
 | v0 | exclude all | Do not import v0 routes, buttons, copy actions, project hooks, or init variants. |
-| Init route | keep non-v0 Plate bootstrap | Keep `/init` and `/init.md` only for shadcn-compatible `@plate` bootstrap. |
-| Theme/customizer | delete Plate residue | Keep upstream token/style system; discard Plate theme library, customizer drawer, project state, lift mode, and random theme UI. |
+| Init route | exclude | Use the upstream `shadcn create` command directly. Do not add a Plate `/init`, `/init.md`, preset proxy, redirect, or compatibility helper. |
+| Registry code styles | adopt pinned transforms | Use Nova by default and materialize Nova, Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea from pinned upstream style inputs without cloning the physical registry graph. |
+| Theme/customizer | delete Plate residue | Keep the accepted registry code-style transforms; discard Plate theme library, customizer drawer, project state, lift mode, random theme UI, and shadcn's full theme/font/color designer. |
 | CN docs | keep Plate | Preserve CN routes, labels, language dropdown, and Fumadocs i18n behavior. |
 | MCP | keep Plate | Preserve MCP dialog/docs/header entry with the `@plate` namespace. |
 | Plate Plus/Pro | keep Plate | Preserve Plus/Pro hooks and links where they support Plate docs. |

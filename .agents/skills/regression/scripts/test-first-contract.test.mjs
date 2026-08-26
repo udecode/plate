@@ -39,6 +39,25 @@ test('Regression makes executable tests the durable behavior authority', () => {
   assert.match(methodology, /The goal plan is transient execution state/);
 });
 
+test('an exact unit RED stops new E2E test escalation', () => {
+  const rule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    rule,
+    /When an exact owner-level unit or\s+package test is RED[\s\S]*Do not add a new E2E\s+test/
+  );
+  assert.match(
+    methodology,
+    /E2E is the fallback regression layer[\s\S]*cannot be reproduced RED in an owner-level unit or package test/
+  );
+  assert.match(template, /Red-test escalation/);
+  assert.match(template, /`unit-red:`[\s\S]*`e2e-required:`/);
+});
+
 test('Regression corpus work derives coordination from executable sources', () => {
   const methodology = read(
     '.agents/rules/regression/references/methodology.md'
@@ -129,6 +148,43 @@ test('reporter follow-ups extend a cumulative phase-aware oracle', () => {
     /Every required evidence row maps to a phase-specific executable oracle/
   );
   assert.match(template, /\| Case ID \| Observation \| Phase \| Applies \|/);
+});
+
+test('reporter rerender claims require a route-wide repeated-component oracle', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+
+  assert.match(
+    regressionRule,
+    /reporter names rerendering[\s\S]*exact-route, phase-specific repeated-component inventory[\s\S]*wrapper-local Profiler[\s\S]*every family above 5%[\s\S]*at least 90%/
+  );
+  assert.match(
+    methodology,
+    /reporter-visible rerender[\s\S]*exact-route, phase-specific component[\s\S]*wrapper-local Profiler[\s\S]*every family above 5%[\s\S]*at least 90%/
+  );
+});
+
+test('plain reporter UI nouns require a complete visible-affordance inventory', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /plain UI noun[\s\S]*reporter-noun:[\s\S]*affordance-inventory:[\s\S]*uninventoried matching affordance/
+  );
+  assert.match(
+    methodology,
+    /Plain UI nouns describe the visible job[\s\S]*source and exact\s+route[\s\S]*accepted-product authority/
+  );
+  assert.match(
+    template,
+    /pointer-feedback` positive assertion[\s\S]*reporter-noun:[\s\S]*affordance-inventory:/
+  );
 });
 
 test('stability-only failures freeze product edits until proof drift is classified', () => {
@@ -283,6 +339,8 @@ test('blocking pixel classifiers reject absent and duplicate layers', () => {
     '.agents/rules/regression/references/methodology.md'
   );
   const template = read('docs/plans/templates/regression.md');
+  const patchRule = read('.agents/rules/patch.mdc');
+  const browserPack = read('docs/plans/templates/packs/browser.md');
 
   assert.match(
     regressionRule,
@@ -296,6 +354,44 @@ test('blocking pixel classifiers reject absent and duplicate layers', () => {
     template,
     /blocking pixel classifier[\s\S]*known-correct single-layer[\s\S]*known-absent[\s\S]*known-invalid duplicate-layer[\s\S]*width or outer geometry alone cannot certify layer count[\s\S]*freezes product edits/i
   );
+  assert.match(
+    regressionRule,
+    /geometry-paint[\s\S]*actual pixel capture[\s\S]*positive-control: pass[\s\S]*negative-control: pass[\s\S]*duplicate-control: pass[\s\S]*Computed[\s\S]*style[\s\S]*diagnostics only/
+  );
+  assert.match(
+    methodology,
+    /geometry-paint[\s\S]*actual pixel capture[\s\S]*positive-control: pass[\s\S]*negative-control: pass[\s\S]*duplicate-control: pass[\s\S]*Computed style[\s\S]*cannot close/
+  );
+  assert.match(
+    patchRule,
+    /reporter-visible paint claim[\s\S]*classify actual pixels[\s\S]*known-correct single-layer[\s\S]*known-absent[\s\S]*known-invalid[\s\S]*duplicate-layer controls[\s\S]*needs-repro/
+  );
+  assert.match(
+    browserPack,
+    /reporter-visible paint claim[\s\S]*classified[\s\S]*known-correct[\s\S]*single-layer[\s\S]*known-absent[\s\S]*known-invalid duplicate-layer[\s\S]*positive-control: pass[\s\S]*negative-control: pass[\s\S]*duplicate-control: pass[\s\S]*Computed style[\s\S]*not final paint proof/
+  );
+});
+
+test('shared style changes inventory explicit paint neutralizers', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /shared CSS selector, marker, class map, or style expansion[\s\S]*every current consumer[\s\S]*neutralize or override[\s\S]*duplicate or inherited\s+paint/
+  );
+  assert.match(
+    methodology,
+    /shared CSS selector, marker, class map, or style expansion[\s\S]*transparent, borderless, shadowless, and ringless wrappers[\s\S]*positive oracle[\s\S]*cannot authorize/
+  );
+  assert.match(
+    template,
+    /shared CSS selector, marker, class map, or style expansion[\s\S]*transparent, borderless, shadowless, and ringless overrides[\s\S]*duplicate\/inherited-paint geometry oracle/
+  );
+  assert.match(template, /Shared-style consumer closure/);
 });
 
 test('Regression routes semantic completion through executable helpers', () => {

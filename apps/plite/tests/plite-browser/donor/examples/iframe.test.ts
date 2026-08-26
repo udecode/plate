@@ -30,7 +30,6 @@ test.describe('iframe editor', () => {
       }
 
       handle.selectRange({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -92,7 +91,6 @@ test.describe('iframe editor', () => {
         }
 
         handle.selectRange({
-          kind: 'text',
           anchor: { path: [1, 1], offset: 0 },
           focus: { path: [1, 1], offset: 'media queries'.length },
         });

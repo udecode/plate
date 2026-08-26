@@ -5,7 +5,7 @@ import { registryFeatures } from './registry-features';
 const registryApi: Registry['items'] = [
   {
     dependencies: [
-      '@ai-sdk/gateway',
+      '@ai-sdk/gateway@3',
       '@platejs/ai',
       '@platejs/markdown',
       '@platejs/table',
@@ -130,7 +130,6 @@ export const registryComponents: Registry['items'] = [
       '@platejs/comment',
       '@platejs/markdown',
       '@platejs/plite',
-      '@platejs/selection',
       '@platejs/table',
       'ai@6',
     ],

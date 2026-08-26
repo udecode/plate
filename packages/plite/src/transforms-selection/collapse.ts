@@ -10,7 +10,7 @@ export const collapse: SelectionMutationMethods['collapse'] = (
   const { edge = 'anchor' } = options;
   const selection = getCurrentSelection(editor);
 
-  if (!selection) {
+  if (!selection || !RangeApi.isRange(selection)) {
     return;
   }
   if (edge === 'anchor') {

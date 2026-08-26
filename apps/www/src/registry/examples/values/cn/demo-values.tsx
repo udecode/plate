@@ -5,7 +5,7 @@ import { basicBlocksValue } from './basic-blocks-value';
 import { basicMarksValue } from './basic-marks-value';
 import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
-import { blockSelectionValue } from './block-selection-value';
+import { nodeSelectionValue } from './node-selection-value';
 import { columnValue } from './column-value';
 import { copilotValue } from './copilot-value';
 import { cursorOverlayValue } from './cursor-overlay-value';
@@ -46,7 +46,7 @@ const values = {
   'basic-marks': basicMarksValue,
   'basic-nodes': basicNodesValue,
   'block-menu': blockMenuValue,
-  'block-selection': blockSelectionValue,
+  'node-selection': nodeSelectionValue,
   // callout: calloutValue,
   column: columnValue,
   copilot: copilotValue,

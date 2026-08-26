@@ -7,6 +7,7 @@ import type { EditorStaticApi } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import { setNodes } from '../transforms-node/set-nodes';
 import { node } from './node';
 
@@ -18,11 +19,13 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget();
 
-    if (!selection || !RangeApi.isRange(selection)) {
-      return;
-    }
+    if (!selection) return;
     const schema = getEditorSchema(editor);
-    const root = selection.anchor.root ?? selection.focus.root ?? 'main';
+    const root = SelectionApi.isNode(selection)
+      ? (selection.root ?? 'main')
+      : RangeApi.isRange(selection)
+        ? selection.anchor.root ?? selection.focus.root ?? 'main'
+        : 'main';
 
     const match = (innerNode: Node, path: Path) => {
       if (!NodeApi.isText(innerNode)) {
@@ -38,6 +41,23 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
         (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
       );
     };
+    if (SelectionApi.isNode(selection)) {
+      for (const range of editor.read.selection.ranges()) {
+        setNodes(
+          editor,
+          { [key]: value },
+          {
+            at: range,
+            marks: true,
+            match,
+            split: true,
+            voids: true,
+          }
+        );
+      }
+      return;
+    }
+    if (!RangeApi.isRange(selection)) return;
     const expandedSelection = RangeApi.isExpanded(selection);
     let markAcceptingVoidSelected = false;
     let selectedPath: Path | undefined;

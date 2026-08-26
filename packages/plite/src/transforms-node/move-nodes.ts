@@ -4,7 +4,7 @@ import {
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { LocationApi, NodeApi } from '../interfaces';
+import { LocationApi, NodeApi, SelectionApi } from '../interfaces';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
@@ -28,7 +28,9 @@ export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
       return;
     }
 
-    if (match == null) {
+    if (SelectionApi.isNode(at)) {
+      match ??= () => true;
+    } else if (match == null) {
       if (LocationApi.isPath(at)) {
         if (at.length !== 0) {
           const movingNode = getNode(editor, at)[0];

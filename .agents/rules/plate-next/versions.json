@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 106,
+  "latestVersion": 110,
   "versions": [
     {
       "version": 0,
@@ -1255,6 +1255,52 @@
         "Prove pre-publication failures roll back, post-publication failures preserve the commit and later observers, and a follow-up update remains usable.",
         "Regenerate Best API and related skill mirrors, verify doctrine fingerprints, and close agent-native plus P1 autoreview."
       ]
+    },
+    {
+      "version": 107,
+      "date": "2026-08-24",
+      "doctrineFingerprint": "sha256:4d6dd753e525417bfc7cab465d0cd42662995d19dbe831607384481557fa7c43",
+      "summary": "Plate registry provider support is explicit, with one canonical graph and sparse Radix/Base UI owners.",
+      "migrationChecks": [
+        "Reject direct assignment of upstream preset bases as Plate capability; audit complete installed graphs and fail closed on unsupported provider/style routes.",
+        "Build docs and primitive-agnostic registry items once, then retain provider variants only for named reusable UI boundaries that write to one installed target.",
+        "Preserve semantic item ids, materialize same-style Plate dependencies at the request boundary, and prove Radix/Base installs, types, generated output, and Browser behavior."
+      ]
+    },
+    {
+      "version": 108,
+      "date": "2026-08-25",
+      "doctrineFingerprint": "sha256:5344dafb618d09cabd1a8853aa524a01744d6ea64c307750023e876382c932b3",
+      "summary": "Schema block reads and mutations have one canonical owner without filtered selection projections or structural aliases.",
+      "migrationChecks": [
+        "Replace generic traversal plus schema block predicates with nodes.block() for one nearest block or nodes.blocks() for every relevant block.",
+        "Keep selection.nodes() exact and option-free; do not add block flags, filtering overloads, or a parallel block-selection namespace.",
+        "Keep semantic block writes under blocks.set, blocks.toggle, blocks.duplicate, and blocks.insertAfter while generic lifting stays under nodes.lift.",
+        "Use props-first blocks.toggle({ type, ...props }, options), regenerate agent mirrors, and audit authored code and teaching for every rejected call shape."
+      ]
+    },
+    {
+      "version": 109,
+      "date": "2026-08-25",
+      "doctrineFingerprint": "sha256:171012892b43c4f51b4933f09cdc43b0f0e1c08be218447e603ecce53921d17b",
+      "summary": "Editor selection is one closed core model without plugin-defined kinds, parallel stores, or selection UI plugins.",
+      "migrationChecks": [
+        "Delete selectionKinds, EditorSelectionSpec, custom selection codecs, and feature-owned mapping, history, marks, slice, or DOM-range protocols.",
+        "Store exact multi-node membership only in directional core NodeSelection with anchorPath, focusPath, paths, and an optional root.",
+        "Use selection() for one representative directed range and selection.nodes() or selection.ranges() for exact plural membership.",
+        "Derive feature geometry through one owner-local read, keep gestures and overlays in presentation code, regenerate mirrors, and prove zero stale custom-selection teaching."
+      ]
+    },
+    {
+      "version": 110,
+      "date": "2026-08-26",
+      "doctrineFingerprint": "sha256:9ea8e99db4388a62e6fe579df8964006d71514fd87bea087913329b074bf83c4",
+      "summary": "Singular selection reads and generic range predicates share one representative range contract.",
+      "migrationChecks": [
+        "Make selection(), isCollapsed(), isExpanded(), and block-edge predicates inspect the same representative Range or null for text and node selections.",
+        "Use selection.nodes() or selection.ranges() for exact node membership and never encode a kind-specific false result in a generic range predicate.",
+        "Audit consumers that duplicated node-selection checks around isExpanded(), regenerate doctrine mirrors, and prove range and exact-membership behavior independently."
+      ]
     }
   ],
   "retiredPackages": {
@@ -1267,6 +1313,11 @@
       "appliedVersion": 50,
       "retiredAt": "2026-08-16",
       "evidence": "docs/plans/2026-08-16-hard-cut-docx-package-topology.md"
+    },
+    "selection": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-25",
+      "evidence": "docs/plans/2026-08-25-selection-read-surface-hard-cut.md"
     }
   },
   "packages": {
@@ -1463,12 +1514,6 @@
     "resizable": {
       "appliedVersion": 50,
       "fingerprint": "sha256:c87b8624a4a9884cc4fda394e13402e224f96302b7af0524e2328f78d9499d59",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "selection": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:efbea8ffbc45f5cf740289ff386a0bdc8e5a4e2f68552982212b96c464f75168",
       "verifiedAt": "2026-08-03",
       "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },

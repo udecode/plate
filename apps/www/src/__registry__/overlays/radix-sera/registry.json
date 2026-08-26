@@ -1,0 +1,74 @@
+{
+  "name": "plate",
+  "homepage": "https://platejs.org",
+  "items": [
+    {
+      "name": "editor-context-menu",
+      "title": "Editor Context Menu",
+      "description": "Provider-neutral context menu behavior for Plate UI.",
+      "registryDependencies": [
+        "context-menu"
+      ],
+      "files": [
+        {
+          "path": "src/registry/bases/radix/context-menu.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/context-menu.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "title": "Editor Dropdown Menu",
+      "description": "Provider-neutral dropdown menu behavior for Plate UI.",
+      "registryDependencies": [
+        "dropdown-menu"
+      ],
+      "files": [
+        {
+          "path": "src/registry/bases/radix/dropdown-menu.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/dropdown-menu.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
+      "name": "floating-popover",
+      "title": "Floating Popover",
+      "description": "Provider-neutral anchored floating content for Plate UI.",
+      "dependencies": [
+        "@radix-ui/react-popover"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "src/registry/bases/radix/floating-popover.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/floating-popover.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
+      "name": "toolbar",
+      "title": "Toolbar",
+      "description": "A customizable toolbar component with various button styles and group",
+      "dependencies": [
+        "@radix-ui/react-toolbar",
+        "@radix-ui/react-tooltip"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "src/registry/bases/radix/toolbar.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/toolbar.tsx"
+        }
+      ],
+      "meta": {},
+      "type": "registry:component"
+    }
+  ]
+}

@@ -328,59 +328,52 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
           return;
         }
 
-        let currentAt = options?.at;
-
-        if (currentAt === undefined) {
-          const selection = tx.selection();
-          const block = selection ? tx.nodes.block({ at: selection }) : null;
-
-          if (block) currentAt = PathApi.next(block[1]);
-        }
-
         const { at: _at, ...restOptions } = options ?? {};
 
         if (store.get('disableEmptyPlaceholder')) {
           tx.tags.add('history-push');
         }
 
-        const insertedUploads: Array<[NodeKey, File]> = [];
-
-        for (const [index, file] of Array.from(files).entries()) {
-          if (index > 0) {
-            currentAt = currentAt ? PathApi.next(currentAt) : undefined;
-          }
-
+        const uploads = Array.from(files).flatMap((file) => {
           const fileType = fileTypes.get(file);
           const mediaType = fileType
             ? uploadConfig[fileType]?.mediaType
             : undefined;
 
-          if (!mediaType) continue;
+          if (!mediaType) return [];
 
           const element = tx.schema.create(type, { mediaType });
 
-          tx.nodes.insert(element, {
-            ...restOptions,
-            at: currentAt,
-          });
-          insertedUploads.push([tx.key(element), file]);
+          return [{ element, file }];
+        });
+
+        if (uploads.length === 0) return;
+
+        const elements = uploads.map(({ element }) => element);
+
+        if (options?.at === undefined) {
+          tx.blocks.insertAfter(elements, restOptions);
+        } else {
+          tx.nodes.insert(elements, { ...restOptions, at: options.at });
         }
 
-        if (insertedUploads.length > 0) {
-          afterCommit(({ editor: innerEditor }) => {
-            for (const [nodeKey, file] of insertedUploads) {
-              const entry = innerEditor.read.nodes.get(nodeKey);
+        const insertedUploads: Array<[NodeKey, File]> = uploads.map(
+          ({ element, file }) => [tx.key(element), file]
+        );
 
-              if (
-                entry &&
-                NodeApi.isElement(entry[0]) &&
-                entry[0].type === type
-              ) {
-                api.addUploadingFile(nodeKey, file);
-              }
+        afterCommit(({ editor: innerEditor }) => {
+          for (const [nodeKey, file] of insertedUploads) {
+            const entry = innerEditor.read.nodes.get(nodeKey);
+
+            if (
+              entry &&
+              NodeApi.isElement(entry[0]) &&
+              entry[0].type === type
+            ) {
+              api.addUploadingFile(nodeKey, file);
             }
-          });
-        }
+          }
+        });
       },
       replaceMedia: (
         {

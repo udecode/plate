@@ -93,7 +93,7 @@ const assertSelectionValidOrNull = (
   }
 
   assert.doesNotThrow(() => {
-    editorString(editor, selection);
+    editor.read.text.string(selection);
   });
 };
 

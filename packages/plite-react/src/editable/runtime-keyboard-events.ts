@@ -1,4 +1,9 @@
-import type { Point, Range, NodeKey } from '@platejs/plite';
+import {
+  type NodeKey,
+  type Point,
+  type Selection,
+  SelectionApi,
+} from '@platejs/plite';
 import {
   createDOMGeometryKernel,
   type DOMPhaseScheduler,
@@ -31,6 +36,7 @@ import {
 import { applyEditableKeyDown } from './keyboard-input-strategy';
 import {
   getSnapshot as editorGetSnapshot,
+  getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
@@ -53,9 +59,10 @@ const MODIFIER_ONLY_KEYS = new Set([
 
 const getVerticalNavigationFocus = (
   editor: ReactRuntimeEditor,
-  selection: Range | null
+  selection: Selection
 ): Point | null =>
-  readPliteViewSelection(editor)?.focus.point ?? selection?.focus ?? null;
+  readPliteViewSelection(editor)?.focus.point ??
+  (selection && !SelectionApi.isNode(selection) ? selection.focus : null);
 
 const resolveVerticalGoalX = (
   editor: ReactRuntimeEditor,
@@ -296,6 +303,7 @@ export const useRuntimeKeyboardEvents = ({
         'keydown.snapshot-selection',
         () => editorGetSnapshot(editor).selection
       );
+      const snapshotRange = getSelectionDOMRange(editor, snapshotSelection);
       const verticalFocus = isPhysicalVerticalMove
         ? getVerticalNavigationFocus(editor, snapshotSelection)
         : null;
@@ -335,7 +343,7 @@ export const useRuntimeKeyboardEvents = ({
             domStrategyRuntime,
             editor,
             event,
-            selection: snapshotSelection,
+            selection: snapshotRange,
           })
       );
       const modelOwnsContentRootVerticalShift = measureRuntimeKeyDownPhase(
@@ -346,7 +354,7 @@ export const useRuntimeKeyboardEvents = ({
             event,
             getActiveContentRootOwner:
               pliteRuntimeContext?.getActiveContentRootOwner,
-            selection: snapshotSelection,
+            selection: snapshotRange,
           })
       );
       const modelOwnsContentRootVerticalMove = measureRuntimeKeyDownPhase(
@@ -365,7 +373,7 @@ export const useRuntimeKeyboardEvents = ({
               getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
               isRTL: false,
               preferredX: preferredVerticalX,
-              selection: snapshotSelection,
+              selection: snapshotRange,
             })
           )
       );
@@ -541,10 +549,7 @@ export const useRuntimeKeyboardEvents = ({
           const viewRoot = toInternalRoot(
             editor.read((state) => state.view.root())
           );
-          const anchorRoot = selection.anchor.root ?? MAIN_ROOT_KEY;
-          const focusRoot = selection.focus.root ?? MAIN_ROOT_KEY;
-
-          return anchorRoot !== viewRoot || focusRoot !== viewRoot;
+          return (SelectionApi.root(selection) ?? MAIN_ROOT_KEY) !== viewRoot;
         })();
       const shouldCaptureProjectedEditing =
         decision.targetOwner === 'internal-control' &&

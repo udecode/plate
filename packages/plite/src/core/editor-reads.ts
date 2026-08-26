@@ -1,12 +1,17 @@
-import type { ContentSlice } from '../interfaces/editor';
+import type {
+  ContentSlice,
+  EditorSliceReadOptions,
+  NodeKey,
+} from '../interfaces/editor';
 import type { Node, NodeEntry } from '../interfaces/node';
 import { defineRead } from './read-definition';
 
 export const editorReads = Object.freeze({
   nodes: Object.freeze({
-    isSelectable: defineRead<Readonly<{ element: Node }>, boolean>(
-      'plite:nodes.is-selectable'
-    ),
+    isSelectable: defineRead<
+      Readonly<{ element: Node; nodeKey: NodeKey | null }>,
+      boolean
+    >('plite:nodes.is-selectable'),
     shouldMergeNodesRemovePrevNode: defineRead<
       Readonly<{
         current: NodeEntry;
@@ -16,8 +21,13 @@ export const editorReads = Object.freeze({
     >('plite:nodes.should-merge-nodes-remove-prev-node'),
   }),
   slice: Object.freeze({
-    export: defineRead<Readonly<{ slice: ContentSlice }>, ContentSlice>(
-      'plite:slice.export'
-    ),
+    export: defineRead<
+      Readonly<{ options: EditorSliceReadOptions; slice: ContentSlice }>,
+      ContentSlice
+    >('plite:slice.export'),
+    get: defineRead<
+      Readonly<{ options: EditorSliceReadOptions; slice: ContentSlice }>,
+      ContentSlice
+    >('plite:slice.get'),
   }),
 });

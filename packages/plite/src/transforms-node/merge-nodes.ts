@@ -5,7 +5,7 @@ import {
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { LocationApi } from '../interfaces';
+import { LocationApi, SelectionApi } from '../interfaces';
 import {
   above as editorAbove,
   getChildren as editorGetChildren,
@@ -104,6 +104,25 @@ export const mergeNodes = ((
     const { hanging = false, voids = false, mode = 'lowest' } = options;
 
     if (!at) {
+      return;
+    }
+
+    if (SelectionApi.isNode(at)) {
+      const nodeMatch = match ?? (() => true);
+      const anchors = Array.from(
+        getNodes(editor, { at, match: nodeMatch, mode, voids }),
+        ([, path]) =>
+          editor.anchor(path, {
+            association: 'forward',
+            deletion: 'drop',
+          })
+      ).toReversed();
+
+      for (const anchor of anchors) {
+        const path = anchor.release();
+
+        if (path) mergeNodes(editor, { ...options, at: path });
+      }
       return;
     }
 

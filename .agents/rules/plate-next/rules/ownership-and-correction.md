@@ -55,13 +55,14 @@ rerun the scoped correction sweep against the repaired doctrine before package
 attestation. Never wait for a separate skill-repair prompt or attest a package
 against rules that still teach the rejected shape.
 
-Custom selections follow installed capability truth. A plugin declares the
-payload, codec, validator, mapping, and behavior once through
-`selectionKinds`; concrete editor reads and updates infer that payload only
-when the plugin is installed. Cut every ambient module augmentation, global
-selection-kind map, side-effect type import, duplicate registration, and open
-custom-kind fallback. Keep a separate earlier `.extend({ selectionKinds })`
-stage only when later stages genuinely consume the inferred selection type.
+Editor selection is closed core truth: text selection plus one directional
+exact node selection. Cut custom selection kinds, plugin selection payloads,
+parallel selected-node stores, duplicate codecs, and feature-owned mapping or
+history protocols. Feature plugins write core exact nodes and derive only the
+geometry their domain owns.
+The callable selection read and every generic range predicate observe the same
+representative range. Exact node membership belongs only to the plural node and
+range reads; never preserve a selection-kind branch inside a range predicate.
 Concrete editor read/update callbacks stay contravariant; callback bivariance
 must not let annotations manufacture uninstalled capabilities. Keep exact
 tuples invariant, erase only at named internal runtime boundaries, and keep

@@ -1,4 +1,4 @@
-import type { Range } from '@platejs/plite';
+import type { Range, Selection } from '@platejs/plite';
 
 export type EditableCommand =
   | {
@@ -10,7 +10,7 @@ export type EditableCommand =
   | {
       kind: 'delete-fragment';
       direction?: 'backward' | 'forward';
-      selection?: Range | null;
+      selection?: Range | Selection;
     }
   | { kind: 'history'; direction: 'redo' | 'undo' }
   | { kind: 'insert-break'; variant: 'open-line' | 'paragraph' | 'soft' }

@@ -2,6 +2,7 @@
 
 import { defineBasePlugin } from '@platejs/core';
 import { schema } from '@platejs/plite';
+import { getEditorLiveSelection } from '@platejs/plite/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import {
@@ -12,7 +13,7 @@ import {
 
 jsxt;
 
-const createCellSelectionEditor = (input: TestEditor, disableMerge: boolean) =>
+const createTableSelectionEditor = (input: TestEditor, disableMerge: boolean) =>
   createTestTableEditor({
     plugins: getTestTablePlugins({ disableMerge }),
     selection: input.selection,
@@ -134,7 +135,7 @@ describe('BaseTablePlugin deletion', () => {
     describe.each([{ disableMerge: true }, { disableMerge: false }])(
       'with disableMerge: $disableMerge',
       ({ disableMerge }) => {
-        let editor: ReturnType<typeof createCellSelectionEditor>;
+        let editor: ReturnType<typeof createTableSelectionEditor>;
         let output: TestEditor;
 
         beforeEach(() => {
@@ -196,7 +197,7 @@ describe('BaseTablePlugin deletion', () => {
             </editor>
           ) as TestEditor;
 
-          editor = createCellSelectionEditor(input, disableMerge);
+          editor = createTableSelectionEditor(input, disableMerge);
 
           editor.update.fragment.delete();
         });
@@ -206,9 +207,10 @@ describe('BaseTablePlugin deletion', () => {
         });
 
         it('preserves the structural cell selection', () => {
-          expect(editor.read.selection()).toMatchObject({
-            ...output.selection!,
-            kind: 'table-cell',
+          expect(getEditorLiveSelection(editor)).toMatchObject({
+            anchorPath: [0, 0, 0],
+            focusPath: [0, 1, 0],
+            kind: 'node',
           });
           expect(editor.read.selection.ranges()).toHaveLength(2);
         });

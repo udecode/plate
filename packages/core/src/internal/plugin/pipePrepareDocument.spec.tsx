@@ -167,7 +167,10 @@ describe('pipePrepareDocument', () => {
           ],
         });
 
-        expect(editor.read.selection()).toEqual(selection);
+        expect(editor.read.selection()).toEqual({
+          anchor: selection.anchor,
+          focus: selection.focus,
+        });
       });
 
       it('auto-select start when autoSelect is "start"', () => {
@@ -177,7 +180,6 @@ describe('pipePrepareDocument', () => {
         });
 
         expect(editor.read.selection()).toEqual({
-          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         });
@@ -190,7 +192,6 @@ describe('pipePrepareDocument', () => {
         });
 
         expect(editor.read.selection()).toEqual({
-          kind: 'text',
           anchor: { offset: 4, path: [0, 0] },
           focus: { offset: 4, path: [0, 0] },
         });

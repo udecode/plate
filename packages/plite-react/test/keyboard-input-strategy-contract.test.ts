@@ -380,7 +380,6 @@ describe('keyboard input strategy', () => {
       });
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [1, 0] },
       });
@@ -436,7 +435,6 @@ describe('keyboard input strategy', () => {
       });
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [1, 0] },
       });
@@ -534,7 +532,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).not.toEqual({
-        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       });
@@ -631,7 +628,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).not.toEqual({
-        kind: 'text',
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       });
@@ -1188,7 +1184,6 @@ describe('keyboard input strategy', () => {
       ).toEqual([true, true]);
       expect(getMountedViewEditor).toHaveBeenLastCalledWith('main');
       expect(mainEditor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 'body'.length },
         focus: { path: [0, 0], offset: 'body'.length },
       });
@@ -1727,7 +1722,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: {
           offset: 'Overview tab visible text'.length,
           path: [0, 0, 0],
@@ -1816,7 +1810,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       });
@@ -1895,7 +1888,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [2, 0] },
       });
@@ -1971,7 +1963,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 'Next'.length, path: [2, 0] },
       });
@@ -2047,7 +2038,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 'Intro visible before hidden '.length, path: [0, 0] },
       });
@@ -2128,7 +2118,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [3, 0] },
         focus: { offset: 0, path: [3, 0] },
       });
@@ -2205,7 +2194,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [2, 0] },
         focus: { offset: 0, path: [2, 0] },
       });
@@ -2280,7 +2268,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -2355,7 +2342,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: startOffset, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -2430,7 +2416,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: introStart.length, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });
@@ -2504,7 +2489,6 @@ describe('keyboard input strategy', () => {
       expect(result.handled).toBe(false);
       expect(event.preventDefault).not.toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { offset: intro.length, path: [0, 0] },
         focus: { offset: 0, path: [1, 0] },
       });

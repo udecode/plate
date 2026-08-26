@@ -88,7 +88,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 
     if (hasReadOnlyModelSelection) {
       editor.update((tx) => {
-        tx.selection.clear();
+        tx.selection.set(null);
       });
     }
 

@@ -206,96 +206,44 @@ const pasteClipboardAndReadFormats = async (page: Page) => {
 const getEditor = (page: Page) =>
   page.locator('[data-plite-editor="true"][contenteditable="true"]');
 
-const getOriginalTable = (page: Page) => {
-  const editor = getEditor(page);
+const TABLE_CELL_SELECTOR = ':is(td, th)[data-plite-node-key]';
+const INITIAL_TABLE_CELL_IDS = [
+  'table-demo-header-plugin',
+  'table-demo-header-element',
+  'table-demo-header-inline',
+  'table-demo-header-void',
+  'table-demo-heading-name',
+  'table-demo-heading-element',
+  'table-demo-heading-inline',
+  'table-demo-heading-void',
+  'table-demo-image-name',
+  'table-demo-image-element',
+  'table-demo-image-inline',
+  'table-demo-image-void',
+  'table-demo-mention-name',
+  'table-demo-mention-element',
+  'table-demo-mention-inline',
+  'table-demo-mention-void',
+] as const;
 
-  return editor.locator('table').filter({
-    has: page.locator('[data-table-cell-id="table-demo-header-plugin"]'),
-  });
-};
+const getOriginalTable = (page: Page) =>
+  getEditor(page).locator('table').filter({ hasText: 'Plugin' });
 
-const getTableCell = (table: Locator, id: string) =>
-  table.locator(`:is(td, th)[data-table-cell-id="${id}"]`);
+const getCreatedTable = (page: Page) =>
+  getEditor(page).locator('table').filter({ hasNotText: 'Plugin' });
 
-const getCellDragHandle = (table: Locator, id: string) =>
-  table.locator(
-    `[data-table-cell-drag-handle="true"][data-table-cell-drag-for="${id}"]`
+const getTableCell = (table: Locator, id: string) => {
+  const index = INITIAL_TABLE_CELL_IDS.indexOf(
+    id as (typeof INITIAL_TABLE_CELL_IDS)[number]
   );
 
-const dragAndReadNativeEvents = async (
-  page: Page,
-  source: Locator,
-  target: Locator
-) => {
-  await page.evaluate(() => {
-    (
-      window as typeof window & {
-        __tableDragEvents?: string[];
-      }
-    ).__tableDragEvents = [];
+  if (index === -1) throw new Error(`Unknown initial table cell: ${id}`);
 
-    for (const type of ['dragstart', 'dragover', 'drop', 'dragend']) {
-      document.addEventListener(
-        type,
-        () => {
-          const state = window as typeof window & {
-            __tableDragEvents?: string[];
-          };
-
-          if (state.__tableDragEvents?.at(-1) !== type) {
-            state.__tableDragEvents?.push(type);
-          }
-        },
-        { capture: true }
-      );
-    }
-  });
-  const sourceBox = await source.boundingBox();
-  const targetBox = await target.boundingBox();
-
-  if (!sourceBox || !targetBox) {
-    throw new Error('Expected visible native drag source and target');
-  }
-
-  const sourcePoint = {
-    x: sourceBox.x + sourceBox.width / 2,
-    y: sourceBox.y + sourceBox.height / 2,
-  };
-  const targetPoint = {
-    x: targetBox.x + targetBox.width / 2,
-    y: targetBox.y + targetBox.height / 2,
-  };
-  const sourceHitIsHandle = await page.evaluate(
-    ({ x, y }) =>
-      document
-        .elementFromPoint(x, y)
-        ?.closest('[data-table-cell-drag-handle="true"]') !== null,
-    sourcePoint
-  );
-
-  if (!sourceHitIsHandle) {
-    throw new Error('Table cell drag handle is not pointer-accessible');
-  }
-
-  await source.dragTo(target, {
-    sourcePosition: {
-      x: sourcePoint.x - sourceBox.x,
-      y: sourcePoint.y - sourceBox.y,
-    },
-    targetPosition: {
-      x: targetPoint.x - targetBox.x,
-      y: targetPoint.y - targetBox.y,
-    },
-  });
-
-  return page.evaluate(
-    () =>
-      (
-        window as typeof window & {
-          __tableDragEvents?: string[];
-        }
-      ).__tableDragEvents ?? []
-  );
+  return table
+    .locator('tr')
+    .nth(Math.floor(index / 4))
+    .locator(TABLE_CELL_SELECTOR)
+    .nth(index % 4);
 };
 
 const expectEditorFocus = async (editor: Locator) => {
@@ -363,14 +311,14 @@ const expectCellTexts = async (
 
 const readTableSnapshot = (table: Locator) =>
   table.evaluate((element) => ({
-    cells: Array.from(element.querySelectorAll('[data-table-cell-id]')).map(
-      (cell) => ({
-        colSpan: cell.getAttribute('colspan'),
-        id: cell.getAttribute('data-table-cell-id'),
-        rowSpan: cell.getAttribute('rowspan'),
-        text: cell.textContent?.replace(/\s+/g, ' ').trim() ?? '',
-      })
-    ),
+    cells: Array.from(
+      element.querySelectorAll(':is(td, th)[data-plite-node-key]')
+    ).map((cell) => ({
+      colSpan: cell.getAttribute('colspan'),
+      key: cell.getAttribute('data-plite-node-key'),
+      rowSpan: cell.getAttribute('rowspan'),
+      text: cell.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+    })),
     rows: element.querySelectorAll('tr').length,
   }));
 
@@ -489,11 +437,8 @@ test.describe('table registry demo', () => {
       await expect(editor).toBeVisible();
       await expect(table).toHaveCount(1);
       await expect(table).toBeVisible();
-      await expect(table.locator('[data-table-cell-id]')).toHaveCount(16);
 
-      const lastCell = table.locator(
-        '[data-table-cell-id="table-demo-header-void"]'
-      );
+      const lastCell = getTableCell(table, 'table-demo-header-void');
       const columns = table.locator('col');
 
       await expect(lastCell).toHaveCount(1);
@@ -568,7 +513,7 @@ test.describe('table registry demo', () => {
       await page.goto('/blocks/table-demo');
       await expect(editor).toHaveCount(1);
       await expect(table).toHaveCount(1);
-      await page.evaluate(() => {
+      await page.evaluate((cellIds) => {
         const state = window as typeof window & {
           __tableVerticalFrames?: Array<{
             cellId: string | null;
@@ -591,10 +536,21 @@ test.describe('table registry demo', () => {
                   : anchorNode?.parentElement;
 
               state.__tableVerticalFrames?.push({
-                cellId:
-                  anchorElement
-                    ?.closest('[data-table-cell-id]')
-                    ?.getAttribute('data-table-cell-id') ?? null,
+                cellId: (() => {
+                  const cell = anchorElement?.closest(
+                    ':is(td, th)[data-plite-node-key]'
+                  );
+                  const ownerTable = cell?.closest('table');
+                  const index = cell
+                    ? Array.from(
+                        ownerTable?.querySelectorAll(
+                          ':is(td, th)[data-plite-node-key]'
+                        ) ?? []
+                      ).indexOf(cell)
+                    : -1;
+
+                  return cellIds[index] ?? null;
+                })(),
                 defaultPrevented: event.defaultPrevented,
                 key: event.key,
               });
@@ -602,7 +558,7 @@ test.describe('table registry demo', () => {
           },
           { capture: true }
         );
-      });
+      }, INITIAL_TABLE_CELL_IDS);
 
       await placeCaretInCell(
         getTableCell(table, 'table-demo-heading-name'),
@@ -718,17 +674,15 @@ test.describe('table registry demo', () => {
 
       await expect(tables).toHaveCount(2);
 
-      const createdTable = tables.filter({
-        hasNot: page.locator('[data-table-cell-id="table-demo-header-plugin"]'),
-      });
+      const createdTable = getCreatedTable(page);
 
       await expect(createdTable).toHaveCount(1);
       await expect(createdTable.locator('tr')).toHaveCount(2);
-      await expect(createdTable.locator('[data-table-cell-id]')).toHaveCount(6);
-      await expect(createdTable.locator('th[data-table-cell-id]')).toHaveCount(
+      await expect(createdTable.locator(TABLE_CELL_SELECTOR)).toHaveCount(6);
+      await expect(createdTable.locator('th[data-plite-node-key]')).toHaveCount(
         0
       );
-      await expect(createdTable.locator('td[data-table-cell-id]')).toHaveCount(
+      await expect(createdTable.locator('td[data-plite-node-key]')).toHaveCount(
         6
       );
       await expect
@@ -760,65 +714,63 @@ test.describe('table registry demo', () => {
       await expect(editor).toHaveCount(1);
       await expect(table).toHaveCount(1);
       await expect(table.locator('tr')).toHaveCount(4);
-      await expect(table.locator('[data-table-cell-id]')).toHaveCount(16);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(12);
+      await expect(table.locator(TABLE_CELL_SELECTOR)).toHaveCount(16);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
 
-      const headerRow = table.locator('tr').filter({
-        has: page.locator('[data-table-cell-id="table-demo-header-plugin"]'),
-      });
+      const headerRow = table.locator('tr').first();
 
       await placeCaretInCell(
-        table.locator('[data-table-cell-id="table-demo-header-void"]'),
+        getTableCell(table, 'table-demo-header-void'),
         editor
       );
       await runTableMenuCommand(page, 'Column', 'Insert column after');
-      await expect(headerRow.locator('[data-table-cell-id]')).toHaveCount(5);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(5);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(15);
+      await expect(headerRow.locator(TABLE_CELL_SELECTOR)).toHaveCount(5);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(5);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(15);
       await expectEditorFocus(editor);
 
-      const insertedHeaderCell = headerRow
-        .locator('[data-table-cell-id]')
-        .nth(4);
+      const insertedHeaderCell = headerRow.locator(TABLE_CELL_SELECTOR).nth(4);
 
       await placeCaretInCell(insertedHeaderCell, editor);
       await runTableMenuCommand(page, 'Column', 'Delete column');
-      await expect(headerRow.locator('[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(12);
+      await expect(headerRow.locator(TABLE_CELL_SELECTOR)).toHaveCount(4);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
       await expectEditorFocus(editor);
 
       await placeCaretInCell(
-        table.locator('[data-table-cell-id="table-demo-image-element"]'),
+        getTableCell(table, 'table-demo-image-element'),
         editor
       );
       await runTableMenuCommand(page, 'Row', 'Insert row after');
       await expect(table.locator('tr')).toHaveCount(5);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(16);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(16);
 
       const insertedBodyRow = table.locator('tr').nth(3);
 
       await expect(
-        insertedBodyRow.locator('th[data-table-cell-id]')
+        insertedBodyRow.locator('th[data-plite-node-key]')
       ).toHaveCount(0);
       await expect(
-        insertedBodyRow.locator('td[data-table-cell-id]')
+        insertedBodyRow.locator('td[data-plite-node-key]')
       ).toHaveCount(4);
       await placeCaretInCell(
-        insertedBodyRow.locator('[data-table-cell-id]').nth(0),
+        insertedBodyRow.locator(TABLE_CELL_SELECTOR).nth(0),
         editor
       );
       await runTableMenuCommand(page, 'Row', 'Delete row');
       await expect(table.locator('tr')).toHaveCount(4);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(12);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
       await expectEditorFocus(editor);
 
-      const mergeAnchor = table.locator(
-        '[data-table-cell-id="table-demo-heading-element"]'
-      );
+      const mergeAnchor = table
+        .locator('tr')
+        .nth(1)
+        .locator(TABLE_CELL_SELECTOR)
+        .nth(1);
       const selectedCells = table.locator(
         ':is(td, th)[data-table-cell-selected="true"]'
       );
@@ -828,26 +780,27 @@ test.describe('table registry demo', () => {
       await placeCaretInCell(mergeAnchor, editor);
       await page.keyboard.press('Shift+ArrowRight');
 
-      expect(
-        await selectedCells.evaluateAll((cells) =>
-          cells.map((cell) => cell.getAttribute('data-table-cell-id'))
-        )
-      ).toEqual(['table-demo-heading-element', 'table-demo-heading-inline']);
+      await expect(
+        getTableCell(table, 'table-demo-heading-element')
+      ).toHaveAttribute('data-table-cell-selected', 'true');
+      await expect(
+        getTableCell(table, 'table-demo-heading-inline')
+      ).toHaveAttribute('data-table-cell-selected', 'true');
       await expect(selectedCells).toHaveCount(2);
 
       await runTableMenuCommand(page, 'Cell', 'Merge cells');
-      await expect(table.locator('[data-table-cell-id]')).toHaveCount(15);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(11);
+      await expect(table.locator(TABLE_CELL_SELECTOR)).toHaveCount(15);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(11);
       await expect(mergeAnchor).toHaveAttribute('colspan', '2');
       await expect(mergeAnchor).toHaveJSProperty('tagName', 'TD');
       await expectEditorFocus(editor);
 
       await placeCaretInCell(mergeAnchor, editor);
       await runTableMenuCommand(page, 'Cell', 'Split cell');
-      await expect(table.locator('[data-table-cell-id]')).toHaveCount(16);
-      await expect(table.locator('th[data-table-cell-id]')).toHaveCount(4);
-      await expect(table.locator('td[data-table-cell-id]')).toHaveCount(12);
+      await expect(table.locator(TABLE_CELL_SELECTOR)).toHaveCount(16);
+      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
       await expect(mergeAnchor).toHaveAttribute('colspan', '1');
       await expect(mergeAnchor).toHaveJSProperty('tagName', 'TD');
       await expectEditorFocus(editor);
@@ -858,8 +811,8 @@ test.describe('table registry demo', () => {
       await page.keyboard.press('Shift+ArrowRight');
       await expect(selectedCells).toHaveCount(2);
 
-      const selectedIdsBefore = await selectedCells.evaluateAll((cells) =>
-        cells.map((cell) => cell.getAttribute('data-table-cell-id'))
+      const selectedKeysBefore = await selectedCells.evaluateAll((cells) =>
+        cells.map((cell) => cell.getAttribute('data-plite-node-key'))
       );
       const columns = table.locator('col');
 
@@ -869,9 +822,10 @@ test.describe('table registry demo', () => {
       const widthBefore = await lastDataColumn.evaluate((element) =>
         Number.parseFloat((element as HTMLElement).style.width)
       );
-      const resizeHandle = table
-        .locator('[data-table-cell-id="table-demo-header-void"]')
-        .locator('[data-table-resize-handle="column-end"]');
+      const resizeHandle = getTableCell(
+        table,
+        'table-demo-header-void'
+      ).locator('[data-table-resize-handle="column-end"]');
 
       await expect(resizeHandle).toHaveCount(1);
       await resizeHandle.hover();
@@ -900,10 +854,10 @@ test.describe('table registry demo', () => {
       await expect
         .poll(() =>
           selectedCells.evaluateAll((cells) =>
-            cells.map((cell) => cell.getAttribute('data-table-cell-id'))
+            cells.map((cell) => cell.getAttribute('data-plite-node-key'))
           )
         )
-        .toEqual(selectedIdsBefore);
+        .toEqual(selectedKeysBefore);
 
       await page.mouse.up();
       pointerIsDown = false;
@@ -918,165 +872,16 @@ test.describe('table registry demo', () => {
       await expect
         .poll(() =>
           selectedCells.evaluateAll((cells) =>
-            cells.map((cell) => cell.getAttribute('data-table-cell-id'))
+            cells.map((cell) => cell.getAttribute('data-plite-node-key'))
           )
         )
-        .toEqual(selectedIdsBefore);
+        .toEqual(selectedKeysBefore);
       await expectEditorFocus(editor);
       runtimeErrors.assertNone();
     } finally {
       if (pointerIsDown) await page.mouse.up();
       runtimeErrors.stop();
     }
-  });
-
-  test.describe('native Chromium table-cell drag', () => {
-    test('moves a self-overlapping selection without erasing its destination', async ({
-      browserName,
-      page,
-    }) => {
-      test.skip(browserName !== 'chromium', 'Native Chromium drag/drop proof');
-
-      const runtimeErrors = recordRuntimeErrors(page);
-      const editor = getEditor(page);
-      const table = getOriginalTable(page);
-
-      try {
-        await page.goto('/blocks/table-demo');
-        await expect(editor).toHaveCount(1);
-        await expect(table).toHaveCount(1);
-        await selectCellRectangle(page, table, editor, {
-          expectedCount: 4,
-          moves: ['ArrowRight', 'ArrowDown'],
-          startId: 'table-demo-heading-name',
-        });
-
-        const dragHandle = getCellDragHandle(table, 'table-demo-heading-name');
-
-        await expect(dragHandle).toBeVisible();
-        const dragEvents = await dragAndReadNativeEvents(
-          page,
-          dragHandle,
-          getTableCell(table, 'table-demo-heading-element')
-        );
-
-        runtimeErrors.assertNone();
-        expect(dragEvents.slice(0, 3)).toEqual([
-          'dragstart',
-          'dragover',
-          'drop',
-        ]);
-
-        await expectCellTexts(table, {
-          'table-demo-heading-element': 'Heading',
-          'table-demo-heading-inline': '',
-          'table-demo-heading-name': '',
-          'table-demo-image-element': 'Image',
-          'table-demo-image-inline': 'Yes',
-          'table-demo-image-name': '',
-        });
-      } finally {
-        runtimeErrors.stop();
-      }
-    });
-
-    test('moves selected cells across tables', async ({
-      browserName,
-      page,
-    }) => {
-      test.skip(browserName !== 'chromium', 'Native Chromium drag/drop proof');
-
-      const runtimeErrors = recordRuntimeErrors(page);
-      const editor = getEditor(page);
-      const sourceTable = getOriginalTable(page);
-      const insertionPoint = editor.getByText(
-        'Create customizable tables with resizable columns and rows, allowing you to design structured layouts.'
-      );
-
-      try {
-        await page.goto('/blocks/table-demo');
-        await expect(editor).toHaveCount(1);
-        await expect(sourceTable).toHaveCount(1);
-        await insertionPoint.click();
-        await page.keyboard.press('End');
-
-        const tableTrigger = page.getByRole('button', {
-          exact: true,
-          name: 'Table',
-        });
-
-        await tableTrigger.click();
-        await page
-          .getByRole('menuitem', { exact: true, name: 'Table' })
-          .hover();
-        await page
-          .getByRole('gridcell', {
-            exact: true,
-            name: 'Insert 2 by 2 table',
-          })
-          .click();
-
-        const targetTable = editor.locator('table').filter({
-          hasNot: page.locator(
-            '[data-table-cell-id="table-demo-header-plugin"]'
-          ),
-        });
-
-        await expect(targetTable).toHaveCount(1);
-        await expect(
-          targetTable.locator(':is(td, th)[data-table-cell-id]')
-        ).toHaveCount(4);
-
-        const targetIds = await targetTable
-          .locator(':is(td, th)[data-table-cell-id]')
-          .evaluateAll((cells) =>
-            cells
-              .slice(0, 2)
-              .map((cell) => cell.getAttribute('data-table-cell-id'))
-          );
-        const [firstTargetId, secondTargetId] = targetIds;
-
-        if (!firstTargetId || !secondTargetId) {
-          throw new Error('Expected stable IDs on the created table cells');
-        }
-
-        await selectCellRectangle(page, sourceTable, editor, {
-          expectedCount: 2,
-          moves: ['ArrowRight'],
-          startId: 'table-demo-image-name',
-        });
-
-        const dragHandle = getCellDragHandle(
-          sourceTable,
-          'table-demo-image-name'
-        );
-
-        await expect(dragHandle).toBeVisible();
-        const dragEvents = await dragAndReadNativeEvents(
-          page,
-          dragHandle,
-          getTableCell(targetTable, firstTargetId)
-        );
-
-        expect(dragEvents.slice(0, 3)).toEqual([
-          'dragstart',
-          'dragover',
-          'drop',
-        ]);
-        runtimeErrors.assertNone();
-
-        await expectCellTexts(sourceTable, {
-          'table-demo-image-element': '',
-          'table-demo-image-name': '',
-        });
-        await expectCellTexts(targetTable, {
-          [firstTargetId]: 'Image',
-          [secondTargetId]: 'Yes',
-        });
-      } finally {
-        runtimeErrors.stop();
-      }
-    });
   });
 
   test.describe('native Chromium clipboard', () => {

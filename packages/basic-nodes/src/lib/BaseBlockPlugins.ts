@@ -164,15 +164,13 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
   },
   update: ({ editor, plugin, tx, schema: { type } }) => ({
     toggle: () => {
-      tx.blocks.toggle(type, { wrap: true });
+      tx.blocks.toggle({ type }, { wrap: true });
     },
     untab: () => {
       const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
       const blocks = [
-        ...tx.nodes.toArray({
-          at: tx.selection() ?? undefined,
+        ...tx.nodes.blocks({
           match: (node, path) =>
-            ElementApi.isElement(node) &&
             !node.indent &&
             node.type === paragraphType &&
             !node.listType &&
@@ -191,7 +189,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
       if (blocks.length === 0) return false;
 
       for (const [, path] of blocks) {
-        tx.blocks.lift({
+        tx.nodes.lift({
           at: path,
         });
       }

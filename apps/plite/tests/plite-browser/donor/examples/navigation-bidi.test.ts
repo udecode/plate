@@ -52,7 +52,7 @@ const expectSynchronizedCaret = async (
       ]);
 
       if (
-        model?.kind !== 'text' ||
+        !model ||
         !dom ||
         model.anchor.path.length !== 2 ||
         model.anchor.path[0] !== 0 ||
@@ -76,7 +76,7 @@ const expectSynchronizedCaret = async (
 
   const model = await editor.selection.get();
 
-  expect(model?.kind).toBe('text');
+  expect(model).not.toBeNull();
   expect(model?.anchor).toEqual(model?.focus);
 
   const leafIndex = model!.anchor.path[1]!;
@@ -156,7 +156,6 @@ test.describe('browser-native mixed-bidi caret proof', () => {
         await page.keyboard.insertText(fixture.text);
         await expect.poll(() => editor.get.modelText()).toBe(fixture.text);
         await editor.selection.selectDOM({
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
@@ -218,7 +217,6 @@ test.describe('browser-native mixed-bidi caret proof', () => {
       await editor.deleteFragment();
       await editor.insertText(text);
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: leaves[0].length },
         focus: {
           path: [0, 0],
@@ -229,7 +227,6 @@ test.describe('browser-native mixed-bidi caret proof', () => {
       await expect(editor.root.locator('strong')).toHaveText(leaves[1]);
       await expect.poll(() => editor.get.modelText()).toBe(text);
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });

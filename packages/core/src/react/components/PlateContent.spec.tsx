@@ -579,7 +579,6 @@ describe('PlateContent', () => {
       expect(focus).toHaveBeenCalledWith({ preventScroll: true });
     });
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });

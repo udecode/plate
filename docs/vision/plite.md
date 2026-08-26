@@ -128,11 +128,33 @@ donor checkout as proof after the transplant.
   configuration. Document commits reuse that topology; live values are method
   results, stable host values use `api`, and direct read facades resolve and
   invoke methods inside the read boundary.
-- Custom selection payloads are installed capabilities. One `selectionKinds`
-  declaration owns the payload type and runtime protocol; concrete editor reads
-  and updates infer it from the installed descriptor tuple. Plite has no
-  ambient selection registry, side-effect type registration, or open custom
-  kind fallback.
+- Plite owns the complete editor selection model. It supports text selection
+  and one built-in directional `NodeSelection`; extensions cannot add selection
+  kinds or parallel selection state. Feature owners write exact nodes and
+  derive feature geometry from core selection.
+- `NodeSelection` stores canonical exact membership as `paths`, directional
+  `anchorPath` and `focusPath`, and an optional explicit root. Mapping,
+  persistence, history, marks, slices, and collaboration preserve that state.
+  React and UI code may control or render selection but never own another
+  selected-node store.
+- The callable `selection()` is the sole singular read and returns a plain
+  `Range` or `null`. It never exposes selection-kind tags or feature payloads.
+  `selection.ranges()` is the sole plural projection, and `selection.nodes()`
+  reads exact selected-node membership. For node selections, the singular read
+  is the directed representative range between anchor and focus; callers use
+  plural reads for exact disjoint membership. Generic range predicates inspect
+  that same representative range; they never return a kind-specific answer.
+  Node selection has no native DOM range.
+- Schema owns block classification. `nodes.block()` reads the nearest block;
+  `nodes.blocks()` reads every relevant block and defaults to the active text or
+  exact node selection. `selection.nodes()` never accepts traversal filters.
+  Semantic block mutations live under `tx.blocks`; generic structural changes
+  such as lifting stay under `tx.nodes` and never gain block aliases.
+- `tx.blocks.reset({ at? })` converts each target to its immediate parent or
+  document-root schema default through the property type-change lifecycle. It
+  preserves children, selection, and live `NodeKey`; feature commands keep
+  their policy guards and delegate this structural mutation instead of
+  replacing a node with a handcrafted default.
 - `EditorExtension` stays flat except for the coherent `on.*` event family.
   Lifecycle and host/DOM observation use prefixless child names; Plate extends
   the same family with names such as `keyDown`, `paste`, `nodeChange`,
@@ -141,7 +163,7 @@ donor checkout as proof after the transplant.
   `editorReads`; app policy does not earn a special root hook.
 - Typed ordered values are extension-point `contributions`, not outputs.
   Extension declarations use explicit low-level nouns: `stateFields`,
-  `effectTypes`, `facetProviders`, and `selectionKinds`.
+  `effectTypes`, and `facetProviders`.
 - Extensions have no `config` channel. Immutable construction inputs and
   opaque runtime resources stay in factory closures or honest host owners.
   `validate` checks assembled context without a configuration argument.
@@ -207,6 +229,9 @@ donor checkout as proof after the transplant.
   `nodes.path(key)` remains scoped to the current editor or view root because a
   `Path` carries no root. Base-editor path inputs always address the main root;
   view path inputs address that view's root.
+  Resolve mounted DOM through `editor.api.dom.resolveDOMNode(nodeOrKey)`.
+  Foreign, removed, and unmounted keys fail closed with `null`; renderer-private
+  structures stay private.
 - Lightweight text problems do not automatically deserve the full editor stack.
 
 ## Plite Browser And Behavior Proof

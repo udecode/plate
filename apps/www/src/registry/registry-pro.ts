@@ -61,12 +61,6 @@ export const proExamples: Registry['items'] = [
   },
   {
     categories: ['pro'],
-    description: '- Beautifully crafted UI',
-    name: 'block-selection-pro',
-    type: 'registry:example',
-  },
-  {
-    categories: ['pro'],
     description: `- Full stack example for Suggestion and Comment
 - Floating comments & suggestions UI with better user experience
 - Comment rendered with Plate editor

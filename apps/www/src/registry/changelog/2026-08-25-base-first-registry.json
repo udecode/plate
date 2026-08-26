@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-25-base-first-registry",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-25-base-first-registry.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Install Base-first registry code with eight shadcn styles",
+  "targets": [
+    {
+      "name": "plate-ui",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for plate-ui."
+        }
+      ]
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-context-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/context-menu.tsx",
+        "apps/www/src/registry/bases/radix/context-menu.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing",
+      "files": ["apps/www/src/registry/components/editor/code-drawing.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "autoformat-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/autoformat-classic.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/fixed-toolbar-classic.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar-classic-buttons",
+      "files": [
+        "apps/www/src/registry/components/editor/fixed-toolbar-classic-buttons.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/floating-toolbar-classic.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar-classic-buttons",
+      "files": [
+        "apps/www/src/registry/components/editor/floating-toolbar-classic-buttons.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-classic-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-classic",
+      "files": ["apps/www/src/registry/components/editor/list-classic.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-classic-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-classic-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms-classic",
+      "files": [
+        "apps/www/src/registry/components/editor/transforms-classic.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-classic-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-classic-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fumadocs",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fumadocs."
+        }
+      ]
+    },
+    {
+      "name": "editor-basic",
+      "files": [
+        "apps/www/src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-basic/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date",
+      "files": ["apps/www/src/registry/components/editor/date.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-style",
+      "files": ["apps/www/src/registry/lib/inline-suggestion.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-25-plate-ui-base-default-registry-provider-7575016d",
+      "kind": "behavior",
+      "summary": "Install Base UI source with `base-nova` by default. Explicit Radix styles select the matching interaction adapters.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "plate-ui",
+        "toolbar",
+        "floating-popover",
+        "editor-dropdown-menu",
+        "editor-context-menu"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-base-first-registry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-25-eight-shadcn-registry-code-styles-ae6bb30f",
+      "kind": "behavior",
+      "summary": "Install Nova, Vega, Maia, Lyra, Mira, Luma, Sera, or Rhea code styles without duplicating the complete editor registry.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["plate-ui", "toolbar", "floating-popover"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-base-first-registry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-25-provider-neutral-registry-consumers-e93d3b54",
+      "kind": "fix",
+      "summary": "Compose popovers, dropdowns, and context menus through the selected provider without provider-specific trigger, focus, delay, or value props in consumer code.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "block-menu",
+        "code-block",
+        "code-drawing",
+        "comment",
+        "emoji-picker",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "footnote",
+        "math",
+        "table",
+        "table-toolbar-button",
+        "turn-into-toolbar-button"
+      ],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-base-first-registry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-25-classic-supported-providers-07aeb0d6",
+      "kind": "fix",
+      "summary": "Install the classic editor graph with Base or Radix through the same semantic item ids.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "autoformat-classic",
+        "fixed-toolbar-classic",
+        "fixed-toolbar-classic-buttons",
+        "floating-toolbar-classic",
+        "floating-toolbar-classic-buttons",
+        "insert-toolbar-classic-button",
+        "list-classic",
+        "list-classic-toolbar-button",
+        "transforms-classic",
+        "turn-into-toolbar-classic-button"
+      ],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-base-first-registry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-25-fumadocs-supported-providers-7dca80c5",
+      "kind": "fix",
+      "summary": "Install the docs block with Base or Radix without fixed Radix primitive packages.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["fumadocs"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-base-first-registry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-25-fresh-create-project-build",
+      "kind": "fix",
+      "summary": "Create a fresh Next project with a complete dependency graph, collision-free inline-suggestion imports, and current copied-source types.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-basic", "ai", "date", "link", "suggestion-style"],
+      "source": {
+        "line": 34,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-08-25",
+          "entry": "2026-08-25-base-first-registry",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

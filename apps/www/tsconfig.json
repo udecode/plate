@@ -5,6 +5,18 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
+      "@/registry/components/editor/context-menu": [
+        "./src/components/site-registry/context-menu"
+      ],
+      "@/registry/components/editor/dropdown-menu": [
+        "./src/components/site-registry/dropdown-menu"
+      ],
+      "@/registry/components/editor/floating-popover": [
+        "./src/components/site-registry/floating-popover"
+      ],
+      "@/registry/components/editor/toolbar": [
+        "./src/components/site-registry/toolbar"
+      ],
       "@/*": ["./src/*"],
       "collections/browser": ["./.source/browser"],
       "collections/server": ["./.source/server"],
@@ -39,7 +51,6 @@
       "@platejs/math/react": ["../../packages/math/src/react"],
       "@platejs/media/react": ["../../packages/media/src/react"],
       "@platejs/mention/react": ["../../packages/mention/src/react"],
-      "@platejs/selection/react": ["../../packages/selection/src/react"],
       "@platejs/slash-command/react": [
         "../../packages/slash-command/src/react"
       ],

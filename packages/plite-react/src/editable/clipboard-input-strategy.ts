@@ -56,6 +56,8 @@ import {
   range as editorRange,
   dispatchCommand,
   editorCommands,
+  getSelection as getEditorSelection,
+  getSelectionDOMRange,
 } from './runtime-editor-api';
 import { readRuntimeNode } from './runtime-live-state';
 import {
@@ -349,7 +351,7 @@ const preventReadOnlyClipboardDefault = ({
 };
 
 const materializePasteTargetBoundaries = (editor: ReactRuntimeEditor) => {
-  const selection = editor.read((state) => state.selection());
+  const selection = getSelectionDOMRange(editor, getEditorSelection(editor));
 
   if (!selection) {
     return;
@@ -448,7 +450,7 @@ export const applyEditableCut = ({
     }
 
     editor.api.dom.clipboard.writeSelection(clipboardData);
-    const selection = editor.read((state) => state.selection());
+    const selection = readRuntimeSelection(editor);
 
     if (selection) {
       if (SelectionApi.isNode(selection)) {
@@ -790,7 +792,7 @@ export const applyEditableDrop = ({
     const draggedRange =
       crossEditorSession?.sourceRange ??
       state.draggedRange ??
-      readRuntimeSelection(editor);
+      readRuntimeSelectionRange(editor);
     const isBlockDrag =
       crossEditorSession?.draggedBlock ||
       state.draggedBlock ||
@@ -857,9 +859,9 @@ export const applyEditableDrop = ({
           : applyEditableCommand({ command, editor })) ?? false;
 
       if (inserted && movesDraggedRange && isBlockDrag) {
-        const selection = tx.selection();
-        const selectedVoid = selection
-          ? tx.nodes.void({ at: selection, voids: true })
+        const selectionRange = tx.selection();
+        const selectedVoid = selectionRange
+          ? tx.nodes.void({ at: selectionRange, voids: true })
           : undefined;
 
         if (
@@ -867,9 +869,9 @@ export const applyEditableDrop = ({
           !NodeApi.isElement(selectedVoid[0]) ||
           editorIsInline(editor, selectedVoid[0])
         ) {
-          const previousBlock = selection
+          const previousBlock = selectionRange
             ? tx.nodes.previous({
-                at: selection,
+                at: selectionRange,
                 match: (node) =>
                   NodeApi.isElement(node) && editorIsBlock(editor, node),
               })
@@ -947,9 +949,30 @@ export const applyEditablePaste = ({
     ReactEditor.hasEditableTarget(editor, event.target) &&
     !isClipboardEventHandled({ event, handler: onPaste });
 
-  if (canHandlePaste && SelectionApi.isNode(readRuntimeSelection(editor))) {
+  if (
+    canHandlePaste &&
+    event.clipboardData &&
+    SelectionApi.isNode(readRuntimeSelection(editor))
+  ) {
     event.preventDefault();
-    return clipboardResult({ command: null });
+    const command: EditableCommand = {
+      data: event.clipboardData,
+      kind: 'insert-data',
+    };
+
+    applyEditableCommand({ command, editor });
+    return clipboardResult({
+      command,
+      repair: {
+        focus: true,
+        kind: 'repair-caret',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      },
+    });
   }
 
   if (partialDOMBackedSelection && event.clipboardData && canHandlePaste) {

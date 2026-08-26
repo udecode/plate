@@ -4,7 +4,6 @@ import { cva } from 'class-variance-authority';
 import {
   NodeApi,
   PathApi,
-  SelectionApi,
   type Element,
   type Path,
   type RenderElementProps,
@@ -33,7 +32,7 @@ export function useCaptionFocused(path: Path) {
     const selection = editor.read.selection();
 
     return (
-      SelectionApi.isText(selection) &&
+      selection !== null &&
       (PathApi.isDescendant(selection.anchor.path, path) ||
         PathApi.isDescendant(selection.focus.path, path))
     );

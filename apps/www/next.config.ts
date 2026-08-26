@@ -179,6 +179,10 @@ const nextConfig = (_phase: string) => {
     outputFileTracingIncludes: {
       '/*': ['./src/registry/**/*', './public/r/**/*'],
       '/api/search': ['../../content/docs/**/*'],
+      '/r/[style]/[name]': [
+        './public/r/*.json',
+        './src/__registry__/overlays/**/*.json',
+      ],
       '/cn/docs/examples/plate-to-html': ['./public/tailwind.css'],
       '/docs/examples/plate-to-html': ['./public/tailwind.css'],
     },
@@ -310,10 +314,6 @@ const nextConfig = (_phase: string) => {
         {
           destination: '/cn/llm/:path*',
           source: '/cn/docs/:path*.md',
-        },
-        {
-          destination: '/init/md',
-          source: '/init.md',
         },
       ];
     },

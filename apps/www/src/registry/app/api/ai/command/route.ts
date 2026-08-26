@@ -1,5 +1,9 @@
 import { createGateway } from '@ai-sdk/gateway';
-import type { AIChatRequestRefs } from '@platejs/ai/react';
+import {
+  type AIChatRequestContext,
+  type AIChatRequestRefs,
+  resolveAIChatRequestContext,
+} from '@platejs/ai';
 import type { MarkdownEditor } from '@platejs/markdown';
 import {
   type LanguageModel,
@@ -13,7 +17,7 @@ import {
 } from 'ai';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { type Selection, type Value, createBaseEditor, nanoid } from 'platejs';
+import { createBaseEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
@@ -38,19 +42,17 @@ export async function POST(req: NextRequest) {
 
   const {
     children,
+    nodeSelection,
     refs,
     selection,
     toolName: toolNameParam,
-  }: {
-    children: Value;
-    refs: AIChatRequestRefs;
-    selection: Selection | null;
-    toolName: ToolName | null;
-  } = ctx;
+  } = ctx as AIChatRequestContext;
+  const request = resolveAIChatRequestContext({ nodeSelection, selection });
+  const { isSelecting } = request;
 
   const editor = createBaseEditor({
     plugins: BaseEditorKit,
-    selection,
+    selection: request.selection,
     initialValue: children,
   });
 
@@ -62,8 +64,6 @@ export async function POST(req: NextRequest) {
       { status: 401 }
     );
   }
-
-  const isSelecting = editor.read.selection.isExpanded();
 
   const gatewayProvider = createGateway({
     apiKey,

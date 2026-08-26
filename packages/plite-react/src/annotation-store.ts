@@ -1,9 +1,10 @@
-import type {
-  Anchor,
-  EditorCommit,
-  Range,
-  NodeKey,
-  Editor as EditorType,
+import {
+  type Anchor,
+  type EditorCommit,
+  RangeApi,
+  type Range,
+  type NodeKey,
+  type Editor as EditorType,
 } from '@platejs/plite';
 
 import {
@@ -138,24 +139,6 @@ const INVALID_ANNOTATION_RANGE_ERROR =
 const isInvalidAnnotationRangeError = (error: unknown) =>
   error instanceof Error && INVALID_ANNOTATION_RANGE_ERROR.test(error.message);
 
-const areRangesEqual = (left: Range | null, right: Range | null) => {
-  if (left === right) return true;
-  if (!left || !right) return false;
-
-  return (
-    left.anchor.offset === right.anchor.offset &&
-    left.focus.offset === right.focus.offset &&
-    left.anchor.path.length === right.anchor.path.length &&
-    left.focus.path.length === right.focus.path.length &&
-    left.anchor.path.every(
-      (segment, index) => segment === right.anchor.path[index]
-    ) &&
-    left.focus.path.every(
-      (segment, index) => segment === right.focus.path[index]
-    )
-  );
-};
-
 const annotationProjectionDataSources = new WeakMap<object, unknown>();
 
 const createAnnotationProjectionData = <
@@ -244,7 +227,7 @@ const areResolvedAnnotationsEqual = <
   right: PliteResolvedAnnotation<TData, TProjection>
 ) =>
   left.id === right.id &&
-  areRangesEqual(left.range, right.range) &&
+  RangeApi.equals(left.range, right.range) &&
   areMappedViewDataEqual(left.data, right.data) &&
   areMappedViewDataEqual(left.projection, right.projection);
 

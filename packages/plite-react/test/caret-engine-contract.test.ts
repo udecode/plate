@@ -1,4 +1,8 @@
-import { replace as editorReplace } from '@platejs/plite/internal';
+import { SelectionApi } from '@platejs/plite';
+import {
+  getEditorLiveSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import { applyEditableCaretMovement } from '../src/editable/caret-engine';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
@@ -6,7 +10,11 @@ import { createReactEditor } from '../src/plugin/with-react';
 
 const createKeyDownEvent = (key: string) =>
   ({
+    altKey: false,
+    ctrlKey: false,
     currentTarget: document.createElement('div'),
+    key,
+    metaKey: false,
     nativeEvent: {
       altKey: false,
       ctrlKey: false,
@@ -15,6 +23,7 @@ const createKeyDownEvent = (key: string) =>
       shiftKey: false,
     },
     preventDefault: vi.fn(),
+    shiftKey: false,
   }) as never;
 
 test('caret movement tags the semantic command commit', () => {
@@ -46,7 +55,6 @@ test('caret movement tags the semantic command commit', () => {
 
   expect(result.handled).toBe(true);
   expect(editor.read((state) => state.selection())).toEqual({
-    kind: 'text',
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   });
@@ -55,3 +63,39 @@ test('caret movement tags the semantic command commit', () => {
   );
   runtime.destroy();
 });
+
+test.each([
+  ['ArrowUp', { offset: 4, path: [0, 0] }],
+  ['ArrowDown', { offset: 0, path: [3, 0] }],
+] as const)(
+  '%s collapses a multi-node selection at its outer edge',
+  (key, point) => {
+    const editor = createReactEditor();
+
+    editorReplace(editor, {
+      children: [
+        { children: [{ text: 'zero' }], type: 'paragraph' },
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'two' }], type: 'paragraph' },
+        { children: [{ text: 'three' }], type: 'paragraph' },
+      ],
+      selection: SelectionApi.nodes([[1], [2]]),
+    });
+
+    const runtime = new EditableDOMRuntime({ editor });
+    const result = applyEditableCaretMovement({
+      domPhaseScheduler: runtime.domPhaseScheduler,
+      domStrategyRuntime: null,
+      editor,
+      event: createKeyDownEvent(key),
+      selection: getEditorLiveSelection(editor),
+    });
+
+    expect(result.handled).toBe(true);
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: point,
+      focus: point,
+    });
+    runtime.destroy();
+  }
+);

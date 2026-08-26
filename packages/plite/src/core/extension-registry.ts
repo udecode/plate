@@ -7,7 +7,6 @@ import type {
   EditorFacet,
   EditorFacetProvider,
   EditorNodeChangeHandler,
-  EditorSelectionSpec,
   EditorStateView,
   EditorStateField,
   EditorTextChangeHandler,
@@ -17,14 +16,14 @@ import type {
   ExtensionsOf,
   RegisteredEditorExtension,
   ValueOf,
-} from '../interfaces/editor';
-import type { CompiledEditorSchema } from './schema-compiler';
+} from "../interfaces/editor";
+import type { CompiledEditorSchema } from "./schema-compiler";
 import {
   createSchemaContributionRegistry,
   finalizeSchemaContributionRegistry,
   mergeSchemaContributionRegistries,
   type EditorSchemaContributionRegistry,
-} from './schema-contribution-registry';
+} from "./schema-contribution-registry";
 
 type EditorStateGroupFactory<TEditor extends Editor> = (
   state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
@@ -93,7 +92,6 @@ export type ExtensionRegistry<TEditor extends Editor = Editor> = {
   reads: CompiledReadRegistry;
   schemaContributions: EditorSchemaContributionRegistry;
   schemaRevision: number;
-  selectionSpecs: Map<string, EditorSelectionSpecRegistration>;
   stateGroups: Map<string, EditorStateGroupRegistration<TEditor>>;
   stateFieldIdentities: Map<string, EditorStateField<any>>;
   stateFields: Map<string, EditorStateFieldRegistration>;
@@ -124,11 +122,6 @@ export type EditorStateFieldRegistration = Readonly<{
   field: EditorStateField<any>;
 }>;
 
-export type EditorSelectionSpecRegistration = Readonly<{
-  extensionName: string;
-  spec: EditorSelectionSpec;
-}>;
-
 export type EditorExtensionContributionRegistration = Readonly<{
   owner: object;
   sourceIndex: number;
@@ -138,17 +131,17 @@ export type EditorExtensionContributionRegistration = Readonly<{
 const EXTENSION_REGISTRIES = new WeakMap<Editor, ExtensionRegistryStore>();
 
 const reservedStateGroupNames = new Set([
-  'marks',
-  'nodes',
-  'points',
-  'ranges',
-  'schema',
-  'selection',
-  'text',
-  'value',
+  "marks",
+  "nodes",
+  "points",
+  "ranges",
+  "schema",
+  "selection",
+  "text",
+  "value",
 ]);
 
-const reservedTxGroupNames = new Set([...reservedStateGroupNames, 'roots']);
+const reservedTxGroupNames = new Set([...reservedStateGroupNames, "roots"]);
 
 export const createExtensionRegistry = <TEditor extends Editor = Editor>(
   options: Readonly<{
@@ -182,7 +175,6 @@ export const createExtensionRegistry = <TEditor extends Editor = Editor>(
     options.schemaRevision ?? 0
   ),
   schemaRevision: options.schemaRevision ?? 0,
-  selectionSpecs: new Map(),
   stateGroups: new Map(),
   stateFieldIdentities: new Map(options.stateFieldIdentities),
   stateFields: new Map(),
@@ -192,17 +184,17 @@ export const createExtensionRegistry = <TEditor extends Editor = Editor>(
 });
 
 const immutableCollectionMutation = () => {
-  throw new Error('Published editor extension registries are immutable.');
+  throw new Error("Published editor extension registries are immutable.");
 };
 
 const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
   const map = new Map(source);
   const immutable: Map<TKey, TValue> = new Proxy(map, {
     get(target, property) {
-      if (property === 'clear' || property === 'delete' || property === 'set') {
+      if (property === "clear" || property === "delete" || property === "set") {
         return immutableCollectionMutation;
       }
-      if (property === 'forEach') {
+      if (property === "forEach") {
         return (
           callback: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void,
           thisArg?: unknown
@@ -215,7 +207,7 @@ const freezeMap = <TKey, TValue>(source: ReadonlyMap<TKey, TValue>) => {
 
       const value = Reflect.get(target, property, target);
 
-      return typeof value === 'function' ? value.bind(target) : value;
+      return typeof value === "function" ? value.bind(target) : value;
     },
   });
 
@@ -226,10 +218,10 @@ const freezeSet = <TValue>(source: ReadonlySet<TValue>) => {
   const set = new Set(source);
   const immutable: Set<TValue> = new Proxy(set, {
     get(target, property) {
-      if (property === 'add' || property === 'clear' || property === 'delete') {
+      if (property === "add" || property === "clear" || property === "delete") {
         return immutableCollectionMutation;
       }
-      if (property === 'forEach') {
+      if (property === "forEach") {
         return (
           callback: (value: TValue, key: TValue, set: Set<TValue>) => void,
           thisArg?: unknown
@@ -242,7 +234,7 @@ const freezeSet = <TValue>(source: ReadonlySet<TValue>) => {
 
       const value = Reflect.get(target, property, target);
 
-      return typeof value === 'function' ? value.bind(target) : value;
+      return typeof value === "function" ? value.bind(target) : value;
     },
   });
 
@@ -318,7 +310,6 @@ export const finalizeExtensionRegistry = <TEditor extends Editor>(
     schemaContributions: finalizeSchemaContributionRegistry(
       registry.schemaContributions
     ),
-    selectionSpecs: freezeMap(registry.selectionSpecs),
     stateGroups: freezeMap(registry.stateGroups),
     stateFieldIdentities: freezeMap(registry.stateFieldIdentities),
     stateFields: freezeMap(registry.stateFields),
@@ -401,7 +392,7 @@ const mergeCommandRegistries = (
           descriptor,
           entries,
           hasAround: entries.some(
-            (entry) => (entry as Readonly<{ kind?: string }>).kind === 'around'
+            (entry) => (entry as Readonly<{ kind?: string }>).kind === "around"
           ),
           id: (descriptor as Readonly<{ id: string }>).id,
         },
@@ -488,15 +479,10 @@ const mergeRegistries = (
     ...configured.contributions.keys(),
     ...base.contributions.keys(),
   ]);
-  assertNoMapConflicts('effect', configured.effectTypes, base.effectTypes);
-  assertNoMapConflicts(
-    'selection kind',
-    configured.selectionSpecs,
-    base.selectionSpecs
-  );
-  assertNoMapConflicts('state group', configured.stateGroups, base.stateGroups);
-  assertNoMapConflicts('state field', configured.stateFields, base.stateFields);
-  assertNoMapConflicts('transaction group', configured.txGroups, base.txGroups);
+  assertNoMapConflicts("effect", configured.effectTypes, base.effectTypes);
+  assertNoMapConflicts("state group", configured.stateGroups, base.stateGroups);
+  assertNoMapConflicts("state field", configured.stateFields, base.stateFields);
+  assertNoMapConflicts("transaction group", configured.txGroups, base.txGroups);
 
   const stateFieldIdentities = new Map(configured.stateFieldIdentities);
 
@@ -557,10 +543,6 @@ const mergeRegistries = (
       previousSchemaContributions
     ),
     schemaRevision: Math.max(configured.schemaRevision, base.schemaRevision),
-    selectionSpecs: new Map([
-      ...configured.selectionSpecs,
-      ...base.selectionSpecs,
-    ]),
     stateGroups: new Map([...configured.stateGroups, ...base.stateGroups]),
     stateFieldIdentities,
     stateFields: new Map([...configured.stateFields, ...base.stateFields]),
@@ -604,7 +586,7 @@ const getExtensionRegistryStore = (editor: Editor) => {
 export const assertEditorExtensionPublicationInactive = (editor: Editor) => {
   if (getExtensionRegistryStore(editor).publishing) {
     throw new Error(
-      'editor writes cannot be started during extension lifecycle publication'
+      "editor writes cannot be started during extension lifecycle publication"
     );
   }
 };
@@ -634,7 +616,7 @@ export const getConfiguredExtensionRegistry = <TEditor extends Editor>(
 /** Run read-only lifecycle work against one detached candidate registry. */
 export const runWithCandidateExtensionRegistry = <
   TEditor extends Editor,
-  TResult,
+  TResult
 >(
   editor: TEditor,
   candidate: Readonly<{
@@ -646,7 +628,7 @@ export const runWithCandidateExtensionRegistry = <
   const store = getExtensionRegistryStore(editor);
 
   if (store.publishing || store.candidate) {
-    throw new Error('Editor extension registry publication cannot re-enter.');
+    throw new Error("Editor extension registry publication cannot re-enter.");
   }
 
   store.publishing = true;
@@ -681,10 +663,10 @@ export const initializeBaseExtensionRegistry = <TEditor extends Editor>(
   const store = getExtensionRegistryStore(editor);
 
   if (!Object.isFrozen(registry)) {
-    throw new Error('Editor base extension registry must be finalized.');
+    throw new Error("Editor base extension registry must be finalized.");
   }
   if (store.baseInitialized) {
-    throw new Error('Editor base extension registry is already initialized.');
+    throw new Error("Editor base extension registry is already initialized.");
   }
 
   store.base = registry as ExtensionRegistry;
@@ -699,7 +681,7 @@ export const runWithEditorExtensionPublicationGuard = <T>(
   const store = getExtensionRegistryStore(editor);
 
   if (store.publishing) {
-    throw new Error('Editor extension registry publication cannot re-enter.');
+    throw new Error("Editor extension registry publication cannot re-enter.");
   }
 
   store.publishing = true;
@@ -723,10 +705,10 @@ export const publishConfiguredExtensionRegistry = <TEditor extends Editor>(
   const store = getExtensionRegistryStore(editor);
 
   if (!Object.isFrozen(registry)) {
-    throw new Error('Editor extension registry candidates must be finalized.');
+    throw new Error("Editor extension registry candidates must be finalized.");
   }
   if (store.publishing) {
-    throw new Error('Editor extension registry publication cannot re-enter.');
+    throw new Error("Editor extension registry publication cannot re-enter.");
   }
 
   const configured = registry as ExtensionRegistry;
@@ -758,18 +740,18 @@ export const publishConfiguredExtensionRegistry = <TEditor extends Editor>(
 
   const assertActivePublication = () => {
     if (!active) {
-      throw new Error('Editor extension publication is already settled.');
+      throw new Error("Editor extension publication is already settled.");
     }
     if (
       store.configured !== publishedConfigured ||
       store.current !== publishedCurrent
     ) {
       throw new Error(
-        'Editor extension publication changed before it was finalized.'
+        "Editor extension publication changed before it was finalized."
       );
     }
     if (store.publishing) {
-      throw new Error('Editor extension registry publication cannot re-enter.');
+      throw new Error("Editor extension registry publication cannot re-enter.");
     }
   };
 
@@ -813,7 +795,7 @@ const assertEffectType = (
       `Editor effect "${type.key}" from "${extensionName}" must be created with defineEffect().`
     );
   }
-  if (type.collab !== 'local' && type.collab !== 'shared') {
+  if (type.collab !== "local" && type.collab !== "shared") {
     throw new Error(
       `Editor effect "${type.key}" has invalid collaboration policy "${String(
         type.collab
@@ -821,10 +803,10 @@ const assertEffectType = (
     );
   }
   if (
-    (type.collab === 'shared' &&
-      type.collabReplay !== 'latest' &&
-      type.collabReplay !== 'live') ||
-    (type.collab === 'local' && type.collabReplay !== 'live')
+    (type.collab === "shared" &&
+      type.collabReplay !== "latest" &&
+      type.collabReplay !== "live") ||
+    (type.collab === "local" && type.collabReplay !== "live")
   ) {
     throw new Error(
       `Editor effect "${
@@ -835,22 +817,22 @@ const assertEffectType = (
     );
   }
   if (
-    (type.collabReplay === 'latest' &&
-      typeof type.collabSnapshot !== 'function') ||
-    (type.collabReplay !== 'latest' && type.collabSnapshot !== undefined)
+    (type.collabReplay === "latest" &&
+      typeof type.collabSnapshot !== "function") ||
+    (type.collabReplay !== "latest" && type.collabSnapshot !== undefined)
   ) {
     throw new Error(
       `Editor effect "${type.key}" has an invalid collaboration snapshot policy.`
     );
   }
-  if (type.history !== 'push' && type.history !== 'skip') {
+  if (type.history !== "push" && type.history !== "skip") {
     throw new Error(
       `Editor effect "${type.key}" has invalid history policy "${String(
         type.history
       )}".`
     );
   }
-  if (typeof type.invert !== 'function' || typeof type.map !== 'function') {
+  if (typeof type.invert !== "function" || typeof type.map !== "function") {
     throw new Error(
       `Editor effect "${type.key}" must define invert and map functions.`
     );
@@ -859,22 +841,22 @@ const assertEffectType = (
     type.codec &&
     (!Number.isSafeInteger(type.codec.version) ||
       type.codec.version < 1 ||
-      typeof type.codec.encode !== 'function' ||
-      typeof type.codec.decode !== 'function')
+      typeof type.codec.encode !== "function" ||
+      typeof type.codec.decode !== "function")
   ) {
     throw new Error(`Editor effect "${type.key}" has an invalid codec.`);
   }
-  if (type.collab === 'shared' && !type.codec) {
+  if (type.collab === "shared" && !type.codec) {
     throw new Error(
       `Shared editor effect "${type.key}" requires a persistence codec.`
     );
   }
   if (
     type.collabTransport &&
-    (type.collab !== 'shared' ||
+    (type.collab !== "shared" ||
       !type.codec ||
-      typeof type.collabTransport.encode !== 'function' ||
-      typeof type.collabTransport.decode !== 'function')
+      typeof type.collabTransport.encode !== "function" ||
+      typeof type.collabTransport.decode !== "function")
   ) {
     throw new Error(
       `Editor effect "${type.key}" has an invalid collaboration transport.`
@@ -903,50 +885,6 @@ export const registerEffectTypeInRegistry = <TEditor extends Editor>(
   return () => {
     if (registry.effectTypes.get(type.key) === registration) {
       registry.effectTypes.delete(type.key);
-    }
-  };
-};
-
-export const registerSelectionSpecInRegistry = <TEditor extends Editor>(
-  registry: ExtensionRegistry<TEditor>,
-  extensionName: string,
-  spec: EditorSelectionSpec
-) => {
-  const kind: string = spec.kind;
-  const existing = registry.selectionSpecs.get(kind);
-
-  if (kind === 'text' || kind === 'node') {
-    throw new Error(
-      `Editor selection kind "${kind}" is built in and cannot be replaced by "${extensionName}".`
-    );
-  }
-  if (
-    typeof spec.validate !== 'function' ||
-    typeof spec.codec?.decode !== 'function' ||
-    typeof spec.codec?.encode !== 'function' ||
-    !Number.isSafeInteger(spec.codec?.version) ||
-    spec.codec.version < 1
-  ) {
-    throw new Error(
-      `Editor selection kind "${kind}" from "${extensionName}" must define a validator and a versioned persistence codec.`
-    );
-  }
-
-  if (existing) {
-    throw new Error(
-      `Editor selection kind "${kind}" from "${extensionName}" conflicts with "${existing.extensionName}".`
-    );
-  }
-
-  const registration = Object.freeze({
-    extensionName,
-    spec: Object.freeze({ ...spec }),
-  });
-  registry.selectionSpecs.set(kind, registration);
-
-  return () => {
-    if (registry.selectionSpecs.get(kind) === registration) {
-      registry.selectionSpecs.delete(kind);
     }
   };
 };
@@ -1017,7 +955,7 @@ export const registerFacetProviderInRegistry = <TEditor extends Editor>(
   const installedFacet = current[0]?.facet as EditorFacet<any, any> | undefined;
 
   if (!provider.facet.key) {
-    throw new Error('Editor facet key cannot be empty.');
+    throw new Error("Editor facet key cannot be empty.");
   }
   if (!Object.isFrozen(provider.facet)) {
     throw new Error(
@@ -1059,7 +997,7 @@ export const registerStateFieldDescriptorInRegistry = <TEditor extends Editor>(
       `Editor extension "${extensionName}" cannot install a state field with an empty key.`
     );
   }
-  if (!Object.isFrozen(field) || typeof field.compare !== 'function') {
+  if (!Object.isFrozen(field) || typeof field.compare !== "function") {
     throw new Error(
       `State field "${field.key}" from "${extensionName}" must be created with defineStateField().`
     );
@@ -1135,7 +1073,7 @@ export const registerTextChangeListenerInRegistry = <TEditor extends Editor>(
 };
 
 export const registerTransactionChangeListenerInRegistry = <
-  TEditor extends Editor,
+  TEditor extends Editor
 >(
   registry: ExtensionRegistry<TEditor>,
   listener: EditorTransactionChangeHandler<TEditor>
@@ -1159,7 +1097,7 @@ export const hasChangeListeners = (editor: Editor) => {
 const registerViewGroup = <TRegistration>(
   groups: Map<string, { extensionName: string; factory: TRegistration }>,
   reservedNames: Set<string>,
-  kind: 'editor' | 'state' | 'tx',
+  kind: "editor" | "state" | "tx",
   extensionName: string,
   groupName: string,
   factory: TRegistration
@@ -1197,7 +1135,7 @@ export const registerStateGroupInRegistry = <TEditor extends Editor>(
   registerViewGroup(
     registry.stateGroups,
     reservedStateGroupNames,
-    'state',
+    "state",
     extensionName,
     groupName,
     factory
@@ -1212,7 +1150,7 @@ export const registerTxGroupInRegistry = <TEditor extends Editor>(
   registerViewGroup(
     registry.txGroups,
     reservedTxGroupNames,
-    'tx',
+    "tx",
     extensionName,
     groupName,
     factory

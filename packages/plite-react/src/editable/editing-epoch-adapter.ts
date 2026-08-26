@@ -1,4 +1,4 @@
-import type { Range } from '@platejs/plite';
+import type { Selection } from '@platejs/plite';
 import { DOMRootRuntime } from '@platejs/plite-dom/internal';
 
 // React only adapts canonical editor commands to the private per-root epoch.
@@ -23,7 +23,7 @@ export type EditableEditingEpoch = {
   handledCommand: EditableCommand | null;
   id: number;
   kind: EditableEditingEpochKind;
-  modelSelectionBefore: Range | null;
+  modelSelectionBefore: Selection;
   ownership: EditableOwnership;
   rootEventFamily: EditableBrowserEventFamily;
   rootIntent: InputIntent | null;
@@ -34,7 +34,7 @@ export type EditableEditingEpoch = {
 
 export type EditableEditingEpochInput = {
   command: EditableCommand | null;
-  modelSelectionBefore?: Range | null;
+  modelSelectionBefore?: Selection;
   ownership: EditableOwnership;
   rootEventFamily: EditableBrowserEventFamily;
   rootIntent?: InputIntent | null;

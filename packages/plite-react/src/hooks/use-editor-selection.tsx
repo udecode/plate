@@ -1,6 +1,5 @@
-import { RangeApi, type Selection } from '@platejs/plite';
+import { RangeApi } from '@platejs/plite';
 
-import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { useEditorSelector } from './use-editor-selector';
 
 /**
@@ -8,13 +7,7 @@ import { useEditorSelector } from './use-editor-selector';
  * Only triggers a rerender when the selection actually changes
  */
 export const useEditorSelection = () =>
-  useEditorSelector((editor) => readRuntimeSelection(editor), {
-    equalityFn: isSelectionEqual,
+  useEditorSelector((editor) => editor.read.selection(), {
+    equalityFn: RangeApi.equals,
     profileId: 'editor-selection',
   });
-
-const isSelectionEqual = (a: Selection, b: Selection) => {
-  if (!a && !b) return true;
-  if (!a || !b) return false;
-  return RangeApi.equals(a, b);
-};

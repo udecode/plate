@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "copilot",
+  "title": "Copilot",
+  "description": "A text suggestion system that displays AI-generated content after the cursor.",
+  "dependencies": [
+    "@faker-js/faker",
+    "@platejs/ai",
+    "@platejs/markdown",
+    "@platejs/plite"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/copilot.tsx",
+      "content": "'use client';\n\nimport { faker } from '@faker-js/faker';\nimport { CopilotPlugin } from '@platejs/ai/react';\nimport { stripMarkdown } from '@platejs/markdown';\nimport type { Element } from '@platejs/plite';\nimport { useEditor, useElement, usePluginStore } from 'platejs/react';\nimport * as React from 'react';\n\nexport function GhostText() {\n  const editor = useEditor();\n  const element = useElement();\n\n  const isSuggested = usePluginStore(\n    CopilotPlugin,\n    'isSuggested',\n    editor.key(element)\n  );\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n}\n\nfunction GhostTextContent() {\n  const suggestionText = usePluginStore(CopilotPlugin, 'suggestionText');\n\n  return (\n    <span\n      className=\"pointer-events-none text-muted-foreground/70 max-sm:hidden\"\n      contentEditable={false}\n    >\n      {suggestionText}\n    </span>\n  );\n}\n\nexport const CopilotKit = [\n  CopilotPlugin.configure(({ update }) => ({\n    initialState: {\n      completeOptions: {\n        api: '/api/ai/copilot',\n        body: {\n          system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.\n  \n  Rules:\n  - Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).\n  - Maintain style and tone. Don't repeat given text.\n  - For unclear context, provide the most likely continuation.\n  - Handle code snippets, lists, or structured text if needed.\n  - Don't include \"\"\" in your response.\n  - CRITICAL: Always end with a punctuation mark.\n  - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.\n  - If no context is provided or you can't generate a continuation, return \"0\" without explanation.`,\n        },\n        onError: () => {\n          // Mock the API response. Remove it when you implement the route /api/ai/copilot\n          update.setBlockSuggestion({\n            text: stripMarkdown(faker.lorem.sentence()),\n          });\n        },\n        onFinish: (_, completion) => {\n          if (completion === '0') return;\n\n          update.setBlockSuggestion({\n            text: stripMarkdown(completion),\n          });\n        },\n      },\n      debounceDelay: 500,\n      renderGhostText: GhostText,\n      getPrompt: ({ editor }) => {\n        const contextEntry = editor.read.nodes.block();\n\n        if (!contextEntry) return '';\n\n        const prompt = editor.api.markdown.serialize({\n          value: { children: [contextEntry[0] as Element] },\n        });\n\n        return `Continue the text up to the next punctuation mark:\n  \"\"\"\n  ${prompt}\n  \"\"\"`;\n      },\n    },\n    shortcuts: {\n      accept: {\n        keys: 'tab',\n      },\n      acceptNextWord: {\n        keys: 'mod+right',\n      },\n      reject: {\n        keys: 'escape',\n      },\n      triggerSuggestion: {\n        keys: 'ctrl+space',\n      },\n    },\n  })),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/copilot.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/copilot"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/copilot"
+      }
+    ],
+    "examples": [
+      "copilot-demo",
+      "copilot-pro"
+    ]
+  },
+  "type": "registry:component"
+}

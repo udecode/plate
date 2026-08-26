@@ -6,6 +6,7 @@ import {
   createEditorView,
   ElementApi,
   type Element,
+  SelectionApi,
   TextApi,
 } from '@platejs/plite';
 import { parent as staticParent } from '@platejs/plite/internal';
@@ -16,6 +17,36 @@ const paragraph = (text: string): Element => ({
 });
 
 describe('state query contract', () => {
+  it('reads schema blocks from text ranges and exact node selections', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two'), paragraph('three')],
+    });
+
+    assert.deepEqual(
+      editor.read.nodes
+        .blocks({
+          at: {
+            anchor: { path: [0, 0], offset: 1 },
+            focus: { path: [1, 0], offset: 2 },
+            kind: 'text',
+          },
+        })
+        .map(([, path]) => path),
+      [[0], [1]]
+    );
+    assert.deepEqual(
+      editor.read.nodes
+        .blocks({
+          at: SelectionApi.nodes([
+            [0, 0],
+            [2, 0],
+          ]),
+        })
+        .map(([, path]) => path),
+      [[0], [2]]
+    );
+  });
+
   it('reads the current selection when text.string omits its target', () => {
     const editor = createEditor({
       initialSelection: {
@@ -35,7 +66,7 @@ describe('state query contract', () => {
 
     editor.update((tx) => {
       assert.equal(tx.text.string(), 'ne');
-      tx.selection.clear();
+      tx.selection.set(null);
       assert.equal(tx.text.string(), '');
     });
 
@@ -93,7 +124,7 @@ describe('state query contract', () => {
     assert.equal(editor.read.selection.isAcrossBlocks(), true);
 
     editor.update((tx) => {
-      tx.selection.clear();
+      tx.selection.set(null);
     });
 
     assert.equal(
@@ -115,7 +146,6 @@ describe('state query contract', () => {
       initialValue: [paragraph('one two'), paragraph('three')],
     });
 
-    assert.equal(editor.read.selection.isWithinText(), true);
     assert.equal(editor.read.selection.isAtBlockStart(), true);
     assert.equal(editor.read.selection.isAtBlockEnd(), false);
     assert.equal(
@@ -165,7 +195,6 @@ describe('state query contract', () => {
       });
 
       assert.equal(tx.selection.isAtBlockEnd(), true);
-      assert.equal(tx.selection.isWithinText(), true);
       assert.equal(tx.points.isWordEnd({ path: [0, 0], offset: 7 }), true);
     });
 
@@ -175,7 +204,6 @@ describe('state query contract', () => {
       focus: { path: [1, 0], offset: 5 },
     });
 
-    assert.equal(editor.read.selection.isWithinText(), false);
     assert.equal(editor.read.selection.isAcrossBlocks(), true);
     assert.equal(editor.read.selection.isAtBlockEnd(), true);
   });
@@ -319,7 +347,6 @@ describe('state query contract', () => {
       focus: { path: [0, 0], offset: 6 },
     });
 
-    assert.equal(headerEditor.read.selection.isWithinText(), true);
     assert.equal(headerEditor.read.selection.isAtBlockStart(), true);
     assert.equal(
       headerEditor.read.selection.intersects({
@@ -333,6 +360,15 @@ describe('state query contract', () => {
       headerEditor.read.points.isWordEnd({ path: [0, 0], offset: 6 }),
       true
     );
+
+    headerEditor.update.selection.setNodes([[0]]);
+
+    assert.equal(headerEditor.read.selection.isCollapsed(), false);
+    assert.equal(headerEditor.read.selection.isExpanded(), true);
+    assert.equal(headerEditor.read.selection.isWithinBlock(), true);
+    assert.equal(headerEditor.read.selection.isAcrossBlocks(), false);
+    assert.equal(headerEditor.read.selection.isAtBlockStart(), true);
+    assert.equal(headerEditor.read.selection.isAtBlockEnd(), true);
   });
 
   it('matches nodes by scalar, one-of, empty, and predicate policies', () => {
@@ -564,7 +600,7 @@ describe('state query contract', () => {
     assert.throws(
       () =>
         editor.read((state) =>
-          state.nodes.toArray({ at: [] }, () => {
+          state.nodes.toArray({ at: [] }).map(() => {
             throw new Error('map boom');
           })
         ),

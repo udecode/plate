@@ -59,7 +59,6 @@ Use explicit predicates instead of rebuilding point and block comparisons in
 feature code.
 
 ```tsx
-const inOneText = editor.read.selection.isWithinText();
 const acrossBlocks = editor.read.selection.isAcrossBlocks();
 const atHeadingStart = editor.read.selection.isAtBlockStart({
   type: "heading",

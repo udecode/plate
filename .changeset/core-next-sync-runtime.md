@@ -26,7 +26,7 @@
 - Resolve plugin dependencies and conflicts by descriptor, install required dependencies transitively, and expose typed dependency APIs without string capability lookup
 - Declare host clipboard insertion as typed Plite DOM extension contributions
 - Publish static View rendering and Plite DOM strategy contributions under distinct extension identities
-- Compile merge, selectability, and slice-export policy into typed Plite read middleware, and selection projection into `selectionKinds`
+- Compile merge, selectability, and slice-export policy into typed Plite read middleware
 - Avoid reevaluating published plugin schema factories during plugin access
 - Fix `PlateElement` and `PliteElement` composition across descriptor-owned component families
 - Keep ordinary text input native when Plate renderers and command middleware are behaviorally inert

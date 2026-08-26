@@ -1,4 +1,10 @@
-import type { Editor, EditorSnapshot, Range, NodeKey } from '@platejs/plite';
+import {
+  type Editor,
+  type EditorSnapshot,
+  type NodeKey,
+  type Range,
+  RangeApi,
+} from '@platejs/plite';
 import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 
 import { point as editorPoint } from '../editable/runtime-editor-api';
@@ -26,7 +32,7 @@ export const isFullDocumentSelection = (
   editor: Editor,
   selection: EditorSnapshot['selection']
 ) => {
-  if (!selection) {
+  if (!selection || !RangeApi.isRange(selection)) {
     return false;
   }
 

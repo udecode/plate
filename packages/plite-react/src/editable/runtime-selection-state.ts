@@ -1,4 +1,9 @@
-import { SelectionApi, type Range, type Selection } from '@platejs/plite';
+import {
+  type Range,
+  RangeApi,
+  SelectionApi,
+  type Selection,
+} from '@platejs/plite';
 
 import {
   type Editor,
@@ -12,6 +17,12 @@ export const readLiveSelection = (editor: Editor): Selection =>
 export const readRuntimeSelection = (editor: Editor): Selection =>
   readLiveSelection(editor) ?? editorGetSelection(editor);
 
+export const readCommittedSelectionRange = (editor: Editor): Range | null => {
+  const selection = editorGetSelection(editor);
+
+  return RangeApi.isRange(selection) ? selection : null;
+};
+
 export const readRuntimeSelectionRange = (editor: Editor): Range | null => {
   const liveSelection = readLiveSelection(editor);
 
@@ -19,5 +30,5 @@ export const readRuntimeSelectionRange = (editor: Editor): Range | null => {
     return liveSelection;
   }
 
-  return editor.read.selection.replacementRange();
+  return readCommittedSelectionRange(editor);
 };

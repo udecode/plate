@@ -19,52 +19,52 @@ type ParagraphElement = {
 
 type CustomValue = ParagraphElement[];
 
-const selectedBlockPaths = new WeakMap<Editor, Path | null>();
+const activePalettePaths = new WeakMap<Editor, Path | null>();
 
 const paragraph = (text: string): ParagraphElement => ({
   type: 'paragraph',
   children: [{ text }],
 });
 
-const createBlockSelectionExtension = () =>
-  defineExtension('blockSelection', {
+const createNodePaletteExtension = () =>
+  defineExtension('nodePalette', {
     api: ({ editor }) => ({
       clear() {
-        selectedBlockPaths.set(editor, null);
+        activePalettePaths.set(editor, null);
       },
       select(path: Path) {
-        selectedBlockPaths.set(editor, [...path] as Path);
+        activePalettePaths.set(editor, [...path] as Path);
       },
       selectedPath() {
-        return selectedBlockPaths.get(editor) ?? null;
+        return activePalettePaths.get(editor) ?? null;
       },
     }),
     read: ({ editor }) => ({
-      hasSelection: () => selectedBlockPaths.get(editor) != null,
-      selectedPath: () => selectedBlockPaths.get(editor) ?? null,
+      hasSelection: () => activePalettePaths.get(editor) != null,
+      selectedPath: () => activePalettePaths.get(editor) ?? null,
     }),
     update: ({ editor, tx }) => ({
       removeSelected() {
-        const path = selectedBlockPaths.get(editor);
+        const path = activePalettePaths.get(editor);
 
         if (!path) {
           return;
         }
 
         tx.nodes.remove({ at: path });
-        selectedBlockPaths.set(editor, null);
+        activePalettePaths.set(editor, null);
       },
-      selectedPath: () => selectedBlockPaths.get(editor) ?? null,
+      selectedPath: () => activePalettePaths.get(editor) ?? null,
     }),
   });
 
-const createBlockSelectionEditor = () =>
+const createNodePaletteEditor = () =>
   createEditor<CustomValue>({
     initialValue: [paragraph('one'), paragraph('two')],
   });
 
-const createInstalledBlockSelectionEditor = () => {
-  const extension = createBlockSelectionExtension();
+const createInstalledNodePaletteEditor = () => {
+  const extension = createNodePaletteExtension();
 
   return createEditor({
     extensions: [extension] as const,
@@ -73,31 +73,31 @@ const createInstalledBlockSelectionEditor = () => {
 };
 
 const assertTypes = (
-  editor: ReturnType<typeof createInstalledBlockSelectionEditor>
+  editor: ReturnType<typeof createInstalledNodePaletteEditor>
 ) => {
-  editor.api.blockSelection.select([0]);
+  editor.api.nodePalette.select([0]);
 
   editor.read((state) => {
-    const hasSelection: boolean = state.blockSelection.hasSelection();
+    const hasSelection: boolean = state.nodePalette.hasSelection();
 
     // @ts-expect-error local editor actions are not deterministic read state
-    state.blockSelection.select([0]);
+    state.nodePalette.select([0]);
 
     return hasSelection;
   });
 
-  const directHasSelection: boolean = editor.read.blockSelection.hasSelection();
+  const directHasSelection: boolean = editor.read.nodePalette.hasSelection();
   const directSelectedPath: Path | null =
-    editor.read.blockSelection.selectedPath();
+    editor.read.nodePalette.selectedPath();
 
   editor.update((tx) => {
-    tx.blockSelection.removeSelected();
+    tx.nodePalette.removeSelected();
 
     // @ts-expect-error local editor actions are not transaction transforms
-    tx.blockSelection.select([0]);
+    tx.nodePalette.select([0]);
   });
 
-  editor.update.blockSelection.removeSelected();
+  editor.update.nodePalette.removeSelected();
 
   void directHasSelection;
   void directSelectedPath;
@@ -113,36 +113,36 @@ const transpiledTypeof = (value: unknown) =>
 describe('extension namespace contract', () => {
   it('installs API handles, state reads, and tx writes as one extension namespace', () => {
     const headlessEditor = createEditor<CustomValue>();
-    const editor = createInstalledBlockSelectionEditor();
+    const editor = createInstalledNodePaletteEditor();
 
-    assert.equal('blockSelection' in headlessEditor, false);
+    assert.equal('nodePalette' in headlessEditor, false);
     assert.equal(
-      (headlessEditor.api as { blockSelection?: unknown }).blockSelection,
+      (headlessEditor.api as { nodePalette?: unknown }).nodePalette,
       undefined
     );
-    assert.equal(editor.api.blockSelection.selectedPath(), null);
+    assert.equal(editor.api.nodePalette.selectedPath(), null);
     assert.equal(
-      editor.read((state) => state.blockSelection.hasSelection()),
+      editor.read((state) => state.nodePalette.hasSelection()),
       false
     );
 
-    editor.api.blockSelection.select([1]);
+    editor.api.nodePalette.select([1]);
 
-    assert.deepEqual(editor.api.blockSelection.selectedPath(), [1]);
+    assert.deepEqual(editor.api.nodePalette.selectedPath(), [1]);
     assert.deepEqual(
-      editor.read((state) => state.blockSelection.selectedPath()),
+      editor.read((state) => state.nodePalette.selectedPath()),
       [1]
     );
-    assert.deepEqual(editor.read.blockSelection.selectedPath(), [1]);
-    assert.equal(transpiledTypeof(editor.read.blockSelection), 'function');
+    assert.deepEqual(editor.read.nodePalette.selectedPath(), [1]);
+    assert.equal(transpiledTypeof(editor.read.nodePalette), 'function');
 
-    editor.update.blockSelection.removeSelected();
+    editor.update.nodePalette.removeSelected();
 
     assert.deepEqual(
       editor.read((state) => state.children()),
       [paragraph('one')]
     );
-    assert.equal(editor.api.blockSelection.selectedPath(), null);
+    assert.equal(editor.api.nodePalette.selectedPath(), null);
 
     const editorSurface = editor as unknown as Record<string, unknown>;
     assert.equal('tf' in editorSurface, false);
@@ -150,29 +150,29 @@ describe('extension namespace contract', () => {
   });
 
   it('cleans up dynamically installed API, state, and tx extension namespaces', () => {
-    const editor = createBlockSelectionEditor();
-    const cleanup = editor.install(createBlockSelectionExtension());
+    const editor = createNodePaletteEditor();
+    const cleanup = editor.install(createNodePaletteExtension());
     const api = editor.api as {
-      blockSelection?: { selectedPath: () => Path | null };
+      nodePalette?: { selectedPath: () => Path | null };
     };
 
-    assert.equal(api.blockSelection?.selectedPath(), null);
+    assert.equal(api.nodePalette?.selectedPath(), null);
     assert.equal(
       editor.read((state) =>
         (
           state as typeof state & {
-            blockSelection: { hasSelection: () => boolean };
+            nodePalette: { hasSelection: () => boolean };
           }
-        ).blockSelection.hasSelection()
+        ).nodePalette.hasSelection()
       ),
       false
     );
 
     cleanup();
 
-    assert.equal(api.blockSelection, undefined);
+    assert.equal(api.nodePalette, undefined);
     assert.equal(
-      editor.read((state) => 'blockSelection' in state),
+      editor.read((state) => 'nodePalette' in state),
       false
     );
   });

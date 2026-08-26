@@ -136,12 +136,9 @@ const isSelectionPoint = (value: unknown, validateOffset: ValueValidator) =>
   Object.keys(value).every((key) => key === 'offset' || key === 'path');
 const isSelection = (value: unknown, validateOffset: ValueValidator): boolean =>
   isRecord(value) &&
-  value.kind === 'text' &&
   isSelectionPoint(value.anchor, validateOffset) &&
   isSelectionPoint(value.focus, validateOffset) &&
-  Object.keys(value).every(
-    (key) => key === 'anchor' || key === 'focus' || key === 'kind'
-  );
+  Object.keys(value).every((key) => key === 'anchor' || key === 'focus');
 const isSelectionSnapshot: ValueValidator = (value) =>
   isSelection(value, isNonnegativeInteger);
 const isSelectionExpectation: ValueValidator = (value) =>

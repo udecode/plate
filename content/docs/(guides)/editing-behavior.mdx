@@ -160,9 +160,9 @@ deletion can still enter the merge pipeline below.
 
 Merge behavior decides whether two nodes can join and whether empty nodes at the boundary disappear.
 
-`tx.nodes.merge(...)` consults Plite's
-`nodes.shouldMergeNodesRemovePrevNode` query before it applies the merge.
-Plate's merge-rule query middleware adds three important guards:
+`tx.nodes.merge(...)` evaluates Plite's internal
+`editorReads.nodes.shouldMergeNodesRemovePrevNode` descriptor before it applies
+the merge. Plate's merge-rule middleware adds three important guards:
 
 | Case | Behavior |
 | --- | --- |
@@ -269,7 +269,7 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 | `rules.selection` | Affinity core plugin plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesselection) |
 | `rules.match` | Core rule lookup plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
 | `tx.nodes.merge(...)` | Plite transaction command | [Transforms](/docs/plite/api/transforms#txnodesmergeoptions) |
-| `editor.read.nodes.shouldMergeNodesRemovePrevNode(...)` | Plite read query extended by Plate merge-rule middleware | [Editor](/docs/plite/api/nodes/editor) |
+| `editorReads.nodes.shouldMergeNodesRemovePrevNode` | Internal Plite descriptor extended by Plate merge-rule middleware | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
 | `tx.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
 
 Done. Rules describe the policy; transaction commands and corrections do the work.

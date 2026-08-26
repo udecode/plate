@@ -1,11 +1,11 @@
 ---
 title: "Selection API"
-description: "Serializable built-in and extension-owned selection validation."
+description: "Active ranges, exact node membership, and semantic selection writes."
 ---
 
-A Plite selection is `null` or a serializable selection value. Core owns text
-and node selections; extensions can register additional kinds with their own
-validation and mapping behavior.
+`editor.read.selection()` returns the active Slate-shaped range. Plite owns the
+complete serializable selection state: text selection or one directional exact
+node selection. Extensions cannot add selection kinds.
 
 ```typescript
 type EditorSelection = TextSelection | NodeSelection;
@@ -17,16 +17,71 @@ type Selection<TSelection extends SelectionValue = SelectionValue> =
 `SelectionApi` is frozen. Compose a custom helper around it instead of
 mutating the namespace.
 
+## Editor Reads
+
+#### `editor.read.selection() => Range | null`
+
+Read the active range or `null`. The same callable is available as
+`state.selection()` and `tx.selection()` inside read and update callbacks. The
+returned object contains only `anchor` and `focus`; it has no selection-kind tag
+or extension payload.
+
+Use it directly wherever a Slate `Range` is expected.
+
+```typescript
+import { RangeApi } from "@platejs/plite";
+
+const selection = editor.read.selection();
+
+if (selection) {
+  const { anchor, focus } = selection;
+  const expanded = RangeApi.isExpanded(selection);
+}
+```
+
+For a node selection, `selection()` returns the directed representative range
+between its anchor and focus nodes. Read exact disjoint membership with
+`selection.nodes()` and one exact range per node with `selection.ranges()`.
+Range predicates such as `selection.isExpanded()`, `isWithinBlock()`, and
+`isAcrossBlocks()` inspect that same representative range. Use `nodes()` for
+exact node-selection membership instead of treating those predicates as a
+selection-kind test.
+
+#### `editor.read.selection.ranges() => readonly Range[]`
+
+Read every exact range in the current selection. Text selections return one
+range and node selections return one range per selected path. Each result is a
+plain `Range`. A missing selection returns an empty array.
+
+Use `state.selection.ranges()` or `tx.selection.ranges()` inside a read or
+update callback.
+
+## Editor Updates
+
+#### `editor.update.selection.setNodes(targets, options?)`
+
+Select live nodes by `Path`, `NodeKey`, or live descendant. The editor resolves
+every target in one root, sorts and deduplicates the paths, and drops descendants
+of selected ancestors. An empty collection clears the selection. A missing or
+foreign target rejects the whole update.
+
+Pass `{ anchor, focus }` when gesture direction matters. Both endpoints must be
+members of the exact selected targets. Omit the options for deterministic
+document-order endpoints.
+
+Use `tx.selection.setNodes(targets)` when earlier writes in the same transaction
+create or move the targets.
+
 ## Static Methods
 
 #### `SelectionApi.equals(left: Selection, right: Selection) => boolean`
 
-Compare complete selection values, including kind-specific fields.
+Compare complete text or node selection values.
 
 #### `SelectionApi.isSelection(value: unknown) => value is SelectionValue`
 
-Check the common serializable selection fields. This predicate does not know
-which extension kinds are installed or whether the points exist in a document.
+Strictly check either built-in serializable selection shape. This predicate
+does not verify whether its points or paths exist in a document.
 
 #### `SelectionApi.isText(value: unknown) => value is TextSelection`
 
@@ -35,22 +90,34 @@ on a collapsed text selection.
 
 #### `SelectionApi.isNode(value: unknown) => value is NodeSelection`
 
-Strictly check the built-in node-selection shape and node path syntax.
+Strictly check the built-in node-selection shape and canonical path membership.
+
+#### `SelectionApi.root(selection) => NamedRootKey | undefined`
+
+Read the named root declared by a text or node selection. A primary-root
+selection returns `undefined`.
 
 #### `SelectionApi.text(range: Range, options?) => TextSelection`
 
 Create a text selection from a range and optional affinity or insertion marks.
 
-#### `SelectionApi.node(path: Path, range: Range) => NodeSelection`
+#### `SelectionApi.nodes(paths: readonly [Path, ...Path[]], options?) => NodeSelection`
 
-Create a node selection from a node path and range.
+Create a detached multi-node selection. Paths are non-empty, deduplicated, and
+sorted in document order. Descendants of selected ancestors are removed.
+`anchorPath` and `focusPath` preserve direction and must both be exact members.
+Live editor code uses `selection.setNodes(targets, { anchor, focus })` instead.
+
+Read exact selected entries with `editor.read.selection.nodes()` or
+`tx.selection.nodes()`. Use `editor.read.nodes.blocks()` to project the active
+selection to schema blocks. `ranges()` projects one range per selected node,
+while `contains` and `intersects` evaluate those exact projections.
 
 ## Editor Validation
 
 #### `state.selection.isValid(value: unknown) => value is Selection`
 
-Validate a complete selection against the editor's installed selection kinds
-and current document. The direct read form is
+Validate a complete built-in selection against the current document. The direct read form is
 `editor.read.selection.isValid(value)`.
 
 ```typescript
@@ -59,11 +126,14 @@ if (editor.read.selection.isValid(input)) {
 }
 ```
 
-This check accepts `null`, rejects unsupported extension kinds, runs the
-installed kind validator, and verifies every projected range against its
-document root.
+This check accepts `null`, rejects unknown kinds, and verifies every text point
+or exact node path against its document root.
 
-In Plite React, node selection is model-only: the editor remains focused while
-the native browser selection has no range. See
+In Plite React, node selection is model-only: `selection()` still exposes its
+active model range while the editor remains focused and the native browser
+selection has no range. See
 [Keyboard-Selectable Content](../../concepts/16-selection-and-dom#keyboard-selectable-content)
 for asset focus, child-content navigation, and deletion.
+
+Plate React apps can render selected-block highlights and blank-space drag
+selection with the [Node Selection components](/docs/api/core/plate-components#node-selection).

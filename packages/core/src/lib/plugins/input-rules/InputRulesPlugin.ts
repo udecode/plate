@@ -1,8 +1,6 @@
 import {
-  type Element,
   type EditorStateView,
   editorCommands,
-  ElementApi,
   NodeApi,
   RangeApi,
 } from '@platejs/plite';
@@ -42,13 +40,11 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
     >;
   }): Omit<SelectionInputRuleContext, 'plugin'> => {
     const selection = state.selection();
-    const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
+    const isCollapsed = !!selection && state.selection.isCollapsed();
     const getBlockEntry = createCachedGetter(() =>
       selection
-        ? state.nodes.above({
+        ? state.nodes.block({
             at: selection.focus,
-            match: (node): node is Element =>
-              ElementApi.isElement(node) && state.schema.isBlock(node),
           })
         : undefined
     );

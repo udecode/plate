@@ -1,11 +1,12 @@
 import {
   type Anchor,
-  NodeApi,
   PathApi,
   type EditorUpdateTransaction,
   type Point,
   type Range,
   RangeApi,
+  type Selection,
+  SelectionApi,
 } from '@platejs/plite';
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import {
@@ -61,7 +62,10 @@ import {
   string as editorString,
   toInternalRoot,
 } from './runtime-editor-api';
-import { readRuntimeSelection } from './runtime-selection-state';
+import {
+  readRuntimeSelection,
+  readRuntimeSelectionRange,
+} from './runtime-selection-state';
 import {
   armModelOwnedTextInputGuard,
   setEditableModelSelectionPreference,
@@ -122,20 +126,18 @@ export const applyModelOwnedLineBreak = ({
   if (
     applyParagraphBreakAfterSelectedBlockVoid(
       editor,
-      readRuntimeSelection(editor)
+      readRuntimeSelectionRange(editor)
     )
   ) {
     return;
   }
 
-  const selection = readRuntimeSelection(editor);
+  const selection = readRuntimeSelectionRange(editor);
   const blockEntry =
     selection && RangeApi.isCollapsed(selection)
       ? editor.read((state) =>
-          state.nodes.above({
+          state.nodes.block({
             at: selection.anchor,
-            match: (node) =>
-              NodeApi.isElement(node) && state.nodes.isBlock(node),
           })
         )
       : undefined;
@@ -356,7 +358,7 @@ const applyProjectedViewSelectionDataCommand = ({
           if (previousSelection) {
             tx.selection.set(previousSelection);
           } else {
-            tx.selection.clear();
+            tx.selection.set(null);
           }
         }
       } catch (error) {
@@ -477,9 +479,8 @@ const applyProjectedViewSelectionLineBreakCommand = ({
         return;
       }
 
-      const blockEntry = tx.nodes.above({
+      const blockEntry = tx.nodes.block({
         at: target.start,
-        match: (node) => NodeApi.isElement(node) && tx.nodes.isBlock(node),
       });
 
       if (!blockEntry) {
@@ -532,6 +533,23 @@ const applyRootLocalSelectionMoveCommand = ({
   editor: RuntimeEditor;
 }) => {
   const selection = readRuntimeSelection(editor);
+  if (SelectionApi.isNode(selection)) {
+    const path = command.reverse ? selection.paths[0] : selection.paths.at(-1);
+    const point = path
+      ? editor.read((state) =>
+          command.reverse ? state.points.end(path) : state.points.start(path)
+        )
+      : null;
+
+    if (!point) return false;
+
+    dispatchCommand(editor, editorCommands.select, {
+      target: createRange(point, point),
+    });
+    if (!command.extend && command.axis !== 'document') return true;
+
+    return applyRootLocalSelectionMoveCommand({ command, editor });
+  }
 
   if (!selection) {
     return false;
@@ -698,12 +716,28 @@ export const applyEditableCommand = ({
       {
         const selection = command.selection ?? readRuntimeSelection(editor);
 
-        if (selection && RangeApi.isCollapsed(selection)) {
+        if (
+          selection &&
+          RangeApi.isRange(selection) &&
+          RangeApi.isCollapsed(selection)
+        ) {
+          return true;
+        }
+
+        if (SelectionApi.isNode(selection)) {
+          editor.update((tx) => {
+            tx.selection.set(selection);
+            tx.command(editorCommands.deleteFragment, {
+              direction: command.direction ?? 'forward',
+            });
+          });
           return true;
         }
 
         dispatchCommand(editor, editorCommands.deleteFragment, {
-          ...(selection && RangeApi.isExpanded(selection)
+          ...(selection &&
+          RangeApi.isRange(selection) &&
+          RangeApi.isExpanded(selection)
             ? { at: selection }
             : {}),
           direction: command.direction ?? 'forward',
@@ -768,7 +802,7 @@ export const applyEditableCommand = ({
     case 'transpose-character': {
       return applyModelOwnedTransposeCharacterIntent({
         editor,
-        selection: readRuntimeSelection(editor),
+        selection: readRuntimeSelectionRange(editor),
       });
     }
 
@@ -794,6 +828,7 @@ export const applyEditableCommand = ({
         editor,
         command.kind === 'select-all' &&
           appliedSelection &&
+          RangeApi.isRange(appliedSelection) &&
           shouldUseModelBackedSelectAllSelection({
             editor: editor as ReactRuntimeEditor,
             selection: appliedSelection,
@@ -812,7 +847,7 @@ export const applyEditableCommand = ({
         applyContentRootSelectionMoveCommand({
           command,
           editor: editor as ReactRuntimeEditor,
-          selection: readRuntimeSelection(editor),
+          selection: readRuntimeSelectionRange(editor),
         }).handled
       ) {
         return true;
@@ -894,8 +929,30 @@ export const applyModelOwnedTextInput = ({
   editor: Editor;
   inputType: string;
   mergeHistory?: boolean;
-  selection?: Range | null;
+  selection?: Range | Selection;
 }): EditableRepairRequest => {
+  if (SelectionApi.isNode(selection)) {
+    editor.update(
+      mergeHistory ? { tags: ['composition', 'history-merge'] } : {},
+      (tx) => {
+        tx.selection.set(selection);
+        tx.command(editorCommands.insertText, { text: data });
+      }
+    );
+
+    return inputType === 'insertText'
+      ? {
+          forceRender: ReactEditor.isComposing(editor as ReactRuntimeEditor),
+          kind: 'repair-caret-after-text-insert',
+          selectionSourceTransition: {
+            preferModelSelection: true,
+            reason: 'model-command',
+            selectionSource: 'model-owned',
+          },
+        }
+      : { kind: 'none' };
+  }
+
   const insertAtSelection = (target: Range) => {
     if (mergeHistory) {
       editor.update({ tags: ['composition', 'history-merge'] }, (tx) => {

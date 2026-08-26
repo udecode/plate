@@ -4,26 +4,23 @@ import {
   createEditor as createPliteEditor,
   createEditorView,
   schema,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
-const createEditor = (sendMessage: ReturnType<typeof mock>) => {
-  const initialValue: Value = [
+const createEditor = (
+  sendMessage: ReturnType<typeof mock>,
+  initialValue: Value = [
     { children: [{ text: 'one' }], type: 'paragraph' },
     { children: [{ text: 'two' }], type: 'paragraph' },
-  ];
+  ]
+) => {
   const editor = createPlateEditor({
     editor: createPliteEditor<Value>(),
-    plugins: [
-      BaseParagraphPlugin,
-      BaseAIPlugin,
-      BlockSelectionPlugin,
-      AIChatPlugin,
-    ],
+    plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -50,13 +47,51 @@ describe('AIChatPlugin submit', () => {
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
+  it('defaults an empty node selection to chat mode', () => {
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage, [
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
+    ]);
+
+    editor.update.selection.set(SelectionApi.nodes([[0]]));
+
+    editor.plugin(AIChatPlugin).api.submit('draft');
+
+    expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('chat');
+    expect(editor.plugin(AIChatPlugin).store.get('chatSelection')).toBeNull();
+    expect(sendMessage).toHaveBeenCalledWith(
+      'draft',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ctx: expect.objectContaining({
+            nodeSelection: {
+              anchorPath: [0],
+              focusPath: [0],
+              paths: [[0]],
+            },
+            selection: {
+              anchor: { offset: 0, path: [0, 0] },
+              focus: { offset: 0, path: [0, 0] },
+            },
+          }),
+        }),
+      })
+    );
+  });
+
   it('undoes insert mode, stores selected blocks, and sends their context', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
-    const selectedKeys = new Set([editor.key([0])!, editor.key([1])!]);
+    const selectedNodeKeys = new Set([editor.key([0])!, editor.key([1])!]);
     editor.plugin(AIChatPlugin).store.set({ toolName: 'edit' });
     editor.plugin(AIChatPlugin).store.set({ open: true });
-    editor.plugin(BlockSelectionPlugin).store.set({ selectedKeys });
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [1]], {
+        anchorPath: [1],
+        focusPath: [0],
+      })
+    );
     editor.update({ history: 'merge' }, (tx) => {
       tx.ai.markBatch();
       tx.nodes.insert({ ai: true, text: ' ai' }, { at: [0, 1] });
@@ -72,13 +107,18 @@ describe('AIChatPlugin submit', () => {
         .plugin(AIChatPlugin)
         .store.get('chatNodes')
         .map(({ nodeKey }) => nodeKey)
-    ).toEqual([...selectedKeys]);
+    ).toEqual([...selectedNodeKeys]);
     expect(editor.plugin(AIChatPlugin).store.get('chatSelection')).toBeNull();
     expect(sendMessage).toHaveBeenCalledWith(
       'draft',
       expect.objectContaining({
         body: expect.objectContaining({
           ctx: expect.objectContaining({
+            nodeSelection: {
+              anchorPath: [1],
+              focusPath: [0],
+              paths: [[0], [1]],
+            },
             refs: {
               blocks: [
                 { path: [0], ref: 'b1' },
@@ -86,12 +126,50 @@ describe('AIChatPlugin submit', () => {
               ],
               tableCells: [],
             },
-            selection: expect.any(Object),
+            selection: {
+              anchor: { offset: 3, path: [1, 0] },
+              focus: { offset: 0, path: [0, 0] },
+            },
             toolName: 'edit',
           }),
         }),
       })
     );
+  });
+
+  it('preserves backward node selection when regenerating', () => {
+    const regenerate = mock(async () => {});
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage);
+    const chat = {
+      messages: [],
+      regenerate,
+      sendMessage,
+    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+
+    editor.plugin(AIChatPlugin).store.set({ chat });
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [1]], {
+        anchorPath: [1],
+        focusPath: [0],
+      })
+    );
+    editor.plugin(AIChatPlugin).api.submit('draft');
+    editor.plugin(BaseAIPlugin).update.beginPreview();
+
+    editor.plugin(AIChatPlugin).api.reload();
+
+    expect(regenerate).toHaveBeenCalledWith({
+      body: {
+        ctx: expect.objectContaining({
+          nodeSelection: {
+            anchorPath: [1],
+            focusPath: [0],
+            paths: [[0], [1]],
+          },
+        }),
+      },
+    });
   });
 
   it('localizes named-root request context while retaining local key ownership', () => {
@@ -118,15 +196,10 @@ describe('AIChatPlugin submit', () => {
       plugins: [
         BaseParagraphPlugin,
         BaseAIPlugin,
-        BlockSelectionPlugin,
         AIChatPlugin,
         RootHolderPlugin,
       ],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0], root: 'header' },
-        focus: { offset: 3, path: [0, 0], root: 'header' },
-      },
+      selection: SelectionApi.nodes([[0]], { root: 'header' }),
       initialValue: {
         children: [
           {
@@ -154,12 +227,16 @@ describe('AIChatPlugin submit', () => {
         body: expect.objectContaining({
           ctx: expect.objectContaining({
             children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+            nodeSelection: {
+              anchorPath: [0],
+              focusPath: [0],
+              paths: [[0]],
+            },
             refs: {
               blocks: [{ path: [0], ref: 'b1' }],
               tableCells: [],
             },
             selection: {
-              kind: 'text',
               anchor: { offset: 0, path: [0, 0] },
               focus: { offset: 3, path: [0, 0] },
             },

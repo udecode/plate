@@ -1,0 +1,36 @@
+{
+  "baseDebt": {
+    "count": 0,
+    "items": []
+  },
+  "fileDecisions": {
+    "canonical-classic-maintenance": 12,
+    "canonical-source": 234,
+    "docs-provider-neutral-install": 2,
+    "exclude-unpublished": 67,
+    "keep-base-author-source": 4,
+    "keep-radix-author-source": 4
+  },
+  "fileRows": 323,
+  "itemDecisions": {
+    "canonical-classic-maintenance": 11,
+    "canonical-common": 92,
+    "canonical-shadcn-consumer": 42,
+    "canonical-style-item": 3,
+    "canonical-transitive": 82,
+    "docs-catalog-once": 199,
+    "docs-provider-neutral-install": 1,
+    "independent-primitive-common": 1,
+    "provider-variant-owner": 4
+  },
+  "itemRows": 435,
+  "unsupportedProviders": [
+    "aria"
+  ],
+  "variantOwners": [
+    "editor-context-menu",
+    "editor-dropdown-menu",
+    "floating-popover",
+    "toolbar"
+  ]
+}

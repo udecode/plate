@@ -25,7 +25,6 @@
 '@platejs/plite-layout': patch
 '@platejs/plite-react': patch
 '@platejs/resizable': patch
-'@platejs/selection': patch
 '@platejs/slash-command': patch
 '@platejs/suggestion': patch
 '@platejs/tabbable': patch

@@ -17,6 +17,7 @@ import {
   type NodeTypeSelector,
 } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
+import { SelectionApi } from '../interfaces/selection';
 import { normalizeNodeMatch } from '../utils/node-match';
 
 export function nodes<T extends Node>(
@@ -51,6 +52,21 @@ export function* nodes<T extends Node>(
   const match = normalizeNodeMatch(options.type, options.match) ?? (() => true);
 
   if (!at) {
+    return;
+  }
+
+  if (SelectionApi.isNode(at)) {
+    const paths = reverse ? at.paths.toReversed() : at.paths;
+    const entries = paths.flatMap((path) => {
+      const node = NodeApi.getIf(editor, path);
+
+      return node && match(node, path)
+        ? ([[node, path]] as unknown as Array<NodeEntry<T>>)
+        : [];
+    });
+
+    if (universal && entries.length !== paths.length) return;
+    yield* entries;
     return;
   }
 

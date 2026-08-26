@@ -58,7 +58,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const editor = createTableEditor(input);
     const cells = editor
       .plugin(BaseTablePlugin)
-      .read.getSelectedCells() as TableCellElement[];
+      .read.selection()!.anchors.map(({ cell }) => cell);
 
     expect(cells.map(getFixtureId)).toEqual(['c11', 'c21']);
 
@@ -131,7 +131,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const editor = createTableEditor(input);
     const cells = editor
       .plugin(BaseTablePlugin)
-      .read.getSelectedCells() as TableCellElement[];
+      .read.selection()!.anchors.map(({ cell }) => cell);
 
     expect(cells.map(getFixtureId)).toEqual(['c12', 'c22']);
     expect(editor.read.nodes.path(cells[1])).toEqual([0, 1, 1]);
@@ -368,7 +368,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const editor = createTableEditor(input);
     const cells = editor
       .plugin(BaseTablePlugin)
-      .read.getSelectedCells() as TableCellElement[];
+      .read.selection()!.anchors.map(({ cell }) => cell);
 
     expect(
       editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders(cells)

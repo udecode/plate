@@ -1,6 +1,5 @@
 'use client';
 
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -35,11 +34,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  ToolbarButton,
+  ToolbarMenuGroup,
+} from '@/registry/components/editor/toolbar';
+import {
   insertBlock,
   insertInlineElement,
 } from '@/registry/components/editor/transforms-classic';
-
-import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
 type Group = {
   group: string;
@@ -216,12 +217,12 @@ const groups: Group[] = [
   },
 ];
 
-export function InsertToolbarButton(props: DropdownMenuProps) {
+export function InsertToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip="Insert" isDropdown>
           <PlusIcon />

@@ -43,8 +43,24 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
   const navigation = useEditorPlugin(NavigationFeedbackPlugin);
   const isScroll = usePluginStore(TocPlugin, 'isScroll');
   const topOffset = usePluginStore(TocPlugin, 'topOffset');
-  const headingList = useEditorSelector((innerEditor) =>
-    innerEditor.plugin(TocPlugin).read.headings()
+  const headingList = useEditorSelector(
+    (innerEditor) => innerEditor.plugin(TocPlugin).read.headings(),
+    {
+      equalityFn: (previous, next) =>
+        previous !== null &&
+        previous.length === next.length &&
+        previous.every((heading, index) => {
+          const nextHeading = next[index];
+
+          return (
+            heading.key === nextHeading?.key &&
+            heading.depth === nextHeading.depth &&
+            heading.title === nextHeading.title &&
+            heading.type === nextHeading.type
+          );
+        }),
+      shouldUpdate: (change) => !change || change.changed.hasAny('document'),
+    }
   );
   const container = useEditorScrollElement(editor);
   const isScrollable =

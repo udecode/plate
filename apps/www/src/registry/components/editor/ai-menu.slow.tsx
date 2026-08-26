@@ -11,7 +11,7 @@ const useHotkeysMock = mock();
 const usePluginStoreMock = mock();
 const useEditorMock = mock();
 const toDOMNodeMock = mock();
-const setBlockSelectionMock = mock();
+const setNodesMock = mock();
 const isAtBlockEndMock = mock();
 
 const Icon = () => <div />;
@@ -23,10 +23,6 @@ mock.module('@platejs/ai/react', () => ({
 
 mock.module('@platejs/comment', () => ({
   getTransientCommentKey: () => 'comment',
-}));
-
-mock.module('@platejs/selection/react', () => ({
-  BlockSelectionPlugin: {},
 }));
 
 mock.module('@platejs/suggestion', () => ({
@@ -76,6 +72,9 @@ mock.module('platejs', () => ({
   },
   PLUGINS: {},
   NodeApi: {},
+  SelectionApi: {
+    isNode: (selection: { kind?: string } | null) => selection?.kind === 'node',
+  },
   TextApi: {
     isText: () => false,
   },
@@ -143,7 +142,7 @@ describe('AIMenu slow contracts', () => {
     usePluginStoreMock.mockReset();
     useEditorMock.mockReset();
     toDOMNodeMock.mockReset();
-    setBlockSelectionMock.mockReset();
+    setNodesMock.mockReset();
     isAtBlockEndMock.mockReset();
 
     globalThis.setTimeout = ((callback: TimerHandler) => {
@@ -161,10 +160,8 @@ describe('AIMenu slow contracts', () => {
           resolveDOMNode: toDOMNodeMock,
         },
       },
-      key: () => 'block',
       plugin: () => ({
-        api: { set: setBlockSelectionMock },
-        read: { getNodes: () => [] },
+        read: { nodes: () => [] },
         store: { get: () => false },
       }),
       read: {
@@ -175,11 +172,15 @@ describe('AIMenu slow contracts', () => {
           ],
           isEmpty: () => false,
         },
-        selection: {
+        selection: Object.assign(() => ({ kind: 'text' }), {
           isAtBlockEnd: isAtBlockEndMock,
           isCollapsed: () => true,
           isExpanded: () => false,
-        },
+          nodes: () => [],
+        }),
+      },
+      update: {
+        selection: { setNodes: setNodesMock },
       },
     } as unknown as PlateEditor;
 
@@ -201,9 +202,6 @@ describe('AIMenu slow contracts', () => {
         }
         case 'open': {
           return chatOpen;
-        }
-        case 'isSelectingSome': {
-          return false;
         }
         case 'chat': {
           return { messages: [], status: 'streaming' };
@@ -253,7 +251,7 @@ describe('AIMenu slow contracts', () => {
       render(<AIMenu />);
     });
 
-    expect(setBlockSelectionMock).toHaveBeenCalledWith('block');
+    expect(setNodesMock).toHaveBeenCalledWith([[0]]);
   });
 
   it('keeps block selection clear when the cursor is at its block end', async () => {
@@ -268,6 +266,6 @@ describe('AIMenu slow contracts', () => {
       render(<AIMenu />);
     });
 
-    expect(setBlockSelectionMock).not.toHaveBeenCalled();
+    expect(setNodesMock).not.toHaveBeenCalled();
   });
 });

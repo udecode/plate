@@ -47,6 +47,32 @@ const getCommandRangeRootMeta = (
 
 export const select: SelectionMutationMethods['select'] = (editor, target) => {
   const selection = getCurrentSelection(editor);
+  if (SelectionApi.isNode(target)) {
+    const root =
+      target.root ??
+      getEditorUpdateRoot(editor) ??
+      getCurrentSelectionRoot(editor);
+
+    writeSelection(
+      editor,
+      SelectionApi.nodes(
+        target.paths,
+        root === 'main'
+          ? {
+              anchorPath: target.anchorPath,
+              focusPath: target.focusPath,
+            }
+          : {
+              anchorPath: target.anchorPath,
+              focusPath: target.focusPath,
+              root,
+            }
+      ),
+      root
+    );
+    return;
+  }
+
   const commandRangeRootMeta = getCommandRangeRootMeta(
     target,
     getEditorUpdateRoot(editor) ?? getCurrentSelectionRoot(editor)

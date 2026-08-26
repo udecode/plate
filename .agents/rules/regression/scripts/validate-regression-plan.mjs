@@ -14,6 +14,7 @@ export { createInputDigest, createProofReceiptId };
 export const REGRESSION_OBSERVATIONS = [
   'model',
   'dom-native',
+  'pointer-feedback',
   'focus',
   'popup',
   'geometry-paint',
@@ -41,6 +42,16 @@ const FAILED_FIX_KINDS = new Set([
   'final-verification',
   'reporter-contradiction',
 ]);
+const EXPECTED_OUTCOME_AUTHORITY_PATTERN =
+  /^(?:reporter|accepted-product-law|existing-contract|upstream-contract):\s*\S/i;
+const UNIT_RED_PATTERN = /^unit-red:\s*\S/i;
+const E2E_REQUIRED_PATTERN = /^e2e-required:\s*\S/i;
+const E2E_TEST_COMMAND_PATTERN =
+  /(?:tooling\/e2e\/|apps\/plite\/tests\/plite-browser\/|\bplaywright\b|\b(?:test:)?e2e\b|\btest:plite(?::|-)?browser(?:\b|:)|--project=)/i;
+const POINTER_INTERACTION_PATTERN =
+  /\b(?:cursor|pointer|mouse|hover)\b|\b(?:resize|drag)\s+handle\b/i;
+const NO_FLASH_POINTER_PATTERN =
+  /\b(?:flash(?:es|ed|ing)?|flicker(?:s|ed|ing)?|frame|pre-handler)\b/i;
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
 const normalizeHeader = (value) =>
@@ -286,6 +297,8 @@ export const validateRegressionPlan = (
     'source_reference',
     'setup_action',
     'expected_outcome',
+    'expected_outcome_authority',
+    'red_test_escalation',
     'exact_environment',
     'test_file_command',
     'status',
@@ -329,6 +342,36 @@ export const validateRegressionPlan = (
       if (!isResolved(row[field])) {
         errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
       }
+    }
+    if (
+      !EXPECTED_OUTCOME_AUTHORITY_PATTERN.test(
+        row.expected_outcome_authority ?? ''
+      )
+    ) {
+      errors.push(
+        `${label} requires Expected-outcome authority reporter:, accepted-product-law:, existing-contract:, or upstream-contract:`
+      );
+    }
+    const unitRed = UNIT_RED_PATTERN.test(row.red_test_escalation ?? '');
+    const e2eRequired = E2E_REQUIRED_PATTERN.test(
+      row.red_test_escalation ?? ''
+    );
+    const usesE2E = E2E_TEST_COMMAND_PATTERN.test(row.test_file_command ?? '');
+
+    if (!unitRed && !e2eRequired) {
+      errors.push(
+        `${label} requires Red-test escalation unit-red: or e2e-required:`
+      );
+    }
+    if (unitRed && usesE2E) {
+      errors.push(
+        `${label} has unit RED and must not add a new E2E test`
+      );
+    }
+    if (e2eRequired && !usesE2E) {
+      errors.push(
+        `${label} records e2e-required but Test file / command is not E2E`
+      );
     }
     if (
       !isResolved(row.exact_environment) &&
@@ -564,6 +607,92 @@ export const validateRegressionPlan = (
     ) {
       errors.push(`${label} requires an executable Proof layer`);
     }
+    if (observation === 'geometry-paint') {
+      if (!/\bpixel\b/i.test(row.proof_layer ?? '')) {
+        errors.push(
+          `${label} requires actual pixel capture/classification; computed style or DOM state is diagnostic only`
+        );
+      }
+      if (complete) {
+        if (!/\bpositive-control:\s*pass\b/i.test(row.result ?? '')) {
+          errors.push(`${label} requires positive-control: pass`);
+        }
+        if (!/\bnegative-control:\s*pass\b/i.test(row.result ?? '')) {
+          errors.push(`${label} requires negative-control: pass`);
+        }
+      }
+    }
+    if (observation === 'pointer-feedback') {
+      if (
+        !/\b(?:dom|browser|exact-chrome|device)\b/i.test(row.proof_layer ?? '')
+      ) {
+        errors.push(
+          `${label} requires DOM or browser proof for pointer feedback`
+        );
+      }
+      if (!/\breporter-noun:\s*\S/i.test(row.positive_assertion ?? '')) {
+        errors.push(`${label} requires reporter-noun: <plain UI noun>`);
+      }
+      if (!/\baffordance-inventory:\s*\S/i.test(row.positive_assertion ?? '')) {
+        errors.push(
+          `${label} requires affordance-inventory: <labels, selectors, or owners>`
+        );
+      }
+      if (complete) {
+        if (!/\binteraction-trace:\s*pass\b/i.test(row.result ?? '')) {
+          errors.push(`${label} requires interaction-trace: pass`);
+        }
+        if (!/\btarget:\s*\S/i.test(row.result ?? '')) {
+          errors.push(`${label} requires target: <pointer target>`);
+        }
+        if (!/\bevent:\s*[\w-]+/i.test(row.result ?? '')) {
+          errors.push(`${label} requires event: <pointer event>`);
+        }
+        if (!/\bbuttons:\s*(?:\d+|none)\b/i.test(row.result ?? '')) {
+          errors.push(`${label} requires buttons: <state>`);
+        }
+        const selected = cases.get(caseId);
+        const noFlashEvidenceAnchors = new Set(
+          (evidenceByCase.get(caseId) ?? [])
+            .filter((evidence) =>
+              NO_FLASH_POINTER_PATTERN.test(
+                [evidence.source_reference, evidence.claim].join(' ')
+              )
+            )
+            .flatMap((evidence) =>
+              splitOracleAnchors(evidence.oracle_anchors)
+            )
+        );
+        const noFlashClaim =
+          NO_FLASH_POINTER_PATTERN.test(
+            [row.positive_assertion, row.forbidden_state].join(' ')
+          ) ||
+          noFlashEvidenceAnchors.has(`pointer-feedback@${phase}`) ||
+          (phase === 'during-action' &&
+            NO_FLASH_POINTER_PATTERN.test(
+              [
+                selected?.source_reference,
+                selected?.setup_action,
+                selected?.expected_outcome,
+              ].join(' ')
+            ));
+
+        if (noFlashClaim) {
+          if (
+            !/\b(?:target-?capture|capture-phase|pre-handler)\b/i.test(
+              row.proof_layer ?? ''
+            )
+          ) {
+            errors.push(
+              `${label} requires a target-capture or pre-handler proof layer`
+            );
+          }
+          if (!/\bpre-handler-state:\s*pass\b/i.test(row.result ?? '')) {
+            errors.push(`${label} requires pre-handler-state: pass`);
+          }
+        }
+      }
+    }
     validateTestAnchor(row.executable_anchor, rootDir, label, errors);
     if (complete && !isPass(row.result)) {
       errors.push(`${label} requires Result pass: <evidence>`);
@@ -601,6 +730,30 @@ export const validateRegressionPlan = (
       )
     ) {
       errors.push(`${caseId} requires at least one applicable oracle row`);
+    }
+
+    const selected = cases.get(caseId);
+    const pointerInteraction = POINTER_INTERACTION_PATTERN.test(
+      [
+        selected?.source_reference,
+        selected?.setup_action,
+        selected?.expected_outcome,
+        ...(evidenceByCase.get(caseId) ?? []).flatMap((row) => [
+          row.source_reference,
+          row.claim,
+        ]),
+      ].join(' ')
+    );
+
+    if (
+      pointerInteraction &&
+      !Array.from(rows?.values() ?? []).some(
+        (row) =>
+          row.observation?.toLowerCase() === 'pointer-feedback' &&
+          row.applies?.toLowerCase() === 'yes'
+      )
+    ) {
+      errors.push(`${caseId} requires an applicable pointer-feedback oracle`);
     }
   }
 

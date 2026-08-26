@@ -88,7 +88,6 @@ describe('BaseDatePlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -127,7 +126,6 @@ describe('BaseDatePlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -160,7 +158,6 @@ describe('BaseDatePlugin', () => {
     editor.update.selection.move({ distance: 1, unit: 'character' });
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });
@@ -197,7 +194,6 @@ describe('BaseDatePlugin', () => {
     });
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
     });

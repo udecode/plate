@@ -9,6 +9,7 @@ import {
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from './BaseTablePlugin';
+import { projectTableSelection } from './internal/selection';
 
 describe('table clipboard', () => {
   jsxt;
@@ -55,7 +56,9 @@ describe('table clipboard', () => {
         const fragment = editor.read.slice.export().content;
 
         expect(fragment).toMatchObject([
-          editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0],
+          projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          ),
         ]);
       }
     );
@@ -134,6 +137,42 @@ describe('table clipboard', () => {
     expect(editor.read.slice.export().content).toContainEqual(
       expect.objectContaining({ type: 'table' })
     );
+  });
+
+  it('projects a transaction from its own node selection', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins(),
+      initialValue: input.children,
+    });
+
+    const result: { slice?: ContentSlice } = {};
+
+    editor.read((state) =>
+      state.transaction((tx) => {
+        tx.selection.setNodes([
+          [0, 0, 0],
+          [0, 0, 1],
+        ]);
+
+        result.slice = tx.slice.get();
+      })
+    );
+
+    expect(result.slice?.content).toMatchObject(input.children);
   });
 
   jsxt;

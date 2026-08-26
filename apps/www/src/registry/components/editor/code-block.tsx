@@ -29,12 +29,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  FloatingPopover as Popover,
+  FloatingPopoverContent as PopoverContent,
+  FloatingPopoverTrigger as PopoverTrigger,
+} from '@/registry/components/editor/floating-popover';
 
 type CodeBlockElementProps = PlateElementProps<typeof CodeBlockPlugin> & {
   showLanguageLabel?: boolean;
@@ -221,7 +221,7 @@ function CodeBlockCombobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <Button
           size="sm"
           variant="ghost"
@@ -236,7 +236,7 @@ function CodeBlockCombobox({
       <PopoverContent
         className="w-[200px] p-0"
         id="code-block-language-options"
-        onCloseAutoFocus={() => {
+        onFinalFocus={() => {
           setSearchValue('');
         }}
       >

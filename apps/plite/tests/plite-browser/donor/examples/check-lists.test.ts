@@ -49,7 +49,6 @@ test.describe('Check-lists example', () => {
     await expect(checkbox).toBeChecked();
 
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [3, 0], offset: 0 },
       focus: { path: [3, 0], offset: 0 },
     });
@@ -62,7 +61,6 @@ test.describe('Check-lists example', () => {
 
     await expect(editor.locator.block([3])).toContainText('Still Criss-cross.');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [3, 0], offset: 'Still '.length },
       focus: { path: [3, 0], offset: 'Still '.length },
     });
@@ -86,7 +84,6 @@ test.describe('Check-lists example', () => {
     await expect(editor.locator.block([3])).toContainText('Criss-cross.');
     if (browserName === 'chromium' || testInfo.project.name === 'mobile') {
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [3, 0], offset: 0 },
         focus: { path: [3, 0], offset: 0 },
       });
@@ -111,7 +108,6 @@ test.describe('Check-lists example', () => {
       .toEqual(['Start here.', 'Keep going.', 'Finish here.']);
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 6 },
       focus: { path: [2, 0], offset: 6 },
     });
@@ -121,7 +117,6 @@ test.describe('Check-lists example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });

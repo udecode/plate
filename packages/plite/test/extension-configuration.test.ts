@@ -267,7 +267,10 @@ describe('transactional extension configuration', () => {
     assert.equal(getEditorExtensionRegistry(editor), previousRegistry);
     assert.equal(editor.read.schema.identity(), previousIdentity);
     assert.deepEqual(editor.read.children(), [paragraph('before')]);
-    assert.deepEqual(editor.read.selection(), initialSelection);
+    assert.deepEqual(editor.read.selection(), {
+      anchor: initialSelection.anchor,
+      focus: initialSelection.focus,
+    });
     assert.equal(editor.read.lastCommit(), null);
     assert.equal(editor.read.runtime.snapshot().version, previousVersion);
     assert.equal(commits, 0);
@@ -366,7 +369,6 @@ describe('transactional extension configuration', () => {
 
     assert.deepEqual(editor.read.children(), [paragraph('wrapped')]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -2433,7 +2435,7 @@ describe('transactional extension configuration', () => {
           defineExtension('configuration-owner-write-guard', {
             validate({ editor: owner }) {
               assert.equal(owner, editor);
-              owner.update.selection.clear();
+              owner.update.selection.set(null);
             },
           })
         ),

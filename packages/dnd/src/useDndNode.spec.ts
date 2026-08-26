@@ -7,6 +7,7 @@ import {
   ElementApi,
   NodeApi,
   type NodeKey,
+  SelectionApi,
 } from '@platejs/plite';
 import { act, renderHook } from '@testing-library/react';
 import type {
@@ -847,6 +848,19 @@ describe('Dnd node behavior', () => {
       callHover(dragItem, monitor);
 
       expect(editor.read.selection.isExpanded()).toBe(false);
+    });
+
+    it('preserves exact node selection while dragging', () => {
+      const focus = spyOn(editor.api.dom, 'focus').mockImplementation(() => {});
+      editor.update.selection.set(SelectionApi.nodes([[0], [2]]));
+
+      callHover(dragItem, monitor);
+
+      expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+        [0],
+        [2],
+      ]);
+      expect(focus).not.toHaveBeenCalled();
     });
 
     it('clears a stale drop target when no move is available', () => {

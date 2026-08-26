@@ -12,7 +12,7 @@ import {
   property,
   schema,
 } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, projectTestSelectionRange } from '@platejs/test-utils';
 import { PLUGINS } from '@platejs/utils';
 
 import {
@@ -462,7 +462,9 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
         editor.update.text.deleteBackward();
 
         expect(editor.read.children()).toEqual(output.children);
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
     });
 
@@ -515,7 +517,9 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
       expect(suggestionData?.type).toBe('remove');
       expect(suggestionData?.userId).toBe('testId');
       expect(rightText).toEqual(output.children[0].children[2]);
-      expect(editor.read.selection()).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
     });
 
     it('marks the previous date-shaped inline void with remove suggestion metadata', () => {
@@ -672,23 +676,25 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
         ).children
       );
       expect(editor.read.selection()).toEqual(
-        (
-          <editor>
-            <hp
-              suggestion={{
-                createdAt: lineBreakSuggestion.createdAt,
-                id: lineBreakSuggestion.id,
-                isLineBreak: true,
-                type: 'remove',
-                userId: 'testId',
-              }}
-            >
-              test1
-              <cursor />
-            </hp>
-            <hp>test2</hp>
-          </editor>
-        ).selection
+        projectTestSelectionRange(
+          (
+            <editor>
+              <hp
+                suggestion={{
+                  createdAt: lineBreakSuggestion.createdAt,
+                  id: lineBreakSuggestion.id,
+                  isLineBreak: true,
+                  type: 'remove',
+                  userId: 'testId',
+                }}
+              >
+                test1
+                <cursor />
+              </hp>
+              <hp>test2</hp>
+            </editor>
+          ).selection
+        )
       );
     });
 
@@ -737,23 +743,25 @@ describe('when editor.plugin(SuggestionPlugin).store.get().isSuggesting is true'
       );
       expect(voidSuggestion.isLineBreak).toBeUndefined();
       expect(editor.read.selection()).toEqual(
-        (
-          <editor>
-            <htoc
-              suggestion={{
-                createdAt: voidSuggestion.createdAt,
-                id: voidSuggestion.id,
-                type: 'remove',
-                userId: 'testId',
-              }}
-            >
-              <htext>
-                <cursor />
-              </htext>
-            </htoc>
-            <hp>test2</hp>
-          </editor>
-        ).selection
+        projectTestSelectionRange(
+          (
+            <editor>
+              <htoc
+                suggestion={{
+                  createdAt: voidSuggestion.createdAt,
+                  id: voidSuggestion.id,
+                  type: 'remove',
+                  userId: 'testId',
+                }}
+              >
+                <htext>
+                  <cursor />
+                </htext>
+              </htoc>
+              <hp>test2</hp>
+            </editor>
+          ).selection
+        )
       );
     });
   });
@@ -913,7 +921,6 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
       userId: 'testId',
     });
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -995,7 +1002,9 @@ describe('delete fragment when editor.plugin(SuggestionPlugin).store.get().isSug
     expect(trailingRemoveData?.type).toBe('remove');
     expect(trailingRemoveData?.userId).toBe('testId');
     expect(trailingText).toEqual(output.children[0].children[4]);
-    expect(editor.read.selection()).toEqual(output.selection);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 });
 
@@ -1154,7 +1163,9 @@ describe('insert text when cursor is expanded', () => {
     expect(insertData?.type).toBe('insert');
     expect(insertData?.userId).toBe('testId');
     expect(trailingText).toEqual(output.children[0].children[5]);
-    expect(editor.read.selection()).toEqual(output.selection);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 });
 

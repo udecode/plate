@@ -301,15 +301,10 @@ const isPaginationBlockActive = (
   editor: CustomEditor,
   format: PaginationBlockFormat
 ) => {
-  const selection = editor.read.selection();
-
-  if (!selection) {
-    return false;
-  }
+  if (!editor.read.selection()) return false;
 
   return editor.read((state) =>
     state.nodes.some({
-      at: state.ranges.unhang(selection),
       match: (node) => isPaginationTextBlock(node) && node.type === format,
     })
   );
@@ -1603,10 +1598,9 @@ const PaginationSurface = ({
         return null;
       }
 
-      const selection = state.selection();
-      const anchorIndex = selection?.anchor.path[0];
-      const focusIndex = selection?.focus.path[0];
-      const indexes = [anchorIndex, focusIndex]
+      const indexes = state.selection
+        .ranges()
+        .flatMap(({ anchor, focus }) => [anchor.path[0], focus.path[0]])
         .filter((index): index is number => typeof index === 'number')
         .sort((left, right) => left - right);
 
@@ -1634,12 +1628,7 @@ const PaginationSurface = ({
           return false;
         }
 
-        const beforeAnchor = change.selectionBefore?.anchor.path[0];
-        const beforeFocus = change.selectionBefore?.focus.path[0];
-        const afterAnchor = change.selectionAfter?.anchor.path[0];
-        const afterFocus = change.selectionAfter?.focus.path[0];
-
-        return beforeAnchor !== afterAnchor || beforeFocus !== afterFocus;
+        return change.selectionChanged;
       },
     }
   );
@@ -1712,7 +1701,7 @@ const PaginationSurface = ({
           return;
         }
 
-        tx.selection.clear();
+        tx.selection.set(null);
 
         if (table.children.length > nextTableRows) {
           for (

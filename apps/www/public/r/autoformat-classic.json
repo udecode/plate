@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "autoformat-classic",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/autoformat.json",
+    "https://platejs.org/r/list-classic.json",
+    "https://platejs.org/r/list-classic-toolbar-button.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/autoformat-classic.tsx",
+      "content": "export { AutoformatKit } from './autoformat';\n",
+      "type": "registry:component",
+      "target": "@components/editor/autoformat-classic.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

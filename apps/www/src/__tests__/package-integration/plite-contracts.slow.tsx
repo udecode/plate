@@ -2,7 +2,7 @@
 
 import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
 import { BaseLinkPlugin } from '@platejs/link';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt, projectTestSelectionRange } from '@platejs/test-utils';
 import {
   type BaseEditor,
   NodeApi,
@@ -50,7 +50,7 @@ const isTrailingTextEmpty = (editor: BaseEditor) =>
     const selection = state.selection();
     if (!selection) return true;
 
-    const blockEntry = state.nodes.block();
+    const blockEntry = state.nodes.block({ at: selection });
     if (!blockEntry) return true;
 
     const [, blockPath] = blockEntry;
@@ -60,7 +60,6 @@ const isTrailingTextEmpty = (editor: BaseEditor) =>
 
     return (
       state.text.string({
-        kind: 'text',
         anchor: selection.focus,
         focus: blockEnd,
       }) === ''
@@ -433,7 +432,7 @@ describe('slate cross-package contracts', () => {
         action(editor);
 
         expect(editor.read.children()).toEqual(output.children);
-        expect(editor.read.selection()).toEqual(output.selection);
+        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
       });
     }
   });

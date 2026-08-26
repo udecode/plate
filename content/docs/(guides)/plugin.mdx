@@ -66,6 +66,34 @@ const NoticePlugin = definePlatePlugin("noticeFeature", {
 });
 ```
 
+### Block Content
+
+Plate treats each non-inline element as normal-flow block content unless its
+schema declares `blockContent: false`. Use that flag for structural internals,
+not for blocks that should remain selectable.
+
+```ts
+const RowPlugin = definePlatePlugin("row", {
+  schema: {
+    element: {
+      ...schema.element.textBlock(),
+      blockContent: false,
+    },
+  },
+});
+```
+
+Read the compiled result through the Plate schema API:
+
+```ts
+editor.read.schema.isBlockContent(element);
+```
+
+This classification is independent of
+`editor.read.nodes.isSelectable(element)`. Content containers use
+`plugins.blockContent(...)` when they declare which normal-flow blocks they
+accept.
+
 ### Inline, Void, and Text Properties
 
 Element behavior lives inside `schema.element`. Declare a boolean text property
@@ -248,12 +276,8 @@ Generic package code can reach the same immutable API object through
 
 Plate plugins declare Plite capabilities directly at the plugin root. Use
 `readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
-`facetProviders`, `selectionKinds`, `contributions`, `on`, `activate`, and
+`facetProviders`, `contributions`, `on`, `activate`, and
 `validate` without a second wrapper.
-
-`selectionKinds` is also the complete type registration. Concrete editors
-infer custom selection reads and writes only when that plugin is installed;
-do not add module augmentation or a side-effect type import.
 
 ```ts showLineNumbers
 import { defineStateField } from "platejs";

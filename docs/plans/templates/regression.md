@@ -38,9 +38,12 @@ First checkpoint:
 Completion threshold:
 - Every selected observed regression has an executable test that fails on the
   violated invariant and passes after the fix.
+- Every selected case records `unit-red: <test>` or
+  `e2e-required: <lower-layer limitation>`. Unit/package RED stops new E2E test
+  creation; Browser may remain final verification without permanent E2E coverage.
 - Every case has positive and forbidden-state assertions for model, DOM/native,
-  focus, popup, geometry/paint, runtime errors, and follow-up input, with an N/A
-  reason for observations that do not apply.
+  pointer feedback, focus, popup, geometry/paint, runtime errors, and follow-up
+  input, with an N/A reason for observations that do not apply.
 - Current source and every proof host are ready before behavior claims.
 - Every kept case has exact reproduction, one-case Patch evidence, focused
   green proof, required retry-free stability, final ref/dirty-boundary proof,
@@ -149,18 +152,38 @@ Work Checklist:
       export/build path, and freshness method are recorded.
 - [ ] Generated/source drift and host readiness are repaired or block the claim.
 - [ ] Every selected case has a stable ID, source reference, owner, setup,
-      action, expected outcome, executable test path/command, tested ref, and
-      required stability.
+      action, expected outcome, expected-outcome authority, executable test
+      path/command, tested ref, and required stability. A negative report does
+      not authorize an invented positive behavior.
+- [ ] Every selected case records its `Red-test escalation`. Try the exact
+      owner-level unit/package test first. `unit-red:` forbids a new E2E test;
+      `e2e-required:` names why no exact unit/package RED is possible. Browser
+      verification alone does not become permanent E2E coverage.
 - [ ] Every selected case inventories its base acceptance, recordings, and all
       later reporter confirmations/contradictions as cumulative deltas. Every
       still-applicable claim stays required; superseded claims cite the source
       and reason that removed them.
 - [ ] Every required evidence row maps to a phase-specific executable oracle.
       A final-state assertion never substitutes for a transient during-action
-      caret, overlay, popup, selection, or paint assertion.
+      caret, overlay, popup, selection, pointer affordance, or paint assertion.
 - [ ] Every selected case has one or more phase-specific reporter-oracle rows
-      for model, DOM/native, focus, popup, geometry/paint, runtime errors, and
-      follow-up input.
+      for model, DOM/native, pointer feedback, focus, popup, geometry/paint,
+      runtime errors, and follow-up input.
+- [ ] Every pointer, mouse, cursor, hover, or resize/drag-handle case has an
+      applicable `pointer-feedback` row for the named interaction phase. Cursor
+      and hover/active/tooltip/drag affordances are proved independently from
+      model state, DOM selection, preview state, and eventual action.
+- [ ] Every applicable `pointer-feedback` positive assertion records
+      `reporter-noun: <plain noun>` and
+      `affordance-inventory: <accessible labels, selectors, or owners>` after
+      source and exact-route discovery. Any excluded matching affordance cites
+      explicit reporter or accepted-product authority.
+- [ ] Every completed applicable `pointer-feedback` row records
+      `interaction-trace: pass`, the actual pointer `target:`, delivered
+      `event:`, and `buttons:` state from the same interaction path.
+- [ ] Every flash, flicker, or one-frame pointer-feedback claim uses a target-
+      capture or equivalent pre-handler oracle and records
+      `pre-handler-state: pass`; eventual post-handler style is insufficient.
 - [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
       state, an executable layer/anchor, and an exact result; every inapplicable
       row has N/A reasons.
@@ -173,7 +196,9 @@ Work Checklist:
 - [ ] Patch returned root cause, durable owner, changed files, exact red/green
       commands, final ref/dirty fingerprints, stability, architecture verdict,
       P1 review, and caveat.
-- [ ] Focused green proof and exact final fresh-host replay passed.
+- [ ] Focused green proof passed. Final Browser verification runs when repo or
+      claim policy requires it; E2E replay is required only for
+      `e2e-required:` or already-existing affected-corpus E2E coverage.
 - [ ] Final proof ran through `capture-proof-receipt.mjs`; its ref, input digest,
       host, timestamps, retry count, and receipt ID validate.
 - [ ] Required retry-free stability runs passed with no retry.
@@ -188,8 +213,17 @@ Work Checklist:
       capture path; width or outer geometry alone cannot certify layer count.
       A failed control invalidates prior results and freezes product edits until
       the proof helper is repaired.
+- [ ] Every completed applicable `geometry-paint` row names actual pixel capture
+      and classification in its proof layer and records `positive-control: pass`
+      plus `negative-control: pass` and `duplicate-control: pass`; computed style,
+      DOM state, selection text, callback traces, and unclassified screenshots
+      are diagnostics only.
 - [ ] Every shared owner was replayed against its affected exact corpus after
       the final owner edit.
+- [ ] Every shared CSS selector, marker, class map, or style expansion has a
+      pre-edit consumer inventory. The affected corpus includes explicit
+      transparent, borderless, shadowless, and ringless overrides, each with a
+      forbidden duplicate/inherited-paint geometry oracle.
 - [ ] Every already-executable affected case has a `pass:` or `red:` pre-edit
       baseline recorded before its shared owner changes.
 - [ ] Every requested or started package, browser, root, or CI gate that failed
@@ -221,12 +255,14 @@ Completion Gates:
 | Current-source readiness | pending | Prove source owner and final tested ref/dirty boundary | pending |
 | Route/proof-host readiness | pending | Prove the runner/host observes current source | pending |
 | Executable regression coverage | pending | Record exact test file, red result, green result, and owning invariant | pending |
+| E2E escalation closure | pending | Prove each case uses `unit-red:` without a new E2E or records `e2e-required:` with the exact unit/package limitation | pending |
 | Cumulative reporter evidence closure | pending | Map every still-applicable base acceptance and later reporter delta to a phase-specific executable oracle | pending |
-| Reporter oracle closure | pending | Resolve positive and forbidden states for all seven observations and every applicable interaction phase per case | pending |
+| Reporter oracle closure | pending | Resolve positive and forbidden states for all eight observations and every applicable interaction phase per case | pending |
 | Failed-fix interrupt closure | pending | Prove every claimed-fix failure invalidated prior proof and completed automatic Regression repair | pending |
 | Architecture pressure closure | pending | Prove every second failure or architecture trigger has Best API and layer-plan evidence | pending |
 | Proof receipt closure | pending | Validate generated final receipts against unchanged issue-owned inputs | pending |
 | Affected-corpus replay closure | pending | Replay all cases affected by the last shared-owner edit | pending |
+| Shared-style consumer closure | pending | Inventory every shared selector/class consumer and prove explicit paint neutralizers do not inherit or duplicate the shared surface | pending |
 | Started-gate failure closure | pending | Rerun every requested or started gate that failed; completion requires the exact gate to pass on final bytes | pending |
 | Smallest-probe closure | pending | Record first falsifying probe and any host repair | pending |
 | Patch delegation closure | pending | Read back one-case root-cause/red/green/proof evidence | pending |
@@ -265,9 +301,9 @@ Phase / pass table:
 | Final goal-plan check | pending | | final response |
 
 Selected executable cases:
-| Case ID | Source reference | Setup / action | Expected outcome | Exact environment | Test file / command | Status | Tested ref | Next owner |
-|---------|------------------|----------------|------------------|-------------------|---------------------|--------|------------|------------|
-| pending | pending | pending | pending | pending | pending | pending | pending | pending |
+| Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
+|---------|------------------|----------------|------------------|----------------------------|---------------------|-------------------|---------------------|--------|------------|------------|
+| pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
 Reporter evidence inventory:
 | Case ID | Source role | Source reference | Phase | Claim | Disposition | Oracle anchors | Executable anchor | Result |
@@ -279,6 +315,7 @@ Reporter oracle matrix:
 |---------|-------------|-------|---------|--------------------|-----------------|-------------|-------------------|--------|
 | pending | model | pending | pending | pending | pending | pending | pending | pending |
 | pending | dom-native | pending | pending | pending | pending | pending | pending | pending |
+| pending | pointer-feedback | pending | pending | pending | pending | pending | pending | pending |
 | pending | focus | pending | pending | pending | pending | pending | pending | pending |
 | pending | popup | pending | pending | pending | pending | pending | pending | pending |
 | pending | geometry-paint | pending | pending | pending | pending | pending | pending | pending |

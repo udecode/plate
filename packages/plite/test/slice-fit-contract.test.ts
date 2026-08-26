@@ -513,10 +513,11 @@ describe('contextual schema slice fitting', () => {
 
     assert.ok(before);
     assert.ok(after);
+    assert.ok(SelectionApi.isText(before.selection?.value));
     assert.equal(Object.isFrozen(before.selection), true);
     assert.equal(Object.isFrozen(before.selection?.value), true);
-    assert.equal(Object.isFrozen(before.selection?.value?.anchor), true);
-    assert.equal(Object.isFrozen(before.selection?.value?.anchor.path), true);
+    assert.equal(Object.isFrozen(before.selection.value.anchor), true);
+    assert.equal(Object.isFrozen(before.selection.value.anchor.path), true);
     assert.deepEqual(before.changes.apply(value).children, [
       { type: 'divider', children: [{ text: '' }] },
       { type: 'heading', level: 2, children: [{ text: 'abc' }] },
@@ -645,7 +646,6 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 1, path: [3, 0] },
       focus: { offset: 1, path: [3, 0] },
-      kind: 'text',
     });
     assert.equal(children[0], committedBefore[0]);
     assert.equal(children[4], committedBefore[2]);
@@ -714,16 +714,19 @@ describe('contextual schema slice fitting', () => {
 
     assert.ok(fitted);
     const expected = fitted.changes.apply(detached.read.value());
+    const fittedSelection = fitted.selection?.value;
+
+    assert.ok(SelectionApi.isText(fittedSelection));
 
     transactional.update((tx) => {
       assert.equal(tx.slice.replace(slice, { at }), true);
     });
 
     assert.deepEqual(transactional.read.value(), expected);
-    assert.deepEqual(
-      transactional.read.selection(),
-      fitted.selection?.value ?? null
-    );
+    assert.deepEqual(transactional.read.selection(), {
+      anchor: fittedSelection.anchor,
+      focus: fittedSelection.focus,
+    });
   });
 
   it('publishes nothing when transactional slice fitting declines', () => {
@@ -1022,7 +1025,6 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 3, path: [1, 0] },
       focus: { offset: 3, path: [1, 0] },
-      kind: 'text',
     });
     assert.equal(editor.key([0]), blockKey);
     assert.equal(editor.key([0, 0]), textKey);
@@ -1806,7 +1808,6 @@ describe('contextual schema slice fitting', () => {
       paragraph('tail'),
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
     });
@@ -1924,7 +1925,6 @@ describe('contextual schema slice fitting', () => {
       { type: 'heading', children: [{ text: 'title!' }] },
     ]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });
@@ -2049,7 +2049,6 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 4, path: [0, 0, 0, 0] },
       focus: { offset: 4, path: [0, 0, 0, 0] },
-      kind: 'text',
     });
   });
 
@@ -2069,7 +2068,6 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 3, path: [target, 0] },
       focus: { offset: 3, path: [target, 0] },
-      kind: 'text',
     });
   });
 
@@ -2113,7 +2111,6 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 6, path: [0, 0] },
-      kind: 'text',
     });
   });
 
@@ -2166,7 +2163,6 @@ describe('contextual schema slice fitting', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 1, path: [0, 1, 0] },
       focus: { offset: 1, path: [0, 1, 0] },
-      kind: 'text',
     });
   });
 
@@ -2518,13 +2514,10 @@ describe('contextual schema slice fitting', () => {
       assert.equal(after.length, blockCount + 1);
       assert.equal(after[0], first);
       assert.equal(after.at(-1), last);
-      assert.deepEqual(
-        editor.read.selection(),
-        SelectionApi.text({
-          anchor: { offset: 0, path: [target + 1, 0] },
-          focus: { offset: 0, path: [target + 1, 0] },
-        })
-      );
+      assert.deepEqual(editor.read.selection(), {
+        anchor: { offset: 0, path: [target + 1, 0] },
+        focus: { offset: 0, path: [target + 1, 0] },
+      });
       assert.ok(
         maximumChangedSpan < 32,
         `${maximumChangedSpan} changed tokens`

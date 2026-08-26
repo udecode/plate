@@ -9,8 +9,11 @@ import {
   editorCommands,
 } from '@platejs/plite';
 import type { Element } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 
 import {
   createTestTableEditor,
@@ -355,7 +358,9 @@ describe('table clipboard slow contracts', () => {
 
       expect(editor.read.children()).toMatchObject(output.children);
 
-      expect(editor.read.selection()).toEqual(output.selection!);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
     });
   });
 
@@ -506,7 +511,9 @@ describe('table clipboard slow contracts', () => {
         editor.update.fragment.replace(fragment);
 
         expect(editor.read.children()).toMatchObject(output.children);
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
     });
   });
@@ -601,7 +608,9 @@ describe('table clipboard slow contracts', () => {
 
       expect(editor.read.children()).toMatchObject(output.children);
 
-      expect(editor.read.selection()).toEqual(output.selection!);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
     });
   });
 

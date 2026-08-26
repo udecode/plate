@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-location-ref-docs",
+  "title": "Anchor",
+  "description": "Root-aware live paths, points, and ranges in Plite.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/location-ref.mdx",
+      "content": "---\ntitle: Anchor\ndescription: Root-aware live paths, points, and ranges in Plite.\n---\n\nCreate an anchor through `editor.anchor(value, options)`. The anchor maps\nits path, point, or range through each committed `DocumentChange` until\n`release()` detaches it.\n\nSee the canonical [Anchor API](/docs/plite/api/locations/anchor).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/location-ref.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

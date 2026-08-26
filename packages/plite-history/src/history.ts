@@ -3,6 +3,7 @@ import {
   type Editor,
   type EditorEffect,
   type EditorSchemaIdentity,
+  RangeApi,
   type Selection,
   SelectionApi,
   type Value,
@@ -72,8 +73,11 @@ const hasFunctions = (
 const isSelection = (value: unknown): value is Selection =>
   value === null ||
   (SelectionApi.isSelection(value) &&
-    value.anchor.root !== MAIN_ROOT_KEY &&
-    value.focus.root !== MAIN_ROOT_KEY);
+    (SelectionApi.isNode(value)
+      ? value.root !== MAIN_ROOT_KEY
+      : RangeApi.isRange(value) &&
+        value.anchor.root !== MAIN_ROOT_KEY &&
+        value.focus.root !== MAIN_ROOT_KEY));
 
 const isAdditionalRoot = (value: unknown) =>
   value === undefined ||

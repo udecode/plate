@@ -1,4 +1,11 @@
-import type { Editor, Location, Point, Range, Value } from '../../index';
+import type {
+  Editor,
+  EditorSelection,
+  Location,
+  Point,
+  Range,
+  Value,
+} from '../../index';
 import type { MoveUnit, SelectionEdge } from '../../types/types';
 
 export interface SelectionCollapseOptions {
@@ -45,7 +52,7 @@ export interface SelectionMutationMethods {
    */
   select: <V extends Value, TExtensions extends readonly unknown[]>(
     editor: Editor<V, TExtensions>,
-    target: Location
+    target: EditorSelection | Location
   ) => void;
 
   /**

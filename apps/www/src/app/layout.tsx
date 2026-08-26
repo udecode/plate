@@ -107,7 +107,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body
         className={cn(
-          'group/body min-h-svh bg-background font-sans antialiased',
+          'group/body style-nova min-h-svh bg-background font-sans antialiased',
           '[--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] lg:[--header-height:calc(var(--spacing)*16)] xl:[--footer-height:calc(var(--spacing)*24)]',
           fontSans.variable,
           fontMono.variable

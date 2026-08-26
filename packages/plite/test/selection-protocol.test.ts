@@ -3,41 +3,21 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
   defineEditorSchema,
-  defineValueCodec,
-  type Editor,
-  type EditorSelectionSpec,
-  type EditorStateView,
-  type EditorUpdateTransaction,
+  type NodeSelection,
   property,
   type Range,
   schema,
   SelectionApi,
   target,
-  type Value,
 } from '@platejs/plite';
 import {
   decodeEditorSelection,
   encodeEditorSelection,
-  getChildren as editorGetChildren,
+  getEditorLiveSelection,
+  getSelectionDOMRange,
   getSnapshot,
 } from '@platejs/plite/internal';
-
-type CellSelection = Range &
-  Readonly<{
-    cells: readonly Range[];
-    kind: 'cell';
-  }>;
-
-type ShallowCellSelection = Range & Readonly<{ kind: 'cell' }>;
-
-type ShallowCellSelectionExtensions = readonly [
-  Readonly<{
-    name: 'shallow-cell-selection';
-    selectionKinds: ShallowCellSelection;
-  }>,
-];
 
 const range = (
   anchorPath: number[],
@@ -49,137 +29,10 @@ const range = (
   focus: { offset: focusOffset, path: focusPath },
 });
 
-const cellSelection = (): CellSelection => ({
-  ...range([0, 0], 0, [1, 0], 1),
-  cells: [range([0, 0], 0, [0, 0], 1), range([1, 0], 0, [1, 0], 1)],
-  kind: 'cell',
-});
-
-const isCellSelection = (selection: unknown): selection is CellSelection =>
-  SelectionApi.isSelection(selection) &&
-  selection.kind === 'cell' &&
-  Object.keys(selection).every((key) =>
-    ['anchor', 'cells', 'focus', 'kind'].includes(key)
-  ) &&
-  Array.isArray((selection as CellSelection).cells) &&
-  (selection as CellSelection).cells.length > 0 &&
-  (selection as CellSelection).cells.every(
-    (cell) =>
-      typeof cell === 'object' &&
-      cell !== null &&
-      SelectionApi.isSelection({ ...cell, kind: 'text' })
-  );
-
-const cellSelectionCodec = defineValueCodec<CellSelection>({
-  decode(value) {
-    if (!isCellSelection(value)) {
-      throw new Error('Invalid cell selection.');
-    }
-
-    return value;
-  },
-  encode: (selection) => selection,
-  version: 1,
-});
-
-const cellSelectionKinds = [
-  {
-    codec: cellSelectionCodec,
-    primaryRange(selection) {
-      return selection.cells[1] ?? null;
-    },
-    kind: 'cell',
-    map(selection, context) {
-      const primary = context.mapRange(selection, {
-        association: 'outward',
-      });
-      const cells = selection.cells.flatMap((cell) => {
-        const mapped = context.mapRange(cell, { association: 'outward' });
-
-        return mapped ? [mapped] : [];
-      });
-
-      return primary && cells.length > 0
-        ? { ...selection, ...primary, cells }
-        : null;
-    },
-    ranges(selection) {
-      return selection.cells;
-    },
-    replacementRange(selection) {
-      return selection.cells[0] ?? null;
-    },
-    validate: isCellSelection,
-  },
-] satisfies ReadonlyArray<EditorSelectionSpec<CellSelection>>;
-
-const cellSelectionExtension = defineExtension('cell-selection', {
-  selectionKinds: cellSelectionKinds,
-});
-
-const conflictingCellSelectionExtension = defineExtension(
-  'other-cell-selection',
-  {
-    selectionKinds: cellSelectionKinds,
-  }
-);
-
-const dependentCellSelectionExtension = defineExtension('cell-consumer', {
-  dependencies: [cellSelectionExtension],
-});
-
-type CellSelectionExtensions = readonly [typeof cellSelectionExtension];
-
 const initialValue = [
   { children: [{ text: 'a' }], type: 'paragraph' },
   { children: [{ text: 'b' }], type: 'paragraph' },
 ];
-
-const assertCellSelectionRequiresExtension = () => {
-  const editor = createEditor({ initialValue });
-
-  editor.update((tx) => {
-    // @ts-expect-error The cell selection kind is not installed.
-    tx.selection.set(cellSelection());
-  });
-  // @ts-expect-error Initial selections come from the installed extension tuple.
-  createEditor({ initialSelection: cellSelection(), initialValue });
-
-  editor.update(
-    // @ts-expect-error A callback annotation cannot manufacture an uninstalled capability.
-    (tx: EditorUpdateTransaction<Value, CellSelectionExtensions>) => {
-      tx.selection.set(cellSelection());
-    }
-  );
-
-  // @ts-expect-error A read callback cannot manufacture a richer transaction builder.
-  editor.read((state: EditorStateView<Value, CellSelectionExtensions>) =>
-    state.transaction((tx) => tx.selection.set(cellSelection()))
-  );
-
-  // @ts-expect-error Direct update selection exposes mutations, not state queries.
-  editor.update.selection();
-};
-
-void assertCellSelectionRequiresExtension;
-
-const assertSameKindSelectionPayloadIsInvariant = (
-  editor: Editor<Value, CellSelectionExtensions>
-) => {
-  // @ts-expect-error Matching `kind` is insufficient when the payload shape differs.
-  const shallowEditor: Editor<Value, ShallowCellSelectionExtensions> = editor;
-
-  void shallowEditor;
-};
-
-void assertSameKindSelectionPayloadIsInvariant;
-
-const assertBareEditorCapabilities = (editor: Editor) => {
-  // @ts-expect-error Bare Editor annotations expose only core capabilities.
-  editor.update.selection.set(cellSelection());
-};
-
-void assertBareEditorCapabilities;
 
 const selectionMarksSchema = defineEditorSchema(
   'schema:selection-marks-schema',
@@ -213,24 +66,7 @@ const selectionMarksSchema = defineEditorSchema(
   }
 );
 
-describe('extensible selection protocol', () => {
-  it('infers custom selections only from installed extension closure', () => {
-    const editor = createEditor({
-      extensions: [dependentCellSelectionExtension],
-      initialSelection: cellSelection(),
-      initialValue,
-    });
-    const selection = editor.read.selection();
-
-    if (selection?.kind === 'cell') {
-      const cells: readonly Range[] = selection.cells;
-
-      assert.equal(cells.length, 2);
-    }
-
-    editor.update((tx) => tx.selection.set(cellSelection()));
-  });
-
+describe('selection protocol', () => {
   it('validates insertion marks at every selection ingress and named root', () => {
     const point = { offset: 0, path: [0, 0] };
 
@@ -290,72 +126,215 @@ describe('extensible selection protocol', () => {
     );
   });
 
-  it('projects and canonically maps an installed custom selection', () => {
+  it('keeps node selections out of the DOM range protocol', () => {
+    const selection = SelectionApi.nodes([[1]]);
     const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialSelection: cellSelection(),
+      initialSelection: selection,
       initialValue,
     });
 
-    assert.deepEqual(editor.read.selection.ranges(), cellSelection().cells);
-    assert.deepEqual(
-      editor.read.selection.replacementRange(),
-      cellSelection().cells[0]
+    assert.deepEqual(editor.read.selection(), range([1, 0], 0, [1, 0], 1));
+    assert.equal(
+      getSelectionDOMRange(editor, getEditorLiveSelection(editor)),
+      null
     );
-    assert.deepEqual(
-      editor.read.selection.primaryRange(),
-      cellSelection().cells[1]
-    );
+  });
 
-    editor.update((tx) => {
-      tx.text.insert('x', { at: { offset: 0, path: [0, 0] } });
+  it('keeps exact empty-node membership separate from range expansion', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    const selection = editor.read.selection();
+    assert.deepEqual(editor.read.selection(), range([0, 0], 0, [0, 0], 0));
+    assert.equal(editor.read.selection.isCollapsed(), true);
+    assert.equal(editor.read.selection.isExpanded(), false);
+    assert.equal(editor.read.selection.nodes().length, 1);
+  });
 
-    assert.equal(selection?.kind, 'cell');
+  it('canonicalizes and persists one or many node paths with one runtime shape', () => {
+    const aggregate = range([0, 0], 0, [1, 0], 1);
+    const selection = SelectionApi.nodes([[1], [0, 0], [0], [1]], {
+      anchorPath: [1],
+      focusPath: [0],
+    });
+    const editor = createEditor({
+      initialSelection: selection,
+      initialValue,
+    });
+
+    assert.deepEqual(selection.paths, [[0], [1]]);
+    assert.deepEqual(selection.anchorPath, [1]);
+    assert.deepEqual(selection.focusPath, [0]);
+    assert.equal('path' in selection, false);
+    assert.equal('anchor' in selection, false);
+    assert.equal('focus' in selection, false);
+    assert.deepEqual(SelectionApi.nodes([[1]]), {
+      anchorPath: [1],
+      focusPath: [1],
+      kind: 'node',
+      paths: [[1]],
+    });
+    assert.deepEqual(editor.read.selection(), range([1, 0], 1, [0, 0], 0));
+    assert.equal(SelectionApi.root(selection), undefined);
+    assert.equal(
+      SelectionApi.root(SelectionApi.nodes([[1]], { root: 'header' })),
+      'header'
+    );
+    assert.throws(
+      () => SelectionApi.nodes([[1]], { root: 'main' as never }),
+      /Omit root/
+    );
+    assert.throws(
+      () =>
+        SelectionApi.nodes([[0], [1]], {
+          anchorPath: [2],
+          focusPath: [1],
+        }),
+      /anchorPath must be an exact selected path/
+    );
+    assert.deepEqual(encodeEditorSelection(editor, selection), {
+      kind: 'node',
+      value: selection,
+      version: 4,
+    });
+    assert.deepEqual(
+      decodeEditorSelection(editor, {
+        kind: 'node',
+        value: { ...aggregate, kind: 'node', path: [1] },
+        version: 1,
+      }),
+      SelectionApi.nodes([[1]])
+    );
+    assert.deepEqual(
+      decodeEditorSelection(editor, {
+        kind: 'node',
+        value: { ...aggregate, kind: 'node', paths: [[1], [0]] },
+        version: 2,
+      }),
+      SelectionApi.nodes([[0], [1]])
+    );
+    assert.deepEqual(
+      decodeEditorSelection(editor, {
+        kind: 'node',
+        value: { kind: 'node', paths: [[1], [0]] },
+        version: 3,
+      }),
+      SelectionApi.nodes([[0], [1]])
+    );
+    assert.throws(
+      () =>
+        decodeEditorSelection(editor, {
+          kind: 'node',
+          value: { ...aggregate, kind: 'node', paths: [[1], [0]] },
+          version: 4,
+        }),
+      /Invalid node editor selection/
+    );
+  });
+
+  it('projects, slices, and maps every selected node path', () => {
+    const selection = SelectionApi.nodes([[0], [1]]);
+    const editor = createEditor({
+      initialSelection: selection,
+      initialValue,
+    });
+
     assert.deepEqual(editor.read.selection.ranges(), [
-      range([0, 0], 0, [0, 0], 2),
+      range([0, 0], 0, [0, 0], 1),
       range([1, 0], 0, [1, 0], 1),
     ]);
+    assert.deepEqual(
+      editor.read.selection.nodes().map(([, path]) => path),
+      [[0], [1]]
+    );
+    assert.equal(editor.read.selection.contains([0]), true);
+    assert.equal(editor.read.selection.intersects([1]), true);
+    assert.equal(editor.read.selection.isCollapsed(), false);
+    assert.equal(editor.read.selection.isExpanded(), true);
+    assert.equal(editor.read.selection.isWithinBlock(), false);
+    assert.equal(editor.read.selection.isAcrossBlocks(), true);
+    assert.equal(editor.read.selection.isAtBlockStart(), true);
+    assert.equal(editor.read.selection.isAtBlockEnd(), true);
+    assert.deepEqual(editor.read.slice.get(), {
+      content: initialValue,
+      openEnd: 0,
+      openStart: 0,
+    });
+
+    editor.update((tx) => tx.nodes.remove({ at: [0] }));
+
+    const mapped = getEditorLiveSelection(editor);
+
+    assert.equal(mapped?.kind, 'node');
+    assert.deepEqual(
+      mapped && SelectionApi.isNode(mapped) ? mapped.paths : [],
+      [[0]]
+    );
+    assert.deepEqual(
+      mapped && SelectionApi.isNode(mapped)
+        ? [mapped.anchorPath, mapped.focusPath]
+        : [],
+      [[0], [0]]
+    );
   });
 
-  it('keeps node selections out of the DOM range protocol', () => {
-    const point = { offset: 0, path: [1, 0] };
-    const selection = SelectionApi.node([1], {
-      anchor: point,
-      focus: point,
-    });
-    const editor = createEditor({
-      initialSelection: selection,
-      initialValue,
-    });
+  it('preserves backward node-selection direction when either edge is deleted', () => {
+    const create = () =>
+      createEditor({
+        initialSelection: SelectionApi.nodes([[0], [1], [2]], {
+          anchorPath: [2],
+          focusPath: [0],
+        }),
+        initialValue: [
+          initialValue[0],
+          { children: [{ text: 'middle' }], type: 'paragraph' },
+          initialValue[1],
+        ],
+      });
+    const withoutFocus = create();
+    const withoutAnchor = create();
 
-    assert.deepEqual(editor.read.selection(), selection);
-    assert.equal(editor.read.selection.primaryRange(), null);
+    withoutFocus.update((tx) => tx.nodes.remove({ at: [0] }));
+    withoutAnchor.update((tx) => tx.nodes.remove({ at: [2] }));
+
+    assert.deepEqual(
+      getEditorLiveSelection(withoutFocus),
+      SelectionApi.nodes([[0], [1]], {
+        anchorPath: [1],
+        focusPath: [0],
+      })
+    );
+    assert.deepEqual(
+      getEditorLiveSelection(withoutAnchor),
+      SelectionApi.nodes([[0], [1]], {
+        anchorPath: [1],
+        focusPath: [0],
+      })
+    );
   });
 
-  it('preserves an explicit null custom DOM range projection', () => {
-    const selection = {
-      ...cellSelection(),
-      cells: [cellSelection().cells[0]],
-    };
+  it('uses exact node projections instead of the aggregate range for membership', () => {
     const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialSelection: selection,
-      initialValue,
+      initialSelection: SelectionApi.nodes([[0], [2]]),
+      initialValue: [
+        initialValue[0],
+        { children: [{ text: 'middle' }], type: 'paragraph' },
+        initialValue[1],
+      ],
     });
 
-    assert.deepEqual(editor.read.selection(), selection);
-    assert.equal(editor.read.selection.primaryRange(), null);
+    assert.deepEqual(
+      editor.read.selection.nodes().map(([, path]) => path),
+      [[0], [2]]
+    );
+    assert.equal(editor.read.selection.contains([1]), false);
+    assert.equal(editor.read.selection.intersects([1]), false);
+    assert.equal(editor.read.selection.intersects([2]), true);
   });
 
   it('reads a node selection from its named root as one closed exact-owner slice', () => {
-    const point = { offset: 0, path: [0, 0], root: 'header' };
-    const selection = SelectionApi.node([0], {
-      anchor: point,
-      focus: point,
-    });
+    const selection = SelectionApi.nodes([[0]], { root: 'header' });
     const header = {
       children: [{ text: 'header' }],
       type: 'paragraph' as const,
@@ -378,37 +357,19 @@ describe('extensible selection protocol', () => {
     });
   });
 
-  it('sets custom selections without collapsing them into text ranges', () => {
-    const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialValue,
-    });
-    const selection = cellSelection();
-
-    editor.update((tx) => tx.selection.set(selection));
-
-    assert.deepEqual(editor.read.selection(), selection);
-  });
-
-  it('publishes custom selections as detached deeply immutable JSON trees', () => {
-    const sharedPath = [0, 0];
+  it('publishes node selections as detached deeply immutable JSON trees', () => {
+    const sharedPath = [0];
     const selection = {
-      ...cellSelection(),
-      cells: [
-        {
-          anchor: { offset: 0, path: sharedPath },
-          focus: { offset: 1, path: sharedPath },
-        },
-        range([1, 0], 0, [1, 0], 1),
-      ],
-    } satisfies CellSelection;
+      anchorPath: sharedPath,
+      focusPath: [1],
+      kind: 'node',
+      paths: [sharedPath, [1]],
+    } satisfies NodeSelection;
     const editor = createEditor({
-      extensions: [cellSelectionExtension],
       initialSelection: selection,
       initialValue,
     });
     const specEditor = createEditor({
-      extensions: [cellSelectionExtension],
       initialValue,
     });
     const spec = specEditor.read((state) =>
@@ -417,109 +378,93 @@ describe('extensible selection protocol', () => {
 
     sharedPath[0] = 9;
 
-    const snapshotSelection = getSnapshot(editor).selection as CellSelection;
-    const specSelection = spec.selection?.value as CellSelection;
+    const snapshotSelection = getSnapshot(editor).selection;
+    const specSelection = spec.selection?.value;
 
-    assert.deepEqual(snapshotSelection.cells[0]?.anchor.path, [0, 0]);
-    assert.notEqual(
-      snapshotSelection.cells[0]?.anchor.path,
-      snapshotSelection.cells[0]?.focus.path
-    );
+    assert.ok(SelectionApi.isNode(snapshotSelection));
+    assert.ok(SelectionApi.isNode(specSelection));
+    assert.deepEqual(snapshotSelection.paths, [[0], [1]]);
+    assert.deepEqual(snapshotSelection.anchorPath, [0]);
+    assert.notEqual(snapshotSelection.anchorPath, snapshotSelection.paths[0]);
     assert.equal(Object.isFrozen(snapshotSelection), true);
-    assert.equal(Object.isFrozen(snapshotSelection.cells), true);
-    assert.equal(Object.isFrozen(snapshotSelection.cells[0]), true);
-    assert.equal(
-      Object.isFrozen(snapshotSelection.cells[0]?.anchor.path),
-      true
-    );
+    assert.equal(Object.isFrozen(snapshotSelection.paths), true);
+    assert.equal(Object.isFrozen(snapshotSelection.paths[0]), true);
+    assert.equal(Object.isFrozen(snapshotSelection.anchorPath), true);
     assert.equal(Object.isFrozen(specSelection), true);
-    assert.equal(Object.isFrozen(specSelection.cells[0]?.focus.path), true);
-    assert.equal(Reflect.set(specSelection.cells[0].focus.path, 0, 9), false);
+    assert.equal(Object.isFrozen(specSelection.focusPath), true);
+    assert.equal(Reflect.set(specSelection.focusPath, 0, 9), false);
   });
 
-  it('replaces a custom selection when setting a plain range', () => {
+  it('replaces a node selection when setting a plain range', () => {
     const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialSelection: cellSelection(),
+      initialSelection: SelectionApi.nodes([[0], [1]]),
       initialValue,
     });
     const next = range([1, 0], 1, [1, 0], 1);
 
     editor.update((tx) => tx.selection.set(next));
 
-    assert.deepEqual(editor.read.selection(), SelectionApi.text(next));
+    assert.deepEqual(editor.read.selection(), next);
   });
 
-  it('maps every custom range when replaceChildren reuses selected nodes', () => {
+  it('maps directional node selection when replaceChildren reuses selected nodes', () => {
     const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialSelection: cellSelection(),
+      initialSelection: SelectionApi.nodes([[0], [1]], {
+        anchorPath: [1],
+        focusPath: [0],
+      }),
       initialValue,
     });
-    const children = editorGetChildren(editor);
+    const children = editor.read.children();
 
     editor.update.nodes.replaceChildren(
       [{ children: [{ text: 'prefix' }], type: 'paragraph' }, ...children],
       { at: [] }
     );
 
-    assert.deepEqual(editor.read.selection(), {
-      ...range([1, 0], 0, [2, 0], 1),
-      cells: [range([1, 0], 0, [1, 0], 1), range([2, 0], 0, [2, 0], 1)],
-      kind: 'cell',
-    });
+    assert.deepEqual(editor.read.selection(), range([2, 0], 1, [1, 0], 0));
+    assert.deepEqual(
+      getEditorLiveSelection(editor),
+      SelectionApi.nodes([[1], [2]], {
+        anchorPath: [2],
+        focusPath: [1],
+      })
+    );
   });
 
-  it('rejects unsupported and conflicting selection kinds', () => {
+  it('validates built-in selections against the current document', () => {
     const editor = createEditor({ initialValue });
 
-    assert.throws(
-      () => editor.update((tx) => tx.selection.set(cellSelection() as never)),
-      /Unsupported editor selection kind "cell"/
-    );
-    assert.throws(
-      () =>
-        createEditor({
-          extensions: [
-            cellSelectionExtension,
-            conflictingCellSelectionExtension,
-          ],
-          initialValue,
-        }),
-      /conflicts with/
-    );
-  });
-
-  it('validates installed selection kinds against the current document', () => {
-    const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialValue,
-    });
-
     assert.equal(editor.read.selection.isValid(null), true);
-    assert.equal(editor.read.selection.isValid(cellSelection()), true);
     assert.equal(
-      editor.read.selection.isValid({ ...cellSelection(), cells: [] }),
-      false
+      editor.read.selection.isValid(
+        SelectionApi.text(range([0, 0], 0, [1, 0], 1))
+      ),
+      true
+    );
+    assert.equal(
+      editor.read.selection.isValid(SelectionApi.nodes([[0], [1]])),
+      true
     );
     assert.equal(
       editor.read.selection.isValid({
-        ...cellSelection(),
-        anchor: { offset: 0, path: [9, 0] },
+        kind: 'node',
+        paths: [[0], [1]],
       }),
       false
     );
     assert.equal(
-      createEditor({ initialValue }).read.selection.isValid(cellSelection()),
+      editor.read.selection.isValid({
+        ...SelectionApi.nodes([[0], [1]]),
+        focusPath: [9],
+      }),
       false
     );
+    assert.equal(editor.read.selection.isValid({ kind: 'cell' }), false);
   });
 
-  it('strictly validates built-in and custom selection shapes and versions', () => {
-    const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialValue,
-    });
+  it('strictly validates built-in selection shapes and versions', () => {
+    const editor = createEditor({ initialValue });
     const point = { offset: 0, path: [0, 0] };
 
     assert.throws(() => {
@@ -543,24 +488,22 @@ describe('extensible selection protocol', () => {
     }, /Invalid text editor selection/);
     assert.throws(() => {
       editor.update((tx) => {
-        tx.selection.set({ ...cellSelection(), cells: [] });
+        tx.selection.set({
+          kind: 'node',
+          paths: [[0]],
+        } as never);
       });
-    }, /Invalid editor selection "cell" value/);
-    for (const selection of [
-      { ...cellSelection(), marks: { bold: true } },
-      {
-        ...SelectionApi.node([0], range([0, 0], 0, [0, 0], 0)),
-        marks: { bold: true },
-      },
-    ]) {
-      assert.throws(() => {
-        editor.update((tx) => {
-          tx.selection.set(selection);
-        });
-      }, /Only collapsed text selections can carry insertion marks/);
-    }
+    }, /Invalid node editor selection/);
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.selection.set({
+          ...SelectionApi.nodes([[0]]),
+          marks: { bold: true },
+        } as never);
+      });
+    }, /Only collapsed text selections can carry insertion marks/);
 
-    const encoded = encodeEditorSelection(editor, cellSelection());
+    const encoded = encodeEditorSelection(editor, SelectionApi.nodes([[0]]));
 
     assert.ok(encoded);
     assert.throws(
@@ -569,15 +512,12 @@ describe('extensible selection protocol', () => {
           ...encoded,
           version: encoded.version + 1,
         }),
-      /Unsupported editor selection "cell" version/
+      /Unsupported editor selection "node" version/
     );
   });
 
   it('rejects stale paths, offsets, and roots at every selection boundary', () => {
-    const editor = createEditor({
-      extensions: [cellSelectionExtension],
-      initialValue,
-    });
+    const editor = createEditor({ initialValue });
 
     for (const invalid of [
       range([9, 0], 0, [9, 0], 0),
@@ -614,12 +554,19 @@ describe('extensible selection protocol', () => {
       );
     }
 
-    assert.equal(backward.read.selection()?.focus.offset, 2);
-    assert.equal(backward.read.selection()?.anchor.offset, 2);
-    assert.equal(forward.read.selection()?.focus.offset, 2);
-    assert.equal(forward.read.selection()?.anchor.offset, 2);
-    assert.equal(expandedForward.read.selection()?.anchor.offset, 0);
-    assert.equal(expandedForward.read.selection()?.focus.offset, 2);
+    const backwardSelection = backward.read.selection();
+    const forwardSelection = forward.read.selection();
+    const expandedSelection = expandedForward.read.selection();
+
+    assert.ok(backwardSelection);
+    assert.ok(forwardSelection);
+    assert.ok(expandedSelection);
+    assert.equal(backwardSelection.focus.offset, 2);
+    assert.equal(backwardSelection.anchor.offset, 2);
+    assert.equal(forwardSelection.focus.offset, 2);
+    assert.equal(forwardSelection.anchor.offset, 2);
+    assert.equal(expandedSelection.anchor.offset, 0);
+    assert.equal(expandedSelection.focus.offset, 2);
   });
 
   it('stores pending insertion marks only on collapsed text selections', () => {
@@ -630,7 +577,8 @@ describe('extensible selection protocol', () => {
 
     editor.update((tx) => tx.marks.set({ bold: true }));
     assert.deepEqual(editor.read.marks(), { bold: true });
-    assert.deepEqual(editor.read.selection(), {
+    assert.deepEqual(editor.read.selection(), range([0, 0], 1, [0, 0], 1));
+    assert.deepEqual(getEditorLiveSelection(editor), {
       ...SelectionApi.text(range([0, 0], 1, [0, 0], 1)),
       marks: { bold: true },
     });
@@ -639,10 +587,7 @@ describe('extensible selection protocol', () => {
     editor.update((tx) =>
       tx.selection.set(SelectionApi.text(range([0, 0], 0, [0, 0], 0)))
     );
-    assert.deepEqual(
-      editor.read.selection(),
-      SelectionApi.text(range([0, 0], 0, [0, 0], 0))
-    );
+    assert.deepEqual(editor.read.selection(), range([0, 0], 0, [0, 0], 0));
 
     editor.update((tx) =>
       tx.selection.set(SelectionApi.text(range([0, 0], 0, [0, 0], 1)))

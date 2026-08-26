@@ -7,12 +7,9 @@ import {
 } from '@platejs/core';
 import {
   ContentSlice,
-  defineValueCodec,
   type Descendant,
-  type EditorAboveOptions,
   editorCommands,
   editorReads,
-  type EditorSelectionSpec,
   type EditorStateView,
   type Element,
   type ElementOf,
@@ -34,7 +31,10 @@ import {
   TextApi,
 } from '@platejs/plite';
 import { clipboardHandler } from '@platejs/plite-dom';
-import { failInvariant } from '@platejs/plite/internal';
+import {
+  failInvariant,
+  getSelectionRange as getEditorSelectionRange,
+} from '@platejs/plite/internal';
 import { PLUGINS } from '@platejs/utils';
 
 import {
@@ -73,9 +73,9 @@ import {
   type TablePasteSource,
 } from './internal/paste';
 import {
-  getTableSelectionBounds,
   getTableSelectionExpansion,
   getTableSelectionNeighbor,
+  createTableNodeSelection,
   projectTableSelection,
   readTableSelection,
   type TableSelectionView,
@@ -101,20 +101,28 @@ type GetSelectedCellsBordersOptions = {
   };
 };
 
-type TableRangeFormat = 'all' | 'cell' | 'table';
+type TableCellBoundsInput = Readonly<{
+  col: number;
+  colSpan: number;
+  row: number;
+  rowSpan: number;
+}>;
 
-type GetTableRangeOptions<T extends TableRangeFormat = 'cell' | 'table'> = {
-  at: Range;
-  format?: T;
-};
-
-type TableRangeEntries = {
-  cellEntries: ElementEntry[];
-  tableEntries: ElementEntry[];
-};
-
-type GetTableRangeAboveOptions = EditorAboveOptions<Element> &
-  Pick<GetTableRangeOptions, 'format'>;
+const getTableCellBounds = (cells: readonly TableCellBoundsInput[]) =>
+  cells.reduce(
+    (bounds, cell) => ({
+      maxCol: Math.max(bounds.maxCol, cell.col + cell.colSpan - 1),
+      maxRow: Math.max(bounds.maxRow, cell.row + cell.rowSpan - 1),
+      minCol: Math.min(bounds.minCol, cell.col),
+      minRow: Math.min(bounds.minRow, cell.row),
+    }),
+    {
+      maxCol: Number.NEGATIVE_INFINITY,
+      maxRow: Number.NEGATIVE_INFINITY,
+      minCol: Number.POSITIVE_INFINITY,
+      minRow: Number.POSITIVE_INFINITY,
+    }
+  );
 
 const clampTableSelection = (
   tableType: string,
@@ -168,118 +176,6 @@ const clampTableSelection = (
     : selection;
 };
 
-export type TableCellSelection = Range &
-  Readonly<{
-    cells: readonly Range[];
-    kind: 'table-cell';
-  }>;
-
-const isTableCellSelection = (
-  selection: unknown
-): selection is TableCellSelection => {
-  if (
-    !SelectionApi.isSelection(selection) ||
-    selection.kind !== 'table-cell' ||
-    !Object.keys(selection).every((key) =>
-      ['anchor', 'cells', 'focus', 'kind'].includes(key)
-    ) ||
-    !Array.isArray((selection as TableCellSelection).cells) ||
-    (selection as TableCellSelection).cells.length === 0 ||
-    !(selection as TableCellSelection).cells.every(RangeApi.isRange)
-  ) {
-    return false;
-  }
-
-  const tableSelection = selection as TableCellSelection;
-  const { root } = tableSelection.anchor;
-
-  if (tableSelection.focus.root !== root) return false;
-
-  const seen = new Set<string>();
-
-  for (const cell of tableSelection.cells) {
-    if (
-      cell.anchor.root !== root ||
-      cell.focus.root !== root ||
-      RangeApi.isBackward(cell)
-    ) {
-      return false;
-    }
-
-    const key = JSON.stringify([
-      cell.anchor.path,
-      cell.anchor.offset,
-      cell.focus.path,
-      cell.focus.offset,
-    ]);
-
-    if (seen.has(key)) return false;
-
-    seen.add(key);
-  }
-
-  return true;
-};
-
-const projectTableSlice = (
-  slice: ContentSlice,
-  tableType: string,
-  selectedTable: Element | undefined
-): ContentSlice => {
-  const content: Descendant[] = [];
-  let projected = false;
-  const tableNodes = slice.content.filter(
-    (node) => ElementApi.isElement(node) && node.type === tableType
-  );
-  const sourceTable = tableNodes.length === 1 ? selectedTable : undefined;
-
-  slice.content.forEach((node) => {
-    if (!ElementApi.isElement(node) || node.type !== tableType) {
-      content.push(node);
-      return;
-    }
-
-    if (!sourceTable) {
-      content.push(node);
-      return;
-    }
-
-    const rows = node.children as TableRowElement[];
-    const rowCount = rows.length;
-
-    if (!rowCount) {
-      content.push(node);
-      return;
-    }
-
-    const colCount = rows[0].children.length;
-
-    projected = true;
-
-    if (rowCount <= 1 && colCount <= 1) {
-      const cell = rows[0].children[0] as TableCellElement;
-
-      content.push(...cell.children);
-      return;
-    }
-
-    content.push({
-      ...sourceTable,
-      ...node,
-      children: sourceTable.children,
-    });
-  });
-
-  return projected
-    ? ContentSlice.fromJSON({
-        ...slice,
-        content,
-        openEnd: 0,
-        openStart: 0,
-      })
-    : slice;
-};
-
 const getTableAnchorPoint = (
   view: TableSelectionView,
   anchor: TableGridAnchor,
@@ -297,6 +193,29 @@ const getTableAnchorPoint = (
     path: view.tablePath.concat(anchor.path, path),
     ...(view.root === undefined ? {} : { root: view.root }),
   };
+};
+
+const projectTableSelectionSlice = (
+  slice: ContentSlice,
+  view: TableSelectionView
+) => {
+  const projection = projectTableSelection(view);
+  const exportedTable =
+    slice.content.length === 1 &&
+    ElementApi.isElement(slice.content[0]) &&
+    slice.content[0].type === view.table.type
+      ? slice.content[0]
+      : null;
+
+  return ContentSlice.withContent(
+    slice,
+    [
+      exportedTable
+        ? { ...projection, ...exportedTable, children: projection.children }
+        : projection,
+    ],
+    { open: 'closed' }
+  );
 };
 
 export type TablePluginState = {
@@ -344,11 +263,6 @@ type MoveTableSelectionOptions = {
   fromOneCell?: boolean;
   /** Move upward instead of downward. */
   reverse?: boolean;
-};
-
-type SetCellBackgroundOptions = {
-  color: string | null;
-  selectedCells?: Element[];
 };
 
 type ToggleTableBordersOptions = {
@@ -1101,347 +1015,147 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             ? { col: anchor.col, row: anchor.row }
             : { col: 0, row: 0 };
         },
-        getSelection: (at?: Location) =>
+        selection: (at?: Location) =>
           readTableSelection(state, {
             at,
             cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+            selection: state.selection(),
             tableType: type,
           }),
       };
     },
   }))
   .extend(({ api, editor, plugin, schema: { type } }) => ({
-    read: ({ state }) => {
-      const getSelectedCellsBoundingBox = (
-        cells: TableCellElement[]
-      ): {
-        maxCol: number;
-        maxRow: number;
-        minCol: number;
-        minRow: number;
-      } => {
-        const currentView = state.table.getSelection();
-        const firstCell = cells[0];
-        const currentContextOwnsFirstCell =
-          currentView &&
-          firstCell &&
-          currentView.context.anchorOf(firstCell)?.cell === firstCell;
-        const findTableContainingCell = (
-          cell: TableCellElement
-        ): Element | undefined => {
-          const visit = (children: readonly Node[]): Element | undefined => {
-            for (const node of children) {
-              if (!ElementApi.isElement(node)) continue;
-
-              if (
-                node.type === type &&
-                node.children.some(
-                  (row) =>
-                    ElementApi.isElement(row) &&
-                    row.children.some((rowCell) => rowCell === cell)
-                )
-              ) {
-                return node;
-              }
-
-              const nested = visit(node.children);
-
-              if (nested) return nested;
-            }
-
-            return undefined;
-          };
-          const value = state.value();
-
-          return (
-            visit(value.children) ??
-            Object.values(value.roots ?? {}).reduce<Element | undefined>(
-              (table, children) => table ?? visit(children),
-              undefined
-            )
-          );
-        };
-        const owningTable =
-          !currentContextOwnsFirstCell && firstCell
-            ? findTableContainingCell(firstCell)
-            : undefined;
-        const context =
-          (currentContextOwnsFirstCell ? currentView.context : null) ??
-          (owningTable ? createDetachedTableContext(owningTable) : null);
-        const bounds = context
-          ? getTableSelectionBounds(
-              cells.flatMap((cell) => {
-                const anchor = context.anchorOf(cell);
-
-                return anchor ? [anchor] : [];
-              })
-            )
-          : null;
+    read: ({ state }) => ({
+      canMerge: () => {
+        const view = state.table.selection();
 
         return (
-          bounds ?? {
-            maxCol: Number.NEGATIVE_INFINITY,
-            maxRow: Number.NEGATIVE_INFINITY,
-            minCol: Number.POSITIVE_INFINITY,
-            minRow: Number.POSITIVE_INFINITY,
-          }
+          !state.view.isReadOnly() &&
+          !!view &&
+          view.anchors.length > 1 &&
+          view.complete
         );
-      };
+      },
+      canSplit: () => {
+        const view = state.table.selection();
 
-      function getGridByRange(
-        options: GetTableRangeOptions<'all'>
-      ): TableRangeEntries;
-      function getGridByRange(options: GetTableRangeOptions): ElementEntry[];
-      function getGridByRange({
+        return (
+          !state.view.isReadOnly() &&
+          view?.anchors.length === 1 &&
+          (view.anchor.colSpan > 1 || view.anchor.rowSpan > 1)
+        );
+      },
+      getAdjacentCell: ({
         at,
-        format = 'table',
-      }: GetTableRangeOptions<TableRangeFormat>):
-        | ElementEntry[]
-        | TableRangeEntries {
-        const view = readTableSelection(state, {
-          at,
-          cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-          tableType: type,
+        deltaCol = 0,
+        deltaRow = 0,
+      }: {
+        at?: Location;
+        deltaCol?: number;
+        deltaRow?: number;
+      } = {}) => {
+        const view = state.table.selection(at);
+
+        if (!view) return undefined;
+
+        const row =
+          view.anchor.row +
+          (deltaRow > 0 ? view.anchor.rowSpan + deltaRow - 1 : deltaRow);
+        const col =
+          view.anchor.col +
+          (deltaCol > 0 ? view.anchor.colSpan + deltaCol - 1 : deltaCol);
+
+        return view.context.entryAt(row, col);
+      },
+      getCellInNextRow: (currentRowAt: Location): NodeEntry | undefined => {
+        const view = state.table.selection(currentRowAt);
+        const anchor = view?.grid.anchorsByRow[view.anchor.row + 1]?.[0];
+
+        return anchor && view
+          ? view.context.entryAt(anchor.row, anchor.col)
+          : undefined;
+      },
+      getCellInPreviousRow: (currentRowAt: Location): NodeEntry | undefined => {
+        const view = state.table.selection(currentRowAt);
+        const anchors = view?.grid.anchorsByRow[view.anchor.row - 1];
+        const anchor = anchors?.at(-1);
+
+        return anchor && view
+          ? view.context.entryAt(anchor.row, anchor.col)
+          : undefined;
+      },
+      getEntries: ({
+        at,
+      }: {
+        at?: Location | null;
+      } = {}) => {
+        const location = at ?? state.selection();
+
+        if (!location) return undefined;
+
+        const cellEntry = state.nodes.find({
+          at: location,
+          match: api.isCell,
         });
-        const empty =
-          format === 'all' ? { cellEntries: [], tableEntries: [] } : [];
 
-        if (!view) return empty;
+        if (!cellEntry) return undefined;
 
-        const cellEntries = [...view.cellEntries];
+        const rowEntry = state.nodes.above({
+          at: cellEntry[1],
+          type: BaseTableRowPlugin,
+        });
 
-        if (format === 'cell') return cellEntries;
+        if (!rowEntry) return undefined;
 
-        const tableEntries: ElementEntry[] = [
-          [projectTableSelection(view), view.tablePath],
-        ];
+        const tableEntry = state.nodes.above({
+          at: rowEntry[1],
+          type: plugin,
+        });
 
-        return format === 'all' ? { cellEntries, tableEntries } : tableEntries;
-      }
+        if (!tableEntry) return undefined;
 
-      return {
-        canMerge: () => {
-          const view = state.table.getSelection();
-
-          return (
-            !state.view.isReadOnly() &&
-            state.selection.isExpanded() &&
-            !!view &&
-            view.anchors.length > 1 &&
-            view.complete
-          );
-        },
-        canSplit: () => {
-          const view = state.table.getSelection();
-
-          return (
-            !state.view.isReadOnly() &&
-            !state.selection.isExpanded() &&
-            view?.anchors.length === 1 &&
-            (view.anchor.colSpan > 1 || view.anchor.rowSpan > 1)
-          );
-        },
-        createCellSelection: (at: Location): TableCellSelection | null => {
-          const range = RangeApi.isRange(at) ? at : state.ranges.get(at);
-
-          if (!range) return null;
-
-          const view = state.table.getSelection(range);
-
-          if (!view) return null;
-
-          const cells = view.anchors.flatMap((anchor) => {
-            const anchorPoint = getTableAnchorPoint(view, anchor);
-            const focusPoint = getTableAnchorPoint(view, anchor, 'end');
-
-            return anchorPoint && focusPoint
-              ? [{ anchor: anchorPoint, focus: focusPoint }]
-              : [];
-          });
-
-          return cells.length <= 1
-            ? null
-            : { ...range, cells, kind: 'table-cell' };
-        },
-        getAdjacentCell: ({
-          at,
-          deltaCol = 0,
-          deltaRow = 0,
-        }: {
-          at?: Location;
-          deltaCol?: number;
-          deltaRow?: number;
-        } = {}) => {
-          const view = state.table.getSelection(at);
-
-          if (!view) return undefined;
-
-          const row =
-            view.anchor.row +
-            (deltaRow > 0 ? view.anchor.rowSpan + deltaRow - 1 : deltaRow);
-          const col =
-            view.anchor.col +
-            (deltaCol > 0 ? view.anchor.colSpan + deltaCol - 1 : deltaCol);
-
-          return view.context.entryAt(row, col);
-        },
-        getCellInNextRow: (currentRowAt: Location): NodeEntry | undefined => {
-          const view = state.table.getSelection(currentRowAt);
-          const anchor = view?.grid.anchorsByRow[view.anchor.row + 1]?.[0];
-
-          return anchor && view
-            ? view.context.entryAt(anchor.row, anchor.col)
+        return {
+          cell: cellEntry,
+          row: rowEntry,
+          table: tableEntry,
+        };
+      },
+      getNextCell: (
+        currentCell: NodeEntry,
+        currentAt: Location,
+        _currentRow: NodeEntry
+      ): NodeEntry | undefined => {
+        const view = state.table.selection(currentAt);
+        const anchor = ElementApi.isElement(currentCell[0])
+          ? view?.context.anchorOf(currentCell[0] as TableCellElement)
+          : undefined;
+        const next =
+          view && anchor
+            ? getTableSelectionNeighbor(view.context, anchor, 'next')
             : undefined;
-        },
-        getCellInPreviousRow: (
-          currentRowAt: Location
-        ): NodeEntry | undefined => {
-          const view = state.table.getSelection(currentRowAt);
-          const anchors = view?.grid.anchorsByRow[view.anchor.row - 1];
-          const anchor = anchors?.at(-1);
 
-          return anchor && view
-            ? view.context.entryAt(anchor.row, anchor.col)
+        return next ? view?.context.entryAt(next.row, next.col) : undefined;
+      },
+      getPreviousCell: (
+        currentCell: NodeEntry,
+        currentAt: Location,
+        _currentRow: NodeEntry
+      ): NodeEntry | undefined => {
+        const view = state.table.selection(currentAt);
+        const anchor = ElementApi.isElement(currentCell[0])
+          ? view?.context.anchorOf(currentCell[0] as TableCellElement)
+          : undefined;
+        const previous =
+          view && anchor
+            ? getTableSelectionNeighbor(view.context, anchor, 'previous')
             : undefined;
-        },
-        getEntries: ({
-          at = state.selection(),
-        }: {
-          at?: Location | null;
-        } = {}) => {
-          if (!at) return undefined;
 
-          const cellEntry = state.nodes.find({
-            at,
-            match: api.isCell,
-          });
-
-          if (!cellEntry) return undefined;
-
-          const rowEntry = state.nodes.above({
-            at: cellEntry[1],
-            type: BaseTableRowPlugin,
-          });
-
-          if (!rowEntry) return undefined;
-
-          const tableEntry = state.nodes.above({
-            at: rowEntry[1],
-            type: plugin,
-          });
-
-          if (!tableEntry) return undefined;
-
-          return {
-            cell: cellEntry,
-            row: rowEntry,
-            table: tableEntry,
-          };
-        },
-        getGridAbove: ({
-          format = 'table',
-          ...options
-        }: GetTableRangeAboveOptions = {}): ElementEntry[] => {
-          const view = readTableSelection(state, {
-            at: options.at,
-            cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-            tableType: type,
-          });
-
-          if (!view) return [];
-
-          return format === 'cell'
-            ? [...view.cellEntries]
-            : [[projectTableSelection(view), view.tablePath]];
-        },
-        getGridByRange,
-        getNextCell: (
-          currentCell: NodeEntry,
-          currentAt: Location,
-          _currentRow: NodeEntry
-        ): NodeEntry | undefined => {
-          const view = state.table.getSelection(currentAt);
-          const anchor = ElementApi.isElement(currentCell[0])
-            ? view?.context.anchorOf(currentCell[0] as TableCellElement)
-            : undefined;
-          const next =
-            view && anchor
-              ? getTableSelectionNeighbor(view.context, anchor, 'next')
-              : undefined;
-
-          return next ? view?.context.entryAt(next.row, next.col) : undefined;
-        },
-        getPreviousCell: (
-          currentCell: NodeEntry,
-          currentAt: Location,
-          _currentRow: NodeEntry
-        ): NodeEntry | undefined => {
-          const view = state.table.getSelection(currentAt);
-          const anchor = ElementApi.isElement(currentCell[0])
-            ? view?.context.anchorOf(currentCell[0] as TableCellElement)
-            : undefined;
-          const previous =
-            view && anchor
-              ? getTableSelectionNeighbor(view.context, anchor, 'previous')
-              : undefined;
-
-          return previous
-            ? view?.context.entryAt(previous.row, previous.col)
-            : undefined;
-        },
-        getSelectedCell: (key?: NodeKey | null) => {
-          if (!key) return null;
-
-          const view = state.table.getSelection();
-
-          return view && view.anchors.length > 1 && view.hasCellKey(key)
-            ? (view.grid.byKey.get(key)?.cell ?? null)
-            : null;
-        },
-        getSelectedCellEntries: (): ElementEntry[] => {
-          const cellEntries = state.table.getSelection()?.cellEntries ?? [];
-
-          return cellEntries.length > 1 ? [...cellEntries] : [];
-        },
-        getSelectedCellKeys: (): NodeKey[] | null => {
-          const view = state.table.getSelection();
-
-          return view && view.anchors.length > 1 && view.cellKeys.length > 0
-            ? [...view.cellKeys]
-            : null;
-        },
-        getSelectedCells: (): Element[] | null => {
-          const view = state.table.getSelection();
-
-          return view && view.anchors.length > 1
-            ? view.anchors.map(({ cell }) => cell)
-            : null;
-        },
-        getSelectedCellsBoundingBox,
-        getSelectedTableKeys: (): NodeKey[] | null => {
-          const view = state.table.getSelection();
-          const tableKey = view?.tableKey;
-
-          return view && view.anchors.length > 1 && tableKey
-            ? [tableKey]
-            : null;
-        },
-        getSelectedTables: (): Element[] | null => {
-          const view = state.table.getSelection();
-
-          return view && view.anchors.length > 1 ? [view.table] : null;
-        },
-        isCellSelected: (key?: NodeKey | null) => {
-          if (!key) return false;
-
-          const view = state.table.getSelection();
-
-          return !!view && view.anchors.length > 1 && view.hasCellKey(key);
-        },
-        isSelectingCell: () =>
-          (state.table.getSelection()?.anchors.length ?? 0) > 1,
-      };
-    },
+        return previous
+          ? view?.context.entryAt(previous.row, previous.col)
+          : undefined;
+      },
+    }),
   }))
   .extend(({ api, editor, plugin, read, schema: { type }, store }) => ({
     read: ({ state }) => ({
@@ -1560,7 +1274,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         options: GetSelectedCellsBordersOptions = {}
       ): TableBorderStates => {
         const { select = { none: true, outer: true, side: true } } = options;
-        let cells = selectedCells;
+        let cells =
+          selectedCells ??
+          state.table.selection()?.cellEntries.map(([cell]) => cell);
 
         if (!cells || cells.length === 0) {
           const cell = state.nodes.block({
@@ -1582,8 +1298,13 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         }
 
         const cellElements = cells.map((cell) => cell as TableCellElement);
-        const { maxCol, maxRow, minCol, minRow } =
-          state.table.getSelectedCellsBoundingBox(cellElements);
+        const { maxCol, maxRow, minCol, minRow } = getTableCellBounds(
+          cellElements.map((cell) => ({
+            ...state.table.getCellIndices(cell),
+            colSpan: getColSpan(cell),
+            rowSpan: getRowSpan(cell),
+          }))
+        );
         let hasAnyBorder = false;
         let allOuterBordersSet = true;
         const borderStates = {
@@ -1751,8 +1472,13 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         cells: TableCellElement[],
         side: BorderDirection
       ): boolean => {
-        const { maxCol, maxRow, minCol, minRow } =
-          state.table.getSelectedCellsBoundingBox(cells);
+        const { maxCol, maxRow, minCol, minRow } = getTableCellBounds(
+          cells.map((cell) => ({
+            ...state.table.getCellIndices(cell),
+            colSpan: getColSpan(cell),
+            rowSpan: getRowSpan(cell),
+          }))
+        );
 
         return cells.every((cell) => {
           const { col, row } = state.table.getCellIndices(cell);
@@ -1850,8 +1576,13 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           return true;
         }),
       isSelectedCellBordersOuter: (cells: TableCellElement[]): boolean => {
-        const { maxCol, maxRow, minCol, minRow } =
-          state.table.getSelectedCellsBoundingBox(cells);
+        const { maxCol, maxRow, minCol, minRow } = getTableCellBounds(
+          cells.map((cell) => ({
+            ...state.table.getCellIndices(cell),
+            colSpan: getColSpan(cell),
+            rowSpan: getRowSpan(cell),
+          }))
+        );
 
         for (const cell of cells) {
           const { col, row } = state.table.getCellIndices(cell);
@@ -1896,17 +1627,10 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       writeSelection: (
         data: Pick<DataTransfer, 'getData' | 'setData'>
       ): boolean => {
-        const cells = read.getGridAbove({ format: 'cell' });
+        const view = read.selection();
 
-        if (cells.length <= 1) return false;
-
-        const [tableEntry] = read.getGridAbove({
-          format: 'table',
-        });
-
-        if (!tableEntry) return false;
-
-        const rows = tableEntry[0].children as TableRowElement[];
+        if (!view || view.cellEntries.length <= 1) return false;
+        const rows = projectTableSelection(view).children as TableRowElement[];
         const values = rows.map((row) =>
           (row.children as TableCellElement[]).map((cell) =>
             NodeApi.string(cell)
@@ -2142,15 +1866,14 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
           if (!tableEntry) return;
 
-          const view = tx.selection.isExpanded()
-            ? tx.table.getSelection()
-            : null;
+          const view = tx.table.selection();
+          const isMultiCell = (view?.anchors.length ?? 0) > 1;
           const context =
             view?.context ?? createTableContext(tx, tableEntry[1]);
 
           if (!context) return;
 
-          if (tx.selection.isExpanded()) {
+          if (isMultiCell) {
             if (!view) return;
 
             if (
@@ -2205,15 +1928,14 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
           if (!tableEntry) return;
 
-          const view = tx.selection.isExpanded()
-            ? tx.table.getSelection()
-            : null;
+          const view = tx.table.selection();
+          const isMultiCell = (view?.anchors.length ?? 0) > 1;
           const context =
             view?.context ?? createTableContext(tx, tableEntry[1]);
 
           if (!context) return;
 
-          if (tx.selection.isExpanded()) {
+          if (isMultiCell) {
             if (!view) return;
 
             if (
@@ -2264,103 +1986,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       };
     },
   }))
-  .extend((context) => ({
-    selectionKinds: [
-      {
-        codec: defineValueCodec<TableCellSelection>({
-          decode(value) {
-            if (!isTableCellSelection(value)) {
-              throw new Error('Invalid table-cell selection.');
-            }
-
-            return value;
-          },
-          encode: (selection) => selection,
-          version: 1,
-        }),
-        primaryRange: (selection) =>
-          Object.freeze({
-            anchor: selection.anchor,
-            focus: selection.anchor,
-          }),
-        kind: 'table-cell',
-        map(selection, mapContext) {
-          const range = mapContext.mapRange(selection, {
-            association: 'outward',
-          });
-          const seen = new Set<string>();
-          const cells = selection.cells.flatMap((cell) => {
-            const mapped = mapContext.mapRange(cell, {
-              association: 'outward',
-              deletion: 'drop',
-            });
-
-            if (!mapped) return [];
-
-            const key = JSON.stringify([
-              mapped.anchor.root ?? mapContext.root,
-              mapped.anchor.path,
-              mapped.anchor.offset,
-              mapped.focus.root ?? mapContext.root,
-              mapped.focus.path,
-              mapped.focus.offset,
-            ]);
-
-            if (seen.has(key)) return [];
-
-            seen.add(key);
-
-            return [mapped];
-          });
-
-          return range && cells.length > 0
-            ? { ...selection, ...range, cells }
-            : null;
-        },
-        marks() {
-          const cells = context.read.getGridAbove({
-            format: 'cell',
-          });
-          const markCounts: Record<string, number> = {};
-          const marks: Record<string, unknown> = {};
-          let textCount = 0;
-
-          cells.forEach(([, cellPath]) => {
-            context.editor.read.nodes
-              .toArray({
-                at: cellPath,
-                match: (node) => TextApi.isText(node),
-              })
-              .forEach(([text]) => {
-                textCount += 1;
-
-                Object.keys(text).forEach((key) => {
-                  if (key === 'text') return;
-
-                  markCounts[key] = (markCounts[key] ?? 0) + 1;
-                  marks[key] = text[key];
-                });
-              });
-          });
-
-          Object.keys(markCounts).forEach((key) => {
-            if (markCounts[key] !== textCount) delete marks[key];
-          });
-
-          return marks;
-        },
-        ranges: (selection) => selection.cells,
-        replacementRange: (selection) => selection,
-        slice: (selection, state) =>
-          projectTableSlice(
-            state.slice.get({ at: selection }),
-            context.schema.type,
-            state.table.getGridAbove()[0]?.[0]
-          ),
-        validate: isTableCellSelection,
-      } satisfies EditorSelectionSpec<TableCellSelection>,
-    ],
-  }))
   .extend((context) => {
     const { api, editor } = context;
 
@@ -2399,7 +2024,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             const [, cellPath] = cellEntry;
             const cellIndex = cellPath.at(-1);
             const rowIndex = cellPath.at(-2);
-            const view = tx.table.getSelection(cellPath);
+            const view = tx.table.selection(cellPath);
             const addDirection = (direction: BorderDirection) => {
               if (direction === 'top') {
                 if (rowIndex === 0) {
@@ -2484,7 +2109,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             const selectedCells =
               explicitCells ??
               (() => {
-                const selected = tx.table.getSelection()?.cellEntries ?? [];
+                const selected = tx.table.selection()?.cellEntries ?? [];
 
                 if (selected.length > 1) {
                   return selected.map(([cell]) => cell);
@@ -2504,7 +2129,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
               if (!path) return [];
 
-              const view = tx.table.getSelection(path);
+              const view = tx.table.selection(path);
               const anchor = view?.context.anchorOf(cell);
 
               if (!view || !anchor) return [];
@@ -2581,7 +2206,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             }
 
             const { maxCol, maxRow, minCol, minRow } =
-              tx.table.getSelectedCellsBoundingBox(selectedCells);
+              getTableCellBounds(targets);
 
             if (border === 'outer') {
               const width = tx.table.getSelectedCellsBorders(selectedCells)
@@ -2670,7 +2295,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             setBorderWidths([{ at, border, width }]);
           },
           merge: (): void => {
-            const cellEntries = tx.table.getSelection()?.cellEntries ?? [];
+            const cellEntries = tx.table.selection()?.cellEntries ?? [];
 
             if (cellEntries.length < 2) return;
 
@@ -2707,7 +2332,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             fromOneCell,
             reverse,
           }: MoveTableSelectionOptions = {}) => {
-            const view = tx.table.getSelection(at);
+            const view = tx.table.selection(at);
 
             if (!view) return undefined;
 
@@ -2723,9 +2348,12 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
                   if (anchor && focus) {
                     const range = { anchor, focus };
+                    const expandedView = tx.table.selection(range);
 
                     tx.selection.set(
-                      tx.table.createCellSelection(range) ?? range
+                      (expandedView &&
+                        createTableNodeSelection(expandedView)) ??
+                        range
                     );
                   }
                 }
@@ -2796,48 +2424,35 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             }
 
             if (tableRange) {
+              const tableView = tx.table.selection(tableRange);
+
               tx.selection.set(
-                tx.table.createCellSelection(tableRange) ?? tableRange
+                (tableView && createTableNodeSelection(tableView)) ?? tableRange
               );
             }
 
             return true;
           },
-          setCellBackground: ({
-            color,
-            selectedCells,
-          }: SetCellBackgroundOptions) => {
-            if (selectedCells && selectedCells.length > 0) {
-              selectedCells.forEach((cell) => {
-                const cellPath = tx.nodes.path(cell);
+          setCellBackground: ({ color }: { color: string | null }) => {
+            const selectedCells = tx.table.selection()?.cellEntries ?? [];
+            const currentCell =
+              selectedCells.length === 0
+                ? tx.nodes.find({ match: api.isCell })
+                : undefined;
+            const cells =
+              selectedCells.length > 0
+                ? selectedCells
+                : currentCell
+                  ? [currentCell]
+                  : [];
 
-                if (!cellPath) return;
-
-                if (color === null) {
-                  tx.nodes.unset('backgroundColor', {
-                    at: cellPath,
-                  });
-                } else {
-                  tx.nodes.set({ backgroundColor: color }, { at: cellPath });
-                }
-              });
-
-              return;
-            }
-
-            const currentCell = tx.nodes.find({
-              match: api.isCell,
+            cells.forEach(([, path]) => {
+              if (color === null) {
+                tx.nodes.unset('backgroundColor', { at: path });
+              } else {
+                tx.nodes.set({ backgroundColor: color }, { at: path });
+              }
             });
-
-            if (!currentCell) return;
-
-            if (color === null) {
-              tx.nodes.unset('backgroundColor', {
-                at: currentCell[1],
-              });
-            } else {
-              tx.nodes.set({ backgroundColor: color }, { at: currentCell[1] });
-            }
           },
           setColumnWidth: (
             { colIndex, width }: { colIndex: number; width: number },
@@ -2866,7 +2481,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
             if (colIndex >= columnCount) {
               throw new RangeError(
-                `Table column index ${colIndex} exceeds the last column index ${columnCount - 1}.`
+                `Table column index ${colIndex} exceeds the last column index ${
+                  columnCount - 1
+                }.`
               );
             }
 
@@ -2906,14 +2523,16 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
             if (rowIndex >= rowCount) {
               throw new RangeError(
-                `Table row index ${rowIndex} exceeds the last row index ${rowCount - 1}.`
+                `Table row index ${rowIndex} exceeds the last row index ${
+                  rowCount - 1
+                }.`
               );
             }
 
             tx.nodes.set({ height }, { at: [...table[1], rowIndex] });
           },
           split: (): void => {
-            const firstCell = tx.table.getSelection()?.cellEntries[0];
+            const firstCell = tx.table.selection()?.cellEntries[0];
 
             if (!firstCell) return;
 
@@ -2938,13 +2557,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           },
           tab: ({ reverse = false }: { reverse?: boolean } = {}) => {
             const selection = tx.selection();
-            const view = selection ? tx.table.getSelection(selection) : null;
+            const view = selection ? tx.table.selection(selection) : null;
 
-            if (
-              selection &&
-              tx.selection.isExpanded() &&
-              (view?.anchors.length ?? 0) > 1
-            ) {
+            if (selection && (view?.anchors.length ?? 0) > 1) {
               tx.selection.collapse({ edge: 'end' });
               return true;
             }
@@ -2955,7 +2570,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
             if (!cellEntry) return false;
 
-            const tableView = tx.table.getSelection(cellEntry[1]);
+            const tableView = tx.table.selection(cellEntry[1]);
             const anchor = tableView?.context.anchorAtPath(cellEntry[1]);
             const target =
               tableView && anchor
@@ -3016,10 +2631,8 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               read('text/plain') || read('text/tsv') || read('text/csv');
             const exact = context.editor.api.dom.clipboard.readSlice(data);
             const hasRecognizedExact = exact.kind !== 'absent';
-            const view = context.read.getSelection();
-            const hasStructuralTarget =
-              !!view &&
-              (isTableCellSelection(view.selection) || view.anchors.length > 1);
+            const view = context.read.selection();
+            const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
             const source: TablePasteSource = hasRecognizedExact
               ? 'model'
               : html
@@ -3159,21 +2772,80 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       },
     ],
   }))
-  .extend((context) => ({
-    readMiddleware: ({ around }) => [
-      around(editorReads.slice.export, ({ next, state }) => {
-        const slice = next();
+  .extend((context) => {
+    const cellType = context.editor.plugin(BaseTableCellPlugin).schema.type;
+    const readSelection = (state: EditorStateView, at?: Location) =>
+      readTableSelection(state, {
+        at,
+        cellTypes: [cellType],
+        selection: state.selection(),
+        tableType: context.schema.type,
+      });
 
-        return SelectionApi.isNode(state.selection())
-          ? slice
-          : projectTableSlice(
-              slice,
-              context.schema.type,
-              context.read.getGridAbove()[0]?.[0]
-            );
-      }),
-    ],
-  }))
+    return {
+      readMiddleware: ({ around }) => [
+        around(editorReads.slice.get, ({ input, next, state }) => {
+          const slice = next();
+          const at = SelectionApi.isNode(input.options.at)
+            ? (getEditorSelectionRange(
+                context.editor,
+                input.options.at,
+                state.value()
+              ) ?? undefined)
+            : input.options.at;
+          const view = readSelection(state, at);
+          const hasNodeSelection =
+            SelectionApi.isNode(input.options.at) ||
+            (input.options.at === undefined &&
+              state.selection.nodes().length > 0);
+
+          return hasNodeSelection && view && view.anchors.length > 1
+            ? projectTableSelectionSlice(slice, view)
+            : slice;
+        }),
+        around(editorReads.slice.export, ({ input, next, state }) => {
+          const slice = next();
+          const at = SelectionApi.isNode(input.options.at)
+            ? (getEditorSelectionRange(
+                context.editor,
+                input.options.at,
+                state.value()
+              ) ?? undefined)
+            : input.options.at;
+          const view = readSelection(state, at);
+          const hasNodeSelection =
+            SelectionApi.isNode(input.options.at) ||
+            (input.options.at === undefined &&
+              state.selection.nodes().length > 0);
+
+          if (!view || hasNodeSelection) return slice;
+          if (view.anchors.length > 1) {
+            return projectTableSelectionSlice(slice, view);
+          }
+
+          const table =
+            slice.content.length === 1 &&
+            ElementApi.isElement(slice.content[0]) &&
+            slice.content[0].type === context.schema.type
+              ? slice.content[0]
+              : null;
+          const row =
+            table?.children.length === 1 &&
+            ElementApi.isElement(table.children[0])
+              ? table.children[0]
+              : null;
+          const cell =
+            row?.children.length === 1 && ElementApi.isElement(row.children[0])
+              ? row.children[0]
+              : null;
+
+          return cell
+            ? ContentSlice.withContent(slice, cell.children, { open: 'closed' })
+            : slice;
+        }),
+      ],
+    };
+  })
   .extend((context) => ({
     commands: ({ around, handle }) => [
       around(editorCommands.select, ({ input, state, next }) =>
@@ -3249,69 +2921,29 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             : state.ranges.get(input.at);
 
         if (!selection) return false;
+        const view = state.table.selection(selection);
 
-        if (
-          state.selection.isWithinBlock({
-            at: selection,
-            type: context.plugin,
-          })
-        ) {
-          const cells = state.table.getGridAbove({
-            at: selection,
-            format: 'cell',
+        if (!view || view.cellEntries.length < 2) return false;
+
+        return state.transaction((tx) => {
+          const cellPaths = view.cellEntries.map(([, path]) => path);
+
+          view.cellEntries.forEach(([, path]) => {
+            tx.nodes.replaceChildren(
+              [
+                {
+                  children: [{ text: '' }],
+                  type: context.editor.plugin(BaseParagraphPlugin).schema.type,
+                },
+              ],
+              { at: path }
+            );
           });
-
-          if (cells.length < 2) return false;
-
-          const anchor = state.points.start(cells[0][1]);
-          const focus = state.points.start(
-            (cells.at(-1) ?? failInvariant('Expected value to be defined'))[1]
-          );
-          const range = anchor && focus ? { anchor, focus } : null;
-
-          const replacement = state.transaction((tx) => {
-            cells.forEach(([, path]) => {
-              tx.nodes.replaceChildren(
-                [
-                  {
-                    children: [{ text: '' }],
-                    type: context.editor.plugin(BaseParagraphPlugin).schema
-                      .type,
-                  },
-                ],
-                { at: path }
-              );
-            });
+          tx.selection.setNodes(cellPaths, {
+            anchor: view.tablePath.concat(view.anchor.path),
+            focus: view.tablePath.concat(view.focus.path),
           });
-
-          return range
-            ? state.transaction.extend(replacement, (tx) => {
-                const cellRanges = cells.flatMap(([, path]) => {
-                  const innerAnchor = tx.points.start(path);
-                  const cellFocus = tx.points.end(path);
-
-                  return innerAnchor && cellFocus
-                    ? [{ anchor: innerAnchor, focus: cellFocus }]
-                    : [];
-                });
-                const innerAnchor = cellRanges[0]?.anchor;
-                const innerFocus = cellRanges.at(-1)?.anchor;
-
-                if (innerAnchor && innerFocus && cellRanges.length > 1) {
-                  tx.selection.set({
-                    anchor: innerAnchor,
-                    cells: cellRanges,
-                    focus: innerFocus,
-                    kind: 'table-cell',
-                  });
-                } else {
-                  tx.selection.set(range);
-                }
-              })
-            : replacement;
-        }
-
-        return false;
+        });
       }),
       handle(editorCommands.replaceSlice, ({ input, state }) => {
         const { slice } = input;
@@ -3330,7 +2962,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
 
         if (!selection) return false;
 
-        const view = state.table.getSelection(selection);
+        const view = state.table.selection(selection);
 
         if (!view) return false;
 
@@ -3343,10 +2975,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         let ordinary = false;
 
         if (!source) {
-          if (
-            !isTableCellSelection(view.selection) &&
-            view.anchors.length <= 1
-          ) {
+          if (view.anchors.length <= 1) {
             return false;
           }
 
@@ -3385,10 +3014,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           return rejectTablePaste(prepared);
         }
 
-        const fillBounds =
-          isTableCellSelection(view.selection) || view.anchors.length > 1
-            ? view.bounds
-            : undefined;
+        const fillBounds = view.anchors.length > 1 ? view.bounds : undefined;
         const plan = planPreparedTablePaste(view.context, prepared, {
           createCell: ({ children, header, sourceRow }) =>
             context.api.createCell({
@@ -3439,18 +3065,18 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             operations: plan.operations,
             selection: plan.selection,
           });
+          const nextView = tx.table.selection(plan.selection);
+          const nodeSelection = nextView && createTableNodeSelection(nextView);
+
+          if (nodeSelection) tx.selection.set(nodeSelection);
         });
       }),
       around(editorCommands.insertText, ({ state, next }) => {
         const selection = state.selection();
+        const view = selection ? state.table.selection(selection) : null;
 
-        if (!selection || !state.selection.isExpanded()) return next();
-        const cells = state.table.getGridAbove({
-          at: selection,
-          format: 'cell',
-        });
-
-        if (cells.length < 2) return next();
+        if (!selection || !view || view.cellEntries.length < 2) return next();
+        const cells = view.cellEntries;
 
         const focus = state.points.start(
           (cells.at(-1) ?? failInvariant('Expected value to be defined'))[1]
@@ -3474,94 +3100,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         });
 
         return next.after(transaction);
-      }),
-      handle(editorCommands.addMark, ({ input, state }) => {
-        if (!state.selection() || state.selection.isCollapsed()) return false;
-
-        const cells = state.table.getGridAbove({ format: 'cell' });
-
-        if (cells.length <= 1) return false;
-
-        return state.transaction((tx) => {
-          cells.forEach(([, cellPath]) => {
-            tx.nodes.set(
-              { [input.key]: input.value },
-              { at: cellPath, marks: true }
-            );
-          });
-        });
-      }),
-      handle(editorCommands.removeMark, ({ input, state }) => {
-        if (!state.selection() || state.selection.isCollapsed()) return false;
-
-        const cells = state.table.getGridAbove({ format: 'cell' });
-
-        if (cells.length <= 1) return false;
-
-        return state.transaction((tx) => {
-          cells.forEach(([, cellPath]) => {
-            tx.nodes.unset(input.key, {
-              at: cellPath,
-              match: (node) => TextApi.isText(node),
-            });
-          });
-        });
-      }),
-      around(editorCommands.setNodes, ({ input, state, next }) => {
-        if (input.options?.marks) return next();
-        if (!state.selection() || state.selection.isCollapsed()) return next();
-
-        const cells = state.table.getGridAbove({ format: 'cell' });
-
-        if (cells.length <= 1) return next();
-
-        const cellPaths = cells.map(([, cellPath]) => cellPath);
-
-        if (input.options?.at) {
-          const target = input.options.at;
-          const range = PathApi.isPath(target)
-            ? undefined
-            : state.ranges.get(target);
-          const targetsSelectedCell = PathApi.isPath(target)
-            ? cellPaths.some((cellPath) => PathApi.isCommon(cellPath, target))
-            : !!range &&
-              cellPaths.some((cellPath) => {
-                const cellRange = state.ranges.get(cellPath);
-
-                return (
-                  !!cellRange &&
-                  (RangeApi.includes(cellRange, range.anchor) ||
-                    RangeApi.includes(cellRange, range.focus) ||
-                    RangeApi.includes(range, cellRange))
-                );
-              });
-
-          if (!targetsSelectedCell) return next();
-        }
-
-        const optionMatch = input.options?.match;
-        const optionAt = input.options?.at;
-
-        return next({
-          ...input,
-          options: {
-            ...input.options,
-            match: (node, path) => {
-              if (
-                !cellPaths.some((cellPath) => PathApi.isCommon(cellPath, path))
-              ) {
-                return false;
-              }
-
-              if (optionMatch) return NodeApi.matches(node, optionMatch, path);
-              if (optionAt && PathApi.isPath(optionAt)) {
-                return PathApi.equals(path, optionAt);
-              }
-
-              return ElementApi.isElement(node) && state.nodes.isBlock(node);
-            },
-          },
-        });
       }),
     ],
   }));

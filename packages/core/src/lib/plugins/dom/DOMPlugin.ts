@@ -9,6 +9,10 @@ import type {
   DOMClipboardApi,
   ScrollIntoViewOptions,
 } from '@platejs/plite-dom';
+import {
+  getSelection as getEditorSelection,
+  getSelectionDOMRange,
+} from '@platejs/plite/internal';
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
@@ -82,7 +86,7 @@ export const DOMPluginBase = defineBasePlugin('dom', {
   }),
   initialState,
   on: {
-    transactionChange({ changed, editor, selectionAfterRoot, store, tx }) {
+    transactionChange({ changed, editor, selectionAfterRoot, store }) {
       if (AUTO_SCROLL.get(editor) !== true) return;
 
       const { scrollMode, scrollChanges = {}, scrollOptions } = store.get();
@@ -117,7 +121,10 @@ export const DOMPluginBase = defineBasePlugin('dom', {
         : [];
       const changedPath =
         scrollMode === 'first' ? shallowPaths[0] : shallowPaths.at(-1);
-      const selectionTarget = tx.selection()?.focus;
+      const selectionTarget = getSelectionDOMRange(
+        editor,
+        getEditorSelection(editor)
+      )?.focus;
       const selectionTouchesChange =
         selectionTarget &&
         changedPaths.some((path) => PathApi.equals(path, selectionTarget.path));

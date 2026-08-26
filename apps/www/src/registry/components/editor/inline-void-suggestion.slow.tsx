@@ -94,10 +94,6 @@ mock.module('@platejs/date', () => ({
 
 mock.module('@platejs/mention', () => ({}));
 
-mock.module('@platejs/selection/react', () => ({
-  BlockSelectionPlugin: { name: 'blockSelection' },
-}));
-
 mock.module('@platejs/suggestion/react', () => ({
   SuggestionPlugin: { name: 'suggestion' },
 }));

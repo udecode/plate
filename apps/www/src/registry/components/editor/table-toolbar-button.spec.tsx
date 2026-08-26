@@ -8,8 +8,11 @@ const focusMock = mock();
 const insertRowMock = mock();
 const pluginMock = mock(() => ({
   read: {
-    canMerge: () => true,
-    canSplit: () => true,
+    selection: () => ({
+      anchor: { colSpan: 1, rowSpan: 1 },
+      anchors: [],
+      complete: true,
+    }),
   },
   schema: { type: 'table' },
   update: {
@@ -24,14 +27,17 @@ const pluginMock = mock(() => ({
   },
 }));
 
-let dropdownOnCloseAutoFocus:
+let dropdownOnFinalFocus:
   | ((event: { preventDefault: () => void }) => void)
   | undefined;
 
 const editor = {
   api: { dom: { focus: focusMock } },
   plugin: pluginMock,
-  read: { nodes: { some: () => true } },
+  read: {
+    nodes: { some: () => true },
+    view: { isReadOnly: () => false },
+  },
 };
 
 mock.module('platejs/react', () => ({
@@ -42,15 +48,15 @@ mock.module('platejs/react', () => ({
   usePluginStore: () => false,
 }));
 
-mock.module('@/components/ui/dropdown-menu', () => ({
+mock.module('./dropdown-menu', () => ({
   DropdownMenu: ({ children }: React.PropsWithChildren) => <>{children}</>,
   DropdownMenuContent: ({
     children,
-    onCloseAutoFocus,
+    onFinalFocus,
   }: React.PropsWithChildren<{
-    onCloseAutoFocus?: (event: { preventDefault: () => void }) => void;
+    onFinalFocus?: (event: { preventDefault: () => void }) => void;
   }>) => {
-    dropdownOnCloseAutoFocus = onCloseAutoFocus;
+    dropdownOnFinalFocus = onFinalFocus;
 
     return <div>{children}</div>;
   },
@@ -110,7 +116,7 @@ mock.module('./toolbar', () => ({
 
 describe('TableToolbarButton', () => {
   beforeEach(() => {
-    dropdownOnCloseAutoFocus = undefined;
+    dropdownOnFinalFocus = undefined;
     focusMock.mockClear();
     insertRowMock.mockClear();
     pluginMock.mockClear();
@@ -132,7 +138,7 @@ describe('TableToolbarButton', () => {
     expect(insertRowMock).toHaveBeenCalledTimes(1);
     expect(focusMock).not.toHaveBeenCalled();
 
-    dropdownOnCloseAutoFocus?.({ preventDefault: preventDefaultMock });
+    dropdownOnFinalFocus?.({ preventDefault: preventDefaultMock });
 
     expect(preventDefaultMock).toHaveBeenCalledTimes(1);
     expect(focusMock).toHaveBeenCalledTimes(1);

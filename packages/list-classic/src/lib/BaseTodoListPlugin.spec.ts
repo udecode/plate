@@ -68,7 +68,6 @@ describe('BaseTodoListPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -98,7 +97,6 @@ describe('BaseTodoListPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });
@@ -140,7 +138,9 @@ describe('BaseTodoListPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
-    editor.update.blocks.toggle(editor.plugin(BaseTodoListPlugin).schema.type);
+    editor.update.blocks.toggle({
+      type: editor.plugin(BaseTodoListPlugin).schema.type,
+    });
 
     expect(editor.read.children()[0].type).toBe(
       editor.plugin(PLUGINS.todoList).schema.type

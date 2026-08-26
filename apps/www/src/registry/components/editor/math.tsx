@@ -3,12 +3,10 @@
 import '@platejs/math/katex.css';
 import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import katex, { type KatexOptions } from 'katex';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import { isHotkey } from 'platejs';
 import {
-  type PlateEditor,
   type PlateElementProps,
   PlateElement,
   useEditor,
@@ -23,16 +21,13 @@ import TextareaAutosize, {
 } from 'react-textarea-autosize';
 
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
-
-const getBlockSelectionApi = (editor: PlateEditor) =>
-  editor.plugin(BlockSelectionPlugin).api;
+import {
+  FloatingPopover as Popover,
+  FloatingPopoverContent as PopoverContent,
+  FloatingPopoverTrigger as PopoverTrigger,
+} from '@/registry/components/editor/floating-popover';
+import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 function useEquation({
   element,
@@ -82,7 +77,7 @@ export function EquationElement(
   return (
     <PlateElement className="my-1" {...props}>
       <Popover open={open} onOpenChange={setOpen} modal={false}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger>
           <button
             aria-label={
               props.element.latex.length > 0 ? 'Edit equation' : 'Add equation'
@@ -176,7 +171,7 @@ export function InlineEquationElement(
       )}
     >
       <Popover open={open} onOpenChange={setOpen} modal={false}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger>
           <button
             aria-label={
               element.latex.length > 0 ? 'Edit equation' : 'Add equation'
@@ -359,16 +354,20 @@ const EquationPopoverContent = ({
       if (nextPoint) {
         editor.update.selection.set(nextPoint);
       }
-      editor.api.dom.focus();
     } else {
-      getBlockSelectionApi(editor).set(editor.key(element));
+      const path = editor.read.nodes.path(element);
+
+      if (path) {
+        editor.update.selection.setNodes([path]);
+      }
     }
+    editor.api.dom.focus();
   };
 
   return (
     <PopoverContent
       className="flex gap-2"
-      onCloseAutoFocus={(event) => {
+      onFinalFocus={(event) => {
         if (isInline) event.preventDefault();
       }}
       onEscapeKeyDown={(e) => {

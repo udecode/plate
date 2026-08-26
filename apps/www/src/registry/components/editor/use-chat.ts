@@ -4,24 +4,12 @@
 
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import {
-  AIChatPlugin,
-  type AIChatRequestRefs,
-  createAIChatAdapter,
-} from '@platejs/ai/react';
+import type { AIChatRequestContext } from '@platejs/ai';
+import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { MarkdownPlugin } from '@platejs/markdown';
-import {
-  type Range,
-  type Value,
-  ElementApi,
-  NodeApi,
-  TextApi,
-} from '@platejs/plite';
+import { NodeApi, TextApi } from '@platejs/plite';
 import { failInvariant } from '@platejs/plite/internal';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { BaseTableCellPlugin } from '@platejs/table';
-import { TablePlugin } from '@platejs/table/react';
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { PLUGINS, nanoid } from 'platejs';
 import { type PlateEditor, useEditor, usePluginStore } from 'platejs/react';
@@ -76,20 +64,8 @@ export type ChatMessage = UIMessage<{}, MessageDataPart>;
 
 type ChatRequestBody = {
   messages: ChatMessage[];
-  ctx?: {
-    children?: Value;
-    refs?: AIChatRequestRefs;
-    selection?: Range;
-  };
+  ctx?: AIChatRequestContext;
   [key: string]: unknown;
-};
-
-const getSelectedTableCells = (editor: PlateEditor): unknown[] => {
-  const selectedCells: unknown = editor
-    .plugin(TablePlugin)
-    .read.getSelectedCells();
-
-  return Array.isArray(selectedCells) ? selectedCells : [];
 };
 
 function createChatTransport({
@@ -123,10 +99,7 @@ function createChatTransport({
         let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
 
         try {
-          const responseBody = JSON.parse(
-            init?.body as string
-          ) as ChatRequestBody;
-          const content = responseBody.messages
+          const content = body.messages
             .at(-1)
             ?.parts.find((part) => part.type === 'text')?.text;
 
@@ -138,40 +111,8 @@ function createChatTransport({
             sample = 'comment';
           }
 
-          // Detect table editing by checking if multiple table cells are selected
-          // Single cell selection should use normal edit flow, only multi-cell uses table tool
-          if (!sample) {
-            // First check: selectedCells from TablePlugin (cell selection mode)
-            const selectedCells = getSelectedTableCells(editor);
-
-            if (selectedCells.length > 1) {
-              sample = 'table';
-            }
-            // Second check: selection range spans multiple cells
-            else if (
-              responseBody.ctx?.children &&
-              responseBody.ctx?.selection
-            ) {
-              const { selection, children } = responseBody.ctx;
-              const anchorPath = selection.anchor?.path;
-              const focusPath = selection.focus?.path;
-
-              if (anchorPath && anchorPath.length >= 3) {
-                const rootIndex = anchorPath[0];
-                const rootNode = children[rootIndex];
-
-                if (rootNode?.type === editor.plugin(TablePlugin).schema.type) {
-                  // Cell path is at index 2 (table -> row -> cell)
-                  const anchorCellPath = anchorPath.slice(0, 3).join(',');
-                  const focusCellPath = focusPath?.slice(0, 3).join(',');
-
-                  // Only use table mock if anchor and focus are in different cells
-                  if (focusCellPath && anchorCellPath !== focusCellPath) {
-                    sample = 'table';
-                  }
-                }
-              }
-            }
+          if (!sample && (body.ctx?.refs.tableCells.length ?? 0) > 1) {
+            sample = 'table';
           }
         } catch {
           sample = null;
@@ -186,7 +127,7 @@ function createChatTransport({
         });
 
         const stream = fakeStreamText({
-          editor,
+          context: body.ctx,
           sample,
           signal: requestAbortController.signal,
         });
@@ -263,7 +204,7 @@ export const useChat = () => {
         const commentData = data.data as TComment;
 
         if (commentData.status === 'finished') {
-          editor.plugin(BlockSelectionPlugin).api.deselect();
+          editor.update.selection.set(null);
 
           return;
         }
@@ -354,11 +295,11 @@ export const useChat = () => {
 // Used for testing. Remove it after implementing useChat api.
 const fakeStreamText = ({
   chunkCount = 10,
-  editor,
+  context,
   sample = null,
   signal,
 }: {
-  editor: PlateEditor;
+  context?: AIChatRequestContext;
   chunkCount?: number;
   sample?: 'comment' | 'markdown' | 'mdx' | 'table' | null;
   signal?: AbortSignal;
@@ -377,12 +318,12 @@ const fakeStreamText = ({
         }
 
         if (sample === 'comment') {
-          const commentChunks = createCommentChunks(editor);
+          const commentChunks = createCommentChunks(context);
           return commentChunks;
         }
 
         if (sample === 'table') {
-          const tableChunks = createTableCellChunks(editor);
+          const tableChunks = createTableCellChunks(context);
           return tableChunks;
         }
 
@@ -1627,55 +1568,48 @@ const mdxChunks = [
   ],
 ];
 
-const createCommentChunks = (editor: PlateEditor) => {
-  const selectedBlocksRead = editor.plugin(BlockSelectionPlugin).read;
-
-  const selectedBlocks = selectedBlocksRead
-    .getNodes({
-      selectionFallback: true,
-      sort: true,
-    })
-    .map(([block]) => block);
-
-  const isSelectingSome = editor
-    .plugin(BlockSelectionPlugin)
-    .store.get('isSelectingSome');
-
+const createCommentChunks = (context?: AIChatRequestContext) => {
+  const root = context ? { children: context.children, type: '' } : null;
   const blocks =
-    selectedBlocks.length > 0 &&
-    (!editor.read.selection.isCollapsed() || isSelectingSome)
-      ? selectedBlocks
-      : editor.read.children();
+    root && context
+      ? context.refs.blocks.flatMap(({ path, ref }) => {
+          const block = NodeApi.getIf(root, path);
 
+          return block ? [{ block, ref }] : [];
+        })
+      : [];
   const max = blocks.length;
+
+  if (max === 0) {
+    return [
+      [{ delay: 50, texts: '{"data":"comment","type":"data-toolName"}' }],
+      [
+        {
+          delay: 100,
+          texts: `{"id":"${nanoid()}","data":{"comment":null,"status":"finished"},"type":"data-comment"}`,
+        },
+      ],
+    ];
+  }
 
   const commentCount = Math.ceil(max / 2);
 
   const result = new Set<number>();
 
   while (result.size < commentCount) {
-    // 0 to max-1 (fixed: was 1 to max)
     const num = Math.floor(Math.random() * max);
     result.add(num);
   }
 
   const indexes = Array.from(result).sort((a, b) => a - b);
-  const refs = editor.plugin(AIChatPlugin).store.get('_blockRefs');
-  const refsByKey = new Map(
-    Object.entries(refs).map(([ref, { key }]) => [key, ref])
-  );
 
   const chunks = indexes
-    .map((index, i) => {
-      const block = blocks[index];
-      if (!block) {
-        return [];
-      }
-      const blockRef = refsByKey.get(editor.key(block));
+    .map((index) => {
+      const entry = blocks[index];
 
-      if (!blockRef) return [];
+      if (!entry) return [];
 
-      const blockString = NodeApi.string(block);
+      const blockString = NodeApi.string(entry.block);
       const endIndex = blockString.indexOf('.');
       const content =
         endIndex === -1 ? blockString : blockString.slice(0, endIndex);
@@ -1683,57 +1617,37 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"comment":{"blockRef":"${blockRef}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${
-            i === indexes.length - 1 ? 'finished' : 'streaming'
-          }"},"type":"data-comment"}`,
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockRef":"${
+            entry.ref
+          }","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"streaming"},"type":"data-comment"}`,
         },
       ];
     })
     .filter((chunk) => chunk.length > 0);
 
-  const result_chunks = [
+  const resultChunks = [
     [{ delay: 50, texts: '{"data":"comment","type":"data-toolName"}' }],
     ...chunks,
+    [
+      {
+        delay: 50,
+        texts: `{"id":"${nanoid()}","data":{"comment":null,"status":"finished"},"type":"data-comment"}`,
+      },
+    ],
   ];
 
-  return result_chunks;
+  return resultChunks;
 };
 
-const createTableCellChunks = (editor: PlateEditor) => {
-  // Get selected table cells from the TablePlugin
-  const selectedCells = getSelectedTableCells(editor);
+const createTableCellChunks = (context?: AIChatRequestContext) => {
+  const root = context ? { children: context.children, type: '' } : null;
+  const cellRefs =
+    root && context
+      ? context.refs.tableCells.flatMap(({ path, ref }) =>
+          NodeApi.getIf(root, path) ? [ref] : []
+        )
+      : [];
 
-  // If no cells selected, try to get cells from current selection
-  let cellRefs: string[] = [];
-  const refs = editor.plugin(AIChatPlugin).store.get('_tableCellRefs');
-  const refsByKey = new Map(
-    Object.entries(refs).map(([ref, { key }]) => [key, ref])
-  );
-
-  if (selectedCells.length > 0) {
-    cellRefs = selectedCells.flatMap((cell) =>
-      ElementApi.isElement(cell)
-        ? [refsByKey.get(editor.key(cell))].filter(
-            (ref): ref is string => ref !== undefined
-          )
-        : []
-    );
-  } else {
-    // Try to find table cells in current selection
-    const cells = editor.read((state) => [
-      ...state.nodes.entries({
-        at: state.selection() ?? undefined,
-        type: BaseTableCellPlugin,
-      }),
-    ]);
-    cellRefs = cells.flatMap(([node]) => {
-      const ref = refsByKey.get(editor.key(node));
-
-      return ref ? [ref] : [];
-    });
-  }
-
-  // If still no cells, return empty chunks
   if (cellRefs.length === 0) {
     return [
       [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
@@ -1746,20 +1660,23 @@ const createTableCellChunks = (editor: PlateEditor) => {
     ];
   }
 
-  // Generate mock content for each cell
-  const chunks = cellRefs.map((cellRef, i) => [
+  const chunks = cellRefs.map((cellRef) => [
     {
       delay: faker.number.int({ max: 300, min: 100 }),
-      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"ref":"${cellRef}","content":"${faker.lorem.sentence()}"},"status":"${
-        i === cellRefs.length - 1 ? 'finished' : 'streaming'
-      }"},"type":"data-table"}`,
+      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"ref":"${cellRef}","content":"${faker.lorem.sentence()}"},"status":"streaming"},"type":"data-table"}`,
     },
   ]);
 
-  const result_chunks = [
+  const resultChunks = [
     [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
     ...chunks,
+    [
+      {
+        delay: 50,
+        texts: `{"id":"${nanoid()}","data":{"cellUpdate":null,"status":"finished"},"type":"data-table"}`,
+      },
+    ],
   ];
 
-  return result_chunks;
+  return resultChunks;
 };

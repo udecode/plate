@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "font",
+  "dependencies": [
+    "@platejs/basic-styles",
+    "@platejs/utils"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/font-size-toolbar-button.json",
+    "https://platejs.org/r/font-color-toolbar-button.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/font.tsx",
+      "content": "'use client';\n\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontFamilyPlugin,\n  FontSizePlugin,\n} from '@platejs/basic-styles/react';\n\nexport const FontKit = [\n  FontColorPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'black',\n      },\n    },\n  }),\n  FontBackgroundColorPlugin,\n  FontSizePlugin,\n  FontFamilyPlugin,\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/font.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

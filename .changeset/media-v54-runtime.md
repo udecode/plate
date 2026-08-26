@@ -31,6 +31,7 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Register media properties and required direct inline caption children in compiled schemas.
 - Convert legacy v53 media identities, captions, missing URLs, and retired placeholder IDs through the shared `migratePlateV54` application document step.
 - Accept caption strings or inline children as construction input and persist them as direct media children.
+- Split media captions into a following paragraph on Enter without duplicating the media node.
 - Use capability name `mediaEmbed` and persisted element type `mediaEmbed`, persist media alignment as `textAlign`, and preserve relative media widths.
 - Set media widths through the descriptor's standard update: `editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
 - Preserve standalone media embeds through clipboard sanitization by carrying sanitized URL and normalized width metadata on the owning figure.

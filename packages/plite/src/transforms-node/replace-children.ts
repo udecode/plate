@@ -2,7 +2,7 @@ import {
   applyBuiltDocumentChange,
   getChildren,
   getEditorUpdateRoot,
-  getPublicSelection,
+  getLiveSelection,
 } from '../core/public-state';
 import {
   type Descendant,
@@ -12,6 +12,8 @@ import {
   type Editor,
   type Node,
   NodeApi,
+  type Path,
+  PathApi,
   type Point,
   SelectionApi,
   type Value,
@@ -77,7 +79,7 @@ export const replaceChildren = <
     index,
     index + replacementCount
   ) as Descendant[];
-  const selection = getPublicSelection(editor);
+  const selection = getLiveSelection(editor);
   const pointIsReplaced = (point: Point) =>
     point.path.length > at.length &&
     at.every((part, depth) => point.path[depth] === part) &&
@@ -94,30 +96,55 @@ export const replaceChildren = <
         }
       : null;
   };
-  const retainedSelection =
-    selection &&
-    (SelectionApi.isText(selection) || SelectionApi.isNode(selection)) &&
-    pointIsReplaced(selection.anchor) &&
-    pointIsReplaced(selection.focus)
+  const pathIsReplaced = (path: readonly number[]) =>
+    path.length > at.length &&
+    at.every((part, depth) => path[depth] === part) &&
+    path[at.length] >= index &&
+    path[at.length] < index + replacedChildren.length;
+  const retainedSelection = SelectionApi.isNode(selection)
+    ? selection.paths.every(pathIsReplaced)
+      ? (() => {
+          const mapped = selection.paths.map((path) => {
+            const target = NodeApi.get(editor, path);
+            const relativePath = findNodeReferencePath(children, target);
+
+            return {
+              path: relativePath
+                ? [...at, index + relativePath[0], ...relativePath.slice(1)]
+                : null,
+              source: path,
+            };
+          });
+          const paths = mapped.flatMap(({ path }) => (path ? [path] : []));
+          const first = paths[0];
+
+          if (!first || paths.length !== selection.paths.length) return null;
+
+          const endpoint = (source: Path) =>
+            mapped.find(({ source: candidate }) =>
+              PathApi.equals(candidate, source)
+            )?.path ?? null;
+          const anchorPath = endpoint(selection.anchorPath);
+          const focusPath = endpoint(selection.focusPath);
+
+          if (!anchorPath || !focusPath) return null;
+
+          return SelectionApi.nodes(
+            [first, ...paths.slice(1)],
+            selection.root === undefined
+              ? { anchorPath, focusPath }
+              : { anchorPath, focusPath, root: selection.root }
+          );
+        })()
+      : undefined
+    : SelectionApi.isText(selection) &&
+        pointIsReplaced(selection.anchor) &&
+        pointIsReplaced(selection.focus)
       ? (() => {
           const anchor = mapPointByReference(selection.anchor);
           const focus = mapPointByReference(selection.focus);
 
           if (!anchor || !focus) return null;
-
-          if (SelectionApi.isNode(selection)) {
-            const target = NodeApi.get(editor, selection.path);
-            const relativePath = findNodeReferencePath(children, target);
-
-            if (!relativePath) return null;
-
-            return {
-              ...selection,
-              anchor,
-              focus,
-              path: [...at, index + relativePath[0], ...relativePath.slice(1)],
-            };
-          }
 
           return { ...selection, anchor, focus };
         })()

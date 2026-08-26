@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "paragraph",
+  "title": "Paragraph",
+  "description": "A paragraph block with background color support.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/paragraph.tsx",
+      "content": "'use client';\n\nimport {\n  type PlateElementProps,\n  type ParagraphPlugin,\n  PlateElement,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElement(\n  props: PlateElementProps<typeof ParagraphPlugin>\n) {\n  return (\n    <PlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/paragraph.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-blocks"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/paragraph"
+      }
+    ],
+    "examples": [
+      "basic-blocks-demo",
+      "basic-nodes-pro"
+    ]
+  },
+  "type": "registry:component"
+}

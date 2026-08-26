@@ -8,7 +8,6 @@ import {
   ElementApi,
   NodeApi,
   PathApi,
-  RangeApi,
   TextApi,
 } from '@platejs/plite';
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
@@ -283,7 +282,9 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
       around(editorCommands.insertText, ({ state, next }) => {
         const selection = state.selection();
 
-        if (!selection || RangeApi.isExpanded(selection)) return next();
+        if (!selection || !state.selection.isCollapsed()) {
+          return next();
+        }
 
         const textPath = selection.focus.path;
         const textCandidate = state.nodes.get(textPath)?.[0];

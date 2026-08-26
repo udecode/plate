@@ -11,9 +11,10 @@
   ],
   "files": [
     {
-      "path": "src/registry/ui/mark-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { useMarkToolbarButton, useMarkToolbarButtonState } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function MarkToolbarButton({\n  clear,\n  nodeType,\n  ...props\n}: React.ComponentProps<typeof ToolbarButton> & {\n  nodeType: string;\n  clear?: string[] | string;\n}) {\n  const state = useMarkToolbarButtonState({ clear, nodeType });\n  const { props: buttonProps } = useMarkToolbarButton(state);\n\n  return <ToolbarButton {...props} {...buttonProps} />;\n}\n",
-      "type": "registry:ui"
+      "path": "src/registry/components/editor/mark-toolbar-button.tsx",
+      "content": "'use client';\n\nimport type { ScriptValue } from '@platejs/basic-nodes';\nimport type {\n  BoldPlugin,\n  CodePlugin,\n  HighlightPlugin,\n  ItalicPlugin,\n  KbdPlugin,\n  ScriptPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@platejs/basic-nodes/react';\nimport { useEditor, useEditorSelector } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\ntype ToolbarButtonProps = React.ComponentProps<typeof ToolbarButton>;\n\ntype BooleanMarkPlugin =\n  | typeof BoldPlugin\n  | typeof CodePlugin\n  | typeof HighlightPlugin\n  | typeof ItalicPlugin\n  | typeof KbdPlugin\n  | typeof StrikethroughPlugin\n  | typeof UnderlinePlugin;\n\ntype MarkToolbarButtonProps = ToolbarButtonProps &\n  (\n    | {\n        plugin: BooleanMarkPlugin;\n        value?: never;\n      }\n    | {\n        plugin: typeof ScriptPlugin;\n        value: ScriptValue;\n      }\n  );\n\nexport function MarkToolbarButton({\n  plugin,\n  value,\n  ...props\n}: MarkToolbarButtonProps) {\n  const editor = useEditor();\n  const pressed = useEditorSelector((innerEditor) =>\n    innerEditor.plugin(plugin).read.isActive(value)\n  );\n\n  return (\n    <ToolbarButton\n      {...props}\n      pressed={pressed}\n      onClick={() => {\n        if (value === undefined) {\n          editor.plugin(plugin).update.toggle();\n        } else {\n          editor.plugin(plugin).update.toggle(value);\n        }\n\n        editor.api.dom.focus();\n      }}\n    />\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/mark-toolbar-button.tsx"
     }
   ],
   "meta": {
@@ -27,5 +28,5 @@
       "basic-nodes-pro"
     ]
   },
-  "type": "registry:ui"
+  "type": "registry:component"
 }

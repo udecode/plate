@@ -1,8 +1,11 @@
 /** @jsx jsxt */
 
 import type { Element } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 
 import {
   createTestTableEditor,
@@ -69,7 +72,9 @@ describe('table insertion slow contracts', () => {
         );
 
         expect(editor.read.children()).toMatchObject(output.children);
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       }
     );
 
@@ -131,7 +136,9 @@ describe('table insertion slow contracts', () => {
         );
 
         expect(editor.read.children()).toMatchObject(output.children);
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       }
     );
 
@@ -203,7 +210,9 @@ describe('table insertion slow contracts', () => {
         );
 
         expect(editor.read.children()).toMatchObject(output.children);
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       }
     );
 
@@ -279,7 +288,9 @@ describe('table insertion slow contracts', () => {
         );
 
         expect(editor.read.children()).toMatchObject(output.children);
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       }
     );
 
@@ -351,7 +362,9 @@ describe('table insertion slow contracts', () => {
         );
 
         expect(editor.read.children()).toMatchObject(output.children);
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       }
     );
   });
@@ -429,7 +442,9 @@ describe('table insertion slow contracts', () => {
             editor.update.table.insertColumn({ select: true });
 
             expect(editor.read.children()).toMatchObject(output.children);
-            expect(editor.read.selection()).toEqual(output.selection!);
+            expect(editor.read.selection()).toEqual(
+              projectTestSelectionRange(output.selection)
+            );
           }
         );
 
@@ -463,7 +478,9 @@ describe('table insertion slow contracts', () => {
             });
 
             expect(editor.read.children()).toMatchObject(output.children);
-            expect(editor.read.selection()).toEqual(output.selection!);
+            expect(editor.read.selection()).toEqual(
+              projectTestSelectionRange(output.selection)
+            );
           }
         );
 
@@ -495,7 +512,9 @@ describe('table insertion slow contracts', () => {
             editor.update.table.insertColumn({ at: [0, 0, 0], select: true });
 
             expect(editor.read.children()).toMatchObject(output.children);
-            expect(editor.read.selection()).toEqual(output.selection!);
+            expect(editor.read.selection()).toEqual(
+              projectTestSelectionRange(output.selection)
+            );
           }
         );
 
@@ -527,7 +546,9 @@ describe('table insertion slow contracts', () => {
             editor.update.table.insertColumn({ before: true, select: true });
 
             expect(editor.read.children()).toMatchObject(output.children);
-            expect(editor.read.selection()).toEqual(output.selection!);
+            expect(editor.read.selection()).toEqual(
+              projectTestSelectionRange(output.selection)
+            );
           }
         );
       });

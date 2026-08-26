@@ -1,4 +1,9 @@
-import type { EditorStateView, NamedRootKey, RootKey } from '@platejs/plite';
+import {
+  type EditorStateView,
+  type NamedRootKey,
+  type RootKey,
+  SelectionApi,
+} from '@platejs/plite';
 import { type KeyboardEvent, useCallback, useMemo } from 'react';
 
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
@@ -71,7 +76,7 @@ const selectSelectionRoot = (
     return null;
   }
 
-  return selection.anchor.root ?? selection.focus.root ?? MAIN_ROOT_KEY;
+  return SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
 };
 
 const selectLastCommitSingleChangedRoot = (

@@ -1,7 +1,6 @@
 'use client';
 
 import { KbdPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   KeyboardIcon,
   MoreHorizontalIcon,
@@ -18,15 +17,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-import { ToolbarButton } from './toolbar';
-
-export function MoreToolbarButton(props: DropdownMenuProps) {
+export function MoreToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip="Insert">
           <MoreHorizontalIcon />

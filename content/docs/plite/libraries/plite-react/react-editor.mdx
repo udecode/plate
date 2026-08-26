@@ -115,10 +115,11 @@ Check if the target is in the editor.
 
 Assert the native DOM element for a Plite node.
 
-#### `editor.api.dom.resolveDOMNode(node: Node): HTMLElement | null`
+#### `editor.api.dom.resolveDOMNode(nodeOrKey: Node | NodeKey): HTMLElement | null`
 
-Resolve the native DOM element for a Plite node. Returns `null` when the Plite
-node is not mounted.
+Resolve the native DOM element for a Plite node or its live `NodeKey`. Returns
+`null` when the node is not mounted or the key is removed or belongs to another
+editor.
 
 #### `editor.api.dom.assertDOMPoint(point: Point): DOMPoint`
 

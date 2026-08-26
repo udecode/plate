@@ -19,16 +19,13 @@ To begin with Vite, create a new project and select the **React + TypeScript** t
 npm create vite@latest
 ```
 
-### Install Core Dependencies
+### Install Plate
 
-First, install the necessary Plate packages. These packages provide the core editor functionality, React integration, and basic plugins for marks and elements.
+Install `platejs` for the core editor runtime and React components.
 
 ```bash
-npm install platejs @platejs/basic-nodes
+npm install platejs
 ```
-
--   `platejs`: The core Plate engine and React components.
--   `@platejs/basic-nodes`: Plugin for basic nodes like headings, bold, italic, underline, etc.
 
 ### TypeScript Configuration
 
@@ -84,6 +81,12 @@ At this point, you'll have a very basic editor capable of displaying and editing
 ### Adding Basic Marks
 
 Let's add support for basic text formatting like bold, italic, and underline.
+
+Install the basic nodes package before adding the mark plugins:
+
+```bash
+npm install @platejs/basic-nodes
+```
 
 ```tsx showLineNumbers title="src/App.tsx" {4-8,32}
 import React from 'react';

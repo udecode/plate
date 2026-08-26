@@ -7,7 +7,6 @@ import {
   BaseVideoPlugin,
 } from '@platejs/media';
 import { PlaceholderPlugin } from '@platejs/media/react';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   AudioLinesIcon,
   FileUpIcon,
@@ -39,12 +38,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-
 import {
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
   ToolbarSplitButtonSecondary,
-} from './toolbar';
+} from '@/registry/components/editor/toolbar';
 
 const MEDIA_CONFIG: Record<
   string,
@@ -110,10 +108,7 @@ function insertMedia(
   return undefined;
 }
 
-export function MediaToolbarButton({
-  plugin,
-  ...props
-}: DropdownMenuProps & { plugin: MediaPlugin }) {
+export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
   const pluginName = plugin.name;
   const currentConfig = MEDIA_CONFIG[pluginName];
 
@@ -146,12 +141,7 @@ export function MediaToolbarButton({
           {currentConfig.icon}
         </ToolbarSplitButtonPrimary>
 
-        <DropdownMenu
-          open={open}
-          onOpenChange={setOpen}
-          modal={false}
-          {...props}
-        >
+        <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
           <DropdownMenuTrigger asChild>
             <ToolbarSplitButtonSecondary />
           </DropdownMenuTrigger>

@@ -5,6 +5,7 @@ import { parse } from '@babel/parser';
 import { registrySchema } from 'shadcn/schema';
 
 import registryShadcnData from '../registry-shadcn.json';
+import { PLATE_DEFAULT_REGISTRY_STYLE } from '../src/lib/plate-registry-styles';
 import { createPlateRegistry, registry } from '../src/registry/registry';
 import { registryFeatures } from '../src/registry/registry-features';
 import {
@@ -17,7 +18,7 @@ const JSON_SUFFIX_REGEX = /\.json$/;
 const IMPORTABLE_SOURCE_FILE_REGEX = /\.[cm]?[jt]sx?$/;
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
-const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r/new-york';
+const PLATE_PUBLIC_REGISTRY_BASE_URL = `https://platejs.org/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.json'] as const;
 const BASELINE_PACKAGES = new Set([
   'class-variance-authority',
@@ -290,7 +291,11 @@ for (const item of sourceRegistry.items) {
   for (const dependency of item.registryDependencies ?? []) {
     assert(
       !dependency.startsWith('@shadcn/'),
-      `Expected source item ${item.name} to use bare shadcn dependency ${dependency.slice('@shadcn/'.length)} instead of ${dependency}`
+      `Expected source item ${
+        item.name
+      } to use bare shadcn dependency ${dependency.slice(
+        '@shadcn/'.length
+      )} instead of ${dependency}`
     );
   }
 
@@ -459,7 +464,10 @@ function resolveSourceOwners(
 
   if (!sourcePath) return null;
 
-  return findOwners(sourceFileOwners, sourcePath);
+  return (
+    findOwners(sourceFileOwners, sourcePath) ??
+    findOwners(installedTargetOwners, sourcePath)
+  );
 }
 
 function resolveInstalledRelativeOwners(
@@ -614,7 +622,9 @@ for (const item of normalizedRegistry.items) {
         ![...copiedOwners].some((owner) => directPlateDependencies.has(owner))
       ) {
         missingDirectRegistryDependencies.push(
-          `${item.name}:${file.path} -> ${[...copiedOwners].map((owner) => `@plate/${owner}`).join(' or ')}`
+          `${item.name}:${file.path} -> ${[...copiedOwners]
+            .map((owner) => `@plate/${owner}`)
+            .join(' or ')}`
         );
         continue;
       }
@@ -658,7 +668,9 @@ function toEditorComponentTarget(filePath: string) {
     `Expected ${filePath} to include ${EDITOR_COMPONENT_PATH_SEGMENT}`
   );
 
-  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length)}`;
+  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(
+    segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length
+  )}`;
 }
 
 assert(itemsByName.has('plate-ui'), 'Expected plate-ui registry item');
@@ -673,7 +685,7 @@ assert(
 const publicEditorBasic = publicItemsByName.get('editor-basic');
 assert(
   publicEditorBasic?.registryDependencies?.includes(
-    'https://platejs.org/r/new-york/plate-ui.json'
+    `${PLATE_PUBLIC_REGISTRY_BASE_URL}/plate-ui.json`
   ),
   'Expected public editor-basic to keep direct URL installs on the same Plate registry base'
 );
@@ -756,7 +768,9 @@ for (const item of normalizedRegistry.items) {
   for (const dependency of item.registryDependencies ?? []) {
     assert(
       !dependency.startsWith('@shadcn/'),
-      `Expected ${item.name} to use bare shadcn dependency ${dependency.slice('@shadcn/'.length)} instead of ${dependency}`
+      `Expected ${item.name} to use bare shadcn dependency ${dependency.slice(
+        '@shadcn/'.length
+      )} instead of ${dependency}`
     );
 
     const target = getRegistryDependencyTarget(dependency);
@@ -793,7 +807,11 @@ for (const item of publicRegistry.items) {
   for (const dependency of item.registryDependencies ?? []) {
     assert(
       !dependency.startsWith('@shadcn/'),
-      `Expected public ${item.name} to use bare shadcn dependency ${dependency.slice('@shadcn/'.length)} instead of ${dependency}`
+      `Expected public ${
+        item.name
+      } to use bare shadcn dependency ${dependency.slice(
+        '@shadcn/'.length
+      )} instead of ${dependency}`
     );
 
     assert(

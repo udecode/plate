@@ -1,8 +1,13 @@
-import type { EditorUpdateTag, EditorUpdateTransaction } from '@platejs/plite';
+import {
+  type EditorUpdateTag,
+  type EditorUpdateTransaction,
+  SelectionApi,
+} from '@platejs/plite';
 
 import { profileEditableMutationDuration } from './mutation-profiler';
 import type { Editor } from './runtime-editor-api';
 import { getEditorRuntime } from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 type NativeTextInputLocation = {
   path: readonly number[];
@@ -24,9 +29,11 @@ const getLocationKey = (location: NativeTextInputLocation | undefined) =>
 const getCurrentSelectionLocation = (
   editor: Editor
 ): NativeTextInputLocation | undefined => {
-  const selection = editor.read((state) => state.selection());
+  const selection = readRuntimeSelection(editor);
 
-  return selection?.anchor;
+  return selection && !SelectionApi.isNode(selection)
+    ? selection.anchor
+    : undefined;
 };
 
 export const getNativeTextInputUpdateTags = (

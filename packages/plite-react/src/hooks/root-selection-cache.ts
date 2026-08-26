@@ -1,17 +1,9 @@
-import type { RootKey, Selection } from '@platejs/plite';
+import { type RootKey, type Selection, SelectionApi } from '@platejs/plite';
 
 import { MAIN_ROOT_KEY } from '../root-key';
 
 const cloneSelection = (selection: Selection): Selection =>
   selection ? structuredClone(selection) : null;
-
-export const getSelectionRoot = (selection: Selection): RootKey | null => {
-  if (!selection) {
-    return null;
-  }
-
-  return selection.anchor.root ?? selection.focus.root ?? MAIN_ROOT_KEY;
-};
 
 export const createRootSelectionCache = () => {
   const selections = new Map<RootKey, Selection>();
@@ -21,7 +13,9 @@ export const createRootSelectionCache = () => {
       cloneSelection(selections.get(root) ?? null),
     record: (
       selection: Selection,
-      root: RootKey | null = getSelectionRoot(selection)
+      root: RootKey | null = selection
+        ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY)
+        : null
     ) => {
       if (!selection || !root) {
         return;

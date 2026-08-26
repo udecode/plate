@@ -8,17 +8,33 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { TooltipProvider } from '@/components/ui/tooltip';
-
 import {
   Toolbar,
   ToolbarButton,
   ToolbarSplitButtonPrimary,
   ToolbarSplitButtonSecondary,
-} from './toolbar';
+} from '@/registry/components/editor/toolbar';
 
 afterEach(cleanup);
 
 describe('editor toolbar button focus ownership', () => {
+  it('materializes the default site style and icon geometry', () => {
+    const view = render(
+      <Toolbar>
+        <ToolbarButton aria-label="Undo">
+          <svg />
+        </ToolbarButton>
+      </Toolbar>
+    );
+    const button = view.getByRole('button', { name: 'Undo' });
+
+    expect(button.className).toContain('h-7');
+    expect(button.className).toContain('min-w-7');
+    expect(button.className).toContain(
+      "[&_svg:not([class*='size-'])]:size-3.5"
+    );
+  });
+
   it('preserves editor focus across plain and split mouse controls', () => {
     const plainMouseDown = mock();
     const primaryMouseDown = mock();

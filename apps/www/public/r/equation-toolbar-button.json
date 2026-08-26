@@ -11,9 +11,10 @@
   ],
   "files": [
     {
-      "path": "src/registry/ui/equation-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { insertInlineEquation } from '@platejs/math';\nimport { RadicalIcon } from 'lucide-react';\nimport { useEditorRef } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function InlineEquationToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        insertInlineEquation(editor);\n      }}\n      tooltip=\"Mark as equation\"\n    >\n      <RadicalIcon />\n    </ToolbarButton>\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "src/registry/components/editor/equation-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { BaseInlineEquationPlugin } from '@platejs/math';\nimport { RadicalIcon } from 'lucide-react';\nimport { useEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function InlineEquationToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditor();\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        editor.plugin(BaseInlineEquationPlugin).update.insert();\n      }}\n      tooltip=\"Mark as equation\"\n    >\n      <RadicalIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/equation-toolbar-button.tsx"
     }
   ],
   "meta": {
@@ -28,5 +29,5 @@
       "floating-toolbar-demo"
     ]
   },
-  "type": "registry:ui"
+  "type": "registry:component"
 }

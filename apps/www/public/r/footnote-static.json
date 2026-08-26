@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "footnote-static",
+  "dependencies": [
+    "@platejs/footnote"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/footnote-static.tsx",
+      "content": "import {\n  BaseFootnoteDefinitionPlugin,\n  BaseFootnotePlugin,\n} from '@platejs/footnote';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nexport function FootnoteReferenceElementStatic(\n  props: PliteElementProps<typeof BaseFootnotePlugin>\n) {\n  const { element } = props;\n\n  return (\n    <PliteElement\n      {...props}\n      as=\"sup\"\n      className=\"mx-0.5 align-super text-xs font-medium text-primary\"\n    >\n      {props.children}[{element.ref ?? ''}]\n    </PliteElement>\n  );\n}\n\nexport function FootnoteDefinitionElementStatic(\n  props: PliteElementProps<typeof BaseFootnoteDefinitionPlugin>\n) {\n  const { element } = props;\n\n  return (\n    <PliteElement {...props} as=\"div\" className=\"mt-2 flex items-start gap-2\">\n      <div className=\"mt-0.5 min-w-4 text-sm text-muted-foreground tabular-nums\">\n        {element.ref ?? ''}\n      </div>\n      <div className=\"min-w-0 flex-1\">{props.children}</div>\n    </PliteElement>\n  );\n}\n\nexport const BaseFootnoteKit = [\n  BaseFootnotePlugin.configure({\n    component: FootnoteReferenceElementStatic,\n  }),\n  BaseFootnoteDefinitionPlugin.configure({\n    component: FootnoteDefinitionElementStatic,\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/footnote-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

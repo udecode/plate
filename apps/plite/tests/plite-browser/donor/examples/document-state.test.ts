@@ -13,7 +13,6 @@ const bodyEndPoint = {
   offset: 'Title changes never need invisible nodes.'.length,
 };
 const bodyStartSelection = {
-  kind: 'text',
   anchor: { path: [0, 0], offset: 'The '.length },
   focus: { path: [0, 0], offset: 'The '.length },
 };
@@ -21,7 +20,6 @@ const focusMutationPrefix = 'Focus mutation: ';
 const historicCommitTags = 'history-skip,historic';
 const remoteStateCommitTags = 'collaboration,remote-state,history-skip';
 const focusMutationSelection = {
-  kind: 'text',
   anchor: { path: [0, 0], offset: `${focusMutationPrefix}The `.length },
   focus: { path: [0, 0], offset: `${focusMutationPrefix}The `.length },
 };
@@ -253,7 +251,6 @@ test.describe('document state example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: {
           path: [0, 0],
           offset: `${focusMutationPrefix}The typed `.length,
@@ -498,7 +495,6 @@ test.describe('document state example', () => {
     await expect(editor.root).toHaveAttribute('spellcheck', 'true');
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -560,7 +556,6 @@ test.describe('document state example', () => {
     await expect(titleStatus).toHaveText('title:Q3 Launch Brief');
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });

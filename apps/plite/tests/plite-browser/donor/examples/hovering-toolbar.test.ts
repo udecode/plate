@@ -36,7 +36,6 @@ test.describe('hovering toolbar example', () => {
     );
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 24, path: [0, 0] },
     });
@@ -137,7 +136,6 @@ test.describe('hovering toolbar example', () => {
 
     try {
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 1] },
         focus: { offset: 4, path: [0, 1] },
       });
@@ -175,7 +173,6 @@ test.describe('hovering toolbar example', () => {
     await editor.deleteFragment();
     await editor.insertText('hello');
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -212,7 +209,6 @@ test.describe('hovering toolbar example', () => {
     await expect(page.getByTestId('menu')).toHaveCSS('opacity', '0');
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -245,7 +241,6 @@ test.describe('hovering toolbar example', () => {
 
     await client.send('Input.insertText', { text: 'すし' });
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 2 },
     });

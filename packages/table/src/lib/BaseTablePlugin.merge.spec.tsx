@@ -12,6 +12,7 @@ import {
 } from './__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from './BaseTablePlugin';
 import type { TableRowElement } from './BaseTablePlugin';
+import { projectTableSelection } from './internal/selection';
 
 describe('table merge', () => {
   describe('removeRow with expanded selections', () => {
@@ -99,7 +100,7 @@ describe('table merge', () => {
       });
 
     describe('merged table range projection', () => {
-      it('returns both cell entries and a table entry for format=all', () => {
+      it('returns cell entries and projected table geometry', () => {
         const input = (
           <editor>
             <htable>
@@ -130,22 +131,22 @@ describe('table merge', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const result = editor.plugin(BaseTablePlugin).read.getGridByRange({
-          at: editor.read.selection()!,
-          format: 'all',
-        });
+        const selection = editor.read.selection();
 
-        expect(result.cellEntries).toHaveLength(4);
-        expect(result.tableEntries).toHaveLength(1);
-        expect(result.tableEntries[0]?.[1]).toEqual([0]);
-        const table = result.tableEntries[0]?.[0];
+        assert.ok(selection);
+        const view = editor.plugin(BaseTablePlugin).read.selection(selection);
+
+        assert.ok(view);
+        expect(view.cellEntries).toHaveLength(4);
+        expect(view.tablePath).toEqual([0]);
+        const table = projectTableSelection(view);
         const firstRow = table?.children[0] as TableRowElement | undefined;
 
         expect(table?.children).toHaveLength(2);
         expect(firstRow?.children).toHaveLength(2);
       });
 
-      it('returns only the cell entries for format=cell', () => {
+      it('returns the selected cell entries', () => {
         const input = (
           <editor>
             <htable>
@@ -179,19 +180,20 @@ describe('table merge', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const result = editor.plugin(BaseTablePlugin).read.getGridByRange({
-          at: editor.read.selection()!,
-          format: 'cell',
-        });
+        const selection = editor.read.selection();
 
-        expect(result.map(([cell]) => NodeApi.string(cell))).toEqual([
+        assert.ok(selection);
+        const view = editor.plugin(BaseTablePlugin).read.selection(selection);
+
+        assert.ok(view);
+        expect(view.cellEntries.map(([cell]) => NodeApi.string(cell))).toEqual([
           '11',
           '21',
           '22',
         ]);
       });
 
-      it('reports whether the current table selection can merge or split', () => {
+      it('exposes the geometry needed to merge or split', () => {
         const mergeInput = (
           <editor>
             <htable>
@@ -213,9 +215,17 @@ describe('table merge', () => {
           </editor>
         ) as TestEditor;
         const mergeEditor = createTableEditor(mergeInput);
+        const mergeView = mergeEditor
+          .plugin(BaseTablePlugin)
+          .read.selection();
 
-        expect(mergeEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(true);
-        expect(mergeEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(false);
+        expect(
+          !!mergeView && mergeView.anchors.length > 1 && mergeView.complete
+        ).toBe(true);
+        expect(
+          mergeView?.anchors.length === 1 &&
+            (mergeView.anchor.colSpan > 1 || mergeView.anchor.rowSpan > 1)
+        ).toBe(false);
 
         const splitInput = (
           <editor>
@@ -232,9 +242,17 @@ describe('table merge', () => {
           </editor>
         ) as TestEditor;
         const splitEditor = createTableEditor(splitInput);
+        const splitView = splitEditor
+          .plugin(BaseTablePlugin)
+          .read.selection();
 
-        expect(splitEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(false);
-        expect(splitEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(true);
+        expect(
+          !!splitView && splitView.anchors.length > 1 && splitView.complete
+        ).toBe(false);
+        expect(
+          splitView?.anchors.length === 1 &&
+            (splitView.anchor.colSpan > 1 || splitView.anchor.rowSpan > 1)
+        ).toBe(true);
       });
     });
   }

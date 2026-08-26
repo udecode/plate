@@ -1,6 +1,7 @@
 import {
   type BasePluginContext,
   type BasePluginDefinition,
+  type BasePluginDefinitionInput,
   defineBasePlugin,
   type ElementWith,
   type PlateNodeInsertOptions,
@@ -9,8 +10,11 @@ import {
 import {
   type Descendant,
   type Element,
+  ElementApi,
   type ElementOf,
   type EditorUpdateContext,
+  editorCommands,
+  PathApi,
   property,
   schema,
   type SchemaElement,
@@ -103,6 +107,9 @@ type MediaPluginExtension = {
   api: (
     context: BasePluginContext<MediaElementPluginDefinition>
   ) => MediaPluginApi;
+  commands: NonNullable<
+    BasePluginDefinitionInput<MediaElementPluginDefinition>['commands']
+  >;
   update: (
     context: BasePluginContext<MediaElementPluginDefinition> & {
       context: EditorUpdateContext;
@@ -117,7 +124,7 @@ type MediaPluginExtension = {
   };
 };
 
-/** Installs direct-child caption normalization and media construction. */
+/** Installs direct-caption editing, URL normalization, and media construction. */
 export function defineMediaPlugin<const C extends MediaElementPluginDefinition>(
   normalizeUrlInput?: (
     state: Readonly<MediaPluginState>,
@@ -125,6 +132,7 @@ export function defineMediaPlugin<const C extends MediaElementPluginDefinition>(
   ) => MediaUrlProperties
 ): (context: BasePluginContext<C>) => {
   api: (context: BasePluginContext<C>) => MediaPluginApi;
+  commands: NonNullable<BasePluginDefinitionInput<C>['commands']>;
   update: (
     context: BasePluginContext<C> & {
       context: EditorUpdateContext;
@@ -155,6 +163,41 @@ export function defineMediaPlugin(
 
     return {
       api: () => ({ normalizeUrl }),
+      commands: ({ around }) => [
+        around(editorCommands.insertBreak, ({ next, state }) => {
+          const selection = state.selection();
+
+          if (!selection || state.selection.nodes().length > 0) return false;
+
+          const anchorBlock = state.nodes.block({ at: selection.anchor });
+          const focusBlock = state.nodes.block({ at: selection.focus });
+
+          if (
+            !anchorBlock ||
+            !focusBlock ||
+            anchorBlock[0].type !== type ||
+            focusBlock[0].type !== type ||
+            !PathApi.equals(anchorBlock[1], focusBlock[1])
+          ) {
+            return false;
+          }
+
+          const rightPath = PathApi.next(anchorBlock[1]);
+          const result = next();
+
+          if (result === false) return false;
+
+          return state.transaction.extend(result, (tx) => {
+            const right = tx.nodes.get(rightPath)?.[0];
+
+            if (!ElementApi.isElement(right) || right.type !== type) {
+              return;
+            }
+
+            tx.blocks.reset({ at: rightPath });
+          });
+        }),
+      ],
       update: ({ tx }) => ({
         insert(input, options) {
           if (!tx.selection() && options?.at === undefined) return false;

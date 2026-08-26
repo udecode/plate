@@ -63,12 +63,8 @@ const table = (): Element => ({
 describe('plite delete contract', () => {
   it('deletes an exact node selection and restores the directional text boundary', () => {
     for (const direction of ['backward', 'forward'] as const) {
-      const point = { offset: 0, path: [1, 0] };
       const editor = createEditor({
-        initialSelection: SelectionApi.node([1], {
-          anchor: point,
-          focus: point,
-        }),
+        initialSelection: SelectionApi.nodes([[1]]),
         initialValue: [
           paragraph('before'),
           { type: 'media', children: [{ text: 'caption' }] },
@@ -100,18 +96,50 @@ describe('plite delete contract', () => {
     }
   });
 
+  it('deletes every selected node once and preserves directional fallback', () => {
+    for (const direction of ['backward', 'forward'] as const) {
+      const editor = createEditor({
+        initialSelection: SelectionApi.nodes([[1], [2]]),
+        initialValue: [
+          paragraph('before'),
+          paragraph('one'),
+          paragraph('two'),
+          paragraph('after'),
+        ],
+      });
+
+      if (direction === 'backward') {
+        editorDeleteBackward(editor);
+      } else {
+        editorDeleteForward(editor);
+      }
+
+      assert.deepEqual(editorGetSnapshot(editor).children, [
+        paragraph('before'),
+        paragraph('after'),
+      ]);
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
+        anchor:
+          direction === 'backward'
+            ? { path: [0, 0], offset: 6 }
+            : { path: [1, 0], offset: 0 },
+        focus:
+          direction === 'backward'
+            ? { path: [0, 0], offset: 6 }
+            : { path: [1, 0], offset: 0 },
+      });
+    }
+  });
+
   it('deletes a named-root node selection without touching the same main path', () => {
-    const point = { offset: 0, path: [1, 0], root: 'caption' };
     const main = [
       paragraph('main before'),
       paragraph('main same path'),
       paragraph('main after'),
     ];
     const editor = createEditor({
-      initialSelection: SelectionApi.node([1], {
-        anchor: point,
-        focus: point,
-      }),
+      initialSelection: SelectionApi.nodes([[1]], { root: 'caption' }),
       initialValue: {
         children: main,
         roots: {

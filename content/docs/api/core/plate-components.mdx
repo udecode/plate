@@ -63,17 +63,19 @@ export function ReadOnlyEditor() {
 
 ## Component Map
 
-| Component        | Use For                                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| `Plate`          | Store provider for one editor instance.                                                          |
-| `PlateContent`   | Editable Plite surface with plugin `on` callbacks, decorators, renderers, hotkeys, and editor effects. |
-| `PlateView`      | Static read-only rendering with Plate fragment copy support.                                     |
-| `PlateContainer` | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots.                 |
-| `Plite`          | Plite provider wrapper used by `PlateContent`; also applies `abovePlite` plugin wrappers.        |
-| `PlateElement`   | Default element renderer for block and inline elements.                                          |
-| `PlateLeaf`      | Default decorated text-leaf renderer.                                                            |
-| `PlateText`      | Default text-node renderer for non-decoration leaf rendering.                                    |
-| `PlateTest`      | Test helper that creates or wraps an editor and renders `PlateContent` with test attributes.     |
+| Component                | Use For                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `Plate`                  | Store provider for one editor instance.                                                          |
+| `PlateContent`           | Editable Plite surface with plugin `on` callbacks, decorators, renderers, hotkeys, and editor effects. |
+| `PlateView`              | Static read-only rendering with Plate fragment copy support.                                     |
+| `PlateContainer`         | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots.                 |
+| `NodeSelectionHighlight` | Highlight overlays for selected selectable blocks.                                               |
+| `NodeSelectionDrag`      | Blank-space pointer-drag selection and its drag rectangle.                                       |
+| `Plite`                  | Plite provider wrapper used by `PlateContent`; also applies `abovePlite` plugin wrappers.        |
+| `PlateElement`           | Default element renderer for block and inline elements.                                          |
+| `PlateLeaf`              | Default decorated text-leaf renderer.                                                            |
+| `PlateText`              | Default text-node renderer for non-decoration leaf rendering.                                    |
+| `PlateTest`              | Test helper that creates or wraps an editor and renders `PlateContent` with test attributes.     |
 
 ## Render Pipeline
 
@@ -157,6 +159,50 @@ export function FigureElement({
 | `PlateElement`      | Adds `data-plite-node="element"`, preserves Plite's `data-plite-node-key`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
 | `PlateLeaf`         | Renders a text leaf and adds hard-affinity spacers when needed.                                                                                                                                                               |
 | `PlateText`         | Renders a text node without leaf-decoration matching.                                                                                                                                                                         |
+
+## Node Selection
+
+Plite stores node selection in the editor model. Plate React provides two
+independent DOM primitives for its visual presentation and pointer-drag input.
+Compose them as siblings after `PlateContent` under the same `Plate` provider.
+
+```tsx title="components/editor.tsx"
+import {
+  NodeSelectionDrag,
+  NodeSelectionHighlight,
+  PlateContent,
+  type PlateContentProps,
+} from "platejs/react";
+
+export function Editor(props: PlateContentProps) {
+  return (
+    <>
+      <PlateContent {...props} />
+      <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
+      <NodeSelectionDrag className="z-50 border border-brand/25 bg-brand/15" />
+    </>
+  );
+}
+```
+
+`NodeSelectionHighlight` portals a highlight into each selected block.
+`NodeSelectionDrag` renders the active drag rectangle in `document.body` and
+writes intersecting blocks through the editor's selection API. Selection
+candidates must pass `editor.read.schema.isBlockContent(element)` and
+`editor.read.nodes.isSelectable(element)`.
+
+Structural internals opt out with `blockContent: false`. A block that owns
+custom highlight geometry sets `data-node-selection-highlight="self"` and can
+read its exact state with `useElementSelected({ mode: "node" })`.
+
+| Primitive                | DOM contract                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `NodeSelectionHighlight` | Accepts `div` attributes except `children`; renders `data-slot="node-selection-highlight"` with required inset positioning. |
+| `NodeSelectionDrag`      | Accepts `div` attributes except `children`; renders `data-slot="node-selection-drag"` with required fixed positioning.      |
+
+Use the [Selection API](/docs/plite/api/locations/selection) for model reads
+and writes. See the [Node Selection demo](/docs/examples/node-selection) for
+the copied Editor composition.
 
 ## API Reference
 

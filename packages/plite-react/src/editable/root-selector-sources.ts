@@ -1,5 +1,5 @@
 import type { EditorCommit, Path, NodeKey } from '@platejs/plite';
-import { NodeApi } from '@platejs/plite';
+import { NodeApi, SelectionApi } from '@platejs/plite';
 import { type ReactNode, useCallback, useMemo } from 'react';
 
 import { useEditor } from '../hooks/use-editor';
@@ -8,6 +8,7 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { toPublicRootOption } from '../root-key';
 import { toInternalRoot } from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 export type DOMStrategyRootConfig = {
   overscan: number;
@@ -132,7 +133,11 @@ const getSelectionPathKey = (
   root: string | undefined
 ) =>
   selection
-    ? `${toInternalRoot(root)}:${selection.anchor.path.join('.')}:${selection.focus.path.join('.')}`
+    ? `${toInternalRoot(root)}:${
+        SelectionApi.isNode(selection)
+          ? selection.paths.map((path) => path.join('.')).join(';')
+          : `${selection.anchor.path.join('.')}:${selection.focus.path.join('.')}`
+      }`
     : 'null';
 
 const isSelectionPathChangeForRoot = (root: string, change: EditorCommit) =>
@@ -248,15 +253,20 @@ export const useTopLevelSelectionIndex = (enabled: boolean) => {
         return null;
       }
 
-      const selection = innerEditor3.read((state) => state.selection());
-      const anchorIndex = selection?.anchor.path[0];
-      const focusIndex = selection?.focus.path[0];
+      const selection = readRuntimeSelection(innerEditor3);
+      const indices = selection
+        ? SelectionApi.isNode(selection)
+          ? selection.paths.map((path) => path[0])
+          : [selection.anchor.path[0], selection.focus.path[0]]
+        : [];
 
-      if (typeof anchorIndex !== 'number' || typeof focusIndex !== 'number') {
+      if (
+        !indices.every((index): index is number => typeof index === 'number')
+      ) {
         return null;
       }
 
-      return Math.min(anchorIndex, focusIndex);
+      return indices.length > 0 ? Math.min(...indices) : null;
     },
     [enabled]
   );
@@ -298,13 +308,15 @@ export const useSelectionPaths = (enabled: boolean) => {
         return null;
       }
 
-      const selection = innerEditor4.read((state) => state.selection());
+      const selection = readRuntimeSelection(innerEditor4);
 
       if (!selection) {
         return null;
       }
 
-      return [selection.anchor.path, selection.focus.path] as const;
+      return SelectionApi.isNode(selection)
+        ? selection.paths
+        : ([selection.anchor.path, selection.focus.path] as const);
     },
     [enabled]
   );

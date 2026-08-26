@@ -86,6 +86,8 @@ import {
   dispatchCommand,
   editorCommands,
   failInvariant,
+  getSelection as getEditorSelection,
+  getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
 
@@ -532,7 +534,10 @@ const resolveExistingSelectionProjectedDragEndpoint = ({
 
   const targetRoot = getEditableRootFromTarget(event.target);
   const targetEditor = getMountedViewEditor(targetRoot) ?? editor;
-  const selection = targetEditor.read((state) => state.selection());
+  const selection = getSelectionDOMRange(
+    targetEditor,
+    getEditorSelection(targetEditor)
+  );
 
   if (!selection || !RangeApi.isExpanded(selection)) {
     return null;
@@ -768,7 +773,31 @@ const createDragSelectionRange = ({
   focus: RangeApi.end(endRange),
 });
 
-const isRegressiveDragSelectionRange = ({
+const isDragSelectionOppositePointerDirection = ({
+  delta,
+  nextRange,
+  startRange,
+}: {
+  delta: number;
+  nextRange: Range;
+  startRange: Range;
+}) => {
+  const startPoint = RangeApi.start(startRange);
+  const nextFocus = nextRange.focus;
+  const nextProgress = comparePoints(nextFocus, startPoint);
+
+  if (delta > 0) {
+    return nextProgress < 0;
+  }
+
+  if (delta < 0) {
+    return nextProgress > 0;
+  }
+
+  return false;
+};
+
+const isRegressiveDragAutoScrollRange = ({
   currentRange,
   delta,
   nextRange,
@@ -779,24 +808,27 @@ const isRegressiveDragSelectionRange = ({
   nextRange: Range;
   startRange: Range;
 }) => {
+  if (
+    isDragSelectionOppositePointerDirection({
+      delta,
+      nextRange,
+      startRange,
+    })
+  ) {
+    return true;
+  }
+
   const startPoint = RangeApi.start(startRange);
   const currentFocus = currentRange.focus;
   const nextFocus = nextRange.focus;
   const currentProgress = comparePoints(currentFocus, startPoint);
-  const nextProgress = comparePoints(nextFocus, startPoint);
 
   if (delta > 0) {
-    return (
-      nextProgress < 0 ||
-      (currentProgress > 0 && comparePoints(nextFocus, currentFocus) < 0)
-    );
+    return currentProgress > 0 && comparePoints(nextFocus, currentFocus) < 0;
   }
 
   if (delta < 0) {
-    return (
-      nextProgress > 0 ||
-      (currentProgress < 0 && comparePoints(nextFocus, currentFocus) > 0)
-    );
+    return currentProgress < 0 && comparePoints(nextFocus, currentFocus) > 0;
   }
 
   return false;
@@ -816,6 +848,15 @@ const clearDOMSelectionFromEvent = (event: MouseEvent<HTMLElement>) => {
       : event.currentTarget.ownerDocument.getSelection();
 
   domSelection?.removeAllRanges();
+};
+
+const shouldIgnoreDragTarget = (event: MouseEvent<HTMLElement>) => {
+  const target = resolveRootInteractionTarget({
+    currentTarget: event.currentTarget,
+    target: event.target,
+  });
+
+  return target.kind === 'external' || target.kind === 'interactive-descendant';
 };
 
 const applyProjectedDragSelectionFromEvent = ({
@@ -1042,7 +1083,7 @@ export const applyDragAutoScrollFrame = (state: PendingDragAutoScroll) => {
   });
 
   if (
-    isRegressiveDragSelectionRange({
+    isRegressiveDragAutoScrollRange({
       currentRange: state.currentRange,
       delta: target.delta,
       nextRange,
@@ -1663,6 +1704,16 @@ export const useRootInteractionController = ({
       }
 
       if (
+        (projectedDrag ||
+          canApplyCoordinateDragSelection(pendingInteraction)) &&
+        shouldIgnoreDragTarget(event)
+      ) {
+        event.preventDefault();
+        stopDragAutoScroll(pendingDragAutoScrollRef);
+        return;
+      }
+
+      if (
         projectedDrag &&
         applyProjectedDragSelectionFromEvent({
           event,
@@ -1696,24 +1747,13 @@ export const useRootInteractionController = ({
             endRange: eventRange,
             startRange: pendingInteraction.startRange,
           });
-          const currentRange =
-            pendingInteraction.currentRange ?? pendingInteraction.startRange;
-          const regressiveRange = isRegressiveDragSelectionRange({
-            currentRange,
-            delta: event.clientY - pendingInteraction.clientY,
-            nextRange,
-            startRange: pendingInteraction.startRange,
+          applyModelDragSelection({
+            editor: focusEditor,
+            range: nextRange,
+            root,
+            selectionBridge,
           });
-
-          if (!regressiveRange) {
-            applyModelDragSelection({
-              editor: focusEditor,
-              range: nextRange,
-              root,
-              selectionBridge,
-            });
-            pendingInteraction.currentRange = nextRange;
-          }
+          pendingInteraction.currentRange = nextRange;
         }
 
         const runtime =
@@ -1768,6 +1808,17 @@ export const useRootInteractionController = ({
       projectedDrag?.releaseCleanup();
       const { currentTarget } = event;
       const pointerMoved = hasPointerMoved(pendingInteraction, event);
+
+      if (
+        pointerMoved &&
+        (projectedDrag ||
+          canApplyCoordinateDragSelection(pendingInteraction)) &&
+        shouldIgnoreDragTarget(event)
+      ) {
+        event.preventDefault();
+        projectedDrag?.finish();
+        return;
+      }
 
       const importExpandedDOMSelection = () => {
         const expandedDOMSelection =
@@ -1908,16 +1959,13 @@ export const useRootInteractionController = ({
           endRange: eventRange,
           startRange: pendingInteraction.startRange,
         });
-        const currentRange =
-          pendingInteraction.currentRange ?? pendingInteraction.startRange;
-        const regressiveRange = isRegressiveDragSelectionRange({
-          currentRange,
-          delta: event.clientY - pendingInteraction.clientY,
-          nextRange,
-          startRange: pendingInteraction.startRange,
-        });
-
-        if (regressiveRange) {
+        if (
+          isDragSelectionOppositePointerDirection({
+            delta: event.clientY - pendingInteraction.clientY,
+            nextRange,
+            startRange: pendingInteraction.startRange,
+          })
+        ) {
           return;
         }
 

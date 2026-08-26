@@ -175,7 +175,6 @@ describe('@platejs/plite-history', () => {
     headerEditor.update((tx) => tx.history.undo());
 
     assert.deepEqual(headerEditor.read.selection(), {
-      kind: 'text',
       anchor: { offset: 2, path: [0, 0], root: 'header' },
       focus: { offset: 2, path: [0, 0], root: 'header' },
     });

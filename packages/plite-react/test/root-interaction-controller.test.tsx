@@ -368,7 +368,6 @@ describe('root interaction controller', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
-      kind: 'text',
     });
   });
 
@@ -741,7 +740,6 @@ describe('root interaction controller', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 4 },
-      kind: 'text',
     });
 
     act(() => {
@@ -758,7 +756,6 @@ describe('root interaction controller', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 4 },
-      kind: 'text',
     });
 
     unmount();
@@ -840,7 +837,6 @@ describe('root interaction controller', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 1 },
       focus: { path: [3, 0], offset: 4 },
-      kind: 'text',
     });
 
     document.getSelection()?.removeAllRanges();
@@ -859,7 +855,205 @@ describe('root interaction controller', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { path: [2, 0], offset: 1 },
       focus: { path: [3, 0], offset: 4 },
+    });
+
+    unmount();
+    editable.remove();
+  });
+
+  test('contracts coordinate selection when the pointer returns toward the drag start', () => {
+    const editable = document.createElement('div');
+    const string = document.createElement('span');
+    const startRange = {
       kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    };
+    const expandedEndRange = {
+      kind: 'text',
+      anchor: { path: [2, 0], offset: 4 },
+      focus: { path: [2, 0], offset: 4 },
+    };
+    const contractedEndRange = {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 4 },
+    };
+    const resolvedRanges = [
+      startRange,
+      null,
+      expandedEndRange,
+      null,
+      contractedEndRange,
+    ];
+    editable.dataset.pliteEditor = 'true';
+    editable.dataset.pliteRoot = 'main';
+    string.dataset.pliteString = 'true';
+    editable.append(string);
+    document.body.append(editable);
+
+    const editor = createCoordinateSelectionEditor({
+      editable,
+      initialValue: [
+        paragraph('first'),
+        paragraph('second'),
+        paragraph('third'),
+      ],
+      resolvedRanges,
+    });
+
+    const { result, unmount } = renderHook(() =>
+      useRootInteractionController({
+        disabled: false,
+        editor,
+        getLastSelectionForRoot: () => startRange,
+        getMountedViewEditor: () => editor,
+        root: 'main',
+        selection: 'restore',
+      })
+    );
+
+    act(() => {
+      result.current.onMouseDownCapture(
+        createMouseCaptureEvent({
+          clientX: 10,
+          clientY: 10,
+          currentTarget: editable,
+          target: string,
+        })
+      );
+      result.current.onMouseMoveCapture(
+        createMouseCaptureEvent({
+          clientX: 80,
+          clientY: 60,
+          currentTarget: editable,
+          target: string,
+        })
+      );
+    });
+
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [2, 0], offset: 4 },
+    });
+
+    act(() => {
+      result.current.onMouseMoveCapture(
+        createMouseCaptureEvent({
+          clientX: 30,
+          clientY: 20,
+          currentTarget: editable,
+          target: string,
+        })
+      );
+    });
+
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+
+    unmount();
+    editable.remove();
+  });
+
+  test('preserves coordinate selection over ignored root chrome', () => {
+    const editable = document.createElement('div');
+    const string = document.createElement('span');
+    const resizeHandle = document.createElement('div');
+    const startRange = {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    };
+    const endRange = {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 2 },
+      focus: { path: [1, 0], offset: 2 },
+    };
+    const handleRange = {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 5 },
+      focus: { path: [1, 0], offset: 5 },
+    };
+    const resolvedRanges = [
+      startRange,
+      null,
+      endRange,
+      null,
+      handleRange,
+      handleRange,
+    ];
+
+    editable.dataset.pliteEditor = 'true';
+    editable.dataset.pliteRoot = 'main';
+    string.dataset.pliteString = 'true';
+    resizeHandle.dataset.pliteRootChromeIgnore = 'true';
+    editable.append(string, resizeHandle);
+    document.body.append(editable);
+
+    const editor = createCoordinateSelectionEditor({
+      editable,
+      initialValue: [paragraph('first'), paragraph('second')],
+      resolvedRanges,
+    });
+    const { result, unmount } = renderHook(() =>
+      useRootInteractionController({
+        disabled: false,
+        editor,
+        getLastSelectionForRoot: () => startRange,
+        getMountedViewEditor: () => editor,
+        root: 'main',
+        selection: 'restore',
+      })
+    );
+
+    act(() => {
+      result.current.onMouseDownCapture(
+        createMouseCaptureEvent({
+          clientX: 10,
+          clientY: 10,
+          currentTarget: editable,
+          target: string,
+        })
+      );
+      result.current.onMouseMoveCapture(
+        createMouseCaptureEvent({
+          clientX: 80,
+          clientY: 40,
+          currentTarget: editable,
+          target: string,
+        })
+      );
+    });
+
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 2 },
+    });
+
+    act(() => {
+      result.current.onMouseMoveCapture(
+        createMouseCaptureEvent({
+          clientX: 90,
+          clientY: 40,
+          currentTarget: editable,
+          target: resizeHandle,
+        })
+      );
+      result.current.onMouseUpCapture(
+        createMouseCaptureEvent({
+          clientX: 90,
+          clientY: 40,
+          currentTarget: editable,
+          target: resizeHandle,
+        })
+      );
+    });
+
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 2 },
     });
 
     unmount();

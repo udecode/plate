@@ -28,7 +28,11 @@ export const FindReplacePlugin = defineBasePlugin(PLUGINS.searchHighlight, {
     const { search } = store.get();
 
     if (
-      !(search && ElementApi.isElement(node) && editor.read.nodes.isBlock(node))
+      !(
+        search &&
+        ElementApi.isElement(node) &&
+        editor.read.schema.isBlock(node)
+      )
     ) {
       return [];
     }

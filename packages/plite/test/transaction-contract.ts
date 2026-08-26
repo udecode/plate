@@ -322,7 +322,6 @@ describe('plite transaction contract', () => {
       });
 
       assert.deepEqual(tx.selection(), {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       });

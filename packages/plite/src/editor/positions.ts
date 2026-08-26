@@ -18,6 +18,7 @@ import type {
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { NodeApi } from '../interfaces/node';
+import { LocationApi } from '../interfaces/location';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
@@ -533,6 +534,8 @@ export function* positions(
     reverse = false,
     voids = false,
   } = options;
+
+  if (!LocationApi.isLocation(at)) return;
 
   const range = editorRange(editor, at);
   const [start, end] = RangeApi.edges(range);

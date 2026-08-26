@@ -100,7 +100,9 @@ function rewriteDocsHref(value: string) {
     value.startsWith(`${DOCS_ROUTE_PREFIX}#`) ||
     value.startsWith(`${DOCS_ROUTE_PREFIX}?`)
   ) {
-    return `${INSTALLED_DOCS_ROUTE_PREFIX}${value.slice(DOCS_ROUTE_PREFIX.length)}`;
+    return `${INSTALLED_DOCS_ROUTE_PREFIX}${value.slice(
+      DOCS_ROUTE_PREFIX.length
+    )}`;
   }
 
   return value;
@@ -203,8 +205,6 @@ export async function createDocsRegistry(): Promise<Registry> {
       },
       {
         dependencies: [
-          '@radix-ui/react-separator',
-          '@radix-ui/react-accordion',
           'lucide-react',
           'class-variance-authority',
           'tailwind-merge',
@@ -229,7 +229,10 @@ export async function createDocsRegistry(): Promise<Registry> {
           },
         ],
         name: 'fumadocs',
-        registryDependencies: [toPlateRegistryDependencySpecifier('docs')],
+        registryDependencies: [
+          'separator',
+          toPlateRegistryDependencySpecifier('docs'),
+        ],
         title: 'Fumadocs app',
         type: 'registry:file',
       },

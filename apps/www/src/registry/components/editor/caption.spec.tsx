@@ -140,7 +140,7 @@ describe('Caption', () => {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
           kind: 'node',
-          path: [0],
+          paths: [[0]],
         }),
       },
     });
@@ -171,7 +171,7 @@ describe('Caption', () => {
           anchor: { offset: 0, path: [1, 0] },
           focus: { offset: 0, path: [1, 0] },
           kind: 'node',
-          path: [1],
+          paths: [[1]],
         }),
       },
     });

@@ -9,15 +9,15 @@ description: 在本地设置 Plate 文档，实现版本控制和 AI 增强的�
 
 本地文档相比外部网站具有明显优势：
 
-*   **版本锁定：** 保持文档与项目的 Plate 版本同步。避免因较新、未采用的 Plate 版本中的功能或 API 而产生混淆。
-*   **AI 就绪开发：**
-    *   **优于 `llms.txt`：** 虽然将文档转储到单个文本文件中是 LLM 上下文的常见做法，但对于大型文档（超过典型的 100k token 限制）这种方法会失效。我们的结构化本地设置让 AI 工具能够精确访问所需内容。
-    *   **AI 工具直接访问：** 您的 AI 辅助 IDE 可以直接访问特定版本的文档，从而为您的 Plate 设置提供准确的代码生成和上下文帮助。
-    *   **为 AI 任务结构化：** AI 工具可以帮助完成翻译文档、创建摘要或在 Plate 版本之间更新文档等任务。
-*   **自定义与控制：** 修改文档外观和结构以匹配您的项目需求。
-*   **轻松更新：** 像代码一样处理文档 - 与代码库一起进行审查、更新和版本控制。
-*   **快速访问：** 获得可靠、快速的文档访问。
-*   **中央枢纽：** 将 Plate 文档与其他库的文档集中在一处。
+- **版本锁定：** 保持文档与项目的 Plate 版本同步。避免因较新、未采用的 Plate 版本中的功能或 API 而产生混淆。
+- **AI 就绪开发：**
+  - **优于 `llms.txt`：** 虽然将文档转储到单个文本文件中是 LLM 上下文的常见做法，但对于大型文档（超过典型的 100k token 限制）这种方法会失效。我们的结构化本地设置让 AI 工具能够精确访问所需内容。
+  - **AI 工具直接访问：** 您的 AI 辅助 IDE 可以直接访问特定版本的文档，从而为您的 Plate 设置提供准确的代码生成和上下文帮助。
+  - **为 AI 任务结构化：** AI 工具可以帮助完成翻译文档、创建摘要或在 Plate 版本之间更新文档等任务。
+- **自定义与控制：** 修改文档外观和结构以匹配您的项目需求。
+- **轻松更新：** 像代码一样处理文档 - 与代码库一起进行审查、更新和版本控制。
+- **快速访问：** 获得可靠、快速的文档访问。
+- **中央枢纽：** 将 Plate 文档与其他库的文档集中在一处。
 
 ## 设置指南
 
@@ -38,6 +38,7 @@ pnpm create fumadocs-app
 ```
 
 设置过程中：
+
 - **名称：** 提示时输入 `docs`
 - **选择您偏好的选项**（默认选项即可）
 - 向导将创建包含所有必要文件的 `docs` 目录
@@ -57,7 +58,7 @@ cd docs
 **选项 A：命令行**
 
 ```bash
-echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
+echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "base-nova",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
 ```
 
 **选项 B：复制粘贴**
@@ -67,7 +68,7 @@ echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york
 ```json
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
+  "style": "base-nova",
   "rsc": true,
   "tsx": true,
   "tailwind": {
@@ -100,9 +101,10 @@ npx shadcn@latest add @plate/fumadocs
   上述命令会从实时注册表安装当前 Plate 文档。对于旧版 Plate，只有不声明
   `registryDependencies` 的叶子注册表项目才适合使用 GitHub 原始 URL。
 
-  不要从 GitHub 原始 tag 安装 `fumadocs.json` 或 `docs.json` 这类聚合项目：
-  它们的传递注册表依赖可能会解析到实时注册表。要安装完整的特定版本文档，
-  请从匹配的 Plate checkout 生成或提供注册表，确保每个传递项目都来自同一版本。
+不要从 GitHub 原始 tag 安装 `fumadocs.json` 或 `docs.json` 这类聚合项目：
+它们的传递注册表依赖可能会解析到实时注册表。要安装完整的特定版本文档，
+请从匹配的 Plate checkout 生成或提供注册表，确保每个传递项目都来自同一版本。
+
 </Callout>
 
 #### 运行 Fumadocs 应用
@@ -114,6 +116,7 @@ pnpm run dev
 ```
 
 您的文档站点将在以下地址可用：
+
 - Plate 文档：`http://localhost:3000/docs/plate`
 
 #### 自定义
@@ -132,11 +135,13 @@ npx shadcn@latest add @plate/docs
 ```
 
 这将：
+
 - 在您的项目中安装 MDX 文档文件（通常在 `docs/` 或类似目录中）
 - 完全跳过 Fumadocs 设置
 - 为您提供原始 MDX 文件，您可以按需使用
 
 使用场景：
+
 - 直接在代码库中引用文档
 - 与现有文档设置集成
 - 使文档对 AI 工具可用以获得更好的上下文
@@ -153,30 +158,24 @@ npx shadcn@latest add @plate/docs
     "shadcn": {
       "description": "Shadcn and Plate MCP",
       "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ]
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
 ```
 
 您的 AI 工具随后可以：
-*   访问文档上下文以获得更好的代码辅助
-*   帮助管理和更新文档
-*   使用正确的导入和配置生成代码
-*   协助编辑器设置和功能集成
+
+- 访问文档上下文以获得更好的代码辅助
+- 帮助管理和更新文档
+- 使用正确的导入和配置生成代码
+- 协助编辑器设置和功能集成
 
 更多详情请参阅 [MCP 指南](/docs/installation/mcp)。
 
 <Callout>
-  配置完成后，尝试询问您的 AI：
-  ```bash
-  "帮我理解 Plate AI 插件是如何工作的"
-  "如何创建自定义插件？"
-  "最新版本的 Plate 有什么新功能？"
-  ```
+  配置完成后，尝试询问您的 AI： ```bash "帮我理解 Plate AI 插件是如何工作的"
+  "如何创建自定义插件？" "最新版本的 Plate 有什么新功能？" ```
 </Callout>
 
 ### 集中管理多个文档

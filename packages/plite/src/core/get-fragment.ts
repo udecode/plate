@@ -4,6 +4,9 @@ import type {
   EditorFragmentReadOptions,
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
+import { RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
+import { getContentSlice } from './get-content-slice';
 import { getLiveSelection } from './public-state';
 
 const unwrapFragmentNodes = (
@@ -32,8 +35,13 @@ export const getFragment = (
 ) => {
   const selection = options.at ?? getLiveSelection(editor);
 
-  if (selection) {
-    const fragment = NodeApi.fragment(editor, selection);
+  const fragment = SelectionApi.isNode(selection)
+    ? [...getContentSlice(editor, selection).content]
+    : RangeApi.isRange(selection)
+      ? NodeApi.fragment(editor, selection)
+      : [];
+
+  if (fragment.length > 0) {
 
     if (options.unwrap && options.unwrap.length > 0) {
       return unwrapFragmentNodes(fragment, new Set(options.unwrap));

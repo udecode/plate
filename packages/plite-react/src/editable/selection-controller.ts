@@ -60,7 +60,7 @@ import { readModelSelectionDOMPreference } from './model-selection-dom-preferenc
 import {
   failInvariant,
   getSelection as editorGetSelection,
-  getSelectionPrimaryRange,
+  getSelectionDOMRange,
   setEditorFocused,
   toInternalRoot,
 } from './runtime-editor-api';
@@ -172,13 +172,15 @@ const isNestedEditableDOMTarget = (
 
 export const isSelectionInEditorView = (
   editor: ReactRuntimeEditor,
-  selection: Range | null
+  selection: Range | Selection
 ) => {
   if (!selection) {
     return true;
   }
 
-  const selectionRoot = selection.anchor.root ?? MAIN_ROOT_KEY;
+  const selectionRoot = SelectionApi.isNode(selection)
+    ? (selection.root ?? MAIN_ROOT_KEY)
+    : (selection.anchor.root ?? MAIN_ROOT_KEY);
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
 
   return selectionRoot === viewRoot;
@@ -487,18 +489,19 @@ export const syncEditorSelectionFromDOM = ({
     exactMatch: false,
   });
   const selection = readRuntimeSelection(editor);
+  const selectionRange = getSelectionDOMRange(editor, selection);
 
   if (
     shouldSuppressCollapsedSelectionMoveDOMRange({
       activeIntent: inputController.state.activeIntent,
-      currentSelection: selection,
+      currentSelection: selectionRange,
       nextSelection: range,
     })
   ) {
     return;
   }
 
-  if (range && (!selection || !RangeApi.equals(selection, range))) {
+  if (range && (!selectionRange || !RangeApi.equals(selectionRange, range))) {
     const modelSelection = editorGetSelection(editor);
 
     if (
@@ -689,7 +692,11 @@ export const shouldImportChangedExpandedDOMSelection = ({
     return false;
   }
 
-  return !currentSelection || !RangeApi.equals(currentSelection, nextSelection);
+  return (
+    !currentSelection ||
+    !RangeApi.isRange(currentSelection) ||
+    !RangeApi.equals(currentSelection, nextSelection)
+  );
 };
 
 export const shouldApplyDOMSelectionChange = ({
@@ -978,7 +985,7 @@ export const applyEditableDOMSelectionChange = ({
     } else {
       writePliteViewSelection(editor, null);
       editor.update((tx) => {
-        tx.selection.clear();
+        tx.selection.set(null);
       });
     }
 
@@ -1019,12 +1026,13 @@ export const applyEditableDOMSelectionChange = ({
     });
     writePliteViewSelection(editor, null);
     editor.update((tx) => {
-      tx.selection.clear();
+      tx.selection.set(null);
     });
     return;
   }
 
   const currentSelection = readLiveSelection(editor);
+  const currentSelectionRange = getSelectionDOMRange(editor, currentSelection);
 
   if (SelectionApi.isNode(currentSelection) && domSelection.rangeCount === 0) {
     return;
@@ -1178,7 +1186,7 @@ export const applyEditableDOMSelectionChange = ({
   const pendingRepairSelectionChangePolicy =
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: state.activeIntent,
-      currentSelection,
+      currentSelection: currentSelectionRange,
       domSelectionTextBacked: isDOMText(anchorNode) && isDOMText(focusNode),
       pendingNativeTextInputRepairDOMOffset:
         domSelection.isCollapsed && isDOMText(anchorNode)
@@ -1220,7 +1228,7 @@ export const applyEditableDOMSelectionChange = ({
     selectionChangeOrigin === 'native-user' &&
     shouldSuppressCollapsedSelectionMoveDOMRange({
       activeIntent: state.activeIntent,
-      currentSelection,
+      currentSelection: currentSelectionRange,
       nextSelection: range,
     })
   ) {
@@ -1229,12 +1237,12 @@ export const applyEditableDOMSelectionChange = ({
 
   const modelSelectionHasDOMCoverage =
     selectionChangeOrigin === 'programmatic-export' &&
-    currentSelection &&
-    DOMCoverage.getBoundariesForRange(editor, currentSelection).length > 0;
+    currentSelectionRange !== null &&
+    DOMCoverage.getBoundariesForRange(editor, currentSelectionRange).length > 0;
   const modelSelectionIsFullDocument =
     selectionChangeOrigin === 'programmatic-export' &&
-    currentSelection &&
-    isFullDocumentSelection(editor, currentSelection);
+    currentSelectionRange !== null &&
+    isFullDocumentSelection(editor, currentSelectionRange);
   const shouldImportChangedExpandedSelection =
     domSelectionBelongsToEditor &&
     !modelSelectionHasDOMCoverage &&
@@ -1318,7 +1326,7 @@ export const applyEditableDOMSelectionChange = ({
     });
     writePliteViewSelection(editor, null);
     editor.update((tx) => {
-      tx.selection.clear();
+      tx.selection.set(null);
     });
   }
 };
@@ -1350,9 +1358,10 @@ export const syncEditableDOMSelectionToEditor = ({
   if (!runtime) return;
   const { domPhaseScheduler } = runtime;
   const selection = readRuntimeSelection(editor);
+  const projectedSelection = getSelectionDOMRange(editor, selection);
   const selectionHasDOMCoverage =
-    !!selection &&
-    DOMCoverage.getBoundariesForRange(editor, selection).length > 0;
+    !!projectedSelection &&
+    DOMCoverage.getBoundariesForRange(editor, projectedSelection).length > 0;
   const scheduleClearSelectionUpdate = (label: string, delay = 0) => {
     const clear = () => {
       state.isUpdatingSelection = false;
@@ -1407,8 +1416,6 @@ export const syncEditableDOMSelectionToEditor = ({
     const preserveScroll =
       options?.preserveScroll || shouldSkipSelectionScroll(editor);
     const viewSelection = readPliteViewSelection(editor);
-    const projectedSelection = getSelectionPrimaryRange(editor, selection);
-
     if (viewSelection || !projectedSelection) {
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
@@ -1442,7 +1449,7 @@ export const syncEditableDOMSelectionToEditor = ({
       shouldKeepFullDocumentSelectionModelBacked({
         editor,
         editorElement,
-        selection,
+        selection: projectedSelection,
       })
     ) {
       return;
@@ -1459,7 +1466,7 @@ export const syncEditableDOMSelectionToEditor = ({
           state.selectionChangeOrigin = 'programmatic-export';
           scheduleClearSelectionUpdate('clear-dom-coverage-selection-update');
         },
-        selection,
+        selection: projectedSelection,
       })
     ) {
       return;

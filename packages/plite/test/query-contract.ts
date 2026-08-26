@@ -1934,17 +1934,16 @@ it('state node query helpers keep lazy traversal and early-exit first-match chec
 
   let mappedEntries = 0;
   const mappedPaths = editor.read((state) =>
-    state.nodes.toArray(
-      {
+    state.nodes
+      .toArray({
         at: [],
         match: (node) => 'type' in node && node.type === 'target',
-      },
-      ([, path]) => {
+      })
+      .map(([, path]) => {
         mappedEntries += 1;
 
         return path;
-      }
-    )
+      })
   );
 
   assert.deepEqual(mappedPaths, [[0], [2]]);
@@ -2589,7 +2588,7 @@ it('transaction queries see the live draft while ambient reads stay committed', 
 
     observed = {
       firstString: tx.text.string([0]),
-      insertedPathExists: tx.nodes.hasPath([2]),
+      insertedPathExists: tx.nodes.get([2]) !== undefined,
       shiftedNodeString: tx.text.string([2]),
       lastPoint: tx.points.end([2])!,
     };

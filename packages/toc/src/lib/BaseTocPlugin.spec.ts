@@ -80,7 +80,6 @@ describe('BaseTocPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -110,7 +109,6 @@ describe('BaseTocPlugin', () => {
 
     expect(editor.read.children()).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -139,7 +137,6 @@ describe('BaseTocPlugin', () => {
     editor.update.selection.move({ reverse: true, unit: 'line' });
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -182,7 +179,6 @@ describe('BaseTocPlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
     });

@@ -246,7 +246,6 @@ describe('editor methods', () => {
 
     assert.deepEqual(editorGetChildren(editor), [paragraph('one')]);
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -285,8 +284,6 @@ describe('editor methods', () => {
     );
 
     const newSelection = {
-      kind: 'text' as const,
-
       anchor: { path: [0, 0, 0], offset: 2 },
       focus: { path: [0, 0, 0], offset: 2 },
     };

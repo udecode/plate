@@ -14,9 +14,15 @@ const getReplacementLength = (
   editor: Editor,
   options: { at?: Location } | undefined
 ) => {
-  const target = options?.at ?? editor.read.selection();
+  if (options?.at !== undefined) {
+    return RangeApi.isRange(options.at)
+      ? editor.read.text.string(options.at).length
+      : 0;
+  }
 
-  return RangeApi.isRange(target) ? editor.read.text.string(target).length : 0;
+  const selection = editor.read.selection();
+
+  return selection ? editor.read.text.string(selection).length : 0;
 };
 
 const getRemainingLength = (

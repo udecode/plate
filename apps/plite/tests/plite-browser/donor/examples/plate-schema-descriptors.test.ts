@@ -62,7 +62,6 @@ test('compiles Plate element and mark descriptors into HTML parsing, rendering, 
     );
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'Descriptor proof'.length },
     });
@@ -204,7 +203,6 @@ test('projects rich Plate descriptors to standalone HTML while the fragment enve
     const expectedDocument = await readDocument();
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });

@@ -1,4 +1,4 @@
-import { type Range, RangeApi } from '@platejs/plite';
+import { type Range, RangeApi, type Selection } from '@platejs/plite';
 import { getSelection, isDOMElement, isDOMText } from '@platejs/plite-dom';
 import type { InputEvent as ReactInputEvent, RefObject } from 'react';
 
@@ -195,6 +195,7 @@ export const applyEditableInput = ({
       androidInputManager &&
       modelOwnsTextInput &&
       runtimeSelection &&
+      RangeApi.isRange(runtimeSelection) &&
       RangeApi.isCollapsed(runtimeSelection)
         ? runtimeSelection.anchor
         : null;
@@ -284,7 +285,7 @@ export const applyModelOwnedBeforeInputMutation = ({
   mergeHistory?: boolean;
   native: boolean;
   preserveComposing?: boolean;
-  selection: Range | null;
+  selection: Range | Selection;
   setComposing: EditableCompositionStateSetter;
 }): EditableRepairRequest | null => {
   const parsedCommand = () =>
@@ -396,7 +397,12 @@ export const applyModelOwnedBeforeInputMutation = ({
       if (textCommand) {
         // Native ownership is limited to insertText. Single-character deletes
         // need their own browser contract before joining this path.
-        if (native && (!selection || !RangeApi.isExpanded(selection))) {
+        if (
+          native &&
+          (!selection ||
+            !RangeApi.isRange(selection) ||
+            !RangeApi.isExpanded(selection))
+        ) {
           return null;
         }
         return applyModelOwnedTextInput({

@@ -9,9 +9,9 @@ export const toggleValue: Value = (
   <fragment>
     <hheading level={2}>折叠</hheading>
     <hp>创建具有多级缩进的折叠内容</hp>
-    <htoggle id="dlks89">第一级折叠</htoggle>
+    <htoggle>第一级折叠</htoggle>
     <hp indent={1}>第一级折叠内容</hp>
-    <htoggle id="kjdd12" indent={1}>
+    <htoggle indent={1}>
       第二级折叠
     </htoggle>
     <hp indent={2}>第二级折叠内容</hp>

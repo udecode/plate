@@ -63,10 +63,9 @@ describe('BaseMediaEmbedPlugin', () => {
   });
 
   it('encodes safe iframes and rejects unsafe iframe URLs', () => {
-    const point = { offset: 0, path: [0, 0] };
     const safe = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [{ text: 'Embed caption' }],
@@ -160,7 +159,7 @@ describe('BaseMediaEmbedPlugin', () => {
         lifecycleErrorSink: (error) => reports.push(error),
       }),
       plugins: [BaseMediaEmbedPlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [{ text: '' }],

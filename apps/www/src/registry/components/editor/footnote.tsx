@@ -32,12 +32,12 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -150,7 +150,7 @@ export function FootnoteReferenceElement(
       }}
     >
       {props.children}
-      <HoverCard open={hoverOpen} onOpenChange={setHoverOpen} openDelay={150}>
+      <HoverCard open={hoverOpen} onOpenChange={setHoverOpen}>
         <HoverCardTrigger asChild>
           <button
             type="button"
@@ -275,49 +275,51 @@ export function FootnoteDefinitionElement(
             {ref}
           </div>
         ) : (
-          <Popover
+          <FloatingPopover
             open={referencePickerOpen}
             onOpenChange={setReferencePickerOpen}
           >
-            <PopoverAnchor asChild>
-              <button
-                type="button"
-                aria-expanded={
-                  hasMultipleReferences ? referencePickerOpen : undefined
-                }
-                aria-haspopup={hasMultipleReferences ? 'dialog' : undefined}
-                aria-label={`Back to reference ${ref}`}
-                className="min-w-3 cursor-pointer rounded-xs text-xs text-muted-foreground tabular-nums underline-offset-2 hover:text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-1"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-
-                  if (hasMultipleReferences) {
-                    setReferencePickerOpen((open) => !open);
-
-                    return;
+            <FloatingPopoverAnchor
+              element={
+                <button
+                  type="button"
+                  aria-expanded={
+                    hasMultipleReferences ? referencePickerOpen : undefined
                   }
+                  aria-haspopup={hasMultipleReferences ? 'dialog' : undefined}
+                  aria-label={`Back to reference ${ref}`}
+                  className="min-w-3 cursor-pointer rounded-xs text-xs text-muted-foreground tabular-nums underline-offset-2 hover:text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
 
-                  footnoteUpdate.focusReference({ ref });
-                }}
-              >
-                {ref}
-              </button>
-            </PopoverAnchor>
+                    if (hasMultipleReferences) {
+                      setReferencePickerOpen((open) => !open);
+
+                      return;
+                    }
+
+                    footnoteUpdate.focusReference({ ref });
+                  }}
+                >
+                  {ref}
+                </button>
+              }
+            />
 
             {hasMultipleReferences && referencePickerOpen ? (
-              <PopoverContent
+              <FloatingPopoverContent
                 className="w-72 p-0"
                 align="start"
                 sideOffset={8}
-                onCloseAutoFocus={(event) => {
+                onFinalFocus={(event) => {
                   event.preventDefault();
                 }}
-                onOpenAutoFocus={(event) => {
+                onInitialFocus={(event) => {
                   event.preventDefault();
                 }}
               >
@@ -350,9 +352,9 @@ export function FootnoteDefinitionElement(
                     </CommandGroup>
                   </CommandList>
                 </Command>
-              </PopoverContent>
+              </FloatingPopoverContent>
             ) : null}
-          </Popover>
+          </FloatingPopover>
         )}
       </div>
       <div className="min-w-0 flex-1">

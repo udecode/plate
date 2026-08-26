@@ -143,7 +143,6 @@ export const handleSelectionMatches = async (
         left.every((segment, index) => segment === right[index]);
 
       return (
-        current.kind === selection.kind &&
         samePath(current.anchor.path, selection.anchor.path) &&
         samePath(current.focus.path, selection.focus.path) &&
         current.anchor.offset === selection.anchor.offset &&

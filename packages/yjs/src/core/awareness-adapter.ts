@@ -1,4 +1,4 @@
-import { RangeApi, type Editor, type Range } from '@platejs/plite';
+import type { Editor, Range } from '@platejs/plite';
 import { toInternalRoot } from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
@@ -96,11 +96,7 @@ export const createYjsAwarenessAdapter = <
   rootFor,
   validateCursorData,
 }: YjsAwarenessAdapterOptions<TCursorData>): YjsAwarenessAdapter<TCursorData> => {
-  const currentSelection = (): Range | null => {
-    const selection = editor.read.selection();
-
-    return selection && RangeApi.isRange(selection) ? selection : null;
-  };
+  const currentSelection = (): Range | null => editor.read.selection();
 
   const getLocalAwarenessClientId = (): number =>
     awareness?.doc?.clientID ??

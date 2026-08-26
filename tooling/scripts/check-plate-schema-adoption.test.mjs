@@ -1722,11 +1722,8 @@ test('allows only exact audited production extend stages at their owner path', (
         .extend(() => ({ update: () => ({}) }))
         .extend(() => ({ contributions: [] }))
         .extend(() => ({ corrections: [] }))
-        .extend(() => ({
-          commands: () => [],
-          readMiddleware: () => [],
-          selectionKinds: [],
-        }))`,
+        .extend(() => ({ readMiddleware: () => [] }))
+        .extend(() => ({ commands: () => [] }))`,
     ],
     [
       'packages/tabbable/src/react/TabbablePlugin.tsx',
@@ -1777,35 +1774,12 @@ test('allows only exact audited production extend stages at their owner path', (
 
   assert.deepEqual(
     auditPlateSchemaSource(
-      `definePlatePlugin('blockSelection', {
-        api: () => ({}),
-
-        on: {},
-        read: () => ({}),
-        selectors: {},
-        shortcuts: {},
-        update: () => ({}),
-      })
-        .extend(() => ({ api: () => ({}), commands: () => [], on: {} }))
-        .extend(() => ({ inject: {}, shortcuts: {}, update: () => ({}) }))
-        .extend(() => ({ render: {} }))`,
-      'packages/selection/src/react/BlockSelectionPlugin.tsx'
+      `definePlatePlugin('cursorOverlay', { })
+        .extend(() => ({ on: {} }))`,
+      'packages/cursor/src/CursorOverlayPlugin.tsx'
     ),
     []
   );
-
-  for (const [source, file] of [
-    [
-      `definePlatePlugin('blockMenu', { }).extend(() => ({ on: {} }))`,
-      'packages/selection/src/react/BlockMenuPlugin.tsx',
-    ],
-    [
-      `definePlatePlugin('cursorOverlay', { }).extend(() => ({ on: {} }))`,
-      'packages/selection/src/react/CursorOverlayPlugin.tsx',
-    ],
-  ]) {
-    assert.deepEqual(auditPlateSchemaSource(source, file), []);
-  }
 });
 
 test('matches opaque shared-factory stages by exact callee identity', () => {

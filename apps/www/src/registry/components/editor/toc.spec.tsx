@@ -20,9 +20,23 @@ const ButtonMock = mock(({ children, className, ...props }: any) => (
 const flashTargetMock = mock();
 const headingElement = document.createElement('h2');
 const headings = [
-  { depth: 1, key: 'intro', title: 'Intro' },
-  { depth: 2, key: 'benefits', title: 'Benefits' },
+  { depth: 1, key: 'intro', title: 'Intro', type: 'h1' },
+  { depth: 2, key: 'benefits', title: 'Benefits', type: 'h2' },
 ];
+const useEditorSelectorMock = mock(
+  (
+    selector: (currentEditor: typeof editor) => unknown,
+    _options?: {
+      equalityFn?: (
+        previous: typeof headings | null,
+        next: typeof headings
+      ) => boolean;
+      shouldUpdate?: (change?: {
+        changed: { hasAny: (kind: string) => boolean };
+      }) => boolean;
+    }
+  ) => selector(editor)
+);
 const editor = {
   api: { dom: { resolveDOMNode: () => headingElement } },
   plugin: () => ({ read: { headings: () => headings } }),
@@ -48,8 +62,7 @@ mock.module('platejs/react', () => ({
   useEditor: () => editor,
   useEditorPlugin: () => ({ update: { flashTarget: flashTargetMock } }),
   useEditorScrollElement: () => null,
-  useEditorSelector: (selector: (currentEditor: typeof editor) => unknown) =>
-    selector(editor),
+  useEditorSelector: useEditorSelectorMock,
   usePluginStore: (_plugin: unknown, key: string) =>
     key === 'isScroll' ? false : 0,
 }));
@@ -70,6 +83,7 @@ describe('toc node rendering', () => {
     PlateElementMock.mockClear();
     ButtonMock.mockClear();
     flashTargetMock.mockReset();
+    useEditorSelectorMock.mockClear();
   });
 
   afterAll(() => {
@@ -100,5 +114,39 @@ describe('toc node rendering', () => {
     expect(flashTargetMock).toHaveBeenCalledWith({
       target: { path: [0], type: 'node' },
     });
+  });
+
+  it('ignores selection commits and equal heading snapshots', async () => {
+    const { TocElement } = await import(
+      `./toc?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    render(
+      <TocElement attributes={{}} element={{ children: [{ text: '' }] } as any}>
+        <span />
+      </TocElement>
+    );
+
+    const options = useEditorSelectorMock.mock.calls[0]?.[1];
+
+    expect(options?.shouldUpdate?.()).toBe(true);
+    expect(options?.shouldUpdate?.({ changed: { hasAny: () => false } })).toBe(
+      false
+    );
+    expect(
+      options?.shouldUpdate?.({
+        changed: { hasAny: (kind) => kind === 'document' },
+      })
+    ).toBe(true);
+    expect(options?.equalityFn?.(null, headings)).toBe(false);
+    expect(options?.equalityFn?.([...headings], [...headings])).toBe(true);
+    expect(
+      options?.equalityFn?.(
+        headings.map((heading, index) =>
+          index === 0 ? { ...heading, title: 'Changed' } : heading
+        ),
+        headings
+      )
+    ).toBe(false);
   });
 });

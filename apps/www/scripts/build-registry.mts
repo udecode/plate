@@ -3,7 +3,6 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import { rimraf } from 'rimraf';
-import { PRESET_BASES, PRESET_STYLES } from 'shadcn/preset';
 import {
   type RegistryItem,
   registrySchema,
@@ -12,29 +11,25 @@ import {
 
 import {
   createPlateRegistry,
+  PLATE_REGISTRY_BASES,
   type PlateRegistryBase,
 } from '@/registry/registry';
+import { PLATE_REGISTRY_VARIANT_ITEM_NAMES } from '@/registry/registry-variants';
 
 import { buildDocsRegistry } from './build-docs-registry.mts';
 import {
   getRegistryBuildTargets,
+  getRegistryOutputTarget,
   REGISTRY_HOMEPAGE,
 } from './registry-build-targets.mts';
 import { toPublicRegistryDependencySpecifier } from './registry-dependencies.mts';
 import { createRegistryIndexSource } from './registry-index.mts';
+import { materializeRegistryStyles } from './registry-style-materializer.mts';
+import { loadRegistryStyleMaps } from './registry-style-transform.mts';
 
 const BASE_URL = 'src/';
 
 const isDev = process.env.NODE_ENV === 'development';
-const MERGE_DOCS = true;
-const REGISTRY_STYLES = [
-  'new-york',
-  'new-york-v4',
-  ...PRESET_BASES.flatMap((base) =>
-    PRESET_STYLES.map((style) => `${base}-${style}`)
-  ),
-] as const;
-
 function withPublicRegistryDependencies(
   item: RegistryItem,
   registryBaseUrl: string
@@ -47,23 +42,22 @@ function withPublicRegistryDependencies(
   };
 }
 
-function getRegistryBase(style: string): PlateRegistryBase {
-  if (style.startsWith('base-')) return 'base';
-  if (style.startsWith('aria-')) return 'aria';
-
-  return 'radix';
-}
-
-function createBuildRegistry(style: string, registryBaseUrl: string): Registry {
+function createBuildRegistry(
+  base: PlateRegistryBase,
+  registryBaseUrl: string,
+  overlay = false
+): Registry {
   const sourceRegistry = createPlateRegistry(REGISTRY_HOMEPAGE, {
-    base: getRegistryBase(style),
+    base,
   });
 
   return registrySchema.parse({
     ...sourceRegistry,
-    items: sourceRegistry.items.map((item) =>
-      withPublicRegistryDependencies(item, registryBaseUrl)
-    ),
+    items: sourceRegistry.items
+      .filter(
+        (item) => !overlay || PLATE_REGISTRY_VARIANT_ITEM_NAMES.has(item.name)
+      )
+      .map((item) => withPublicRegistryDependencies(item, registryBaseUrl)),
   });
 }
 
@@ -160,35 +154,40 @@ async function buildRegistry(registryFile: string, outputDir: string) {
 try {
   const buildTargets = getRegistryBuildTargets({
     dev: isDev,
-    styles: REGISTRY_STYLES,
   });
+  const outputTarget = getRegistryOutputTarget({ dev: isDev });
   const defaultTarget = buildTargets[0];
   const defaultRegistry = createBuildRegistry(
-    defaultTarget.style,
+    defaultTarget.base,
     defaultTarget.registryBaseUrl
   );
 
   if (!isDev) {
     console.info('🗂️ Building registry/__index__.tsx...');
     await buildRegistryIndex(defaultRegistry);
-
-    // Clean up the entire public/r directory first
-    rimraf.sync(path.join(process.cwd(), defaultTarget.outputDir));
   }
+
+  // Clean up generated registry payloads before rebuilding either owner.
+  rimraf.sync(path.join(process.cwd(), outputTarget.canonicalDir));
+  for (const base of PLATE_REGISTRY_BASES) {
+    rimraf.sync(path.join(process.cwd(), `${BASE_URL}__registry__/${base}`));
+  }
+  rimraf.sync(path.join(process.cwd(), outputTarget.overlayDir));
+  rimraf.sync(path.join(process.cwd(), '.registry-build'));
 
   console.info('📖 Building registry-docs.json...');
   const docsItems = await buildDocsRegistry();
 
-  for (const {
-    outputDir,
-    registryBaseUrl,
-    registryFile,
-    style,
-  } of buildTargets) {
-    const registry = createBuildRegistry(style, registryBaseUrl);
+  for (const target of buildTargets) {
+    const { base, kind, outputDir, registryBaseUrl, registryFile } = target;
+    const registry = createBuildRegistry(
+      base,
+      registryBaseUrl,
+      kind === 'provider-overlay'
+    );
 
     console.info(`💅 Building ${registryFile}...`);
-    if (MERGE_DOCS) {
+    if (kind === 'canonical') {
       console.info('🔄 Merging docs into registry.json');
       await buildRegistryJsonFile(
         registry,
@@ -203,6 +202,21 @@ try {
     console.info(`🏗️ Building ${outputDir}...`);
     await buildRegistry(registryFile, outputDir);
   }
+
+  console.info('🎨 Materializing Base/Nova and sparse style overlays...');
+  const styleMaps = await loadRegistryStyleMaps();
+  const { canonical, combinations } = await materializeRegistryStyles({
+    baseRawDir: path.join(process.cwd(), buildTargets[0].outputDir),
+    canonicalDir: path.join(process.cwd(), outputTarget.canonicalDir),
+    overlayDir: path.join(process.cwd(), outputTarget.overlayDir),
+    providerRawDir: path.join(process.cwd(), buildTargets[1].outputDir),
+    styleMaps,
+  });
+  console.info(
+    `✅ Materialized ${canonical.size} canonical payloads and ${combinations.length} sparse overlays`
+  );
+
+  rimraf.sync(path.join(process.cwd(), '.registry-build'));
 } catch (error) {
   console.error(error);
   process.exit(1);

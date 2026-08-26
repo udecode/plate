@@ -1,0 +1,54 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-plugins",
+  "title": "Editor Plugins",
+  "dependencies": [
+    "@platejs/csv",
+    "@platejs/docx-paste"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/ai.json",
+    "https://platejs.org/r/align.json",
+    "https://platejs.org/r/autoformat.json",
+    "https://platejs.org/r/basic-blocks.json",
+    "https://platejs.org/r/basic-marks.json",
+    "https://platejs.org/r/block-menu.json",
+    "https://platejs.org/r/block-placeholder.json",
+    "https://platejs.org/r/callout.json",
+    "https://platejs.org/r/code-block.json",
+    "https://platejs.org/r/column.json",
+    "https://platejs.org/r/comment.json",
+    "https://platejs.org/r/cursor-overlay.json",
+    "https://platejs.org/r/date.json",
+    "https://platejs.org/r/discussion.json",
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/emoji.json",
+    "https://platejs.org/r/exit-break.json",
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/floating-toolbar.json",
+    "https://platejs.org/r/font.json",
+    "https://platejs.org/r/footnote.json",
+    "https://platejs.org/r/line-height.json",
+    "https://platejs.org/r/link.json",
+    "https://platejs.org/r/list.json",
+    "https://platejs.org/r/markdown.json",
+    "https://platejs.org/r/math.json",
+    "https://platejs.org/r/media.json",
+    "https://platejs.org/r/mention.json",
+    "https://platejs.org/r/slash.json",
+    "https://platejs.org/r/suggestion.json",
+    "https://platejs.org/r/table.json",
+    "https://platejs.org/r/toc.json",
+    "https://platejs.org/r/toggle.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins.ts",
+      "content": "import { CsvPlugin } from '@platejs/csv';\nimport { DocxPastePlugin } from '@platejs/docx-paste';\nimport { TrailingBlockPlugin } from 'platejs';\n\nimport { AIKit } from './ai';\nimport { AlignKit } from './align';\nimport { AutoformatKit } from './autoformat';\nimport { BasicBlocksKit } from './basic-blocks';\nimport { BasicMarksKit } from './basic-marks';\nimport { BlockMenuKit } from './block-menu';\nimport { BlockPlaceholderKit } from './block-placeholder';\nimport { CalloutKit } from './callout';\nimport { CodeBlockKit } from './code-block';\nimport { ColumnKit } from './column';\nimport { CommentKit } from './comment';\nimport { CursorOverlayKit } from './cursor-overlay';\nimport { DateKit } from './date';\nimport { DiscussionKit } from './discussion';\nimport { DndKit } from './dnd';\nimport { EmojiKit } from './emoji';\nimport { ExitBreakKit } from './exit-break';\nimport { FixedToolbarKit } from './fixed-toolbar';\nimport { FloatingToolbarKit } from './floating-toolbar';\nimport { FontKit } from './font';\nimport { FootnoteKit } from './footnote';\nimport { LineHeightKit } from './line-height';\nimport { LinkKit } from './link';\nimport { ListKit } from './list';\nimport { MarkdownKit } from './markdown';\nimport { MathKit } from './math';\nimport { MediaKit } from './media';\nimport { MentionKit } from './mention';\nimport { SlashKit } from './slash';\nimport { SuggestionKit } from './suggestion';\nimport { TableKit } from './table';\nimport { TocKit } from './toc';\nimport { ToggleKit } from './toggle';\n\nexport const EditorKit = [\n  ...AIKit,\n  ...BlockMenuKit,\n\n  // Elements\n  ...BasicBlocksKit,\n  ...CodeBlockKit,\n  ...TableKit,\n  ...ToggleKit,\n  ...TocKit,\n  ...MediaKit,\n  ...CalloutKit,\n  ...ColumnKit,\n  ...MathKit,\n  ...DateKit,\n  ...LinkKit,\n  ...MentionKit,\n  ...FootnoteKit,\n\n  // Marks\n  ...BasicMarksKit,\n  ...FontKit,\n\n  // Block Style\n  ...ListKit,\n  ...AlignKit,\n  ...LineHeightKit,\n\n  // Collaboration\n  ...DiscussionKit,\n  ...CommentKit,\n  ...SuggestionKit,\n\n  // Editing\n  ...SlashKit,\n  ...AutoformatKit,\n  ...CursorOverlayKit,\n  ...DndKit,\n  ...EmojiKit,\n  ...ExitBreakKit,\n  TrailingBlockPlugin,\n\n  // Parsers\n  CsvPlugin,\n  DocxPastePlugin,\n  ...MarkdownKit,\n\n  // UI\n  ...BlockPlaceholderKit,\n  ...FixedToolbarKit,\n  ...FloatingToolbarKit,\n] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/plugins.ts"
+    }
+  ],
+  "type": "registry:component"
+}

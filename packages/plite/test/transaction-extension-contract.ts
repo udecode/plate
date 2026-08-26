@@ -127,7 +127,9 @@ describe('transaction extension values', () => {
             selectionOffset.compute(
               (state) => {
                 selectionComputes += 1;
-                return state.selection()?.anchor.offset ?? -1;
+                const selection = state.selection();
+
+                return selection?.anchor.offset ?? -1;
               },
               { dependencies: ['selection'] }
             ),

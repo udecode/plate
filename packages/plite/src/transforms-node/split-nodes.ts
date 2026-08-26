@@ -12,7 +12,7 @@ import {
 import { mapCanonicalRepresentationPoint } from '../core/representation';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { type Location, LocationApi } from '../interfaces';
+import { type Location, LocationApi, SelectionApi } from '../interfaces';
 import {
   after as editorAfter,
   isBlock as editorIsBlock,
@@ -35,7 +35,6 @@ import {
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
-import { SelectionApi } from '../interfaces/selection';
 import type {
   NodeMutationMethods,
   NodeSplitNodesOptions,
@@ -186,6 +185,7 @@ export const splitNodes = ((
       if (!at) {
         return;
       }
+      if (SelectionApi.isNode(at)) return;
 
       if (match == null) {
         match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);

@@ -126,7 +126,10 @@ describe('Plate model publication', () => {
     ).toThrow('bootstrap correction failed');
     expect(correctionRuns).toBeGreaterThan(0);
     expect(raw.read.value()).toEqual(previousValue);
-    expect(raw.read.selection()).toEqual(initialSelection);
+    expect(raw.read.selection()).toEqual({
+      anchor: initialSelection.anchor,
+      focus: initialSelection.focus,
+    });
     expect(raw.read.lastCommit()).toBeNull();
     expect(raw.read.runtime.snapshot().version).toBe(previousVersion);
     expect(raw.read.schema).toBe(previousSchema);

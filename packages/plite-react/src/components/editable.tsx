@@ -26,6 +26,7 @@ import { useRootInteractionController } from '../editable/root-interaction-contr
 import {
   isVoid as editorIsVoid,
   isInline as editorIsInline,
+  getSelectionDOMRange,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
@@ -945,8 +946,8 @@ export const defaultScrollSelectionIntoView = (
   domRange: DOMRange
 ) => {
   // Scroll to the focus point of the selection, in case the selection is expanded
-  const selection = readLiveSelection(editor);
-  const isBackward = !!selection && RangeApi.isBackward(selection);
+  const selection = getSelectionDOMRange(editor, readLiveSelection(editor));
+  const isBackward = Boolean(selection && RangeApi.isBackward(selection));
   const domFocusPoint = domRange.cloneRange();
   domFocusPoint.collapse(isBackward);
 

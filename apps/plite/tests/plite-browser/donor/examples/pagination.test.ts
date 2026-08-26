@@ -2567,7 +2567,6 @@ test.describe('pagination example', {
     const tablePath = Number(tablePathAttribute);
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [tablePath, 24, 0, 0], offset: 0 },
       focus: { path: [tablePath, 25, 2, 0], offset: 'Fragment 26'.length },
     });
@@ -2835,7 +2834,6 @@ test.describe('pagination example', {
       await expect
         .poll(async () => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: {
             offset: target.expectedOffset,
             path: target.expectedPath,
@@ -2937,7 +2935,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: firstBlockText.length },
         focus: { path: [0, 0], offset: firstBlockText.length },
       });
@@ -3062,7 +3059,6 @@ test.describe('pagination example', {
             isCollapsed: true,
           },
           selection: {
-            kind: 'text',
             anchor: {
               path: [Number(target.blockPath), 0],
               offset: target.expectedOffset,
@@ -3183,7 +3179,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: firstBlockText.length + 3 },
         focus: { path: [0, 0], offset: firstBlockText.length + 3 },
       });
@@ -3419,7 +3414,6 @@ test.describe('pagination example', {
       .toEqual({
         domPath: '0,0',
         selection: expect.objectContaining({
-          kind: 'text',
           anchor: expect.objectContaining({ path: [0, 0] }),
           focus: expect.objectContaining({ path: [0, 0] }),
         }),
@@ -3434,7 +3428,6 @@ test.describe('pagination example', {
       .toEqual({
         domPath: '1,0',
         selection: expect.objectContaining({
-          kind: 'text',
           anchor: expect.objectContaining({ path: [1, 0] }),
           focus: expect.objectContaining({ path: [1, 0] }),
         }),
@@ -3552,7 +3545,6 @@ test.describe('pagination example', {
           kind: 'assertSelection',
           label: 'assert-model-selected-projected-word',
           selection: {
-            kind: 'text',
             anchor: { offset: 0, path: [0, 0] },
             focus: { offset: 'Premirror'.length, path: [0, 0] },
           },
@@ -3616,7 +3608,6 @@ test.describe('pagination example', {
           kind: 'assertSelection',
           label: 'assert-model-selected-virtualized-projected-word',
           selection: {
-            kind: 'text',
             anchor: { offset: 0, path: [0, 0] },
             focus: { offset: 'Premirror'.length, path: [0, 0] },
           },
@@ -3788,7 +3779,6 @@ test.describe('pagination example', {
       .toEqual({
         activeIsEditor: true,
         selection: {
-          kind: 'text',
           anchor: { path: [Number(marginTarget!.blockPath), 0], offset: 0 },
           focus: { path: [Number(marginTarget!.blockPath), 0], offset: 0 },
         },
@@ -3877,7 +3867,6 @@ test.describe('pagination example', {
             hasAnchorText: true,
           },
           selection: {
-            kind: 'text',
             anchor: {
               path: [Number(target.blockPath), 0],
               offset: target.expectedOffset,
@@ -4023,7 +4012,6 @@ test.describe('pagination example', {
       .toEqual({
         blockText: expectedText,
         selection: {
-          kind: 'text',
           anchor: { offset: clickedOffset + 1, path: [targetPath, 0] },
           focus: { offset: clickedOffset + 1, path: [targetPath, 0] },
         },
@@ -4293,7 +4281,6 @@ test.describe('pagination example', {
       .toEqual({
         modelHasTableText: true,
         selection: {
-          kind: 'text',
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
@@ -4436,7 +4423,6 @@ test.describe('pagination example', {
       .toEqual({
         domPath: `${tablePath},119,1,0`,
         selection: {
-          kind: 'text',
           anchor: {
             path: [tablePath, 119, 1, 0],
             offset: 'Path-aware cell 120'.length,
@@ -4486,7 +4472,6 @@ test.describe('pagination example', {
         .toEqual({
           domPath: `${tablePath},119,1,0`,
           selection: {
-            kind: 'text',
             anchor: {
               path: [tablePath, 119, 1, 0],
               offset: targetText.length - 1,
@@ -4507,7 +4492,6 @@ test.describe('pagination example', {
         .toEqual({
           modelHasText: true,
           selection: {
-            kind: 'text',
             anchor: { path: [tablePath, 119, 1, 0], offset: targetText.length },
             focus: { path: [tablePath, 119, 1, 0], offset: targetText.length },
           },
@@ -4599,7 +4583,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: {
           path: [targetBlockPath, 0],
           offset: targetTextPrefix.length,
@@ -4655,7 +4638,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: {
           path: [targetBlockPath, 0],
           offset: targetTextPrefix.length + typedPrefix.length,
@@ -4707,7 +4689,6 @@ test.describe('pagination example', {
       await expect
         .poll(async () => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + typedPrefix.length,
@@ -4732,7 +4713,6 @@ test.describe('pagination example', {
       .toEqual({
         modelHasText: true,
         selection: {
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + typedPrefix.length,
@@ -4861,7 +4841,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: {
           path: [targetBlockPath, 0],
           offset: targetTextPrefix.length,
@@ -4913,7 +4892,6 @@ test.describe('pagination example', {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + burstText.length,
@@ -5078,7 +5056,6 @@ test.describe('pagination example', {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset:
@@ -5258,7 +5235,6 @@ test.describe('pagination example', {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset:
@@ -5621,7 +5597,6 @@ test.describe('pagination example', {
           `mno${originalSuffix}`,
         ],
         selection: {
-          kind: 'text',
           anchor: { path: [targetBlockPath + 4, 0], offset: 3 },
           focus: { path: [targetBlockPath + 4, 0], offset: 3 },
         },
@@ -5712,7 +5687,6 @@ test.describe('pagination example', {
       .toEqual({
         modelHasExpectedText: true,
         selection: {
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + 3,
@@ -5751,7 +5725,6 @@ test.describe('pagination example', {
         hasExpectedText: true,
         modelHasExpectedText: true,
         selection: {
-          kind: 'text',
           anchor: {
             path: [targetBlockPath, 0],
             offset: targetTextPrefix.length + 2,
@@ -6214,7 +6187,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [8, 0], offset: 0 },
         focus: { path: [8, 0], offset: 0 },
       });
@@ -6255,7 +6227,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [7, 0], offset: 0 },
         focus: { path: [7, 0], offset: 0 },
       });
@@ -6293,12 +6264,10 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [5, 0], offset: 0 },
         focus: { path: [5, 0], offset: 0 },
       });
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [5, 0], offset: 0 },
       focus: { path: [5, 0], offset: 0 },
     });
@@ -6312,7 +6281,6 @@ test.describe('pagination example', {
     await expect
       .poll(async () => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [4, 0], offset: 1 },
         focus: { path: [4, 0], offset: 1 },
       });

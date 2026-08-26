@@ -19,7 +19,9 @@ import {
   failInvariant,
   isBlock as editorIsBlock,
   before as editorBefore,
+  getSelection as getEditorSelection,
   after as editorAfter,
+  getSelectionDOMRange,
 } from './runtime-editor-api';
 
 type VerticalExtensionEvent = Pick<
@@ -452,7 +454,7 @@ const isPlainVerticalLargeDocumentSelection = ({
   domStrategyRuntime,
   editor,
   event,
-  selection = editor.read((state) => state.selection()),
+  selection = getSelectionDOMRange(editor, getEditorSelection(editor)),
 }: {
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
@@ -769,7 +771,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
   event,
   forceModelMovement = false,
   preferredX,
-  selection = editor.read((state) => state.selection()),
+  selection = getSelectionDOMRange(editor, getEditorSelection(editor)),
 }: {
   domStrategyRuntime: unknown;
   editor: ReactRuntimeEditor;
@@ -1012,7 +1014,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
 export const getPlainVerticalDOMCoverageExtension = ({
   editor,
   event,
-  selection = editor.read((state) => state.selection()),
+  selection = getSelectionDOMRange(editor, getEditorSelection(editor)),
 }: {
   editor: ReactRuntimeEditor;
   event: VerticalExtensionEvent;

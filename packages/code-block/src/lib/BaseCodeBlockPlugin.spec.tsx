@@ -24,7 +24,12 @@ import {
   ElementApi,
   type Value,
 } from '@platejs/plite';
-import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
+import {
+  createDataTransfer,
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 import { PLUGINS } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
 
@@ -143,10 +148,9 @@ describe('BaseCodeBlockPlugin', () => {
   });
 
   it('decodes and encodes code lines through the compiled HTML codec', () => {
-    const point = { offset: 0, path: [0, 0, 0] };
     const editor = createBaseEditor({
       plugins: [BaseCodeBlockPlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [
@@ -488,7 +492,9 @@ describe('isCodeBlockEmpty', () => {
         editor.update.break.insert();
 
         expect(editor.read.children()).toEqual(output.children);
-        expect(output.selection).toEqual(editor.read.selection());
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
 
       it('preserves the indentation level when splitting inside whitespace', () => {
@@ -522,7 +528,9 @@ describe('isCodeBlockEmpty', () => {
         editor.update.break.insert();
 
         expect(editor.read.children()).toEqual(output.children);
-        expect(output.selection).toEqual(editor.read.selection());
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
     });
   });
@@ -577,7 +585,9 @@ describe('isCodeBlockEmpty', () => {
       editor.update.text.deleteBackward();
 
       expect(editor.read.children()).toEqual(input.children);
-      expect(input.selection).toEqual(editor.read.selection());
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(input.selection)
+      );
     });
 
     it('merges an empty non-first code line into the previous line', () => {
@@ -608,7 +618,9 @@ describe('isCodeBlockEmpty', () => {
       editor.update.text.deleteBackward();
 
       expect(editor.read.children()).toEqual(output.children);
-      expect(output.selection).toEqual(editor.read.selection());
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
     });
 
     it('unwraps an empty code block to a plain paragraph', () => {
@@ -635,7 +647,9 @@ describe('isCodeBlockEmpty', () => {
       editor.update.text.deleteBackward();
 
       expect(editor.read.children()).toEqual(output.children);
-      expect(output.selection).toEqual(editor.read.selection());
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
     });
   });
 
@@ -661,7 +675,6 @@ describe('isCodeBlockEmpty', () => {
       editor.update.codeBlock.selectAll();
 
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 5, path: [0, 1, 0] },
       });
@@ -690,7 +703,9 @@ describe('isCodeBlockEmpty', () => {
         getPlateRuntime(editor).shortcuts['codeBlock.selectAll']?.keys
       ).toBe('mod+a');
       expect(editor.update.codeBlock.selectAll()).toBe(false);
-      expect(input.selection).toEqual(editor.read.selection());
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(input.selection)
+      );
     });
   });
 
@@ -792,7 +807,9 @@ describe('isCodeBlockEmpty', () => {
 
       expect(editor.update.codeBlock.tab()).toBe(true);
       expect(editor.read.children()).toEqual(output.children);
-      expect(output.selection).toEqual(editor.read.selection());
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(output.selection)
+      );
     });
   });
 
@@ -1127,7 +1144,9 @@ describe('BaseCodeBlockPlugin input rules', () => {
       unsubscribe();
 
       expect(editor.read.children()).toEqual(expected.children);
-      expect(editor.read.selection()).toEqual(expected.selection!);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(expected.selection!)
+      );
       expect(commits).toBe(1);
       expect(editor.read.history.undos()).toHaveLength(1);
     });
@@ -1394,7 +1413,6 @@ describe('BaseCodeBlockPlugin input rules', () => {
           ).children
         );
         expect(editor.read.selection()).toEqual({
-          kind: 'text',
           anchor: { offset: 1, path: [0, 1, 0] },
           focus: { offset: 1, path: [0, 1, 0] },
         });

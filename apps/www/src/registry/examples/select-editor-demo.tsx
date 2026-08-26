@@ -3,17 +3,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import * as React from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
 import {
   type SelectItem,
   SelectEditor,
@@ -25,11 +18,11 @@ import {
 const LABELS = [
   { url: '/docs/components/editor', value: 'Editor' },
   { url: '/docs/components/select-editor', value: 'Select Editor' },
-  { url: '/docs/components/block-selection', value: 'Block Selection' },
+  { url: '/docs/plite/api/locations/selection', value: 'Node Selection' },
   { url: '/docs/components/button', value: 'Button' },
   { url: '/docs/components/command', value: 'Command' },
   { url: '/docs/components/dialog', value: 'Dialog' },
-  { url: '/docs/components/form', value: 'Form' },
+  { url: '/docs/components/field', value: 'Field' },
   { url: '/docs/components/input', value: 'Input' },
   { url: '/docs/components/label', value: 'Label' },
   { url: '/docs/components/popover', value: 'Popover' },
@@ -62,67 +55,65 @@ export default function EditorSelectForm() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 p-11 pt-24 pl-2">
-      <Form {...form}>
-        <div className="space-y-6">
-          <FormField
-            name="labels"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-start gap-2">
+      <div className="space-y-6">
+        <Controller
+          name="labels"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <div data-invalid={fieldState.invalid}>
+              <div className="flex items-start gap-2">
+                <Button
+                  variant="ghost"
+                  className="h-10"
+                  onClick={() => {
+                    setReadOnly(!readOnly);
+                  }}
+                  type="button"
+                >
+                  {readOnly ? (
+                    <PlusIcon className="size-4" />
+                  ) : (
+                    <CheckIcon className="size-4" />
+                  )}
+                </Button>
+
+                {readOnly && labels.length === 0 ? (
                   <Button
+                    size="lg"
                     variant="ghost"
                     className="h-10"
                     onClick={() => {
-                      setReadOnly(!readOnly);
+                      setReadOnly(false);
                     }}
                     type="button"
                   >
-                    {readOnly ? (
-                      <PlusIcon className="size-4" />
-                    ) : (
-                      <CheckIcon className="size-4" />
-                    )}
+                    Add labels
                   </Button>
-
-                  {readOnly && labels.length === 0 ? (
-                    <Button
-                      size="lg"
-                      variant="ghost"
-                      className="h-10"
-                      onClick={() => {
-                        setReadOnly(false);
-                      }}
-                      type="button"
-                    >
-                      Add labels
-                    </Button>
-                  ) : (
-                    <FormControl>
-                      <SelectEditor
-                        value={field.value}
-                        onValueChange={readOnly ? undefined : field.onChange}
-                        items={LABELS}
-                      >
-                        <SelectEditorContent>
-                          <SelectEditorInput
-                            readOnly={readOnly}
-                            placeholder={
-                              readOnly ? 'Empty' : 'Select labels...'
-                            }
-                          />
-                          {!readOnly && <SelectEditorCombobox />}
-                        </SelectEditorContent>
-                      </SelectEditor>
-                    </FormControl>
-                  )}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-      </Form>
+                ) : (
+                  <SelectEditor
+                    value={field.value}
+                    onValueChange={readOnly ? undefined : field.onChange}
+                    items={LABELS}
+                  >
+                    <SelectEditorContent>
+                      <SelectEditorInput
+                        readOnly={readOnly}
+                        placeholder={readOnly ? 'Empty' : 'Select labels...'}
+                      />
+                      {!readOnly && <SelectEditorCombobox />}
+                    </SelectEditorContent>
+                  </SelectEditor>
+                )}
+              </div>
+              {fieldState.error?.message ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {fieldState.error.message}
+                </p>
+              ) : null}
+            </div>
+          )}
+        />
+      </div>
     </div>
   );
 }

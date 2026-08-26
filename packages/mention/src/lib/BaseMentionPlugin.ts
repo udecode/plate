@@ -137,8 +137,13 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
         throw new TypeError('Mention ref must be a non-empty string.');
       }
 
-      const selection = options.at === undefined ? tx.selection() : undefined;
-      const blockPath = selection ? tx.nodes.block()?.[1] : undefined;
+      const selection =
+        options.at === undefined && tx.selection.nodes().length === 0
+          ? tx.selection()
+          : undefined;
+      const blockPath = selection
+        ? tx.nodes.block({ at: selection.focus })?.[1]
+        : undefined;
       const insertSpaceAfter =
         store.get().insertSpaceAfterMention &&
         blockPath &&

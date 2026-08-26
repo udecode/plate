@@ -15,10 +15,9 @@ jsxt;
 
 describe('BaseBlockquotePlugin', () => {
   it('decodes and encodes its HTML element claim', () => {
-    const point = { offset: 0, path: [0, 0, 0] };
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [{ children: [{ text: 'Quote' }], type: 'paragraph' }],
@@ -129,7 +128,6 @@ describe('BaseBlockquotePlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 2, path: [0, 0, 0] },
       focus: { offset: 2, path: [0, 0, 0] },
     });
@@ -260,10 +258,9 @@ describe('BaseBlockquotePlugin', () => {
 
 describe('BaseHorizontalRulePlugin', () => {
   it('decodes and encodes its void HTML element claim', () => {
-    const point = { offset: 0, path: [0, 0] };
     const editor = createBaseEditor({
       plugins: [BaseHorizontalRulePlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [{ text: '' }],
@@ -366,7 +363,6 @@ describe('basic block input rules', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0, 0] },
     });

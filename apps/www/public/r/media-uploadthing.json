@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-uploadthing",
+  "description": "media + media-uploadthing-api",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/media.json",
+    "https://platejs.org/r/media-uploadthing-api.json"
+  ],
+  "files": [],
+  "type": "registry:component"
+}

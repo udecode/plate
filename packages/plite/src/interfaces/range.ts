@@ -40,7 +40,7 @@ export interface RangeInterface {
   /**
    * Check if a range is exactly equal to another.
    */
-  equals: (range: Range, another: Range) => boolean;
+  equals: (range: Range | null, another: Range | null) => boolean;
 
   /**
    * Check if a range includes a path, a point or part of another range.
@@ -116,7 +116,10 @@ export const RangeApi: Readonly<RangeInterface> = Object.freeze({
     return end;
   },
 
-  equals(range: Range, another: Range): boolean {
+  equals(range: Range | null, another: Range | null): boolean {
+    if (range === another) return true;
+    if (!range || !another) return false;
+
     return (
       PointApi.equals(range.anchor, another.anchor) &&
       PointApi.equals(range.focus, another.focus)

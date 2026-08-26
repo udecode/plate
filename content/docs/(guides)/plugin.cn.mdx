@@ -65,6 +65,31 @@ const NoticePlugin = definePlatePlugin("noticeFeature", {
 });
 ```
 
+### 块内容
+
+Plate 默认把每个非行内元素视为普通文档流中的块内容。结构节点应在 schema 中
+声明 `blockContent: false`，而不是用该字段排除仍应可选择的块。
+
+```ts
+const RowPlugin = definePlatePlugin("row", {
+  schema: {
+    element: {
+      ...schema.element.textBlock(),
+      blockContent: false,
+    },
+  },
+});
+```
+
+通过 Plate schema API 读取编译结果：
+
+```ts
+editor.read.schema.isBlockContent(element);
+```
+
+该分类独立于 `editor.read.nodes.isSelectable(element)`。内容容器通过
+`plugins.blockContent(...)` 声明可接受的普通文档流块。
+
 ### 行内元素、Void 元素和文本属性
 
 元素行为位于 `schema.element` 中。使用 `schema.mark` 下的属性描述符声明布尔文本属性：
@@ -240,12 +265,8 @@ immutable API object。
 
 Plate 插件直接在插件根级声明 Plite 能力。使用 `readMiddleware`、`commands`、
 `corrections`、`stateFields`、`effectTypes`、`facetProviders`、
-`selectionKinds`、`contributions`、`on`、`activate` 和 `validate`，
+`contributions`、`on`、`activate` 和 `validate`，
 不再添加第二层 wrapper。
-
-`selectionKinds` 同时也是完整的类型注册。只有安装该插件的具体 editor 才会
-推断自定义 selection 的读取和写入；不要添加 module augmentation 或
-side-effect type import。
 
 ```ts showLineNumbers
 import { defineStateField } from "platejs";

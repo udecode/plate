@@ -8,11 +8,13 @@ import {
 } from '@platejs/core/react/internal';
 import type { Element, Location, Range, Value } from '@platejs/plite';
 import { NodeApi, schema } from '@platejs/plite';
+import { getEditorLiveSelection } from '@platejs/plite/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import type React from 'react';
 
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
+import { createTableNodeSelection } from '../lib/internal/selection';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
@@ -24,11 +26,11 @@ const createTableEditor = (input: TestEditor) => {
     initialValue: input.children,
   });
   const selection = editor.read.selection();
-  const tableSelection =
-    selection &&
-    editor.plugin(BaseTablePlugin).read.createCellSelection(selection);
+  const view =
+    selection && editor.plugin(BaseTablePlugin).read.selection(selection);
+  const tableSelection = view && createTableNodeSelection(view);
 
-  if (!tableSelection) throw new Error('Expected table-cell selection');
+  if (!tableSelection) throw new Error('Expected table node selection');
 
   editor.update.selection.set(tableSelection);
 
@@ -161,9 +163,8 @@ const createRootMoveEditor = (
     plugins: [TablePlugin, RootHolderPlugin],
     initialValue: { children, roots },
   });
-  const tableSelection = editor
-    .plugin(BaseTablePlugin)
-    .read.createCellSelection(sourceRange);
+  const view = editor.plugin(BaseTablePlugin).read.selection(sourceRange);
+  const tableSelection = view && createTableNodeSelection(view);
 
   if (!tableSelection) throw new Error('Expected root-aware cell selection');
 
@@ -243,7 +244,10 @@ const installEventRangeApi = <V extends Value, D extends BasePluginDefinition>(
 const runHandler = <V extends Value, D extends BasePluginDefinition>(
   editor: InternalPlateEditorWithInstalledPlugins<V, D>,
   ...[key, event]:
-    | [key: 'dragEnd' | 'dragStart' | 'drop', event: React.DragEvent]
+    | [
+        key: 'dragEnd' | 'dragOver' | 'dragStart' | 'drop',
+        event: React.DragEvent,
+      ]
     | [key: 'mouseUp', event: React.MouseEvent]
 ) => {
   const context = createPluginContext(editor, TablePlugin);
@@ -326,7 +330,7 @@ const dragSelectedCells = <V extends Value, D extends BasePluginDefinition>(
     trackCommits?: boolean;
   }
 ) => {
-  const sourceCellKey = editor.plugin(BaseTablePlugin).read.getSelection()
+  const sourceCellKey = editor.plugin(BaseTablePlugin).read.selection()
     ?.cellKeys[0];
 
   if (!sourceCellKey) throw new Error('Expected source cell id');
@@ -373,10 +377,10 @@ describe('TablePlugin table drag/drop', () => {
     const result = runHandler(editor, 'mouseUp', {} as React.MouseEvent);
 
     expect(result).toBe(true);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: range.anchor,
-      focus: range.focus,
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 0, 1],
+      focusPath: [0, 0, 0],
+      kind: 'node',
     });
     expect(editor.read.selection.ranges()).toHaveLength(2);
   });
@@ -397,7 +401,6 @@ describe('TablePlugin table drag/drop', () => {
     expect(editor.read.selection()).toMatchObject({
       anchor: range.anchor,
       focus: range.focus,
-      kind: 'text',
     });
   });
 
@@ -412,10 +415,10 @@ describe('TablePlugin table drag/drop', () => {
     expect(readTable(editor, 0)).toEqual([['', '']]);
     expect(readTable(editor, 1)).toEqual([['A', 'B']]);
     expect(commits).toHaveLength(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { path: [1, 0, 0, 0, 0] },
-      focus: { path: [1, 0, 1, 0, 0] },
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [1, 0, 0],
+      focusPath: [1, 0, 1],
+      kind: 'node',
     });
     expect(editor.read.history.undos()).toHaveLength(1);
 
@@ -428,13 +431,35 @@ describe('TablePlugin table drag/drop', () => {
     expect(readTable(editor, 1)).toEqual([['A', 'B']]);
   });
 
+  it('accepts marked browser dragover while a table drag is active', () => {
+    const editor = createCrossTableEditor();
+    const sourceCellKey = editor.plugin(BaseTablePlugin).read.selection()
+      ?.cellKeys[0];
+
+    if (!sourceCellKey) throw new Error('Expected source cell key');
+
+    const dataTransfer = {
+      setData: mock(),
+      types: ['application/x-plate-table-cell-selection'],
+    } as unknown as DataTransfer;
+    const dragStart = createDragEvent(dataTransfer, {
+      dragCellKey: sourceCellKey,
+    });
+    const dragOver = createDragEvent(dataTransfer);
+
+    expect(runHandler(editor, 'dragStart', dragStart)).toBeUndefined();
+    expect(runHandler(editor, 'dragOver', dragOver)).toBe(true);
+    expect(dragOver.preventDefault).toHaveBeenCalledTimes(1);
+    expect(dragOver.stopPropagation).toHaveBeenCalledTimes(1);
+  });
+
   it('moves one structurally selected cell', () => {
     const editor = createCrossTableEditor();
     const point = { offset: 0, path: [0, 0, 0, 0, 0] };
 
     editor.update.selection.set({ anchor: point, focus: point });
     expect(
-      editor.plugin(BaseTablePlugin).read.getSelection()?.anchors
+      editor.plugin(BaseTablePlugin).read.selection()?.anchors
     ).toHaveLength(1);
 
     dragSelectedCells(editor, {
@@ -480,16 +505,11 @@ describe('TablePlugin table drag/drop', () => {
       expect(readRootTable(editor, sourceRoot)).toEqual([['', '']]);
       expect(readRootTable(editor, targetRoot)).toEqual([['A', 'B']]);
       expect(commits).toHaveLength(1);
-      expect(editor.read.selection()).toMatchObject({
-        anchor: {
-          path: [0, 0, 0, 0, 0],
-          ...(targetRoot === undefined ? {} : { root: targetRoot }),
-        },
-        focus: {
-          path: [0, 0, 1, 0, 0],
-          ...(targetRoot === undefined ? {} : { root: targetRoot }),
-        },
-        kind: 'table-cell',
+      expect(getEditorLiveSelection(editor)).toMatchObject({
+        anchorPath: [0, 0, 0],
+        focusPath: [0, 0, 1],
+        kind: 'node',
+        ...(targetRoot === undefined ? {} : { root: targetRoot }),
       });
     }
   );

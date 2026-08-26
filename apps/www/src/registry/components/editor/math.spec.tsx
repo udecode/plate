@@ -52,13 +52,16 @@ mock.module('react-textarea-autosize', () => ({
   },
 }));
 
-mock.module('@platejs/selection/react', () => ({
-  BlockSelectionPlugin: { name: 'blockSelection' },
-}));
-
 mock.module('platejs', () => ({
   isHotkey: (hotkey: string) => (event: KeyboardEvent) =>
     event.key.toLowerCase() === hotkey.toLowerCase(),
+  SelectionApi: {
+    node: (path: number[], range: object) => ({
+      ...range,
+      kind: 'node',
+      paths: [path],
+    }),
+  },
 }));
 
 mock.module('platejs/react', () => ({
@@ -89,8 +92,8 @@ mock.module('@/components/ui/button', () => ({
   ),
 }));
 
-mock.module('@/components/ui/popover', () => ({
-  Popover: ({
+mock.module('./floating-popover', () => ({
+  FloatingPopover: ({
     children,
     onOpenChange,
     open,
@@ -106,9 +109,17 @@ mock.module('@/components/ui/popover', () => ({
       </div>
     );
   },
-  PopoverAnchor: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  PopoverContent: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  PopoverTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  FloatingPopoverAnchor: ({
+    element: anchorElement,
+  }: {
+    element: React.ReactNode;
+  }) => <>{anchorElement}</>,
+  FloatingPopoverContent: ({ children }: React.PropsWithChildren) => (
+    <>{children}</>
+  ),
+  FloatingPopoverTrigger: ({ children }: React.PropsWithChildren) => (
+    <>{children}</>
+  ),
 }));
 
 mock.module('@/lib/utils', () => ({
@@ -116,7 +127,7 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
-mock.module('@/registry/lib/suggestion', () => ({
+mock.module('@/registry/lib/inline-suggestion', () => ({
   inlineSuggestionVariants: () => '',
 }));
 

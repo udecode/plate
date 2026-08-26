@@ -55,7 +55,6 @@ const reviewedPackageSlugs = [
   'mention',
   'plate',
   'resizable',
-  'selection',
   'slash-command',
   'suggestion',
   'tabbable',

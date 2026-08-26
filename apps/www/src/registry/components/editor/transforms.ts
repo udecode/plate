@@ -453,11 +453,7 @@ export const applyBlockAction = (
       }
     }
 
-    const entries = tx.nodes.toArray({
-      match: (node): node is Element =>
-        ElementApi.isElement(node) && tx.schema.isBlock(node),
-      mode: 'lowest',
-    });
+    const entries = tx.nodes.blocks();
 
     entries.forEach((entry) => {
       setEntry(entry);

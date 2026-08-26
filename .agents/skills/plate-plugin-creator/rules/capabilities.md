@@ -291,14 +291,11 @@ State and native extension mechanics:
   inputs and runtime resources stay in the factory closure or their host owner.
 - Plate constructors expose Plite-native fields directly at the plugin root:
   `conflicts`, `readMiddleware`, `commands`, `corrections`, `stateFields`,
-  `effectTypes`, `facetProviders`, `selectionKinds`, `contributions`, `on`,
+  `effectTypes`, `facetProviders`, `contributions`, `on`,
   `activate`, and `validate`. Never recreate a nested `extension` object.
-- Declare each custom selection payload exactly once through `selectionKinds`.
-  Installed plugin inference must make the payload available to selection reads
-  and updates; never pair it with `declare module`, an ambient selection map, a
-  side-effect type import, or a broad custom-kind escape hatch. If a later
-  `read` or `update` stage consumes that payload type, an earlier dedicated
-  `.extend({ selectionKinds })` stage is a real staged-capability dependency.
+- Plugins cannot define selection kinds or own selected-node state. Use core
+  text or directional node selection, then derive plugin geometry through one
+  owner-local read. Keep DOM gesture and overlay state in presentation code.
 - Public read/update callbacks stay contravariant so an explicit annotation
   cannot manufacture an uninstalled plugin capability. Do not repair
   assignability with callback bivariance; keep any erasure at a named internal

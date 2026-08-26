@@ -169,7 +169,6 @@ describe('migratePlateV54 editor loading', () => {
         },
       ]);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       });

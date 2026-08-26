@@ -102,30 +102,8 @@ const EditorKit = [
 
 There is one option: `generateId`. There is no block filter, inline filter,
 text filter, initialization mode, paste reuse switch, duplicate-scan callback,
-hidden `_id`, or number-valued ID.
-
-The plugin's semantic property is `id`. Add a closed application-schema key
-override so its compiled key can differ without changing plugin capability
-identity:
-
-```ts
-defineEditor("app", {
-  plugins: [ElementIdPlugin],
-  schema: {
-    overrides: [
-      schema.override(ElementIdPlugin, {
-        properties: {
-          id: { key: "blockId" },
-        },
-      }),
-    ],
-  },
-});
-```
-
-This belongs to `defineEditor` schema policy, not `.configure()` or `.extend()`.
-Plugin and consumer code use the compiled property handle, never `element.id`
-or a raw key.
+hidden `_id`, or number-valued ID. The plugin-owned persisted property remains
+`id`.
 
 The same closed override narrows applicability when an application deliberately
 wants block-only IDs:
@@ -143,17 +121,21 @@ second runtime matcher.
 
 ```ts
 const elementId = editor.plugin(ElementIdPlugin);
+const key = editor.key(element);
 
-const id: string = elementId.read.id(element);
-const entry = elementId.read.entry(id);
+const id = elementId.read.id(key);
+const entry = id ? elementId.read.entry(id) : undefined;
 
 if (entry) {
-  editor.update.nodes.remove({ at: entry[0] });
+  editor.update.nodes.remove({ at: entry.key });
 }
 ```
 
+Exact schema-derived element code reads `element.id` directly. The plugin read
+accepts only `NodeKey` at erased or optionally installed boundaries.
+
 Do not accept a persisted string directly as `NodeTarget`. A raw application
-ID and a `RuntimeId` are different namespaces. The plugin-scoped lookup keeps
+ID and a `NodeKey` are different namespaces. The plugin-scoped lookup keeps
 that distinction visible and returns the generic node target that Core already
 understands.
 

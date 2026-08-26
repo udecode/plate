@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "indent-static",
+  "dependencies": [
+    "@platejs/indent"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/indent-static.tsx",
+      "content": "import { BaseIndentPlugin } from '@platejs/indent';\nimport { PLUGINS } from 'platejs';\n\nexport const BaseIndentKit = [\n  BaseIndentPlugin.configure({\n    initialState: {\n      offset: 24,\n    },\n    targetPlugins: [\n      PLUGINS.heading,\n      PLUGINS.paragraph,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.toggle,\n    ],\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/indent-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

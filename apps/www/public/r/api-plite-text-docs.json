@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-text-docs",
+  "title": "Text",
+  "description": "Plite text node types and pure text helpers.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/text.mdx",
+      "content": "---\ntitle: Text\ndescription: Plite text node types and pure text helpers.\n---\n\nText nodes contain document text and leaf marks. Pure helpers live on\n`TextApi`; editor text reads live under `editor.read.text`.\n\nSee the canonical [Text reference](/docs/plite/api/nodes/text).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/text.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

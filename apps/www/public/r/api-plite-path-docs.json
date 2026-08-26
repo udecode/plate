@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-path-docs",
+  "title": "Path",
+  "description": "Plite path types and pure path helpers.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/path.mdx",
+      "content": "---\ntitle: Path\ndescription: Plite path types and pure path helpers.\n---\n\nA path is an array of indexes locating a node inside one document root.\n\nSee the canonical [Path reference](/docs/plite/api/locations/path).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/path.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

@@ -2,10 +2,10 @@ export {
   defineEditorSchema,
   defineExtension,
   defineExtensionPoint,
-} from './core/editor-extension';
-export { defineCommand } from './core/command-registry';
-export { editorCommands } from './core/editor-commands';
-export { editorReads } from './core/editor-reads';
+} from "./core/editor-extension";
+export { defineCommand } from "./core/command-registry";
+export { editorCommands } from "./core/editor-commands";
+export { editorReads } from "./core/editor-reads";
 export type {
   AddMarkCommand,
   CollapseSelectionCommand,
@@ -25,8 +25,8 @@ export type {
   SetSelectionCommand,
   ToggleBlockCommand,
   ToggleMarkCommand,
-} from './core/editor-commands';
-export { ContentSlice } from './core/content-slice';
+} from "./core/editor-commands";
+export { ContentSlice } from "./core/content-slice";
 export type {
   Anchor,
   AnchorAssociation,
@@ -34,17 +34,17 @@ export type {
   AnchorOptions,
   AnchorValue,
   RangeAnchorAssociation,
-} from './core/anchor';
-export { DocumentChange } from './core/document-change';
-export type { JsonEditorValue, JsonNode } from './core/document-change';
-export { defineExtensionSlot } from './core/extension-slot';
+} from "./core/anchor";
+export { DocumentChange } from "./core/document-change";
+export type { JsonEditorValue, JsonNode } from "./core/document-change";
+export { defineExtensionSlot } from "./core/extension-slot";
 export type {
   EditorExtensionSlot,
   EditorExtensionSlotValue,
-} from './core/extension-slot';
-export { property, schema, target } from './core/schema-definition';
-export type { PropertyBuilderApi } from './core/schema-definition';
-export { EditorSchemaValidationError } from './core/schema-validation';
+} from "./core/extension-slot";
+export { property, schema, target } from "./core/schema-definition";
+export type { PropertyBuilderApi } from "./core/schema-definition";
+export { EditorSchemaValidationError } from "./core/schema-validation";
 export {
   createEditorSchemaContract,
   diffEditorSchemaContracts,
@@ -58,39 +58,38 @@ export {
   type EditorSchemaContractDiff,
   type EditorSchemaContractElement,
   type EditorSchemaContractRoot,
-} from './core/schema-compiler';
-export { defineFacet } from './core/facet';
-export { setEditorReadOnly } from './core/public-state';
-export { defineStateField } from './core/state-field';
-export { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
+} from "./core/schema-compiler";
+export { defineFacet } from "./core/facet";
+export { setEditorReadOnly } from "./core/public-state";
+export { defineStateField } from "./core/state-field";
+export { screenReaderAnnouncementEffect } from "./core/screen-reader-announcement";
 export {
   decodeEditorEffect,
   defineValueCodec,
   encodeEditorEffect,
   valueCodecs,
-} from './core/value-codec';
+} from "./core/value-codec";
 export {
   defineEffect,
   defineUpdateAnnotation,
   invertEffect,
   mapEffect,
-} from './core/transaction-values';
-export { txOnly } from './core/tx-only';
-export type { TxOnlyMethod } from './core/tx-only';
+} from "./core/transaction-values";
+export { txOnly } from "./core/tx-only";
+export type { TxOnlyMethod } from "./core/tx-only";
 export {
   createEditor,
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
-} from './create-editor';
-export { createEditorView } from './editor-runtime-view';
-export { isEditor } from './interfaces/editor';
+} from "./create-editor";
+export { createEditorView } from "./editor-runtime-view";
+export { isEditor } from "./interfaces/editor";
 export type {
   CompatibleEditorCommand,
   CreateEditorOptions,
   Editor,
   EditorAboveOptions,
   EditorBlockOptions,
-  EditorBlockResetOptions,
   EditorCanonicalUpdateTag,
   EditorCommand,
   EditorCommandAroundHandler,
@@ -192,8 +191,6 @@ export type {
   EditorReplaceChildrenOptions,
   EditorReplaceNodeOptions,
   EditorSelectionBlockOptions,
-  EditorSelectionMapContext,
-  EditorSelectionSpec,
   EditorSelectionTargetOptions,
   EditorSchemaGetProperty,
   EditorSchemaPropertyReadOptions,
@@ -281,23 +278,23 @@ export type {
   TransactionSpec,
   Value,
   ValueOf,
-} from './interfaces/editor';
-export { EditorExtensionPublicationError } from './core/editor-extension';
-export * from './interfaces/element';
-export * from './interfaces/location';
-export * from './interfaces/node';
-export * from './interfaces/selection';
-export type * from './interfaces/schema';
-export type * from './interfaces/schema-validation';
-export * from './interfaces/path';
-export * from './interfaces/point';
-export * from './interfaces/range';
-export * from './interfaces/text';
-export type * from './interfaces/transforms/node';
-export type * from './interfaces/transforms/selection';
-export type * from './interfaces/transforms/text';
-export type * from './types';
+} from "./interfaces/editor";
+export { EditorExtensionPublicationError } from "./core/editor-extension";
+export * from "./interfaces/element";
+export * from "./interfaces/location";
+export * from "./interfaces/node";
+export * from "./interfaces/selection";
+export type * from "./interfaces/schema";
+export type * from "./interfaces/schema-validation";
+export * from "./interfaces/path";
+export * from "./interfaces/point";
+export * from "./interfaces/range";
+export * from "./interfaces/text";
+export type * from "./interfaces/transforms/node";
+export type * from "./interfaces/transforms/selection";
+export type * from "./interfaces/transforms/text";
+export type * from "./types";
 export {
   type DebugValueScrubber,
   setDebugValueScrubber,
-} from './utils/format-debug-value';
+} from "./utils/format-debug-value";

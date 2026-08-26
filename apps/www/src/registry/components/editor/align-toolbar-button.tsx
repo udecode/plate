@@ -2,7 +2,6 @@
 
 import type { Alignment } from '@platejs/basic-styles';
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
@@ -20,8 +19,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-import { ToolbarButton } from './toolbar';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const items = [
   {
@@ -45,7 +43,7 @@ const items = [
   value: Alignment;
 }>;
 
-export function AlignToolbarButton(props: DropdownMenuProps) {
+export function AlignToolbarButton() {
   const editor = useEditor();
   const value =
     useSelectionFragmentProp({
@@ -63,7 +61,7 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
     items.find((item) => item.value === value)?.icon ?? AlignLeftIcon;
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip="Align" isDropdown>
           <IconValue />

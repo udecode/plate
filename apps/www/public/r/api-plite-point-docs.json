@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-point-docs",
+  "title": "Point",
+  "description": "Plite point types and editor point reads.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/point.mdx",
+      "content": "---\ntitle: Point\ndescription: Plite point types and editor point reads.\n---\n\nA point combines a text path with a UTF-16 offset. Pure helpers live on\n`PointApi`; editor-owned reads live under `editor.read.points`.\n\nSee the canonical [Point reference](/docs/plite/api/locations/point).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/point.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

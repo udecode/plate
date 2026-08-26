@@ -5,7 +5,6 @@ import {
   createEditor,
   type Descendant,
   type Editor,
-  SelectionApi,
   TextApi,
 } from '@platejs/plite';
 import { replace as editorReplace } from '@platejs/plite/internal';
@@ -34,7 +33,7 @@ const assertEditorIntegrity = (editor: Editor) => {
 
   const selection = editor.read.selection();
 
-  if (selection && SelectionApi.isText(selection)) {
+  if (selection) {
     for (const point of [selection.anchor, selection.focus]) {
       const entry = editor.read.nodes.get(point.path);
 

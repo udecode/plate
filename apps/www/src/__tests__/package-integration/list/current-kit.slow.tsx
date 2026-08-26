@@ -47,7 +47,6 @@ describe('ListKit current contract', () => {
     ]);
     expect(editor.read.children()[0]).toHaveProperty('id');
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

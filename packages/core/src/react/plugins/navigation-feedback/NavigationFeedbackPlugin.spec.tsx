@@ -196,7 +196,6 @@ describe('NavigationFeedbackPlugin', () => {
     });
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
@@ -247,7 +246,6 @@ describe('NavigationFeedbackPlugin', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
-      kind: 'text',
     });
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [1])

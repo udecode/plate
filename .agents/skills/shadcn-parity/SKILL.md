@@ -1,5 +1,5 @@
 ---
-description: Clone shadcn implementation patterns with source-by-source parity. Use when the user says "shadcn parity", asks to mirror shadcn, copy shadcn UX/architecture/tests, or wants more than inspiration.
+description: Clone shadcn implementation patterns with source-by-source parity. Use when the user says "shadcn parity", asks to mirror shadcn, copy shadcn UX/architecture/tests, or wants more than inspiration. Excludes post-release template output and synchronization unless explicitly scoped.
 name: shadcn-parity
 metadata:
   skiller:
@@ -26,8 +26,8 @@ The rule is simple:
 - Plate divergence only when the repo has a real constraint
 
 Plate does **not** fork shadcn CLI. Do not talk about Plate as if it owns a
-custom installer. Plate owns a registry and template sync layer around the
-upstream shadcn contract.
+custom installer. Plate owns a registry and delivery layer around the upstream
+shadcn contract.
 
 If you diverge, say exactly why.
 
@@ -46,18 +46,24 @@ Plate owns the content and delivery:
 - registry source files under `apps/www/src/registry/*`
 - registry build logic in `apps/www/scripts/build-registry.mts`
 - generated registry output under `apps/www/public/r` and `apps/www/public/rd`
-- the `@plate` namespace configured in template `components.json`
-- template sync tooling in:
-  - `tooling/scripts/update-template.sh`
-  - `tooling/scripts/prepare-local-template-registry.mjs`
+- the `@plate` namespace, provider/style policy, and create configuration under
+  `apps/www/src/lib/plate-registry-*.ts` and
+  `apps/www/src/lib/plate-create.ts`
+- dynamic registry delivery in `apps/www/src/lib/registry-response.ts` and the
+  owning routes
 
 Important boundary:
 
 - shadcn owns how registry items are resolved and installed
-- Plate owns what the registry contains and how local template sync feeds it
+- Plate owns what its registry contains and how its responses are delivered
 
 Plate's registry build is custom. The goal is still upstream parity at the
 item and resolver boundary.
+
+Plate `/create` is a thin selector for Plate editor presets. Shadcn owns the
+`create` command, preset encoding, provider names, style names, and registry
+directory resolution. Plate must not copy the upstream theme, font, color, v0,
+or full project-designer product into that route.
 
 ## Registry Rules
 
@@ -66,16 +72,23 @@ shape.
 
 When building or changing Plate registry items:
 
-- exclude `*-classic` variants, including `list-classic`, from proactive parity,
-  modernization, new variants, shared abstractions, polish, demos, and adoption
-  work; they are maintenance-only pending deprecation and may change only for a
-  user-facing regression, security/release blocker, or explicitly authorized
-  deprecation/removal
+- exclude `*-classic` items, including `list-classic`, from proactive parity,
+  modernization, new abstractions, polish, demos, and adoption work; they are
+  maintenance-only pending deprecation. This does not permit an item-level
+  provider exclusion: every retained public item installs through every
+  supported Plate provider, with coupling repaired at the direct owner instead
+  of cloning the assembly
 - check `../shadcn` first
 - copy upstream file/layout/helper patterns when they fit
 - prefer upstream naming and dependency structure over Plate-specific novelty
-- keep dynamic Plate-specific behavior in build or sync tooling, not in a fake
-  registry data model
+- keep dynamic Plate-specific behavior in build or response tooling, not in a
+  fake registry data model
+- treat Base as Plate's default provider and keep one complete semantic item
+  surface for Base and Radix; unsupported providers fail closed as providers,
+  never as filtered items inside a supported provider
+- treat Nova as Plate's default style and support the pinned upstream Nova,
+  Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea transforms only when each style
+  produces installable output for the complete public semantic registry
 
 Registry dependency rules:
 
@@ -88,7 +101,7 @@ Registry dependency rules:
   same-base item URLs such as `https://platejs.org/r/*.json`, so direct URL
   installs resolve transitive Plate items from the same registry base
 - keep legacy localhost and absolute Plate item URLs as accepted input
-  compatibility for local-file sync adapters
+  compatibility
 - treat `@shadcn/*` as compatibility input only; do not write it in Plate
   registry source or generated output
 - if upstream does not expose a small standalone item, use a small Plate
@@ -97,31 +110,30 @@ Registry dependency rules:
 - do not expand compatibility hacks into new conventions
 
 Do not fork shadcn CLI to compensate for Plate registry problems. Fix the
-registry data or the Plate sync tooling instead.
+registry data or Plate build/delivery code instead.
 
-## Template Rules
+Do not add a Plate `/init` proxy. Prove direct Base/Nova and Radix/Luma
+`shadcn create` installs against freshly built local Plate artifacts before
+changing the public create flow. Treat npm and the deployed registry directory
+as post-release smoke surfaces, not implementation gates.
 
-For template installs, shadcn CLI is still the installer. Plate supplies the
-registry.
+## Scope Boundary
 
-Template rules:
+Post-release template output is not a `$shadcn-parity` audit surface.
 
-- keep `templates/*/components.json` aligned with shadcn registry semantics
-- treat `@plate` in `components.json` as the install entrypoint for Plate
-  items
-- prefer registry fixes over template-only patches when generated output is
-  wrong
-- compare Plate output against `../shadcn` before inventing a custom rule
+- Do not inspect, modify, or gate parity on `templates/**`, template
+  `components.json`, `tooling/scripts/update-template*.sh`, or local template
+  mirror preparation.
+- Do not classify stale template output as a current registry or install
+  protocol defect. `.github/workflows/release.yml` owns template
+  synchronization after publish.
+- Include template generation only when the user explicitly asks for that
+  separate release/sync scope. Keep its findings separate from registry
+  protocol parity.
 
-For local template sync:
-
-- `--local` uses local-file mode, not localhost
-- local sync works by preparing a JSON mirror from `apps/www/public/rd`
-- local sync exists to feed upstream shadcn local-file install flow, not to
-  replace it
-
-If a change would make public installs cleaner but would break local-file sync,
-call that out and fix both sides together.
+This exclusion does not remove upstream `components.json`, URL, or local-file
+resolver semantics from protocol parity. Audit the protocol owners, not
+post-release consumers of them.
 
 ## Current Divergences
 
@@ -130,8 +142,6 @@ pattern to spread.
 
 - Plate publishes a registry from `apps/www`, not from upstream shadcn
   infrastructure
-- local template sync uses prepared JSON mirrors and local-file mode
-- template install entrypoints use the `@plate` registry in `components.json`
 - old generated registry output may still contain absolute Plate self-URLs;
   treat that as compatibility input only, not the source contract
 
@@ -143,5 +153,5 @@ Stop and reassess if you are about to do any of this:
 - invent a new Plate-only registry schema
 - replace upstream namespace behavior with raw URL sprawl
 - solve a registry issue by adding more installer logic when the data is wrong
-- patch templates by hand without checking whether the registry source is the
-  real problem
+- treat post-release template state as a registry parity failure without an
+  explicit template/release scope

@@ -1,11 +1,6 @@
 /** @jsx jsxt */
 
-import {
-  type Element,
-  ElementApi,
-  type NodeEntry,
-  schema,
-} from '@platejs/plite';
+import { ElementApi, schema, target } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
 import { createBaseEditor } from '../../editor';
@@ -75,7 +70,7 @@ describe('ElementIdPlugin', () => {
     if (!ElementApi.isElement(paragraph)) return;
     const link = paragraph.children[1];
 
-    const paragraphId = editor.plugin(ElementIdPlugin).read.id(paragraph);
+    const paragraphId = paragraph.id;
     const paragraphKey = editor.key(paragraph);
 
     expect(paragraphId).toMatch(/^element-/);
@@ -84,16 +79,52 @@ describe('ElementIdPlugin', () => {
     );
     expect(ElementApi.isElement(link)).toBe(true);
     if (!ElementApi.isElement(link)) return;
-    const linkId = editor.plugin(ElementIdPlugin).read.id(link);
+    const linkId = link.id;
 
     expect(linkId).toMatch(/^element-/);
     expect(linkId).not.toBe(paragraphId);
     expect(paragraph.children[0]).not.toHaveProperty('id');
+    if (typeof linkId !== 'string') throw new Error('Expected a link ID');
     expect(editor.plugin(ElementIdPlugin).read.entry(linkId)).toMatchObject({
       node: link,
       path: [0, 1],
       root: 'main',
     });
+  });
+
+  it('honors the configured schema target while preparing ids', () => {
+    const editor = createBaseEditor({
+      initialValue: [
+        {
+          children: [
+            { text: 'before' },
+            {
+              children: [{ text: 'link' }],
+              id: 'excluded-inline-id',
+              type: 'elementIdLink',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      plugins: [
+        ElementIdPlugin.configure({
+          initialState: { generateId: createIdFactory() },
+        }),
+        LinkPlugin,
+      ],
+      schema: {
+        overrides: [
+          schema.override(ElementIdPlugin, {
+            properties: { id: { target: target.group('block') } },
+          }),
+        ],
+      },
+    });
+    const paragraph = editor.read.children()[0];
+
+    expect(paragraph?.id).toMatch(/^element-/);
+    expect(paragraph?.children[1]).not.toHaveProperty('id');
   });
 
   it('resolves persisted ids from live keys without a caller node lookup', () => {
@@ -129,11 +160,7 @@ describe('ElementIdPlugin', () => {
     });
 
     editor.update((tx) => {
-      const entry = tx.nodes.get([0]);
-
-      if (entry && ElementApi.isElement(entry[0])) {
-        tx.nodes.duplicate([entry as NodeEntry<Element>]);
-      }
+      tx.blocks.duplicate({ at: [0] });
     });
     const copiedId = editor.read.children()[1]?.id;
 

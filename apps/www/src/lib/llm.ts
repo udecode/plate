@@ -1,6 +1,9 @@
 import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 
+import { PLATE_DEFAULT_REGISTRY_STYLE } from './plate-registry-styles';
+
 const SITE_URL = 'https://platejs.org';
+const PLATE_REGISTRY_URL = `${SITE_URL}/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
 
 type PlateLLMFrontmatter = {
   description?: string;
@@ -54,11 +57,11 @@ Source: ${docUrl}
 
 ## Registry URLs
 
-- Components index: https://platejs.org/r/new-york/registry.json
-- Docs index: https://platejs.org/r/new-york/registry-docs.json
-- Component content: https://platejs.org/r/new-york/{name}.json
+- Components index: ${PLATE_REGISTRY_URL}/registry.json
+- Docs index: ${PLATE_REGISTRY_URL}/registry-docs.json
+- Component content: ${PLATE_REGISTRY_URL}/{name}.json
 
-Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in this page can be resolved at \`https://platejs.org/r/new-york/{name}.json\`.
+Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in this page can be resolved at \`${PLATE_REGISTRY_URL}/{name}.json\`.
 
 ---
 
@@ -130,5 +133,5 @@ export const processMdxForLLMs = (content: string) =>
   content.replace(
     /<Component(?:Preview|Source)[\s\S]*?name="([^"]+)"[\s\S]*?\/>/g,
     (_match, name: string) =>
-      `[${name} registry content](https://platejs.org/r/new-york/${name}.json)`
+      `[${name} registry content](${PLATE_REGISTRY_URL}/${name}.json)`
   );

@@ -17,9 +17,7 @@ export const ExitBreakPlugin = defineBasePlugin(PLUGINS.exitBreak, {
   editOnly: true,
   update: ({ editor, tx }) => {
     const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {
-      const selection = tx.selection();
-
-      if (!selection || !tx.selection.isCollapsed()) return undefined;
+      if (!tx.selection.isCollapsed()) return undefined;
 
       const block = tx.nodes.block();
 

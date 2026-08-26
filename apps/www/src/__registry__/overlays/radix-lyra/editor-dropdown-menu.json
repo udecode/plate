@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-dropdown-menu",
+  "title": "Editor Dropdown Menu",
+  "description": "Provider-neutral dropdown menu behavior for Plate UI.",
+  "registryDependencies": [
+    "dropdown-menu"
+  ],
+  "files": [
+    {
+      "path": "src/registry/bases/radix/dropdown-menu.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  DropdownMenuContent as ShadcnDropdownMenuContent,\n  DropdownMenuTrigger as ShadcnDropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\n\nexport {\n  DropdownMenu,\n  DropdownMenuCheckboxItem,\n  DropdownMenuGroup,\n  DropdownMenuItem,\n  DropdownMenuLabel,\n  DropdownMenuPortal,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuSeparator,\n  DropdownMenuShortcut,\n  DropdownMenuSub,\n  DropdownMenuSubContent,\n  DropdownMenuSubTrigger,\n} from '@/components/ui/dropdown-menu';\n\ntype DropdownMenuContentProps = Omit<\n  React.ComponentPropsWithoutRef<'div'>,\n  'onAbort'\n> & {\n  align?: 'center' | 'end' | 'start';\n  alignOffset?: number;\n  onFinalFocus?: (event: Event) => void;\n  side?: 'bottom' | 'left' | 'right' | 'top';\n  sideOffset?: number;\n};\n\ntype DropdownMenuTriggerProps = Omit<\n  React.ComponentPropsWithoutRef<'button'>,\n  'children'\n> & {\n  children: React.ReactElement;\n};\n\nexport function DropdownMenuContent({\n  onFinalFocus,\n  ...props\n}: DropdownMenuContentProps) {\n  return (\n    <ShadcnDropdownMenuContent {...props} onCloseAutoFocus={onFinalFocus} />\n  );\n}\n\nexport function DropdownMenuTrigger({\n  children,\n  ...props\n}: DropdownMenuTriggerProps) {\n  return (\n    <ShadcnDropdownMenuTrigger {...props} asChild>\n      {children}\n    </ShadcnDropdownMenuTrigger>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/dropdown-menu.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

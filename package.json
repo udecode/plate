@@ -162,7 +162,6 @@
     "@platejs/plite-hyperscript": "workspace:^",
     "@platejs/plite-layout": "workspace:^",
     "@platejs/plite-react": "workspace:^",
-    "@platejs/selection": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/table": "workspace:^",
     "@platejs/test-utils": "workspace:^",

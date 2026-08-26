@@ -70,7 +70,7 @@ type MarkdownRuntimeOptions = Readonly<{
 
 export type MarkdownRuntime = Readonly<{
   codecs: CompiledMarkdownCodecs;
-  elementId: ((element: Element) => string) | null;
+  elementId: ((element: Element) => string | undefined) | null;
   options: MarkdownRuntimeOptions;
   registry: MarkdownPluginRegistry;
   state: MarkdownRuntimeEditorState;
@@ -85,7 +85,13 @@ export const createMarkdownRuntime = (
 
   return Object.freeze({
     codecs: compileMarkdownCodecs(editor),
-    elementId: elementId.installed ? elementId.read.id : null,
+    elementId: elementId.installed
+      ? (element) => {
+          const id = editor.read.schema.getProperty(element, 'id');
+
+          return typeof id === 'string' ? id : undefined;
+        }
+      : null,
     options: Object.freeze(options),
     registry: Object.freeze({
       has: (plugin) => editor.plugin(plugin).installed,

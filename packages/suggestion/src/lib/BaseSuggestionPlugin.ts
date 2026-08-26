@@ -985,6 +985,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         schema: { key },
         store,
       } = context;
+      const getTextSelection = () => {
+        const selection = tx.selection();
+
+        return selection &&
+          tx.selection.nodes().length === 0 &&
+          tx.selection.ranges().length === 1
+          ? selection
+          : null;
+      };
       const setNodes = (
         options: SetSuggestionNodesOptions = {}
       ): string | undefined => {
@@ -998,9 +1007,9 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           suggestionId = nanoid(),
           ...nodeOptions
         } = options ?? {};
-        const at = nodeOptions.at ?? tx.selection();
+        const { at } = nodeOptions;
 
-        if (!at) return undefined;
+        if (at === undefined && !tx.selection()) return undefined;
 
         const queryAt = RangeApi.isRange(at)
           ? { anchor: RangeApi.start(at), focus: RangeApi.end(at) }
@@ -1138,7 +1147,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         });
 
         while (true) {
-          const pointCurrent = tx.selection()?.anchor;
+          const pointCurrent = getTextSelection()?.anchor;
 
           if (!pointCurrent) break;
 
@@ -1306,7 +1315,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             break;
           }
 
-          const currentSelection = tx.selection();
+          const currentSelection = getTextSelection();
 
           if (
             currentSelection &&
@@ -1350,7 +1359,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       }: DeleteSuggestionFragmentOptions = {}): string | undefined => {
         if (store.get().currentUserId === null) return undefined;
 
-        const selection = tx.selection();
+        const selection = getTextSelection();
 
         if (!selection) return undefined;
 
@@ -1518,7 +1527,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
           deleteFragment();
 
-          const selection = tx.selection();
+          const selection = getTextSelection();
 
           if (!selection) return;
 
@@ -1537,7 +1546,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
           if (currentUserId === null) return;
 
-          const selection = tx.selection();
+          const selection = getTextSelection();
 
           if (!selection) return;
 
@@ -1562,7 +1571,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
 
           tx.nodes.insert(
             { ...properties, [key]: true, text },
-            { at: tx.selection() ?? selection, select: true }
+            { at: getTextSelection() ?? selection, select: true }
           );
         },
         reject: (description: ResolvedSuggestion) => {
@@ -1726,12 +1735,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           if (nodes.length === 0) return;
 
           const selection = tx.selection();
+          const at = tx.selection.nodes().at(-1)?.[1] ?? selection ?? undefined;
 
-          if (!selection) return;
+          if (!at) return;
 
           const { id, createdAt } =
             tx.suggestion.findIdentity({
-              at: selection,
+              at,
               type: 'remove',
             }) ?? api.createIdentity();
 
@@ -1880,9 +1890,15 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return next();
           }
 
+          const currentSelection = state.selection();
+
           const selection =
             input.options?.at === undefined
-              ? state.selection()
+              ? currentSelection &&
+                state.selection.nodes().length === 0 &&
+                state.selection.ranges().length === 1
+                ? currentSelection
+                : null
               : state.ranges.get(input.options.at);
 
           if (!selection) return next();
@@ -1920,9 +1936,17 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           });
         }),
         around(editorCommands.delete, ({ input, state, tags, next }) => {
-          const selection = state.selection();
+          const currentSelection = state.selection();
 
-          if (!selection) return next();
+          if (
+            !currentSelection ||
+            state.selection.nodes().length > 0 ||
+            state.selection.ranges().length !== 1
+          ) {
+            return next();
+          }
+
+          const selection = currentSelection;
 
           const reverse = input.direction === 'backward';
           const pointTarget = reverse
@@ -1973,6 +1997,10 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return false;
           }
 
+          if (input.at === undefined && state.selection.nodes().length > 0) {
+            return false;
+          }
+
           const selection =
             input.at === undefined
               ? state.selection()
@@ -1999,10 +2027,23 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             return false;
           }
 
-          const selection = state.selection();
-          const above = state.nodes.above({ match: ElementApi.isElement });
+          const currentSelection = state.selection();
 
-          if (!selection || !above) return state.transaction(() => {});
+          if (
+            !currentSelection ||
+            state.selection.nodes().length > 0 ||
+            state.selection.ranges().length !== 1
+          ) {
+            return next();
+          }
+
+          const selection = currentSelection;
+          const above = state.nodes.above({
+            at: selection.focus,
+            match: ElementApi.isElement,
+          });
+
+          if (!above) return state.transaction(() => {});
 
           const [node, path] = above;
 

@@ -6,6 +6,7 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  type Selection,
   SelectionApi,
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
@@ -41,6 +42,8 @@ import {
   dispatchCommand,
   editorCommands,
   failInvariant,
+  getSelection as getEditorSelection,
+  getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
 import {
@@ -425,7 +428,7 @@ const moveSelectionAndRespectBoundaries = ({
   if (writeViewSelection) {
     writeMainRootViewSelection(
       editor,
-      editor.read((state) => state.selection()),
+      getSelectionDOMRange(editor, getEditorSelection(editor)),
       viewSelectionRootElement,
       domPhaseScheduler
     );
@@ -442,7 +445,7 @@ export const getKeyboardSelectableVerticalNavigationTarget = ({
     KeyboardEvent<HTMLDivElement>,
     'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'
   >;
-  selection: Range | null;
+  selection: Range | Selection;
 }) => {
   if (
     event.altKey ||
@@ -454,18 +457,25 @@ export const getKeyboardSelectableVerticalNavigationTarget = ({
     return null;
   }
 
-  if (event.key === 'ArrowDown' && SelectionApi.isNode(selection)) {
-    const nodeSelection = getKeyboardSelectableNodeSelection(
-      editor,
-      selection.path
+  if (SelectionApi.isNode(selection)) {
+    const firstPath = selection.paths[0];
+    const lastPath = selection.paths.at(-1);
+    const entersKeyboardSelectableOwner =
+      event.key === 'ArrowDown' &&
+      selection.paths.length === 1 &&
+      lastPath &&
+      getKeyboardSelectableNodeSelection(editor, lastPath);
+    const point = editor.read((state) =>
+      event.key === 'ArrowUp'
+        ? (state.points.before(firstPath) ?? state.points.start(firstPath))
+        : lastPath
+          ? entersKeyboardSelectableOwner
+            ? state.points.start(lastPath)
+            : (state.points.after(lastPath) ?? state.points.end(lastPath))
+          : null
     );
 
-    return nodeSelection
-      ? SelectionApi.text({
-          anchor: nodeSelection.anchor,
-          focus: nodeSelection.focus,
-        })
-      : null;
+    return point ? SelectionApi.text({ anchor: point, focus: point }) : null;
   }
 
   if (
@@ -521,7 +531,7 @@ export const applyEditableCaretMovement = ({
   editor: ReactRuntimeEditor;
   event: KeyboardEvent<HTMLDivElement>;
   preferredX?: number;
-  selection: Range | null;
+  selection: Range | Selection;
 }): EditableCaretMovementResult => {
   const { nativeEvent } = event;
   const keyboardSelectableTarget =
@@ -540,6 +550,10 @@ export const applyEditableCaretMovement = ({
     });
 
     return caretMovementHandled();
+  }
+
+  if (!RangeApi.isRange(selection)) {
+    return caretMovementUnhandled();
   }
 
   const ownerlessViewSelectionRange = measureCaretPhase(

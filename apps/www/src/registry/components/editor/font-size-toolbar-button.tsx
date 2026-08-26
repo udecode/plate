@@ -6,14 +6,15 @@ import { Minus, Plus } from 'lucide-react';
 import { useEditor, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-
-import { ToolbarButton } from './toolbar';
+import {
+  FloatingPopover as Popover,
+  FloatingPopoverContent as PopoverContent,
+  FloatingPopoverTrigger as PopoverTrigger,
+} from '@/registry/components/editor/floating-popover';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const DEFAULT_FONT_SIZE = '16';
 
@@ -93,10 +94,10 @@ export function FontSizeToolbarButton() {
       </ToolbarButton>
 
       <Popover open={isFocused} modal={false}>
-        <PopoverTrigger asChild>
-          <input
+        <PopoverTrigger>
+          <Input
             className={cn(
-              'h-full w-10 shrink-0 bg-transparent px-1 text-center text-sm hover:bg-muted'
+              'h-full w-10 shrink-0 border-none bg-transparent px-1 text-center hover:bg-muted focus-visible:ring-transparent'
             )}
             value={displayValue}
             onBlur={() => {
@@ -122,25 +123,25 @@ export function FontSizeToolbarButton() {
         </PopoverTrigger>
         <PopoverContent
           className="w-10 px-px py-1"
-          onOpenAutoFocus={(e) => {
+          onInitialFocus={(e) => {
             e.preventDefault();
           }}
         >
           {FONT_SIZES.map((size) => (
-            <button
+            <Button
               key={size}
-              className={cn(
-                'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
-              )}
+              className={cn('h-8 w-full data-[highlighted=true]:bg-accent')}
               onClick={() => {
                 editor.plugin(FontSizePlugin).update.set(`${size}px`);
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}
+              size="sm"
               type="button"
+              variant="ghost"
             >
               {size}
-            </button>
+            </Button>
           ))}
         </PopoverContent>
       </Popover>

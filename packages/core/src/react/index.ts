@@ -4,6 +4,7 @@ export * from './plite-react';
 export * from './components/Plate';
 export * from './components/PlateContainer';
 export * from './components/PlateContent';
+export * from './components/NodeSelection';
 export * from './components/PlateRoot';
 export * from './components/PlateView';
 export * from './components/plate-nodes';

@@ -4,11 +4,18 @@ import type {
   ElementEntry,
   Location,
   Node,
+  NodeSelection,
   Path,
   Range,
   NodeKey,
 } from '@platejs/plite';
-import { ElementApi, PathApi, PointApi, RangeApi } from '@platejs/plite';
+import {
+  ElementApi,
+  PathApi,
+  PointApi,
+  RangeApi,
+  SelectionApi,
+} from '@platejs/plite';
 import { failInvariant } from '@platejs/plite/internal';
 
 import type { TableCellElement } from '../BaseTablePlugin';
@@ -47,6 +54,7 @@ type ReadTableSelectionOptions = Readonly<{
   at?: Location;
   cellTypes: readonly string[];
   expansion?: TableSelectionExpansion;
+  selection?: Range | null;
   tableType: string;
 }>;
 
@@ -198,6 +206,7 @@ export const readTableSelection = (
     at,
     cellTypes,
     expansion = 'span-closure',
+    selection: currentSelection = state.selection(),
     tableType,
   }: ReadTableSelectionOptions
 ): TableSelectionView | null => {
@@ -231,7 +240,7 @@ export const readTableSelection = (
 
     return view;
   };
-  const location = at ?? state.selection();
+  const location = at ?? currentSelection;
 
   if (!location) return publish(null);
 
@@ -247,7 +256,9 @@ export const readTableSelection = (
 
   const root =
     selection.anchor.root ??
-    (at === undefined ? state.selection.root() : state.view.root());
+    (at === undefined
+      ? SelectionApi.root(state.selection())
+      : state.view.root());
   const inRoot = (point: Range['anchor']) =>
     root === undefined ? point : { ...point, root };
 
@@ -300,7 +311,12 @@ export const readTableSelection = (
     cell.cell,
     tablePath.concat(cell.path),
   ]);
-  const cellKeys = Object.freeze(anchors.map(({ cell }) => state.key(cell)));
+  const keyAt = (path: Path) =>
+    state.key(root === undefined ? path : { offset: 0, path, root }) ??
+    failInvariant('Expected node key to be defined');
+  const cellKeys = Object.freeze(
+    cellEntries.map(([, path]) => keyAt(path))
+  );
   const cellKeySet = new Set(cellKeys);
 
   return publish(
@@ -318,11 +334,30 @@ export const readTableSelection = (
       ...(root === undefined ? {} : { root }),
       selection,
       table,
-      tableKey: state.key(table),
+      tableKey: keyAt(tablePath),
       tablePath,
       version: snapshot.version,
     })
   );
+};
+
+export const createTableNodeSelection = (
+  view: TableSelectionView
+): NodeSelection | null => {
+  if (view.cellEntries.length <= 1) return null;
+
+  const paths = view.cellEntries.map(([, path]) => path);
+  const first = paths[0];
+  const anchorPath = view.tablePath.concat(view.anchor.path);
+  const focusPath = view.tablePath.concat(view.focus.path);
+
+  if (!first) return null;
+
+  return SelectionApi.nodes([first, ...paths.slice(1)], {
+    anchorPath,
+    focusPath,
+    ...(view.root === undefined ? {} : { root: view.root }),
+  });
 };
 
 export const readTableSelectionViewMetrics = (): TableSelectionViewMetrics => ({
@@ -393,7 +428,7 @@ export const projectTableSelection = (view: TableSelectionView): Element => {
   }
 
   return {
+    ...view.table,
     children: rows.map(({ children, row }) => ({ ...row, children })),
-    type: view.table.type,
   };
 };

@@ -1,7 +1,6 @@
 'use client';
 
 import { TablePlugin } from '@platejs/table/react';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   ArrowDown,
   ArrowLeft,
@@ -17,6 +16,7 @@ import {
 import { useEditor, useEditorSelector, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,33 +26,29 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+} from '@/registry/components/editor/dropdown-menu';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-import { ToolbarButton } from './toolbar';
-
-export function TableToolbarButton(props: DropdownMenuProps) {
-  const tableSelected = useEditorSelector((editor) =>
-    editor.read.nodes.some({
-      type: TablePlugin,
-    })
+export function TableToolbarButton() {
+  const tableSelected = useEditorSelector(
+    (editor) => editor.plugin(TablePlugin).read.selection() !== null
+  );
+  const canMergeSelection = useEditorSelector((editor) =>
+    editor.plugin(TablePlugin).read.canMerge()
+  );
+  const canSplitSelection = useEditorSelector((editor) =>
+    editor.plugin(TablePlugin).read.canSplit()
   );
 
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
-  const canMerge = useEditorSelector(
-    (innerEditor) =>
-      !disableMerge && innerEditor.plugin(TablePlugin).read.canMerge()
-  );
-  const canSplit = useEditorSelector(
-    (innerEditor2) =>
-      !disableMerge && innerEditor2.plugin(TablePlugin).read.canSplit()
-  );
+  const canMerge = !disableMerge && canMergeSelection;
+  const canSplit = !disableMerge && canSplitSelection;
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
-      <DropdownMenuTrigger asChild>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger>
         <ToolbarButton
           aria-label="Table"
           className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
@@ -66,7 +62,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
       <DropdownMenuContent
         className="flex w-[180px] min-w-0 flex-col"
         align="start"
-        onCloseAutoFocus={(event) => {
+        onFinalFocus={(event) => {
           event.preventDefault();
           editor.api.dom.focus();
         }}
@@ -327,7 +323,9 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
                       ] = element;
                     }}
                     aria-colindex={colIndex + 1}
-                    aria-label={`Insert ${rowIndex + 1} by ${colIndex + 1} table`}
+                    aria-label={`Insert ${rowIndex + 1} by ${
+                      colIndex + 1
+                    } table`}
                     aria-rowindex={rowIndex + 1}
                     aria-selected={isSelected}
                     autoFocus={isActive}

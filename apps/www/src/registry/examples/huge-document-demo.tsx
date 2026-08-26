@@ -1,11 +1,15 @@
 'use client';
 
+import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import Link from 'next/link';
 import type { Value } from 'platejs';
 import {
   createPlateEditor,
+  ParagraphPlugin,
   Plate,
   PlateContent,
+  PlateElement,
+  type PlateElementProps,
   useElementSelected,
 } from 'platejs/react';
 import React, {
@@ -99,6 +103,11 @@ const DEFAULT_CONFIG: Config = {
   showSelectedHeadings: false,
   strictMode: false,
 };
+
+const PlateRenderConfigContext = React.createContext({
+  contentVisibility: false,
+  showSelectedHeadings: false,
+});
 
 function getDocumentSearchParams() {
   if (typeof document === 'undefined') return null;
@@ -287,6 +296,10 @@ const createEditor = ({
 
   return createPlateEditor({
     initialValue: structuredClone(initialValue),
+    plugins: [
+      ParagraphPlugin.configure({ component: HugeDocumentPlateParagraph }),
+      HeadingPlugin.configure({ component: HugeDocumentPlateHeading }),
+    ],
   }) as unknown as Editor;
 };
 
@@ -317,77 +330,74 @@ const Chunk = ({
   );
 };
 
-const PlateHeading = ({
-  children,
-  showSelectedHeadings = false,
-  style: styleProp,
-  ...props
-}: React.ComponentProps<'h1'> & { showSelectedHeadings: boolean }) => {
+const HugeDocumentPlateHeading = (
+  props: PlateElementProps<typeof HeadingPlugin>
+) => {
+  const { contentVisibility, showSelectedHeadings } = React.useContext(
+    PlateRenderConfigContext
+  );
   const selected = useElementSelected();
   const highlightSelected = showSelectedHeadings && selected;
-  const style = {
-    ...styleProp,
-    color: highlightSelected ? 'green' : undefined,
-  };
+  const tag = `h${props.element.level}` as const;
 
   return (
-    <h1
+    <PlateElement
       {...props}
-      data-selected={highlightSelected ? '' : undefined}
-      style={style}
-    >
-      {children}
-    </h1>
+      as={tag}
+      attributes={{
+        ...props.attributes,
+        'data-selected': highlightSelected ? '' : undefined,
+      }}
+      style={{
+        color: highlightSelected ? 'green' : undefined,
+        contentVisibility: contentVisibility ? 'auto' : undefined,
+      }}
+    />
   );
 };
 
-const Paragraph = 'p';
+const HugeDocumentPlateParagraph = (
+  props: PlateElementProps<typeof ParagraphPlugin>
+) => {
+  const { contentVisibility } = React.useContext(PlateRenderConfigContext);
 
-const Element = ({
+  return (
+    <PlateElement
+      {...props}
+      as="p"
+      style={{ contentVisibility: contentVisibility ? 'auto' : undefined }}
+    />
+  );
+};
+
+const SlateElement = ({
   attributes,
   children,
   contentVisibility,
   element,
-  engine,
-  showSelectedHeadings,
 }: {
   attributes: any;
   children: React.ReactNode;
   contentVisibility: boolean;
   element: { type?: string };
-  engine: EngineKind;
-  showSelectedHeadings: boolean;
 }) => {
   const style: CSSProperties = {
     contentVisibility: contentVisibility ? 'auto' : undefined,
   };
 
   switch (element.type) {
-    case 'h1':
     case 'heading-one': {
-      if (engine === 'upstream-slate') {
-        return (
-          <h1 {...attributes} style={style}>
-            {children}
-          </h1>
-        );
-      }
-
       return (
-        <PlateHeading
-          {...attributes}
-          showSelectedHeadings={showSelectedHeadings}
-          style={style}
-        >
+        <h1 {...attributes} style={style}>
           {children}
-        </PlateHeading>
+        </h1>
       );
     }
     default: {
       return (
-        <Paragraph {...attributes} style={style}>
+        <p {...attributes} style={style}>
           {children}
-        </Paragraph>
+        </p>
       );
     }
   }
@@ -502,14 +512,20 @@ function EnginePane({
 
   const renderElement = useCallback(
     (props: any) => (
-      <Element
+      <SlateElement
         {...props}
         contentVisibility={config.contentVisibilityMode === 'element'}
-        engine={engine}
-        showSelectedHeadings={config.showSelectedHeadings}
       />
     ),
-    [config.contentVisibilityMode, config.showSelectedHeadings, engine]
+    [config.contentVisibilityMode]
+  );
+
+  const plateRenderConfig = useMemo(
+    () => ({
+      contentVisibility: config.contentVisibilityMode === 'element',
+      showSelectedHeadings: config.showSelectedHeadings,
+    }),
+    [config.contentVisibilityMode, config.showSelectedHeadings]
   );
 
   const renderChunk = useCallback(
@@ -547,12 +563,13 @@ function EnginePane({
         afterChange.current = true;
       }}
     >
-      <PlateContent
-        domStrategy={config.chunking ? ('auto' as const) : ('full' as const)}
-        placeholder="Enter some text…"
-        renderElement={renderElement as any}
-        spellCheck
-      />
+      <PlateRenderConfigContext.Provider value={plateRenderConfig}>
+        <PlateContent
+          domStrategy={config.chunking ? ('auto' as const) : ('full' as const)}
+          placeholder="Enter some text…"
+          spellCheck
+        />
+      </PlateRenderConfigContext.Provider>
     </Plate>
   );
 

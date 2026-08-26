@@ -14,7 +14,7 @@ persistent, while `tx.anchor` is limited to one transaction callback.
 ```typescript
 const selection = editor.read.selection();
 
-if (!selection || selection.kind !== "text") return;
+if (!selection) return;
 
 const target = editor.anchor(selection, {
   association: "inward",

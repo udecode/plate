@@ -113,7 +113,6 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       'inline:false;void:false;editableIsland:false;readOnly:true;selectable:true;document:unchanged'
     );
     await named.selection.select({
-      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 2 },
       focus: { path: [1, 1, 0], offset: 2 },
     });
@@ -135,13 +134,11 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       'inline:false;void:false;editableIsland:false;readOnly:false;selectable:false;document:unchanged'
     );
     await named.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [1, 2], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
     await named.root.press('ArrowLeft');
     await named.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 'before'.length - 1 },
       focus: { path: [1, 0], offset: 'before'.length - 1 },
     });
@@ -151,7 +148,6 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       'inline:false;void:false;editableIsland:false;readOnly:false;selectable:true;document:unchanged'
     );
     await named.selection.select({
-      kind: 'text',
       anchor: { path: [1, 1, 0], offset: 2 },
       focus: { path: [1, 1, 0], offset: 2 },
     });

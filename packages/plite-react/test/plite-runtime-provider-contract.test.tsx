@@ -839,7 +839,6 @@ describe('PliteRuntime provider contract', () => {
     });
 
     expect(result.current).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 6, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     });
@@ -1230,7 +1229,6 @@ describe('PliteRuntime provider contract', () => {
 
       expect(update).not.toHaveBeenCalled();
       expect(editor.read((state) => state.selection())).toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -1871,7 +1869,6 @@ describe('PliteRuntime provider contract', () => {
     render(<RuntimeViews />);
 
     const expectedSelection = {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 6, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     };

@@ -1,0 +1,34 @@
+---
+id: 2026-08-25-base-first-registry
+date: 2026-08-25
+status: draft
+kind: behavior
+summary: 'Install Base-first registry code with eight shadcn styles'
+change: { 'type': 'source', 'date': '2026-08-25', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-08-25-plate-ui-base-default-registry-provider-7575016d","kind":"behavior","migrationNotes":[]} -->
+
+- **`plate-ui`**, **`toolbar`**, **`floating-popover`**, **`editor-dropdown-menu`**, **`editor-context-menu`**: Install Base UI source with `base-nova` by default. Explicit Radix styles select the matching interaction adapters.
+
+<!-- entry: {"id":"2026-08-25-eight-shadcn-registry-code-styles-ae6bb30f","kind":"behavior","migrationNotes":[]} -->
+
+- **`plate-ui`**, **`toolbar`**, **`floating-popover`**: Install Nova, Vega, Maia, Lyra, Mira, Luma, Sera, or Rhea code styles without duplicating the complete editor registry.
+
+<!-- entry: {"id":"2026-08-25-provider-neutral-registry-consumers-e93d3b54","kind":"fix","migrationNotes":[]} -->
+
+- **`block-menu`**, **`code-block`**, **`code-drawing`**, **`comment`**, **`emoji-picker`**, **`font-color-toolbar-button`**, **`font-size-toolbar-button`**, **`footnote`**, **`math`**, **`table`**, **`table-toolbar-button`**, **`turn-into-toolbar-button`**: Compose popovers, dropdowns, and context menus through the selected provider without provider-specific trigger, focus, delay, or value props in consumer code.
+
+<!-- entry: {"id":"2026-08-25-classic-supported-providers-07aeb0d6","kind":"fix","migrationNotes":[]} -->
+
+- **`autoformat-classic`**, **`fixed-toolbar-classic`**, **`fixed-toolbar-classic-buttons`**, **`floating-toolbar-classic`**, **`floating-toolbar-classic-buttons`**, **`insert-toolbar-classic-button`**, **`list-classic`**, **`list-classic-toolbar-button`**, **`transforms-classic`**, **`turn-into-toolbar-classic-button`**: Install the classic editor graph with Base or Radix through the same semantic item ids.
+
+<!-- entry: {"id":"2026-08-25-fumadocs-supported-providers-7dca80c5","kind":"fix","migrationNotes":[]} -->
+
+- **`fumadocs`**: Install the docs block with Base or Radix without fixed Radix primitive packages.
+
+<!-- entry: {"id":"2026-08-25-fresh-create-project-build","kind":"fix","migrationNotes":[]} -->
+
+- **`editor-basic`**, **`ai`**, **`date`**, **`link`**, **`suggestion-style`**: Create a fresh Next project with a complete dependency graph, collision-free inline-suggestion imports, and current copied-source types.

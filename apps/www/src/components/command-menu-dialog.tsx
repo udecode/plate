@@ -62,7 +62,7 @@ const commandMenuCopyableRegistryNames = new Set(
   `
   ai align autoformat-classic autoformat basic-blocks
   basic-marks basic-nodes block-menu block-placeholder
-  block-selection callout code-block code-drawing column
+  callout code-block code-drawing column
   comment copilot cursor-overlay date discussion dnd
   docx docx-export editor-static editor-plugins emoji exit-break
   fixed-toolbar-classic fixed-toolbar floating-toolbar
@@ -71,7 +71,7 @@ const commandMenuCopyableRegistryNames = new Set(
   media media-uploadthing mention slash suggestion
   tabbable table toc toggle
   ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
-  basic-nodes-demo block-menu-demo block-selection-demo callout-demo
+  basic-nodes-demo block-menu-demo node-selection-demo callout-demo
   code-block-demo code-drawing-demo collaboration-demo column-demo
   controlled-demo copilot-demo cursor-overlay-demo date-demo discussion-demo
   dnd-demo editable-voids-demo emoji-demo equation-demo excalidraw-demo

@@ -93,7 +93,6 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 2, path: [1, 0, 0] },
       focus: { offset: 2, path: [1, 0, 0] },
     });
@@ -112,7 +111,6 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 2, path: [1, 0, 0] },
       focus: { offset: 2, path: [1, 0, 0] },
     });
@@ -173,7 +171,10 @@ describe('editor block transforms', () => {
       { children: [{ text: 'one' }], type: 'paragraph' },
       { children: [{ text: 'two' }], level: 1, type: 'heading' },
     ]);
-    expect(editor.read.selection()).toEqual(selection);
+    expect(editor.read.selection()).toEqual({
+      anchor: selection.anchor,
+      focus: selection.focus,
+    });
   });
 
   it('upserts a list action by its list identity', () => {
@@ -238,7 +239,6 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [2, 0, 0] },
       focus: { offset: 0, path: [2, 0, 0] },
     });
@@ -267,7 +267,6 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });

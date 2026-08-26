@@ -2,7 +2,7 @@ import type { MarkdownEditor } from '@platejs/markdown';
 import { BaseTableCellPlugin, BaseTablePlugin } from '@platejs/table';
 import type { UIMessage } from 'ai';
 import dedent from 'dedent';
-import { ElementApi, type BaseEditor, type Element, RangeApi } from 'platejs';
+import { type BaseEditor, RangeApi } from 'platejs';
 
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
@@ -266,28 +266,13 @@ const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
 /** Check if the current selection fully covers all top-level blocks. */
 export const isMultiBlocks = (editor: BaseEditor) =>
   editor.read((state) => {
-    const selection = state.selection();
+    if (!state.selection()) return false;
 
-    if (!selection) return false;
-
-    return (
-      state.nodes.toArray({
-        at: selection,
-        match: (node) =>
-          ElementApi.isElement(node) && state.schema.isBlock(node),
-        mode: 'lowest',
-      }).length > 1
-    );
+    return state.nodes.blocks().length > 1;
   });
 
 export const serializePromptBlocks = (editor: MarkdownEditor) => {
-  const blocks = editor.read.nodes
-    .toArray({
-      match: (node): node is Element =>
-        ElementApi.isElement(node) && editor.read.schema.isBlock(node),
-      mode: 'lowest',
-    })
-    .map(([node]) => node);
+  const blocks = editor.read.nodes.blocks().map(([node]) => node);
 
   return editor.api.markdown.serialize({
     value: { children: blocks },
@@ -300,12 +285,9 @@ export const getMarkdownWithSelection = (editor: MarkdownEditor) =>
 
 /** Check if the current selection is inside a table cell */
 export const isSelectionInTable = (editor: BaseEditor): boolean => {
-  const selection = editor.read.selection();
-
-  if (!selection) return false;
+  if (!editor.read.selection()) return false;
 
   const tableEntry = editor.read.nodes.block({
-    at: selection,
     type: BaseTablePlugin,
   });
 
@@ -314,13 +296,10 @@ export const isSelectionInTable = (editor: BaseEditor): boolean => {
 
 /** Check if selection is within a single table cell */
 export const isSingleCellSelection = (editor: BaseEditor): boolean => {
-  const selection = editor.read.selection();
-
-  if (!selection) return false;
+  if (!editor.read.selection()) return false;
 
   // Get all td blocks in selection
   const cells = editor.read.nodes.toArray({
-    at: selection,
     type: BaseTableCellPlugin,
   });
 

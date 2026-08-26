@@ -238,7 +238,8 @@ export {
   assertSelectionSupported,
   decodeEditorSelection,
   encodeEditorSelection,
-  getSelectionPrimaryRange,
+  getSelectionDOMRange,
+  getSelectionRange,
   mapSelectionThroughChange,
 } from '../core/selection-protocol';
 export { createEditorEffect } from '../core/transaction-values';

@@ -287,7 +287,18 @@ export function compileTableGrid(
       throw new Error(`No table found at path ${tablePath}`);
     }
 
-    return compileTableElement(table, (cell) => state.key(cell));
+    return compileTableElement(table, (_cell, path) => {
+      const cellPath = tablePath.concat(path);
+      const key = state.key(
+        root ? { offset: 0, path: cellPath, root } : cellPath
+      );
+
+      if (!key) {
+        throw new Error(`No table cell key found at path ${cellPath}`);
+      }
+
+      return key;
+    });
   }
 
   return compileTableElement(stateOrTable as Element);

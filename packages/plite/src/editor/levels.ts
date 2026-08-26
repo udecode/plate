@@ -7,6 +7,7 @@ import type {
   AnyEditor as Editor,
   EditorLevelsOptions,
 } from '../interfaces/editor';
+import { LocationApi } from '../interfaces/location';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
 import { normalizeNodeMatch } from '../utils/node-match';
 
@@ -21,7 +22,7 @@ export function* levels<T extends Node>(
   } = options;
   const match = normalizeNodeMatch(options.type, options.match) ?? (() => true);
 
-  if (!at) {
+  if (!at || !LocationApi.isLocation(at)) {
     return;
   }
 

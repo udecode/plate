@@ -30,13 +30,11 @@ import type {
   EditorNodesReadOptions,
   EditorNodesOptions,
   EditorParentOptions,
-  EditorBlockOptions,
   EditorPathOptions,
   EditorPointOptions,
   EditorCorrectionTransaction,
   EditorSnapshot,
   EditorSelectionBlockOptions,
-  EditorSelectionTargetOptions,
   EditorStateFragmentApi,
   EditorStateField,
   EditorStateMarksApi,
@@ -72,10 +70,11 @@ import type {
   TransactionSpec,
   Value,
 } from '../interfaces/editor';
-import type {
-  Element,
-  ElementIn,
-  ElementOrTextIn,
+import {
+  ElementApi,
+  type Element,
+  type ElementIn,
+  type ElementOrTextIn,
 } from '../interfaces/element';
 import { LocationApi, type Location, type Span } from '../interfaces/location';
 import {
@@ -97,10 +96,15 @@ import type {
   EditorSchemaIdentity,
   SchemaPropertyHandle,
 } from '../interfaces/schema';
-import { SelectionApi } from '../interfaces/selection';
+import {
+  type NodeSelection,
+  SelectionApi,
+  type SelectionValue,
+} from '../interfaces/selection';
 import type { Text } from '../interfaces/text';
 import type {
   BlockDuplicateOptions,
+  NodeDuplicateOptions,
   NodeInsertNodesOptions,
   NodeUnsetNodesOptions,
 } from '../interfaces/transforms/node';
@@ -125,7 +129,6 @@ import {
   applyMove,
   select,
   setPoint,
-  setSelection,
 } from '../transforms-selection';
 import { deleteText } from '../transforms-text';
 import type { MaximizeMode } from '../types/types';
@@ -167,6 +170,7 @@ import { editorCommands } from './editor-commands';
 import {
   isEditorNodeSelectable,
   projectEditorExportSlice,
+  projectEditorGetSlice,
 } from './editor-read-execution';
 import {
   getEditorRuntime,
@@ -211,7 +215,6 @@ import { normalizeNodeUnsetInput } from './node-property-mutation';
 import { profileCoreDuration } from './profiling';
 import {
   getPublicExplicitLocationRoot,
-  getPublicExplicitRangeRoot,
   getReadLocationRoot,
   MAIN_ROOT_KEY,
   requireMutableRoot,
@@ -227,11 +230,8 @@ import {
 import { EditorSchemaValidationError } from './schema-validation';
 import {
   assertSelectionSupported,
-  getSelectionPrimaryRange,
+  getSelectionRange,
   getSelectionRanges,
-  getSelectionReplacementRange,
-  getSelectionSpecMarks,
-  getSelectionSpecSlice,
   isValidEditorSelection,
   mapSelectionThroughChange,
 } from './selection-protocol';
@@ -945,18 +945,33 @@ const withLocationRootRead = <T>(
 
 const withOptionsRootRead = <T>(
   editor: Editor,
-  options: { at?: Location | Span } | undefined,
+  options: { at?: Location | NodeSelection | Span } | undefined,
   fn: () => T,
   queryOptions?: { selectionFallback?: boolean }
-): T => withLocationRootRead(editor, options?.at, fn, queryOptions);
+): T => {
+  if (SelectionApi.isNode(options?.at)) {
+    return withEditorRootChildren(editor, options.at.root ?? MAIN_ROOT_KEY, fn);
+  }
+
+  return withLocationRootRead(editor, options?.at, fn, queryOptions);
+};
 
 const withOptionsRootGenerator = <T>(
   editor: Editor,
-  options: { at?: Location | Span } | undefined,
+  options: { at?: Location | NodeSelection | Span } | undefined,
   create: () => Iterable<T>,
   queryOptions?: { selectionFallback?: boolean }
 ): Generator<T, void, undefined> =>
   (function* rootedReadGenerator() {
+    if (SelectionApi.isNode(options?.at)) {
+      yield* withEditorRootChildrenGenerator(
+        editor,
+        options.at.root ?? MAIN_ROOT_KEY,
+        create
+      );
+      return;
+    }
+
     const root =
       getReadLocationRoot(options?.at) ??
       getEditorChildrenRoot(editor) ??
@@ -1024,8 +1039,11 @@ const hasLocationPath = (
 
 const hasReadableNodeCollection = (
   editor: Editor,
-  options: { at?: Location | Span } | undefined
-): boolean => options?.at === undefined || hasLocationPath(editor, options.at);
+  options: { at?: Location | NodeSelection | Span } | undefined
+): boolean =>
+  options?.at === undefined ||
+  SelectionApi.isNode(options.at) ||
+  hasLocationPath(editor, options.at);
 
 const readNodeEntry = <T extends PliteNode>(
   editor: Editor,
@@ -1071,7 +1089,10 @@ const resolveNodeTargetLocation = (
   }
 
   if (!NodeApi.isDescendant(target)) {
-    return target as Location;
+    const location = target as Location;
+
+    assertLocationPathShape(location);
+    return location;
   }
 
   const nodeKey = getNodeKeyForNode(target, getEditorRuntimeOwner(editor));
@@ -1114,6 +1135,17 @@ const getNodeTargetRoot = (editor: Editor, target: NodeTarget | undefined) => {
   }
 
   return undefined;
+};
+
+const getSelectionNodeTargetRoot = (
+  editor: Editor,
+  target: Descendant | NodeKey
+) => {
+  if (typeof target === 'string') return getRuntimeTargetRoot(editor, target);
+
+  const nodeKey = getNodeKeyForNode(target, getEditorRuntimeOwner(editor));
+
+  return nodeKey ? getRuntimeTargetRoot(editor, nodeKey) : undefined;
 };
 
 const withNodeTargetRootRead = <T>(
@@ -1201,11 +1233,13 @@ const resolveNodeTargetOptions = <TOptions extends NodeTargetOptions>(
   });
 };
 
-type NodeTargetOrSpanOptions = { at?: NodeTarget | Span };
+type NodeTargetOrSpanOptions = {
+  at?: NodeSelection | NodeTarget | Span;
+};
 
 type ResolvedNodeTargetOrSpanOptions<TOptions extends NodeTargetOrSpanOptions> =
   Omit<NormalizedNodeMatchOptions<TOptions>, 'at'> & {
-    at?: Location | Span;
+    at?: Location | NodeSelection | Span;
   };
 
 const resolveNodeTargetOrSpanOptions = <
@@ -1220,6 +1254,11 @@ const resolveNodeTargetOrSpanOptions = <
           options
         ) as ResolvedNodeTargetOrSpanOptions<TOptions>)
       : undefined;
+  }
+  if (SelectionApi.isNode(options.at)) {
+    return normalizeNodeMatchOption(
+      options
+    ) as ResolvedNodeTargetOrSpanOptions<TOptions>;
   }
   if (LocationApi.isSpan(options.at as Location | Span)) {
     return normalizeNodeMatchOption(
@@ -1595,9 +1634,13 @@ const getActiveMutationRoot = (editor: Editor): string | undefined =>
 
 const getMutationRoot = (
   editor: Editor,
-  options?: { at?: Location }
+  options?: { at?: Location | NodeSelection }
 ): string | undefined => {
   if (options?.at !== undefined) {
+    if (SelectionApi.isNode(options.at)) {
+      return options.at.root ?? MAIN_ROOT_KEY;
+    }
+
     return (
       getPublicExplicitLocationRoot(options.at) ??
       getActiveMutationRoot(editor) ??
@@ -1919,7 +1962,9 @@ export const getEditorNodeKeyForNode = (
   }
 
   throw new Error(
-    `Node key requires a live node in this editor; received ${'text' in node ? 'text' : `"${node.type}" element`}.`
+    `Node key requires a live node in this editor; received ${
+      'text' in node ? 'text' : `"${node.type}" element`
+    }.`
   );
 };
 
@@ -1935,6 +1980,39 @@ export const getPathByNodeKey = (
 export const getLastCommit = (editor: Editor): EditorCommit | null =>
   LAST_COMMIT.get(editor) ?? null;
 
+const equalMarkValue = (left: unknown, right: unknown): boolean => {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => equalMarkValue(value, right[index]))
+    );
+  }
+  if (
+    typeof left !== 'object' ||
+    left === null ||
+    typeof right !== 'object' ||
+    right === null
+  ) {
+    return false;
+  }
+
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const keys = Object.keys(leftRecord);
+
+  return (
+    keys.length === Object.keys(rightRecord).length &&
+    keys.every(
+      (key) =>
+        Object.hasOwn(rightRecord, key) &&
+        equalMarkValue(leftRecord[key], rightRecord[key])
+    )
+  );
+};
+
 export const getSelectionMarks = <V extends Value>(
   editor: Editor<V>
 ): EditorMarks<V> | null => {
@@ -1947,6 +2025,47 @@ export const getSelectionMarks = <V extends Value>(
 
   if (marks) {
     return marks as EditorMarks<V>;
+  }
+
+  if (SelectionApi.isNode(selection)) {
+    return withEditorRootChildren(
+      editor,
+      selection.root ?? MAIN_ROOT_KEY,
+      () => {
+        const texts = selection.paths.flatMap((path) =>
+          Array.from(
+            getNodes(editor as unknown as Editor, {
+              at: path,
+              match: NodeApi.isText,
+            })
+          ).map(([node]) => node)
+        );
+        const first = texts[0];
+
+        if (!first) return {};
+
+        const common: Record<string, unknown> = { ...first };
+
+        delete common.text;
+
+        for (const text of texts.slice(1)) {
+          for (const key of Object.keys(common)) {
+            if (
+              !Object.hasOwn(text, key) ||
+              !equalMarkValue(common[key], text[key])
+            ) {
+              delete common[key];
+            }
+          }
+        }
+
+        return common as EditorMarks<V>;
+      }
+    );
+  }
+
+  if (!RangeApi.isRange(selection)) {
+    return null;
   }
 
   return withEditorRootChildren(editor, getCurrentSelectionRoot(editor), () => {
@@ -2053,33 +2172,24 @@ const createNodesToArray = <V extends Value>(
   editor: Editor<V>
 ): EditorStateNodesApi<V>['toArray'] => {
   const toArray = (
-    options: EditorNodesReadOptions<PliteNode> = {},
-    map?: (entry: NodeEntry) => unknown
-  ): readonly unknown[] => {
+    options: EditorNodesReadOptions<PliteNode> = {}
+  ): readonly NodeEntry[] => {
     const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
 
     if (resolvedOptions === null) return [];
 
-    return (({ map: innerMap, options: innerOptions = {} }) =>
+    return (({ options: innerOptions = {} }) =>
       withOptionsRootRead(
         editor,
-        innerOptions,
+        innerOptions as { at?: Location | NodeSelection | Span },
         () => {
-          if (!hasReadableNodeCollection(editor, innerOptions)) {
+          if (
+            !hasReadableNodeCollection(
+              editor,
+              innerOptions as { at?: Location | NodeSelection | Span }
+            )
+          ) {
             return [];
-          }
-
-          if (innerMap) {
-            const mapped: unknown[] = [];
-
-            for (const entry of getNodes(
-              editor as unknown as Editor,
-              innerOptions
-            )) {
-              mapped.push(innerMap(entry));
-            }
-
-            return mapped;
           }
 
           const entries: NodeEntry[] = [];
@@ -2093,9 +2203,12 @@ const createNodesToArray = <V extends Value>(
 
           return entries;
         },
-        { selectionFallback: usesImplicitSelectionLocation(innerOptions) }
+        {
+          selectionFallback: usesImplicitSelectionLocation(
+            innerOptions as { at?: Location | NodeSelection | Span }
+          ),
+        }
       ))({
-      map: map as ((entry: NodeEntry) => unknown) | undefined,
       options: resolvedOptions as EditorNodesOptions<PliteNode>,
     });
   };
@@ -2113,11 +2226,32 @@ type SelectionQueryState<V extends Value = Value> = Pick<
   'nodes' | 'ranges'
 >;
 
+export const getSelectionNodeEntries = <V extends Value>(
+  editor: Editor<V>,
+  state: Pick<EditorCoreStateView<V>, 'nodes'>,
+  selection: Selection
+): ReadonlyArray<NodeEntry<DescendantIn<V>>> => {
+  if (!SelectionApi.isNode(selection)) return [];
+
+  const root = selection.root ?? MAIN_ROOT_KEY;
+  const entries = withEditorRootChildren(editor, root, () =>
+    selection.paths.flatMap((path) => {
+      const entry = state.nodes.get(path, {
+        match: (node): node is DescendantIn<V> => NodeApi.isDescendant(node),
+      });
+
+      return entry ? [entry] : [];
+    })
+  );
+
+  return Object.freeze(entries);
+};
+
 const WHITESPACE_OR_END_REGEX = /^(?:\s|$)/;
 
 const resolveSelectionQueryRange = (
   state: Pick<EditorStateView, 'ranges'>,
-  selection: Selection,
+  selection: Range | null,
   at: NodeTarget | null | undefined
 ): Range | null => {
   if (at === null) return null;
@@ -2156,7 +2290,7 @@ const getSelectionBlockEntries = <V extends Value>(
 
 export const isSelectionWithinBlock = <V extends Value>(
   state: SelectionQueryState<V>,
-  selection: Selection,
+  selection: Range | null,
   options: EditorSelectionBlockOptions = {}
 ) => {
   const range = resolveSelectionQueryRange(state, selection, options.at);
@@ -2175,7 +2309,7 @@ export const isSelectionWithinBlock = <V extends Value>(
 
 export const isSelectionAcrossBlocks = <V extends Value>(
   state: SelectionQueryState<V>,
-  selection: Selection,
+  selection: Range | null,
   options: EditorSelectionBlockOptions = {}
 ) => {
   const range = resolveSelectionQueryRange(state, selection, options.at);
@@ -2191,23 +2325,9 @@ export const isSelectionAcrossBlocks = <V extends Value>(
   return !PathApi.equals(startBlock[1], endBlock[1]);
 };
 
-export const isSelectionWithinText = (
-  state: Pick<EditorStateView, 'ranges'>,
-  selection: Selection,
-  options: EditorSelectionTargetOptions = {}
-) => {
-  const range = resolveSelectionQueryRange(state, selection, options.at);
-
-  if (!range) return false;
-
-  const [startPoint, endPoint] = RangeApi.edges(range);
-
-  return PathApi.equals(startPoint.path, endPoint.path);
-};
-
 export const isSelectionAtBlockStart = <V extends Value>(
   state: SelectionQueryState<V> & Pick<EditorCoreStateView<V>, 'points'>,
-  selection: Selection,
+  selection: Range | null,
   options: EditorSelectionBlockOptions = {}
 ) => {
   const range = resolveSelectionQueryRange(state, selection, options.at);
@@ -2226,7 +2346,7 @@ export const isSelectionAtBlockStart = <V extends Value>(
 
 export const isSelectionAtBlockEnd = <V extends Value>(
   state: SelectionQueryState<V> & Pick<EditorCoreStateView<V>, 'points'>,
-  selection: Selection,
+  selection: Range | null,
   options: EditorSelectionBlockOptions = {}
 ) => {
   const range = resolveSelectionQueryRange(state, selection, options.at);
@@ -2254,25 +2374,41 @@ export const isSelectionAtBlockEnd = <V extends Value>(
 export const doesSelectionIntersect = (
   state: Pick<EditorStateView, 'ranges'>,
   selection: Selection,
-  target: NodeTarget
+  target: NodeTarget,
+  selectionRanges: readonly Range[] = RangeApi.isRange(selection)
+    ? [selection]
+    : []
 ) => {
   if (!selection) return false;
 
   const range = state.ranges.get(target);
 
-  return !!range && !!RangeApi.intersection(selection, range);
+  return (
+    !!range &&
+    selectionRanges.some(
+      (selectionRange) => !!RangeApi.intersection(selectionRange, range)
+    )
+  );
 };
 
 export const doesSelectionContain = (
   state: Pick<EditorStateView, 'ranges'>,
   selection: Selection,
-  target: NodeTarget
+  target: NodeTarget,
+  selectionRanges: readonly Range[] = RangeApi.isRange(selection)
+    ? [selection]
+    : []
 ) => {
   if (!selection) return false;
 
   const range = state.ranges.get(target);
 
-  return !!range && RangeApi.surrounds(selection, range);
+  return (
+    !!range &&
+    selectionRanges.some((selectionRange) =>
+      RangeApi.surrounds(selectionRange, range)
+    )
+  );
 };
 
 const remapContentSliceRoots = <V extends Value>(
@@ -2429,6 +2565,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     let at = getTransactionView(editor).resolveTarget({ at: localOptions?.at });
 
     if (!at) at = getDefaultInsertLocation(editor);
+    if (SelectionApi.isNode(at)) return false;
 
     let range: Range | undefined;
     let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
@@ -2894,47 +3031,39 @@ const getStateView = <
           { selectionFallback: usesImplicitSelectionLocation(readOptions) }
         );
       })({ options })) satisfies EditorStateFragmentApi<V>);
-    const marksApi = Object.freeze((() => {
-      const projected = getSelectionSpecMarks(
-        editor,
-        getCurrentSelection(editor),
-        state
-      );
-
-      return projected === undefined ? getSelectionMarks(editor) : projected;
-    }) satisfies EditorStateMarksApi<V>);
+    const marksApi = Object.freeze((() =>
+      getSelectionMarks(editor)) satisfies EditorStateMarksApi<V>);
     const getSlice: EditorStateSliceApi<V>['get'] = (options = {}) => {
       const selection = getCurrentSelection(editor);
-      const range = options.at ?? selection;
+      const target = options.at ?? selection;
+      const read = () => {
+        if (
+          target &&
+          RangeApi.isRange(target) &&
+          !hasLocationPath(editor, target)
+        ) {
+          return ContentSlice.empty;
+        }
 
-      return withOptionsRootRead(
-        editor,
-        options,
-        () => {
-          if (options.at === undefined) {
-            const projected = getSelectionSpecSlice(editor, selection, state);
+        return getContentSlice(
+          editor,
+          SelectionApi.isNode(target) || RangeApi.isRange(target)
+            ? target
+            : null
+        );
+      };
 
-            if (projected) return ContentSlice.fromJSON<V>(projected);
-          }
-          if (
-            range &&
-            RangeApi.isRange(range) &&
-            !hasLocationPath(editor, range)
-          ) {
-            return ContentSlice.empty;
-          }
+      const slice = SelectionApi.isNode(target)
+        ? withEditorRootChildren(editor, target.root ?? MAIN_ROOT_KEY, read)
+        : withOptionsRootRead(editor, options as { at?: Range }, read, {
+            selectionFallback: options.at === undefined,
+          });
 
-          return getContentSlice(
-            editor,
-            range && RangeApi.isRange(range) ? range : null
-          );
-        },
-        { selectionFallback: options.at === undefined }
-      );
+      return projectEditorGetSlice(editor, slice, options);
     };
     const sliceApi = Object.freeze({
       export: (options = {}) =>
-        projectEditorExportSlice(editor, getSlice(options)),
+        projectEditorExportSlice(editor, getSlice(options), options),
       fit: (
         slice: import('../interfaces/editor').ContentSlice,
         options?: Parameters<EditorStateSliceApi<V>['fit']>[1]
@@ -2964,27 +3093,53 @@ const getStateView = <
       },
       get: getSlice,
     }) satisfies EditorStateSliceApi<V>;
+    const selectionNodes = () =>
+      getSelectionNodeEntries(editor, state, getCurrentSelection(editor));
     const selectionApi = Object.freeze(
-      Object.assign(() => getCurrentSelection(editor), {
-        contains: (target: NodeTarget) =>
-          doesSelectionContain(state, getCurrentSelection(editor), target),
-        intersects: (target: NodeTarget) =>
-          doesSelectionIntersect(state, getCurrentSelection(editor), target),
-        isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
-          isSelectionAcrossBlocks(state, getCurrentSelection(editor), options),
-        isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
-          isSelectionAtBlockEnd(state, getCurrentSelection(editor), options),
-        isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
-          isSelectionAtBlockStart(state, getCurrentSelection(editor), options),
-        isCollapsed: () => {
+      Object.assign(() => getPublicSelection(editor), {
+        contains: (target: NodeTarget) => {
           const selection = getCurrentSelection(editor);
 
-          return !!selection && RangeApi.isCollapsed(selection);
+          return doesSelectionContain(
+            state,
+            selection,
+            target,
+            getSelectionRanges(
+              editor,
+              selection,
+              getEditorDocumentValue(editor)
+            )
+          );
+        },
+        intersects: (target: NodeTarget) => {
+          const selection = getCurrentSelection(editor);
+
+          return doesSelectionIntersect(
+            state,
+            selection,
+            target,
+            getSelectionRanges(
+              editor,
+              selection,
+              getEditorDocumentValue(editor)
+            )
+          );
+        },
+        isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
+          isSelectionAcrossBlocks(state, getPublicSelection(editor), options),
+        isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
+          isSelectionAtBlockEnd(state, getPublicSelection(editor), options),
+        isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
+          isSelectionAtBlockStart(state, getPublicSelection(editor), options),
+        isCollapsed: () => {
+          const selection = getPublicSelection(editor);
+
+          return selection ? RangeApi.isCollapsed(selection) : false;
         },
         isExpanded: () => {
-          const selection = getCurrentSelection(editor);
+          const selection = getPublicSelection(editor);
 
-          return !!selection && RangeApi.isExpanded(selection);
+          return selection ? RangeApi.isExpanded(selection) : false;
         },
         isValid: (value: unknown) =>
           isValidEditorSelection(
@@ -2994,16 +3149,15 @@ const getStateView = <
             getCurrentChildrenRoot(editor)
           ),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
-          isSelectionWithinBlock(state, getCurrentSelection(editor), options),
-        isWithinText: (options?: EditorSelectionTargetOptions) =>
-          isSelectionWithinText(state, getCurrentSelection(editor), options),
-        primaryRange: () =>
-          getSelectionPrimaryRange(editor, getCurrentSelection(editor)),
-        ranges: () => getSelectionRanges(editor, getCurrentSelection(editor)),
-        replacementRange: () =>
-          getSelectionReplacementRange(editor, getCurrentSelection(editor)),
-        root: () => toPublicRoot(getCurrentSelectionRoot(editor)),
-      }) satisfies EditorStateSelectionApi
+          isSelectionWithinBlock(state, getPublicSelection(editor), options),
+        nodes: selectionNodes,
+        ranges: () =>
+          getSelectionRanges(
+            editor,
+            getCurrentSelection(editor),
+            getEditorDocumentValue(editor)
+          ),
+      }) satisfies EditorStateSelectionApi<SelectionValue, V>
     );
     const readBlock = ((
       options: {
@@ -3020,6 +3174,18 @@ const getStateView = <
         if (resolvedOptions === null) return undefined;
         const nextOptions = resolvedOptions ?? {};
         const { match } = nextOptions;
+        const exact = PathApi.isPath(nextOptions.at)
+          ? readNodeEntry<PliteNode>(editor, nextOptions.at)
+          : undefined;
+
+        if (
+          exact &&
+          NodeApi.isElement(exact[0]) &&
+          getEditorSchema(editor).isBlock(exact[0]) &&
+          (match?.(exact[0], exact[1]) ?? true)
+        ) {
+          return exact as NodeEntry<any>;
+        }
         const entry = getEditorRuntime(editor).above({
           ...nextOptions,
           match: (node, path) =>
@@ -3032,6 +3198,71 @@ const getStateView = <
           ? (entry as NodeEntry<any>)
           : undefined;
       })) as EditorStateNodesApi<V>['block'];
+    const readBlocks = ((
+      inputOptions: Parameters<EditorStateNodesApi<V>['blocks']>[0] = {}
+    ) => {
+      const target =
+        inputOptions.at ?? getCurrentSelection(editor) ?? undefined;
+
+      if (!target) return [];
+
+      const match = normalizeNodeMatch(inputOptions.type, inputOptions.match);
+      const matchesBlock = (node: PliteNode, path: Path) =>
+        NodeApi.isElement(node) &&
+        getEditorSchema(editor).isBlock(node) &&
+        (match?.(node, path) ?? true);
+
+      if (SelectionApi.isNode(target)) {
+        return withEditorRootChildren(
+          editor,
+          target.root ?? MAIN_ROOT_KEY,
+          () => {
+            const entries: Array<NodeEntry<Element>> = [];
+
+            for (const path of target.paths) {
+              const exact = readNodeEntry<PliteNode>(editor, path);
+              const block =
+                exact && matchesBlock(exact[0], exact[1])
+                  ? (exact as NodeEntry<Element>)
+                  : readBlock({ at: path, match: matchesBlock });
+
+              if (
+                block &&
+                !entries.some(([, candidate]) =>
+                  PathApi.equals(candidate, block[1])
+                )
+              ) {
+                entries.push(block);
+              }
+            }
+
+            return Object.freeze(
+              inputOptions.reverse ? entries.toReversed() : entries
+            );
+          }
+        );
+      }
+
+      const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, {
+        ...inputOptions,
+        at: target,
+      });
+
+      if (resolvedOptions === null) return [];
+      const queryOptions = resolvedOptions ?? {};
+
+      return withOptionsRootRead(editor, queryOptions, () =>
+        Object.freeze(
+          Array.from(
+            getNodes(editor as unknown as Editor, {
+              ...queryOptions,
+              match: matchesBlock,
+              mode: queryOptions.mode ?? 'lowest',
+            })
+          ) as Array<NodeEntry<Element>>
+        )
+      );
+    }) as EditorStateNodesApi<V>['blocks'];
     function getStateNodeKey(node: Descendant): NodeKey;
     function getStateNodeKey(at: Location): NodeKey | null;
     function getStateNodeKey(target: Descendant | Location): NodeKey | null {
@@ -3081,6 +3312,7 @@ const getStateView = <
             }) as [Ancestor, Path] | undefined;
           })) as EditorStateNodesApi<V>['above'],
         block: readBlock,
+        blocks: readBlocks,
         children(
           target: NodeTarget = []
         ): ReturnType<EditorStateNodesApi<V>['children']> {
@@ -3141,29 +3373,6 @@ const getStateView = <
                 return !match || match(entry[0], entry[1]) ? entry : undefined;
               }))({ at, options });
           })) as EditorStateNodesApi<V>['get'],
-        hasBlocks: (element: import('../interfaces/element').Element) =>
-          (({ element: innerElement }) =>
-            getEditorRuntime(editor).hasBlocks(innerElement))({
-            element,
-          }),
-        hasInlines: (element: import('../interfaces/element').Element) =>
-          (({ element: innerElement2 }) =>
-            getEditorRuntime(editor).hasInlines(innerElement2))({
-            element,
-          }),
-        hasPath: (path: Path) =>
-          (({ path: innerPath }) =>
-            getEditorRuntime(editor).hasPath(innerPath))({ path }),
-        hasTexts: (element: import('../interfaces/element').Element) =>
-          (({ element: innerElement3 }) =>
-            getEditorRuntime(editor).hasTexts(innerElement3))({
-            element,
-          }),
-        isBlock: (element: import('../interfaces/node').Node) =>
-          (({ element: innerElement4 }) =>
-            getEditorRuntime(editor).isBlock(innerElement4))({
-            element,
-          }),
         isSelectable: (element: import('../interfaces/node').Node) =>
           isEditorNodeSelectable(editor, element),
         isEmpty: (element: import('../interfaces/element').Element) =>
@@ -3335,15 +3544,6 @@ const getStateView = <
                 : undefined
             ) as [PliteNode, Path] | undefined;
           })) as EditorStateNodesApi<V>['previous'],
-        shouldMergeNodesRemovePrevNode: (
-          previous: NodeEntry,
-          current: NodeEntry
-        ) =>
-          (({ current: innerCurrent, previous: innerPrevious }) =>
-            getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(
-              innerPrevious,
-              innerCurrent
-            ))({ current, previous }),
         parent: ((target: NodeTarget, options: EditorParentOptions = {}) =>
           withNodeTargetRootRead(editor, target, () => {
             const at = resolveReadableNodeTarget(editor, target);
@@ -3504,10 +3704,22 @@ const getStateView = <
       selection: selectionApi,
       slice: sliceApi,
       text: Object.freeze({
-        string: (target?: NodeTarget, options = {}) => {
+        string: (target?: NodeSelection | NodeTarget, options = {}) => {
           const resolvedTarget = target ?? getCurrentSelection(editor);
 
           if (!resolvedTarget) return '';
+          if (SelectionApi.isNode(resolvedTarget)) {
+            return withEditorRootChildren(
+              editor,
+              resolvedTarget.root ?? MAIN_ROOT_KEY,
+              () =>
+                resolvedTarget.paths
+                  .map((path) => NodeApi.getIf(editor, path))
+                  .filter((node): node is PliteNode => !!node)
+                  .map(NodeApi.string)
+                  .join('')
+            );
+          }
           return withNodeTargetRootRead(editor, resolvedTarget, () => {
             const at = resolveReadableNodeTarget(editor, resolvedTarget);
 
@@ -3769,6 +3981,45 @@ const getUpdateView = <
       return fn(localOptions);
     });
   };
+  type NodeMutationTargetOptions = {
+    at?: NodeSelection | NodeTarget;
+  };
+  type ResolvedNodeMutationTargetOptions<
+    TOptions extends NodeMutationTargetOptions,
+  > = Omit<NormalizedNodeMatchOptions<TOptions>, 'at'> & {
+    at?: Location | NodeSelection;
+  };
+  const runNodeTargetMutation = <
+    TOptions extends NodeMutationTargetOptions,
+    TResult,
+  >(
+    options: TOptions | undefined,
+    fn: (
+      options: ResolvedNodeMutationTargetOptions<TOptions> | undefined
+    ) => TResult
+  ): TResult | undefined => {
+    if (!SelectionApi.isNode(options?.at)) {
+      return runTargetMutation(
+        options as (TOptions & NodeTargetOptions) | undefined,
+        (resolvedOptions) =>
+          fn(
+            resolvedOptions as
+              | ResolvedNodeMutationTargetOptions<TOptions>
+              | undefined
+          )
+      );
+    }
+
+    assertActive();
+
+    return runWithMutationRoot(editor, options.at.root ?? MAIN_ROOT_KEY, () =>
+      fn(
+        normalizeNodeMatchOption(
+          options
+        ) as ResolvedNodeMutationTargetOptions<TOptions>
+      )
+    );
+  };
   const runSelectionMutation = <T>(fn: () => T) => {
     assertActive();
 
@@ -3792,135 +4043,151 @@ const getUpdateView = <
       fn
     );
   };
+  const getDefaultBlockProps = (path: Path, root: string) => {
+    let defaultBlock: Descendant | null = null;
+
+    if (path.length === 1) {
+      defaultBlock = state.schema.createDefaultRootChild(toPublicRoot(root));
+    } else {
+      const parent = state.nodes.parent(path)?.[0];
+      const defaultChild =
+        ElementApi.isElement(parent) && typeof parent.type === 'string'
+          ? state.schema.element(parent.type)?.content?.default
+          : null;
+
+      if (defaultChild && defaultChild !== 'text') {
+        defaultBlock = state.schema.create(defaultChild.type);
+      }
+    }
+
+    if (!ElementApi.isElement(defaultBlock)) {
+      const owner =
+        path.length === 1
+          ? `root "${root}"`
+          : `parent of block at [${path.join(', ')}]`;
+
+      throw new Error(
+        `Editor ${owner} must declare an element default before a block can be reset.`
+      );
+    }
+
+    return NodeApi.extractProps(defaultBlock);
+  };
+  const resetBlockAtPath = (
+    path: Path,
+    root: string,
+    options: Readonly<{
+      props?: Readonly<Record<string, unknown>>;
+      voids?: boolean;
+    }> = {}
+  ) => {
+    setNodes(
+      editor,
+      (options.props ?? getDefaultBlockProps(path, root)) as never,
+      { at: path, voids: options.voids }
+    );
+  };
+  const resetBlocks: EditorTransactionBlocksApi<V>['reset'] = (options) => {
+    runNodeTargetMutation(options, (resolvedOptions) => {
+      const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
+      const entries = state.nodes.blocks(resolvedOptions as never);
+
+      for (const [, path] of entries) {
+        resetBlockAtPath(path, root);
+      }
+    });
+  };
   const toggleBlock = defineSemanticUpdateMethod<
     EditorTransactionBlocksApi<V>['toggle']
   >(
     (
-      type,
-      {
-        at = getCurrentSelection(editor) ?? undefined,
-        someOptions,
-        wrap,
-        ...options
-      } = {}
+      props,
+      { at = getCurrentSelection(editor) ?? undefined, voids, wrap } = {}
     ) => {
       if (!at) return;
-      const targetAt = resolveNodeTargetLocation(editor, at);
+      const nodeSelection = SelectionApi.isNode(at) ? at : null;
+      const targetAt = nodeSelection
+        ? null
+        : resolveNodeTargetLocation(editor, at as NodeTarget);
 
-      if (!targetAt) return;
-      const someMatch = normalizeNodeMatch(
-        someOptions?.type,
-        someOptions?.match
+      if (!nodeSelection && !targetAt) return;
+      const root = nodeSelection
+        ? (nodeSelection.root ?? MAIN_ROOT_KEY)
+        : targetAt
+          ? (getLocationMutationRoot(editor, targetAt) ?? MAIN_ROOT_KEY)
+          : MAIN_ROOT_KEY;
+      const selectedBlockPaths = runWithMutationRoot(editor, root, () =>
+        state.nodes
+          .blocks({ at: nodeSelection ?? targetAt ?? undefined, voids })
+          .map(([, path]) => path)
       );
 
-      const typeMatch = (node: PliteNode, path: Path) =>
-        NodeApi.isElement(node) &&
-        node.type === type &&
-        (someMatch?.(node, path) ?? true);
-      const isActive = state.nodes.some({
-        ...someOptions,
-        at: targetAt,
-        match: typeMatch,
-      } as never);
-      const root = getLocationMutationRoot(editor, targetAt) ?? MAIN_ROOT_KEY;
-      const defaultChild = isActive
-        ? state.schema.createDefaultRootChild(toPublicRoot(root))
-        : null;
+      if (selectedBlockPaths.length === 0) return;
 
-      let nextType = type;
+      const propsMatch = (node: PliteNode) =>
+        NodeApi.isElement(node) && ElementApi.matches(node, props);
+      const isActive = runWithMutationRoot(editor, root, () =>
+        wrap
+          ? selectedBlockPaths.some((path) =>
+              state.nodes.some({ at: path, match: propsMatch, voids })
+            )
+          : selectedBlockPaths.some((path) => {
+              const entry = state.nodes.get(path);
 
-      if (isActive) {
-        if (!NodeApi.isElement(defaultChild)) {
-          throw new Error(
-            `Editor root "${root}" must declare a default element before an active block can be toggled off.`
-          );
-        }
-        if (type === defaultChild.type) return;
-        nextType = defaultChild.type;
-      }
+              return !!entry && propsMatch(entry[0]);
+            })
+      );
 
       if (wrap) {
-        if (isActive) {
-          runMutation({ at: targetAt }, () => {
-            unwrapNodes(editor, {
-              at: targetAt,
-              match: typeMatch,
-              ...options,
-            });
-          });
-        } else {
-          runMutation({ at: targetAt }, () => {
-            wrapNodes(editor, { children: [], type } as ElementIn<V>, {
-              at: targetAt,
-              ...options,
-            });
+        for (const path of selectedBlockPaths.toReversed()) {
+          runWithMutationRoot(editor, root, () => {
+            if (
+              isActive &&
+              !state.nodes.some({ at: path, match: propsMatch, voids })
+            ) {
+              return;
+            }
+
+            if (isActive) {
+              unwrapNodes(editor, { at: path, match: propsMatch, voids });
+            } else {
+              wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
+                at: path,
+                voids,
+              });
+            }
           });
         }
 
         return;
       }
 
-      runMutation({ at: targetAt }, () => {
-        setNodes(editor, { type: nextType } as never, {
-          at: targetAt,
-          ...options,
+      for (const path of selectedBlockPaths) {
+        runWithMutationRoot(editor, root, () => {
+          if (isActive) {
+            const nextProps = getDefaultBlockProps(path, root);
+            const propsToUnset = Object.keys(props).filter(
+              (key) => key !== 'type' && !Object.hasOwn(nextProps, key)
+            );
+
+            if (propsToUnset.length > 0) {
+              unsetNodes(editor, propsToUnset, { at: path, voids });
+            }
+            resetBlockAtPath(path, root, { props: nextProps, voids });
+          } else {
+            setNodes(editor, props as never, { at: path, voids });
+          }
         });
-      });
+      }
     },
-    (command, [blockType, options]) => {
-      command(editorCommands.toggleBlock, { blockType, options });
+    (command, [props, options]) => {
+      command(editorCommands.toggleBlock, { options, props });
     }
   );
-  const resetBlock: EditorTransactionBlocksApi<V>['reset'] = (
-    props,
-    { preserve = [], ...options } = {}
-  ) => {
-    const resolvedOptions = resolveNodeTargetOptions(editor, options);
-
-    if (resolvedOptions === null) return;
-
-    const nextOptions = (resolvedOptions ?? {}) as EditorBlockOptions;
-    const { match } = nextOptions;
-    const exactEntry =
-      nextOptions.at && LocationApi.isPath(nextOptions.at)
-        ? state.nodes.get(nextOptions.at)
-        : undefined;
-    let entry: NodeEntry<Element> | undefined;
-
-    if (
-      exactEntry &&
-      NodeApi.isElement(exactEntry[0]) &&
-      state.schema.isBlock(exactEntry[0]) &&
-      (match?.(exactEntry[0], exactEntry[1]) ?? true)
-    ) {
-      entry = exactEntry as NodeEntry<Element>;
-    } else {
-      entry = state.nodes.block(
-        nextOptions as EditorBlockOptions<Element, undefined>
-      );
-    }
-
-    if (!entry) return;
-
-    const [block, path] = entry;
-    const preserved = new Set(preserve);
-    const nextProps = props as Record<string, unknown>;
-    const propsToUnset = Object.keys(NodeApi.extractProps(block)).filter(
-      (key) => !preserved.has(key) && !(key in nextProps)
-    );
-
-    runMutation({ at: path }, () => {
-      for (const key of propsToUnset) {
-        unsetNodes(editor, key, { at: path });
-      }
-
-      setNodes(editor, props, { at: path });
-    });
-  };
   let txRecord!: EditorUpdateTransaction<V, TExtensions>;
-  const duplicateNodes: EditorTransactionNodesApi<V>['duplicate'] = (
-    entries,
-    options = {}
+  const duplicateNodes = (
+    entries: ReadonlyArray<NodeEntry<ElementOrTextIn<V>>>,
+    options: NodeDuplicateOptions = {}
   ) => {
     if (entries.length === 0) return;
 
@@ -3974,19 +4241,29 @@ const getUpdateView = <
     });
     materializeContentSliceRoots(editor, slice);
   };
-  const duplicateBlocks = (({
-    at = state.selection() ?? undefined,
-    hanging,
-    match,
-    mode,
-    select: innerSelect,
-    type,
-    voids,
-  }: BlockDuplicateOptions & { at?: NodeTarget } = {}) => {
-    if (!at) return;
-    const targetAt = resolveNodeTargetLocation(editor, at);
+  const duplicateBlocks = ((
+    inputOptions: BlockDuplicateOptions & {
+      at?: NodeSelection | NodeTarget;
+    } = {}
+  ) => {
+    const {
+      at: explicitAt,
+      hanging,
+      match,
+      mode,
+      select: innerSelect,
+      type,
+      voids,
+    } = inputOptions;
+    const at = explicitAt ?? getCurrentSelection(editor) ?? undefined;
 
-    if (!targetAt) return;
+    if (!at) return;
+    const nodeSelection = SelectionApi.isNode(at) ? at : null;
+    const targetAt = nodeSelection
+      ? null
+      : resolveNodeTargetLocation(editor, at as NodeTarget);
+
+    if (!nodeSelection && !targetAt) return;
 
     const blockMatch = normalizeNodeMatch(type, match);
 
@@ -3994,84 +4271,155 @@ const getUpdateView = <
       NodeApi.isElement(node) &&
       state.schema.isBlock(node) &&
       (!blockMatch || blockMatch(node, path));
-    const entries = LocationApi.isRange(targetAt)
-      ? state.nodes.toArray({
-          at: targetAt,
-          match: matchesBlock,
-          mode,
-          voids,
-        } as never)
-      : (() => {
-          const entry = state.nodes.block({ at: targetAt });
+    const entries = nodeSelection
+      ? runWithMutationRoot(editor, nodeSelection.root ?? MAIN_ROOT_KEY, () =>
+          nodeSelection.paths.reduce<Array<NodeEntry<Element>>>((all, path) => {
+            const exact = state.nodes.get(path);
+            const block =
+              exact &&
+              NodeApi.isElement(exact[0]) &&
+              state.schema.isBlock(exact[0])
+                ? (exact as NodeEntry<Element>)
+                : state.nodes.block({ at: path });
 
-          return entry && matchesBlock(entry[0], entry[1]) ? [entry] : [];
-        })();
+            if (
+              block &&
+              matchesBlock(block[0], block[1]) &&
+              !all.some(([, candidate]) => PathApi.equals(candidate, block[1]))
+            ) {
+              all.push(block);
+            }
 
-    txRecord.nodes.duplicate(
-      entries as ReadonlyArray<NodeEntry<ElementOrTextIn<V>>>,
-      {
-        hanging,
-        select: innerSelect,
-        voids,
-      }
-    );
+            return all;
+          }, [])
+        )
+      : targetAt
+        ? LocationApi.isRange(targetAt)
+          ? state.nodes.toArray({
+              at: targetAt,
+              match: matchesBlock,
+              mode,
+              voids,
+            } as never)
+          : (() => {
+              const entry = state.nodes.block({ at: targetAt });
+
+              return entry && matchesBlock(entry[0], entry[1]) ? [entry] : [];
+            })()
+        : [];
+
+    duplicateNodes(entries as ReadonlyArray<NodeEntry<ElementOrTextIn<V>>>, {
+      hanging,
+      select: innerSelect,
+      voids,
+    });
   }) as EditorTransactionBlocksApi<V>['duplicate'];
   const insertBlocksAfter: EditorTransactionBlocksApi<V>['insertAfter'] = (
     nodes,
-    { at = state.selection() ?? undefined, ...options } = {}
+    inputOptions = {}
   ) => {
+    const { at: explicitAt, ...options } = inputOptions;
+    const at = explicitAt ?? getCurrentSelection(editor) ?? undefined;
+
     if (!at) {
       txRecord.nodes.insert(nodes, options);
       return;
     }
 
-    const targetAt = resolveNodeTargetLocation(editor, at);
+    if (SelectionApi.isNode(at)) {
+      const target = at.paths.at(-1);
 
-    if (!targetAt) return;
+      if (!target) return;
+      runWithMutationRoot(editor, at.root ?? MAIN_ROOT_KEY, () => {
+        const exactEntry = state.nodes.get(target);
+        const block =
+          exactEntry &&
+          NodeApi.isElement(exactEntry[0]) &&
+          state.schema.isBlock(exactEntry[0])
+            ? (exactEntry as NodeEntry<Element>)
+            : state.nodes.block({ at: target });
 
-    const target = LocationApi.isRange(targetAt)
-      ? state.points.end(targetAt)
-      : targetAt;
-
-    if (!target) return;
-
-    const exactEntry = LocationApi.isPath(target)
-      ? state.nodes.get(target)
-      : undefined;
-    let block: NodeEntry<Element> | undefined;
-
-    if (
-      exactEntry &&
-      NodeApi.isElement(exactEntry[0]) &&
-      state.schema.isBlock(exactEntry[0])
-    ) {
-      block = exactEntry as NodeEntry<Element>;
-    } else {
-      block = state.nodes.block({ at: target });
+        if (!block) return;
+        txRecord.nodes.insert(nodes, {
+          ...options,
+          at: PathApi.next(block[1]),
+        });
+      });
+      return;
     }
 
-    if (!block) return;
+    runTargetMutation({ at }, (resolvedOptions) => {
+      const targetAt = resolvedOptions?.at;
 
-    txRecord.nodes.insert(nodes, {
-      ...options,
-      at: PathApi.next(block[1]),
+      if (!targetAt) return;
+
+      const target = LocationApi.isRange(targetAt)
+        ? state.points.end(targetAt)
+        : targetAt;
+
+      if (!target) return;
+
+      const exactEntry = LocationApi.isPath(target)
+        ? state.nodes.get(target)
+        : undefined;
+      let block: NodeEntry<Element> | undefined;
+
+      if (
+        exactEntry &&
+        NodeApi.isElement(exactEntry[0]) &&
+        state.schema.isBlock(exactEntry[0])
+      ) {
+        block = exactEntry as NodeEntry<Element>;
+      } else {
+        block = state.nodes.block({ at: target });
+      }
+
+      if (!block) return;
+
+      txRecord.nodes.insert(nodes, {
+        ...options,
+        at: PathApi.next(block[1]),
+      });
     });
   };
   const setTransactionNodes = defineSemanticUpdateMethod<
     EditorTransactionNodesApi<V>['set']
   >(
     (props, options) =>
-      runTargetMutation(options, (resolvedOptions) => {
+      runNodeTargetMutation(options, (resolvedOptions) => {
         setNodes(editor, props, resolvedOptions as never);
       }),
     (command, [props, options]) =>
       command(editorCommands.setNodes, { options: options as never, props })
   );
+  const setTransactionBlocks = ((
+    props: Partial<Element>,
+    options?: {
+      at?: NodeSelection | NodeTarget;
+      match?: NodeMatch<Element>;
+      mode?: MaximizeMode;
+      type?: NodeTypeSelector;
+      voids?: boolean;
+    }
+  ) =>
+    runNodeTargetMutation(options, (resolvedOptions) => {
+      const entries = state.nodes.blocks(resolvedOptions as never);
+
+      for (const [, path] of entries) {
+        setTransactionNodes(
+          props as never,
+          {
+            ...resolvedOptions,
+            at: path,
+          } as never
+        );
+      }
+    })) as EditorTransactionBlocksApi<V>['set'];
   const unsetTransactionNodes = ((
     props: string | readonly string[] | SchemaPropertyHandle,
     options?: NodeUnsetNodesOptions<NodeIn<V>>
   ) =>
-    runTargetMutation(options, (resolvedOptions) => {
+    runNodeTargetMutation(options, (resolvedOptions) => {
       unsetNodes(
         editor,
         normalizeNodeUnsetInput(
@@ -4211,11 +4559,8 @@ const getUpdateView = <
     blocks: Object.freeze({
       duplicate: duplicateBlocks,
       insertAfter: insertBlocksAfter,
-      lift: (options?: { at?: NodeTarget }) =>
-        runTargetMutation(options, (resolvedOptions) => {
-          liftNodes(editor, resolvedOptions as never);
-        }),
-      reset: resetBlock,
+      reset: resetBlocks,
+      set: setTransactionBlocks,
       toggle: toggleBlock,
     }),
     break: Object.freeze({
@@ -4336,7 +4681,6 @@ const getUpdateView = <
     ),
     nodes: Object.freeze({
       ...state.nodes,
-      duplicate: duplicateNodes,
       insert: defineSemanticUpdateMethod<
         EditorTransactionNodesApi<V>['insert']
       >(
@@ -4371,23 +4715,23 @@ const getUpdateView = <
           });
         }
       ),
-      lift: (options?: { at?: NodeTarget }) =>
-        runTargetMutation(options, (resolvedOptions) => {
+      lift: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runNodeTargetMutation(options, (resolvedOptions) => {
           liftNodes(editor, resolvedOptions as never);
         }),
-      merge: (options?: { at?: NodeTarget }) =>
-        runTargetMutation(options, (resolvedOptions) => {
+      merge: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runNodeTargetMutation(options, (resolvedOptions) => {
           mergeNodes(editor, resolvedOptions as never);
         }),
-      move: (options: { at?: NodeTarget }) =>
-        runTargetMutation(options, (resolvedOptions) => {
+      move: (options: { at?: NodeSelection | NodeTarget }) =>
+        runNodeTargetMutation(options, (resolvedOptions) => {
           moveNodes(editor, resolvedOptions as never);
         }),
       remove: defineSemanticUpdateMethod<
         EditorTransactionNodesApi<V>['remove']
       >(
-        (options: { at?: NodeTarget } | undefined) =>
-          runTargetMutation(options, (resolvedOptions) => {
+        (options: { at?: NodeSelection | NodeTarget } | undefined) =>
+          runNodeTargetMutation(options, (resolvedOptions) => {
             removeNodes(editor, resolvedOptions as never);
           }),
         (command, [options]) => {
@@ -4401,14 +4745,16 @@ const getUpdateView = <
         runTargetMutation(options, (resolvedOptions) => {
           splitNodes(editor, resolvedOptions as never);
         }),
-      toggle: toggleBlock,
       unset: unsetTransactionNodes,
-      unwrap: (options?: { at?: NodeTarget }) =>
-        runTargetMutation(options, (resolvedOptions) => {
+      unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
+        runNodeTargetMutation(options, (resolvedOptions) => {
           unwrapNodes(editor, resolvedOptions as never);
         }),
-      wrap: (element: ElementIn<V>, options?: { at?: NodeTarget }) =>
-        runTargetMutation(options, (resolvedOptions) => {
+      wrap: (
+        element: ElementIn<V>,
+        options?: { at?: NodeSelection | NodeTarget }
+      ) =>
+        runNodeTargetMutation(options, (resolvedOptions) => {
           wrapNodes(editor, element, resolvedOptions as never);
         }),
     }),
@@ -4506,7 +4852,6 @@ const getUpdateView = <
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),
-        primaryRange: () => state.selection.primaryRange(),
         intersects: (target: NodeTarget) => state.selection.intersects(target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           state.selection.isAcrossBlocks(options),
@@ -4519,14 +4864,8 @@ const getUpdateView = <
         isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
-        isWithinText: (options?: EditorSelectionTargetOptions) =>
-          state.selection.isWithinText(options),
+        nodes: state.selection.nodes,
         ranges: () => state.selection.ranges(),
-        replacementRange: () => state.selection.replacementRange(),
-        root: () => state.selection.root(),
-        clear: () => {
-          runSelectionWrite(() => deselect(editor));
-        },
         collapse: defineSemanticUpdateMethod<
           EditorTransactionSelectionApi['collapse']
         >(
@@ -4556,9 +4895,23 @@ const getUpdateView = <
 
             if (SelectionApi.isSelection(target)) {
               markSelectionWritten(() => {
-                runLocationMutation(target, () => select(editor, target));
+                runWithMutationRoot(
+                  editor,
+                  SelectionApi.root(target) ??
+                    getActiveMutationRoot(editor) ??
+                    MAIN_ROOT_KEY,
+                  () => select(editor, target)
+                );
               });
               return;
+            }
+
+            if (
+              typeof target === 'object' &&
+              target !== null &&
+              Object.hasOwn(target, 'kind')
+            ) {
+              assertSelectionSupported(editor, target);
             }
 
             if (RangeApi.isRange(target)) {
@@ -4581,21 +4934,113 @@ const getUpdateView = <
             command(editorCommands.select, { target });
           }
         ),
+        setNodes: (
+          ...[targets, options]: Parameters<
+            EditorTransactionSelectionApi['setNodes']
+          >
+        ) => {
+          runSelectionWrite(() => {
+            if (targets.length === 0) {
+              deselect(editor);
+              return;
+            }
+
+            const fallbackRoot =
+              getCurrentChildrenRoot(editor) ??
+              getActiveMutationRoot(editor) ??
+              MAIN_ROOT_KEY;
+            const directionalTargets = options
+              ? [options.anchor, options.focus]
+              : [];
+            const targetRoots = [...targets, ...directionalTargets].map(
+              (target) =>
+                PathApi.isPath(target)
+                  ? fallbackRoot
+                  : getSelectionNodeTargetRoot(editor, target)
+            );
+            const root = targetRoots[0];
+
+            if (!root || targetRoots.some((candidate) => candidate !== root)) {
+              throw new Error(
+                'Node selection targets must be live nodes in one editor root.'
+              );
+            }
+
+            runWithMutationRoot(editor, root, () => {
+              const resolveSelectedPath = (
+                target: (typeof targets)[number]
+              ) => {
+                const location = resolveNodeTargetLocation(editor, target);
+
+                if (!location || !PathApi.isPath(location)) {
+                  throw new Error(
+                    'Node selection targets must resolve to live node paths.'
+                  );
+                }
+                if (!state.nodes.get(location)) {
+                  throw new Error(
+                    `Cannot select a missing node at path ${JSON.stringify(
+                      location
+                    )}.`
+                  );
+                }
+
+                return location;
+              };
+              const paths = targets.map(resolveSelectedPath);
+              const firstPath = paths[0];
+
+              if (!firstPath) return;
+              const endpoints = options
+                ? {
+                    anchorPath: resolveSelectedPath(options.anchor),
+                    focusPath: resolveSelectedPath(options.focus),
+                  }
+                : null;
+
+              if (
+                endpoints &&
+                !paths.some((path) =>
+                  PathApi.equals(path, endpoints.anchorPath)
+                )
+              ) {
+                throw new Error(
+                  'Node selection anchor must be one of the selected targets.'
+                );
+              }
+              if (
+                endpoints &&
+                !paths.some((path) => PathApi.equals(path, endpoints.focusPath))
+              ) {
+                throw new Error(
+                  'Node selection focus must be one of the selected targets.'
+                );
+              }
+
+              const publicRoot = toPublicRoot(root);
+              select(
+                editor,
+                SelectionApi.nodes(
+                  [firstPath, ...paths.slice(1)],
+                  endpoints
+                    ? {
+                        anchorPath: endpoints.anchorPath,
+                        focusPath: endpoints.focusPath,
+                        ...(publicRoot ? { root: publicRoot } : {}),
+                      }
+                    : publicRoot
+                      ? { root: publicRoot }
+                      : {}
+                )
+              );
+            });
+          });
+        },
         setPoint: (
           ...args: Parameters<EditorTransactionSelectionApi['setPoint']>
         ) => {
           runSelectionWrite(() => setPoint(editor, ...args));
         },
-        setRange: defineSemanticUpdateMethod<
-          EditorTransactionSelectionApi['setRange']
-        >(
-          (...args) => {
-            runSelectionWrite(() => setSelection(editor, ...args));
-          },
-          (command, [props]) => {
-            command(editorCommands.setSelection, { props });
-          }
-        ),
       }) satisfies EditorTransactionSelectionApi
     ),
     setField: <TValue>(
@@ -5330,6 +5775,7 @@ export const getCorrectionUpdateView = <
 
   return Object.freeze({
     ...installedGroups,
+    anchor: tx.anchor,
     blocks: tx.blocks,
     break: tx.break,
     fragment: tx.fragment,
@@ -5834,8 +6280,12 @@ export const subscribeEditorViewState = (
   };
 };
 
-export const getPublicSelection = (editor: Editor): Selection =>
-  getCurrentSelection(editor);
+export const getPublicSelection = (editor: Editor): Range | null =>
+  getSelectionRange(
+    editor,
+    getCurrentSelection(editor),
+    getEditorDocumentValue(editor)
+  );
 
 export const setCurrentSelection = (
   editor: Editor,
@@ -5980,7 +6430,7 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
     get marks() {
       return getCurrentMarks(editor);
     },
-    resolveTarget(options: { at?: Location } = {}) {
+    resolveTarget(options: { at?: Location | NodeSelection } = {}) {
       if (options.at !== undefined) {
         return options.at;
       }
@@ -7851,7 +8301,9 @@ const readDirectSnapshotInput = (
 
   if (!matches) {
     throw new Error(
-      `Persisted document schema ${JSON.stringify(source)} does not match current schema ${JSON.stringify(current)}.`
+      `Persisted document schema ${JSON.stringify(
+        source
+      )} does not match current schema ${JSON.stringify(current)}.`
     );
   }
 
@@ -7911,8 +8363,15 @@ export const replaceTransformedSnapshot = (
     () => {
       const snapshotInput = readDirectSnapshotInput(editor, transformedInput);
       const transaction = getTransactionSnapshot(editor);
-      const selectedRoot =
-        getPublicExplicitRangeRoot(snapshotInput.selection) ?? MAIN_ROOT_KEY;
+      const explicitSelection =
+        snapshotInput.selection &&
+        snapshotInput.selection !== 'start' &&
+        snapshotInput.selection !== 'end'
+          ? snapshotInput.selection
+          : null;
+      const selectedRoot = explicitSelection
+        ? (SelectionApi.root(explicitSelection) ?? MAIN_ROOT_KEY)
+        : MAIN_ROOT_KEY;
       const fitted = getEditorSchema(editor).fitDocument({
         children: snapshotInput.children as Value,
         ...(snapshotInput.meta === undefined
@@ -7926,22 +8385,29 @@ export const replaceTransformedSnapshot = (
         snapshotInput.selection &&
         snapshotInput.selection !== 'start' &&
         snapshotInput.selection !== 'end'
-          ? {
-              ...snapshotInput.selection,
-              anchor: stripLocationRoots(snapshotInput.selection.anchor),
-              focus: stripLocationRoots(snapshotInput.selection.focus),
-            }
+          ? SelectionApi.isNode(snapshotInput.selection)
+            ? SelectionApi.nodes(snapshotInput.selection.paths, {
+                anchorPath: snapshotInput.selection.anchorPath,
+                focusPath: snapshotInput.selection.focusPath,
+              })
+            : {
+                ...snapshotInput.selection,
+                anchor: stripLocationRoots(snapshotInput.selection.anchor),
+                focus: stripLocationRoots(snapshotInput.selection.focus),
+              }
           : null;
       const selectedInputChildren =
         selectedRoot === MAIN_ROOT_KEY
           ? snapshotInput.children
           : snapshotInput.roots?.[selectedRoot];
-      const protectedInlineSpacerPaths = representationSelection
-        ? getProtectedInlineSpacerEntries(editor, selectedInputChildren ?? [], [
-            representationSelection.anchor,
-            representationSelection.focus,
-          ]).map(({ path }) => path)
-        : [];
+      const protectedInlineSpacerPaths =
+        representationSelection && RangeApi.isRange(representationSelection)
+          ? getProtectedInlineSpacerEntries(
+              editor,
+              selectedInputChildren ?? [],
+              [representationSelection.anchor, representationSelection.focus]
+            ).map(({ path }) => path)
+          : [];
       if (transaction) {
         transaction.protectedInlineSpacerPaths.set(
           selectedRoot,
@@ -8045,6 +8511,15 @@ const resolveSnapshotSelection = (
 
   if (!selection) return null;
 
+  if (SelectionApi.isNode(selection)) {
+    return selection.paths.every((path) => NodeApi.has(editor, path))
+      ? SelectionApi.nodes(selection.paths, {
+          anchorPath: selection.anchorPath,
+          focusPath: selection.focusPath,
+        })
+      : null;
+  }
+
   const anchor = resolveSnapshotPoint(editor, selection.anchor);
   const focus = resolveSnapshotPoint(editor, selection.focus);
 
@@ -8101,17 +8576,29 @@ export const initializeEditorSchemaSnapshot = (
   transformedInput: SnapshotInput
 ) => {
   const snapshotInput = readDirectSnapshotInput(editor, transformedInput);
-  const selectedRoot =
-    getPublicExplicitRangeRoot(snapshotInput.selection) ?? MAIN_ROOT_KEY;
+  const explicitSelection =
+    snapshotInput.selection &&
+    snapshotInput.selection !== 'start' &&
+    snapshotInput.selection !== 'end'
+      ? snapshotInput.selection
+      : null;
+  const selectedRoot = explicitSelection
+    ? (SelectionApi.root(explicitSelection) ?? MAIN_ROOT_KEY)
+    : MAIN_ROOT_KEY;
   const representationSelection =
     snapshotInput.selection &&
     snapshotInput.selection !== 'start' &&
     snapshotInput.selection !== 'end'
-      ? {
-          ...snapshotInput.selection,
-          anchor: stripLocationRoots(snapshotInput.selection.anchor),
-          focus: stripLocationRoots(snapshotInput.selection.focus),
-        }
+      ? SelectionApi.isNode(snapshotInput.selection)
+        ? SelectionApi.nodes(snapshotInput.selection.paths, {
+            anchorPath: snapshotInput.selection.anchorPath,
+            focusPath: snapshotInput.selection.focusPath,
+          })
+        : {
+            ...snapshotInput.selection,
+            anchor: stripLocationRoots(snapshotInput.selection.anchor),
+            focus: stripLocationRoots(snapshotInput.selection.focus),
+          }
       : null;
   const inputDocument = {
     children: snapshotInput.children as Value,
@@ -8229,8 +8716,9 @@ export const initializePublicState = <
   for (const children of Object.values(initialRoots)) {
     seedNodeKeys(children, editor);
   }
-  const initialSelectionRoot =
-    getPublicExplicitRangeRoot(options.initialSelection) ?? MAIN_ROOT_KEY;
+  const initialSelectionRoot = options.initialSelection
+    ? (SelectionApi.root(options.initialSelection) ?? MAIN_ROOT_KEY)
+    : MAIN_ROOT_KEY;
   initializeSelectionState(
     editor,
     options.initialSelection ?? null,

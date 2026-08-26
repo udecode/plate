@@ -3,7 +3,7 @@ import type {
   EditorExtensionReference,
   EditorReadMethodTree,
   EditorStateSchemaApi,
-} from '@platejs/plite';
+} from "@platejs/plite";
 import {
   failInvariant,
   compileEditorExtension,
@@ -11,8 +11,8 @@ import {
   getCompiledSchemaPropertyId,
   getCompiledEditorSchemaFromApi,
   txRead,
-} from '@platejs/plite/internal';
-import { createVanillaStore } from 'zustand-x/vanilla';
+} from "@platejs/plite/internal";
+import { createVanillaStore } from "zustand-x/vanilla";
 
 import type {
   AnyBasePlugin,
@@ -21,20 +21,20 @@ import type {
   BasePluginInput,
   BasePlugins,
   NodeComponents,
-} from '../../lib';
-import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
-import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+} from "../../lib";
+import type { EditorSchemaIdentity } from "../../lib/editor/editorApplicationSchema";
+import { createPluginContext } from "../../lib/plugin/createPluginContext.internal";
 import {
   createBlockFenceInputRule,
   createBlockStartInputRule,
   createMarkInputRule,
-} from '../../lib/plugins/input-rules/createInputRules';
-import { defineInputRule } from '../../lib/plugins/input-rules/defineInputRule';
+} from "../../lib/plugins/input-rules/createInputRules";
+import { defineInputRule } from "../../lib/plugins/input-rules/defineInputRule";
 import type {
   InputRule,
   InputRuleBuilder,
   ResolvedInputRule,
-} from '../../lib/plugins/input-rules/types';
+} from "../../lib/plugins/input-rules/types";
 import {
   brandPluginDescriptor,
   getPluginDescriptorMetadata,
@@ -43,31 +43,31 @@ import {
   isNominalPluginDescriptor,
   mergePlugins,
   setPluginDescriptorMetadata,
-} from '../utils/mergePlugins';
-import { snapshotApiValue } from '../utils/snapshotApiValue';
+} from "../utils/mergePlugins";
+import { snapshotApiValue } from "../utils/snapshotApiValue";
 import type {
   CompiledPlateModel,
   PlateModelPublication,
-} from './compilePlateModel';
+} from "./compilePlateModel";
 import {
   getPlateModelPublication,
   getPlateRuntime,
   setCompiledPlatePluginCandidate,
   withCompiledPlatePluginCandidate,
-} from './compilePlateModel';
-import { compilePlateShortcuts } from './compilePlateShortcuts';
-import { mergePluginCapabilities } from './mergePluginCapabilities';
+} from "./compilePlateModel";
+import { compilePlateShortcuts } from "./compilePlateShortcuts";
+import { mergePluginCapabilities } from "./mergePluginCapabilities";
 import {
   setPlateRuntimeCandidate,
   type PlatePluginCache,
-} from './plateRuntime';
+} from "./plateRuntime";
 import {
   clearPluginStores,
   createPluginStore,
   createPluginStateSnapshot,
   snapshotPluginState,
   setPluginStore,
-} from './pluginStore';
+} from "./pluginStore";
 import {
   getResolvedPluginCapabilities,
   inheritResolvedPluginCapabilities,
@@ -75,7 +75,7 @@ import {
   type ResolvedPluginCapabilityContribution,
   type ResolvedPluginConfiguration,
   resolvePluginWithConfigurations,
-} from './resolvePlugin';
+} from "./resolvePlugin";
 
 type PlateRuntimeExtensionBinding = Readonly<{
   extension: EditorExtensionReference;
@@ -151,26 +151,29 @@ const appendPluginDescriptorPath = (
 
 const formatPluginDescriptorPath = (path: readonly PropertyKey[]) =>
   path.reduce<string>((output, key) => {
-    if (typeof key === 'number') return `${output}[${key}]`;
-    if (typeof key === 'symbol') return `${output}[${String(key)}]`;
+    if (typeof key === "number") return `${output}[${key}]`;
+    if (typeof key === "symbol") return `${output}[${String(key)}]`;
 
     return output ? `${output}.${key}` : key;
-  }, '');
+  }, "");
 
 const createPluginDescriptorAccessorError = (
   context: PluginDescriptorSnapshotContext
 ) =>
   new Error(
-    `Plate plugin "${context.name}" descriptor path "${formatPluginDescriptorPath(context.path)}" must be data-only. Accessor properties are not supported.`
+    `Plate plugin "${
+      context.name
+    }" descriptor path "${formatPluginDescriptorPath(
+      context.path
+    )}" must be data-only. Accessor properties are not supported.`
   );
 
 const opaqueNativeResourceFields = new Set<PropertyKey>([
-  'contributions',
-  'corrections',
-  'effectTypes',
-  'facetProviders',
-  'selectionKinds',
-  'stateFields',
+  "contributions",
+  "corrections",
+  "effectTypes",
+  "facetProviders",
+  "stateFields",
 ]);
 
 const isOpaquePluginDescriptorResource = (
@@ -181,43 +184,43 @@ const isOpaquePluginDescriptorResource = (
   const parent = path.at(-2);
 
   if (
-    parent === 'render' &&
+    parent === "render" &&
     isOpaquePluginRenderKey(
-      key ?? failInvariant('Expected value to be defined')
+      key ?? failInvariant("Expected value to be defined")
     )
   ) {
     return true;
   }
   if (
-    typeof key === 'number' &&
+    typeof key === "number" &&
     path.length === 2 &&
     opaqueNativeResourceFields.has(
-      parent ?? failInvariant('Expected value to be defined')
+      parent ?? failInvariant("Expected value to be defined")
     )
   ) {
     return true;
   }
 
-  return path.at(-3) === 'override' && parent === 'components';
+  return path.at(-3) === "override" && parent === "components";
 };
 
 type MutableDeep<T> = T extends (...args: never[]) => unknown
   ? T
   : T extends ReadonlyArray<infer TItem>
-    ? Array<MutableDeep<TItem>>
-    : T extends object
-      ? { -readonly [K in keyof T]: MutableDeep<T[K]> }
-      : T;
+  ? Array<MutableDeep<TItem>>
+  : T extends object
+  ? { -readonly [K in keyof T]: MutableDeep<T[K]> }
+  : T;
 
 type MutablePlatePluginCache = MutableDeep<PlatePluginCache>;
 type MutableResolvedInputRulesMeta = {
-  insertBreak: Array<Extract<ResolvedInputRule, { target: 'insertBreak' }>>;
-  insertData: Array<Extract<ResolvedInputRule, { target: 'insertData' }>>;
+  insertBreak: Array<Extract<ResolvedInputRule, { target: "insertBreak" }>>;
+  insertData: Array<Extract<ResolvedInputRule, { target: "insertData" }>>;
   insertText: {
-    all: Array<Extract<ResolvedInputRule, { target: 'insertText' }>>;
+    all: Array<Extract<ResolvedInputRule, { target: "insertText" }>>;
     byTrigger: Record<
       string,
-      Array<Extract<ResolvedInputRule, { target: 'insertText' }>>
+      Array<Extract<ResolvedInputRule, { target: "insertText" }>>
     >;
   };
   plugins: Record<string, { rules: ResolvedInputRule[] }>;
@@ -280,7 +283,7 @@ const snapshotPluginDescriptorValue = (
   context: PluginDescriptorSnapshotContext,
   publishedPlugins?: ReadonlyMap<string, AnyBasePlugin>
 ): unknown => {
-  if (!value || typeof value !== 'object') return value;
+  if (!value || typeof value !== "object") return value;
   if (isOpaquePluginDescriptorResource(context)) return value;
   if (isNominalPluginDescriptor(value)) {
     const published = publishedPlugins?.get(value.name);
@@ -329,7 +332,7 @@ const snapshotPluginDescriptorValue = (
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
 
     if (!descriptor) continue;
-    if (!Object.hasOwn(descriptor, 'value')) {
+    if (!Object.hasOwn(descriptor, "value")) {
       throw createPluginDescriptorAccessorError(
         appendPluginDescriptorPath(ownerContext, key)
       );
@@ -338,7 +341,7 @@ const snapshotPluginDescriptorValue = (
     Object.defineProperty(snapshot, key, {
       enumerable: descriptor.enumerable,
       value:
-        isPluginDescriptor && key === 'initialState'
+        isPluginDescriptor && key === "initialState"
           ? snapshotPluginState(descriptor.value)
           : snapshotPluginDescriptorValue(
               descriptor.value,
@@ -380,7 +383,9 @@ const isPlatePluginSourceList = (
 const asAnyBasePlugin = (plugin: BasePluginInput): AnyBasePlugin => {
   if (!isNominalPluginDescriptor(plugin)) {
     throw new Error(
-      `Plate plugin source "${(plugin as { name: string }).name}" must be created by a Plate plugin builder.`
+      `Plate plugin source "${
+        (plugin as { name: string }).name
+      }" must be created by a Plate plugin builder.`
     );
   }
 
@@ -453,13 +458,13 @@ const publishPlatePluginDescriptors = (
   pluginList.forEach((plugin) => {
     const published =
       publishedByName.get(plugin.name) ??
-      failInvariant('Expected value to be defined');
+      failInvariant("Expected value to be defined");
 
     for (const key of Reflect.ownKeys(plugin)) {
       const descriptor = Object.getOwnPropertyDescriptor(plugin, key);
 
       if (!descriptor) continue;
-      if (!Object.hasOwn(descriptor, 'value')) {
+      if (!Object.hasOwn(descriptor, "value")) {
         throw createPluginDescriptorAccessorError({
           name: plugin.name,
           path: [key],
@@ -468,7 +473,7 @@ const publishPlatePluginDescriptors = (
 
       let value: unknown;
 
-      if (key === 'dependencies' || key === 'conflicts') {
+      if (key === "dependencies" || key === "conflicts") {
         const references = Array.isArray(descriptor.value)
           ? descriptor.value
           : [];
@@ -484,15 +489,15 @@ const publishPlatePluginDescriptors = (
             );
           })
         );
-      } else if (key === 'initialState') {
+      } else if (key === "initialState") {
         value = snapshotPluginState(descriptor.value);
-      } else if (key === 'inject') {
+      } else if (key === "inject") {
         const inject = snapshotPluginDescriptorValue(
           descriptor.value,
           snapshots,
           { name: plugin.name, path: [key] },
           publishedByName
-        ) as AnyBasePlugin['inject'];
+        ) as AnyBasePlugin["inject"];
         const propertyKey = model.byName[plugin.name]?.propertyKey;
 
         value =
@@ -526,7 +531,7 @@ const publishPlatePluginDescriptors = (
   const publishedPluginList = pluginList.map(
     (plugin) =>
       publishedByName.get(plugin.name) ??
-      failInvariant('Expected value to be defined')
+      failInvariant("Expected value to be defined")
   );
 
   publishedPluginList.forEach(Object.freeze);
@@ -545,7 +550,7 @@ export const resolvePlugins = (
 ) => {
   if (getPlateModelPublication(editor)) {
     throw new Error(
-      'Plate plugins are fixed after model publication. Configure plugin `initialState` before creating the editor.'
+      "Plate plugins are fixed after model publication. Configure plugin `initialState` before creating the editor."
     );
   }
 
@@ -627,22 +632,28 @@ const publishCompiledSchemaHandles = (
                 (property) =>
                   property.owner === binding.name &&
                   property.placement === handle.placement &&
-                  (typeof property.key === 'string'
+                  (typeof property.key === "string"
                     ? property.key === handle.key
-                    : typeof handle.key !== 'string' &&
+                    : typeof handle.key !== "string" &&
                       property.key.prefix === handle.key.prefix)
               );
 
         if (matches.length !== 1) {
           throw new Error(
-            `Plate plugin "${binding.name}" schema property "${localId}" (${handle.id}) did not resolve to one compiled property. Compiled owner candidates: ${
+            `Plate plugin "${binding.name}" schema property "${localId}" (${
+              handle.id
+            }) did not resolve to one compiled property. Compiled owner candidates: ${
               compiledProperties
                 .filter((property) => property.owner === binding.name)
                 .map(
                   (property) =>
-                    `${property.id}:${typeof property.key === 'string' ? property.key : `${property.key.prefix}*`}`
+                    `${property.id}:${
+                      typeof property.key === "string"
+                        ? property.key
+                        : `${property.key.prefix}*`
+                    }`
                 )
-                .join(', ') || 'none'
+                .join(", ") || "none"
             }.`
           );
         }
@@ -652,7 +663,7 @@ const publishCompiledSchemaHandles = (
           Object.freeze({
             id: matches[0].id,
             key: matches[0].key,
-            kind: 'schema-property' as const,
+            kind: "schema-property" as const,
             placement: matches[0].placement,
           }),
         ];
@@ -663,10 +674,10 @@ const publishCompiledSchemaHandles = (
           (handle) => handle?.id === binding.textPropertyId
         )
       : binding.propertyKey
-        ? propertyHandles[binding.propertyKey]
-        : undefined;
+      ? propertyHandles[binding.propertyKey]
+      : undefined;
     const propertyKey = binding.propertyKey
-      ? typeof primaryPropertyHandle?.key === 'string'
+      ? typeof primaryPropertyHandle?.key === "string"
         ? primaryPropertyHandle.key
         : (() => {
             throw new Error(
@@ -682,9 +693,9 @@ const publishCompiledSchemaHandles = (
       propertyHandles: Object.freeze(propertyHandles),
       schema: Object.freeze({
         ...binding.schema,
-        ...(binding.kind === 'mark'
+        ...(binding.kind === "mark"
           ? {
-              key: propertyKey ?? failInvariant('Expected value to be defined'),
+              key: propertyKey ?? failInvariant("Expected value to be defined"),
             }
           : {}),
         properties: Object.freeze(
@@ -733,7 +744,7 @@ export const createPlateModelPublication = (
   const compiledSchema = getCompiledEditorSchemaFromApi(schemaApi);
 
   if (!compiledSchema) {
-    throw new Error('Plate model publication requires a compiled schema.');
+    throw new Error("Plate model publication requires a compiled schema.");
   }
   const publishedModel = publishCompiledSchemaHandles(model, compiledSchema);
   const publishedPluginList = publishPlatePluginDescriptors(
@@ -745,7 +756,7 @@ export const createPlateModelPublication = (
       const elementType = publishedModel.byName[plugin.name]?.elementType;
 
       return elementType &&
-        !updateMethods[plugin.name]?.includes('toggle') &&
+        !updateMethods[plugin.name]?.includes("toggle") &&
         isGenericElementToggleEligible(compiledSchema, elementType)
         ? [plugin.name]
         : [];
@@ -761,7 +772,7 @@ export const createPlateModelPublication = (
           elementType &&
           isGenericElementToggleEligible(compiledSchema, elementType)
         ) {
-          methods.add('toggle');
+          methods.add("toggle");
         }
 
         return [plugin.name, Object.freeze([...methods])] as const;
@@ -782,14 +793,14 @@ export const createPlateModelPublication = (
   publishedModel.bindings.forEach((binding) => {
     const plugin = plugins[binding.name];
 
-    if (binding.kind === 'none' || !plugin) return;
+    if (binding.kind === "none" || !plugin) return;
 
     if (plugin.render.node) {
       const documentIdentity = binding.elementType ?? binding.propertyKey;
 
       if (documentIdentity) components[documentIdentity] = plugin.render.node;
     }
-    if (binding.kind !== 'mark') return;
+    if (binding.kind !== "mark") return;
     if (binding.isDecoration || plugin.render.leaf) {
       decoratedMarks.push(binding.name);
     }
@@ -804,12 +815,12 @@ export const createPlateModelPublication = (
     }
   });
 
-  const blockTypes = compiledSchema.elements.groups.get('block');
+  const blockTypes = compiledSchema.elements.groups.get("block");
   const containerTypes = publishedModel.bindings.flatMap((binding) => {
-    if (binding.kind !== 'element' || !blockTypes) return [];
+    if (binding.kind !== "element" || !blockTypes) return [];
 
     const childTypes = compiledSchema.elements.byType.get(
-      binding.elementType ?? failInvariant('Expected value to be defined')
+      binding.elementType ?? failInvariant("Expected value to be defined")
     )?.content?.allowedElementTypes;
 
     if (!childTypes) return [];
@@ -817,7 +828,7 @@ export const createPlateModelPublication = (
     for (const childType of childTypes) {
       if (blockTypes.has(childType)) {
         return [
-          binding.elementType ?? failInvariant('Expected value to be defined'),
+          binding.elementType ?? failInvariant("Expected value to be defined"),
         ];
       }
     }
@@ -938,7 +949,7 @@ const isGenericElementToggleEligible = (
   schema: NonNullable<ReturnType<typeof getCompiledEditorSchemaFromApi>>,
   elementType: string
 ) => {
-  if (!schema.elements.groups.get('textBlock')?.has(elementType)) return false;
+  if (!schema.elements.groups.get("textBlock")?.has(elementType)) return false;
   if (!schema.primaryRoot.content.allowedElementTypes.has(elementType)) {
     return false;
   }
@@ -979,11 +990,11 @@ const inspectPluginUpdateMethods = (
   pluginList.forEach((plugin) => {
     const binding = model.byName[plugin.name];
     const names = new Set<string>([
-      ...(binding?.elementType ? ['insert', 'remove', 'set'] : []),
-      ...(binding?.kind === 'mark' ? ['clear', 'set', 'toggle'] : []),
+      ...(binding?.elementType ? ["insert", "remove", "set"] : []),
+      ...(binding?.kind === "mark" ? ["clear", "set", "toggle"] : []),
     ]);
 
-    if (typeof plugin.update !== 'function') {
+    if (typeof plugin.update !== "function") {
       if (names.size > 0) {
         updateMethods[plugin.name] = Object.freeze([...names]);
       }
@@ -1008,7 +1019,7 @@ const inspectPluginUpdateMethods = (
     }
 
     Object.entries(group).forEach(([name, value]) => {
-      if (typeof value === 'function') names.add(name);
+      if (typeof value === "function") names.add(name);
     });
     updateMethods[plugin.name] = Object.freeze([...names]);
   });
@@ -1016,21 +1027,21 @@ const inspectPluginUpdateMethods = (
   return Object.freeze(updateMethods);
 };
 
-const lifecycleKeys = ['commit', 'transactionChange'] as const;
+const lifecycleKeys = ["commit", "transactionChange"] as const;
 
 const isApiRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const resolvePluginCapability = (
   owner: string,
-  kind: 'read' | 'update',
+  kind: "read" | "update",
   pluginContext: object,
   contributions: readonly ResolvedPluginCapabilityContribution[],
   context: object
 ) => {
   const values = contributions.map(({ factory, kind: innerKind }) =>
     Reflect.apply(factory, undefined, [
-      innerKind === 'native'
+      innerKind === "native"
         ? context
         : Object.assign(Object.create(pluginContext), context),
     ])
@@ -1039,7 +1050,7 @@ const resolvePluginCapability = (
   return mergePluginCapabilities(
     {
       kind,
-      ...(kind === 'read' ? { mapMethod: txRead } : {}),
+      ...(kind === "read" ? { mapMethod: txRead } : {}),
       owner,
     },
     ...values
@@ -1056,7 +1067,7 @@ const createPluginLifecycleHandlers = (
   lifecycleKeys.forEach((name) => {
     const handler = plugin.on?.[name];
 
-    if (typeof handler !== 'function') return;
+    if (typeof handler !== "function") return;
 
     handlers[name] = (context) =>
       Reflect.apply(handler, undefined, [
@@ -1131,7 +1142,7 @@ export const createPlateRuntimeExtensions = (
           previous.conflicts.some((conflict) => conflict.name === plugin.name)
             ? [
                 extensionByName.get(previous.name) ??
-                  failInvariant('Expected value to be defined'),
+                  failInvariant("Expected value to be defined"),
               ]
             : []
         ),
@@ -1142,14 +1153,14 @@ export const createPlateRuntimeExtensions = (
     const effectTypes = plugin.effectTypes ?? [];
     const binding = model.byName[plugin.name];
     const elementType = binding?.elementType;
-    const markKey = binding?.kind === 'mark' ? binding.propertyKey : null;
+    const markKey = binding?.kind === "mark" ? binding.propertyKey : null;
     const markIsBoolean =
       markKey !== null &&
       binding?.properties.some(
         (property) =>
-          property.placement === 'text' &&
+          property.placement === "text" &&
           getCompiledSchemaPropertyId(property) === binding.textPropertyId &&
-          property.value.kind === 'boolean'
+          property.value.kind === "boolean"
       );
     const definition: EditorExtensionDefinitionInput<BaseEditor> = {
       ...(plugin.enabled === false ? { enabled: false } : {}),
@@ -1162,14 +1173,14 @@ export const createPlateRuntimeExtensions = (
 
               if (apiContributions.length === 0) {
                 resolvedApi = mergePluginCapabilities(
-                  { kind: 'api', owner: plugin.name },
+                  { kind: "api", owner: plugin.name },
                   resolvedApi,
                   frozenPluginApi
                 ) as Record<PropertyKey, unknown>;
               } else {
                 for (const contribution of apiContributions) {
                   const value =
-                    contribution.kind === 'plate'
+                    contribution.kind === "plate"
                       ? contribution.value
                       : Reflect.apply(contribution.factory, undefined, [
                           context,
@@ -1181,7 +1192,7 @@ export const createPlateRuntimeExtensions = (
                     );
                   }
                   resolvedApi = mergePluginCapabilities(
-                    { kind: 'api', owner: plugin.name },
+                    { kind: "api", owner: plugin.name },
                     resolvedApi,
                     value
                   ) as Record<PropertyKey, unknown>;
@@ -1194,28 +1205,28 @@ export const createPlateRuntimeExtensions = (
         : {}),
       ...(markKey ||
       capabilities.read.length > 0 ||
-      typeof plugin.read === 'function'
+      typeof plugin.read === "function"
         ? {
             read: (context) => {
               const authoredRead =
                 capabilities.read.length > 0
                   ? resolvePluginCapability(
                       plugin.name,
-                      'read',
+                      "read",
                       pluginContext,
                       capabilities.read,
                       context
                     )
-                  : typeof plugin.read === 'function'
-                    ? Reflect.apply(plugin.read, undefined, [
-                        Object.assign(Object.create(pluginContext), context),
-                      ])
-                    : {};
+                  : typeof plugin.read === "function"
+                  ? Reflect.apply(plugin.read, undefined, [
+                      Object.assign(Object.create(pluginContext), context),
+                    ])
+                  : {};
 
               if (!markKey) {
                 return mergePluginCapabilities(
                   {
-                    kind: 'read',
+                    kind: "read",
                     mapMethod: txRead,
                     owner: plugin.name,
                   },
@@ -1244,7 +1255,7 @@ export const createPlateRuntimeExtensions = (
 
               return mergePluginCapabilities(
                 {
-                  kind: 'read',
+                  kind: "read",
                   mapMethod: txRead,
                   owner: plugin.name,
                 },
@@ -1257,23 +1268,23 @@ export const createPlateRuntimeExtensions = (
       ...(elementType ||
       markKey ||
       capabilities.update.length > 0 ||
-      typeof plugin.update === 'function'
+      typeof plugin.update === "function"
         ? {
             update: (context) => {
               const authoredUpdate =
                 capabilities.update.length > 0
                   ? resolvePluginCapability(
                       plugin.name,
-                      'update',
+                      "update",
                       pluginContext,
                       capabilities.update,
                       context
                     )
-                  : typeof plugin.update === 'function'
-                    ? Reflect.apply(plugin.update, undefined, [
-                        Object.assign(Object.create(pluginContext), context),
-                      ])
-                    : {};
+                  : typeof plugin.update === "function"
+                  ? Reflect.apply(plugin.update, undefined, [
+                      Object.assign(Object.create(pluginContext), context),
+                    ])
+                  : {};
 
               if (!isApiRecord(authoredUpdate)) {
                 throw new Error(
@@ -1281,7 +1292,7 @@ export const createPlateRuntimeExtensions = (
                 );
               }
               const hasAuthoredToggle =
-                typeof authoredUpdate.toggle === 'function';
+                typeof authoredUpdate.toggle === "function";
               const hasGenericToggle =
                 getPlateModelPublication(
                   editor
@@ -1338,7 +1349,7 @@ export const createPlateRuntimeExtensions = (
                               const { collapse, ...blockOptions } = options;
 
                               context.tx.blocks.toggle(
-                                elementType,
+                                { type: elementType },
                                 blockOptions
                               );
                               if (collapse) {
@@ -1376,7 +1387,7 @@ export const createPlateRuntimeExtensions = (
               };
 
               return mergePluginCapabilities(
-                { kind: 'update', owner: plugin.name },
+                { kind: "update", owner: plugin.name },
                 defaultUpdate,
                 authoredUpdate
               );
@@ -1386,29 +1397,29 @@ export const createPlateRuntimeExtensions = (
       ...(plugin.readMiddleware
         ? {
             readMiddleware:
-              plugin.readMiddleware as EditorExtensionDefinitionInput<BaseEditor>['readMiddleware'],
+              plugin.readMiddleware as EditorExtensionDefinitionInput<BaseEditor>["readMiddleware"],
           }
         : {}),
       ...(plugin.commands
         ? {
             commands:
-              plugin.commands as EditorExtensionDefinitionInput<BaseEditor>['commands'],
+              plugin.commands as EditorExtensionDefinitionInput<BaseEditor>["commands"],
           }
         : {}),
       ...(plugin.corrections
         ? {
             corrections: (
               plugin.corrections as NonNullable<
-                EditorExtensionDefinitionInput<BaseEditor>['corrections']
+                EditorExtensionDefinitionInput<BaseEditor>["corrections"]
               >
             ).map((correction) => {
               const { query } = correction;
 
               if (
                 !query ||
-                query === 'root' ||
-                typeof query !== 'object' ||
-                !('type' in query)
+                query === "root" ||
+                typeof query !== "object" ||
+                !("type" in query)
               ) {
                 return correction;
               }
@@ -1417,50 +1428,44 @@ export const createPlateRuntimeExtensions = (
                 ...correction,
                 query: { ...query, type: lowerNodeType(query.type) },
               };
-            }) as EditorExtensionDefinitionInput<BaseEditor>['corrections'],
+            }) as EditorExtensionDefinitionInput<BaseEditor>["corrections"],
           }
         : {}),
       ...(stateFields.length > 0
         ? {
             stateFields:
-              stateFields as EditorExtensionDefinitionInput<BaseEditor>['stateFields'],
+              stateFields as EditorExtensionDefinitionInput<BaseEditor>["stateFields"],
           }
         : {}),
       ...(effectTypes.length > 0
         ? {
             effectTypes:
-              effectTypes as EditorExtensionDefinitionInput<BaseEditor>['effectTypes'],
+              effectTypes as EditorExtensionDefinitionInput<BaseEditor>["effectTypes"],
           }
         : {}),
       ...(plugin.facetProviders
         ? {
             facetProviders:
-              plugin.facetProviders as EditorExtensionDefinitionInput<BaseEditor>['facetProviders'],
-          }
-        : {}),
-      ...(plugin.selectionKinds
-        ? {
-            selectionKinds:
-              plugin.selectionKinds as EditorExtensionDefinitionInput<BaseEditor>['selectionKinds'],
+              plugin.facetProviders as EditorExtensionDefinitionInput<BaseEditor>["facetProviders"],
           }
         : {}),
       ...(plugin.contributions
         ? {
             contributions:
-              plugin.contributions as EditorExtensionDefinitionInput<BaseEditor>['contributions'],
+              plugin.contributions as EditorExtensionDefinitionInput<BaseEditor>["contributions"],
           }
         : {}),
       ...(Reflect.ownKeys(on).length > 0 ? { on } : {}),
       ...(plugin.activate
         ? {
             activate:
-              plugin.activate as EditorExtensionDefinitionInput<BaseEditor>['activate'],
+              plugin.activate as EditorExtensionDefinitionInput<BaseEditor>["activate"],
           }
         : {}),
       ...(plugin.validate
         ? {
             validate:
-              plugin.validate as EditorExtensionDefinitionInput<BaseEditor>['validate'],
+              plugin.validate as EditorExtensionDefinitionInput<BaseEditor>["validate"],
           }
         : {}),
       ...(model.contributions[plugin.name]
@@ -1515,14 +1520,14 @@ export const createPlateRuntimeExtensions = (
       pluginList.forEach((plugin) => {
         const extension =
           extensionByName.get(plugin.name) ??
-          failInvariant('Expected value to be defined');
+          failInvariant("Expected value to be defined");
         const candidate = getCandidateEditorExtensionApi(editor, extension)?.[
           plugin.name
         ];
         const api = isApiRecord(candidate)
           ? candidate
-          : (fallbackApiByPlugin.get(plugin.name) ??
-            failInvariant('Expected value to be defined'));
+          : fallbackApiByPlugin.get(plugin.name) ??
+            failInvariant("Expected value to be defined");
 
         apiByPlugin[plugin.name] = api;
         shortcutApiByPlugin[plugin.name] = Object.freeze({ api });
@@ -1545,13 +1550,13 @@ const createPluginShortcuts = (
 ) => {
   const shortcuts = Object.create(null) as Record<
     string,
-    BasePlugin['shortcuts'][string]
+    BasePlugin["shortcuts"][string]
   >;
   const compilerInputs: Array<{
     declarationIndex: number;
     id: string;
     pluginIndex: number;
-    shortcut: NonNullable<BasePlugin['shortcuts'][string]>;
+    shortcut: NonNullable<BasePlugin["shortcuts"][string]>;
   }> = [];
 
   pluginList.forEach((plugin, pluginIndex) => {
@@ -1562,7 +1567,7 @@ const createPluginShortcuts = (
         if (hotkey === null) {
           // If hotkey is null, remove the namespaced shortcut
           delete shortcuts[namespacedKey];
-        } else if (hotkey && typeof hotkey === 'object') {
+        } else if (hotkey && typeof hotkey === "object") {
           const { target, ...hotkeyOptions } = hotkey;
           const resolvedHotkey = { ...hotkeyOptions } as Record<
             string,
@@ -1581,8 +1586,8 @@ const createPluginShortcuts = (
           if (!resolvedHotkey.handler && updateMethods) {
             if (
               target !== undefined &&
-              target !== 'api' &&
-              target !== 'update'
+              target !== "api" &&
+              target !== "update"
             ) {
               throw new Error(
                 `Plate shortcut "${namespacedKey}" target must be "update" or "api".`
@@ -1593,50 +1598,50 @@ const createPluginShortcuts = (
             const apiScopes = shortcutApiByPlugin?.[plugin.name];
             const apiOwner = apiScopes?.api;
             const apiCommand = apiOwner?.[originalKey];
-            const hasApi = typeof apiCommand === 'function';
+            const hasApi = typeof apiCommand === "function";
             const route = (() => {
-              if (target === 'update') {
+              if (target === "update") {
                 if (!hasUpdate) {
                   throw new Error(
                     `Plate shortcut "${namespacedKey}" targets missing update command "${plugin.name}.${originalKey}".`
                   );
                 }
 
-                return 'update';
+                return "update";
               }
-              if (target === 'api') {
+              if (target === "api") {
                 if (!hasApi) {
                   throw new Error(
                     `Plate shortcut "${namespacedKey}" targets missing API command "${plugin.name}.${originalKey}".`
                   );
                 }
 
-                return 'api';
+                return "api";
               }
               if (hasUpdate && hasApi) {
                 throw new Error(
                   `Plate shortcut "${namespacedKey}" matches both update and API commands. Set target to "update" or "api".`
                 );
               }
-              if (hasUpdate) return 'update';
-              if (hasApi) return 'api';
+              if (hasUpdate) return "update";
+              if (hasApi) return "api";
 
               throw new Error(
                 `Plate shortcut "${namespacedKey}" does not match a public update or API command. Add a custom handler or define the command.`
               );
             })();
 
-            if (route === 'update') {
+            if (route === "update") {
               resolvedHotkey.handler = () => {
                 const updateGroup = (
                   editor.update as unknown as Record<string, unknown>
                 )[plugin.name];
                 const command =
-                  updateGroup && typeof updateGroup === 'object'
+                  updateGroup && typeof updateGroup === "object"
                     ? (updateGroup as Record<string, unknown>)[originalKey]
                     : undefined;
 
-                if (typeof command !== 'function') {
+                if (typeof command !== "function") {
                   throw new Error(
                     `Plate shortcut "${namespacedKey}" lost its compiled update command.`
                   );
@@ -1659,14 +1664,14 @@ const createPluginShortcuts = (
           resolvedHotkey.priority ??= 0;
 
           shortcuts[namespacedKey] = resolvedHotkey as NonNullable<
-            BasePlugin['shortcuts'][string]
+            BasePlugin["shortcuts"][string]
           >;
           compilerInputs.push({
             declarationIndex,
             id: namespacedKey,
             pluginIndex,
             shortcut: resolvedHotkey as NonNullable<
-              BasePlugin['shortcuts'][string]
+              BasePlugin["shortcuts"][string]
             >,
           });
         }
@@ -1686,7 +1691,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
   pluginList.forEach((plugin, pluginIndex) => {
     const inputRulesDefinition = plugin.inputRules;
     const definitionRules =
-      typeof inputRulesDefinition === 'function'
+      typeof inputRulesDefinition === "function"
         ? inputRulesDefinition({
             rule: {
               blockFence: (config) => createBlockFenceInputRule(config),
@@ -1697,7 +1702,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
               mark: (config) => createMarkInputRule(config),
             } satisfies InputRuleBuilder,
           })
-        : (inputRulesDefinition ?? []);
+        : inputRulesDefinition ?? [];
     const ruleDefinitions = definitionRules as InputRule[];
 
     resolvedMeta.plugins[plugin.name] = {
@@ -1722,7 +1727,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
 
       resolvedMeta.plugins[plugin.name].rules.push(resolvedRule);
 
-      if (resolvedRule.target === 'insertText') {
+      if (resolvedRule.target === "insertText") {
         const triggers = Array.isArray(resolvedRule.trigger)
           ? [...resolvedRule.trigger]
           : [resolvedRule.trigger];
@@ -1735,9 +1740,9 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
 
           resolvedMeta.insertText.byTrigger[trigger].push(resolvedRule);
         });
-      } else if (resolvedRule.target === 'insertBreak') {
+      } else if (resolvedRule.target === "insertBreak") {
         resolvedMeta.insertBreak.push(resolvedRule);
-      } else if (resolvedRule.target === 'insertData') {
+      } else if (resolvedRule.target === "insertData") {
         resolvedMeta.insertData.push(resolvedRule);
       }
     });
@@ -1760,7 +1765,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
   return resolvedMeta;
 };
 
-type PluginRootRole = 'baseCore' | 'internalRoot' | 'reactCore' | 'user';
+type PluginRootRole = "baseCore" | "internalRoot" | "reactCore" | "user";
 
 type PluginRootOrigin = Readonly<{
   descriptor: AnyBasePlugin;
@@ -1813,7 +1818,7 @@ const assertPluginReference = (
       `Plate plugin "${ownerName}" has an empty dependency name at "${path}".`
     );
   }
-  if (reference.name === 'root') {
+  if (reference.name === "root") {
     throw new Error(
       `Plate plugin name "root" is reserved for the internal editor root (${path}).`
     );
@@ -1859,7 +1864,7 @@ export const collectPlatePluginSourceCandidates = (
   ];
 
   for (const candidate of queue) {
-    if (!candidate || typeof candidate !== 'object' || visited.has(candidate)) {
+    if (!candidate || typeof candidate !== "object" || visited.has(candidate)) {
       continue;
     }
     visited.add(candidate);
@@ -1887,10 +1892,10 @@ const applyComponentOverrides = (
 
     if (!components) continue;
     Object.entries(components).forEach(([key, component]) => {
-      if (plugin.name === 'root' || !componentOverrides[key]) {
+      if (plugin.name === "root" || !componentOverrides[key]) {
         componentOverrides[key] = {
           component,
-          terminal: plugin.name === 'root',
+          terminal: plugin.name === "root",
         };
       }
     });
@@ -1942,28 +1947,27 @@ const getPresentNames = (
 };
 
 const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
-  'activate',
-  'api',
-  'codecs',
-  'commands',
-  'conflicts',
-  'configure',
-  'contributions',
-  'corrections',
-  'dependencies',
-  'effectTypes',
-  'extend',
-  'facetProviders',
-  'name',
-  'override',
-  'plugins',
-  'read',
-  'readMiddleware',
-  'schema',
-  'selectionKinds',
-  'stateFields',
-  'update',
-  'validate',
+  "activate",
+  "api",
+  "codecs",
+  "commands",
+  "conflicts",
+  "configure",
+  "contributions",
+  "corrections",
+  "dependencies",
+  "effectTypes",
+  "extend",
+  "facetProviders",
+  "name",
+  "override",
+  "plugins",
+  "read",
+  "readMiddleware",
+  "schema",
+  "stateFields",
+  "update",
+  "validate",
 ]);
 
 const assertWeakPluginOverride = (
@@ -1971,7 +1975,7 @@ const assertWeakPluginOverride = (
   targetName: string,
   value: unknown
 ): Record<PropertyKey, unknown> => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(
       `Plate plugin "${contributorName}" weak override for "${targetName}" must be an object.`
     );
@@ -1980,13 +1984,15 @@ const assertWeakPluginOverride = (
   for (const key of Reflect.ownKeys(value)) {
     if (weakPluginOverrideForbiddenKeys.has(key)) {
       throw new Error(
-        `Plate plugin "${contributorName}" weak override for "${targetName}" cannot define "${String(key)}". Weak overrides cannot mutate plugin identity, topology, or authoring state.`
+        `Plate plugin "${contributorName}" weak override for "${targetName}" cannot define "${String(
+          key
+        )}". Weak overrides cannot mutate plugin identity, topology, or authoring state.`
       );
     }
   }
   if (
-    Object.hasOwn(value, 'enabled') &&
-    typeof Reflect.get(value, 'enabled') !== 'boolean'
+    Object.hasOwn(value, "enabled") &&
+    typeof Reflect.get(value, "enabled") !== "boolean"
   ) {
     throw new Error(
       `Plate plugin "${contributorName}" weak override for "${targetName}" must define "enabled" as a boolean.`
@@ -2004,9 +2010,11 @@ const getWeakOverrideGraphSignature = (
     .map(([name, node]) => {
       const plugin = node.resolved;
 
-      return `${name}:${present.has(name) ? 1 : 0}:${plugin?.enabled === false ? 0 : 1}`;
+      return `${name}:${present.has(name) ? 1 : 0}:${
+        plugin?.enabled === false ? 0 : 1
+      }`;
     })
-    .join('|');
+    .join("|");
 
 const applyWeakPluginOverrides = (
   editor: BaseEditor,
@@ -2041,7 +2049,7 @@ const applyWeakPluginOverrides = (
       if (!overrides) continue;
 
       for (const targetName of Object.keys(overrides)) {
-        if (targetName === 'root') {
+        if (targetName === "root") {
           throw new Error(
             `Plate plugin "${contributor.resolved.name}" cannot weakly override the internal root plugin.`
           );
@@ -2095,7 +2103,7 @@ const applyWeakPluginOverrides = (
     if (nextSignature === signature) return;
     if (seen.has(nextSignature)) {
       throw new Error(
-        'Plate weak plugin overrides contain cyclic enablement. Configure one target descriptor directly.'
+        "Plate weak plugin overrides contain cyclic enablement. Configure one target descriptor directly."
       );
     }
 
@@ -2105,7 +2113,7 @@ const applyWeakPluginOverrides = (
   }
 
   throw new Error(
-    'Plate weak plugin overrides did not reach a stable enablement graph.'
+    "Plate weak plugin overrides did not reach a stable enablement graph."
   );
 };
 
@@ -2124,7 +2132,7 @@ const resolveAndSortPluginsCandidate = (
     return sourceIndex;
   };
   const indexDescriptor = (value: unknown) => {
-    if (!value || typeof value !== 'object' || indexed.has(value)) return;
+    if (!value || typeof value !== "object" || indexed.has(value)) return;
 
     indexed.add(value);
     sourceIndexByDescriptor.set(value, takeSourceIndex());
@@ -2143,12 +2151,12 @@ const resolveAndSortPluginsCandidate = (
     if (!isNominalPluginDescriptor(descriptor) || !descriptor.name) {
       throw new Error(`Plate plugin at "${path}" must have a non-empty name.`);
     }
-    if (descriptor.name === 'root' && role !== 'internalRoot') {
+    if (descriptor.name === "root" && role !== "internalRoot") {
       throw new Error(
         `Plate plugin name "root" is reserved for the internal editor root (${path}).`
       );
     }
-    if (role === 'internalRoot' && descriptor.name !== 'root') {
+    if (role === "internalRoot" && descriptor.name !== "root") {
       throw new Error(
         `The internal editor root must use the reserved plugin name "root".`
       );
@@ -2166,14 +2174,14 @@ const resolveAndSortPluginsCandidate = (
         role,
         sourceIndex:
           sourceIndexByDescriptor.get(descriptor) ??
-          failInvariant('Expected value to be defined'),
+          failInvariant("Expected value to be defined"),
       });
       rootOriginsByName.set(descriptor.name, origins);
     }
   };
   const indexRoots = (
     plugins: readonly AnyBasePlugin[],
-    role: Exclude<PluginRootRole, 'internalRoot'>
+    role: Exclude<PluginRootRole, "internalRoot">
   ) => {
     plugins.forEach((plugin, index) => {
       indexDescriptor(plugin);
@@ -2183,11 +2191,11 @@ const resolveAndSortPluginsCandidate = (
 
   if (sources.internalRoot) {
     indexDescriptor(sources.internalRoot);
-    addRoot(sources.internalRoot, 'internalRoot', 'internalRoot.root');
+    addRoot(sources.internalRoot, "internalRoot", "internalRoot.root");
   }
-  indexRoots(sources.baseCore, 'baseCore');
-  indexRoots(sources.reactCore, 'reactCore');
-  indexRoots(sources.user, 'user');
+  indexRoots(sources.baseCore, "baseCore");
+  indexRoots(sources.reactCore, "reactCore");
+  indexRoots(sources.user, "user");
 
   const nodes = new Map<string, PluginGraphNode>();
   const resolvedByDescriptor = new WeakMap<
@@ -2264,7 +2272,7 @@ const resolveAndSortPluginsCandidate = (
         ),
       });
       selected =
-        orderedOrigins.at(-1) ?? failInvariant('Expected value to be defined');
+        orderedOrigins.at(-1) ?? failInvariant("Expected value to be defined");
     }
 
     const resolved = resolveDescriptor(descriptor);
@@ -2297,7 +2305,7 @@ const resolveAndSortPluginsCandidate = (
     index: number
   ) => {
     const ownerPlugin =
-      owner.resolved ?? failInvariant('Expected value to be defined');
+      owner.resolved ?? failInvariant("Expected value to be defined");
     const path = `${owner.origin.path}.dependencies[${index}]`;
     const descriptor = assertPluginReference(reference, ownerPlugin.name, path);
     const hidden = hiddenByName.get(descriptor.name);
@@ -2335,7 +2343,7 @@ const resolveAndSortPluginsCandidate = (
         ...target.origin,
         sourceIndex:
           sourceIndexByDescriptor.get(descriptor) ??
-          failInvariant('Expected value to be defined'),
+          failInvariant("Expected value to be defined"),
       };
     }
 
@@ -2389,7 +2397,7 @@ const resolveAndSortPluginsCandidate = (
 
   requiredByTarget.forEach((edges, targetName) => {
     const target =
-      nodes.get(targetName) ?? failInvariant('Expected value to be defined');
+      nodes.get(targetName) ?? failInvariant("Expected value to be defined");
 
     if (target.resolved?.enabled === false) {
       const edge = edges[0];
@@ -2448,7 +2456,7 @@ const resolveAndSortPluginsCandidate = (
   const ordered: AnyBasePlugin[] = [];
 
   while (ready.length > 0) {
-    const node = ready.shift() ?? failInvariant('Expected value to be defined');
+    const node = ready.shift() ?? failInvariant("Expected value to be defined");
     const { name } = node.resolved;
 
     ordered.push(node.resolved);
@@ -2459,7 +2467,7 @@ const resolveAndSortPluginsCandidate = (
       if (next === 0) {
         ready.push(
           enabledByName.get(dependentName) ??
-            failInvariant('Expected value to be defined')
+            failInvariant("Expected value to be defined")
         );
         ready.sort(compareReady);
       }
@@ -2467,23 +2475,23 @@ const resolveAndSortPluginsCandidate = (
   }
 
   if (ordered.length !== enabledNodes.length) {
-    const state = new Map<string, 'visited' | 'visiting'>();
+    const state = new Map<string, "visited" | "visiting">();
     const stack: string[] = [];
     let cycle: string[] | undefined;
     const visit = (name: string) => {
-      if (cycle || state.get(name) === 'visited') return;
-      if (state.get(name) === 'visiting') {
+      if (cycle || state.get(name) === "visited") return;
+      if (state.get(name) === "visiting") {
         const start = stack.indexOf(name);
 
         cycle = [...stack.slice(start), name];
         return;
       }
 
-      state.set(name, 'visiting');
+      state.set(name, "visiting");
       stack.push(name);
       dependencyNamesByOwner.get(name)?.forEach(visit);
       stack.pop();
-      state.set(name, 'visited');
+      state.set(name, "visited");
     };
 
     enabledNodes.forEach((node) => {
@@ -2491,7 +2499,7 @@ const resolveAndSortPluginsCandidate = (
     });
 
     throw new Error(
-      `Circular plugin dependency: ${(cycle ?? []).join(' -> ')}`
+      `Circular plugin dependency: ${(cycle ?? []).join(" -> ")}`
     );
   }
 

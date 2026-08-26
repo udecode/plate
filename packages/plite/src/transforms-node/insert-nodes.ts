@@ -15,6 +15,7 @@ import {
   type NodeTypeSelector,
   PathApi,
   RangeApi,
+  SelectionApi,
 } from '../interfaces';
 import {
   type AnyEditor,
@@ -60,6 +61,7 @@ const insertNodesRuntime = (
 
     if (!at) {
       const target = tx.resolveTarget();
+      if (SelectionApi.isNode(target)) return;
       if (target) {
         at = target;
       }

@@ -61,7 +61,6 @@ const contractByFamily =
 const point = (path: number[], offset: number) => ({ path, offset });
 
 const collapsedSelection = (path: number[], offset: number) => ({
-  kind: 'text',
   anchor: point(path, offset),
   focus: point(path, offset),
 });
@@ -189,7 +188,6 @@ const hugeDocumentCut = (): StressCase => {
         kind: 'select',
         label: 'select-two-top-level-blocks',
         selection: {
-          kind: 'text',
           anchor: { path: [cutIndex, 0], offset: 0 },
           focus: { path: [cutIndex + 2, 0], offset: 0 },
         },
@@ -1038,7 +1036,6 @@ const webkitBackwardSelection = (): StressCase => {
         kind: 'assertSelection',
         label: 'assert-model-selection-is-backward',
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 4 },
           focus: { path: [0, 0], offset: 3 },
         },

@@ -440,7 +440,6 @@ test.describe('paste html example', () => {
     ).toHaveCount(1);
     if (testInfo.project.name === 'mobile') {
       await editor.selection.select({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 'Hello Bold'.length },
         focus: { path: [0, 0], offset: 'Hello Bold'.length },
       });
@@ -673,7 +672,6 @@ test.describe('paste html example', () => {
 
     try {
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: copiedText.length },
       });
@@ -708,7 +706,6 @@ test.describe('paste html example', () => {
     const insertedText = 'Prediction';
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 1], offset: 0 },
     });
@@ -722,7 +719,6 @@ test.describe('paste html example', () => {
       `${insertedText}'text/plain'`
     );
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 1], offset: insertedText.length },
       focus: { path: [0, 1], offset: insertedText.length },
     });
@@ -1308,7 +1304,6 @@ test.describe('paste html example', () => {
     expect(await editor.get.modelText()).not.toContain('\u00A0');
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: pastedText.length },
       focus: { path: [0, 0], offset: pastedText.length },
     });

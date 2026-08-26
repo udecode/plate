@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list",
+  "dependencies": [
+    "@platejs/list"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-list.json",
+    "https://platejs.org/r/list-toolbar-button.json",
+    "https://platejs.org/r/indent.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/list.tsx",
+      "content": "'use client';\n\nimport {\n  BulletedListRules,\n  isOrderedList,\n  ListType,\n  OrderedListRules,\n  TaskListRules,\n} from '@platejs/list';\nimport { ListPlugin } from '@platejs/list/react';\nimport { PLUGINS } from 'platejs';\n\nimport { BlockList } from '@/registry/components/editor/block-list';\nimport { IndentKit } from '@/registry/components/editor/indent';\n\nexport const ListKit = [\n  ...IndentKit,\n  ListPlugin.configure({\n    inputRules: [\n      BulletedListRules.markdown({ variant: '-' }),\n      BulletedListRules.markdown({ variant: '*' }),\n      OrderedListRules.markdown({ variant: '.' }),\n      OrderedListRules.markdown({ variant: ')' }),\n      TaskListRules.markdown({ checked: false }),\n      TaskListRules.markdown({ checked: true }),\n    ],\n    inject: {\n      nodeProps: {\n        nodeKey: 'listType',\n        query: ({ nodeProps }) => {\n          const { element } = nodeProps;\n\n          return (\n            element?.listType === ListType.Bulleted && !isOrderedList(element)\n          );\n        },\n        transformProps: ({ props }) => ({\n          ...props,\n          role: 'listitem',\n          style: {\n            ...props.style,\n            display: 'list-item',\n          },\n        }),\n      },\n    },\n    render: {\n      belowNodes: BlockList,\n    },\n    targetPlugins: [\n      PLUGINS.heading,\n      PLUGINS.paragraph,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.toggle,\n      PLUGINS.image,\n    ],\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/list.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

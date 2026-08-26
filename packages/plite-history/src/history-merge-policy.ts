@@ -84,7 +84,9 @@ const getCollapsedPoint = (
   fallbackRoot: RootKey,
   root: RootKey
 ): HistoryPoint | null => {
-  if (!selection || !RangeApi.isCollapsed(selection)) return null;
+  if (!selection || !RangeApi.isRange(selection) || !RangeApi.isCollapsed(selection)) {
+    return null;
+  }
 
   const point = selection.anchor;
   const pointRoot = point.root ?? fallbackRoot;
@@ -104,6 +106,7 @@ const selectionIsExpandedInRoot = (
 ) =>
   Boolean(
     selection &&
+    RangeApi.isRange(selection) &&
     !RangeApi.isCollapsed(selection) &&
     (selection.anchor.root ?? fallbackRoot) === root &&
     (selection.focus.root ?? fallbackRoot) === root
@@ -189,7 +192,7 @@ export const createHistoryBatchGroup = (
     commit.selectionBeforeRoot ?? MAIN_ROOT_KEY,
     root
   );
-  const selectionStart = commit.selectionBefore
+  const selectionStart = RangeApi.isRange(commit.selectionBefore)
     ? RangeApi.edges(commit.selectionBefore)[0]
     : null;
   const structuralReplacementInsertedText = Boolean(

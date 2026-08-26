@@ -438,13 +438,11 @@ describe('BaseColumnPlugin schema', () => {
 
         expect(editor.update.column.selectAll()).toBe(true);
         expect(editor.read.selection()).toEqual({
-          kind: 'text',
           anchor: { offset: 0, path: [0, 0, 0, 0] },
           focus: { offset: 3, path: [0, 0, 0, 0] },
         });
         expect(editor.update.column.selectAll()).toBe(true);
         expect(editor.read.selection()).toEqual({
-          kind: 'text',
           anchor: { offset: 0, path: [0, 0, 0, 0] },
           focus: { offset: 3, path: [0, 1, 0, 0] },
         });
@@ -482,7 +480,6 @@ describe('BaseColumnPlugin schema', () => {
 
         expect(editor.update.column.selectAll()).toBe(true);
         expect(editor.read.selection()).toEqual({
-          kind: 'text',
           anchor: { offset: 0, path: [0, 0, 0, 0] },
           focus: { offset: 3, path: [0, 1, 0, 0] },
         });

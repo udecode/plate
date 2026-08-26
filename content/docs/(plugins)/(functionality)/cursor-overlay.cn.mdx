@@ -55,13 +55,13 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/selection @platejs/cursor
+npm install @platejs/cursor
 ```
 
 ### 添加插件
 
 ```tsx
-import { CursorOverlayPlugin } from '@platejs/selection/react';
+import { CursorOverlayPlugin } from '@platejs/cursor';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
@@ -77,7 +77,7 @@ const editor = createPlateEditor({
 通过组件配置光标覆盖层的渲染方式：
 
 ```tsx
-import { CursorOverlayPlugin } from '@platejs/selection/react';
+import { CursorOverlayPlugin } from '@platejs/cursor';
 import { CursorOverlay } from '@/components/editor/cursor-overlay';
 
 CursorOverlayPlugin.configure({

@@ -68,7 +68,6 @@ test('external DOM corruption is repaired from the model without moving selectio
       });
     expect(await editor.get.text()).toBe(modelText);
     await editor.assert.selection({
-      kind: 'text',
       anchor: point,
       focus: point,
     });

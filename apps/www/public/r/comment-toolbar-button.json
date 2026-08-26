@@ -3,17 +3,17 @@
   "name": "comment-toolbar-button",
   "title": "Comment Toolbar Button",
   "description": "A toolbar button for adding inline comments.",
-  "dependencies": [
-    "@platejs/comment"
-  ],
+  "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/comment-kit.json"
+    "https://platejs.org/r/comment.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
-      "path": "src/registry/ui/comment-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { MessageSquareTextIcon } from 'lucide-react';\nimport { useEditorRef } from 'platejs/react';\n\nimport { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      onClick={() => {\n        editor.getTransforms(commentPlugin).comment.setDraft();\n      }}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "src/registry/components/editor/comment-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { MessageSquareTextIcon } from 'lucide-react';\nimport { useEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { commentPlugin } from '@/registry/components/editor/comment';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditor();\n\n  return (\n    <ToolbarButton\n      onClick={() => {\n        editor.plugin(commentPlugin).update.setDraft();\n      }}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/comment-toolbar-button.tsx"
     }
   ],
   "meta": {
@@ -31,5 +31,5 @@
       "discussion-pro"
     ]
   },
-  "type": "registry:ui"
+  "type": "registry:component"
 }

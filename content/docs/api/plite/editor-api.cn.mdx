@@ -90,9 +90,14 @@ const callout = editor.read.nodes.find({
 const structural = editor.read.nodes.toArray({
   type: ["table", "table_cell"],
 });
+
+const currentBlock = editor.read.nodes.block();
+const selectedBlocks = editor.read.nodes.blocks();
 ```
 
 数组选择任一列出的类型。计算策略和 TypeScript 类型缩窄使用谓词。
+`nodes.block(options?)` 读取最近的 schema 块。`nodes.blocks(options?)` 读取
+所有相关 schema 块，并默认使用当前选区，包括精确节点选区。
 
 ## 选区查询
 

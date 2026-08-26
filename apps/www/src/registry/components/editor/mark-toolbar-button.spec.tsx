@@ -33,7 +33,7 @@ const pluginMock = mock();
 
 let currentEditor: any;
 let currentPluginName = 'bold';
-let dropdownOnCloseAutoFocus:
+let dropdownOnFinalFocus:
   | ((event: { preventDefault: () => void }) => void)
   | undefined;
 let mediaUrlOnChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
@@ -129,6 +129,15 @@ mock.module('@/components/ui/alert-dialog', () => ({
 }));
 
 mock.module('@/components/ui/button', () => ({
+  Button: ({
+    size: _size,
+    type: _type,
+    variant: _variant,
+    ...props
+  }: React.ComponentProps<'button'> & {
+    size?: string;
+    variant?: string;
+  }) => <button {...props} type="button" />,
   buttonVariants: () => '',
 }));
 
@@ -137,10 +146,12 @@ mock.module('@/components/ui/dropdown-menu', () => ({
   DropdownMenuContent: ({
     children,
     onCloseAutoFocus,
+    onFinalFocus,
   }: React.PropsWithChildren<{
     onCloseAutoFocus?: (event: { preventDefault: () => void }) => void;
+    onFinalFocus?: (event: { preventDefault: () => void }) => void;
   }>) => {
-    dropdownOnCloseAutoFocus = onCloseAutoFocus;
+    dropdownOnFinalFocus = onFinalFocus ?? onCloseAutoFocus;
 
     return <div>{children}</div>;
   },
@@ -210,12 +221,27 @@ mock.module('@/components/ui/popover', () => ({
   PopoverTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 
+mock.module(
+  '@/registry/components/editor/dropdown-menu',
+  async () => import('@/components/ui/dropdown-menu')
+);
+
+mock.module('@/registry/components/editor/floating-popover', () => ({
+  FloatingPopover: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  FloatingPopoverContent: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
+  FloatingPopoverTrigger: ({ children }: React.PropsWithChildren) => (
+    <>{children}</>
+  ),
+}));
+
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>
     values.filter(Boolean).join(' '),
 }));
 
-mock.module('./toolbar', () => ({
+mock.module('@/registry/components/editor/toolbar', () => ({
   ToolbarButton: ({
     children,
     pressed,
@@ -249,7 +275,7 @@ mock.module('./toolbar', () => ({
 describe('feature toolbar plugin portals', () => {
   beforeEach(() => {
     currentPluginName = 'bold';
-    dropdownOnCloseAutoFocus = undefined;
+    dropdownOnFinalFocus = undefined;
     mediaUrlOnChange = undefined;
     clearMock.mockClear();
     focusMock.mockClear();
@@ -509,7 +535,7 @@ describe('feature toolbar plugin portals', () => {
     expect(pluginMock).toHaveBeenCalledWith(FontColorPlugin);
     expect(clearMock).toHaveBeenCalledTimes(1);
 
-    dropdownOnCloseAutoFocus?.({ preventDefault: preventDefaultMock });
+    dropdownOnFinalFocus?.({ preventDefault: preventDefaultMock });
 
     expect(preventDefaultMock).toHaveBeenCalledTimes(1);
     expect(focusMock).toHaveBeenCalledTimes(1);

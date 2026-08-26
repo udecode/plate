@@ -28,7 +28,6 @@ export type OverridePluginUpdate = {
     action: string | undefined,
     blockPath: Path
   ) => boolean;
-  resetBlock: (at: Path) => void;
   selectAdjacentBlockVoid: (
     adjacent: readonly [unknown, Path] | undefined,
     current: readonly [Element, Path]
@@ -49,36 +48,12 @@ export const OverridePlugin = defineBasePlugin('override', {
 
       return defaultBlock;
     };
-    const getDefaultBlockAt = (at: Path) => {
-      if (at.length <= 1) return getDefaultRootBlock();
-      const parent = tx.nodes.parent(at, { match: ElementApi.isElement })?.[0];
-      const defaultChild =
-        parent && typeof parent.type === 'string'
-          ? tx.schema.element(parent.type)?.content?.default
-          : null;
-
-      if (!defaultChild || defaultChild === 'text') {
-        throw new Error(
-          `Plate schema must declare a default block child for element "${parent?.type ?? 'unknown'}".`
-        );
-      }
-      const defaultBlock = tx.schema.create(defaultChild.type);
-
-      if (!ElementApi.isElement(defaultBlock)) {
-        throw new Error(
-          `Plate schema default child "${defaultChild.type}" must be an element.`
-        );
-      }
-
-      return defaultBlock;
-    };
-    const resetBlock = (at: Path) => {
-      tx.blocks.reset(NodeApi.extractProps(getDefaultBlockAt(at)), { at });
-    };
     const insertExitBreak = () => {
       const selection = tx.selection();
 
-      if (!selection || !tx.selection.isCollapsed()) return false;
+      if (!selection || !tx.selection.isCollapsed()) {
+        return false;
+      }
 
       const block = tx.nodes.block({ at: selection.focus });
 
@@ -110,7 +85,7 @@ export const OverridePlugin = defineBasePlugin('override', {
       if (!action || action === 'default') return false;
       if (action === 'none') return true;
       if (action === 'reset') {
-        resetBlock(blockPath);
+        tx.blocks.reset({ at: blockPath });
 
         return true;
       }
@@ -120,7 +95,7 @@ export const OverridePlugin = defineBasePlugin('override', {
         return true;
       }
       if (action === 'lift' && blockPath.length > 0) {
-        tx.blocks.lift({ at: blockPath });
+        tx.nodes.lift({ at: blockPath });
 
         return true;
       }
@@ -138,12 +113,12 @@ export const OverridePlugin = defineBasePlugin('override', {
       blockPath: Path
     ) => {
       if (action === 'reset') {
-        resetBlock(blockPath);
+        tx.blocks.reset({ at: blockPath });
 
         return true;
       }
       if (action === 'lift' && blockPath.length > 0) {
-        tx.blocks.lift({ at: blockPath });
+        tx.nodes.lift({ at: blockPath });
 
         return true;
       }
@@ -178,7 +153,6 @@ export const OverridePlugin = defineBasePlugin('override', {
     return {
       executeBreakRuleAction,
       executeDeleteRuleAction,
-      resetBlock,
       selectAdjacentBlockVoid,
     };
   },
@@ -282,7 +256,9 @@ export const OverridePlugin = defineBasePlugin('override', {
     commands: ({ around, handle }) => [
       around(editorCommands.insertBreak, ({ next, state }) => {
         const selection = state.selection();
-        const block = state.nodes.block();
+        const block = selection
+          ? state.nodes.block({ at: selection.focus })
+          : undefined;
 
         if (!selection || !block) return false;
 
@@ -356,9 +332,9 @@ export const OverridePlugin = defineBasePlugin('override', {
           if (result === false) return false;
 
           return state.transaction.extend(result, (tx) => {
-            tx.plugin(plugin).resetBlock(
-              isAtStart ? blockPath : PathApi.next(blockPath)
-            );
+            tx.blocks.reset({
+              at: isAtStart ? blockPath : PathApi.next(blockPath),
+            });
           });
         }
 
@@ -367,9 +343,11 @@ export const OverridePlugin = defineBasePlugin('override', {
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();
 
-        if (!selection || !state.selection.isCollapsed()) return false;
+        if (!selection || !state.selection.isCollapsed()) {
+          return false;
+        }
 
-        const block = state.nodes.block();
+        const block = state.nodes.block({ at: selection.focus });
 
         if (input.direction === 'forward') {
           if (block && state.points.isEnd(selection.anchor, block[1])) {

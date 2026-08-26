@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "mention-static",
+  "dependencies": [
+    "@platejs/mention"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/suggestion-style.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/mention-static.tsx",
+      "content": "import { BaseMentionPlugin } from '@platejs/mention';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';\n\nexport function MentionElementStatic(\n  props: PliteElementProps<typeof BaseMentionPlugin> & {\n    prefix?: string;\n  }\n) {\n  const { prefix } = props;\n  const { element } = props;\n  const label = element.label ?? element.ref;\n\n  return (\n    <PliteElement\n      {...props}\n      as=\"span\"\n      className={cn(\n        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',\n        inlineSuggestionVariants(),\n        element.children[0].bold === true && 'font-bold',\n        element.children[0].italic === true && 'italic',\n        element.children[0].underline === true && 'underline'\n      )}\n      attributes={{\n        ...props.attributes,\n        'data-plite-value': label,\n      }}\n    >\n      {props.children}\n      {prefix}\n      {label}\n    </PliteElement>\n  );\n}\n\nexport const BaseMentionKit = [\n  BaseMentionPlugin.configure({\n    component: MentionElementStatic,\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/mention-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

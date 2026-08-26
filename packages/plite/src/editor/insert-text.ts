@@ -94,7 +94,11 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
         target = getDefaultInsertLocation(editor);
       }
 
-      if (!target || shouldIgnoreTarget(editor, target, options)) {
+      if (
+        !target ||
+        !LocationApi.isLocation(target) ||
+        shouldIgnoreTarget(editor, target, options)
+      ) {
         return;
       }
 

@@ -113,7 +113,11 @@ const shouldClearDeletedMarksAtMarkedSuffix = (
 ) => {
   const selection = getCurrentSelection(editor);
 
-  if (!selection || !RangeApi.isCollapsed(selection)) {
+  if (
+    !selection ||
+    !RangeApi.isRange(selection) ||
+    !RangeApi.isCollapsed(selection)
+  ) {
     return false;
   }
 
@@ -201,7 +205,7 @@ const resolveMergePoint = (
 const resolveDeleteTarget = (
   editor: Editor,
   options: DeleteOptions = {},
-  resolvedAt?: Location | null
+  resolvedAt?: Location | import('../interfaces').NodeSelection | null
 ): DeletePathTarget | DeleteRangePlan | null => {
   const {
     reverse = false,
@@ -212,11 +216,12 @@ const resolveDeleteTarget = (
   } = options;
   let { at = resolvedAt ?? getCurrentSelection(editor), hanging = false } =
     options;
-  const initialAt = at ?? undefined;
 
   if (!at) {
     return null;
   }
+  if (SelectionApi.isNode(at)) return null;
+  const initialAt = at;
 
   let isCollapsed = false;
 
@@ -290,6 +295,7 @@ const resolveDeleteTarget = (
     const selection = getCurrentSelection(editor);
     const selectionInside =
       selection &&
+      RangeApi.isRange(selection) &&
       (pathContainsPoint(at, selection.anchor) ||
         pathContainsPoint(at, selection.focus));
     const fallbackPoint = selectionInside
@@ -668,7 +674,11 @@ const resolveDeleteSelection = (
 
   const finalSelection = getCurrentSelection(editor);
 
-  if (finalSelection && RangeApi.isCollapsed(finalSelection)) {
+  if (
+    finalSelection &&
+    RangeApi.isRange(finalSelection) &&
+    RangeApi.isCollapsed(finalSelection)
+  ) {
     let normalizedSelectionPoint = normalizeFinalDeletePoint(
       editor,
       finalSelection.anchor,
@@ -1166,11 +1176,13 @@ export const deleteText: TextMutationMethods['delete'] = (
       if (!at) {
         return;
       }
+      if (!LocationApi.isLocation(at)) return;
 
       const selection = getCurrentSelection(editor);
       const shouldWriteSelection =
         options.at === undefined ||
         (selection !== null &&
+          RangeApi.isRange(selection) &&
           LocationApi.isRange(at) &&
           RangeApi.equals(selection, at));
 

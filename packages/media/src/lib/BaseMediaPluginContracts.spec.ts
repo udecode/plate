@@ -200,6 +200,77 @@ describe('Base media plugin contracts', () => {
     ).toThrow();
   });
 
+  it('splits each media caption into a following paragraph on Enter', () => {
+    const rows = [
+      [BaseFilePlugin, PLUGINS.file],
+      [BaseAudioPlugin, PLUGINS.audio],
+      [BaseVideoPlugin, PLUGINS.video],
+      [BaseImagePlugin, PLUGINS.image],
+      [BaseMediaEmbedPlugin, PLUGINS.mediaEmbed],
+    ] as const;
+
+    const verifyCaptionSplit = <const P extends (typeof rows)[number]>([
+      plugin,
+      type,
+    ]: P) => {
+      const editor = createBaseEditor({
+        editor: createEditor<Value>(),
+        plugins: [plugin] as const,
+        selection: {
+          kind: 'text',
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        },
+        initialValue: [
+          {
+            children: [{ text: 'hello' }],
+            type,
+            url: 'https://platejs.org/example',
+          },
+          { children: [{ text: 'after' }], type: 'paragraph' },
+        ],
+      });
+
+      editor.update.break.insert();
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [{ text: 'he' }],
+          type,
+          url: 'https://platejs.org/example',
+        },
+        { children: [{ text: 'llo' }], type: 'paragraph' },
+        { children: [{ text: 'after' }], type: 'paragraph' },
+      ]);
+      expect(editor.read.selection()).toEqual({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      });
+    };
+
+    rows.forEach(verifyCaptionSplit);
+  });
+
+  it('keeps hard Enter behavior outside media captions', () => {
+    const editor = createBaseEditor({
+      editor: createEditor<Value>(),
+      plugins: [BaseImagePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'Before' }], type: 'paragraph' }],
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'Bef' }], type: 'paragraph' },
+      { children: [{ text: 'ore' }], type: 'paragraph' },
+    ]);
+  });
+
   it('stores image alt text as a declared semantic property', () => {
     const editor = createBaseEditor({
       plugins: [BaseImagePlugin],
@@ -455,10 +526,9 @@ describe('Base media plugin contracts', () => {
   });
 
   it('encodes a visible image and caption with standard media attributes', () => {
-    const point = { offset: 0, path: [0, 0] };
     const editor = createBaseEditor({
       plugins: [BaseImagePlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           alt: 'Plate',
@@ -544,7 +614,6 @@ describe('Base media plugin contracts', () => {
 
       expect(editor.read.children()).toHaveLength(2);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       });

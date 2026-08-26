@@ -8,17 +8,20 @@ const floatingUpdate = mock();
 const setFloating = mock();
 let floatingOptions: { onOpenChange: (open: boolean) => void };
 let focusedEditorId: null | string = 'editor-1';
+let selectedNodeCount = 0;
 let selectionExpanded = true;
 let selectionRange: unknown;
 let toolbarOverlayOpenChange: (open: boolean) => void;
 
+const selection = Object.assign(() => selectionRange, {
+  isExpanded: () => selectionExpanded,
+  nodes: () => Array.from({ length: selectedNodeCount }),
+});
+
 const editor = {
   read: {
     lastCommit: () => null,
-    selection: {
-      isExpanded: () => selectionExpanded,
-      primaryRange: () => selectionRange,
-    },
+    selection,
     text: { string: () => (selectionExpanded ? 'selected' : '') },
   },
 };
@@ -114,7 +117,7 @@ mock.module('./turn-into-toolbar-button', () => ({
   TurnIntoToolbarButton: ButtonStub,
 }));
 
-mock.module('./toolbar', () => ({
+mock.module('@/registry/components/editor/toolbar', () => ({
   Toolbar: ({
     children,
     onOverlayOpenChange,
@@ -137,6 +140,7 @@ mock.module('./toolbar', () => ({
 describe('FloatingToolbar', () => {
   beforeEach(() => {
     focusedEditorId = 'editor-1';
+    selectedNodeCount = 0;
     selectionExpanded = true;
     selectionRange = {
       anchor: { offset: 0, path: [0, 0] },
@@ -148,6 +152,18 @@ describe('FloatingToolbar', () => {
 
   afterAll(() => {
     mock.restore();
+  });
+
+  it('does not mount text toolbar work for node selections', async () => {
+    selectedNodeCount = 2;
+
+    const { FloatingToolbar } = await import(
+      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FloatingToolbar>toolbar</FloatingToolbar>);
+
+    expect(view.queryByText('toolbar')).toBeNull();
+    expect(floatingUpdate).not.toHaveBeenCalled();
   });
 
   it('allows the same range to reopen after a collapsed selection lifecycle', async () => {

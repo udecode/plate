@@ -522,7 +522,7 @@ describe('DOM coverage boundaries', () => {
         expect(commits[0]?.selectionChanged).toBe(true);
         expect(commits[0]?.changed.has('selection')).toBe(true);
 
-        editor.update((tx) => tx.selection.clear());
+        editor.update((tx) => tx.selection.set(null));
         commits.length = 0;
 
         editor.api.dom.focus({ retries: 1 });

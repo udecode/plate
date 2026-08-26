@@ -5,6 +5,7 @@ import type { EditorStaticApi } from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { deleteText } from '../transforms-text/delete-text';
+import { applyDelete } from './delete-backward';
 
 export const applyDeleteFragment: EditorStaticApi['deleteFragment'] = (
   editor,
@@ -12,6 +13,15 @@ export const applyDeleteFragment: EditorStaticApi['deleteFragment'] = (
 ) => {
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget({ at });
+
+    if (SelectionApi.isNode(selection)) {
+      tx.setSelection(selection);
+      applyDelete(editor, {
+        direction,
+        unit: 'character',
+      });
+      return;
+    }
 
     if (
       selection &&

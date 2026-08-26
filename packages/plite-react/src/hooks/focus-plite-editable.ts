@@ -6,7 +6,7 @@ import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import {
   type Editor,
-  getSelectionPrimaryRange,
+  getSelectionDOMRange,
   setEditorFocused,
 } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
@@ -30,7 +30,7 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
-    const projectedSelection = getSelectionPrimaryRange(
+    const projectedSelection = getSelectionDOMRange(
       editor as unknown as Editor,
       selection
     );

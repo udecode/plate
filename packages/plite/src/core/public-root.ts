@@ -1,6 +1,7 @@
 import type { NamedRootKey, RootKey } from '../interfaces/editor';
 import type { Location, Span } from '../interfaces/location';
 import { RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import {
   getCommonLocationRoot,
   MAIN_ROOT_KEY,
@@ -49,7 +50,7 @@ export const getReadLocationRoot = (
 };
 
 export const usesImplicitSelectionLocation = (
-  options: { at?: Location | Span } | undefined
+  options: { at?: unknown } | undefined
 ) => options?.at === undefined;
 
 export const getExplicitRangeRoot = (value: unknown): string | undefined => {
@@ -74,19 +75,7 @@ export const getPublicExplicitRangeRoot = (
     return undefined;
   }
 
-  const anchorRoot = value.anchor.root;
-  const focusRoot = value.focus.root;
-
-  assertPublicRootKey(anchorRoot);
-  assertPublicRootKey(focusRoot);
-
-  if (anchorRoot && focusRoot && anchorRoot !== focusRoot) {
-    throw new Error('Cannot target multiple editor roots in one range.');
-  }
-
-  const root = anchorRoot ?? focusRoot;
-
-  return root;
+  return SelectionApi.root(value);
 };
 
 export const getPublicExplicitLocationRoot = (

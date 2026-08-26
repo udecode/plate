@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "highlight-static",
+  "dependencies": [
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/highlight-style.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/highlight-static.tsx",
+      "content": "import type { BaseHighlightPlugin } from '@platejs/basic-nodes';\nimport type { PliteLeafProps } from 'platejs/static';\nimport { PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function HighlightLeafStatic(\n  props: PliteLeafProps<typeof BaseHighlightPlugin>\n) {\n  return (\n    <PliteLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </PliteLeaf>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/highlight-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

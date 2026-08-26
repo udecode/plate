@@ -2,16 +2,14 @@ import type {
   EditorExtensionReference,
   EditorReadMethodRecord,
   EditorReadMethodTree,
-  EditorSelectionSpec,
   EditorUpdateContext,
-  SelectionValue,
-} from '@platejs/plite';
+} from "@platejs/plite";
 
 import {
   allowPrivateRenderContribution,
   isPrivateRenderContribution,
-} from '../../internal/plugin/privateRenderContribution';
-import { isFunction } from '../../internal/utils/isFunction';
+} from "../../internal/plugin/privateRenderContribution";
+import { isFunction } from "../../internal/utils/isFunction";
 import {
   brandPluginDescriptor,
   freezePluginDescriptorValue,
@@ -19,11 +17,11 @@ import {
   isConfiguredPluginDescriptor,
   mergePlugins,
   setPluginDescriptorMetadata,
-} from '../../internal/utils/mergePlugins';
+} from "../../internal/utils/mergePlugins";
 import type {
   PlatePluginReadState,
   PlatePluginTransaction,
-} from '../editor/pluginRuntimeTypes';
+} from "../editor/pluginRuntimeTypes";
 import type {
   AnyBasePlugin,
   AnyBasePluginContext,
@@ -33,8 +31,8 @@ import type {
   Decorate,
   EditorShortcut,
   PluginCodecMapDeclaration,
-} from './BasePlugin';
-import type { BasePluginDependencyReferences } from './basePluginCompiler.internal';
+} from "./BasePlugin";
+import type { BasePluginDependencyReferences } from "./basePluginCompiler.internal";
 import type {
   PluginSchemaContext,
   PluginSchemaDeclaration,
@@ -43,7 +41,7 @@ import type {
   PluginSelectors,
   NormalizePluginSelectors,
   NormalizePluginState,
-} from './PluginDefinition';
+} from "./PluginDefinition";
 
 const PLUGIN_NAME_PATTERN = /^[a-z][A-Za-z0-9]*$/;
 
@@ -62,7 +60,7 @@ type BasePluginConstructorContextDefinition<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration = never,
-  TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
+  TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly []
 > = Readonly<{
   dependencies: BasePluginDependencyReferences<D>;
   initialState: S;
@@ -78,7 +76,7 @@ type BasePluginConstructorSchemaFactory<
   D extends BasePluginDependencies,
   S extends object,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
-  TSchema extends PluginSchemaDeclaration,
+  TSchema extends PluginSchemaDeclaration
 > = (
   context: PluginSchemaContext<
     NoInfer<
@@ -90,7 +88,7 @@ type BasePluginConstructorSchemaFactory<
 type BasePluginConstructorInitialStateInput<
   N extends string,
   D extends BasePluginDependencies,
-  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>
 > =
   | ((
       context: BasePluginContext<
@@ -105,7 +103,7 @@ type BasePluginConstructorUpdateFactory<
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
-  TUpdate extends object,
+  TUpdate extends object
 > = (
   context: BasePluginContext<
     NoInfer<
@@ -127,25 +125,25 @@ type BasePluginShortcutRecord = Record<
 >;
 
 type BasePluginConstructorPresenceKey =
-  | 'activate'
-  | 'codecs'
-  | 'commands'
-  | 'contributions'
-  | 'corrections'
-  | 'editOnly'
-  | 'effectTypes'
-  | 'facetProviders'
-  | 'inject'
-  | 'inputRules'
-  | 'on'
-  | 'override'
-  | 'readMiddleware'
-  | 'render'
-  | 'rules'
-  | 'stateFields'
-  | 'prepareDocument'
-  | 'useHooks'
-  | 'validate';
+  | "activate"
+  | "codecs"
+  | "commands"
+  | "contributions"
+  | "corrections"
+  | "editOnly"
+  | "effectTypes"
+  | "facetProviders"
+  | "inject"
+  | "inputRules"
+  | "on"
+  | "override"
+  | "readMiddleware"
+  | "render"
+  | "rules"
+  | "stateFields"
+  | "prepareDocument"
+  | "useHooks"
+  | "validate";
 
 type MutableBasePlugin = AnyBasePlugin & {
   targetPlugins: ReadonlyArray<PluginReference | string>;
@@ -156,20 +154,20 @@ type PluginRecord = Record<PropertyKey, unknown> & {
 };
 
 const isObjectRecord = (value: unknown): value is PluginRecord =>
-  typeof value === 'object' && value !== null;
+  typeof value === "object" && value !== null;
 
 const assertNoPublicRenderNode = (value: object) => {
   if (isPrivateRenderContribution(value)) return;
 
-  const render = Reflect.get(value, 'render');
+  const render = Reflect.get(value, "render");
 
   if (
-    typeof render === 'object' &&
+    typeof render === "object" &&
     render !== null &&
-    Object.hasOwn(render, 'node')
+    Object.hasOwn(render, "node")
   ) {
     throw new Error(
-      'Plate plugin `render.node` is private. Use top-level `component` in defineBasePlugin/definePlatePlugin, or terminal .configure({ component }).'
+      "Plate plugin `render.node` is private. Use top-level `component` in defineBasePlugin/definePlatePlugin, or terminal .configure({ component })."
     );
   }
 };
@@ -178,50 +176,50 @@ const assertBaseDefinition: (
   value: unknown
 ) => asserts value is PluginRecord = (value) => {
   if (!isObjectRecord(value)) {
-    throw new Error('Plate plugin definitions must be objects.');
+    throw new Error("Plate plugin definitions must be objects.");
   }
-  if (typeof value.name !== 'string' || value.name.length === 0) {
-    throw new Error('Plate plugins require a non-empty `name`.');
+  if (typeof value.name !== "string" || value.name.length === 0) {
+    throw new Error("Plate plugins require a non-empty `name`.");
   }
-  if (Object.hasOwn(value, 'key') || Object.hasOwn(value, 'type')) {
+  if (Object.hasOwn(value, "key") || Object.hasOwn(value, "type")) {
     throw new Error(
-      'Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`.'
+      "Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`."
     );
   }
 
   assertNoPublicRenderNode(value);
-  if (Object.hasOwn(value, 'node')) {
+  if (Object.hasOwn(value, "node")) {
     throw new Error(
-      'Plate plugin `node` is unsupported. Use top-level `schema` and `render`.'
+      "Plate plugin `node` is unsupported. Use top-level `schema` and `render`."
     );
   }
-  if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
-    throw new Error('Plate plugin `api` must be a context factory.');
+  if (Object.hasOwn(value, "api") && typeof value.api !== "function") {
+    throw new Error("Plate plugin `api` must be a context factory.");
   }
 };
 
 const assertExtendObject = (value: object) => {
   assertNoPublicRenderNode(value);
 
-  if (Object.hasOwn(value, 'component')) {
+  if (Object.hasOwn(value, "component")) {
     throw new Error(
-      'Plate plugin .extend() cannot define `component`; declare the default in the constructor or replace it through terminal .configure({ component }).'
+      "Plate plugin .extend() cannot define `component`; declare the default in the constructor or replace it through terminal .configure({ component })."
     );
   }
 
   if (
-    Object.hasOwn(value, 'api') &&
-    typeof Reflect.get(value, 'api') !== 'function'
+    Object.hasOwn(value, "api") &&
+    typeof Reflect.get(value, "api") !== "function"
   ) {
-    throw new Error('Plate plugin `api` must be a context factory.');
+    throw new Error("Plate plugin `api` must be a context factory.");
   }
 
   for (const field of [
-    'dependencies',
-    'key',
-    'name',
-    'schema',
-    'type',
+    "dependencies",
+    "key",
+    "name",
+    "schema",
+    "type",
   ] as const) {
     if (Object.hasOwn(value, field)) {
       throw new Error(
@@ -235,26 +233,25 @@ const assertConfigureObject = (value: object) => {
   assertNoPublicRenderNode(value);
 
   for (const field of [
-    'activate',
-    'api',
-    'codecs',
-    'commands',
-    'conflicts',
-    'contributions',
-    'corrections',
-    'dependencies',
-    'effectTypes',
-    'facetProviders',
-    'key',
-    'name',
-    'read',
-    'readMiddleware',
-    'schema',
-    'selectionKinds',
-    'stateFields',
-    'type',
-    'update',
-    'validate',
+    "activate",
+    "api",
+    "codecs",
+    "commands",
+    "conflicts",
+    "contributions",
+    "corrections",
+    "dependencies",
+    "effectTypes",
+    "facetProviders",
+    "key",
+    "name",
+    "read",
+    "readMiddleware",
+    "schema",
+    "stateFields",
+    "type",
+    "update",
+    "validate",
   ] as const) {
     if (Object.hasOwn(value, field)) {
       throw new Error(
@@ -265,7 +262,7 @@ const assertConfigureObject = (value: object) => {
 };
 
 const normalizeComponent = (value: PluginRecord): PluginRecord => {
-  if (!Object.hasOwn(value, 'component')) return value;
+  if (!Object.hasOwn(value, "component")) return value;
 
   const { component, ...rest } = value;
   const render = isObjectRecord(rest.render) ? rest.render : {};
@@ -304,7 +301,7 @@ const snapshotConfiguration = (configuration: object) => {
 const createInitialStage = (definition: PluginRecord) => {
   const { api, codecs, initialState, read, update } = definition;
   const contextualInitialState =
-    typeof initialState === 'function' ? initialState : undefined;
+    typeof initialState === "function" ? initialState : undefined;
 
   if (
     api === undefined &&
@@ -326,7 +323,7 @@ const createInitialStage = (definition: PluginRecord) => {
       ...(codecs !== undefined
         ? {
             codecs:
-              typeof codecs === 'function'
+              typeof codecs === "function"
                 ? Reflect.apply(codecs, undefined, [context])
                 : codecs,
           }
@@ -362,8 +359,8 @@ const attachPluginMethods = (
     );
   };
 
-  Reflect.set(plugin, 'configure', (input: unknown) => {
-    assertAuthoringOpen('configure');
+  Reflect.set(plugin, "configure", (input: unknown) => {
+    assertAuthoringOpen("configure");
     const next = { ...plugin } as MutableBasePlugin;
     const metadata = getPluginDescriptorMetadata(plugin);
 
@@ -374,13 +371,13 @@ const attachPluginMethods = (
         configurationLayers: [
           ...metadata.configurationLayers,
           Object.freeze({
-            kind: 'context' as const,
+            kind: "context" as const,
             value: (context: AnyBasePluginContext) => {
               const configuration = Reflect.apply(input, undefined, [context]);
 
               if (!isObjectRecord(configuration)) {
                 throw new Error(
-                  'Plate plugin .configure() callbacks must return an object.'
+                  "Plate plugin .configure() callbacks must return an object."
                 );
               }
               return normalizeConfiguration(configuration);
@@ -390,7 +387,7 @@ const attachPluginMethods = (
       });
     } else {
       if (!isObjectRecord(input)) {
-        throw new Error('Plate plugin .configure() values must be objects.');
+        throw new Error("Plate plugin .configure() values must be objects.");
       }
       const configuration = normalizeConfiguration(input);
       setPluginDescriptorMetadata(next, {
@@ -399,7 +396,7 @@ const attachPluginMethods = (
         configurationLayers: [
           ...metadata.configurationLayers,
           Object.freeze({
-            kind: 'object' as const,
+            kind: "object" as const,
             value: snapshotConfiguration(configuration),
           }),
         ],
@@ -409,8 +406,8 @@ const attachPluginMethods = (
     return recreate(next);
   });
 
-  Reflect.set(plugin, 'extend', (input: unknown) => {
-    assertAuthoringOpen('extend');
+  Reflect.set(plugin, "extend", (input: unknown) => {
+    assertAuthoringOpen("extend");
     const next = { ...plugin } as MutableBasePlugin;
     const metadata = getPluginDescriptorMetadata(plugin);
 
@@ -424,10 +421,10 @@ const attachPluginMethods = (
 
             if (!isObjectRecord(contribution)) {
               throw new Error(
-                'Plate plugin .extend() callbacks must return an object.'
+                "Plate plugin .extend() callbacks must return an object."
               );
             }
-            if (!Object.hasOwn(contribution, 'name')) {
+            if (!Object.hasOwn(contribution, "name")) {
               assertExtendObject(contribution);
             }
 
@@ -437,12 +434,12 @@ const attachPluginMethods = (
       });
     } else {
       if (!isObjectRecord(input)) {
-        throw new Error('Plate plugin .extend() values must be objects.');
+        throw new Error("Plate plugin .extend() values must be objects.");
       }
 
       // A named object is a canonical raw Plite descriptor. Its name is
       // validated by the resolver and its native fields are adopted flat.
-      if (!Object.hasOwn(input, 'name')) assertExtendObject(input);
+      if (!Object.hasOwn(input, "name")) assertExtendObject(input);
 
       const contribution = freezePluginDescriptorValue(input);
 
@@ -490,7 +487,7 @@ const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
     },
     {
       ...staticDefinition,
-      ...(initialState === undefined || typeof initialState === 'function'
+      ...(initialState === undefined || typeof initialState === "function"
         ? {}
         : { initialState }),
     }
@@ -521,30 +518,29 @@ type BasePluginConstructorRestInput<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration,
-  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>
 > = Omit<
   BasePluginDefinitionInput<
     NoInfer<
       BasePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >
   >,
-  | 'api'
-  | 'codecs'
-  | 'conflicts'
-  | 'dependencies'
-  | 'decorate'
-  | 'enabled'
-  | 'initialState'
-  | 'key'
-  | 'name'
-  | 'read'
-  | 'schema'
-  | 'selectionKinds'
-  | 'selectors'
-  | 'shortcuts'
-  | 'targetPlugins'
-  | 'type'
-  | 'update'
+  | "api"
+  | "codecs"
+  | "conflicts"
+  | "dependencies"
+  | "decorate"
+  | "enabled"
+  | "initialState"
+  | "key"
+  | "name"
+  | "read"
+  | "schema"
+  | "selectors"
+  | "shortcuts"
+  | "targetPlugins"
+  | "type"
+  | "update"
 >;
 
 type BasePluginConstructorSchemaInput<
@@ -552,20 +548,20 @@ type BasePluginConstructorSchemaInput<
   D extends BasePluginDependencies,
   S extends object,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
-  TSchema extends PluginSchemaDeclaration,
+  TSchema extends PluginSchemaDeclaration
 > =
   | BasePluginConstructorSchemaFactory<N, D, S, TTargetPlugins, TSchema>
   | (TSchema & Readonly<Record<string, unknown>>);
 
 type BasePluginConstructorKey = Exclude<
   keyof BasePluginDefinitionInput,
-  'name'
+  "name"
 >;
 
 type BasePluginConstructorDependencies<
   TKeys extends BasePluginConstructorKey,
-  D extends BasePluginDependencies,
-> = 'dependencies' extends TKeys ? D : readonly [];
+  D extends BasePluginDependencies
+> = "dependencies" extends TKeys ? D : readonly [];
 
 type BasePluginConstructorCapabilityDefinition<
   N extends string,
@@ -573,23 +569,16 @@ type BasePluginConstructorCapabilityDefinition<
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration,
-  TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TTargetPlugins extends ReadonlyArray<PluginReference | string>
 > = BasePluginConstructorContextDefinition<N, D, S, never, TTargetPlugins> &
-  ('schema' extends TKeys
+  ("schema" extends TKeys
     ? Readonly<{ schema: TSchema }>
     : Readonly<Record<never, never>>);
 
-type BasePluginConstructorSelection<
-  TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>>,
-> =
-  TSelectionKinds[number] extends EditorSelectionSpec<infer TSelection>
-    ? Extract<TSelection, SelectionValue>
-    : never;
-
 type BasePluginConstructorRead<
   TKeys extends BasePluginConstructorKey,
-  TSchema extends PluginSchemaDeclaration,
-> = 'schema' extends TKeys
+  TSchema extends PluginSchemaDeclaration
+> = "schema" extends TKeys
   ? TSchema extends Readonly<{ mark: unknown }>
     ? EditorReadMethodRecord
     : EditorReadMethodTree
@@ -608,22 +597,23 @@ export function defineBasePlugin<
   const TDecoration extends object,
   const TSchema extends PluginSchemaDeclaration,
   const D extends BasePluginDependencies,
-  S extends object = 'initialState' extends TKeys
+  S extends object = "initialState" extends TKeys
     ? Extract<ConstructorFactoryResult<TInitialStateInput>, object>
     : {},
   const TConflicts extends BasePluginDependencies = readonly [],
-  const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
-    readonly [],
-  const TRead extends BasePluginConstructorRead<TKeys, TSchema> =
-    BasePluginConstructorRead<TKeys, TSchema>,
-  const TSelectionKinds extends ReadonlyArray<EditorSelectionSpec<any>> =
-    readonly [],
+  const TTargetPlugins extends ReadonlyArray<
+    PluginReference | string
+  > = readonly [],
+  const TRead extends BasePluginConstructorRead<
+    TKeys,
+    TSchema
+  > = BasePluginConstructorRead<TKeys, TSchema>,
   const TSelectors extends PluginSelectors<S> = {},
-  const TEnabled extends boolean = boolean,
+  const TEnabled extends boolean = boolean
 >(
   name: N,
   definition: Readonly<Record<TKeys, unknown>> &
-    ('schema' extends TKeys
+    ("schema" extends TKeys
       ? Readonly<{
           schema: BasePluginConstructorSchemaInput<
             N,
@@ -638,13 +628,13 @@ export function defineBasePlugin<
       N,
       BasePluginConstructorDependencies<TKeys, D>,
       S,
-      NoInfer<'schema' extends TKeys ? TSchema : never>,
+      NoInfer<"schema" extends TKeys ? TSchema : never>,
       TTargetPlugins
     > &
-    ('initialState' extends TKeys
+    ("initialState" extends TKeys
       ? Readonly<{ initialState: TInitialStateInput }>
       : Readonly<{ initialState?: never }>) &
-    ('decorate' extends TKeys
+    ("decorate" extends TKeys
       ? Readonly<{
           decorate: Decorate<
             NoInfer<
@@ -653,7 +643,7 @@ export function defineBasePlugin<
                 TKeys,
                 BasePluginConstructorDependencies<TKeys, D>,
                 S,
-                'schema' extends TKeys ? TSchema : never,
+                "schema" extends TKeys ? TSchema : never,
                 TTargetPlugins
               >
             >,
@@ -670,7 +660,7 @@ export function defineBasePlugin<
               TKeys,
               BasePluginConstructorDependencies<TKeys, D>,
               S,
-              'schema' extends TKeys ? TSchema : never,
+              "schema" extends TKeys ? TSchema : never,
               TTargetPlugins
             >
           >
@@ -686,7 +676,7 @@ export function defineBasePlugin<
                   TKeys,
                   BasePluginConstructorDependencies<TKeys, D>,
                   S,
-                  'schema' extends TKeys ? TSchema : never,
+                  "schema" extends TKeys ? TSchema : never,
                   TTargetPlugins
                 >
               >
@@ -703,7 +693,7 @@ export function defineBasePlugin<
               TKeys,
               BasePluginConstructorDependencies<TKeys, D>,
               S,
-              'schema' extends TKeys ? TSchema : never,
+              "schema" extends TKeys ? TSchema : never,
               TTargetPlugins
             >
           >
@@ -715,14 +705,13 @@ export function defineBasePlugin<
                 TKeys,
                 BasePluginConstructorDependencies<TKeys, D>,
                 S,
-                'schema' extends TKeys ? TSchema : never,
+                "schema" extends TKeys ? TSchema : never,
                 TTargetPlugins
               >
             >
           >;
         }
       ) => TRead;
-      selectionKinds?: TSelectionKinds;
       selectors?: TSelectors & PluginSelectors<NoInfer<S>>;
       shortcuts?: BasePluginShortcutRecord;
       targetPlugins?: TTargetPlugins;
@@ -730,51 +719,44 @@ export function defineBasePlugin<
         N,
         BasePluginConstructorDependencies<TKeys, D>,
         S,
-        NoInfer<'schema' extends TKeys ? TSchema : never>,
+        NoInfer<"schema" extends TKeys ? TSchema : never>,
         TTargetPlugins,
         TUpdate
       >;
     }>
 ): BasePlugin<
   Readonly<{
-    [
-      P in Extract<
-        keyof Readonly<Record<TKeys, unknown>>,
-        BasePluginConstructorPresenceKey
-      >
-    ]: true;
+    [P in Extract<
+      keyof Readonly<Record<TKeys, unknown>>,
+      BasePluginConstructorPresenceKey
+    >]: true;
   }> &
     Readonly<{ name: N }> &
-    ('dependencies' extends TKeys
+    ("dependencies" extends TKeys
       ? Readonly<{
           dependencies: BasePluginDependencyReferences<
             BasePluginConstructorDependencies<TKeys, D>
           >;
         }>
       : Readonly<Record<never, never>>) &
-    ('conflicts' extends TKeys
+    ("conflicts" extends TKeys
       ? Readonly<{
           conflicts: BasePluginDependencyReferences<TConflicts>;
         }>
       : Readonly<Record<never, never>>) &
-    ('initialState' extends TKeys
+    ("initialState" extends TKeys
       ? Readonly<{ initialState: NormalizePluginState<S> }>
       : Readonly<Record<never, never>>) &
-    ('enabled' extends TKeys
+    ("enabled" extends TKeys
       ? Readonly<{ enabled: TEnabled }>
       : Readonly<Record<never, never>>) &
-    ('api' extends TKeys
+    ("api" extends TKeys
       ? Readonly<{ api: TApi }>
       : Readonly<Record<never, never>>) &
-    ('read' extends TKeys
+    ("read" extends TKeys
       ? Readonly<{ read: TRead }>
       : Readonly<Record<never, never>>) &
-    ('selectionKinds' extends TKeys
-      ? Readonly<{
-          selectionKinds: BasePluginConstructorSelection<TSelectionKinds>;
-        }>
-      : Readonly<Record<never, never>>) &
-    ('selectors' extends TKeys
+    ("selectors" extends TKeys
       ? Readonly<{
           selectors: NormalizePluginSelectors<
             NormalizePluginState<S>,
@@ -782,28 +764,28 @@ export function defineBasePlugin<
           >;
         }>
       : Readonly<Record<never, never>>) &
-    ('update' extends TKeys
+    ("update" extends TKeys
       ? Readonly<{ update: TUpdate }>
       : Readonly<Record<never, never>>) &
-    ('decorate' extends TKeys
+    ("decorate" extends TKeys
       ? Readonly<{ decorate: TDecoration }>
       : Readonly<Record<never, never>>) &
-    ('schema' extends TKeys
+    ("schema" extends TKeys
       ? Readonly<{
           schema: TSchema;
         }>
       : Readonly<Record<never, never>>) &
-    ('targetPlugins' extends TKeys
+    ("targetPlugins" extends TKeys
       ? Readonly<{ targetPlugins: TTargetPlugins }>
       : Readonly<Record<never, never>>) &
-    ('shortcuts' extends TKeys
+    ("shortcuts" extends TKeys
       ? Readonly<{ shortcuts: true }>
       : Readonly<Record<never, never>>)
 >;
 
 export function defineBasePlugin(name: string, definition: unknown): object {
-  if (typeof name !== 'string' || name.length === 0) {
-    throw new Error('Plate plugins require a non-empty name.');
+  if (typeof name !== "string" || name.length === 0) {
+    throw new Error("Plate plugins require a non-empty name.");
   }
   if (!PLUGIN_NAME_PATTERN.test(name)) {
     throw new Error(
@@ -811,11 +793,11 @@ export function defineBasePlugin(name: string, definition: unknown): object {
     );
   }
   if (!isObjectRecord(definition)) {
-    throw new Error('Plate plugin definitions must be objects.');
+    throw new Error("Plate plugin definitions must be objects.");
   }
-  if (Object.hasOwn(definition, 'name')) {
+  if (Object.hasOwn(definition, "name")) {
     throw new Error(
-      'Plate plugin identity is positional. Remove `name` from the definition.'
+      "Plate plugin identity is positional. Remove `name` from the definition."
     );
   }
 

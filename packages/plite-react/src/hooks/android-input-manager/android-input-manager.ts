@@ -63,7 +63,7 @@ import {
   writeRuntimeMarks,
   writeRuntimeSelection,
 } from '../../editable/runtime-mutation-state';
-import { readRuntimeSelection } from '../../editable/runtime-selection-state';
+import { readRuntimeSelectionRange } from '../../editable/runtime-selection-state';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -162,7 +162,7 @@ export function createAndroidInputManager({
     EDITOR_TO_PENDING_SELECTION.delete(editor);
 
     if (pendingSelection) {
-      const selection = readRuntimeSelection(editor);
+      const selection = readRuntimeSelectionRange(editor);
       const normalized = normalizeRange(editor, pendingSelection);
 
       if (
@@ -191,7 +191,7 @@ export function createAndroidInputManager({
       }
 
       const innerTargetRange = editorRange(editor, target);
-      const selection = readRuntimeSelection(editor);
+      const selection = readRuntimeSelectionRange(editor);
       if (!selection || !RangeApi.equals(selection, innerTargetRange)) {
         writeRuntimeSelection(editor, target);
       }
@@ -232,7 +232,7 @@ export function createAndroidInputManager({
       flushing = 'action';
     }
 
-    const liveSelection = readRuntimeSelection(editor);
+    const liveSelection = readRuntimeSelectionRange(editor);
     const selectionAnchor =
       liveSelection &&
       editor.anchor(liveSelection, {
@@ -293,7 +293,7 @@ export function createAndroidInputManager({
       }
 
       const range = targetRange(diff);
-      const selection = readRuntimeSelection(editor);
+      const selection = readRuntimeSelectionRange(editor);
       if (!selection || !RangeApi.equals(selection, range)) {
         writeRuntimeSelection(editor, range);
       }
@@ -339,10 +339,10 @@ export function createAndroidInputManager({
     if (
       selection &&
       !EDITOR_TO_PENDING_SELECTION.get(editor) &&
-      (!readRuntimeSelection(editor) ||
+      (!readRuntimeSelectionRange(editor) ||
         !RangeApi.equals(
           selection,
-          readRuntimeSelection(editor) ??
+          readRuntimeSelectionRange(editor) ??
             failInvariant('Expected value to be defined')
         ))
     ) {
@@ -568,7 +568,7 @@ export function createAndroidInputManager({
       return recentEcho.selectionOffset;
     }
 
-    const selection = readRuntimeSelection(editor);
+    const selection = readRuntimeSelectionRange(editor);
     const shouldTrustRuntimeCaret =
       trustRuntimeCaret ||
       inputController.state.selectionChangeOrigin === 'repair-induced' ||
@@ -671,7 +671,7 @@ export function createAndroidInputManager({
       (inputController.state.selectionSource === 'dom-current' &&
         inputController.state.selectionChangeOrigin !== 'native-user');
     let innerTargetRange2: Range | null = preferRuntimeSelection
-      ? readRuntimeSelection(editor)
+      ? readRuntimeSelectionRange(editor)
       : null;
     const data: DataTransfer | string | undefined =
       getInputEventData(event) ?? undefined;
@@ -721,7 +721,7 @@ export function createAndroidInputManager({
       });
     }
 
-    innerTargetRange2 ??= readRuntimeSelection(editor);
+    innerTargetRange2 ??= readRuntimeSelectionRange(editor);
     if (!innerTargetRange2) {
       return;
     }
@@ -1119,7 +1119,7 @@ export function createAndroidInputManager({
           }
 
           if (canStoreDiff) {
-            const currentSelection = readRuntimeSelection(editor);
+            const currentSelection = readRuntimeSelectionRange(editor);
             storeDiff(start.path, diff);
 
             if (currentSelection) {
@@ -1146,7 +1146,7 @@ export function createAndroidInputManager({
             at: cloneRange(
               canStoreDiff
                 ? innerTargetRange2
-                : (readRuntimeSelection(editor) ?? innerTargetRange2)
+                : (readRuntimeSelectionRange(editor) ?? innerTargetRange2)
             ),
           }
         );
@@ -1168,7 +1168,7 @@ export function createAndroidInputManager({
     cancelSelectionFlush?.();
     cancelSelectionFlush = null;
 
-    const selection = editor.read((state) => state.selection());
+    const selection = readRuntimeSelectionRange(editor);
     if (!range) {
       return;
     }

@@ -21,9 +21,13 @@ const streamPreview = (chunks: string[]) => {
         : [],
   });
 
-  const insertAt = PathApi.next(
-    editor.read.selection()!.focus.path.slice(0, 1)
-  );
+  const selection = editor.read.selection();
+
+  if (!selection) {
+    throw new Error('Expected an initial text selection.');
+  }
+
+  const insertAt = PathApi.next(selection.focus.path.slice(0, 1));
 
   editor.update({ history: 'skip' }).nodes.insert(
     {
@@ -112,7 +116,6 @@ describe('ai chat streaming history', () => {
     editor.plugin(AIChatPlugin).update.accept();
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });
@@ -126,7 +129,6 @@ describe('ai chat streaming history', () => {
     editor.update.history.redo();
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });

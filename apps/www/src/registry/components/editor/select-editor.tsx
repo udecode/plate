@@ -14,12 +14,12 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 
 import { Editor, EditorContainer } from './editor';
 import { TagElement } from './tag';
@@ -353,17 +353,17 @@ export function SelectEditorCombobox() {
   if (!open || selectableItems.length === 0) return null;
 
   return (
-    <Popover open={open}>
-      <PopoverAnchor virtualRef={{ current: virtualAnchor }} />
-      <PopoverContent
+    <FloatingPopover open={open}>
+      <FloatingPopoverAnchor element={virtualAnchor} />
+      <FloatingPopoverContent
         className="p-0 data-[state=open]:animate-none"
         style={{
-          width: 'calc(var(--radix-popover-trigger-width) + 8px)',
+          width: 'calc(var(--floating-popover-anchor-width) + 8px)',
         }}
-        onCloseAutoFocus={(e) => {
+        onFinalFocus={(e) => {
           e.preventDefault();
         }}
-        onOpenAutoFocus={(e) => {
+        onInitialFocus={(e) => {
           e.preventDefault();
         }}
         align="start"
@@ -410,8 +410,8 @@ export function SelectEditorCombobox() {
             ))}
           </CommandGroup>
         </CommandList>
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }
 

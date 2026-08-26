@@ -156,7 +156,6 @@ describe('createPlateStore', () => {
     expect(result.current.editor).toBe(editor);
     expect(result.current.value).toEqual(value);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });

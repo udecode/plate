@@ -8,7 +8,7 @@ import {
   type Range,
   RangeApi,
   type NodeKey,
-  type TextSelection,
+  type Selection as EditorSelection,
 } from '@platejs/plite';
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 
@@ -50,6 +50,7 @@ import {
   getSelection as editorGetSelection,
   getEditorSelectionRoot,
   getInternalDocumentChangeRootKeys,
+  getSelectionDOMRange,
   getSnapshot as editorGetSnapshot,
   insertText as editorInsertText,
   string as editorString,
@@ -101,7 +102,8 @@ export type PliteBrowserHandle = {
   getPathByNodeKey: (nodeKey: NodeKey) => Path | null;
   getProjectedNativeAffordanceMatrix: () => unknown;
   getNodeKey: (path: Path) => NodeKey | null;
-  getSelection: () => TextSelection | null;
+  getModelSelection: () => EditorSelection;
+  getSelection: () => Range | null;
   getText: () => string;
   getValue: () => JsonEditorValue;
   getViewSelection: () => unknown;
@@ -119,7 +121,7 @@ export type PliteBrowserHandle = {
     policy?: EditorUpdatePolicyFor<ReactRuntimeEditor>
   ) => void;
   redo: () => void;
-  resolveRangeAnchor: (id: string) => TextSelection | null;
+  resolveRangeAnchor: (id: string) => Range | null;
   selectAll: () => void;
   selectRange: (selection: Range) => void;
   setNativeDOMSelection: (selection: Range) => boolean;
@@ -135,7 +137,7 @@ export type PliteBrowserHandle = {
     } | null
   ) => void;
   undo: () => void;
-  releaseRangeAnchor: (id: string) => TextSelection | null;
+  releaseRangeAnchor: (id: string) => Range | null;
 };
 
 export type PliteBrowserHandleElement = HTMLDivElement & {
@@ -145,6 +147,14 @@ export type PliteBrowserHandleElement = HTMLDivElement & {
 type RefBox<T> = {
   current: T;
 };
+
+const cloneRange = (range: Range | null): Range | null =>
+  range
+    ? {
+        anchor: { ...range.anchor, path: [...range.anchor.path] },
+        focus: { ...range.focus, path: [...range.focus.path] },
+      }
+    : null;
 
 const getPublicDocumentChangeRoots = (change: DocumentChange) => [
   ...getInternalDocumentChangeRootKeys(change).map((root) =>
@@ -284,8 +294,9 @@ export const attachPliteBrowserHandle = ({
 
     applyEditableCommand({ command, editor });
     const selectionAfter = readRuntimeSelection(editor);
-    const partialDOMBackedSelection =
-      isPartialDOMBackedSelection(selectionAfter);
+    const partialDOMBackedSelection = isPartialDOMBackedSelection(
+      getSelectionDOMRange(editor, selectionAfter)
+    );
 
     if (partialDOMBackedSelection) {
       setEditableModelSelectionPreference({
@@ -417,6 +428,7 @@ export const attachPliteBrowserHandle = ({
 
       if (
         !modelSelection ||
+        !RangeApi.isRange(modelSelection) ||
         !RangeApi.isCollapsed(modelSelection) ||
         modelSelection.anchor.path.join(',') !== pathKey ||
         modelSelection.anchor.offset !== offset
@@ -494,7 +506,9 @@ export const attachPliteBrowserHandle = ({
       editorElement.focus({ preventScroll: true });
       forceRender();
       const selection = readRuntimeSelection(editor);
-      const partialDOMBackedSelection = isPartialDOMBackedSelection(selection);
+      const partialDOMBackedSelection = isPartialDOMBackedSelection(
+        getSelectionDOMRange(editor, selection)
+      );
 
       setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
       syncEditableDOMSelectionToEditor({
@@ -565,23 +579,8 @@ export const attachPliteBrowserHandle = ({
     getPathByNodeKey: (nodeKey) => editorGetPathByNodeKey(editor, nodeKey),
     getProjectedNativeAffordanceMatrix,
     getNodeKey: (path) => editorGetNodeKey(editor, path),
-    getSelection: () => {
-      const selection = readRuntimeSelection(editor);
-
-      return selection
-        ? {
-            anchor: {
-              offset: selection.anchor.offset,
-              path: [...selection.anchor.path],
-            },
-            focus: {
-              offset: selection.focus.offset,
-              path: [...selection.focus.path],
-            },
-            kind: 'text',
-          }
-        : null;
-    },
+    getModelSelection: () => readRuntimeSelection(editor),
+    getSelection: () => cloneRange(editor.read.selection()),
     getInputState: () => ({
       activeIntent: inputController.state.activeIntent,
       isProjectingSelection: inputController.state.isProjectingSelection,
@@ -678,7 +677,7 @@ export const attachPliteBrowserHandle = ({
         },
       });
 
-      return selectionAfter;
+      return cloneRange(editor.read.selection());
     },
     insertBreak: () => {
       runCommand({ kind: 'insert-break', variant: 'paragraph' });
@@ -692,7 +691,10 @@ export const attachPliteBrowserHandle = ({
       runCommand({ data, kind: 'insert-data' });
     },
     insertText: (text) => {
-      const selection = readRuntimeSelection(editor);
+      const selection = getSelectionDOMRange(
+        editor,
+        readRuntimeSelection(editor)
+      );
       const path = selection ? RangeApi.start(selection).path : null;
       runCommand({ kind: 'insert-text', text });
       if (!path || !didSyncTextPathToDOM(editor, path)) {
@@ -723,19 +725,7 @@ export const attachPliteBrowserHandle = ({
       const rangeAnchor = browserHandleRangeAnchors.current.get(id);
       const selection = rangeAnchor?.resolve() ?? null;
 
-      return selection
-        ? {
-            anchor: {
-              offset: selection.anchor.offset,
-              path: [...selection.anchor.path],
-            },
-            focus: {
-              offset: selection.focus.offset,
-              path: [...selection.focus.path],
-            },
-            kind: 'text',
-          }
-        : null;
+      return cloneRange(selection);
     },
     selectAll: () => {
       runCommand({ kind: 'select-all' });
@@ -895,19 +885,7 @@ export const attachPliteBrowserHandle = ({
 
       const selection = rangeAnchor.release();
 
-      return selection
-        ? {
-            anchor: {
-              offset: selection.anchor.offset,
-              path: [...selection.anchor.path],
-            },
-            focus: {
-              offset: selection.focus.offset,
-              path: [...selection.focus.path],
-            },
-            kind: 'text',
-          }
-        : null;
+      return cloneRange(selection);
     },
   };
 

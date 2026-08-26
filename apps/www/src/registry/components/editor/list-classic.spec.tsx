@@ -5,10 +5,10 @@ import { createPlateEditor, Plate } from 'platejs/react';
 import * as React from 'react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toolbar } from '@/registry/components/editor/toolbar';
 
 import { TaskListItemElement } from './list-classic';
 import { ListToolbarButton } from './list-classic-toolbar-button';
-import { Toolbar } from './toolbar';
 
 describe('classic list registry UI', () => {
   it('disables task checkboxes in read-only editors', () => {

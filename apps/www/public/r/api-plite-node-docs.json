@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-node-docs",
+  "title": "Node",
+  "description": "Plite node types, traversal helpers, and matching.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/node.mdx",
+      "content": "---\ntitle: Node\ndescription: Plite node types, traversal helpers, and matching.\n---\n\n`NodeApi` contains pure node-tree helpers. Editor-owned traversal and location\nresolution live under `editor.read.nodes`.\n\n`NodeApi.matches(node, match, path?)` runs a predicate against a node and its\npath.\n\nSee the canonical [Node reference](/docs/plite/api/nodes/node).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/node.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

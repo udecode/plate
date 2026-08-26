@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-26-hide-table-selection-highlight",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-26-hide-table-selection-highlight.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Hide native text highlight while selecting multiple table cells",
+  "targets": [
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-26-table-native-text-highlight-while-0988aa2f",
+      "kind": "fix",
+      "summary": "Hide native text highlight while selecting multiple table cells.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-26",
+          "entry": "2026-08-26-hide-table-selection-highlight",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-26-table-ignore-resize-handles-while-selecting-0facdf63",
+      "kind": "fix",
+      "summary": "Keep the text cursor while resize handles are ignored during cell-selection drags.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-26",
+          "entry": "2026-08-26-hide-table-selection-highlight",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "horizontal-rule",
+  "title": "Horizontal Rule",
+  "description": "A horizontal rule component with focus states.",
+  "dependencies": [
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/horizontal-rule.tsx",
+      "content": "'use client';\n\nimport type { HorizontalRulePlugin } from '@platejs/basic-nodes/react';\nimport type { PlateElementProps } from 'platejs/react';\nimport {\n  PlateElement,\n  useEditorFocused,\n  useEditorReadOnly,\n  useElementSelected,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElement(\n  props: PlateElementProps<typeof HorizontalRulePlugin>\n) {\n  const readOnly = useEditorReadOnly();\n  const selected = useElementSelected();\n  const focused = useEditorFocused();\n\n  return (\n    <PlateElement {...props}>\n      <div className=\"py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content',\n            selected && focused && 'ring-2 ring-ring ring-offset-2',\n            !readOnly && 'cursor-pointer'\n          )}\n        />\n      </div>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/horizontal-rule.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/horizontal-rule"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/horizontal-rule"
+      }
+    ],
+    "examples": [
+      "basic-blocks-demo"
+    ]
+  },
+  "type": "registry:component"
+}

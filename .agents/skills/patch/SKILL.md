@@ -109,6 +109,12 @@ Plite owns only editor-agnostic substrate behavior.
   verification.
 - Add a changeset when published packages change.
 - Use Browser proof for visible behavior.
+- For a reporter-visible paint claim, computed style, DOM attributes, callback
+  traces, selection text, and an unclassified screenshot are diagnostics only.
+  Final proof must classify actual pixels from the named interaction phase and
+  pass known-correct single-layer, known-absent, and known-invalid
+  duplicate-layer controls through the identical capture path. Without that
+  oracle, return `needs-repro`; never claim fixed.
 - End non-trivial implementation work with P1 `autoreview` by passing
   `--max-priority P1`. Use P2 or P3 only when explicitly requested.
 - A claimed `candidate-local`, `kept`, or `completed` fix that later fails its
@@ -178,12 +184,13 @@ and DOM/native state when relevant.
 Before editing, record one reporter-valid case in the active plan or delegated
 packet:
 
-- stable `case_id` such as `issue-5088:block-selection-pointer-drag`;
+- stable `case_id` such as `issue-5088:node-selection-pointer-drag`;
 - exact route/surface, setup, target, action, and expected end state;
 - issue body, attachment, comment, docs, or prior-version `source_refs`;
 - browser, OS/device, branch/channel, and observed bad ref when known;
-- applicable claim fields: model, rendered DOM, native selection/caret, focus,
-  popup/toolbar, geometry/paint, runtime errors, and follow-up input;
+- applicable claim fields: model, rendered DOM, native selection/caret,
+  pointer feedback, focus, popup/toolbar, geometry/paint, runtime errors, and
+  follow-up input;
 - production, test, fixture, and harness file fingerprints for the proof run;
 - the commit/ref tested, or `dirty:<ref>` plus those fingerprints.
 
@@ -244,6 +251,19 @@ after pointer-up recheck native selection and floating-toolbar visibility; after
 table navigation recheck destination selection shape; after formatting preserve
 the required selection instead of accepting its disappearance; after DnD prove
 the final model/DOM order and drag-time caret/selection behavior.
+
+For pointer, mouse, cursor, hover, or resize/drag-handle cases, assert the
+cursor and relevant hover, active, tooltip, or drag affordance in the named
+interaction phase. Selection, preview, and final action assertions do not prove
+pointer feedback.
+Trace the actual pointer target, delivered event, and button state in the same
+interaction. Completion evidence records `interaction-trace: pass`,
+`target:`, `event:`, and `buttons:`; a synthetic boundary event that never
+occurs in the reporter path is not proof.
+For a flash, flicker, or one-frame pointer-feedback report, prove the state
+before the target component's event handler with target-capture or an
+equivalent earlier browser anchor. Record `pre-handler-state: pass`; a
+post-handler computed-style assertion does not close the case.
 
 ### 4. Fix The Durable Owner
 

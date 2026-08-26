@@ -44,7 +44,7 @@ Copy:
 
 - [EventEditorPlugin.ts](../../../../packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts)
 - [CopilotPlugin.tsx](../../../../packages/ai/src/react/CopilotPlugin.tsx)
-- [BlockSelectionPlugin.tsx](../../../../packages/selection/src/react/BlockSelectionPlugin.tsx)
+- [CursorOverlayPlugin.tsx](../../../../packages/cursor/src/CursorOverlayPlugin.tsx)
 
 Copy direct `definePlatePlugin` only when the behavior is genuinely hook,
 DOM/editor-surface, or React-native. Do not copy explicit types or file
@@ -132,7 +132,7 @@ Copy:
 
 ## React-Only Prop Augmentation
 
-- [BlockSelectionPlugin.tsx](../../../../packages/selection/src/react/BlockSelectionPlugin.tsx)
+- [BlockPlaceholderPlugin.tsx](../../../../packages/utils/src/react/BlockPlaceholderPlugin.tsx)
 - [NavigationFeedbackPlugin.ts](../../../../packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
 
 Copy `inject.nodeProps.transformProps` when the exact job is hook-driven prop

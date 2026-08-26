@@ -59,7 +59,6 @@ describe('read/update contract', () => {
 
     assert.deepEqual(state.children, [paragraph('one')]);
     assert.deepEqual(state.selection, {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -94,7 +93,6 @@ describe('read/update contract', () => {
 
     assert.equal(editor.read.text.string([]), 'one');
     assert.deepEqual(editor.read.selection(), {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -194,7 +192,7 @@ describe('read/update contract', () => {
 
     assert.deepEqual(
       editor.read((state) => state.selection()),
-      selection
+      { anchor: selection.anchor, focus: selection.focus }
     );
     const commit = editor.read.lastCommit();
 

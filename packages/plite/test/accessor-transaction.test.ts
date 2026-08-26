@@ -430,7 +430,6 @@ describe('plite public accessor + transaction boundary', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
-      kind: 'text',
     });
   });
 
@@ -454,7 +453,6 @@ describe('plite public accessor + transaction boundary', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
-      kind: 'text',
     });
   });
 
@@ -518,14 +516,13 @@ describe('plite public accessor + transaction boundary', () => {
     assert.equal(headerCommit?.changed.has('selection', 'header'), true);
     assert.equal(headerCommit?.changed.has('selection'), false);
     assert.equal(getEditorSelectionRoot(runtime), 'header');
-    assert.equal(runtime.read.selection.root(), 'header');
-    assert.equal(main.read.selection.root(), undefined);
-    assert.equal(header.read.selection.root(), 'header');
+    assert.equal(SelectionApi.root(runtime.read.selection()), 'header');
+    assert.equal(SelectionApi.root(main.read.selection()), undefined);
+    assert.equal(SelectionApi.root(header.read.selection()), 'header');
     assert.equal(main.read.selection(), null);
     assert.deepEqual(header.read.selection(), {
       anchor: { path: [0, 0], root: 'header', offset: 2 },
       focus: { path: [0, 0], root: 'header', offset: 2 },
-      kind: 'text',
     });
 
     main.update((tx) => {
@@ -539,13 +536,12 @@ describe('plite public accessor + transaction boundary', () => {
     assert.equal(mainCommit?.changed.has('selection', 'header'), true);
     assert.equal(mainCommit?.changed.has('selection'), true);
     assert.equal(getEditorSelectionRoot(runtime), 'main');
-    assert.equal(runtime.read.selection.root(), undefined);
-    assert.equal(main.read.selection.root(), undefined);
-    assert.equal(header.read.selection.root(), undefined);
+    assert.equal(SelectionApi.root(runtime.read.selection()), undefined);
+    assert.equal(SelectionApi.root(main.read.selection()), undefined);
+    assert.equal(SelectionApi.root(header.read.selection()), undefined);
     assert.deepEqual(main.read.selection(), {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
-      kind: 'text',
     });
     assert.equal(header.read.selection(), null);
   });

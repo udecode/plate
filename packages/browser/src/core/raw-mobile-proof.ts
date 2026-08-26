@@ -11,7 +11,7 @@ export const PLITE_RAW_MOBILE_SCENARIOS = [
   { id: 'selection-handle-forward', updateCount: 0 },
   { id: 'selection-handle-backward', updateCount: 0 },
   { id: 'cross-inline-selection', updateCount: 0 },
-  { id: 'cross-block-selection', updateCount: 0 },
+  { id: 'cross-block-text-selection', updateCount: 0 },
   { id: 'selection-autoscroll', updateCount: 0 },
   { id: 'swipe-collapsed', updateCount: 0 },
   { id: 'swipe-expanded', updateCount: 0 },

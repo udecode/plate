@@ -1,4 +1,9 @@
-import { type ClipboardEvent, useCallback } from 'react';
+import { SelectionApi } from '@platejs/plite';
+import {
+  type ClipboardEvent as ReactClipboardEvent,
+  useCallback,
+  useEffect,
+} from 'react';
 
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -16,10 +21,36 @@ import {
   recordEditableInputIntent,
 } from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 type ClipboardHandler = (
-  event: ClipboardEvent<HTMLDivElement>
+  event: ReactClipboardEvent<HTMLDivElement>
 ) => boolean | void;
+
+const routeClipboardEventToRoot = (
+  event: globalThis.ClipboardEvent,
+  root: HTMLDivElement
+) =>
+  new Proxy(
+    {},
+    {
+      get(_target, property) {
+        if (property === 'currentTarget' || property === 'target') return root;
+        if (property === 'isDefaultPrevented') {
+          return () => event.defaultPrevented;
+        }
+        if (property === 'isPropagationStopped') {
+          return () => event.cancelBubble;
+        }
+        if (property === 'nativeEvent') return event;
+        if (property === 'persist') return () => {};
+
+        const value = Reflect.get(event, property, event);
+
+        return typeof value === 'function' ? value.bind(event) : value;
+      },
+    }
+  ) as unknown as ReactClipboardEvent<HTMLDivElement>;
 
 export const useRuntimeClipboardEvents = ({
   editor,
@@ -32,6 +63,7 @@ export const useRuntimeClipboardEvents = ({
   repair,
   setExplicitPartialDOMBackedSelection,
   partialDOMBackedSelection,
+  rootRef,
   trace,
 }: {
   editor: ReactRuntimeEditor;
@@ -44,10 +76,11 @@ export const useRuntimeClipboardEvents = ({
   repair: EditableEventRuntime['repair'];
   setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
   partialDOMBackedSelection: boolean;
+  rootRef: { current: HTMLDivElement | null };
   trace: EditableEventRuntime['trace'];
 }) => {
   const handlePaste = useCallback(
-    (event: ClipboardEvent<HTMLDivElement>) => {
+    (event: ReactClipboardEvent<HTMLDivElement>) => {
       flushPendingNativeTextInput?.();
       const decision = prepareEditableClipboardKernel({
         editor,
@@ -98,7 +131,7 @@ export const useRuntimeClipboardEvents = ({
   const onRuntimePaste = useEditablePasteHandler({ handlePaste });
 
   const handleCopy = useCallback(
-    (event: ClipboardEvent<HTMLDivElement>) => {
+    (event: ReactClipboardEvent<HTMLDivElement>) => {
       flushPendingNativeTextInput?.();
       const decision = prepareEditableClipboardKernel({
         editor,
@@ -125,7 +158,7 @@ export const useRuntimeClipboardEvents = ({
   });
 
   const handleCut = useCallback(
-    (event: ClipboardEvent<HTMLDivElement>) => {
+    (event: ReactClipboardEvent<HTMLDivElement>) => {
       flushPendingNativeTextInput?.();
       const decision = prepareEditableClipboardKernel({
         editor,
@@ -168,6 +201,44 @@ export const useRuntimeClipboardEvents = ({
   const onRuntimeCut = useEditableClipboardHandler({
     handleClipboard: handleCut,
   });
+
+  useEffect(() => {
+    const root = rootRef.current;
+
+    if (!root) return;
+
+    const document = root.ownerDocument;
+    const route = (event: globalThis.ClipboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        document.activeElement !== root ||
+        (event.target !== null && root.contains(event.target as Node)) ||
+        !SelectionApi.isNode(readRuntimeSelection(editor))
+      ) {
+        return;
+      }
+
+      const routedEvent = routeClipboardEventToRoot(event, root);
+
+      if (event.type === 'copy') {
+        onRuntimeCopy(routedEvent);
+      } else if (event.type === 'cut') {
+        onRuntimeCut(routedEvent);
+      } else {
+        onRuntimePaste(routedEvent);
+      }
+    };
+
+    document.addEventListener('copy', route, true);
+    document.addEventListener('cut', route, true);
+    document.addEventListener('paste', route, true);
+
+    return () => {
+      document.removeEventListener('copy', route, true);
+      document.removeEventListener('cut', route, true);
+      document.removeEventListener('paste', route, true);
+    };
+  }, [editor, onRuntimeCopy, onRuntimeCut, onRuntimePaste, rootRef]);
 
   return {
     onCopy: onRuntimeCopy,

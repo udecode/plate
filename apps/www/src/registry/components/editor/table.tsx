@@ -3,10 +3,6 @@
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import { resizeLengthClampStatic } from '@platejs/resizable';
 import {
-  BlockSelectionPlugin,
-  useBlockSelected,
-} from '@platejs/selection/react';
-import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
@@ -29,7 +25,6 @@ import {
 } from 'lucide-react';
 import { type Path, PathApi } from 'platejs';
 import {
-  type PlateEditor,
   type PlateElementProps,
   PlateElement,
   useComposedRef,
@@ -46,6 +41,7 @@ import {
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -54,25 +50,23 @@ import {
   DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/registry/components/editor/dropdown-menu';
 import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-
-import { blockSelectionVariants } from './block-selection';
-import {
-  ColorDropdownMenuItems,
-  DEFAULT_COLORS,
-} from './font-color-toolbar-button';
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 import {
   Toolbar,
   ToolbarButton,
   ToolbarGroup,
   ToolbarMenuGroup,
-} from './toolbar';
+} from '@/registry/components/editor/toolbar';
+
+import {
+  ColorDropdownMenuItems,
+  DEFAULT_COLORS,
+} from './font-color-toolbar-button';
 
 type TableResizeDirection = 'bottom' | 'left' | 'right';
 
@@ -95,11 +89,11 @@ type TableResizeDragState = {
 type TableResizeContextValue = {
   colSizeOverrides: Map<number, number>;
   disableMarginLeft: boolean;
-  dragCellKey: string | null;
+  hasMultiRowSelection: boolean;
   marginLeftOverride: number | null;
   rowSizeOverrides: Map<number, number>;
   clearResizePreview: (handleKey: string) => void;
-  setResizePreview: (
+  showResizePreview: (
     event: React.PointerEvent<HTMLDivElement>,
     options: TableResizeStartOptions
   ) => void;
@@ -116,15 +110,11 @@ const TABLE_DEFAULT_COLUMN_WIDTH = 120;
 const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
 
 const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
+const TABLE_SELECTION_OVERLAY_CLASS =
+  'pointer-events-none absolute inset-0 z-1 bg-brand/[.13]';
 
 const roundCellSizeToStep = (size: number, step?: number) =>
   step ? Math.round(size / step) * step : size;
-
-const getTablePlugin = (editor: Pick<PlateEditor, 'plugin'>) =>
-  editor.plugin(TablePlugin);
-
-const getTableRead = (editor: Pick<PlateEditor, 'plugin'>) =>
-  editor.plugin(TablePlugin).read;
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -288,12 +278,13 @@ function useTableResizeController({
     [showResizeIndicatorAtOffset, wrapperRef]
   );
 
-  const setResizePreview = React.useCallback(
+  const showResizePreview = React.useCallback(
     (
       event: React.PointerEvent<HTMLDivElement>,
       options: TableResizeStartOptions
     ) => {
       if (activeHandleKeyRef.current) return;
+      if (event.buttons !== 0) return;
 
       previewHandleKeyRef.current = options.handleKey;
       showResizeIndicator({ ...options, event });
@@ -314,10 +305,9 @@ function useTableResizeController({
 
   const commitColSize = React.useCallback(
     (colIndex: number, width: number) => {
-      getTablePlugin(editor).update.setColumnWidth(
-        { colIndex, width },
-        { at: tablePath }
-      );
+      editor
+        .plugin(TablePlugin)
+        .update.setColumnWidth({ colIndex, width }, { at: tablePath });
       setTimeout(() => {
         overrideColSize(colIndex, null);
       }, 0);
@@ -327,10 +317,9 @@ function useTableResizeController({
 
   const commitRowSize = React.useCallback(
     (rowIndex: number, height: number) => {
-      getTablePlugin(editor).update.setRowHeight(
-        { height, rowIndex },
-        { at: tablePath }
-      );
+      editor
+        .plugin(TablePlugin)
+        .update.setRowHeight({ height, rowIndex }, { at: tablePath });
       setTimeout(() => {
         overrideRowSize(rowIndex, null);
       }, 0);
@@ -340,10 +329,9 @@ function useTableResizeController({
 
   const commitMarginLeft = React.useCallback(
     (nextMarginLeft: number) => {
-      getTablePlugin(editor).update.set(
-        { marginLeft: nextMarginLeft },
-        { at: tablePath }
-      );
+      editor
+        .plugin(TablePlugin)
+        .update.set({ marginLeft: nextMarginLeft }, { at: tablePath });
       setTimeout(() => {
         overrideMarginLeft(null);
       }, 0);
@@ -602,10 +590,10 @@ function useTableResizeController({
     () => ({
       clearResizePreview,
       disableMarginLeft,
-      setResizePreview,
+      showResizePreview,
       startResize,
     }),
-    [clearResizePreview, disableMarginLeft, setResizePreview, startResize]
+    [clearResizePreview, disableMarginLeft, showResizePreview, startResize]
   );
 }
 
@@ -621,11 +609,7 @@ function TableElementContent({
   const { api, read, store } = useEditorPlugin(TablePlugin);
   const { disableMarginLeft = false } = store.get();
   const readOnly = useEditorReadOnly();
-  const isSelectionAreaVisible = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
-  const hasControls = !readOnly && !isSelectionAreaVisible;
+  const hasControls = !readOnly;
   const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
   const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
   const hoverIndicatorRef = React.useRef<HTMLDivElement>(null);
@@ -681,20 +665,17 @@ function TableElementContent({
   const tablePath = useElementSelector(TablePlugin, ([, path]) => path);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const tableNodeKey = props.editor.key(props.element);
-  const dragCellKey = useEditorSelector((innerEditor) => {
-    const view = getTableRead(innerEditor).getSelection();
+  const hasMultiRowSelection = useEditorSelector((innerEditor) => {
+    const view = innerEditor.plugin(TablePlugin).read.selection();
 
-    if (
-      !view?.complete ||
-      view.grid.problems.length > 0 ||
-      view.tableKey !== tableNodeKey ||
-      view.anchors.length <= 1 ||
-      view.cellKeys.length !== view.anchors.length
-    ) {
-      return null;
-    }
-
-    return view.cellKeys[0] ?? null;
+    return Boolean(
+      view?.complete &&
+      view.grid.problems.length === 0 &&
+      view.tableKey === tableNodeKey &&
+      view.anchors.length > 1 &&
+      view.cellKeys.length === view.anchors.length &&
+      view.bounds.maxRow > view.bounds.minRow
+    );
   });
   const resizeController = useTableResizeController({
     baseColSizes,
@@ -714,13 +695,13 @@ function TableElementContent({
     () => ({
       ...resizeController,
       colSizeOverrides,
-      dragCellKey,
+      hasMultiRowSelection,
       marginLeftOverride,
       rowSizeOverrides,
     }),
     [
       colSizeOverrides,
-      dragCellKey,
+      hasMultiRowSelection,
       marginLeftOverride,
       resizeController,
       rowSizeOverrides,
@@ -748,19 +729,29 @@ function TableElementContent({
     [controlColumnWidth, resolvedColSizes]
   );
 
-  const isSelectingTable = useBlockSelected(tableNodeKey);
+  const isSelectingTable = useElementSelected({
+    at: tableNodeKey,
+    mode: 'node',
+  });
 
   const content = (
     <PlateElement
       {...props}
+      attributes={{
+        ...props.attributes,
+        'data-node-selection-highlight': 'self',
+      }}
       className={cn(
         'overflow-x-auto py-5',
-        hasControls && '-ml-2 *:data-[slot=block-selection]:left-2'
+        hasControls && '-ml-2 *:data-[slot=node-selection-highlight]:left-2'
       )}
       style={{ paddingLeft: marginLeft }}
     >
       <TableResizeContext value={tableResizeContext}>
-        <div ref={wrapperRef} className="group/table relative w-fit">
+        <div
+          ref={wrapperRef}
+          className="relative w-fit [&:active:not(:has([data-table-resize-handle]:active))_[data-table-resize-handle]]:cursor-text"
+        >
           <div
             ref={dragIndicatorRef}
             className="pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] -translate-x-[1.5px] bg-ring/70"
@@ -771,33 +762,14 @@ function TableElementContent({
             className="pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] -translate-x-[1.5px] bg-ring/80"
             contentEditable={false}
           />
-          {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] The table only intercepts pointer propagation from its owned drag handle; it is not an interactive control. */}
+          {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] A new table interaction collapses the prior expanded cell selection. */}
           <table
             ref={tableRef}
-            className="mr-0 ml-px table h-px table-fixed border-collapse"
+            className="mr-0 ml-px table h-px table-fixed border-collapse [&:has([data-table-cell-selected=true])_*::selection]:bg-transparent"
             style={tableStyle}
-            onMouseDown={(event) => {
-              if (
-                (event.target as Element).closest(
-                  '[data-table-cell-drag-handle="true"]'
-                )
-              ) {
-                event.stopPropagation();
-
-                return;
-              }
-
-              if (read.isSelectingCell()) {
+            onMouseDown={() => {
+              if ((read.selection()?.anchors.length ?? 0) > 1) {
                 editor.update.selection.collapse();
-              }
-            }}
-            onPointerDown={(event) => {
-              if (
-                (event.target as Element).closest(
-                  '[data-table-cell-drag-handle="true"]'
-                )
-              ) {
-                event.stopPropagation();
               }
             }}
           >
@@ -828,7 +800,11 @@ function TableElementContent({
           </table>
 
           {isSelectingTable && (
-            <div className={blockSelectionVariants()} contentEditable={false} />
+            <div
+              className={TABLE_SELECTION_OVERLAY_CLASS}
+              contentEditable={false}
+              data-slot="node-selection-highlight"
+            />
           )}
         </div>
       </TableResizeContext>
@@ -845,9 +821,10 @@ function TableElementContent({
 function TableFloatingToolbar({
   children,
   ...props
-}: React.ComponentProps<typeof PopoverContent>) {
+}: React.ComponentProps<typeof FloatingPopoverContent>) {
   const selectedCellCount = useEditorSelector(
-    (editor) => getTableRead(editor).getSelectedCellKeys()?.length ?? 0
+    (editor) =>
+      editor.plugin(TablePlugin).read.selection()?.cellKeys.length ?? 0
   );
   const selected = useElementSelected();
   const collapsedInside = useEditorSelector(
@@ -860,20 +837,20 @@ function TableFloatingToolbar({
   const isToolbarOpen = isCollapsedToolbarOpen || isExpandedSelectionPending;
 
   return (
-    <Popover open={isToolbarOpen} modal={false}>
-      <PopoverAnchor asChild>{children}</PopoverAnchor>
+    <FloatingPopover open={isToolbarOpen} modal={false}>
+      <FloatingPopoverAnchor element={children as React.ReactElement} />
       {isCollapsedToolbarOpen && (
         <CollapsedTableFloatingToolbarContent {...props} />
       )}
       {isExpandedSelectionPending && (
         <DelayedExpandedSelectionTableFloatingToolbarContent {...props} />
       )}
-    </Popover>
+    </FloatingPopover>
   );
 }
 
 function DelayedExpandedSelectionTableFloatingToolbarContent(
-  props: React.ComponentProps<typeof PopoverContent>
+  props: React.ComponentProps<typeof FloatingPopoverContent>
 ) {
   const [isReady, setIsReady] = React.useState(false);
 
@@ -893,18 +870,18 @@ function DelayedExpandedSelectionTableFloatingToolbarContent(
 }
 
 function ExpandedSelectionTableFloatingToolbarContent(
-  props: React.ComponentProps<typeof PopoverContent>
+  props: React.ComponentProps<typeof FloatingPopoverContent>
 ) {
   const editor = useEditor();
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
-  const canMerge = useEditorSelector(
-    (innerEditor2) =>
-      !disableMerge && innerEditor2.plugin(TablePlugin).read.canMerge()
+  const canMergeSelection = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.canMerge()
   );
-  const canSplit = useEditorSelector(
-    (innerEditor3) =>
-      !disableMerge && innerEditor3.plugin(TablePlugin).read.canSplit()
+  const canSplitSelection = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.canSplit()
   );
+  const canMerge = !disableMerge && canMergeSelection;
+  const canSplit = !disableMerge && canSplitSelection;
 
   if (!canMerge && !canSplit) return null;
 
@@ -913,10 +890,10 @@ function ExpandedSelectionTableFloatingToolbarContent(
       canMerge={canMerge}
       canSplit={canSplit}
       onMerge={() => {
-        getTablePlugin(editor).update.merge();
+        editor.plugin(TablePlugin).update.merge();
       }}
       onSplit={() => {
-        getTablePlugin(editor).update.split();
+        editor.plugin(TablePlugin).update.split();
       }}
       {...props}
     />
@@ -924,15 +901,15 @@ function ExpandedSelectionTableFloatingToolbarContent(
 }
 
 function CollapsedTableFloatingToolbarContent(
-  props: React.ComponentProps<typeof PopoverContent>
+  props: React.ComponentProps<typeof FloatingPopoverContent>
 ) {
   const editor = useEditor();
   const element = useElement(TablePlugin);
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
-  const canSplit = useEditorSelector(
-    (innerEditor4) =>
-      !disableMerge && innerEditor4.plugin(TablePlugin).read.canSplit()
+  const canSplitSelection = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.canSplit()
   );
+  const canSplit = !disableMerge && canSplitSelection;
 
   return (
     <TableFloatingToolbarContent
@@ -943,25 +920,25 @@ function CollapsedTableFloatingToolbarContent(
         editor.api.dom.focus();
       }}
       onDeleteColumn={() => {
-        getTablePlugin(editor).update.removeColumn();
+        editor.plugin(TablePlugin).update.removeColumn();
       }}
       onDeleteRow={() => {
-        getTablePlugin(editor).update.removeRow();
+        editor.plugin(TablePlugin).update.removeRow();
       }}
       onInsertColumnAfter={() => {
-        getTablePlugin(editor).update.insertColumn();
+        editor.plugin(TablePlugin).update.insertColumn();
       }}
       onInsertColumnBefore={() => {
-        getTablePlugin(editor).update.insertColumn({ before: true });
+        editor.plugin(TablePlugin).update.insertColumn({ before: true });
       }}
       onInsertRowAfter={() => {
-        getTablePlugin(editor).update.insertRow();
+        editor.plugin(TablePlugin).update.insertRow();
       }}
       onInsertRowBefore={() => {
-        getTablePlugin(editor).update.insertRow({ before: true });
+        editor.plugin(TablePlugin).update.insertRow({ before: true });
       }}
       onSplit={() => {
-        getTablePlugin(editor).update.split();
+        editor.plugin(TablePlugin).update.split();
       }}
       {...props}
     />
@@ -982,7 +959,7 @@ function TableFloatingToolbarContent({
   onMerge,
   onSplit,
   ...props
-}: React.ComponentProps<typeof PopoverContent> & {
+}: React.ComponentProps<typeof FloatingPopoverContent> & {
   canMerge?: boolean;
   canSplit?: boolean;
   collapsedInside?: boolean;
@@ -997,9 +974,9 @@ function TableFloatingToolbarContent({
   onSplit?: () => void;
 }) {
   return (
-    <PopoverContent
-      asChild
-      onOpenAutoFocus={(e) => {
+    <FloatingPopoverContent
+      className="w-auto border-0 bg-transparent p-0 shadow-none ring-0"
+      onInitialFocus={(e) => {
         e.preventDefault();
       }}
       contentEditable={false}
@@ -1033,7 +1010,7 @@ function TableFloatingToolbarContent({
           )}
 
           <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <ToolbarButton aria-label="Cell borders" tooltip="Cell borders">
                 <Grid2X2Icon />
               </ToolbarButton>
@@ -1109,7 +1086,7 @@ function TableFloatingToolbarContent({
           </ToolbarGroup>
         )}
       </Toolbar>
-    </PopoverContent>
+    </FloatingPopoverContent>
   );
 }
 
@@ -1117,14 +1094,14 @@ function TableBordersDropdownMenuContent(
   props: React.ComponentProps<typeof DropdownMenuContent>
 ) {
   const editor = useEditor();
-  const borderStates = useEditorSelector((innerEditor5) =>
-    getTableRead(innerEditor5).getSelectedCellsBorders()
+  const borderStates = useEditorSelector((innerEditor) =>
+    innerEditor.plugin(TablePlugin).read.getSelectedCellsBorders()
   );
 
   return (
     <DropdownMenuContent
       className="min-w-[220px]"
-      onCloseAutoFocus={(e) => {
+      onFinalFocus={(e) => {
         e.preventDefault();
         editor.api.dom.focus();
       }}
@@ -1137,7 +1114,7 @@ function TableBordersDropdownMenuContent(
         <DropdownMenuCheckboxItem
           checked={borderStates.top}
           onCheckedChange={() => {
-            getTablePlugin(editor).update.toggleBorders({ border: 'top' });
+            editor.plugin(TablePlugin).update.toggleBorders({ border: 'top' });
           }}
         >
           <BorderTopIcon />
@@ -1146,7 +1123,9 @@ function TableBordersDropdownMenuContent(
         <DropdownMenuCheckboxItem
           checked={borderStates.right}
           onCheckedChange={() => {
-            getTablePlugin(editor).update.toggleBorders({ border: 'right' });
+            editor
+              .plugin(TablePlugin)
+              .update.toggleBorders({ border: 'right' });
           }}
         >
           <BorderRightIcon />
@@ -1155,7 +1134,9 @@ function TableBordersDropdownMenuContent(
         <DropdownMenuCheckboxItem
           checked={borderStates.bottom}
           onCheckedChange={() => {
-            getTablePlugin(editor).update.toggleBorders({ border: 'bottom' });
+            editor
+              .plugin(TablePlugin)
+              .update.toggleBorders({ border: 'bottom' });
           }}
         >
           <BorderBottomIcon />
@@ -1164,7 +1145,7 @@ function TableBordersDropdownMenuContent(
         <DropdownMenuCheckboxItem
           checked={borderStates.left}
           onCheckedChange={() => {
-            getTablePlugin(editor).update.toggleBorders({ border: 'left' });
+            editor.plugin(TablePlugin).update.toggleBorders({ border: 'left' });
           }}
         >
           <BorderLeftIcon />
@@ -1176,7 +1157,7 @@ function TableBordersDropdownMenuContent(
         <DropdownMenuCheckboxItem
           checked={borderStates.none}
           onCheckedChange={() => {
-            getTablePlugin(editor).update.toggleBorders({ border: 'none' });
+            editor.plugin(TablePlugin).update.toggleBorders({ border: 'none' });
           }}
         >
           <BorderNoneIcon />
@@ -1185,7 +1166,9 @@ function TableBordersDropdownMenuContent(
         <DropdownMenuCheckboxItem
           checked={borderStates.outer}
           onCheckedChange={() => {
-            getTablePlugin(editor).update.toggleBorders({ border: 'outer' });
+            editor
+              .plugin(TablePlugin)
+              .update.toggleBorders({ border: 'outer' });
           }}
         >
           <BorderAllIcon />
@@ -1210,25 +1193,19 @@ function ColorDropdownMenu({
   const onUpdateColor = React.useCallback(
     (color: string) => {
       setOpen(false);
-      getTablePlugin(editor).update.setCellBackground({
-        color,
-        selectedCells: getTableRead(editor).getSelectedCells() ?? [],
-      });
+      editor.plugin(TablePlugin).update.setCellBackground({ color });
     },
     [editor]
   );
 
   const onClearColor = React.useCallback(() => {
     setOpen(false);
-    getTablePlugin(editor).update.setCellBackground({
-      color: null,
-      selectedCells: getTableRead(editor).getSelectedCells() ?? [],
-    });
+    editor.plugin(TablePlugin).update.setCellBackground({ color: null });
   }, [editor]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <ToolbarButton aria-label={tooltip} tooltip={tooltip}>
           {children}
         </ToolbarButton>
@@ -1269,13 +1246,9 @@ export function TableRowElement({
     return index;
   });
   const rowSize = useElementSelector(TableRowPlugin, ([node]) => node.height);
-  const { rowSizeOverrides } = useTableResizeContext();
+  const { hasMultiRowSelection, rowSizeOverrides } = useTableResizeContext();
   const rowMinHeight = rowSizeOverrides.get(rowIndex) ?? rowSize;
-  const isSelectionAreaVisible = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
-  const hasControls = !readOnly && !isSelectionAreaVisible;
+  const hasControls = !readOnly;
 
   const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
@@ -1321,8 +1294,12 @@ export function TableRowElement({
           className="w-2 max-w-2 min-w-2 p-0 select-none"
           contentEditable={false}
         >
-          <RowDragHandle dragRef={handleRef} />
-          <RowDropLine />
+          {!hasMultiRowSelection && (
+            <>
+              <RowDragHandle dragRef={handleRef} />
+              <RowDropLine />
+            </>
+          )}
         </td>
       )}
 
@@ -1380,9 +1357,7 @@ export function TableCellElement(
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const { element } = props;
-  const { dragCellKey } = useTableResizeContext();
   const isHeader = element.header === true;
-  const cellKey = editor.key(element);
 
   const tableKey = useElementSelector(TablePlugin, ([node]) =>
     editor.key(node)
@@ -1390,15 +1365,15 @@ export function TableCellElement(
   const rowKey = useElementSelector(TableRowPlugin, ([node]) =>
     editor.key(node)
   );
-  const isSelectingTable = useBlockSelected(tableKey);
-  const isSelectingRow = useBlockSelected(rowKey) || isSelectingTable;
-  const isSelectionAreaVisible = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
+  const isSelectingTable = useElementSelected({
+    at: tableKey,
+    mode: 'node',
+  });
+  const isSelectingRow =
+    useElementSelected({ at: rowKey, mode: 'node' }) || isSelectingTable;
   const cellIndices = useEditorSelector(
-    (innerEditor6) =>
-      innerEditor6.plugin(TablePlugin).read.getCellIndices(element),
+    (innerEditor) =>
+      innerEditor.plugin(TablePlugin).read.getCellIndices(element),
     {
       equalityFn: (next, previous) =>
         next?.col === previous?.col && next?.row === previous?.row,
@@ -1460,26 +1435,16 @@ export function TableCellElement(
         {props.children}
       </div>
 
-      {!readOnly && dragCellKey === cellKey && (
-        <button
-          aria-label="Move selected cells"
-          className="absolute top-1/2 left-6 z-40 flex h-6 w-4 -translate-y-1/2 cursor-grab items-center justify-center rounded-sm border bg-background text-muted-foreground shadow-sm active:cursor-grabbing"
-          contentEditable={false}
-          data-table-cell-drag-for={dragCellKey}
-          data-table-cell-drag-handle="true"
-          draggable
-          type="button"
-        >
-          <GripVertical className="size-3" />
-        </button>
-      )}
-
-      {!readOnly && !isSelectionAreaVisible && (
+      {!readOnly && (
         <TableCellResizeControls colIndex={colIndex} rowIndex={rowIndex} />
       )}
 
       {isSelectingRow && (
-        <div className={blockSelectionVariants()} contentEditable={false} />
+        <div
+          className={TABLE_SELECTION_OVERLAY_CLASS}
+          contentEditable={false}
+          data-slot="node-selection-highlight"
+        />
       )}
     </PlateElement>
   );
@@ -1495,7 +1460,7 @@ function TableCellResizeControls({
   const {
     clearResizePreview,
     disableMarginLeft,
-    setResizePreview,
+    showResizePreview,
     startResize,
   } = useTableResizeContext();
   const rightHandleKey = `right:${rowIndex}:${colIndex}`;
@@ -1505,15 +1470,24 @@ function TableCellResizeControls({
 
   return (
     <div
-      className="group/resize pointer-events-none absolute inset-0 z-30 select-none"
+      className="pointer-events-none absolute inset-0 z-30 select-none"
       contentEditable={false}
+      data-plite-root-chrome-ignore="true"
       suppressContentEditableWarning={true}
     >
       <div
         className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
         data-table-resize-handle="column-end"
         onPointerEnter={(event) => {
-          setResizePreview(event, {
+          showResizePreview(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerMove={(event) => {
+          showResizePreview(event, {
             colIndex,
             direction: 'right',
             handleKey: rightHandleKey,
@@ -1534,8 +1508,17 @@ function TableCellResizeControls({
       />
       <div
         className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
+        data-table-resize-handle="row-end"
         onPointerEnter={(event) => {
-          setResizePreview(event, {
+          showResizePreview(event, {
+            colIndex,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
+            rowIndex,
+          });
+        }}
+        onPointerMove={(event) => {
+          showResizePreview(event, {
             colIndex,
             direction: 'bottom',
             handleKey: bottomHandleKey,
@@ -1557,8 +1540,17 @@ function TableCellResizeControls({
       {isLeftHandle && (
         <div
           className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
+          data-table-resize-handle="column-start"
           onPointerEnter={(event) => {
-            setResizePreview(event, {
+            showResizePreview(event, {
+              colIndex,
+              direction: 'left',
+              handleKey: leftHandleKey,
+              rowIndex,
+            });
+          }}
+          onPointerMove={(event) => {
+            showResizePreview(event, {
               colIndex,
               direction: 'left',
               handleKey: leftHandleKey,

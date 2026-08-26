@@ -13,5 +13,6 @@
 - Schedule focus, selection, scrolling, and standalone host work through cancellable root-addressed DOM phases
 - Cancel stale focus retries when another editor in the same document or shadow root takes focus ownership
 - Resolve stale DOM path mappings through lifecycle reads and typed domain errors
+- Resolve a mounted native element from a Plite node or its live `NodeKey`, returning `null` for foreign, removed, and unmounted keys
 - Serialize node selections as closed exact-owner slices, including reachable secondary roots
 - Resolve iframe and shadow-root input, selection, and shortcut behavior from each browser realm

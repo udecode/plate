@@ -4,6 +4,7 @@ import {
   type Range,
   RangeApi,
   type RootKey,
+  type Selection,
   SelectionApi,
 } from '@platejs/plite';
 import {
@@ -140,9 +141,6 @@ const selectionSpansNativeTextInputBoundary = ({
   );
 };
 
-const getSelectionRootKey = (selection: Range | null): RootKey =>
-  selection?.anchor.root ?? selection?.focus.root ?? MAIN_ROOT_KEY;
-
 const getTargetElement = (target: EventTarget | null) =>
   isDOMElement(target)
     ? target
@@ -177,11 +175,21 @@ const getNestedEditableRootKey = (
 };
 
 const qualifySelectionRoot = (
-  selection: Range | null,
+  selection: Range | Selection,
   root: RootKey | null
-): Range | null => {
+): Range | Selection => {
   if (!selection || !root || root === MAIN_ROOT_KEY) {
     return selection;
+  }
+
+  if (SelectionApi.isNode(selection)) {
+    return selection.root
+      ? selection
+      : SelectionApi.nodes(selection.paths, {
+          anchorPath: selection.anchorPath,
+          focusPath: selection.focusPath,
+          root,
+        });
   }
 
   return {
@@ -286,7 +294,8 @@ const isPartialDOMStrategyRuntime = (domStrategyRuntime: unknown) =>
     (domStrategyRuntime as { type?: unknown }).type === 'staged' ||
     (domStrategyRuntime as { type?: unknown }).type === 'virtualized');
 
-const getSelectionRoot = (selection: Range | null) => selection?.anchor.root;
+const getRangeSelection = (selection: Range | Selection): Range | null =>
+  selection && RangeApi.isRange(selection) ? selection : null;
 
 const isCollapsedSelectionBackedByEditableTextDOM = ({
   editor,
@@ -480,7 +489,7 @@ export const applyEditableKeyDown = ({
           })
         : null;
 
-    const selectionRoot = getSelectionRootKey(selection);
+    const selectionRoot = SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
     const shouldHandleProjectedSelection =
       nestedEditableTarget || selectionRoot !== viewRoot;
@@ -488,9 +497,10 @@ export const applyEditableKeyDown = ({
     if (shouldHandleProjectedSelection) {
       const focusEditor = nestedSelectionContext?.editor ?? editor;
       const focusSelection = nestedSelectionContext?.rawSelection ?? selection;
+      const focusRange = getRangeSelection(focusSelection);
       const focusNode =
-        focusSelection && editorHasPath(focusEditor, focusSelection.focus.path)
-          ? NodeApi.parent(focusEditor, focusSelection.focus.path)
+        focusRange && editorHasPath(focusEditor, focusRange.focus.path)
+          ? NodeApi.parent(focusEditor, focusRange.focus.path)
           : null;
       const isRTL = focusNode
         ? getTextDirection(NodeApi.string(focusNode)) === 'rtl'
@@ -503,7 +513,7 @@ export const applyEditableKeyDown = ({
         getMountedViewEditor,
         isRTL,
         preferredX: preferredVerticalX,
-        selection,
+        selection: getRangeSelection(selection),
       });
 
       if (contentRootViewSelectionResult.handled) {
@@ -624,18 +634,45 @@ export const applyEditableKeyDown = ({
     }
 
     const selection = readRuntimeSelection(editor);
-    const selectionRoot = getSelectionRoot(selection);
+    const selectionRange = getRangeSelection(selection);
+    const selectionRoot = SelectionApi.root(selection);
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
 
     if (
       SelectionApi.isNode(selection) &&
-      (isPlainTextKeyboardInput(nativeEvent) ||
-        Hotkeys.isOpenLine(nativeEvent) ||
+      isPlainTextKeyboardInput(nativeEvent)
+    ) {
+      event.preventDefault();
+      applyEditableCommand({
+        command: {
+          inputType: 'insertText',
+          kind: 'insert-text',
+          text: nativeEvent.key,
+        },
+        editor,
+      });
+      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+    }
+
+    if (
+      SelectionApi.isNode(selection) &&
+      (Hotkeys.isOpenLine(nativeEvent) ||
         Hotkeys.isSoftBreak(nativeEvent) ||
         Hotkeys.isSplitBlock(nativeEvent))
     ) {
       event.preventDefault();
-      return keyDownHandled();
+      applyEditableCommand({
+        command: {
+          kind: 'insert-break',
+          variant: Hotkeys.isSoftBreak(nativeEvent)
+            ? 'soft'
+            : Hotkeys.isOpenLine(nativeEvent)
+              ? 'open-line'
+              : 'paragraph',
+        },
+        editor,
+      });
+      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
     }
 
     if (
@@ -719,7 +756,10 @@ export const applyEditableKeyDown = ({
     }
 
     if (
-      selectionSpansNativeTextInputBoundary({ editor, selection }) &&
+      selectionSpansNativeTextInputBoundary({
+        editor,
+        selection: selectionRange,
+      }) &&
       isPlainTextKeyboardInput(nativeEvent)
     ) {
       event.preventDefault();
@@ -735,7 +775,10 @@ export const applyEditableKeyDown = ({
     }
 
     const children = editor.read((state) => state.nodes.children());
-    const element = children[selection === null ? 0 : selection.focus.path[0]];
+    const selectedTopLevelIndex = SelectionApi.isNode(selection)
+      ? selection.paths[0]?.[0]
+      : selectionRange?.focus.path[0];
+    const element = children[selectedTopLevelIndex ?? 0];
     const isRTL = getTextDirection(NodeApi.string(element)) === 'rtl';
 
     // COMPAT: Since we prevent the default behavior on
@@ -788,7 +831,7 @@ export const applyEditableKeyDown = ({
       !isCollapsedSelectionBackedByEditableTextDOM({
         editor,
         inputController,
-        selection,
+        selection: selectionRange,
       }) &&
       selection &&
       nativeEvent.key.length === 1 &&
@@ -817,7 +860,7 @@ export const applyEditableKeyDown = ({
     }
 
     const largeDocumentVerticalSelection =
-      getOwnerlessViewSelectionRange(editor) ?? selection;
+      getOwnerlessViewSelectionRange(editor) ?? selectionRange;
 
     if (
       shouldModelOwnPlainVerticalLargeDocumentExtension({
@@ -833,7 +876,7 @@ export const applyEditableKeyDown = ({
         editor,
         event,
         preferredX: preferredVerticalX,
-        selection: largeDocumentVerticalSelection,
+        selection: getOwnerlessViewSelectionRange(editor) ?? selection,
       });
 
       if (caretMovementResult.handled) {
@@ -849,7 +892,7 @@ export const applyEditableKeyDown = ({
       getMountedViewEditor,
       isRTL,
       preferredX: preferredVerticalX,
-      selection,
+      selection: selectionRange,
     });
 
     if (contentRootViewSelectionResult.handled) {
@@ -873,7 +916,7 @@ export const applyEditableKeyDown = ({
       getMountedViewEditor,
       isRTL,
       preferredX: preferredVerticalX,
-      selection,
+      selection: selectionRange,
     });
 
     if (contentRootNavigationResult.handled) {
@@ -950,15 +993,15 @@ export const applyEditableKeyDown = ({
         // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
         // an event when deleting backwards in a selected void inline node
         const currentNode =
-          selection && RangeApi.isCollapsed(selection)
-            ? NodeApi.parent(editor, selection.anchor.path)
+          selectionRange && RangeApi.isCollapsed(selectionRange)
+            ? NodeApi.parent(editor, selectionRange.anchor.path)
             : null;
         const isDeleteForward = Hotkeys.isDeleteForward(nativeEvent);
 
         if (
-          selection &&
+          selectionRange &&
           (Hotkeys.isDeleteBackward(nativeEvent) || isDeleteForward) &&
-          RangeApi.isCollapsed(selection) &&
+          RangeApi.isCollapsed(selectionRange) &&
           currentNode &&
           NodeApi.isElement(currentNode) &&
           editorIsVoid(editor, currentNode) &&
@@ -985,8 +1028,8 @@ export const applyEditableKeyDown = ({
       });
 
       if (
-        selection &&
-        RangeApi.isExpanded(selection) &&
+        selectionRange &&
+        RangeApi.isExpanded(selectionRange) &&
         isPlainTextKeyboardInput(nativeEvent) &&
         !ReactEditor.isComposing(editor)
       ) {

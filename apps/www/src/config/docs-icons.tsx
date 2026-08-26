@@ -113,7 +113,7 @@ export const DocIcons = {
   'basic-plugins-default': LayersIcon,
   'block-menu': MenuIcon,
   'block-list': ListTodoIcon,
-  'block-selection': SquareMousePointerIcon,
+  'node-selection': SquareMousePointerIcon,
   blockquote: QuoteIcon,
   bold: BoldIcon,
   button: SquareMinusIcon,

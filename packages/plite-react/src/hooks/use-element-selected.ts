@@ -1,8 +1,8 @@
 import {
   type EditorCommit,
+  type NodeKey,
   type Path,
   PathApi,
-  RangeApi,
   SelectionApi,
 } from '@platejs/plite';
 import { useCallback, useContext } from 'react';
@@ -11,7 +11,6 @@ import { NodeKeyContext } from '../context';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
-  range as editorRange,
 } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -23,50 +22,57 @@ export type UseElementSelectedMode = 'collapsed' | 'intersects' | 'node';
 
 /** Options for selecting the context element or an explicit element path. */
 export type UseElementSelectedOptions = {
-  at?: Path | null;
+  at?: NodeKey | Path | null;
   mode?: UseElementSelectedMode;
 };
 
 /** Subscribe to whether an element path matches the current selection. */
 export const useElementSelected = ({
-  at: path,
+  at,
   mode = 'intersects',
 }: UseElementSelectedOptions = {}): boolean => {
   const element = useOptionalElement();
-  const nodeKey = useContext(NodeKeyContext);
+  const contextNodeKey = useContext(NodeKeyContext);
+  const explicitNodeKey = typeof at === 'string' ? at : null;
+  const explicitPath = Array.isArray(at) ? at : null;
+  const watchedNodeKey = explicitNodeKey ??
+    (explicitPath ? null : contextNodeKey);
 
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {
-      if (!element && !path) return false;
+      if (!element && !explicitPath && !watchedNodeKey) return false;
 
       const selection = readRuntimeSelection(editor);
 
       if (!selection) return false;
       const selectedPath =
-        path ??
-        (nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null) ??
+        explicitPath ??
+        (watchedNodeKey
+          ? editorGetPathByNodeKey(editor, watchedNodeKey)
+          : null) ??
         (element ? ReactEditor.resolvePath(editor, element) : null);
       if (!selectedPath) return false;
       if (!editorHasPath(editor, selectedPath)) return false;
       if (mode === 'node') {
         return (
           SelectionApi.isNode(selection) &&
-          PathApi.equals(selection.path, selectedPath)
+          selection.paths.some((candidatePath) =>
+            PathApi.equals(candidatePath, selectedPath)
+          )
         );
       }
-      if (mode === 'collapsed' && !RangeApi.isCollapsed(selection)) {
+      if (mode === 'collapsed' && !editor.read.selection.isCollapsed()) {
         return false;
       }
 
-      const range = editorRange(editor, selectedPath);
-      return !!RangeApi.intersection(range, selection);
+      return editor.read.selection.intersects(selectedPath);
     },
-    [element, mode, path, nodeKey]
+    [element, explicitPath, mode, watchedNodeKey]
   );
 
   const shouldUpdate = useCallback(
     (change?: EditorCommit) => {
-      if (path) {
+      if (explicitPath) {
         return (
           !change ||
           change.selectionChanged ||
@@ -75,21 +81,21 @@ export const useElementSelected = ({
         );
       }
 
-      if (!nodeKey || !change) {
+      if (!watchedNodeKey || !change) {
         return true;
       }
 
       return (
-        change.changed.hasNodeKey(nodeKey, 'selection') ||
-        change.changed.hasNodeKey(nodeKey, 'path')
+        change.changed.hasNodeKey(watchedNodeKey, 'selection') ||
+        change.changed.hasNodeKey(watchedNodeKey, 'path')
       );
     },
-    [path, nodeKey]
+    [explicitPath, watchedNodeKey]
   );
 
   return useEditorSelector(selector, {
     deferred: true,
-    nodeKey: path ? null : nodeKey,
+    nodeKey: explicitPath ? null : watchedNodeKey,
     profileId: 'element-selected',
     runtimeEventSource: 'selection',
     shouldUpdate,

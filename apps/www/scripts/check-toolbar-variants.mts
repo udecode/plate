@@ -14,7 +14,7 @@ const cacheRoot = path.join(
   repoRoot,
   'node_modules/.cache/plate-toolbar-variants'
 );
-const variants = ['radix', 'base', 'aria'] as const;
+const variants = ['base', 'radix'] as const;
 
 for (const variant of variants) {
   const fixtureRoot = path.join(cacheRoot, variant);
@@ -24,10 +24,10 @@ for (const variant of variants) {
   mkdirSync(path.join(sourceRoot, 'components/editor'), { recursive: true });
   mkdirSync(path.join(sourceRoot, 'lib'), { recursive: true });
 
-  const toolbarSource =
-    variant === 'radix'
-      ? path.join(appRoot, 'src/registry/components/editor/toolbar.tsx')
-      : path.join(appRoot, `src/registry/bases/${variant}/editor/toolbar.tsx`);
+  const toolbarSource = path.join(
+    appRoot,
+    `src/registry/bases/${variant}/toolbar.tsx`
+  );
 
   copyFileSync(
     toolbarSource,

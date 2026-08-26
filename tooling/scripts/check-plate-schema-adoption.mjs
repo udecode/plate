@@ -326,18 +326,7 @@ const intentionalProductionExtendStageChains = new Map([
     'packages/toggle/src/lib/BaseTogglePlugin.ts',
     [[['api', 'read', 'selectors']]],
   ],
-  [
-    'packages/selection/src/react/BlockSelectionPlugin.tsx',
-    [
-      [
-        ['api', 'commands', 'on'],
-        ['inject', 'shortcuts', 'update'],
-        ['render'],
-      ],
-    ],
-  ],
-  ['packages/selection/src/react/BlockMenuPlugin.tsx', [[['on']]]],
-  ['packages/selection/src/react/CursorOverlayPlugin.tsx', [[['on']]]],
+  ['packages/cursor/src/CursorOverlayPlugin.tsx', [[['on']]]],
   ['packages/tag/src/lib/BaseTagPlugin.ts', [[['read', 'update'], ['read']]]],
   [
     'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx',
@@ -356,7 +345,8 @@ const intentionalProductionExtendStageChains = new Map([
         ['update'],
         ['contributions'],
         ['corrections'],
-        ['commands', 'readMiddleware', 'selectionKinds'],
+        ['readMiddleware'],
+        ['commands'],
       ],
     ],
   ],

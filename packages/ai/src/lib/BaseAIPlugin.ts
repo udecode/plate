@@ -7,8 +7,10 @@ import {
   type Location,
   NodeApi,
   type NodeEntry,
+  type NodeSelection,
   type Path,
   type Range,
+  SelectionApi,
   type Value,
   defineEffect,
   defineStateField,
@@ -16,6 +18,7 @@ import {
   schema,
   target,
 } from '@platejs/plite';
+import { getSelection as getEditorSelection } from '@platejs/plite/internal';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { PLUGINS } from '@platejs/utils';
 import { distance } from 'fastest-levenshtein';
@@ -25,7 +28,7 @@ export const AI_PREVIEW_KEY = 'aiPreview';
 
 type AIPreviewState = {
   originalBlocks: Value;
-  selectionBefore: Range | null;
+  selectionBefore: NodeSelection | Range | null;
 };
 
 const aiBatchEffect = defineEffect<number>({
@@ -354,9 +357,15 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
       } = {}) => {
         if (tx.getField(aiPreviewField)) return false;
 
+        const semanticSelection = getEditorSelection(editor);
+
         tx.setField(aiPreviewField, {
           originalBlocks: cloneDeep(originalBlocks),
-          selectionBefore: cloneDeep(tx.selection()),
+          selectionBefore: cloneDeep(
+            SelectionApi.isNode(semanticSelection)
+              ? semanticSelection
+              : tx.selection()
+          ),
         });
 
         return true;
@@ -377,7 +386,9 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
           target?: Path;
         } = {}
       ) => {
-        const at = innerTarget ?? tx.selection()?.focus.path;
+        const selection = tx.selection();
+        const selectedNodePath = tx.selection.nodes().at(-1)?.[1];
+        const at = innerTarget ?? selectedNodePath ?? selection?.focus.path;
 
         if (!at) return;
 

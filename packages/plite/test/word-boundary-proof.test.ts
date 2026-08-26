@@ -116,7 +116,6 @@ const getCollapsedPoint = (editor: Editor<Value, any>): Point => {
   const selection = editor.read((state) => state.selection());
 
   assert.ok(selection);
-  assert.equal(selection.kind, 'text');
   assert.deepEqual(selection.anchor, selection.focus);
 
   return selection.anchor;

@@ -32,7 +32,6 @@ test.describe('readonly editor', () => {
     });
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'This example'.length },
     });
@@ -41,7 +40,6 @@ test.describe('readonly editor', () => {
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe('This example');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'This example'.length },
     });
@@ -59,7 +57,6 @@ test.describe('readonly editor', () => {
     });
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'This example'.length },
     });
@@ -112,7 +109,6 @@ test.describe('readonly editor', () => {
     });
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'This example'.length },
     });

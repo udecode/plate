@@ -1,6 +1,5 @@
 'use client';
 
-import { ArrowUpToLineIcon } from 'lucide-react';
 import { Plate, usePlateEditor } from 'platejs/react';
 import * as React from 'react';
 
@@ -25,9 +24,7 @@ const DocxFixedToolbarPlugin = FixedToolbarPlugin.configure({
       <FixedToolbar>
         <FixedToolbarButtons>
           <ToolbarGroup>
-            <ExportToolbarButton>
-              <ArrowUpToLineIcon />
-            </ExportToolbarButton>
+            <ExportToolbarButton />
             <ImportToolbarButton />
           </ToolbarGroup>
         </FixedToolbarButtons>

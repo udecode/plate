@@ -1,53 +1,45 @@
 import type {
-  ContentSlice,
   AnyEditor as Editor,
   EditorDocumentValue,
-  EditorMarks,
   EditorSelectionMapContext,
-  EditorStateView,
   RootKey,
   SerializedEditorSelection,
   SnapshotIndex,
-  Value,
-} from '../interfaces/editor';
-import { PathApi, type Path } from '../interfaces/path';
-import type { Point } from '../interfaces/point';
-import type { Range } from '../interfaces/range';
-import { RangeApi } from '../interfaces/range';
+} from "../interfaces/editor";
+import { PathApi, type Path } from "../interfaces/path";
+import type { Point } from "../interfaces/point";
+import type { Range } from "../interfaces/range";
+import { RangeApi } from "../interfaces/range";
 import {
   SelectionApi,
   type EditorSelection,
   type Selection,
   type SelectionValue,
-} from '../interfaces/selection';
+} from "../interfaces/selection";
 import {
   type DocumentChange,
   getInternalDocumentRootChange,
   mapInternalDocumentChangePosition,
-} from './change/document-change';
-import { DocumentIndex } from './change/document-index';
-import { getRangeEndpointAssociations } from './change/range-association';
-import type { JsonEditorValue } from './change/tokens';
-import { getEditorSchema } from './editor-runtime';
-import {
-  type ExtensionRegistry,
-  getExtensionRegistry,
-} from './extension-registry';
-import { toPublicRoot } from './public-root';
+} from "./change/document-change";
+import { DocumentIndex } from "./change/document-index";
+import { getRangeEndpointAssociations } from "./change/range-association";
+import type { JsonEditorValue } from "./change/tokens";
+import { getEditorSchema } from "./editor-runtime";
+import { toPublicRoot } from "./public-root";
 import {
   decodeVersionedValue,
   encodeVersionedValue,
   assertEditorJsonValue,
-} from './value-codec';
+} from "./value-codec";
 
 type MappingOptions = {
-  association?: 'backward' | 'forward';
-  deletion?: 'drop' | 'nearest';
+  association?: "backward" | "forward";
+  deletion?: "drop" | "nearest";
   preferPositionMapping?: boolean;
 };
 
-type RangeMappingOptions = Omit<MappingOptions, 'association'> & {
-  association?: 'backward' | 'forward' | 'inward' | 'outward';
+type RangeMappingOptions = Omit<MappingOptions, "association"> & {
+  association?: "backward" | "forward" | "inward" | "outward";
 };
 
 type SelectionMappingOptions = RangeMappingOptions & {
@@ -57,23 +49,8 @@ type SelectionMappingOptions = RangeMappingOptions & {
   }>;
 };
 
-type RuntimeSelectionSpec = Readonly<{
-  codec?: import('../interfaces/editor').EditorValueCodec<any>;
-  kind: string;
-  map?: (
-    selection: SelectionValue,
-    context: EditorSelectionMapContext
-  ) => Selection;
-  marks?: (...args: any[]) => any;
-  primaryRange?: (selection: SelectionValue) => Range | null;
-  ranges?: (selection: SelectionValue) => readonly Range[];
-  replacementRange?: (selection: SelectionValue) => Range | null;
-  slice?: (...args: any[]) => any;
-  validate?: (selection: SelectionValue) => boolean;
-}>;
-
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const hasOnlyKeys = (
   value: Record<string, unknown>,
@@ -87,27 +64,36 @@ const hasOnlyKeys = (
 const assertBuiltInSelection: (
   selection: SelectionValue
 ) => asserts selection is EditorSelection = (selection) => {
-  if (!isRecord(selection)) {
-    throw new Error('Invalid built-in editor selection.');
-  }
-
-  if (selection.kind === 'text') {
+  if (selection.kind === "text") {
     if (!SelectionApi.isText(selection)) {
-      throw new Error('Invalid text editor selection.');
+      throw new Error("Invalid text editor selection.");
     }
     if (selection.marks !== undefined) {
-      assertEditorJsonValue(selection.marks, 'text selection marks');
+      assertEditorJsonValue(selection.marks, "text selection marks");
     }
     return;
   }
 
   if (!SelectionApi.isNode(selection)) {
-    throw new Error('Invalid node editor selection.');
+    throw new Error("Invalid node editor selection.");
   }
 };
 
 const rootValue = (value: JsonEditorValue, root: RootKey) =>
-  root === 'main' ? value.children : (value.roots?.[root] ?? []);
+  root === "main" ? value.children : value.roots?.[root] ?? [];
+
+const projectSelectionPoint = (point: Point): Point =>
+  Object.freeze({
+    offset: point.offset,
+    path: Object.freeze([...point.path]) as Path,
+    ...(point.root === undefined ? {} : { root: point.root }),
+  });
+
+const projectSelectionRange = (range: Range): Range =>
+  Object.freeze({
+    anchor: projectSelectionPoint(range.anchor),
+    focus: projectSelectionPoint(range.focus),
+  });
 
 const rawNodeAt = (
   children: ReadonlyArray<Record<string, unknown>>,
@@ -140,59 +126,146 @@ const publicPoint = (
     ...(includeRoot ? { root } : {}),
   });
 
-const selectionRoot = (selection: SelectionValue, fallback: RootKey) =>
-  pointRoot(selection.anchor, fallback);
+const getLegacyNodeSelectionOptions = (range: Range) => {
+  const anchorRoot = range.anchor.root;
+  const focusRoot = range.focus.root;
 
-const getSelectionSpecByKind = (
-  editor: Editor,
-  kind: string,
-  registry: ExtensionRegistry = getExtensionRegistry(editor)
-): RuntimeSelectionSpec => {
-  const registered = registry.selectionSpecs.get(kind)?.spec;
-
-  if (registered) return registered;
-  if (kind === 'text' || kind === 'node') {
-    return { kind };
+  if (anchorRoot && focusRoot && anchorRoot !== focusRoot) {
+    throw new Error("A legacy node selection cannot cross document roots.");
   }
 
-  throw new Error(
-    `Unsupported editor selection kind "${kind}". Install an extension that defines it.`
-  );
+  const root = anchorRoot ?? focusRoot;
+
+  if (root === "main") {
+    throw new Error("[Plite] Omit root to target the primary document.");
+  }
+
+  return root ? { root } : {};
 };
 
-const getSelectionSpec = (
-  editor: Editor,
-  selection: SelectionValue,
-  registry?: ExtensionRegistry
-) => getSelectionSpecByKind(editor, selection.kind, registry);
-
-const BUILT_IN_SELECTION_CODEC = Object.freeze({
-  decode(value: unknown): EditorSelection {
-    if (!SelectionApi.isSelection(value)) {
-      throw new Error('Invalid built-in editor selection.');
+const TEXT_SELECTION_CODEC = Object.freeze({
+  decode(value: unknown) {
+    if (!SelectionApi.isText(value)) {
+      throw new Error("Invalid text editor selection.");
     }
-
-    assertBuiltInSelection(value);
 
     return value;
   },
   encode(value: SelectionValue) {
-    assertBuiltInSelection(value);
+    if (!SelectionApi.isText(value)) {
+      throw new Error("Invalid text editor selection.");
+    }
 
     return value;
   },
   version: 1,
 });
 
-const getSelectionCodec = (editor: Editor, kind: string) => {
-  const spec = getSelectionSpecByKind(editor, kind);
+const NODE_SELECTION_CODEC = Object.freeze({
+  decode(value: unknown) {
+    if (!SelectionApi.isNode(value)) {
+      throw new Error("Invalid node editor selection.");
+    }
 
-  if (spec.codec) return spec.codec;
-  if (kind === 'text' || kind === 'node') return BUILT_IN_SELECTION_CODEC;
+    return value;
+  },
+  encode(value: SelectionValue) {
+    if (!SelectionApi.isNode(value)) {
+      throw new Error("Invalid node editor selection.");
+    }
 
-  throw new Error(
-    `Editor selection kind "${kind}" does not define a persistence codec.`
-  );
+    return value;
+  },
+  version: 4,
+});
+
+const LEGACY_NODE_SELECTION_CODEC = Object.freeze({
+  decode(value: unknown) {
+    if (
+      !isRecord(value) ||
+      !hasOnlyKeys(value, ["anchor", "focus", "kind", "path"]) ||
+      value.kind !== "node"
+    ) {
+      throw new Error("Invalid legacy node editor selection.");
+    }
+
+    const { kind: _kind, path, ...range } = value;
+
+    if (!RangeApi.isRange(range) || !PathApi.isPath(path)) {
+      throw new Error("Invalid legacy node editor selection.");
+    }
+
+    return SelectionApi.nodes([path], getLegacyNodeSelectionOptions(range));
+  },
+  encode() {
+    throw new Error("Legacy node editor selections are decode-only.");
+  },
+  version: 1,
+});
+
+const LEGACY_NODE_SELECTION_V2_CODEC = Object.freeze({
+  decode(value: unknown) {
+    if (
+      !isRecord(value) ||
+      !hasOnlyKeys(value, ["anchor", "focus", "kind", "paths"]) ||
+      value.kind !== "node"
+    ) {
+      throw new Error("Invalid legacy node editor selection.");
+    }
+
+    const { kind: _kind, paths, ...range } = value;
+
+    if (
+      !RangeApi.isRange(range) ||
+      !Array.isArray(paths) ||
+      paths.length === 0 ||
+      !paths.every(PathApi.isPath)
+    ) {
+      throw new Error("Invalid legacy node editor selection.");
+    }
+
+    return SelectionApi.nodes(
+      paths as [Path, ...Path[]],
+      getLegacyNodeSelectionOptions(range)
+    );
+  },
+  encode() {
+    throw new Error("Legacy node editor selections are decode-only.");
+  },
+  version: 2,
+});
+
+const LEGACY_NODE_SELECTION_V3_CODEC = Object.freeze({
+  decode(value: unknown) {
+    if (
+      !isRecord(value) ||
+      !hasOnlyKeys(value, ["kind", "paths", "root"]) ||
+      value.kind !== "node" ||
+      !Array.isArray(value.paths) ||
+      value.paths.length === 0 ||
+      !value.paths.every(PathApi.isPath) ||
+      (value.root !== undefined &&
+        (typeof value.root !== "string" || value.root === "main"))
+    ) {
+      throw new Error("Invalid legacy node editor selection.");
+    }
+
+    return SelectionApi.nodes(
+      value.paths as [Path, ...Path[]],
+      value.root === undefined ? {} : { root: value.root }
+    );
+  },
+  encode() {
+    throw new Error("Legacy node editor selections are decode-only.");
+  },
+  version: 3,
+});
+
+const getSelectionCodec = (kind: string) => {
+  if (kind === "text") return TEXT_SELECTION_CODEC;
+  if (kind === "node") return NODE_SELECTION_CODEC;
+
+  throw new Error(`Unsupported editor selection kind "${kind}".`);
 };
 
 export const encodeEditorSelection = (
@@ -205,13 +278,7 @@ export const encodeEditorSelection = (
   const { kind } = selection;
 
   if (options.validateDocument === false) {
-    const spec = getSelectionSpec(editor, selection);
-
-    if (kind === 'text' || kind === 'node') {
-      assertBuiltInSelection(selection);
-    } else if (!spec.validate?.(selection)) {
-      throw new Error(`Invalid editor selection "${kind}" value.`);
-    }
+    assertBuiltInSelection(selection);
   } else {
     assertSelectionSupported(editor, selection);
   }
@@ -219,7 +286,7 @@ export const encodeEditorSelection = (
   return Object.freeze({
     kind,
     ...encodeVersionedValue(
-      getSelectionCodec(editor, kind),
+      getSelectionCodec(kind),
       selection,
       `editor selection "${kind}"`
     ),
@@ -234,15 +301,23 @@ export const decodeEditorSelection = (
   if (input === null) return null;
   if (
     !isRecord(input) ||
-    !hasOnlyKeys(input, ['kind', 'value', 'version']) ||
-    typeof (input as { kind?: unknown }).kind !== 'string'
+    !hasOnlyKeys(input, ["kind", "value", "version"]) ||
+    typeof (input as { kind?: unknown }).kind !== "string"
   ) {
-    throw new Error('Invalid editor selection envelope.');
+    throw new Error("Invalid editor selection envelope.");
   }
 
   const { kind } = input as { kind: string };
   const selection = decodeVersionedValue(
-    getSelectionCodec(editor, kind),
+    kind === "node"
+      ? input.version === 1
+        ? LEGACY_NODE_SELECTION_CODEC
+        : input.version === 2
+        ? LEGACY_NODE_SELECTION_V2_CODEC
+        : input.version === 3
+        ? LEGACY_NODE_SELECTION_V3_CODEC
+        : getSelectionCodec(kind)
+      : getSelectionCodec(kind),
     input,
     `editor selection "${kind}"`
   );
@@ -264,7 +339,7 @@ const createMapContext = (
   before: JsonEditorValue,
   after: JsonEditorValue,
   root: RootKey,
-  runtimeIndexes?: SelectionMappingOptions['runtimeIndexes']
+  runtimeIndexes?: SelectionMappingOptions["runtimeIndexes"]
 ): EditorSelectionMapContext => {
   const nearestDeletedPoint = (
     document: DocumentIndex,
@@ -317,14 +392,14 @@ const createMapContext = (
     const nearest = PathApi.isSibling(backwardPoint.path, point.path)
       ? backwardPoint
       : PathApi.equals(forwardPoint.path, point.path)
-        ? forwardPoint
-        : backwardCommon > forwardCommon
-          ? backwardPoint
-          : forwardCommon > backwardCommon
-            ? forwardPoint
-            : fallbackAssociation === -1
-              ? backwardPoint
-              : forwardPoint;
+      ? forwardPoint
+      : backwardCommon > forwardCommon
+      ? backwardPoint
+      : forwardCommon > backwardCommon
+      ? forwardPoint
+      : fallbackAssociation === -1
+      ? backwardPoint
+      : forwardPoint;
 
     return publicPoint(nearest, targetRoot, includeRoot);
   };
@@ -341,7 +416,7 @@ const createMapContext = (
       rootValue(before, targetRoot)
     );
     const afterDocument = DocumentIndex.fromValue(rootValue(after, targetRoot));
-    const association = options.association === 'backward' ? -1 : 1;
+    const association = options.association === "backward" ? -1 : 1;
     const position = beforeDocument.positionAt({
       offset: point.offset,
       path: point.path,
@@ -361,26 +436,26 @@ const createMapContext = (
       targetRoot,
       position,
       association,
-      'around'
+      "around"
     );
     const mapped = mapInternalDocumentChangePosition(
       change,
       targetRoot,
       position,
       association,
-      options.deletion === 'drop' ? 'around' : undefined
+      options.deletion === "drop" ? "around" : undefined
     );
     const next =
       mapped == null ? null : afterDocument.pointAt(mapped, association);
     const sourceNode = rawNodeAt(rootValue(before, targetRoot), point.path);
     const preservesNonEmptyTextPosition =
       options.preferPositionMapping &&
-      typeof sourceNode?.text === 'string' &&
+      typeof sourceNode?.text === "string" &&
       sourceNode.text.length > 0;
 
     const mappedPoint =
       !preservesNonEmptyTextPosition &&
-      options.deletion !== 'drop' &&
+      options.deletion !== "drop" &&
       (dropped == null || nodeWasRemoved)
         ? nearestDeletedPoint(
             afterDocument,
@@ -390,8 +465,8 @@ const createMapContext = (
             association
           )
         : next
-          ? publicPoint(next, targetRoot, point.root !== undefined)
-          : null;
+        ? publicPoint(next, targetRoot, point.root !== undefined)
+        : null;
     const nodeKey = runtimeIndexes?.before.keyAt(point.path);
     const retainedPath = nodeKey
       ? runtimeIndexes?.after.pathOf(nodeKey)
@@ -402,8 +477,8 @@ const createMapContext = (
     const sourceText = sourceNode?.text;
     const retainedText = retainedNode?.text;
     const retainedTextPosition =
-      typeof sourceText === 'string' &&
-      typeof retainedText === 'string' &&
+      typeof sourceText === "string" &&
+      typeof retainedText === "string" &&
       (sourceText === retainedText ||
         (options.preferPositionMapping && retainedText.startsWith(sourceText)));
 
@@ -411,7 +486,7 @@ const createMapContext = (
       nodeKey &&
       retainedPath &&
       retainedTextPosition &&
-      typeof sourceText === 'string'
+      typeof sourceText === "string"
     ) {
       return publicPoint(
         {
@@ -426,7 +501,7 @@ const createMapContext = (
     return mappedPoint;
   };
 
-  const mapPath: EditorSelectionMapContext['mapPath'] = (
+  const mapPath: EditorSelectionMapContext["mapPath"] = (
     path,
     options = {}
   ) => {
@@ -440,17 +515,30 @@ const createMapContext = (
     if (retainedPath) {
       return Object.freeze([...retainedPath]);
     }
+    if (nodeKey) return null;
 
     const beforeDocument = DocumentIndex.fromValue(rootValue(before, root));
     const afterDocument = DocumentIndex.fromValue(rootValue(after, root));
-    const association = options.association === 'backward' ? -1 : 1;
-    const position = beforeDocument.nodeRange(path).from;
+    const nodeRange = beforeDocument.nodeRange(path);
+    let nodeWasRemoved = false;
+
+    getInternalDocumentRootChange(change, root)?.iterChangedRanges(
+      (from, to) => {
+        if (from <= nodeRange.from && to >= nodeRange.to) {
+          nodeWasRemoved = true;
+        }
+      }
+    );
+    if (options.deletion === "drop" && nodeWasRemoved) return null;
+
+    const association = options.association === "backward" ? -1 : 1;
+    const position = nodeRange.from;
     const mapped = mapInternalDocumentChangePosition(
       change,
       root,
       position,
       association,
-      options.deletion === 'drop' ? 'around' : undefined
+      options.deletion === "drop" ? "around" : undefined
     );
     const next =
       mapped == null ? null : afterDocument.nodeStartingAt(mapped)?.path;
@@ -458,14 +546,14 @@ const createMapContext = (
     return next ? Object.freeze([...next]) : null;
   };
 
-  const mapRange: EditorSelectionMapContext['mapRange'] = (
+  const mapRange: EditorSelectionMapContext["mapRange"] = (
     range,
     options: RangeMappingOptions = {}
   ) => {
     const targetRoot = pointRoot(range.anchor, root);
 
     if (pointRoot(range.focus, targetRoot) !== targetRoot) {
-      throw new Error('An editor selection range cannot cross document roots.');
+      throw new Error("An editor selection range cannot cross document roots.");
     }
 
     const beforeDocument = DocumentIndex.fromValue(
@@ -475,19 +563,19 @@ const createMapContext = (
     const focusPosition = beforeDocument.positionAt(range.focus);
     const associations = getRangeEndpointAssociations(
       anchorPosition === focusPosition
-        ? 'collapsed'
+        ? "collapsed"
         : anchorPosition < focusPosition
-          ? 'forward'
-          : 'backward',
+        ? "forward"
+        : "backward",
       options.association
     );
     const anchor = mapPoint(range.anchor, {
-      association: associations[0] === -1 ? 'backward' : 'forward',
+      association: associations[0] === -1 ? "backward" : "forward",
       deletion: options.deletion,
       preferPositionMapping: options.preferPositionMapping,
     });
     const focus = mapPoint(range.focus, {
-      association: associations[1] === -1 ? 'backward' : 'forward',
+      association: associations[1] === -1 ? "backward" : "forward",
       deletion: options.deletion,
       preferPositionMapping: options.preferPositionMapping,
     });
@@ -507,102 +595,116 @@ const createMapContext = (
 
 export const getSelectionRanges = (
   editor: Editor,
-  selection: Selection
+  selection: Selection,
+  documentValue: EditorDocumentValue = editor.read.value()
 ): readonly Range[] => {
   if (!selection) return [];
 
-  const spec = getSelectionSpec(editor, selection);
-  const ranges = spec.ranges?.(selection) ?? [selection];
+  if (SelectionApi.isNode(selection)) {
+    const root = SelectionApi.root(selection) ?? "main";
+    const includeRoot = selection.root !== undefined;
+    const document = DocumentIndex.fromValue(rootValue(documentValue, root));
 
-  return Object.freeze(ranges.map((range) => Object.freeze({ ...range })));
+    return Object.freeze(
+      selection.paths.map((path) => {
+        const { from, to } = document.nodeRange(path);
+        const anchor = document.pointAt(from, 1);
+        const focus = document.pointAt(to, -1);
+
+        if (!anchor || !focus) {
+          throw new Error(
+            `Node selection path [${path}] has no selectable document range.`
+          );
+        }
+
+        return projectSelectionRange({
+          anchor: publicPoint(anchor, root, includeRoot),
+          focus: publicPoint(focus, root, includeRoot),
+        });
+      })
+    );
+  }
+
+  return Object.freeze([projectSelectionRange(selection)]);
 };
 
-export const getSelectionReplacementRange = (
+export const getSelectionRange = (
   editor: Editor,
-  selection: Selection
+  selection: Selection,
+  documentValue: EditorDocumentValue = editor.read.value()
 ): Range | null => {
   if (!selection) return null;
 
-  return (
-    getSelectionSpec(editor, selection).replacementRange?.(selection) ??
-    selection
+  if (RangeApi.isRange(selection)) {
+    return projectSelectionRange(selection);
+  }
+
+  const ranges = getSelectionRanges(editor, selection, documentValue);
+  const anchorIndex = selection.paths.findIndex((path) =>
+    PathApi.equals(path, selection.anchorPath)
   );
+  const focusIndex = selection.paths.findIndex((path) =>
+    PathApi.equals(path, selection.focusPath)
+  );
+  const anchorRange = ranges[anchorIndex];
+  const focusRange = ranges[focusIndex];
+
+  if (!anchorRange || !focusRange) return null;
+
+  const backward =
+    PathApi.compare(selection.anchorPath, selection.focusPath) > 0;
+
+  return projectSelectionRange({
+    anchor: backward ? anchorRange.focus : anchorRange.anchor,
+    focus: backward ? focusRange.anchor : focusRange.focus,
+  });
 };
 
-export const getSelectionPrimaryRange = (
+export const getSelectionDOMRange = (
   editor: Editor,
   selection: Selection
 ): Range | null => {
   if (!selection) return null;
   if (SelectionApi.isNode(selection)) return null;
 
-  const { primaryRange } = getSelectionSpec(editor, selection);
-
-  return primaryRange ? primaryRange(selection) : selection;
-};
-
-export const getSelectionSpecMarks = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: Editor,
-  selection: Selection,
-  state: EditorStateView<V, TExtensions>
-): EditorMarks<V> | null | undefined => {
-  if (!selection) return undefined;
-
-  return getSelectionSpec(editor, selection).marks?.(selection, state) as
-    | EditorMarks<V>
-    | null
-    | undefined;
-};
-
-export const getSelectionSpecSlice = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: Editor,
-  selection: Selection,
-  state: EditorStateView<V, TExtensions>
-): ContentSlice<V> | undefined => {
-  if (!selection) return undefined;
-
-  return getSelectionSpec(editor, selection).slice?.(selection, state) as
-    | ContentSlice<V>
-    | undefined;
+  return projectSelectionRange(selection);
 };
 
 export const assertSelectionSupported = (
   editor: Editor,
-  selection: Selection,
+  selection: unknown,
   documentValue: EditorDocumentValue = editor.read.value(),
-  fallbackRoot = 'main'
+  fallbackRoot = "main"
 ) => {
   if (selection === null) return;
-  assertEditorJsonValue(selection, 'editor selection');
-  if (!SelectionApi.isSelection(selection)) {
-    throw new Error('Invalid editor selection.');
-  }
-  const { kind } = selection;
-
-  if (kind !== 'text' && Object.hasOwn(selection, 'marks')) {
+  assertEditorJsonValue(selection, "editor selection");
+  if (
+    isRecord(selection) &&
+    selection.kind !== "text" &&
+    Object.hasOwn(selection, "marks")
+  ) {
     throw new Error(
-      'Only collapsed text selections can carry insertion marks.'
+      "Only collapsed text selections can carry insertion marks."
     );
   }
-
-  const spec = getSelectionSpec(editor, selection);
-
-  if (kind === 'text' || kind === 'node') {
-    assertBuiltInSelection(selection);
-  } else if (!spec.validate?.(selection)) {
-    throw new Error(`Invalid editor selection "${kind}" value.`);
+  if (!SelectionApi.isSelection(selection)) {
+    if (
+      isRecord(selection) &&
+      (selection.kind === "text" || selection.kind === "node")
+    ) {
+      assertBuiltInSelection(selection as SelectionValue);
+    }
+    if (isRecord(selection) && typeof selection.kind === "string") {
+      throw new Error(`Unsupported editor selection kind "${selection.kind}".`);
+    }
+    throw new Error("Invalid editor selection.");
   }
+  assertBuiltInSelection(selection);
 
-  const root = selectionRoot(selection, fallbackRoot);
+  const root = SelectionApi.root(selection) ?? fallbackRoot;
 
   const jsonDocumentValue = documentValue as JsonEditorValue;
-  const ranges = [selection, ...getSelectionRanges(editor, selection)];
+  const ranges = getSelectionRanges(editor, selection, documentValue);
 
   for (const range of ranges) {
     if (!RangeApi.isRange(range)) {
@@ -613,7 +715,7 @@ export const assertSelectionSupported = (
     const rangeRoot = pointRoot(range.anchor, root);
 
     if (rangeRoot !== pointRoot(range.focus, rangeRoot)) {
-      throw new Error('An editor selection range cannot cross document roots.');
+      throw new Error("An editor selection range cannot cross document roots.");
     }
 
     try {
@@ -625,7 +727,9 @@ export const assertSelectionSupported = (
       document.positionAt(range.focus);
     } catch {
       throw new Error(
-        `Editor selection "${selection.kind}" range ${JSON.stringify(range)} points outside document root "${rangeRoot}".`
+        `Editor selection "${selection.kind}" range ${JSON.stringify(
+          range
+        )} points outside document root "${rangeRoot}".`
       );
     }
   }
@@ -641,16 +745,14 @@ export const assertSelectionSupported = (
   }
 
   if (SelectionApi.isNode(selection)) {
-    const nodeRoot = pointRoot(selection.anchor, root);
-    const node = rawNodeAt(
-      rootValue(jsonDocumentValue, nodeRoot),
-      selection.path
-    );
+    const nodeRoot = selection.root ?? root;
 
-    if (!node) {
-      throw new Error(
-        `Node selection path points outside document root "${nodeRoot}".`
-      );
+    for (const path of selection.paths) {
+      if (!rawNodeAt(rootValue(jsonDocumentValue, nodeRoot), path)) {
+        throw new Error(
+          `Node selection path [${path}] points outside document root "${nodeRoot}".`
+        );
+      }
     }
   }
 };
@@ -672,28 +774,72 @@ export const isValidEditorSelection = (
 };
 
 export const mapSelectionWithContext = (
-  editor: Editor,
   selection: SelectionValue,
   context: EditorSelectionMapContext,
-  options: RangeMappingOptions = {},
-  registry?: ExtensionRegistry
+  options: RangeMappingOptions = {}
 ): Selection => {
-  const spec = getSelectionSpec(editor, selection, registry);
+  if (SelectionApi.isNode(selection)) {
+    const mappedEntries = selection.paths.map((path) => {
+      const mapped = context.mapPath(path, {
+        association:
+          options.association === "backward" ? "backward" : "forward",
+        deletion: "drop",
+      });
 
-  if (spec.map) return spec.map(selection, context);
+      return { mapped, source: path };
+    });
+    const paths = mappedEntries.flatMap(({ mapped }) =>
+      mapped ? [mapped] : []
+    );
+    const first = paths[0];
+
+    if (!first) return null;
+
+    const rootOptions =
+      context.root === undefined ? ({} as const) : { root: context.root };
+    const canonical = SelectionApi.nodes(
+      [first, ...paths.slice(1)],
+      rootOptions
+    );
+    const backward =
+      PathApi.compare(selection.anchorPath, selection.focusPath) > 0;
+    const firstPath = canonical.paths[0];
+    const lastPath = canonical.paths.at(-1) ?? firstPath;
+    const resolveEndpoint = (source: Path, fallback: Path) => {
+      const mapped = mappedEntries.find(({ source: candidate }) =>
+        PathApi.equals(candidate, source)
+      )?.mapped;
+
+      if (!mapped) return fallback;
+
+      return (
+        canonical.paths.find(
+          (path) =>
+            PathApi.equals(path, mapped) || PathApi.isAncestor(path, mapped)
+        ) ?? fallback
+      );
+    };
+    const anchorPath = resolveEndpoint(
+      selection.anchorPath,
+      backward ? lastPath : firstPath
+    );
+    const focusPath = resolveEndpoint(
+      selection.focusPath,
+      backward ? firstPath : lastPath
+    );
+
+    return Object.freeze(
+      SelectionApi.nodes(canonical.paths, {
+        anchorPath,
+        focusPath,
+        ...rootOptions,
+      })
+    );
+  }
 
   const range = context.mapRange(selection, options);
 
   if (!range) return null;
-
-  if (SelectionApi.isNode(selection)) {
-    const path = context.mapPath(selection.path, {
-      association: options.association === 'backward' ? 'backward' : 'forward',
-      deletion: options.deletion,
-    });
-
-    return path ? Object.freeze({ ...selection, ...range, path }) : null;
-  }
 
   if (
     SelectionApi.isText(selection) &&
@@ -726,7 +872,7 @@ export const mapSelectionThroughChange = (
 ): Selection => {
   if (!selection || change.empty) return selection;
 
-  const root = selectionRoot(selection, fallbackRoot);
+  const root = SelectionApi.root(selection) ?? fallbackRoot;
   const context = createMapContext(
     editor,
     change,
@@ -736,22 +882,30 @@ export const mapSelectionThroughChange = (
     options.runtimeIndexes
   );
 
-  const rangeRoot = pointRoot(selection.anchor, root);
+  if (SelectionApi.isNode(selection)) {
+    if (
+      selection.paths.some((path) => !rawNodeAt(rootValue(before, root), path))
+    ) {
+      return null;
+    }
+  } else if (RangeApi.isRange(selection)) {
+    const rangeRoot = pointRoot(selection.anchor, root);
 
-  if (pointRoot(selection.focus, rangeRoot) !== rangeRoot) {
-    throw new Error('An editor selection range cannot cross document roots.');
+    if (pointRoot(selection.focus, rangeRoot) !== rangeRoot) {
+      throw new Error("An editor selection range cannot cross document roots.");
+    }
+
+    try {
+      const document = DocumentIndex.fromValue(rootValue(before, rangeRoot));
+
+      document.positionAt(selection.anchor);
+      document.positionAt(selection.focus);
+    } catch {
+      return null;
+    }
   }
 
-  try {
-    const document = DocumentIndex.fromValue(rootValue(before, rangeRoot));
-
-    document.positionAt(selection.anchor);
-    document.positionAt(selection.focus);
-  } catch {
-    return null;
-  }
-
-  const mapped = mapSelectionWithContext(editor, selection, context, options);
+  const mapped = mapSelectionWithContext(selection, context, options);
 
   if (mapped) {
     assertSelectionSupported(editor, mapped, after, root);

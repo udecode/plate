@@ -7,6 +7,7 @@ import type { EditorStaticApi } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import { unsetNodes } from '../transforms-node/unset-nodes';
 import { node } from './node';
 
@@ -14,9 +15,7 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget();
 
-    if (!selection || !RangeApi.isRange(selection)) {
-      return;
-    }
+    if (!selection) return;
 
     const match = (innerNode: Node, path: Path) => {
       if (!NodeApi.isText(innerNode)) {
@@ -32,6 +31,18 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
         getEditorSchema(editor).isMarkableVoid(parentNode)
       );
     };
+    if (SelectionApi.isNode(selection)) {
+      for (const range of editor.read.selection.ranges()) {
+        unsetNodes(editor, key, {
+          at: range,
+          match,
+          split: true,
+          voids: true,
+        });
+      }
+      return;
+    }
+    if (!RangeApi.isRange(selection)) return;
     const expandedSelection = RangeApi.isExpanded(selection);
     let markAcceptingVoidSelected = false;
     let selectedPath: Path | undefined;

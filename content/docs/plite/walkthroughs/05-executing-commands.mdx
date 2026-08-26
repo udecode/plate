@@ -108,11 +108,7 @@ const markdownBlocks = defineExtension("markdown-blocks", {
         selection &&
         RangeApi.isCollapsed(selection)
       ) {
-        const blockEntry = state.nodes.above({
-          at: selection,
-          match: (node) =>
-            ElementApi.isElement(node) && state.nodes.isBlock(node),
-        });
+        const blockEntry = state.nodes.block({ at: selection });
 
         if (blockEntry) {
           const [block, blockPath] = blockEntry;
@@ -124,14 +120,7 @@ const markdownBlocks = defineExtension("markdown-blocks", {
             PointApi.equals(selection.anchor, start)
           ) {
             return state.transaction((tx) => {
-              tx.nodes.set(
-                { type: "paragraph" },
-                {
-                  at: blockPath,
-                  match: (node) =>
-                    ElementApi.isElement(node) && tx.nodes.isBlock(node),
-                }
-              );
+              tx.blocks.set({ type: "paragraph" }, { at: blockPath });
             });
           }
         }
@@ -143,11 +132,7 @@ const markdownBlocks = defineExtension("markdown-blocks", {
       const selection = state.selection();
 
       if (selection && RangeApi.isCollapsed(selection)) {
-        const blockEntry = state.nodes.above({
-          at: selection,
-          match: (node) =>
-            ElementApi.isElement(node) && state.nodes.isBlock(node),
-        });
+        const blockEntry = state.nodes.block({ at: selection });
 
         if (blockEntry) {
           const [block, blockPath] = blockEntry;
@@ -158,14 +143,7 @@ const markdownBlocks = defineExtension("markdown-blocks", {
             if (PointApi.equals(selection.anchor, start)) {
               return next.after(
                 state.transaction((tx) => {
-                  tx.nodes.set(
-                    { type: "paragraph" },
-                    {
-                      at: blockPath,
-                      match: (node) =>
-                        ElementApi.isElement(node) && tx.nodes.isBlock(node),
-                    }
-                  );
+                  tx.blocks.set({ type: "paragraph" }, { at: blockPath });
                 })
               );
             }

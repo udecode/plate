@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-audio",
+  "title": "Media Audio",
+  "description": "An audio player component with caption support.",
+  "dependencies": [
+    "@platejs/media"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/caption.json",
+    "https://platejs.org/r/resize-handle.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/media-audio.tsx",
+      "content": "'use client';\n\nimport type { AudioPlugin } from '@platejs/media/react';\nimport type { PlateElementProps } from 'platejs/react';\nimport { PlateElement, useElementSelected, usePath } from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nimport { Caption, useCaptionFocused } from './caption';\n\nexport function AudioElement(props: PlateElementProps<typeof AudioPlugin>) {\n  const path = usePath();\n  const selected = useElementSelected({ mode: 'node' });\n  const textAlign =\n    'textAlign' in props.element &&\n    (props.element.textAlign === 'left' ||\n      props.element.textAlign === 'right' ||\n      props.element.textAlign === 'center')\n      ? props.element.textAlign\n      : 'center';\n  const captionFocused = useCaptionFocused(path);\n\n  return (\n    <PlateElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default [&>figcaption]:min-h-20\">\n        <div className={cn('h-16 rounded-sm')} contentEditable={false}>\n          {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n        <Caption\n          active={selected || captionFocused}\n          align={textAlign}\n          element={props.element}\n          slots={props.slots}\n        >\n          {props.children}\n        </Caption>\n      </figure>\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/media-audio.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-audio"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  },
+  "type": "registry:component"
+}

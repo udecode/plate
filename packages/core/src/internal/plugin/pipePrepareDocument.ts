@@ -11,6 +11,7 @@ import {
 } from '@platejs/plite';
 import {
   failInvariant,
+  getSelection as getEditorSelection,
   MAIN_ROOT_KEY,
   mapSelectionThroughChange,
   runTrustedUpdate,
@@ -186,7 +187,7 @@ export const pipePrepareDocument = <
     tx.value.replace({
       document: editor.read.value(),
       schema: editor.read.schema.identity(),
-      selection: editor.read.selection(),
+      selection: getEditorSelection(editor),
     });
   });
 };

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "block-placeholder",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/block-placeholder.tsx",
+      "content": "'use client';\n\nimport { BlockPlaceholderPlugin } from 'platejs/react';\n\nexport const BlockPlaceholderKit = [\n  BlockPlaceholderPlugin.configure({\n    initialState: {\n      className:\n        'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',\n      placeholders: {\n        paragraph: 'Type something...',\n      },\n      query: ({ path }) => path.length === 1,\n    },\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/block-placeholder.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

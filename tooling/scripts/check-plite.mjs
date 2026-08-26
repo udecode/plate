@@ -19,57 +19,67 @@ const leadingDotSlashPattern = /^\.\//;
 
 export const repoRoot = path.resolve(scriptRoot, '../..');
 
-export const plitePackages = Object.freeze([
+const plitePackageDefinitions = Object.freeze([
   Object.freeze({
-    dependencies: Object.freeze([]),
     name: '@platejs/plite',
     root: 'packages/plite',
   }),
   Object.freeze({
-    dependencies: Object.freeze(['@platejs/plite']),
     name: '@platejs/plite-dom',
     root: 'packages/plite-dom',
   }),
   Object.freeze({
-    dependencies: Object.freeze(['@platejs/plite']),
     name: '@platejs/plite-history',
     root: 'packages/plite-history',
   }),
   Object.freeze({
-    dependencies: Object.freeze(['@platejs/plite']),
     name: '@platejs/plite-hyperscript',
     root: 'packages/plite-hyperscript',
   }),
   Object.freeze({
-    dependencies: Object.freeze([
-      '@platejs/plite',
-      '@platejs/plite-dom',
-      '@platejs/plite-history',
-      '@platejs/plite-hyperscript',
-    ]),
     name: '@platejs/plite-react',
     root: 'packages/plite-react',
   }),
   Object.freeze({
-    dependencies: Object.freeze(['@platejs/plite', '@platejs/plite-react']),
     name: '@platejs/plite-layout',
     root: 'packages/plite-layout',
   }),
   Object.freeze({
-    dependencies: Object.freeze([]),
     name: '@platejs/browser',
     root: 'packages/browser',
   }),
   Object.freeze({
-    dependencies: Object.freeze([
-      '@platejs/plite',
-      '@platejs/plite-history',
-      '@platejs/plite-react',
-    ]),
     name: '@platejs/yjs',
     root: 'packages/yjs',
   }),
 ]);
+
+const plitePackageNames = new Set(
+  plitePackageDefinitions.map(({ name }) => name)
+);
+
+export const plitePackages = Object.freeze(
+  plitePackageDefinitions.map((definition) => {
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.join(repoRoot, definition.root, 'package.json'),
+        'utf-8'
+      )
+    );
+    const dependencies = Object.keys({
+      ...manifest.dependencies,
+      ...manifest.devDependencies,
+      ...manifest.peerDependencies,
+    })
+      .filter((name) => plitePackageNames.has(name))
+      .sort(compareStrings);
+
+    return Object.freeze({
+      ...definition,
+      dependencies: Object.freeze(dependencies),
+    });
+  })
+);
 
 export const plateAdopterPackages = Object.freeze(
   [
@@ -108,7 +118,6 @@ export const plateAdopterPackages = Object.freeze(
     ['mention', '@platejs/mention'],
     ['plate', 'platejs'],
     ['resizable', '@platejs/resizable'],
-    ['selection', '@platejs/selection'],
     ['slash-command', '@platejs/slash-command'],
     ['suggestion', '@platejs/suggestion'],
     ['tabbable', '@platejs/tabbable'],

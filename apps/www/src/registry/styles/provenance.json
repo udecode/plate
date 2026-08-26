@@ -1,0 +1,14 @@
+{
+  "commit": "ee628d75dea87325735fafa7c54f5d7d7edb8774",
+  "files": {
+    "style-nova.css": "5d5751579c015b61e77cf0822862a43ac79f3e6fed236a17624be8e6d1ebea1d",
+    "style-vega.css": "7b0dc3a9d2245ab6ce3d17653fa74a07f0ce2541e480bef36d2600fe38f1281b",
+    "style-maia.css": "0a1e5a658ea601ee7a9427b91ea567c6fc915a385d7466bea19f42ec726added",
+    "style-lyra.css": "7d75035683a22e61f5dace0b115e97f9e9b643500c1f4bfe2b31ad4dcdaa0c4a",
+    "style-mira.css": "025f54a060adeb60489d17eb3eb935e1118ee091ba5c618d5463eb27f2b1d003",
+    "style-luma.css": "a698210162ca2d3385142a47334f22985831b1e91716c2d3175828d928a59707",
+    "style-sera.css": "eda71a39ba86625eb81b25f2e5824579952ced0cf0451be16be3f4dd70bf9876",
+    "style-rhea.css": "bcb242a7845316f93b0562345dd5c32a46a2988b506a8e8d7df1c836a1637b49"
+  },
+  "source": "shadcn-ui/ui/apps/v4/registry/styles"
+}

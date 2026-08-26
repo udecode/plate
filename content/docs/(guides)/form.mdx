@@ -3,7 +3,7 @@ title: Form
 description: How to integrate Plate editor with react-hook-form.
 ---
 
-While Plate is typically used as an **uncontrolled** input, there are valid scenarios where you want to integrate the editor within a form library like [**react-hook-form**](https://www.react-hook-form.com) or the [**Form**](https://ui.shadcn.com/docs/components/form) component from **shadcn/ui**. This guide walks through best practices and common pitfalls.
+While Plate is typically used as an **uncontrolled** input, there are valid scenarios where you want to integrate the editor with [**react-hook-form**](https://www.react-hook-form.com) and the [**Field**](https://ui.shadcn.com/docs/components/field) family from **shadcn/ui**. This guide walks through best practices and common pitfalls.
 
 ## When to Integrate Plate with a Form
 
@@ -81,20 +81,17 @@ export function RHFEditorForm() {
 
 If you expect large documents or fast typing, consider debouncing or switching to an `onBlur` approach to reduce form updates.
 
-### shadcn/ui Form Example
+### shadcn/ui Field Example
 
-[shadcn/ui](https://ui.shadcn.com/docs/components/form) provides a `<Form>` that integrates with react-hook-form. We'll use `<FormField>` to handle the field logic:
+[shadcn/ui](https://ui.shadcn.com/docs/components/field) provides field layout and validation components. Use React Hook Form's `<Controller>` to connect Plate to that UI:
 
 ```tsx
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Controller, useForm } from "react-hook-form";
 import type { EditorDocumentValue } from "platejs";
 import { Plate, PlateContent, usePlateEditor } from "platejs/react";
 
@@ -108,7 +105,7 @@ export function EditorForm() {
     defaultValues: {
       content: {
         children: [
-          { type: "paragraph", children: [{ text: "Hello from shadcn/ui Form!" }] },
+          { type: "paragraph", children: [{ text: "Hello from shadcn/ui Field!" }] },
         ],
       },
     },
@@ -124,38 +121,34 @@ export function EditorForm() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Controller
           control={form.control}
           name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <Plate
-                  editor={editor}
-                  onValueChange={({ value }) => {
-                    // Sync to the form
-                    field.onChange(value);
-                  }}
-                >
-                  <PlateContent placeholder="Type..." />
-                </Plate>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Content</FieldLabel>
+              <Plate
+                editor={editor}
+                onValueChange={({ value }) => field.onChange(value)}
+              >
+                <PlateContent
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Type..."
+                />
+              </Plate>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
           )}
         />
 
         <button type="submit">Submit</button>
-      </form>
-    </Form>
+    </form>
   );
 }
 ```
 
-This approach makes your editor content behave like any other field in the shadcn/ui form.
+This approach makes editor content behave like any other React Hook Form field while shadcn/ui owns layout and validation styling.
 
 ## Approach 2: Sync on Blur (or Another Trigger)
 
@@ -254,28 +247,27 @@ function MyForm() {
 
 ## Migrating from a shadcn Textarea to Plate
 
-If you have a standard [TextareaForm from shadcn/ui docs](https://ui.shadcn.com/docs/components/textarea#form) and want to replace `<Textarea>` with a Plate editor, you can follow these steps:
+If you have a standard [Field example from shadcn/ui docs](https://ui.shadcn.com/docs/components/field) and want to replace `<Textarea>` with a Plate editor, follow these steps:
 
 ```tsx
 // 1. Original code (TextareaForm)
-<FormField
+<Controller
   control={form.control}
   name="bio"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Bio</FormLabel>
-      <FormControl>
-        <Textarea
-          placeholder="Tell us a bit about yourself"
-          className="resize-none"
-          {...field}
-        />
-      </FormControl>
-      <FormDescription>
+  render={({ field, fieldState }) => (
+    <Field data-invalid={fieldState.invalid}>
+      <FieldLabel>Bio</FieldLabel>
+      <Textarea
+        aria-invalid={fieldState.invalid}
+        placeholder="Tell us a bit about yourself"
+        className="resize-none"
+        {...field}
+      />
+      <FieldDescription>
         You can <span>@mention</span> other users and organizations.
-      </FormDescription>
-      <FormMessage />
-    </FormItem>
+      </FieldDescription>
+      <FieldError errors={[fieldState.error]} />
+    </Field>
   )}
 />
 ```
@@ -296,24 +288,23 @@ import { Plate, PlateContent, usePlateEditor } from "platejs/react";
  *
  * Usage:
  *
- * <FormField
+ * <Controller
  *   control={form.control}
  *   name="bio"
- *   render={({ field }) => (
- *     <FormItem>
- *       <FormLabel>Bio</FormLabel>
- *       <FormControl>
- *         <EditorField
- *           initialValue={field.value}
- *           onBlur={field.onBlur}
- *           onChange={field.onChange}
- *           placeholder="Tell us a bit about yourself"
- *           ref={field.ref}
- *         />
- *       </FormControl>
- *       <FormDescription>Some helpful description...</FormDescription>
- *       <FormMessage />
- *     </FormItem>
+ *   render={({ field, fieldState }) => (
+ *     <Field data-invalid={fieldState.invalid}>
+ *       <FieldLabel>Bio</FieldLabel>
+ *       <EditorField
+ *         aria-invalid={fieldState.invalid}
+ *         initialValue={field.value}
+ *         onBlur={field.onBlur}
+ *         onChange={field.onChange}
+ *         placeholder="Tell us a bit about yourself"
+ *         ref={field.ref}
+ *       />
+ *       <FieldDescription>Some helpful description...</FieldDescription>
+ *       <FieldError errors={[fieldState.error]} />
+ *     </Field>
  *   )}
  * />
  */
@@ -362,19 +353,16 @@ export function EditorField({
 "use client";
 
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { NodeApi, type EditorDocumentValue } from "platejs";
 
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { EditorField } from "./EditorField"; // Import the component above
 
 // 1. Define our validation schema with zod
@@ -409,35 +397,32 @@ export function EditorForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Controller
           control={form.control}
           name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <EditorField
-                  initialValue={field.value}
-                  onBlur={field.onBlur}
-                  onChange={field.onChange}
-                  placeholder="Tell us a bit about yourself..."
-                  ref={field.ref}
-                />
-              </FormControl>
-              <FormDescription>
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Bio</FieldLabel>
+              <EditorField
+                aria-invalid={fieldState.invalid}
+                initialValue={field.value}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                placeholder="Tell us a bit about yourself..."
+                ref={field.ref}
+              />
+              <FieldDescription>
                 You can <span>@mention</span> other users and organizations.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
+              </FieldDescription>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
           )}
         />
         <button type="submit" className="py-2 px-4 bg-primary text-white">
           Submit
         </button>
-      </form>
-    </Form>
+    </form>
   );
 }
 ```

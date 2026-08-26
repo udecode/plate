@@ -23,6 +23,7 @@ import {
   getCompiledEditorSchema,
   getCompiledEditorSchemaFromApi,
   getCompiledSchemaPropertyId,
+  getSelection as getEditorSelection,
   getEditorExtensionContributions,
   getEditorStateView,
   getExtensionRegistry,
@@ -262,17 +263,40 @@ const createPlainTextInlineSlice = <V extends Value>(
   );
 };
 
-const createDefaultPlainTextHostCodec = <V extends Value>() =>
+const createDefaultPlainTextHostCodec = <V extends Value>(
+  editor?: Editor<V, any>
+) =>
   defineHostCodec<V>({
     format: 'text/plain',
     key: 'plite-plain-text',
     parse: ({ data, state }) => {
       const selection = state.selection();
-      const at = selection
-        ? RangeApi.isRange(selection)
-          ? selection
-          : null
-        : state.points.end([]);
+      const semanticSelection = editor ? getEditorSelection(editor) : null;
+
+      if (SelectionApi.isNode(semanticSelection)) {
+        const defaultChild = state.schema.createDefaultRootChild(
+          semanticSelection.root
+        );
+
+        if (!defaultChild || !NodeApi.isElement(defaultChild)) return null;
+
+        const content = createPlainTextFallbackBlocks(
+          state,
+          defaultChild.type,
+          data.split(NEWLINE_SPLIT_RE),
+          null
+        );
+
+        if (!content) return null;
+
+        Object.freeze(content);
+
+        return createDetachedContentSlice<V>(content, 0, 0, {
+          canonicalFor: state.schema,
+        });
+      }
+
+      const at = selection ?? state.points.end([]);
 
       if (!at) return null;
 
@@ -295,12 +319,14 @@ const createDefaultPlainTextHostCodec = <V extends Value>() =>
 
       const activeMarks = (() => {
         if (
-          !SelectionApi.isText(selection) ||
-          !RangeApi.isCollapsed(selection)
+          !SelectionApi.isText(semanticSelection) ||
+          !RangeApi.isCollapsed(semanticSelection)
         ) {
           return null;
         }
-        if (selection.marks !== undefined) return selection.marks;
+        if (semanticSelection.marks !== undefined) {
+          return semanticSelection.marks;
+        }
 
         const target = state.nodes.get(start.path)?.[0];
 
@@ -310,9 +336,7 @@ const createDefaultPlainTextHostCodec = <V extends Value>() =>
       })();
       const lines = data.split(NEWLINE_SPLIT_RE);
       const inlineSlice =
-        lines.length === 1 &&
-        SelectionApi.isText(selection) &&
-        RangeApi.isCollapsed(selection)
+        lines.length === 1 && !!selection && state.selection.isCollapsed()
           ? createPlainTextInlineSlice(
               state,
               start,
@@ -341,15 +365,22 @@ const createDefaultPlainTextHostCodec = <V extends Value>() =>
     },
   });
 
-const createDefaultHostCodecRegistration = <V extends Value>() =>
+const createDefaultHostCodecRegistration = <V extends Value>(
+  editor?: Editor<V, any>
+) =>
   Object.freeze({
-    codec: createDefaultPlainTextHostCodec<V>(),
+    codec: createDefaultPlainTextHostCodec<V>(editor),
     owner: 'plite-dom',
   });
 
 const withDefaultHostCodec = <V extends Value>(
-  registrations: ReadonlyArray<HostCodecRegistration<V>>
-) => Object.freeze([createDefaultHostCodecRegistration<V>(), ...registrations]);
+  registrations: ReadonlyArray<HostCodecRegistration<V>>,
+  editor?: Editor<V, any>
+) =>
+  Object.freeze([
+    createDefaultHostCodecRegistration<V>(editor),
+    ...registrations,
+  ]);
 
 type HostCodecDirection = 'parse' | 'serialize';
 
@@ -581,7 +612,8 @@ const getHostCodecs = <V extends Value>(editor: Editor<V, any>) => {
   const registered = withDefaultHostCodec(
     getEditorExtensionContributions(editor, HOST_CODECS) as ReadonlyArray<
       HostCodecRegistration<V>
-    >
+    >,
+    editor
   );
   const compiled = compileHostCodecs(
     registered,

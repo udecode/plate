@@ -1,6 +1,7 @@
 import { defineExtension, type Descendant, type Editor } from '@platejs/plite';
 import {
   getCompiledEditorSchemaFromApi,
+  getSelection as getEditorSelection,
   getEditorRuntimeOwner,
 } from '@platejs/plite/internal';
 
@@ -160,7 +161,7 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
                       ...before.roots,
                       [root]: children,
                     },
-                    selection: state.selection(),
+                    selection: getEditorSelection(owner),
                   });
                 });
                 const value = transaction.changes.apply(before);

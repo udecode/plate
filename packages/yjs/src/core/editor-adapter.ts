@@ -4,20 +4,22 @@ import type {
   Editor,
   EditorDocumentValue,
   EditorEffect,
+  EditorSelection,
   EditorUpdatePolicy,
   Element,
   JsonEditorValue,
+  Selection,
   Range,
   TextSelection,
 } from '@platejs/plite';
-import { NodeApi, SelectionApi } from '@platejs/plite';
+import { NodeApi, RangeApi, SelectionApi } from '@platejs/plite';
 import { runTrustedUpdate, toInternalRoot } from '@platejs/plite/internal';
 
 export type YjsEditorAdapter = {
   readonly applyRemote: (input: {
     readonly change?: DocumentChange;
     readonly effects: readonly EditorEffect[];
-    readonly selection?: Range | null;
+    readonly selection?: Range | Selection;
   }) => void;
   readonly canonicalize: (
     root: string,
@@ -47,10 +49,32 @@ const SELECTION_ROOT_TYPE = 'plite-yjs-selection-root';
 
 const sanitizeImportSelection = (
   children: readonly Descendant[],
-  selection: Range | null
-): TextSelection | null => {
+  selection: Range | Selection
+): EditorSelection | null => {
   if (selection === null) {
     return null;
+  }
+  if (SelectionApi.isNode(selection)) {
+    const root: Element = {
+      children,
+      type: SELECTION_ROOT_TYPE,
+    };
+
+    return selection.paths.every((path) => NodeApi.getIf(root, path))
+      ? SelectionApi.nodes(
+          selection.paths,
+          selection.root === undefined
+            ? {
+                anchorPath: selection.anchorPath,
+                focusPath: selection.focusPath,
+              }
+            : {
+                anchorPath: selection.anchorPath,
+                focusPath: selection.focusPath,
+                root: selection.root,
+              }
+        )
+      : null;
   }
   if ('kind' in selection && selection.kind !== 'text') return null;
 
@@ -113,9 +137,11 @@ export const createYjsEditorAdapter = (
     const currentValue = editor.read.value();
     const nextValue = change ? change.apply(currentValue) : currentValue;
     const editorRoot =
-      selection === undefined || selection === null
+      selection === undefined ||
+      selection === null ||
+      (!SelectionApi.isNode(selection) && !RangeApi.isRange(selection))
         ? toInternalRoot(editor.read.view.root())
-        : toInternalRoot(selection.anchor.root ?? selection.focus.root);
+        : toInternalRoot(SelectionApi.root(selection));
     const nextChildren =
       editorRoot === 'main'
         ? nextValue.children

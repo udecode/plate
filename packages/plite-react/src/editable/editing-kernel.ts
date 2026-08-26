@@ -2,6 +2,7 @@ import {
   type Range,
   RangeApi,
   type RootKey,
+  type Selection,
   SelectionApi,
 } from '@platejs/plite';
 import { Hotkeys } from '@platejs/plite-dom';
@@ -228,7 +229,7 @@ export type EditableEventFrame = {
   id: number;
   inputIntent: InputIntent | null;
   lifecyclePhase: EditableReactLifecyclePhase;
-  modelSelectionBefore: Range | null;
+  modelSelectionBefore: Selection;
   root: RootKey;
   selectionSource: SelectionSource;
   startedAt: number;
@@ -242,7 +243,7 @@ export type EditableEventFrameInput = {
   focusOwner?: EditableEventTargetOwner;
   inputIntent?: InputIntent | null;
   lifecyclePhase?: EditableReactLifecyclePhase;
-  modelSelectionBefore?: Range | null;
+  modelSelectionBefore?: Selection;
   root?: RootKey;
   selectionSource?: SelectionSource;
   startedAt?: number;
@@ -264,8 +265,8 @@ export type EditableKernelTraceEntry = {
   repair: EditableRepairRequest | null;
   repairPolicy: EditableRepairPolicy;
   selectionChangeOrigin: SelectionChangeOrigin;
-  selectionAfter: Range | null;
-  selectionBefore: Range | null;
+  selectionAfter: Selection;
+  selectionBefore: Selection;
   selectionPolicy: EditableSelectionPolicy;
   selectionSource: SelectionSource;
   stateAfter: EditableKernelState;
@@ -337,7 +338,7 @@ export type EditableKeyDownKernelDecision = {
   internalTarget: boolean;
   nativeAllowed: boolean;
   ownership: EditableOwnership;
-  selectionBefore: Range | null;
+  selectionBefore: Selection;
   selectionPolicy: EditableSelectionPolicy;
   selectionSourceTransition: EditableSelectionSourceTransition | null;
   shouldForceDOMImport: boolean;
@@ -351,7 +352,7 @@ export type EditableBeforeInputKernelDecision = {
   internalTarget: boolean;
   nativeAllowed: boolean;
   ownership: EditableOwnership;
-  selectionBefore: Range | null;
+  selectionBefore: Selection;
   selectionPolicy: EditableSelectionPolicy;
   selectionSourceTransition: EditableSelectionSourceTransition | null;
   stateBefore: EditableKernelState;
@@ -363,7 +364,7 @@ export type EditableClipboardKernelDecision = {
   internalTarget: boolean;
   nativeAllowed: boolean;
   ownership: EditableOwnership;
-  selectionBefore: Range | null;
+  selectionBefore: Selection;
   stateBefore: EditableKernelState;
   targetOwner: EditableEventTargetOwner;
 };
@@ -374,7 +375,7 @@ export type EditableCompositionKernelDecision = {
   nativeAllowed: boolean;
   ownership: EditableOwnership;
   repairPolicy: EditableRepairPolicy;
-  selectionBefore: Range | null;
+  selectionBefore: Selection;
   selectionPolicy: EditableSelectionPolicy;
   stateBefore: EditableKernelState;
   targetOwner: EditableEventTargetOwner;
@@ -385,7 +386,7 @@ export type EditableFocusMouseKernelDecision = {
   internalTarget: boolean;
   nativeAllowed: boolean;
   ownership: EditableOwnership;
-  selectionBefore: Range | null;
+  selectionBefore: Selection;
   stateBefore: EditableKernelState;
   targetOwner: EditableEventTargetOwner;
 };
@@ -395,7 +396,7 @@ export type EditableInputKernelDecision = {
   internalTarget: boolean;
   nativeAllowed: boolean;
   ownership: EditableOwnership;
-  selectionBefore: Range | null;
+  selectionBefore: Selection;
   stateBefore: EditableKernelState;
   targetOwner: EditableEventTargetOwner;
 };
@@ -422,7 +423,7 @@ export type EditableKernelTraceInput = Omit<
   movement?: EditableMovementOwnershipTrace | null;
   repairPolicy?: EditableRepairPolicy;
   selectionChangeOrigin?: SelectionChangeOrigin;
-  selectionAfter?: Range | null;
+  selectionAfter?: Selection;
   selectionPolicy?: EditableSelectionPolicy;
   transition?: EditableKernelTransition;
 };
@@ -697,10 +698,11 @@ const deleteFragmentOrCommand = ({
   unit,
 }: {
   direction: 'backward' | 'forward';
-  selection: Range | null;
+  selection: Range | Selection;
   unit?: 'block' | 'line' | 'word';
 }): EditableCommand =>
-  selection && RangeApi.isExpanded(selection)
+  selection &&
+  (SelectionApi.isNode(selection) || RangeApi.isExpanded(selection))
     ? { direction, kind: 'delete-fragment', selection }
     : { direction, kind: 'delete', unit };
 
@@ -709,11 +711,11 @@ const getBeforeInputDeleteCommand = ({
   selection,
 }: {
   inputType: string;
-  selection: Range | null;
+  selection: Range | Selection;
 }): EditableCommand | null => {
   if (
     selection &&
-    RangeApi.isExpanded(selection) &&
+    (SelectionApi.isNode(selection) || RangeApi.isExpanded(selection)) &&
     inputType.startsWith('delete')
   ) {
     return {
@@ -770,7 +772,7 @@ export const getEditableCommandFromBeforeInputType = ({
 }: {
   data: unknown;
   inputType: string;
-  selection: Range | null;
+  selection: Range | Selection;
 }): EditableCommand | null => {
   if (inputType === 'historyUndo') {
     return { direction: 'undo', kind: 'history' };
@@ -814,7 +816,7 @@ export const getEditableCommandFromBeforeInput = ({
   selection,
 }: {
   event: InputEvent;
-  selection: Range | null;
+  selection: Range | Selection;
 }): EditableCommand | null =>
   getEditableCommandFromBeforeInputType({
     data: getInputEventData(event),
@@ -827,7 +829,7 @@ export const getEditableCommandFromKeyDown = ({
   selection,
 }: {
   event: ReactKeyboardEvent<HTMLDivElement>;
-  selection: Range | null;
+  selection: Range | Selection;
 }): EditableCommand | null => {
   const { nativeEvent } = event;
   const historyDirection = getHistoryDirectionFromNativeEvent(nativeEvent);

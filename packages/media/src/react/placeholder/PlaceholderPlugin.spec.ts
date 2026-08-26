@@ -1,6 +1,7 @@
 import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
+import { SelectionApi } from '@platejs/plite';
 
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { PlaceholderPlugin, UploadErrorCode } from './PlaceholderPlugin';
@@ -121,6 +122,31 @@ describe('PlaceholderPlugin', () => {
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: '' }], type: 'placeholder' },
+    ]);
+  });
+
+  it('inserts after the last exact node selection member', () => {
+    const editor = createPlateEditor({
+      plugins: [PlaceholderPlugin],
+      selection: SelectionApi.nodes([[0], [2]]),
+      initialValue: [
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'middle' }], type: 'paragraph' },
+        { children: [{ text: 'three' }], type: 'paragraph' },
+      ],
+    });
+
+    editor
+      .plugin(PlaceholderPlugin)
+      .update.insertMedia([
+        new File(['image'], 'image.png', { type: 'image/png' }),
+      ]);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'middle' }], type: 'paragraph' },
+      { children: [{ text: 'three' }], type: 'paragraph' },
       { children: [{ text: '' }], type: 'placeholder' },
     ]);
   });

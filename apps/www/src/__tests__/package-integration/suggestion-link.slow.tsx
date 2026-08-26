@@ -1,7 +1,11 @@
 /** @jsx jsxt */
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditorFixture,
+} from '@platejs/test-utils';
 import { type BaseEditor, createBaseEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
@@ -83,7 +87,7 @@ describe('suggestion link integration', () => {
     expect(editor.read.children()[0].children[2]).toEqual(
       output.children[0].children[2]
     );
-    expect(editor.read.selection()).toEqual(output.selection);
+    expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
   });
 
   it('removes an empty link after accepting the last removed character', () => {

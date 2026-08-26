@@ -4,6 +4,7 @@ import type {
   PersistedDocumentInput,
   Value,
 } from '@platejs/plite';
+import { SelectionApi } from '@platejs/plite';
 import { MAIN_ROOT_KEY } from '@platejs/plite/internal';
 
 import { mapDocumentSelection } from '../../internal/plugin/pipePrepareDocument';
@@ -367,7 +368,7 @@ export const migrateDocument = <V extends Value>(
         selection,
         document,
         next,
-        selection.anchor.root ?? selection.focus.root ?? MAIN_ROOT_KEY
+        SelectionApi.root(selection) ?? MAIN_ROOT_KEY
       );
     }
     document = next;

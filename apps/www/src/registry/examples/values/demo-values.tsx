@@ -11,7 +11,7 @@ import { basicBlocksValue } from './basic-blocks-value';
 import { basicMarksValue } from './basic-marks-value';
 import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
-import { blockSelectionValue } from './block-selection-value';
+import { nodeSelectionValue } from './node-selection-value';
 import { codeBlockValue } from './code-block-value';
 import { columnValue } from './column-value';
 import { copilotValue } from './copilot-value';
@@ -58,7 +58,7 @@ const values = {
   'block-menu': blockMenuValue,
   // 'multi-editors': multiEditorsValue,
   'block-placeholder': blockPlaceholderValue,
-  'block-selection': blockSelectionValue,
+  'node-selection': nodeSelectionValue,
   callout: calloutValue,
   'code-block': codeBlockValue,
   column: columnValue,

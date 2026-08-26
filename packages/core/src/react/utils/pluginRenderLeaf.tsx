@@ -34,7 +34,8 @@ const isActiveHardAffinityBoundary = (
   const match = editor.read((state) => {
     if (!state.selection.isCollapsed()) return undefined;
 
-    const focus = state.selection()?.focus;
+    const selection = state.selection();
+    const focus = selection?.focus;
 
     if (!focus) return undefined;
 

@@ -9,15 +9,15 @@ Host Plate's documentation locally to integrate it directly with your project. T
 
 Local documentation provides distinct advantages over external sites:
 
-*   **Version Lock-In:** Keep documentation synchronized with your project's Plate version. Avoid confusion from features or APIs in newer, unadopted Plate releases.
-*   **AI-Ready Development:**
-    *   **Better than `llms.txt`:** While dumping docs into a single text file is common for LLM context, this breaks down with large documentation (exceeding typical 100k token limits). Our structured, local setup lets AI tools access exactly what they need.
-    *   **Direct Access for AI Tools:** Your AI-assisted IDE gets direct access to version-specific documentation, enabling accurate code generation and contextual help with your Plate setup.
-    *   **Structured for AI Tasks:** AI tools can help with tasks like translating docs, creating summaries, or updating documentation between Plate versions.
-*   **Customization & Control:** Modify documentation appearance and structure to match your project needs.
-*   **Easy Updates:** Treat documentation like code - review, update, and version control it with your codebase.
-*   **Fast Access:** Get reliable, quick access to documentation.
-*   **Central Hub:** Keep Plate docs alongside documentation for other libraries in one place.
+- **Version Lock-In:** Keep documentation synchronized with your project's Plate version. Avoid confusion from features or APIs in newer, unadopted Plate releases.
+- **AI-Ready Development:**
+  - **Better than `llms.txt`:** While dumping docs into a single text file is common for LLM context, this breaks down with large documentation (exceeding typical 100k token limits). Our structured, local setup lets AI tools access exactly what they need.
+  - **Direct Access for AI Tools:** Your AI-assisted IDE gets direct access to version-specific documentation, enabling accurate code generation and contextual help with your Plate setup.
+  - **Structured for AI Tasks:** AI tools can help with tasks like translating docs, creating summaries, or updating documentation between Plate versions.
+- **Customization & Control:** Modify documentation appearance and structure to match your project needs.
+- **Easy Updates:** Treat documentation like code - review, update, and version control it with your codebase.
+- **Fast Access:** Get reliable, quick access to documentation.
+- **Central Hub:** Keep Plate docs alongside documentation for other libraries in one place.
 
 ## Setup Guide
 
@@ -38,6 +38,7 @@ pnpm create fumadocs-app
 ```
 
 During setup:
+
 - **Name:** Enter `docs` when prompted
 - **Choose your preferred options** (defaults work well)
 - The wizard will create a `docs` directory with all necessary files
@@ -57,7 +58,7 @@ In your docs directory, create a `components.json` file. You have two options:
 **Option A: Command line**
 
 ```bash
-echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "new-york",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
+echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "base-nova",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
 ```
 
 **Option B: Copy and paste**
@@ -67,7 +68,7 @@ Create a new file called `components.json` in your docs directory with this cont
 ```json
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
+  "style": "base-nova",
   "rsc": true,
   "tsx": true,
   "tailwind": {
@@ -101,11 +102,12 @@ npx shadcn@latest add @plate/fumadocs
   For older Plate versions, raw GitHub URLs are safe only for leaf registry
   items that declare no `registryDependencies`.
 
-  Do not install aggregate items such as `fumadocs.json` or `docs.json` from a
-  raw GitHub tag: their transitive registry dependencies can resolve from the
-  live registry. For full version-pinned docs, generate or serve the registry
-  from the matching Plate checkout so every transitive item comes from the same
-  version.
+Do not install aggregate items such as `fumadocs.json` or `docs.json` from a
+raw GitHub tag: their transitive registry dependencies can resolve from the
+live registry. For full version-pinned docs, generate or serve the registry
+from the matching Plate checkout so every transitive item comes from the same
+version.
+
 </Callout>
 
 #### Run Fumadocs App
@@ -117,6 +119,7 @@ pnpm run dev
 ```
 
 Your documentation site will be available at:
+
 - Plate docs: `http://localhost:3000/docs/plate`
 
 #### Customize
@@ -135,11 +138,13 @@ npx shadcn@latest add @plate/docs
 ```
 
 This will:
+
 - Install MDX documentation files in your project (typically in a `docs/` or similar directory)
 - Skip the Fumadocs setup entirely
 - Give you raw MDX files to use however you need
 
 Use cases:
+
 - Reference documentation directly in your codebase
 - Integrate with your existing documentation setup
 - Make docs available to AI tools for better context
@@ -156,30 +161,25 @@ Enable AI tools to work with your local documentation by adding the Plate server
     "shadcn": {
       "description": "Shadcn and Plate MCP",
       "command": "npx",
-      "args": [
-        "shadcn@latest",
-        "mcp"
-      ]
+      "args": ["shadcn@latest", "mcp"]
     }
   }
 }
 ```
 
 Your AI tools can then:
-*   Access documentation context for better code assistance
-*   Help manage and update documentation
-*   Generate code with proper imports and configurations
-*   Assist with editor setup and feature integration
+
+- Access documentation context for better code assistance
+- Help manage and update documentation
+- Generate code with proper imports and configurations
+- Assist with editor setup and feature integration
 
 See the [MCP Guide](/docs/installation/mcp) for more details.
 
 <Callout>
-  Once configured, try asking your AI:
-  ```bash
-  "Help me understand how the Plate AI plugin works"
-  "How to create a custom plugin?"
-  "What's new in the latest Plate version?"
-  ```
+  Once configured, try asking your AI: ```bash "Help me understand how the Plate
+  AI plugin works" "How to create a custom plugin?" "What's new in the latest
+  Plate version?" ```
 </Callout>
 
 ### Centralizing Multiple Documentations

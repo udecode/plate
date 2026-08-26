@@ -2,6 +2,7 @@
 
 import { Plate, PlateContent, definePlatePlugin } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
+import { getEditorLiveSelection } from '@platejs/plite/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
@@ -128,7 +129,6 @@ describe('TablePlugin onKeyDown', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 1, 0, 0] },
-      kind: 'text',
     });
     expect(competingHandler).not.toHaveBeenCalled();
     await waitFor(() => {
@@ -205,7 +205,6 @@ describe('TablePlugin onKeyDown', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [1, 0, 0, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0, 0, 0] },
-      kind: 'text',
     });
     expect(competingHandler).not.toHaveBeenCalled();
     await waitFor(() => {
@@ -247,7 +246,6 @@ describe('TablePlugin onKeyDown', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
-      kind: 'text',
     });
   });
 
@@ -280,10 +278,10 @@ describe('TablePlugin onKeyDown', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-      focus: { offset: 0, path: [0, 1, 0, 0, 0] },
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 0, 0],
+      focusPath: [0, 1, 0],
+      kind: 'node',
     });
     expect(editor.read.selection.ranges()).toHaveLength(2);
   });
@@ -353,10 +351,10 @@ describe('TablePlugin onKeyDown', () => {
     expect(fallback).not.toHaveBeenCalled();
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 1, 0, 0] },
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 0, 0],
+      focusPath: [0, 0, 1],
+      kind: 'node',
     });
     expect(editor.read.selection.ranges()).toHaveLength(2);
   });
@@ -389,10 +387,10 @@ describe('TablePlugin onKeyDown', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 1, 0],
+      focusPath: [0, 0, 0],
+      kind: 'node',
     });
     expect(editor.read.selection.ranges()).toHaveLength(2);
   });
@@ -423,10 +421,10 @@ describe('TablePlugin onKeyDown', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 0, 1],
+      focusPath: [0, 0, 0],
+      kind: 'node',
     });
     expect(editor.read.selection.ranges()).toHaveLength(2);
   });
@@ -463,10 +461,10 @@ describe('TablePlugin onKeyDown', () => {
 
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
     expect(event.stopPropagation).toHaveBeenCalledTimes(1);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 2, 0, 0] },
-      kind: 'table-cell',
+    expect(getEditorLiveSelection(editor)).toMatchObject({
+      anchorPath: [0, 0, 0],
+      focusPath: [0, 0, 2],
+      kind: 'node',
     });
     expect(editor.read.selection.ranges()).toHaveLength(3);
   });
@@ -508,7 +506,6 @@ describe('TablePlugin onKeyDown', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
-      kind: 'text',
     });
   });
 

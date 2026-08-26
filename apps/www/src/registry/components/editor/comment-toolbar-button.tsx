@@ -5,8 +5,7 @@ import { useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { commentPlugin } from '@/registry/components/editor/comment';
-
-import { ToolbarButton } from './toolbar';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function CommentToolbarButton() {
   const editor = useEditor();

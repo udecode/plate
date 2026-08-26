@@ -1,0 +1,37 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-plugins-static",
+  "registryDependencies": [
+    "https://platejs.org/r/editor-static.json",
+    "https://platejs.org/r/align-static.json",
+    "https://platejs.org/r/basic-blocks-static.json",
+    "https://platejs.org/r/basic-marks-static.json",
+    "https://platejs.org/r/callout-static.json",
+    "https://platejs.org/r/code-block-static.json",
+    "https://platejs.org/r/column-static.json",
+    "https://platejs.org/r/comment-static.json",
+    "https://platejs.org/r/date-static.json",
+    "https://platejs.org/r/font-static.json",
+    "https://platejs.org/r/footnote-static.json",
+    "https://platejs.org/r/line-height-static.json",
+    "https://platejs.org/r/link-static.json",
+    "https://platejs.org/r/list-static.json",
+    "https://platejs.org/r/markdown.json",
+    "https://platejs.org/r/math-static.json",
+    "https://platejs.org/r/media-static.json",
+    "https://platejs.org/r/mention-static.json",
+    "https://platejs.org/r/suggestion-static.json",
+    "https://platejs.org/r/table-static.json",
+    "https://platejs.org/r/toc-static.json",
+    "https://platejs.org/r/toggle-static.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins-static.ts",
+      "content": "import { BaseAlignKit } from './align-static';\nimport { BaseBasicBlocksKit } from './basic-blocks-static';\nimport { BaseBasicMarksKit } from './basic-marks-static';\nimport { BaseCalloutKit } from './callout-static';\nimport { BaseCodeBlockKit } from './code-block-static';\nimport { BaseColumnKit } from './column-static';\nimport { BaseCommentKit } from './comment-static';\nimport { BaseDateKit } from './date-static';\nimport { BaseFontKit } from './font-static';\nimport { BaseFootnoteKit } from './footnote-static';\nimport { BaseLineHeightKit } from './line-height-static';\nimport { BaseLinkKit } from './link-static';\nimport { BaseListKit } from './list-static';\nimport { MarkdownKit } from './markdown';\nimport { BaseMathKit } from './math-static';\nimport { BaseMediaKit } from './media-static';\nimport { BaseMentionKit } from './mention-static';\nimport { BaseSuggestionKit } from './suggestion-static';\nimport { BaseTableKit } from './table-static';\nimport { BaseTocKit } from './toc-static';\nimport { BaseToggleKit } from './toggle-static';\n\nexport const BaseEditorKit = [\n  ...BaseBasicBlocksKit,\n  ...BaseCodeBlockKit,\n  ...BaseTableKit,\n  ...BaseToggleKit,\n  ...BaseTocKit,\n  ...BaseMediaKit,\n  ...BaseCalloutKit,\n  ...BaseColumnKit,\n  ...BaseMathKit,\n  ...BaseDateKit,\n  ...BaseLinkKit,\n  ...BaseMentionKit,\n  ...BaseFootnoteKit,\n  ...BaseBasicMarksKit,\n  ...BaseFontKit,\n  ...BaseListKit,\n  ...BaseAlignKit,\n  ...BaseLineHeightKit,\n  ...BaseCommentKit,\n  ...BaseSuggestionKit,\n  ...MarkdownKit,\n] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/plugins-static.ts"
+    }
+  ],
+  "type": "registry:component"
+}

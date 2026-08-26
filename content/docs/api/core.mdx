@@ -609,6 +609,9 @@ Adds persisted string IDs to every block and inline element. It is opt-in and
 never assigns IDs to text nodes.
 
 ```ts
+import { ElementIdPlugin, schema, target } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
 const editor = createPlateEditor({
   plugins: [ElementIdPlugin],
 });
@@ -623,6 +626,23 @@ Configure `initialState.generateId` to replace the default full-length
 `nanoid()` generator. Use `migrateElementIds(value, options)` for stored input
 that lacks IDs, contains legacy numeric IDs, or needs a legacy property
 canonicalized through `sourceKey`.
+
+The application schema can narrow the plugin-owned `id` target. Document
+preparation generates and retains IDs only for elements that match the compiled
+target.
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ElementIdPlugin],
+  schema: {
+    overrides: [
+      schema.override(ElementIdPlugin, {
+        properties: { id: { target: target.group('block') } },
+      }),
+    ],
+  },
+});
+```
 
 ### `ElementStatePlugin`
 

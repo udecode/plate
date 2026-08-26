@@ -1,4 +1,4 @@
-import { DocumentChange } from '@platejs/plite';
+import { createEditorView, DocumentChange, SelectionApi } from '@platejs/plite';
 import {
   createDOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
@@ -233,7 +233,83 @@ test('browser handle selectAll selects the whole editor', () => {
   expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 3, path: [1, 0] },
-    kind: 'text',
+  });
+});
+
+test('browser handle preserves multi-node selection', () => {
+  const editor = createReactEditor({
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+  });
+  const element = document.createElement('div') as PliteBrowserHandleElement;
+
+  attachPliteBrowserHandle({
+    browserHandleNextId: { current: 0 },
+    browserHandleRangeAnchors: { current: new Map() },
+    editor,
+    element,
+    forceRender: vi.fn(),
+    inputController: createInputController(),
+    isPartialDOMBackedSelection: () => false,
+    setExplicitPartialDOMBackedSelection: vi.fn(),
+  });
+
+  editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
+
+  expect(element.__pliteBrowserHandle?.getModelSelection()).toEqual({
+    anchorPath: [0],
+    focusPath: [1],
+    kind: 'node',
+    paths: [[0], [1]],
+  });
+  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 3, path: [1, 0] },
+  });
+});
+
+test('browser handle keeps named-root selections local to its attached root', () => {
+  const runtime = createReactEditor({
+    initialValue: {
+      children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
+      roots: {
+        header: [{ type: 'paragraph', children: [{ text: 'header' }] }],
+      },
+    },
+  });
+  const editor = createEditorView(runtime, { root: 'header' });
+  const element = document.createElement('div') as PliteBrowserHandleElement;
+
+  attachPliteBrowserHandle({
+    browserHandleNextId: { current: 0 },
+    browserHandleRangeAnchors: { current: new Map() },
+    editor,
+    element,
+    forceRender: vi.fn(),
+    inputController: createInputController(),
+    isPartialDOMBackedSelection: () => false,
+    setExplicitPartialDOMBackedSelection: vi.fn(),
+  });
+
+  editor.update.selection.set({ path: [0, 0], offset: 2 });
+  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+    anchor: { offset: 2, path: [0, 0], root: 'header' },
+    focus: { offset: 2, path: [0, 0], root: 'header' },
+  });
+
+  editor.update.selection.setNodes([[0]]);
+  expect(element.__pliteBrowserHandle?.getModelSelection()).toEqual({
+    anchorPath: [0],
+    focusPath: [0],
+    kind: 'node',
+    paths: [[0]],
+    root: 'header',
+  });
+  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+    anchor: { offset: 0, path: [0, 0], root: 'header' },
+    focus: { offset: 6, path: [0, 0], root: 'header' },
   });
 });
 
@@ -304,7 +380,6 @@ test('browser handle selectRange flushes pending native text repair first', () =
   expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
-    kind: 'text',
   });
 });
 
@@ -350,7 +425,6 @@ test('browser handle selectRange clears projected view selection', () => {
   expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
-    kind: 'text',
   });
 });
 

@@ -181,7 +181,7 @@ describe('BaseTablePlugin prepared paste', () => {
       );
 
       expect(
-        editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
+        editor.plugin(BaseTablePlugin).read.selection()?.anchors.length
       ).toBeGreaterThan(1);
       expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
       unsubscribe();
@@ -217,7 +217,7 @@ describe('BaseTablePlugin prepared paste', () => {
     data.setData('text/plain', 'plain fallback');
 
     expect(
-      editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
+      editor.plugin(BaseTablePlugin).read.selection()?.anchors.length
     ).toBe(1);
     expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     expect(tableText(editor)).toEqual([['plain fallbacka']]);

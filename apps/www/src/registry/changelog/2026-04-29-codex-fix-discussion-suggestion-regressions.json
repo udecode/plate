@@ -78,10 +78,7 @@
     },
     {
       "name": "suggestion",
-      "files": [
-        "apps/www/src/registry/components/editor/suggestion.tsx",
-        "apps/www/src/registry/lib/suggestion.ts"
-      ],
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },

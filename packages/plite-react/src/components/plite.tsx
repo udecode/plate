@@ -8,9 +8,9 @@ import {
   type NamedRootKey,
   type NodeKey,
   type Path,
-  RangeApi,
   type RootKey,
   type Selection,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '@platejs/plite-dom/internal';
@@ -92,13 +92,6 @@ const profileRuntimeDuration = <T,>(id: string, callback: () => T): T => {
       kind: 'runtime-time',
     });
   }
-};
-
-const isSelectionEqual = (a: Selection, b: Selection) => {
-  if (!a && !b) return true;
-  if (!a || !b) return false;
-
-  return RangeApi.equals(a, b);
 };
 
 type RuntimeContentRootOwner = PliteContentRootOwner & {
@@ -460,7 +453,7 @@ const usePliteChangeCallbacks = <
         previousSnapshot.children !== snapshot.children;
       const selectionChanged =
         commit.selectionChanged &&
-        !isSelectionEqual(previousSnapshot.selection, snapshot.selection);
+        !SelectionApi.equals(previousSnapshot.selection, snapshot.selection);
       lastSnapshotRef.current = snapshot;
 
       const context = {

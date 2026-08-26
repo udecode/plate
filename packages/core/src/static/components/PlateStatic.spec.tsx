@@ -7,6 +7,7 @@ import {
   target,
   type Value,
 } from '@platejs/plite';
+import { getEditorLiveSelection } from '@platejs/plite/internal';
 import { render } from '@testing-library/react';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
@@ -98,7 +99,7 @@ const createEditorWithMultipleElements = ({
 const replaceRoot = (editor: BaseEditor, children: Value) => {
   editor.update.value.replace({
     children,
-    selection: editor.read.selection(),
+    selection: getEditorLiveSelection(editor),
   });
 };
 

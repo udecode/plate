@@ -869,7 +869,6 @@ describe('BaseLinkPlugin runtime', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });

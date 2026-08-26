@@ -149,7 +149,6 @@
     "[Autoformat](/docs/autoformat)",
     "[Block Menu](/docs/block-menu)",
     "[Block Placeholder](/docs/block-placeholder)",
-    "[Block Selection](/docs/block-selection)",
     "[Combobox](/docs/combobox)",
     "[Emoji](/docs/emoji)",
     "[Slash Command](/docs/slash-command)",
@@ -168,7 +167,6 @@
     "[AI Toolbar Button](/docs/components/ai-toolbar-button)",
     "[Align Toolbar Button](/docs/components/align-toolbar-button)",
     "[Block Context Menu](/docs/components/block-menu)",
-    "[Block Selection](/docs/components/block-selection)",
     "[Import Toolbar Button](/docs/components/import-toolbar-button)",
     "[Export Toolbar Button](/docs/components/export-toolbar-button)",
     "[Caption](/docs/components/caption)",
@@ -273,7 +271,7 @@
     "[Autoformat Demo](/docs/examples/autoformat)",
     "[Basic Nodes Demo](/docs/examples/basic-nodes)",
     "[Block Menu Demo](/docs/examples/block-menu)",
-    "[Block Selection Demo](/docs/examples/block-selection)",
+    "[Node Selection Demo](/docs/examples/node-selection)",
     "[Column Demo](/docs/examples/column)",
     "[Code Block Demo](/docs/examples/code-block)",
     "[Callout Demo](/docs/examples/callout)",
@@ -582,7 +580,6 @@
                     "stateFields",
                     "effectTypes",
                     "facetProviders",
-                    "selectionKinds",
                     "contributions",
                     "activate",
                     "validate",
@@ -694,12 +691,6 @@
               "href": "/docs/components/block-menu",
               "title": "Block Menu",
               "titleCn": "Block Menu"
-            },
-            {
-              "description": "A visual overlay for selected blocks.",
-              "href": "/docs/components/block-selection",
-              "title": "Block Selection",
-              "titleCn": "Block Selection"
             },
             {
               "description": "A toolbar button to import editor content from a file.",
@@ -1322,10 +1313,10 @@
               "titleCn": "Block Menu"
             },
             {
-              "description": "Visual block selection with keyboard support.",
-              "href": "/docs/examples/block-selection",
-              "title": "Block Selection Demo",
-              "titleCn": "Block Selection"
+              "description": "Visual multi-node selection backed by editor state.",
+              "href": "/docs/examples/node-selection",
+              "title": "Node Selection Demo",
+              "titleCn": "Node Selection"
             },
             {
               "description": "Column layout.",
@@ -2028,12 +2019,6 @@
                   "titleCn": "Block Placeholder"
                 },
                 {
-                  "description": "Select and manipulate entire text blocks.",
-                  "href": "/docs/block-selection",
-                  "title": "Block Selection",
-                  "titleCn": "Block Selection"
-                },
-                {
                   "description": "Utilities for adding combobox to your editor.",
                   "href": "/docs/combobox",
                   "items": [
@@ -2560,11 +2545,6 @@
         "title": "Block Placeholder",
         "titleCn": "Block Placeholder"
       },
-      "/docs/block-selection": {
-        "description": "Select and manipulate entire text blocks.",
-        "title": "Block Selection",
-        "titleCn": "Block Selection"
-      },
       "/docs/combobox": {
         "description": "Utilities for adding combobox to your editor.",
         "title": "Combobox",
@@ -2647,11 +2627,6 @@
         "description": "A context menu for block-level operations.",
         "title": "Block Menu",
         "titleCn": "Block Menu"
-      },
-      "/docs/components/block-selection": {
-        "description": "A visual overlay for selected blocks.",
-        "title": "Block Selection",
-        "titleCn": "Block Selection"
       },
       "/docs/components/import-toolbar-button": {
         "description": "A toolbar button to import editor content from a file.",
@@ -3149,10 +3124,10 @@
         "title": "Block Menu Demo",
         "titleCn": "Block Menu"
       },
-      "/docs/examples/block-selection": {
-        "description": "Visual block selection with keyboard support.",
-        "title": "Block Selection Demo",
-        "titleCn": "Block Selection"
+      "/docs/examples/node-selection": {
+        "description": "Visual multi-node selection backed by editor state.",
+        "title": "Node Selection Demo",
+        "titleCn": "Node Selection"
       },
       "/docs/examples/column": {
         "description": "Column layout.",

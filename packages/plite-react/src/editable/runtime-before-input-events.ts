@@ -51,6 +51,7 @@ import {
 } from './runtime-editor-api';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import {
+  readCommittedSelectionRange,
   readRuntimeSelection,
   readRuntimeSelectionRange,
 } from './runtime-selection-state';
@@ -517,6 +518,59 @@ export const useRuntimeBeforeInputEvents = ({
           'beforeinput-root-owner',
           () => el.getRootNode() as Document | ShadowRoot
         );
+        const modelSelection = readRuntimeSelection(editor);
+        const modelSelectionCommand = decision.command;
+
+        if (
+          !readOnly &&
+          ReactEditor.hasEditableTarget(editor, event.target) &&
+          SelectionApi.isNode(modelSelection)
+        ) {
+          profileBeforeInputDuration('beforeinput-on-user-input', onUserInput);
+
+          if (modelSelectionCommand?.kind === 'insert-text') {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            const applyMutation = () =>
+              applyModelOwnedBeforeInputMutation({
+                command: modelSelectionCommand,
+                data: event.data ?? modelSelectionCommand.text,
+                editor,
+                inputType: event.inputType,
+                mergeHistory:
+                  isCompositionFinalInputType(event.inputType) &&
+                  shouldMergeEditableCompositionHistory(inputController),
+                native: false,
+                selection: modelSelection,
+                setComposing,
+              });
+            const request = isCompositionFinalInputType(event.inputType)
+              ? runTrackedEditableCompositionMutation({
+                  callback: applyMutation,
+                  editor,
+                  inputController,
+                }).result
+              : applyMutation();
+
+            setEditableModelSelectionPreference({
+              inputController,
+              preferModelSelection: true,
+              reason: 'model-command',
+              selectionSource: 'model-owned',
+            });
+            armModelOwnedTextInputGuard({ inputController });
+            if (request) repair.requestEditableRepair(request);
+            return;
+          }
+
+          if (event.inputType.startsWith('insert')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            return;
+          }
+        }
 
         if (
           profileBeforeInputDuration('beforeinput-webkit-shadow', () =>
@@ -539,16 +593,6 @@ export const useRuntimeBeforeInputEvents = ({
         );
 
         if (!readOnly && editableTarget) {
-          if (
-            event.inputType.startsWith('insert') &&
-            SelectionApi.isNode(readRuntimeSelection(editor))
-          ) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            handledDOMBeforeInputRef.current = true;
-            return;
-          }
-
           if (
             profileBeforeInputDuration('beforeinput-without-selection', () =>
               shouldIgnoreDOMBeforeInputWithoutSelection({
@@ -708,7 +752,7 @@ export const useRuntimeBeforeInputEvents = ({
                 repair,
                 selection:
                   currentSelection ??
-                  targetEditor.read((state) => state.selection()),
+                  readCommittedSelectionRange(targetEditor),
                 setComposing,
               })
             ) {
@@ -730,7 +774,7 @@ export const useRuntimeBeforeInputEvents = ({
                     native: false,
                     selection:
                       currentSelection ??
-                      targetEditor.read((state) => state.selection()),
+                      readCommittedSelectionRange(targetEditor),
                     setComposing,
                   });
 
@@ -1099,10 +1143,6 @@ export const useRuntimeBeforeInputEvents = ({
 
   const handleReactBeforeInputFallback = useCallback(
     (text: string) => {
-      if (SelectionApi.isNode(readRuntimeSelection(editor))) {
-        return;
-      }
-
       const request = runTrackedEditableCompositionMutation({
         callback: () =>
           applyModelOwnedBeforeInputMutation({

@@ -69,7 +69,7 @@ import {
   point as editorPoint,
   void as editorVoid,
   hasPath as editorHasPath,
-  getSelectionPrimaryRange,
+  getSelectionDOMRange,
   setEditorFocused,
   string as editorString,
 } from './runtime-editor-api';
@@ -950,15 +950,12 @@ export const restoreUserSelectionAfterBeforeInput = ({
   // Restore the actual user section if nothing manually set it.
   const toRestore = EDITOR_TO_USER_SELECTION.get(editor)?.release();
   EDITOR_TO_USER_SELECTION.delete(editor);
+  const currentSelection = readRuntimeSelection(editor);
+  const currentRange = getSelectionDOMRange(editor, currentSelection);
 
   if (
     toRestore &&
-    (!readRuntimeSelection(editor) ||
-      !RangeApi.equals(
-        readRuntimeSelection(editor) ??
-          failInvariant('Expected value to be defined'),
-        toRestore
-      ))
+    (!currentRange || !RangeApi.equals(currentRange, toRestore))
   ) {
     writePliteViewSelection(editor, null);
     editor.update((tx) => {
@@ -1060,6 +1057,7 @@ export const useEditableSelectionReconciler = ({
 
     // Make sure the DOM selection state is in sync.
     const selection = readRuntimeSelection(editor);
+    const projectedSelection = getSelectionDOMRange(editor, selection);
     const root = ReactEditor.findDocumentOrShadowRoot(editor);
     const domSelection = getSelection(root);
 
@@ -1097,8 +1095,8 @@ export const useEditableSelectionReconciler = ({
     }
 
     const selectionHasDOMCoverage =
-      !!selection &&
-      DOMCoverage.getBoundariesForRange(editor, selection).length > 0;
+      !!projectedSelection &&
+      DOMCoverage.getBoundariesForRange(editor, projectedSelection).length > 0;
 
     if (
       state.pendingDOMSelectionImport &&
@@ -1168,11 +1166,6 @@ export const useEditableSelectionReconciler = ({
         hasDomSelectionInEditor = true;
       }
 
-      const projectedSelection =
-        selection && !SelectionApi.isNode(selection)
-          ? getSelectionPrimaryRange(editor, selection)
-          : null;
-
       // If the DOM selection is in the editor and the editor selection is already correct, we're done.
       if (
         hasDomSelection &&
@@ -1204,7 +1197,10 @@ export const useEditableSelectionReconciler = ({
       // then its children might just change - DOM responds to it on its own
       // but Plite's value is not being updated through any intent
       // and thus it doesn't transform selection on its own
-      if (selection && !ReactEditor.hasRange(editor, selection)) {
+      if (
+        projectedSelection &&
+        !ReactEditor.hasRange(editor, projectedSelection)
+      ) {
         const resolvedRange = ReactEditor.resolvePliteRange(
           editor,
           domSelection,
@@ -1233,7 +1229,7 @@ export const useEditableSelectionReconciler = ({
             state.selectionChangeOrigin = 'programmatic-export';
             clearUpdatingSelection();
           },
-          selection,
+          selection: projectedSelection,
         })
       ) {
         return undefined;

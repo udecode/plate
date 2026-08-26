@@ -1,4 +1,11 @@
-import type { Editor, EditorCommit, Path, Value } from '@platejs/plite';
+import {
+  type Editor,
+  type EditorCommit,
+  type Path,
+  PathApi,
+  SelectionApi,
+  type Value,
+} from '@platejs/plite';
 import {
   defaultScrollSelectionIntoView,
   Editable,
@@ -433,14 +440,6 @@ const isRectWithinVerticalRange = (
   range: PagedEditableViewport
 ) => rect.top + rect.height >= range.top && rect.top <= range.bottom;
 
-const isPathWithin = (path: Path, ancestor: Path) =>
-  ancestor.length <= path.length &&
-  ancestor.every((segment, index) => path[index] === segment);
-
-const samePath = (left: Path, right: Path) =>
-  left.length === right.length &&
-  left.every((segment, index) => segment === right[index]);
-
 const sameSelectedPaths = (
   left: readonly Path[] | null,
   right: readonly Path[] | null
@@ -449,11 +448,22 @@ const sameSelectedPaths = (
   (left != null &&
     right != null &&
     left.length === right.length &&
-    left.every((path, index) => samePath(path, right[index])));
+    left.every((path, index) => PathApi.equals(path, right[index])));
+
+const getSelectionPaths = (
+  selection: EditorCommit['selectionAfter']
+): readonly Path[] =>
+  SelectionApi.isNode(selection)
+    ? selection.paths
+    : selection
+      ? [selection.anchor.path, selection.focus.path]
+      : EMPTY_SELECTED_PATHS;
 
 const getSelectionPathsKey = (selection: EditorCommit['selectionAfter']) =>
   selection
-    ? `${selection.anchor.path.join('.')}:${selection.focus.path.join('.')}`
+    ? `${SelectionApi.root(selection) ?? 'main'}:${getSelectionPaths(selection)
+        .map((path) => path.join('.'))
+        .join(';')}`
     : 'null';
 
 const shouldUpdatePagedEditableSelectedPaths = (change?: EditorCommit) =>
@@ -464,8 +474,7 @@ const shouldUpdatePagedEditableSelectedPaths = (change?: EditorCommit) =>
     getSelectionPathsKey(change.selectionBefore) !==
       getSelectionPathsKey(change.selectionAfter));
 
-const pathsOverlap = (left: Path, right: Path) =>
-  isPathWithin(left, right) || isPathWithin(right, left);
+const pathsOverlap = (left: Path, right: Path) => PathApi.isCommon(left, right);
 
 const EMPTY_SELECTED_PATHS = Object.freeze([]) as readonly Path[];
 const USER_SCROLL_SELECTION_SCROLL_SUPPRESSION_MS = 500;
@@ -777,6 +786,12 @@ export const PagedEditable = ({
   const [viewportStore] = useState(() => createPagedEditableViewportStore());
   const selectedPaths = useEditorState(
     (state) => {
+      const selectedNodes = state.selection.nodes();
+
+      if (selectedNodes.length > 0) {
+        return selectedNodes.map(([, path]) => path);
+      }
+
       const selection = state.selection();
 
       return selection

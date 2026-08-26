@@ -18,6 +18,7 @@ import {
 } from './input-router';
 import type { EditableInputController } from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
+import { readRuntimeSelection } from './runtime-selection-state';
 import {
   applyEditableBlur,
   applyEditableClick,
@@ -272,9 +273,7 @@ export const useRuntimeFocusMouseEvents = ({
         onClick,
         readOnly,
       });
-      if (
-        SelectionApi.isNode(editor.read((innerState) => innerState.selection()))
-      ) {
+      if (SelectionApi.isNode(readRuntimeSelection(editor))) {
         syncDOMSelectionToEditor();
       }
     },
@@ -395,11 +394,7 @@ export const useRuntimeFocusMouseEvents = ({
 
       const handled = onMouseUp?.(event) ?? event.defaultPrevented;
 
-      if (
-        SelectionApi.isNode(
-          editor.read((innerState2) => innerState2.selection())
-        )
-      ) {
+      if (SelectionApi.isNode(readRuntimeSelection(editor))) {
         syncDOMSelectionToEditor();
         return;
       }

@@ -1,6 +1,9 @@
 import {
+  ElementApi,
   type EditorSchemaContribution,
   type EditorSchemaOverride,
+  type EditorStateSchemaApi,
+  type Node,
   type SchemaContent,
   type SchemaContentRule,
   type SchemaContentRootContribution,
@@ -164,6 +167,14 @@ export const resolvePluginPropertyKey = (
 
 export const createPlateBlockContent = (options?: SchemaContentOptions) =>
   schema.content.group(PLATE_BLOCK_CONTENT_SCHEMA_GROUP, options);
+
+/** @internal */
+export const isPlateBlockContent = (
+  schemaApi: Pick<EditorStateSchemaApi, 'isElementTypeInGroup'>,
+  node: Node
+) =>
+  ElementApi.isElement(node) &&
+  schemaApi.isElementTypeInGroup(node.type, PLATE_BLOCK_CONTENT_SCHEMA_GROUP);
 
 const EMPTY_MODEL: CompiledPlateModel = Object.freeze({
   bindings: Object.freeze([]),

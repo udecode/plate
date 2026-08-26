@@ -36,10 +36,9 @@ describe('base heading plugin', () => {
 
   it('encodes every heading level to its matching HTML element', () => {
     for (let level = 1; level <= 6; level++) {
-      const point = { offset: 0, path: [0, 0] };
       const editor = createBaseEditor({
         plugins: [BaseHeadingPlugin],
-        selection: SelectionApi.node([0], { anchor: point, focus: point }),
+        selection: SelectionApi.nodes([[0]]),
         initialValue: [
           {
             children: [{ text: 'Heading' }],

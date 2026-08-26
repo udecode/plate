@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = explicitBaseURL ?? 'http://localhost:3000';
+const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 export default defineConfig({
   expect: {
@@ -15,6 +16,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
+          executablePath: chromiumExecutablePath,
           ignoreDefaultArgs: ['--hide-scrollbars'],
         },
       },

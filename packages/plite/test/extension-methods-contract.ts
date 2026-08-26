@@ -171,7 +171,9 @@ describe('extension method hard cut', () => {
         defineExtension('insert-text-command', {
           commands: ({ around }) => [
             around(editorCommands.insertText, ({ input, state, next }) => {
-              seenOffsets.push(state.selection()?.anchor.offset ?? -1);
+              const selection = state.selection();
+
+              seenOffsets.push(selection?.anchor.offset ?? -1);
               const spec = next({
                 ...input,
                 text: input.text.toUpperCase(),
@@ -180,7 +182,9 @@ describe('extension method hard cut', () => {
               if (!spec) return false;
 
               return state.transaction.extend(spec, (tx) => {
-                seenOffsets.push(tx.selection()?.anchor.offset ?? -1);
+                const transactionSelection = tx.selection();
+
+                seenOffsets.push(transactionSelection?.anchor.offset ?? -1);
                 tx.tags.add('extended-command');
               });
             }),

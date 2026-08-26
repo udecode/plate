@@ -160,6 +160,49 @@ When the ideal call site is blocked:
 Do not call a workaround "pragmatic" and quietly make it architecture. If the
 durable fix is large, report the real blast radius and still choose it.
 
+### Canonical Read And Projection Gate
+
+Do not confuse an internal canonical carrier with the best public read. A
+carrier may need tags, bookkeeping, or extension payloads to preserve runtime
+truth while the common caller needs one established domain value. In that
+case, return the domain value directly and keep the carrier behind its owner.
+Making every caller decode internal protocol machinery is API leakage, not
+honesty.
+
+Give the high-frequency read the shortest unqualified name. Do not surround it
+with vague singular projections such as `primary`, `current`, `resolved`, or a
+noun-specific alias that merely chooses the normal answer. A public read should
+answer one caller job without exposing how the owner stores or derives it.
+
+When public authoring compiles a semantic classification into a private group,
+registry key, or tag, expose that fact through a named read on the owning
+facade. Callers must not spell the private carrier or rebuild it from concrete
+plugin names. Keep gesture and presentation policy in their own owners.
+
+Keep a projection only when it has a distinct current job and meaning. Lossless
+plural projection may stay explicit. Browser, input, transport, or rendering
+projection belongs to that literal protocol owner. A hook that always returns
+its input, the common read, or a constant has no independent public job and
+should be deleted. Preserve an exact carrier publicly only when callers have a
+proven independent job that requires its complete payload; implementation and
+compatibility are not such jobs.
+
+When callers repeatedly combine generic traversal with one canonical owner
+predicate, promote that semantic job as a named read on the traversal owner.
+Do not add a boolean mode flag, a parallel namespace, or filtering options to
+an exact projection. Use a singular name for one nearest result and its plural
+for all relevant results. Keep generic traversal as the escape path. Mutation
+namespaces may name the semantic target, but must reuse generic structural
+verbs instead of publishing aliases for them.
+
+Schema-default block conversion is one semantic mutation:
+`tx.blocks.reset({ at? })`. Resolve each target against its immediate parent or
+document-root default and apply the new type through the schema property
+lifecycle so children, selection, live identity, and allowed properties retain
+their canonical owners. Feature commands keep their guards and delegate this
+structural step. Reject feature-local default-node replacement, reset aliases,
+and type or mode knobs on this exact operation.
+
 ## Bounded Exhaustiveness Gate
 
 When the question touches colocation, inlining, helper survival, file topology,
@@ -211,10 +254,23 @@ Do not confuse recomputable output with latent user intent. Delete derived
 state, but retain persisted intent that is currently inactive and can become
 observable after a legal edit; a migration-time snapshot is not equivalent.
 
+A supported variant, provider, or backend is one complete public surface.
+Never advertise the variant while filtering individual public nouns that still
+need an implementation. Delete the unsupported variant, or repair the coupling
+at the smallest direct owner and keep assemblies canonical. Compatibility age,
+maintenance-only status, and implementation effort do not make a contradictory
+partial surface truthful.
+
 Identity names state ownership: `key` / `keys` hold live `NodeKey` values,
 `id` identifies this persisted element occurrence, and `ref` / `refs` hold
 persisted association tokens. Keep domain addresses such as `url` semantic
-instead of renaming every pointer-like field to `ref`.
+instead of renaming every pointer-like field to `ref`. Exact schema-derived
+elements read persisted identity directly; an erased persisted-ID boundary
+accepts only `NodeKey`, never an arbitrary element plus a runtime assertion.
+The compiled schema property target is the sole applicability policy for ID
+generation and preparation. Mounted DOM lookup accepts a node or `NodeKey`
+through the existing DOM resolver and returns `null` for foreign, removed, or
+unmounted keys; do not expose renderer internals or add a second lookup owner.
 
 A provider that owns subscriptions, caches, or callbacks binds one runtime
 owner for its mounted lifetime unless a current user job requires replacement
@@ -267,9 +323,17 @@ learned concepts; reject one public verb per compiler destination.
 When a headless package portals lifecycle-owned DOM outside the consumer's
 tree, the package owns that element's semantics and exposes at most one
 truthfully named presentation channel for a current customization job. The
-consumer applies literal product classes through that channel. Reject
+package keeps required positioning, hit testing, and accessibility behavior;
+the consumer applies literal product classes through that channel. Reject
 descendant selectors that cannot reach the portal, package-owned brand tokens,
 duplicate portals, and directional or unused styling knobs.
+
+When reusable behavior produces independently placed DOM parts, export one
+primitive per part and give each its ordinary DOM props such as `className` and
+`style`. Do not invent a parent, provider, render prop, or `*ClassName` control
+prop merely to configure siblings. A shared editor context, file, or private
+helper does not justify a public root; retain one only when it owns an
+independent shared lifecycle or state job.
 
 ### Authoring And Inference → [authoring-and-inference.md](./rules/authoring-and-inference.md)
 
@@ -306,6 +370,10 @@ Ask:
 - Does every public entrypoint's packed JavaScript and declaration graph require
   only its declared dependency set, with optional peers isolated behind honest
   subpaths?
+- Does a provider or style matrix describe proven downstream contracts, or
+  merely copy an upstream catalog? Enumeration is not support: require one
+  canonical graph, named provider boundaries, and fail-closed unsupported
+  inputs before retaining the matrix.
 - For two independently optional capabilities, do adapting-only, target-only,
   both, and both with explicit target configuration preserve independent
   membership and deterministic precedence?

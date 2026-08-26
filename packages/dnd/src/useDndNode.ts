@@ -718,7 +718,10 @@ const useDomDropNode = (
 
         store.set({ dropTarget: newDropTarget });
       }
-      if (editor.read.selection.isExpanded()) {
+      if (
+        editor.read.selection.nodes().length === 0 &&
+        editor.read.selection.isExpanded()
+      ) {
         editor.api.dom.focus();
         editor.update.selection.collapse({ edge: 'anchor' });
       }

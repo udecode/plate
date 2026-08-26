@@ -1,10 +1,7 @@
 'use client';
 import { ElementApi } from '@platejs/plite';
 import { PLUGINS } from '@platejs/utils';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import {
-  CheckIcon,
   ChevronRightIcon,
   Code2Icon,
   Columns3Icon,
@@ -30,13 +27,15 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/registry/components/editor/dropdown-menu';
+import {
+  ToolbarButton,
+  ToolbarMenuGroup,
+} from '@/registry/components/editor/toolbar';
 import {
   getBlockType,
   applyBlockAction,
 } from '@/registry/components/editor/transforms-classic';
-
-import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
@@ -118,7 +117,7 @@ const turnIntoItems = [
   },
 ];
 
-export function TurnIntoToolbarButton(props: DropdownMenuProps) {
+export function TurnIntoToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
@@ -147,8 +146,8 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   );
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
-      <DropdownMenuTrigger asChild>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger>
         <ToolbarButton
           className="min-w-[125px]"
           pressed={open}
@@ -161,7 +160,7 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
-        onCloseAutoFocus={(e) => {
+        onFinalFocus={(e) => {
           e.preventDefault();
           editor.api.dom.focus();
         }}
@@ -180,11 +179,6 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
                 className="min-w-[180px] pl-2 *:first:[span]:hidden"
                 value={itemValue}
               >
-                <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
-                  <DropdownMenuItemIndicator>
-                    <CheckIcon />
-                  </DropdownMenuItemIndicator>
-                </span>
                 {icon}
                 {label}
               </DropdownMenuRadioItem>

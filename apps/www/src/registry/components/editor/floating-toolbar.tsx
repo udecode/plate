@@ -38,6 +38,7 @@ import {
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -47,7 +48,6 @@ import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { MoreToolbarButton } from './more-toolbar-button';
 import { SuggestionToolbarButton } from './suggestion-toolbar-button';
-import { ToolbarGroup, Toolbar } from './toolbar';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
 export function FloatingToolbarButtons() {
@@ -116,14 +116,28 @@ type FloatingToolbarOptions = {
   showWhenReadOnly?: boolean;
 };
 
-export function FloatingToolbar({
+type FloatingToolbarProps = React.ComponentProps<typeof Toolbar> & {
+  options?: FloatingToolbarOptions;
+};
+
+export function FloatingToolbar(props: FloatingToolbarProps) {
+  const editorId = useEditorId();
+  const hasNodeSelection = useEditorSelector(
+    (editor) => editor.read.selection.nodes().length > 0,
+    { id: editorId }
+  );
+
+  if (hasNodeSelection) return null;
+
+  return <TextFloatingToolbar {...props} />;
+}
+
+function TextFloatingToolbar({
   children,
   className,
   options,
   ...props
-}: React.ComponentProps<typeof Toolbar> & {
-  options?: FloatingToolbarOptions;
-}) {
+}: FloatingToolbarProps) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
@@ -138,7 +152,7 @@ export function FloatingToolbar({
     { id: editorId }
   );
   const selectionRange = useEditorSelector(
-    (innerEditor3) => innerEditor3.read.selection.primaryRange(),
+    (innerEditor3) => innerEditor3.read.selection(),
     { id: editorId }
   );
   const waitForCollapsedSelection = useEditorSelector(
@@ -225,8 +239,8 @@ export function FloatingToolbar({
   const updateFloating = floating.update;
 
   React.useEffect(() => {
-    updateFloating?.();
-  }, [editorVersion, updateFloating]);
+    if (open) updateFloating?.();
+  }, [editorVersion, open, updateFloating]);
 
   const clickOutsideRef = useOnClickOutside(
     () => {

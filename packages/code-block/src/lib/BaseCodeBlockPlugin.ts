@@ -14,6 +14,7 @@ import {
   type ElementOf,
   type Location,
   NodeApi,
+  type NodeSelection,
   type NodeEntry,
   PathApi,
   property,
@@ -88,14 +89,17 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
   dependencies: [BaseCodeLinePlugin],
   read: ({ plugin, state }) => {
     const entry = ({
-      at = state.selection(),
+      at,
     }: {
       at?: Location | null;
     } = {}) => {
-      if (!at) return undefined;
+      const selection = state.selection();
+      const target = at === undefined ? selection : at;
+
+      if (!target) return undefined;
 
       const codeLine = state.nodes.above({
-        at,
+        at: target,
         type: BaseCodeLinePlugin,
       });
 
@@ -224,11 +228,11 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
     return {
       update: ({ tx }) => {
         const unwrap = ({
-          at = tx.selection() ?? undefined,
+          at,
         }: {
-          at?: Location;
+          at?: Location | NodeSelection;
         } = {}) => {
-          if (!at) return;
+          if (at === undefined && !tx.selection()) return;
 
           const codeBlockEntries = Array.from(
             tx.nodes.entries({
@@ -305,7 +309,9 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             const text = range ? tx.text.string(range) : '';
 
             if (NON_WHITESPACE.test(text)) {
-              if (selection) tx.text.insert(value, { at: selection });
+              if (selection) {
+                tx.text.insert(value, { at: selection });
+              }
 
               return;
             }
@@ -346,7 +352,6 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
         };
         const tab = (reverse = false) => {
           const codeLines = tx.nodes.toArray({
-            at: tx.selection() ?? undefined,
             type: BaseCodeLinePlugin,
           });
 
@@ -562,7 +567,9 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
           const selection = state.selection();
 
-          if (!selection || state.selection.isExpanded()) return false;
+          if (!selection || state.selection.isExpanded()) {
+            return false;
+          }
 
           const codeLine = state.nodes.above({
             type: BaseCodeLinePlugin,
@@ -691,9 +698,15 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           const { options, slice } = input;
           const fragment = [...slice.content];
           const target = options?.at;
+          const currentSelection = state.selection();
+
+          if (target === undefined && !currentSelection) {
+            return next();
+          }
+
           const at =
             target === undefined
-              ? (state.selection() ?? undefined)
+              ? (currentSelection ?? undefined)
               : NodeApi.isNode(target)
                 ? state.nodes.path(target)
                 : target;

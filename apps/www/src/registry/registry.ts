@@ -1,5 +1,11 @@
 import type { Registry, RegistryItem } from 'shadcn/schema';
 
+import {
+  PLATE_DEFAULT_REGISTRY_BASE,
+  type PlateRegistryBase,
+  PLATE_REGISTRY_BASES,
+} from '@/lib/plate-registry-styles';
+
 import { registryBlocks } from './registry-blocks';
 import { registryComponents } from './registry-components';
 import { registryEditor } from './registry-editor';
@@ -7,6 +13,11 @@ import { registryExamples } from './registry-examples';
 import { registryHooks } from './registry-hooks';
 import { registryLib } from './registry-lib';
 import { registryStyles } from './registry-styles';
+import {
+  EDITOR_REGISTRY_VARIANT_PACKAGE_NAMES,
+  EDITOR_REGISTRY_VARIANTS,
+  getEditorRegistryVariantSourcePath,
+} from './registry-variants';
 
 const url =
   process.env.NODE_ENV === 'development'
@@ -16,28 +27,17 @@ const url =
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
 
-export const PLATE_REGISTRY_BASES = ['radix', 'base', 'aria'] as const;
-
-export type PlateRegistryBase = (typeof PLATE_REGISTRY_BASES)[number];
-
-const EDITOR_BASE_VARIANT_FILES = new Map([
-  ['components/editor/toolbar.tsx', 'toolbar.tsx'],
-]);
-const EDITOR_BASE_PACKAGES: Record<PlateRegistryBase, string[]> = {
-  aria: ['react-aria-components'],
-  base: ['@base-ui/react'],
-  radix: ['@radix-ui/react-toolbar', '@radix-ui/react-tooltip'],
-};
-const EDITOR_BASE_PACKAGE_SET = new Set(
-  Object.values(EDITOR_BASE_PACKAGES).flat()
-);
+export { PLATE_DEFAULT_REGISTRY_BASE, PLATE_REGISTRY_BASES };
+export type { PlateRegistryBase };
 
 function getEditorComponentTarget(filePath: string) {
   const segmentIndex = filePath.indexOf(EDITOR_COMPONENT_PATH_SEGMENT);
 
   if (segmentIndex === -1) return null;
 
-  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length)}`;
+  return `${EDITOR_COMPONENT_TARGET_PREFIX}${filePath.slice(
+    segmentIndex + EDITOR_COMPONENT_PATH_SEGMENT.length
+  )}`;
 }
 
 function withEditorComponentTargets(
@@ -65,31 +65,34 @@ function withEditorBase(
   base: PlateRegistryBase
 ): Registry['items'] {
   return items.map((item) => {
-    let hasVariantFile = false;
+    const variantPackages = new Set<string>();
     const files = item.files?.map((file) => {
-      const fileName = EDITOR_BASE_VARIANT_FILES.get(file.path);
+      const { target } = file;
 
-      if (!fileName) return file;
-      hasVariantFile = true;
+      if (!target) return file;
 
-      if (base === 'radix') return file;
+      const variant = EDITOR_REGISTRY_VARIANTS.get(target);
+
+      if (!variant) return file;
+      for (const packageName of variant.packages[base]) {
+        variantPackages.add(packageName);
+      }
 
       return {
         ...file,
-        path: `bases/${base}/editor/${fileName}`,
-        target: `${EDITOR_COMPONENT_TARGET_PREFIX}${fileName}`,
+        path: getEditorRegistryVariantSourcePath(target, base),
       };
     });
 
-    if (!hasVariantFile) return { ...item, files };
+    if (variantPackages.size === 0) return { ...item, files };
 
     return {
       ...item,
       dependencies: [
         ...(item.dependencies ?? []).filter(
-          (dependency) => !EDITOR_BASE_PACKAGE_SET.has(dependency)
+          (dependency) => !EDITOR_REGISTRY_VARIANT_PACKAGE_NAMES.has(dependency)
         ),
-        ...EDITOR_BASE_PACKAGES[base],
+        ...variantPackages,
       ],
       files,
     };
@@ -125,7 +128,7 @@ export const registryInit: RegistryItem[] = [
 ];
 
 export function createPlateRegistryItems({
-  base = 'radix',
+  base = PLATE_DEFAULT_REGISTRY_BASE,
 }: {
   base?: PlateRegistryBase;
 } = {}): Registry['items'] {

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-audio-static",
+  "dependencies": [
+    "@platejs/media"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/caption-static.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/media-audio-static.tsx",
+      "content": "import type { BaseAudioPlugin } from '@platejs/media';\nimport type { PliteElementProps } from 'platejs/static';\nimport { PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nimport { CaptionStatic } from './caption-static';\n\nexport function AudioElementStatic(\n  props: PliteElementProps<typeof BaseAudioPlugin>\n) {\n  return (\n    <PliteElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default\">\n        <div className={cn('h-16 rounded-sm')}>\n          {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n        <CaptionStatic element={props.element}>{props.children}</CaptionStatic>\n      </figure>\n    </PliteElement>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/media-audio-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

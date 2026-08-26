@@ -22,8 +22,8 @@
 - Preserve exact `property.*` descriptor inference in packed declarations and reject declaration artifacts whose generic `Readonly` arguments were erased.
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
-- Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks. Infer custom selection payloads only from the descriptors installed on each concrete editor, and keep the complete payload invariant even when two descriptors reuse the same `kind`; no global selection-kind augmentation exists.
-- Validate unknown selection values with strict built-in predicates or the installed editor selection protocol through `editor.read.selection.isValid(value)`
+- Support text selection and one directional exact `NodeSelection` with canonical `paths`, `anchorPath`, `focusPath`, and an optional named root. Preserve node selection through mapping, history, collaboration, marks, and slices without extension-defined selection kinds.
+- Validate unknown selection values against the built-in selection shapes and current document through `editor.read.selection.isValid(value)`
 - Track persistent Path, Point, and Range values with `editor.anchor`; use auto-released `tx.anchor` handles for locations needed only inside one update or transaction builder
 - Default bare public editor, read, update, transaction, and view types to the core-only extension tuple. Use the explicit internal `AnyEditor` boundary when runtime infrastructure intentionally erases installed capabilities.
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
@@ -35,6 +35,8 @@
 - Name installed extension namespace projections `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
 - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
 - Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
+- Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. Mutate semantic blocks through `blocks.duplicate`, `blocks.insertAfter`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
+- Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset()`, preserving children, selection, live node keys, and lifecycle-approved properties.
 - Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles
@@ -46,7 +48,7 @@
 - Add descriptor-owned typed extension contributions for package-specific contribution channels
 - Define package-owned contribution channels with `defineExtensionPoint(...)` and collect ordered values through `context.getContributions(...)`
 - Intercept core-owned pure reads through descriptor-based extension `read` middleware, with transaction-draft state, single delegation, and complete generator cleanup
-- Group prefixless change callbacks under `on`; declare owner-local methods through `read` and `update`, core read wrappers through `readMiddleware`, candidate validation through `validate`, and descriptor collections as `stateFields`, `effectTypes`, `facetProviders`, and `selectionKinds`
+- Group prefixless change callbacks under `on`; declare owner-local methods through `read` and `update`, core read wrappers through `readMiddleware`, candidate validation through `validate`, and descriptor collections as `stateFields`, `effectTypes`, and `facetProviders`
 - Infer one exact definition from every `defineExtension(name, definition)` author object, carry that sole public definition generic through `EditorExtension<D>`, omit undeclared fields from the inferred descriptor, and expose `DefinitionOf<typeof Extension>` as the public definition extractor
 - Use `defineExtension(name, definition)` and `defineEditorSchema(name, definition)` as the only extension/schema descriptor factories. Descriptors are nominal, immutable values; installing the same descriptor twice is idempotent, while divergent same-name descriptors reject.
 - Return the public `Editor` directly from `createEditor()`. Create root-scoped views with `createEditorView(editor, options)` and add live capabilities with `editor.install(extension)`; layered editors retain their complete caller capabilities through root-scoped views, while raw Plite editors infer their installed extension tuple. No public runtime wrapper or live `.extend()` API exists.
@@ -58,7 +60,7 @@
 - Resolve functional extension APIs against each editor view root and preserve the complete root-scoped read surface, including exported selection slices
 - Declare every extension API through an `api` factory, including context-free API objects; contextual factories receive one `{ editor, root, getContributions }` object
 - Keep merge, selectability, and exported-slice policy on typed `editorReads` descriptors instead of extension-specific root hooks
-- Name the model selection projection `primaryRange`
+- Read the active plain model range through `selection()`, exact selected nodes through `selection.nodes()`, and every exact range through `selection.ranges()`
 - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
 - Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
 - Freeze pure descriptor namespaces and preserve exact custom property values and defaults from inline `validate` predicates paired with a positive-integer `validationVersion`

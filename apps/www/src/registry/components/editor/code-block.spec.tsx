@@ -70,10 +70,10 @@ mock.module('@/components/ui/command', () => ({
   CommandList: ({ children }: any) => <div>{children}</div>,
 }));
 
-mock.module('@/components/ui/popover', () => ({
-  Popover: ({ children }: any) => <>{children}</>,
-  PopoverContent: ({ children }: any) => <div>{children}</div>,
-  PopoverTrigger: ({ children }: any) => <>{children}</>,
+mock.module('./floating-popover', () => ({
+  FloatingPopover: ({ children }: any) => <>{children}</>,
+  FloatingPopoverContent: ({ children }: any) => <div>{children}</div>,
+  FloatingPopoverTrigger: ({ children }: any) => <>{children}</>,
 }));
 
 mock.module('@/lib/utils', () => ({

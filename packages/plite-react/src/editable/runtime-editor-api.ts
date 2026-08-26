@@ -58,7 +58,7 @@ export {
   getPathByNodeKey,
   getNodeKey,
   getSelection,
-  getSelectionPrimaryRange,
+  getSelectionDOMRange,
   getSnapshot,
   hasPath,
   isBlock,

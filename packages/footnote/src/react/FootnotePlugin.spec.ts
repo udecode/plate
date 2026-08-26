@@ -53,7 +53,6 @@ describe('FootnotePlugin', () => {
     editor.update((tx) => {
       expect(tx.footnote.focusDefinition({ ref: '1' })).toBe(true);
       expect(tx.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [1, 0, 0] },
         focus: { offset: 0, path: [1, 0, 0] },
       });
@@ -81,7 +80,6 @@ describe('FootnotePlugin', () => {
     editor.update((tx) => {
       expect(tx.footnote.focusReference({ ref: '1' })).toBe(true);
       expect(tx.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });

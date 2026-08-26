@@ -50,13 +50,7 @@ const App = () => {
                 })
               );
               editor.update((tx) => {
-                tx.nodes.set(
-                  { type: match ? "paragraph" : "code" },
-                  {
-                    match: (node) =>
-                      ElementApi.isElement(node) && tx.schema.isBlock(node),
-                  }
-                );
+                tx.blocks.set({ type: match ? "paragraph" : "code" });
               });
               break;
             }
@@ -141,13 +135,7 @@ const App = () => {
                 })
               );
               editor.update((tx) => {
-                tx.nodes.set(
-                  { type: match ? "paragraph" : "code" },
-                  {
-                    match: (node) =>
-                      ElementApi.isElement(node) && tx.schema.isBlock(node),
-                  }
-                );
+                tx.blocks.set({ type: match ? "paragraph" : "code" });
               });
               break;
             }

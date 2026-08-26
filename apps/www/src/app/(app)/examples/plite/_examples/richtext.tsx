@@ -244,9 +244,8 @@ const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
         }
 
         return (
-          state.nodes.above({
+          state.nodes.block({
             at: selection,
-            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
           })?.[1] ?? null
         );
       })
@@ -255,20 +254,14 @@ const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
   editor.update((tx) => {
     if (isAlignType(format)) {
       if (alignBlockPath) {
-        tx.nodes.set(
+        tx.blocks.set(
           { align: isActive ? undefined : format },
-          {
-            at: alignBlockPath,
-            match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-          }
+          { at: alignBlockPath }
         );
         return;
       }
 
-      tx.nodes.set(
-        { align: isActive ? undefined : format },
-        { match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n) }
-      );
+      tx.blocks.set({ align: isActive ? undefined : format });
       return;
     }
 
@@ -279,10 +272,9 @@ const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
       split: true,
     });
 
-    tx.nodes.set(
-      { type: isActive ? 'paragraph' : isList ? 'list-item' : format },
-      { match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n) }
-    );
+    tx.blocks.set({
+      type: isActive ? 'paragraph' : isList ? 'list-item' : format,
+    });
 
     if (!isActive && isList) {
       tx.nodes.wrap({ type: format, children: [] });
@@ -296,10 +288,7 @@ const clearRichTextFormatting = (editor: RichTextEditor) => {
       tx.marks.remove(mark);
     }
 
-    tx.nodes.set(
-      { align: undefined },
-      { match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n) }
-    );
+    tx.blocks.set({ align: undefined });
   });
 };
 
@@ -417,9 +406,8 @@ const RichTextExtension = defineExtension('richtext', {
       const selection = state.selection();
 
       if (selection && RangeApi.isCollapsed(selection)) {
-        const blockEntry = state.nodes.above({
+        const blockEntry = state.nodes.block({
           at: selection,
-          match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
         });
 
         if (blockEntry) {
@@ -442,13 +430,7 @@ const RichTextExtension = defineExtension('richtext', {
               if (result === false) return false;
 
               return state.transaction.extend(result, (tx) => {
-                tx.nodes.set(
-                  { type: 'paragraph' },
-                  {
-                    at: paragraphPath,
-                    match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-                  }
-                );
+                tx.blocks.set({ type: 'paragraph' }, { at: paragraphPath });
               });
             }
           }
@@ -492,12 +474,10 @@ const isBlockActive = (
   format: RichTextElementFormat,
   blockType: 'type' | 'align' = 'type'
 ) => {
-  const selection = editor.read.selection();
-  if (!selection) return false;
+  if (!editor.read.selection()) return false;
 
   return editor.read((state) =>
     state.nodes.some({
-      at: state.ranges.unhang(selection),
       match: (n) => {
         if (NodeApi.isElement(n)) {
           if (blockType === 'align' && typeof n.align === 'string') {

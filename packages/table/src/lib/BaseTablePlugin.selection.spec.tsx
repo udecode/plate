@@ -2,10 +2,17 @@
 
 import assert from 'node:assert/strict';
 
-import { createPlateEditor } from '@platejs/core/react';
 import type { Range } from '@platejs/plite';
-import { jsx, jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import {
+  getEditorLiveSelection,
+  getSelectionDOMRange,
+} from '@platejs/plite/internal';
+import {
+  jsx,
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 
 import {
   createTestTableEditor,
@@ -13,40 +20,7 @@ import {
 } from './__tests__/getTestTablePlugins';
 import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import type { TableElement } from './BaseTablePlugin';
-
-const assertTableSelectionInference = () => {
-  const range = {
-    anchor: { offset: 0, path: [0, 0] },
-    focus: { offset: 0, path: [0, 0] },
-  } satisfies Range;
-  const tableSelection = {
-    ...range,
-    cells: [range],
-    kind: 'table-cell' as const,
-  };
-  const tableEditor = createPlateEditor({ plugins: [BaseTablePlugin] });
-  const selection = tableEditor.read.selection();
-
-  if (selection && selection.kind === 'table-cell') {
-    const cells: readonly Range[] = selection.cells;
-
-    void cells;
-  }
-
-  tableEditor.update((tx) => tx.selection.set(tableSelection));
-
-  // @ts-expect-error Direct update selection exposes mutations, not queries.
-  tableEditor.update.selection();
-
-  const plainEditor = createPlateEditor();
-
-  plainEditor.update((tx) => {
-    // @ts-expect-error Table selection is unavailable without BaseTablePlugin.
-    tx.selection.set(tableSelection);
-  });
-};
-
-void assertTableSelectionInference;
+import { createTableNodeSelection } from './internal/selection';
 
 describe('table selection', () => {
   {
@@ -98,169 +72,7 @@ describe('table selection', () => {
         initialValue: value.children,
       });
 
-    const getCell = (
-      editor: ReturnType<typeof createEditor>,
-      path: number[]
-    ) => {
-      const entry = editor.read.nodes.get(path, {
-        type: BaseTableCellPlugin,
-      });
-      assert.ok(entry);
-
-      return entry[0];
-    };
-
-    describe('getSelectedCellsBoundingBox', () => {
-      it('returns the bounds of one cell', () => {
-        const editor = createEditor();
-
-        expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([getCell(editor, [0, 1, 1])])
-        ).toEqual({ maxCol: 1, maxRow: 1, minCol: 1, minRow: 1 });
-      });
-
-      it('returns the bounds of horizontal, vertical, and L-shaped selections', () => {
-        const editor = createEditor();
-
-        expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([
-              getCell(editor, [0, 1, 0]),
-              getCell(editor, [0, 1, 1]),
-              getCell(editor, [0, 1, 2]),
-            ])
-        ).toEqual({ maxCol: 2, maxRow: 1, minCol: 0, minRow: 1 });
-        expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([
-              getCell(editor, [0, 0, 1]),
-              getCell(editor, [0, 1, 1]),
-              getCell(editor, [0, 2, 1]),
-            ])
-        ).toEqual({ maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 });
-        expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([
-              getCell(editor, [0, 0, 0]),
-              getCell(editor, [0, 1, 0]),
-              getCell(editor, [0, 1, 1]),
-            ])
-        ).toEqual({ maxCol: 1, maxRow: 1, minCol: 0, minRow: 0 });
-      });
-
-      it('includes diagonal corners and cell spans', () => {
-        const editor = createEditor();
-
-        expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([
-              getCell(editor, [0, 0, 0]),
-              getCell(editor, [0, 2, 2]),
-            ])
-        ).toEqual({ maxCol: 2, maxRow: 2, minCol: 0, minRow: 0 });
-
-        const spanningInput = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>00</hp>
-                </htd>
-                <htd>
-                  <hp>01</hp>
-                </htd>
-                <htd>
-                  <hp>02</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>10</hp>
-                </htd>
-                <htd colSpan={2} rowSpan={2}>
-                  <hp>span</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>20</hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-        const spanningEditor = createTestTableEditor({
-          plugins: getTestTablePlugins(),
-          initialValue: spanningInput.children,
-        });
-        const spanningCell = getCell(spanningEditor, [0, 1, 1]);
-
-        expect(
-          spanningEditor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([spanningCell])
-        ).toEqual({
-          maxCol: 2,
-          maxRow: 2,
-          minCol: 1,
-          minRow: 1,
-        });
-      });
-
-      it('uses the explicit cells table instead of the active selection table', () => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <anchor />
-                    a1
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>
-                    a2
-                    <focus />
-                  </hp>
-                </htd>
-              </htr>
-            </htable>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>b1</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>b2</hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-        const editor = createTestTableEditor({
-          plugins: getTestTablePlugins(),
-          selection: input.selection,
-          initialValue: input.children,
-        });
-
-        expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBoundingBox([getCell(editor, [1, 1, 0])])
-        ).toEqual({ maxCol: 0, maxRow: 1, minCol: 0, minRow: 1 });
-      });
-    });
-
-    describe('createCellSelection', () => {
+    describe('core node selection', () => {
       it('keeps one-cell ranges, paths, and points as ordinary selections', () => {
         const editor = createEditor();
         const start = editor.read.points.start([0, 1, 1]);
@@ -272,13 +84,105 @@ describe('table selection', () => {
         const table = editor.plugin(BaseTablePlugin).read;
 
         expect(
-          table.createCellSelection({ anchor: start, focus: end })
+          createTableNodeSelection(
+            table.selection({ anchor: start, focus: end })!
+          )
         ).toBeNull();
         expect(
-          table.createCellSelection({ anchor: end, focus: start })
+          createTableNodeSelection(
+            table.selection({ anchor: end, focus: start })!
+          )
         ).toBeNull();
-        expect(table.createCellSelection([0, 1, 1])).toBeNull();
-        expect(table.createCellSelection(end)).toBeNull();
+        expect(
+          createTableNodeSelection(table.selection([0, 1, 1])!)
+        ).toBeNull();
+        expect(createTableNodeSelection(table.selection(end)!)).toBeNull();
+      });
+
+      it('derives merge and split eligibility from exact node selection', () => {
+        const mergeValue = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const mergeEditor = createTestTableEditor({
+          plugins: getTestTablePlugins(),
+          initialValue: mergeValue.children,
+        });
+
+        mergeEditor.update.selection.setNodes(
+          [
+            [0, 0, 0],
+            [0, 0, 1],
+          ],
+          { anchor: [0, 0, 0], focus: [0, 0, 1] }
+        );
+
+        expect(mergeEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(true);
+        expect(mergeEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(false);
+
+        const splitValue = (
+          <editor>
+            <htable>
+              <htr>
+                <htd colSpan={2}>
+                  <hp>
+                    <htext />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const splitEditor = createTestTableEditor({
+          plugins: getTestTablePlugins(),
+          initialValue: splitValue.children,
+        });
+
+        splitEditor.update.selection.setNodes([[0, 0, 0]]);
+
+        expect(splitEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(false);
+        expect(splitEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(true);
+
+        const readOnlyMergeEditor = createTestTableEditor({
+          readOnly: true,
+          plugins: getTestTablePlugins(),
+          initialValue: mergeValue.children,
+        });
+
+        readOnlyMergeEditor.update.selection.setNodes([
+          [0, 0, 0],
+          [0, 0, 1],
+        ]);
+
+        expect(
+          readOnlyMergeEditor.plugin(BaseTablePlugin).read.canMerge()
+        ).toBe(false);
+
+        const readOnlySplitEditor = createTestTableEditor({
+          readOnly: true,
+          plugins: getTestTablePlugins(),
+          initialValue: splitValue.children,
+        });
+
+        readOnlySplitEditor.update.selection.setNodes([[0, 0, 0]]);
+
+        expect(
+          readOnlySplitEditor.plugin(BaseTablePlugin).read.canSplit()
+        ).toBe(false);
       });
 
       it('creates a directed structural selection only when explicitly requested across cells', () => {
@@ -289,16 +193,21 @@ describe('table selection', () => {
         assert.ok(anchor);
         assert.ok(focus);
 
-        const selection = editor
+        const view = editor
           .plugin(BaseTablePlugin)
-          .read.createCellSelection({ anchor, focus });
+          .read.selection({ anchor, focus });
+        const selection = view && createTableNodeSelection(view);
 
         expect(selection).toMatchObject({
-          anchor,
-          focus,
-          kind: 'table-cell',
+          anchorPath: [0, 1, 2],
+          focusPath: [0, 1, 0],
+          kind: 'node',
         });
-        expect(selection?.cells).toHaveLength(3);
+        expect(selection?.paths).toEqual([
+          [0, 1, 0],
+          [0, 1, 1],
+          [0, 1, 2],
+        ]);
       });
 
       it('keeps the structural model selection while collapsing its DOM range', () => {
@@ -309,18 +218,19 @@ describe('table selection', () => {
         assert.ok(anchor);
         assert.ok(focus);
 
-        const selection = editor
+        const view = editor
           .plugin(BaseTablePlugin)
-          .read.createCellSelection({ anchor, focus });
+          .read.selection({ anchor, focus });
+        const selection = view && createTableNodeSelection(view);
 
         assert.ok(selection);
         editor.update.selection.set(selection);
 
-        expect(editor.read.selection()).toEqual(selection);
-        expect(editor.read.selection.primaryRange()).toEqual({
-          anchor,
-          focus: anchor,
-        });
+        expect(editor.read.selection()).toEqual({ anchor, focus });
+        expect(getEditorLiveSelection(editor)).toEqual(selection);
+        expect(
+          getSelectionDOMRange(editor, getEditorLiveSelection(editor))
+        ).toBeNull();
       });
 
       it('exports projected table content as a closed slice', () => {
@@ -331,9 +241,10 @@ describe('table selection', () => {
         assert.ok(anchor);
         assert.ok(focus);
 
-        const selection = editor
+        const view = editor
           .plugin(BaseTablePlugin)
-          .read.createCellSelection({ anchor, focus });
+          .read.selection({ anchor, focus });
+        const selection = view && createTableNodeSelection(view);
 
         assert.ok(selection);
         editor.update.selection.set(selection);
@@ -464,10 +375,10 @@ describe('table selection', () => {
             .plugin(BaseTablePlugin)
             .update.moveSelection({ edge: 'right', fromOneCell: true })
         ).toBe(true);
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-          focus: { offset: 0, path: [0, 0, 1, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 0, 0],
+          focusPath: [0, 0, 1],
+          kind: 'node',
         });
         expect(editor.read.selection.ranges()).toHaveLength(2);
       });
@@ -498,17 +409,17 @@ describe('table selection', () => {
         table.update.moveSelection({ edge: 'left', fromOneCell: true });
         table.update.moveSelection({ edge: 'left' });
 
-        expect(table.read.getSelectedCellKeys()).toEqual(
+        expect(table.read.selection()?.cellKeys).toEqual(
           [
             [0, 0, 0],
             [0, 0, 1],
             [0, 0, 2],
           ].map((path) => editor.key(path)!)
         );
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { path: [0, 0, 2, 0, 0] },
-          focus: { path: [0, 0, 0, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 0, 2],
+          focusPath: [0, 0, 0],
+          kind: 'node',
         });
       });
 
@@ -540,10 +451,10 @@ describe('table selection', () => {
             .plugin(BaseTablePlugin)
             .update.moveSelection({ edge: 'top', fromOneCell: true })
         ).toBe(true);
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
-          focus: { offset: 0, path: [0, 0, 0, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 1, 0],
+          focusPath: [0, 0, 0],
+          kind: 'node',
         });
         expect(editor.read.selection.ranges()).toHaveLength(2);
       });
@@ -578,17 +489,17 @@ describe('table selection', () => {
         table.update.moveSelection({ edge: 'top', fromOneCell: true });
         table.update.moveSelection({ edge: 'top' });
 
-        expect(table.read.getSelectedCellKeys()).toEqual(
+        expect(table.read.selection()?.cellKeys).toEqual(
           [
             [0, 0, 0],
             [0, 1, 0],
             [0, 2, 0],
           ].map((path) => editor.key(path)!)
         );
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { path: [0, 2, 0, 0, 0] },
-          focus: { path: [0, 0, 0, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 2, 0],
+          focusPath: [0, 0, 0],
+          kind: 'node',
         });
       });
 
@@ -620,10 +531,10 @@ describe('table selection', () => {
             .plugin(BaseTablePlugin)
             .update.moveSelection({ edge: 'bottom', fromOneCell: true })
         ).toBe(true);
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-          focus: { offset: 0, path: [0, 1, 0, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 0, 0],
+          focusPath: [0, 1, 0],
+          kind: 'node',
         });
         expect(editor.read.selection.ranges()).toHaveLength(2);
       });
@@ -725,7 +636,9 @@ describe('table selection', () => {
 
         editor.plugin(BaseTablePlugin).update.moveSelection();
 
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
 
       it('expands the current cell range to the right edge', () => {
@@ -758,42 +671,14 @@ describe('table selection', () => {
           </editor>
         ) as TestEditor;
 
-        const output = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <anchor />
-                    11
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>21</hp>
-                </htd>
-                <htd>
-                  <hp>
-                    <focus />
-                    22
-                  </hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-
         const editor = createTableEditor(input);
 
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'right' });
 
-        expect(editor.read.selection()).toMatchObject({
-          ...output.selection!,
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 0, 0],
+          focusPath: [0, 1, 1],
+          kind: 'node',
         });
         expect(editor.read.selection.ranges()).toHaveLength(4);
       });
@@ -825,17 +710,17 @@ describe('table selection', () => {
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'left' });
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+          editor.plugin(BaseTablePlugin).read.selection()?.cellKeys
         ).toEqual(
           [
             [0, 0, 0],
             [0, 0, 1],
           ].map((path) => editor.key(path)!)
         );
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { path: [0, 0, 0, 0, 0] },
-          focus: { path: [0, 0, 1, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 0, 0],
+          focusPath: [0, 0, 1],
+          kind: 'node',
         });
       });
 
@@ -866,17 +751,17 @@ describe('table selection', () => {
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'right' });
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellKeys()
+          editor.plugin(BaseTablePlugin).read.selection()?.cellKeys
         ).toEqual(
           [
             [0, 0, 1],
             [0, 0, 2],
           ].map((path) => editor.key(path)!)
         );
-        expect(editor.read.selection()).toMatchObject({
-          anchor: { path: [0, 0, 2, 0, 0] },
-          focus: { path: [0, 0, 1, 0, 0] },
-          kind: 'table-cell',
+        expect(getEditorLiveSelection(editor)).toMatchObject({
+          anchorPath: [0, 0, 2],
+          focusPath: [0, 0, 1],
+          kind: 'node',
         });
       });
 
@@ -919,7 +804,9 @@ describe('table selection', () => {
 
         editor.plugin(BaseTablePlugin).update.moveSelection();
 
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
 
       it('moves backward out of the table when there is no previous cell', () => {
@@ -961,7 +848,9 @@ describe('table selection', () => {
 
         editor.plugin(BaseTablePlugin).update.moveSelection({ reverse: true });
 
-        expect(editor.read.selection()).toEqual(output.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
     });
 
@@ -1004,7 +893,9 @@ describe('table selection', () => {
 
         editor.update.selection.set(requested.selection!);
 
-        expect(editor.read.selection()).toEqual(requested.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(requested.selection)
+        );
       });
 
       it('clamps a forward range from text into a trailing table to the table end', () => {
@@ -1063,7 +954,9 @@ describe('table selection', () => {
 
         editor.update.selection.set(requested.selection!);
 
-        expect(editor.read.selection()).toEqual(expected.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(expected.selection)
+        );
       });
 
       it('keeps a range that crosses two document-edge tables', () => {
@@ -1118,7 +1011,9 @@ describe('table selection', () => {
 
         editor.update.selection.set(requested.selection!);
 
-        expect(editor.read.selection()).toEqual(requested.selection!);
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(requested.selection)
+        );
       });
     });
   }

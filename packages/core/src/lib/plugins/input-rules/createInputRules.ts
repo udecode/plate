@@ -1,4 +1,4 @@
-import { ElementApi, type Point } from '@platejs/plite';
+import type { Point } from '@platejs/plite';
 
 import {
   getCompiledPlateModelBinding,
@@ -243,24 +243,21 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       }
 
       if (config.mode === 'wrap') {
-        tx.blocks.toggle(type, {
-          wrap: true,
-        });
+        tx.blocks.toggle(
+          { type },
+          {
+            wrap: true,
+          }
+        );
         return true;
       }
 
       if (config.mode === 'toggle') {
-        tx.blocks.toggle(type);
+        tx.blocks.toggle({ type });
         return true;
       }
 
-      tx.nodes.set(
-        { type },
-        {
-          match: (entryNode) =>
-            ElementApi.isElement(entryNode) && tx.schema.isBlock(entryNode),
-        }
-      );
+      tx.blocks.set({ type });
 
       return true;
     },
@@ -483,7 +480,9 @@ export const createTextSubstitutionInputRule = ({
     target: 'insertText',
     trigger: triggers,
     resolve: ({ editor, text }) => {
-      if (!editor.read.selection() || !editor.read.selection.isCollapsed()) {
+      const selection = editor.read.selection();
+
+      if (!selection || !editor.read.selection.isCollapsed()) {
         return undefined;
       }
 
@@ -492,10 +491,6 @@ export const createTextSubstitutionInputRule = ({
       if (!candidates) return undefined;
 
       for (const { end, pattern, start } of candidates) {
-        const selection = editor.read.selection();
-
-        if (!selection) return undefined;
-
         let beforeEndMatchPoint: Point | undefined = selection.anchor;
 
         if (end) {

@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import matter from 'gray-matter';
 
+import { PLATE_DEFAULT_REGISTRY_STYLE } from '@/lib/plate-registry-styles';
 import { hrefWithLocale } from '@/lib/withLocale';
 import { registryEditor } from '@/registry/registry-editor';
 import { registryExamples } from '@/registry/registry-examples';
@@ -30,7 +31,7 @@ const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
 const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
-const PLATE_PUBLIC_REGISTRY_BASE_URL = 'https://platejs.org/r/new-york';
+const PLATE_PUBLIC_REGISTRY_BASE_URL = `https://platejs.org/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
 const SOURCE_FILES = [
   path.join(process.cwd(), '.source/index.ts'),
   path.join(process.cwd(), '.source/server.ts'),

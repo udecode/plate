@@ -181,7 +181,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -216,7 +215,6 @@ test.describe('images example', () => {
         await expect
           .poll(() => editor.selection.get())
           .toEqual({
-            kind: 'text',
             anchor: { path, offset: 0 },
             focus: { path, offset: 0 },
           });
@@ -306,7 +304,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -324,7 +321,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [3, 0], offset: 0 },
           focus: { path: [3, 0], offset: 0 },
         });
@@ -383,7 +379,6 @@ test.describe('images example', () => {
       expect(boxes[2]?.top).toBeGreaterThan(boxes[1]?.top ?? 0);
 
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [4, 0], offset: 'After adjacent images.'.length },
         focus: { path: [4, 0], offset: 'After adjacent images.'.length },
       });
@@ -418,7 +413,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [3, 0], offset: 0 },
           focus: { path: [3, 0], offset: 0 },
         });
@@ -428,7 +422,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [3, 0], offset: 0 },
           focus: { path: [3, 0], offset: 0 },
         });
@@ -698,7 +691,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [3, 0], offset: 0 },
           focus: { path: [3, 0], offset: 0 },
         });
@@ -817,7 +809,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [2, 0], offset: 0 },
           focus: { path: [2, 0], offset: 0 },
         });
@@ -854,7 +845,6 @@ test.describe('images example', () => {
       'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your clipboard and paste it anywhere in the editor!';
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
@@ -862,12 +852,10 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [3, 0], offset: 0 },
         focus: { path: [3, 0], offset: 0 },
       });
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
@@ -879,7 +867,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -908,7 +895,6 @@ test.describe('images example', () => {
       'This example shows images in action. It features two ways to add images. You can either add an image via the toolbar icon above, or if you want in on a little secret, copy an image URL to your clipboard and paste it anywhere in the editor!';
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
@@ -919,7 +905,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -941,7 +926,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -973,7 +957,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -1013,7 +996,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1042,7 +1024,6 @@ test.describe('images example', () => {
       .allTextContents();
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 10 },
       focus: { path: [0, 0], offset: 10 },
     });
@@ -1115,7 +1096,6 @@ test.describe('images example', () => {
       .toEqual(['', 'Between edge images.', '']);
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 8 },
       focus: { path: [1, 0], offset: 8 },
     });
@@ -1146,7 +1126,6 @@ test.describe('images example', () => {
     await editor.assert.noDoubleSelectionHighlight();
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 8 },
       focus: { path: [1, 0], offset: 8 },
     });
@@ -1154,7 +1133,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -1165,7 +1143,6 @@ test.describe('images example', () => {
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 8 },
       focus: { path: [1, 0], offset: 8 },
     });
@@ -1173,7 +1150,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -1218,7 +1194,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1238,7 +1213,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path, offset: 0 },
           focus: { path, offset: 0 },
         });
@@ -1259,7 +1233,6 @@ test.describe('images example', () => {
       await expect
         .poll(() => editor.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path, offset: 0 },
           focus: { path, offset: 0 },
         });
@@ -1294,7 +1267,6 @@ test.describe('images example', () => {
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 113 },
       focus: { path: [0, 0], offset: 113 },
     });
@@ -1302,7 +1274,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1338,7 +1309,6 @@ test.describe('images example', () => {
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 113 },
       focus: { path: [0, 0], offset: 113 },
     });
@@ -1353,7 +1323,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1366,7 +1335,6 @@ test.describe('images example', () => {
     const proof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1387,7 +1355,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [2, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -1400,7 +1367,6 @@ test.describe('images example', () => {
     const afterImageProof = await takePliteBrowserRenderStateSnapshot(editor);
 
     expect(afterImageProof.selection).toEqual({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
@@ -1425,7 +1391,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1451,7 +1416,6 @@ test.describe('images example', () => {
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 113 },
       focus: { path: [0, 0], offset: 113 },
     });
@@ -1461,7 +1425,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1493,7 +1456,6 @@ test.describe('images example', () => {
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 113 },
       focus: { path: [0, 0], offset: 113 },
     });
@@ -1503,7 +1465,6 @@ test.describe('images example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 113 },
         focus: { path: [1, 0], offset: 0 },
       });

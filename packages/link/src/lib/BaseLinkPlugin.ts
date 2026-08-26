@@ -160,7 +160,9 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
     findAutolink: (): LinkTextAutolinkMatch | undefined => {
       const selection = state.selection();
 
-      if (!selection || !state.selection.isCollapsed()) return undefined;
+      if (!selection || !state.selection.isCollapsed()) {
+        return undefined;
+      }
 
       const before = state.points.before(
         selection,
@@ -304,7 +306,9 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
       exitEnd: () => {
         const selection = tx.selection();
 
-        if (!selection || !tx.selection.isCollapsed()) return undefined;
+        if (!selection || !tx.selection.isCollapsed()) {
+          return undefined;
+        }
 
         const link = tx.nodes.above({
           at: selection,
@@ -347,7 +351,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
       unwrap: (options?: UnwrapLinkOptions) => {
         const selection = tx.selection();
 
-        if (options?.split && selection) {
+        if (options?.split && selection && tx.selection.nodes().length === 0) {
           const [start, end] = RangeApi.edges(selection);
           const linkAboveStart = tx.nodes.above({
             at: start,
@@ -409,7 +413,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
       }: UpsertLinkOptions) => {
         const selection = tx.selection();
 
-        if (!selection) return undefined;
+        if (!selection || tx.selection.nodes().length > 0) return undefined;
 
         const linkAbove = tx.nodes.above({
           at: selection,
@@ -665,6 +669,7 @@ const pasteAutolinkRule = createLinkRule<
 
     if (
       selection &&
+      context.editor.read.selection.nodes().length === 0 &&
       (!codeBlock.installed ||
         !context.editor.read.nodes.above({
           at: selection,

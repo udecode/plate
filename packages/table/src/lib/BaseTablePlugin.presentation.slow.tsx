@@ -525,18 +525,6 @@ describe('table presentation slow contracts', () => {
         initialValue: input.children,
       });
 
-    const getCell = (
-      editor: ReturnType<typeof createEditorInstance>,
-      path: number[]
-    ) => {
-      const entry = editor.read.nodes.get(path, {
-        type: BaseTableCellPlugin,
-      });
-      assert.ok(entry);
-
-      return entry[0];
-    };
-
     describe('when background color is not set', () => {
       it('set background color for current cell', () => {
         const input = (
@@ -612,20 +600,27 @@ describe('table presentation slow contracts', () => {
         ) as TestEditor;
 
         const editorInstance = createEditorInstance(input);
-        const selection = editorInstance.read.selection();
         let commits = 0;
 
         editorInstance.subscribeCommit(() => (commits += 1) - 1);
-        editorInstance.plugin(BaseTablePlugin).update.setCellBackground({
-          color: 'red',
-          selectedCells: [
-            getCell(editorInstance, [0, 0, 0]),
-            getCell(editorInstance, [0, 0, 1]),
-          ],
+        editorInstance.update((tx) => {
+          tx.selection.setNodes(
+            [
+              [0, 0, 0],
+              [0, 0, 1],
+            ],
+            { anchor: [0, 0, 0], focus: [0, 0, 1] }
+          );
+          tx.plugin(BaseTablePlugin).setCellBackground({ color: 'red' });
         });
 
         expect(editorInstance.read.children()).toMatchObject(output.children);
-        expect(editorInstance.read.selection()).toEqual(selection);
+        expect(
+          editorInstance.read.selection.nodes().map(([, path]) => path)
+        ).toEqual([
+          [0, 0, 0],
+          [0, 0, 1],
+        ]);
         expect(commits).toBe(1);
       });
     });
@@ -705,12 +700,15 @@ describe('table presentation slow contracts', () => {
         ) as TestEditor;
 
         const editorInstance = createEditorInstance(input);
+        editorInstance.update.selection.setNodes(
+          [
+            [0, 0, 0],
+            [0, 0, 1],
+          ],
+          { anchor: [0, 0, 0], focus: [0, 0, 1] }
+        );
         editorInstance.plugin(BaseTablePlugin).update.setCellBackground({
           color: null,
-          selectedCells: [
-            getCell(editorInstance, [0, 0, 0]),
-            getCell(editorInstance, [0, 0, 1]),
-          ],
         });
 
         expect(editorInstance.read.children()).toMatchObject(output.children);
@@ -926,6 +924,18 @@ describe('table presentation slow contracts', () => {
         ).toBe(true);
         expect(
           editor.plugin(BaseTablePlugin).read.isSelectedCellBorder(cells, 'top')
+        ).toBe(true);
+
+        editor.update.selection.setNodes(
+          [
+            [0, 0, 0],
+            [0, 0, 1],
+          ],
+          { anchor: [0, 0, 0], focus: [0, 0, 1] }
+        );
+
+        expect(
+          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders().outer
         ).toBe(true);
 
         setBorders(editor, [0, 0, 1], {

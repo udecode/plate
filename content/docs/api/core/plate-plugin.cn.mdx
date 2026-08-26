@@ -445,11 +445,6 @@ update method。
   派生 state provider。
 </APIItem>
 
-<APIItem name="selectionKinds" type="readonly EditorSelectionSpec[]">
-  已安装的自定义 selection payload、codec 和行为。具体 editor 的读取和更新会
-  从已安装的插件 descriptor 推断每个 payload；不需要 module augmentation。
-</APIItem>
-
 <APIItem name="contributions" type="readonly EditorExtensionContribution[]">
   绑定到类型化 extension point 的有序值。Host clipboard insertion 必须直接使用
   `clipboardHandler(...)` contribution，不能使用根级 `clipboard` 字段。
@@ -566,7 +561,7 @@ factory，或使用前一阶段新增类型。
 - `selectors`：基于 editor-local state 的纯派生值
 - `update`：插件作用域内、绑定事务的变更
 - `readMiddleware`、`commands`、`corrections`、`stateFields`、
-  `effectTypes`、`facetProviders`、`selectionKinds`、`contributions`、
+  `effectTypes`、`facetProviders`、`contributions`、
   `on`、`activate` 和 `validate`：直接声明在插件上的原生 Plite 能力
 - `codecs`：context-bound `defineCodecs` 返回的 declaration
 

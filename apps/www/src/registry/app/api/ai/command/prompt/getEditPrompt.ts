@@ -1,4 +1,4 @@
-import type { AIChatRequestRefs } from '@platejs/ai/react';
+import type { AIChatRequestRefs } from '@platejs/ai';
 import type { MarkdownEditor } from '@platejs/markdown';
 import dedent from 'dedent';
 

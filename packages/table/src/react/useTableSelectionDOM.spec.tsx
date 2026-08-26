@@ -8,6 +8,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
+import { createTableNodeSelection } from '../lib/internal/selection';
 import { TablePlugin } from './TablePlugin';
 import { useTableSelectionDOM } from './useTableSelectionDOM';
 
@@ -112,9 +113,10 @@ describe('useTableSelectionDOM', () => {
     assert.ok(anchor);
     assert.ok(focus);
 
-    const selection = editor
+    const view = editor
       .plugin(TablePlugin)
-      .read.createCellSelection({ anchor, focus });
+      .read.selection({ anchor, focus });
+    const selection = view && createTableNodeSelection(view);
 
     assert.ok(selection);
 
@@ -136,9 +138,11 @@ describe('useTableSelectionDOM', () => {
     expect(c4Set).not.toHaveBeenCalled();
     expect(querySelectorAll).toHaveBeenCalledTimes(1);
 
-    const backwardSelection = editor
+    const backwardView = editor
       .plugin(TablePlugin)
-      .read.createCellSelection({ anchor: focus, focus: anchor });
+      .read.selection({ anchor: focus, focus: anchor });
+    const backwardSelection =
+      backwardView && createTableNodeSelection(backwardView);
 
     assert.ok(backwardSelection);
 

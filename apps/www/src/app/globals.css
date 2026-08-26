@@ -1,8 +1,11 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn-prose';
+@import '../registry/styles/preview-style-classes.css';
 
 @source "../**/*.{ts,tsx,mdx}";
+@source not "../../public/r";
+@source not "../__registry__";
 
 @plugin "tailwind-scrollbar-hide";
 

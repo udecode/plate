@@ -64,7 +64,7 @@ Keep structurally owned editable content in the owning node's ordinary
 `children`. Conditional visibility, selection, copy, or mounting is a
 projection/DOM-coverage job, not a reason to invent another persisted content
 container. Distinct owner selection, child-text focus, rendering, or optional
-empty UI also does not earn a one-child semantic wrapper: use selection kinds,
+empty UI also does not earn a one-child semantic wrapper: use selection state,
 schema behavior, and projection. A structural child element earns identity
 only when it owns distinct grammar, properties, commands, or one of several
 real semantic regions. Promote content to a named root only when it has
@@ -99,13 +99,16 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   factory closure or an honest host owner. Plate runtime values alone use
   `initialState` and the scoped store.
 - Low-level registration slots name the descriptors they contain:
-  `stateFields`, `effectTypes`, `facetProviders`, and `selectionKinds`.
-- A custom selection kind is one installed descriptor capability. Its
-  `selectionKinds` entry owns the payload type, codec, validator, mapping, and
-  behavior once; concrete editor reads and updates infer that payload only when
-  the descriptor is installed. Never add an ambient module augmentation,
-  global selection-kind map, side-effect type import, or open custom-selection
-  fallback as a second source of truth.
+  `stateFields`, `effectTypes`, and `facetProviders`.
+- Editor selection is a closed core capability: text selection plus one
+  directional exact `NodeSelection`. Delete extension-defined selection kinds,
+  feature selection payloads, parallel selected-node stores, and plugin-owned
+  selection protocols. Feature owners derive their view from core exact nodes
+  and keep only feature geometry or presentation.
+- Keep the callable `selection()` and every generic range predicate on one
+  representative `Range | null` contract. Read exact node membership through
+  `selection.nodes()` or `selection.ranges()`; never make a range predicate
+  return a selection-kind-specific answer.
 - Keep concrete editor read/update callbacks contravariant. Bivariant callback
   parameters let explicit annotations manufacture uninstalled capabilities.
   Preserve exact tuples with a type-only invariant witness, erase them only at

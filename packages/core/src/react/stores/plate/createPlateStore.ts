@@ -2,8 +2,8 @@ import {
   type EditorCommit,
   type EditorStateView,
   type ExtensionsOf,
+  type Range,
   RangeApi,
-  type Selection,
   type ValueOf,
 } from '@platejs/plite';
 import {
@@ -30,13 +30,6 @@ const childrenChanged = (change?: EditorCommit) =>
 
 const selectionChanged = (change?: { selectionChanged?: boolean }) =>
   Boolean(change?.selectionChanged);
-
-const selectionEqual = (previous: Selection, next: Selection) => {
-  if (previous === next) return true;
-  if (!previous || !next) return previous === next;
-
-  return RangeApi.equals(previous, next);
-};
 
 export const createPlateStore = <E = PlateStoreEditor>({
   containerRef = { current: null },
@@ -220,11 +213,11 @@ export function useActiveEditor(
 }
 
 /** Get the editor selection (deeply memoized). */
-export const useEditorSelection = (id?: string): Selection => {
+export const useEditorSelection = (id?: string): Range | null => {
   const editor = useInternalEditor(id);
 
   return useEditorRuntimeState(editor, (state) => state.selection(), {
-    equalityFn: selectionEqual,
+    equalityFn: RangeApi.equals,
     shouldUpdate: selectionChanged,
   });
 };

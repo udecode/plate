@@ -11,7 +11,7 @@ export const setPoint: SelectionMutationMethods['setPoint'] = (
   const selection = getCurrentSelection(editor);
   let { edge = 'both' } = options;
 
-  if (!selection) {
+  if (!selection || !RangeApi.isRange(selection)) {
     return;
   }
 

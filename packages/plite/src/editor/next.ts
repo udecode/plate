@@ -28,7 +28,7 @@ export const next = ((
   const { at = editorGetSnapshot(editor).selection } = options;
   let match = normalizeNodeMatch(options.type, options.match);
 
-  if (!at) {
+  if (!at || !LocationApi.isLocation(at)) {
     return undefined;
   }
 

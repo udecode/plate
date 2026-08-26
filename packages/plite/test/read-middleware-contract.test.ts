@@ -49,7 +49,12 @@ describe('descriptor-based extension read middleware', () => {
     const editor = createEditor({ extensions: [first, second] });
 
     assert.equal(
-      editor.read.nodes.shouldMergeNodesRemovePrevNode(previous, current),
+      executeEditorRead(
+        editor,
+        editorReads.nodes.shouldMergeNodesRemovePrevNode,
+        { current, previous },
+        () => true
+      ),
       false
     );
     assert.deepEqual(seen, ['first:before', 'second', 'first:after']);

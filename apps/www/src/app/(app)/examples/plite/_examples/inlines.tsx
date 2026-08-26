@@ -147,7 +147,10 @@ const inline = () =>
             }
 
             const selection = tx.selection();
-            const isCollapsed = selection && RangeApi.isCollapsed(selection);
+
+            if (!selection) return next();
+
+            const isCollapsed = RangeApi.isCollapsed(selection);
             const link: LinkElement = {
               type: 'link',
               url: text,

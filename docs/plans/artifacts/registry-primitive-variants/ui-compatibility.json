@@ -1,0 +1,5620 @@
+{
+  "bases": [
+    "base",
+    "radix"
+  ],
+  "boundaries": {
+    "itemCount": 51,
+    "moduleCount": 20,
+    "usageCount": 179
+  },
+  "items": [
+    {
+      "name": "ai-menu",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "className",
+            "disabled",
+            "onClick",
+            "size",
+            "variant"
+          ],
+          "file": "components/editor/ai-menu.tsx"
+        },
+        {
+          "imported": "Command",
+          "local": "Command",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "onValueChange",
+            "value"
+          ],
+          "file": "components/editor/ai-menu.tsx"
+        },
+        {
+          "imported": "CommandGroup",
+          "local": "CommandGroup",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "heading",
+            "key"
+          ],
+          "file": "components/editor/ai-menu.tsx"
+        },
+        {
+          "imported": "CommandItem",
+          "local": "CommandItem",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "onSelect",
+            "value"
+          ],
+          "file": "components/editor/ai-menu.tsx"
+        },
+        {
+          "imported": "CommandList",
+          "local": "CommandList",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/ai-menu.tsx"
+        }
+      ]
+    },
+    {
+      "name": "align-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/align-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "className"
+          ],
+          "file": "components/editor/align-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuRadioGroup",
+          "local": "DropdownMenuRadioGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onValueChange",
+            "value"
+          ],
+          "file": "components/editor/align-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuRadioItem",
+          "local": "DropdownMenuRadioItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "value"
+          ],
+          "file": "components/editor/align-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/align-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "import-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/import-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align"
+          ],
+          "file": "components/editor/import-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuGroup",
+          "local": "DropdownMenuGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/import-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "onSelect"
+          ],
+          "file": "components/editor/import-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/import-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "export-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/export-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align"
+          ],
+          "file": "components/editor/export-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuGroup",
+          "local": "DropdownMenuGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/export-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 5,
+          "props": [
+            "onSelect"
+          ],
+          "file": "components/editor/export-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/export-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "caption",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "...",
+            "onClick"
+          ],
+          "file": "components/editor/caption.tsx"
+        }
+      ]
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "buttonVariants",
+          "local": "buttonVariants",
+          "module": "button",
+          "callCount": 2,
+          "jsxCount": 0,
+          "props": [],
+          "file": "components/editor/font-color-toolbar-button.tsx"
+        },
+        {
+          "imported": "Tooltip",
+          "local": "Tooltip",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/font-color-toolbar-button.tsx"
+        },
+        {
+          "imported": "TooltipContent",
+          "local": "TooltipContent",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/font-color-toolbar-button.tsx"
+        },
+        {
+          "imported": "TooltipProvider",
+          "local": "TooltipProvider",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/font-color-toolbar-button.tsx"
+        },
+        {
+          "imported": "TooltipTrigger",
+          "local": "TooltipTrigger",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/font-color-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "block-discussion",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Avatar",
+          "local": "Avatar",
+          "module": "avatar",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/block-discussion.tsx"
+        },
+        {
+          "imported": "AvatarFallback",
+          "local": "AvatarFallback",
+          "module": "avatar",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/block-discussion.tsx"
+        },
+        {
+          "imported": "AvatarImage",
+          "local": "AvatarImage",
+          "module": "avatar",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "alt",
+            "src"
+          ],
+          "file": "components/editor/block-discussion.tsx"
+        },
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "aria-label",
+            "className",
+            "contentEditable",
+            "data-active",
+            "onClick",
+            "ref",
+            "variant"
+          ],
+          "file": "components/editor/block-discussion.tsx"
+        }
+      ]
+    },
+    {
+      "name": "emoji-picker",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "aria-label",
+            "className",
+            "onClick",
+            "size",
+            "title",
+            "type",
+            "variant"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "Popover",
+          "local": "Popover",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "PopoverContent",
+          "local": "PopoverContent",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "PopoverTrigger",
+          "local": "PopoverTrigger",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "Tooltip",
+          "local": "Tooltip",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "key"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "TooltipContent",
+          "local": "TooltipContent",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "side"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "TooltipProvider",
+          "local": "TooltipProvider",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/emoji-picker.tsx"
+        },
+        {
+          "imported": "TooltipTrigger",
+          "local": "TooltipTrigger",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/emoji-picker.tsx"
+        }
+      ]
+    },
+    {
+      "name": "list-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/list-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "align",
+            "alignOffset"
+          ],
+          "file": "components/editor/list-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuGroup",
+          "local": "DropdownMenuGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [],
+          "file": "components/editor/list-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 8,
+          "props": [
+            "onClick",
+            "onSelect"
+          ],
+          "file": "components/editor/list-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/list-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "insert-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/insert-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "className"
+          ],
+          "file": "components/editor/insert-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "onSelect"
+          ],
+          "file": "components/editor/insert-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/insert-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "insert-toolbar-classic-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/insert-toolbar-classic-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "className"
+          ],
+          "file": "components/editor/insert-toolbar-classic-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "onSelect"
+          ],
+          "file": "components/editor/insert-toolbar-classic-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/insert-toolbar-classic-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "line-height-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/line-height-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "className"
+          ],
+          "file": "components/editor/line-height-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuRadioGroup",
+          "local": "DropdownMenuRadioGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onValueChange",
+            "value"
+          ],
+          "file": "components/editor/line-height-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuRadioItem",
+          "local": "DropdownMenuRadioItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "value"
+          ],
+          "file": "components/editor/line-height-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/line-height-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "media-toolbar",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className",
+            "onClick",
+            "onMouseDown",
+            "size",
+            "variant"
+          ],
+          "file": "components/editor/media-toolbar.tsx"
+        },
+        {
+          "imported": "buttonVariants",
+          "local": "buttonVariants",
+          "module": "button",
+          "callCount": 1,
+          "jsxCount": 0,
+          "props": [],
+          "file": "components/editor/media-toolbar.tsx"
+        },
+        {
+          "imported": "Separator",
+          "local": "Separator",
+          "module": "separator",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "orientation"
+          ],
+          "file": "components/editor/media-toolbar.tsx"
+        }
+      ]
+    },
+    {
+      "name": "media-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "AlertDialog",
+          "local": "AlertDialog",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogAction",
+          "local": "AlertDialogAction",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onClick"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogCancel",
+          "local": "AlertDialogCancel",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogContent",
+          "local": "AlertDialogContent",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogDescription",
+          "local": "AlertDialogDescription",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogFooter",
+          "local": "AlertDialogFooter",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogHeader",
+          "local": "AlertDialogHeader",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "AlertDialogTitle",
+          "local": "AlertDialogTitle",
+          "module": "alert-dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "alignOffset",
+            "onClick"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuGroup",
+          "local": "DropdownMenuGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "onSelect"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        },
+        {
+          "imported": "Input",
+          "local": "Input",
+          "module": "input",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "autoFocus",
+            "className",
+            "id",
+            "onChange",
+            "onKeyDown",
+            "placeholder",
+            "type",
+            "value"
+          ],
+          "file": "components/editor/media-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "mode-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/mode-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "className"
+          ],
+          "file": "components/editor/mode-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuRadioGroup",
+          "local": "DropdownMenuRadioGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onValueChange",
+            "value"
+          ],
+          "file": "components/editor/mode-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuRadioItem",
+          "local": "DropdownMenuRadioItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "className",
+            "value"
+          ],
+          "file": "components/editor/mode-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/mode-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "more-toolbar-button",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenu",
+          "local": "DropdownMenu",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "modal",
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/more-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuContent",
+          "local": "DropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "align",
+            "className"
+          ],
+          "file": "components/editor/more-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuGroup",
+          "local": "DropdownMenuGroup",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/more-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuItem",
+          "local": "DropdownMenuItem",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "onSelect"
+          ],
+          "file": "components/editor/more-toolbar-button.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "DropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/more-toolbar-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "editor-context-menu",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "ContextMenu",
+          "local": "ShadcnContextMenu",
+          "module": "context-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "..."
+          ],
+          "file": "components/editor/context-menu.tsx"
+        },
+        {
+          "imported": "ContextMenuContent",
+          "local": "ShadcnContextMenuContent",
+          "module": "context-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "...",
+            "onCloseAutoFocus"
+          ],
+          "file": "components/editor/context-menu.tsx"
+        },
+        {
+          "imported": "ContextMenuTrigger",
+          "local": "ShadcnContextMenuTrigger",
+          "module": "context-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "...",
+            "asChild"
+          ],
+          "file": "components/editor/context-menu.tsx"
+        }
+      ]
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "DropdownMenuContent",
+          "local": "ShadcnDropdownMenuContent",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "...",
+            "onCloseAutoFocus"
+          ],
+          "file": "components/editor/dropdown-menu.tsx"
+        },
+        {
+          "imported": "DropdownMenuTrigger",
+          "local": "ShadcnDropdownMenuTrigger",
+          "module": "dropdown-menu",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "...",
+            "asChild"
+          ],
+          "file": "components/editor/dropdown-menu.tsx"
+        }
+      ]
+    },
+    {
+      "name": "block-list",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Checkbox",
+          "local": "Checkbox",
+          "module": "checkbox",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "checked",
+            "className",
+            "onCheckedChange",
+            "onMouseDown"
+          ],
+          "file": "components/editor/block-list.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toc-static",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "variant"
+          ],
+          "file": "components/editor/toc-static.tsx"
+        }
+      ]
+    },
+    {
+      "name": "callout",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "contentEditable",
+            "disabled",
+            "style",
+            "variant"
+          ],
+          "file": "components/editor/callout.tsx"
+        }
+      ]
+    },
+    {
+      "name": "code-block",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "...",
+            "aria-controls",
+            "aria-expanded",
+            "className",
+            "onClick",
+            "role",
+            "size",
+            "title",
+            "variant"
+          ],
+          "file": "components/editor/code-block.tsx"
+        },
+        {
+          "imported": "Command",
+          "local": "Command",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "shouldFilter"
+          ],
+          "file": "components/editor/code-block.tsx"
+        },
+        {
+          "imported": "CommandEmpty",
+          "local": "CommandEmpty",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/code-block.tsx"
+        },
+        {
+          "imported": "CommandGroup",
+          "local": "CommandGroup",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/code-block.tsx"
+        },
+        {
+          "imported": "CommandInput",
+          "local": "CommandInput",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "onValueChange",
+            "placeholder",
+            "value"
+          ],
+          "file": "components/editor/code-block.tsx"
+        },
+        {
+          "imported": "CommandItem",
+          "local": "CommandItem",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "onSelect",
+            "value"
+          ],
+          "file": "components/editor/code-block.tsx"
+        },
+        {
+          "imported": "CommandList",
+          "local": "CommandList",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/code-block.tsx"
+        }
+      ]
+    },
+    {
+      "name": "code-drawing",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className",
+            "onClick",
+            "size",
+            "title",
+            "variant"
+          ],
+          "file": "components/editor/code-drawing.tsx"
+        },
+        {
+          "imported": "Select",
+          "local": "Select",
+          "module": "select",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "onOpenChange",
+            "onValueChange",
+            "open",
+            "value"
+          ],
+          "file": "components/editor/code-drawing.tsx"
+        },
+        {
+          "imported": "SelectContent",
+          "local": "SelectContent",
+          "module": "select",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/code-drawing.tsx"
+        },
+        {
+          "imported": "SelectItem",
+          "local": "SelectItem",
+          "module": "select",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "key",
+            "value"
+          ],
+          "file": "components/editor/code-drawing.tsx"
+        },
+        {
+          "imported": "SelectTrigger",
+          "local": "SelectTrigger",
+          "module": "select",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/code-drawing.tsx"
+        },
+        {
+          "imported": "SelectValue",
+          "local": "SelectValue",
+          "module": "select",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [],
+          "file": "components/editor/code-drawing.tsx"
+        }
+      ]
+    },
+    {
+      "name": "column",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 7,
+          "props": [
+            "className",
+            "onClick",
+            "onMouseDown",
+            "variant"
+          ],
+          "file": "components/editor/column.tsx"
+        },
+        {
+          "imported": "Separator",
+          "local": "Separator",
+          "module": "separator",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "orientation"
+          ],
+          "file": "components/editor/column.tsx"
+        },
+        {
+          "imported": "Tooltip",
+          "local": "Tooltip",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/column.tsx"
+        },
+        {
+          "imported": "TooltipContent",
+          "local": "TooltipContent",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/column.tsx"
+        },
+        {
+          "imported": "TooltipProvider",
+          "local": "TooltipProvider",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/column.tsx"
+        },
+        {
+          "imported": "TooltipTrigger",
+          "local": "TooltipTrigger",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/column.tsx"
+        }
+      ]
+    },
+    {
+      "name": "comment",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Avatar",
+          "local": "Avatar",
+          "module": "avatar",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/comment.tsx"
+        },
+        {
+          "imported": "AvatarFallback",
+          "local": "AvatarFallback",
+          "module": "avatar",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [],
+          "file": "components/editor/comment.tsx"
+        },
+        {
+          "imported": "AvatarImage",
+          "local": "AvatarImage",
+          "module": "avatar",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "alt",
+            "src"
+          ],
+          "file": "components/editor/comment.tsx"
+        },
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 5,
+          "props": [
+            "className",
+            "disabled",
+            "onClick",
+            "size",
+            "type",
+            "variant"
+          ],
+          "file": "components/editor/comment.tsx"
+        }
+      ]
+    },
+    {
+      "name": "date",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Calendar",
+          "local": "Calendar",
+          "module": "calendar",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "initialFocus",
+            "mode",
+            "onSelect",
+            "selected"
+          ],
+          "file": "components/editor/date.tsx"
+        },
+        {
+          "imported": "Popover",
+          "local": "Popover",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/date.tsx"
+        },
+        {
+          "imported": "PopoverContent",
+          "local": "PopoverContent",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/date.tsx"
+        },
+        {
+          "imported": "PopoverTrigger",
+          "local": "PopoverTrigger",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/date.tsx"
+        }
+      ]
+    },
+    {
+      "name": "dnd",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Tooltip",
+          "local": "Tooltip",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/dnd.tsx"
+        },
+        {
+          "imported": "TooltipContent",
+          "local": "TooltipContent",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/dnd.tsx"
+        },
+        {
+          "imported": "TooltipTrigger",
+          "local": "TooltipTrigger",
+          "module": "tooltip",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/dnd.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footnote",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className",
+            "onClick",
+            "onMouseDown",
+            "size",
+            "type",
+            "variant"
+          ],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "Command",
+          "local": "Command",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "CommandGroup",
+          "local": "CommandGroup",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "CommandItem",
+          "local": "CommandItem",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "key",
+            "onMouseDown",
+            "onSelect"
+          ],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "CommandList",
+          "local": "CommandList",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "HoverCard",
+          "local": "HoverCard",
+          "module": "hover-card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "HoverCardContent",
+          "local": "HoverCardContent",
+          "module": "hover-card",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/footnote.tsx"
+        },
+        {
+          "imported": "HoverCardTrigger",
+          "local": "HoverCardTrigger",
+          "module": "hover-card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/footnote.tsx"
+        }
+      ]
+    },
+    {
+      "name": "link",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "buttonVariants",
+          "local": "buttonVariants",
+          "module": "button",
+          "callCount": 3,
+          "jsxCount": 0,
+          "props": [],
+          "file": "components/editor/link.tsx"
+        },
+        {
+          "imported": "Separator",
+          "local": "Separator",
+          "module": "separator",
+          "callCount": 0,
+          "jsxCount": 3,
+          "props": [
+            "className",
+            "orientation"
+          ],
+          "file": "components/editor/link.tsx"
+        }
+      ]
+    },
+    {
+      "name": "list-classic",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Checkbox",
+          "local": "Checkbox",
+          "module": "checkbox",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "checked",
+            "disabled",
+            "onCheckedChange"
+          ],
+          "file": "components/editor/list-classic.tsx"
+        }
+      ]
+    },
+    {
+      "name": "math",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "onClick",
+            "variant"
+          ],
+          "file": "components/editor/math.tsx"
+        }
+      ]
+    },
+    {
+      "name": "table",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "aria-label",
+            "className",
+            "onClick",
+            "ref",
+            "variant"
+          ],
+          "file": "components/editor/table.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toc",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "aria-current",
+            "className",
+            "key",
+            "onClick",
+            "variant"
+          ],
+          "file": "components/editor/toc.tsx"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "contentEditable",
+            "onClick",
+            "onMouseDown",
+            "size",
+            "variant"
+          ],
+          "file": "components/editor/toggle.tsx"
+        }
+      ]
+    },
+    {
+      "name": "settings-dialog",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 5,
+          "props": [
+            "aria-controls",
+            "aria-expanded",
+            "asChild",
+            "className",
+            "onClick",
+            "role",
+            "size",
+            "type",
+            "variant"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "Command",
+          "local": "Command",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "CommandEmpty",
+          "local": "CommandEmpty",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "CommandGroup",
+          "local": "CommandGroup",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "CommandInput",
+          "local": "CommandInput",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "placeholder"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "CommandItem",
+          "local": "CommandItem",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "key",
+            "onSelect",
+            "value"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "CommandList",
+          "local": "CommandList",
+          "module": "command",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "Dialog",
+          "local": "Dialog",
+          "module": "dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "DialogContent",
+          "local": "DialogContent",
+          "module": "dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "DialogDescription",
+          "local": "DialogDescription",
+          "module": "dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "DialogHeader",
+          "local": "DialogHeader",
+          "module": "dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "DialogTitle",
+          "local": "DialogTitle",
+          "module": "dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "DialogTrigger",
+          "local": "DialogTrigger",
+          "module": "dialog",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "Input",
+          "local": "Input",
+          "module": "input",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "data-1p-ignore",
+            "id",
+            "onChange",
+            "placeholder",
+            "type",
+            "value"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "Popover",
+          "local": "Popover",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onOpenChange",
+            "open"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "PopoverContent",
+          "local": "PopoverContent",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "id"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        },
+        {
+          "imported": "PopoverTrigger",
+          "local": "PopoverTrigger",
+          "module": "popover",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild",
+            "id"
+          ],
+          "file": "components/editor/settings-dialog.tsx"
+        }
+      ]
+    },
+    {
+      "name": "plate-to-html",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild",
+            "className"
+          ],
+          "file": "components/editor/plate-to-html.tsx"
+        }
+      ]
+    },
+    {
+      "name": "select-editor-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "className",
+            "onClick",
+            "size",
+            "type",
+            "variant"
+          ],
+          "file": "examples/select-editor-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "controlled-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "onClick"
+          ],
+          "file": "examples/controlled-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "huge-document-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "asChild",
+            "size",
+            "variant"
+          ],
+          "file": "examples/huge-document-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "multiple-editors-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Separator",
+          "local": "Separator",
+          "module": "separator",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [],
+          "file": "examples/multiple-editors-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "version-history-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "onClick"
+          ],
+          "file": "examples/version-history-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 5,
+          "props": [
+            "onClick"
+          ],
+          "file": "examples/markdown-streaming-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "collaboration-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Alert",
+          "local": "Alert",
+          "module": "alert",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "data-schema-status",
+            "variant"
+          ],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "AlertDescription",
+          "local": "AlertDescription",
+          "module": "alert",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "AlertTitle",
+          "local": "AlertTitle",
+          "module": "alert",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "Badge",
+          "local": "Badge",
+          "module": "badge",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "data-peer-status",
+            "variant"
+          ],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "Button",
+          "local": "Button",
+          "module": "button",
+          "callCount": 0,
+          "jsxCount": 5,
+          "props": [
+            "aria-label",
+            "data-connection-action",
+            "data-history-action",
+            "data-schema-action",
+            "disabled",
+            "onClick",
+            "onMouseDown",
+            "size",
+            "variant"
+          ],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "Card",
+          "local": "Card",
+          "module": "card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "data-peer"
+          ],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "CardContent",
+          "local": "CardContent",
+          "module": "card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "CardDescription",
+          "local": "CardDescription",
+          "module": "card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "CardFooter",
+          "local": "CardFooter",
+          "module": "card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className"
+          ],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "CardHeader",
+          "local": "CardHeader",
+          "module": "card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "examples/collaboration-demo.tsx"
+        },
+        {
+          "imported": "CardTitle",
+          "local": "CardTitle",
+          "module": "card",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "examples/collaboration-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "single-block-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Checkbox",
+          "local": "Checkbox",
+          "module": "checkbox",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "checked",
+            "id",
+            "onCheckedChange"
+          ],
+          "file": "examples/single-block-demo.tsx"
+        },
+        {
+          "imported": "Label",
+          "local": "Label",
+          "module": "label",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "htmlFor"
+          ],
+          "file": "examples/single-block-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "editable-voids-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Input",
+          "local": "Input",
+          "module": "input",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "id",
+            "onChange",
+            "placeholder",
+            "type",
+            "value"
+          ],
+          "file": "examples/editable-voids-demo.tsx"
+        },
+        {
+          "imported": "Label",
+          "local": "Label",
+          "module": "label",
+          "callCount": 0,
+          "jsxCount": 4,
+          "props": [
+            "htmlFor"
+          ],
+          "file": "examples/editable-voids-demo.tsx"
+        },
+        {
+          "imported": "RadioGroup",
+          "local": "RadioGroup",
+          "module": "radio-group",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "defaultValue",
+            "id"
+          ],
+          "file": "examples/editable-voids-demo.tsx"
+        },
+        {
+          "imported": "RadioGroupItem",
+          "local": "RadioGroupItem",
+          "module": "radio-group",
+          "callCount": 0,
+          "jsxCount": 2,
+          "props": [
+            "id",
+            "value"
+          ],
+          "file": "examples/editable-voids-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "find-replace-demo",
+      "sourceKind": "plate",
+      "usages": [
+        {
+          "imported": "Input",
+          "local": "Input",
+          "module": "input",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [
+            "className",
+            "data-testid",
+            "onChange",
+            "placeholder",
+            "type",
+            "value"
+          ],
+          "file": "examples/find-replace-demo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "fumadocs",
+      "sourceKind": "docs",
+      "usages": [
+        {
+          "imported": "Separator",
+          "local": "Separator",
+          "module": "separator",
+          "callCount": 0,
+          "jsxCount": 1,
+          "props": [],
+          "file": "blocks/fumadocs/mdx-plate-components.tsx"
+        }
+      ]
+    },
+    {
+      "name": "emoji-docs",
+      "sourceKind": "docs",
+      "usages": []
+    },
+    {
+      "name": "editor-methods-docs",
+      "sourceKind": "docs",
+      "usages": []
+    },
+    {
+      "name": "controlled-docs",
+      "sourceKind": "docs",
+      "usages": []
+    },
+    {
+      "name": "form-docs",
+      "sourceKind": "docs",
+      "usages": []
+    }
+  ],
+  "modules": [
+    {
+      "exports": {
+        "base": [
+          "Alert",
+          "AlertAction",
+          "AlertDescription",
+          "AlertTitle"
+        ],
+        "radix": [
+          "Alert",
+          "AlertAction",
+          "AlertDescription",
+          "AlertTitle"
+        ]
+      },
+      "importedSymbols": [
+        "Alert",
+        "AlertDescription",
+        "AlertTitle"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "alert"
+    },
+    {
+      "exports": {
+        "base": [
+          "AlertDialog",
+          "AlertDialogAction",
+          "AlertDialogCancel",
+          "AlertDialogContent",
+          "AlertDialogDescription",
+          "AlertDialogFooter",
+          "AlertDialogHeader",
+          "AlertDialogMedia",
+          "AlertDialogOverlay",
+          "AlertDialogPortal",
+          "AlertDialogTitle",
+          "AlertDialogTrigger"
+        ],
+        "radix": [
+          "AlertDialog",
+          "AlertDialogAction",
+          "AlertDialogCancel",
+          "AlertDialogContent",
+          "AlertDialogDescription",
+          "AlertDialogFooter",
+          "AlertDialogHeader",
+          "AlertDialogMedia",
+          "AlertDialogOverlay",
+          "AlertDialogPortal",
+          "AlertDialogTitle",
+          "AlertDialogTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "AlertDialog",
+        "AlertDialogAction",
+        "AlertDialogCancel",
+        "AlertDialogContent",
+        "AlertDialogDescription",
+        "AlertDialogFooter",
+        "AlertDialogHeader",
+        "AlertDialogTitle"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "alert-dialog"
+    },
+    {
+      "exports": {
+        "base": [
+          "Avatar",
+          "AvatarBadge",
+          "AvatarFallback",
+          "AvatarGroup",
+          "AvatarGroupCount",
+          "AvatarImage"
+        ],
+        "radix": [
+          "Avatar",
+          "AvatarBadge",
+          "AvatarFallback",
+          "AvatarGroup",
+          "AvatarGroupCount",
+          "AvatarImage"
+        ]
+      },
+      "importedSymbols": [
+        "Avatar",
+        "AvatarFallback",
+        "AvatarImage"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "avatar"
+    },
+    {
+      "exports": {
+        "base": [
+          "Badge",
+          "badgeVariants"
+        ],
+        "radix": [
+          "Badge",
+          "badgeVariants"
+        ]
+      },
+      "importedSymbols": [
+        "Badge"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "badge"
+    },
+    {
+      "exports": {
+        "base": [
+          "Button",
+          "buttonVariants"
+        ],
+        "radix": [
+          "Button",
+          "buttonVariants"
+        ]
+      },
+      "importedSymbols": [
+        "Button",
+        "buttonVariants"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "button"
+    },
+    {
+      "exports": {
+        "base": [
+          "Calendar",
+          "CalendarDayButton"
+        ],
+        "radix": [
+          "Calendar",
+          "CalendarDayButton"
+        ]
+      },
+      "importedSymbols": [
+        "Calendar"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "calendar"
+    },
+    {
+      "exports": {
+        "base": [
+          "Card",
+          "CardAction",
+          "CardContent",
+          "CardDescription",
+          "CardFooter",
+          "CardHeader",
+          "CardTitle"
+        ],
+        "radix": [
+          "Card",
+          "CardAction",
+          "CardContent",
+          "CardDescription",
+          "CardFooter",
+          "CardHeader",
+          "CardTitle"
+        ]
+      },
+      "importedSymbols": [
+        "Card",
+        "CardContent",
+        "CardDescription",
+        "CardFooter",
+        "CardHeader",
+        "CardTitle"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "card"
+    },
+    {
+      "exports": {
+        "base": [
+          "Checkbox"
+        ],
+        "radix": [
+          "Checkbox"
+        ]
+      },
+      "importedSymbols": [
+        "Checkbox"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "checkbox"
+    },
+    {
+      "exports": {
+        "base": [
+          "Command",
+          "CommandDialog",
+          "CommandEmpty",
+          "CommandGroup",
+          "CommandInput",
+          "CommandItem",
+          "CommandList",
+          "CommandSeparator",
+          "CommandShortcut"
+        ],
+        "radix": [
+          "Command",
+          "CommandDialog",
+          "CommandEmpty",
+          "CommandGroup",
+          "CommandInput",
+          "CommandItem",
+          "CommandList",
+          "CommandSeparator",
+          "CommandShortcut"
+        ]
+      },
+      "importedSymbols": [
+        "Command",
+        "CommandEmpty",
+        "CommandGroup",
+        "CommandInput",
+        "CommandItem",
+        "CommandList"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "command"
+    },
+    {
+      "exports": {
+        "base": [
+          "ContextMenu",
+          "ContextMenuCheckboxItem",
+          "ContextMenuContent",
+          "ContextMenuGroup",
+          "ContextMenuItem",
+          "ContextMenuLabel",
+          "ContextMenuPortal",
+          "ContextMenuRadioGroup",
+          "ContextMenuRadioItem",
+          "ContextMenuSeparator",
+          "ContextMenuShortcut",
+          "ContextMenuSub",
+          "ContextMenuSubContent",
+          "ContextMenuSubTrigger",
+          "ContextMenuTrigger"
+        ],
+        "radix": [
+          "ContextMenu",
+          "ContextMenuCheckboxItem",
+          "ContextMenuContent",
+          "ContextMenuGroup",
+          "ContextMenuItem",
+          "ContextMenuLabel",
+          "ContextMenuPortal",
+          "ContextMenuRadioGroup",
+          "ContextMenuRadioItem",
+          "ContextMenuSeparator",
+          "ContextMenuShortcut",
+          "ContextMenuSub",
+          "ContextMenuSubContent",
+          "ContextMenuSubTrigger",
+          "ContextMenuTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "ContextMenu",
+        "ContextMenuContent",
+        "ContextMenuTrigger"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "context-menu"
+    },
+    {
+      "exports": {
+        "base": [
+          "Dialog",
+          "DialogClose",
+          "DialogContent",
+          "DialogDescription",
+          "DialogFooter",
+          "DialogHeader",
+          "DialogOverlay",
+          "DialogPortal",
+          "DialogTitle",
+          "DialogTrigger"
+        ],
+        "radix": [
+          "Dialog",
+          "DialogClose",
+          "DialogContent",
+          "DialogDescription",
+          "DialogFooter",
+          "DialogHeader",
+          "DialogOverlay",
+          "DialogPortal",
+          "DialogTitle",
+          "DialogTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "Dialog",
+        "DialogContent",
+        "DialogDescription",
+        "DialogHeader",
+        "DialogTitle",
+        "DialogTrigger"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "dialog"
+    },
+    {
+      "exports": {
+        "base": [
+          "DropdownMenu",
+          "DropdownMenuCheckboxItem",
+          "DropdownMenuContent",
+          "DropdownMenuGroup",
+          "DropdownMenuItem",
+          "DropdownMenuLabel",
+          "DropdownMenuPortal",
+          "DropdownMenuRadioGroup",
+          "DropdownMenuRadioItem",
+          "DropdownMenuSeparator",
+          "DropdownMenuShortcut",
+          "DropdownMenuSub",
+          "DropdownMenuSubContent",
+          "DropdownMenuSubTrigger",
+          "DropdownMenuTrigger"
+        ],
+        "radix": [
+          "DropdownMenu",
+          "DropdownMenuCheckboxItem",
+          "DropdownMenuContent",
+          "DropdownMenuGroup",
+          "DropdownMenuItem",
+          "DropdownMenuLabel",
+          "DropdownMenuPortal",
+          "DropdownMenuRadioGroup",
+          "DropdownMenuRadioItem",
+          "DropdownMenuSeparator",
+          "DropdownMenuShortcut",
+          "DropdownMenuSub",
+          "DropdownMenuSubContent",
+          "DropdownMenuSubTrigger",
+          "DropdownMenuTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuGroup",
+        "DropdownMenuItem",
+        "DropdownMenuRadioGroup",
+        "DropdownMenuRadioItem",
+        "DropdownMenuTrigger"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "dropdown-menu"
+    },
+    {
+      "exports": {
+        "base": [
+          "HoverCard",
+          "HoverCardContent",
+          "HoverCardTrigger"
+        ],
+        "radix": [
+          "HoverCard",
+          "HoverCardContent",
+          "HoverCardTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "HoverCard",
+        "HoverCardContent",
+        "HoverCardTrigger"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "hover-card"
+    },
+    {
+      "exports": {
+        "base": [
+          "Input"
+        ],
+        "radix": [
+          "Input"
+        ]
+      },
+      "importedSymbols": [
+        "Input"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "input"
+    },
+    {
+      "exports": {
+        "base": [
+          "Label"
+        ],
+        "radix": [
+          "Label"
+        ]
+      },
+      "importedSymbols": [
+        "Label"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "label"
+    },
+    {
+      "exports": {
+        "base": [
+          "Popover",
+          "PopoverContent",
+          "PopoverDescription",
+          "PopoverHeader",
+          "PopoverTitle",
+          "PopoverTrigger"
+        ],
+        "radix": [
+          "Popover",
+          "PopoverAnchor",
+          "PopoverContent",
+          "PopoverDescription",
+          "PopoverHeader",
+          "PopoverTitle",
+          "PopoverTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "popover"
+    },
+    {
+      "exports": {
+        "base": [
+          "RadioGroup",
+          "RadioGroupItem"
+        ],
+        "radix": [
+          "RadioGroup",
+          "RadioGroupItem"
+        ]
+      },
+      "importedSymbols": [
+        "RadioGroup",
+        "RadioGroupItem"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "radio-group"
+    },
+    {
+      "exports": {
+        "base": [
+          "Select",
+          "SelectContent",
+          "SelectGroup",
+          "SelectItem",
+          "SelectLabel",
+          "SelectScrollDownButton",
+          "SelectScrollUpButton",
+          "SelectSeparator",
+          "SelectTrigger",
+          "SelectValue"
+        ],
+        "radix": [
+          "Select",
+          "SelectContent",
+          "SelectGroup",
+          "SelectItem",
+          "SelectLabel",
+          "SelectScrollDownButton",
+          "SelectScrollUpButton",
+          "SelectSeparator",
+          "SelectTrigger",
+          "SelectValue"
+        ]
+      },
+      "importedSymbols": [
+        "Select",
+        "SelectContent",
+        "SelectItem",
+        "SelectTrigger",
+        "SelectValue"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "select"
+    },
+    {
+      "exports": {
+        "base": [
+          "Separator"
+        ],
+        "radix": [
+          "Separator"
+        ]
+      },
+      "importedSymbols": [
+        "Separator"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "separator"
+    },
+    {
+      "exports": {
+        "base": [
+          "Tooltip",
+          "TooltipContent",
+          "TooltipProvider",
+          "TooltipTrigger"
+        ],
+        "radix": [
+          "Tooltip",
+          "TooltipContent",
+          "TooltipProvider",
+          "TooltipTrigger"
+        ]
+      },
+      "importedSymbols": [
+        "Tooltip",
+        "TooltipContent",
+        "TooltipProvider",
+        "TooltipTrigger"
+      ],
+      "missingByBase": {
+        "base": [],
+        "radix": []
+      },
+      "module": "tooltip"
+    }
+  ],
+  "rows": [
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "className",
+        "disabled",
+        "onClick",
+        "size",
+        "variant"
+      ],
+      "file": "components/editor/ai-menu.tsx",
+      "item": "ai-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Command",
+      "local": "Command",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "onValueChange",
+        "value"
+      ],
+      "file": "components/editor/ai-menu.tsx",
+      "item": "ai-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandGroup",
+      "local": "CommandGroup",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "heading",
+        "key"
+      ],
+      "file": "components/editor/ai-menu.tsx",
+      "item": "ai-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandItem",
+      "local": "CommandItem",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "onSelect",
+        "value"
+      ],
+      "file": "components/editor/ai-menu.tsx",
+      "item": "ai-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandList",
+      "local": "CommandList",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/ai-menu.tsx",
+      "item": "ai-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/align-toolbar-button.tsx",
+      "item": "align-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "className"
+      ],
+      "file": "components/editor/align-toolbar-button.tsx",
+      "item": "align-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuRadioGroup",
+      "local": "DropdownMenuRadioGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onValueChange",
+        "value"
+      ],
+      "file": "components/editor/align-toolbar-button.tsx",
+      "item": "align-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuRadioItem",
+      "local": "DropdownMenuRadioItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "value"
+      ],
+      "file": "components/editor/align-toolbar-button.tsx",
+      "item": "align-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/align-toolbar-button.tsx",
+      "item": "align-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/import-toolbar-button.tsx",
+      "item": "import-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align"
+      ],
+      "file": "components/editor/import-toolbar-button.tsx",
+      "item": "import-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuGroup",
+      "local": "DropdownMenuGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/import-toolbar-button.tsx",
+      "item": "import-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "onSelect"
+      ],
+      "file": "components/editor/import-toolbar-button.tsx",
+      "item": "import-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/import-toolbar-button.tsx",
+      "item": "import-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/export-toolbar-button.tsx",
+      "item": "export-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align"
+      ],
+      "file": "components/editor/export-toolbar-button.tsx",
+      "item": "export-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuGroup",
+      "local": "DropdownMenuGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/export-toolbar-button.tsx",
+      "item": "export-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 5,
+      "props": [
+        "onSelect"
+      ],
+      "file": "components/editor/export-toolbar-button.tsx",
+      "item": "export-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/export-toolbar-button.tsx",
+      "item": "export-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "...",
+        "onClick"
+      ],
+      "file": "components/editor/caption.tsx",
+      "item": "caption",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "buttonVariants",
+      "local": "buttonVariants",
+      "module": "button",
+      "callCount": 2,
+      "jsxCount": 0,
+      "props": [],
+      "file": "components/editor/font-color-toolbar-button.tsx",
+      "item": "font-color-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Tooltip",
+      "local": "Tooltip",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/font-color-toolbar-button.tsx",
+      "item": "font-color-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipContent",
+      "local": "TooltipContent",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/font-color-toolbar-button.tsx",
+      "item": "font-color-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipProvider",
+      "local": "TooltipProvider",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/font-color-toolbar-button.tsx",
+      "item": "font-color-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipTrigger",
+      "local": "TooltipTrigger",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/font-color-toolbar-button.tsx",
+      "item": "font-color-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Avatar",
+      "local": "Avatar",
+      "module": "avatar",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/block-discussion.tsx",
+      "item": "block-discussion",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AvatarFallback",
+      "local": "AvatarFallback",
+      "module": "avatar",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/block-discussion.tsx",
+      "item": "block-discussion",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AvatarImage",
+      "local": "AvatarImage",
+      "module": "avatar",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "alt",
+        "src"
+      ],
+      "file": "components/editor/block-discussion.tsx",
+      "item": "block-discussion",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "aria-label",
+        "className",
+        "contentEditable",
+        "data-active",
+        "onClick",
+        "ref",
+        "variant"
+      ],
+      "file": "components/editor/block-discussion.tsx",
+      "item": "block-discussion",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "aria-label",
+        "className",
+        "onClick",
+        "size",
+        "title",
+        "type",
+        "variant"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Popover",
+      "local": "Popover",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "PopoverContent",
+      "local": "PopoverContent",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "PopoverTrigger",
+      "local": "PopoverTrigger",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Tooltip",
+      "local": "Tooltip",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "key"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipContent",
+      "local": "TooltipContent",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "side"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipProvider",
+      "local": "TooltipProvider",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipTrigger",
+      "local": "TooltipTrigger",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/emoji-picker.tsx",
+      "item": "emoji-picker",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/list-toolbar-button.tsx",
+      "item": "list-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "align",
+        "alignOffset"
+      ],
+      "file": "components/editor/list-toolbar-button.tsx",
+      "item": "list-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuGroup",
+      "local": "DropdownMenuGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [],
+      "file": "components/editor/list-toolbar-button.tsx",
+      "item": "list-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 8,
+      "props": [
+        "onClick",
+        "onSelect"
+      ],
+      "file": "components/editor/list-toolbar-button.tsx",
+      "item": "list-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/list-toolbar-button.tsx",
+      "item": "list-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "className"
+      ],
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "onSelect"
+      ],
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/insert-toolbar-classic-button.tsx",
+      "item": "insert-toolbar-classic-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "className"
+      ],
+      "file": "components/editor/insert-toolbar-classic-button.tsx",
+      "item": "insert-toolbar-classic-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "onSelect"
+      ],
+      "file": "components/editor/insert-toolbar-classic-button.tsx",
+      "item": "insert-toolbar-classic-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/insert-toolbar-classic-button.tsx",
+      "item": "insert-toolbar-classic-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/line-height-toolbar-button.tsx",
+      "item": "line-height-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "className"
+      ],
+      "file": "components/editor/line-height-toolbar-button.tsx",
+      "item": "line-height-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuRadioGroup",
+      "local": "DropdownMenuRadioGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onValueChange",
+        "value"
+      ],
+      "file": "components/editor/line-height-toolbar-button.tsx",
+      "item": "line-height-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuRadioItem",
+      "local": "DropdownMenuRadioItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "value"
+      ],
+      "file": "components/editor/line-height-toolbar-button.tsx",
+      "item": "line-height-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/line-height-toolbar-button.tsx",
+      "item": "line-height-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className",
+        "onClick",
+        "onMouseDown",
+        "size",
+        "variant"
+      ],
+      "file": "components/editor/media-toolbar.tsx",
+      "item": "media-toolbar",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "buttonVariants",
+      "local": "buttonVariants",
+      "module": "button",
+      "callCount": 1,
+      "jsxCount": 0,
+      "props": [],
+      "file": "components/editor/media-toolbar.tsx",
+      "item": "media-toolbar",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Separator",
+      "local": "Separator",
+      "module": "separator",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "orientation"
+      ],
+      "file": "components/editor/media-toolbar.tsx",
+      "item": "media-toolbar",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialog",
+      "local": "AlertDialog",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogAction",
+      "local": "AlertDialogAction",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onClick"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogCancel",
+      "local": "AlertDialogCancel",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogContent",
+      "local": "AlertDialogContent",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogDescription",
+      "local": "AlertDialogDescription",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogFooter",
+      "local": "AlertDialogFooter",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogHeader",
+      "local": "AlertDialogHeader",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDialogTitle",
+      "local": "AlertDialogTitle",
+      "module": "alert-dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "alignOffset",
+        "onClick"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuGroup",
+      "local": "DropdownMenuGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "onSelect"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Input",
+      "local": "Input",
+      "module": "input",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "autoFocus",
+        "className",
+        "id",
+        "onChange",
+        "onKeyDown",
+        "placeholder",
+        "type",
+        "value"
+      ],
+      "file": "components/editor/media-toolbar-button.tsx",
+      "item": "media-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/mode-toolbar-button.tsx",
+      "item": "mode-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "className"
+      ],
+      "file": "components/editor/mode-toolbar-button.tsx",
+      "item": "mode-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuRadioGroup",
+      "local": "DropdownMenuRadioGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onValueChange",
+        "value"
+      ],
+      "file": "components/editor/mode-toolbar-button.tsx",
+      "item": "mode-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuRadioItem",
+      "local": "DropdownMenuRadioItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "className",
+        "value"
+      ],
+      "file": "components/editor/mode-toolbar-button.tsx",
+      "item": "mode-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/mode-toolbar-button.tsx",
+      "item": "mode-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenu",
+      "local": "DropdownMenu",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "modal",
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/more-toolbar-button.tsx",
+      "item": "more-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "DropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "align",
+        "className"
+      ],
+      "file": "components/editor/more-toolbar-button.tsx",
+      "item": "more-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuGroup",
+      "local": "DropdownMenuGroup",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/more-toolbar-button.tsx",
+      "item": "more-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuItem",
+      "local": "DropdownMenuItem",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "onSelect"
+      ],
+      "file": "components/editor/more-toolbar-button.tsx",
+      "item": "more-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "DropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/more-toolbar-button.tsx",
+      "item": "more-toolbar-button",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "ContextMenu",
+      "local": "ShadcnContextMenu",
+      "module": "context-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "..."
+      ],
+      "file": "components/editor/context-menu.tsx",
+      "item": "editor-context-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "ContextMenuContent",
+      "local": "ShadcnContextMenuContent",
+      "module": "context-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "...",
+        "onCloseAutoFocus"
+      ],
+      "file": "components/editor/context-menu.tsx",
+      "item": "editor-context-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "ContextMenuTrigger",
+      "local": "ShadcnContextMenuTrigger",
+      "module": "context-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "...",
+        "asChild"
+      ],
+      "file": "components/editor/context-menu.tsx",
+      "item": "editor-context-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuContent",
+      "local": "ShadcnDropdownMenuContent",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "...",
+        "onCloseAutoFocus"
+      ],
+      "file": "components/editor/dropdown-menu.tsx",
+      "item": "editor-dropdown-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DropdownMenuTrigger",
+      "local": "ShadcnDropdownMenuTrigger",
+      "module": "dropdown-menu",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "...",
+        "asChild"
+      ],
+      "file": "components/editor/dropdown-menu.tsx",
+      "item": "editor-dropdown-menu",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Checkbox",
+      "local": "Checkbox",
+      "module": "checkbox",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "checked",
+        "className",
+        "onCheckedChange",
+        "onMouseDown"
+      ],
+      "file": "components/editor/block-list.tsx",
+      "item": "block-list",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "variant"
+      ],
+      "file": "components/editor/toc-static.tsx",
+      "item": "toc-static",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "contentEditable",
+        "disabled",
+        "style",
+        "variant"
+      ],
+      "file": "components/editor/callout.tsx",
+      "item": "callout",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "...",
+        "aria-controls",
+        "aria-expanded",
+        "className",
+        "onClick",
+        "role",
+        "size",
+        "title",
+        "variant"
+      ],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Command",
+      "local": "Command",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "shouldFilter"
+      ],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandEmpty",
+      "local": "CommandEmpty",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandGroup",
+      "local": "CommandGroup",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandInput",
+      "local": "CommandInput",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "onValueChange",
+        "placeholder",
+        "value"
+      ],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandItem",
+      "local": "CommandItem",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "onSelect",
+        "value"
+      ],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandList",
+      "local": "CommandList",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/code-block.tsx",
+      "item": "code-block",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className",
+        "onClick",
+        "size",
+        "title",
+        "variant"
+      ],
+      "file": "components/editor/code-drawing.tsx",
+      "item": "code-drawing",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Select",
+      "local": "Select",
+      "module": "select",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "onOpenChange",
+        "onValueChange",
+        "open",
+        "value"
+      ],
+      "file": "components/editor/code-drawing.tsx",
+      "item": "code-drawing",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "SelectContent",
+      "local": "SelectContent",
+      "module": "select",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/code-drawing.tsx",
+      "item": "code-drawing",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "SelectItem",
+      "local": "SelectItem",
+      "module": "select",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "key",
+        "value"
+      ],
+      "file": "components/editor/code-drawing.tsx",
+      "item": "code-drawing",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "SelectTrigger",
+      "local": "SelectTrigger",
+      "module": "select",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/code-drawing.tsx",
+      "item": "code-drawing",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "SelectValue",
+      "local": "SelectValue",
+      "module": "select",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [],
+      "file": "components/editor/code-drawing.tsx",
+      "item": "code-drawing",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 7,
+      "props": [
+        "className",
+        "onClick",
+        "onMouseDown",
+        "variant"
+      ],
+      "file": "components/editor/column.tsx",
+      "item": "column",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Separator",
+      "local": "Separator",
+      "module": "separator",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "orientation"
+      ],
+      "file": "components/editor/column.tsx",
+      "item": "column",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Tooltip",
+      "local": "Tooltip",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/column.tsx",
+      "item": "column",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipContent",
+      "local": "TooltipContent",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/column.tsx",
+      "item": "column",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipProvider",
+      "local": "TooltipProvider",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/column.tsx",
+      "item": "column",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipTrigger",
+      "local": "TooltipTrigger",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/column.tsx",
+      "item": "column",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Avatar",
+      "local": "Avatar",
+      "module": "avatar",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/comment.tsx",
+      "item": "comment",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AvatarFallback",
+      "local": "AvatarFallback",
+      "module": "avatar",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [],
+      "file": "components/editor/comment.tsx",
+      "item": "comment",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AvatarImage",
+      "local": "AvatarImage",
+      "module": "avatar",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "alt",
+        "src"
+      ],
+      "file": "components/editor/comment.tsx",
+      "item": "comment",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 5,
+      "props": [
+        "className",
+        "disabled",
+        "onClick",
+        "size",
+        "type",
+        "variant"
+      ],
+      "file": "components/editor/comment.tsx",
+      "item": "comment",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Calendar",
+      "local": "Calendar",
+      "module": "calendar",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "initialFocus",
+        "mode",
+        "onSelect",
+        "selected"
+      ],
+      "file": "components/editor/date.tsx",
+      "item": "date",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Popover",
+      "local": "Popover",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/date.tsx",
+      "item": "date",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "PopoverContent",
+      "local": "PopoverContent",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/date.tsx",
+      "item": "date",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "PopoverTrigger",
+      "local": "PopoverTrigger",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/date.tsx",
+      "item": "date",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Tooltip",
+      "local": "Tooltip",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/dnd.tsx",
+      "item": "dnd",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipContent",
+      "local": "TooltipContent",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/dnd.tsx",
+      "item": "dnd",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "TooltipTrigger",
+      "local": "TooltipTrigger",
+      "module": "tooltip",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/dnd.tsx",
+      "item": "dnd",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className",
+        "onClick",
+        "onMouseDown",
+        "size",
+        "type",
+        "variant"
+      ],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Command",
+      "local": "Command",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandGroup",
+      "local": "CommandGroup",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandItem",
+      "local": "CommandItem",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "key",
+        "onMouseDown",
+        "onSelect"
+      ],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandList",
+      "local": "CommandList",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "HoverCard",
+      "local": "HoverCard",
+      "module": "hover-card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "HoverCardContent",
+      "local": "HoverCardContent",
+      "module": "hover-card",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "HoverCardTrigger",
+      "local": "HoverCardTrigger",
+      "module": "hover-card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/footnote.tsx",
+      "item": "footnote",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "buttonVariants",
+      "local": "buttonVariants",
+      "module": "button",
+      "callCount": 3,
+      "jsxCount": 0,
+      "props": [],
+      "file": "components/editor/link.tsx",
+      "item": "link",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Separator",
+      "local": "Separator",
+      "module": "separator",
+      "callCount": 0,
+      "jsxCount": 3,
+      "props": [
+        "className",
+        "orientation"
+      ],
+      "file": "components/editor/link.tsx",
+      "item": "link",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Checkbox",
+      "local": "Checkbox",
+      "module": "checkbox",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "checked",
+        "disabled",
+        "onCheckedChange"
+      ],
+      "file": "components/editor/list-classic.tsx",
+      "item": "list-classic",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "onClick",
+        "variant"
+      ],
+      "file": "components/editor/math.tsx",
+      "item": "math",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "aria-label",
+        "className",
+        "onClick",
+        "ref",
+        "variant"
+      ],
+      "file": "components/editor/table.tsx",
+      "item": "table",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "aria-current",
+        "className",
+        "key",
+        "onClick",
+        "variant"
+      ],
+      "file": "components/editor/toc.tsx",
+      "item": "toc",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "contentEditable",
+        "onClick",
+        "onMouseDown",
+        "size",
+        "variant"
+      ],
+      "file": "components/editor/toggle.tsx",
+      "item": "toggle",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 5,
+      "props": [
+        "aria-controls",
+        "aria-expanded",
+        "asChild",
+        "className",
+        "onClick",
+        "role",
+        "size",
+        "type",
+        "variant"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Command",
+      "local": "Command",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandEmpty",
+      "local": "CommandEmpty",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandGroup",
+      "local": "CommandGroup",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandInput",
+      "local": "CommandInput",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "placeholder"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandItem",
+      "local": "CommandItem",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "key",
+        "onSelect",
+        "value"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CommandList",
+      "local": "CommandList",
+      "module": "command",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Dialog",
+      "local": "Dialog",
+      "module": "dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DialogContent",
+      "local": "DialogContent",
+      "module": "dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DialogDescription",
+      "local": "DialogDescription",
+      "module": "dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DialogHeader",
+      "local": "DialogHeader",
+      "module": "dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DialogTitle",
+      "local": "DialogTitle",
+      "module": "dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "DialogTrigger",
+      "local": "DialogTrigger",
+      "module": "dialog",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Input",
+      "local": "Input",
+      "module": "input",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "data-1p-ignore",
+        "id",
+        "onChange",
+        "placeholder",
+        "type",
+        "value"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Popover",
+      "local": "Popover",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onOpenChange",
+        "open"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "PopoverContent",
+      "local": "PopoverContent",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "id"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "PopoverTrigger",
+      "local": "PopoverTrigger",
+      "module": "popover",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild",
+        "id"
+      ],
+      "file": "components/editor/settings-dialog.tsx",
+      "item": "settings-dialog",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild",
+        "className"
+      ],
+      "file": "components/editor/plate-to-html.tsx",
+      "item": "plate-to-html",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "className",
+        "onClick",
+        "size",
+        "type",
+        "variant"
+      ],
+      "file": "examples/select-editor-demo.tsx",
+      "item": "select-editor-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "onClick"
+      ],
+      "file": "examples/controlled-demo.tsx",
+      "item": "controlled-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "asChild",
+        "size",
+        "variant"
+      ],
+      "file": "examples/huge-document-demo.tsx",
+      "item": "huge-document-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Separator",
+      "local": "Separator",
+      "module": "separator",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [],
+      "file": "examples/multiple-editors-demo.tsx",
+      "item": "multiple-editors-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "onClick"
+      ],
+      "file": "examples/version-history-demo.tsx",
+      "item": "version-history-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 5,
+      "props": [
+        "onClick"
+      ],
+      "file": "examples/markdown-streaming-demo.tsx",
+      "item": "markdown-streaming-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Alert",
+      "local": "Alert",
+      "module": "alert",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "data-schema-status",
+        "variant"
+      ],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertDescription",
+      "local": "AlertDescription",
+      "module": "alert",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "AlertTitle",
+      "local": "AlertTitle",
+      "module": "alert",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Badge",
+      "local": "Badge",
+      "module": "badge",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "data-peer-status",
+        "variant"
+      ],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Button",
+      "local": "Button",
+      "module": "button",
+      "callCount": 0,
+      "jsxCount": 5,
+      "props": [
+        "aria-label",
+        "data-connection-action",
+        "data-history-action",
+        "data-schema-action",
+        "disabled",
+        "onClick",
+        "onMouseDown",
+        "size",
+        "variant"
+      ],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Card",
+      "local": "Card",
+      "module": "card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "data-peer"
+      ],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CardContent",
+      "local": "CardContent",
+      "module": "card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CardDescription",
+      "local": "CardDescription",
+      "module": "card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CardFooter",
+      "local": "CardFooter",
+      "module": "card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className"
+      ],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CardHeader",
+      "local": "CardHeader",
+      "module": "card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "CardTitle",
+      "local": "CardTitle",
+      "module": "card",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "examples/collaboration-demo.tsx",
+      "item": "collaboration-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Checkbox",
+      "local": "Checkbox",
+      "module": "checkbox",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "checked",
+        "id",
+        "onCheckedChange"
+      ],
+      "file": "examples/single-block-demo.tsx",
+      "item": "single-block-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Label",
+      "local": "Label",
+      "module": "label",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "htmlFor"
+      ],
+      "file": "examples/single-block-demo.tsx",
+      "item": "single-block-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Input",
+      "local": "Input",
+      "module": "input",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "id",
+        "onChange",
+        "placeholder",
+        "type",
+        "value"
+      ],
+      "file": "examples/editable-voids-demo.tsx",
+      "item": "editable-voids-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Label",
+      "local": "Label",
+      "module": "label",
+      "callCount": 0,
+      "jsxCount": 4,
+      "props": [
+        "htmlFor"
+      ],
+      "file": "examples/editable-voids-demo.tsx",
+      "item": "editable-voids-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "RadioGroup",
+      "local": "RadioGroup",
+      "module": "radio-group",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "defaultValue",
+        "id"
+      ],
+      "file": "examples/editable-voids-demo.tsx",
+      "item": "editable-voids-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "RadioGroupItem",
+      "local": "RadioGroupItem",
+      "module": "radio-group",
+      "callCount": 0,
+      "jsxCount": 2,
+      "props": [
+        "id",
+        "value"
+      ],
+      "file": "examples/editable-voids-demo.tsx",
+      "item": "editable-voids-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Input",
+      "local": "Input",
+      "module": "input",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [
+        "className",
+        "data-testid",
+        "onChange",
+        "placeholder",
+        "type",
+        "value"
+      ],
+      "file": "examples/find-replace-demo.tsx",
+      "item": "find-replace-demo",
+      "missingIn": [],
+      "sourceKind": "plate"
+    },
+    {
+      "imported": "Separator",
+      "local": "Separator",
+      "module": "separator",
+      "callCount": 0,
+      "jsxCount": 1,
+      "props": [],
+      "file": "blocks/fumadocs/mdx-plate-components.tsx",
+      "item": "fumadocs",
+      "missingIn": [],
+      "sourceKind": "docs"
+    }
+  ]
+}

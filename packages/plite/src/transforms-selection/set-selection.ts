@@ -7,7 +7,7 @@ import {
 } from '../core/public-state';
 import type { AnyEditor as Editor, Value } from '../interfaces/editor';
 import { PointApi } from '../interfaces/point';
-import type { Range } from '../interfaces/range';
+import { type Range, RangeApi } from '../interfaces/range';
 import type { Selection } from '../interfaces/selection';
 import { SelectionApi } from '../interfaces/selection';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
@@ -43,7 +43,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   const selectionRoot = getCurrentSelectionRoot(editor);
   const updateRoot = getEditorUpdateRoot(editor);
 
-  if (!selection) {
+  if (!selection || !RangeApi.isRange(selection)) {
     return;
   }
 

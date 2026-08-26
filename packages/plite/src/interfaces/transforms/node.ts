@@ -7,6 +7,7 @@ import type {
   Node,
   NodeIn,
   NodeProps,
+  NodeSelection,
   Path,
   Selection,
   Value,
@@ -39,7 +40,7 @@ export interface NodeRemoveNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
@@ -51,7 +52,7 @@ export interface NodeLiftNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
@@ -62,7 +63,7 @@ export interface NodeMergeNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: RangeMode;
@@ -74,7 +75,7 @@ export interface NodeMoveNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
@@ -100,7 +101,7 @@ export interface NodeUnwrapNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
@@ -112,7 +113,7 @@ export interface NodeWrapNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
@@ -149,7 +150,7 @@ export interface NodeSetNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;
@@ -165,7 +166,7 @@ export interface NodeUnsetNodesOptions<
   T extends Node = Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location;
+  at?: Location | NodeSelection;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: MaximizeMode;

@@ -7,8 +7,6 @@ type ExpectedEditorApiKeys =
   | 'ai'
   | 'aiChat'
   | 'audio'
-  | 'blockMenu'
-  | 'blockSelection'
   | 'comment'
   | 'csv'
   | 'cursorOverlay'

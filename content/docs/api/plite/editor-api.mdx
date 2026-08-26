@@ -104,14 +104,14 @@ const structural = editor.read.nodes.toArray({
   type: ["table", "table_cell"],
 });
 
-const blocks = editor.read.nodes.toArray({
-  match: (node) =>
-    NodeApi.isElement(node) && editor.read.schema.isBlock(node),
-});
+const currentBlock = editor.read.nodes.block();
+const selectedBlocks = editor.read.nodes.blocks();
 ```
 
 An array selects any listed type. Use predicates for computed policy and
-TypeScript narrowing.
+TypeScript narrowing. `nodes.block(options?)` reads the nearest schema block.
+`nodes.blocks(options?)` reads every relevant schema block and defaults to the
+active selection, including exact node selections.
 
 ## Selection Queries
 

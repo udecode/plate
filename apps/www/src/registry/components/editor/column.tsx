@@ -3,7 +3,6 @@
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { ColumnItemPlugin, ColumnPlugin } from '@platejs/layout/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useComposedRef } from '@udecode/cn';
 import { type LucideProps, Trash2Icon, GripHorizontal } from 'lucide-react';
 import { PathApi } from 'platejs';
@@ -16,16 +15,10 @@ import {
   useElement,
   useElementSelected,
   useFocusedLast,
-  usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
@@ -34,6 +27,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 
 export function ColumnElement({
   children,
@@ -44,10 +42,6 @@ export function ColumnElement({
   const editor = useEditor();
   const { width } = element;
   const readOnly = useEditorReadOnly();
-  const isSelectionAreaVisible = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectionAreaVisible'
-  );
 
   const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
@@ -63,7 +57,7 @@ export function ColumnElement({
 
   return (
     <div className="group/column relative" style={{ width: width ?? '100%' }}>
-      {!readOnly && !isSelectionAreaVisible && (
+      {!readOnly && (
         <div
           ref={handleRef}
           className={cn(
@@ -91,7 +85,7 @@ export function ColumnElement({
         >
           {children}
 
-          {!readOnly && !isSelectionAreaVisible && <DropLine />}
+          {!readOnly && <DropLine />}
         </div>
       </PlateElement>
     </div>
@@ -151,7 +145,7 @@ export function ColumnGroupElement(
   );
 }
 
-function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
+function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const element = useElement(ColumnPlugin);
@@ -171,11 +165,11 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   };
 
   return (
-    <Popover open={open} modal={false}>
-      <PopoverAnchor>{children}</PopoverAnchor>
-      <PopoverContent
+    <FloatingPopover open={open} modal={false}>
+      <FloatingPopoverAnchor element={children} />
+      <FloatingPopoverContent
         className="w-auto p-1"
-        onOpenAutoFocus={(e) => {
+        onInitialFocus={(e) => {
           e.preventDefault();
         }}
         align="center"
@@ -243,8 +237,8 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
             <Trash2Icon />
           </Button>
         </div>
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }
 

@@ -198,12 +198,7 @@ const isCodeBlockActive = editor.read((state) =>
 );
 
 editor.update((tx) => {
-  tx.nodes.set(
-    { type: "code" },
-    {
-      match: (node) => ElementApi.isElement(node) && tx.schema.isBlock(node),
-    }
-  );
+  tx.blocks.set({ type: "code" });
 });
 ```
 

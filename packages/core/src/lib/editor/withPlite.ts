@@ -8,6 +8,7 @@ import {
   type PersistedDocumentInput,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
+  SelectionApi,
   type Selection,
   type Value,
 } from '@platejs/plite';
@@ -38,6 +39,7 @@ import {
   getCompiledPlatePlugin,
   getPlateModelPublication,
   getPlateRuntime,
+  isPlateBlockContent,
   withEditorApplicationSchemaCandidate,
   withCompiledPlateModelCandidate,
   withCompiledPlatePluginCandidate,
@@ -187,7 +189,7 @@ const lowerPlateNodeOptions = (
     next.type = lowerPlateNodeType(editor, record.type);
     changed = next.type !== record.type;
   }
-  for (const key of ['someOptions', 'split'] as const) {
+  for (const key of ['split'] as const) {
     if (!(key in record)) continue;
     const lowered = lowerPlateNodeOptions(editor, record[key]);
 
@@ -273,6 +275,7 @@ const createPlateNodeOptionsProxy = (
 const STATE_NODE_OPTION_INDEXES = Object.freeze({
   above: 0,
   block: 0,
+  blocks: 0,
   entries: 0,
   find: 0,
   get: 1,
@@ -286,7 +289,6 @@ const STATE_NODE_OPTION_INDEXES = Object.freeze({
 
 const TRANSACTION_NODE_OPTION_INDEXES = Object.freeze({
   ...STATE_NODE_OPTION_INDEXES,
-  duplicate: 1,
   insert: 1,
   lift: 0,
   merge: 0,
@@ -302,8 +304,7 @@ const TRANSACTION_NODE_OPTION_INDEXES = Object.freeze({
 const BLOCK_OPTION_INDEXES = Object.freeze({
   duplicate: 0,
   insertAfter: 1,
-  lift: 0,
-  reset: 1,
+  set: 1,
   toggle: 1,
 });
 
@@ -612,6 +613,10 @@ const installPlateModelAccessors = (editor: BaseEditor) => {
               : descriptor,
             group
           );
+      }
+      if (key === 'isBlockContent') {
+        return (node: Parameters<typeof rawSchema.isBlock>[0]) =>
+          isPlateBlockContent(rawSchema, node);
       }
       return Reflect.get(target, key, receiver);
     },
@@ -1069,9 +1074,7 @@ const applyBaseEditor = <
         const migrated =
           migration?.document ?? (inputDocument as EditorDocumentValue);
         const selectionRoot =
-          innerSelection?.anchor.root ??
-          innerSelection?.focus.root ??
-          MAIN_ROOT_KEY;
+          SelectionApi.root(innerSelection) ?? MAIN_ROOT_KEY;
         const runnerSelection =
           migration?.selection === 'start' || migration?.selection === 'end'
             ? undefined

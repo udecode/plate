@@ -544,8 +544,12 @@ describe('footnote node rendering', () => {
     );
 
     expect(focusReference).not.toHaveBeenCalled();
-    expect(view.container.textContent).toContain('First paragraph ref');
-    expect(view.container.textContent).toContain('Second paragraph ref');
+    expect(
+      view.getByRole('button', { name: /First paragraph ref/ })
+    ).toBeDefined();
+    expect(
+      view.getByRole('button', { name: /Second paragraph ref/ })
+    ).toBeDefined();
 
     fireEvent.click(view.getByRole('button', { name: /Second paragraph ref/ }));
 

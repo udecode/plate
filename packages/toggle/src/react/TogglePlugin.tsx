@@ -36,7 +36,7 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
 
         return state.transaction.extend(result, (tx) => {
           if (isOpen) {
-            tx.blocks.toggle(schema.type);
+            tx.blocks.reset();
 
             const insertedBlock = tx.nodes.block();
 
@@ -152,9 +152,10 @@ export const TogglePlugin = toPlatePlugin(BaseTogglePlugin).extend(
     readMiddleware: ({ around }) => [
       around(
         editorReads.nodes.isSelectable,
-        ({ input: { element }, next, state }) =>
+        ({ input: { element, nodeKey }, next }) =>
           ElementApi.isElement(element) &&
-          store.get('isClosed', state.key(element))
+          nodeKey !== null &&
+          store.get('isClosed', nodeKey)
             ? false
             : next()
       ),

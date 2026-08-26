@@ -150,7 +150,6 @@ test.describe('styling example', () => {
 
     await editor.assert.text(originalText);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: selectionStart },
       focus: { path: [0, 0], offset: selectionEnd },
     });

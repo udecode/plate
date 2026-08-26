@@ -11,6 +11,7 @@ import {
   NodeApi,
   type Point,
   RangeApi,
+  SelectionApi,
 } from '../interfaces';
 import {
   above as editorAbove,
@@ -53,6 +54,25 @@ export const wrapNodes = ((
     };
 
     if (!target) {
+      return;
+    }
+
+    if (SelectionApi.isNode(target)) {
+      const nodeMatch = match ?? (() => true);
+      const anchors = Array.from(
+        getNodes(editor, { at: target, match: nodeMatch, mode, voids }),
+        ([, path]) =>
+          editor.anchor(path, {
+            association: 'forward',
+            deletion: 'drop',
+          })
+      ).toReversed();
+
+      for (const anchor of anchors) {
+        const path = anchor.release();
+
+        if (path) wrapNodes(editor, element, { ...options, at: path });
+      }
       return;
     }
 

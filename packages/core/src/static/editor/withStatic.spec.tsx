@@ -115,7 +115,10 @@ describe('extendStaticEditor', () => {
         initialValue: value.children as Value,
       });
 
-      expect(editor.read.selection()).toEqual(selection);
+      expect(editor.read.selection()).toEqual({
+        anchor: selection.anchor,
+        focus: selection.focus,
+      });
     });
   });
 
@@ -137,7 +140,6 @@ describe('extendStaticEditor', () => {
 
       const start = editor.read.points.start([]);
       const expectedSelection = {
-        kind: 'text',
         anchor: start,
         focus: start,
       };
@@ -161,7 +163,6 @@ describe('extendStaticEditor', () => {
 
       const end = editor.read.points.end([]);
       const expectedSelection = {
-        kind: 'text',
         anchor: end,
         focus: end,
       };

@@ -12,6 +12,7 @@ import {
   type EditorUpdateTransaction,
   NodeApi,
   type Path,
+  type Range,
   SelectionApi,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
@@ -51,6 +52,8 @@ const paragraph = (text: string) =>
     type: 'paragraph',
     children: [{ text }],
   }) satisfies Element;
+
+const publicRange = ({ anchor, focus }: Range): Range => ({ anchor, focus });
 
 const markedParagraph = (text: string, marks: Record<string, unknown>) =>
   ({
@@ -151,7 +154,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 8, root: 'header' },
         focus: { path: [0, 0], offset: 8, root: 'header' },
       }
@@ -671,7 +673,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       }
@@ -760,7 +761,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 6, root: 'header' },
         focus: { path: [0, 0], offset: 6, root: 'header' },
       }
@@ -859,7 +859,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       }
@@ -1017,7 +1016,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 7, root: 'header' },
         focus: { path: [0, 0], offset: 7, root: 'header' },
       }
@@ -1541,7 +1539,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 5, root: 'header' },
         focus: { path: [0, 0], offset: 5, root: 'header' },
       }
@@ -1590,11 +1587,11 @@ describe('editor runtime/view contract', () => {
     );
     assert.deepEqual(
       runtime.read((state) => state.selection()),
-      mainSelection
+      publicRange(mainSelection)
     );
     assert.deepEqual(
       mainEditor.read((state) => state.selection()),
-      mainSelection
+      publicRange(mainSelection)
     );
     assert.equal(
       headerEditor.read((state) => state.selection()),
@@ -1614,11 +1611,11 @@ describe('editor runtime/view contract', () => {
     );
     assert.deepEqual(
       runtime.read((state) => state.selection()),
-      mainSelection
+      publicRange(mainSelection)
     );
     assert.deepEqual(
       mainEditor.read((state) => state.selection()),
-      mainSelection
+      publicRange(mainSelection)
     );
     assert.equal(
       headerEditor.read((state) => state.selection()),
@@ -1674,11 +1671,11 @@ describe('editor runtime/view contract', () => {
     );
     assert.deepEqual(
       runtime.read((state) => state.selection()),
-      mainSelection
+      publicRange(mainSelection)
     );
     assert.deepEqual(
       mainEditor.read((state) => state.selection()),
-      mainSelection
+      publicRange(mainSelection)
     );
     assert.equal(
       headerEditor.read((state) => state.selection()),
@@ -1935,7 +1932,6 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.deepEqual(selectionAfterSet, {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 6, root: 'header' },
       focus: { path: [0, 0], offset: 6, root: 'header' },
     });
@@ -1978,7 +1974,6 @@ describe('editor runtime/view contract', () => {
     assert.deepEqual(
       headerEditor.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1, root: 'header' },
         focus: { path: [0, 0], offset: 1, root: 'header' },
       }

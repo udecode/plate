@@ -4,6 +4,7 @@ import {
   RangeApi,
   type Selection,
   type SelectionValue,
+  SelectionApi,
 } from '@platejs/plite';
 
 import type { EditableInputController } from './input-state';
@@ -45,7 +46,9 @@ export const shouldExportModelSelectionToDOM = (
     commit?.tags.includes('semantic-command') &&
     commit?.changed.hasAny('document') &&
     modelSelection &&
-    RangeApi.isExpanded(modelSelection)
+    (SelectionApi.isNode(modelSelection) ||
+      (RangeApi.isRange(modelSelection) &&
+        RangeApi.isExpanded(modelSelection)))
   ) {
     return true;
   }
@@ -128,20 +131,20 @@ export const subscribeSelectionOnlyDOMExport = ({
   getModelSelection?: () => Selection;
   inputController: EditableInputController;
   scheduleDOMExport: ScheduleDOMExport;
-  shouldSkipDOMExport?: (
-    selection: Selection,
-    commit?: EditorCommit
-  ) => boolean;
+  shouldSkipDOMExport?: (selection: Range | null, commit?: EditorCommit) => boolean;
   syncDOMSelectionToEditor: SyncDOMSelectionToEditor;
 }) => {
   const pendingDOMExportCancels = new Set<CancelScheduledDOMExport>();
   let subscribed = true;
   const readProjection = () => {
     const modelSelection = getModelSelection();
-    const projectedSelection =
-      modelSelection && getDOMSelectionProjection
+    const projectedSelection = modelSelection
+      ? getDOMSelectionProjection
         ? getDOMSelectionProjection(modelSelection)
-        : modelSelection;
+        : RangeApi.isRange(modelSelection)
+          ? modelSelection
+          : null
+      : null;
 
     return {
       modelSelection,
@@ -150,6 +153,7 @@ export const subscribeSelectionOnlyDOMExport = ({
         !!modelSelection &&
         !!getDOMSelectionProjection &&
         (!projectedSelection ||
+          !RangeApi.isRange(modelSelection) ||
           !RangeApi.equals(modelSelection, projectedSelection)),
     };
   };
@@ -161,9 +165,13 @@ export const subscribeSelectionOnlyDOMExport = ({
           return;
         }
 
-        const { modelSelection, requiresProjectedExport } = readProjection();
+        const {
+          modelSelection,
+          projectedSelection,
+          requiresProjectedExport,
+        } = readProjection();
 
-        if (shouldSkipDOMExport?.(modelSelection, commit)) {
+        if (shouldSkipDOMExport?.(projectedSelection, commit)) {
           return;
         }
 

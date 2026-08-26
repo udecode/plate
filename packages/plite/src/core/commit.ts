@@ -180,30 +180,35 @@ const bindInverseNodeKeys = (
   return bindDocumentChangeNodeKeys(inverse, before, keyAt);
 };
 
-const getSelectionRoot = (selection: Selection, fallback: RootKey): RootKey =>
-  selection?.focus.root ?? selection?.anchor.root ?? fallback;
-
 const getSelectionNodeKeys = (
   selection: Selection,
   root: RootKey,
   index: SnapshotIndex,
   selectionRoot: RootKey
 ): NodeKey[] => {
-  if (!selection || getSelectionRoot(selection, selectionRoot) !== root) {
+  if (!selection || (SelectionApi.root(selection) ?? selectionRoot) !== root) {
     return [];
   }
 
   const paths: Path[] = [];
 
-  for (const point of [selection.anchor, selection.focus]) {
-    for (let depth = point.path.length; depth > 0; depth--) {
-      paths.push(point.path.slice(0, depth));
+  if (SelectionApi.isNode(selection)) {
+    for (const path of selection.paths) {
+      for (let depth = path.length; depth > 0; depth--) {
+        paths.push(path.slice(0, depth));
+      }
     }
-  }
+  } else if (RangeApi.isRange(selection)) {
+    for (const point of [selection.anchor, selection.focus]) {
+      for (let depth = point.path.length; depth > 0; depth--) {
+        paths.push(point.path.slice(0, depth));
+      }
+    }
 
-  if (!RangeApi.isCollapsed(selection)) {
-    for (const [, path] of index.entries()) {
-      if (RangeApi.includes(selection, path)) paths.push(path);
+    if (!RangeApi.isCollapsed(selection)) {
+      for (const [, path] of index.entries()) {
+        if (RangeApi.includes(selection, path)) paths.push(path);
+      }
     }
   }
 
@@ -980,10 +985,10 @@ const createCommitChanged = ({
     const result = new Set<RootKey>(roots);
 
     if (selectionBefore) {
-      result.add(getSelectionRoot(selectionBefore, selectionBeforeRoot));
+      result.add(SelectionApi.root(selectionBefore) ?? selectionBeforeRoot);
     }
     if (selectionAfter) {
-      result.add(getSelectionRoot(selectionAfter, selectionAfterRoot));
+      result.add(SelectionApi.root(selectionAfter) ?? selectionAfterRoot);
     }
     if (result.size === 0) result.add('main');
 

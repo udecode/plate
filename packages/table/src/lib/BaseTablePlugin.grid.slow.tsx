@@ -9,6 +9,7 @@ import {
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from './BaseTablePlugin';
+import { projectTableSelection } from './internal/selection';
 
 describe('table grid slow contracts', () => {
   jsxt;
@@ -55,9 +56,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -118,9 +119,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -179,9 +180,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -245,9 +246,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -314,9 +315,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -383,9 +384,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -452,9 +453,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -521,9 +522,9 @@ describe('table grid slow contracts', () => {
             initialValue: input.children,
           });
 
-          const table = editor
-            .plugin(BaseTablePlugin)
-            .read.getGridAbove()[0][0];
+          const table = projectTableSelection(
+            editor.plugin(BaseTablePlugin).read.selection()!
+          );
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }

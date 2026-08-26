@@ -5,6 +5,7 @@ import {
   point as editorPoint,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
+import { RangeApi } from '../interfaces/range';
 
 /**
  * Get the default location to insert content into the editor.
@@ -15,7 +16,7 @@ import type { AnyEditor as Editor } from '../interfaces/editor';
 export const getDefaultInsertLocation = (editor: Editor): Location => {
   const { selection } = editorGetSnapshot(editor);
 
-  if (selection) {
+  if (selection && RangeApi.isRange(selection)) {
     return selection;
   }
   if (editorGetChildren(editor).length > 0) {

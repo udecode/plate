@@ -12,7 +12,6 @@ import { removeNodes } from '../transforms-node/remove-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import type { TextUnit } from '../types/types';
 import type { WithEditorFirstArg } from '../utils/types';
-import { hasPath } from './has-path';
 import { point } from './point';
 
 export const applyDelete = (editor: Editor, command: DeleteCommand) => {
@@ -20,45 +19,57 @@ export const applyDelete = (editor: Editor, command: DeleteCommand) => {
     const selection = tx.resolveTarget();
 
     if (SelectionApi.isNode(selection)) {
-      const root =
-        selection.anchor.root ??
-        selection.focus.root ??
-        editor.read.view.root() ??
-        'main';
+      const root = selection.root ?? editor.read.view.root() ?? 'main';
 
       withEditorUpdateRootScope(editor, root, () => {
-        const { path } = selection;
-        const previousPath = PathApi.hasPrevious(path)
-          ? PathApi.previous(path)
-          : null;
-        const nextPath = PathApi.next(path);
-        const hadPrevious = previousPath
-          ? hasPath(editor, previousPath)
-          : false;
-        const hadNext = hasPath(editor, nextPath);
+        const { paths } = selection;
+        const firstPath = paths[0];
+        const lastPath = paths.at(-1);
 
-        removeNodes(editor, { at: path });
+        if (!firstPath || !lastPath) return;
+
+        const previousPath = PathApi.hasPrevious(firstPath)
+          ? PathApi.previous(firstPath)
+          : null;
+        const nextPath = PathApi.next(lastPath);
+        const previousPoint = previousPath
+          ? point(editor, previousPath, { edge: 'end' })
+          : null;
+        const nextPoint = editor.read.nodes.get(nextPath)
+          ? point(editor, nextPath, { edge: 'start' })
+          : null;
+        const previousAnchor = previousPoint
+          ? editor.anchor(previousPoint, {
+              association: 'backward',
+              deletion: 'nearest',
+            })
+          : null;
+        const nextAnchor = nextPoint
+          ? editor.anchor(nextPoint, {
+              association: 'forward',
+              deletion: 'nearest',
+            })
+          : null;
+
+        for (const path of paths.toReversed()) {
+          removeNodes(editor, { at: path });
+        }
 
         const candidates =
           command.direction === 'backward'
-            ? [
-                hadPrevious && previousPath
-                  ? { edge: 'end' as const, path: previousPath }
-                  : null,
-                hadNext ? { edge: 'start' as const, path } : null,
-              ]
-            : [
-                hadNext ? { edge: 'start' as const, path } : null,
-                hadPrevious && previousPath
-                  ? { edge: 'end' as const, path: previousPath }
-                  : null,
-              ];
-        const fallback = candidates.find(
-          (candidate) => candidate && hasPath(editor, candidate.path)
-        );
-        const fallbackPoint = fallback
-          ? point(editor, fallback.path, { edge: fallback.edge })
-          : null;
+            ? [previousAnchor, nextAnchor]
+            : [nextAnchor, previousAnchor];
+        let fallbackPoint = null;
+
+        for (const candidate of candidates) {
+          if (!candidate) continue;
+
+          fallbackPoint = candidate.release();
+          if (fallbackPoint) break;
+        }
+
+        previousAnchor?.release();
+        nextAnchor?.release();
         const rootedFallbackPoint =
           fallbackPoint && root !== 'main'
             ? { ...fallbackPoint, root }

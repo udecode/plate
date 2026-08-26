@@ -44,7 +44,6 @@ describe('scenario helpers', () => {
         kind: 'select',
         label: 'select',
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -474,7 +473,6 @@ describe('scenario helpers', () => {
       kind: 'select',
       label: 'select-word',
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 5 },
       },
@@ -492,7 +490,6 @@ describe('scenario helpers', () => {
         kind: 'select',
         label: 'select-word',
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -661,7 +658,6 @@ describe('scenario helpers', () => {
           noDoubleSelectionHighlight: true,
           selectedText: 'alpha',
           selection: {
-            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 5 },
           },
@@ -755,7 +751,6 @@ describe('scenario helpers', () => {
       {
         buttonName: 'Open editor',
         expectedSelection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -774,7 +769,6 @@ describe('scenario helpers', () => {
         {
           buttonName: /Open editor/u as unknown as string,
           expectedSelection: {
-            kind: 'text',
             anchor: { path: [0, 0], offset: 0 },
             focus: { path: [0, 0], offset: 0 },
           },
@@ -804,7 +798,6 @@ describe('scenario helpers', () => {
       {
         buttonName: 'Open editor',
         expectedSelection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -1003,7 +996,6 @@ describe('scenario helpers', () => {
     const selection = (offset: unknown) => ({
       anchor: { offset, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
-      kind: 'text',
     });
     const invalidSteps = [
       { kind: 'assertDOMCaret', offset: -1, text: 'a' },
@@ -1053,7 +1045,6 @@ describe('scenario helpers', () => {
           selection: {
             anchor: { offset, path: [0, 0] },
             focus: { offset: 0, path: [0, 0] },
-            kind: 'text',
           },
         },
         {
@@ -1238,23 +1229,19 @@ describe('scenario helpers', () => {
         },
         markButtonTestId: 'mark-button-bold',
         markSelection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 8 },
           focus: { path: [0, 0], offset: 16 },
         },
         selectedText: 'editable',
         selectionAfterArrowLeft: {
-          kind: 'text',
           anchor: { path: [0, 1], offset: 7 },
           focus: { path: [0, 1], offset: 7 },
         },
         selectionAfterCollapse: {
-          kind: 'text',
           anchor: { path: [0, 1], offset: 8 },
           focus: { path: [0, 1], offset: 8 },
         },
         selectionAfterInsert: {
-          kind: 'text',
           anchor: { path: [0, 1], offset: 9 },
           focus: { path: [0, 1], offset: 9 },
         },
@@ -1297,12 +1284,10 @@ describe('scenario helpers', () => {
 
   test('creates replayable generated command-family gauntlet helpers', () => {
     const collapsed = {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     };
     const selected = {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     };
@@ -1439,23 +1424,19 @@ describe('scenario helpers', () => {
       },
       followUpText: '!',
       pasteSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 4 },
       },
       pastedText: 'Paste',
       selectionAfterDeleteAfterPaste: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
         focus: { path: [0, 0], offset: 4 },
       },
       selectionAfterFollowUp: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       },
       selectionAfterPaste: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       },
@@ -1465,7 +1446,6 @@ describe('scenario helpers', () => {
       textAfterPaste: 'Paste text',
       wordDeleteIterations: 2,
       wordDeleteSelection: {
-        kind: 'text',
         anchor: { path: [0, 1], offset: 4 },
         focus: { path: [0, 1], offset: 4 },
       },
@@ -1530,7 +1510,6 @@ describe('scenario helpers', () => {
     const selection = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
-      kind: 'text' as const,
     };
 
     for (const iterations of invalidCounts) {

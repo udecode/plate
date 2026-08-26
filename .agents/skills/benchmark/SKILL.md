@@ -125,6 +125,14 @@ Within that order:
    isolating lane or diagnostic. Do not patch from correlation.
 5. When the conclusive-cause gate passes, pause later lanes immediately.
 
+For a reporter-visible rerender or render-storm claim, record an exact-route,
+phase-specific repeated-component inventory before owner isolation. Count
+render or commit work by component family and repeated visible unit before and
+during the named action. A wrapper-local Profiler, one improved component, or
+pointer latency can prove only that local result; none can close the route-wide
+claim. Account for every family above 5% of added work and at least 90%
+overall, or keep the benchmark open with the remainder named.
+
 ## Conclusive Cause Gate
 
 A cause is proven only when every row is present:

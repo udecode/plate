@@ -1,10 +1,7 @@
 'use client';
 
+import { CursorOverlayPlugin } from '@platejs/cursor';
 import type { TextSelection } from '@platejs/plite';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@platejs/selection/react';
 import {
   definePlatePlugin,
   ParagraphPlugin,
@@ -74,12 +71,7 @@ const CursorState = () => {
 
 const CursorOverlayOrderingExample = () => {
   const editor = usePlateEditor({
-    plugins: [
-      ParagraphPlugin,
-      BlockSelectionPlugin,
-      CursorOverlayPlugin,
-      NestedEditableProbePlugin,
-    ],
+    plugins: [ParagraphPlugin, CursorOverlayPlugin, NestedEditableProbePlugin],
     initialValue: [
       { children: [{ text: 'Focus this nested editor.' }], type: 'paragraph' },
     ],

@@ -7,13 +7,15 @@
     "@platejs/link"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/link.json",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {
-      "path": "src/registry/ui/link-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  useLinkToolbarButton,\n  useLinkToolbarButtonState,\n} from '@platejs/link/react';\nimport { Link } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function LinkToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const state = useLinkToolbarButtonState();\n  const { props: buttonProps } = useLinkToolbarButton(state);\n\n  return (\n    <ToolbarButton {...props} {...buttonProps} data-plate-focus tooltip=\"Link\">\n      <Link />\n    </ToolbarButton>\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "src/registry/components/editor/link-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { Link } from 'lucide-react';\nimport { useEditor, useEditorPlugin, useEditorSelector } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nimport { linkPlugin } from './link';\n\nexport function LinkToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditor();\n  const { api } = useEditorPlugin(linkPlugin);\n  const pressed = useEditorSelector((innerEditor) => {\n    const selection = innerEditor.read.selection();\n\n    return !!selection && innerEditor.read.nodes.some({ type: linkPlugin });\n  });\n\n  return (\n    <ToolbarButton\n      {...props}\n      pressed={pressed}\n      onClick={() => {\n        if (pressed) {\n          if (!editor.read.selection()) return;\n\n          const node = editor.read.nodes.find({\n            type: linkPlugin,\n          });\n\n          if (!node) return;\n\n          const endPoint = editor.read.points.end(node[1]);\n\n          if (endPoint) editor.update.selection.set(endPoint);\n        } else {\n          editor.api.dom.focus();\n          api.trigger({ focused: true });\n        }\n      }}\n      data-plate-focus\n      tooltip=\"Link\"\n    >\n      <Link />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/link-toolbar-button.tsx"
     }
   ],
   "meta": {
@@ -30,5 +32,5 @@
       "link-pro"
     ]
   },
-  "type": "registry:ui"
+  "type": "registry:component"
 }

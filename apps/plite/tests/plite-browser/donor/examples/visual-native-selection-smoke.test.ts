@@ -66,7 +66,6 @@ test.describe('visual native selection smoke', () => {
       },
     });
     const selection = {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'This is edit'.length },
       focus: { path: [0, 2], offset: ' text'.length },
     };
@@ -115,7 +114,6 @@ test.describe('visual native selection smoke', () => {
     await editor.selection.selectAll();
     await page.keyboard.type(text);
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: text.length },
       focus: { path: [0, 0], offset: text.length },
     });
@@ -134,7 +132,6 @@ test.describe('visual native selection smoke', () => {
       noDoubleSelectionHighlight: true,
       selectedText: 'def',
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: text.length },
         focus: { path: [0, 0], offset: text.length - 3 },
       },
@@ -247,7 +244,6 @@ test.describe('visual native selection smoke', () => {
     await expect(editor.root.locator('img')).toHaveCount(3);
     await expect(bottomImage).toBeVisible();
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [4, 0], offset: 'After adjacent images.'.length },
       focus: { path: [4, 0], offset: 'After adjacent images.'.length },
     });
@@ -269,7 +265,6 @@ test.describe('visual native selection smoke', () => {
     await assertPliteBrowserSelectionContract(editor, {
       noDoubleSelectionHighlight: true,
       selection: {
-        kind: 'text',
         anchor: { path: [3, 0], offset: 0 },
         focus: { path: [3, 0], offset: 0 },
       },
@@ -306,7 +301,6 @@ test.describe('visual native selection smoke', () => {
     await page.locator('[data-plite-editor] p').nth(1).click({ clickCount: 3 });
 
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
@@ -356,14 +350,12 @@ test.describe('visual native selection smoke', () => {
     const expectedSelection =
       testInfo.project.name === 'firefox'
         ? {
-            kind: 'text',
             anchor: { path: [0, 1, 0], offset: text.length },
             domAnchorOffset: text.length,
             domFocusOffset: 0,
             focus: { path: [0, 1, 0], offset: 0 },
           }
         : {
-            kind: 'text',
             anchor: { path: [0, 1, 0], offset: 0 },
             domAnchorOffset: 0,
             domFocusOffset: text.length,
@@ -380,7 +372,6 @@ test.describe('visual native selection smoke', () => {
       noDoubleSelectionHighlight: true,
       selectedText: text,
       selection: {
-        kind: 'text',
         anchor: expectedSelection.anchor,
         focus: expectedSelection.focus,
       },
@@ -419,7 +410,6 @@ test.describe('visual native selection smoke', () => {
       noDoubleSelectionHighlight: true,
       selectedText: 'Human',
       selection: {
-        kind: 'text',
         anchor: { path: [1, 0, 1, 0], offset: 0 },
         focus: { path: [1, 0, 1, 0], offset: 'Human'.length },
       },

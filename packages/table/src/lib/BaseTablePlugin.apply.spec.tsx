@@ -4,7 +4,11 @@ import assert from 'node:assert/strict';
 
 import { ElementIdPlugin } from '@platejs/core';
 import { DocumentChange } from '@platejs/plite';
-import { jsxt, type TestEditor } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 import { BaseYjsPlugin } from '@platejs/yjs/plate';
 
 import {
@@ -90,7 +94,9 @@ describe('BaseTablePlugin apply', () => {
 
     editor.update.selection.set(requested.selection!);
 
-    expect(editor.read.selection()).toEqual(requested.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(requested.selection)
+    );
   });
 
   it('clamps selection focus to the end of the table when dragging from inside the table to a block after it', () => {
@@ -153,7 +159,9 @@ describe('BaseTablePlugin apply', () => {
 
     editor.update.selection.set(requested.selection!);
 
-    expect(editor.read.selection()).toEqual(expected.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(expected.selection)
+    );
   });
 
   it('clamps backward selection focus to the point before the table when dragging from a block after it into the table', () => {
@@ -218,7 +226,9 @@ describe('BaseTablePlugin apply', () => {
 
     editor.update.selection.set(requested.selection!);
 
-    expect(editor.read.selection()).toEqual(expected.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(expected.selection)
+    );
   });
 
   it('derives current indices after a column is removed', () => {
@@ -368,7 +378,10 @@ describe('BaseTablePlugin apply', () => {
     editor.update.history.undo();
 
     expect(editor.read.children()).toMatchObject(input.children);
-    assert.deepEqual(editor.read.selection(), input.selection);
+    assert.deepEqual(
+      editor.read.selection(),
+      projectTestSelectionRange(input.selection)
+    );
 
     editor.update.history.redo();
 

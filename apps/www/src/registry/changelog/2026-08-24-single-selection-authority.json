@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-24-single-selection-authority",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-24-single-selection-authority.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Select one or many nodes through the editor model",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "cursor-overlay",
+      "files": ["apps/www/src/registry/components/editor/cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-24-selection-editor-owned-node-across-ab63885a",
+      "kind": "remove",
+      "summary": "The copied editor renders a Pointer Events marquee while exact one-or-many membership stays in editor selection. No selection plugin, area abstraction, or selection package is required.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor",
+        "block-menu",
+        "dnd",
+        "table",
+        "ai-menu",
+        "cursor-overlay"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-24",
+          "entry": "2026-08-24-single-selection-authority",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -437,7 +437,6 @@ the behavior needs that runtime phase.
 | `stateFields`    | typed persisted or runtime state descriptors                  |
 | `effectTypes`    | typed commit-effect descriptors and codecs                    |
 | `facetProviders` | derived state providers                                       |
-| `selectionKinds` | installed custom selection payloads, codecs, and behavior      |
 | `api`            | host services exposed through the extension namespace         |
 | `contributions`  | typed ordered values consumed through an extension point      |
 | `on.*`           | `commit`, `transactionChange`, `nodeChange`, and `textChange` |
@@ -484,56 +483,3 @@ type ImagesDefinition = DefinitionOf<typeof ImagesExtension>;
 Do not annotate callback contexts or pass a separate editor generic. The
 definition factory, installed descriptor tuple, and descriptor portal preserve
 the inferred capabilities.
-
-Custom selections follow the same rule. The installed descriptor owns the
-payload type and runtime protocol, so editor reads narrow it and editor updates
-accept it without module augmentation.
-
-```ts showLineNumbers
-import {
-  createEditor,
-  defineExtension,
-  defineValueCodec,
-  type EditorSelectionSpec,
-  type Range,
-} from "@platejs/plite";
-
-type GridSelection = Range &
-  Readonly<{
-    cells: readonly Range[];
-    kind: "grid";
-  }>;
-
-const isGridSelection = (value: unknown): value is GridSelection =>
-  typeof value === "object" &&
-  value !== null &&
-  Reflect.get(value, "kind") === "grid" &&
-  Array.isArray(Reflect.get(value, "cells"));
-
-const GridExtension = defineExtension("grid", {
-  selectionKinds: [
-    {
-      codec: defineValueCodec<GridSelection>({
-        decode(value) {
-          if (!isGridSelection(value)) throw new Error("Invalid grid selection");
-
-          return value;
-        },
-        encode: (selection) => selection,
-        version: 1,
-      }),
-      kind: "grid",
-      primaryRange: (selection) => selection,
-      validate: isGridSelection,
-    } satisfies EditorSelectionSpec<GridSelection>,
-  ],
-});
-
-const editor = createEditor({ extensions: [GridExtension] });
-const selection = editor.read.selection();
-
-if (selection?.kind === "grid") selection.cells;
-```
-
-An editor created without `GridExtension` rejects a `grid` selection at compile
-time. Runtime installation and type availability cannot drift apart.

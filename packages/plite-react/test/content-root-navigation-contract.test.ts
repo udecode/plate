@@ -316,7 +316,6 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(false);
     expect(event.preventDefault).not.toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0], root: 'card:body' },
       focus: { offset: 0, path: [1, 0], root: 'card:body' },
     });
@@ -342,7 +341,6 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -368,7 +366,6 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
       focus: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
     });
@@ -391,7 +388,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(bodyEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
       focus: { path: [0, 0], offset: 'Inside'.length, root: 'card:body' },
     });
@@ -415,7 +411,6 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(bodyEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });
@@ -443,7 +438,6 @@ describe('content root navigation', () => {
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
     expect(mainEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 'After'.length },
       focus: { path: [2, 0], offset: 'After'.length },
     });
@@ -470,7 +464,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [4, 0], offset: 0 },
       focus: { path: [4, 0], offset: 0 },
     });
@@ -497,7 +490,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 'Between'.length },
       focus: { path: [2, 0], offset: 'Between'.length },
     });
@@ -522,7 +514,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -547,7 +538,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -570,7 +560,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(mainEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'Before'.length },
       focus: { path: [0, 0], offset: 'Before'.length },
     });
@@ -765,7 +754,6 @@ describe('content root navigation', () => {
 
     expect(result.handled).toBe(true);
     expect(bodyEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0, root: 'card:body' },
       focus: { path: [0, 0], offset: 0, root: 'card:body' },
     });

@@ -228,12 +228,7 @@ describe('useElementSelected', () => {
           const start = tx.points.start([0, 1]);
 
           expect(start).toBeTruthy();
-          tx.selection.set(
-            SelectionApi.node([0, 1], {
-              anchor: start!,
-              focus: start!,
-            })
-          );
+          tx.selection.set(SelectionApi.nodes([[0, 1]]));
         });
       });
 
@@ -351,6 +346,43 @@ describe('useElementSelected', () => {
     });
 
     expect(selectedByHostId['0']).toBe(true);
+  });
+
+  it('tracks exact node selection by explicit node key', async () => {
+    editor = createReactEditor({ initialValue: initialValue() });
+
+    const watchedKey = editor.key([2]);
+    const selectedValues: boolean[] = [];
+    const ExplicitNodeKeyProbe = () => {
+      selectedValues.push(useElementSelected({ at: watchedKey, mode: 'node' }));
+
+      return null;
+    };
+
+    render(
+      <Plite editor={editor}>
+        <ExplicitNodeKeyProbe />
+        <Editable
+          renderElement={({ attributes, children }) => (
+            <div {...attributes}>{children}</div>
+          )}
+        />
+      </Plite>
+    );
+
+    expect(selectedValues.at(-1)).toBe(false);
+
+    await act(async () => {
+      editor.update.selection.setNodes([[2]]);
+    });
+
+    expect(selectedValues.at(-1)).toBe(true);
+
+    await act(async () => {
+      editor.update.selection.setNodes([[1]]);
+    });
+
+    expect(selectedValues.at(-1)).toBe(false);
   });
 
   it('supports collapsed-only mode with an explicit watched path', async () => {

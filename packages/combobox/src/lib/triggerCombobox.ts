@@ -47,10 +47,11 @@ export const triggerCombobox = <
       triggerPreviousCharPattern,
       triggerQuery,
     } = getState();
+    const selection = state.selection();
 
     if (
       input.options?.at ||
-      !state.selection() ||
+      !selection ||
       !(trigger instanceof RegExp
         ? trigger.test(input.text)
         : Array.isArray(trigger)
@@ -62,15 +63,13 @@ export const triggerCombobox = <
     }
 
     // Make sure an input is created at the beginning of line or after a whitespace
-    const selection = state.selection();
-    const before = selection && state.points.before(selection);
-    const previousChar =
-      selection && before
-        ? state.text.string({
-            anchor: before,
-            focus: selection.anchor,
-          })
-        : '';
+    const before = state.points.before(selection);
+    const previousChar = before
+      ? state.text.string({
+          anchor: before,
+          focus: selection.anchor,
+        })
+      : '';
 
     const matchesPreviousCharPattern =
       triggerPreviousCharPattern?.test(previousChar);

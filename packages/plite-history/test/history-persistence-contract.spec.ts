@@ -1,5 +1,5 @@
-import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 
 import {
   createEditor,
@@ -16,25 +16,22 @@ import {
   schema,
   SelectionApi,
   valueCodecs,
-} from '@platejs/plite';
-import { initializeEditorExtensions } from '@platejs/plite/internal';
+} from "@platejs/plite";
+import {
+  getEditorLiveSelection,
+  initializeEditorExtensions,
+} from "@platejs/plite/internal";
 
-import { History, history } from '../src';
-import { encodeHistoryValue } from '../src/history-codec';
-
-type CellSelection = Range &
-  Readonly<{
-    cells: readonly Range[];
-    kind: 'cell';
-  }>;
+import { History, history } from "../src";
+import { encodeHistoryValue } from "../src/history-codec";
 
 const paragraph = (text: string): Element => ({
-  type: 'paragraph',
+  type: "paragraph",
   children: [{ text }],
 });
 
 const editorSchema = ({
-  id = 'article',
+  id = "article",
   isolating = false,
   version = 1,
 }: {
@@ -42,7 +39,7 @@ const editorSchema = ({
   isolating?: boolean;
   version?: number;
 } = {}) =>
-  defineEditorSchema('schema:derived', {
+  defineEditorSchema("schema:derived", {
     elements: {
       paragraph: {
         content: schema.content.text(),
@@ -50,19 +47,19 @@ const editorSchema = ({
       },
     },
     id,
-    root: schema.content.type('paragraph', { min: 1 }),
-    unknown: 'reject',
+    root: schema.content.type("paragraph", { min: 1 }),
+    unknown: "reject",
     version,
   });
 
 const title = defineStateField({
-  key: 'document.title',
-  collab: 'shared',
-  history: 'push',
-  initial: () => 'Untitled',
+  key: "document.title",
+  collab: "shared",
+  history: "push",
+  initial: () => "Untitled",
   persist: valueCodecs.string,
 });
-const titleExtension = defineExtension('document-title', {
+const titleExtension = defineExtension("document-title", {
   stateFields: [title],
 });
 
@@ -71,44 +68,11 @@ const range = (start: number, end = start): Range => ({
   focus: { offset: end, path: [0, 0] },
 });
 
-const cellSelectionCodec = defineValueCodec<CellSelection>({
-  decode(value) {
-    if (
-      !SelectionApi.isSelection(value) ||
-      value.kind !== 'cell' ||
-      !Array.isArray((value as CellSelection).cells)
-    ) {
-      throw new Error('Invalid cell selection.');
-    }
-
-    return value as CellSelection;
-  },
-  encode: (value) => value,
-  version: 1,
-});
-
-const cellSelectionExtension = defineExtension('cell-selection-persistence', {
-  selectionKinds: [
-    {
-      codec: cellSelectionCodec,
-      kind: 'cell',
-      map(selection, context) {
-        const mapped = context.mapRange(selection);
-
-        return mapped ? { ...selection, ...mapped } : null;
-      },
-      validate(selection) {
-        return Array.isArray(selection.cells) && selection.cells.length > 0;
-      },
-    },
-  ],
-});
-
 const createStateEditor = (
-  initialValue: Parameters<typeof createEditor>[0]['initialValue']
+  initialValue: Parameters<typeof createEditor>[0]["initialValue"]
 ) =>
   createEditor({
-    extensions: [history(), titleExtension, cellSelectionExtension] as const,
+    extensions: [history(), titleExtension] as const,
     initialValue,
   });
 
@@ -120,12 +84,12 @@ const redo = (editor: ReturnType<typeof createStateEditor>) => {
   editor.update((tx) => tx.history.redo());
 };
 
-describe('versioned history persistence', () => {
-  it('embeds the exact schema identity in version 4 JSON', () => {
-    const raw = createStateEditor([paragraph('body')]);
+describe("versioned history persistence", () => {
+  it("embeds the exact schema identity in version 4 JSON", () => {
+    const raw = createStateEditor([paragraph("body")]);
     const declared = createEditor({
       extensions: [history(), editorSchema()] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
     assert.deepEqual(History.toJSON(raw), {
@@ -140,10 +104,10 @@ describe('versioned history persistence', () => {
     );
   });
 
-  it('adopts a final bootstrap schema before the first user commit', () => {
+  it("adopts a final bootstrap schema before the first user commit", () => {
     const editor = createEditor({
       extensions: [history()] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
     const provisionalSchema = editor.read.history().schema;
 
@@ -155,23 +119,23 @@ describe('versioned history persistence', () => {
       editor.read.schema.identity()
     );
 
-    editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+    editor.update((tx) => tx.text.insert("!", { at: range(4).anchor }));
 
     assert.equal(editor.read.history().undos.length, 1);
   });
 
-  it('keeps persisted schema identity exact and free of live fields', () => {
+  it("keeps persisted schema identity exact and free of live fields", () => {
     const editor = createEditor({
       extensions: [history(), editorSchema()] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
     const encoded = History.toJSON(editor);
     const liveValidator = () => true;
     const encodedSchema = encoded.schema;
 
-    assert.equal(encodedSchema.kind, 'named');
-    if (encodedSchema.kind !== 'named') {
-      throw new Error('Expected named schema.');
+    assert.equal(encodedSchema.kind, "named");
+    if (encodedSchema.kind !== "named") {
+      throw new Error("Expected named schema.");
     }
     const pollutedIdentity = {
       ...encodedSchema,
@@ -226,19 +190,19 @@ describe('versioned history persistence', () => {
     assert.equal(accessorReads, 0);
   });
 
-  it('rejects schema mismatches before decoding any history batch', () => {
+  it("rejects schema mismatches before decoding any history batch", () => {
     const source = createEditor({
       extensions: [history(), editorSchema()] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
-    source.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+    source.update((tx) => tx.text.insert("!", { at: range(4).anchor }));
 
     const json = structuredClone(History.toJSON(source));
     const batch = json.undos[0];
 
     assert.ok(batch);
-    (batch.effects as unknown[]).push({ key: 'must-not-decode' });
+    (batch.effects as unknown[]).push({ key: "must-not-decode" });
 
     const changedWithoutVersion = createEditor({
       extensions: [history(), editorSchema({ isolating: true })] as const,
@@ -261,12 +225,12 @@ describe('versioned history persistence', () => {
     );
   });
 
-  it('persists one slice replacement as one canonical undo and redo batch', () => {
-    const editor = createStateEditor([paragraph('body')]);
+  it("persists one slice replacement as one canonical undo and redo batch", () => {
+    const editor = createStateEditor([paragraph("body")]);
 
     editor.update((tx) => {
       tx.selection.set(SelectionApi.text(range(4)));
-      tx.fragment.replace([{ text: '!' }]);
+      tx.fragment.replace([{ text: "!" }]);
     });
 
     const afterInsert = editor.read.history();
@@ -288,43 +252,43 @@ describe('versioned history persistence', () => {
     assert.doesNotMatch(JSON.stringify(encodedChange), /"open(?:End|Start)"/);
 
     undo(editor);
-    assert.equal(editor.read.text.string([]), 'body');
+    assert.equal(editor.read.text.string([]), "body");
     assert.equal(editor.read.history().undos.length, 0);
     assert.equal(editor.read.history().redos.length, 1);
 
     redo(editor);
-    assert.equal(editor.read.text.string([]), 'body!');
+    assert.equal(editor.read.text.string([]), "body!");
     assert.equal(editor.read.history().undos.length, 1);
     assert.equal(editor.read.history().redos.length, 0);
   });
 
-  it('publishes migration once and atomically resets incompatible history', () => {
-    const slot = defineExtensionSlot('history-schema');
+  it("publishes migration once and atomically resets incompatible history", () => {
+    const slot = defineExtensionSlot("history-schema");
     const schemaWithBlock = (version: number, type: string) =>
-      defineEditorSchema('schema:history-schema', {
+      defineEditorSchema("schema:history-schema", {
         elements: {
           [type]: { content: schema.content.text() },
         },
-        id: 'history-schema',
+        id: "history-schema",
         root: schema.content.type(type, { min: 1 }),
-        unknown: 'reject',
+        unknown: "reject",
         version,
       });
     const editor = createEditor({
       extensions: [
         history(),
-        slot.of(schemaWithBlock(1, 'paragraph')),
+        slot.of(schemaWithBlock(1, "paragraph")),
       ] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
     editor.update((tx) => {
       tx.history.newBatch();
-      tx.text.insert('1', { at: range(4).anchor });
+      tx.text.insert("1", { at: range(4).anchor });
     });
     editor.update((tx) => {
       tx.history.newBatch();
-      tx.text.insert('2', { at: range(5).anchor });
+      tx.text.insert("2", { at: range(5).anchor });
     });
     undo(editor);
 
@@ -336,25 +300,25 @@ describe('versioned history persistence', () => {
 
     editor.subscribeCommit((commit) => migrationCommits.push(commit.version));
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, schemaWithBlock(2, 'heading'), {
+      tx.extensions.reconfigure(slot, schemaWithBlock(2, "heading"), {
         migrate: ({ document }) => ({
           ...document,
           children: document.children.map((node) => ({
             ...node,
-            type: 'heading',
+            type: "heading",
           })),
         }),
       });
-      tx.text.insert('?', { at: range(5).anchor });
+      tx.text.insert("?", { at: range(5).anchor });
     });
 
     const after = editor.read.history();
 
-    assert.equal(editor.read.text.string([]), 'body1?');
-    assert.equal(editor.read.children()[0]?.type, 'heading');
+    assert.equal(editor.read.text.string([]), "body1?");
+    assert.equal(editor.read.children()[0]?.type, "heading");
     assert.equal(migrationCommits.length, 1);
     assert.equal(
-      editor.read.lastCommit()?.dirtyStateKeys.includes('$configuration'),
+      editor.read.lastCommit()?.dirtyStateKeys.includes("$configuration"),
       true
     );
     assert.equal(after.revision, before.revision + 1);
@@ -363,18 +327,18 @@ describe('versioned history persistence', () => {
     assert.deepEqual(after.schema, editor.read.schema.identity());
 
     undo(editor);
-    assert.equal(editor.read.text.string([]), 'body1?');
-    assert.equal(editor.read.children()[0]?.type, 'heading');
+    assert.equal(editor.read.text.string([]), "body1?");
+    assert.equal(editor.read.children()[0]?.type, "heading");
   });
 
-  it('does not save a schema commit that reactivates history', () => {
-    const slot = defineExtensionSlot('reactivated-history-schema');
+  it("does not save a schema commit that reactivates history", () => {
+    const slot = defineExtensionSlot("reactivated-history-schema");
     const editor = createEditor({
       extensions: [slot.of([history(), editorSchema()])] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
-    editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+    editor.update((tx) => tx.text.insert("!", { at: range(4).anchor }));
     assert.equal(editor.read.history().undos.length, 1);
 
     editor.update((tx) => {
@@ -382,7 +346,7 @@ describe('versioned history persistence', () => {
         history({ maxDepth: 101 }),
         editorSchema({ version: 2 }),
       ]);
-      tx.text.insert('?', { at: range(5).anchor });
+      tx.text.insert("?", { at: range(5).anchor });
     });
 
     assert.deepEqual(
@@ -391,19 +355,19 @@ describe('versioned history persistence', () => {
     );
     assert.equal(editor.read.history().undos.length, 0);
 
-    editor.update((tx) => tx.text.insert('.', { at: range(6).anchor }));
+    editor.update((tx) => tx.text.insert(".", { at: range(6).anchor }));
 
     assert.equal(editor.read.history().undos.length, 1);
   });
 
-  it('does not restore a decoded history after its live schema changes', () => {
-    const slot = defineExtensionSlot('delayed-history-schema');
+  it("does not restore a decoded history after its live schema changes", () => {
+    const slot = defineExtensionSlot("delayed-history-schema");
     const editor = createEditor({
       extensions: [history(), slot.of(editorSchema())] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
-    editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+    editor.update((tx) => tx.text.insert("!", { at: range(4).anchor }));
     const decoded = History.fromJSON(editor, History.toJSON(editor));
 
     editor.update((tx) => {
@@ -416,45 +380,41 @@ describe('versioned history persistence', () => {
     );
   });
 
-  it('preserves undoable edits across equivalent schema reconfiguration', () => {
-    const slot = defineExtensionSlot('equivalent-history-schema');
+  it("preserves undoable edits across equivalent schema reconfiguration", () => {
+    const slot = defineExtensionSlot("equivalent-history-schema");
     const editor = createEditor({
       extensions: [history(), slot.of(editorSchema())] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
-    editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
+    editor.update((tx) => tx.text.insert("!", { at: range(4).anchor }));
     editor.update((tx) => {
       tx.extensions.reconfigure(slot, editorSchema());
-      tx.text.insert('remote-', { at: range(0).anchor });
+      tx.text.insert("remote-", { at: range(0).anchor });
     });
 
     assert.equal(editor.read.history().undos.length, 2);
 
     undo(editor);
-    assert.equal(editor.read.text.string([]), 'body!');
+    assert.equal(editor.read.text.string([]), "body!");
     undo(editor);
-    assert.equal(editor.read.text.string([]), 'body');
+    assert.equal(editor.read.text.string([]), "body");
   });
 
-  it('round-trips canonical changes, state effects, and custom selections', () => {
-    const selection: CellSelection = {
-      ...range(1),
-      cells: [range(0, 2)],
-      kind: 'cell',
-    };
+  it("round-trips canonical changes, state effects, and node selections", () => {
+    const selection = SelectionApi.nodes([[0]]);
     const source = createEditor({
-      extensions: [history(), titleExtension, cellSelectionExtension] as const,
+      extensions: [history(), titleExtension] as const,
       initialSelection: selection,
       initialValue: {
-        children: [paragraph('body')],
-        meta: { [title.key]: title.serialize('Q2') },
+        children: [paragraph("body")],
+        meta: { [title.key]: title.serialize("Q2") },
       },
     });
 
     source.update((tx) => {
       tx.nodes.set({ persisted: true }, { at: [0] });
-      tx.setField(title, 'Q3');
+      tx.setField(title, "Q3");
     });
 
     const json = JSON.parse(JSON.stringify(History.toJSON(source)));
@@ -466,49 +426,49 @@ describe('versioned history persistence', () => {
     assert.equal(History.isHistory(restored.read.history()), true);
 
     undo(restored);
-    assert.equal(restored.read.text.string([]), 'body');
-    assert.equal(restored.read.getField(title), 'Q2');
-    assert.equal(restored.read.selection()?.kind, 'cell');
+    assert.equal(restored.read.text.string([]), "body");
+    assert.equal(restored.read.getField(title), "Q2");
+    assert.deepEqual(getEditorLiveSelection(restored), selection);
 
     redo(restored);
     assert.deepEqual(restored.read.value().children, [
-      { ...paragraph('body'), persisted: true },
+      { ...paragraph("body"), persisted: true },
     ]);
-    assert.equal(restored.read.getField(title), 'Q3');
+    assert.equal(restored.read.getField(title), "Q3");
   });
 
-  it('rebases restored canonical history across a remote change', () => {
-    const source = createStateEditor([paragraph('body')]);
+  it("rebases restored canonical history across a remote change", () => {
+    const source = createStateEditor([paragraph("body")]);
 
-    source.update((tx) => tx.text.insert('local', { at: range(4).anchor }));
+    source.update((tx) => tx.text.insert("local", { at: range(4).anchor }));
 
     const restored = createStateEditor(source.read.value());
 
     restored.update((tx) =>
       tx.history.restore(History.fromJSON(restored, History.toJSON(source)))
     );
-    restored.update({ tags: ['collaboration', 'history-skip'] }, (tx) => {
-      tx.text.insert('remote-', { at: range(0).anchor });
+    restored.update({ tags: ["collaboration", "history-skip"] }, (tx) => {
+      tx.text.insert("remote-", { at: range(0).anchor });
     });
     undo(restored);
 
-    assert.equal(restored.read.text.string([]), 'remote-body');
+    assert.equal(restored.read.text.string([]), "remote-body");
   });
 
-  it('round-trips pending insertion marks through selection history', () => {
+  it("round-trips pending insertion marks through selection history", () => {
     const source = createEditor({
       extensions: [history()] as const,
       initialSelection: SelectionApi.text(range(2)),
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
     source.update((tx) => tx.marks.set({ bold: true }));
-    source.update((tx) => tx.text.insert('!', { at: range(2).anchor }));
+    source.update((tx) => tx.text.insert("!", { at: range(2).anchor }));
 
     const json = JSON.parse(JSON.stringify(History.toJSON(source)));
     const restored = createEditor({
       extensions: [history()] as const,
-      initialSelection: source.read.selection(),
+      initialSelection: getEditorLiveSelection(source),
       initialValue: source.read.value(),
     });
 
@@ -517,73 +477,66 @@ describe('versioned history persistence', () => {
     );
     restored.update((tx) => tx.history.undo());
     assert.deepEqual(restored.read.marks(), { bold: true });
-    assert.deepEqual(restored.read.selection(), {
-      ...SelectionApi.text(range(2)),
-      marks: { bold: true },
-    });
+    assert.deepEqual(restored.read.selection(), range(2));
 
     restored.update((tx) => tx.history.redo());
     assert.deepEqual(restored.read.marks(), { bold: true });
-    assert.deepEqual(restored.read.selection(), {
-      ...SelectionApi.text(range(3)),
-      marks: { bold: true },
-    });
+    assert.deepEqual(restored.read.selection(), range(3));
   });
 
-  it('round-trips rootless selections owned by a named root', () => {
+  it("round-trips rootless selections owned by a named root", () => {
     const source = createEditor({
       extensions: [history()] as const,
       initialValue: {
-        children: [paragraph('x')],
-        roots: { header: [paragraph('header')] },
+        children: [paragraph("x")],
+        roots: { header: [paragraph("header")] },
       },
     });
-    const sourceHeader = createEditorView(source, { root: 'header' });
+    const sourceHeader = createEditorView(source, { root: "header" });
 
     sourceHeader.update((tx) => {
       tx.selection.set({
-        kind: 'text',
+        kind: "text",
         anchor: { offset: 6, path: [0, 0] },
         focus: { offset: 6, path: [0, 0] },
       });
     });
     sourceHeader.update((tx) => {
-      tx.text.insert('!');
+      tx.text.insert("!");
     });
 
     const restored = createEditor({
       extensions: [history()] as const,
       initialValue: source.read.value(),
     });
-    const restoredHeader = createEditorView(restored, { root: 'header' });
+    const restoredHeader = createEditorView(restored, { root: "header" });
     const decoded = History.fromJSON(restored, History.toJSON(source));
 
     restored.update((tx) => tx.history.restore(decoded));
     restoredHeader.update((tx) => tx.history.undo());
 
-    assert.equal(restoredHeader.read.text.string([]), 'header');
+    assert.equal(restoredHeader.read.text.string([]), "header");
     assert.deepEqual(restoredHeader.read.selection(), {
-      kind: 'text',
-      anchor: { offset: 6, path: [0, 0], root: 'header' },
-      focus: { offset: 6, path: [0, 0], root: 'header' },
+      anchor: { offset: 6, path: [0, 0], root: "header" },
+      focus: { offset: 6, path: [0, 0], root: "header" },
     });
   });
 
-  it('omits the primary root from history JSON and rejects explicit sentinels', () => {
+  it("omits the primary root from history JSON and rejects explicit sentinels", () => {
     const source = createEditor({
       extensions: [history()] as const,
       initialSelection: SelectionApi.text(range(2)),
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
-    source.update((tx) => tx.text.insert('!'));
+    source.update((tx) => tx.text.insert("!"));
 
     const json = structuredClone(History.toJSON(source));
     const batch = json.undos[0];
 
     assert.ok(batch);
-    assert.equal(Object.hasOwn(batch, 'selectionAfterRoot'), false);
-    assert.equal(Object.hasOwn(batch, 'selectionBeforeRoot'), false);
+    assert.equal(Object.hasOwn(batch, "selectionAfterRoot"), false);
+    assert.equal(Object.hasOwn(batch, "selectionBeforeRoot"), false);
 
     const explicitBatchRoot = structuredClone(json);
 
@@ -591,7 +544,7 @@ describe('versioned history persistence', () => {
       explicitBatchRoot.undos[0] as {
         selectionAfterRoot?: string;
       }
-    ).selectionAfterRoot = 'main';
+    ).selectionAfterRoot = "main";
     assert.throws(
       () => History.fromJSON(source, explicitBatchRoot),
       /Invalid history batch JSON/
@@ -605,7 +558,7 @@ describe('versioned history persistence', () => {
       selectionAfter.value as {
         anchor: { root?: string };
       }
-    ).anchor.root = 'main';
+    ).anchor.root = "main";
     assert.throws(
       () => History.fromJSON(source, explicitPointRoot),
       /Invalid history batch JSON/
@@ -619,7 +572,7 @@ describe('versioned history persistence', () => {
         undos: [
           {
             ...decoded.undos[0],
-            selectionAfterRoot: 'main',
+            selectionAfterRoot: "main",
           },
         ],
       }),
@@ -627,29 +580,29 @@ describe('versioned history persistence', () => {
     );
   });
 
-  it('rejects an invalid intermediate document under a closed schema', () => {
+  it("rejects an invalid intermediate document under a closed schema", () => {
     const source = createEditor({
       extensions: [history()] as const,
-      initialValue: [paragraph('body')],
+      initialValue: [paragraph("body")],
     });
 
     source.update((tx) => tx.nodes.set({ undeclared: true }, { at: [0] }));
     source.update((tx) => tx.history.undo());
 
     const closedParagraph = defineEditorSchema(
-      'schema:closed-history-paragraph',
+      "schema:closed-history-paragraph",
       {
         elements: {
           paragraph: {
-            content: schema.content.text({ default: 'text', min: 1 }),
+            content: schema.content.text({ default: "text", min: 1 }),
           },
         },
-        id: 'closed-history-paragraph',
-        root: schema.content.type('paragraph', {
-          default: { type: 'paragraph' },
+        id: "closed-history-paragraph",
+        root: schema.content.type("paragraph", {
+          default: { type: "paragraph" },
           min: 1,
         }),
-        unknown: 'reject',
+        unknown: "reject",
         version: 1,
       }
     );
@@ -670,31 +623,31 @@ describe('versioned history persistence', () => {
     );
   });
 
-  it('round-trips registered domain effects', () => {
+  it("round-trips registered domain effects", () => {
     const increment = defineEffect<number>({
       codec: valueCodecs.number,
       invert: (value) => -value,
-      key: 'counter.increment',
+      key: "counter.increment",
     });
     const counter = defineStateField({
-      key: 'counter',
+      key: "counter",
       initial: () => 0,
       persist: valueCodecs.number,
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineExtension('counter-increment-effect', {
+    const incrementExtension = defineExtension("counter-increment-effect", {
       effectTypes: [increment],
       stateFields: [counter],
     });
     const createCounterEditor = (
-      initialValue: Parameters<typeof createEditor>[0]['initialValue']
+      initialValue: Parameters<typeof createEditor>[0]["initialValue"]
     ) =>
       createEditor({
         extensions: [history(), incrementExtension] as const,
         initialValue,
       });
-    const source = createCounterEditor([paragraph('body')]);
+    const source = createCounterEditor([paragraph("body")]);
 
     source.update((tx) => tx.effects.emit(increment, 2));
 
@@ -709,8 +662,8 @@ describe('versioned history persistence', () => {
     assert.equal(restored.read.getField(counter), 2);
   });
 
-  it('rejects old, unversioned, schema-less history, unknown effects, and stale field data', () => {
-    const editor = createStateEditor([paragraph('body')]);
+  it("rejects old, unversioned, schema-less history, unknown effects, and stale field data", () => {
+    const editor = createStateEditor([paragraph("body")]);
     const schemaIdentity = editor.read.schema.identity();
 
     assert.throws(
@@ -755,34 +708,34 @@ describe('versioned history persistence', () => {
     assert.throws(
       () =>
         createStateEditor({
-          children: [paragraph('body')],
-          meta: { [title.key]: { value: 'Q2', version: 2 } },
+          children: [paragraph("body")],
+          meta: { [title.key]: { value: "Q2", version: 2 } },
         }),
       /Unsupported state field "document.title" version 2/
     );
 
-    editor.update((tx) => tx.setField(title, 'Q3'));
+    editor.update((tx) => tx.setField(title, "Q3"));
     const json = structuredClone(History.toJSON(editor));
     const effect = json.undos[0]?.effects[0];
 
     assert.ok(effect);
-    (effect as { key: string }).key = 'missing.effect';
+    (effect as { key: string }).key = "missing.effect";
     assert.throws(
       () => History.fromJSON(editor, json),
       /Cannot decode history effect "missing.effect"/
     );
   });
 
-  it('rejects history encoded by a stale installed effect descriptor', () => {
+  it("rejects history encoded by a stale installed effect descriptor", () => {
     const incrementV1 = defineEffect<number>({
       codec: valueCodecs.number,
-      key: 'counter.stale-increment',
+      key: "counter.stale-increment",
     });
     const incrementV2 = defineEffect<number>({
       codec: defineValueCodec({
         decode(value) {
-          if (typeof value !== 'number') {
-            throw new Error('Expected a numeric increment.');
+          if (typeof value !== "number") {
+            throw new Error("Expected a numeric increment.");
           }
 
           return value;
@@ -795,7 +748,7 @@ describe('versioned history persistence', () => {
     const source = createEditor({
       extensions: [
         history(),
-        defineExtension('counter-effect-v1', {
+        defineExtension("counter-effect-v1", {
           effectTypes: [incrementV1],
         }),
       ],
@@ -806,7 +759,7 @@ describe('versioned history persistence', () => {
     const restored = createEditor({
       extensions: [
         history(),
-        defineExtension('counter-effect-v2', {
+        defineExtension("counter-effect-v2", {
           effectTypes: [incrementV2],
         }),
       ],

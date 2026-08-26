@@ -21,6 +21,29 @@ describe('BaseTablePlugin', () => {
     expect(TableRowPlugin.dependencies).toEqual([TableCellPlugin]);
   });
 
+  it('exposes only the table as normal-flow block content', () => {
+    const editor = createTestTableEditor({ plugins: [TablePlugin] });
+
+    expect(
+      editor.read.schema.isBlockContent({
+        children: [],
+        type: TablePlugin.name,
+      })
+    ).toBe(true);
+    expect(
+      editor.read.schema.isBlockContent({
+        children: [],
+        type: TableRowPlugin.name,
+      })
+    ).toBe(false);
+    expect(
+      editor.read.schema.isBlockContent({
+        children: [],
+        type: TableCellPlugin.name,
+      })
+    ).toBe(false);
+  });
+
   it.each([
     ['row', BaseTableRowPlugin.configure({ enabled: false })],
     ['cell', BaseTableCellPlugin.configure({ enabled: false })],
@@ -695,10 +718,9 @@ describe('BaseTablePlugin', () => {
   });
 
   it('encodes table structure and presentation with standard HTML', () => {
-    const point = { offset: 0, path: [0, 0, 0, 0, 0] };
     const editor = createTestTableEditor({
       plugins: [BaseTablePlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [

@@ -21,7 +21,7 @@
     },
     {
       "action": "extend selection across block boundaries",
-      "id": "cross-block-selection",
+      "id": "cross-block-text-selection",
       "updateCount": 0
     },
     {

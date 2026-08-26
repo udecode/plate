@@ -67,7 +67,6 @@ export const measurePliteTrustedTyping = async ({
             getSelection(): {
               anchor: { offset: number; path: number[] };
               focus: { offset: number; path: number[] };
-              kind: 'text';
             } | null;
             getKernelTrace(): Array<{
               command: { kind?: string; text?: string } | null;
@@ -189,7 +188,7 @@ export const measurePliteTrustedTyping = async ({
         row.domTextInsertionMatched = row.observedDOMText === row.expectedText;
         row.modelTextInsertionMatched =
           modelText === row.expectedText &&
-          selection?.kind === 'text' &&
+          selection != null &&
           pathsEqual(selection.anchor.path, rowPath) &&
           pathsEqual(selection.focus.path, rowPath) &&
           selection.anchor.offset === nextOffset &&
@@ -212,7 +211,7 @@ export const measurePliteTrustedTyping = async ({
 
         const selection = handle?.getSelection();
         const isCollapsedSelection =
-          selection?.kind === 'text' &&
+          selection != null &&
           pathsEqual(selection.anchor.path, selection.focus.path) &&
           selection.anchor.offset === selection.focus.offset;
         const path = isCollapsedSelection ? selection.anchor.path : undefined;
@@ -252,7 +251,7 @@ export const measurePliteTrustedTyping = async ({
         row.modelSelectionMatched =
           row.path != null &&
           row.offset != null &&
-          selection?.kind === 'text' &&
+          selection != null &&
           pathsEqual(selection.anchor.path, row.path) &&
           pathsEqual(selection.focus.path, row.path) &&
           selection.anchor.offset === row.offset &&

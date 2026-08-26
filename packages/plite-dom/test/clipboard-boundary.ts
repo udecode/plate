@@ -643,13 +643,9 @@ describe('plite-dom clipboard boundary', () => {
       const details = [
         { children: [{ text: 'Owned details' }], type: 'paragraph' as const },
       ];
-      const point = { offset: 0, path: [1, 0] };
       const editor = createEditor({
         extensions: [dom(), keyboardSelectableClipboardSchema],
-        initialSelection: SelectionApi.node([1], {
-          anchor: point,
-          focus: point,
-        }),
+        initialSelection: SelectionApi.nodes([[1]]),
         initialValue: {
           children: [
             { children: [{ text: 'before' }], type: 'paragraph' as const },

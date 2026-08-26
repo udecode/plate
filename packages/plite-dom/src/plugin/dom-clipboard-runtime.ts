@@ -9,6 +9,7 @@ import {
   editorCommands,
   type EditorUpdateTransaction,
   type EditorUpdateTransactionOf,
+  type NodeSelection,
   NodeApi as PliteNode,
   type Range,
   RangeApi,
@@ -18,6 +19,7 @@ import {
 import {
   failInvariant,
   dispatchCommand,
+  getSelection as getEditorSelection,
   void as editorVoid,
 } from '@platejs/plite/internal';
 
@@ -377,7 +379,7 @@ const writeModelBackedRangeData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
   clipboardFormatKey: string,
-  range: Range,
+  range: NodeSelection | Range,
   slice = editor.read.slice.export({ at: range })
 ) => {
   writeDOMHostFragmentData(editor, data, {
@@ -404,7 +406,7 @@ export const writeDOMSelectionData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>
 ) => {
-  const selection = editor.read((state) => state.selection());
+  const selection = getEditorSelection(editor);
 
   if (!selection) return undefined;
 
@@ -417,7 +419,7 @@ export const writeDOMSelectionData = <V extends Value>(
 export const writeDOMRangeData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
-  range: Range,
+  range: NodeSelection | Range,
   options: Readonly<{ slice?: ContentSliceValue<V> }> = {}
 ) => {
   const clipboardFormatKey = getDOMClipboardFormatKey(editor);

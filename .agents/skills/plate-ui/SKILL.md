@@ -20,10 +20,10 @@ layering, open-code preservation, and registry wiring.
 
 ## Repo Surfaces
 
-- `apps/www/src/registry/components/editor` — flat copied editor features,
-  live/static components, and app-owned kit values
-- `apps/www/src/registry/bases/{base,aria}/editor` — primitive-specific source
-  variants that install over the same flat editor targets
+- `apps/www/src/registry/components/editor` — provider-neutral copied editor
+  features, live/static components, and app-owned kit values
+- `apps/www/src/registry/bases/*` — provider-specific source variants that
+  install over the same flat editor targets
 - `apps/www/src/registry/registry-*.ts` — registry metadata and dependencies
 - `packages/*` — upstream semantic owners; package edits route to
   `plate-plugin-creator`
@@ -51,8 +51,10 @@ schema law, and application typing remain outside this skill.
 5. **Registry wiring is part of authorship.** A component is not done until kits, examples, and style deps are coherent.
 6. **React floor is 19.2+.** Do not add backward-compat code for React 18-era limitations or patterns.
 7. **Classic registry surfaces are maintenance-only.** Do not invest in
-   `*-classic` variants, including `list-classic`, while they await
-   deprecation.
+   proactive `*-classic` redesign, including `list-classic`, while they await
+   deprecation. A retained public classic item must still install through every
+   supported registry provider; repair accidental coupling at its real owner
+   instead of hiding the item or cloning the assembly.
 8. **Examples teach the install shape.** Do not remove an explicit feature
    plugin, kit, renderer binding, or dependency merely because an aggregate
    application editor installed by the `editor-kit` registry item also includes
@@ -73,9 +75,27 @@ schema law, and application typing remain outside this skill.
     `components/editor`; `components/ui` belongs only to shadcn primitives.
 13. **Kit is a value, not topology.** Feature files/items use the feature name;
     their app-owned plugin tuple is `FooKit`, including one-descriptor features.
-14. **Variants resolve before install.** Radix, Base UI, and React Aria source
-    variants expose one editor-facing contract and write to one target. Never
-    branch on the primitive library at runtime.
+14. **Variants resolve before install.** Plate supports Radix and Base UI.
+    Source variants expose one editor-facing contract and write to one target.
+    Never branch on the primitive library at runtime.
+    A website-only isolated preview may select author-source variants at
+    runtime, but that selector must stay outside copied registry output.
+    Shadcn's documented install-time `asChild`/`render` transform is valid
+    provider resolution for a direct `components/ui` consumer. Do not add a
+    Plate adapter merely to replace syntax that shadcn already translates.
+    Add an adapter when Plate owns behavior, focus, or props that the transform
+    does not normalize; its consumers use the provider-neutral contract.
+15. **Preset catalogs are not compatibility proof.** Keep one complete
+    Base/Nova canonical registry graph. Add a provider source variant only for
+    a named reusable boundary whose complete installed graph passes that
+    provider. Materialize supported styles from pinned upstream transforms as
+    sparse logical overlays; reject unsupported providers and styles instead of
+    widening Plate support from `shadcn/preset`.
+16. **Supported providers expose the complete semantic registry.** Base is the
+    default provider. Never 404 or filter a public item because its current
+    source is coupled to Radix. Remove the coupling or translate it at the
+    smallest direct primitive owner; keep assemblies and transitive items
+    canonical.
 
 ## Critical Rules
 
@@ -112,7 +132,12 @@ schema law, and application typing remain outside this skill.
 - Keep application endpoints, visible copy, upload quotas, arbitrary media
   limits, feature-specific accessibility labels, colors, borders, and stacking
   policy in copied registry source. Packages expose neutral mechanics and
-  configurable contracts, not Plate's example-product defaults.
+  configurable contracts, including positioning and hit-testing required for
+  correct behavior, not Plate's example-product defaults.
+- Compose independently placed package DOM primitives as siblings in copied
+  registry UI. Style each through ordinary DOM props such as `className`; do
+  not add a public root, provider, render prop, or `*ClassName` prop merely to
+  pass presentation into independent parts.
 - Never create a package hook just to hide JSX, avoid typing work, or move logic used by one component only.
 - If extraction makes the component harder to compare with upstream shadcn/open code, keep it local.
 - Package cleanup must not paste a package-owned transform, query, navigation
@@ -213,6 +238,9 @@ Read this reference for component families, registry feature variants, headless 
 - After source ownership is correct, declare every surviving direct runtime
   package and registry dependency. Metadata mirrors source; it never grants a
   generic host permission to require an optional feature.
+- Build docs and primitive-agnostic registry items once. Resolve only named
+  provider-boundary items at request/install time, preserve semantic item ids,
+  and rewrite Plate self-dependencies to the requested supported style.
 - If a component depends on shared CSS vars like highlight tokens, add the style registry dep.
 - Examples should depend on kits plus any extra styles/components they introduce.
 - Treat registry examples as teaching/install surfaces, not optimized host-app
@@ -343,7 +371,7 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
 1. Start with the `shadcn` skill. Run the normal `shadcn` docs/search workflow first.
 2. Search Plate for the closest analog in
    `apps/www/src/registry/components/editor`, the applicable
-   `apps/www/src/registry/bases/*/editor` variant, and the relevant `packages/*`.
+   `apps/www/src/registry/bases/*` variant, and the relevant `packages/*`.
 3. Decide ownership with the extraction test before writing code.
 4. Decide the three layers before coding:
    - semantic core

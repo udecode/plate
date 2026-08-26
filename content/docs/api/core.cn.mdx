@@ -532,6 +532,9 @@ const generic = useElement();
 节点生成 ID。
 
 ```ts
+import { ElementIdPlugin, schema, target } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
+
 const editor = createPlateEditor({
   plugins: [ElementIdPlugin],
 });
@@ -545,6 +548,22 @@ const entry = id ? elementId.read.entry(id) : undefined;
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。已存储输入
 缺少 ID、包含旧数字 ID，或需要通过 `sourceKey` 规范化旧属性时，使用
 `migrateElementIds(value, options)`。
+
+应用 schema 可以收窄该插件拥有的 `id` target。文档准备只为匹配编译后 target
+的元素生成并保留 ID。
+
+```ts
+const editor = createPlateEditor({
+  plugins: [ElementIdPlugin],
+  schema: {
+    overrides: [
+      schema.override(ElementIdPlugin, {
+        properties: { id: { target: target.group('block') } },
+      }),
+    ],
+  },
+});
+```
 
 ### `ElementStatePlugin`
 

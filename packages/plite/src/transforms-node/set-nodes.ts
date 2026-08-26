@@ -25,6 +25,7 @@ import {
 } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { type Range, RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import type {
   NodeMutationMethods,
   NodeSetNodesOptions,
@@ -114,18 +115,27 @@ export const setNodes = ((
     if (!at) {
       return;
     }
+    if (optionAt === undefined && SelectionApi.isNode(at) && marks) {
+      for (const target of editor.read.selection.ranges()) {
+        setNodes(editor, props, { ...options, at: target });
+      }
+      return;
+    }
     const root =
-      (LocationApi.isRange(at)
+      (SelectionApi.isNode(at)
+        ? at.root
+        : LocationApi.isRange(at)
         ? (at.anchor.root ?? at.focus.root)
         : undefined) ??
       getActiveUpdateRoot(editor) ??
       'main';
 
     if (marks) {
-      if (LocationApi.isPath(at)) {
+      if (SelectionApi.isNode(at)) return;
+      if (PathApi.isPath(at)) {
         at = editorRange(editor, at);
       }
-      if (!LocationApi.isRange(at)) {
+      if (!RangeApi.isRange(at)) {
         return;
       }
 
@@ -181,16 +191,18 @@ export const setNodes = ((
     }
 
     if (match == null) {
-      match = LocationApi.isPath(at)
+      match = SelectionApi.isNode(at)
+        ? () => true
+        : PathApi.isPath(at)
         ? matchPath(editor, at)
         : (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
-    if (!hanging && LocationApi.isRange(at)) {
+    if (!hanging && RangeApi.isRange(at)) {
       at = editorUnhangRange(editor, at, { voids });
     }
 
-    if (split && LocationApi.isRange(at)) {
+    if (split && RangeApi.isRange(at)) {
       if (
         RangeApi.isCollapsed(at) &&
         editorLeaf(editor, at.anchor)[0].text.length > 0
@@ -223,7 +235,7 @@ export const setNodes = ((
       });
       at = getDefined(rangeAnchor.release());
 
-      if (optionAt !== undefined && LocationApi.isRange(at)) {
+      if (optionAt !== undefined && RangeApi.isRange(at)) {
         at = trimSplitRangeEndAtTextStart(editor, at, match);
       }
 

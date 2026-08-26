@@ -14,7 +14,7 @@ import type {
 import { useEditor, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
-import { ToolbarButton } from './toolbar';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 type ToolbarButtonProps = React.ComponentProps<typeof ToolbarButton>;
 

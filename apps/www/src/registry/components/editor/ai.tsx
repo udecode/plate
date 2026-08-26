@@ -66,7 +66,8 @@ export const aiChatPlugin = AIChatTransportPlugin.extend({
 
           if (!selection) return;
 
-          const { startBlock, startInEmptyParagraph } = read.insertStart();
+          const { path, startBlock, startInEmptyParagraph } =
+            read.insertStart();
 
           editor.update.ai.beginPreview({
             originalBlocks:
@@ -83,7 +84,7 @@ export const aiChatPlugin = AIChatTransportPlugin.extend({
               type: editor.plugin(PLUGINS.aiChat).schema.type,
             },
             {
-              at: PathApi.next(selection.focus.path.slice(0, 1)),
+              at: PathApi.next(path),
             }
           );
           store.set({ streaming: true });

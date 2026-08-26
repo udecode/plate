@@ -1,3 +1,4 @@
+import type { Range, Selection } from '@platejs/plite';
 import type { Locator, Page } from '@playwright/test';
 
 import type { PlaceholderShape } from '../browser/zero-width';
@@ -20,7 +21,6 @@ export type PliteBrowserNumberBudget =
 export type SelectionSnapshot = {
   anchor: { path: number[]; offset: number };
   focus: { path: number[]; offset: number };
-  kind: 'text';
 };
 
 /** Owner metadata for a raw view-selection snapshot. */
@@ -362,7 +362,7 @@ export type PliteBrowserKernelCommand =
   | {
       direction?: 'backward' | 'forward';
       kind: 'delete-fragment';
-      selection?: PliteBrowserKernelRange | null;
+      selection?: Range | Selection;
     }
   | { direction: 'redo' | 'undo'; kind: 'history' }
   | { kind: 'insert-break'; variant: 'open-line' | 'paragraph' | 'soft' }
@@ -375,22 +375,8 @@ export type PliteBrowserKernelCommand =
       kind: 'move-selection';
       reverse?: boolean;
     }
-  | { kind: 'select'; selection: PliteBrowserKernelRange }
+  | { kind: 'select'; selection: Range }
   | { kind: 'select-all' };
-
-/** Plain model range carried by a kernel trace command or snapshot. */
-export type PliteBrowserKernelRange = Readonly<{
-  anchor: Readonly<{
-    offset: number;
-    path: readonly number[];
-    root?: string;
-  }>;
-  focus: Readonly<{
-    offset: number;
-    path: readonly number[];
-    root?: string;
-  }>;
-}>;
 
 /** Static command metadata captured beside a kernel trace command. */
 export type PliteBrowserKernelCommandDefinition = Readonly<{
@@ -505,7 +491,7 @@ export type PliteBrowserKernelEventFrame = {
   id: number;
   inputIntent: PliteBrowserKernelInputIntent | null;
   lifecyclePhase: 'commit' | 'event' | 'external' | 'layout-effect';
-  modelSelectionBefore: PliteBrowserKernelRange | null;
+  modelSelectionBefore: Selection;
   root: string;
   selectionSource: PliteBrowserKernelSelectionSource;
   startedAt: number;
@@ -528,8 +514,8 @@ export type PliteBrowserKernelTraceEntry = {
   repair: PliteBrowserKernelRepairRequest | null;
   repairPolicy: PliteBrowserKernelRepairPolicy;
   selectionChangeOrigin: PliteBrowserKernelSelectionChangeOrigin;
-  selectionAfter: PliteBrowserKernelRange | null;
-  selectionBefore: PliteBrowserKernelRange | null;
+  selectionAfter: Selection;
+  selectionBefore: Selection;
   selectionPolicy: PliteBrowserKernelSelectionPolicy;
   selectionSource: PliteBrowserKernelSelectionSource;
   stateAfter: PliteBrowserKernelState;
@@ -631,7 +617,6 @@ export type OffsetExpectation = number | readonly [number, number];
 export type SelectionSnapshotExpectation = {
   anchor: { path: number[]; offset: OffsetExpectation };
   focus: { path: number[]; offset: OffsetExpectation };
-  kind: 'text';
 };
 
 /** Expected browser-native DOM selection snapshot shape. */

@@ -89,15 +89,14 @@ const assertNodeQueryInference = () => {
       'type' in node && node.type === 'paragraph',
   });
   guardedEntry?.[0].align satisfies string | undefined;
-  const guardedAligns = editor.read.nodes.toArray(
-    {
+  const guardedAligns = editor.read.nodes
+    .toArray({
       match: (
         node
       ): node is SchemaElementFor<typeof ArticleSchema, 'paragraph'> =>
         'type' in node && node.type === 'paragraph',
-    },
-    ([node]) => node.align
-  );
+    })
+    .map(([node]) => node.align);
   guardedAligns[0] satisfies string | undefined;
 
   editor.read.nodes.next({ type: maybeHeading });

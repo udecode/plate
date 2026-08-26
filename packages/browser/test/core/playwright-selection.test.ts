@@ -73,7 +73,6 @@ describe('playwright selection snapshots', () => {
           path: [0, 0],
           offset: 0,
         },
-        kind: 'text',
       });
     };
 
@@ -109,7 +108,6 @@ describe('playwright selection snapshots', () => {
     expect(await takeSelectionSnapshot(createPage())).toEqual({
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 5 },
-      kind: 'text',
     });
   });
 
@@ -151,7 +149,6 @@ describe('playwright selection snapshots', () => {
       getSelection: () => ({
         anchor: { offset: 3, path: [47, 119, 1, 0] },
         focus: { offset: 3, path: [47, 119, 1, 0] },
-        kind: 'text',
       }),
     };
     window.getSelection()?.removeAllRanges();
@@ -186,7 +183,6 @@ describe('playwright selection snapshots', () => {
       getSelection: () => ({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [9999, 0] },
-        kind: 'text',
       }),
       getViewSelection: () => null,
     };
@@ -203,13 +199,11 @@ describe('playwright selection snapshots', () => {
     const expected = {
       anchor: { offset: 3, path: [47, 119, 1, 0] },
       focus: { offset: 3, path: [47, 119, 1, 0] },
-      kind: 'text' as const,
     };
     let reads = 0;
     let selection = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
-      kind: 'text' as const,
     };
 
     (root as any).__pliteBrowserHandle = {
@@ -319,7 +313,6 @@ describe('playwright selection snapshots', () => {
 
     (root as any).__pliteBrowserHandle = {
       getSelection: () => ({
-        kind: 'text',
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 3, path: [1, 0] },
       }),

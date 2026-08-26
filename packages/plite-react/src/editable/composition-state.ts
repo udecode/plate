@@ -1,8 +1,8 @@
 import {
   type EditorMarks,
   NodeApi,
+  type Range,
   RangeApi,
-  type Selection,
   type Text,
   TextApi,
 } from '@platejs/plite';
@@ -42,6 +42,7 @@ import {
 import type { Editor } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
+import { readCommittedSelectionRange } from './runtime-selection-state';
 import {
   armModelOwnedTextInputGuard,
   setEditableModelSelectionPreference,
@@ -217,14 +218,14 @@ const schedulePendingCompositionEnd = ({
 }: {
   commitFallback: (
     shouldCommit: boolean,
-    target: Selection,
+    target: Range | null,
     options: Readonly<{ publish: boolean }>
   ) => boolean;
   discardFallback: () => void;
   finishComposing: () => void;
   inputController: EditableInputController;
   ownership: 'external' | 'plite';
-  resolveFallbackTarget: () => Selection;
+  resolveFallbackTarget: () => Range | null;
   runOwnedDOMMutation: (callback: () => void) => void;
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
   settledData: string;
@@ -533,7 +534,7 @@ export const commitChromeCompositionEndFallback = ({
   mergeHistory?: boolean;
   rootElement?: HTMLElement | null;
   shouldCommit?: boolean;
-  target: Selection;
+  target: Range | null;
   text: string | null | undefined;
 }): boolean => {
   // COMPAT: Some browsers do not fire a usable `insertFromComposition`
@@ -811,7 +812,7 @@ export const applyEditableCompositionEnd = ({
       getCompositionEventText(event) ??
       inputController.state.compositionSession?.text;
     const mergeHistory = shouldMergeEditableCompositionHistory(inputController);
-    const target = editor.read((state) => state.selection());
+    const target = readCommittedSelectionRange(editor);
     const targetAnchor =
       target &&
       editor.anchor(target, {
@@ -827,7 +828,7 @@ export const applyEditableCompositionEnd = ({
     };
     const commitCompositionEndFallback = (
       shouldCommit: boolean,
-      liveTarget: Selection,
+      liveTarget: Range | null,
       { publish }: Readonly<{ publish: boolean }>
     ) => {
       if (shouldCommit && !liveTarget) return false;
@@ -957,11 +958,11 @@ export const applyEditableCompositionStart = ({
     }
 
     const marks = editor.read((state) => state.marks());
-    const selection = editor.read((state) => state.selection());
+    const selection = readCommittedSelectionRange(editor);
 
     if (inputController) {
       beginEditableCompositionSession(inputController, {
-        historyMergePending: !!selection && RangeApi.isExpanded(selection),
+        historyMergePending: editor.read.selection.isExpanded(),
       });
       inputController.state.activeIntent = 'composition';
     }
@@ -1052,7 +1053,7 @@ export const usePendingInsertionMarksEffect = ({
       () => {
         if (ReactEditor.isComposing(editor as ReactRuntimeEditor)) return;
 
-        const selection = editor.read((state) => state.selection());
+        const selection = readCommittedSelectionRange(editor);
         if (selection) {
           const { anchor } = selection;
           const text = readRuntimeText(editor, anchor.path);

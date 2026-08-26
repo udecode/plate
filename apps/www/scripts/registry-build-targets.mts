@@ -1,37 +1,58 @@
+import type { PlateRegistryBase } from '@/lib/plate-registry-styles';
+
 export const REGISTRY_HOMEPAGE = 'https://platejs.org';
-const DEFAULT_STYLE = 'new-york';
 
 export interface RegistryBuildTarget {
+  base: PlateRegistryBase;
+  kind: 'canonical' | 'provider-overlay';
   outputDir: string;
   registryBaseUrl: string;
   registryFile: string;
-  style: string;
+}
+
+export interface RegistryOutputTarget {
+  canonicalDir: string;
+  overlayDir: string;
+  registryBaseUrl: string;
 }
 
 export function getRegistryBuildTargets({
   dev,
-  styles,
 }: {
   dev: boolean;
-  styles: readonly string[];
-}): [RegistryBuildTarget, ...RegistryBuildTarget[]] {
-  const outputRoot = dev ? 'public/rd' : 'public/r';
+}): [RegistryBuildTarget, RegistryBuildTarget] {
   const registryRootUrl = dev
     ? 'http://localhost:3000/rd'
     : `${REGISTRY_HOMEPAGE}/r`;
 
   return [
     {
-      outputDir: outputRoot,
+      base: 'base',
+      kind: 'canonical',
+      outputDir: '.registry-build/base',
       registryBaseUrl: registryRootUrl,
-      registryFile: `${outputRoot}/registry.json`,
-      style: DEFAULT_STYLE,
+      registryFile: '.registry-build/base.registry.json',
     },
-    ...styles.map((style) => ({
-      outputDir: `${outputRoot}/${style}`,
-      registryBaseUrl: `${registryRootUrl}/${style}`,
-      registryFile: `${outputRoot}/${style}/registry.json`,
-      style,
-    })),
+    {
+      base: 'radix',
+      kind: 'provider-overlay',
+      outputDir: '.registry-build/radix',
+      registryBaseUrl: registryRootUrl,
+      registryFile: '.registry-build/radix.registry.json',
+    },
   ];
+}
+
+export function getRegistryOutputTarget({
+  dev,
+}: {
+  dev: boolean;
+}): RegistryOutputTarget {
+  return {
+    canonicalDir: dev ? 'public/rd' : 'public/r',
+    overlayDir: 'src/__registry__/overlays',
+    registryBaseUrl: dev
+      ? 'http://localhost:3000/rd'
+      : `${REGISTRY_HOMEPAGE}/r`,
+  };
 }

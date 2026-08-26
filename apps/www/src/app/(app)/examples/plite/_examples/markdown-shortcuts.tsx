@@ -111,9 +111,7 @@ const markdownShortcuts = () =>
           selection &&
           RangeApi.isCollapsed(selection)
         ) {
-          const match = state.nodes.above({
-            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
-          });
+          const match = state.nodes.block();
 
           if (match) {
             const [block, path] = match;
@@ -152,9 +150,8 @@ const markdownShortcuts = () =>
         const selection = state.selection();
 
         if (selection && RangeApi.isCollapsed(selection)) {
-          const blockEntry = state.nodes.above({
+          const blockEntry = state.nodes.block({
             at: selection,
-            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
           });
 
           if (blockEntry) {
@@ -172,13 +169,7 @@ const markdownShortcuts = () =>
                 if (result === false) return false;
 
                 return state.transaction.extend(result, (tx) => {
-                  tx.nodes.set(
-                    { type: 'paragraph' },
-                    {
-                      at: blockPath,
-                      match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-                    }
-                  );
+                  tx.blocks.set({ type: 'paragraph' }, { at: blockPath });
                 });
               }
             }
@@ -197,9 +188,7 @@ const markdownShortcuts = () =>
           RangeApi.isCollapsed(selection)
         ) {
           const { anchor } = selection;
-          const block = state.nodes.above({
-            match: (n) => NodeApi.isElement(n) && state.nodes.isBlock(n),
-          });
+          const block = state.nodes.block();
           const path = block ? block[1] : [];
           const currentBlock = block?.[0];
           const start = state.points.start(path);
@@ -241,12 +230,7 @@ const markdownShortcuts = () =>
                 tx.text.delete();
               }
 
-              tx.nodes.set(
-                { type },
-                {
-                  match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-                }
-              );
+              tx.blocks.set({ type });
 
               if (type === 'list-item') {
                 const list = createListElement(beforeText, orderedListMatch);
@@ -383,9 +367,7 @@ const mergeAdjacentBulletedLists = (tx: EditorTransactionSpecBuilder) => {
 };
 
 const selectCurrentBlockStart = (tx: EditorTransactionSpecBuilder) => {
-  const block = tx.nodes.above({
-    match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
-  });
+  const block = tx.nodes.block();
 
   if (block) {
     const start = tx.points.start(block[1]);

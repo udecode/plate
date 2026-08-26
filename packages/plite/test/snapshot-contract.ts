@@ -1263,6 +1263,26 @@ it('insertBreak splits the current top-level block and moves selection into the 
   });
 });
 
+it('insertBreak preserves a node selection without inventing an aggregate target', () => {
+  const children = [
+    { type: 'paragraph', children: [{ text: 'one' }] },
+    { type: 'paragraph', children: [{ text: 'middle' }] },
+    { type: 'paragraph', children: [{ text: 'three' }] },
+  ];
+  const selection = SelectionApi.nodes([[0], [2]]);
+  const editor = createEditor({
+    initialSelection: selection,
+    initialValue: children,
+  });
+
+  editorInsertBreak(editor);
+
+  const snapshot = editorGetSnapshot(editor);
+
+  assert.deepEqual(snapshot.children, children);
+  assert.deepEqual(snapshot.selection, selection);
+});
+
 it('insertBreak replaces the next soft break with a block split', () => {
   const editor = createEditor();
 
@@ -2516,20 +2536,27 @@ it('publishes an immutable cloned selection for a text change', () => {
     anchor: { path: [0, 0], offset: 6 },
     focus: { path: [0, 0], offset: 6 },
   });
+  assert.ok(SelectionApi.isText(snapshot.selection));
   assert.notEqual(snapshot.selection, selection);
-  assert.notEqual(snapshot.selection?.anchor, selection.anchor);
+  assert.notEqual(snapshot.selection.anchor, selection.anchor);
   assert.throws(() => {
     (
       snapshot.selection as NonNullable<typeof snapshot.selection>
     ).anchor.offset = 99;
   });
-  assert.equal(editorGetSnapshot(editor).selection?.anchor.offset, 6);
+  const currentSelection = editorGetSnapshot(editor).selection;
+
+  assert.ok(SelectionApi.isText(currentSelection));
+  assert.equal(currentSelection.anchor.offset, 6);
   assert.throws(() => {
     (
       snapshot.selection as NonNullable<typeof snapshot.selection>
     ).anchor.path[0] = 9;
   });
-  assert.deepEqual(editorGetSnapshot(editor).selection?.anchor.path, [0, 0]);
+  const currentSelectionAfterMutation = editorGetSnapshot(editor).selection;
+
+  assert.ok(SelectionApi.isText(currentSelectionAfterMutation));
+  assert.deepEqual(currentSelectionAfterMutation.anchor.path, [0, 0]);
 });
 
 it('runs custom corrections after text changes', () => {
@@ -6959,14 +6986,18 @@ it('deep-freezes snapshot selections including point paths', () => {
   const snapshot = editorGetSnapshot(editor);
 
   assert.deepEqual(snapshot.selection, selection);
+  assert.ok(SelectionApi.isText(snapshot.selection));
   assert.notEqual(snapshot.selection, selection);
-  assert.notEqual(snapshot.selection?.anchor.path, selection.anchor.path);
+  assert.notEqual(snapshot.selection.anchor.path, selection.anchor.path);
   assert.throws(() => {
     (
       snapshot.selection as NonNullable<typeof snapshot.selection>
     ).anchor.path[0] = 9;
   });
-  assert.deepEqual(editorGetSnapshot(editor).selection?.anchor.path, [0, 0]);
+  const currentSelection = editorGetSnapshot(editor).selection;
+
+  assert.ok(SelectionApi.isText(currentSelection));
+  assert.deepEqual(currentSelection.anchor.path, [0, 0]);
 });
 
 it('deep-freezes nested marks instead of sharing nested payloads', () => {

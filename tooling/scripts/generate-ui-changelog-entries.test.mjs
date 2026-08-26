@@ -560,6 +560,33 @@ test('infers explicit registry files when the item name differs from the source 
   ]);
 });
 
+test('infers every provider author from a targeted base file', () => {
+  const hints = inferRegistryHints('editor-context-menu', {
+    registryDefinitions: [
+      {
+        content: `export const items = [{
+          files: [{
+            path: 'bases/base/context-menu.tsx',
+            target: '@components/editor/context-menu.tsx',
+          }],
+          name: 'editor-context-menu',
+        }];`,
+        path: 'apps/www/src/registry/registry-editor.ts',
+      },
+    ],
+    registryFiles: [
+      'apps/www/src/registry/bases/base/context-menu.tsx',
+      'apps/www/src/registry/bases/radix/context-menu.tsx',
+      'apps/www/src/registry/components/editor/context-menu-button.tsx',
+    ],
+  });
+
+  assert.deepEqual(hints.files, [
+    'apps/www/src/registry/bases/base/context-menu.tsx',
+    'apps/www/src/registry/bases/radix/context-menu.tsx',
+  ]);
+});
+
 test('resolves explicit registry files against a configured registry root', () => {
   const hints = inferRegistryHints('editor-plugins', {
     registryDefinitions: [

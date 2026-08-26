@@ -4,6 +4,7 @@ import {
   type Editor,
   type EditorDocumentValue,
   type EditorSchemaIdentity,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
 import {
@@ -140,7 +141,14 @@ const omitPrimaryPointRoot = <T extends { readonly root?: string }>(
 const omitPrimarySelectionRoot = <T extends Batch['selectionAfter']>(
   selection: T
 ): T =>
-  (selection
+  (SelectionApi.isNode(selection)
+    ? selection.root === MAIN_ROOT_KEY
+      ? SelectionApi.nodes(selection.paths, {
+          anchorPath: selection.anchorPath,
+          focusPath: selection.focusPath,
+        })
+      : selection
+    : selection
     ? {
         ...selection,
         anchor: omitPrimaryPointRoot(selection.anchor),

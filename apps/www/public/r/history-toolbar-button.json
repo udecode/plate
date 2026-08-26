@@ -9,21 +9,22 @@
   ],
   "files": [
     {
-      "path": "src/registry/ui/history-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Redo2Icon, Undo2Icon } from 'lucide-react';\nimport { useSlateHistory } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function RedoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { canRedo, redo } = useSlateHistory();\n\n  return (\n    <ToolbarButton\n      {...props}\n      disabled={!canRedo}\n      onClick={redo}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip=\"Redo\"\n    >\n      <Redo2Icon />\n    </ToolbarButton>\n  );\n}\n\nexport function UndoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { canUndo, undo } = useSlateHistory();\n\n  return (\n    <ToolbarButton\n      {...props}\n      disabled={!canUndo}\n      onClick={undo}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip=\"Undo\"\n    >\n      <Undo2Icon />\n    </ToolbarButton>\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "src/registry/components/editor/history-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { Redo2Icon, Undo2Icon } from 'lucide-react';\nimport { usePliteHistory } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function RedoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { canRedo, redo } = usePliteHistory();\n\n  return (\n    <ToolbarButton {...props} disabled={!canRedo} onClick={redo} tooltip=\"Redo\">\n      <Redo2Icon />\n    </ToolbarButton>\n  );\n}\n\nexport function UndoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { canUndo, undo } = usePliteHistory();\n\n  return (\n    <ToolbarButton {...props} disabled={!canUndo} onClick={undo} tooltip=\"Undo\">\n      <Undo2Icon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/history-toolbar-button.tsx"
     }
   ],
   "meta": {
     "docs": [
       {
-        "route": "https://docs.slatejs.org/libraries/slate-history",
-        "title": "Slate History"
+        "route": "/docs/plite/libraries/plite-history",
+        "title": "Plite History"
       }
     ],
     "examples": [
       "basic-nodes-demo"
     ]
   },
-  "type": "registry:ui"
+  "type": "registry:component"
 }

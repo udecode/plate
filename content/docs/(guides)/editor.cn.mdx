@@ -123,7 +123,7 @@ const editor = createPlateEditor({
 升序运行，然后 Plate 执行已安装插件的文档准备和 schema 适配。
 
 ```ts title="src/editor.ts" showLineNumbers
-import { ParagraphPlugin } from '@platejs/basic-nodes/react';
+import { ParagraphPlugin } from 'platejs/react';
 import {
   defineDocumentMigrations,
   migratePlateV54,
@@ -431,6 +431,26 @@ const entry = id ? elementId.read.entry(id) : undefined;
 默认生成器是完整长度的 `nanoid()`。加载和移动保留有效 ID；复制、拆分、重复和
 粘贴副本使用新 ID；显式重复 ID 会被拒绝。精确 schema 派生元素可直接读取
 `element.id`；类型擦除或可选安装的 package 边界通过插件读取。
+
+编译后的 schema 属性 target 决定哪些元素获得 ID。只有 block 需要持久化身份时，
+在应用 schema 中收窄 target：
+
+```ts
+import { ElementIdPlugin, schema, target } from "platejs";
+
+const editor = usePlateEditor({
+  plugins: [ElementIdPlugin],
+  schema: {
+    overrides: [
+      schema.override(ElementIdPlugin, {
+        properties: { id: { target: target.group("block") } },
+      }),
+    ],
+  },
+});
+```
+
+文档准备只为匹配的元素生成 ID，并从不匹配的元素中移除该插件拥有的 `id`。
 
 缺少 ID 的已存储文档应在加载前使用纯迁移 helper。它保留有效字符串、补齐缺失
 ID、报告重复项，并要求显式处理旧数字 ID。

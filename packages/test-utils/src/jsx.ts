@@ -2,8 +2,10 @@ import {
   type Descendant,
   type EditorSelection,
   type Element,
+  type Range,
   type Selection,
   type Text,
+  RangeApi,
   createEditor as createPliteEditor,
 } from '@platejs/plite';
 import {
@@ -23,6 +25,17 @@ export type TestEditorFixture = {
 };
 
 export type TestEditor = TestEditorFixture;
+
+export const projectTestSelectionRange = (
+  selection: Selection | undefined
+): Range | null => {
+  if (!selection) return null;
+  if (!RangeApi.isRange(selection)) {
+    throw new Error('Expected a range-backed test selection.');
+  }
+
+  return { anchor: selection.anchor, focus: selection.focus };
+};
 
 export const createEditorFromFixture = (fixture: TestEditorFixture) =>
   createPliteEditor({

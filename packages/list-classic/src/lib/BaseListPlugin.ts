@@ -380,7 +380,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
       }: {
         at?: Location | null;
       } = {}): { list: ElementEntry; listItem: ElementEntry } | undefined => {
-        const location = at === undefined ? state.selection() : at;
+        const selection = state.selection();
+        const location = at === undefined ? selection : at;
 
         let _at: Path;
 
@@ -417,7 +418,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
       const getListRoot = (
         at: Path | Point | Range | null | undefined
       ): ElementEntry | undefined => {
-        const location = at === undefined ? state.selection() : at;
+        const selection = state.selection();
+        const location = at === undefined ? selection : at;
 
         if (!location) return undefined;
 
@@ -1043,7 +1045,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
       };
 
       const moveListItems = ({
-        at = tx.selection() ?? undefined,
+        at,
         enableResetOnShiftTab,
         increase = true,
       }: {
@@ -1154,10 +1156,13 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
       };
       const move = (increase: boolean) => {
         const selection = tx.selection();
+        const hasNodeSelection = tx.selection.nodes().length > 0;
 
         if (!selection) return false;
 
-        let at = selection;
+        let at: EditorNodesOptions<Element>['at'] = hasNodeSelection
+          ? undefined
+          : selection;
 
         if (!tx.selection.isCollapsed()) {
           const { anchor, focus } = RangeApi.isBackward(selection)
@@ -1279,6 +1284,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
             }
           };
           const selection = tx.selection();
+          const selectedNodePaths = tx.selection
+            .nodes()
+            .map(([, path]) => path);
 
           if (!selection) return;
 
@@ -1296,6 +1304,103 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
 
             return plugin.schema.type;
           });
+
+          if (selectedNodePaths.length > 0) {
+            const listTypes = new Set(api.getListTypes());
+            const validLiChildrenTypeSet = new Set(validLiChildrenTypes);
+            const wrapBlockAt = (path: Path) => {
+              const entry = tx.nodes.get(path, {
+                match: ElementApi.isElement,
+              });
+
+              if (!entry) return;
+
+              if (!validLiChildrenTypeSet.has(entry[0].type)) {
+                tx.nodes.set(
+                  {
+                    type: editor.plugin(PLUGINS.listItemContent).schema.type,
+                  },
+                  { at: path }
+                );
+              }
+
+              tx.nodes.wrap(
+                {
+                  children: [],
+                  ...getPropsIfTaskList({ checked }),
+                  type: editor.plugin(PLUGINS.listItem).schema.type,
+                },
+                { at: path }
+              );
+              tx.nodes.wrap({ children: [], type }, { at: path });
+            };
+            const refs = selectedNodePaths.map((path) =>
+              tx.anchor(path, {
+                association: 'forward',
+                deletion: 'nearest',
+              })
+            );
+
+            for (const ref of refs.reverse()) {
+              const path = ref.resolve();
+
+              if (!path) continue;
+
+              const entry = tx.nodes.get(path, {
+                match: ElementApi.isElement,
+              });
+
+              if (!entry) continue;
+
+              if (listTypes.has(entry[0].type)) {
+                if (entry[0].type === type) {
+                  unwrapList({ at: path });
+                } else {
+                  setListType(entry, { checked, type });
+                }
+
+                continue;
+              }
+
+              const listItem =
+                entry[0].type === editor.plugin(PLUGINS.listItem).schema.type
+                  ? entry
+                  : tx.nodes.above({
+                      at: path,
+                      type: BaseListItemPlugin,
+                      mode: 'lowest',
+                    });
+              const parentList = listItem
+                ? tx.nodes.parent(listItem[1], {
+                    match: ElementApi.isElement,
+                  })
+                : undefined;
+
+              if (listItem && parentList && listTypes.has(parentList[0].type)) {
+                const selectedBlockPath =
+                  entry[0].type === editor.plugin(PLUGINS.listItem).schema.type
+                    ? listItem[1].concat(0)
+                    : path;
+                const selectedBlockRef = tx.anchor(selectedBlockPath, {
+                  association: 'forward',
+                  deletion: 'nearest',
+                });
+
+                unwrapList({ at: listItem[1] });
+                if (parentList[0].type !== type) {
+                  const nextPath = selectedBlockRef.resolve();
+
+                  if (nextPath) wrapBlockAt(nextPath);
+                }
+
+                continue;
+              }
+
+              wrapBlockAt(path);
+            }
+
+            return;
+          }
 
           if (tx.selection.isCollapsed() || !tx.selection.isAcrossBlocks()) {
             const res = tx.listClassic.getListItemEntry({ at: selection });
@@ -2121,9 +2226,10 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.listClassic, {
           return around(
             editorCommands.deleteFragment,
             ({ input, state, next }) => {
+              const currentSelection = state.selection();
               const selection =
                 input.at === undefined
-                  ? state.selection()
+                  ? currentSelection
                   : state.ranges.get(input.at);
 
               if (

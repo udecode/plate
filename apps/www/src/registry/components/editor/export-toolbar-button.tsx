@@ -2,7 +2,6 @@
 
 import { exportToDocx } from '@platejs/docx-export';
 import { MarkdownPlugin } from '@platejs/markdown';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createBaseEditor } from 'platejs';
 import { useEditor } from 'platejs/react';
@@ -18,9 +17,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DocxExportKit } from '@/registry/components/editor/docx-export';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 import { EditorStatic } from './editor-static';
-import { ToolbarButton } from './toolbar';
 
 const siteUrl = 'https://platejs.org';
 
@@ -38,7 +37,7 @@ const downloadFile = async (url: string, filename: string) => {
   window.URL.revokeObjectURL(blobUrl);
 };
 
-export function ExportToolbarButton(props: DropdownMenuProps) {
+export function ExportToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
 
@@ -169,7 +168,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip="Export" isDropdown>
           <ArrowDownToLineIcon className="size-4" />

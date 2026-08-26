@@ -11,6 +11,7 @@ import {
   LocationApi,
   NodeApi,
   RangeApi,
+  SelectionApi,
 } from '../interfaces';
 import {
   getChildren as editorGetChildren,
@@ -132,6 +133,25 @@ export const unwrapNodes = ((
       return;
     }
 
+    if (SelectionApi.isNode(target)) {
+      const nodeMatch = match ?? (() => true);
+      const anchors = Array.from(
+        getNodes(editor, { at: target, match: nodeMatch, mode, voids }),
+        ([, path]) =>
+          editor.anchor(path, {
+            association: 'forward',
+            deletion: 'drop',
+          })
+      ).toReversed();
+
+      for (const anchor of anchors) {
+        const path = anchor.release();
+
+        if (path) unwrapNodes(editor, { ...options, at: path });
+      }
+      return;
+    }
+
     const wantsGenericBehavior =
       match != null || mode !== 'lowest' || split || voids;
 
@@ -183,7 +203,10 @@ export const unwrapNodes = ((
         const anchoredRange = rangeAnchor?.resolve();
 
         if (split && anchoredRange) {
-          const liveRange = getCurrentSelection(editor) ?? anchoredRange;
+          const currentSelection = getCurrentSelection(editor);
+          const liveRange = RangeApi.isRange(currentSelection)
+            ? currentSelection
+            : anchoredRange;
           const intersection = RangeApi.intersection(liveRange, range);
 
           if (!intersection) {

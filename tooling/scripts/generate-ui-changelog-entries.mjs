@@ -1346,7 +1346,7 @@ export function extractRegistryItemNames(value) {
   return [];
 }
 
-const registryItemPathsCache = new Map();
+const registryItemFilesCache = new Map();
 
 function getObjectProperty(node, name) {
   return node.properties.find(
@@ -1358,8 +1358,8 @@ function getObjectProperty(node, name) {
   );
 }
 
-function extractRegistryItemPaths(content) {
-  const cached = registryItemPathsCache.get(content);
+function extractRegistryItemFiles(content) {
+  const cached = registryItemFilesCache.get(content);
 
   if (cached) return cached;
 
@@ -1384,9 +1384,18 @@ function extractRegistryItemPaths(content) {
           if (element?.type !== 'ObjectExpression') return [];
 
           const pathProperty = getObjectProperty(element, 'path');
+          const targetProperty = getObjectProperty(element, 'target');
 
           return pathProperty?.value.type === 'StringLiteral'
-            ? [pathProperty.value.value]
+            ? [
+                {
+                  path: pathProperty.value.value,
+                  target:
+                    targetProperty?.value.type === 'StringLiteral'
+                      ? targetProperty.value.value
+                      : null,
+                },
+              ]
             : [];
         });
 
@@ -1406,9 +1415,20 @@ function extractRegistryItemPaths(content) {
   };
 
   visit(ast.program);
-  registryItemPathsCache.set(content, items);
+  registryItemFilesCache.set(content, items);
 
   return items;
+}
+
+function getProviderVariantPattern({ path: filePath, target }) {
+  if (!target) return null;
+
+  const match = filePath.replaceAll('\\', '/').match(/^bases\/[^/]+\/(.+)$/);
+  const variantPath = match?.[1];
+
+  if (!variantPath || !target.endsWith(`/${variantPath}`)) return null;
+
+  return new RegExp(`(?:^|/)bases/[^/]+/${escapeRegExp(variantPath)}$`);
 }
 
 export function inferRegistryHints(
@@ -1423,14 +1443,24 @@ export function inferRegistryHints(
     `(?:^|/)${escapeRegExp(itemName)}\\.(?:ts|tsx|mts)$`
   );
   const namePattern = new RegExp(`name:\\s*['"]${escapeRegExp(itemName)}['"]`);
-  const explicitFiles = registryDefinitions.flatMap(({ content }) =>
-    (extractRegistryItemPaths(content).get(itemName) ?? []).map((filePath) =>
-      path.join(registryRoot, filePath)
+  const explicitItemFiles = registryDefinitions.flatMap(
+    ({ content }) => extractRegistryItemFiles(content).get(itemName) ?? []
+  );
+  const explicitFiles = explicitItemFiles.map(({ path: filePath }) =>
+    path.join(registryRoot, filePath)
+  );
+  const providerVariantPatterns = explicitItemFiles
+    .map(getProviderVariantPattern)
+    .filter(Boolean);
+  const providerVariantFiles = registryFiles.filter((filePath) =>
+    providerVariantPatterns.some((pattern) =>
+      pattern.test(filePath.replaceAll('\\', '/'))
     )
   );
   const files = unique([
     ...registryFiles.filter((filePath) => exactFilePattern.test(filePath)),
     ...explicitFiles.filter((filePath) => registryFiles.includes(filePath)),
+    ...providerVariantFiles,
   ])
     .filter((filePath) => SOURCE_EXTENSIONS.has(path.extname(filePath)))
     .filter((filePath) => !SPEC_OR_TEST_FILE_PATTERN.test(filePath))

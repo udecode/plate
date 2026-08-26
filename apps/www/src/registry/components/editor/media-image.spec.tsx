@@ -33,7 +33,10 @@ mock.module('platejs/react', () => ({
   useElementSelected: () => {
     const selection = selectionMock();
 
-    return selection?.kind === 'node' && selection.path?.[0] === 0;
+    return (
+      selection?.kind === 'node' &&
+      selection.paths?.some((path: number[]) => path[0] === 0)
+    );
   },
   usePluginStore: usePluginStoreMock,
   usePath: () => [0],
@@ -113,7 +116,7 @@ describe('ImageElement', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
       kind: 'node',
-      path: [0],
+      paths: [[0]],
     });
 
     const view = await renderImage();

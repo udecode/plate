@@ -4,7 +4,7 @@ import { Redo2Icon, Undo2Icon } from 'lucide-react';
 import { usePliteHistory } from 'platejs/react';
 import * as React from 'react';
 
-import { ToolbarButton } from './toolbar';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function RedoToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>

@@ -47,9 +47,9 @@
   "dependencies": {
     "@platejs/combobox": "workspace:^",
     "@platejs/core": "workspace:^",
+    "@platejs/cursor": "workspace:^",
     "@platejs/markdown": "workspace:^",
     "@platejs/plite": "workspace:^",
-    "@platejs/selection": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/table": "workspace:^",
     "@platejs/utils": "workspace:^",

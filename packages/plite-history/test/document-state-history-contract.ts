@@ -619,7 +619,10 @@ describe('document meta history contract', () => {
     const undoCommit = editorGetLastCommit(editor);
     assert.deepEqual(
       editor.read((state) => state.selection()),
-      currentSelection
+      {
+        anchor: currentSelection.anchor,
+        focus: currentSelection.focus,
+      }
     );
     assert.deepEqual(undoCommit?.tags, [
       'semantic-command',
@@ -714,7 +717,6 @@ describe('document meta history contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },
       }
@@ -733,7 +735,6 @@ describe('document meta history contract', () => {
     assert.deepEqual(
       runtime.read((state) => state.selection()),
       {
-        kind: 'text',
         anchor: { path: [1, 0], offset: 3, root: 'header' },
         focus: { path: [1, 0], offset: 3, root: 'header' },
       }

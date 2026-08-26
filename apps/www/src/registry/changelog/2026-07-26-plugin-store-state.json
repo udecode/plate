@@ -298,9 +298,15 @@
     },
     {
       "name": "block-selection",
-      "files": ["apps/www/src/registry/components/editor/block-selection.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-selection."
+        }
+      ]
     },
     {
       "name": "block-suggestion",

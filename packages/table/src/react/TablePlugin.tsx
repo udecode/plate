@@ -13,7 +13,10 @@ import {
   planTableCellDrop,
   type TableDragCapture,
 } from '../lib/internal/paste';
-import { readTableSelection } from '../lib/internal/selection';
+import {
+  createTableNodeSelection,
+  readTableSelection,
+} from '../lib/internal/selection';
 
 const tableDragCaptures = new WeakMap<PlateEditor, TableDragCapture>();
 const TABLE_CELL_DRAG_MIME = 'application/x-plate-table-cell-selection';
@@ -69,6 +72,19 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     dragEnd: ({ editor }) => {
       tableDragCaptures.delete(editor);
     },
+    dragOver: ({ editor, event }) => {
+      if (
+        !tableDragCaptures.has(editor) ||
+        !Array.from(event.dataTransfer.types ?? []).includes(
+          TABLE_CELL_DRAG_MIME
+        )
+      ) {
+        return undefined;
+      }
+
+      consumeTableDragEvent(event);
+      return true;
+    },
     dragStart: ({ editor, event, read }) => {
       tableDragCaptures.delete(editor);
 
@@ -83,7 +99,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       if (!dragCellKey) return undefined;
 
-      const source = read.getSelection();
+      const source = read.selection();
 
       if (!source || !source.cellKeys.includes(dragCellKey as NodeKey)) {
         return undefined;
@@ -193,7 +209,8 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       const range = editor.api.dom.resolvePliteRange(domSelection, {
         exactMatch: false,
       });
-      const selection = range && read.createCellSelection(range);
+      const view = range && read.selection(range);
+      const selection = view && createTableNodeSelection(view);
 
       if (!selection) return undefined;
 
@@ -204,7 +221,9 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     keyDown: ({ editor, event, read, update }) => {
       if (event.defaultPrevented) return undefined;
 
-      const getMoveContext = (point = editor.read.selection()?.anchor) => {
+      const selection = editor.read.selection();
+
+      const getMoveContext = (point = selection?.anchor) => {
         if (
           !point ||
           !editor.read.selection.isWithinBlock({ type: TableCellPlugin })
@@ -236,11 +255,11 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         const adjacentBlock = reverse
           ? editor.read.nodes.previous({
               at: blockPath,
-              match: (node) => editor.read.nodes.isBlock(node),
+              match: (node) => editor.read.schema.isBlock(node),
             })
           : editor.read.nodes.next({
               at: blockPath,
-              match: (node) => editor.read.nodes.isBlock(node),
+              match: (node) => editor.read.schema.isBlock(node),
             });
 
         return (
@@ -307,7 +326,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         'shift+up': 'top',
       } as const;
       const shouldMoveSingleCell = (key: keyof typeof edges) => {
-        const context = getMoveContext(editor.read.selection()?.focus);
+        const context = getMoveContext(selection?.focus);
 
         if (!context) return false;
 
@@ -332,9 +351,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       if (
         // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Safari IME exposes composition code 229 through which when cell selection is active.
         event.which === 229 &&
-        editor.read.selection() &&
-        editor.read.selection.isExpanded() &&
-        read.isSelectingCell()
+        (read.selection()?.anchors.length ?? 0) > 1
       ) {
         editor.update.selection.collapse({ edge: 'end' });
 
@@ -356,9 +373,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           update.moveSelection({ edge: edges[key], reverse }) ||
           (shouldMoveSingleCell(key) &&
             update.moveSelection({
-              at:
-                editor.read.selection() ??
-                failInvariant('Expected value to be defined'),
+              at: selection ?? failInvariant('Expected value to be defined'),
               edge: edges[key],
               fromOneCell: true,
               reverse,

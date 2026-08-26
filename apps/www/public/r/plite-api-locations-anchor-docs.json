@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-anchor-docs",
+  "title": "Anchor API",
+  "description": "Root-aware live paths, points, and ranges mapped by canonical document changes.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/anchor.mdx",
+      "content": "---\ntitle: \"Anchor API\"\ndescription: \"Root-aware live paths, points, and ranges mapped by canonical document changes.\"\n---\n\nAn anchor keeps a path, point, or range mapped through canonical\n`DocumentChange` values. Choose its API by lifetime: `editor.anchor` is\npersistent, while `tx.anchor` is limited to one transaction callback.\n\n## Persistent Anchors\n\n#### `editor.anchor(value, options) => Anchor`\n\n```typescript\nconst selection = editor.read.selection();\n\nif (!selection) return;\n\nconst target = editor.anchor(selection, {\n  association: \"inward\",\n  deletion: \"drop\",\n});\n```\n\n`deletion` is required:\n\n- `\"drop\"` resolves to `null` when the target is deleted.\n- `\"nearest\"` resolves to the nearest valid location.\n\nPaths and points accept `\"backward\"` or `\"forward\"` association. Ranges also\naccept `\"inward\"` and `\"outward\"`. Pass `root` for a rootless value that belongs\nto a named document root.\n\nPersistent anchors remain active across commits until `release()` is called.\n\n```typescript\nconst current = target.resolve();\nconst finalValue = target.release();\n```\n\n`resolve()` returns the current mapped value without ending tracking.\n`release()` returns the current value and permanently detaches the anchor.\nBoth return `null` after a dropped target or release.\n\nUse persistent anchors for application-owned runtime state such as local\nannotations. Release them when their owner is removed.\n\n## Transaction Anchors\n\n#### `tx.anchor(value, options) => EditorTransactionAnchor`\n\nTransaction anchors track a location only while the update or detached\ntransaction builder is active.\n\n```typescript\neditor.update((tx) => {\n  const target = tx.anchor(range, {\n    association: \"inward\",\n    deletion: \"nearest\",\n  });\n\n  tx.text.delete({ at: range });\n\n  const mapped = target.resolve();\n\n  if (mapped) tx.selection.set(mapped);\n});\n```\n\n`EditorTransactionAnchor` exposes only `resolve()`. The transaction releases\nits backing anchor automatically. Calling `resolve()` after the callback ends\nthrows because the transaction is no longer active.\n\nAnchors are runtime values. Persist the resolved path, point, or range only when\nthe application owns a durable serialization policy.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/anchor.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

@@ -2,6 +2,148 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-26-compose-node-selection-primitives",
+      "href": "/registry/changelog/2026-08-26-compose-node-selection-primitives.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Compose editor node selection from package primitives",
+      "change": {
+        "type": "source",
+        "date": "2026-08-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-26-fix-link-popover-rows",
+      "href": "/registry/changelog/2026-08-26-fix-link-popover-rows.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Use flat link popover rows with edge-to-edge separators",
+      "change": {
+        "type": "source",
+        "date": "2026-08-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-26-hide-block-drag-handles-during-table-selection",
+      "href": "/registry/changelog/2026-08-26-hide-block-drag-handles-during-table-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Scope drag handles during table cell selection",
+      "change": {
+        "type": "source",
+        "date": "2026-08-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd", "table"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-26-hide-table-selection-highlight",
+      "href": "/registry/changelog/2026-08-26-hide-table-selection-highlight.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Hide native text highlight while selecting multiple table cells",
+      "change": {
+        "type": "source",
+        "date": "2026-08-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-26-schema-driven-block-selection",
+      "href": "/registry/changelog/2026-08-26-schema-driven-block-selection.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Select schema-defined blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-08-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-selection", "table"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-25-base-first-registry",
+      "href": "/registry/changelog/2026-08-25-base-first-registry.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Install Base-first registry code with eight shadcn styles",
+      "change": {
+        "type": "source",
+        "date": "2026-08-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "plate-ui",
+        "toolbar",
+        "floating-popover",
+        "editor-dropdown-menu",
+        "editor-context-menu",
+        "block-menu",
+        "code-block",
+        "code-drawing",
+        "comment",
+        "emoji-picker",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "footnote",
+        "math",
+        "table",
+        "table-toolbar-button",
+        "turn-into-toolbar-button",
+        "autoformat-classic",
+        "fixed-toolbar-classic",
+        "fixed-toolbar-classic-buttons",
+        "floating-toolbar-classic",
+        "floating-toolbar-classic-buttons",
+        "insert-toolbar-classic-button",
+        "list-classic",
+        "list-classic-toolbar-button",
+        "transforms-classic",
+        "turn-into-toolbar-classic-button",
+        "fumadocs",
+        "editor-basic",
+        "ai",
+        "date",
+        "link",
+        "suggestion-style"
+      ],
+      "entries": 6,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-25-fix-font-size-selection-overlay",
       "href": "/registry/changelog/2026-08-25-fix-font-size-selection-overlay.json",
       "status": "draft",
@@ -139,6 +281,31 @@
         "inline-combobox"
       ],
       "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-24-single-selection-authority",
+      "href": "/registry/changelog/2026-08-24-single-selection-authority.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Select one or many nodes through the editor model",
+      "change": {
+        "type": "source",
+        "date": "2026-08-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor",
+        "block-menu",
+        "dnd",
+        "table",
+        "ai-menu",
+        "cursor-overlay"
+      ],
+      "entries": 1,
       "diagnostics": []
     },
     {

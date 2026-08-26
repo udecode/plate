@@ -664,13 +664,9 @@ describe('old Slate helper behavior through current Plite APIs', () => {
       }
     );
 
-    assert.equal(
-      getCurrentIsEmptyAfter(
-        editor,
-        editor.read((state) => state.selection())
-      ),
-      true
-    );
+    const selection = editor.read((state) => state.selection());
+
+    assert.equal(getCurrentIsEmptyAfter(editor, selection), true);
     assert.equal(
       getCurrentIsEmptyAfter(editor, {
         anchor: { path: [0, 1, 0], offset: 2 },

@@ -217,7 +217,6 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         },
       ]);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 3, path: [0, 1] },
         focus: { offset: 3, path: [0, 1] },
       });
@@ -250,7 +249,6 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         },
       ]);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 3, path: [0, 1] },
         focus: { offset: 3, path: [0, 1] },
       });
@@ -353,7 +351,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
           if (selection) {
             tx.selection.set(selection);
           } else {
-            tx.selection.clear();
+            tx.selection.set(null);
           }
         });
       },
@@ -445,7 +443,6 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
       installPreview({
         selection: {
-          kind: 'text',
           anchor: { offset: 7, path: [0, 0] },
           focus: { offset: 7, path: [0, 0] },
         },
@@ -488,13 +485,12 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     it('restores a null snapshot selection', () => {
       const { editor, installPreview } = createPreviewHarness();
 
-      editor.update.selection.clear();
+      editor.update.selection.set(null);
       editor.plugin(BaseAIPlugin).update.beginPreview({
         originalBlocks: [structuredClone(editor.read.children()[0])],
       });
       installPreview({
         selection: {
-          kind: 'text',
           anchor: { offset: 7, path: [0, 0] },
           focus: { offset: 7, path: [0, 0] },
         },
@@ -759,7 +755,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
           ],
           { at: [], count: tx.children().length, index: 0 }
         );
-        tx.selection.clear();
+        tx.selection.set(null);
       });
 
       editor.plugin(BaseAIPlugin).update.undo();

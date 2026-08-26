@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-blocks",
+  "dependencies": [
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/blockquote.json",
+    "https://platejs.org/r/heading.json",
+    "https://platejs.org/r/horizontal-rule.json",
+    "https://platejs.org/r/paragraph.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/basic-blocks.tsx",
+      "content": "'use client';\n\nimport {\n  BlockquoteRules,\n  HeadingRules,\n  HorizontalRuleRules,\n} from '@platejs/basic-nodes';\nimport {\n  BlockquotePlugin,\n  HeadingPlugin,\n  HorizontalRulePlugin,\n} from '@platejs/basic-nodes/react';\nimport { ParagraphPlugin } from 'platejs/react';\n\nimport { BlockquoteElement } from '@/registry/components/editor/blockquote';\nimport { HeadingElement } from '@/registry/components/editor/heading';\nimport { HrElement } from '@/registry/components/editor/horizontal-rule';\nimport { ParagraphElement } from '@/registry/components/editor/paragraph';\n\nexport const BasicBlocksKit = [\n  ParagraphPlugin.configure({ component: ParagraphElement }),\n  HeadingPlugin.configure({\n    component: HeadingElement,\n    inputRules: [HeadingRules.markdown()],\n    rules: {\n      break: { empty: 'reset' },\n    },\n    shortcuts: {\n      toggleHeading1: {\n        handler: ({ editor }) => {\n          editor.plugin(HeadingPlugin).update.toggle({ level: 1 });\n        },\n        keys: 'mod+alt+1',\n      },\n      toggleHeading2: {\n        handler: ({ editor }) => {\n          editor.plugin(HeadingPlugin).update.toggle({ level: 2 });\n        },\n        keys: 'mod+alt+2',\n      },\n      toggleHeading3: {\n        handler: ({ editor }) => {\n          editor.plugin(HeadingPlugin).update.toggle({ level: 3 });\n        },\n        keys: 'mod+alt+3',\n      },\n      toggleHeading4: {\n        handler: ({ editor }) => {\n          editor.plugin(HeadingPlugin).update.toggle({ level: 4 });\n        },\n        keys: 'mod+alt+4',\n      },\n      toggleHeading5: {\n        handler: ({ editor }) => {\n          editor.plugin(HeadingPlugin).update.toggle({ level: 5 });\n        },\n        keys: 'mod+alt+5',\n      },\n      toggleHeading6: {\n        handler: ({ editor }) => {\n          editor.plugin(HeadingPlugin).update.toggle({ level: 6 });\n        },\n        keys: 'mod+alt+6',\n      },\n    },\n  }),\n  BlockquotePlugin.configure({\n    component: BlockquoteElement,\n    inputRules: [BlockquoteRules.markdown()],\n    shortcuts: { toggle: { keys: 'mod+shift+period' } },\n  }),\n  HorizontalRulePlugin.configure({\n    component: HrElement,\n    inputRules: [\n      HorizontalRuleRules.markdown({ variant: '-' }),\n      HorizontalRuleRules.markdown({ variant: '_' }),\n    ],\n  }),\n] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/basic-blocks.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

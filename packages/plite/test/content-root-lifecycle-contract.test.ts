@@ -8,11 +8,8 @@ import {
   defineExtension,
   defineStateField,
   type Descendant,
-  type ElementIn,
-  NodeApi,
-  type NodeEntry,
   schema,
-  type ValueOf,
+  SelectionApi,
   valueCodecs,
 } from '@platejs/plite';
 
@@ -136,12 +133,7 @@ describe('element-owned root lifecycle', () => {
     assert.deepEqual(editor.read.root('exclusive:1'), [paragraph('caption')]);
 
     editor.update((tx) => {
-      const entry = tx.nodes.get([0]);
-
-      assert.ok(entry && NodeApi.isElement(entry[0]));
-      tx.nodes.duplicate([
-        entry as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
-      ]);
+      tx.blocks.duplicate({ at: [0] });
     });
 
     assert.deepEqual(
@@ -182,19 +174,7 @@ describe('element-owned root lifecycle', () => {
     );
 
     editor.update((tx) => {
-      const first = tx.nodes.get([0]);
-      const second = tx.nodes.get([1]);
-
-      assert.ok(
-        first &&
-          second &&
-          NodeApi.isElement(first[0]) &&
-          NodeApi.isElement(second[0])
-      );
-      tx.nodes.duplicate([
-        first as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
-        second as NodeEntry<ElementIn<ValueOf<typeof editor>>>,
-      ]);
+      tx.blocks.duplicate({ at: SelectionApi.nodes([[0], [1]]) });
     });
 
     assert.deepEqual(editor.read.children(), [
@@ -451,7 +431,6 @@ describe('element-owned root lifecycle', () => {
     assert.deepEqual(editor.read.selection(), {
       anchor: { offset: 3, path: [0, 0], root: 'exclusive:new' },
       focus: { offset: 3, path: [0, 0], root: 'exclusive:new' },
-      kind: 'text',
     });
   });
 });

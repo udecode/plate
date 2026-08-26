@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-31",
+  "updatedAt": "2026-08-24",
   "notes": [
     "Editable source for sync-shadcn dashboard.",
     "Routine sync-shadcn status should stay concise; this file can include settled forks and rejected upstream surfaces.",
@@ -161,8 +161,25 @@
       "id": "registry",
       "label": "Registry",
       "reviewState": "defer",
-      "summary": "Registry shape, copy payloads, and source loading are deferred as one product review.",
+      "summary": "The Base-first provider and eight-style registry contract is synced; registry content, copy payloads, and source loading remain Plate-owned or deferred.",
       "items": [
+        {
+          "id": "registry-preset-contract",
+          "title": "Preset base and style build contract",
+          "state": "synced",
+          "decision": "Use Base/Nova as the complete canonical registry, support Base and Radix across Nova, Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea, and keep sparse physical variants at Toolbar, FloatingPopover, DropdownMenu, and ContextMenu only.",
+          "upstream": "Shadcn 4.19.0 exposes radix, base, and aria across nova, vega, maia, lyra, mira, luma, sera, and rhea.",
+          "files": [
+            "apps/www/package.json",
+            "apps/www/scripts/registry-build-targets.mts",
+            "apps/www/scripts/registry-style-materializer.mts",
+            "apps/www/scripts/registry-style-transform.mts",
+            "apps/www/src/registry/registry.ts",
+            "apps/www/src/lib/plate-registry-styles.ts",
+            "apps/www/src/lib/registry-response.ts"
+          ],
+          "suggestion": "Plate pins upstream style inputs, fails unsupported providers and styles closed, and varies only copied UI families with proven provider-specific behavior."
+        },
         {
           "id": "registry-source",
           "title": "Lazy source loading",
@@ -186,10 +203,6 @@
             "apps/www/src/registry/registry.ts",
             "apps/www/src/registry/registry-components.ts"
           ],
-          "screenshots": {
-            "shadcn": "docs/sync/shadcn/runs/2026-05-30-deferred-review-screenshots/screenshots/shadcn-registry-review-blocks.png",
-            "suggestion": "docs/sync/shadcn/runs/2026-05-30-deferred-review-screenshots/screenshots/plate-registry-review-editors.png"
-          },
           "suggestion": "Plate registry content and API MDX are product-owned and should not be merged piecemeal."
         }
       ]
@@ -197,34 +210,45 @@
     {
       "id": "create",
       "label": "Create",
-      "reviewState": "defer",
-      "summary": "Defer upstream /create review; future Plate create work is a separate product decision.",
+      "reviewState": "synced",
+      "summary": "The thin Plate /create flow is enabled after fresh Base/Nova and Radix/Luma projects passed against local Plate registry and package artifacts; the legacy /init path is deleted.",
       "items": [
         {
           "id": "upstream-create",
           "title": "Upstream /create product surface",
-          "state": "defer",
-          "decision": "Defer upstream /create and v0-oriented create flow review until Plate has a product-shaped /create decision.",
-          "upstream": "Shadcn /create is tied to its own product flow and generated style/theme registry.",
-          "files": ["docs/sync/shadcn/decisions.md"],
-          "suggestion": "Plate may have a /create later, but it should be designed for Plate rather than copied now."
+          "state": "synced",
+          "decision": "Keep a thin Plate editor, provider, and code-style selector that emits the upstream shadcn create command. Prove it against fresh local Plate registry and package artifacts. Keep the theme, font, color, v0, and full project designer upstream.",
+          "upstream": "Shadcn owns create commands, preset encoding, base/style names, and central registry directory resolution.",
+          "files": [
+            "apps/www/src/app/(app)/create/page.tsx",
+            "apps/www/src/app/(app)/create/create-client.tsx",
+            "apps/www/src/app/(view)/create-preview/page.tsx",
+            "apps/www/src/lib/plate-create.ts",
+            "docs/sync/shadcn/decisions.md"
+          ],
+          "suggestion": "Run npm and deployed-directory smoke after release."
         }
       ]
     },
     {
       "id": "themes",
       "label": "Themes and Styles",
-      "reviewState": "defer",
-      "summary": "Defer upstream Rhea/style/theme/generated style registry review with the create/theming product surface.",
+      "reviewState": "fork",
+      "summary": "Plate adopts eight registry code styles and rejects the upstream theme, font, color, and full project-designer product graph.",
       "items": [
         {
-          "id": "rhea-style-registry",
-          "title": "Rhea/style/theme generated registry",
-          "state": "defer",
-          "decision": "Defer this with upstream create/theming instead of treating it as a final exclusion.",
-          "upstream": "Shadcn has generated style registry files for themed examples.",
-          "files": ["docs/sync/shadcn/decisions.md"],
-          "suggestion": "Plate does not want the old theme/customizer direction or upstream Rhea theme surface."
+          "id": "registry-code-styles",
+          "title": "Registry code styles",
+          "state": "synced",
+          "decision": "Materialize Nova, Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea from pinned upstream code-style transforms while excluding theme/customizer product state.",
+          "upstream": "Shadcn exposes eight code styles alongside a larger theme, font, color, and project-design surface.",
+          "files": [
+            "apps/www/src/registry/styles/provenance.json",
+            "apps/www/src/registry/styles/style-nova.css",
+            "apps/www/scripts/sync-shadcn-registry-styles.mts",
+            "docs/sync/shadcn/decisions.md"
+          ],
+          "suggestion": "Keep code styles as compile-time registry output, not runtime application theme state."
         }
       ]
     },
@@ -232,19 +256,20 @@
       "id": "preview-routes",
       "label": "Preview Routes",
       "reviewState": "fork",
-      "summary": "Plate keeps a single preview route while the registry/style system stays deferred.",
+      "summary": "Plate keeps /view/[name] for registry previews and uses an isolated /create-preview route for provider and style selection.",
       "items": [
         {
           "id": "style-param-view-route",
           "title": "Shadcn style-param /view route",
           "state": "fork",
-          "decision": "Do not copy shadcn /view/[style]/[name] and legacy theme wrapper for now.",
+          "decision": "Do not copy shadcn /view/[style]/[name] or its theme wrapper. Keep /view/[name] and isolate the thin create preview from the docs shell.",
           "upstream": "Shadcn iframes use /view/[style]/[name] for style-aware block previews.",
           "files": [
             "apps/www/src/app/(view)/view/[name]/page.tsx",
+            "apps/www/src/app/(view)/create-preview/page.tsx",
             "apps/www/src/components/block-viewer.tsx"
           ],
-          "suggestion": "Plate uses /view/[name] for registry previews and has no active multi-style preview surface."
+          "suggestion": "Plate previews provider and code-style choices only inside the create flow; copied registry output never contains the website selector."
         }
       ]
     },

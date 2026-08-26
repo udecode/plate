@@ -14,6 +14,7 @@ import {
   type Path,
   type RootKey,
   type Selection,
+  SelectionApi,
   type Value,
   type ValueOf,
 } from '@platejs/plite';
@@ -64,10 +65,7 @@ import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { setPliteViewSelectionStoreKey } from '../view-selection';
 import { focusPliteEditable } from './focus-plite-editable';
-import {
-  createRootSelectionCache,
-  getSelectionRoot,
-} from './root-selection-cache';
+import { createRootSelectionCache } from './root-selection-cache';
 import {
   type EditorSelectorContextValue,
   useEditorSelectorContext,
@@ -92,7 +90,7 @@ const selectionChanged = (change?: EditorCommit) =>
 const selectActiveRoot = (state: EditorStateView<any, any>): RootKey => {
   const selection = state.selection();
 
-  return getSelectionRoot(selection) ?? MAIN_ROOT_KEY;
+  return SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
 };
 
 const selectPublicActiveRoot = (

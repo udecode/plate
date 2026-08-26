@@ -138,7 +138,6 @@ test.describe('plaintext example', () => {
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'This is '.length },
       focus: { path: [0, 0], offset: 'This is editable'.length },
     });
@@ -228,7 +227,6 @@ test.describe('plaintext example', () => {
         .poll(() => page.evaluate(() => window.getSelection()?.toString()))
         .toBe(selectedText);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: anchorOffset },
         focus: { path: [0, 0], offset: focusOffset },
       });
@@ -284,7 +282,6 @@ test.describe('plaintext example', () => {
         });
 
         const expectedSelection = {
-          kind: 'text',
           anchor: { path: [0, 0], offset: targetOffset },
           focus: { path: [0, 0], offset: targetOffset },
         };
@@ -339,7 +336,6 @@ test.describe('plaintext example', () => {
       await editor.selection.selectAll();
       await page.keyboard.insertText(initialText);
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: selectionStart },
         focus: { path: [0, 0], offset: selectionEnd },
       });
@@ -435,7 +431,6 @@ test.describe('plaintext example', () => {
 
       await editor.assert.blockTexts([expectedText]);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: safeInsertOffset + pastedText.length },
         focus: { path: [0, 0], offset: safeInsertOffset + pastedText.length },
       });
@@ -479,7 +474,6 @@ test.describe('plaintext example', () => {
       expect(selectedText.startsWith('editable plain')).toBe(true);
       expect(nativeSelectedText).toBe(selectedText);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 'This is '.length },
         focus: {
           path: [0, 0],
@@ -516,7 +510,6 @@ test.describe('plaintext example', () => {
       const selectionEnd = selectionStart + 'editable'.length;
 
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: selectionStart },
         focus: { path: [0, 0], offset: selectionEnd },
       });
@@ -632,7 +625,6 @@ test.describe('plaintext example', () => {
 
       await editor.assert.text(`${movedText} still interactive`);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: movedText.length + 18 },
         focus: { path: [0, 0], offset: movedText.length + 18 },
       });
@@ -663,7 +655,6 @@ test.describe('plaintext example', () => {
     await editor.assert.blockTexts(['one', 'two', 'three']);
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 'two'.length },
     });
@@ -671,7 +662,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.blockTexts(['replacement', 'three']);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'replacement'.length },
       focus: { path: [0, 0], offset: 'replacement'.length },
     });
@@ -700,7 +690,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text('foo');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -735,7 +724,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text('foo');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -761,7 +749,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.blockTexts(['abc']);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -786,7 +773,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.blockTexts(['Hello', 'world']);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 'world'.length },
       focus: { path: [1, 0], offset: 'world'.length },
     });
@@ -815,7 +801,6 @@ test.describe('plaintext example', () => {
 
       await editor.assert.blockTexts(['start', ...new Array(12).fill('')]);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [12, 0], offset: 0 },
         focus: { path: [12, 0], offset: 0 },
       });
@@ -827,7 +812,6 @@ test.describe('plaintext example', () => {
         'tail',
       ]);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [12, 0], offset: 'tail'.length },
         focus: { path: [12, 0], offset: 'tail'.length },
       });
@@ -863,7 +847,6 @@ test.describe('plaintext example', () => {
         const bottomInsert = String.fromCharCode(97 + i);
 
         await editor.selection.selectDOM({
-          kind: 'text',
           anchor: { path: [0, 0], offset: first.length },
           focus: { path: [0, 0], offset: first.length },
         });
@@ -871,7 +854,6 @@ test.describe('plaintext example', () => {
         first += topInsert;
 
         await editor.selection.selectDOM({
-          kind: 'text',
           anchor: { path: [1, 0], offset: second.length },
           focus: { path: [1, 0], offset: second.length },
         });
@@ -881,7 +863,6 @@ test.describe('plaintext example', () => {
 
       await editor.assert.blockTexts([first, second]);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [1, 0], offset: second.length },
         focus: { path: [1, 0], offset: second.length },
       });
@@ -937,7 +918,6 @@ test.describe('plaintext example', () => {
 
       await editor.assert.blockTexts(['<>']);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -1001,7 +981,6 @@ test.describe('plaintext example', () => {
     const selectionEnd = selectionStart + 'editable'.length;
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: selectionStart },
       focus: { path: [0, 0], offset: selectionEnd },
     });
@@ -1015,7 +994,6 @@ test.describe('plaintext example', () => {
     await expect.poll(() => editor.clipboard.readText()).toBe('editable');
     await editor.assert.text('This is  plain text, just like a <textarea>!');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: selectionStart },
       focus: { path: [0, 0], offset: selectionStart },
     });
@@ -1051,7 +1029,6 @@ test.describe('plaintext example', () => {
     await editor.assert.blockTexts([longText]);
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: longText.length },
     });
@@ -1094,7 +1071,6 @@ test.describe('plaintext example', () => {
     await expect
       .poll(() => editor.get.selection())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [2, 0], offset: 0 },
       });
@@ -1104,7 +1080,6 @@ test.describe('plaintext example', () => {
     await page.keyboard.press('Backspace');
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1124,7 +1099,6 @@ test.describe('plaintext example', () => {
     const breakCount = 6;
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: initialText.length },
       focus: { path: [0, 0], offset: initialText.length },
     });
@@ -1132,7 +1106,6 @@ test.describe('plaintext example', () => {
     for (let index = 0; index < breakCount; index++) {
       await page.keyboard.press('Enter');
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [index + 1, 0], offset: 0 },
         focus: { path: [index + 1, 0], offset: 0 },
       });
@@ -1143,7 +1116,6 @@ test.describe('plaintext example', () => {
       ...new Array(breakCount).fill(''),
     ]);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [breakCount, 0], offset: 0 },
       focus: { path: [breakCount, 0], offset: 0 },
     });
@@ -1170,7 +1142,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.blockTexts(['', 'second']);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1198,14 +1169,12 @@ test.describe('plaintext example', () => {
     await editor.assert.blockTexts(['First line', 'Second line', 'Third line']);
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
     await page.keyboard.press('End');
 
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 'Second line'.length },
       focus: { path: [1, 0], offset: 'Second line'.length },
     });
@@ -1229,14 +1198,12 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('Hello');
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     await page.keyboard.press('Enter');
     await editor.assert.blockTexts(['', 'Hello']);
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1244,7 +1211,6 @@ test.describe('plaintext example', () => {
     await page.keyboard.press('ArrowRight');
 
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1270,25 +1236,21 @@ test.describe('plaintext example', () => {
     await editor.assert.blockTexts(['text1', '', 'text2']);
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'text1'.length },
       focus: { path: [0, 0], offset: 'text1'.length },
     });
     await page.keyboard.press('ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 0 },
     });
     await page.keyboard.press('ArrowLeft');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1312,14 +1274,12 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('Hello');
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     await page.keyboard.press('Enter');
     await editor.assert.blockTexts(['', 'Hello']);
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1327,7 +1287,6 @@ test.describe('plaintext example', () => {
     await page.keyboard.press(wordForward);
 
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1353,25 +1312,21 @@ test.describe('plaintext example', () => {
     await page.keyboard.insertText(text);
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: text.indexOf('p') },
       focus: { path: [0, 0], offset: text.indexOf('p') },
     });
     await page.keyboard.press(await getBrowserWordBackwardHotkey(editor.root));
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: text.indexOf('p') + 1 },
       focus: { path: [0, 0], offset: text.indexOf('p') + 1 },
     });
     await page.keyboard.press(await getBrowserWordForwardHotkey(editor.root));
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: text.length },
       focus: { path: [0, 0], offset: text.length },
     });
@@ -1391,21 +1346,18 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('off');
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
 
     await page.keyboard.press('ArrowLeft');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
 
     await page.keyboard.press('ArrowLeft');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1425,7 +1377,6 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('aa');
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1434,7 +1385,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text('a');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1457,7 +1407,6 @@ test.describe('plaintext example', () => {
     await page.keyboard.insertText('A');
     await editor.assert.blockTexts(['B', 'A']);
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1486,7 +1435,6 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText(text);
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: text.length },
       focus: { path: [0, 0], offset: text.length },
     });
@@ -1496,7 +1444,6 @@ test.describe('plaintext example', () => {
     await page.keyboard.press('Shift+ArrowLeft');
 
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: text.length },
       focus: { path: [0, 0], offset: text.length - 3 },
     });
@@ -1538,7 +1485,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.blockTexts(['foobar', '']);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1573,7 +1519,6 @@ test.describe('plaintext example', () => {
 
       await editor.assert.blockTexts(['foobar', '']);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });
@@ -1657,7 +1602,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text(text.slice(0, softLineStart));
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: softLineStart },
       focus: { path: [0, 0], offset: softLineStart },
     });
@@ -1785,7 +1729,6 @@ test.describe('plaintext example', () => {
     });
     await editor.assert.text('bar');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1801,7 +1744,6 @@ test.describe('plaintext example', () => {
     });
     await editor.assert.text('foo');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'foo'.length },
       focus: { path: [0, 0], offset: 'foo'.length },
     });
@@ -1911,7 +1853,6 @@ test.describe('plaintext example', () => {
     });
     await editor.assert.text('ab');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: graphemeStart },
       focus: { path: [0, 0], offset: graphemeStart },
     });
@@ -1924,7 +1865,6 @@ test.describe('plaintext example', () => {
     });
     await editor.assert.text('ab');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: graphemeStart },
       focus: { path: [0, 0], offset: graphemeStart },
     });
@@ -2034,7 +1974,6 @@ test.describe('plaintext example', () => {
     });
     await editor.assert.text('A B');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -2049,7 +1988,6 @@ test.describe('plaintext example', () => {
     });
     await editor.assert.text('A B');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -2227,7 +2165,6 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('abc');
     await editor.selection.select({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -2249,7 +2186,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text('bca');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -2272,7 +2208,6 @@ test.describe('plaintext example', () => {
     const editOffset = 'This is editable '.length;
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: editOffset },
       focus: { path: [0, 0], offset: editOffset },
     });
@@ -2285,7 +2220,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text(originalText);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: editOffset },
       focus: { path: [0, 0], offset: editOffset },
     });
@@ -2308,7 +2242,6 @@ test.describe('plaintext example', () => {
     const selectionEnd = selectionStart + 'plain '.length;
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: selectionStart },
       focus: { path: [0, 0], offset: selectionEnd },
     });
@@ -2319,7 +2252,6 @@ test.describe('plaintext example', () => {
 
     await editor.assert.text(originalText);
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: selectionStart },
       focus: { path: [0, 0], offset: selectionEnd },
     });
@@ -2364,7 +2296,6 @@ test.describe('plaintext example', () => {
       },
       selectedText: 'plain ',
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: selectionStart },
         focus: { path: [0, 0], offset: selectionEnd },
       },

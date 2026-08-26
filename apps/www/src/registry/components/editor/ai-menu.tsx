@@ -2,7 +2,6 @@
 
 import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
 import { CommentPlugin } from '@platejs/comment/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
@@ -43,12 +42,12 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
@@ -80,14 +79,11 @@ export function AIMenu() {
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
 
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
-  const isSelectingSome = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectingSome'
+  const isSelecting = useEditorSelector(
+    (innerEditor) =>
+      innerEditor.read.selection.nodes().length > 0 ||
+      innerEditor.read.selection.isExpanded()
   );
-  const selectionExpanded = useEditorSelector((innerEditor) =>
-    innerEditor.read.selection.isExpanded()
-  );
-  const isSelecting = selectionExpanded || isSelectingSome;
   const isFocusedLast = useFocusedLast();
   const chatOpen = usePluginStore(AIChatPlugin, 'open');
   const open = chatOpen && isFocusedLast;
@@ -148,15 +144,13 @@ export function AIMenu() {
       };
     }
 
-    const blockSelection = editor.plugin(BlockSelectionPlugin);
     let nextAnchor: HTMLElement | null = null;
+    const selectedBlock = editor.read.nodes.blocks().at(-1);
 
-    if (blockSelection.store.get('isSelectingSome')) {
-      const block = blockSelection.read.getNodes({}).at(-1);
+    if (selectedBlock) {
+      if (!ElementApi.isElement(selectedBlock[0])) return undefined;
 
-      if (!block || !ElementApi.isElement(block[0])) return undefined;
-
-      nextAnchor = editor.api.dom.resolveDOMNode(block[0]);
+      nextAnchor = editor.api.dom.resolveDOMNode(selectedBlock[0]);
     } else if (editor.read.selection.isCollapsed()) {
       const ancestorEntry = editor.read.nodes.block();
 
@@ -169,19 +163,12 @@ export function AIMenu() {
         ElementApi.isElement(ancestor) &&
         !editor.read.nodes.isEmpty(ancestor)
       ) {
-        editor.plugin(BlockSelectionPlugin).api.set(editor.key(ancestor));
+        editor.update.selection.setNodes([ancestorEntry[1]]);
       }
 
       nextAnchor = editor.api.dom.resolveDOMNode(ancestor);
     } else if (editor.read.selection.isExpanded()) {
-      const block = editor
-        .read((state) =>
-          state.nodes.toArray({
-            match: (node) =>
-              ElementApi.isElement(node) && state.schema.isBlock(node),
-          })
-        )
-        .at(-1);
+      const block = editor.read((state) => state.nodes.blocks()).at(-1);
       nextAnchor = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
     }
 
@@ -210,10 +197,8 @@ export function AIMenu() {
       .at(-1);
 
     if (!anchorNode) {
-      anchorNode = editor
-        .plugin(BlockSelectionPlugin)
-        .read.getNodes({ selectionFallback: true, sort: true })
-        .at(-1);
+      anchorNode =
+        editor.read.nodes.blocks().at(-1) ?? editor.read.nodes.block();
     }
 
     if (!anchorNode) return undefined;
@@ -241,11 +226,11 @@ export function AIMenu() {
   if (!anchorElement) return null;
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={false}>
-      <PopoverAnchor virtualRef={{ current: anchorElement }} />
+    <FloatingPopover open={open} onOpenChange={setOpen} modal={false}>
+      <FloatingPopoverAnchor element={anchorElement} />
 
-      <PopoverContent
-        className="border-none bg-transparent p-0 shadow-none"
+      <FloatingPopoverContent
+        className="border-none bg-transparent p-0 shadow-none ring-0"
         style={{
           width: anchorElement?.offsetWidth,
         }}
@@ -308,8 +293,8 @@ export function AIMenu() {
             </CommandList>
           )}
         </Command>
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }
 
@@ -637,14 +622,11 @@ export const AIMenuItems = ({
 }) => {
   const editor = useEditor();
   const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
-  const isSelectingSome = usePluginStore(
-    BlockSelectionPlugin,
-    'isSelectingSome'
+  const isSelecting = useEditorSelector(
+    (innerEditor2) =>
+      innerEditor2.read.selection.nodes().length > 0 ||
+      innerEditor2.read.selection.isExpanded()
   );
-  const selectionExpanded = useEditorSelector((innerEditor2) =>
-    innerEditor2.read.selection.isExpanded()
-  );
-  const isSelecting = selectionExpanded || isSelectingSome;
 
   const menuState: EditorChatState =
     (messages?.length ?? 0) > 0

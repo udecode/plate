@@ -5,7 +5,6 @@ import { basicBlocksValue as basicBlocksValueEn } from '@/registry/examples/valu
 import { basicMarksValue as basicMarksValueEn } from '@/registry/examples/values/basic-marks-value';
 import { basicNodesValue as basicNodesValueEn } from '@/registry/examples/values/basic-nodes-value';
 import { blockMenuValue as blockMenuValueEn } from '@/registry/examples/values/block-menu-value';
-import { blockSelectionValue as blockSelectionValueEn } from '@/registry/examples/values/block-selection-value';
 import { aiValue as aiValueCn } from '@/registry/examples/values/cn/ai-value';
 import { alignValue as alignValueCn } from '@/registry/examples/values/cn/align-value';
 import { autoformatValue as autoformatValueCn } from '@/registry/examples/values/cn/autoformat-value';
@@ -13,7 +12,6 @@ import { basicBlocksValue as basicBlocksValueCn } from '@/registry/examples/valu
 import { basicMarksValue as basicMarksValueCn } from '@/registry/examples/values/cn/basic-marks-value';
 import { basicNodesValue as basicNodesValueCn } from '@/registry/examples/values/cn/basic-nodes-value';
 import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/cn/block-menu-value';
-import { blockSelectionValue as blockSelectionValueCn } from '@/registry/examples/values/cn/block-selection-value';
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueCn } from '@/registry/examples/values/cn/cursor-overlay-value';
@@ -43,6 +41,7 @@ import { listValue as listClassicValueCn } from '@/registry/examples/values/cn/l
 import { listValue as listValueCn } from '@/registry/examples/values/cn/list-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
+import { nodeSelectionValue as nodeSelectionValueCn } from '@/registry/examples/values/cn/node-selection-value';
 import { placeholderValue as placeholderValueCn } from '@/registry/examples/values/cn/placeholder-value';
 import { playgroundValue as playgroundValueCn } from '@/registry/examples/values/cn/playground-value';
 import { previewMdValue as previewMdValueCn } from '@/registry/examples/values/cn/preview-md-value';
@@ -79,6 +78,7 @@ import { linkValue as linkValueEn } from '@/registry/examples/values/link-value'
 import { listValue as listValueEn } from '@/registry/examples/values/list-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
+import { nodeSelectionValue as nodeSelectionValueEn } from '@/registry/examples/values/node-selection-value';
 import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';
 import { playgroundValue as playgroundValueEn } from '@/registry/examples/values/playground-value';
 import { pluginRulesValue as pluginRulesValueEn } from '@/registry/examples/values/plugin-rules-value';
@@ -97,7 +97,7 @@ const i18n = {
     basicMarks: basicMarksValueCn,
     basicNodes: basicNodesValueCn,
     blockMenu: blockMenuValueCn,
-    blockSelection: blockSelectionValueCn,
+    nodeSelection: nodeSelectionValueCn,
     column: columnValueCn,
     copilot: copilotValueCn,
     cursorOverlay: cursorOverlayValueCn,
@@ -142,7 +142,7 @@ const i18n = {
     basicMarks: basicMarksValueEn,
     basicNodes: basicNodesValueEn,
     blockMenu: blockMenuValueEn,
-    blockSelection: blockSelectionValueEn,
+    nodeSelection: nodeSelectionValueEn,
     column: columnValueEn,
     comment: commentValueEn,
     copilot: copilotValueEn,

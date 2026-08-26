@@ -77,7 +77,6 @@ describe('OverridePlugin', () => {
       { children: [{ text: 'after' }], type: 'paragraph' },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -106,7 +105,6 @@ describe('OverridePlugin', () => {
       { children: [{ text: 'after' }], type: 'paragraph' },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -192,7 +190,6 @@ describe('OverridePlugin', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });

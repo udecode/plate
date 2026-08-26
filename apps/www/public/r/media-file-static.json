@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-file-static",
+  "dependencies": [
+    "@platejs/media",
+    "@platejs/suggestion"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/caption-static.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/media-file-static.tsx",
+      "content": "import type { BaseFilePlugin } from '@platejs/media';\nimport type { SuggestionData } from '@platejs/suggestion';\nimport { FileUp } from 'lucide-react';\nimport type { PliteElementProps } from 'platejs/static';\nimport { PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nimport { CaptionStatic } from './caption-static';\n\nexport function FileElementStatic(\n  props: PliteElementProps<typeof BaseFilePlugin>\n) {\n  const { name, url } = props.element;\n  const suggestionData = (\n    props.element as typeof props.element & {\n      suggestion?: SuggestionData;\n    }\n  ).suggestion;\n  const isRemoveSuggestion = suggestionData?.type === 'remove';\n\n  return (\n    <PliteElement className=\"my-px rounded-sm\" {...props}>\n      <figure className=\"group relative m-0 [&>figcaption]:text-left\">\n        <a\n          className={cn(\n            'flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted',\n            isRemoveSuggestion && 'bg-red-100 text-red-700 hover:bg-red-200/80'\n          )}\n          download={name}\n          href={url}\n          rel=\"noopener noreferrer\"\n          target=\"_blank\"\n        >\n          <div\n            className={cn(\n              'flex items-center gap-1 p-1',\n              isRemoveSuggestion && 'line-through decoration-current'\n            )}\n          >\n            <FileUp className=\"size-5\" />\n            <div>{name}</div>\n          </div>\n        </a>\n        <CaptionStatic align=\"left\" element={props.element}>\n          {props.children}\n        </CaptionStatic>\n      </figure>\n    </PliteElement>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/media-file-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

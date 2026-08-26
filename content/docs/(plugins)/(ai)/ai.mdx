@@ -73,7 +73,7 @@ AI_GATEWAY_API_KEY="your-api-key"
 ### Installation
 
 ```bash
-npm install @platejs/ai @platejs/markdown @platejs/selection @ai-sdk/react ai
+npm install @platejs/ai @platejs/markdown @ai-sdk/react ai
 ```
 
 `@platejs/suggestion` is optional but required for diff-based edit suggestions.
@@ -83,12 +83,10 @@ npm install @platejs/ai @platejs/markdown @platejs/selection @ai-sdk/react ai
 ```tsx
 import { createPlateEditor } from 'platejs/react';
 import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 
 export const editor = createPlateEditor({
   plugins: [
-    BlockSelectionPlugin,
     MarkdownPlugin,
     AIPlugin,
     AIChatPlugin, // extended in the next step
@@ -96,7 +94,7 @@ export const editor = createPlateEditor({
 });
 ```
 
-- `BlockSelectionPlugin`: Enables multi-block selections that `AIChatPlugin` relies on for insert/replace transforms.
+- Editor selection supplies text and multi-node targets to `AIChatPlugin`.
 - `MarkdownPlugin`: Provides Markdown serialization used by streaming utilities.
 - `AIPlugin`: Adds the AI mark and transforms for undoing AI batches.
 - `AIChatPlugin`: Supplies the AI combobox, API helpers, and transforms.
@@ -224,7 +222,7 @@ export async function POST(req: Request) {
   });
 
   const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
+    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY,
   });
 
   const result = streamText({
@@ -303,16 +301,20 @@ editor.plugin(AIChatPlugin).api.submit('', {
 ### Client Prompting
 
 - `aiChat.api.submit` accepts an `EditorPrompt`: a string, a
-  `default`/`selecting`/`blockSelecting` object, or a function receiving
-  `{ editor, isSelecting, isBlockSelecting }`.
+  `default`/`selecting`/`nodeSelecting` object, or a function receiving
+  `{ editor, isSelecting, isNodeSelecting }`.
+- `isSelecting` reports whether the representative range is expanded.
+  `isNodeSelecting` reports exact node membership and remains true for selected
+  empty nodes whose representative range is collapsed. `nodeSelecting` takes
+  precedence over `selecting`.
 - `aiChat.read.prompt` resolves that input for the current snapshot.
 - `aiChat.read.resolvePlaceholders` expands `{editor}`, `{block}`,
-  `{blockSelection}`, and `{prompt}` with snapshot Markdown.
+  `{nodeSelection}`, and `{prompt}` with snapshot Markdown.
 
 ```tsx
 const aiChat = editor.plugin(AIChatPlugin);
 const template = aiChat.read.resolvePlaceholders(
-  'Rewrite {blockSelection} using a friendly tone.'
+  'Rewrite {nodeSelection} using a friendly tone.'
 );
 
 aiChat.api.submit('Improve tone', {

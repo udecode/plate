@@ -19,6 +19,16 @@ import {
   type UpdateSuggestionData,
 } from './BaseSuggestionPlugin';
 
+const getTextSelection = (editor: BaseEditor) => {
+  const selection = editor.read.selection();
+
+  if (!selection) {
+    throw new TypeError('Expected a text selection.');
+  }
+
+  return selection;
+};
+
 // keeps each merged test source isolated.
 {
   describe('BaseSuggestionPlugin.read.activeDescriptions', () => {
@@ -288,7 +298,7 @@ import {
 
       expect(
         editor.plugin(BaseSuggestionPlugin).read.findIdentity({
-          at: editor.read.selection()!,
+          at: getTextSelection(editor),
           type: 'insert',
         })
       ).toEqual({
@@ -298,7 +308,7 @@ import {
 
       expect(
         editor.plugin(BaseSuggestionPlugin).read.findIdentity({
-          at: editor.read.selection()!,
+          at: getTextSelection(editor),
           type: 'remove',
         })
       ).not.toEqual({
@@ -339,7 +349,7 @@ import {
 
       expect(
         editor.plugin(BaseSuggestionPlugin).read.findIdentity({
-          at: editor.read.selection()!,
+          at: getTextSelection(editor),
           type: 'insert',
         })
       ).toEqual({
@@ -389,7 +399,7 @@ import {
 
       expect(
         editor.plugin(BaseSuggestionPlugin).read.findIdentity({
-          at: editor.read.selection()!,
+          at: getTextSelection(editor),
           type: 'remove',
         })
       ).toEqual({

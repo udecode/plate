@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-element-docs",
+  "title": "Element",
+  "description": "Plite element node types and pure helpers.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/element.mdx",
+      "content": "---\ntitle: Element\ndescription: Plite element node types and pure helpers.\n---\n\nElements contain descendant nodes and represent block or inline structure.\nSchema policy such as block, inline, void, and selectable behavior belongs to\n`editor.read.schema`.\n\nSee the canonical [Element reference](/docs/plite/api/nodes/element).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/element.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

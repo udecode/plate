@@ -216,7 +216,6 @@ describe('BaseFootnotePlugins', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -255,7 +254,6 @@ describe('BaseFootnotePlugins', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
@@ -494,14 +492,12 @@ describe('BaseFootnotePlugin updates', () => {
       })
     ).toEqual([1]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
     });
     expect(editor.update.footnote.createDefinition({ ref: '1' })).toEqual([1]);
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -588,7 +584,6 @@ describe('BaseFootnotePlugin updates', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -703,7 +698,6 @@ describe('BaseFootnotePlugin updates', () => {
 
     expect(editor.read.value().children).toHaveLength(2);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -945,7 +939,6 @@ describe('BaseFootnotePlugin updates', () => {
         },
       ]);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });
@@ -979,7 +972,6 @@ describe('BaseFootnotePlugin updates', () => {
 
       expect(didFocusDefinition).toBe(true);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [1, 0, 0] },
         focus: { offset: 0, path: [1, 0, 0] },
       });
@@ -990,7 +982,6 @@ describe('BaseFootnotePlugin updates', () => {
 
       expect(didFocusReference).toBe(true);
       expect(editor.read.selection()).toEqual({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "caption-static",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/caption-static.tsx",
+      "content": "import type { Element } from 'platejs';\nimport { NodeApi } from 'platejs';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport const getMediaTextAlign = (element: object) => {\n  if (!('textAlign' in element)) return 'center';\n\n  const align = element.textAlign;\n\n  return align === 'left' || align === 'right' ? align : 'center';\n};\n\nexport function CaptionStatic({\n  align = 'center',\n  children,\n  className,\n  element,\n  ...props\n}: React.ComponentProps<'figcaption'> & {\n  align?: 'center' | 'left' | 'right';\n  element: Element;\n}) {\n  if (NodeApi.string(element).length === 0) return null;\n\n  return (\n    <figcaption\n      {...props}\n      className={cn(\n        'mt-2 min-h-6 max-w-full',\n        align === 'center' && 'mx-auto text-center',\n        align === 'left' && 'mr-auto text-left',\n        align === 'right' && 'ml-auto text-right',\n        className\n      )}\n    >\n      {children}\n    </figcaption>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/caption-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

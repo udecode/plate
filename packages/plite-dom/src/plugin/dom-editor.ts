@@ -22,7 +22,7 @@ import {
   getActiveEditorTransaction,
   getEditorNodeKeyForNode,
   getNodeKey as editorGetNodeKey,
-  getSelectionPrimaryRange,
+  getSelectionDOMRange,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
   point as editorPoint,
@@ -153,7 +153,7 @@ export interface DOMApi {
   isFocused: () => boolean;
   isReadOnly: () => boolean;
   isTargetInsideNonReadonlyVoid: (target: EventTarget | null) => boolean;
-  resolveDOMNode: (node: Node) => HTMLElement | null;
+  resolveDOMNode: (nodeOrKey: Node | NodeKey) => HTMLElement | null;
   resolveDOMPoint: (point: Point) => DOMPoint | null;
   resolveDOMRange: (range: Range) => DOMRange | null;
   resolveEventRange: (event: any) => Range | null;
@@ -493,14 +493,14 @@ export interface DOMEditorInterface {
   ) => boolean;
 
   /**
-   * Resolve the native DOM element for a Plite node.
+   * Resolve the native DOM element for a Plite node or live node key.
    *
    * Returns `null` when the node is not currently mounted or the node maps are
    * stale.
    */
   resolveDOMNode: <V extends Value, TExtensions extends readonly unknown[]>(
     editor: DOMEditor<V, TExtensions>,
-    node: Node
+    nodeOrKey: Node | NodeKey
   ) => HTMLElement | null;
 
   /**
@@ -699,6 +699,19 @@ const cachePliteDOMNode = (
   }
 
   return domNode;
+};
+
+const isMountedEditorDOMNode = (
+  editor: DOMEditor<any>,
+  domNode: HTMLElement
+) => {
+  const editorElement = EDITOR_TO_ELEMENT.get(editor);
+
+  return (
+    editorElement?.isConnected === true &&
+    domNode.isConnected &&
+    containsShadowAware(editorElement, domNode)
+  );
 };
 
 const resolvePlitePointFromDOMCoverageBoundary = (
@@ -961,7 +974,7 @@ export const DOMEditor: DOMEditorInterface = {
 
     if (selection) {
       editor.update((tx) => {
-        tx.selection.clear();
+        tx.selection.set(null);
       });
     }
   },
@@ -1162,10 +1175,7 @@ export const DOMEditor: DOMEditorInterface = {
     const getLiveSelection = () => editorGetSelection(editor);
     const selection = getLiveSelection();
     const selectionAtFocus = selection
-      ? {
-          anchor: { ...selection.anchor },
-          focus: { ...selection.focus },
-        }
+      ? getSelectionDOMRange(editor, selection)
       : null;
     // Create a new selection in the top of the document if missing
     if (!selection) {
@@ -1186,10 +1196,7 @@ export const DOMEditor: DOMEditorInterface = {
 
       if (innerSelection) {
         const domSelection = getSelection(root);
-        const projectedSelection = getSelectionPrimaryRange(
-          editor,
-          innerSelection
-        );
+        const projectedSelection = getSelectionDOMRange(editor, innerSelection);
 
         if (!domSelection) {
           return;
@@ -1329,7 +1336,10 @@ export const DOMEditor: DOMEditorInterface = {
               return;
             }
 
-            const currentSelection = getLiveSelection();
+            const currentSelection = getSelectionDOMRange(
+              editor,
+              getLiveSelection()
+            );
 
             if (
               !currentSelection ||
@@ -1460,7 +1470,25 @@ export const DOMEditor: DOMEditorInterface = {
     );
   },
 
-  resolveDOMNode: (editor, node) => {
+  resolveDOMNode: (editor, nodeOrKey) => {
+    let node: Node;
+
+    if (typeof nodeOrKey === 'string') {
+      const nodeKey = nodeOrKey;
+      const entry = editor.read((state) => state.nodes.get(nodeKey));
+
+      if (!entry) return null;
+      const key = EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor)?.get(nodeKey);
+      const domNode = key
+        ? EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(key)
+        : undefined;
+
+      if (domNode && isMountedEditorDOMNode(editor, domNode)) return domNode;
+      node = entry[0];
+    } else {
+      node = nodeOrKey;
+    }
+
     if (node === editor) return DOMEditor.editable(editor);
     if (NodeApi.isEditor(node)) return null;
     let key: Key;
@@ -1472,13 +1500,13 @@ export const DOMEditor: DOMEditorInterface = {
     }
     const domNode = EDITOR_TO_KEY_TO_ELEMENT.get(editor)?.get(key);
 
-    if (domNode) {
+    if (domNode && isMountedEditorDOMNode(editor, domNode)) {
       return domNode;
     }
 
     const fallbackDOMNode = toMountedDOMNodeByPath(editor, node);
 
-    if (fallbackDOMNode) {
+    if (fallbackDOMNode && isMountedEditorDOMNode(editor, fallbackDOMNode)) {
       return cachePliteDOMNode(editor, node, fallbackDOMNode);
     }
 

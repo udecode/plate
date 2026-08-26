@@ -721,6 +721,81 @@ describe('createPlateEditor', () => {
       expect(editor.read.schema.isMarkableVoid(badgeElement)).toBe(true);
     });
 
+    it('reports compiled Plate block-content semantics', () => {
+      const FlowBlockPlugin = defineBasePlugin('flowBlock', {
+        schema: {
+          element: TextBlockElement,
+        },
+      });
+      const NonSelectableBlockPlugin = defineBasePlugin('nonSelectableBlock', {
+        schema: {
+          element: {
+            ...TextBlockElement,
+            selectable: false,
+          },
+        },
+      });
+      const StructuralPlugin = defineBasePlugin('structural', {
+        schema: {
+          element: {
+            ...TextBlockElement,
+            blockContent: false,
+          },
+        },
+      });
+      const InlinePlugin = defineBasePlugin('inline', {
+        schema: {
+          element: {
+            void: 'inline',
+          },
+        },
+      });
+      const flowBlockElement = {
+        children: [{ text: '' }],
+        type: 'flowBlock',
+      };
+      const nonSelectableBlockElement = {
+        children: [{ text: '' }],
+        type: 'nonSelectableBlock',
+      };
+      const editor = createPlateEditor({
+        editor: createEditor(),
+        plugins: [
+          FlowBlockPlugin,
+          InlinePlugin,
+          NonSelectableBlockPlugin,
+          StructuralPlugin,
+        ],
+        initialValue: [flowBlockElement],
+      });
+
+      expect(editor.read.schema.isBlockContent(flowBlockElement)).toBe(true);
+      expect(editor.read.schema.isBlockContent(nonSelectableBlockElement)).toBe(
+        true
+      );
+      expect(editor.read.nodes.isSelectable(nonSelectableBlockElement)).toBe(
+        false
+      );
+      expect(
+        editor.read.schema.isBlockContent({
+          children: [{ text: '' }],
+          type: 'structural',
+        })
+      ).toBe(false);
+      expect(
+        editor.read.schema.isBlockContent({
+          children: [{ text: '' }],
+          type: 'inline',
+        })
+      ).toBe(false);
+      expect(
+        editor.read.schema.isBlockContent({
+          children: [{ text: '' }],
+          type: 'unknown',
+        })
+      ).toBe(false);
+    });
+
     it('compiles boolean marks, parameterized marks, and element grammar', () => {
       const CellPlugin = defineBasePlugin('cell', {
         schema: {
@@ -1372,7 +1447,10 @@ describe('createPlateEditor', () => {
     });
 
     expect(result.read.children()).toEqual(value);
-    expect(result.read.selection()).toEqual(selection);
+    expect(result.read.selection()).toEqual({
+      anchor: selection.anchor,
+      focus: selection.focus,
+    });
 
     // Test autoSelect start
     const editorWithAutoSelectStart = createBaseEditor({
@@ -1381,7 +1459,6 @@ describe('createPlateEditor', () => {
       initialValue: value,
     });
     const expectedStartSelection = {
-      kind: 'text',
       anchor: editorWithAutoSelectStart.read((state) => state.points.start([])),
       focus: editorWithAutoSelectStart.read((state) => state.points.start([])),
     };
@@ -1396,7 +1473,6 @@ describe('createPlateEditor', () => {
       initialValue: value,
     });
     const expectedEndSelection = {
-      kind: 'text',
       anchor: editorWithAutoSelectEnd.read((state) => state.points.end([])),
       focus: editorWithAutoSelectEnd.read((state) => state.points.end([])),
     };
@@ -1414,7 +1490,6 @@ describe('createPlateEditor', () => {
       initialValue: value,
     });
     expect(editorWithElementPathSelection.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
@@ -1524,7 +1599,6 @@ describe('createPlateEditor', () => {
     });
 
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 2, path: [0, 1, 0, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
     });

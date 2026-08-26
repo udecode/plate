@@ -78,9 +78,11 @@ During planning, directly merge a change when all of these are true:
   no generated output, and no package or lockfile edit.
 - The local Plate file still has the old value or an equivalent local variant
   that should receive the same fix.
-- The change does not touch settled exclusions: v0, create, charts, colors,
-  Rhea/theme/customizer/style-registry product surfaces, upstream docs prose,
-  external registry directory content, or generated `public/r/**` output.
+- The change does not touch settled exclusions: v0, charts, colors,
+  theme/customizer product surfaces, upstream docs prose, external registry
+  directory content, or generated `public/r/**` output. Plate `/create` and
+  registry styles are accepted surfaces, but their multi-file product work can
+  never qualify as a micro-merge.
 - No product judgment is needed. If the change changes layout, UX, copy,
   route shape, docs concepts, registry semantics, or multi-file architecture,
   it is not a micro-merge.
@@ -274,10 +276,9 @@ Reviewable differences:
   only, keep Plate install/source behavior and no v0; or leave as Plate fork.
 ```
 
-Collapse upstream product/theme/style noise into its owning deferred decision.
-For example, Rhea/style/theme/generated style registry rows are part of the
-upstream create/theming product surface; do not list them as separate status
-items unless the user explicitly asks to review that product surface.
+Collapse rejected upstream product/theme noise into its owning decision. Keep
+Plate's accepted eight registry code styles separate from the rejected theme,
+font, color, v0, and full project-designer surfaces.
 
 Status checks:
 
@@ -700,10 +701,14 @@ accepted slice and proceed through `task`.
 - Planning is the default output. Do not patch `apps/www` unless the row
   qualifies as a micro-overlap direct merge or the user accepts a merge slice in
   a later instruction after reviewing a written plan.
-- Do not edit generated registry output, templates output, or generated skill
-  mirrors by hand.
-- Do not run `build:registry`; local registry generation is CI-owned in this
-  repo.
+- Do not edit generated registry output or generated skill mirrors by hand.
+- Never inspect, classify, modify, regenerate, restore, or gate on
+  `templates/**`, template `components.json`, or template preparation scripts.
+  Post-release CI owns template synchronization unless the user explicitly
+  requests that separate release scope.
+- On `next`, run `pnpm --filter www build:registry` when accepted registry
+  source changes. Other branches follow the repo's CI-generation rule. Never
+  generate registry output during a planning-only run.
 - Do not delegate to `task` in the same activation that creates or materially
   updates a sync plan. Direct micro-overlap merges stay in-thread and tiny; all
   bigger work waits for review.
@@ -782,7 +787,6 @@ Read these before making decisions:
 - `.agents/rules/shadcn-parity.mdc`
 - `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md`
 - `docs/solutions/developer-experience/2026-05-27-shadcn-docs-sidebar-parity-needs-source-and-dom-metrics.md`
-- `docs/solutions/developer-experience/2026-05-24-plate-init-routes-should-return-shadcn-registry-base-items.md`
 - `docs/solutions/developer-experience/2026-05-24-shadcn-v4-registry-schema-needs-source-only-validation.md`
 - `docs/solutions/developer-experience/2026-05-24-shadcn-registry-install-commands-should-use-configured-namespaces.md`
 - `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md`
@@ -790,8 +794,19 @@ Read these before making decisions:
 Default durable decisions:
 
 - Discard upstream v0 surfaces.
-- Discard upstream `/create`, `/charts`, `/colors`, and public directory-style
-  product pages unless the user explicitly asks for a Plate version.
+- Keep a thin Plate `/create` that selects Plate editor presets, Base or Radix,
+  and the eight pinned upstream code styles. Keep shadcn as the command and
+  preset protocol owner. Discard its theme, font, color, v0, and full project
+  designer. Before changing the public flow, prove fresh Base/Nova and
+  Radix/Luma projects against the local style-aware directory and freshly built
+  Plate artifacts. Treat npm and the deployed directory as post-release smoke.
+- When an accepted sync changes upstream registry style inputs, set
+  `SHADCN_STYLE_SOURCE_COMMIT` to the exact reviewed upstream SHA, then run
+  `pnpm --filter www exec tsx scripts/sync-shadcn-registry-styles.mts` from the
+  repo root. Verify the style-transform suite before registry generation. Never
+  copy style CSS or edit provenance and preview-class output by hand.
+- Discard upstream `/charts`, `/colors`, and public directory-style product
+  pages unless the user explicitly asks for a Plate version.
 - Discard Plate theme/customizer/project/lift-mode residue.
 - Keep Plate docs content under `content/docs/**`.
 - Keep committed Fumadocs metadata as the docs navigation authority.
@@ -921,6 +936,22 @@ Every upstream changed file must be assigned to one subsystem:
 - `assets`: public assets, manifest, images, fonts
 - `other`: only with an explanation
 
+Upstream preset bases and styles are inventory, not automatic Plate capability.
+Never assign `PRESET_BASES` directly as Plate's supported set or multiply the
+physical Plate/docs graph by `base x style`. First audit the complete installed
+graph, name each real provider-specific owner, keep primitive-agnostic items
+canonical, and reject unsupported provider/style routes. Base/Nova may remain
+the full canonical output while other supported combinations are sparse
+logical overlays. Isolated generation of one variant component does not prove
+registry compatibility.
+
+Plate defaults to Base. A supported provider must resolve the complete public
+semantic registry. Never filter or 404 an item inside Base or Radix because its
+current implementation is provider-coupled. Remove the coupling or add a sparse
+author-source variant at the smallest direct primitive owner, then prove the
+affected installed closure. Maintenance-only items are not exempt from this
+compatibility floor.
+
 For each file, record:
 
 - upstream status: added, modified, deleted, renamed
@@ -1035,8 +1066,8 @@ or `None`.
 
 ## Explicit Exclusions
 
-List upstream changes not to import, especially v0/create/charts/colors/theme
-surfaces, with the local Plate policy evidence.
+List upstream changes not to import, especially v0/charts/colors/theme and the
+full project-designer surfaces, with the local Plate policy evidence.
 
 ## Plate Forks To Preserve
 
@@ -1120,7 +1151,7 @@ Evidence:
 - Upstream files: <file rows from the plan>
 - Upstream diff evidence: <focused command summaries, file rows, or hunk notes>
 - Plate evidence: <local files and solution notes>
-- Explicit exclusions: <v0/create/charts/colors/themes/etc. if relevant>
+- Explicit exclusions: <v0/charts/colors/themes/full designer/etc. if relevant>
 
 Implementation:
 - <specific files or surfaces to inspect first>
@@ -1135,7 +1166,8 @@ Acceptance:
 - browser proof only if the slice changes browser-visible docs UI
 - for visual slices, screenshot both upstream shadcn and Plate pages at the
   same viewport before calling the slice done
-- do not run `build:registry`
+- run `pnpm --filter www build:registry` on `next` when accepted registry
+  source changed; otherwise follow the branch's CI-generation rule
 - update `docs/sync/shadcn/status.json` only if the whole target range is fully
   accounted for; otherwise record a partial sync note and keep
   `lastSyncedCommit` unchanged

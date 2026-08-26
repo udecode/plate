@@ -18,7 +18,11 @@ export const insertDefaultBlockAfterSelectedBlockVoid = (
 ) => {
   const selection = editorGetSelection(editor);
 
-  if (!selection || !RangeApi.isCollapsed(selection)) {
+  if (
+    !selection ||
+    !RangeApi.isRange(selection) ||
+    !RangeApi.isCollapsed(selection)
+  ) {
     return false;
   }
 

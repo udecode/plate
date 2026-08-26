@@ -1,3 +1,5 @@
+export const instant = false;
+
 export {
   BlockPreviewPage as default,
   generateBlockPreviewMetadata as generateMetadata,

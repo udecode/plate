@@ -13,7 +13,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
-import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
+import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 import {
   InlineCombobox,

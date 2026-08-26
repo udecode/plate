@@ -31,7 +31,7 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
   type _editorNotAny = AssertFalse<IsAny<typeof ctx.editor>>;
 
   const table = ctx.editor.plugin(TablePlugin);
-  const isSelectingCell = table.read.isSelectingCell();
+  const isSelectingCell = (table.read.selection()?.anchors.length ?? 0) > 1;
   const tableNode = table.api.create({ colCount: 2, rowCount: 2 });
 
   void (isSelectingCell satisfies boolean);
@@ -63,7 +63,7 @@ const tableDependentPlugin = defineBasePlugin('tableDependent', {
       const { api } = editor.plugin(BaseTablePlugin);
       const cell = api.createCell({ header: true });
       const row = api.createRow({ colCount: 2, header: true });
-      const selection = editor.read.table.getSelection();
+      const selection = editor.read.table.selection();
       const table = api.create({ colCount: 2, rowCount: 2 });
 
       return { cell, row, selection, table };
@@ -81,14 +81,9 @@ const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
       tx.plugin(plugin).setBorderSize(0, { border: 'left' });
 
       const selection = tx.selection();
-      const tableSelection = tx.table.getSelection();
+      const tableSelection = tx.table.selection();
 
-      return {
-        cellSelection: selection
-          ? tx.table.createCellSelection(selection)
-          : null,
-        tableSelection,
-      };
+      return { selection, tableSelection };
     },
   }),
 }));

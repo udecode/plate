@@ -299,15 +299,9 @@ export const applyBlockAction = (
       }
     }
 
-    tx.nodes
-      .toArray({
-        match: (node): node is Element =>
-          ElementApi.isElement(node) && tx.schema.isBlock(node),
-        mode: 'lowest',
-      })
-      .forEach((entry) => {
-        setEntry(entry);
-      });
+    tx.nodes.blocks().forEach((entry) => {
+      setEntry(entry);
+    });
   });
 };
 

@@ -66,7 +66,6 @@ describe('usePliteRootChrome', () => {
 
     expect(document.activeElement).toBe(screen.getByLabelText('Header editor'));
     expect(headerEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });
@@ -78,7 +77,6 @@ describe('usePliteRootChrome', () => {
 
     expect(document.activeElement).toBe(screen.getByLabelText('Header editor'));
     expect(headerEditor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { offset: 6, path: [0, 0], root: 'header' },
       focus: { offset: 6, path: [0, 0], root: 'header' },
     });

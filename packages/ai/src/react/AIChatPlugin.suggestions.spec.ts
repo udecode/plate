@@ -1,18 +1,17 @@
 import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
+import { CursorOverlayPlugin } from '@platejs/cursor';
 import { MarkdownPlugin } from '@platejs/markdown';
 import {
   createEditor as createPliteEditor,
+  createEditorView,
   type Element,
   schema,
   SelectionApi,
   type TextSelection,
   type Value,
 } from '@platejs/plite';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@platejs/selection/react';
+import { getEditorLiveSelection } from '@platejs/plite/internal';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 
@@ -31,7 +30,6 @@ const createEditor = (
       BaseAIPlugin,
       MarkdownPlugin,
       SuggestionPlugin,
-      BlockSelectionPlugin,
       CursorOverlayPlugin,
       AIChatPlugin,
     ],
@@ -64,9 +62,14 @@ describe('AIChatPlugin suggestions', () => {
       .store.get('_replaceNodeKeys');
 
     expect(replacementIds).toHaveLength(2);
+    const selection = getEditorLiveSelection(editor);
+
+    expect(SelectionApi.isNode(selection)).toBe(true);
     expect(
-      editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
-    ).toEqual(new Set(replacementIds));
+      SelectionApi.isNode(selection)
+        ? selection.paths.map((path) => editor.key(path))
+        : []
+    ).toEqual([...replacementIds]);
     expect(replacementIds.every((id) => editor.read.nodes.path(id))).toBe(true);
     expect(editor.read.text.string([])).toContain('next-a');
     expect(editor.read.text.string([])).toContain('next-b');
@@ -215,9 +218,14 @@ describe('AIChatPlugin suggestions', () => {
 
     expect(replacementKeys).toHaveLength(2);
     expect(replacementKeys).not.toContain(unrelatedKey);
+    const selection = getEditorLiveSelection(editor);
+
+    expect(SelectionApi.isNode(selection)).toBe(true);
     expect(
-      editor.plugin(BlockSelectionPlugin).store.get('selectedKeys')
-    ).toEqual(new Set(replacementKeys));
+      SelectionApi.isNode(selection)
+        ? selection.paths.map((path) => editor.key(path))
+        : []
+    ).toEqual([...replacementKeys]);
   });
 
   it('keeps streaming when the replacement block count changes', () => {
@@ -275,7 +283,6 @@ describe('AIChatPlugin suggestions', () => {
         BaseAIPlugin,
         MarkdownPlugin,
         SuggestionPlugin,
-        BlockSelectionPlugin,
         CursorOverlayPlugin,
         AIChatPlugin,
         RootHolderPlugin,
@@ -310,6 +317,86 @@ describe('AIChatPlugin suggestions', () => {
     editor.plugin(AIChatPlugin).update.applySuggestions('replacement');
 
     expect(editor.read.value()).toEqual(before);
+  });
+
+  it('replaces named-root chat blocks without touching the main document', () => {
+    const chatNodes = [
+      { children: [{ text: 'old-a' }], type: 'paragraph' },
+      { children: [{ text: 'old-b' }], type: 'paragraph' },
+    ];
+    const RootHolderPlugin = defineBasePlugin('aiReplacementRootHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.type('paragraph', {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const main = {
+      childRoots: { body: 'header' },
+      children: [{ text: '' }],
+      type: 'aiReplacementRootHolder',
+    };
+    const mainChildren = [
+      main,
+      { children: [{ text: '' }], type: 'paragraph' },
+    ];
+    const editor = createPlateEditor({
+      editor: createPliteEditor<Value>(),
+      plugins: [
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        MarkdownPlugin,
+        SuggestionPlugin,
+        CursorOverlayPlugin,
+        AIChatPlugin,
+        RootHolderPlugin,
+      ],
+      selection: {
+        anchor: { offset: 0, path: [0, 0], root: 'header' },
+        focus: { offset: 5, path: [1, 0], root: 'header' },
+        kind: 'text',
+      },
+      initialValue: {
+        children: structuredClone(mainChildren),
+        roots: { header: structuredClone(chatNodes) },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    header.update.selection.setNodes([[0], [1]]);
+
+    editor.plugin(AIChatPlugin).store.set({
+      chatNodes: chatNodes.map((node, index) => ({
+        node,
+        nodeKey: header.key([index])!,
+        root: 'header',
+      })),
+      previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
+    });
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.ai.markBatch();
+      tx.nodes.insert(
+        { [SUGGESTION_TRANSIENT_KEY]: true, text: ' ai' },
+        { at: [1, 1] }
+      );
+    });
+
+    editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' });
+
+    expect(editor.read.children()).toEqual(mainChildren);
+    expect(header.read.children()).toEqual([
+      { children: [{ text: 'new' }], type: 'paragraph' },
+    ]);
   });
 
   it('replaces the selection from the owned preview value', () => {
@@ -365,6 +452,6 @@ describe('AIChatPlugin suggestions', () => {
         match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
       })
     ).toBe(true);
-    expect(editor.read.selection()).toEqual(SelectionApi.text(transientRange));
+    expect(editor.read.selection()).toEqual(transientRange);
   });
 });

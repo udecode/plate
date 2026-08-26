@@ -122,7 +122,11 @@ const shouldCancelStaleCompositionSelectionChangeFlush = ({
 
   const modelSelection = editorGetSelection(editor);
 
-  if (!modelSelection || !RangeApi.isCollapsed(modelSelection)) {
+  if (
+    !modelSelection ||
+    !RangeApi.isRange(modelSelection) ||
+    !RangeApi.isCollapsed(modelSelection)
+  ) {
     return false;
   }
 

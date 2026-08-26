@@ -188,6 +188,26 @@ describe('BaseListPlugin canonical model', () => {
     ]);
   });
 
+  it('toggles only exact node selection members', () => {
+    const editor = createEditor({
+      selection: SelectionApi.nodes([[0], [2]]),
+      initialValue: [
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'middle' }], type: 'paragraph' },
+        { children: [{ text: 'three' }], type: 'paragraph' },
+      ],
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+
+    expect(editor.read.children()).toMatchObject([
+      { indent: 1, listType: 'bulleted', type: 'paragraph' },
+      { type: 'paragraph' },
+      { indent: 1, listType: 'bulleted', type: 'paragraph' },
+    ]);
+    expect(editor.read.children()[1]).not.toHaveProperty('listType');
+  });
+
   it('stores a custom marker separately from list kind', () => {
     const editor = createEditor();
 
@@ -886,7 +906,6 @@ describe('BaseListPlugin canonical model', () => {
   });
 
   it('encodes a forced restart in Plate clipboard HTML', () => {
-    const point = { offset: 0, path: [0, 0] };
     const editor = createEditor({
       initialValue: [
         {
@@ -898,7 +917,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
     });
     const data = new DataTransfer();
 
@@ -912,7 +931,6 @@ describe('BaseListPlugin canonical model', () => {
   });
 
   it('preserves conditional start intent in Plate clipboard HTML', () => {
-    const point = { offset: 0, path: [0, 0] };
     const editor = createEditor({
       initialValue: [
         {
@@ -923,7 +941,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
     });
     const data = new DataTransfer();
 
@@ -938,7 +956,6 @@ describe('BaseListPlugin canonical model', () => {
   });
 
   it('encodes a top-level ordinal after a nested item', () => {
-    const point = { offset: 0, path: [2, 0] };
     const editor = createEditor({
       initialValue: [
         {
@@ -960,7 +977,7 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.node([2], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[2]]),
     });
     const data = new DataTransfer();
 

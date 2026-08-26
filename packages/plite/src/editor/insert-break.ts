@@ -15,7 +15,11 @@ const getNextSoftBreakRange = (
 ) => {
   const selection = editorGetSelection(editor);
 
-  if (!selection || !RangeApi.isCollapsed(selection)) {
+  if (
+    !selection ||
+    !RangeApi.isRange(selection) ||
+    !RangeApi.isCollapsed(selection)
+  ) {
     return null;
   }
 
@@ -35,6 +39,9 @@ const getNextSoftBreakRange = (
 export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   const softBreakRange = getNextSoftBreakRange(editor);
   const selection = editorGetSelection(editor);
+
+  // Node selections may be disjoint, so they have no truthful break target.
+  if (selection && !RangeApi.isRange(selection)) return;
 
   if (softBreakRange) {
     deleteText(editor, { at: softBreakRange, hanging: true });

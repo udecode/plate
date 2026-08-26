@@ -1,4 +1,4 @@
-import type { Path, RootKey } from '@platejs/plite';
+import { type Path, type RootKey, SelectionApi } from '@platejs/plite';
 
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
@@ -117,7 +117,7 @@ export const getModelOwnedHistoryFocusRepair = ({
   const historyFocusRoot = consumeModelOwnedHistoryFocusRoot(editor);
   const selection = readRuntimeSelection(editor);
   const selectionRoot = selection
-    ? (selection.anchor.root ?? selection.focus.root ?? MAIN_ROOT_KEY)
+    ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY)
     : null;
   const currentRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const focusEditor = resolveHistoryFocusEditor({

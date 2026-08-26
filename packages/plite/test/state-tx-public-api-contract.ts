@@ -8,6 +8,8 @@ import {
   type Element,
   NodeApi,
   type NodeKey,
+  type Range,
+  SelectionApi,
 } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
@@ -56,7 +58,10 @@ describe('state/tx public API contract', () => {
       () => editor.read((innerState3) => innerState3.root(primaryRoot)),
       /Use editor\.read\.children/
     );
-    assert.deepEqual(state.selection, selection);
+    assert.deepEqual(state.selection, {
+      anchor: selection.anchor,
+      focus: selection.focus,
+    });
     assert.equal(state.lastCommit, null);
   });
 
@@ -274,6 +279,20 @@ describe('state/tx public API contract', () => {
     });
   });
 
+  it('validates a replacement node selection against the replacement document', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one')],
+    });
+    const selection = SelectionApi.nodes([[0], [1]]);
+
+    editor.update.value.replace({
+      children: [paragraph('two'), paragraph('new')],
+      selection,
+    });
+
+    assert.deepEqual(editorGetSelection(editor), selection);
+  });
+
   it('repairs replacement selections that point at element paths', () => {
     const editor = createEditor({
       initialValue: [paragraph('one')],
@@ -447,6 +466,116 @@ describe('state/tx public API contract', () => {
     return editor;
   };
 
+  it('sets a canonical node selection from live paths', () => {
+    const editor = createSeededEditor();
+
+    editor.update.selection.setNodes([[1], [0], [1]]);
+
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    });
+    assert.deepEqual(
+      editor.read.selection.nodes().map(([, path]) => path),
+      [[0], [1]]
+    );
+  });
+
+  it('sets node selection inside an editor view root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const headerEditor = createEditorView(editor, { root: 'header' });
+
+    headerEditor.update.selection.setNodes([[0]]);
+
+    assert.deepEqual(headerEditor.read.selection(), {
+      anchor: { path: [0, 0], offset: 0, root: 'header' },
+      focus: { path: [0, 0], offset: 6, root: 'header' },
+    });
+    assert.deepEqual(headerEditor.read.selection.ranges(), [
+      {
+        anchor: { path: [0, 0], offset: 0, root: 'header' },
+        focus: { path: [0, 0], offset: 6, root: 'header' },
+      },
+    ]);
+    assert.deepEqual(
+      headerEditor.read.nodes.blocks().map(([, path]) => path),
+      [[0]]
+    );
+    assert.equal(headerEditor.read.selection.contains([0]), true);
+    assert.deepEqual(editor.read.selection.nodes(), [
+      [editor.read.root('header')[0], [0]],
+    ]);
+    assert.equal(SelectionApi.root(headerEditor.read.selection()), 'header');
+  });
+
+  it('keeps base editor setNodes in the current named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body one'), paragraph('body two')],
+        roots: {
+          header: [paragraph('header one'), paragraph('header two')],
+        },
+      },
+    });
+    const headerEditor = createEditorView(editor, { root: 'header' });
+
+    headerEditor.update.selection.setNodes([[0]]);
+    editor.update.selection.setNodes([[1]]);
+
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { path: [1, 0], offset: 0, root: 'header' },
+      focus: { path: [1, 0], offset: 10, root: 'header' },
+    });
+    assert.deepEqual(editor.read.selection.nodes(), [
+      [editor.read.root('header')[1], [1]],
+    ]);
+  });
+
+  it('sets node selection against structural changes in the same transaction', () => {
+    const editor = createSeededEditor();
+    let draftSelection: ReturnType<typeof editor.read.selection> = null;
+
+    editor.update((tx) => {
+      tx.nodes.insert(paragraph('zero'), { at: [0] });
+      tx.selection.setNodes([[2], [0]]);
+      draftSelection = tx.selection();
+    });
+
+    const expected = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 3 },
+    };
+
+    assert.deepEqual(draftSelection, expected);
+    assert.deepEqual(editor.read.selection(), expected);
+    assert.deepEqual(
+      editor.read.selection.nodes().map(([, path]) => path),
+      [[0], [2]]
+    );
+  });
+
+  it('rolls back the update when any selected node path is stale', () => {
+    const editor = createSeededEditor();
+    const before = editor.read.selection();
+
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.nodes.set({ role: 'draft' }, { at: [0] });
+          tx.selection.setNodes([[0], [9]]);
+        }),
+      /Cannot select a missing node at path \[9\]/
+    );
+
+    assert.deepEqual(editor.read.children()[0], paragraph('one'));
+    assert.deepEqual(editor.read.selection(), before);
+  });
+
   it('passes grouped read state into editor.read', () => {
     const editor = createSeededEditor();
 
@@ -463,7 +592,6 @@ describe('state/tx public API contract', () => {
     assert.equal(state.isVoid, false);
     assert.equal(state.text, 'onetwo');
     assert.deepEqual(state.selection, {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -728,11 +856,6 @@ describe('state/tx public API contract', () => {
       before: innerState9.points.before({ path: [1, 0], offset: 0 }),
       edge: innerState9.points.isEdge({ path: [0, 0], offset: 0 }, [0]),
       first: innerState9.nodes.first([]),
-      hasBlocks: innerState9.nodes.hasBlocks({
-        type: 'container',
-        children: [paragraph('nested')],
-      }),
-      hasPath: innerState9.nodes.hasPath([1, 0]),
       isBlock: innerState9.schema.isBlock(paragraph('one')),
       isEmpty: innerState9.nodes.isEmpty({
         type: 'paragraph',
@@ -740,7 +863,7 @@ describe('state/tx public API contract', () => {
       }),
       last: innerState9.nodes.last([]),
       levels: Array.from(innerState9.nodes.levels({ at: [0, 0] })),
-      nodePaths: innerState9.nodes.toArray({ at: [] }, ([, path]) => path),
+      nodePaths: innerState9.nodes.toArray({ at: [] }).map(([, path]) => path),
       projected: innerState9.ranges.project({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 3 },
@@ -757,8 +880,6 @@ describe('state/tx public API contract', () => {
     assert.deepEqual(state.before, { path: [0, 0], offset: 3 });
     assert.equal(state.edge, true);
     assert.deepEqual(state.first?.[1], [0, 0]);
-    assert.equal(state.hasBlocks, true);
-    assert.equal(state.hasPath, true);
     assert.equal(state.isBlock, true);
     assert.equal(state.isEmpty, true);
     assert.deepEqual(state.last?.[1], [1, 0]);
@@ -779,7 +900,7 @@ describe('state/tx public API contract', () => {
   it('passes grouped tx writes into editor.update and reads the live draft', () => {
     const editor = createSeededEditor();
     let draftText = '';
-    let draftSelection = null as ReturnType<typeof editorGetSelection>;
+    let draftSelection: Range | null = null;
 
     editor.update((tx) => {
       tx.text.insert('!');
@@ -796,7 +917,6 @@ describe('state/tx public API contract', () => {
 
     assert.equal(draftText, 'one!two');
     assert.deepEqual(draftSelection, {
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     });

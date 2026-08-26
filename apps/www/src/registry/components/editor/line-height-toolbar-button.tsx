@@ -1,9 +1,7 @@
 'use client';
 
 import { LineHeightPlugin } from '@platejs/basic-styles/react';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import { CheckIcon, WrapText } from 'lucide-react';
+import { WrapText } from 'lucide-react';
 import { useEditor, useSelectionFragmentProp } from 'platejs/react';
 import * as React from 'react';
 
@@ -14,10 +12,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-import { ToolbarButton } from './toolbar';
-
-export function LineHeightToolbarButton(props: DropdownMenuProps) {
+export function LineHeightToolbarButton() {
   const editor = useEditor();
   const { nodeProps } = editor.plugin(LineHeightPlugin).inject;
 
@@ -35,7 +32,7 @@ export function LineHeightToolbarButton(props: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip="Line height" isDropdown>
           <WrapText />
@@ -56,11 +53,6 @@ export function LineHeightToolbarButton(props: DropdownMenuProps) {
               className="min-w-[180px] pl-2 *:first:[span]:hidden"
               value={String(innerValue)}
             >
-              <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
-                <DropdownMenuItemIndicator>
-                  <CheckIcon />
-                </DropdownMenuItemIndicator>
-              </span>
               {innerValue}
             </DropdownMenuRadioItem>
           ))}

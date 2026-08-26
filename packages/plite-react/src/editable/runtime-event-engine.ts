@@ -201,6 +201,7 @@ export const useEditableEventRuntime = ({
     onPaste: callbacks.onPaste,
     readOnly,
     repair: eventCore.repair,
+    rootRef,
     setExplicitPartialDOMBackedSelection:
       runtime.setExplicitPartialDOMBackedSelection,
     partialDOMBackedSelection,

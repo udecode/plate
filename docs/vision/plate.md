@@ -178,8 +178,11 @@ Current priorities:
   share one `ref`, while separate occurrences keep distinct element IDs.
   External names such as MDAST `identifier` stay inside codecs, and semantic
   addresses such as `url` keep their domain name.
-  Exact generated nodes read `element.id`; generic package boundaries use the
-  installed plugin portal. Runtime keys never leak into persisted content.
+  Exact generated nodes read `element.id`; generic package boundaries convert
+  a `NodeKey` through the installed plugin portal. The portal does not accept
+  erased element values. The compiled `id` property target alone decides which
+  elements receive persisted IDs; preparation strips the plugin-owned property
+  from excluded elements. Runtime keys never leak into persisted content.
   One-request protocols expose small refs mapped to local `NodeKey` values;
   they install persisted IDs only when references must survive reload,
   storage, editor destruction, or another client.
@@ -206,6 +209,9 @@ Current priorities:
 - Descriptor-aware schema calls identify schema elements and groups. Document
   property reads use typed property handles or semantic plugin APIs, never a
   one-property descriptor shortcut.
+- Plate normal-flow membership is authored with `blockContent` and read through
+  `editor.read.schema.isBlockContent(element)`. Dynamic selectability and UI
+  presentation remain independent policy.
 - Generic node traversal uses an independent structural `type` selector and a
   function-only `match` condition. Plate descriptors resolve through the final
   application schema; Plite accepts persisted strings and schema handles.
@@ -524,9 +530,14 @@ Current priorities:
   component factories/HOCs, React 18 branches, or `forwardRef`. A separate
   state owner needs independent lifecycle or cross-family reuse.
 - A package may publish a headless React primitive when reusable DOM behavior
-  and accessibility are the contract. The package owns interaction mechanics;
-  copied registry UI owns styles, labels, editor persistence, and product
+  and accessibility are the contract. The package owns interaction mechanics
+  and positioning or hit-testing required for correct behavior; copied
+  registry UI owns visual styles, labels, editor persistence, and product
   composition. Internal providers, stores, and prop hooks stay private.
+- Independently placed DOM parts are independent primitives with ordinary DOM
+  props such as `className` and `style`. They compose as siblings; a public
+  root or `*ClassName` control prop requires a real shared lifecycle or state
+  job.
 - When one hook mixes durable DOM lifecycle with renderer composition, split
   it. Keep only the subscription, imperative DOM projection, and cleanup in the
   package; a side-effect-only adapter takes its required lifecycle input and
@@ -557,12 +568,21 @@ Current priorities:
   variants resolve at install time, expose one editor-facing contract, and
   write to one target; never ship runtime base switching or variant-only shared
   helpers.
+- Plate registry provider support is explicit and narrower than any upstream
+  preset catalog. Base is the default; Radix remains explicit. Build docs and
+  primitive-agnostic items once. A provider variant exists only for a named
+  reusable UI boundary with complete installed graph proof. Every public item
+  resolves through every supported provider; repair coupling at the smallest
+  direct owner instead of filtering an item or cloning its assembly.
+  Unsupported provider/style routes fail closed. Preserve semantic item ids and
+  materialize same-style Plate self-dependencies at the request boundary.
 - Registry surfaces dedicated to `*-classic`, including `list-classic`, are
   maintenance-only pending deprecation. Do not add parity work, new variants,
   shared abstractions, polish, demos, adoption, or API investment. Touch them
   only for a user-facing regression, security or release blocker, or an
   explicitly authorized deprecation/removal. New work targets the modern
-  registry surface; planned deprecation alone does not authorize deletion.
+  registry surface; planned deprecation alone does not authorize deletion or a
+  broken supported-provider install.
 - Preferred extension path is npm package distribution plus local app
   composition and registry usage for development.
 - If you build a plugin or component pack, host and maintain it in your own

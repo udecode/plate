@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-05-31T21:05:18.831Z",
+  "generatedAt": "2026-08-25T16:04:42.630Z",
   "source": {
     "deltas": "docs/sync/shadcn/deltas.json",
     "status": "docs/sync/shadcn/status.json"
   },
   "status": {
-    "lastSyncedCommit": "4a4dc8eb0fc793d8e9225e780183ad605f15d2c2",
-    "lastPlannedCommit": "efdec3ca4523e5edd8a714f633002a7addc203a1",
-    "lastPlan": "docs/sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md",
-    "partialSyncCount": 7,
+    "lastSyncedCommit": "cd54e0927f3853a777f700a0bbf34507cf697b9c",
+    "lastPlannedCommit": "b9938d94635fca7a4560449713b0b1ba87d77bc6",
+    "lastPlan": "docs/sync/shadcn/runs/2026-08-24-cd54e09-to-b9938d9/plan.md",
+    "partialSyncCount": 9,
     "target": {
       "docsApp": "apps/www",
       "docsContent": "content/docs"
@@ -49,20 +49,20 @@
     }
   },
   "featureCounts": {
-    "defer": 3,
+    "defer": 1,
     "pending": 1,
-    "fork": 5,
+    "fork": 6,
     "rejected": 0,
-    "synced": 5
+    "synced": 6
   },
   "itemCounts": {
-    "defer": 3,
+    "defer": 1,
     "pending": 0,
     "fork": 9,
     "rejected": 0,
-    "synced": 12
+    "synced": 15
   },
-  "itemTotal": 24,
+  "itemTotal": 25,
   "features": [
     {
       "summary": "Shared header follows shadcn structure while keeping Plate-owned product choices.",
@@ -148,7 +148,9 @@
           "id": "block-viewer-toolbar",
           "title": "BlockViewer toolbar",
           "state": "synced",
-          "files": ["apps/www/src/components/block-viewer.tsx"],
+          "files": [
+            "apps/www/src/components/block-viewer.tsx"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -162,7 +164,9 @@
           "id": "preview-frame",
           "title": "Preview frame polish",
           "state": "synced",
-          "files": ["apps/www/src/components/block-viewer.tsx"],
+          "files": [
+            "apps/www/src/components/block-viewer.tsx"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -211,7 +215,9 @@
           "id": "accordion-sidebar",
           "title": "Accordion sidebar",
           "state": "fork",
-          "files": ["apps/www/src/components/docs-nav.tsx"],
+          "files": [
+            "apps/www/src/components/docs-nav.tsx"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -233,7 +239,9 @@
           "id": "command-input",
           "title": "Header search input",
           "state": "synced",
-          "files": ["apps/www/src/components/command-menu.tsx"],
+          "files": [
+            "apps/www/src/components/command-menu.tsx"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -260,11 +268,33 @@
       ]
     },
     {
-      "summary": "Registry shape, copy payloads, and source loading are deferred as one product review.",
+      "summary": "The Base-first provider and eight-style registry contract is synced; registry content, copy payloads, and source loading remain Plate-owned or deferred.",
       "id": "registry",
       "label": "Registry",
       "reviewState": "defer",
       "items": [
+        {
+          "decision": "Use Base/Nova as the complete canonical registry, support Base and Radix across Nova, Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea, and keep sparse physical variants at Toolbar, FloatingPopover, DropdownMenu, and ContextMenu only.",
+          "evidence": "",
+          "suggestion": "Plate pins upstream style inputs, fails unsupported providers and styles closed, and varies only copied UI families with proven provider-specific behavior.",
+          "upstream": "Shadcn 4.19.0 exposes radix, base, and aria across nova, vega, maia, lyra, mira, luma, sera, and rhea.",
+          "id": "registry-preset-contract",
+          "title": "Preset base and style build contract",
+          "state": "synced",
+          "files": [
+            "apps/www/package.json",
+            "apps/www/scripts/registry-build-targets.mts",
+            "apps/www/scripts/registry-style-materializer.mts",
+            "apps/www/scripts/registry-style-transform.mts",
+            "apps/www/src/registry/registry.ts",
+            "apps/www/src/lib/plate-registry-styles.ts",
+            "apps/www/src/lib/registry-response.ts"
+          ],
+          "screenshots": {
+            "suggestion": "",
+            "shadcn": ""
+          }
+        },
         {
           "decision": "Keep lazy /api/registry-source/[name] for bandwidth; do not pull shadcn eager code-source behavior without a registry decision.",
           "evidence": "",
@@ -296,27 +326,33 @@
             "apps/www/src/registry/registry-components.ts"
           ],
           "screenshots": {
-            "suggestion": "docs/sync/shadcn/runs/2026-05-30-deferred-review-screenshots/screenshots/plate-registry-review-editors.png",
-            "shadcn": "docs/sync/shadcn/runs/2026-05-30-deferred-review-screenshots/screenshots/shadcn-registry-review-blocks.png"
+            "suggestion": "",
+            "shadcn": ""
           }
         }
       ]
     },
     {
-      "summary": "Defer upstream /create review; future Plate create work is a separate product decision.",
+      "summary": "The thin Plate /create flow is enabled after fresh Base/Nova and Radix/Luma projects passed against local Plate registry and package artifacts; the legacy /init path is deleted.",
       "id": "create",
       "label": "Create",
-      "reviewState": "defer",
+      "reviewState": "synced",
       "items": [
         {
-          "decision": "Defer upstream /create and v0-oriented create flow review until Plate has a product-shaped /create decision.",
+          "decision": "Keep a thin Plate editor, provider, and code-style selector that emits the upstream shadcn create command. Prove it against fresh local Plate registry and package artifacts. Keep the theme, font, color, v0, and full project designer upstream.",
           "evidence": "",
-          "suggestion": "Plate may have a /create later, but it should be designed for Plate rather than copied now.",
-          "upstream": "Shadcn /create is tied to its own product flow and generated style/theme registry.",
+          "suggestion": "Run npm and deployed-directory smoke after release.",
+          "upstream": "Shadcn owns create commands, preset encoding, base/style names, and central registry directory resolution.",
           "id": "upstream-create",
           "title": "Upstream /create product surface",
-          "state": "defer",
-          "files": ["docs/sync/shadcn/decisions.md"],
+          "state": "synced",
+          "files": [
+            "apps/www/src/app/(app)/create/page.tsx",
+            "apps/www/src/app/(app)/create/create-client.tsx",
+            "apps/www/src/app/(view)/create-preview/page.tsx",
+            "apps/www/src/lib/plate-create.ts",
+            "docs/sync/shadcn/decisions.md"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -325,20 +361,25 @@
       ]
     },
     {
-      "summary": "Defer upstream Rhea/style/theme/generated style registry review with the create/theming product surface.",
+      "summary": "Plate adopts eight registry code styles and rejects the upstream theme, font, color, and full project-designer product graph.",
       "id": "themes",
       "label": "Themes and Styles",
-      "reviewState": "defer",
+      "reviewState": "fork",
       "items": [
         {
-          "decision": "Defer this with upstream create/theming instead of treating it as a final exclusion.",
+          "decision": "Materialize Nova, Vega, Maia, Lyra, Mira, Luma, Sera, and Rhea from pinned upstream code-style transforms while excluding theme/customizer product state.",
           "evidence": "",
-          "suggestion": "Plate does not want the old theme/customizer direction or upstream Rhea theme surface.",
-          "upstream": "Shadcn has generated style registry files for themed examples.",
-          "id": "rhea-style-registry",
-          "title": "Rhea/style/theme generated registry",
-          "state": "defer",
-          "files": ["docs/sync/shadcn/decisions.md"],
+          "suggestion": "Keep code styles as compile-time registry output, not runtime application theme state.",
+          "upstream": "Shadcn exposes eight code styles alongside a larger theme, font, color, and project-design surface.",
+          "id": "registry-code-styles",
+          "title": "Registry code styles",
+          "state": "synced",
+          "files": [
+            "apps/www/src/registry/styles/provenance.json",
+            "apps/www/src/registry/styles/style-nova.css",
+            "apps/www/scripts/sync-shadcn-registry-styles.mts",
+            "docs/sync/shadcn/decisions.md"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""
@@ -347,21 +388,22 @@
       ]
     },
     {
-      "summary": "Plate keeps a single preview route while the registry/style system stays deferred.",
+      "summary": "Plate keeps /view/[name] for registry previews and uses an isolated /create-preview route for provider and style selection.",
       "id": "preview-routes",
       "label": "Preview Routes",
       "reviewState": "fork",
       "items": [
         {
-          "decision": "Do not copy shadcn /view/[style]/[name] and legacy theme wrapper for now.",
+          "decision": "Do not copy shadcn /view/[style]/[name] or its theme wrapper. Keep /view/[name] and isolate the thin create preview from the docs shell.",
           "evidence": "",
-          "suggestion": "Plate uses /view/[name] for registry previews and has no active multi-style preview surface.",
+          "suggestion": "Plate previews provider and code-style choices only inside the create flow; copied registry output never contains the website selector.",
           "upstream": "Shadcn iframes use /view/[style]/[name] for style-aware block previews.",
           "id": "style-param-view-route",
           "title": "Shadcn style-param /view route",
           "state": "fork",
           "files": [
             "apps/www/src/app/(view)/view/[name]/page.tsx",
+            "apps/www/src/app/(view)/create-preview/page.tsx",
             "apps/www/src/components/block-viewer.tsx"
           ],
           "screenshots": {
@@ -577,7 +619,9 @@
           "id": "custom-api-mdx",
           "title": "Custom API MDX",
           "state": "fork",
-          "files": ["content/docs/api"],
+          "files": [
+            "content/docs/api"
+          ],
           "screenshots": {
             "suggestion": "",
             "shadcn": ""

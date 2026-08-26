@@ -345,7 +345,6 @@ export const createEditorHarness = (
         await harness.selection.select({
           anchor: point,
           focus: point,
-          kind: 'text',
         });
       },
       anchor: async (options?: SelectionCaptureOptions) =>

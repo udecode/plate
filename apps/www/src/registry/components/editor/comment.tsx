@@ -45,13 +45,6 @@ import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import {
@@ -59,6 +52,13 @@ import {
   discussionPlugin,
   getDiscussionClickTarget,
 } from '@/registry/components/editor/discussion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/registry/components/editor/dropdown-menu';
 
 import { Editor, EditorContainer } from './editor';
 
@@ -138,7 +138,10 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
   .extend(({ schema, store }) => ({
     update: ({ tx }) => ({
       setDraft: (options = {}) => {
-        const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
+        const selection = tx.selection();
+        const commentingBlock = selection
+          ? selection.focus.path.slice(0, 1)
+          : null;
 
         if (tx.selection.isCollapsed()) {
           const blockEntry = tx.nodes.block();
@@ -361,7 +364,7 @@ export function Comment(props: {
             )}
 
             <CommentMoreDropdown
-              onCloseAutoFocus={() => {
+              onFinalFocus={() => {
                 setTimeout(() => {
                   focusEditorAtEnd(commentEditor);
                 }, 0);
@@ -447,7 +450,7 @@ function CommentMoreDropdown(props: {
   dropdownOpen: boolean;
   setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
-  onCloseAutoFocus?: () => void;
+  onFinalFocus?: () => void;
   onRemoveComment?: () => void;
 }) {
   const {
@@ -455,7 +458,7 @@ function CommentMoreDropdown(props: {
     dropdownOpen,
     setDropdownOpen,
     setEditingId,
-    onCloseAutoFocus,
+    onFinalFocus,
     onRemoveComment,
   } = props;
 
@@ -521,7 +524,6 @@ function CommentMoreDropdown(props: {
       modal={false}
     >
       <DropdownMenuTrigger
-        asChild
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -532,9 +534,9 @@ function CommentMoreDropdown(props: {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-48"
-        onCloseAutoFocus={(e) => {
+        onFinalFocus={(e) => {
           if (selectedEditCommentRef.current) {
-            onCloseAutoFocus?.();
+            onFinalFocus?.();
             selectedEditCommentRef.current = false;
           }
 

@@ -8,8 +8,19 @@ export const editorComponents: Registry['items'] = [
       { path: 'components/editor/editor.tsx', type: 'registry:component' },
     ],
     meta: {
-      docs: [{ route: 'https://pro.platejs.org/docs/components/editor' }],
-      examples: ['editor-default', 'editor-disabled', 'editor-full-width'],
+      docs: [
+        {
+          route: '/docs/api/core/plate-components',
+          title: 'Node Selection',
+        },
+        { route: 'https://pro.platejs.org/docs/components/editor' },
+      ],
+      examples: [
+        'editor-default',
+        'editor-disabled',
+        'editor-full-width',
+        'node-selection-demo',
+      ],
     },
     name: 'editor',
     registryDependencies: [],
@@ -31,7 +42,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/ai', '@platejs/selection', 'cmdk'],
+    dependencies: ['@platejs/ai', 'cmdk'],
     description: 'A menu for AI-powered content generation and insertion.',
     files: [
       { path: 'components/editor/ai-menu.tsx', type: 'registry:component' },
@@ -51,7 +62,7 @@ export const editorComponents: Registry['items'] = [
     registryDependencies: [
       'button',
       'command',
-      'popover',
+      '@plate/floating-popover',
       '@plate/editor',
       '@plate/use-chat',
       '@plate/editor-static',
@@ -212,7 +223,7 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'font-color-toolbar-button',
     registryDependencies: [
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       'button',
       'tooltip',
       '@plate/toolbar',
@@ -275,7 +286,7 @@ export const editorComponents: Registry['items'] = [
     name: 'block-discussion',
     registryDependencies: [
       'button',
-      'popover',
+      '@plate/floating-popover',
       'avatar',
       'dropdown-menu',
       '@plate/editor',
@@ -303,7 +314,11 @@ export const editorComponents: Registry['items'] = [
       label: 'New',
     },
     name: 'select-editor',
-    registryDependencies: ['@plate/editor', 'popover', '@plate/tag'],
+    registryDependencies: [
+      '@plate/editor',
+      '@plate/floating-popover',
+      '@plate/tag',
+    ],
     title: 'Select Editor',
     type: 'registry:component',
   },
@@ -626,9 +641,10 @@ export const editorComponents: Registry['items'] = [
     name: 'media-toolbar',
     registryDependencies: [
       'button',
-      'popover',
+      'input',
       'separator',
       '@plate/caption',
+      '@plate/floating-popover',
       '@plate/media-preview-dialog',
     ],
     title: 'Media Toolbar',
@@ -731,7 +747,7 @@ export const editorComponents: Registry['items'] = [
       examples: ['table-demo'],
     },
     name: 'table-toolbar-button',
-    registryDependencies: ['dropdown-menu', '@plate/toolbar'],
+    registryDependencies: ['@plate/editor-dropdown-menu', '@plate/toolbar'],
     title: 'Table Toolbar Button',
     type: 'registry:component',
   },
@@ -773,7 +789,7 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'turn-into-toolbar-button',
     registryDependencies: [
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       '@plate/toolbar',
       '@plate/transforms',
     ],
@@ -794,7 +810,7 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'turn-into-toolbar-classic-button',
     registryDependencies: [
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       '@plate/toolbar',
       '@plate/transforms-classic',
     ],
@@ -821,11 +837,56 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@radix-ui/react-toolbar', '@radix-ui/react-tooltip'],
+    description: 'Provider-neutral context menu behavior for Plate UI.',
+    files: [
+      {
+        path: 'bases/base/context-menu.tsx',
+        target: '@components/editor/context-menu.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-context-menu',
+    registryDependencies: ['context-menu'],
+    title: 'Editor Context Menu',
+    type: 'registry:component',
+  },
+  {
+    description: 'Provider-neutral dropdown menu behavior for Plate UI.',
+    files: [
+      {
+        path: 'bases/base/dropdown-menu.tsx',
+        target: '@components/editor/dropdown-menu.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'editor-dropdown-menu',
+    registryDependencies: ['dropdown-menu'],
+    title: 'Editor Dropdown Menu',
+    type: 'registry:component',
+  },
+  {
+    description: 'Provider-neutral anchored floating content for Plate UI.',
+    files: [
+      {
+        path: 'bases/base/floating-popover.tsx',
+        target: '@components/editor/floating-popover.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'floating-popover',
+    registryDependencies: [],
+    title: 'Floating Popover',
+    type: 'registry:component',
+  },
+  {
     description:
       'A customizable toolbar component with various button styles and group',
     files: [
-      { path: 'components/editor/toolbar.tsx', type: 'registry:component' },
+      {
+        path: 'bases/base/toolbar.tsx',
+        target: '@components/editor/toolbar.tsx',
+        type: 'registry:component',
+      },
     ],
     meta: {
       // Add links here if needed
@@ -978,7 +1039,12 @@ export const editorNodes: Registry['items'] = [
       examples: ['font-demo'],
     },
     name: 'font-size-toolbar-button',
-    registryDependencies: ['popover', '@plate/toolbar'],
+    registryDependencies: [
+      'button',
+      'input',
+      '@plate/floating-popover',
+      '@plate/toolbar',
+    ],
     title: 'Font Size Toolbar Button',
     type: 'registry:component',
   },

@@ -279,7 +279,6 @@ test.describe('comment mode example', () => {
     );
 
     await editor.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: {
         path: [0, 0],

@@ -3,6 +3,7 @@ import {
   type Editor,
   type EditorEffectType,
   type EditorSchemaIdentity,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
 import {
@@ -183,12 +184,18 @@ const decodeBatch = <V extends Value>(
     validateDocument: false,
   });
 
-  if (
-    selectionAfter?.anchor.root === MAIN_ROOT_KEY ||
-    selectionAfter?.focus.root === MAIN_ROOT_KEY ||
-    selectionBefore?.anchor.root === MAIN_ROOT_KEY ||
-    selectionBefore?.focus.root === MAIN_ROOT_KEY
-  ) {
+  const hasPrimaryRoot = (
+    selection: typeof selectionAfter
+  ): boolean =>
+    SelectionApi.isNode(selection)
+      ? selection.root === MAIN_ROOT_KEY
+      : Boolean(
+          selection &&
+            (selection.anchor.root === MAIN_ROOT_KEY ||
+              selection.focus.root === MAIN_ROOT_KEY)
+        );
+
+  if (hasPrimaryRoot(selectionAfter) || hasPrimaryRoot(selectionBefore)) {
     throw new Error('Invalid history batch JSON.');
   }
 

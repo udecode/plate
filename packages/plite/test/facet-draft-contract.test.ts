@@ -64,7 +64,11 @@ describe('transaction-local facet caching', () => {
               { dependencies: [{ kind: 'document', root: 'sidebar' }] }
             ),
             selectionOffset.compute(
-              (state) => state.selection()?.anchor.offset ?? -1,
+              (state) => {
+                const selection = state.selection();
+
+                return selection?.anchor.offset ?? -1;
+              },
               { dependencies: ['selection'] }
             ),
             counterValue.compute((state) => state.getField(counter), {
@@ -79,10 +83,12 @@ describe('transaction-local facet caching', () => {
                 state.schema.element('quote')?.behavior.voidKind ?? 'regular',
               { dependencies: ['schema'] }
             ),
-            wholeState.compute(
-              (state) =>
-                `${state.text.string([])}:${state.selection()?.anchor.offset ?? -1}:${state.getField(counter)}`
-            ),
+            wholeState.compute((state) => {
+              const selection = state.selection();
+              const offset = selection?.anchor.offset ?? -1;
+
+              return `${state.text.string([])}:${offset}:${state.getField(counter)}`;
+            }),
           ],
           stateFields: [counter],
         }),

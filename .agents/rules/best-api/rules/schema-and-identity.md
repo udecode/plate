@@ -60,7 +60,10 @@ standard:
 - Application schema lineage uses `id` and `version` inside the single
   app-owned `schema` object. Do not duplicate lineage in a top-level
   `schemaIdentity` option or a generator-only definition. Plate schema
-  elements use `blockContent` for normal-flow membership.
+  elements use `blockContent` for normal-flow membership. Read the compiled
+  result with `editor.read.schema.isBlockContent(element)`; never export its
+  private group identity or rebuild it from plugin names. Keep it independent
+  from `editor.read.nodes.isSelectable(element)` and UI presentation policy.
 - Runtime verbs are `schema.create`, `schema.assertDocument`,
   `schema.assertFragment`, and `schema.isMarkableVoid`. Assertions accept
   `unknown` and narrow it.
@@ -169,7 +172,10 @@ MDAST `identifier` stays at the adapter boundary. Keep semantic addresses such
 as `url` instead of renaming every pointer-like domain field. DOM bindings for live nodes use
 `data-plite-node-key`; feature-owned DOM attributes carrying node keys follow
 the same vocabulary. Hydration may use a deterministic editor-local render
-token, but mounted DOM lookup must publish the full owning runtime key.
+token, but mounted DOM lookup must publish the full owning runtime key. Resolve
+mounted DOM with `editor.api.dom.resolveDOMNode(nodeOrKey)`. Foreign, removed,
+and unmounted keys return `null`; do not add another lookup namespace or expose
+`NodeView`, `ViewDesc`, or renderer-private structures.
 
 Persisted element identity is a separate optional Plate capability owned by
 `ElementIdPlugin`. Its canonical schema property is `id`, its default generator
@@ -177,12 +183,17 @@ is `nanoid`, and consumers may configure another string generator. Exact
 schema-derived element code reads `element.id`; erased or optionally installed
 package code uses `editor.plugin(ElementIdPlugin).read`. Migrations may read a
 legacy `sourceKey`, but runtime schema configuration never aliases or renames a
-plugin-authored property key. Persisted IDs apply to elements, not text.
+plugin-authored property key. Persisted IDs apply to elements, not text. The
+compiled property target is the sole applicability policy: document preparation
+generates IDs only for matching elements and removes the plugin-owned `id` from
+excluded elements. Narrow the application schema target instead of adding a
+plugin `types`, inline filter, or second runtime matcher.
 
 At the persistence boundary, convert a live key directly with
 `editor.plugin(ElementIdPlugin).read.id(key)`. Do not retrieve the node merely
-to read its persisted ID. Missing or deleted keys return `undefined`; exact
-element input keeps the strict non-empty ID contract. Live TOC, outline,
+to read its persisted ID. The read accepts only `NodeKey`; exact schema-derived
+elements read `element.id` directly. Missing or deleted keys return `undefined`.
+Live TOC, outline,
 selection, drag/drop, and navigation state use `NodeKey` and must not install
 `ElementIdPlugin`. One-shot exports such as DOCX derive export-local references
 from runtime keys. Serialized identity such as Markdown block-ID round trips

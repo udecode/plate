@@ -3,12 +3,13 @@
 import { SmileIcon } from 'lucide-react';
 import * as React from 'react';
 
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
+
 import {
   EmojiPicker,
   type EmojiPickerOptions,
   EmojiPickerTrigger,
 } from './emoji-picker';
-import { ToolbarButton } from './toolbar';
 
 export function EmojiToolbarButton({
   closeOnSelect,

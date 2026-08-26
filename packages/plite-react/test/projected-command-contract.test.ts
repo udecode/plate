@@ -294,7 +294,6 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'BefX'.length },
       focus: { path: [0, 0], offset: 'BefX'.length },
     });
@@ -334,7 +333,6 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
@@ -522,7 +520,6 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'BefZ'.length },
       focus: { path: [0, 0], offset: 'BefZ'.length },
     });
@@ -705,7 +702,6 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'Bef'.length },
       focus: { path: [0, 0], offset: 'Bef'.length },
     });
@@ -787,7 +783,6 @@ describe('projected editable commands', () => {
       },
     });
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -986,7 +981,6 @@ describe('projected editable commands', () => {
     expect(seenDirections).toEqual(['forward']);
     expect(editorString(editor, [0])).toBe(' beta');
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1045,7 +1039,6 @@ describe('projected editable commands', () => {
 
     expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1075,7 +1068,6 @@ describe('projected editable commands', () => {
       paragraph('alpha'),
     ]);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'alpha'.length },
       focus: { path: [0, 0], offset: 'alpha'.length },
     });
@@ -1105,7 +1097,6 @@ describe('projected editable commands', () => {
       paragraph('beta'),
     ]);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1139,7 +1130,6 @@ describe('projected editable commands', () => {
 
     expect(editor.read((state) => state.children())).toEqual([paragraph('')]);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1229,7 +1219,6 @@ describe('projected editable commands', () => {
       },
     ]);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1268,7 +1257,6 @@ describe('projected editable commands', () => {
 
     expect(editor.read((state) => state.children())).toEqual([paragraph('Z')]);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -1346,7 +1334,10 @@ describe('projected editable commands', () => {
       paragraph('Before'),
       paragraph('After'),
     ]);
-    expect(editor.read((state) => state.selection())).toEqual(selection);
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: selection.anchor,
+      focus: selection.focus,
+    });
     expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
   });
 
@@ -1650,7 +1641,6 @@ describe('projected editable commands', () => {
 
     expect(readPliteViewSelection(editor)).toBe(null);
     expect(editor.read((state) => state.selection())).toEqual({
-      kind: 'text',
       anchor: { path: [2, 0], offset: 0 },
       focus: { path: [2, 0], offset: 'After'.length },
     });

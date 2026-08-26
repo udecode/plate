@@ -147,7 +147,6 @@ export type {
   PliteBrowserKernelInputIntent,
   PliteBrowserKernelMovementOwnershipTrace,
   PliteBrowserKernelOwnership,
-  PliteBrowserKernelRange,
   PliteBrowserKernelRepairPolicy,
   PliteBrowserKernelRepairRequest,
   PliteBrowserKernelSelectionChangeOrigin,

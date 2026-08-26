@@ -257,7 +257,6 @@ test.describe('hidden content blocks example', () => {
     await editor.selection.collapse({ offset: intro.length, path: [0, 0] });
     await page.keyboard.press('ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: 0, path: [2, 0, 0] },
       focus: { offset: 0, path: [2, 0, 0] },
     });
@@ -358,7 +357,6 @@ test.describe('hidden content blocks example', () => {
     });
     await page.keyboard.press('ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: 0, path: [2, 1, 0] },
       focus: { offset: 0, path: [2, 1, 0] },
     });
@@ -381,7 +379,6 @@ test.describe('hidden content blocks example', () => {
     );
     await page.keyboard.press('Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: overview.length, path: [2, 0, 0] },
       focus: { offset: 0, path: [2, 1, 0] },
     });
@@ -392,7 +389,6 @@ test.describe('hidden content blocks example', () => {
 
     await page.keyboard.press('Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: overview.length, path: [2, 0, 0] },
       focus: { offset: 1, path: [2, 1, 0] },
     });
@@ -430,7 +426,6 @@ test.describe('hidden content blocks example', () => {
     const overview = 'Overview tab visible text';
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { offset: beta.length, path: [1, 1, 0] },
       focus: { offset: overview.length, path: [2, 0, 0] },
     });
@@ -441,7 +436,6 @@ test.describe('hidden content blocks example', () => {
 
     await page.keyboard.press('Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: beta.length, path: [1, 1, 0] },
       focus: { offset: 0, path: [2, 1, 0] },
     });
@@ -452,7 +446,6 @@ test.describe('hidden content blocks example', () => {
 
     await page.keyboard.press('Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: beta.length, path: [1, 1, 0] },
       focus: { offset: 1, path: [2, 1, 0] },
     });
@@ -488,7 +481,6 @@ test.describe('hidden content blocks example', () => {
     });
     await page.keyboard.press('ArrowLeft');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: 'Overview tab visible text'.length, path: [2, 0, 0] },
       focus: { offset: 'Overview tab visible text'.length, path: [2, 0, 0] },
     });
@@ -511,7 +503,6 @@ test.describe('hidden content blocks example', () => {
     );
     await page.keyboard.press('Shift+ArrowLeft');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: 0, path: [2, 1, 0] },
       focus: { offset: 'Overview tab visible text'.length, path: [2, 0, 0] },
     });
@@ -522,7 +513,6 @@ test.describe('hidden content blocks example', () => {
 
     await page.keyboard.press('Shift+ArrowLeft');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: 0, path: [2, 1, 0] },
       focus: {
         offset: 'Overview tab visible text'.length - 1,
@@ -565,7 +555,6 @@ test.describe('hidden content blocks example', () => {
     });
     await page.keyboard.press('Shift+ArrowDown');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: 'Intro visible before '.length, path: [0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -588,7 +577,6 @@ test.describe('hidden content blocks example', () => {
     });
     await page.keyboard.press('Shift+ArrowDown');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: intro.length, path: [0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
@@ -613,7 +601,6 @@ test.describe('hidden content blocks example', () => {
     });
     await page.keyboard.press('Shift+ArrowDown');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: details.length, path: [2, 1, 0] },
       focus: { offset: 0, path: [3, 0, 0] },
     });
@@ -636,7 +623,6 @@ test.describe('hidden content blocks example', () => {
     await editor.selection.collapse(outroStart);
     await page.keyboard.press('Shift+ArrowUp');
     await editor.assert.selection({
-      kind: 'text',
       anchor: outroStart,
       focus: { offset: collapsibleEnd, path: [3, 0, 0] },
     });
@@ -659,21 +645,18 @@ test.describe('hidden content blocks example', () => {
 
     const intro = 'Intro visible before hidden blocks.';
     await editor.selection.select({
-      kind: 'text',
       anchor: { offset: intro.length - 3, path: [0, 0] },
       focus: { offset: intro.length, path: [0, 0] },
     });
     await expect.poll(() => getNativeSelectionText(page)).toBe('ks.');
     await page.keyboard.press('Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: intro.length - 3, path: [0, 0] },
       focus: { offset: 1, path: [2, 0, 0] },
     });
     await expect.poll(() => getNativeSelectionText(page)).toBe('ks.\nO');
     await page.keyboard.press('Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: intro.length - 3, path: [0, 0] },
       focus: { offset: 2, path: [2, 0, 0] },
     });
@@ -688,13 +671,11 @@ test.describe('hidden content blocks example', () => {
     );
 
     await editor.selection.select({
-      kind: 'text',
       anchor: { offset: intro.length - 3, path: [0, 0] },
       focus: { offset: intro.length, path: [0, 0] },
     });
     await page.keyboard.press('Control+Shift+ArrowRight');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { offset: intro.length - 3, path: [0, 0] },
       focus: { offset: 'Overview'.length, path: [2, 0, 0] },
     });

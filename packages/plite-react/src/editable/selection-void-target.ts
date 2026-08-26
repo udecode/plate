@@ -111,7 +111,7 @@ export const getKeyboardSelectableNodeSelection = (
     const start = state.points.start(path);
 
     return start
-      ? SelectionApi.node(path, { anchor: start, focus: start })
+      ? SelectionApi.nodes([path], start.root ? { root: start.root } : {})
       : null;
   });
 
@@ -138,10 +138,10 @@ export const getKeyboardSelectableAncestorNodeSelection = (
     return start
       ? {
           path,
-          selection: SelectionApi.node(path, {
-            anchor: start,
-            focus: start,
-          }),
+          selection: SelectionApi.nodes(
+            [path],
+            start.root ? { root: start.root } : {}
+          ),
           start,
         }
       : null;

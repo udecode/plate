@@ -229,6 +229,11 @@ describe('plite interfaces contract', () => {
 
     assert.equal(PointApi.equals(mainPoint, explicitMainPoint), true);
     assert.equal(PointApi.equals(mainPoint, headerPoint), false);
+    assert.equal(RangeApi.equals(null, null), true);
+    assert.equal(
+      RangeApi.equals({ anchor: mainPoint, focus: mainPoint }, null),
+      false
+    );
     assert.equal(
       RangeApi.equals(
         { anchor: mainPoint, focus: mainPoint },

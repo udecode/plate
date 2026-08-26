@@ -28,11 +28,6 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -40,6 +35,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  FloatingPopover,
+  FloatingPopoverAnchor,
+  FloatingPopoverContent,
+} from '@/registry/components/editor/floating-popover';
 
 const languageLabels: Record<CodeDrawingLanguage, string> = {
   flowchart: 'Flowchart',
@@ -53,6 +53,14 @@ const viewLabels: Record<CodeDrawingView, string> = {
   preview: 'Preview',
   split: 'Split',
 };
+
+const isCodeDrawingLanguage = (
+  value: string | null
+): value is CodeDrawingLanguage =>
+  CODE_DRAWING_LANGUAGES.some((language) => language === value);
+
+const isCodeDrawingView = (value: string | null): value is CodeDrawingView =>
+  CODE_DRAWING_VIEWS.some((view) => view === value);
 
 export function CodeDrawingElement(
   props: PlateElementProps<typeof CodeDrawingPlugin>
@@ -180,12 +188,12 @@ export function CodeDrawingElement(
   }
 
   return (
-    <Popover open={open} modal={false}>
-      <PopoverAnchor asChild>{content}</PopoverAnchor>
-      <PopoverContent
+    <FloatingPopover open={open} modal={false}>
+      <FloatingPopoverAnchor element={content} />
+      <FloatingPopoverContent
         className="w-auto p-1"
         contentEditable={false}
-        onOpenAutoFocus={(e) => {
+        onInitialFocus={(e) => {
           e.preventDefault();
         }}
       >
@@ -213,8 +221,8 @@ export function CodeDrawingElement(
             <Trash2 className="size-4" />
           </Button>
         </div>
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }
 
@@ -348,7 +356,11 @@ function CodeDrawingToolbar({
       {!readOnly && (
         <Select
           value={language}
-          onValueChange={onLanguageChange}
+          onValueChange={(nextLanguage) => {
+            if (isCodeDrawingLanguage(nextLanguage)) {
+              onLanguageChange(nextLanguage);
+            }
+          }}
           open={languageSelectOpen}
           onOpenChange={setLanguageSelectOpen}
         >
@@ -372,7 +384,11 @@ function CodeDrawingToolbar({
       {!readOnly && (
         <Select
           value={viewMode}
-          onValueChange={onViewChange}
+          onValueChange={(nextView) => {
+            if (isCodeDrawingView(nextView)) {
+              onViewChange(nextView);
+            }
+          }}
           open={viewSelectOpen}
           onOpenChange={setViewSelectOpen}
         >

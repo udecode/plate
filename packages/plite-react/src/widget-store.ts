@@ -1,6 +1,7 @@
 import {
   type EditorCommit,
   PointApi,
+  RangeApi,
   type Range,
   type NodeKey,
   type Editor as EditorType,
@@ -12,6 +13,7 @@ import type {
 } from './annotation-store';
 import {
   failInvariant,
+  getSelectionDOMRange,
   getSnapshot as editorGetSnapshot,
 } from './editable/runtime-editor-api';
 import {
@@ -105,21 +107,6 @@ const EMPTY_METRICS = Object.freeze({
   widgetSubscriberWakeCount: 0,
 }) as PliteWidgetStoreMetrics;
 
-const sameRange = (left: Range | null, right: Range | null) => {
-  if (!left && !right) {
-    return true;
-  }
-
-  if (!left || !right) {
-    return false;
-  }
-
-  return (
-    PointApi.equals(left.anchor, right.anchor) &&
-    PointApi.equals(left.focus, right.focus)
-  );
-};
-
 const isVisibleSelection = (range: Range | null) =>
   !!range && !PointApi.equals(range.anchor, range.focus);
 
@@ -163,7 +150,7 @@ const areResolvedWidgetsEqual = <
 ) =>
   areWidgetInputsEqual(left, right) &&
   left.annotation === right.annotation &&
-  sameRange(left.range, right.range) &&
+  RangeApi.equals(left.range, right.range) &&
   left.visible === right.visible;
 
 const getEditorChangeWidgetIds = <T extends Record<string, unknown>>(
@@ -245,7 +232,7 @@ const createPliteWidgetStoreInternal = <
         break;
       }
       case 'selection': {
-        range = mappingEditorSnapshot.selection;
+        range = getSelectionDOMRange(editor, mappingEditorSnapshot.selection);
         visible = isVisibleSelection(range);
         break;
       }

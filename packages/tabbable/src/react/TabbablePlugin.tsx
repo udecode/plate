@@ -47,7 +47,14 @@ export const TabbablePlugin = definePlatePlugin(PLUGINS.tabbable, {
         return point ? { path: point.path, type: 'path' } : null;
       }
 
-      const selectionPath = state.selection()?.anchor.path ?? [];
+      const selection = state.selection();
+      const selectedNodes = state.selection.nodes();
+      const selectionPath =
+        (direction === 'forward'
+          ? selectedNodes.at(-1)?.[1]
+          : selectedNodes[0]?.[1]) ??
+        selection?.anchor.path ??
+        [];
       const nextEntry =
         direction === 'forward'
           ? tabbableEntries.find(

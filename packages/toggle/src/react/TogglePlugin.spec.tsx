@@ -144,6 +144,36 @@ describe('TogglePlugin', () => {
     );
   });
 
+  it('keeps detached node selectability keyed by stable identity', () => {
+    const editor = createPlateEditor({
+      plugins,
+      initialValue: [
+        { children: [{ text: 'Toggle' }], id: 't1', type: 'toggle' },
+        {
+          children: [{ text: 'hidden child' }],
+          id: 'p1',
+          indent: 1,
+          type: 'paragraph',
+        },
+      ],
+    });
+    const toggleKey = editor.key([0])!;
+    const childKey = editor.key([1])!;
+    const hiddenChild = editor.read.nodes.get([1])?.[0];
+
+    editor.plugin(TogglePlugin).store.set({
+      toggleIndex: new Map([
+        [toggleKey, []],
+        [childKey, [toggleKey]],
+      ]),
+    });
+    editor.update.nodes.remove({ at: [1] });
+
+    expect(hiddenChild && editor.read.nodes.isSelectable(hiddenChild)).toBe(
+      false
+    );
+  });
+
   it('moves past hidden descendants before deleting backward', () => {
     const editor = createPlateEditor({
       plugins,

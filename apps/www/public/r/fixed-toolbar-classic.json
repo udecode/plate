@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "fixed-toolbar-classic",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/fixed-toolbar-classic-buttons.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/fixed-toolbar-classic.tsx",
+      "content": "'use client';\n\nimport { definePlatePlugin } from 'platejs/react';\n\nimport { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';\nimport { FixedToolbarButtons } from '@/registry/components/editor/fixed-toolbar-classic-buttons';\n\nexport const FixedToolbarKit = [\n  definePlatePlugin('fixedToolbar', {\n    render: {\n      beforeEditable: () => (\n        <FixedToolbar>\n          <FixedToolbarButtons />\n        </FixedToolbar>\n      ),\n    },\n  }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/fixed-toolbar-classic.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

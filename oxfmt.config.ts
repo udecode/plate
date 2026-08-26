@@ -32,6 +32,7 @@ const projectIgnorePatterns = [
   'apps/plite/tests/**/donor/**',
   'apps/www/src/app/(app)/examples/slate/_examples/**',
   'apps/www/src/registry/**/*.schema.json',
+  'apps/www/src/registry/styles/**',
   'apps/www/tests/slate-browser/donor/**',
   'benchmarks/slate-v2/donor/**',
   'tooling/plite/donor/**',

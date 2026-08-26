@@ -11,9 +11,10 @@
   ],
   "files": [
     {
-      "path": "src/registry/ui/suggestion-toolbar-button.tsx",
-      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { SuggestionPlugin } from '@platejs/suggestion/react';\nimport { PencilLineIcon } from 'lucide-react';\nimport { useEditorPlugin, usePluginOption } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function SuggestionToolbarButton() {\n  const { setOption } = useEditorPlugin(SuggestionPlugin);\n  const isSuggesting = usePluginOption(SuggestionPlugin, 'isSuggesting');\n\n  return (\n    <ToolbarButton\n      className={cn(isSuggesting && 'text-brand/80 hover:text-brand/80')}\n      onClick={() => setOption('isSuggesting', !isSuggesting)}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip={isSuggesting ? 'Turn off suggesting' : 'Suggestion edits'}\n    >\n      <PencilLineIcon />\n    </ToolbarButton>\n  );\n}\n",
-      "type": "registry:ui"
+      "path": "src/registry/components/editor/suggestion-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { SuggestionPlugin } from '@platejs/suggestion/react';\nimport { PencilLineIcon } from 'lucide-react';\nimport { useEditorPlugin, usePluginStore } from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function SuggestionToolbarButton() {\n  const { store } = useEditorPlugin(SuggestionPlugin);\n  const isSuggesting = usePluginStore(SuggestionPlugin, 'isSuggesting');\n\n  return (\n    <ToolbarButton\n      className={cn(isSuggesting && 'text-brand/80 hover:text-brand/80')}\n      onClick={() => {\n        store.set({ isSuggesting: !isSuggesting });\n      }}\n      tooltip={isSuggesting ? 'Turn off suggesting' : 'Suggestion edits'}\n    >\n      <PencilLineIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/suggestion-toolbar-button.tsx"
     }
   ],
   "meta": {
@@ -27,5 +28,5 @@
       "discussion-pro"
     ]
   },
-  "type": "registry:ui"
+  "type": "registry:component"
 }

@@ -3,6 +3,7 @@
  */
 
 export * from './EditorRefEffect';
+export * from './NodeSelection';
 export * from './Plate';
 export * from './PlateContainer';
 export * from './PlateContent';

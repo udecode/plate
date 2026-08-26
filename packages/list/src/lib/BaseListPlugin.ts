@@ -24,6 +24,7 @@ import {
   type EditorCoreStateView,
   type Element,
   type Location,
+  type NodeSelection,
   type NodeEntry,
   type NodeKey,
 } from '@platejs/plite';
@@ -106,17 +107,17 @@ const LIST_TYPES = [
 ] as const;
 
 export type IndentListOptions = {
-  at?: Location;
+  at?: Location | NodeSelection;
   listStyle?: ListStyle | (string & {});
   type?: ListType;
 };
 
 export type OutdentListOptions = {
-  at?: Location;
+  at?: Location | NodeSelection;
 };
 
 export type ToggleListOptions = {
-  at?: Location;
+  at?: Location | NodeSelection;
   getSiblingListOptions?: GetSiblingListOptions;
   listStyle?: ListStyle | (string & {});
   type: ListType;
@@ -1014,7 +1015,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         ...options
       }: IndentListOptions = {}) => {
         const listStyle = normalizeListStyle(type, options.listStyle);
-        const at = options.at ?? tx.selection() ?? undefined;
+        const { at } = options;
 
         tx.indent.change({
           nodes: {
@@ -1028,12 +1029,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         });
 
         const match = getInjectMatch(editor, plugin);
-        const entries = tx.nodes.toArray({
+        const entries = tx.nodes.blocks({
           at,
-          match: (node, path): node is Element =>
-            ElementApi.isElement(node) &&
-            tx.schema.isBlock(node) &&
-            match(node, path),
+          match,
           mode: 'lowest',
         });
 
@@ -1079,14 +1077,19 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         });
       },
       toggle: ({
-        at = tx.selection() ?? undefined,
+        at,
         getSiblingListOptions,
         listRestart,
         listStart,
         listStyle,
         type,
       }: ToggleListOptions) => {
-        if (!at || (PathApi.isPath(at) && at.length === 0)) return;
+        if (
+          (at === undefined && !tx.selection()) ||
+          (PathApi.isPath(at) && at.length === 0)
+        ) {
+          return;
+        }
         if (listStart !== undefined && listRestart !== undefined) {
           throw new Error(
             'List toggle accepts either listStart or listRestart, not both.'
@@ -1094,12 +1097,9 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         }
 
         const match = getInjectMatch(editor, plugin);
-        const entries = tx.nodes.toArray({
+        const entries = tx.nodes.blocks({
           at,
-          match: (node, path): node is Element =>
-            ElementApi.isElement(node) &&
-            tx.schema.isBlock(node) &&
-            match(node, path),
+          match,
           mode: 'lowest',
         });
 
@@ -1223,8 +1223,12 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
       return [
         handle(editorCommands.delete, ({ input, state }) => {
           if (input.direction !== 'backward') return false;
-          const nodeEntry = state.nodes.block();
           const selection = state.selection();
+          const hasNodeSelection = state.selection.nodes().length > 0;
+          const nodeEntry =
+            selection && !hasNodeSelection
+              ? state.nodes.block({ at: selection })
+              : undefined;
           const blockStart = nodeEntry
             ? state.points.start(nodeEntry[1])
             : undefined;
@@ -1241,6 +1245,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           if (
             !nodeEntry ||
             !selection ||
+            hasNodeSelection ||
             !isListItem(nodeEntry[0]) ||
             state.selection.isExpanded() ||
             !isAtBlockStart
@@ -1253,12 +1258,17 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           });
         }),
         around(editorCommands.insertBreak, ({ state, next }) => {
-          const nodeEntry = state.nodes.block();
           const selection = state.selection();
+          const hasNodeSelection = state.selection.nodes().length > 0;
+          const nodeEntry =
+            selection && !hasNodeSelection
+              ? state.nodes.block({ at: selection })
+              : undefined;
 
           if (
             !nodeEntry ||
             !selection ||
+            hasNodeSelection ||
             !isListItem(nodeEntry[0]) ||
             state.selection.isExpanded()
           ) {
@@ -1292,16 +1302,18 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           });
         }),
         around(editorCommands.insertBreak, ({ state, next }) => {
-          const nodeEntry = state.nodes.block();
+          const selection = state.selection();
+          const nodeEntry =
+            selection && state.selection.nodes().length === 0
+              ? state.nodes.block({ at: selection })
+              : undefined;
 
-          if (!nodeEntry) return false;
+          if (!selection || !nodeEntry) return false;
 
           const [node, path] = nodeEntry;
-          const selection = state.selection();
 
           if (
             node.listType !== ListType.Task ||
-            !selection ||
             state.selection.isExpanded() ||
             !state.points.isEnd(selection.focus, path)
           ) {

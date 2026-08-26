@@ -48,8 +48,8 @@ describe('AIChatPlugin read.resolvePlaceholders', () => {
     ) as TestEditor;
     const aiChat = await createTestEditor(input);
     const expectedBlock = aiChat.read.markdown({ type: 'block' });
-    const expectedBlockSelection = aiChat.read.markdown({
-      type: 'blockSelection',
+    const expectedNodeSelection = aiChat.read.markdown({
+      type: 'nodeSelection',
     });
     const expectedEditor = aiChat.read.markdown({ type: 'editor' });
 
@@ -58,7 +58,7 @@ describe('AIChatPlugin read.resolvePlaceholders', () => {
         'Prompt: {prompt}',
         'Prompt again: {prompt}',
         'Block: {block}',
-        'Selection: {blockSelection}',
+        'Selection: {nodeSelection}',
         'Editor: {editor}',
       ].join('\n'),
       { prompt: 'Refine this' }
@@ -69,7 +69,7 @@ describe('AIChatPlugin read.resolvePlaceholders', () => {
         'Prompt: Refine this',
         'Prompt again: Refine this',
         `Block: ${expectedBlock}`,
-        `Selection: ${expectedBlockSelection}`,
+        `Selection: ${expectedNodeSelection}`,
         `Editor: ${expectedEditor}`,
       ].join('\n')
     );

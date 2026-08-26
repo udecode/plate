@@ -36,7 +36,6 @@ describe('CodeBlockKit current contract', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 4, path: [0, 0, 0] },
       focus: { offset: 4, path: [0, 0, 0] },
     });

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-document-change-docs",
+  "title": "Document Change",
+  "description": "Plite canonical document changes, serialization, and replay.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/document-change.mdx",
+      "content": "---\ntitle: Document Change\ndescription: Plite canonical document changes, serialization, and replay.\n---\n\nApplication code mutates documents through `editor.update`. Serialize\n`commit.changes` and import canonical changes through `tx.changes.apply`.\n\nRead [Document Changes](/docs/plite/concepts/05-document-changes) for the\nalgebra and [Canonical Change Substrate](/docs/plite/walkthroughs/07-canonical-change-substrate)\nfor adapter boundaries.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/document-change.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

@@ -4,6 +4,8 @@ import {
   schema,
   SelectionApi,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
+import { getEditorLiveSelection } from '@platejs/plite/internal';
 import { act, fireEvent, render } from '@testing-library/react';
 
 import {
@@ -36,10 +38,16 @@ const keyboardSelectableSchema = defineEditorSchema(
         content: schema.content.text({ default: 'text', min: 1 }),
         keyboardSelectable: true,
       },
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
     },
     id: 'keyboard-selectable-selection',
-    root: schema.content.not(schema.content.text()),
-    unknown: 'preserve',
+    root: schema.content.types(['media', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
     version: 1,
   }
 );
@@ -68,10 +76,14 @@ const renderElement = ({
   );
 
 const renderKeyboardSelectableEditor = (
-  props: Pick<EditableProps, 'onClick' | 'onMouseUp'> = {}
+  props: Pick<EditableProps, 'onClick' | 'onMouseUp'> = {},
+  options: { history?: boolean } = {}
 ) => {
   const editor = createReactEditor({
-    extensions: [keyboardSelectableSchema],
+    extensions: [
+      ...(options.history ? [history()] : []),
+      keyboardSelectableSchema,
+    ],
     initialValue: initialValue(),
   });
   const rendered = render(
@@ -132,11 +144,11 @@ describe('keyboard-selectable element selection', () => {
       });
     });
 
-    expect(editor.read((state) => state.selection())).toEqual({
-      anchor: { offset: 0, path: [2, 0] },
-      focus: { offset: 0, path: [2, 0] },
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [2],
+      focusPath: [2],
       kind: 'node',
-      path: [2],
+      paths: [[2]],
     });
     expect(document.activeElement).toBe(editable);
     expect(document.getSelection()?.rangeCount).toBe(0);
@@ -167,11 +179,9 @@ describe('keyboard-selectable element selection', () => {
 
     const captionSelection = editor.read((state) => state.selection());
 
-    expect(SelectionApi.isText(captionSelection)).toBe(true);
     expect(captionSelection).toEqual({
       anchor: { offset: 0, path: [2, 0] },
       focus: { offset: 0, path: [2, 0] },
-      kind: 'text',
     });
     expect(
       document
@@ -184,11 +194,11 @@ describe('keyboard-selectable element selection', () => {
       fireEvent.keyDown(editable, { key: 'ArrowUp' });
     });
 
-    expect(editor.read((state) => state.selection())).toEqual({
-      anchor: { offset: 0, path: [2, 0] },
-      focus: { offset: 0, path: [2, 0] },
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [2],
+      focusPath: [2],
       kind: 'node',
-      path: [2],
+      paths: [[2]],
     });
     expect(document.activeElement).toBe(editable);
     expect(document.getSelection()?.rangeCount).toBe(0);
@@ -207,19 +217,15 @@ describe('keyboard-selectable element selection', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { offset: 6, path: [1, 0] },
       focus: { offset: 6, path: [1, 0] },
-      kind: 'text',
     });
   });
 
   test('Delete removes the exact node selection and moves to the next text', async () => {
     const { editable, editor, rendered } = renderKeyboardSelectableEditor();
 
-    await act(async () => {
-      const asset = rendered.getByTestId('asset');
+    await selectAsset(rendered);
 
-      fireEvent.mouseDown(asset);
-      fireEvent.mouseUp(asset);
-      fireEvent.click(asset);
+    await act(async () => {
       fireEvent.keyDown(editable, { key: 'Delete' });
     });
 
@@ -233,7 +239,24 @@ describe('keyboard-selectable element selection', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { offset: 0, path: [2, 0] },
       focus: { offset: 0, path: [2, 0] },
-      kind: 'text',
+    });
+  });
+
+  test('Enter preserves a node selection with no aggregate break target', async () => {
+    const { editable, editor, rendered } = renderKeyboardSelectableEditor();
+
+    await selectAsset(rendered);
+
+    await act(async () => {
+      fireEvent.keyDown(editable, { key: 'Enter' });
+    });
+
+    expect(editor.read.value()).toEqual({ children: initialValue() });
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [2],
+      focusPath: [2],
+      kind: 'node',
+      paths: [[2]],
     });
   });
 
@@ -258,11 +281,11 @@ describe('keyboard-selectable element selection', () => {
       },
       version: 1,
     });
-    expect(editor.read((state) => state.selection())).toEqual({
-      anchor: { offset: 0, path: [2, 0] },
-      focus: { offset: 0, path: [2, 0] },
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [2],
+      focusPath: [2],
       kind: 'node',
-      path: [2],
+      paths: [[2]],
     });
 
     const cutClipboard = new FakeDataTransfer();
@@ -295,20 +318,68 @@ describe('keyboard-selectable element selection', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { offset: 6, path: [1, 0] },
       focus: { offset: 6, path: [1, 0] },
-      kind: 'text',
     });
   });
 
-  test('keeps printable input and paste inert until ArrowDown enters text', async () => {
+  test('printable input replaces the exact selected owner', async () => {
     const { editable, editor, rendered } = renderKeyboardSelectableEditor();
-    const clipboard = new FakeDataTransfer();
 
-    clipboard.setData('text/plain', 'paste');
     await selectAsset(rendered);
 
     await act(async () => {
       expect(fireEvent.keyDown(editable, { key: 'x' })).toBe(false);
     });
+
+    expect(editor.read.value()).toEqual({
+      children: [
+        { type: 'paragraph', children: [{ text: 'start' }] },
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'paragraph', children: [{ text: 'x' }] },
+        { type: 'paragraph', children: [{ text: 'after' }] },
+      ],
+    });
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { offset: 1, path: [2, 0] },
+      focus: { offset: 1, path: [2, 0] },
+    });
+  });
+
+  test('undo restores the exact directional node selection after printable replacement', async () => {
+    const { editable, editor } = renderKeyboardSelectableEditor(
+      {},
+      { history: true }
+    );
+
+    editor.update.selection.setNodes([[1], [2]], { anchor: [1], focus: [2] });
+
+    await act(async () => {
+      expect(fireEvent.keyDown(editable, { key: 'x' })).toBe(false);
+    });
+
+    await act(async () => {
+      fireEvent.keyDown(editable, {
+        code: 'KeyZ',
+        ctrlKey: true,
+        key: 'z',
+      });
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+
+    expect(editor.read.value()).toEqual({ children: initialValue() });
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [1],
+      focusPath: [2],
+      kind: 'node',
+      paths: [[1], [2]],
+    });
+  });
+
+  test('beforeinput replaces a model-only node selection', async () => {
+    const { editable, editor, rendered } = renderKeyboardSelectableEditor();
+
+    await selectAsset(rendered);
 
     const beforeInput = new InputEvent('beforeinput', {
       bubbles: true,
@@ -317,19 +388,74 @@ describe('keyboard-selectable element selection', () => {
       inputType: 'insertText',
     });
 
+    expect(SelectionApi.isNode(getEditorLiveSelection(editor))).toBe(true);
+
     await act(async () => {
       editable.dispatchEvent(beforeInput);
-      fireEvent.paste(editable, { clipboardData: clipboard });
     });
 
     expect(beforeInput.defaultPrevented).toBe(true);
-    expect(editor.read.value()).toEqual({ children: initialValue() });
-    expect(editor.read((state) => state.selection())).toEqual({
-      anchor: { offset: 0, path: [2, 0] },
-      focus: { offset: 0, path: [2, 0] },
-      kind: 'node',
-      path: [2],
+    expect(editor.read.value()).toEqual({
+      children: [
+        { type: 'paragraph', children: [{ text: 'start' }] },
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'paragraph', children: [{ text: 'y' }] },
+        { type: 'paragraph', children: [{ text: 'after' }] },
+      ],
     });
-    expect(document.getSelection()?.rangeCount).toBe(0);
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { offset: 1, path: [2, 0] },
+      focus: { offset: 1, path: [2, 0] },
+    });
+  });
+
+  test('paste replaces the exact selected owner', async () => {
+    const { editable, editor, rendered } = renderKeyboardSelectableEditor();
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'paste');
+    await selectAsset(rendered);
+
+    await act(async () => {
+      fireEvent.paste(editable, { clipboardData: clipboard });
+    });
+
+    expect(editor.read.value()).toEqual({
+      children: [
+        { type: 'paragraph', children: [{ text: 'start' }] },
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'paragraph', children: [{ text: 'paste' }] },
+        { type: 'paragraph', children: [{ text: 'after' }] },
+      ],
+    });
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { offset: 5, path: [2, 0] },
+      focus: { offset: 5, path: [2, 0] },
+    });
+  });
+
+  test('routes body-targeted paste to the focused node selection', async () => {
+    const { editor, rendered } = renderKeyboardSelectableEditor();
+    const clipboard = new FakeDataTransfer();
+
+    clipboard.setData('text/plain', 'paste');
+    await selectAsset(rendered);
+
+    await act(async () => {
+      fireEvent.paste(document.body, { clipboardData: clipboard });
+    });
+
+    expect(editor.read.value()).toEqual({
+      children: [
+        { type: 'paragraph', children: [{ text: 'start' }] },
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'paragraph', children: [{ text: 'paste' }] },
+        { type: 'paragraph', children: [{ text: 'after' }] },
+      ],
+    });
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { offset: 5, path: [2, 0] },
+      focus: { offset: 5, path: [2, 0] },
+    });
   });
 });

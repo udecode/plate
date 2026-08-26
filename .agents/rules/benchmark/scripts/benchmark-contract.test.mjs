@@ -193,6 +193,22 @@ test('default inventory keeps every lane in diagnostic order', () => {
   );
 });
 
+test('route-wide rerender claims cannot close on one owner proxy', () => {
+  const rule = read('.agents/rules/benchmark.mdc');
+  const methodology = read(
+    '.agents/rules/benchmark/references/methodology.md'
+  );
+
+  assert.match(
+    rule,
+    /reporter-visible rerender[\s\S]*exact-route,[\s\S]*repeated-component inventory[\s\S]*wrapper-local Profiler[\s\S]*every family above 5%[\s\S]*at least 90%/
+  );
+  assert.match(
+    methodology,
+    /Reporter-visible rerender[\s\S]*exact-route,[\s\S]*repeated-component inventory[\s\S]*wrapper-local Profiler[\s\S]*every family above 5%[\s\S]*at least 90%/
+  );
+});
+
 test('a conclusive cause requires causal evidence and pauses later lanes', () => {
   const defaultPlaceholders = plan({
     cause: { lane: provenCause.lane, state: 'proven' },

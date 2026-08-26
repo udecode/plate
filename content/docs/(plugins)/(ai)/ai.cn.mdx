@@ -74,7 +74,7 @@ AI_GATEWAY_API_KEY="your-api-key"
 ### 安装
 
 ```bash
-npm install @platejs/ai @platejs/markdown @platejs/selection @ai-sdk/react ai
+npm install @platejs/ai @platejs/markdown @ai-sdk/react ai
 ```
 
 `@platejs/suggestion` 是可选的，但对于基于差异的编辑建议是必需的。
@@ -83,23 +83,19 @@ npm install @platejs/ai @platejs/markdown @platejs/selection @ai-sdk/react ai
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
-import { AIChatPlugin,
-  AIPlugin } from '@platejs/ai/react';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 
 export const editor = createPlateEditor({
   plugins: [
-    BlockSelectionPlugin,
-  MarkdownPlugin,
-  AIPlugin,
-  AIChatPlugin,
-  // 在下一步中扩展
+    MarkdownPlugin,
+    AIPlugin,
+    AIChatPlugin, // 在下一步中扩展
   ],
-  });
+});
 ```
 
-- `BlockSelectionPlugin`：启用 `AIChatPlugin` 依赖的多块选择，用于插入/替换变换。
+- 编辑器选择为 `AIChatPlugin` 提供文本和多节点目标。
 - `MarkdownPlugin`：提供流式工具使用的 Markdown 序列化。
 - `AIPlugin`：添加 AI 标记和用于撤销 AI 批处理的变换。
 - `AIChatPlugin`：提供 AI 组合框、API 助手和变换。
@@ -228,7 +224,7 @@ export async function POST(req: Request) {
   });
 
   const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
+    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY,
   });
 
   const result = streamText({
@@ -306,14 +302,15 @@ editor.plugin(AIChatPlugin).api.submit('', {
 
 ### 客户端提示
 
-- `aiChat.api.submit` 接受 `EditorPrompt`：字符串、`default`/`selecting`/`blockSelecting` 对象，或接收 `{ editor, isSelecting, isBlockSelecting }` 的函数。
+- `aiChat.api.submit` 接受 `EditorPrompt`：字符串、`default`/`selecting`/`nodeSelecting` 对象，或接收 `{ editor, isSelecting, isNodeSelecting }` 的函数。
+- `isSelecting` 表示代表范围是否展开；`isNodeSelecting` 表示精确节点成员关系，因此选择空节点时，即使代表范围折叠，它仍为 `true`。`nodeSelecting` 优先于 `selecting`。
 - `aiChat.read.prompt` 针对当前快照解析该输入。
-- `aiChat.read.resolvePlaceholders` 使用快照 Markdown 扩展 `{editor}`、`{block}`、`{blockSelection}` 和 `{prompt}`。
+- `aiChat.read.resolvePlaceholders` 使用快照 Markdown 扩展 `{editor}`、`{block}`、`{nodeSelection}` 和 `{prompt}`。
 
 ```tsx
 const aiChat = editor.plugin(AIChatPlugin);
 const template = aiChat.read.resolvePlaceholders(
-  'Rewrite {blockSelection} using a friendly tone.'
+  'Rewrite {nodeSelection} using a friendly tone.'
 );
 
 aiChat.api.submit('Improve tone', {

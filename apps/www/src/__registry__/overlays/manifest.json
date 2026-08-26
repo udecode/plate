@@ -1,0 +1,164 @@
+{
+  "canonical": "base-nova",
+  "combinations": [
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-vega"
+    },
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-maia"
+    },
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-lyra"
+    },
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-mira"
+    },
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-luma"
+    },
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-sera"
+    },
+    {
+      "files": [
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "toolbar.json"
+      ],
+      "style": "base-rhea"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-nova"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-vega"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-maia"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-lyra"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-mira"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-luma"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-sera"
+    },
+    {
+      "files": [
+        "editor-context-menu.json",
+        "editor-dropdown-menu.json",
+        "floating-popover.json",
+        "inline-combobox.json",
+        "link.json",
+        "registry.json",
+        "toolbar.json"
+      ],
+      "style": "radix-rhea"
+    }
+  ],
+  "itemCount": 378,
+  "shadcnStyleCommit": "ee628d75dea87325735fafa7c54f5d7d7edb8774"
+}

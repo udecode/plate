@@ -184,6 +184,7 @@ describe('plite-dom bridge', () => {
       root.appendChild(owner);
 
       expect(editor.api.dom.assertDOMNode(textNode)).toBe(owner);
+      expect(editor.api.dom.resolveDOMNode(editor.key(textNode))).toBe(owner);
       expect(
         editor.api.dom.assertDOMPoint({ path: [0, 0], offset: 5 })
       ).toEqual([domText, 5]);
@@ -429,19 +430,55 @@ describe('plite-dom bridge', () => {
   });
 
   it('resolves a removed Plite node to null', () => {
-    const editor = createParagraphEditor();
+    withDom(({ document }) => {
+      const editor = createParagraphEditor();
 
-    editor.update((tx) => {
-      tx.nodes.insert(
-        { type: 'paragraph', children: [{ text: 'removed' }] },
-        { at: [1] }
+      editor.update((tx) => {
+        tx.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'removed' }] },
+          { at: [1] }
+        );
+      });
+      const [removed] = editor.read((state) => state.nodes.get([1]));
+      const removedKey = editor.key(removed);
+      const owner = document.createElement('p');
+
+      mountEditorRoot(editor, document).appendChild(owner);
+      EDITOR_TO_KEY_TO_ELEMENT.get(editor)!.set(
+        editor.api.dom.findKey(removed),
+        owner
       );
+
+      editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+      expect(editor.api.dom.resolveDOMNode(removed)).toBeNull();
+      expect(editor.api.dom.resolveDOMNode(removedKey)).toBeNull();
     });
-    const [removed] = editor.read((state) => state.nodes.get([1]));
+  });
 
-    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+  it('rejects a NodeKey owned by another editor', () => {
+    const editor = createParagraphEditor();
+    const otherEditor = createParagraphEditor('other');
 
-    expect(editor.api.dom.resolveDOMNode(removed)).toBeNull();
+    expect(editor.api.dom.resolveDOMNode(otherEditor.key([0, 0]))).toBeNull();
+  });
+
+  it('rejects a stale DOM mapping outside the mounted editor', () => {
+    withDom(({ document }) => {
+      const editor = createParagraphEditor();
+      const root = mountEditorRoot(editor, document);
+      const owner = document.createElement('span');
+
+      root.appendChild(owner);
+      bindTextOwner(editor, [0, 0], owner);
+      const [text] = editor.read((state) => state.nodes.get([0, 0]));
+      const textKey = editor.key(text);
+
+      document.body.appendChild(owner);
+
+      expect(editor.api.dom.resolveDOMNode(text)).toBeNull();
+      expect(editor.api.dom.resolveDOMNode(textKey)).toBeNull();
+    });
   });
 
   it('keeps parent and nested editor DOM point ownership separate', () => {

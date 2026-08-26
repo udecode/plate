@@ -64,8 +64,14 @@ describe('table navigation slow contracts', () => {
         anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0, 0, 0] },
       });
+      const selection = editor.read.selection();
+
+      if (!selection) {
+        throw new TypeError('Expected a text selection.');
+      }
+
       const cellAbove = editor.plugin(BaseTablePlugin).read.getAdjacentCell({
-        at: editor.read.selection()!.anchor.path,
+        at: selection.anchor.path,
         deltaRow: -1,
       });
       expect(cellAbove).toBeUndefined();

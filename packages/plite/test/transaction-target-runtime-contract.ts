@@ -7,6 +7,7 @@ import {
   type EditorUpdateTransaction,
   editorCommands,
   NodeApi,
+  type Range,
 } from '@platejs/plite';
 import {
   getChildren as editorGetChildren,
@@ -199,7 +200,7 @@ describe('transaction target runtime', () => {
   it('exposes model selection reads without target freshness', () => {
     const editor = setupEditor();
     let calls = 0;
-    let selection = null as ReturnType<typeof editorGetSelection>;
+    let selection: Range | null = null;
 
     setEditorTargetRuntime(editor, {
       resolveImplicitTarget() {
@@ -218,7 +219,6 @@ describe('transaction target runtime', () => {
 
     assert.equal(calls, 0);
     assert.deepEqual(selection, {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });

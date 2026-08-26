@@ -49,7 +49,7 @@ import { insertText as executeInsertTextCommand } from '../editor/insert-text';
 import { isEditor as isEditorValue } from '../editor/is-editor';
 import { removeMark as executeRemoveMarkCommand } from '../editor/remove-mark';
 import { toggleMark as executeToggleMarkCommand } from '../editor/toggle-mark';
-import { getLocationRoot } from '../internal/root-location';
+import { getLocationRoot, MAIN_ROOT_KEY } from '../internal/root-location';
 import {
   liftNodes as executeLiftNodes,
   mergeNodes as executeMergeNodes,
@@ -92,7 +92,13 @@ import type {
   SchemaDescendantInValue,
   SchemaValueFromExtensions,
 } from './schema';
-import type { EditorSelection, Selection, SelectionValue } from './selection';
+import { SelectionApi } from './selection';
+import type {
+  EditorSelection,
+  NodeSelection,
+  Selection,
+  SelectionValue,
+} from './selection';
 import type {
   BlockDuplicateOptions,
   NodeInsertNodesOptions,
@@ -144,12 +150,10 @@ type NodePropertyEntryIn<V extends Value> =
 
 type NodePropertyKeyIn<V extends Value> = NodePropertyEntryIn<V>['key'];
 
-type WithNodeKeyTarget<TOptions extends { at?: Location }> = Omit<
-  TOptions,
-  'at'
-> & {
-  at?: Location | NodeKey;
-};
+type WithNodeKeyTarget<TOptions extends { at?: Location | NodeSelection }> =
+  Omit<TOptions, 'at'> & {
+    at?: Location | NodeKey | NodeSelection;
+  };
 
 type NodePropertyPatch<TProps> = TProps extends unknown
   ? {
@@ -180,11 +184,56 @@ type EditorNodeSetObject<V extends Value> = {
   ): void;
 };
 
+type EditorBlockSetOptions<
+  T extends Element,
+  TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
+> = {
+  at?: NodeSelectionTarget;
+  match?: NodeMatch<T>;
+  mode?: MaximizeMode;
+  type?: TType;
+  voids?: boolean;
+};
+
+export type EditorTransactionBlocksApi<V extends Value = Value> = {
+  duplicate: {
+    <const TType extends NodeTypeSelector>(
+      options: Omit<
+        BlockDuplicateOptions<NodeForTypeSelector<TType>, TType>,
+        'at'
+      > & {
+        at?: NodeSelectionTarget;
+        type: TType;
+      }
+    ): void;
+    (
+      options?: Omit<BlockDuplicateOptions<ElementIn<V>>, 'at'> & {
+        at?: NodeSelectionTarget;
+      }
+    ): void;
+  };
+  /** Insert block nodes after the block containing the target. */
+  insertAfter: <T extends ElementIn<V>>(
+    nodes: T | readonly T[],
+    options?: NodeDuplicateOptions & { at?: NodeSelectionTarget }
+  ) => void;
+  /** Reset blocks to the immediate parent or root schema default. */
+  reset: (options?: { at?: NodeSelectionTarget }) => void;
+  set: (
+    props: NodePropertyPatch<NodeProps<ElementIn<V>>>,
+    options?: EditorBlockSetOptions<ElementIn<V>>
+  ) => void;
+  toggle: (
+    props: NodePropertyPatch<NodeProps<ElementIn<V>>> & { type: string },
+    options?: EditorBlockToggleOptions
+  ) => void;
+};
+
 export type EditorNodeUnsetOptions<
   T extends Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > = {
-  at?: NodeTarget;
+  at?: NodeSelectionTarget;
   match?(node: T, path: Path): boolean;
   type?: TType;
   mode?: MaximizeMode;
@@ -289,6 +338,10 @@ export type EditorReplaceNodeOptions = {
   select?: boolean;
 };
 
+type NodeSelectionTarget<TNode extends Descendant = Descendant> =
+  | NodeSelection
+  | NodeTarget<TNode>;
+
 type WithNodeTarget<
   TOptions extends { at?: Location },
   TNode extends Descendant = Descendant,
@@ -297,16 +350,21 @@ type WithNodeTarget<
 };
 
 type WithNodeTargetOrSpan<
-  TOptions extends { at?: Location | Span },
+  TOptions extends { at?: Location | NodeSelection | Span },
   TNode extends Descendant = Descendant,
 > = Omit<TOptions, 'at'> & {
-  at?: NodeTarget<TNode> | Span;
+  at?: NodeSelectionTarget<TNode> | Span;
 };
 
 export type EditorNodesReadOptions<
   T extends Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > = WithNodeTargetOrSpan<EditorNodesOptions<T, TType>>;
+
+type EditorBlocksReadOptions<
+  T extends Node,
+  TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
+> = Omit<EditorNodesReadOptions<T, TType>, 'pass' | 'universal'>;
 
 export type EditorNodeGetOptions<
   T extends Node,
@@ -578,6 +636,13 @@ export type EditorSelectionTargetOptions = {
   at?: NodeTarget | null;
 };
 
+export type EditorSelectionSetNodesOptions = Readonly<{
+  /** First exact selected node in the user's selection direction. */
+  anchor: Descendant | NodeKey | Path;
+  /** Active exact selected node in the user's selection direction. */
+  focus: Descendant | NodeKey | Path;
+}>;
+
 export type EditorSelectionBlockOptions = EditorSelectionTargetOptions & {
   match?: NodeMatch<Element>;
   type?: NodeTypeSelector;
@@ -585,22 +650,22 @@ export type EditorSelectionBlockOptions = EditorSelectionTargetOptions & {
 
 export type EditorStateSelectionApi<
   TSelection extends SelectionValue = SelectionValue,
-> = (() => Selection<TSelection>) & {
+  V extends Value = Value,
+> = (() => Range | null) & {
   contains: (target: NodeTarget) => boolean;
   intersects: (target: NodeTarget) => boolean;
   isAcrossBlocks: (options?: EditorSelectionBlockOptions) => boolean;
   isAtBlockEnd: (options?: EditorSelectionBlockOptions) => boolean;
   isAtBlockStart: (options?: EditorSelectionBlockOptions) => boolean;
+  /** Whether the active representative range is collapsed. */
   isCollapsed: () => boolean;
+  /** Whether the active representative range is expanded. */
   isExpanded: () => boolean;
   isValid: (value: unknown) => value is Selection<TSelection>;
   isWithinBlock: (options?: EditorSelectionBlockOptions) => boolean;
-  isWithinText: (options?: EditorSelectionTargetOptions) => boolean;
-  primaryRange: () => Range | null;
+  /** Exact live entries in the current node selection. */
+  nodes: () => ReadonlyArray<NodeEntry<ValueDescendant<V>>>;
   ranges: () => readonly Range[];
-  replacementRange: () => Range | null;
-  /** Named root containing the current selection, or `undefined` for primary. */
-  root: () => NamedRootKey | undefined;
 };
 
 export type EditorStateViewApi = {
@@ -621,7 +686,7 @@ export type EditorStateFragmentApi<V extends Value = Value> = (
 ) => ReadonlyArray<DescendantIn<V>>;
 
 export type EditorSliceReadOptions = Readonly<{
-  at?: Range;
+  at?: NodeSelection | Range;
 }>;
 
 export type EditorStateSliceApi<V extends Value = Value> = {
@@ -652,16 +717,20 @@ type EditorSelectionLocation =
 
 export type EditorTransactionSelectionApi<
   TSelection extends SelectionValue = SelectionValue,
-> = EditorStateSelectionApi<TSelection> & {
-  clear: () => void;
+  V extends Value = Value,
+> = EditorStateSelectionApi<TSelection, V> & {
   collapse: (options?: SelectionCollapseOptions) => void;
   move: (options?: SelectionMoveOptions) => void;
   set: BivariantMethod<
     [target: TSelection | EditorSelectionLocation | null],
     void
   >;
+  /** Select exact live nodes. An empty collection clears the selection. */
+  setNodes: (
+    targets: ReadonlyArray<Descendant | NodeKey | Path>,
+    options?: EditorSelectionSetNodesOptions
+  ) => void;
   setPoint: (props: Partial<Point>, options?: SelectionSetPointOptions) => void;
-  setRange: (props: Partial<Range>) => void;
 };
 
 /** A mapped location whose lifetime is limited to one transaction callback. */
@@ -685,23 +754,16 @@ export type EditorToggleMarkOptions = {
   collapse?: boolean | SelectionCollapseOptions;
 };
 
-export type EditorBlockToggleOptions<T extends Descendant = Descendant> = {
-  at?: NodeTarget<T>;
-  compare?: PropsCompare;
-  hanging?: boolean;
-  merge?: PropsMerge;
-  mode?: MaximizeMode;
-  someOptions?: Omit<EditorNodesReadOptions<Node>, 'at'>;
-  split?: boolean;
+export type EditorBlockToggleOptions = {
+  at?: NodeSelectionTarget;
   voids?: boolean;
   wrap?: boolean;
 };
 
-export type EditorToggleBlockOptions<T extends Descendant = Descendant> =
-  EditorBlockToggleOptions<T> & {
-    /** Collapse the resulting selection in the same command commit. */
-    collapse?: boolean | SelectionCollapseOptions;
-  };
+export type EditorToggleBlockOptions = EditorBlockToggleOptions & {
+  /** Collapse the resulting selection in the same command commit. */
+  collapse?: boolean | SelectionCollapseOptions;
+};
 
 export type EditorTransactionMarksApi<V extends Value = Value> =
   EditorStateMarksApi<V> & {
@@ -796,6 +858,22 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options?: WithNodeTarget<EditorBlockOptions<ValueElement<V>>>
     ): NodeEntry<ValueElement<V>> | undefined;
   };
+  /** Read every schema block relevant to the target or active selection. */
+  blocks: {
+    <TGuard extends ValueElement<V>>(
+      options: EditorBlocksReadOptions<ValueElement<V>, undefined> & {
+        match: (node: ValueElement<V>, path: Path) => node is TGuard;
+      }
+    ): ReadonlyArray<NodeEntry<TGuard>>;
+    <const TType extends NodeTypeSelector>(
+      options: EditorBlocksReadOptions<NodeForTypeSelector<TType>, TType> & {
+        type: TType;
+      }
+    ): ReadonlyArray<NodeEntry<NodeForTypeSelector<TType>>>;
+    (
+      options?: EditorBlocksReadOptions<ValueElement<V>>
+    ): ReadonlyArray<NodeEntry<ValueElement<V>>>;
+  };
   children: (at?: NodeTarget) => ReadonlyArray<ValueDescendant<V>>;
   elementReadOnly: (
     options?: WithNodeTarget<EditorElementReadOnlyOptions>
@@ -820,11 +898,6 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options?: EditorNodeGetOptions<ValueTreeNode<V>>
     ): NodeEntry | undefined;
   };
-  hasBlocks: (element: Element) => boolean;
-  hasInlines: (element: Element) => boolean;
-  hasPath: (path: Path) => boolean;
-  hasTexts: (element: Element) => boolean;
-  isBlock: (element: Node) => boolean;
   isSelectable: (element: Node) => boolean;
   isEmpty: (element: Element) => boolean;
   last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;
@@ -903,22 +976,6 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       }
     ): ReadonlyArray<NodeEntry<NodeForTypeSelector<TType>>>;
     (options?: EditorNodesReadOptions<ValueTreeNode<V>>): readonly NodeEntry[];
-    <const TType extends NodeTypeSelector, R>(
-      options: EditorNodesReadOptions<NodeForTypeSelector<TType>, TType> & {
-        type: TType;
-      },
-      map: (entry: NodeEntry<NodeForTypeSelector<TType>>) => R
-    ): readonly R[];
-    <TGuard extends ValueTreeNode<V>, R>(
-      options: EditorNodesReadOptions<ValueTreeNode<V>, undefined> & {
-        match: (node: ValueTreeNode<V>, path: Path) => node is TGuard;
-      },
-      map: (entry: NodeEntry<TGuard>) => R
-    ): readonly R[];
-    <R>(
-      options: EditorNodesReadOptions<ValueTreeNode<V>> | undefined,
-      map: (entry: NodeEntry) => R
-    ): readonly R[];
   };
   next: {
     <TGuard extends ValueDescendant<V>>(
@@ -970,10 +1027,6 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options?: WithNodeTarget<EditorPreviousOptions<ValueTreeNode<V>>>
     ): NodeEntry | undefined;
   };
-  shouldMergeNodesRemovePrevNode: (
-    previous: NodeEntry,
-    current: NodeEntry
-  ) => boolean;
   void: (
     options?: WithNodeTarget<EditorVoidOptions>
   ) => NodeEntry<Element> | undefined;
@@ -981,10 +1034,6 @@ export type EditorStateNodesApi<V extends Value = Value> = {
 
 export type EditorTransactionNodesApi<V extends Value = Value> =
   EditorStateNodesApi<V> & {
-    duplicate: <T extends ElementOrTextIn<V>>(
-      entries: ReadonlyArray<NodeEntry<T>>,
-      options?: NodeDuplicateOptions
-    ) => void;
     insert: {
       <
         T extends ElementOrTextIn<V>,
@@ -1007,14 +1056,14 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     };
     lift: {
       <const TType extends NodeTypeSelector>(options: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeForTypeSelector<TType>>;
         mode?: MaximizeMode;
         type: TType;
         voids?: boolean;
       }): void;
       (options?: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeIn<V>>;
         mode?: MaximizeMode;
         type?: NodeTypeSelector;
@@ -1023,7 +1072,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     };
     merge: {
       <const TType extends NodeTypeSelector>(options: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeForTypeSelector<TType>>;
         mode?: RangeMode;
         hanging?: boolean;
@@ -1031,7 +1080,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         voids?: boolean;
       }): void;
       (options?: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeIn<V>>;
         mode?: RangeMode;
         hanging?: boolean;
@@ -1041,7 +1090,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     };
     move: {
       <const TType extends NodeTypeSelector>(options: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeForTypeSelector<TType>>;
         mode?: MaximizeMode;
         to: Path;
@@ -1049,7 +1098,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         voids?: boolean;
       }): void;
       (options: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeIn<V>>;
         mode?: MaximizeMode;
         to: Path;
@@ -1059,7 +1108,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     };
     remove: {
       <const TType extends NodeTypeSelector>(options: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeForTypeSelector<TType>>;
         mode?: MaximizeMode;
         hanging?: boolean;
@@ -1067,7 +1116,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         voids?: boolean;
       }): void;
       (options?: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeIn<V>>;
         mode?: MaximizeMode;
         hanging?: boolean;
@@ -1106,10 +1155,6 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         voids?: boolean;
       }): void;
     };
-    toggle: (
-      type: string,
-      options?: EditorBlockToggleOptions<DescendantIn<V>>
-    ) => void;
     unset: {
       <
         const TKey extends NodePropertyKeyIn<V>,
@@ -1147,7 +1192,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
     };
     unwrap: {
       <const TType extends NodeTypeSelector>(options: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeForTypeSelector<TType>>;
         mode?: MaximizeMode;
         split?: boolean;
@@ -1155,7 +1200,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         voids?: boolean;
       }): void;
       (options?: {
-        at?: NodeTarget;
+        at?: NodeSelectionTarget;
         match?: NodeMatch<NodeIn<V>>;
         mode?: MaximizeMode;
         split?: boolean;
@@ -1167,7 +1212,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       <const TType extends NodeTypeSelector>(
         element: ElementIn<V>,
         options: {
-          at?: NodeTarget;
+          at?: NodeSelectionTarget;
           match?: NodeMatch<NodeForTypeSelector<TType>>;
           mode?: MaximizeMode;
           split?: boolean;
@@ -1178,7 +1223,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       (
         element: ElementIn<V>,
         options?: {
-          at?: NodeTarget;
+          at?: NodeSelectionTarget;
           match?: NodeMatch<NodeIn<V>>;
           mode?: MaximizeMode;
           split?: boolean;
@@ -1188,33 +1233,6 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       ): void;
     };
   };
-
-export type EditorBlockResetOptions<T extends Element = Element> =
-  EditorBlockOptions<T> & {
-    preserve?: readonly string[];
-  };
-
-export type EditorTransactionBlocksApi<V extends Value = Value> = {
-  duplicate: {
-    <const TType extends NodeTypeSelector>(
-      options: WithNodeTarget<
-        BlockDuplicateOptions<NodeForTypeSelector<TType>, TType>
-      > & { type: TType }
-    ): void;
-    (options?: WithNodeTarget<BlockDuplicateOptions<ElementIn<V>>>): void;
-  };
-  /** Insert block nodes after the block containing the target. */
-  insertAfter: <T extends ElementIn<V>>(
-    nodes: T | readonly T[],
-    options?: NodeDuplicateOptions & { at?: NodeTarget }
-  ) => void;
-  lift: EditorTransactionNodesApi<V>['lift'];
-  reset: <T extends ElementIn<V>>(
-    props: Partial<NodeProps<T>>,
-    options?: WithNodeTarget<EditorBlockResetOptions<T>, T>
-  ) => void;
-  toggle: EditorTransactionNodesApi<V>['toggle'];
-};
 
 export type EditorStatePointsApi = {
   after: (at: NodeTarget, options?: EditorAfterOptions) => Point | undefined;
@@ -1241,7 +1259,7 @@ export type EditorStateRangesApi = {
 
 export type EditorStateTextApi = {
   /** Return text at a target, or at the current selection when omitted. */
-  string: (at?: NodeTarget, options?: EditorStringOptions) => string;
+  string: (at?: NodeSelectionTarget, options?: EditorStringOptions) => string;
 };
 
 export type EditorTransactionFragmentApi<V extends Value = Value> =
@@ -1502,7 +1520,7 @@ export type EditorCoreStateView<
   ) => ReadonlyArray<V[number]>;
   runtime: EditorStateRuntimeApi<V>;
   schema: EditorStateSchemaApi<V>;
-  selection: EditorStateSelectionApi<TSelection>;
+  selection: EditorStateSelectionApi<TSelection, V>;
   slice: EditorStateSliceApi<V>;
   text: EditorStateTextApi;
   value: EditorStateValueApi<V>;
@@ -1512,9 +1530,9 @@ export type EditorCoreStateView<
 export type EditorStateView<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = EditorCoreStateView<V, EditorSelectionFromExtensions<TExtensions>> &
+> = EditorCoreStateView<V, EditorSelection> &
   EditorInstalledReadGroups<V, TExtensions> &
-  EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>> & {
+  EditorSelectionCapability<EditorSelection> & {
     /**
      * Build an immutable transaction without mutating or publishing editor
      * state. An empty spec represents an intentionally handled no-op.
@@ -1550,7 +1568,7 @@ export type EditorCoreUpdateTransaction<
   nodes: EditorTransactionNodesApi<V>;
   roots: EditorTransactionRootsApi<V>;
   slice: EditorTransactionSliceApi<V>;
-  selection: EditorTransactionSelectionApi<TSelection>;
+  selection: EditorTransactionSelectionApi<TSelection, V>;
   setField: <TValue>(
     field: EditorStateField<TValue>,
     value: StateFieldValueInput<TValue>
@@ -1563,33 +1581,27 @@ export type EditorCoreUpdateTransaction<
 export type EditorUpdateTransaction<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = EditorCoreUpdateTransaction<
-  V,
-  EditorSelectionFromExtensions<TExtensions>
-> & {
+> = EditorCoreUpdateTransaction<V, EditorSelection> & {
   /** Dispatch a typed semantic command inside this active update. */
   command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;
 } & EditorInstalledUpdateGroups<V, TExtensions> &
-  EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>>;
+  EditorSelectionCapability<EditorSelection>;
 
 /** Pure transaction builder available while producing a command spec. */
 export type EditorTransactionSpecBuilder<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = Omit<
-  EditorCoreUpdateTransaction<V, EditorSelectionFromExtensions<TExtensions>>,
+  EditorCoreUpdateTransaction<V, EditorSelection>,
   'extensions' | 'key'
 > &
   EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>> &
-  EditorSelectionCapability<EditorSelectionFromExtensions<TExtensions>>;
+  EditorSelectionCapability<EditorSelection>;
 
 export type EditorReadMethods<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = Omit<
-  EditorCoreStateView<V, EditorSelectionFromExtensions<TExtensions>>,
-  'key'
-> &
+> = Omit<EditorCoreStateView<V, EditorSelection>, 'key'> &
   EditorInstalledReadGroups<V, TExtensions>;
 
 export type EditorRead<
@@ -1634,7 +1646,6 @@ export type EditorCoreUpdateMethods<
     Pick<
       EditorTransactionNodesApi<V>,
       | 'insert'
-      | 'duplicate'
       | 'lift'
       | 'merge'
       | 'move'
@@ -1642,7 +1653,6 @@ export type EditorCoreUpdateMethods<
       | 'replace'
       | 'replaceChildren'
       | 'split'
-      | 'toggle'
       | 'unwrap'
       | 'wrap'
     >
@@ -1652,8 +1662,8 @@ export type EditorCoreUpdateMethods<
   slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;
   selection: EditorBivariantMethods<
     Pick<
-      EditorTransactionSelectionApi<EditorSelectionFromExtensions<TExtensions>>,
-      'clear' | 'collapse' | 'move' | 'set' | 'setPoint' | 'setRange'
+      EditorTransactionSelectionApi<EditorSelection>,
+      'collapse' | 'move' | 'set' | 'setNodes' | 'setPoint'
     >
   >;
   setField: BivariantFunction<EditorCoreUpdateTransaction<V>['setField']>;
@@ -1814,7 +1824,7 @@ export type CreateEditorOptions<
   extensions?: TExtensions;
   /** Stable logical identity for this editor instance. */
   id?: string;
-  initialSelection?: Selection<EditorSelectionFromExtensions<TExtensions>>;
+  initialSelection?: Selection<EditorSelection>;
   initialValue?: InitialValue<V>;
   /** Receives failures from observers that run after authoritative state is published. */
   lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TExtensions>>;
@@ -1955,7 +1965,9 @@ export type EditorTransaction<V extends Value = Value> = {
   /** Effective marks at the draft selection, including inherited leaf marks. */
   getSelectionMarks: () => EditorMarks<V> | null;
   readonly marks: EditorMarks<V> | null;
-  resolveTarget: (options?: { at?: Location }) => Location | null;
+  resolveTarget: (options?: {
+    at?: Location | NodeSelection;
+  }) => Location | NodeSelection | null;
   readonly selection: Selection;
   setMarks: (marks: EditorMarks<V> | null) => void;
   setSelection: (selection: Selection) => void;
@@ -2302,6 +2314,7 @@ export type EditorCorrectionTransaction<
   TExtensions extends readonly unknown[] = readonly [],
 > = Pick<
   EditorCoreUpdateTransaction<V>,
+  | 'anchor'
   | 'blocks'
   | 'break'
   | 'fragment'
@@ -2621,7 +2634,6 @@ export type EditorExtensionReference = Readonly<{
   stateFields?: unknown;
   effectTypes?: unknown;
   facetProviders?: unknown;
-  selectionKinds?: unknown;
   contributions?: unknown;
   on?: unknown;
   activate?: unknown;
@@ -2650,8 +2662,6 @@ export type EditorExtensionDefinition = Readonly<{
   read?: unknown;
   readMiddleware?: true;
   schema?: EditorSchemaDeclaration;
-  /** Exact custom selection payload union, never the callback-rich specs. */
-  selectionKinds?: SelectionValue;
   stateFields?: true;
   update?: unknown;
   validate?: true;
@@ -2701,11 +2711,9 @@ type EditorExtensionDependencyReferences<TInput> =
     : never;
 
 type EditorExtensionPublicDefinition<TDefinition> = Readonly<{
-  [TKey in keyof TDefinition]: TKey extends 'selectionKinds'
-    ? true
-    : TKey extends 'conflicts' | 'dependencies'
-      ? EditorExtensionDependencyReferences<TDefinition[TKey]>
-      : TDefinition[TKey];
+  [TKey in keyof TDefinition]: TKey extends 'conflicts' | 'dependencies'
+    ? EditorExtensionDependencyReferences<TDefinition[TKey]>
+    : TDefinition[TKey];
 }>;
 
 export type DefinitionOf<TExtension> = TExtension extends unknown
@@ -2729,12 +2737,7 @@ type EditorExtensionCapabilityFromPublicDefinition<TDefinition> = Readonly<
 type EditorExtensionCapabilityDefinition<TDefinition> =
   EditorExtensionCapabilityFromPublicDefinition<
     EditorExtensionPublicDefinition<TDefinition>
-  > &
-    (TDefinition extends {
-      selectionKinds: infer TSelection extends SelectionValue;
-    }
-      ? Readonly<{ selectionKinds: TSelection }>
-      : Readonly<Record<never, never>>);
+  >;
 
 /** Shallow public reference to an extension dependency. */
 export interface EditorExtensionDependencyReference extends PrivateEditorExtensionReferenceBrand {
@@ -3003,7 +3006,6 @@ export type EditorExtensionDefinitionInput<
   stateFields?: ReadonlyArray<EditorStateField<any>>;
   effectTypes?: readonly EditorEffectType[];
   facetProviders?: readonly EditorFacetProvider[];
-  selectionKinds?: ReadonlyArray<EditorSelectionSpec<any>>;
   contributions?: ReadonlyArray<
     EditorExtensionContributionInput<NoInfer<TEditor>>
   >;
@@ -3053,33 +3055,6 @@ export type EditorSelectionMapContext = Readonly<{
   /** Named mapped root, or `undefined` for the primary document. */
   root: NamedRootKey | undefined;
 }>;
-
-export type EditorSelectionSpec<
-  TSelection extends SelectionValue = SelectionValue,
-> = TSelection extends SelectionValue
-  ? Readonly<{
-      /** Versioned persistence contract for this selection kind. */
-      codec: EditorValueCodec<TSelection>;
-      kind: TSelection['kind'];
-      map?: (
-        selection: TSelection,
-        context: EditorSelectionMapContext
-      ) => TSelection | null;
-      marks?: (
-        selection: TSelection,
-        state: EditorStateView<Value, any>
-      ) => EditorMarks | null;
-      primaryRange?: (selection: TSelection) => Range | null;
-      ranges?: (selection: TSelection) => readonly Range[];
-      replacementRange?: (selection: TSelection) => Range | null;
-      slice?: (
-        selection: TSelection,
-        state: EditorStateView<Value, any>
-      ) => ContentSlice;
-      /** Validate kind-specific runtime fields before the selection is accepted. */
-      validate: (selection: TSelection) => boolean;
-    }>
-  : never;
 
 export type EditorExtensionTypes = {
   api?: Record<string, unknown>;
@@ -3260,27 +3235,6 @@ type EditorProvidedSlot<
         : never
       : never
     : never;
-
-type EditorSelectionFromExtension<TExtension> = TExtension extends unknown
-  ? TExtension extends {
-      selectionKinds: infer TSelection extends SelectionValue;
-    }
-    ? TSelection
-    : EditorExtensionCapabilityOf<TExtension> extends {
-          selectionKinds: infer TDeclaredSelection extends SelectionValue;
-        }
-      ? TDeclaredSelection
-      : never
-  : never;
-
-/** Built-in selections plus exact kinds contributed by installed extensions. */
-export type EditorSelectionFromExtensions<
-  TExtensions extends readonly unknown[] = readonly [],
-> =
-  | EditorSelection
-  | EditorSelectionFromExtension<
-      EditorResolvedInstalledExtensions<TExtensions>[number]
-    >;
 
 type EditorReadGroupsFromExtension<
   V extends Value,
@@ -3659,7 +3613,7 @@ export interface EditorNodesOptions<
   T extends Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
 > {
-  at?: Location | Span;
+  at?: Location | NodeSelection | Span;
   match?: NodeMatch<T>;
   type?: TType;
   mode?: SelectionMode;
@@ -4242,11 +4196,11 @@ export interface EditorStaticApi {
     options?: EditorToggleMarkOptions
   ) => void;
 
-  /** Toggle selected blocks between a target type and its default type. */
+  /** Toggle selected blocks between target properties and the schema default. */
   toggleBlock: <V extends Value, TExtensions extends readonly unknown[]>(
     editor: Editor<V, TExtensions>,
-    type: string,
-    options?: EditorToggleBlockOptions<DescendantIn<V>>
+    props: NodePropertyPatch<NodeProps<ElementIn<V>>> & { type: string },
+    options?: EditorToggleBlockOptions
   ) => void;
 
   unsetNodes: NodeMutationMethods['unsetNodes'];
@@ -4325,10 +4279,19 @@ type EditorInternalApiTable = EditorStaticApi & {
 const getImplicitSelectionRoot = (editor: AnyEditor) =>
   getCurrentSelection(editor) ? getCurrentSelectionRoot(editor) : undefined;
 
-const getWriteRoot = (editor: AnyEditor, at: Location | undefined) =>
-  at === undefined ? getImplicitSelectionRoot(editor) : getLocationRoot(at);
+const getWriteRoot = (
+  editor: AnyEditor,
+  at: Location | NodeSelection | undefined
+) =>
+  at === undefined
+    ? getImplicitSelectionRoot(editor)
+    : SelectionApi.isNode(at)
+      ? (at.root ?? MAIN_ROOT_KEY)
+      : getLocationRoot(at);
 
-const isPathLocation = (value: Location | undefined): value is Path =>
+const isPathLocation = (
+  value: Location | NodeSelection | undefined
+): value is Path =>
   Array.isArray(value) && value.every((segment) => Number.isInteger(segment));
 
 const runRootedInternalWrite = <T>(
@@ -4790,10 +4753,10 @@ const editorInternalApi: EditorInternalApiTable = {
     executeToggleMarkCommand(editor, key, nextValue, options);
   },
 
-  toggleBlock(editor, type, options) {
+  toggleBlock(editor, props, options) {
     dispatchCommand(editor, editorCommands.toggleBlock, {
-      blockType: type,
       options,
+      props,
     });
   },
 

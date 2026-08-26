@@ -19,7 +19,11 @@ import {
 import { type Path, PathApi } from '../interfaces/path';
 import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
-import { type EditorSelection, SelectionApi } from '../interfaces/selection';
+import {
+  type EditorSelection,
+  type NodeSelection,
+  SelectionApi,
+} from '../interfaces/selection';
 import type {
   NodeInsertNodesOptions,
   NodeRemoveNodesOptions,
@@ -43,19 +47,51 @@ import { areEditorJsonValuesEqual } from './value-codec';
 type CommandStateView = EditorStateView<Value, any>;
 
 type CommandTargetOptions<
-  TOptions extends { at?: Location },
+  TOptions extends { at?: Location | NodeSelection },
   TNode extends Descendant = Descendant,
 > = Omit<TOptions, 'at'> & {
-  at?: NodeTarget<TNode>;
+  at?: Extract<TOptions['at'], NodeSelection> | NodeTarget<TNode>;
 };
 
 const resolveCommandRange = (
   state: CommandStateView,
   at: NodeTarget | undefined
 ) => {
-  if (at === undefined) return state.selection.replacementRange() ?? undefined;
+  if (at === undefined) {
+    return state.selection() ?? undefined;
+  }
 
   return RangeApi.isRange(at) ? at : state.ranges.get(at);
+};
+
+const getCurrentNodeSelection = (
+  state: CommandStateView
+): NodeSelection | null => {
+  const paths = state.selection.nodes().map(([, path]) => path);
+  const first = paths[0];
+
+  if (!first) return null;
+
+  const selection = state.selection();
+  const last = paths.at(-1) ?? first;
+  const selectedPathAt = (path: Path | undefined, fallback: Path) =>
+    path
+      ? (paths.find(
+          (candidate) =>
+            PathApi.equals(candidate, path) ||
+            PathApi.isAncestor(candidate, path)
+        ) ?? fallback)
+      : fallback;
+  const anchorPath = selectedPathAt(selection?.anchor.path, first);
+  const focusPath = selectedPathAt(selection?.focus.path, last);
+  const root = SelectionApi.root(selection);
+
+  return SelectionApi.nodes(
+    [first, ...paths.slice(1)],
+    root === undefined
+      ? { anchorPath, focusPath }
+      : { anchorPath, focusPath, root }
+  );
 };
 
 const equalsInRoot = (point: Point | undefined, target: Point) => {
@@ -78,11 +114,12 @@ const withPointRoot = (
 const getBlockVoidBoundaryDeleteSpec = (state: CommandStateView) => {
   const selection = state.selection();
 
-  if (!selection || !RangeApi.isCollapsed(selection)) return null;
+  if (!selection || !RangeApi.isCollapsed(selection)) {
+    return null;
+  }
 
-  const block = state.nodes.above({
+  const block = state.nodes.block({
     at: selection.anchor,
-    match: (node) => NodeApi.isElement(node) && state.nodes.isBlock(node),
     mode: 'highest',
     voids: true,
   });
@@ -107,7 +144,7 @@ const getBlockVoidBoundaryDeleteSpec = (state: CommandStateView) => {
     !point ||
     !previous ||
     !NodeApi.isElement(previous) ||
-    !state.nodes.isBlock(previous) ||
+    !state.schema.isBlock(previous) ||
     !state.schema.isVoid(previous)
   ) {
     return null;
@@ -151,10 +188,8 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: CommandStateView) => {
       state.schema.isVoid(node)
     );
   };
-  const block = state.nodes.above({
+  const block = state.nodes.block({
     at: point,
-    match: (node): node is Element =>
-      NodeApi.isElement(node) && state.nodes.isBlock(node),
     mode: 'lowest',
     voids: true,
   });
@@ -175,7 +210,7 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: CommandStateView) => {
   if (
     !previous ||
     !NodeApi.isElement(previous) ||
-    !state.nodes.isBlock(previous) ||
+    !state.schema.isBlock(previous) ||
     (!isInlineVoidAt(point) && !isInlineVoidAt(nextSiblingPath))
   ) {
     return null;
@@ -225,13 +260,13 @@ const getFullySelectedSiblingBlockPaths = (
 
   const [start, end] = RangeApi.edges(range);
   const isBlock = (node: Node) =>
-    NodeApi.isElement(node) && state.nodes.isBlock(node);
-  const startBlock = state.nodes.above({
+    NodeApi.isElement(node) && state.schema.isBlock(node);
+  const startBlock = state.nodes.block({
     at: start,
     match: isBlock,
     mode: 'highest',
   });
-  const endBlock = state.nodes.above({
+  const endBlock = state.nodes.block({
     at: end,
     match: isBlock,
     mode: 'highest',
@@ -415,6 +450,56 @@ const getFullBlockTextReplacement = (
   };
 };
 
+const getNodeSelectionReplacement = (
+  state: CommandStateView,
+  selection: Extract<EditorSelection, { kind: 'node' }>,
+  createReplacement: (context: {
+    paths: Extract<EditorSelection, { kind: 'node' }>['paths'];
+    root: string;
+  }) => Readonly<{
+    edge: 'first' | 'last';
+    replacement: Descendant;
+  }> | null
+) => {
+  const { paths } = selection;
+
+  if (
+    paths.length === 0 ||
+    paths.some((path) => {
+      const node = state.nodes.get(path)?.[0];
+
+      return !node || !NodeApi.isElement(node) || !state.schema.isBlock(node);
+    })
+  ) {
+    return null;
+  }
+
+  const root = selection.root ?? MAIN_ROOT_KEY;
+  const planned = createReplacement({ paths, root });
+
+  if (!planned) return null;
+
+  const textEntries = [...NodeApi.texts(planned.replacement)];
+  const textEntry =
+    planned.edge === 'first' ? textEntries[0] : textEntries.at(-1);
+  const firstPath = paths[0];
+
+  if (!textEntry || !firstPath) return null;
+
+  const point: Point = {
+    offset: textEntry[0].text.length,
+    path: [...firstPath, ...textEntry[1]],
+    ...(toPublicRoot(root) ? { root: toPublicRoot(root) } : {}),
+  };
+
+  return {
+    firstPath,
+    paths,
+    replacement: planned.replacement,
+    selection: { anchor: point, focus: point, kind: 'text' as const },
+  };
+};
+
 export type AddMarkCommand = {
   key: string;
   value: unknown;
@@ -487,8 +572,8 @@ export type ToggleMarkCommand = {
 };
 
 export type ToggleBlockCommand = {
-  blockType: string;
   options?: EditorToggleBlockOptions;
+  props: Partial<NodeProps<Element>> & { type: string };
 };
 
 export type EditorCommands = Readonly<{
@@ -528,7 +613,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   delete: defineCommand<DeleteCommand>('content.delete', {
     build: ({ input, state }) => {
       const boundarySpec =
-        !SelectionApi.isNode(state.selection()) &&
+        !getCurrentNodeSelection(state) &&
         input.direction === 'backward' &&
         input.unit === 'character'
           ? (getLeadingInlineVoidBoundaryDeleteSpec(state) ??
@@ -551,7 +636,8 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   deleteFragment: defineCommand<DeleteFragmentCommand>('fragment.delete', {
     build: ({ input, state }) => {
-      const range = resolveCommandRange(state, input.at);
+      const range =
+        input.at === undefined ? null : resolveCommandRange(state, input.at);
       const fullBlocks = range
         ? getFullySelectedSiblingBlockPaths(state, range, {
             includeAllSiblings: true,
@@ -664,6 +750,42 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   insertText: defineCommand<InsertTextCommand>('text.insert', {
     build: ({ input, state }) => {
+      const nodeSelection = getCurrentNodeSelection(state);
+      const nodeReplacement =
+        input.options?.at === undefined && nodeSelection
+          ? getNodeSelectionReplacement(
+              state,
+              nodeSelection,
+              ({ paths, root }) => {
+                if (LINE_BREAK_PATTERN.test(input.text)) return null;
+
+                const replacement = fillDefaultRootChild(
+                  state,
+                  root,
+                  input.text,
+                  state.marks() ?? getConsistentBlockTextMarks(state, paths)
+                );
+
+                return replacement ? { edge: 'last', replacement } : null;
+              }
+            )
+          : null;
+
+      if (input.options?.at === undefined && nodeSelection) {
+        if (!nodeReplacement) return false;
+
+        return state.transaction((tx) => {
+          tx.selection.set(null);
+          for (const path of nodeReplacement.paths.toReversed()) {
+            tx.nodes.remove({ at: path });
+          }
+          tx.nodes.insert(nodeReplacement.replacement, {
+            at: nodeReplacement.firstPath,
+          });
+          tx.selection.set(nodeReplacement.selection);
+        });
+      }
+
       const range = resolveCommandRange(state, input.options?.at);
       const replacement = range
         ? getFullBlockTextReplacement(state, range, input.text)
@@ -721,11 +843,101 @@ export const editorCommands: EditorCommands = Object.freeze({
   setSelection: defineCommand<SetSelectionCommand>('selection.update', {
     build: ({ input, state }) =>
       state.transaction((tx) => {
-        tx.selection.setRange(input.props);
+        const selection = tx.selection();
+
+        if (selection) tx.selection.set({ ...selection, ...input.props });
       }),
   }),
   replaceSlice: defineCommand<ReplaceSliceCommand>('slice.replace', {
-    build: ({ input, state }) => state.slice.fit(input.slice, input.options),
+    build: ({ input, state }) => {
+      const nodeSelection = getCurrentNodeSelection(state);
+
+      if (input.options?.at === undefined && nodeSelection) {
+        const nodeReplacement = getNodeSelectionReplacement(
+          state,
+          nodeSelection,
+          ({ root }) => {
+            const { slice } = input;
+
+            if (
+              slice.openStart !== 0 ||
+              slice.openEnd !== 0 ||
+              slice.roots !== undefined ||
+              slice.content.length === 0
+            ) {
+              return null;
+            }
+
+            const defaultChild = state.schema.createDefaultRootChild(
+              toPublicRoot(root)
+            );
+
+            if (
+              !defaultChild ||
+              !NodeApi.isElement(defaultChild) ||
+              slice.content.some(
+                (node) =>
+                  state.schema.findWrapping(defaultChild, node)?.length !== 0
+              )
+            ) {
+              return null;
+            }
+
+            return {
+              edge: 'last',
+              replacement: { ...defaultChild, children: slice.content },
+            };
+          }
+        );
+
+        if (nodeReplacement) {
+          return state.transaction((tx) => {
+            tx.selection.set(null);
+            for (const path of nodeReplacement.paths.toReversed()) {
+              tx.nodes.remove({ at: path });
+            }
+            tx.nodes.insert(nodeReplacement.replacement, {
+              at: nodeReplacement.firstPath,
+            });
+            tx.selection.set(nodeReplacement.selection);
+          });
+        }
+
+        const { paths } = nodeSelection;
+        const firstPath = paths[0];
+        const firstRange = firstPath ? state.ranges.get(firstPath) : null;
+        const removalKeys = paths.slice(1).flatMap((path) => {
+          const node = state.nodes.get(path)?.[0];
+
+          return node && NodeApi.isDescendant(node) ? [state.key(node)] : [];
+        });
+
+        if (
+          !firstPath ||
+          !firstRange ||
+          removalKeys.length !== paths.length - 1
+        ) {
+          return false;
+        }
+
+        let replaced = false;
+        const spec = state.transaction((tx) => {
+          replaced = tx.slice.replace(input.slice, {
+            ...input.options,
+            at: firstRange,
+          });
+          if (!replaced) return;
+
+          for (const key of removalKeys.toReversed()) {
+            tx.nodes.remove({ at: key });
+          }
+        });
+
+        return replaced ? spec : false;
+      }
+
+      return state.slice.fit(input.slice, input.options);
+    },
     prepare: (input) =>
       Object.freeze({
         ...input,
@@ -750,7 +962,7 @@ export const editorCommands: EditorCommands = Object.freeze({
       const { collapse, ...options } = input.options ?? {};
 
       return state.transaction((tx) => {
-        tx.blocks.toggle(input.blockType, options);
+        tx.blocks.toggle(input.props, options);
 
         if (collapse) {
           tx.selection.collapse(collapse === true ? undefined : collapse);

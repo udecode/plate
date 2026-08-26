@@ -17,12 +17,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PLATE_INIT_URL } from '@/lib/plate-registry-config';
+import { getPlateCreateCommand } from '@/lib/plate-create';
 
 export function SetupMCPDialog() {
   const [open, setOpen] = useState(false);
 
-  const initCommand = `npx shadcn@latest init --preset ${PLATE_INIT_URL}`;
+  const createCommand = getPlateCreateCommand({ editor: 'editor-basic' });
 
   const codeXConfig = `[mcp_servers.plate]\ncommand = "npx"\nargs = ["shadcn@latest", "mcp"]\n`;
 
@@ -101,7 +101,7 @@ export function SetupMCPDialog() {
           <h3 className="!mt-0">Start from our basic template</h3>
           <CodeBlock
             className="overflow-x-auto"
-            value={initCommand}
+            value={createCommand}
             language="bash"
           />
 

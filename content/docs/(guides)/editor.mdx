@@ -132,7 +132,7 @@ migration chain. Target-version steps run in ascending order before installed
 plugin preparation and schema fitting.
 
 ```ts title="src/editor.ts" showLineNumbers
-import { ParagraphPlugin } from '@platejs/basic-nodes/react';
+import { ParagraphPlugin } from 'platejs/react';
 import {
   defineDocumentMigrations,
   migratePlateV54,
@@ -446,6 +446,27 @@ The default generator is full-length `nanoid()`. Loads and moves preserve valid
 IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. Explicit
 duplicates are rejected. Exact schema-derived elements expose `element.id`;
 use the plugin read at erased or optionally installed package boundaries.
+
+The compiled schema property target decides which elements receive IDs. Narrow
+the target in the application schema when only blocks need persisted identity:
+
+```ts
+import { ElementIdPlugin, schema, target } from "platejs";
+
+const editor = usePlateEditor({
+  plugins: [ElementIdPlugin],
+  schema: {
+    overrides: [
+      schema.override(ElementIdPlugin, {
+        properties: { id: { target: target.group("block") } },
+      }),
+    ],
+  },
+});
+```
+
+Document preparation generates IDs only for matching elements and removes the
+plugin-owned `id` from excluded elements.
 
 Use the pure migration helper before loading stored documents that lack IDs.
 It preserves valid strings, fills missing IDs, reports duplicates, and requires

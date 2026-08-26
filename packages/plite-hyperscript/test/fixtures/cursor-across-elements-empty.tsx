@@ -34,7 +34,6 @@ export const output = {
     },
   ],
   selection: {
-    kind: 'text',
     anchor: {
       path: [0, 0],
       offset: 0,

@@ -503,9 +503,9 @@ const replaceDocument = (peer: Peer, peerId: PeerId): void => {
 
 const wrapFirstBlock = (peer: Peer): void => {
   peer.editor.update((tx) => {
-    tx.selection.clear();
+    tx.selection.set(null);
     tx.nodes.wrap({ children: [], type: 'block-quote' }, { at: [0] });
-    tx.selection.clear();
+    tx.selection.set(null);
   });
 };
 

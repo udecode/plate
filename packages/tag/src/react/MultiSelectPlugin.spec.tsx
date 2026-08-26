@@ -79,7 +79,6 @@ describe('MultiSelectPlugin', () => {
       ).map(([node]) => node.value)
     ).toEqual(['alpha']);
     expect(editor.read.selection()).toEqual({
-      kind: 'text',
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });

@@ -4,8 +4,9 @@ import { Link } from 'lucide-react';
 import { useEditor, useEditorPlugin, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
+import { ToolbarButton } from '@/registry/components/editor/toolbar';
+
 import { linkPlugin } from './link';
-import { ToolbarButton } from './toolbar';
 
 export function LinkToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
@@ -15,10 +16,7 @@ export function LinkToolbarButton(
   const pressed = useEditorSelector((innerEditor) => {
     const selection = innerEditor.read.selection();
 
-    return (
-      !!selection &&
-      innerEditor.read.nodes.some({ at: selection, type: linkPlugin })
-    );
+    return !!selection && innerEditor.read.nodes.some({ type: linkPlugin });
   });
 
   return (
@@ -27,12 +25,9 @@ export function LinkToolbarButton(
       pressed={pressed}
       onClick={() => {
         if (pressed) {
-          const selection = editor.read.selection();
-
-          if (!selection) return;
+          if (!editor.read.selection()) return;
 
           const node = editor.read.nodes.find({
-            at: selection,
             type: linkPlugin,
           });
 

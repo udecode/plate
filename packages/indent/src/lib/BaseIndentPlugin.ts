@@ -85,13 +85,10 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
       unsetNodeProps = [],
     }: IndentChangeOptions = {}) => {
       const { match, mode = 'lowest', ...nodeOptions } = nodes ?? {};
-      const entries = tx.nodes.toArray({
+      const entries = tx.nodes.blocks({
         ...nodeOptions,
         mode,
-        match: (node, path): node is Element =>
-          ElementApi.isElement(node) &&
-          tx.nodes.isBlock(node) &&
-          (!match || match(node, path)),
+        match: (node, path) => !match || match(node, path),
       });
 
       for (const [node, path] of entries) {

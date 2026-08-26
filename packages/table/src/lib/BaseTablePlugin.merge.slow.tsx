@@ -3,8 +3,11 @@
 import assert from 'node:assert/strict';
 
 import { NodeApi } from '@platejs/plite';
-import { jsxt } from '@platejs/test-utils';
-import type { TestEditor } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 
 import {
   createTestTableEditor,
@@ -86,7 +89,6 @@ describe('table merge slow contracts', () => {
           expect(editor.read.selection()).toEqual({
             anchor: { offset: 2, path: [0, 0, 0, 3, 0] },
             focus: { offset: 2, path: [0, 0, 0, 3, 0] },
-            kind: 'text',
           });
         });
 
@@ -190,7 +192,9 @@ describe('table merge slow contracts', () => {
           editor.plugin(BaseTablePlugin).update.split();
 
           expect(editor.read.children()).toMatchObject(output.children);
-          expect(editor.read.selection()).toEqual(output.selection!);
+          expect(editor.read.selection()).toEqual(
+            projectTestSelectionRange(output.selection)
+          );
         });
 
         it('inserts split cells into existing rows before later siblings', () => {
@@ -285,7 +289,9 @@ describe('table merge slow contracts', () => {
           editor.update.table.removeRow();
 
           expect(editor.read.children()).toMatchObject(output.children);
-          expect(editor.read.selection()).toEqual(output.selection!);
+          expect(editor.read.selection()).toEqual(
+            projectTestSelectionRange(output.selection)
+          );
         });
 
         it('keeps the table unchanged when the selection does not span the full row width', () => {
@@ -323,7 +329,9 @@ describe('table merge slow contracts', () => {
           editor.update.table.removeRow();
 
           expect(editor.read.children()).toMatchObject(input.children);
-          expect(editor.read.selection()).toEqual(input.selection!);
+          expect(editor.read.selection()).toEqual(
+            projectTestSelectionRange(input.selection)
+          );
         });
       });
 
@@ -386,7 +394,9 @@ describe('table merge slow contracts', () => {
           editor.update.table.removeColumn();
 
           expect(editor.read.children()).toMatchObject(output.children);
-          expect(editor.read.selection()).toEqual(output.selection!);
+          expect(editor.read.selection()).toEqual(
+            projectTestSelectionRange(output.selection)
+          );
         });
 
         it('keeps the table unchanged when the selection does not span every row', () => {
@@ -424,7 +434,9 @@ describe('table merge slow contracts', () => {
           editor.update.table.removeColumn();
 
           expect(editor.read.children()).toMatchObject(input.children);
-          expect(editor.read.selection()).toEqual(input.selection!);
+          expect(editor.read.selection()).toEqual(
+            projectTestSelectionRange(input.selection)
+          );
         });
       });
     });

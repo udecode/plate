@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-location-docs",
+  "title": "Location",
+  "description": "Plite location and node-target contracts.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/location.mdx",
+      "content": "---\ntitle: Location\ndescription: Plite location and node-target contracts.\n---\n\n`Location` is a `Path`, `Point`, or `Range`. Public editor reads and writes\nthat accept `at` can also accept a live descendant through `NodeTarget`.\n\nSee the canonical [Location reference](/docs/plite/api/locations/location).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/location.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

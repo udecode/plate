@@ -13,13 +13,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
 import {
   ToolbarButton,
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
   ToolbarSplitButtonSecondary,
-} from './toolbar';
+} from '@/registry/components/editor/toolbar';
 
 export function BulletedListToolbarButton() {
   const editor = useEditor();

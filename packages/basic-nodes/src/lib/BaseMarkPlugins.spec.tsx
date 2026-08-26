@@ -239,7 +239,6 @@ describe('BaseMarkPlugins', () => {
       const decodedText = decoded
         ? Array.from(NodeApi.texts({ children: decoded, type: 'root' }))[0]?.[0]
         : undefined;
-      const point = { offset: 0, path: [0, 0] };
       const data = new DataTransfer();
 
       expect(decodedText).toMatchObject({
@@ -247,9 +246,7 @@ describe('BaseMarkPlugins', () => {
         text: 'text',
       });
 
-      editor.update.selection.set(
-        SelectionApi.node([0], { anchor: point, focus: point })
-      );
+      editor.update.selection.set(SelectionApi.nodes([[0]]));
       editor.api.dom.clipboard.writeSelection(data);
 
       const { body } = new DOMParser().parseFromString(
@@ -262,10 +259,9 @@ describe('BaseMarkPlugins', () => {
   );
 
   it('composes product mark wrappers without losing claims', () => {
-    const point = { offset: 0, path: [0, 0] };
     const editor = createBaseEditor({
       plugins: [BaseBoldPlugin, BaseItalicPlugin, BaseUnderlinePlugin],
-      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
           children: [

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plite-editor-transforms-docs",
+  "title": "Editor Transforms",
+  "description": "Transaction methods for changing Plite editor state.",
+  "files": [
+    {
+      "path": "../../content/docs/api/plite/editor-transforms.mdx",
+      "content": "---\ntitle: Editor Transforms\ndescription: Transaction methods for changing Plite editor state.\n---\n\nPlite mutations live under `editor.update`. Use a direct group method for one\nwrite and the callback form for an atomic group of writes.\n\n```ts\neditor.update.text.insert(\"Hello\");\n\neditor.update((tx) => {\n  tx.nodes.set({ type: \"heading\" });\n  tx.text.insert(\"Title\");\n});\n```\n\nSee the canonical [Plite transform reference](/docs/plite/api/transforms).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plite/editor-transforms.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

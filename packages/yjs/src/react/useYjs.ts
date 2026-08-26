@@ -103,6 +103,11 @@ type YjsStateForEditor<
   TExtensions extends readonly unknown[],
 > = EditorYjsStateFor<V, TExtensions>;
 
+type YjsReadEditor<
+  V extends Value,
+  TExtensions extends readonly unknown[],
+> = Pick<Editor<V, TExtensions>, 'read'>;
+
 type YjsOverlayEditor = Readonly<{
   api: Readonly<{
     dom: Readonly<{
@@ -132,7 +137,7 @@ const readYjsState = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: YjsReadEditor<V, TExtensions>,
   selector: (state: YjsStateForEditor<V, TExtensions>) => T
 ): T => editor.read((state) => selector(getEditorYjsState(state)));
 
@@ -175,7 +180,7 @@ const useYjsProviderValue = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: YjsReadEditor<V, TExtensions>,
   selector: (state: YjsStateForEditor<V, TExtensions>) => T
 ): T => {
   const subscribe = useCallback(
@@ -489,7 +494,7 @@ export const getYjsProviderStatus = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>
+  editor: YjsReadEditor<V, TExtensions>
 ): YjsProviderStatus | null =>
   readYjsState(editor, (state) => state.providerStatus());
 
@@ -497,7 +502,7 @@ export const getYjsProviderSynced = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>
+  editor: YjsReadEditor<V, TExtensions>
 ): boolean | null => readYjsState(editor, (state) => state.providerSynced());
 
 function useYjsAwarenessRevision<
@@ -510,14 +515,14 @@ function useYjsAwarenessRevision<
 export function useYjsProviderStatus<
   V extends Value,
   TExtensions extends readonly unknown[],
->(editor: Editor<V, TExtensions>): YjsProviderStatus | null {
+>(editor: YjsReadEditor<V, TExtensions>): YjsProviderStatus | null {
   return useYjsProviderValue(editor, (state) => state.providerStatus());
 }
 
 export function useYjsProviderSynced<
   V extends Value,
   TExtensions extends readonly unknown[],
->(editor: Editor<V, TExtensions>): boolean | null {
+>(editor: YjsReadEditor<V, TExtensions>): boolean | null {
   return useYjsProviderValue(editor, (state) => state.providerSynced());
 }
 

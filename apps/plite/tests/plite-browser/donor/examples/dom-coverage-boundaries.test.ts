@@ -303,7 +303,6 @@ test.describe('dom coverage boundaries example', () => {
     const text = 'Section summary stays mounted.';
 
     await collapseDOMSelectionToTextEnd(editor.root.getByText(text), {
-      kind: 'text',
       anchor: { path: [2, 0, 0], offset: text.length },
       focus: { path: [2, 0, 0], offset: text.length },
     });
@@ -311,7 +310,6 @@ test.describe('dom coverage boundaries example', () => {
     await expect
       .poll(() => editor.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [2, 0, 0], offset: text.length },
         focus: { path: [2, 0, 0], offset: text.length },
       });

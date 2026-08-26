@@ -52,6 +52,14 @@ If a named issue is already known to live in a later lane, lane 2 uses that
 surface for the initial smoke. The table order still governs attribution and
 resume state.
 
+Reporter-visible rerender and render-storm claims require an exact-route,
+phase-specific repeated-component inventory before owner isolation. Count
+render or commit work by component family and repeated visible unit before and
+during the named action. A wrapper-local Profiler, one improved component, or
+pointer latency is a proxy for that local owner, not route-wide completion.
+Account for every family above 5% of added work and at least 90% overall.
+Anything unattributed remains an open benchmark row.
+
 ## Candidate And Baseline Identity
 
 Record before measuring:

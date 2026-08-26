@@ -27,13 +27,13 @@ import {
 import {
   getCurrentSelection,
   getCurrentSelectionRoot,
+  getSelectionNodeEntries,
   getTargetRuntime,
   doesSelectionContain,
   doesSelectionIntersect,
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
   isSelectionAcrossBlocks,
-  isSelectionWithinText,
   isSelectionWithinBlock,
   readEditor,
   withEditorUpdateRoot,
@@ -53,7 +53,6 @@ import type {
   EditorKeyApi,
   EditorParentOptions,
   EditorSelectionBlockOptions,
-  EditorSelectionTargetOptions,
   EditorSnapshot,
   EditorStateSliceApi,
   EditorStateView,
@@ -73,8 +72,10 @@ import type {
 import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { Location } from './interfaces/location';
 import type { Ancestor, NodeEntry } from './interfaces/node';
-import { RangeApi } from './interfaces/range';
+import { type Range, RangeApi } from './interfaces/range';
 import type { SchemaPropertyHandle } from './interfaces/schema';
+import type { NodeSelection } from './interfaces/selection';
+import { SelectionApi } from './interfaces/selection';
 import type { NodeUnsetNodesOptions } from './interfaces/transforms/node';
 import { getDefined } from './internal/get-defined';
 import { withImplicitRangeRoot } from './internal/root-location';
@@ -191,6 +192,18 @@ const withViewSelection = (
   };
 };
 
+const withViewRange = (
+  range: Range | null,
+  viewState: ViewState,
+  selectionRoot: RootKey
+): Range | null => {
+  if (selectionRoot !== viewState.root || !range) return null;
+
+  return viewState.root === MAIN_ROOT_KEY
+    ? range
+    : withImplicitRangeRoot(range, viewState.root);
+};
+
 const hasViewSelection = (editor: Editor, viewState: ViewState) =>
   !getCurrentSelection(editor) ||
   getCurrentSelectionRoot(editor) === viewState.root;
@@ -237,13 +250,14 @@ const withRootChildren = <
   Object.freeze({
     ...state.nodes,
     above: rootMethod(editor, viewState, state.nodes.above),
+    block: rootMethod(editor, viewState, state.nodes.block),
+    blocks: rootMethod(editor, viewState, state.nodes.blocks),
     children: rootMethod(editor, viewState, state.nodes.children),
     elementReadOnly: rootMethod(editor, viewState, state.nodes.elementReadOnly),
     entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),
     find: rootMethod(editor, viewState, state.nodes.find),
     first: rootMethod(editor, viewState, state.nodes.first),
     get: rootMethod(editor, viewState, state.nodes.get),
-    hasPath: rootMethod(editor, viewState, state.nodes.hasPath),
     last: rootMethod(editor, viewState, state.nodes.last),
     leaf: rootMethod(editor, viewState, state.nodes.leaf),
     levels: rootGeneratorMethod(editor, viewState, state.nodes.levels),
@@ -306,16 +320,7 @@ const withRootMarks = <V extends Value, T extends ViewStateTransformInput<V>>(
         return null;
       }
 
-      return withRootRead(editor, viewState, () => {
-        if (
-          !state.nodes.hasPath(selection.anchor.path) ||
-          !state.nodes.hasPath(selection.focus.path)
-        ) {
-          return null;
-        }
-
-        return state.marks();
-      });
+      return withRootRead(editor, viewState, () => state.marks());
     }, state.marks)
   );
 
@@ -339,8 +344,14 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   state: T,
   viewState: ViewState
 ): T & { view: EditorStateViewApi } => {
-  const selection = () =>
+  const semanticSelection = () =>
     withViewSelection(
+      getCurrentSelection(editor),
+      viewState,
+      getCurrentSelectionRoot(editor)
+    );
+  const selection = () =>
+    withViewRange(
       state.selection(),
       viewState,
       getCurrentSelectionRoot(editor)
@@ -391,6 +402,21 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     : undefined;
   const ranges = withRootRanges<V, T>(editor, state, viewState);
   const selectionRangeState = { ranges };
+  const selectionRanges = () => {
+    if (!semanticSelection()) return [];
+
+    const projected = state.selection.ranges();
+
+    return viewState.root === MAIN_ROOT_KEY
+      ? projected
+      : projected.map((range) => withImplicitRangeRoot(range, viewState.root));
+  };
+  const selectionNodes = (() =>
+    getSelectionNodeEntries(
+      editor,
+      scopedState,
+      semanticSelection()
+    )) as T['selection']['nodes'];
 
   const scopedState: T & { view: EditorStateViewApi } = Object.freeze({
     ...state,
@@ -421,10 +447,19 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     selection: Object.freeze(
       Object.assign(selection, {
         contains: (target: NodeTarget) =>
-          doesSelectionContain(selectionRangeState, selection(), target),
-        primaryRange: () => state.selection.primaryRange(),
+          doesSelectionContain(
+            selectionRangeState,
+            semanticSelection(),
+            target,
+            selectionRanges()
+          ),
         intersects: (target: NodeTarget) =>
-          doesSelectionIntersect(selectionRangeState, selection(), target),
+          doesSelectionIntersect(
+            selectionRangeState,
+            semanticSelection(),
+            target,
+            selectionRanges()
+          ),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           isSelectionAcrossBlocks(scopedState, selection(), options),
         isAtBlockEnd: (options?: EditorSelectionBlockOptions) =>
@@ -432,22 +467,19 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
         isAtBlockStart: (options?: EditorSelectionBlockOptions) =>
           isSelectionAtBlockStart(scopedState, selection(), options),
         isCollapsed: () => {
-          const currentSelection = selection();
+          const projected = selection();
 
-          return !!currentSelection && RangeApi.isCollapsed(currentSelection);
+          return projected ? RangeApi.isCollapsed(projected) : false;
         },
         isExpanded: () => {
-          const currentSelection = selection();
+          const projected = selection();
 
-          return !!currentSelection && RangeApi.isExpanded(currentSelection);
+          return projected ? RangeApi.isExpanded(projected) : false;
         },
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           isSelectionWithinBlock(scopedState, selection(), options),
-        isWithinText: (options?: EditorSelectionTargetOptions) =>
-          isSelectionWithinText(selectionRangeState, selection(), options),
-        ranges: () => state.selection.ranges(),
-        replacementRange: () => state.selection.replacementRange(),
-        root: () => (selection() ? toPublicRoot(viewState.root) : undefined),
+        nodes: selectionNodes,
+        ranges: selectionRanges,
       })
     ),
     text: Object.freeze({
@@ -484,14 +516,14 @@ const withViewTransaction = <V extends Value>(
     transaction,
     viewState
   );
-  const hasExplicitTarget = (options: { at?: NodeTarget } | undefined) =>
+  const hasExplicitTarget = (options: { at?: unknown } | undefined) =>
     options?.at !== undefined;
   const runSelectionMutation = <T>(fn: () => T): T | undefined =>
     runWithViewSelection(editor, viewState, () =>
       runRootTransform(editor, viewState, fn)
     );
   const runImplicitSelectionMutation = <T>(
-    options: { at?: NodeTarget } | undefined,
+    options: { at?: unknown } | undefined,
     fn: () => T
   ): T | undefined => {
     if (hasExplicitTarget(options)) {
@@ -509,17 +541,26 @@ const withViewTransaction = <V extends Value>(
 
     runRootTransform(editor, viewState, () => {
       const value = transaction.value();
+      const selectionInput = input.selection;
       const selection =
-        input.selection &&
-        input.selection !== 'start' &&
-        input.selection !== 'end' &&
+        selectionInput &&
+        selectionInput !== 'start' &&
+        selectionInput !== 'end' &&
         viewState.root !== MAIN_ROOT_KEY
-          ? {
-              ...input.selection,
-              anchor: { ...input.selection.anchor, root: viewState.root },
-              focus: { ...input.selection.focus, root: viewState.root },
-            }
-          : input.selection;
+          ? SelectionApi.isNode(selectionInput)
+            ? SelectionApi.nodes(selectionInput.paths, {
+                anchorPath: selectionInput.anchorPath,
+                focusPath: selectionInput.focusPath,
+                root: viewState.root,
+              })
+            : RangeApi.isRange(selectionInput)
+              ? {
+                  ...selectionInput,
+                  anchor: { ...selectionInput.anchor, root: viewState.root },
+                  focus: { ...selectionInput.focus, root: viewState.root },
+                }
+              : selectionInput
+          : selectionInput;
 
       const scopedInput: SnapshotInput<V> = {
         ...(viewState.root === MAIN_ROOT_KEY
@@ -559,6 +600,18 @@ const withViewTransaction = <V extends Value>(
       }
     });
   };
+  type ViewBlocksApi = EditorUpdateTransaction<V, any>['blocks'];
+  const setViewBlocks = (
+    props: Parameters<ViewBlocksApi['set']>[0],
+    options?: Parameters<ViewBlocksApi['set']>[1]
+  ) =>
+    runImplicitSelectionMutation(options, () => {
+      transaction.blocks.set(props, options as never);
+    });
+  const toggleViewBlocks: ViewBlocksApi['toggle'] = (props, options) =>
+    runImplicitSelectionMutation(options, () => {
+      transaction.blocks.toggle(props, options);
+    });
 
   const viewTransaction = Object.freeze<EditorUpdateTransaction<V, any>>({
     ...state,
@@ -584,29 +637,23 @@ const withViewTransaction = <V extends Value>(
         transaction.anchor(value, anchorOptions)
       ),
     blocks: Object.freeze<EditorUpdateTransaction<V, any>['blocks']>({
-      duplicate: ((options?: { at?: NodeTarget }) =>
+      duplicate: ((options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.duplicate(options as never);
         })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
       insertAfter: (
         nodes: ElementIn<V> | ReadonlyArray<ElementIn<V>>,
-        options?: { at?: NodeTarget }
+        options?: { at?: NodeSelection | NodeTarget }
       ) =>
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.insertAfter(nodes, options);
         }),
-      lift: (options?: { at?: NodeTarget }) =>
+      reset: (options) =>
         runImplicitSelectionMutation(options, () => {
-          transaction.blocks.lift(options as never);
+          transaction.blocks.reset(options);
         }),
-      reset: (props, options) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.blocks.reset(props, options);
-        }),
-      toggle: (type, options) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.blocks.toggle(type, options);
-        }),
+      set: setViewBlocks,
+      toggle: toggleViewBlocks,
     }),
     break: Object.freeze({
       ...transaction.break,
@@ -653,11 +700,6 @@ const withViewTransaction = <V extends Value>(
     ),
     nodes: Object.freeze<EditorUpdateTransaction<V, any>['nodes']>({
       ...state.nodes,
-      duplicate: (entries, options) => {
-        runRootTransform(editor, viewState, () => {
-          transaction.nodes.duplicate(entries, options);
-        });
-      },
       insert: (
         nodes: ElementOrTextIn<V> | ReadonlyArray<ElementOrTextIn<V>>,
         options?: { at?: NodeTarget }
@@ -665,19 +707,19 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.insert(nodes, options as never);
         }),
-      lift: (options?: { at?: NodeTarget }) =>
+      lift: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.lift(options as never);
         }),
-      merge: (options?: { at?: NodeTarget }) =>
+      merge: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.merge(options as never);
         }),
-      move: (options: { at?: NodeTarget }) =>
+      move: (options: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.move(options as never);
         }),
-      remove: (options?: { at?: NodeTarget }) =>
+      remove: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.remove(options as never);
         }),
@@ -709,11 +751,14 @@ const withViewTransaction = <V extends Value>(
             ) => void
           )(props, options);
         })) as typeof transaction.nodes.unset,
-      unwrap: (options?: { at?: NodeTarget }) =>
+      unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.unwrap(options as never);
         }),
-      wrap: (element: ElementIn<V>, options?: { at?: NodeTarget }) =>
+      wrap: (
+        element: ElementIn<V>,
+        options?: { at?: NodeSelection | NodeTarget }
+      ) =>
         runImplicitSelectionMutation(options, () => {
           transaction.nodes.wrap(element, options as never);
         }),
@@ -721,7 +766,6 @@ const withViewTransaction = <V extends Value>(
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),
-        primaryRange: () => state.selection.primaryRange(),
         intersects: (target: NodeTarget) => state.selection.intersects(target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           state.selection.isAcrossBlocks(options),
@@ -734,12 +778,8 @@ const withViewTransaction = <V extends Value>(
         isValid: (value: unknown) => state.selection.isValid(value),
         isWithinBlock: (options?: EditorSelectionBlockOptions) =>
           state.selection.isWithinBlock(options),
-        isWithinText: (options?: EditorSelectionTargetOptions) =>
-          state.selection.isWithinText(options),
+        nodes: state.selection.nodes,
         ranges: () => state.selection.ranges(),
-        replacementRange: () => state.selection.replacementRange(),
-        root: () => state.selection.root(),
-        clear: () => runSelectionMutation(transaction.selection.clear),
         collapse: (options = {}) =>
           runSelectionMutation(() => {
             transaction.selection.collapse(options);
@@ -760,18 +800,20 @@ const withViewTransaction = <V extends Value>(
             transaction.selection.set(target);
           });
         },
+        setNodes: (
+          paths: Parameters<typeof transaction.selection.setNodes>[0],
+          options?: Parameters<typeof transaction.selection.setNodes>[1]
+        ) => {
+          runRootTransform(editor, viewState, () => {
+            transaction.selection.setNodes(paths, options);
+          });
+        },
         setPoint: (
           props: Parameters<typeof transaction.selection.setPoint>[0],
           options?: Parameters<typeof transaction.selection.setPoint>[1]
         ) =>
           runSelectionMutation(() => {
             transaction.selection.setPoint(props, options);
-          }),
-        setRange: (
-          props: Parameters<typeof transaction.selection.setRange>[0]
-        ) =>
-          runSelectionMutation(() => {
-            transaction.selection.setRange(props);
           }),
       }) satisfies typeof transaction.selection
     ),

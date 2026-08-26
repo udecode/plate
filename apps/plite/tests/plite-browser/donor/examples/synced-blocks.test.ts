@@ -534,7 +534,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
-        kind: 'text',
         anchor: { path: [2, 0] },
         focus: { path: [2, 0] },
       });
@@ -558,7 +557,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
-        kind: 'text',
         anchor: { path: [4, 0] },
         focus: { path: [4, 0] },
       });
@@ -581,7 +579,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
-        kind: 'text',
         anchor: { path: [6, 0] },
         focus: { path: [6, 0] },
       });
@@ -634,7 +631,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
-        kind: 'text',
         anchor: { path: [4, 0] },
         focus: { path: [4, 0] },
       });
@@ -654,7 +650,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toMatchObject({
-        kind: 'text',
         anchor: { path: [2, 0] },
         focus: { path: [2, 0] },
       });
@@ -695,7 +690,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -739,7 +733,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [6, 0], offset: 0 },
         focus: { path: [6, 0], offset: 0 },
       });
@@ -866,7 +859,6 @@ test.describe('synced blocks example', () => {
     );
 
     await first.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 'Shared mission'.length },
     });
@@ -920,7 +912,6 @@ test.describe('synced blocks example', () => {
     const selectionStart = SHARED_BODY_SECOND.indexOf(selectedText);
 
     await first.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [1, 0], offset: selectionStart },
       focus: { path: [1, 0], offset: selectionStart + selectedText.length },
     });
@@ -1619,7 +1610,6 @@ test.describe('synced blocks example', () => {
     await focusRoot(firstEditor);
     await first.insertText('not so good!');
     await first.selection.selectDOM({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 'not so '.length },
       focus: { path: [0, 0], offset: 'not so good'.length },
     });
@@ -1991,7 +1981,6 @@ test.describe('synced blocks example', () => {
     );
 
     await outer.selection.select({
-      kind: 'text',
       anchor: { path: [6, 0], offset: 1 },
       focus: { path: [6, 0], offset: 0 },
     });
@@ -2095,7 +2084,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -2125,7 +2113,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 'p1'.length },
       });
@@ -2256,7 +2243,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       });
@@ -2328,7 +2314,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -2384,7 +2369,6 @@ test.describe('synced blocks example', () => {
       await expect
         .poll(() => outer.selection.get())
         .toEqual({
-          kind: 'text',
           anchor: { path: [1, 0], offset: 0 },
           focus: { path: [1, 0], offset: 0 },
         });
@@ -2425,7 +2409,6 @@ test.describe('synced blocks example', () => {
       const selectedText = SHARED_BODY_SECOND.slice(anchorOffset);
 
       await first.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [1, 0], offset: anchorOffset },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2519,7 +2502,6 @@ test.describe('synced blocks example', () => {
       const selectedText = SHARED_BODY_SECOND.slice(anchorOffset);
 
       await first.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [1, 0], offset: anchorOffset },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2558,9 +2540,16 @@ test.describe('synced blocks example', () => {
       await expect
         .poll(() => first.selection.get())
         .toEqual({
-          kind: 'text',
-          anchor: { path: [2, 0], offset: 0 },
-          focus: { path: [2, 0], offset: 0 },
+          anchor: {
+            path: [2, 0],
+            offset: 0,
+            root: 'synced-block:shared:body',
+          },
+          focus: {
+            path: [2, 0],
+            offset: 0,
+            root: 'synced-block:shared:body',
+          },
         });
       await expect
         .poll(() => outer.get.modelText())
@@ -2596,7 +2585,6 @@ test.describe('synced blocks example', () => {
       );
 
       await first.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
       });
@@ -2796,7 +2784,6 @@ test.describe('synced blocks example', () => {
         .toBe(`${SHARED_BODY_FIRST.slice(2)}${SHARED_BODY_SECOND}`);
       await expect.poll(() => getViewSelection(outerEditor)).toBe(null);
       await outer.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       });
@@ -2897,9 +2884,16 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => second.selection.get())
       .toEqual({
-        kind: 'text',
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
+        anchor: {
+          path: [0, 0],
+          offset: 0,
+          root: 'synced-block:shared:body',
+        },
+        focus: {
+          path: [0, 0],
+          offset: 0,
+          root: 'synced-block:shared:body',
+        },
       });
     await expect.poll(() => getViewSelection(outerEditor)).toBe(null);
     await outer.assert.noDoubleSelectionHighlight();
@@ -2915,7 +2909,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [6, 0], offset: 0 },
         focus: { path: [6, 0], offset: 0 },
       });
@@ -2930,9 +2923,16 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => second.selection.get())
       .toEqual({
-        kind: 'text',
-        anchor: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
-        focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
+        anchor: {
+          path: [1, 0],
+          offset: SHARED_BODY_SECOND.length,
+          root: 'synced-block:shared:body',
+        },
+        focus: {
+          path: [1, 0],
+          offset: SHARED_BODY_SECOND.length,
+          root: 'synced-block:shared:body',
+        },
       });
     await expect.poll(() => getViewSelection(outerEditor)).toBe(null);
     await outer.assert.noDoubleSelectionHighlight();
@@ -2945,7 +2945,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: {
           path: [4, 0],
           offset: 'Between synced documents.'.length,
@@ -2990,9 +2989,16 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => first.selection.get())
       .toEqual({
-        kind: 'text',
-        anchor: { path: [0, 0], offset: 'Shared'.length },
-        focus: { path: [0, 0], offset: 'Shared'.length },
+        anchor: {
+          path: [0, 0],
+          offset: 'Shared'.length,
+          root: 'synced-block:shared:body',
+        },
+        focus: {
+          path: [0, 0],
+          offset: 'Shared'.length,
+          root: 'synced-block:shared:body',
+        },
       });
     await expect.poll(() => getViewSelection(outerEditor)).toBe(null);
     await outer.assert.noDoubleSelectionHighlight();
@@ -3027,7 +3033,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [6, 0], offset: 'p2'.length },
         focus: { path: [6, 0], offset: 'p2'.length },
       });
@@ -3040,7 +3045,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -3179,7 +3183,6 @@ test.describe('synced blocks example', () => {
     await expect
       .poll(() => outer.selection.get())
       .toEqual({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [6, 0], offset: 2 },
       });

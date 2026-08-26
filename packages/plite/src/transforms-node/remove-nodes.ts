@@ -11,6 +11,7 @@ import {
   LocationApi,
   NodeApi,
   SelectionApi,
+  type NodeSelection,
   type Span,
 } from '../interfaces';
 import {
@@ -18,6 +19,7 @@ import {
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { AnyEditor as Editor } from '../interfaces/editor';
+import { PathApi } from '../interfaces/path';
 import type {
   NodeMutationMethods,
   NodeRemoveNodesOptions,
@@ -29,6 +31,33 @@ export const removeNodes = ((
   editor: Editor,
   options: NodeRemoveNodesOptions = {}
 ) => {
+  const removeNodeSelection = (
+    nodeSelection: NodeSelection,
+    clearSelection: boolean
+  ) => {
+    const paths = nodeSelection.paths;
+
+    runEditorTransaction(editor, (tx) => {
+      if (clearSelection) tx.setSelection(null);
+      for (const path of paths.toReversed()) {
+        removeNodes(editor, { ...options, at: path });
+      }
+    });
+  };
+
+  if (SelectionApi.isNode(options.at)) {
+    removeNodeSelection(options.at, false);
+    return;
+  }
+
+  const implicitSelection =
+    options.at === undefined ? getCurrentSelection(editor) : null;
+
+  if (SelectionApi.isNode(implicitSelection)) {
+    removeNodeSelection(implicitSelection, true);
+    return;
+  }
+
   if (
     options.at !== undefined &&
     LocationApi.isPath(options.at) &&
@@ -52,9 +81,11 @@ export const removeNodes = ((
   runEditorTransaction(editor, (tx) => {
     const { hanging = false, voids = false, mode = 'lowest' } = options;
     let match = normalizeNodeMatch(options.type, options.match);
-    let at: Location | Span | null | undefined = tx.resolveTarget({
+    const resolvedTarget = tx.resolveTarget({
       at: options.at,
     });
+    if (SelectionApi.isNode(resolvedTarget)) return;
+    let at: Location | Span | null | undefined = resolvedTarget;
 
     if (!at) {
       return;

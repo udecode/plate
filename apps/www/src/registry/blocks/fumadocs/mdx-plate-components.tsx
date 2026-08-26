@@ -1,12 +1,11 @@
 'use client';
 
-import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import { type VariantProps, cva } from 'class-variance-authority';
-import { ChevronDownIcon, PlusIcon } from 'lucide-react';
-import React, { type ReactNode, createContext, useState } from 'react';
+import { PlusIcon } from 'lucide-react';
+import React, { type ReactNode, createContext } from 'react';
 
-import { cn } from '../../../lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 type Item = {
   children: ReactNode;
@@ -348,24 +347,18 @@ export function APISubList({
   children: ReactNode;
   open?: boolean;
 }) {
-  const [value, setValue] = useState(open ? '1' : '');
-
   return (
     <Card className="my-2 p-0">
-      <Accordion
-        className="w-full py-0"
-        defaultValue={open ? '1' : ''}
-        onValueChange={setValue}
-        type="single"
-        collapsible
-      >
-        <AccordionItem className="border-none" value="1">
-          <AccordionTrigger className="group px-3 py-2" iconVariant="plus">
-            {value ? 'Hide' : 'Show'} child attributes
-          </AccordionTrigger>
-          <AccordionContent>{children}</AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <details className="group w-full" open={open}>
+        <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-medium outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
+          <PlusIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-45" />
+          <span className="group-open:hidden">Show child attributes</span>
+          <span className="hidden group-open:inline">
+            Hide child attributes
+          </span>
+        </summary>
+        <div className="pb-4">{children}</div>
+      </details>
     </Card>
   );
 }
@@ -391,93 +384,6 @@ function LinkIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-function Separator({
-  className,
-  decorative = true,
-  orientation = 'horizontal',
-  ...props
-}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
-  return (
-    <SeparatorPrimitive.Root
-      orientation={orientation}
-      className={cn(
-        'shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px',
-        className
-      )}
-      data-slot="separator-root"
-      decorative={decorative}
-      {...props}
-    />
-  );
-}
-
-function Accordion({
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
-}
-
-function AccordionItem({
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
-  return (
-    <AccordionPrimitive.Item
-      className={cn('border-b **:my-0 last:border-b-0', className)}
-      data-slot="accordion-item"
-      {...props}
-    />
-  );
-}
-
-function AccordionTrigger({
-  children,
-  className,
-  iconVariant = 'chevron',
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger> & {
-  iconVariant?: 'chevron' | 'plus';
-}) {
-  return (
-    <AccordionPrimitive.Header className="flex">
-      <AccordionPrimitive.Trigger
-        className={cn(
-          'flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left font-medium text-sm outline-none transition-all **:my-0 hover:underline focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180',
-          className
-        )}
-        data-slot="accordion-trigger"
-        {...props}
-      >
-        {iconVariant === 'plus' && (
-          <PlusIcon className="pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200" />
-        )}
-        {children}
-        {iconVariant === 'chevron' && (
-          <ChevronDownIcon className="pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200" />
-        )}
-      </AccordionPrimitive.Trigger>
-    </AccordionPrimitive.Header>
-  );
-}
-
-function AccordionContent({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
-  return (
-    <AccordionPrimitive.Content
-      className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-      data-slot="accordion-content"
-      {...props}
-    >
-      <div className={cn('pt-0 pb-4', className)}>{children}</div>
-    </AccordionPrimitive.Content>
-  );
-}
-
-export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };
 
 export const Steps = ({ ...props }) => (
   <div

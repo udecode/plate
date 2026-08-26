@@ -6,7 +6,7 @@ Require React and React DOM 19.2 or newer.
 
 Use `useTableSelectionDOM(tableRef)` as the sole package React primitive for a custom table renderer. Compose transient column, row, and margin state, cell layout reads, and pointer handlers in the renderer through `TablePlugin` and Core selector hooks. Replace `useTableSelectionDom` and the old renderer-state hook family with this DOM lifecycle hook and the matching scoped capabilities.
 
-Read merge and split eligibility through `editor.plugin(TablePlugin).read.canMerge()` and `.read.canSplit()`. The copied `table` owns transient column, row, and margin overrides plus row rendering.
+Derive merge and split eligibility from `editor.plugin(TablePlugin).read.selection()`. The copied `table` owns transient column, row, and margin overrides plus row rendering.
 
 Export `TablePluginState` as the complete mutable state contract for `BaseTablePlugin`.
 
@@ -16,15 +16,15 @@ Validate spans as positive safe integers, row heights as positive finite numbers
 
 Repair malformed grids and paste rectangular cell fragments across merged-cell boundaries. Keep paste, drag-and-drop, and compound table commands targeting the intended rows and cells after earlier edits.
 
-Represent multi-cell pointer drags as structural table selections, preserve them when clearing cells, and leave same-cell text drags native. Publish that table-cell payload through `BaseTablePlugin.selectionKinds` as the single runtime and type contract. Editors infer table-cell reads and writes only when the Table plugin is installed.
+Represent multi-cell pointer drags as directional core `NodeSelection` values, preserve them when clearing cells, and leave same-cell text drags native. Derive rectangular cell geometry through `editor.plugin(TablePlugin).read.selection(at?)`.
 
-Name live selection identity `cellKeys` and `tableKey`. Read selected live targets with `getSelectedCellKeys`, `getSelectedTableKeys`, and `getCellIndicesByKey`; persisted table element IDs remain ordinary schema data. Cache table-selection projections by the stable snapshot index rather than a short-lived read facade, including named-root editor views.
+Return live cell entries, anchors, bounds, and table identity from the sole Table selection read. Use core `selection.nodes()` and `selection.contains()` for generic membership. Persisted table element IDs remain ordinary schema data.
 
 **Migration:** Replace direct table helper imports with the matching scoped capability:
 
 ```tsx
 editor.api.table.create({ colCount: 3, rowCount: 2 });
-editor.read.table.getSelectedCells();
+editor.plugin(TablePlugin).read.selection();
 editor.update.table.insert({ colCount: 3, rowCount: 2 });
 editor.update.table.insertColumn();
 editor.update.table.removeRow();
@@ -50,8 +50,8 @@ const migrations = defineDocumentMigrations(EditorSchema, {
 
 Replace `editor.api.table.getCellTypes()` with `editor.plugin(TableCellPlugin).schema.type`; tables have one cell element type.
 
-Use `getCellIndices(cell)` for row and column coordinates, `getAdjacentCell({ deltaCol, deltaRow })` for neighboring cells, and `getGridByRange(range)` for range grids. Border batch mutation is private to the table command owner; public callers use `setBorderSize` or `toggleBorders`.
+Use `getCellIndices(cell)` for row and column coordinates and `getAdjacentCell({ deltaCol, deltaRow })` for neighboring cells. Border batch mutation is private to the table command owner; public callers use `setBorderSize` or `toggleBorders`.
 
-Use exact clipboard slices through `readSlice` and `writeSlice`, preserve projected row and cell children when exporting table selections through `exportSlice`, and declare table selection DOM projection through `primaryRange`.
+Use exact clipboard slices through `readSlice` and `writeSlice`, and preserve projected row and cell children when exporting directional node selections through the core slice read.
 
 Use semantic table fields and store column widths only on tables.

@@ -2,6 +2,7 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginState } from '@platejs/combobox';
 import type { DefinitionOf, PlatePluginReadState } from '@platejs/core';
 import { type PlateEditor, definePlatePlugin } from '@platejs/core/react';
+import { CursorOverlayPlugin } from '@platejs/cursor';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
@@ -25,13 +26,10 @@ import {
   defineEffect,
   editorCommands,
   schema,
+  SelectionApi,
   TextApi,
 } from '@platejs/plite';
 import { failInvariant } from '@platejs/plite/internal';
-import {
-  BlockSelectionPlugin,
-  CursorOverlayPlugin,
-} from '@platejs/selection/react';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BaseTablePlugin } from '@platejs/table';
@@ -39,26 +37,18 @@ import { PLUGINS } from '@platejs/utils';
 import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
 
+import type {
+  AIChatRequestContext,
+  AIToolName,
+} from '../lib/AIChatRequestContext';
 import { AI_PREVIEW_KEY, BaseAIPlugin } from '../lib/BaseAIPlugin';
 
 export type AIMode = 'chat' | 'insert';
-
-export type AIToolName = 'comment' | 'edit' | 'generate' | null;
 
 type TComment = {
   blockRef: string;
   comment: string;
   content: string;
-};
-
-export type AIChatRequestNodeRef = {
-  path: Path;
-  ref: string;
-};
-
-export type AIChatRequestRefs = {
-  blocks: AIChatRequestNodeRef[];
-  tableCells: AIChatRequestNodeRef[];
 };
 
 export type AIChatAdapter = {
@@ -85,7 +75,9 @@ export const createAIChatAdapter = <TMessage extends UIMessage>(
 
 export type EditorPromptParams = {
   editor: PlateEditor;
-  isBlockSelecting: boolean;
+  /** Whether the current selection contains exact selected nodes. */
+  isNodeSelecting: boolean;
+  /** Whether the representative selection range is expanded. */
   isSelecting: boolean;
 };
 
@@ -93,7 +85,7 @@ export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
   | {
       default: string;
-      blockSelecting?: string;
+      nodeSelecting?: string;
       selecting?: string;
     }
   | string;
@@ -104,6 +96,8 @@ export type TableCellUpdate = {
 };
 
 export type AIChatNodeSnapshot = {
+  isSelectionAnchor?: true;
+  isSelectionFocus?: true;
   node: Element;
   nodeKey: NodeKey;
   root?: NamedRootKey;
@@ -133,7 +127,7 @@ export type AIChatPluginState = {
   >;
 } & TriggerComboboxPluginState;
 
-type MarkdownType = 'block' | 'blockSelection' | 'editor' | 'tableCellWithRef';
+type MarkdownType = 'block' | 'editor' | 'nodeSelection' | 'tableCellWithRef';
 
 type StreamInsertOptions = {
   autoScroll?: boolean;
@@ -147,7 +141,6 @@ const aiChatShowEffect = defineEffect({ key: 'ai.chat.show' });
 const dependencies = [
   BaseAIPlugin,
   MarkdownPlugin,
-  BlockSelectionPlugin,
   CursorOverlayPlugin,
   SuggestionPlugin,
 ] as const;
@@ -156,7 +149,7 @@ type AIChatPluginReadState = PlatePluginReadState<
   DefinitionOf<(typeof dependencies)[number]>
 >;
 type AIChatInsertState = Pick<AIChatPluginReadState, 'nodes' | 'selection'>;
-type AIChatPromptState = Pick<AIChatPluginReadState, 'blockSelection'>;
+type AIChatPromptState = Pick<AIChatPluginReadState, 'selection'>;
 
 const initialState: AIChatPluginState = {
   _blockChunks: '',
@@ -525,8 +518,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         anchor && anchor[1].at(-1) !== 0
           ? PathApi.previous(anchor[1])
           : undefined;
-      const path = anchorPrevious ??
-        state.selection()?.focus.path.slice(0, 1) ?? [0];
+      const selection = state.selection();
+      const selectionPath =
+        state.selection.nodes().at(-1)?.[1] ?? selection?.focus.path;
+      const path = anchorPrevious ?? selectionPath?.slice(0, 1) ?? [0];
       const entry = state.nodes.get(path, { match: ElementApi.isElement });
       const containerTypes = new Set<string>(
         [columnGroup, tablePlugin]
@@ -713,13 +708,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
       if (!focus) return;
 
-      const blockSelection = editor.plugin(BlockSelectionPlugin);
-
-      if (blockSelection.store.get('isSelectingSome')) {
-        blockSelection.api.focus();
-      } else {
-        editor.api.dom.focus();
-      }
+      editor.api.dom.focus();
     };
     const hide = ({
       focus = true,
@@ -749,19 +738,13 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         });
       }
       if (type === 'block') {
-        const blocks = state.nodes
-          .toArray({
-            match: (node): node is Element =>
-              ElementApi.isElement(node) && state.schema.isBlock(node),
-            mode: 'lowest',
-          })
-          .map(([node]) => node);
+        const blocks = state.nodes.blocks().map(([node]) => node);
 
         return editor.api.markdown.serialize({
           value: { children: blocks },
         });
       }
-      if (type === 'blockSelection') {
+      if (type === 'nodeSelection') {
         const fragment = state.fragment();
         const value: Element[] =
           fragment.length === 1 && ElementApi.isElement(fragment[0])
@@ -776,7 +759,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               );
 
         if (value.length !== fragment.length) {
-          throw new Error('Block selections must contain block elements.');
+          throw new Error('Node selections must contain block elements.');
         }
 
         return editor.api.markdown.serialize({
@@ -787,10 +770,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
       if (!tablePlugin.installed) return '';
 
-      const cells = tablePlugin.read.getGridAbove({ format: 'cell' });
+      const cells = tablePlugin.read.selection()?.cellEntries ?? [];
 
       if (cells.length === 0) return '';
-      const root = state.view.root() ?? state.selection.root();
+      const root = state.view.root() ?? SelectionApi.root(state.selection());
       const tableView = root ? createEditorView(editor, { root }) : null;
       const tableNodes = tableView?.read.nodes ?? state.nodes;
       const tableKey = (path: Path) =>
@@ -873,12 +856,11 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
       return `${rows.join('\n')}\n\n${cellBlocks}`;
     };
-    const getRequestContext = (at: Range | null) => {
+    const getRequestContext = (at: Range | null): AIChatRequestContext => {
       const root =
         editor.read.view.root() ??
-        at?.anchor.root ??
-        at?.focus.root ??
-        editor.read.selection.root();
+        SelectionApi.root(at) ??
+        SelectionApi.root(editor.read.selection());
       const requestEditor = root ? createEditorView(editor, { root }) : editor;
       const requestAt = at
         ? {
@@ -887,31 +869,56 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             focus: { offset: at.focus.offset, path: at.focus.path },
           }
         : null;
+      const selectedNodePaths = requestEditor.read.selection
+        .nodes()
+        .map(([, path]) => [...path]);
+      const [firstSelectedNodePath, ...remainingSelectedNodePaths] =
+        selectedNodePaths;
+      const isNodeSelecting = !!firstSelectedNodePath;
+      const nodeSelection = (() => {
+        if (!firstSelectedNodePath || !requestAt) return null;
+
+        const paths: [Path, ...Path[]] = [
+          firstSelectedNodePath,
+          ...remainingSelectedNodePaths,
+        ];
+        const findEndpoint = (pointPath: Path) =>
+          paths.find(
+            (path) =>
+              PathApi.equals(path, pointPath) ||
+              PathApi.isAncestor(path, pointPath)
+          );
+        const anchorPath = findEndpoint(requestAt.anchor.path);
+        const focusPath = findEndpoint(requestAt.focus.path);
+
+        if (!anchorPath || !focusPath) {
+          throw new Error(
+            'Node selection endpoints must resolve in the request.'
+          );
+        }
+
+        return { anchorPath, focusPath, paths };
+      })();
       const blockRefs: AIChatPluginState['_blockRefs'] = {};
-      const blocks = requestEditor.read.nodes
-        .toArray({
-          at: requestAt ?? [],
-          match: (node): node is Element =>
-            ElementApi.isElement(node) &&
-            requestEditor.read.schema.isBlock(node),
-          mode: 'lowest',
-        })
-        .flatMap(([, path], index) => {
-          const key = requestEditor.key(path);
+      const blocks = (
+        isNodeSelecting
+          ? requestEditor.read.nodes.blocks()
+          : requestEditor.read.nodes.blocks({ at: requestAt ?? [] })
+      ).flatMap(([, path], index) => {
+        const key = requestEditor.key(path);
 
-          if (!key) return [];
+        if (!key) return [];
 
-          const ref = `b${index + 1}`;
+        const ref = `b${index + 1}`;
 
-          blockRefs[ref] = { key, ...(root ? { root } : {}) };
+        blockRefs[ref] = { key, ...(root ? { root } : {}) };
 
-          return [{ path: [...path], ref }];
-        });
+        return [{ path: [...path], ref }];
+      });
       const tableCellRefs: AIChatPluginState['_tableCellRefs'] = {};
       const tableCells = tablePlugin.installed
-        ? tablePlugin.read
-            .getGridAbove({ format: 'cell' })
-            .flatMap(([, path], index) => {
+        ? (tablePlugin.read.selection()?.cellEntries ?? []).flatMap(
+            ([, path], index) => {
               const key = requestEditor.key(path);
 
               if (!key) return [];
@@ -921,7 +928,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               tableCellRefs[ref] = { key, ...(root ? { root } : {}) };
 
               return [{ path: [...path], ref }];
-            })
+            }
+          )
         : [];
 
       context.store.set({
@@ -931,7 +939,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
       return {
         children: [...requestEditor.read.children()],
-        refs: { blocks, tableCells } satisfies AIChatRequestRefs,
+        nodeSelection,
+        refs: { blocks, tableCells },
         selection: requestAt,
       };
     };
@@ -941,16 +950,14 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     ) => {
       const params = {
         editor,
-        isBlockSelecting: editor
-          .plugin(BlockSelectionPlugin)
-          .store.get('isSelectingSome'),
-        isSelecting: state.blockSelection.isSelecting(),
+        isNodeSelecting: state.selection.nodes().length > 0,
+        isSelecting: state.selection.isExpanded(),
       };
 
       if (typeof prompt === 'function') return prompt(params);
       if (typeof prompt === 'string') return prompt;
-      if (params.isBlockSelecting && prompt.blockSelecting) {
-        return prompt.blockSelecting;
+      if (params.isNodeSelecting && prompt.nodeSelecting) {
+        return prompt.nodeSelecting;
       }
       if (params.isSelecting && prompt.selecting) return prompt.selecting;
 
@@ -970,25 +977,38 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           if (!editor.plugin(BaseAIPlugin).update.undo()) return;
           if (chatSelection) editor.update.selection.set(chatSelection);
           else {
-            const nodeKeys = chatNodes.flatMap(({ nodeKey }) =>
-              editor.read.nodes.get(nodeKey, { match: ElementApi.isElement })
-                ? [nodeKey]
-                : []
+            const anchor = chatNodes.find(
+              ({ isSelectionAnchor }) => isSelectionAnchor
             );
+            const focus = chatNodes.find(
+              ({ isSelectionFocus }) => isSelectionFocus
+            );
+            const entries = chatNodes.flatMap(({ nodeKey }) => {
+              const entry = editor.read.nodes.get(nodeKey, {
+                match: ElementApi.isElement,
+              });
+
+              return entry ? [entry] : [];
+            });
 
             if (
-              nodeKeys.length !== chatNodes.length ||
-              new Set(nodeKeys).size !== chatNodes.length
+              entries.length !== chatNodes.length ||
+              new Set(entries.map(([node]) => editor.key(node))).size !==
+                chatNodes.length
             ) {
               return;
             }
-            editor.plugin(BlockSelectionPlugin).api.set(nodeKeys);
+            if (chatNodes.length > 0 && (!anchor || !focus)) return;
+
+            editor.update.selection.setNodes(
+              entries.map(([node]) => node),
+              anchor && focus
+                ? { anchor: anchor.nodeKey, focus: focus.nodeKey }
+                : undefined
+            );
           }
 
-          const blocks = editor.plugin(BlockSelectionPlugin).read.getNodes({});
-          const selection = blocks.length
-            ? editor.read.ranges.fromEntries(blocks)
-            : editor.read.selection();
+          const selection = editor.read.selection();
 
           void chat?.regenerate({
             body: {
@@ -1028,9 +1048,11 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           context.store.set({ previewValue: [] });
 
+          const selection = editor.read.selection();
+          const isNodeSelecting = editor.read.selection.nodes().length > 0;
           const nextMode =
             mode ??
-            (editor.plugin(BlockSelectionPlugin).read.isSelecting()
+            (isNodeSelecting || editor.read.selection.isExpanded()
               ? 'chat'
               : 'insert');
 
@@ -1039,33 +1061,34 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           context.store.set({ mode: nextMode });
           context.store.set({ toolName: nextToolName });
 
-          const blocks = editor.plugin(BlockSelectionPlugin).read.getNodes({});
+          const requestContext = getRequestContext(selection ?? null);
           const promptText = getPrompt(editor.read, {
             prompt: prompt ?? input,
           });
-          const chatSelection = blocks.length ? null : editor.read.selection();
-          const selection = blocks.length
-            ? editor.read.ranges.fromEntries(blocks)
-            : chatSelection;
-          const chatNodes = (
-            blocks.length
-              ? blocks
-              : editor.read.nodes.toArray({
-                  match: (node): node is Element =>
-                    ElementApi.isElement(node) &&
-                    editor.read.schema.isBlock(node),
-                  mode: 'highest',
-                })
-          ).map(([node]) => {
-            const root =
-              editor.read.view.root() ?? editor.read.selection.root();
+          const chatSelection = isNodeSelecting ? null : selection;
+          const chatNodes = editor.read.nodes
+            .blocks({ mode: 'highest' })
+            .map(([node, path]) => {
+              const root =
+                editor.read.view.root() ??
+                SelectionApi.root(editor.read.selection());
+              const isEndpoint = (endpoint: Path | undefined) =>
+                !!endpoint &&
+                (PathApi.equals(path, endpoint) ||
+                  PathApi.isAncestor(path, endpoint));
 
-            return {
-              node,
-              nodeKey: editor.key(node),
-              ...(root ? { root } : {}),
-            };
-          });
+              return {
+                ...(isEndpoint(requestContext.nodeSelection?.anchorPath)
+                  ? { isSelectionAnchor: true as const }
+                  : {}),
+                ...(isEndpoint(requestContext.nodeSelection?.focusPath)
+                  ? { isSelectionFocus: true as const }
+                  : {}),
+                node,
+                nodeKey: editor.key(node),
+                ...(root ? { root } : {}),
+              };
+            });
 
           context.store.set({ chatNodes });
           context.store.set({ chatSelection });
@@ -1073,7 +1096,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           void chat?.sendMessage(promptText, {
             body: {
               ctx: {
-                ...getRequestContext(selection ?? null),
+                ...requestContext,
                 toolName: nextToolName,
               },
             },
@@ -1181,9 +1204,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         ) => {
           let result = text.split('{prompt}').join(prompt ?? '');
           const placeholders: Record<string, MarkdownType> = {
-            '{blockSelection}': 'blockSelection',
             '{block}': 'block',
             '{editor}': 'editor',
+            '{nodeSelection}': 'nodeSelection',
             '{tableCellWithRef}': 'tableCellWithRef',
           };
 
@@ -1569,7 +1592,16 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           }
 
           updateContext.afterCommit(() => {
-            editor.plugin(BlockSelectionPlugin).api.set(replacementKeys);
+            const entries = replacementKeys.flatMap((key) => {
+              const entry = editor.read.nodes.get(key, {
+                match: ElementApi.isElement,
+              });
+
+              return entry ? [entry] : [];
+            });
+            if (entries.length === replacementKeys.length) {
+              editor.update.selection.setNodes(entries.map(([node]) => node));
+            }
             context.store.set({ _replaceNodeKeys: replacementKeys });
           });
         };
@@ -1618,23 +1650,6 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           tx.ai.markBatch();
           tx.nodes.replaceChildren(next, { at: target.key });
         };
-        const getSelectedBlocks = () => {
-          const selectedKeys = editor
-            .plugin(BlockSelectionPlugin)
-            .store.get('selectedKeys');
-
-          if (!selectedKeys?.size) return [];
-
-          return [...selectedKeys]
-            .flatMap((nodeKey) => {
-              const entry = tx.nodes.get(nodeKey, {
-                match: ElementApi.isElement,
-              });
-
-              return entry ? [entry] : [];
-            })
-            .toSorted(([, a], [, b]) => PathApi.compare(a, b));
-        };
         const getChatBlocks = (restored: boolean) => {
           if (!restored) return [];
 
@@ -1656,6 +1671,47 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           }
 
           return entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
+        };
+        const selectEntries = (entries: ReadonlyArray<NodeEntry<Element>>) => {
+          tx.selection.setNodes(entries.map(([node]) => node));
+        };
+        const resolveInsertedBlocks = (nodes: Element[]) => {
+          const entries = nodes.flatMap((node) => {
+            const entry = tx.nodes.get(tx.key(node), {
+              match: ElementApi.isElement,
+            });
+
+            return entry ? [entry] : [];
+          });
+
+          if (entries.length !== nodes.length) {
+            throw new Error('Inserted AI blocks must resolve exactly once.');
+          }
+
+          return entries;
+        };
+        const insertBlocksAfterAndSelect = (
+          nodes: Element[],
+          target: NodeEntry<Element>
+        ) => {
+          tx.blocks.insertAfter(nodes, { at: tx.key(target[0]) });
+          selectEntries(resolveInsertedBlocks(nodes));
+        };
+        const replaceBlocksAndSelect = (
+          nodes: Element[],
+          entries: ReadonlyArray<NodeEntry<Element>>
+        ) => {
+          const selectedKeys = entries.map(([node]) => tx.key(node));
+          const firstKey = selectedKeys[0];
+
+          if (!firstKey) return;
+
+          tx.nodes.insert(nodes, { at: firstKey });
+          selectEntries(resolveInsertedBlocks(nodes));
+
+          for (const key of selectedKeys.toReversed()) {
+            tx.nodes.remove({ at: key });
+          }
         };
 
         return {
@@ -1709,19 +1765,15 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           }: {
             format?: 'all' | 'none' | 'single';
           } = {}) => {
-            const blockSelection = editor.plugin(BlockSelectionPlugin);
-
             if (context.store.get('toolName') !== 'generate') {
-              const selected = getSelectedBlocks();
+              const selected = tx.nodes.blocks();
               const nodes = cloneDeep(selected.map(([node]) => node));
 
               const last = getChatBlocks(tx.ai.undo()).at(-1);
 
               if (!last) return;
 
-              tx.blockSelection.insertBlocksAndSelect(nodes, {
-                at: PathApi.next(last[1]),
-              });
+              insertBlocksAfterAndSelect(nodes, last);
               reviewSuggestions('accept');
               tx.nodes.remove({
                 at: [],
@@ -1738,8 +1790,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             if (!source) return;
 
-            const isBlockSelecting =
-              blockSelection.store.get('isSelectingSome');
+            const isNodeSelecting = tx.selection.nodes().length > 0;
 
             const restored = tx.ai.undo();
             tx.nodes.remove({
@@ -1750,7 +1801,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               hideOptions();
             });
 
-            if (isBlockSelecting) {
+            if (isNodeSelecting) {
               const selected = getChatBlocks(restored);
 
               const last = selected.at(-1);
@@ -1768,9 +1819,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
               if (!blocks) return;
 
-              tx.blockSelection.insertBlocksAndSelect(blocks, {
-                at: PathApi.next(last[1]),
-              });
+              insertBlocksAfterAndSelect(blocks, last);
 
               return;
             }
@@ -1784,8 +1833,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             if (!edges) return;
 
             const [, end] = edges;
-            const endPath = [end.path[0]];
-            const current = tx.nodes.block({ at: endPath });
+            const current = tx.nodes.block({ at: end });
 
             if (!current) return;
 
@@ -1800,9 +1848,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             if (!blocks) return;
 
-            tx.blockSelection.insertBlocksAndSelect(blocks, {
-              at: PathApi.next(endPath),
-            });
+            insertBlocksAfterAndSelect(blocks, current);
           },
           insertChunk,
           rejectSuggestions: () => {
@@ -1826,9 +1872,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               hideOptions();
             });
 
-            const blockSelection = editor.plugin(BlockSelectionPlugin);
-
-            if (!blockSelection.store.get('isSelectingSome')) {
+            if (tx.selection.nodes().length === 0) {
               const block = tx.nodes.block();
 
               if (
@@ -1879,10 +1923,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             if (!blocks) return;
 
-            tx.blockSelection.removeNodes();
-            tx.blockSelection.insertBlocksAndSelect(blocks, {
-              at: selected[0][1],
-            });
+            replaceBlocksAndSelect(blocks, selected);
           },
         };
       },

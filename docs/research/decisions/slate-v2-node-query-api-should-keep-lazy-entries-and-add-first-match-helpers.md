@@ -39,7 +39,7 @@ for (const [node, path] of state.nodes.entries({ at, match })) {
 }
 
 const entries = editor.read((state) =>
-  state.nodes.toArray({ at, match }, ([node, path]) => ({ node, path })),
+  state.nodes.toArray({ at, match }).map(([node, path]) => ({ node, path })),
 );
 ```
 
@@ -79,8 +79,8 @@ of a generator or returning a generator that may be consumed after the boundary.
 
 - Keep a lazy all-matches method on `state.nodes`.
 - Add first-match and boolean helpers so active checks do not allocate arrays.
-- Add an explicit `toArray(options, map?)` materializer for callers that really
-  need a stable array from a read/update callback.
+- Add an explicit `toArray(options)` materializer for callers that need a stable
+  array from a read/update callback. Native array methods own projection.
 - Prefer names that avoid `state.nodes.match({ match: ... })` stutter.
 - Keep the legacy `match` option name because it is Slate-close and already used
   across query/transform options.
@@ -101,7 +101,7 @@ return a stable array afterward.
 Updated direction:
 
 - keep `entries` / `find` / `some`;
-- reopen only `state.nodes.toArray(options, map?)` as an allocation-explicit
+- reopen only `state.nodes.toArray(options)` as an allocation-explicit
   materializer;
 - keep `filter`, `map`, `every`, selector strings, product helpers, `count`, and
   type indexes rejected or deferred;

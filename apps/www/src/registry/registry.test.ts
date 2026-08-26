@@ -1,15 +1,35 @@
 import { describe, expect, it } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { getRegistryIndexComponentPath } from '../../scripts/registry-index.mts';
-import { createPlateRegistry, PLATE_REGISTRY_BASES } from './registry';
+import {
+  createPlateRegistry,
+  PLATE_DEFAULT_REGISTRY_BASE,
+  PLATE_REGISTRY_BASES,
+} from './registry';
+import {
+  EDITOR_REGISTRY_VARIANTS,
+  getEditorRegistryVariantFileName,
+  getEditorRegistryVariantSourcePath,
+} from './registry-variants';
 
 describe('Plate registry editor files', () => {
   const { items } = createPlateRegistry();
 
+  it('uses the supported shadcn preset bases', () => {
+    expect(PLATE_REGISTRY_BASES).toEqual(['base', 'radix']);
+    expect(PLATE_DEFAULT_REGISTRY_BASE).toBe('base');
+    expect(
+      createPlateRegistry().items.find((item) => item.name === 'toolbar')
+        ?.files?.[0]?.path
+    ).toBe('bases/base/toolbar.tsx');
+  });
+
   function toEditorTarget(path: string) {
-    return `@components/editor/${path.slice(path.indexOf('components/editor/') + 'components/editor/'.length)}`;
+    return `@components/editor/${path.slice(
+      path.indexOf('components/editor/') + 'components/editor/'.length
+    )}`;
   }
 
   it('installs editor component files through the configured components alias', () => {
@@ -24,29 +44,78 @@ describe('Plate registry editor files', () => {
     }
   });
 
-  it('resolves every Toolbar base to one installed editor path', () => {
-    for (const base of PLATE_REGISTRY_BASES) {
-      const toolbar = createPlateRegistry('https://platejs.org', {
-        base,
-      }).items.find((item) => item.name === 'toolbar');
-      const file = toolbar?.files?.[0];
+  it('resolves direct primitive owners through base variants', () => {
+    for (const [target, variant] of EDITOR_REGISTRY_VARIANTS) {
+      const fileName = getEditorRegistryVariantFileName(target);
 
-      expect(file?.path).toBe(
-        base === 'radix'
-          ? 'components/editor/toolbar.tsx'
-          : `bases/${base}/editor/toolbar.tsx`
-      );
-      expect(file?.target).toBe('@components/editor/toolbar.tsx');
-      expect(toolbar?.dependencies).toContain(
-        base === 'base'
-          ? '@base-ui/react'
-          : base === 'aria'
-            ? 'react-aria-components'
-            : '@radix-ui/react-toolbar'
-      );
       expect(
-        existsSync(join(import.meta.dir, file?.path ?? 'missing-toolbar'))
-      ).toBe(true);
+        existsSync(join(import.meta.dir, 'components/editor', fileName))
+      ).toBe(false);
+
+      for (const base of PLATE_REGISTRY_BASES) {
+        const item = createPlateRegistry('https://platejs.org', {
+          base,
+        }).items.find((candidate) => candidate.name === variant.itemName);
+        const file = item?.files?.[0];
+
+        expect(file?.path).toBe(
+          getEditorRegistryVariantSourcePath(target, base)
+        );
+        expect(file?.target).toBe(target);
+        for (const packageName of variant.packages[base]) {
+          expect(item?.dependencies).toContain(packageName);
+        }
+        expect(
+          existsSync(
+            join(import.meta.dir, file?.path ?? `missing-${variant.itemName}`)
+          )
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('keeps only declared provider authors in each base directory', () => {
+    const expectedFileNames = [...EDITOR_REGISTRY_VARIANTS.keys()]
+      .map(getEditorRegistryVariantFileName)
+      .sort();
+
+    for (const base of PLATE_REGISTRY_BASES) {
+      const entries = readdirSync(join(import.meta.dir, 'bases', base), {
+        withFileTypes: true,
+      });
+
+      expect(
+        entries
+          .map((entry) => (entry.isFile() ? entry.name : `${entry.name}/`))
+          .sort()
+      ).toEqual(expectedFileNames);
+    }
+  });
+
+  it('keeps website provider routing outside copied registry source', () => {
+    const tsconfig = JSON.parse(
+      readFileSync(join(import.meta.dir, '../../tsconfig.json'), 'utf-8')
+    ) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+
+    for (const target of EDITOR_REGISTRY_VARIANTS.keys()) {
+      const moduleName = target
+        .replace('@components/', '@/registry/components/')
+        .replace(/\.tsx$/, '');
+      const fileName = getEditorRegistryVariantFileName(target).replace(
+        /\.tsx$/,
+        ''
+      );
+      const sourcePath = `./src/components/site-registry/${fileName}`;
+
+      expect(tsconfig.compilerOptions.paths[moduleName]).toEqual([sourcePath]);
+
+      for (const item of items) {
+        expect(item.files?.map((file) => file.path)).not.toContain(
+          `../components/site-registry/${fileName}.tsx`
+        );
+      }
     }
   });
 

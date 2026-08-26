@@ -2,7 +2,11 @@
 
 import { DOMPlugin, Hotkeys } from '@platejs/core';
 import { pipeHandler } from '@platejs/core/react/internal';
-import { jsxt, type TestEditor } from '@platejs/test-utils';
+import {
+  jsxt,
+  projectTestSelectionRange,
+  type TestEditor,
+} from '@platejs/test-utils';
 
 import { createTestTableEditor } from '../lib/__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
@@ -150,7 +154,9 @@ describe('TablePlugin navigation', () => {
     editor.update.break.insert();
 
     expect(editor.read.children()).toMatchObject(output.children);
-    expect(editor.read.selection()).toEqual(output.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 
   it('keeps Backspace at the start of a cell inside the current cell', () => {
@@ -195,7 +201,9 @@ describe('TablePlugin navigation', () => {
     editor.update.text.deleteBackward();
 
     expect(editor.read.children()).toMatchObject(output.children);
-    expect(editor.read.selection()).toEqual(output.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 
   it('selectAll selects the whole table when the cursor is inside it', () => {
@@ -219,7 +227,7 @@ describe('TablePlugin navigation', () => {
 
     expect(editor.plugin(BaseTablePlugin).update.selectAll()).toBe(true);
     if (!tableRange) throw new Error('Expected table range');
-    expect(editor.read.selection()).toEqual({ ...tableRange, kind: 'text' });
+    expect(editor.read.selection()).toEqual(tableRange);
   });
 
   it('second selectAll escalates from the table to the whole document', () => {
@@ -246,10 +254,7 @@ describe('TablePlugin navigation', () => {
     expect(editor.plugin(BaseTablePlugin).update.selectAll()).toBe(true);
     expect(editor.plugin(BaseTablePlugin).update.selectAll()).toBe(true);
     if (!documentRange) throw new Error('Expected document range');
-    expect(editor.read.selection()).toEqual({
-      ...documentRange,
-      kind: 'text',
-    });
+    expect(editor.read.selection()).toEqual(documentRange);
   });
 
   it('collapses a multi-cell selection before tabbing', () => {
@@ -283,7 +288,6 @@ describe('TablePlugin navigation', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
       focus: { offset: 2, path: [0, 0, 1, 0, 0] },
-      kind: 'text',
     });
   });
 
@@ -314,7 +318,6 @@ describe('TablePlugin navigation', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
-      kind: 'text',
     });
   });
 
@@ -345,7 +348,6 @@ describe('TablePlugin navigation', () => {
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0, 0, 0] },
-      kind: 'text',
     });
   });
 
@@ -424,7 +426,9 @@ describe('TablePlugin navigation', () => {
     const editor = createTableEditor(input);
 
     expect(moveLineTable(editor, { reverse: false })).toBe(true);
-    expect(editor.read.selection()).toEqual(output.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 
   it('keeps ArrowUp inside a multi-block cell until the caret reaches the start', () => {
@@ -502,7 +506,9 @@ describe('TablePlugin navigation', () => {
     const editor = createTableEditor(input);
 
     expect(moveLineTable(editor, { reverse: true })).toBe(true);
-    expect(editor.read.selection()).toEqual(output.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 
   it('keeps ArrowDown native inside a soft-break cell before the last visual line', () => {
@@ -542,7 +548,9 @@ describe('TablePlugin navigation', () => {
     );
 
     expect(moveLineTable(editor, { reverse: false })).toBe(false);
-    expect(editor.read.selection()).toEqual(selection);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(selection)
+    );
   });
 
   it('keeps ArrowDown native when DOM ranges are unavailable', () => {
@@ -575,7 +583,9 @@ describe('TablePlugin navigation', () => {
     spyOn(editor.api.dom, 'resolveDOMRange').mockReturnValue(null);
 
     expect(moveLineTable(editor, { reverse: false })).toBe(false);
-    expect(editor.read.selection()).toEqual(selection);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(selection)
+    );
   });
 
   it('moves ArrowDown to the next cell from the last visual line in a soft-break cell', () => {
@@ -634,7 +644,9 @@ describe('TablePlugin navigation', () => {
     );
 
     expect(moveLineTable(editor, { reverse: false })).toBe(true);
-    expect(editor.read.selection()).toEqual(output.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 
   it('keeps ArrowUp native inside a soft-wrapped cell after the first visual line', () => {
@@ -674,7 +686,9 @@ describe('TablePlugin navigation', () => {
     );
 
     expect(moveLineTable(editor, { reverse: true })).toBe(false);
-    expect(editor.read.selection()).toEqual(selection);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(selection)
+    );
   });
 
   it('moves ArrowUp to the previous cell from the first visual line in a soft-wrapped cell', () => {
@@ -733,6 +747,8 @@ describe('TablePlugin navigation', () => {
     );
 
     expect(moveLineTable(editor, { reverse: true })).toBe(true);
-    expect(editor.read.selection()).toEqual(output.selection!);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 });

@@ -224,7 +224,6 @@ test.describe('On markdown-shortcuts example', () => {
     await expect(page.locator('ul')).toHaveCount(0);
     await expect.poll(() => editor.get.modelText()).toBe('');
     await editor.assert.selection({
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -469,7 +468,6 @@ test.describe('On markdown-shortcuts example', () => {
       await expect(textbox.locator('h1')).toHaveText('Heading');
       await editor.assert.blockTexts(['Heading', '']);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 'Heading'.length },
         focus: { path: [0, 0], offset: 'Heading'.length },
       });
@@ -499,7 +497,6 @@ test.describe('On markdown-shortcuts example', () => {
       await expect(textbox.locator('h1')).toHaveText('Heading');
 
       await editor.selection.selectDOM({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -510,7 +507,6 @@ test.describe('On markdown-shortcuts example', () => {
       await expect(textbox.locator('h1')).toHaveText('Heading');
       await editor.assert.blockTexts(['', 'Heading']);
       await editor.assert.selection({
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       });

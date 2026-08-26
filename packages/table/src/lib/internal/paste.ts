@@ -5,12 +5,14 @@ import {
   DocumentChange,
   type EditorDocumentValue,
   type Element,
+  type NodeSelection,
   type Path,
   type Range,
   type NodeKey,
   type Value,
   ElementApi,
   PathApi,
+  SelectionApi,
 } from '@platejs/plite';
 import type { AnyEditor } from '@platejs/plite/internal';
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -85,7 +87,7 @@ export type TableDragCapture = Readonly<{
 export type TableCellDropPlan = Readonly<{
   change: DocumentChange;
   kind: 'plan';
-  selection: Range;
+  selection: NodeSelection;
 }>;
 
 type DeepMutable<T> = T extends (...args: any[]) => unknown
@@ -1165,7 +1167,7 @@ const tableCellSelection = (
   tablePath: Path,
   root: string | undefined,
   bounds: TableSelectionBounds
-): Range | null => {
+): NodeSelection | null => {
   const context = createDetachedTableContext(table, tablePath);
   const anchors: TableGridAnchor[] = [];
   const seen = new Set<TableGridAnchor>();
@@ -1181,44 +1183,16 @@ const tableCellSelection = (
     }
   }
 
-  const cells = anchors.flatMap((anchor) => {
-    const start = firstTextPoint(
-      anchor.cell.children,
-      tablePath.concat(anchor.path),
-      'start'
-    );
-    const end = firstTextPoint(
-      anchor.cell.children,
-      tablePath.concat(anchor.path),
-      'end'
-    );
-
-    if (!start || !end) return [];
-
-    return [
-      Object.freeze({
-        anchor: Object.freeze({
-          ...start,
-          ...(root === undefined ? {} : { root }),
-        }),
-        focus: Object.freeze({
-          ...end,
-          ...(root === undefined ? {} : { root }),
-        }),
-        kind: 'text' as const,
-      }),
-    ];
-  });
-  const first = cells[0];
-  const last = cells.at(-1);
+  const paths = anchors.map((anchor) => tablePath.concat(anchor.path));
+  const first = paths[0];
+  const last = paths.at(-1);
 
   if (!first || !last) return null;
 
-  return Object.freeze({
-    anchor: first.anchor,
-    cells: Object.freeze(cells),
-    focus: last.focus,
-    kind: 'table-cell',
+  return SelectionApi.nodes([first, ...paths.slice(1)], {
+    anchorPath: first,
+    focusPath: last,
+    ...(root === undefined ? {} : { root }),
   });
 };
 

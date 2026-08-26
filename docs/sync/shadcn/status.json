@@ -13,8 +13,8 @@
   "lastSyncedCommit": "cd54e0927f3853a777f700a0bbf34507cf697b9c",
   "lastSyncedAt": "2026-06-02",
   "lastSyncPlan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
-  "lastPlannedCommit": "cd54e0927f3853a777f700a0bbf34507cf697b9c",
-  "lastPlan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
+  "lastPlannedCommit": "b9938d94635fca7a4560449713b0b1ba87d77bc6",
+  "lastPlan": "docs/sync/shadcn/runs/2026-08-24-cd54e09-to-b9938d9/plan.md",
   "baselineNotes": [
     "Initial tracker seeded from the current codex/fumadocs-migration branch and the local ../shadcn origin/main checkout.",
     "The original migration plan did not record an exact upstream SHA; future syncs must not advance this value without a complete range plan and verification."
@@ -202,9 +202,39 @@
         "pnpm exec biome check apps/www/package.json pnpm-lock.yaml: package JSON checked; lockfile version verified by pnpm install and semantic assertions",
         "Browser proof on http://localhost:3003/r/registries.json and http://localhost:3003/init: valid registry JSON, @plate URL preserved, no console warnings/errors"
       ]
+    },
+    {
+      "range": "cd54e0927f3853a777f700a0bbf34507cf697b9c..b9938d94635fca7a4560449713b0b1ba87d77bc6",
+      "implementedAt": "2026-08-25",
+      "plan": "docs/plans/2026-08-24-complete-base-first-registry-variants.md",
+      "baselineAdvanced": false,
+      "slices": [
+        "Base-first registry contract: retained shadcn 4.19.0 preset inventory, made Base/base-nova the default canonical graph, kept Radix as a sparse four-item interaction overlay, and proved every public semantic item under both supported providers"
+      ],
+      "deferred": [
+        "Docs sidebar scroll restoration and duplicate-active-link resilience",
+        "Fumadocs source refresh",
+        "React DayPicker v9 Calendar migration"
+      ],
+      "excluded": [
+        "Upstream @shadcn/react and 374 base primitive/example source rows",
+        "React Aria provider routes and source because the installed Plate graph does not support them",
+        "Upstream generated registry output and deleted style source trees",
+        "v0/create/typeset/theme/product/example surfaces"
+      ],
+      "verification": [
+        "pnpm --filter www add shadcn@4.19.0",
+        "pnpm --filter www exec shadcn --version: 4.19.0",
+        "Installed shadcn/preset readback: upstream radix/base/aria catalog and eight styles; Plate support is the explicit radix/base subset",
+        "pnpm --filter www exec tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts",
+        "Focused registry build, response, variant, and init contract tests pass",
+        "pnpm --filter www build:registry: one canonical Base registry plus a four-item Radix overlay",
+        "Isolated shadcn 4.19 Vite consumers: all 380 public items install under Base and Radix; all four adapter owners typecheck under both; normalized full tsc -b diagnostics have zero provider-only rows",
+        "Chrome installed-Base harness: toolbar overlay reporting, floating popover, dropdown, and context menu open/close/focus paths pass after a fresh reload; zero page console warnings/errors, failed network events, or HTTP >=400 responses"
+      ]
     }
   ],
-  "lastPlannedAt": "2026-06-02",
-  "lastFullPlan": "docs/sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md",
+  "lastPlannedAt": "2026-08-24",
+  "lastFullPlan": "docs/sync/shadcn/runs/2026-08-24-cd54e09-to-b9938d9/plan.md",
   "lastPlannedScope": "latest full range"
 }

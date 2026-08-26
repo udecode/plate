@@ -19,10 +19,12 @@ import {
   type InitialValue,
   property,
   schema,
+  SelectionApi,
   type Value,
 } from '@platejs/plite';
 import {
   jsxt,
+  projectTestSelectionRange,
   type TestEditor,
   type TestEditorFixture,
 } from '@platejs/test-utils';
@@ -540,6 +542,54 @@ describe('list toggling', () => {
             </editor>
           ).children
         );
+      });
+
+      it('wraps only exact node selection members', () => {
+        const editor = createBaseEditor({
+          plugins: [BaseListPlugin],
+          selection: SelectionApi.nodes([[0], [2]]),
+          initialValue: [
+            { children: [{ text: 'AAA' }], type: 'paragraph' },
+            { children: [{ text: 'BBB' }], type: 'paragraph' },
+            { children: [{ text: 'CCC' }], type: 'paragraph' },
+          ],
+        });
+
+        editor.plugin(BaseListPlugin).update.toggle({
+          type: editor.plugin(PLUGINS.bulletedList).schema.type,
+        });
+
+        expect(editor.read.children()).toEqual([
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ text: 'AAA' }],
+                    type: 'listItemContent',
+                  },
+                ],
+                type: 'listItem',
+              },
+            ],
+            type: 'bulletedList',
+          },
+          { children: [{ text: 'BBB' }], type: 'paragraph' },
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ text: 'CCC' }],
+                    type: 'listItemContent',
+                  },
+                ],
+                type: 'listItem',
+              },
+            ],
+            type: 'bulletedList',
+          },
+        ]);
       });
 
       it('keeps configured valid list-item children at the list item root', () => {
@@ -1718,7 +1768,9 @@ describe('line breaks', () => {
       editor.update.break.insert();
 
       expect(editor.read.children()).toEqual(expected.children);
-      expect(editor.read.selection()).toEqual(expected.selection!);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(expected.selection!)
+      );
     });
 
     it('inserts a sibling list item for non-empty content', () => {
@@ -1754,7 +1806,9 @@ describe('line breaks', () => {
       editor.update.break.insert();
 
       expect(editor.read.children()).toEqual(expected.children);
-      expect(editor.read.selection()).toEqual(expected.selection!);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(expected.selection!)
+      );
     });
 
     it('inherits task state when inserting before a task item', () => {
@@ -1837,7 +1891,9 @@ describe('line breaks', () => {
           { checked: true, children: [{ children: [{ text: '' }] }] },
         ],
       });
-      expect(editor.read.selection()?.anchor.path).toEqual([0, 1, 0, 0]);
+      const selection = editor.read.selection();
+
+      expect(selection?.anchor.path).toEqual([0, 1, 0, 0]);
     });
 
     it('falls back to normal insertBreak outside lists', () => {
@@ -1864,7 +1920,9 @@ describe('line breaks', () => {
       editor.update.break.insert();
 
       expect(editor.read.children()).toEqual(expected.children);
-      expect(editor.read.selection()).toEqual(expected.selection!);
+      expect(editor.read.selection()).toEqual(
+        projectTestSelectionRange(expected.selection!)
+      );
     });
   });
 });

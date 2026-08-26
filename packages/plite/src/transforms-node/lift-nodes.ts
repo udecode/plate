@@ -4,7 +4,13 @@ import {
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { type Ancestor, LocationApi, NodeApi, RangeApi } from '../interfaces';
+import {
+  type Ancestor,
+  LocationApi,
+  NodeApi,
+  RangeApi,
+  SelectionApi,
+} from '../interfaces';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
@@ -100,6 +106,25 @@ export const liftNodes = ((
     let match = normalizeNodeMatch(options.type, options.match);
 
     if (!target) {
+      return;
+    }
+
+    if (SelectionApi.isNode(target)) {
+      const nodeMatch = match ?? (() => true);
+      const pathAnchors = Array.from(
+        getNodes(editor, { at: target, match: nodeMatch, mode, voids }),
+        ([, path]) =>
+          editor.anchor(path, {
+            association: 'forward',
+            deletion: 'drop',
+          })
+      );
+
+      for (const pathAnchor of pathAnchors) {
+        const path = pathAnchor.release();
+
+        if (path) liftNodeAtPath(path);
+      }
       return;
     }
 

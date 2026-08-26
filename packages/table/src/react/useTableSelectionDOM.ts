@@ -24,7 +24,7 @@ export const useTableSelectionDOM = (
   > | null>(null);
   const { caretCellKey, selectedCellKeys } = useEditorSelector(
     (editor) => {
-      const view = editor.plugin(TablePlugin).read.getSelection();
+      const view = editor.plugin(TablePlugin).read.selection();
       const isExpanded = !!view && view.anchors.length > 1;
 
       return {

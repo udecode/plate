@@ -1,4 +1,6 @@
 import type { AnyEditor as Editor, Selection } from '../interfaces/editor';
+import { RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
 import { cloneEditorJsonValue } from './value-codec';
 
@@ -22,6 +24,26 @@ const normalizeSelectionRoot = (
   const cloned = cloneEditorJsonValue(selection ?? null);
 
   if (!cloned) {
+    return cloned;
+  }
+
+  if (SelectionApi.isNode(cloned)) {
+    return SelectionApi.nodes(
+      cloned.paths,
+      root === MAIN_ROOT_KEY
+        ? {
+            anchorPath: cloned.anchorPath,
+            focusPath: cloned.focusPath,
+          }
+        : {
+            anchorPath: cloned.anchorPath,
+            focusPath: cloned.focusPath,
+            root,
+          }
+    );
+  }
+
+  if (!RangeApi.isRange(cloned)) {
     return cloned;
   }
 

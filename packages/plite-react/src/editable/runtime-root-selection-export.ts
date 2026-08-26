@@ -2,7 +2,10 @@ import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
-import { getSelectionPrimaryRange } from './runtime-editor-api';
+import {
+  getSelection as getEditorSelection,
+  getSelectionDOMRange,
+} from './runtime-editor-api';
 import { subscribeSelectionOnlyDOMExport } from './selection-runtime';
 
 export const useEditableRootSelectionExport = ({
@@ -20,8 +23,8 @@ export const useEditableRootSelectionExport = ({
     const unsubscribe = subscribeSelectionOnlyDOMExport({
       addSelectorEventListener,
       getDOMSelectionProjection: (selection) =>
-        getSelectionPrimaryRange(editor, selection),
-      getModelSelection: () => editor.read((state) => state.selection()),
+        getSelectionDOMRange(editor, selection),
+      getModelSelection: () => getEditorSelection(editor),
       inputController,
       scheduleDOMExport: (callback) =>
         domPhaseScheduler.schedule(
