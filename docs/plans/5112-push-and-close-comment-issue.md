@@ -36,8 +36,8 @@ Reporter-valid behavior case:
 - browser / OS-device / branch-channel / observed bad ref: Google Chrome 151 on macOS, Plate `next`/Beta; original deployed bad ref unknown; current local base `d282fd8a33affb40d2b60103b6c1ce370140d2eb`
 - claim fields: model mark cleanup, native DOM selection/caret, editor focus, popover open/close, toolbar geometry/paint, runtime errors, and follow-up typing/formatting
 - exact red proof: completed Regression plans record anchor, cancel/caret, and resolve/toolbar reds before the local fixes
-- final replay ref and production/test/fixture/harness fingerprints: pending final commit, push verification, clean matching checkout, and post-push receipt
-- retry-free warm result and required Chrome/device spot check: local candidate passed three comment cases 15/15 with zero retries on exact installed Chrome; final pushed-ref 5/5 replay pending
+- final replay ref and production/test/fixture/harness fingerprints: pushed integration commit `219d1a9a2d` exposed a proof-host CSS failure and a `FloatingPopover` anchor integration miss; repaired candidate fingerprints and final post-repair pushed receipt remain pending
+- retry-free warm result and required Chrome/device spot check: post-`v2` repair passes Tailwind 1/1, toolbar 4/4, comment corpus 3/3, Regression 51/51, issue-reporter self-test, and `www` typecheck; final pushed-ref 5/5 replay pending
 - current status: `candidate-local`
 
 First checkpoint:
@@ -80,7 +80,7 @@ Boundaries:
 - Source of truth: live GitHub issue state, current checkout, fetched `origin/next`, executable tests, and final pushed SHA
 - Allowed edit scope: repository rules require committing every current modified/untracked file; fix verified P1 blockers in that complete commit scope and resolve rebase conflicts without changing unrelated intent
 - Public mutation authority: explicit user authority for commit, push, one issue status comment, and close #5112; no PR, merge, release, labels, or other issue mutations
-- Security scope: #5112 is non-security; known issue-reporter orphan-upload P1 must be fixed because the entire dirty checkout enters the commit, without remote deletion or secret output
+- Security scope: #5112 is non-security; the issue-reporter orphan-upload P1 is fixed by reporting every attempted public URL on pre-creation failure, without remote deletion or secret output
 - Browser surface: local exact installed Chrome against a clean checkout of the final pushed `next` ref
 - Non-goals: no force push, PR, release, package publish, label changes, other issue closure, or broad queue scan
 
@@ -91,17 +91,17 @@ Blocked condition:
 - Block only if GitHub auth/push authority fails, the giant `origin/next` integration cannot preserve the current checkout safely, a commit-scope P1 remains, final clean-checkout Chrome replay fails, or live issue state contradicts closure.
 
 Maintainer state:
-- current_phase: commit-scope repair and integration readiness
+- current_phase: post-integration repair ready to commit and push
 - current_phase_status: in_progress
 - selected_item: udecode/plate#5112
-- selected_owner: maintainer coordinating existing Regression/Patch packet plus skill-creator repair for the commit-scope reporter P1
+- selected_owner: maintainer coordinating the Regression/Patch packet, completed skill-creator P1 repair, and final current-next replay
 - goal_status: active
 
 Current verdict:
-- verdict: candidate-local; not yet legal to close
-- confidence: high in local #5112 behavior, pending current-next integration and final pushed-ref replay
-- next owner: skill-creator repair, then maintainer integration/push/final proof
-- reason: live issue is open and unclaimed; local packet is green, but current branch is one large commit behind `origin/next` and the complete checkout contains one known P1
+- verdict: candidate-local after repairing the final-ref integration failure; not yet legal to close
+- confidence: high in the repaired integrated checkout, pending final commit/push and five-run clean-ref replay
+- next owner: maintainer commit/push/final proof
+- reason: live issue is open and unclaimed; complete-scope P1 is fixed and all focused integrated checks pass, but the latest repairs are not pushed yet
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -198,7 +198,7 @@ Completion Gates:
 Candidate matrix:
 | Rank | Item | Source | Live state | Category | VISION fit | Intake | Duplicate/claim guard | Owner | Proof | Authority | Decision |
 |------|------|--------|------------|----------|------------|--------|-----------------------|-------|-------|-----------|----------|
-| 1 | #5112 first comment composer / comment lifecycle | user-selected live issue | OPEN; no comments, assignee, or related PR; updated 2026-08-26 | Plate registry browser regression | yes: precise local focus/selection and source-owned registry behavior | agent-ready after cumulative reporter deltas in this task | pass: no related PR, assignee, or public claim | maintainer coordinates completed Regression/Patch packet and final-ref proof | clean final-SHA Chrome full corpus 5/5 plus exact fingerprints | explicit commit/push/comment/close | execute after complete-scope P1 repair and current-next integration |
+| 1 | #5112 first comment composer / comment lifecycle | user-selected live issue | OPEN; no comments, assignee, or related PR; updated 2026-08-26 | Plate registry browser regression | yes: precise local focus/selection and source-owned registry behavior | agent-ready after cumulative reporter deltas in this task | pass: no related PR, assignee, or public claim | maintainer coordinates completed Regression/Patch packet and final-ref proof | clean final-SHA Chrome full corpus 5/5 plus exact fingerprints | explicit commit/push/comment/close | integrated candidate green; commit/push/final replay next |
 
 Rejected / skipped candidates:
 | Item | Reason | Next possible owner |
@@ -218,33 +218,46 @@ Heartbeat handoff:
 
 Findings:
 - #5112 is live OPEN with no comments, assignee, linked PR, duplicate, or competing claim.
-- Local `next` HEAD `d282fd8a` is one giant `v2` commit behind `origin/next` `98184323`; non-force integration is required before push.
-- Repository rules make every current modified/untracked file part of the commit. The prior P1 review found one blocker in the new issue-reporter publisher: partial multi-video uploads can become public orphans without their URLs being reported.
+- The complete checkout was rebased onto `v2` and pushed as `219d1a9a2d` without force. The final-ref replay correctly blocked closure before reporter assertions because imported preview CSS generated invalid double-escaped selectors.
+- Reinstall proved the CSS failure was source-owned. Unquoted attribute selectors in the imported preview CSS compile, and the existing Tailwind guard passes.
+- The upstream `FloatingPopover` migration also required the comment owner to keep a lazy virtual anchor. Immediate DOM resolution returned `null` before the split draft leaf materialized and never triggered another wrapper render.
+- The issue-reporter P1 is fixed: every attempted public URL is reported when upload, verification, or issue creation fails before the issue exists. The full reporter self-test passes.
 
 Timeline:
 - 2026-08-27: user explicitly authorized commit, push, and closing #5112.
 - 2026-08-27: live issue/PR search, VISION/intake rules, checkout scope, and origin divergence read.
+- 2026-08-27: committed the complete checkout, rebased onto `98184323`, resolved source/generated conflicts, and pushed `219d1a9a2d` without force.
+- 2026-08-27: final-ref replay stopped on a source-owned Tailwind host failure; reinstall reproduced it, then the CSS owner and `FloatingPopover` anchor integration were repaired.
+- 2026-08-27: repaired integrated checkout passed comment 3/3, Tailwind 1/1, toolbar 4/4, Regression 51/51, issue-reporter self-test, and `www` typecheck.
 
 Decisions and tradeoffs:
 - Do not force push or close from dirty/local proof.
 - Fix the commit-scope reporter P1 before committing because repository rules require including that skill in the push.
 - Commit first, then rebase onto the one newer `origin/next` commit; final public proof must run after the rebase on the pushed SHA.
+- Treat the failed `219d1a9a2d` replay as a valid closure interrupt, not a product completion. Push the host/anchor repair and restart final-ref proof from zero.
 
 Review fixes:
-- pending
+- Fixed the commit-scope upload-orphan P1 with an executable two-video partial-failure test.
+- Rejected the first post-rebase P1 finding as stale plan text after verifying the publisher source and self-test already contain the fix; this plan now records the current fact.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| First final receipt input named the removed virtual `floating-popover.tsx` path | 1 | Resolve the current registry base/radix owners | Added both real owner variants to the proof fingerprint set. |
+| First pushed-ref replay | 1 | Stop repeats and classify before product edits | Build failed before reporter assertions; reinstall reproduced the source-owned CSS error. |
 
 Verification evidence:
-- pending
+- Integrated local candidate: comment browser corpus 3/3, exact Chrome.
+- `bun test` Tailwind plus floating-toolbar owners: 5/5.
+- Regression workflow: 51/51.
+- GitHub issue reporter and recording helper self-tests: pass.
+- `pnpm --filter www exec tsc --noEmit --pretty false`: pass.
+- Final pushed-ref five-run receipt: pending the repair commit and push.
 
 Reboot status:
 | Where am I? | Where am I going? | What is the goal? | What learned? | What done? |
 |-------------|-------------------|-------------------|---------------|------------|
-| pending | pending | pending | pending | pending |
+| post-integration repair | commit and push repaired checkout, then clean final-ref replay and close | close #5112 only after five-run Chrome proof | imported CSS quoted selector was a source host bug; FloatingPopover needs a lazy model-backed anchor | complete checkout committed/rebased/pushed once; integrated repair is green and pending final push |
 
 Open risks:
-- pending
+- Final commit/push may change the remote SHA; all public fixed/closed wording remains blocked until the fresh final-ref replay passes.

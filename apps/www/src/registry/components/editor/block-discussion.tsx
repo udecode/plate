@@ -513,32 +513,52 @@ const BlockCommentDetails = ({
       selected ||
       (isCommenting && !!draftCommentNode && commentingCurrent));
 
-  const anchorElement = (() => {
-    let activeNode: NodeEntry<Element | Text> | undefined;
+  const activeNode = (() => {
+    let resolvedNode: NodeEntry<Element | Text> | undefined;
 
     if (activeSuggestion) {
-      activeNode = suggestionNodes.find(
+      resolvedNode = suggestionNodes.find(
         ([node]) => suggestionApi.id(node) === activeSuggestion.suggestionId
       );
     }
 
     if (activeCommentId) {
       if (activeCommentId === getDraftCommentKey()) {
-        activeNode = draftCommentNode;
+        resolvedNode = draftCommentNode;
       } else {
-        activeNode = commentNodes.find(
+        resolvedNode = commentNodes.find(
           ([node]) => commentsApi.id(node) === activeCommentId
         );
       }
     }
 
-    if (!activeNode) return null;
-
-    return editor.api.dom.resolveDOMNode(activeNode[0]);
+    return resolvedNode;
   })();
+  const activeNodePathKey = activeNode?.[1].join(",") ?? null;
+  const blockPathKey = blockPath.join(",");
+  const activeVirtualAnchor = activeNodePathKey
+    ? {
+        getBoundingClientRect: () => {
+          const activePath = activeNodePathKey.split(",").map(Number);
+          const fallbackPath = blockPathKey.split(",").map(Number);
+          const activeNodeElement = editor.read.nodes.get(activePath)?.[0];
+          const blockElement = editor.read.nodes.get(fallbackPath)?.[0];
+          const anchorElement = activeNodeElement
+            ? editor.api.dom.resolveDOMNode(activeNodeElement)
+            : null;
+          const fallbackElement = blockElement
+            ? editor.api.dom.resolveDOMNode(blockElement)
+            : editor.api.dom.root();
+          const measuredElement =
+            anchorElement ?? fallbackElement ?? editor.api.dom.root();
+
+          return measuredElement?.getBoundingClientRect() ?? new DOMRect();
+        },
+      }
+    : null;
   const [triggerElement, setTriggerElement] =
     React.useState<HTMLButtonElement | null>(null);
-  const popoverAnchorElement = anchorElement ?? triggerElement;
+  const popoverAnchorElement = activeVirtualAnchor ?? triggerElement;
 
   return (
     <div className="flex w-full justify-between">

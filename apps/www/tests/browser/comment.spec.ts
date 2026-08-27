@@ -47,10 +47,14 @@ test('comment: first composer stays anchored to the selected text', async ({
     await expect(commentButton).toBeVisible();
     await commentButton.click();
 
-    const popover = page.locator('[data-slot="popover-content"]');
-    const replyInput = popover.locator(
-      '[data-plite-editor="true"][contenteditable="true"]'
-    );
+    const popover = page.locator('.cn-popover-content').filter({
+      has: page.locator(
+        '[data-plite-editor="true"][contenteditable="true"]'
+      ),
+    });
+    const replyInput = popover
+      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .last();
 
     await expect(replyInput).toBeVisible();
     await expect(replyInput).toBeFocused();
@@ -58,14 +62,11 @@ test('comment: first composer stays anchored to the selected text', async ({
       'Reply...'
     );
 
-    const popoverWrapper = page
-      .locator('[data-radix-popper-content-wrapper]')
-      .filter({ has: popover });
     const selectedCommentMarks = page
       .locator('.plite-comment')
       .filter({ hasText: selectedText });
     const commentMark = selectedCommentMarks.last();
-    const popoverBox = await popoverWrapper.boundingBox();
+    const popoverBox = await popover.boundingBox();
     const commentBox = await commentMark.boundingBox();
 
     expect(popoverBox).not.toBeNull();
@@ -159,7 +160,11 @@ test('comment: closing an unsubmitted composer cleans only its draft mark', asyn
     await expect(floatingToolbar).toBeVisible();
     await commentButton.click();
 
-    const popover = page.locator('[data-slot="popover-content"]');
+    const popover = page.locator('.cn-popover-content').filter({
+      has: page.locator(
+        '[data-plite-editor="true"][contenteditable="true"]'
+      ),
+    });
     const selectedCommentMarks = page
       .locator('.plite-comment')
       .filter({ hasText: selectedText });
@@ -262,7 +267,11 @@ test('comment: closing an unsubmitted composer cleans only its draft mark', asyn
 
     await overlappingCommentButton.click();
 
-    const overlappingPopover = page.locator('[data-slot="popover-content"]');
+    const overlappingPopover = page.locator('.cn-popover-content').filter({
+      has: page.locator(
+        '[data-plite-editor="true"][contenteditable="true"]'
+      ),
+    });
 
     await expect(overlappingPopover).toBeVisible();
     await page.mouse.click(20, 20);
@@ -342,10 +351,14 @@ test('comment: resolving a submitted comment preserves floating toolbar recovery
 
     await commentButton.click();
 
-    const popover = page.locator('[data-slot="popover-content"]');
-    const replyInput = popover.locator(
-      '[data-plite-editor="true"][contenteditable="true"]'
-    );
+    const popover = page.locator('.cn-popover-content').filter({
+      has: page.locator(
+        '[data-plite-editor="true"][contenteditable="true"]'
+      ),
+    });
+    const replyInput = popover
+      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .last();
 
     await expect(popover).toBeVisible();
     await expect(replyInput).toBeFocused();
