@@ -1,16 +1,48 @@
-import type { OverrideEditor, TCommentText } from 'platejs';
+import type { Descendant, OverrideEditor, TCommentText } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { ElementApi, KEYS, TextApi } from 'platejs';
 
 import type { BaseCommentConfig } from './BaseCommentPlugin';
 
-import { getCommentCount, getDraftCommentKey } from './utils';
+import {
+  getCommentCount,
+  getCommentKeys,
+  getDraftCommentKey,
+  getTransientCommentKey,
+} from './utils';
+
+/** Drop source document comment marks so paste does not share discussion ids. */
+export const stripCommentKeysFromFragment = (fragment: Descendant[]) => {
+  const visit = (node: Descendant) => {
+    if (TextApi.isText(node)) {
+      const text = node as TCommentText;
+
+      for (const key of getCommentKeys(text)) {
+        delete text[key];
+      }
+
+      delete text[KEYS.comment];
+      delete text[getDraftCommentKey()];
+      delete text[getTransientCommentKey()];
+    }
+
+    if (ElementApi.isElement(node)) {
+      node.children.forEach(visit);
+    }
+  };
+
+  fragment.forEach(visit);
+};
 
 export const withComment: OverrideEditor<BaseCommentConfig> = ({
   editor,
-  tf: { normalizeNode },
+  tf: { insertFragment, normalizeNode },
 }) => ({
   transforms: {
+    insertFragment(fragment) {
+      stripCommentKeysFromFragment(fragment);
+      return insertFragment(fragment);
+    },
     normalizeNode(entry) {
       const [node, path] = entry;
 

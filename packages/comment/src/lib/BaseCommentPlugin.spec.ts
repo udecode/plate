@@ -198,4 +198,92 @@ describe('BaseCommentPlugin', () => {
       text: 'b',
     });
   });
+
+  it('strips source comment keys when pasting a slate fragment into another editor', () => {
+    const sourceFragment = [
+      {
+        children: [
+          { text: 'plain ' },
+          {
+            bold: true,
+            comment: true,
+            comment_discussion1: true,
+            text: 'commented',
+          },
+          {
+            comment: true,
+            commentTransient: true,
+            comment_discussion2: true,
+            comment_draft: true,
+            italic: true,
+            text: 'drafted',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+    const source = createCommentEditor(sourceFragment);
+    const dest = createCommentEditor([
+      {
+        children: [{ text: '' }],
+        type: 'p',
+      },
+    ]);
+
+    dest.selection = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    };
+
+    dest.tf.insertData({
+      files: [],
+      getData: (mimeType: string) =>
+        mimeType === 'application/x-slate-fragment'
+          ? window.btoa(encodeURIComponent(JSON.stringify(sourceFragment)))
+          : '',
+    } as any);
+
+    expect(collectCommentRefKeys(dest.children)).toEqual([]);
+    expect(dest.children).toEqual([
+      {
+        children: [
+          { text: 'plain ' },
+          {
+            bold: true,
+            text: 'commented',
+          },
+          {
+            italic: true,
+            text: 'drafted',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
+    expect(source.children[0].children[1]).toMatchObject({
+      comment: true,
+      comment_discussion1: true,
+      text: 'commented',
+    });
+  });
 });
+
+const collectCommentRefKeys = (nodes: any[]): string[] => {
+  const keys: string[] = [];
+  const visit = (node: any) => {
+    Object.keys(node).forEach((key) => {
+      if (
+        key === 'comment' ||
+        key === 'commentTransient' ||
+        key.startsWith('comment_')
+      ) {
+        keys.push(key);
+      }
+    });
+    node.children?.forEach(visit);
+  };
+
+  nodes.forEach(visit);
+
+  return keys;
+};
