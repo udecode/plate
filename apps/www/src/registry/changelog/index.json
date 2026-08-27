@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-08-26-fix-comment-popover-position",
+      "href": "/registry/changelog/2026-08-26-fix-comment-popover-position.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep comment popovers anchored and restore the floating toolbar after comment actions",
+      "change": {
+        "type": "source",
+        "date": "2026-08-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-discussion", "comment", "floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-26-fix-link-popover-rows",
       "href": "/registry/changelog/2026-08-26-fix-link-popover-rows.json",
       "status": "draft",

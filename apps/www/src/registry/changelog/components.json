@@ -12,6 +12,35 @@
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
+    "block-discussion": [
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-19-stabilize-suggestion-popover-anchor",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-18-inline-registry-hooks",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-05-keep-block-discussion-typing-responsive",
+      "2026-07-26-plugin-store-state",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "comment": [
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families"
+    ],
+    "floating-toolbar": [
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "link": [
       "2026-08-26-fix-link-popover-rows",
       "2026-08-25-base-first-registry",
@@ -74,11 +103,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-18-align-v55-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "comment": [
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families"
     ],
     "emoji-picker": [
       "2026-08-25-base-first-registry",
@@ -217,15 +241,6 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "floating-toolbar": [
-      "2026-08-24-preserve-toolbar-focus",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
-    ],
     "media-placeholder": [
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-20-improve-editor-control-accessibility",
@@ -302,18 +317,6 @@
     "pro-iframe-demo": [
       "2026-08-20-improve-editor-control-accessibility",
       "2025-11-20-biome-ultracite"
-    ],
-    "block-discussion": [
-      "2026-08-19-stabilize-suggestion-popover-anchor",
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-18-inline-registry-hooks",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-05-keep-block-discussion-typing-responsive",
-      "2026-07-26-plugin-store-state",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
     ],
     "date-static": [
       "2026-08-18-align-v55-ast-contracts",

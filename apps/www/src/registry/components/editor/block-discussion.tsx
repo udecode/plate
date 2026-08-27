@@ -1,20 +1,24 @@
-'use client';
+"use client";
 
-import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
-import type { NormalizePluginState } from '@platejs/core/internal';
-import { failInvariant } from '@platejs/plite/internal';
+import {
+  BaseCommentPlugin,
+  getCommentCount,
+  getDraftCommentKey,
+} from "@platejs/comment";
+import type { NormalizePluginState } from "@platejs/core/internal";
+import { failInvariant } from "@platejs/plite/internal";
 import {
   BaseSuggestionPlugin,
   SUGGESTION_TRANSIENT_KEY,
-} from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
+} from "@platejs/suggestion";
+import { SuggestionPlugin } from "@platejs/suggestion/react";
 import {
   CheckIcon,
   XIcon,
   MessageSquareTextIcon,
   MessagesSquareIcon,
   PencilLineIcon,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   ElementApi,
   type Element,
@@ -24,7 +28,7 @@ import {
   PLUGINS,
   type Text,
   TextApi,
-} from 'platejs';
+} from "platejs";
 import {
   useEditorPlugin,
   useEditorRuntimeState,
@@ -33,35 +37,35 @@ import {
   type RenderNodeWrapper,
   type RenderNodeWrapperProps,
   useEditor,
-} from 'platejs/react';
-import * as React from 'react';
+} from "platejs/react";
+import * as React from "react";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   type TDiscussion,
   discussionPlugin,
-} from '@/registry/components/editor/discussion';
+} from "@/registry/components/editor/discussion";
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
   FloatingPopoverContent,
-} from '@/registry/components/editor/floating-popover';
-import { suggestionPlugin } from '@/registry/components/editor/suggestion';
+} from "@/registry/components/editor/floating-popover";
+import { suggestionPlugin } from "@/registry/components/editor/suggestion";
 import {
   BLOCK_SUGGESTION_TOKEN,
   buildBlockDiscussionIndex,
   type ResolvedSuggestion,
   sameBlockDiscussionSelection,
   shouldRefreshBlockDiscussionIndex,
-} from '@/registry/lib/block-discussion-index';
+} from "@/registry/lib/block-discussion-index";
 
 import {
   Comment,
   CommentCreateForm,
   commentPlugin,
   formatCommentDate,
-} from './comment';
+} from "./comment";
 
 type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 
@@ -69,22 +73,22 @@ const EMPTY_DISCUSSIONS = Object.freeze([]) as readonly TDiscussion[];
 const EMPTY_SUGGESTIONS = Object.freeze([]) as readonly ResolvedSuggestion[];
 
 const suggestionText2Array = (text: string) => {
-  if (text === BLOCK_SUGGESTION_TOKEN) return ['line breaks'];
+  if (text === BLOCK_SUGGESTION_TOKEN) return ["line breaks"];
 
   return text.split(BLOCK_SUGGESTION_TOKEN).filter(Boolean);
 };
 
 const getRemoveSummaryItems = (text: string) => {
   const items = suggestionText2Array(text).map((item) => {
-    if (item === 'columnGroup') return 'Column';
-    if (item === 'codeBlock') return 'Code Block';
+    if (item === "columnGroup") return "Column";
+    if (item === "codeBlock") return "Code Block";
 
     return item;
   });
 
-  if (items.includes('Table')) return ['Table'];
-  if (items.includes('Code Block')) return ['Code Block'];
-  if (items.includes('Column')) return ['Column'];
+  if (items.includes("Table")) return ["Table"];
+  if (items.includes("Code Block")) return ["Code Block"];
+  if (items.includes("Column")) return ["Column"];
 
   return items;
 };
@@ -119,21 +123,21 @@ const getDiscussionIndex = (
 
   (
     [
-      [PLUGINS.audio, 'Audio'],
-      [PLUGINS.blockquote, 'Blockquote'],
-      [PLUGINS.callout, 'Callout'],
-      [PLUGINS.codeBlock, 'Code Block'],
-      [PLUGINS.column, 'Column'],
-      [PLUGINS.equation, 'Equation'],
-      [PLUGINS.file, 'File'],
-      [PLUGINS.heading, 'Heading'],
-      [PLUGINS.horizontalRule, 'Horizontal Rule'],
-      [PLUGINS.image, 'Image'],
-      [PLUGINS.mediaEmbed, 'Media'],
-      [PLUGINS.table, 'Table'],
-      [PLUGINS.toc, 'Table of Contents'],
-      [PLUGINS.toggle, 'Toggle'],
-      [PLUGINS.video, 'Video'],
+      [PLUGINS.audio, "Audio"],
+      [PLUGINS.blockquote, "Blockquote"],
+      [PLUGINS.callout, "Callout"],
+      [PLUGINS.codeBlock, "Code Block"],
+      [PLUGINS.column, "Column"],
+      [PLUGINS.equation, "Equation"],
+      [PLUGINS.file, "File"],
+      [PLUGINS.heading, "Heading"],
+      [PLUGINS.horizontalRule, "Horizontal Rule"],
+      [PLUGINS.image, "Image"],
+      [PLUGINS.mediaEmbed, "Media"],
+      [PLUGINS.table, "Table"],
+      [PLUGINS.toc, "Table of Contents"],
+      [PLUGINS.toggle, "Toggle"],
+      [PLUGINS.video, "Video"],
     ] as const
   ).forEach(([plugin, label]) => {
     const portal = editor.plugin(plugin);
@@ -155,7 +159,7 @@ const getDiscussionIndex = (
       at: [],
       match: (node): node is Element | Text =>
         ElementApi.isElement(node) || TextApi.isText(node),
-      mode: 'all',
+      mode: "all",
     }),
     getBlockLabel: (node) => {
       const heading = editor.plugin(PLUGINS.heading);
@@ -163,16 +167,16 @@ const getDiscussionIndex = (
       if (
         heading.installed &&
         node.type === heading.schema.type &&
-        typeof node.level === 'number'
+        typeof node.level === "number"
       ) {
         return `Heading ${node.level}`;
       }
       if (node.type === paragraphType) {
-        if (node.listType === 'task') return 'Todo List';
-        if (node.listType === 'numbered') return 'Ordered List';
-        if (node.listType === 'bulleted') return 'List';
+        if (node.listType === "task") return "Todo List";
+        if (node.listType === "numbered") return "Ordered List";
+        if (node.listType === "bulleted") return "List";
 
-        return 'Paragraph';
+        return "Paragraph";
       }
 
       return blockLabels.get(node.type) ?? node.type;
@@ -206,7 +210,7 @@ export function BlockSuggestionCard({
 }) {
   const { update } = useEditorPlugin(SuggestionPlugin);
 
-  const userInfo = usePluginStore(discussionPlugin, 'user', suggestion.userId);
+  const userInfo = usePluginStore(discussionPlugin, "user", suggestion.userId);
 
   const accept = (innerSuggestion: ResolvedSuggestion) => {
     update.accept(innerSuggestion);
@@ -250,9 +254,9 @@ export function BlockSuggestionCard({
 
         <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
-            {suggestion.type === 'remove' &&
+            {suggestion.type === "remove" &&
               getRemoveSummaryItems(
-                suggestion.text ?? failInvariant('Expected value to be defined')
+                suggestion.text ?? failInvariant("Expected value to be defined")
               ).map((text) => (
                 <div key={text} className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Delete:</span>
@@ -261,25 +265,25 @@ export function BlockSuggestionCard({
                 </div>
               ))}
 
-            {suggestion.type === 'insert' &&
+            {suggestion.type === "insert" &&
               suggestionText2Array(
                 suggestion.newText ??
-                  failInvariant('Expected value to be defined')
+                  failInvariant("Expected value to be defined")
               ).map((text, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Add:</span>
 
                   <span key={index} className="text-sm">
-                    {text || 'line breaks'}
+                    {text || "line breaks"}
                   </span>
                 </div>
               ))}
 
-            {suggestion.type === 'replace' && (
+            {suggestion.type === "replace" && (
               <div className="flex flex-col gap-2">
                 {suggestionText2Array(
                   suggestion.newText ??
-                    failInvariant('Expected value to be defined')
+                    failInvariant("Expected value to be defined")
                 ).map((text, index) => (
                   <React.Fragment key={index}>
                     <div
@@ -287,28 +291,28 @@ export function BlockSuggestionCard({
                       className="flex items-start gap-2 text-brand/80"
                     >
                       <span className="text-sm">with:</span>
-                      <span className="text-sm">{text || 'line breaks'}</span>
+                      <span className="text-sm">{text || "line breaks"}</span>
                     </div>
                   </React.Fragment>
                 ))}
 
                 {suggestionText2Array(
                   suggestion.text ??
-                    failInvariant('Expected value to be defined')
+                    failInvariant("Expected value to be defined")
                 ).map((text, index) => (
                   <React.Fragment key={index}>
                     <div key={index} className="flex items-start gap-2">
                       <span className="text-sm text-muted-foreground">
-                        {index === 0 ? 'Replace:' : 'Delete:'}
+                        {index === 0 ? "Replace:" : "Delete:"}
                       </span>
-                      <span className="text-sm">{text || 'line breaks'}</span>
+                      <span className="text-sm">{text || "line breaks"}</span>
                     </div>
                   </React.Fragment>
                 ))}
               </div>
             )}
 
-            {suggestion.type === 'update' && (
+            {suggestion.type === "update" && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {Object.keys(suggestion.properties ?? {}).map((key) => (
@@ -375,7 +379,7 @@ export function BlockSuggestionCard({
 
 export const isResolvedSuggestion = (
   suggestion: ResolvedSuggestion | TDiscussion
-): suggestion is ResolvedSuggestion => 'suggestionId' in suggestion;
+): suggestion is ResolvedSuggestion => "suggestionId" in suggestion;
 
 export const BlockDiscussion: RenderNodeWrapper = (_props) =>
   function BlockDiscussionWrapper(props) {
@@ -385,7 +389,7 @@ export const BlockDiscussion: RenderNodeWrapper = (_props) =>
 const BlockCommentContent = ({ children, element }: RenderNodeWrapperProps) => {
   const editor = useEditor();
   const nodeKey = editor.key(element);
-  const discussions = usePluginStore(discussionPlugin, 'discussions');
+  const discussions = usePluginStore(discussionPlugin, "discussions");
   const {
     hasDraftComment,
     isTopLevelBlock,
@@ -401,7 +405,7 @@ const BlockCommentContent = ({ children, element }: RenderNodeWrapperProps) => {
       );
 
       return {
-        contentKey: index.contentKeyByNodeKey.get(nodeKey) ?? '',
+        contentKey: index.contentKeyByNodeKey.get(nodeKey) ?? "",
         hasDraftComment: index.draftCommentNodeKeys.has(nodeKey),
         isTopLevelBlock: index.topLevelNodeKeys.has(nodeKey),
         resolvedDiscussions:
@@ -452,9 +456,13 @@ const BlockCommentDetails = ({
   const editor = useEditor();
   const blockPath =
     editor.read.nodes.path(nodeKey) ??
-    failInvariant('Expected value to be defined');
-  const { api: commentsApi, read: commentsRead } =
-    useEditorPlugin(commentPlugin);
+    failInvariant("Expected value to be defined");
+  const {
+    api: commentsApi,
+    read: commentsRead,
+    schema: commentsSchema,
+    store: commentsStore,
+  } = useEditorPlugin(commentPlugin);
   const { api: suggestionApi, read: suggestionRead } =
     useEditorPlugin(suggestionPlugin);
 
@@ -469,13 +477,13 @@ const BlockCommentDetails = ({
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
 
-  const activeSuggestionId = usePluginStore(suggestionPlugin, 'activeId');
+  const activeSuggestionId = usePluginStore(suggestionPlugin, "activeId");
   const activeSuggestion =
     activeSuggestionId &&
     resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginStore(commentPlugin, 'commentingBlock');
-  const activeCommentId = usePluginStore(commentPlugin, 'activeId');
+  const commentingBlock = usePluginStore(commentPlugin, "commentingBlock");
+  const activeCommentId = usePluginStore(commentPlugin, "activeId");
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&
@@ -493,15 +501,17 @@ const BlockCommentDetails = ({
     resolvedSuggestions.some((s) => s.suggestionId === activeSuggestionId);
 
   const [_open, setOpen] = React.useState(selected);
+  const [closingDraft, setClosingDraft] = React.useState(false);
 
   // in some cases, we may comment the multiple blocks
   const commentingCurrent =
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
 
   const open =
-    _open ||
-    selected ||
-    (isCommenting && !!draftCommentNode && commentingCurrent);
+    !closingDraft &&
+    (_open ||
+      selected ||
+      (isCommenting && !!draftCommentNode && commentingCurrent));
 
   const anchorElement = (() => {
     let activeNode: NodeEntry<Element | Text> | undefined;
@@ -533,15 +543,11 @@ const BlockCommentDetails = ({
   return (
     <div className="flex w-full justify-between">
       <FloatingPopover
-        open={open}
+        open={open && !!popoverAnchorElement}
         onOpenChange={(_open_) => {
-          if (!_open_ && isCommenting && draftCommentNode) {
-            editor.update.nodes.unset(getDraftCommentKey(), {
-              at: [],
-              mode: 'lowest',
-              match: (n) =>
-                Boolean((n as Record<string, unknown>)[getDraftCommentKey()]),
-            });
+          if (!_open_ && isCommenting) {
+            setClosingDraft(true);
+            return;
           }
           setOpen(_open_);
         }}
@@ -555,6 +561,36 @@ const BlockCommentDetails = ({
           className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           onFinalFocus={(e) => {
             e.preventDefault();
+
+            if (!closingDraft) return;
+
+            if (draftCommentNode) {
+              editor.update((tx) => {
+                tx.nodes.unset(commentsSchema.key, {
+                  at: [],
+                  mode: "lowest",
+                  match: (n) =>
+                    TextApi.isText(n) &&
+                    Boolean(n[getDraftCommentKey()]) &&
+                    getCommentCount(n) === 0,
+                });
+                tx.nodes.unset(getDraftCommentKey(), {
+                  at: [],
+                  mode: "lowest",
+                  match: (n) =>
+                    Boolean(
+                      (n as Record<string, unknown>)[getDraftCommentKey()]
+                    ),
+                });
+              });
+            }
+
+            commentsStore.set({
+              activeId: null,
+              commentingBlock: null,
+            });
+            setOpen(false);
+            setClosingDraft(false);
           }}
           onInitialFocus={(e) => {
             e.preventDefault();

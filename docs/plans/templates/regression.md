@@ -16,9 +16,11 @@ Primary template:
 {{TEMPLATE_PATH}}
 
 Applied packs:
+
 - none
 
 Regression source:
+
 - target bug / surface / corpus: pending
 - lane and current source owner: pending
 - selected executable test cases: pending
@@ -27,6 +29,7 @@ Regression source:
 - invocation mode / timebox: pending
 
 First checkpoint:
+
 - Copy every explicit requirement, scope boundary, non-goal, timing rule, stop
   condition, deliverable, verification surface, and final handoff requirement
   into the Work Checklist before mutable work.
@@ -36,6 +39,7 @@ First checkpoint:
 - Do not create a TSV, JSON, database, manifest, or manual case registry.
 
 Completion threshold:
+
 - Every selected observed regression has an executable test that fails on the
   violated invariant and passes after the fix.
 - Every selected case records `unit-red: <test>` or
@@ -62,6 +66,7 @@ Completion threshold:
   both semantic validation and `check-complete.mjs` pass.
 
 Verification surface:
+
 - selected executable package/DOM/Playwright/Browser/Chrome/device commands
 - exact final-case replay and retry-free stability when required
 - source/host freshness proof and exact final ref
@@ -71,6 +76,7 @@ Verification surface:
 - `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
 
 Constraints:
+
 - Executable tests own durable regression behavior.
 - GitHub owns issue provenance/status; exact refs and runtime/CI receipts own
   integration claims.
@@ -93,6 +99,7 @@ Constraints:
   repair, `no-change`, and `defer` cannot resume the product attempt.
 
 Boundaries:
+
 - allowed source owners: pending
 - allowed proof/test owners: pending
 - generated/source boundary: pending
@@ -101,10 +108,12 @@ Boundaries:
 - orchestration mode and writer ownership: pending
 
 Output budget strategy:
+
 - Start from exact owner and test files. Use runner discovery/counts before
   printing broad corpora. Cap logs and exclude generated/build trees.
 
 Blocked condition:
+
 - Block only when exact current behavior cannot be observed, the authoritative
   host/device/credential is unavailable, unsafe scope needs user authority, or
   the same blocker leaves no safe alternate packet.
@@ -112,6 +121,7 @@ Blocked condition:
   hosts before treating them as product blockers.
 
 Regression state:
+
 - current phase: requirement extraction
 - current executable case: pending
 - current case status: pending
@@ -119,6 +129,7 @@ Regression state:
 - goal status: active
 
 Completion rule:
+
 - Do not call `update_goal(status: complete)` with unchecked Work Checklist
   items, unresolved Completion Gates, open required cases, or missing
   executable proof.
@@ -143,6 +154,7 @@ Start Gates:
 | Claim width and blocked rules recorded | pending | pending |
 
 Work Checklist:
+
 - [ ] Skill analysis complete: Regression is the supervisor, Patch is the
       one-case worker, and executable tests are the behavior authority.
 - [ ] First checkpoint captures every explicit requirement before mutable work.
@@ -184,6 +196,12 @@ Work Checklist:
 - [ ] Every flash, flicker, or one-frame pointer-feedback claim uses a target-
       capture or equivalent pre-handler oracle and records
       `pre-handler-state: pass`; eventual post-handler style is insufficient.
+- [ ] Every applicable popup/toolbar oracle after an action or release has an
+      applicable `follow-up-input@follow-up` oracle proving the next owning-
+      surface interaction still works.
+- [ ] Every applicable popup close oracle at `after-action` or `after-release`
+      accounts for `dom-native` and `focus` at the same phase; later follow-up
+      input never substitutes for close-time selection/caret preservation.
 - [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
       state, an executable layer/anchor, and an exact result; every inapplicable
       row has N/A reasons.
@@ -378,15 +396,19 @@ Workflow slowdowns:
 | pending | pending | pending | pending | pending | pending |
 
 Findings:
+
 - pending
 
 Timeline:
+
 - pending
 
 Decisions and tradeoffs:
+
 - pending
 
 Review fixes:
+
 - pending
 
 Error attempts:
@@ -395,9 +417,11 @@ Error attempts:
 | None yet | 0 | N/A | N/A |
 
 Verification evidence:
+
 - pending
 
 Final handoff:
+
 - executable cases: pending
 - cumulative reporter evidence, phase-specific oracles, and forbidden states: pending
 - failed-fix invalidation and automatic repair: pending
@@ -421,4 +445,5 @@ Reboot status:
 | What have I done? | template created |
 
 Open risks:
+
 - pending

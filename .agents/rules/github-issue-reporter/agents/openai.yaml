@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plate Beta Issue Reporter"
+  short_description: "Report verified Plate next/Beta regressions"
+  default_prompt: "Use $github-issue-reporter to analyze this Plate next/Beta evidence and create a verified [Beta] issue in udecode/plate."

@@ -1,46 +1,46 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   createInputDigest,
   createProofReceiptId,
-} from './proof-receipt-contract.mjs';
+} from "./proof-receipt-contract.mjs";
 
 export { createInputDigest, createProofReceiptId };
 
 export const REGRESSION_OBSERVATIONS = [
-  'model',
-  'dom-native',
-  'pointer-feedback',
-  'focus',
-  'popup',
-  'geometry-paint',
-  'runtime-errors',
-  'follow-up-input',
+  "model",
+  "dom-native",
+  "pointer-feedback",
+  "focus",
+  "popup",
+  "geometry-paint",
+  "runtime-errors",
+  "follow-up-input",
 ];
 export const REGRESSION_PHASES = [
-  'setup',
-  'during-action',
-  'after-action',
-  'after-release',
-  'follow-up',
+  "setup",
+  "during-action",
+  "after-action",
+  "after-release",
+  "follow-up",
 ];
 
 const ARCHITECTURE_TRIGGERS = new Set([
-  'cross-layer-compensation',
-  'duplicated-live-identity',
-  'per-node-hot-work',
-  'second-failed-fix',
-  'timer-focus-correctness',
-  'ui-repairs-substrate',
+  "cross-layer-compensation",
+  "duplicated-live-identity",
+  "per-node-hot-work",
+  "second-failed-fix",
+  "timer-focus-correctness",
+  "ui-repairs-substrate",
 ]);
 const FAILED_FIX_KINDS = new Set([
-  'exact-replay',
-  'final-verification',
-  'reporter-contradiction',
+  "exact-replay",
+  "final-verification",
+  "reporter-contradiction",
 ]);
 const EXPECTED_OUTCOME_AUTHORITY_PATTERN =
   /^(?:reporter|accepted-product-law|existing-contract|upstream-contract):\s*\S/i;
@@ -57,21 +57,21 @@ const REGRESSION_SOURCE_PATTERN =
 const normalizeHeader = (value) =>
   value
     .toLowerCase()
-    .replace(/`/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/`/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 
 const isResolved = (value) =>
   Boolean(value) &&
   !/^(?:pending|todo|tbd|none yet|n\/a(?:\s*:|$))/i.test(value.trim()) &&
-  !value.includes('{{');
+  !value.includes("{{");
 
-const isNotApplicable = (value) => /^N\/A:\s*\S/i.test(value ?? '');
-const isPass = (value) => /^pass:\s*\S/i.test(value ?? '');
-const isSuperseded = (value) => /^superseded:\s*\S/i.test(value ?? '');
+const isNotApplicable = (value) => /^N\/A:\s*\S/i.test(value ?? "");
+const isPass = (value) => /^pass:\s*\S/i.test(value ?? "");
+const isSuperseded = (value) => /^superseded:\s*\S/i.test(value ?? "");
 const isSourceIdentity = (value) =>
-  /^(?:commit|dirty):[a-f0-9]{40}$/i.test(value ?? '');
-const isSha256 = (value) => /^sha256:[a-f0-9]{64}$/i.test(value ?? '');
+  /^(?:commit|dirty):[a-f0-9]{40}$/i.test(value ?? "");
+const isSha256 = (value) => /^sha256:[a-f0-9]{64}$/i.test(value ?? "");
 const isPixelClassifierOracle = (row) =>
   /\b(?:pixel|classifier|image diff|screenshot diff)\b/i.test(
     [
@@ -79,32 +79,32 @@ const isPixelClassifierOracle = (row) =>
       row.forbidden_state,
       row.proof_layer,
       row.result,
-    ].join(' ')
+    ].join(" ")
   );
 const hasPixelClassifierControls = (value) =>
-  /\bpositive-control:\s*pass\b/i.test(value ?? '') &&
-  /\bnegative-control:\s*pass\b/i.test(value ?? '') &&
-  /\bduplicate-control:\s*pass\b/i.test(value ?? '');
+  /\bpositive-control:\s*pass\b/i.test(value ?? "") &&
+  /\bnegative-control:\s*pass\b/i.test(value ?? "") &&
+  /\bduplicate-control:\s*pass\b/i.test(value ?? "");
 const parseTimestamp = (value) => {
-  const timestamp = Date.parse(value ?? '');
+  const timestamp = Date.parse(value ?? "");
 
   return Number.isFinite(timestamp) ? timestamp : null;
 };
 
 const parseCells = (line) => {
-  const source = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+  const source = line.trim().replace(/^\|/, "").replace(/\|$/, "");
   const cells = [];
-  let cell = '';
+  let cell = "";
 
   for (let index = 0; index < source.length; index += 1) {
-    if (source[index] === '\\' && source[index + 1] === '|') {
-      cell += '|';
+    if (source[index] === "\\" && source[index + 1] === "|") {
+      cell += "|";
       index += 1;
       continue;
     }
-    if (source[index] === '|') {
+    if (source[index] === "|") {
       cells.push(cell.trim());
-      cell = '';
+      cell = "";
       continue;
     }
     cell += source[index];
@@ -144,7 +144,7 @@ const parseTable = (markdown, label) => {
     (line, index) =>
       index > sectionStart &&
       index < effectiveEnd &&
-      line.trim().startsWith('|')
+      line.trim().startsWith("|")
   );
 
   if (tableStart === -1) {
@@ -158,7 +158,7 @@ const parseTable = (markdown, label) => {
   for (let index = tableStart + 1; index < lines.length; index += 1) {
     const line = lines[index];
 
-    if (!line.trim().startsWith('|')) {
+    if (!line.trim().startsWith("|")) {
       if (rows.length > 0) break;
       continue;
     }
@@ -170,7 +170,7 @@ const parseTable = (markdown, label) => {
     const row = {};
 
     for (const [cellIndex, header] of headers.entries()) {
-      row[header] = cells[cellIndex] ?? '';
+      row[header] = cells[cellIndex] ?? "";
     }
 
     rows.push(row);
@@ -187,7 +187,7 @@ const requireHeaders = (table, label, expected, errors) => {
 
   for (const header of expected) {
     if (!table.headers.includes(header)) {
-      errors.push(`${label} requires column ${header.replaceAll('_', ' ')}`);
+      errors.push(`${label} requires column ${header.replaceAll("_", " ")}`);
     }
   }
 
@@ -199,7 +199,7 @@ const requireHeaders = (table, label, expected, errors) => {
 };
 
 const parseTestAnchor = (value) => {
-  const normalized = value?.replaceAll('`', '').trim();
+  const normalized = value?.replaceAll("`", "").trim();
   const match = normalized?.match(/^test:\s*([^#]+)#(.+)$/i);
 
   return match ? { path: match[1].trim(), title: match[2].trim() } : null;
@@ -218,14 +218,14 @@ const validateTestAnchor = (value, rootDir, label, errors) => {
 
   if (
     isAbsolute(relativePath) ||
-    relativePath.startsWith('..') ||
+    relativePath.startsWith("..") ||
     !existsSync(absolutePath)
   ) {
     errors.push(`${label} references missing executable test ${anchor.path}`);
     return;
   }
 
-  if (!readFileSync(absolutePath, 'utf8').includes(anchor.title)) {
+  if (!readFileSync(absolutePath, "utf8").includes(anchor.title)) {
     errors.push(`${label} references missing test title ${anchor.title}`);
   }
 };
@@ -248,23 +248,23 @@ const toReceipt = (row) => ({
 });
 
 const splitCases = (value) =>
-  (value ?? '')
-    .replaceAll('`', '')
-    .split(',')
+  (value ?? "")
+    .replaceAll("`", "")
+    .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
 
 const splitInputs = (value) =>
-  (value ?? '')
-    .replaceAll('`', '')
-    .split(',')
+  (value ?? "")
+    .replaceAll("`", "")
+    .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
 
 const splitOracleAnchors = (value) =>
-  (value ?? '')
-    .replaceAll('`', '')
-    .split(',')
+  (value ?? "")
+    .replaceAll("`", "")
+    .split(",")
     .map((part) => part.trim().toLowerCase())
     .filter(Boolean);
 
@@ -275,10 +275,10 @@ const parseOracleAnchor = (value) => {
 };
 
 const parseArchitectureTriggers = (value) => {
-  if (/^none:\s*\S/i.test(value ?? '')) return [];
+  if (/^none:\s*\S/i.test(value ?? "")) return [];
 
-  return (value ?? '')
-    .split(',')
+  return (value ?? "")
+    .split(",")
     .map((part) => part.trim().toLowerCase())
     .filter(Boolean);
 };
@@ -291,25 +291,25 @@ export const validateRegressionPlan = (
   { complete = false, rootDir = process.cwd() } = {}
 ) => {
   const errors = [];
-  const selectedTable = parseTable(markdown, 'Selected executable cases');
+  const selectedTable = parseTable(markdown, "Selected executable cases");
   const selectedHeaders = [
-    'case_id',
-    'source_reference',
-    'setup_action',
-    'expected_outcome',
-    'expected_outcome_authority',
-    'red_test_escalation',
-    'exact_environment',
-    'test_file_command',
-    'status',
-    'tested_ref',
-    'next_owner',
+    "case_id",
+    "source_reference",
+    "setup_action",
+    "expected_outcome",
+    "expected_outcome_authority",
+    "red_test_escalation",
+    "exact_environment",
+    "test_file_command",
+    "status",
+    "tested_ref",
+    "next_owner",
   ];
 
   if (
     !requireHeaders(
       selectedTable,
-      'Selected executable cases',
+      "Selected executable cases",
       selectedHeaders,
       errors
     )
@@ -321,10 +321,10 @@ export const validateRegressionPlan = (
 
   for (const row of selectedTable.rows) {
     const caseId = row.case_id;
-    const label = `case ${caseId || '<missing>'}`;
+    const label = `case ${caseId || "<missing>"}`;
 
     if (!isResolved(caseId)) {
-      errors.push('Selected executable cases requires Case ID');
+      errors.push("Selected executable cases requires Case ID");
       continue;
     }
     if (cases.has(caseId)) {
@@ -333,30 +333,30 @@ export const validateRegressionPlan = (
     }
 
     for (const field of [
-      'source_reference',
-      'setup_action',
-      'expected_outcome',
-      'test_file_command',
-      'next_owner',
+      "source_reference",
+      "setup_action",
+      "expected_outcome",
+      "test_file_command",
+      "next_owner",
     ]) {
       if (!isResolved(row[field])) {
-        errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
+        errors.push(`${label} requires ${field.replaceAll("_", " ")}`);
       }
     }
     if (
       !EXPECTED_OUTCOME_AUTHORITY_PATTERN.test(
-        row.expected_outcome_authority ?? ''
+        row.expected_outcome_authority ?? ""
       )
     ) {
       errors.push(
         `${label} requires Expected-outcome authority reporter:, accepted-product-law:, existing-contract:, or upstream-contract:`
       );
     }
-    const unitRed = UNIT_RED_PATTERN.test(row.red_test_escalation ?? '');
+    const unitRed = UNIT_RED_PATTERN.test(row.red_test_escalation ?? "");
     const e2eRequired = E2E_REQUIRED_PATTERN.test(
-      row.red_test_escalation ?? ''
+      row.red_test_escalation ?? ""
     );
-    const usesE2E = E2E_TEST_COMMAND_PATTERN.test(row.test_file_command ?? '');
+    const usesE2E = E2E_TEST_COMMAND_PATTERN.test(row.test_file_command ?? "");
 
     if (!unitRed && !e2eRequired) {
       errors.push(
@@ -364,9 +364,7 @@ export const validateRegressionPlan = (
       );
     }
     if (unitRed && usesE2E) {
-      errors.push(
-        `${label} has unit RED and must not add a new E2E test`
-      );
+      errors.push(`${label} has unit RED and must not add a new E2E test`);
     }
     if (e2eRequired && !usesE2E) {
       errors.push(
@@ -384,7 +382,7 @@ export const validateRegressionPlan = (
     }
     if (
       complete &&
-      !['completed', 'kept'].includes(row.status?.toLowerCase())
+      !["completed", "kept"].includes(row.status?.toLowerCase())
     ) {
       errors.push(`${label} is not completed or kept`);
     }
@@ -392,24 +390,24 @@ export const validateRegressionPlan = (
     cases.set(caseId, row);
   }
 
-  const evidenceTable = parseTable(markdown, 'Reporter evidence inventory');
+  const evidenceTable = parseTable(markdown, "Reporter evidence inventory");
   const evidenceHeaders = [
-    'case_id',
-    'source_role',
-    'source_reference',
-    'phase',
-    'claim',
-    'disposition',
-    'oracle_anchors',
-    'executable_anchor',
-    'result',
+    "case_id",
+    "source_role",
+    "source_reference",
+    "phase",
+    "claim",
+    "disposition",
+    "oracle_anchors",
+    "executable_anchor",
+    "result",
   ];
   const evidenceByCase = new Map();
 
   if (
     requireHeaders(
       evidenceTable,
-      'Reporter evidence inventory',
+      "Reporter evidence inventory",
       evidenceHeaders,
       errors
     )
@@ -418,15 +416,15 @@ export const validateRegressionPlan = (
 
     for (const row of evidenceTable.rows) {
       const caseId = row.case_id;
-      const label = `reporter evidence ${caseId || '<missing>'}`;
+      const label = `reporter evidence ${caseId || "<missing>"}`;
 
       if (!cases.has(caseId)) {
         errors.push(`${label} references an unknown case`);
         continue;
       }
-      for (const field of ['source_role', 'source_reference', 'claim']) {
+      for (const field of ["source_role", "source_reference", "claim"]) {
         if (!isResolved(row[field])) {
-          errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
+          errors.push(`${label} requires ${field.replaceAll("_", " ")}`);
         }
       }
       const phase = row.phase?.toLowerCase();
@@ -441,7 +439,7 @@ export const validateRegressionPlan = (
         row.source_reference,
         phase,
         row.claim,
-      ].join('|');
+      ].join("|");
 
       if (seenEvidence.has(evidenceKey)) {
         errors.push(`${label} duplicates one reporter claim`);
@@ -450,7 +448,7 @@ export const validateRegressionPlan = (
 
       const disposition = row.disposition?.toLowerCase();
 
-      if (disposition === 'required') {
+      if (disposition === "required") {
         const anchors = splitOracleAnchors(row.oracle_anchors);
 
         if (anchors.length === 0) {
@@ -476,14 +474,13 @@ export const validateRegressionPlan = (
           errors.push(`${label} requires a current Result`);
         }
       } else if (isSuperseded(row.disposition)) {
-        for (const field of [
-          'oracle_anchors',
-          'executable_anchor',
-          'result',
-        ]) {
+        for (const field of ["oracle_anchors", "executable_anchor", "result"]) {
           if (!isNotApplicable(row[field])) {
             errors.push(
-              `${label} superseded ${field.replaceAll('_', ' ')} requires N/A reason`
+              `${label} superseded ${field.replaceAll(
+                "_",
+                " "
+              )} requires N/A reason`
             );
           }
         }
@@ -502,30 +499,30 @@ export const validateRegressionPlan = (
       if (
         !evidenceByCase
           .get(caseId)
-          ?.some((row) => row.disposition?.toLowerCase() === 'required')
+          ?.some((row) => row.disposition?.toLowerCase() === "required")
       ) {
         errors.push(`${caseId} requires at least one required reporter claim`);
       }
     }
   }
 
-  const oracleTable = parseTable(markdown, 'Reporter oracle matrix');
+  const oracleTable = parseTable(markdown, "Reporter oracle matrix");
   const oracleHeaders = [
-    'case_id',
-    'observation',
-    'phase',
-    'applies',
-    'positive_assertion',
-    'forbidden_state',
-    'proof_layer',
-    'executable_anchor',
-    'result',
+    "case_id",
+    "observation",
+    "phase",
+    "applies",
+    "positive_assertion",
+    "forbidden_state",
+    "proof_layer",
+    "executable_anchor",
+    "result",
   ];
 
   if (
     !requireHeaders(
       oracleTable,
-      'Reporter oracle matrix',
+      "Reporter oracle matrix",
       oracleHeaders,
       errors
     )
@@ -539,7 +536,9 @@ export const validateRegressionPlan = (
     const caseId = row.case_id;
     const observation = row.observation?.toLowerCase();
     const phase = row.phase?.toLowerCase();
-    const label = `${caseId || '<missing>'} ${observation || '<missing>'}@${phase || '<missing>'}`;
+    const label = `${caseId || "<missing>"} ${observation || "<missing>"}@${
+      phase || "<missing>"
+    }`;
 
     if (!cases.has(caseId)) {
       errors.push(`Reporter oracle matrix references unknown case ${caseId}`);
@@ -567,22 +566,22 @@ export const validateRegressionPlan = (
 
     const applies = row.applies?.toLowerCase();
 
-    if (!['yes', 'no'].includes(applies)) {
+    if (!["yes", "no"].includes(applies)) {
       errors.push(`${label} requires Applies yes or no`);
       continue;
     }
 
-    if (applies === 'no') {
+    if (applies === "no") {
       for (const field of [
-        'positive_assertion',
-        'forbidden_state',
-        'proof_layer',
-        'executable_anchor',
-        'result',
+        "positive_assertion",
+        "forbidden_state",
+        "proof_layer",
+        "executable_anchor",
+        "result",
       ]) {
         if (!isNotApplicable(row[field])) {
           errors.push(
-            `${label} ${field.replaceAll('_', ' ')} requires N/A reason`
+            `${label} ${field.replaceAll("_", " ")} requires N/A reason`
           );
         }
       }
@@ -607,48 +606,48 @@ export const validateRegressionPlan = (
     ) {
       errors.push(`${label} requires an executable Proof layer`);
     }
-    if (observation === 'geometry-paint') {
-      if (!/\bpixel\b/i.test(row.proof_layer ?? '')) {
+    if (observation === "geometry-paint") {
+      if (!/\bpixel\b/i.test(row.proof_layer ?? "")) {
         errors.push(
           `${label} requires actual pixel capture/classification; computed style or DOM state is diagnostic only`
         );
       }
       if (complete) {
-        if (!/\bpositive-control:\s*pass\b/i.test(row.result ?? '')) {
+        if (!/\bpositive-control:\s*pass\b/i.test(row.result ?? "")) {
           errors.push(`${label} requires positive-control: pass`);
         }
-        if (!/\bnegative-control:\s*pass\b/i.test(row.result ?? '')) {
+        if (!/\bnegative-control:\s*pass\b/i.test(row.result ?? "")) {
           errors.push(`${label} requires negative-control: pass`);
         }
       }
     }
-    if (observation === 'pointer-feedback') {
+    if (observation === "pointer-feedback") {
       if (
-        !/\b(?:dom|browser|exact-chrome|device)\b/i.test(row.proof_layer ?? '')
+        !/\b(?:dom|browser|exact-chrome|device)\b/i.test(row.proof_layer ?? "")
       ) {
         errors.push(
           `${label} requires DOM or browser proof for pointer feedback`
         );
       }
-      if (!/\breporter-noun:\s*\S/i.test(row.positive_assertion ?? '')) {
+      if (!/\breporter-noun:\s*\S/i.test(row.positive_assertion ?? "")) {
         errors.push(`${label} requires reporter-noun: <plain UI noun>`);
       }
-      if (!/\baffordance-inventory:\s*\S/i.test(row.positive_assertion ?? '')) {
+      if (!/\baffordance-inventory:\s*\S/i.test(row.positive_assertion ?? "")) {
         errors.push(
           `${label} requires affordance-inventory: <labels, selectors, or owners>`
         );
       }
       if (complete) {
-        if (!/\binteraction-trace:\s*pass\b/i.test(row.result ?? '')) {
+        if (!/\binteraction-trace:\s*pass\b/i.test(row.result ?? "")) {
           errors.push(`${label} requires interaction-trace: pass`);
         }
-        if (!/\btarget:\s*\S/i.test(row.result ?? '')) {
+        if (!/\btarget:\s*\S/i.test(row.result ?? "")) {
           errors.push(`${label} requires target: <pointer target>`);
         }
-        if (!/\bevent:\s*[\w-]+/i.test(row.result ?? '')) {
+        if (!/\bevent:\s*[\w-]+/i.test(row.result ?? "")) {
           errors.push(`${label} requires event: <pointer event>`);
         }
-        if (!/\bbuttons:\s*(?:\d+|none)\b/i.test(row.result ?? '')) {
+        if (!/\bbuttons:\s*(?:\d+|none)\b/i.test(row.result ?? "")) {
           errors.push(`${label} requires buttons: <state>`);
         }
         const selected = cases.get(caseId);
@@ -656,38 +655,36 @@ export const validateRegressionPlan = (
           (evidenceByCase.get(caseId) ?? [])
             .filter((evidence) =>
               NO_FLASH_POINTER_PATTERN.test(
-                [evidence.source_reference, evidence.claim].join(' ')
+                [evidence.source_reference, evidence.claim].join(" ")
               )
             )
-            .flatMap((evidence) =>
-              splitOracleAnchors(evidence.oracle_anchors)
-            )
+            .flatMap((evidence) => splitOracleAnchors(evidence.oracle_anchors))
         );
         const noFlashClaim =
           NO_FLASH_POINTER_PATTERN.test(
-            [row.positive_assertion, row.forbidden_state].join(' ')
+            [row.positive_assertion, row.forbidden_state].join(" ")
           ) ||
           noFlashEvidenceAnchors.has(`pointer-feedback@${phase}`) ||
-          (phase === 'during-action' &&
+          (phase === "during-action" &&
             NO_FLASH_POINTER_PATTERN.test(
               [
                 selected?.source_reference,
                 selected?.setup_action,
                 selected?.expected_outcome,
-              ].join(' ')
+              ].join(" ")
             ));
 
         if (noFlashClaim) {
           if (
             !/\b(?:target-?capture|capture-phase|pre-handler)\b/i.test(
-              row.proof_layer ?? ''
+              row.proof_layer ?? ""
             )
           ) {
             errors.push(
               `${label} requires a target-capture or pre-handler proof layer`
             );
           }
-          if (!/\bpre-handler-state:\s*pass\b/i.test(row.result ?? '')) {
+          if (!/\bpre-handler-state:\s*pass\b/i.test(row.result ?? "")) {
             errors.push(`${label} requires pre-handler-state: pass`);
           }
         }
@@ -701,7 +698,7 @@ export const validateRegressionPlan = (
     }
     if (
       complete &&
-      observation === 'geometry-paint' &&
+      observation === "geometry-paint" &&
       isPixelClassifierOracle(row) &&
       !hasPixelClassifierControls(row.result)
     ) {
@@ -726,7 +723,7 @@ export const validateRegressionPlan = (
     if (
       rows &&
       !Array.from(rows.values()).some(
-        (row) => row.applies?.toLowerCase() === 'yes'
+        (row) => row.applies?.toLowerCase() === "yes"
       )
     ) {
       errors.push(`${caseId} requires at least one applicable oracle row`);
@@ -742,18 +739,48 @@ export const validateRegressionPlan = (
           row.source_reference,
           row.claim,
         ]),
-      ].join(' ')
+      ].join(" ")
     );
 
     if (
       pointerInteraction &&
       !Array.from(rows?.values() ?? []).some(
         (row) =>
-          row.observation?.toLowerCase() === 'pointer-feedback' &&
-          row.applies?.toLowerCase() === 'yes'
+          row.observation?.toLowerCase() === "pointer-feedback" &&
+          row.applies?.toLowerCase() === "yes"
       )
     ) {
       errors.push(`${caseId} requires an applicable pointer-feedback oracle`);
+    }
+
+    const completedPopupRows = Array.from(rows?.values() ?? []).filter(
+      (row) =>
+        row.observation?.toLowerCase() === "popup" &&
+        row.applies?.toLowerCase() === "yes" &&
+        ["after-action", "after-release"].includes(row.phase?.toLowerCase())
+    );
+    const hasCompletedPopupPhase = completedPopupRows.length > 0;
+    const followUpInput = rows?.get("follow-up-input@follow-up");
+
+    if (
+      hasCompletedPopupPhase &&
+      followUpInput?.applies?.toLowerCase() !== "yes"
+    ) {
+      errors.push(
+        `${caseId} popup lifecycle requires applicable follow-up-input@follow-up`
+      );
+    }
+
+    for (const popupRow of completedPopupRows) {
+      const phase = popupRow.phase?.toLowerCase();
+
+      for (const observation of ["dom-native", "focus"]) {
+        if (!rows?.has(`${observation}@${phase}`)) {
+          errors.push(
+            `${caseId} popup lifecycle at ${phase} requires ${observation}@${phase}`
+          );
+        }
+      }
     }
   }
 
@@ -761,7 +788,7 @@ export const validateRegressionPlan = (
     const caseOracles = oracleByCase.get(caseId);
 
     for (const row of evidenceRows) {
-      if (row.disposition?.toLowerCase() !== 'required') continue;
+      if (row.disposition?.toLowerCase() !== "required") continue;
 
       for (const anchor of splitOracleAnchors(row.oracle_anchors)) {
         const oracle = caseOracles?.get(anchor);
@@ -770,7 +797,7 @@ export const validateRegressionPlan = (
           errors.push(
             `reporter evidence ${caseId} requires missing oracle ${anchor}`
           );
-        } else if (oracle.applies?.toLowerCase() !== 'yes') {
+        } else if (oracle.applies?.toLowerCase() !== "yes") {
           errors.push(
             `reporter evidence ${caseId} requires applicable oracle ${anchor}`
           );
@@ -779,46 +806,41 @@ export const validateRegressionPlan = (
     }
   }
 
-  const failedTable = parseTable(markdown, 'Failed fix history');
+  const failedTable = parseTable(markdown, "Failed fix history");
   const failedHeaders = [
-    'case_id',
-    'attempt',
-    'failure_signal',
-    'failure_kind',
-    'prior_claim_invalidated',
-    'regression_repair',
-    'workflow_test',
-    'architecture_trigger',
-    'best_api_layer_plan',
-    'resume_state',
+    "case_id",
+    "attempt",
+    "failure_signal",
+    "failure_kind",
+    "prior_claim_invalidated",
+    "regression_repair",
+    "workflow_test",
+    "architecture_trigger",
+    "best_api_layer_plan",
+    "resume_state",
   ];
   const failedCountByCase = new Map(
     Array.from(cases.keys(), (caseId) => [caseId, 0])
   );
 
   if (
-    requireHeaders(
-      failedTable,
-      'Failed fix history',
-      failedHeaders,
-      errors
-    )
+    requireHeaders(failedTable, "Failed fix history", failedHeaders, errors)
   ) {
     const noneRows = failedTable.rows.filter(
-      (row) => row.case_id?.toLowerCase() === 'none'
+      (row) => row.case_id?.toLowerCase() === "none"
     );
     const failedRows = failedTable.rows.filter(
-      (row) => row.case_id?.toLowerCase() !== 'none'
+      (row) => row.case_id?.toLowerCase() !== "none"
     );
 
     if (failedRows.length === 0) {
-      if (noneRows.length !== 1 || noneRows[0].attempt !== '0') {
+      if (noneRows.length !== 1 || noneRows[0].attempt !== "0") {
         errors.push(
-          'Failed fix history requires one explicit none / attempt 0 row when no claimed fix failed'
+          "Failed fix history requires one explicit none / attempt 0 row when no claimed fix failed"
         );
       }
     } else if (noneRows.length > 0) {
-      errors.push('Failed fix history cannot mix none with failed attempts');
+      errors.push("Failed fix history cannot mix none with failed attempts");
     }
 
     const attemptsByCase = new Map();
@@ -852,11 +874,11 @@ export const validateRegressionPlan = (
         failureKinds.add(failureKind);
         failureKindsByCase.set(caseId, failureKinds);
       }
-      if (!/^yes:\s*\S/i.test(row.prior_claim_invalidated ?? '')) {
+      if (!/^yes:\s*\S/i.test(row.prior_claim_invalidated ?? "")) {
         errors.push(`${label} must invalidate the prior claim`);
       }
       if (
-        !/^repair-now:\s*\S/i.test(row.regression_repair ?? '') ||
+        !/^repair-now:\s*\S/i.test(row.regression_repair ?? "") ||
         !REGRESSION_SOURCE_PATTERN.test(row.regression_repair)
       ) {
         errors.push(
@@ -867,29 +889,30 @@ export const validateRegressionPlan = (
         errors.push(`${label} requires Workflow test pass: <evidence>`);
       }
 
-      const architectureTrigger = row.architecture_trigger ?? '';
+      const architectureTrigger = row.architecture_trigger ?? "";
       const hasArchitectureTrigger = /^yes:\s*\S/i.test(architectureTrigger);
 
-      if (
-        !hasArchitectureTrigger &&
-        !/^no:\s*\S/i.test(architectureTrigger)
-      ) {
-        errors.push(`${label} requires Architecture trigger yes/no with reason`);
+      if (!hasArchitectureTrigger && !/^no:\s*\S/i.test(architectureTrigger)) {
+        errors.push(
+          `${label} requires Architecture trigger yes/no with reason`
+        );
       }
       if (attempt >= 2 || hasArchitectureTrigger) {
-        if (!/\bbest-api\b/i.test(row.best_api_layer_plan ?? '')) {
+        if (!/\bbest-api\b/i.test(row.best_api_layer_plan ?? "")) {
           errors.push(`${label} requires Best API`);
         }
-        if (!/\b(?:plite-plan|plate-plan)\b/i.test(row.best_api_layer_plan ?? '')) {
+        if (
+          !/\b(?:plite-plan|plate-plan)\b/i.test(row.best_api_layer_plan ?? "")
+        ) {
           errors.push(`${label} requires a Plite or Plate layer plan`);
         }
       } else if (
         !isNotApplicable(row.best_api_layer_plan) &&
-        !/\bbest-api\b/i.test(row.best_api_layer_plan ?? '')
+        !/\bbest-api\b/i.test(row.best_api_layer_plan ?? "")
       ) {
         errors.push(`${label} requires escalation evidence or N/A reason`);
       }
-      if (!/^(?:reproduced|blocked):\s*\S/i.test(row.resume_state ?? '')) {
+      if (!/^(?:reproduced|blocked):\s*\S/i.test(row.resume_state ?? "")) {
         errors.push(
           `${label} must resume from reproduced: <evidence> or blocked: <reason>`
         );
@@ -907,7 +930,7 @@ export const validateRegressionPlan = (
         (_, index) => index + 1
       );
 
-      if (attempts.join(',') !== expected.join(',')) {
+      if (attempts.join(",") !== expected.join(",")) {
         errors.push(`${caseId} failed fix attempts must be sequential from 1`);
       }
       failedCountByCase.set(caseId, attempts.length);
@@ -919,17 +942,17 @@ export const validateRegressionPlan = (
       const evidenceRows = evidenceByCase.get(caseId) ?? [];
       const requiredRoles = new Set(
         evidenceRows
-          .filter((row) => row.disposition?.toLowerCase() === 'required')
+          .filter((row) => row.disposition?.toLowerCase() === "required")
           .map((row) => row.source_role?.toLowerCase())
       );
       const baseAcceptance = evidenceRows.filter(
-        (row) => row.source_role?.toLowerCase() === 'base-acceptance'
+        (row) => row.source_role?.toLowerCase() === "base-acceptance"
       );
 
       if (
         !baseAcceptance.some(
           (row) =>
-            row.disposition?.toLowerCase() === 'required' ||
+            row.disposition?.toLowerCase() === "required" ||
             isSuperseded(row.disposition)
         )
       ) {
@@ -938,8 +961,8 @@ export const validateRegressionPlan = (
         );
       }
       if (
-        failureKindsByCase.get(caseId)?.has('reporter-contradiction') &&
-        !requiredRoles.has('latest-reporter-delta')
+        failureKindsByCase.get(caseId)?.has("reporter-contradiction") &&
+        !requiredRoles.has("latest-reporter-delta")
       ) {
         errors.push(
           `${caseId} reporter contradiction requires required latest-reporter-delta evidence`
@@ -948,21 +971,21 @@ export const validateRegressionPlan = (
     }
   }
 
-  const architectureTable = parseTable(markdown, 'Architecture pressure');
+  const architectureTable = parseTable(markdown, "Architecture pressure");
   const architectureHeaders = [
-    'case_id',
-    'failed_fix_count',
-    'triggers',
-    'verdict',
-    'best_api',
-    'layer_plan',
-    'proof',
+    "case_id",
+    "failed_fix_count",
+    "triggers",
+    "verdict",
+    "best_api",
+    "layer_plan",
+    "proof",
   ];
 
   if (
     requireHeaders(
       architectureTable,
-      'Architecture pressure',
+      "Architecture pressure",
       architectureHeaders,
       errors
     )
@@ -971,7 +994,7 @@ export const validateRegressionPlan = (
 
     for (const row of architectureTable.rows) {
       const caseId = row.case_id;
-      const label = `architecture pressure ${caseId || '<missing>'}`;
+      const label = `architecture pressure ${caseId || "<missing>"}`;
 
       if (!cases.has(caseId)) {
         errors.push(`${label} references an unknown case`);
@@ -999,7 +1022,7 @@ export const validateRegressionPlan = (
           errors.push(`${label} has unknown trigger ${trigger}`);
         }
       }
-      if (count >= 2 && !triggers.includes('second-failed-fix')) {
+      if (count >= 2 && !triggers.includes("second-failed-fix")) {
         errors.push(`${label} requires trigger second-failed-fix`);
       }
 
@@ -1007,22 +1030,22 @@ export const validateRegressionPlan = (
       const verdict = row.verdict?.toLowerCase();
 
       if (mustEscalate) {
-        if (verdict !== 'escalate') {
+        if (verdict !== "escalate") {
           errors.push(`${label} requires architecture verdict escalate`);
         }
-        if (!/^required:.*\bbest-api\b/i.test(row.best_api ?? '')) {
+        if (!/^required:.*\bbest-api\b/i.test(row.best_api ?? "")) {
           errors.push(`${label} requires Best API`);
         }
-        if (!/^(?:plite-plan|plate-plan):\s*\S/i.test(row.layer_plan ?? '')) {
+        if (!/^(?:plite-plan|plate-plan):\s*\S/i.test(row.layer_plan ?? "")) {
           errors.push(`${label} requires a Plite or Plate layer plan`);
         }
-      } else if (!['patch', 'escalate'].includes(verdict)) {
+      } else if (!["patch", "escalate"].includes(verdict)) {
         errors.push(`${label} requires verdict patch or escalate`);
-      } else if (verdict === 'escalate') {
-        if (!/^required:.*\bbest-api\b/i.test(row.best_api ?? '')) {
+      } else if (verdict === "escalate") {
+        if (!/^required:.*\bbest-api\b/i.test(row.best_api ?? "")) {
           errors.push(`${label} requires Best API`);
         }
-        if (!/^(?:plite-plan|plate-plan):\s*\S/i.test(row.layer_plan ?? '')) {
+        if (!/^(?:plite-plan|plate-plan):\s*\S/i.test(row.layer_plan ?? "")) {
           errors.push(`${label} requires a Plite or Plate layer plan`);
         }
       } else {
@@ -1033,7 +1056,7 @@ export const validateRegressionPlan = (
           errors.push(`${label} Layer plan requires N/A reason`);
         }
       }
-      if (complete && !/^(?:pass|accepted):\s*\S/i.test(row.proof ?? '')) {
+      if (complete && !/^(?:pass|accepted):\s*\S/i.test(row.proof ?? "")) {
         errors.push(`${label} requires proof pass: or accepted:`);
       }
     }
@@ -1045,29 +1068,27 @@ export const validateRegressionPlan = (
     }
   }
 
-  const receiptTable = parseTable(markdown, 'Proof receipts');
+  const receiptTable = parseTable(markdown, "Proof receipts");
   const receiptHeaders = [
-    'case_id',
-    'attempt',
-    'claim',
-    'command',
-    'result',
-    'ref',
-    'input_digest',
-    'input_count',
-    'inputs',
-    'host',
-    'latest_input_mtime',
-    'proof_started',
-    'proof_ended',
-    'retries',
-    'receipt_id',
+    "case_id",
+    "attempt",
+    "claim",
+    "command",
+    "result",
+    "ref",
+    "input_digest",
+    "input_count",
+    "inputs",
+    "host",
+    "latest_input_mtime",
+    "proof_started",
+    "proof_ended",
+    "retries",
+    "receipt_id",
   ];
   const receiptsByCase = new Map();
 
-  if (
-    requireHeaders(receiptTable, 'Proof receipts', receiptHeaders, errors)
-  ) {
+  if (requireHeaders(receiptTable, "Proof receipts", receiptHeaders, errors)) {
     const receiptRows =
       !complete && receiptTable.rows.every(isPlaceholderRow)
         ? []
@@ -1075,7 +1096,7 @@ export const validateRegressionPlan = (
 
     for (const row of receiptRows) {
       const receipt = toReceipt(row);
-      const label = `proof receipt ${receipt.caseId || '<missing>'}`;
+      const label = `proof receipt ${receipt.caseId || "<missing>"}`;
 
       if (!cases.has(receipt.caseId)) {
         errors.push(`${label} references an unknown case`);
@@ -1090,7 +1111,7 @@ export const validateRegressionPlan = (
           `${label} must replace invalidated receipts with attempt ${expectedAttempt}`
         );
       }
-      if (complete && receipt.claim?.toLowerCase() !== 'completed') {
+      if (complete && receipt.claim?.toLowerCase() !== "completed") {
         errors.push(`${label} requires Claim completed`);
       }
       if (!isResolved(receipt.command)) {
@@ -1161,7 +1182,7 @@ export const validateRegressionPlan = (
       ) {
         errors.push(`${label} ended before it started`);
       }
-      if (receipt.retries !== '0') {
+      if (receipt.retries !== "0") {
         errors.push(`${label} requires Retries 0`);
       }
       if (row.receipt_id !== createProofReceiptId(receipt)) {
@@ -1182,8 +1203,8 @@ export const validateRegressionPlan = (
     const oracleRows = oracleByCase.get(caseId);
     const geometryPaintApplies = Array.from(oracleRows?.values() ?? []).some(
       (row) =>
-        row.observation?.toLowerCase() === 'geometry-paint' &&
-        row.applies?.toLowerCase() === 'yes'
+        row.observation?.toLowerCase() === "geometry-paint" &&
+        row.applies?.toLowerCase() === "yes"
     );
     const browserSpecific =
       /\b(?:chrome|blink|compositor|native browser)\b/i.test(
@@ -1191,26 +1212,30 @@ export const validateRegressionPlan = (
           selected.source_reference,
           selected.setup_action,
           selected.expected_outcome,
-        ].join(' ')
+        ].join(" ")
       ) || geometryPaintApplies;
 
     if (complete && receipts.length === 0) {
       errors.push(`${caseId} is missing a completed Proof receipt`);
     }
     if (browserSpecific) {
-      if (!/^exact-chrome:\s*\S/i.test(selected.exact_environment ?? '')) {
-        errors.push(`${caseId} requires Exact environment exact-chrome: <proof>`);
+      if (!/^exact-chrome:\s*\S/i.test(selected.exact_environment ?? "")) {
+        errors.push(
+          `${caseId} requires Exact environment exact-chrome: <proof>`
+        );
       }
       if (
         geometryPaintApplies &&
         !Array.from(oracleRows?.values() ?? []).some(
           (row) =>
-            row.observation?.toLowerCase() === 'geometry-paint' &&
-            row.applies?.toLowerCase() === 'yes' &&
-            /\bexact-chrome\b/i.test(row.proof_layer ?? '')
+            row.observation?.toLowerCase() === "geometry-paint" &&
+            row.applies?.toLowerCase() === "yes" &&
+            /\bexact-chrome\b/i.test(row.proof_layer ?? "")
         )
       ) {
-        errors.push(`${caseId} geometry-paint requires proof layer exact-chrome`);
+        errors.push(
+          `${caseId} geometry-paint requires proof layer exact-chrome`
+        );
       }
       if (
         complete &&
@@ -1228,116 +1253,114 @@ export const validateRegressionPlan = (
     }
   }
 
-  const corpusTable = parseTable(markdown, 'Affected corpus replay');
+  const corpusTable = parseTable(markdown, "Affected corpus replay");
   const corpusHeaders = [
-    'owner',
-    'affected_cases',
-    'pre_edit_baseline',
-    'last_owner_edit',
-    'combined_command',
-    'receipt_input_digest',
-    'result',
+    "owner",
+    "affected_cases",
+    "pre_edit_baseline",
+    "last_owner_edit",
+    "combined_command",
+    "receipt_input_digest",
+    "result",
   ];
 
   if (
-    requireHeaders(
-      corpusTable,
-      'Affected corpus replay',
-      corpusHeaders,
-      errors
-    )
+    requireHeaders(corpusTable, "Affected corpus replay", corpusHeaders, errors)
   ) {
     if (!complete && corpusTable.rows.every(isPlaceholderRow)) {
       // Final shared-owner replay does not exist before implementation.
     } else {
-    const coveredCases = new Set();
-    const allReceipts = Array.from(receiptsByCase.values()).flat();
+      const coveredCases = new Set();
+      const allReceipts = Array.from(receiptsByCase.values()).flat();
 
-    for (const row of corpusTable.rows) {
-      const label = `affected corpus ${row.owner || '<missing>'}`;
-      const affectedCases = splitCases(row.affected_cases);
+      for (const row of corpusTable.rows) {
+        const label = `affected corpus ${row.owner || "<missing>"}`;
+        const affectedCases = splitCases(row.affected_cases);
 
-      if (!isResolved(row.owner)) errors.push(`${label} requires Owner`);
-      if (affectedCases.length === 0) {
-        errors.push(`${label} requires Affected cases`);
-      }
-      for (const caseId of affectedCases) {
-        if (!cases.has(caseId)) {
-          errors.push(`${label} references unknown case ${caseId}`);
-        } else {
-          coveredCases.add(caseId);
+        if (!isResolved(row.owner)) errors.push(`${label} requires Owner`);
+        if (affectedCases.length === 0) {
+          errors.push(`${label} requires Affected cases`);
+        }
+        for (const caseId of affectedCases) {
+          if (!cases.has(caseId)) {
+            errors.push(`${label} references unknown case ${caseId}`);
+          } else {
+            coveredCases.add(caseId);
+          }
+        }
+        if (!/^(?:pass|red):\s*\S/i.test(row.pre_edit_baseline ?? "")) {
+          errors.push(`${label} requires Pre-edit baseline pass: or red:`);
+        }
+
+        const finalReplayFields = [
+          row.last_owner_edit,
+          row.combined_command,
+          row.receipt_input_digest,
+          row.result,
+        ];
+
+        if (
+          !complete &&
+          finalReplayFields.every((field) => !isResolved(field))
+        ) {
+          continue;
+        }
+
+        if (!isResolved(row.combined_command)) {
+          errors.push(`${label} requires Combined command`);
+        }
+        if (!isSha256(row.receipt_input_digest)) {
+          errors.push(`${label} requires Receipt input digest sha256:<hash>`);
+        }
+        if (complete && !isPass(row.result)) {
+          errors.push(`${label} requires Result pass: <evidence>`);
+        }
+
+        const lastOwnerEdit = parseTimestamp(row.last_owner_edit);
+        const matchingReceipts = allReceipts.filter(
+          (receipt) => receipt.inputDigest === row.receipt_input_digest
+        );
+
+        if (lastOwnerEdit === null) {
+          errors.push(`${label} requires ISO Last owner edit`);
+        }
+        if (matchingReceipts.length === 0) {
+          errors.push(`${label} does not match a Proof receipt input digest`);
+        } else if (
+          lastOwnerEdit !== null &&
+          matchingReceipts.every(
+            (receipt) =>
+              receipt.proofStartedTimestamp === null ||
+              lastOwnerEdit > receipt.proofStartedTimestamp
+          )
+        ) {
+          errors.push(`${label} replay started before the last owner edit`);
         }
       }
-      if (!/^(?:pass|red):\s*\S/i.test(row.pre_edit_baseline ?? '')) {
-        errors.push(`${label} requires Pre-edit baseline pass: or red:`);
-      }
 
-      const finalReplayFields = [
-        row.last_owner_edit,
-        row.combined_command,
-        row.receipt_input_digest,
-        row.result,
-      ];
-
-      if (!complete && finalReplayFields.every((field) => !isResolved(field))) {
-        continue;
-      }
-
-      if (!isResolved(row.combined_command)) {
-        errors.push(`${label} requires Combined command`);
-      }
-      if (!isSha256(row.receipt_input_digest)) {
-        errors.push(`${label} requires Receipt input digest sha256:<hash>`);
-      }
-      if (complete && !isPass(row.result)) {
-        errors.push(`${label} requires Result pass: <evidence>`);
-      }
-
-      const lastOwnerEdit = parseTimestamp(row.last_owner_edit);
-      const matchingReceipts = allReceipts.filter(
-        (receipt) => receipt.inputDigest === row.receipt_input_digest
-      );
-
-      if (lastOwnerEdit === null) {
-        errors.push(`${label} requires ISO Last owner edit`);
-      }
-      if (matchingReceipts.length === 0) {
-        errors.push(`${label} does not match a Proof receipt input digest`);
-      } else if (
-        lastOwnerEdit !== null &&
-        matchingReceipts.every(
-          (receipt) =>
-            receipt.proofStartedTimestamp === null ||
-            lastOwnerEdit > receipt.proofStartedTimestamp
-        )
-      ) {
-        errors.push(`${label} replay started before the last owner edit`);
-      }
-    }
-
-    if (complete) {
-      for (const caseId of cases.keys()) {
-        if (!coveredCases.has(caseId)) {
-          errors.push(`${caseId} is missing from Affected corpus replay`);
+      if (complete) {
+        for (const caseId of cases.keys()) {
+          if (!coveredCases.has(caseId)) {
+            errors.push(`${caseId} is missing from Affected corpus replay`);
+          }
         }
       }
-    }
     }
   }
 
-  const gateFailureTable = parseTable(markdown, 'Gate failure closure');
+  const gateFailureTable = parseTable(markdown, "Gate failure closure");
   const gateFailureHeaders = [
-    'gate',
-    'failure_signal',
-    'classification',
-    'resolution',
-    'final_rerun',
+    "gate",
+    "failure_signal",
+    "classification",
+    "resolution",
+    "final_rerun",
   ];
 
   if (
     requireHeaders(
       gateFailureTable,
-      'Gate failure closure',
+      "Gate failure closure",
       gateFailureHeaders,
       errors
     )
@@ -1346,46 +1369,49 @@ export const validateRegressionPlan = (
       // A gate cannot fail before execution starts.
     } else {
       const noneRows = gateFailureTable.rows.filter(
-        (row) => row.gate?.toLowerCase() === 'none'
+        (row) => row.gate?.toLowerCase() === "none"
       );
       const failedGateRows = gateFailureTable.rows.filter(
-        (row) => row.gate?.toLowerCase() !== 'none'
+        (row) => row.gate?.toLowerCase() !== "none"
       );
 
       if (failedGateRows.length === 0) {
         if (noneRows.length !== 1) {
           errors.push(
-            'Gate failure closure requires one explicit none row when no started gate failed'
+            "Gate failure closure requires one explicit none row when no started gate failed"
           );
         } else {
           for (const field of [
-            'failure_signal',
-            'classification',
-            'resolution',
-            'final_rerun',
+            "failure_signal",
+            "classification",
+            "resolution",
+            "final_rerun",
           ]) {
             if (!isNotApplicable(noneRows[0][field])) {
               errors.push(
-                `Gate failure closure none ${field.replaceAll('_', ' ')} requires N/A reason`
+                `Gate failure closure none ${field.replaceAll(
+                  "_",
+                  " "
+                )} requires N/A reason`
               );
             }
           }
         }
       } else if (noneRows.length > 0) {
-        errors.push('Gate failure closure cannot mix none with failed gates');
+        errors.push("Gate failure closure cannot mix none with failed gates");
       }
 
       for (const row of failedGateRows) {
-        const label = `gate failure ${row.gate || '<missing>'}`;
+        const label = `gate failure ${row.gate || "<missing>"}`;
 
         for (const field of [
-          'gate',
-          'failure_signal',
-          'classification',
-          'resolution',
+          "gate",
+          "failure_signal",
+          "classification",
+          "resolution",
         ]) {
           if (!isResolved(row[field])) {
-            errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
+            errors.push(`${label} requires ${field.replaceAll("_", " ")}`);
           }
         }
         if (complete && !isPass(row.final_rerun)) {
@@ -1397,20 +1423,20 @@ export const validateRegressionPlan = (
     }
   }
 
-  const methodologyTable = parseTable(markdown, 'Methodology deltas');
+  const methodologyTable = parseTable(markdown, "Methodology deltas");
   const methodologyHeaders = [
-    'case',
-    'miss_or_owner_checked',
-    'decision',
-    'durable_owner_change',
-    'focused_proof',
-    'trigger_result',
+    "case",
+    "miss_or_owner_checked",
+    "decision",
+    "durable_owner_change",
+    "focused_proof",
+    "trigger_result",
   ];
 
   if (
     requireHeaders(
       methodologyTable,
-      'Methodology deltas',
+      "Methodology deltas",
       methodologyHeaders,
       errors
     )
@@ -1433,17 +1459,17 @@ export const validateRegressionPlan = (
         continue;
       }
       if (
-        !['repair-now', 'no-change', 'defer'].includes(
+        !["repair-now", "no-change", "defer"].includes(
           row.decision?.toLowerCase()
         )
       ) {
         errors.push(`${caseId} has invalid Methodology decision`);
       }
       if (failedCount > 0) {
-        if (row.decision?.toLowerCase() !== 'repair-now') {
+        if (row.decision?.toLowerCase() !== "repair-now") {
           errors.push(`${caseId} failed fix requires Methodology repair-now`);
         }
-        if (!REGRESSION_SOURCE_PATTERN.test(row.durable_owner_change ?? '')) {
+        if (!REGRESSION_SOURCE_PATTERN.test(row.durable_owner_change ?? "")) {
           errors.push(`${caseId} failed fix requires Regression durable owner`);
         }
         if (!isPass(row.focused_proof)) {
@@ -1451,10 +1477,10 @@ export const validateRegressionPlan = (
         }
       }
       for (const field of [
-        'miss_or_owner_checked',
-        'durable_owner_change',
-        'focused_proof',
-        'trigger_result',
+        "miss_or_owner_checked",
+        "durable_owner_change",
+        "focused_proof",
+        "trigger_result",
       ]) {
         if (!isResolved(row[field])) {
           errors.push(`${caseId} Methodology delta requires ${field}`);
@@ -1470,12 +1496,12 @@ const findRepoRoot = (start) => {
   let current = resolve(start);
 
   while (true) {
-    if (existsSync(join(current, 'AGENTS.md'))) return current;
+    if (existsSync(join(current, "AGENTS.md"))) return current;
 
     const parent = dirname(current);
 
     if (parent === current) {
-      throw new Error('could not find repo root containing AGENTS.md');
+      throw new Error("could not find repo root containing AGENTS.md");
     }
     current = parent;
   }
@@ -1486,28 +1512,30 @@ if (
   resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
 ) {
   const args = process.argv.slice(2);
-  const complete = args.includes('--complete');
-  const planPath = args.find((arg) => !arg.startsWith('--'));
+  const complete = args.includes("--complete");
+  const planPath = args.find((arg) => !arg.startsWith("--"));
 
   if (!planPath) {
     process.stderr.write(
-      'Usage: validate-regression-plan.mjs <plan.md> [--complete]\n'
+      "Usage: validate-regression-plan.mjs <plan.md> [--complete]\n"
     );
     process.exitCode = 1;
   } else {
     const rootDir = findRepoRoot(process.cwd());
     const absolutePlan = resolve(rootDir, planPath);
-    const errors = validateRegressionPlan(readFileSync(absolutePlan, 'utf8'), {
+    const errors = validateRegressionPlan(readFileSync(absolutePlan, "utf8"), {
       complete,
       rootDir,
     });
 
     if (errors.length > 0) {
-      process.stderr.write(`${errors.join('\n')}\n`);
+      process.stderr.write(`${errors.join("\n")}\n`);
       process.exitCode = 1;
     } else {
       process.stdout.write(
-        `Regression plan: ${complete ? 'semantically complete' : 'structurally valid'}.\n`
+        `Regression plan: ${
+          complete ? "semantically complete" : "structurally valid"
+        }.\n`
       );
     }
   }

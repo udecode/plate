@@ -315,6 +315,7 @@ export function Comment(props: {
   const onResolveComment = () => {
     resolveDiscussion(comment.discussionId);
     editor.plugin(commentPlugin).update.unsetMark({ id: comment.discussionId });
+    editor.api.dom.focus();
   };
 
   const isFirst = index === 0;

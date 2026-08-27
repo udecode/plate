@@ -201,6 +201,16 @@ a target-capture or equivalent pre-handler oracle and record
 `pre-handler-state: pass`. A post-handler computed-style assertion is red for
 that claim even when the eventual cursor is correct.
 
+Any popup or toolbar lifecycle asserted after an action or release requires an
+applicable `follow-up-input@follow-up` oracle. Proving that an overlay closed is
+not enough; the next interaction on the owning surface must still work.
+
+For every applicable popup close row at `after-action` or `after-release`, the
+matrix must also account for `dom-native` and `focus` at that same phase. Mark
+them applicable with exact selection/caret and focus assertions, or explicitly
+N/A with a reason. A later follow-up action cannot prove that close preserved
+the live pointer-created selection or caret.
+
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
 harness.
