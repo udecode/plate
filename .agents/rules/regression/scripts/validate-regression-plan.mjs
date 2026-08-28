@@ -50,6 +50,10 @@ const E2E_TEST_COMMAND_PATTERN =
   /(?:tooling\/e2e\/|apps\/plite\/tests\/plite-browser\/|\bplaywright\b|\b(?:test:)?e2e\b|\btest:plite(?::|-)?browser(?:\b|:)|--project=)/i;
 const POINTER_INTERACTION_PATTERN =
   /\b(?:cursor|pointer|mouse|hover)\b|\b(?:resize|drag)\s+handle\b/i;
+const POINTER_BOUNDARY_PATTERN =
+  /\b(?:outside|beyond|leave|leaves|leaving|exit|exits|exited)\b[\s\S]{0,100}\b(?:browser|editor|scrollport|window|boundary)\b|\b(?:browser|editor|scrollport|window|boundary)\b[\s\S]{0,100}\b(?:outside|beyond|leave|leaves|leaving|exit|exits|exited)\b/i;
+const CONTINUOUS_POINTER_PATTERN =
+  /\b(?:autoscroll|continuous|continues?|continuing|drag|held|scroll|stall|stalls|stalled|stop|stops|stopped)\b/i;
 const NO_FLASH_POINTER_PATTERN =
   /\b(?:flash(?:es|ed|ing)?|flicker(?:s|ed|ing)?|frame|pre-handler)\b/i;
 const REGRESSION_SOURCE_PATTERN =
@@ -741,6 +745,18 @@ export const validateRegressionPlan = (
         ]),
       ].join(" ")
     );
+    const pointerCaseText = [
+      selected?.source_reference,
+      selected?.setup_action,
+      selected?.expected_outcome,
+      ...(evidenceByCase.get(caseId) ?? []).flatMap((row) => [
+        row.source_reference,
+        row.claim,
+      ]),
+    ].join(" ");
+    const continuousBoundaryPointer =
+      POINTER_BOUNDARY_PATTERN.test(pointerCaseText) &&
+      CONTINUOUS_POINTER_PATTERN.test(pointerCaseText);
 
     if (
       pointerInteraction &&
@@ -751,6 +767,55 @@ export const validateRegressionPlan = (
       )
     ) {
       errors.push(`${caseId} requires an applicable pointer-feedback oracle`);
+    }
+
+    if (continuousBoundaryPointer) {
+      const pointerRow = rows?.get("pointer-feedback@during-action");
+
+      if (pointerRow?.applies?.toLowerCase() !== "yes") {
+        errors.push(
+          `${caseId} boundary-exit pointer behavior requires pointer-feedback@during-action`
+        );
+      } else {
+        if (!/\bboundary-liveness:\s*\S/i.test(pointerRow.positive_assertion ?? "")) {
+          errors.push(`${caseId} boundary-exit pointer behavior requires boundary-liveness:`);
+        }
+        if (!/\brelease-cleanup:\s*\S/i.test(pointerRow.positive_assertion ?? "")) {
+          errors.push(`${caseId} boundary-exit pointer behavior requires release-cleanup:`);
+        }
+        if (!/\bscroll-owner:\s*\S/i.test(pointerRow.positive_assertion ?? "")) {
+          errors.push(`${caseId} boundary-exit pointer behavior requires scroll-owner:`);
+        }
+        if (!/\bspeed-law:\s*\S/i.test(pointerRow.positive_assertion ?? "")) {
+          errors.push(`${caseId} boundary-exit pointer behavior requires speed-law:`);
+        }
+        if (!/\bvisible-scroll:\s*\S/i.test(pointerRow.positive_assertion ?? "")) {
+          errors.push(`${caseId} boundary-exit pointer behavior requires visible-scroll:`);
+        }
+        if (!/\bboundary-exit\b/i.test(pointerRow.proof_layer ?? "")) {
+          errors.push(`${caseId} boundary-exit pointer behavior requires a boundary-exit proof layer`);
+        }
+        if (complete) {
+          if (!/\bboundary-exit-trace:\s*pass\b/i.test(pointerRow.result ?? "")) {
+            errors.push(`${caseId} boundary-exit pointer behavior requires boundary-exit-trace: pass`);
+          }
+          if (!/\brange-miss:\s*continue\b/i.test(pointerRow.result ?? "")) {
+            errors.push(`${caseId} boundary-exit pointer behavior requires range-miss: continue`);
+          }
+          if (!/\bowner-lock:\s*pass\b/i.test(pointerRow.result ?? "")) {
+            errors.push(`${caseId} boundary-exit pointer behavior requires owner-lock: pass`);
+          }
+          if (!/\bspeed-consistency:\s*pass\b/i.test(pointerRow.result ?? "")) {
+            errors.push(`${caseId} boundary-exit pointer behavior requires speed-consistency: pass`);
+          }
+          if (!/\bvisible-scroll:\s*pass\b/i.test(pointerRow.result ?? "")) {
+            errors.push(`${caseId} boundary-exit pointer behavior requires visible-scroll: pass`);
+          }
+          if (!/\brelease:\s*stop\b/i.test(pointerRow.result ?? "")) {
+            errors.push(`${caseId} boundary-exit pointer behavior requires release: stop`);
+          }
+        }
+      }
     }
 
     const completedPopupRows = Array.from(rows?.values() ?? []).filter(
@@ -915,6 +980,14 @@ export const validateRegressionPlan = (
       if (!/^(?:reproduced|blocked):\s*\S/i.test(row.resume_state ?? "")) {
         errors.push(
           `${label} must resume from reproduced: <evidence> or blocked: <reason>`
+        );
+      }
+      if (
+        ["exact-replay", "final-verification"].includes(failureKind) &&
+        !/\bdiagnostic:\s*\S/i.test(row.resume_state ?? "")
+      ) {
+        errors.push(
+          `${label} requires diagnostic: <unchanged-bytes phase/result>`
         );
       }
 

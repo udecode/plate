@@ -260,6 +260,28 @@ state in that same interaction. Record `interaction-trace: pass`,
 result. A test that reaches the same cursor through `pointerenter` does not
 cover a reporter path that delivers only held `pointermove`.
 
+For continuous held-pointer behavior that leaves an editor, browser viewport,
+window, scrollport, or owning boundary, record
+`boundary-liveness: <event/last-coordinate source>` and
+`release-cleanup: <mouseup/pointerup/dragend/blur stop law>`,
+`scroll-owner: <stable acquired owner>`, and
+`speed-law: <distance/phase to signed delta contract>`, and
+`visible-scroll: <actual owner offset plus stable content geometry>` in the positive
+assertion. The executable proof layer must exercise the actual boundary exit,
+one transient missing DOM target or range, continued scheduling from the last
+valid boundary coordinate, horizontal and vertical exit without owner
+reselection, constant signed speed inside the named outside-speed region, and
+actual owner offset and stable content geometry movement caused by the held
+interaction rather than a programmatic scroll, plus the real release/blur
+cleanup. Completion records
+`boundary-exit-trace: pass`, `range-miss: continue`, `owner-lock: pass`,
+`speed-consistency: pass`, `visible-scroll: pass`, and `release: stop`.
+Selection expansion, a scroll method call, a synthetic `scrollTop` mutation, a
+coordinate-only target/delta test, final scroll offset without an
+interaction-owned before/during trace, or ordinary inside-editor drag is
+support-only because each can pass while the live loop dies, changes owner,
+changes speed, or never visibly moves at the boundary.
+
 A flash, flicker, or one-frame pointer-feedback report needs a pre-handler
 oracle. Read the target's cursor or other material state from a native target-
 capture listener before component bubble handlers run, or use an equivalent
@@ -474,6 +496,13 @@ Record one explicit failure kind: `reporter-contradiction`, `exact-replay`, or
 which may be required or explicitly superseded. Only a reporter contradiction
 requires a required `latest-reporter-delta`; exact replay and final verification
 failures have no reporter delta unless one actually exists.
+
+An `exact-replay` or `final-verification` failure must record
+`diagnostic: <unchanged-bytes phase/result>` in its resume state before another
+Patch. Run the actual failing assertion on frozen product bytes and name
+whether product nondeterminism, interaction delivery, host readiness, or oracle
+sampling caused the red. Repeated green runs without a phase/result diagnostic
+cannot resume product edits.
 
 That event immediately interrupts product work:
 

@@ -115,6 +115,7 @@ export type EditableInputControllerState = {
   draggedRange: Range | null;
   isComposing: boolean;
   isDraggingInternally: boolean;
+  isNativeSelectionDragActive: boolean;
   isProjectingSelection: boolean;
   isUpdatingSelection: boolean;
   latestElement: DOMElement | null;
@@ -288,6 +289,7 @@ export const createEditableInputControllerState = (
       draggedRange: null,
       isComposing: false,
       isDraggingInternally: false,
+      isNativeSelectionDragActive: false,
       isProjectingSelection: false,
       isUpdatingSelection: false,
       latestElement: null,

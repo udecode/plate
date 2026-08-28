@@ -379,7 +379,7 @@ test('failed DOM selection export clears the updating guard', () => {
   }
 });
 
-test('forced model selection export rebuilds an unchanged native range', () => {
+test('native selection drag keeps DOM selection and scroll under browser ownership', () => {
   vi.useFakeTimers();
 
   const editor = createReactEditor();
@@ -416,18 +416,46 @@ test('forced model selection export rebuilds an unchanged native range', () => {
   const removeAllRanges = vi.spyOn(domSelection, 'removeAllRanges');
   const addRange = vi.spyOn(domSelection, 'addRange');
   const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+  const runtime = new EditableDOMRuntime({ editor });
+
+  runtime.setRoot(editorElement);
+  runtime.connect();
+  testRuntimes.add(runtime);
 
   try {
+    const state = {
+      isUpdatingSelection: false,
+      outsideFocusBoundarySettleUntil: 0,
+      selectionChangeOrigin: null,
+    };
+
+    runtime.inputController.state.isNativeSelectionDragActive = true;
+    editorElement.scrollTop = 100;
+
     syncEditableDOMSelectionToEditor({
       editor,
-      options: { forceModelExport: true },
+      options: { forceModelExport: true, preserveScroll: true },
       scrollSelectionIntoView: vi.fn(),
       partialDOMBackedSelection: false,
-      state: {
-        isUpdatingSelection: false,
-        outsideFocusBoundarySettleUntil: 0,
-        selectionChangeOrigin: null,
-      },
+      state,
+    });
+
+    expect(removeAllRanges).not.toHaveBeenCalled();
+    expect(addRange).not.toHaveBeenCalled();
+    expect(setBaseAndExtent).not.toHaveBeenCalled();
+    expect(state.isUpdatingSelection).toBe(false);
+    expect(state.selectionChangeOrigin).toBeNull();
+
+    runtime.domPhaseScheduler.flush();
+    expect(editorElement.scrollTop).toBe(100);
+
+    runtime.inputController.state.isNativeSelectionDragActive = false;
+    syncEditableDOMSelectionToEditor({
+      editor,
+      options: { forceModelExport: true, preserveScroll: true },
+      scrollSelectionIntoView: vi.fn(),
+      partialDOMBackedSelection: false,
+      state,
     });
 
     expect(removeAllRanges).toHaveBeenCalledTimes(1);

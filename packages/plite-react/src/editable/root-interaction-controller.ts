@@ -180,6 +180,7 @@ type RootInteractionDragEndpoint = {
 };
 
 type PendingProjectedDrag = {
+  browserOwned: boolean;
   clientX: number;
   clientY: number;
   editor: RootInteractionEditor;
@@ -206,6 +207,15 @@ type PendingDragAutoScrollRef = {
 };
 
 let pendingProjectedDrag: PendingProjectedDrag | null = null;
+
+const setNativeSelectionDragActive = (
+  runtime: EditableDOMRuntime | undefined,
+  active: boolean
+) => {
+  if (runtime) {
+    runtime.inputController.state.isNativeSelectionDragActive = active;
+  }
+};
 
 const finishPendingProjectedDrag = (projectedDrag: PendingProjectedDrag) => {
   projectedDrag.releaseCleanup();
@@ -1429,11 +1439,7 @@ export const useRootInteractionController = ({
           nativeEditableTextTarget &&
           (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
 
-        if (
-          nativeEditableMultiClick ||
-          nativeEditableSelectedTextTarget ||
-          nativeEditableModifiedClick
-        ) {
+        if (nativeEditableTextTarget) {
           action = { type: 'ignore' };
         }
 
@@ -1589,15 +1595,22 @@ export const useRootInteractionController = ({
           ? {
               clientX: event.clientX,
               clientY: event.clientY,
+              browserOwned: nativeEditableTextTarget,
               editor: projectedDragEditor,
               endpoint: projectedDragEndpoint,
               finish: () => {
-                selectionBridge?.finishProjectedDrag();
-                refreshPliteViewSelection(projectedDragEditor);
+                setNativeSelectionDragActive(rootRuntime, false);
+                if (!nativeEditableTextTarget) {
+                  selectionBridge?.finishProjectedDrag();
+                  refreshPliteViewSelection(projectedDragEditor);
+                }
               },
               releaseCleanup: () => {},
             }
           : null;
+        if (nativeEditableTextTarget) {
+          setNativeSelectionDragActive(rootRuntime, true);
+        }
         if (pendingProjectedDrag) {
           pendingProjectedDrag.releaseCleanup =
             attachProjectedDragReleaseListeners(
@@ -1684,6 +1697,7 @@ export const useRootInteractionController = ({
       ignoreBlankEditableRootClicks,
       pendingInteractionRef,
       root,
+      rootRuntime,
       scheduleInteractionFrame,
       selection,
       selectionBridge,
@@ -1696,6 +1710,7 @@ export const useRootInteractionController = ({
       const projectedDrag = pendingProjectedDrag;
 
       if (event.buttons === 0) {
+        setNativeSelectionDragActive(rootRuntime, false);
         if (projectedDrag) {
           finishPendingProjectedDrag(projectedDrag);
         }
@@ -1704,7 +1719,7 @@ export const useRootInteractionController = ({
       }
 
       if (
-        (projectedDrag ||
+        ((projectedDrag && !projectedDrag.browserOwned) ||
           canApplyCoordinateDragSelection(pendingInteraction)) &&
         shouldIgnoreDragTarget(event)
       ) {
@@ -1715,6 +1730,7 @@ export const useRootInteractionController = ({
 
       if (
         projectedDrag &&
+        !projectedDrag.browserOwned &&
         applyProjectedDragSelectionFromEvent({
           event,
           getMountedViewEditor,
@@ -1802,6 +1818,7 @@ export const useRootInteractionController = ({
       const pendingInteraction = pendingInteractionRef.current;
       pendingInteractionRef.current = ignoreInteraction();
       stopDragAutoScroll(pendingDragAutoScrollRef);
+      setNativeSelectionDragActive(rootRuntime, false);
       const { action: pendingAction } = pendingInteraction;
       const projectedDrag = pendingProjectedDrag;
       pendingProjectedDrag = null;
@@ -1811,7 +1828,7 @@ export const useRootInteractionController = ({
 
       if (
         pointerMoved &&
-        (projectedDrag ||
+        ((projectedDrag && !projectedDrag.browserOwned) ||
           canApplyCoordinateDragSelection(pendingInteraction)) &&
         shouldIgnoreDragTarget(event)
       ) {
@@ -1882,12 +1899,14 @@ export const useRootInteractionController = ({
       };
 
       if (projectedDrag) {
-        const appliedProjectedDrag = applyProjectedDragSelectionFromEvent({
-          event,
-          getMountedViewEditor,
-          projectedDrag,
-          selectionBridge,
-        });
+        const appliedProjectedDrag =
+          !projectedDrag.browserOwned &&
+          applyProjectedDragSelectionFromEvent({
+            event,
+            getMountedViewEditor,
+            projectedDrag,
+            selectionBridge,
+          });
 
         projectedDrag.finish();
         if (appliedProjectedDrag) {
@@ -2038,6 +2057,7 @@ export const useRootInteractionController = ({
       getMountedViewEditor,
       pendingInteractionRef,
       root,
+      rootRuntime,
       scheduleInteractionFrame,
       selection,
       selectionBridge,

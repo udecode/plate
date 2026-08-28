@@ -226,6 +226,11 @@ const failedFixRows = ({
         ? "best-api: accepted durable API; plate-plan: accepted adoption plan"
         : "N/A: first failed fix without architecture pressure";
 
+    const diagnostic =
+      failureKind === "reporter-contradiction"
+        ? ""
+        : "; diagnostic: pass unchanged-bytes failing phase classified";
+
     return `| case-complete | ${attempt} | reporter contradiction after claimed candidate | ${failureKind} | ${
       invalidate ? "yes: prior green and completion receipt revoked" : "no"
     } | ${
@@ -236,7 +241,7 @@ const failedFixRows = ({
       attempt >= 2
         ? "yes: second-failed-fix"
         : "no: first failure and no structural pressure"
-    } | ${architecture} | reproduced: restart the exact reporter case |`;
+    } | ${architecture} | reproduced: restart the exact reporter case${diagnostic} |`;
   }).join("\n");
 
 const fixture = ({
@@ -590,6 +595,25 @@ test("only reporter contradictions require a latest reporter delta", () => {
   }
 });
 
+test("replay and final-verification failures require an unchanged-bytes diagnostic", () => {
+  for (const failureKind of ["exact-replay", "final-verification"]) {
+    const invalidRows = failedFixRows({ failureKind }).replace(
+      "; diagnostic: pass unchanged-bytes failing phase classified",
+      ""
+    );
+    const errors = validateRegressionPlan(
+      fixture({ failedCount: 1, failedRows: invalidRows, failureKind }),
+      { complete: true, rootDir: root }
+    ).join("\n");
+
+    assert.match(
+      errors,
+      /requires diagnostic: <unchanged-bytes phase\/result>/,
+      failureKind
+    );
+  }
+});
+
 test("pointer-driven cases require an applicable pointer-feedback oracle", () => {
   const pointerCase = fixture()
     .replace(
@@ -628,6 +652,67 @@ test("pointer-feedback completion requires an interaction trace", () => {
   }).join("\n");
 
   assert.match(errors, /requires interaction-trace: pass/);
+});
+
+test("continuous pointer boundary exits require liveness and release proof", () => {
+  const boundaryCase = fixture()
+    .replace(
+      "validate one complete plan",
+      "keep a held mouse drag scrolling after it leaves the editor or browser window"
+    )
+    .replace(
+      "semantic closure is accepted",
+      "autoscroll continues outside the editor until release"
+    )
+    .replace(
+      "| case-complete | pointer-feedback | during-action | no | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case |",
+      `| case-complete | pointer-feedback | during-action | yes | reporter-noun: selection drag; affordance-inventory: editor scrollport; held pointer keeps scrolling outside | scrolling stalls after boundary exit | browser pointer event oracle | test: ${semanticTestPath}#${semanticTestTitle} | pass: interaction-trace: pass; target: editor; event: mousemove; buttons: 1 |`
+    );
+  const errors = validateRegressionPlan(boundaryCase, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires boundary-liveness:/);
+  assert.match(errors, /requires release-cleanup:/);
+  assert.match(errors, /requires scroll-owner:/);
+  assert.match(errors, /requires speed-law:/);
+  assert.match(errors, /requires visible-scroll:/);
+  assert.match(errors, /requires a boundary-exit proof layer/);
+  assert.match(errors, /requires boundary-exit-trace: pass/);
+  assert.match(errors, /requires range-miss: continue/);
+  assert.match(errors, /requires owner-lock: pass/);
+  assert.match(errors, /requires speed-consistency: pass/);
+  assert.match(errors, /requires visible-scroll: pass/);
+  assert.match(errors, /requires release: stop/);
+
+  const resolved = boundaryCase
+    .replace(
+      "reporter-noun: selection drag; affordance-inventory: editor scrollport; held pointer keeps scrolling outside",
+      "reporter-noun: selection drag; affordance-inventory: editor scrollport; boundary-liveness: last valid boundary coordinate survives transient range misses; release-cleanup: mouseup pointerup dragend and blur stop; scroll-owner: originating editor scrollport stays fixed; speed-law: outside region keeps one signed delta; visible-scroll: actual owner offset and stable content geometry move without programmatic scroll; held pointer keeps scrolling outside"
+    )
+    .replace("browser pointer event oracle", "browser boundary-exit pointer event oracle")
+    .replace(
+      "buttons: 1 |",
+      "buttons: 1; boundary-exit-trace: pass; range-miss: continue; owner-lock: pass; speed-consistency: pass; visible-scroll: pass; release: stop |"
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
+test("the latest reporter-invalidated outside-scroll packet lacks visible movement proof", () => {
+  const planPath =
+    "docs/plans/2026-08-27-outside-editor-autoscroll-owner-speed-failed-fix-repair.md";
+  const errors = validateRegressionPlan(readFileSync(join(root, planPath)), {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires visible-scroll:/);
+  assert.match(errors, /requires visible-scroll: pass/);
 });
 
 test("no-flash pointer feedback requires pre-handler state", () => {
