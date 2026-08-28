@@ -96,7 +96,7 @@ Blocked condition:
 - Block only if GitHub auth/branch protection prevents the authorized push/comment/close, remote `next` changed incompatibly, or the exact pushed-ref Chrome replay fails after safe host repair. Never close on a local-only candidate.
 
 Maintainer state:
-- current_phase: commit and rebase onto current origin/next
+- current_phase: push replay harness correction and establish final SHA
 - current_phase_status: in_progress
 - selected_item: udecode/plate#5113
 - selected_owner: maintainer shipping the completed Regression/Patch packet
@@ -226,31 +226,37 @@ Findings:
 - Live #5113 is OPEN with `bug` only, no comments or assignee; related PR/branch/search guard is empty.
 - Local `next` at `219d1a...` is two commits behind `origin/next` `083e54b...`; commit then rebase before push.
 - Current dirty/untracked set is entirely #5113 product, proof, Regression workflow, changeset, and ticket plans; no unrelated file found.
+- First pushed commit `85d92abbad` reached `origin/next`; its exact Chrome replay passed 4/5 then failed a pre-second-drag toolbar setup assertion before the reporter action.
+- Product bytes stayed frozen. Moving the toolbar assertion to the held second-drag phase passed exact Chrome 5/5 locally.
 
 Timeline:
 - 2026-08-28: user authorized commit, comment, and close; dedicated Maintainer shipping goal created.
 - 2026-08-28: VISION/intake/standing orders and live GitHub read passed; duplicate/claim guard empty; origin/next freshness checked.
+- 2026-08-28: committed/rebased/pushed `85d92abbad`; first pushed-ref replay exposed an oracle-phase error, not a reporter assertion; harness-only correction passed 5/5.
 
 Decisions and tradeoffs:
 - Push is necessary before closure because fixed/completed wording requires exact final-ref proof; `next` integration is not an npm/latest release.
 
 Review fixes:
-- pending
+- Pushed-ref proof review: accepted moving the toolbar assertion from setup click to buttons=1 held-drag phase; product source unchanged.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Fresh server lock from stale PID 69215 | 1 | inspect and stop exact old same-checkout process, then start fresh pushed-ref host | resolved: fresh PID 72807 |
+| First pushed-ref exact Chrome replay | 1 | freeze product and inspect failing phase | 4/5 reporter path green; fifth failed pre-action toolbar setup proxy; harness assertion moved to held phase and local Chrome 5/5 passed |
 
 Verification evidence:
 - Local attempt5 receipt `sha256:66c1f18c...`, exact Chrome 151 5/5, Node22 full Plite dev gate, and semantic goal closure are inputs, not pushed-ref proof.
 - `gh issue view` -> OPEN, bug, no comments/assignees; PR/search/branch guard -> empty.
 - `git fetch origin next` -> remote `083e54b...`, local `219d1a...`, two remote commits require rebase.
+- first push -> `85d92abbad` local/origin/ls-remote equality; clean worktree before replay.
+- corrected exact Chrome harness -> Ultracite pass and 5/5, product bytes unchanged.
 
 Reboot status:
 | Where am I? | Where am I going? | What is the goal? | What learned? | What done? |
 |-------------|-------------------|-------------------|---------------|------------|
-| Commit/rebase | Stage exact issue-owned diff, commit, rebase onto `083e54b...` | Ship and close #5113 truthfully | Local candidate complete; live/claim guard passed; remote replay required | Intake docs, live issue, diff and remote freshness audited |
+| Second commit/push | Commit harness phase correction, push new final SHA, restart fresh host and replay | Ship and close #5113 truthfully | First pushed ref found proof-only pre-action failure; product frozen; corrected harness 5/5 | First commit pushed and remote equality proved |
 
 Open risks:
 - Remote `origin/next` may have advanced since local proof; fetch and reconcile before push without mixing unrelated changes.

@@ -314,7 +314,6 @@ test(CASE_ID, async ({ page }, testInfo) => {
     };
 
     await page.mouse.click(upwardStart.x, upwardStart.y);
-    await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
 
     const upwardStartScrollTop = await scroller.evaluate(
       (element) => element.scrollTop
@@ -338,6 +337,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
 
     try {
       await page.mouse.move(upwardStart.x, 1, { steps: 30 });
+      await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
 
       await expect
         .poll(() => scroller.evaluate((element) => element.scrollTop), {
