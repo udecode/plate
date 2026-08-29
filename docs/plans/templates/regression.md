@@ -202,6 +202,11 @@ Work Checklist:
 - [ ] Every applicable popup close oracle at `after-action` or `after-release`
       accounts for `dom-native` and `focus` at the same phase; later follow-up
       input never substitutes for close-time selection/caret preservation.
+- [ ] Every required caret, insertion-point, caret-accessible line, editable
+      blank line/row, or text-cursor claim maps to applicable same-phase
+      `dom-native` and `focus` rows plus `follow-up-input@follow-up`. Native
+      browser proof replays the real interaction and asserts caret paint
+      independently from wrapper height, DOM markers, and block highlighting.
 - [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
       state, an executable layer/anchor, and an exact result; every inapplicable
       row has N/A reasons.

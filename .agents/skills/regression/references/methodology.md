@@ -248,6 +248,16 @@ it `no` only with a phase and an N/A reason in every proof cell. “Moved,”
 “rendered,” or “did not crash” never implies selection shape, focus, popup
 exclusion, paint, performance, transient gesture state, or follow-up usability.
 
+Required evidence that names a caret, insertion point, caret-accessible line,
+editable blank line/row, or text cursor must include oracle anchors for
+`dom-native` and `focus` at that evidence phase plus
+`follow-up-input@follow-up`; every named row must be applicable. The proof must
+replay the reporter's real click, selection, or keyboard path in a native
+browser, assert visible/native caret paint independently from model selection,
+wrapper height, DOM markers, and block highlighting, then prove the next valid
+edit still works. A zero-height spacer, a hidden selection anchor, a static
+unselected screenshot, or geometry-only pixel classification is support-only.
+
 Pointer, mouse, cursor, hover, and resize/drag-handle cases require an
 applicable `pointer-feedback` row. Observe it during the held-pointer or hover
 phase instead of inferring it from after-release state. Prove the computed or

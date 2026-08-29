@@ -6,6 +6,7 @@ type PliteSpacerShellAttributes = {
 };
 
 const defaultSpacerStyle = {
+  caretColor: 'transparent',
   height: '0',
   color: 'transparent',
   outline: 'none',

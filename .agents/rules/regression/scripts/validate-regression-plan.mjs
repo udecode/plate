@@ -56,6 +56,8 @@ const CONTINUOUS_POINTER_PATTERN =
   /\b(?:autoscroll|continuous|continues?|continuing|drag|held|scroll|stall|stalls|stalled|stop|stops|stopped)\b/i;
 const NO_FLASH_POINTER_PATTERN =
   /\b(?:flash(?:es|ed|ing)?|flicker(?:s|ed|ing)?|frame|pre-handler)\b/i;
+const CARET_VISIBILITY_PATTERN =
+  /\bcaret(?:-accessible)?\b|\binsertion point\b|\beditable\s+(?:blank\s+)?(?:line|row)\b|\btext cursor\b/i;
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
 const normalizeHeader = (value) =>
@@ -855,7 +857,9 @@ export const validateRegressionPlan = (
     for (const row of evidenceRows) {
       if (row.disposition?.toLowerCase() !== "required") continue;
 
-      for (const anchor of splitOracleAnchors(row.oracle_anchors)) {
+      const anchors = splitOracleAnchors(row.oracle_anchors);
+
+      for (const anchor of anchors) {
         const oracle = caseOracles?.get(anchor);
 
         if (!oracle) {
@@ -866,6 +870,39 @@ export const validateRegressionPlan = (
           errors.push(
             `reporter evidence ${caseId} requires applicable oracle ${anchor}`
           );
+        }
+      }
+
+      if (
+        CARET_VISIBILITY_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+      ) {
+        const phase = row.phase?.toLowerCase();
+        const requiredCaretAnchors = [
+          `dom-native@${phase}`,
+          `focus@${phase}`,
+          "follow-up-input@follow-up",
+        ];
+
+        for (const anchor of requiredCaretAnchors) {
+          if (!anchors.includes(anchor)) {
+            errors.push(
+              `reporter evidence ${caseId} caret-visible behavior requires oracle anchor ${anchor}`
+            );
+          }
+
+          const oracle = caseOracles?.get(anchor);
+
+          if (!oracle) {
+            errors.push(
+              `reporter evidence ${caseId} caret-visible behavior requires oracle ${anchor}`
+            );
+          } else if (oracle.applies?.toLowerCase() !== "yes") {
+            errors.push(
+              `reporter evidence ${caseId} caret-visible behavior requires applicable oracle ${anchor}`
+            );
+          }
         }
       }
     }

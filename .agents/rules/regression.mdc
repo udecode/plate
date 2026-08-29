@@ -231,6 +231,16 @@ them applicable with exact selection/caret and focus assertions, or explicitly
 N/A with a reason. A later follow-up action cannot prove that close preserved
 the live pointer-created selection or caret.
 
+Any required reporter evidence that names a caret, insertion point,
+caret-accessible line, editable blank line/row, or text cursor must map to
+applicable `dom-native` and `focus` rows at the same phase plus an applicable
+`follow-up-input@follow-up` row. Replay the reporter's real click, selection, or
+keyboard path in a browser-native proof layer. Assert the native caret paint
+independently from wrapper height, DOM markers, model selection, and block
+highlighting, then prove the next valid edit still works. A zero-height spacer,
+selection-capable hidden text node, static screenshot without the selection
+phase, or geometry-only pixel classifier cannot close a caret-visible claim.
+
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
 harness.

@@ -2676,125 +2676,151 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('keeps DeleteForward direction in the Chrome/WebKit void-node fallback', async () => {
-    vi.resetModules();
-
-    const innerApplyEditableCommand3 = vi.fn(() => true);
-
-    vi.doMock('../src/editable/editing-kernel', async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import('../src/editable/editing-kernel')>();
-
-      return {
-        ...actual,
-        getEditableCommandFromKeyDown: vi.fn(() => null),
-      };
-    });
-    vi.doMock('../src/editable/mutation-controller', async (importOriginal) => {
-      const actual =
-        await importOriginal<
-          typeof import('../src/editable/mutation-controller')
-        >();
-
-      return {
-        ...actual,
-        applyEditableCommand: innerApplyEditableCommand3,
-      };
-    });
-
-    try {
-      const [
-        {
-          createEditor: innerCreateEditor3,
-          defineEditorSchema: innerDefineEditorSchema2,
-          schema: innerSchema2,
-        },
-        { ReactEditor: innerReactEditor3 },
-        { applyEditableKeyDown: innerApplyEditableKeyDown3 },
-      ] = await Promise.all([
-        import('@platejs/plite'),
-        import('../src/plugin/react-editor'),
-        import('../src/editable/keyboard-input-strategy'),
-      ]);
-      const editor = innerCreateEditor3({
-        extensions: [
-          innerDefineEditorSchema2('schema:keyboard-input-strategy-void-test', {
-            elements: { image: { void: 'block' } },
-            id: 'keyboard-input-strategy-void-test',
-            root: innerSchema2.content.not(innerSchema2.content.text()),
-            unknown: 'preserve',
-            version: 1,
-          }),
-        ],
-        initialSelection: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        },
-        initialValue: [{ type: 'image', children: [{ text: '' }] }],
-      }) as ReactEditorType;
-      const frame = document.createElement('iframe');
-
-      document.body.append(frame);
-      const frameDocument = frame.contentDocument!;
-      const frameWindow = frame.contentWindow!;
-      const target = frameDocument.createElement('div');
-
-      Object.defineProperty(frameWindow.navigator, 'userAgent', {
-        configurable: true,
-        value:
-          'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',
-      });
-      Object.defineProperty(frameWindow, 'InputEvent', {
-        configurable: true,
-        value: class InputEvent {
-          getTargetRanges() {
-            return [];
-          }
-        },
-      });
-      frameDocument.body.append(target);
-      const nativeEvent = new frameWindow.KeyboardEvent('keydown', {
-        bubbles: true,
-        key: 'Delete',
-      });
-
-      target.dispatchEvent(nativeEvent);
-      const event = reactKeyEvent(nativeEvent);
-      const hasEditableTarget = vi
-        .spyOn(innerReactEditor3, 'hasEditableTarget')
-        .mockReturnValue(true);
-      const isComposing = vi
-        .spyOn(innerReactEditor3, 'isComposing')
-        .mockReturnValue(false);
-
-      const result = innerApplyEditableKeyDown3({
-        androidInputManagerRef: { current: null },
-        editor,
-        event,
-        forceRender: vi.fn(),
-        inputController: {} as any,
-        readOnly: false,
-        domStrategyRuntime: null,
-        setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
-      });
-
-      expect(result.handled).toBe(true);
-      expect(event.preventDefault).toHaveBeenCalled();
-      expect(innerApplyEditableCommand3).toHaveBeenCalledWith({
-        command: { direction: 'forward', kind: 'delete', unit: 'block' },
-        editor,
-      });
-
-      frame.remove();
-      hasEditableTarget.mockRestore();
-      isComposing.mockRestore();
-    } finally {
-      vi.doUnmock('../src/editable/editing-kernel');
-      vi.doUnmock('../src/editable/mutation-controller');
+  it.each([
+    ['Backspace', 'backward'],
+    ['Delete', 'forward'],
+  ] as const)(
+    'keeps %s direction in the Chrome/WebKit void-node fallback before generic deletion',
+    async (key, direction) => {
       vi.resetModules();
+
+      const innerApplyEditableCommand3 = vi.fn(() => true);
+
+      vi.doMock('../src/editable/editing-kernel', async (importOriginal) => {
+        const actual =
+          await importOriginal<
+            typeof import('../src/editable/editing-kernel')
+          >();
+
+        return {
+          ...actual,
+          getEditableCommandFromKeyDown: vi.fn(() => ({
+            direction,
+            kind: 'delete',
+          })),
+        };
+      });
+      vi.doMock(
+        '../src/editable/mutation-controller',
+        async (importOriginal) => {
+          const actual =
+            await importOriginal<
+              typeof import('../src/editable/mutation-controller')
+            >();
+
+          return {
+            ...actual,
+            applyEditableCommand: innerApplyEditableCommand3,
+          };
+        }
+      );
+
+      try {
+        const [
+          {
+            createEditor: innerCreateEditor3,
+            defineEditorSchema: innerDefineEditorSchema2,
+            schema: innerSchema2,
+          },
+          { ReactEditor: innerReactEditor3 },
+          { applyEditableKeyDown: innerApplyEditableKeyDown3 },
+        ] = await Promise.all([
+          import('@platejs/plite'),
+          import('../src/plugin/react-editor'),
+          import('../src/editable/keyboard-input-strategy'),
+        ]);
+        const editor = innerCreateEditor3({
+          extensions: [
+            innerDefineEditorSchema2(
+              'schema:keyboard-input-strategy-void-test',
+              {
+                elements: { image: { void: 'block' } },
+                id: 'keyboard-input-strategy-void-test',
+                root: innerSchema2.content.not(innerSchema2.content.text()),
+                unknown: 'preserve',
+                version: 1,
+              }
+            ),
+          ],
+          initialSelection: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 0 },
+          },
+          initialValue: [{ type: 'image', children: [{ text: '' }] }],
+        }) as ReactEditorType;
+        const frame = document.createElement('iframe');
+
+        document.body.append(frame);
+        const frameDocument = frame.contentDocument!;
+        const frameWindow = frame.contentWindow!;
+        const target = frameDocument.createElement('div');
+
+        Object.defineProperty(frameWindow.navigator, 'userAgent', {
+          configurable: true,
+          value:
+            'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',
+        });
+        Object.defineProperty(frameWindow, 'InputEvent', {
+          configurable: true,
+          value: class InputEvent {
+            getTargetRanges() {
+              return [];
+            }
+          },
+        });
+        frameDocument.body.append(target);
+        const nativeEvent = new frameWindow.KeyboardEvent('keydown', {
+          bubbles: true,
+          key,
+        });
+
+        target.dispatchEvent(nativeEvent);
+        const event = reactKeyEvent(nativeEvent);
+        const hasEditableTarget = vi
+          .spyOn(innerReactEditor3, 'hasEditableTarget')
+          .mockReturnValue(true);
+        const isComposing = vi
+          .spyOn(innerReactEditor3, 'isComposing')
+          .mockReturnValue(false);
+
+        const result = innerApplyEditableKeyDown3({
+          androidInputManagerRef: { current: null },
+          editor,
+          event,
+          forceRender: vi.fn(),
+          inputController: {} as any,
+          readOnly: false,
+          domStrategyRuntime: null,
+          setComposing: vi.fn(),
+          setExplicitPartialDOMBackedSelection: vi.fn(),
+          partialDOMBackedSelection: false,
+        });
+
+        expect(result.handled).toBe(true);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(innerApplyEditableCommand3).toHaveBeenCalledWith({
+          command: {
+            direction,
+            kind: 'delete-fragment',
+            selection: {
+              anchorPath: [0],
+              focusPath: [0],
+              kind: 'node',
+              paths: [[0]],
+            },
+          },
+          editor,
+        });
+
+        frame.remove();
+        hasEditableTarget.mockRestore();
+        isComposing.mockRestore();
+      } finally {
+        vi.doUnmock('../src/editable/editing-kernel');
+        vi.doUnmock('../src/editable/mutation-controller');
+        vi.resetModules();
+      }
     }
-  });
+  );
 });

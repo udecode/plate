@@ -532,6 +532,55 @@ test("a popup close requires same-phase selection and focus accounting", () => {
   );
 });
 
+test("a caret-visible report requires native, focus, and follow-up oracles", () => {
+  const caretClaim =
+    "selecting a block void leaves a caret-accessible blank line";
+  const invalid = fixture().replace(
+    "semantic closure matches the cumulative report",
+    caretClaim
+  );
+  const errors = validateRegressionPlan(invalid, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    errors,
+    /caret-visible behavior requires oracle anchor dom-native@after-action/
+  );
+  assert.match(
+    errors,
+    /caret-visible behavior requires oracle anchor focus@after-action/
+  );
+  assert.match(
+    errors,
+    /caret-visible behavior requires oracle anchor follow-up-input@follow-up/
+  );
+
+  const resolved = invalid
+    .replace(
+      `| ${caretClaim} | required | model@after-action |`,
+      `| ${caretClaim} | required | dom-native@after-action, focus@after-action, follow-up-input@follow-up |`
+    )
+    .replace(
+      /^\| case-complete \| dom-native \| after-action \|.*$/m,
+      `| case-complete | dom-native | after-action | yes | native selection stays on the selected void without a separate caret row | a caret paints below the void | browser | test: ${semanticTestPath}#${semanticTestTitle} | pass: native caret excluded |`
+    )
+    .replace(
+      /^\| case-complete \| focus \| after-action \|.*$/m,
+      `| case-complete | focus | after-action | yes | the editor retains focus while the void remains selected | focus moves into a phantom blank line | browser | test: ${semanticTestPath}#${semanticTestTitle} | pass: focus retained |`
+    )
+    .replace(
+      /^\| case-complete \| follow-up-input \| follow-up \|.*$/m,
+      `| case-complete | follow-up-input | follow-up | yes | the next editor input edits a real neighboring block | the hidden caret repair breaks the next input | browser | test: ${semanticTestPath}#${semanticTestTitle} | pass: follow-up input works |`
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
 test("a failed fix cannot drop the base acceptance when adding the latest reporter delta", () => {
   const errors = validateRegressionPlan(
     fixture({ failedCount: 1, missingBaseEvidence: true }),

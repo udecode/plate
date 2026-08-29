@@ -952,6 +952,47 @@ export const applyEditableKeyDown = ({
       return keyDownUnhandled();
     }
 
+    if (
+      supportsDOMBeforeInput(nativeEvent) &&
+      (isBlinkDOMHost(nativeEvent) || isWebKitDOMHost(nativeEvent))
+    ) {
+      // Chrome and Safari do not fire beforeinput when deleting a selected void.
+      const currentNode =
+        selectionRange && RangeApi.isCollapsed(selectionRange)
+          ? NodeApi.parent(editor, selectionRange.anchor.path)
+          : null;
+      const isDeleteForward = Hotkeys.isDeleteForward(nativeEvent);
+
+      if (
+        selectionRange &&
+        (Hotkeys.isDeleteBackward(nativeEvent) || isDeleteForward) &&
+        RangeApi.isCollapsed(selectionRange) &&
+        currentNode &&
+        NodeApi.isElement(currentNode) &&
+        editorIsVoid(editor, currentNode) &&
+        (editorIsInline(editor, currentNode) ||
+          editorIsBlock(editor, currentNode))
+      ) {
+        const voidPath = selectionRange.anchor.path.slice(0, -1) as Path;
+        const voidSelection = SelectionApi.nodes(
+          [voidPath],
+          selectionRange.anchor.root ? { root: selectionRange.anchor.root } : {}
+        );
+
+        event.preventDefault();
+        applyEditableCommand({
+          command: {
+            direction: isDeleteForward ? 'forward' : 'backward',
+            kind: 'delete-fragment',
+            selection: voidSelection,
+          },
+          editor,
+        });
+
+        return keyDownHandled();
+      }
+    }
+
     if (isDestructiveEditableCommand(keyDownCommand)) {
       event.preventDefault();
       applyEditableCommand({ command: keyDownCommand, editor });
@@ -988,40 +1029,7 @@ export const applyEditableKeyDown = ({
     // COMPAT: Certain browsers don't support the `beforeinput` event, so we
     // fall back to guessing at the input intention for hotkeys.
     // COMPAT: In iOS, some of these hotkeys are handled in the
-    if (supportsDOMBeforeInput(nativeEvent)) {
-      if (isBlinkDOMHost(nativeEvent) || isWebKitDOMHost(nativeEvent)) {
-        // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
-        // an event when deleting backwards in a selected void inline node
-        const currentNode =
-          selectionRange && RangeApi.isCollapsed(selectionRange)
-            ? NodeApi.parent(editor, selectionRange.anchor.path)
-            : null;
-        const isDeleteForward = Hotkeys.isDeleteForward(nativeEvent);
-
-        if (
-          selectionRange &&
-          (Hotkeys.isDeleteBackward(nativeEvent) || isDeleteForward) &&
-          RangeApi.isCollapsed(selectionRange) &&
-          currentNode &&
-          NodeApi.isElement(currentNode) &&
-          editorIsVoid(editor, currentNode) &&
-          (editorIsInline(editor, currentNode) ||
-            editorIsBlock(editor, currentNode))
-        ) {
-          event.preventDefault();
-          applyEditableCommand({
-            command: {
-              direction: isDeleteForward ? 'forward' : 'backward',
-              kind: 'delete',
-              unit: 'block',
-            },
-            editor,
-          });
-
-          return keyDownHandled();
-        }
-      }
-    } else {
+    if (!supportsDOMBeforeInput(nativeEvent)) {
       const fallbackCommand = getEditableCommandFromKeyDown({
         event,
         selection,
