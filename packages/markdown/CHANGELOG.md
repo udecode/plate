@@ -1,5 +1,62 @@
 # @platejs/markdown
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Resolve `withBlockId` through `ElementIdPlugin`. Serialization rejects the option when persisted element identity is not installed, and deserialization restores persisted IDs from block wrappers.
+
+  Export `MarkdownPluginState` as the complete mutable state contract for `MarkdownPlugin`.
+
+  - Expose editor-bound conversion only through `editor.api.markdown.{deserialize,deserializeInline,serialize}`
+  - Remove the duplicate editor-bound `deserializeMd`, `deserializeInlineMd`, `serializeMd`, `serializeInlineMd`, and `buildRules` exports
+  - Return `EditorDocumentValue` from Markdown deserialization and accept the same document shape for serialization
+  - Preserve Markdown image alt text as the image `alt` property and the visible direct caption children; preserve rich MDX media content in those children
+  - Seed Markdown conversion and rule behavior through `MarkdownPlugin.initialState`
+  - Resolve feature codecs directly by their owning plugin name, without reverse name/type translation
+  - Name custom MDX element tags with each plugin's resolved application schema type; fixed MDAST, HTML, and MDX syntax remains literal
+  - Resolve every generated Plate paragraph through the installed application schema type; use the default `paragraph` identity only when no paragraph plugin is installed
+  - Key one-operation decode overrides by installed plugin capability name even when the application schema uses a different persisted element type
+  - Keep typed `audio`, `file`, and `video` rule keys in the canonical Markdown node-name union, and reject persisted-tag aliases after a codec claims a decode source
+  - Rename the public `PlateType` and `StrictPlateType` format-node unions to `MarkdownNodeName` and `StrictMarkdownNodeName`; remove the exported `mdastToPlate` and `plateToMdast` lookup helpers
+  - Use one `tableCell` Plate type for GFM table cells; header semantics stay on the cell's `header` property
+  - Round-trip `<sub>` and `<sup>` through one `script: 'sub' | 'sup'` text property
+  - Map structural ordered-list starts to forced `listRestart` boundaries and serialize active `listStart` or `listRestart` values as MDAST starts
+  - Remove `MarkdownPlugin.parser`, `DeserializeMdOptions.memoize`, and `DeserializeMdOptions.parser`
+  - Remove exported conversion internals: `customMdxDeserialize`, `getCustomMark`, `getDeserializerByKey`, `getMergedOptionsDeserialize`, `getMergedOptionsSerialize`, `getSerializerByKey`, `getStyleValue`, `markdownToSlateNodesSafely`, and `unreachable`
+  - Remove React peer and runtime dependencies from the base Markdown package
+
+  **Migration:** Install `MarkdownPlugin`, configure Markdown behavior through `initialState`, and use the root Markdown API when reading, replacing, or serializing a document:
+
+  ```tsx
+  MarkdownPlugin.configure({
+    initialState: {
+      remarkPlugins: [remarkGfm],
+    },
+  });
+
+  const document = editor.api.markdown.deserialize(markdown);
+
+  editor.update.value.replace(document);
+  editor.api.markdown.serialize({ value: document });
+  ```
+
+  Use `MarkdownNodeName` for custom rule filters. Persisted custom MDX tags must match the configured application schema type before conversion.
+
+  Serialize semantic list fields and one parameterized heading model.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Preserve exact node inference for built-in Markdown rules while keeping custom rule keys type-safe and open
+  - Author Markdown parsing and serialization through one schema-wide `codecs: ({ defineCodecs }) => defineCodecs(...)` constructor declaration over immutable slices
+  - Compile Markdown conversion from installed feature plugins and keep per-operation rule overrides local to each call
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve schema-owned element IDs when serializing Markdown block wrappers.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Serialize open clipboard fragments without adding block markers outside the selection.
+
 ## 53.2.2
 
 ### Patch Changes
@@ -182,6 +239,7 @@
 - [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Added support for preserving block IDs in markdown serialization to enable AI comment tracking.
 
   ### Changes:
+
   - **Enhanced Serialization**: Updated `serializeMd` to support `withBlockId` option for maintaining block references
 
   ### Example:
@@ -477,6 +535,7 @@
   - `splitLineBreaks` deserialize only
 
   ##### Deserialization
+
   - Removed `elementRules` and `textRules` options
     - Use `rules.key.deserialize` instead
     - See [nodes documentation](https://platejs.org/docs/markdown)
@@ -493,13 +552,13 @@
           mark: true,
           deserialize: (mdastNode) => ({
             bold: true,
-            text: node.value || '',
+            text: node.value || "",
           }),
         },
         // For elementRules
         [EquationPlugin.key]: {
           deserialize: (mdastNode, options) => ({
-            children: [{ text: '' }],
+            children: [{ text: "" }],
             texExpression: node.value,
             type: EquationPlugin.key,
           }),
@@ -514,6 +573,7 @@
     - Use `remarkPlugins` instead
 
   ##### Serialization
+
   - Removed `serializeMdNodes`
     - Use `editor.markdown.serialize({ value: nodes })` instead
   - Removed `SerializeMdOptions` due to new serialization process
@@ -543,15 +603,15 @@
               .getApi(SuggestionPlugin)
               .suggestion.suggestionData(node);
 
-            return suggestionData?.type === 'insert'
-              ? { type: 'text', value: '' }
-              : { type: 'text', value: node.text };
+            return suggestionData?.type === "insert"
+              ? { type: "text", value: "" }
+              : { type: "text", value: node.text };
           },
         },
         // For elementRules
         [EquationPlugin.key]: {
           serialize: (slateNode) => ({
-            type: 'math',
+            type: "math",
             value: node.texExpression,
           }),
         },

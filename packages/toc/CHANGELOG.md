@@ -1,5 +1,27 @@
 # @udecode/plate-heading
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Keep TOC interaction controllers in copied renderers. The package exposes heading discovery and insertion instead of renderer-specific hooks.
+
+  Track headings through editor-scoped `NodeKey` values. TOC does not install `ElementIdPlugin` or require persisted element IDs.
+
+  Read headings through `editor.plugin(TocPlugin).read.headings()` and insert a table of contents through `editor.update.toc.insert()`. The plugin owns heading discovery and insertion instead of exported editor/transaction helpers.
+
+  Copy `toc-node` for active-heading observation, scrolling, and navigation feedback.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Read table-of-contents depth from the semantic heading level.
+
+  Define table-of-contents MDX conversion on the table-of-contents plugin and derive its custom tag from the resolved application schema type.
+
 ## 53.0.0
 
 ### Patch Changes
@@ -186,10 +208,12 @@
   - Type the heading levels props
 
   ### Details
+
   - The `createHeadingPlugin` function has been updated to accept an array of specific heading levels to enable, allowing for granular selection of heading levels. This provides more flexibility in choosing which heading levels to support within the editor.
   - The function now supports retaining the old behavior of generating plugins for all heading levels up to a maximum level if desired. This ensures backward compatibility with existing implementations that rely on the previous behavior.
 
   ### How to Use
+
   - To use the granular selection feature, pass an array of heading levels to the `createHeadingPlugin` function when initializing it. For example:
 
   ```ts

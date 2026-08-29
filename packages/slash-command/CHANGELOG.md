@@ -1,5 +1,22 @@
 # @platejs/slash-command
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Export `SlashPluginState` as the complete mutable state contract for `BaseSlashPlugin`.
+
+  - Expose Slash plugins through the Plite-native plugin contract
+  - Register slash-input values in compiled schemas
+  - Install the slash-input descriptor as a required plugin dependency
+  - Use `slashCommand` and `slashInput` as plugin identities, with transient elements persisted as `slashInput`
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
 ## 53.0.0
 
 ## 52.3.10

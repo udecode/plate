@@ -1,6 +1,6 @@
 {
   "name": "@platejs/basic-nodes",
-  "version": "54.0.0-beta.0",
+  "version": "54.0.0-beta.2",
   "description": "Basic nodes plugin for Plate",
   "keywords": [
     "plate",
