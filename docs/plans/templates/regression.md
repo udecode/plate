@@ -207,6 +207,10 @@ Work Checklist:
       `dom-native` and `focus` rows plus `follow-up-input@follow-up`. Native
       browser proof replays the real interaction and asserts caret paint
       independently from wrapper height, DOM markers, and block highlighting.
+- [ ] Every required positive layout reference maps to same-phase
+      `geometry-paint`. The oracle records `reference-geometry:`, its browser
+      proof executes `layout-bounds`, and completion records
+      `layout-bounds: pass`; negative-only paint or absence proof is insufficient.
 - [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
       state, an executable layer/anchor, and an exact result; every inapplicable
       row has N/A reasons.

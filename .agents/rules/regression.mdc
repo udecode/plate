@@ -241,6 +241,15 @@ highlighting, then prove the next valid edit still works. A zero-height spacer,
 selection-capable hidden text node, static screenshot without the selection
 phase, or geometry-only pixel classifier cannot close a caret-visible claim.
 
+Any required positive authority/reference evidence that names layout, width,
+size, centering/alignment, position, spacing, compression, or a full row must
+map to `geometry-paint` at the same phase. That oracle's positive assertion
+records `reference-geometry: <material bounds/relationship>`, its browser or
+exact-Chrome proof layer names executable `layout-bounds`, and completion
+records `layout-bounds: pass`. A negative-only absence check, caret classifier,
+wrapper-height assertion, or unclassified screenshot cannot prove that the
+visible content still matches the supplied positive layout reference.
+
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
 harness.

@@ -83,7 +83,7 @@ export function EquationElement(
               props.element.latex.length > 0 ? 'Edit equation' : 'Add equation'
             }
             className={cn(
-              'group flex cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
+              'group flex w-full cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
               props.element.latex.length === 0
                 ? 'bg-muted p-3 pr-9'
                 : 'px-2 py-1'

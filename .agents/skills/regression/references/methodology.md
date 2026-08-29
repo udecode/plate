@@ -272,6 +272,15 @@ wrapper height, DOM markers, and block highlighting, then prove the next valid
 edit still works. A zero-height spacer, a hidden selection anchor, a static
 unselected screenshot, or geometry-only pixel classification is support-only.
 
+Required positive authority/reference evidence that names layout, width,
+size, centering/alignment, position, spacing, compression, or a full row must
+anchor `geometry-paint` at the same phase. The applicable oracle records
+`reference-geometry: <material bounds/relationship>` in its positive assertion,
+uses a browser or exact-Chrome proof layer with executable `layout-bounds`, and
+records `layout-bounds: pass` at completion. A negative-only absence check,
+caret classifier, wrapper-height assertion, or unclassified screenshot cannot
+prove the positive reference geometry survived.
+
 Pointer, mouse, cursor, hover, and resize/drag-handle cases require an
 applicable `pointer-feedback` row. Observe it during the held-pointer or hover
 phase instead of inferring it from after-release state. Prove the computed or

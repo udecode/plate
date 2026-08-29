@@ -1,10 +1,10 @@
 # block void caret regression attempt 2
 
 Objective:
-Remove visible caret rows after block voids, restore Backspace deletion for a
-selected HR, and repair Regression's missed caret oracle; done when attempt-1
-proof is invalidated, the failed packet is rejected, and the exact
-click/caret/delete case passes five fresh Chrome runs.
+INVALIDATED by the attempt-3 reporter contradiction: this packet removed the
+caret and restored HR deletion but compressed the visible block equation.
+Its completion, receipt authority, screenshots, and pushed fixed claim are
+revoked.
 
 Flow mode:
 one-shot execution
@@ -157,11 +157,11 @@ Blocked condition:
 
 Regression state:
 
-- current phase: final closure
+- current phase: invalidated by attempt-3 reporter contradiction
 - current executable case: block-void-following-spacing attempt 2
-- current case status: completed locally on final dirty bytes
-- next owner: user decision on commit/push; neither was requested
-- goal status: completion audit
+- current case status: failed fix; compressed block-equation layout
+- next owner: attempt-3 Regression workflow repair and exact reproduction
+- goal status: invalidated
 
 Completion rule:
 

@@ -35,6 +35,41 @@ const readVoidState = (voidNode: Locator) =>
     };
   });
 
+const readBlockEquationLayout = (equation: Locator) =>
+  equation.evaluate((element) => {
+    const button = element.querySelector('button[aria-label="Edit equation"]');
+    const formula = button?.querySelector('.katex');
+    const elementRect = element.getBoundingClientRect();
+    const buttonRect = button?.getBoundingClientRect();
+    const formulaRect = formula?.getBoundingClientRect();
+
+    return {
+      buttonCenterDelta: buttonRect
+        ? Math.abs(
+            (buttonRect.left + buttonRect.right) / 2 -
+              (elementRect.left + elementRect.right) / 2
+          )
+        : Number.POSITIVE_INFINITY,
+      buttonWidth: buttonRect?.width ?? 0,
+      elementWidth: elementRect.width,
+      formulaHeight: formulaRect?.height ?? 0,
+      formulaWidth: formulaRect?.width ?? 0,
+    };
+  });
+
+const expectFullRowCenteredEquation = (
+  layout: Awaited<ReturnType<typeof readBlockEquationLayout>>
+) => {
+  expect(layout.elementWidth).toBeGreaterThan(500);
+  expect(
+    Math.abs(layout.buttonWidth - layout.elementWidth)
+  ).toBeLessThanOrEqual(2);
+  expect(layout.buttonCenterDelta).toBeLessThanOrEqual(1);
+  expect(layout.formulaWidth).toBeGreaterThan(100);
+  expect(layout.formulaWidth).toBeLessThan(250);
+  expect(layout.formulaHeight).toBeGreaterThan(30);
+};
+
 const clickTextEnd = async (page: Page, text: Locator) => {
   const box = await text.boundingBox();
 
@@ -84,6 +119,10 @@ test(CASE_ID, async ({ page }, testInfo) => {
       text: 'Dates and Equations',
     });
 
+    const equation = editor.locator('.plite-equation');
+
+    expectFullRowCenteredEquation(await readBlockEquationLayout(equation));
+
     const horizontalRule = editor.locator('.plite-horizontalRule');
     await horizontalRule.locator('hr').click();
     await afterPaint(page);
@@ -106,7 +145,6 @@ test(CASE_ID, async ({ page }, testInfo) => {
     await expect(horizontalRule).toHaveCount(1);
     await afterPaint(page);
 
-    const equation = editor.locator('.plite-equation');
     await equation.getByRole('button', { name: 'Edit equation' }).click();
     await page.getByRole('button', { name: /Done/ }).click();
     await afterPaint(page);
@@ -121,6 +159,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     );
     expect(equationState.zeroWidthKind).toBe('z');
     expect(equationState.hasBreak).toBe(false);
+    expectFullRowCenteredEquation(await readBlockEquationLayout(equation));
 
     const calloutHeading = editor
       .locator('h3')

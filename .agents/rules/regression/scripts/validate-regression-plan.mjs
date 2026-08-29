@@ -60,6 +60,10 @@ const NO_FLASH_POINTER_PATTERN =
   /\b(?:flash(?:es|ed|ing)?|flicker(?:s|ed|ing)?|frame|pre-handler)\b/i;
 const CARET_VISIBILITY_PATTERN =
   /\bcaret(?:-accessible)?\b|\binsertion point\b|\beditable\s+(?:blank\s+)?(?:line|row)\b|\btext cursor\b/i;
+const POSITIVE_REFERENCE_ROLE_PATTERN =
+  /\b(?:positive(?:[-\s]+(?:authority|reference))|correct(?:[-\s]+reference))\b/i;
+const REFERENCE_GEOMETRY_PATTERN =
+  /\b(?:align(?:ed|ment)?|center(?:ed|ing)?|compress(?:ed|ion)?|content[-\s]?width|full[-\s]?row|geometry|layout|position(?:ed|ing)?|size|spacing|width)\b/i;
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
 const isBrowserCommandCase = (selected) =>
@@ -930,6 +934,47 @@ export const validateRegressionPlan = (
               `reporter evidence ${caseId} caret-visible behavior requires applicable oracle ${anchor}`
             );
           }
+        }
+      }
+
+      if (
+        POSITIVE_REFERENCE_ROLE_PATTERN.test(row.source_role ?? "") &&
+        REFERENCE_GEOMETRY_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+      ) {
+        const phase = row.phase?.toLowerCase();
+        const anchor = `geometry-paint@${phase}`;
+        const oracle = caseOracles?.get(anchor);
+
+        if (!anchors.includes(anchor)) {
+          errors.push(
+            `reporter evidence ${caseId} positive layout reference requires oracle anchor ${anchor}`
+          );
+        }
+        if (!oracle || oracle.applies?.toLowerCase() !== "yes") {
+          errors.push(
+            `reporter evidence ${caseId} positive layout reference requires applicable oracle ${anchor}`
+          );
+          continue;
+        }
+        if (!/\breference-geometry:\s*\S/i.test(oracle.positive_assertion ?? "")) {
+          errors.push(
+            `reporter evidence ${caseId} positive layout reference requires reference-geometry in ${anchor}`
+          );
+        }
+        if (
+          !/\b(?:browser|exact-chrome)\b/i.test(oracle.proof_layer ?? "") ||
+          !/\blayout-bounds\b/i.test(oracle.proof_layer ?? "")
+        ) {
+          errors.push(
+            `reporter evidence ${caseId} positive layout reference requires browser layout-bounds proof in ${anchor}`
+          );
+        }
+        if (complete && !/\blayout-bounds:\s*pass\b/i.test(oracle.result ?? "")) {
+          errors.push(
+            `reporter evidence ${caseId} positive layout reference requires layout-bounds: pass in ${anchor}`
+          );
         }
       }
     }

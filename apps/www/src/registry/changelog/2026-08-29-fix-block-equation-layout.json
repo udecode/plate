@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-29-fix-block-equation-layout",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-29-fix-block-equation-layout.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep block equations centered",
+  "targets": [
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-29-math-keep-block-equations-centered-5c701e64",
+      "kind": "fix",
+      "summary": "Keep block equations full-width and centered.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["math"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-29",
+          "entry": "2026-08-29-fix-block-equation-layout",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

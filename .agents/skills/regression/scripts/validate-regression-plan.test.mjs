@@ -654,6 +654,41 @@ test("a caret-visible report requires native, focus, and follow-up oracles", () 
   );
 });
 
+test("a positive layout reference requires executable reference geometry", () => {
+  const evidence = `| case-complete | positive-authority | correct layout screenshot | during-action | content keeps full-row centered layout without compression | required | geometry-paint@during-action | test: ${semanticTestPath}#${semanticTestTitle} | pass: reference retained |`;
+  const invalid = fixture({ exactChrome: true }).replace(
+    /(?=\n\nReporter oracle matrix:)/,
+    `\n${evidence}`
+  );
+  const errors = validateRegressionPlan(invalid, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires reference-geometry/);
+  assert.match(errors, /requires browser layout-bounds proof/);
+  assert.match(errors, /requires layout-bounds: pass/);
+
+  const resolved = invalid
+    .replace(
+      "paint matches final geometry",
+      "reference-geometry: content spans its full row and stays centered"
+    )
+    .replace(
+      "exact-chrome pixel classifier",
+      "exact-chrome browser pixel classifier with executable layout-bounds"
+    )
+    .replace(
+      "duplicate-control: pass known duplicate-layer state rejected",
+      "duplicate-control: pass known duplicate-layer state rejected; layout-bounds: pass"
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
 test("a failed fix cannot drop the base acceptance when adding the latest reporter delta", () => {
   const errors = validateRegressionPlan(
     fixture({ failedCount: 1, missingBaseEvidence: true }),
