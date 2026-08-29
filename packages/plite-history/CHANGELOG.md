@@ -1,5 +1,26 @@
 # plite-history
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+  - Add validated versioned history serialization and atomic restoration for canonical changes, selection state, and registered effects
+  - Persist compiled schema identity, reject mismatched snapshots before batch decoding, and reset incompatible branches during atomic schema migration
+  - Require a non-null derived or named schema identity in memory and in History JSON format 4, and reject older envelope formats
+  - Publish immutable lazy-mapped branches with configurable depth
+  - Store fitted slice replacements as one canonical undo/redo batch
+  - Rebase saved selections through skipped changes against each batch's source and target documents
+  - Canonicalize text-only inverse batches before mapping skipped text changes so concurrent boundary inserts survive undo and redo
+  - Restore history selections against the editor view root that owns the batch
+  - Add typed undo, redo, state-aware batching, history skipping, state reads, and redo-branch disposal
+
+### Minor Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `history({ newBatchDelay })` with a 500 ms default so idle gaps split otherwise-compatible automatic native edit groups without weakening explicit `merge()` and `newBatch()` decisions.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve exact one-or-many node selections through history serialization, undo, and redo.
+
 ## 0.115.0
 
 ### Patch Changes

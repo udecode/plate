@@ -1,5 +1,21 @@
 # @platejs/tag
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Keep tag selection UI in the copied `select-editor` component. The package exports the tag descriptors and scoped semantic capabilities.
+
+  Move tag insertion to `editor.plugin(MultiSelectPlugin).update.insert`, read selected items through `editor.plugin(MultiSelectPlugin).read.getSelectedItems`, and compare values through `editor.plugin(MultiSelectPlugin).read.isEqual`. Run multi-select behavior through Plite transactions, register tag values in compiled schemas, and remove standalone tag query helpers.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep tag text cleanup scoped to text selections.
+
 ## 53.0.0
 
 ## 52.3.10

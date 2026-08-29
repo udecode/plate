@@ -1,5 +1,11 @@
 # plite-hyperscript
 
+## 54.0.0-beta.2
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Infer custom creator and element tags from `createHyperscript` options, initialize editor fixtures atomically, and keep JSX development metadata out of document values.
+
 ## 0.115.0
 
 ### Patch Changes

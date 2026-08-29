@@ -1,5 +1,19 @@
 # @udecode/cmdk
 
+## 2.0.0-beta.0
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Use direct React 19 ref props and context providers throughout the command components. Remove the legacy forwarded-ref child-render branch.
+
+  Fix `aria-activedescendant` updates after command selection changes
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
 ## 1.0.2
 
 ### Patch Changes

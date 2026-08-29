@@ -1,5 +1,19 @@
 # @platejs/tabbable
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Export `TabbablePluginState` as the complete mutable state contract for `BaseTabbablePlugin`.
+
+  Support HTML and SVG tabbables through the snapshot-aware `editor.plugin(TabbablePlugin).read.findDestination(options)` query. Accept `FocusableElement` in custom `TabbableEntry` values and remove the standalone `findTabDestination` helper. Keep `TabbableEffects` as plugin implementation instead of a public component.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
 ## 53.0.0
 
 ## 52.3.10

@@ -1,5 +1,48 @@
 # @platejs/suggestion
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Ignore schema-declared metadata properties when computing suggestion diffs, including configured persisted element-ID keys.
+
+  Export `BaseSuggestionPluginState` and `SuggestionPluginState` as the complete mutable state contracts for the headless and React suggestion descriptors.
+
+  Move suggestion queries and mutations to `BaseSuggestionPlugin` and the installed editor API, and register suggestion marks and metadata in compiled schemas with versioned inline validation. Infer `nodes()` and `nodeEntries()` results as descendant entries rather than exposing the editor root through the broad `Node` union.
+
+  Let suggestion leaf components inspect suggestion metadata without receiving the underlying text string.
+
+  **Migration:** Read pure value helpers from `editor.api.suggestion`, snapshot queries from `editor.read.suggestion`, and mutations from `editor.update.suggestion`:
+
+  ```tsx
+  const identity = editor.api.suggestion.createIdentity();
+  const fragment = editor.api.suggestion.createFragment(input, identity);
+  const nextValue = editor
+    .plugin(BaseSuggestionPlugin)
+    .api.diff(previousValue, value);
+  const entries = editor.read.suggestion.nodes();
+
+  editor.update.suggestion.accept(description);
+  editor.update.suggestion.reject(description);
+  editor.update.suggestion.setNodes(options);
+  ```
+
+  Use `SuggestionUpdatePolicy.skip` for updates that bypass suggestion tracking and `SUGGESTION_TRANSIENT_KEY` for transient metadata. Remove `withSuggestion`, `diffToSuggestions`, and standalone suggestion query, transform, and utility imports.
+
+### Minor Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Expose semantic transient-suggestion cleanup through the suggestion plugin update group so aliased properties remain bound to their exact schema handle.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Defer text suggestion commands while a node selection is active.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Define suggestion mark Markdown conversion on the suggestion plugin.
+
 ## 53.0.3
 
 ### Patch Changes

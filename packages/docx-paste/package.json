@@ -1,6 +1,6 @@
 {
   "name": "@platejs/docx-paste",
-  "version": "54.0.0-beta.0",
+  "version": "54.0.0-beta.2",
   "description": "Paste content from Microsoft Word into Plate",
   "keywords": [
     "docx",

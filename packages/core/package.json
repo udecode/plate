@@ -1,6 +1,6 @@
 {
   "name": "@platejs/core",
-  "version": "54.0.0-beta.1",
+  "version": "54.0.0-beta.2",
   "description": "The core Plate plugin runtime for Plite editors",
   "keywords": [
     "contentEditable",

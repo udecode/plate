@@ -1,5 +1,23 @@
 # @platejs/combobox
 
+## 54.0.0-beta.2
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require React and React DOM 19.2 or newer.
+
+  Remove the React combobox-input controller, `cursorState`, and `useHTMLInputCursorState`. Copy `inline-combobox` for input focus, cancellation, keyboard navigation, and undo/redo forwarding.
+
+  - Handle trigger-combobox insertion through the typed `insertText` command
+  - Keep transient collaboration metadata on inserted combobox inputs
+  - Rename `TriggerComboboxPluginOptions` to `TriggerComboboxPluginState`
+
+  **Migration:** Replace `withTriggerCombobox` with `BaseTriggerComboboxPlugin`, which declares the command behavior directly.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Run combobox triggers only from a text selection.
+
 ## 53.0.0
 
 ## 52.3.10
@@ -24,14 +42,14 @@
   // Before
   MentionPlugin.configure({
     options: {
-      getUserId: (editor) => '123',
+      getUserId: (editor) => "123",
     },
   });
 
   // After
   const editor = usePlateEditor({
     plugins: [MentionPlugin],
-    userId: '123',
+    userId: "123",
   });
   ```
 
@@ -52,13 +70,13 @@
   ```tsx
   SlashPlugin.configure({
     options: {
-      getUserId: (editor) => editor.getOption(YjsPlugin, 'userId'),
+      getUserId: (editor) => editor.getOption(YjsPlugin, "userId"),
     },
   });
 
   MentionPlugin.configure({
     options: {
-      getUserId: (editor) => editor.getOption(YjsPlugin, 'userId'),
+      getUserId: (editor) => editor.getOption(YjsPlugin, "userId"),
     },
   });
   ```

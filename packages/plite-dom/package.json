@@ -1,6 +1,6 @@
 {
   "name": "@platejs/plite-dom",
-  "version": "54.0.0-beta.0",
+  "version": "54.0.0-beta.2",
   "description": "DOM bridge and browser utilities for Plite editors.",
   "keywords": [
     "@platejs/plite",
@@ -76,6 +76,6 @@
     "jsdom": "20.0.3"
   },
   "peerDependencies": {
-    "@platejs/plite": ">=54.0.0-beta.0"
+    "@platejs/plite": ">=54.0.0-beta.2"
   }
 }
