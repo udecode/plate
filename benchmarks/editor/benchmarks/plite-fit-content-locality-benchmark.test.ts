@@ -8,7 +8,7 @@ import {
   createEditor,
   defineEditorSchema,
   schema,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 
 const root = resolve(import.meta.dir, '../../..');
 const benchmarkPath = resolve(

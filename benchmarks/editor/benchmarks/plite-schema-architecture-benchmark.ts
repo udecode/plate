@@ -3,35 +3,19 @@ import { Buffer } from 'node:buffer';
 import { resolve } from 'node:path';
 
 import {
-  createBaseEditor,
+  createEditor as createHeadlessEditor,
   defineBasePlugin,
-} from '../../../packages/core/src/index';
-import {
-  getDOMClipboardFormatKey,
-  writeDOMHostFragmentData,
-} from '../../../packages/plite-dom/src/internal/index';
-import {
-  decodeProjectedClipboardFragment,
-  getProjectedViewSelectionFragment,
-  writeProjectedViewSelectionClipboardData,
-} from '../../../packages/plite-react/src/editable/projected-clipboard';
-import { getEditorRuntimeOwner } from '../../../packages/plite-react/src/editable/runtime-editor-api';
-import { getSchemaInvalidatedRuntimeIds } from '../../../packages/plite-react/src/editable/schema-runtime-invalidation';
-import type { ReactRuntimeEditor } from '../../../packages/plite-react/src/plugin/react-editor';
-import {
-  createPliteProjectionGraph,
-  type PliteProjectionOwner,
-} from '../../../packages/plite-react/src/projection-graph';
-import {
-  createPliteViewSelection,
-  writePliteViewSelection,
-} from '../../../packages/plite-react/src/view-selection';
-import { resolveCompiledSchemaWrapperPlan } from '../../../packages/plite/src/core/schema-compiler';
+} from '../../../packages/platejs/src/index';
+import { resolveCompiledSchemaWrapperPlan } from '../../../packages/plitejs/src/core/schema-compiler';
 import {
   createSchemaContributionRegistry,
   mergeSchemaContributionRegistries,
   registerSchemaContribution,
-} from '../../../packages/plite/src/core/schema-contribution-registry';
+} from '../../../packages/plitejs/src/core/schema-contribution-registry';
+import {
+  getDOMClipboardFormatKey,
+  writeDOMHostFragmentData,
+} from '../../../packages/plitejs/src/dom/internal/index';
 import {
   createEditor,
   createEditorView,
@@ -44,7 +28,7 @@ import {
   type EditorSchemaExtension,
   type Point,
   type RootKey,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 import {
   compileEditorSchemaContributions,
   getEditorRuntimeElementEntries,
@@ -53,7 +37,23 @@ import {
   resolveCompiledSchemaProperty,
   type CompiledEditorSchema,
   type EditorSchemaContributionRecord,
-} from '../../../packages/plite/src/internal/index';
+} from '../../../packages/plitejs/src/internal/index';
+import {
+  decodeProjectedClipboardFragment,
+  getProjectedViewSelectionFragment,
+  writeProjectedViewSelectionClipboardData,
+} from '../../../packages/plitejs/src/react/editable/projected-clipboard';
+import { getEditorRuntimeOwner } from '../../../packages/plitejs/src/react/editable/runtime-editor-api';
+import { getSchemaInvalidatedRuntimeIds } from '../../../packages/plitejs/src/react/editable/schema-runtime-invalidation';
+import type { ReactRuntimeEditor } from '../../../packages/plitejs/src/react/plugin/react-editor';
+import {
+  createPliteProjectionGraph,
+  type PliteProjectionOwner,
+} from '../../../packages/plitejs/src/react/projection-graph';
+import {
+  createPliteViewSelection,
+  writePliteViewSelection,
+} from '../../../packages/plitejs/src/react/view-selection';
 import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 import {
@@ -325,7 +325,7 @@ const measurePlateDescriptorStartup = (
   const plugins = createPlateDescriptorPlugins(count, cohort);
   const schemaId = `plate-descriptor-benchmark-${cohort}-${count}`;
   const before = performance.now();
-  const editor = createBaseEditor({
+  const editor = createHeadlessEditor({
     plugins,
     schema: { id: schemaId, version: 1 },
   });
@@ -377,7 +377,7 @@ const measurePlateDescriptorCohort = (
     () => {
       const before = performance.now();
 
-      createBaseEditor({
+      createHeadlessEditor({
         plugins: measured.plugins,
         schema: { id: measured.schemaId, version: 1 },
       });

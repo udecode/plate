@@ -4,7 +4,7 @@ import {
   attachPliteBrowserSelectionScreenshot,
   openExample,
   type PliteBrowserEditorHarness,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const hugeDocumentReadyTimeout = 90 * 1000;
 

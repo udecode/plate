@@ -1,12 +1,12 @@
 'use client';
 
-import type { PlateElementProps } from 'platejs/react';
 import {
+  type PlateElementProps,
   definePlatePlugin,
   Plate,
   PlateElement,
+  useCreateEditor,
   useEditorFocused,
-  usePlateEditor,
   useElementSelected,
 } from 'platejs/react';
 import * as React from 'react';
@@ -21,7 +21,7 @@ const TabbableElementPlugin = definePlatePlugin('tabbableElement', {
 });
 
 export default function TabbableDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       ...EditorKit,
       TabbableElementPlugin.configure({ component: TabbableElement }),

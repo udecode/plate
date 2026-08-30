@@ -1,23 +1,19 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { BoldPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
-import * as actualBasicStyles from '@platejs/basic-styles';
-import { FontColorPlugin, FontSizePlugin } from '@platejs/basic-styles/react';
-import * as actualCore from '@platejs/core';
-import * as actualCoreReact from '@platejs/core/react';
-import * as actualMedia from '@platejs/media';
+import { act, fireEvent, render, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import * as actualPlate from 'platejs';
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
   BaseVideoPlugin,
-} from '@platejs/media';
-import * as actualPlite from '@platejs/plite';
-import * as actualUtils from '@platejs/utils';
-import { act, fireEvent, render, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import * as actualUdecodeUtils from '@udecode/utils';
+} from 'platejs/media';
+import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
+
+const { BoldPlugin, FontColorPlugin, FontSizePlugin, ScriptPlugin } =
+  actualCoreReact;
 
 const focusMock = mock();
 const clearMock = mock();
@@ -44,46 +40,6 @@ mock.module('platejs/react', () => ({
   useEditorPlugin: () => ({ name: currentPluginName }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector(currentEditor),
-}));
-
-mock.module('platejs', () => ({
-  ...actualCore,
-  ...actualPlite,
-  ...actualUtils,
-  ...actualUdecodeUtils,
-  isUrl: isUrlMock,
-  PLUGINS: {
-    audio: 'audio',
-    file: 'file',
-    image: 'image',
-    kbd: 'kbd',
-    video: 'video',
-  },
-  TextApi: { isText: () => true },
-}));
-
-mock.module('@platejs/basic-styles', () => ({
-  ...actualBasicStyles,
-  toUnitLess: (value: string) => value.replace('px', ''),
-}));
-
-mock.module('@platejs/media', () => ({
-  ...actualMedia,
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseVideoPlugin,
-}));
-
-mock.module('use-file-picker', () => ({
-  useFilePicker: () => ({ openFilePicker: openFilePickerMock }),
-}));
-
-mock.module('sonner', () => ({
-  toast: { error: toastErrorMock },
-}));
-
-mock.module('@udecode/cn', () => ({
   useComposedRef:
     (...refs: Array<React.Ref<HTMLInputElement>>) =>
     (value: HTMLInputElement | null) => {
@@ -96,6 +52,32 @@ mock.module('@udecode/cn', () => ({
         }
       });
     },
+}));
+
+mock.module('platejs', () => ({
+  ...actualPlate,
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+  isUrl: isUrlMock,
+  PLUGINS: {
+    audio: 'audio',
+    file: 'file',
+    image: 'image',
+    kbd: 'kbd',
+    video: 'video',
+  },
+  TextApi: { isText: () => true },
+  toUnitLess: (value: string) => value.replace('px', ''),
+}));
+
+mock.module('use-file-picker', () => ({
+  useFilePicker: () => ({ openFilePicker: openFilePickerMock }),
+}));
+
+mock.module('sonner', () => ({
+  toast: { error: toastErrorMock },
 }));
 
 mock.module('@/components/ui/alert-dialog', () => ({
@@ -362,7 +344,7 @@ describe('feature toolbar plugin portals', () => {
     const view = render(<FontSizeToolbarButton />);
     const buttons = view.getAllByRole('button');
 
-    fireEvent.click(buttons[0]!);
+    fireEvent.click(buttons[0]);
     fireEvent.click(buttons.at(-1)!);
 
     expect(pluginMock).toHaveBeenCalledWith(FontSizePlugin);

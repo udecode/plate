@@ -1,11 +1,16 @@
-import { BaseCalloutPlugin } from '@platejs/callout';
-import { BaseImagePlugin, BaseMediaEmbedPlugin } from '@platejs/media';
-import { ElementApi, property, schema } from '@platejs/plite';
 import type { Root } from 'mdast';
-import { createBaseEditor, defineBasePlugin } from 'platejs';
+import {
+  ElementApi,
+  property,
+  schema,
+  createEditor,
+  defineBasePlugin,
+} from 'platejs';
+import { BaseCalloutPlugin } from 'platejs/callout';
+import { BaseImagePlugin } from 'platejs/media';
 
-import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import { remarkMdx } from '../../../../../../packages/markdown/src/lib/plugins';
+import { MarkdownPlugin } from '../../../../../../packages/platejs/src/markdown/lib/MarkdownPlugin';
+import { remarkMdx } from '../../../../../../packages/platejs/src/markdown/lib/plugins';
 import { createTestEditor } from './createTestEditor';
 
 const inlineContent = schema.content.any(
@@ -84,33 +89,8 @@ const CustomBoldPlugin = defineBasePlugin('customBold', {
 });
 
 describe('feature-owned Markdown codecs', () => {
-  it('decodes the legacy media-embed tag and writes the canonical tag', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        BaseMediaEmbedPlugin,
-        MarkdownPlugin.configure({
-          initialState: { remarkPlugins: [remarkMdx] },
-        }),
-      ],
-    });
-    const value = editor.api.markdown.deserialize(
-      '<media_embed src="https://platejs.org/embed" />'
-    );
-
-    expect(value.children).toEqual([
-      {
-        children: [{ text: '' }],
-        type: 'mediaEmbed',
-        url: 'https://platejs.org/embed',
-      },
-    ]);
-    expect(editor.api.markdown.serialize({ value })).toBe(
-      '<mediaEmbed src="https://platejs.org/embed" />\n'
-    );
-  });
-
   it('decodes callouts without installing a Plate paragraph plugin', () => {
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [
         BaseCalloutPlugin,
         MarkdownPlugin.configure({
@@ -152,7 +132,7 @@ describe('feature-owned Markdown codecs', () => {
         },
       ];
     };
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [
         BaseImagePlugin,
         BaseCalloutPlugin,
@@ -179,7 +159,7 @@ describe('feature-owned Markdown codecs', () => {
       },
     ];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [MarkdownPlugin, CustomHeadingPlugin, CustomParagraphPlugin],
     });
 
@@ -197,7 +177,7 @@ describe('feature-owned Markdown codecs', () => {
       },
     ];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [
         MarkdownPlugin,
         CustomHeadingPlugin,
@@ -224,7 +204,7 @@ describe('feature-owned Markdown codecs', () => {
       },
     ];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [MarkdownPlugin, CustomHeadingPlugin, CustomParagraphPlugin],
     });
 
@@ -246,7 +226,7 @@ describe('feature-owned Markdown codecs', () => {
       },
     ];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [
         MarkdownPlugin,
         CustomHeadingPlugin,

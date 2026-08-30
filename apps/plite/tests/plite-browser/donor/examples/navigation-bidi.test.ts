@@ -3,7 +3,7 @@ import {
   openExample,
   type PliteBrowserEditorHarness,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 type NativeCaretFixture = Readonly<{
   backwardKey: 'ArrowLeft' | 'ArrowRight';

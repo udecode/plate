@@ -12,12 +12,12 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  createBaseEditor,
+  createEditor,
   defineBasePlugin,
   defineDocumentMigrations,
-} from '../../core/src/index';
-import { migratePlateV54 } from '../../plate/src/migrations/index';
-import { schema } from '../../plite/src/index';
+  schema,
+} from '../../platejs/src/index';
+import { migratePlateV54 } from '../../platejs/src/migrations/index';
 import {
   runEditorMigrationInput,
   runEditorMigrations,
@@ -62,9 +62,8 @@ const createFixture = (
   temporaryDirectories.push(directory);
   writeFileSync(
     entryPath,
-    `import { defineBasePlugin, defineDocumentMigrations } from '../../core/src/index';
-import { schema } from '../../plite/src/index';
-import { migratePlateV54 } from '../../plate/src/migrations/index';
+    `import { defineBasePlugin, defineDocumentMigrations, schema } from '../../platejs/src/index';
+import { migratePlateV54 } from '../../platejs/src/migrations/index';
 
 const ParagraphPlugin = defineBasePlugin('paragraph', {
   schema: { element: schema.element.textBlock() },
@@ -155,7 +154,7 @@ describe('plate migrate run', () => {
       kind: 'named',
       version: 55,
     });
-    const runtimeEditor = createBaseEditor({
+    const runtimeEditor = createEditor({
       initialValue: JSON.parse(before),
       migrations: RuntimeMigrations,
       plugins: [RuntimeParagraphPlugin],

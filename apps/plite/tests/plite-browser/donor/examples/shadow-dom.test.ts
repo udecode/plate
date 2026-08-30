@@ -3,7 +3,7 @@ import {
   assertNoIllegalKernelTransitions,
   createPliteBrowserEditorHarness,
   createPliteBrowserTextInsertionGauntlet,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const focusTextboxEnd = async (textbox: Locator) => {
   await textbox.evaluate((element: Element) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { failInvariant } from '@platejs/plite/internal';
+import { failInvariant } from '../../../../lib/failInvariant';
 import { createElement, useState } from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';

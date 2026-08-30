@@ -1,6 +1,12 @@
 {
   "permissions": {
-    "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
+    "allow": [
+      "Bash",
+      "Edit",
+      "Skill",
+      "WebFetch",
+      "WebSearch"
+    ]
   },
   "enableAllProjectMcpServers": true,
   "hooks": {

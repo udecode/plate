@@ -23,7 +23,7 @@ performance work.
 6. [2026-04-03-affinity-redesign-plan.md](/Users/zbeyens/git/plate-2/docs/performance/2026-04-03-affinity-redesign-plan.md)
    - plan for the hard-affinity code-mark redesign
 7. [2026-04-03-remaining-basic-nodes-benchmark.md](/Users/zbeyens/git/plate-2/docs/performance/2026-04-03-remaining-basic-nodes-benchmark.md)
-   - plan for the remaining `@platejs/basic-nodes` census extension
+   - plan for the remaining `platejs` basic-node census extension
 
 ## Artifact Policy
 

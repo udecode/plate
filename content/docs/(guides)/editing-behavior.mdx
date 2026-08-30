@@ -75,7 +75,7 @@ Plate checks the current block and handles these cases in order:
 Use `splitReset` for blocks that should not keep their type after a normal split.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 export const AppHeadingPlugin = HeadingPlugin.configure({
   rules: {
@@ -89,7 +89,7 @@ export const AppHeadingPlugin = HeadingPlugin.configure({
 Use `lineBreak` and `deleteExit` for container-like blocks that need soft lines before they leave the block.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 export const AppCalloutPlugin = CalloutPlugin.configure({
   rules: {
@@ -120,7 +120,7 @@ Plate checks collapsed `deleteBackward` in this order:
 Use `start: 'reset'` for formatted text blocks that should become paragraphs before they merge into the previous block.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 export const AppHeadingPlugin = HeadingPlugin.configure({
   rules: {
@@ -173,7 +173,7 @@ the merge. Plate's merge-rule middleware adds three important guards:
 Use `removeEmpty: true` for text-like blocks such as paragraphs and headings.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 export const AppHeadingPlugin = HeadingPlugin.configure({
   rules: {
@@ -187,7 +187,7 @@ export const AppHeadingPlugin = HeadingPlugin.configure({
 Keep `removeEmpty: false` for structural nodes that own layout, children, or wrappers. Tables, rows, cells, columns, and callouts should not disappear just because a merge crosses their boundary.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 export const StableCalloutPlugin = CalloutPlugin.configure({
   rules: {
@@ -211,7 +211,7 @@ export const StableCalloutPlugin = CalloutPlugin.configure({
 Use `normalize.removeEmpty` for elements that should not exist without text content. Links use this shape because an empty link has no useful editing surface.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
 export const AppLinkPlugin = LinkPlugin.configure({
   rules: {

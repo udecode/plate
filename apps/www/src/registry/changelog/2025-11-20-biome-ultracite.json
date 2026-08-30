@@ -52,7 +52,6 @@
         "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
         "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
         "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
-        "apps/www/src/registry/app/api/ai/command/prompt/index.ts",
         "apps/www/src/registry/app/api/ai/command/route.ts",
         "apps/www/src/registry/app/api/ai/command/utils.ts"
       ],
@@ -146,14 +145,6 @@
     {
       "name": "transforms",
       "files": ["apps/www/src/registry/components/editor/transforms.ts"],
-      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "transforms-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/transforms-classic.ts"
-      ],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
       "diagnostics": []
     },
@@ -331,14 +322,6 @@
       "diagnostics": []
     },
     {
-      "name": "insert-toolbar-classic-button",
-      "files": [
-        "apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "link-toolbar",
       "files": [],
       "definitionFiles": [],
@@ -349,26 +332,6 @@
           "message": "No exact registry source file found for link-toolbar."
         }
       ]
-    },
-    {
-      "name": "list-classic-node",
-      "files": [],
-      "definitionFiles": [],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for list-classic-node."
-        }
-      ]
-    },
-    {
-      "name": "list-classic-toolbar-button",
-      "files": [
-        "apps/www/src/registry/components/editor/list-classic-toolbar-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
     },
     {
       "name": "media-embed-node",
@@ -476,7 +439,11 @@
     },
     {
       "name": "select-editor",
-      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
+      "files": [
+        "apps/www/src/registry/components/editor/select-command-score.ts",
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
@@ -713,7 +680,6 @@
         "discussion-kit",
         "tabbable-kit",
         "transforms",
-        "transforms-classic",
         "markdown-joiner-transform"
       ],
       "source": {
@@ -751,10 +717,7 @@
         "heading-node",
         "inline-combobox",
         "insert-toolbar-button",
-        "insert-toolbar-classic-button",
         "link-toolbar",
-        "list-classic-node",
-        "list-classic-toolbar-button",
         "media-embed-node",
         "media-image-node",
         "media-placeholder-node",

@@ -1,9 +1,8 @@
 'use client';
 
-import { ListStyle, ListType } from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
-import { useEditor, useEditorSelector } from 'platejs/react';
+import { ListStyle, ListType } from 'platejs';
+import { ListPlugin, useEditor, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
 import {

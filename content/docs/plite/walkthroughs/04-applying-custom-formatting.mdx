@@ -26,10 +26,10 @@ const renderElement = (props) => {
 Use `editor.update.marks.toggle(...)` for a single formatting command.
 
 ```tsx
-import { ElementApi } from "@platejs/plite";
+import { ElementApi } from "plitejs";
 
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -113,7 +113,7 @@ Pass both renderers to `Editable`:
 
 ```tsx
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>

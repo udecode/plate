@@ -4,8 +4,7 @@
   "title": "Media File",
   "description": "A file attachment component with download capability and caption.",
   "dependencies": [
-    "@platejs/media",
-    "@platejs/suggestion"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/caption.json",
@@ -14,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/media-file.tsx",
-      "content": "'use client';\n\nimport type { FilePlugin } from '@platejs/media/react';\nimport { FileUp } from 'lucide-react';\nimport type { PlateElementProps } from 'platejs/react';\nimport { PlateElement, useElementSelected, usePath } from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nimport { Caption, useCaptionFocused } from './caption';\n\nexport function FileElement(props: PlateElementProps<typeof FilePlugin>) {\n  const path = usePath();\n  const selected = useElementSelected({ mode: 'node' });\n  const captionFocused = useCaptionFocused(path);\n\n  return (\n    <PlateElement className=\"my-px rounded-sm\" {...props}>\n      <figure className=\"group relative m-0 [&>figcaption]:text-left\">\n        <div contentEditable={false}>\n          <a\n            className={cn(\n              'flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted'\n            )}\n            download={props.element.name}\n            href={props.element.url}\n            rel=\"noopener noreferrer\"\n            target=\"_blank\"\n          >\n            <div className={cn('flex items-center gap-1 p-1')}>\n              <FileUp className=\"size-5\" />\n              <div>{props.element.name}</div>\n            </div>\n          </a>\n        </div>\n        <Caption\n          active={selected || captionFocused}\n          align=\"left\"\n          element={props.element}\n          slots={props.slots}\n        >\n          {props.children}\n        </Caption>\n      </figure>\n    </PlateElement>\n  );\n}\n",
+      "content": "'use client';\n\nimport { FileUp } from 'lucide-react';\nimport type { FilePlugin } from 'platejs/media/react';\nimport {\n  type PlateElementProps,\n  PlateElement,\n  useElementSelected,\n  usePath,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nimport { Caption, useCaptionFocused } from './caption';\n\nexport function FileElement(props: PlateElementProps<typeof FilePlugin>) {\n  const path = usePath();\n  const selected = useElementSelected({ mode: 'node' });\n  const captionFocused = useCaptionFocused(path);\n\n  return (\n    <PlateElement className=\"my-px rounded-sm\" {...props}>\n      <figure className=\"group relative m-0 [&>figcaption]:text-left\">\n        <div contentEditable={false}>\n          <a\n            className={cn(\n              'flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted'\n            )}\n            download={props.element.name}\n            href={props.element.url}\n            rel=\"noopener noreferrer\"\n            target=\"_blank\"\n          >\n            <div className={cn('flex items-center gap-1 p-1')}>\n              <FileUp className=\"size-5\" />\n              <div>{props.element.name}</div>\n            </div>\n          </a>\n        </div>\n        <Caption\n          active={selected || captionFocused}\n          align=\"left\"\n          element={props.element}\n          slots={props.slots}\n        >\n          {props.children}\n        </Caption>\n      </figure>\n    </PlateElement>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/media-file.tsx"
     }

@@ -3,28 +3,28 @@ title: Plate 编辑器
 description: Plate 编辑器运行时的 API 参考。
 ---
 
-`PlateEditor` 是 `createPlateEditor`、`usePlateEditor` 和 `withPlate` 返回的 React 编辑器类型。它在基础 Plite 编辑器之上添加类型化插件 portal、类型化 `api`、类型化 `editor.update()` 事务、DOM service 和 editor-local plugin store。
+`Editor` 是 `createEditor` 和 `useCreateEditor` 返回的 React 编辑器类型。它在基础 Plite 编辑器之上添加类型化插件 portal、类型化 `api`、类型化 `editor.update()` 事务、DOM service 和 editor-local plugin store。
 
 ## 所有权
 
 | 表面               | 所有者                | 说明                                                                                     |
 | ------------------ | --------------------- | ---------------------------------------------------------------------------------------- |
-| `PlateEditor`      | `@platejs/core/react` | React 编辑器类型，包含 Plate 插件 API、事务组、lifecycle/DOM 事件、render 和 hooks。     |
-| `BaseEditor`       | `@platejs/core`       | 非 React 编辑器类型，用于服务端和静态编辑器路径。                                        |
-| Plite primitives   | `@platejs/plite`      | `children`、`selection`、`operations`、核心 `api` 和事务/update 运行时。                 |
-| Core plugins       | `@platejs/core`       | debug、HTML 解析、product codecs、length、node id、history、input rules 和基础段落行为。 |
-| React core plugins | `@platejs/core/react` | React 扩展、DOM 集成、event editor、navigation feedback 和 React paragraph plugin。      |
+| `Editor`      | `platejs/react` | React 编辑器类型，包含 Plate 插件 API、事务组、lifecycle/DOM 事件、render 和 hooks。     |
+| `Editor`       | `platejs`       | 非 React 编辑器类型，用于服务端和静态编辑器路径。                                        |
+| Plite primitives   | `platejs`      | `children`、`selection`、`operations`、核心 `api` 和事务/update 运行时。                 |
+| Core plugins       | `platejs`       | debug、HTML 解析、product codecs、length、node id、history、input rules 和基础段落行为。 |
+| React core plugins | `platejs/react` | React 扩展、DOM 集成、event editor、navigation feedback 和 React paragraph plugin。      |
 
-React 页面或组件中使用 `PlateEditor`。需要 headless 编辑器时，从 `createBaseEditor` 使用 `BaseEditor`。
+React 页面或组件中使用 `Editor`。需要 headless 编辑器时，从 `createEditor` 使用 `Editor`。
 
 ## 编辑器形状
 
 编辑器仍然是 Plite 编辑器。Plate 在这个形状上增加类型化插件访问、DOM service 和少量 Plate runtime 状态。
 
-<API name="PlateEditor">
+<API name="Editor">
   <APIAttributes>
     <APIItem name="id" type="string">
-      编辑器实例 id。`withPlite` 会使用传入的 `id`、已有编辑器 id，或调用
+      编辑器实例 id。`createEditor` 会使用传入的 `id`、已有编辑器 id，或调用
       `nanoid()`。
     </APIItem>
     <APIItem name="children" type="Value">
@@ -36,10 +36,10 @@ React 页面或组件中使用 `PlateEditor`。需要 headless 编辑器时，�
     <APIItem name="operations" type="Operation[]">
       Plite 上次 flush 后应用的 operations。
     </APIItem>
-    <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
+    <APIItem name="api" type="Editor['api'] & CorePluginApi">
       Core Plite API、显式编辑器级 API，以及按插件 name 推断的已安装插件 API。
     </APIItem>
-    <APIItem name="update" type="PlateEditor['update']">
+    <APIItem name="update" type="Editor['update']">
       文档、选择、历史和插件命令的事务入口。
     </APIItem>
     <APIItem
@@ -49,10 +49,10 @@ React 页面或组件中使用 `PlateEditor`。需要 headless 编辑器时，�
       返回精确插件 descriptor 对应的 portal，用于访问插件
       API、read、update、type 和 store。
     </APIItem>
-    <APIItem name="dom" type="PlateEditor['dom']">
+    <APIItem name="dom" type="Editor['dom']">
       编辑器实例拥有的运行时 DOM 状态。
     </APIItem>
-    <APIItem name="runtime" type="PlateEditor['runtime']">
+    <APIItem name="runtime" type="Editor['runtime']">
       Plate 对外公开的 identity 和 lifecycle 状态。已编译插件注册表由 Plate
       私有管理。
     </APIItem>
@@ -67,7 +67,7 @@ React 和 DOM 运行时状态通过 Plite runtime API 读取。`editor.runtime` 
 | ----------- | ------------------------------------------------------------------ | ---------------------------------------------------- |
 | composition | `editor.api.react.isComposing()`                                   | Plite React composition runtime。                    |
 | focus       | `editor.api.react.isFocused()`                                     | Plite React focus runtime。                          |
-| read-only   | `editor.read.view.isReadOnly()` 或 `editor.api.react.isReadOnly()` | `createPlateEditor`、`<Plate>` 和 `<PlateContent>`。 |
+| read-only   | `editor.read.view.isReadOnly()` 或 `editor.api.react.isReadOnly()` | `createEditor`、`<Plate>` 和 `<PlateContent>`。 |
 
 | 字段            | 类型                          | 说明                                                 |
 | --------------- | ----------------------------- | ---------------------------------------------------- |
@@ -88,7 +88,7 @@ editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
 ```ts title="Plugin state access"
-import { FindReplacePlugin } from "@platejs/find-replace";
+import { FindReplacePlugin } from 'platejs/find-replace';
 
 const findReplace = editor.plugin(FindReplacePlugin);
 
@@ -120,15 +120,15 @@ React 组件使用 `usePluginStore(plugin, key)` 或
 
 ## 初始化
 
-`withPlate` 用 React 默认配置包装 `withPlite`。它从 `initialState` 创建每个插件的
+`createEditor` 用 React 默认配置包装 `createEditor`。它从 `initialState` 创建每个插件的
 editor-local store，并把 React core plugins 插入到用户插件前面。
 
 ```tsx title="Create a typed editor"
-import { usePlateEditor } from "platejs/react";
-import { BoldPlugin } from "@platejs/basic-nodes/react";
+import { useCreateEditor } from "platejs/react";
+import { BoldPlugin } from "platejs/react";
 
 export function useBasicEditor() {
-  return usePlateEditor({
+  return useCreateEditor({
     plugins: [BoldPlugin],
     initialValue: [
       {
@@ -140,7 +140,7 @@ export function useBasicEditor() {
 }
 ```
 
-`withPlite` 做更底层的设置：
+`createEditor` 做更底层的设置：
 
 | 步骤                | 行为                                                                                                                           |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |

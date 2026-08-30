@@ -55,11 +55,11 @@ Insert a void divider between sections.
 <ComponentSource name="basic-blocks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicBlocksKit],
 });
 ```
@@ -95,8 +95,8 @@ export const staticEditor = createStaticEditor({
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
 | `platejs/react` | Package | Exports `ParagraphPlugin`. |
-| `@platejs/basic-nodes` | Package | Exports block rules and individual base block plugins. |
-| `@platejs/basic-nodes/react` | Package | Exports the individual React block plugins. |
+| `platejs` | Package | Exports block rules and individual base block plugins. |
+| `platejs/react` | Package | Exports the individual React block plugins. |
 | `basic-blocks` | Registry | Adds React UI components, input rules, break rules, and shortcuts. |
 | `basic-blocks-static` | Registry | Adds static UI components for static rendering. |
 | Leaf pages | Docs | Own block-specific behavior: [`Heading`](/docs/heading), [`Blockquote`](/docs/blockquote), and [`Horizontal Rule`](/docs/horizontal-rule). |
@@ -129,7 +129,7 @@ See [`Plugin Input Rules`](/docs/plugin-input-rules) for the rule engine and tri
 Use manual setup when you want the package plugins without the registry kit.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ```tsx
@@ -137,7 +137,7 @@ import {
   BlockquoteRules,
   HeadingRules,
   HorizontalRuleRules,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 import {
   BlockquotePlugin,
   HeadingPlugin,
@@ -147,10 +147,10 @@ import {
   
   
   HorizontalRulePlugin,
-} from '@platejs/basic-nodes/react';
-import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
+} from 'platejs/react';
+import { createEditor, ParagraphPlugin } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     ParagraphPlugin,
     HeadingPlugin.configure({

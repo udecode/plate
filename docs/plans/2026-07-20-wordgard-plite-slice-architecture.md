@@ -86,7 +86,7 @@ Boundaries:
   OT, moving product schemas or table grids into Plite, or creating a second
   renderer.
 - Direct adoption owners: Plate core/parser/static clipboard, AI, link,
-  suggestion, list-classic, code-block, table, Plite examples, the dev perf
+  suggestion, legacy-list-model, code-block, table, Plite examples, the dev perf
   page, history/Yjs tests, public exports, docs, fixtures, and benchmarks.
 
 Output budget strategy:
@@ -208,7 +208,7 @@ Prompt requirement ledger:
 | React recovery | `packages/plite-react/src/editable/mutation-controller.ts:410-418` | DOM mutation reconstruction enters through the slice command. |
 | Plate core/codecs | `packages/core/src/lib/plugins/ParserPlugin.ts:33-107`; `packages/core/src/static/internal/writeStaticSelectionClipboardData.ts:10-27`; `packages/markdown/src/lib/MarkdownPlugin.ts` | Plate parsers become host codecs, static copy constructs slices, and Markdown consumes codec ownership. |
 | Plate product consumers | `packages/ai/src/react/ai-chat/transforms/replaceSelectionAIChat.ts:85-124`; `packages/ai/src/react/ai-chat/utils/applyAISuggestions.ts:140-153`; `packages/ai/src/react/copilot/transforms/acceptCopilot*.ts`; `packages/link/src/lib/transforms/insertLink.ts:10-20`; `packages/suggestion/src/lib/transforms/insertFragmentSuggestion.ts:61-91`; `packages/suggestion/src/lib/withSuggestion.ts:153-195` | Ordinary closed fragments currently pay factory and open-slice boilerplate. |
-| Structural plugin consumers | `packages/list-classic/src/lib/withInsertFragmentList.ts:199-369`; `packages/code-block/src/lib/withInsertFragmentCodeBlock.ts:17-98`; `packages/table/src/lib/withInsertFragmentTable.ts:48-300` | Plugins intercept the canonical command but manually reconstruct or specialize slice fitting. |
+| Structural plugin consumers | `packages/platejs/src/features/list/src/lib/withInsertFragmentList.ts:199-369`; `packages/code-block/src/lib/withInsertFragmentCodeBlock.ts:17-98`; `packages/table/src/lib/withInsertFragmentTable.ts:48-300` | Plugins intercept the canonical command but manually reconstruct or specialize slice fitting. |
 | Persistence | `packages/plite-history/src/history-codec.ts:22-128`; `packages/plite-history/src/history-state.ts`; `packages/yjs/src/core/controller.ts`; `packages/yjs/src/core/change-bridge.ts` | History/Yjs persist and map canonical `DocumentChange`, not public slice objects. |
 | Examples/downstream | `apps/www/src/app/(app)/examples/plite/_examples/{paste-html-import,persistent-annotation-anchors,richtext,yjs-collaboration,yjs-hocuspocus}.*`; `apps/www/src/app/dev/editor-perf/page.tsx:5554-5628` | Public teaching, collaboration demos, and manual slice timing use the current factory API. |
 | Current docs | `docs/plite/ledgers/plite-editor-api.md:50-55`; `docs/plite/ledgers/plite-transforms-api.md:26-27`; `docs/plite/references/architecture-contract.md:93-95`; `docs/plite/absolute-architecture-release-claim.md:75-76`; `packages/plite-dom/README.md:45-46` | Current reference surfaces teach `EditorContentSlice`, schema-owned preview fitting, and transaction replacement. |
@@ -758,7 +758,7 @@ it never leaves a partial editor mutation because codecs cannot mutate.
 | `packages/core` and `packages/markdown` | ParserPlugin returns generic slices through pure contexts; static writer uses `ContentSlice.closed`; claims remain compiled. | Plate does not validate or fit schema vocabulary itself. |
 | `packages/ai`, `packages/link` | Ordinary insertions become `fragment.replace`. | No open-slice construction for closed generated content. |
 | `packages/suggestion` | Rewrite content through `ContentSlice.withContent`; return/extend specs. | Preserve openness only through validated API. |
-| `packages/list-classic` | Rewrite command slices through `ContentSlice.withContent`; retain list-item/sublists product rules and delegate the actual target fit. | No redundant synthetic fit or raw openness guessing. |
+| `packages/platejs/src/features/list` | Rewrite command slices through `ContentSlice.withContent`; retain list-item/sublists product rules and delegate the actual target fit. | No redundant synthetic fit or raw openness guessing. |
 | `packages/code-block` | Convert incoming content to code lines, then delegate one rewritten closed slice command. | No operation-shaped first-line/rest-line branch or `fitContent` pre-pass; code semantics remain Plate-owned. |
 | `packages/table` | Use `fitContent` with parent and root context for detached cell content; retain grid/span/selection implementation and tests. | No table model enters Plite. |
 | `apps/www` | Update five Plite examples and dev perf lane; teach fragment versus slice. | No duplicate example source tree. |
@@ -978,7 +978,7 @@ downstream callers are being adopted.
 - Public breaks: hard-cut local helper signatures that expose old fragment or
   factory shapes.
 - Adoption: every production and test caller in the manifest, including AI,
-  link, ParserPlugin, suggestion, list-classic, code-block, table, Plite React,
+  link, ParserPlugin, suggestion, legacy-list-model, code-block, table, Plite React,
   history/Yjs fixtures, and five apps/www examples.
 - Focused tests: all touched package specs; assert semantic command delegation,
   selection, one undo batch, list merging, code conversion, table spans.
@@ -1146,7 +1146,7 @@ pnpm turbo typecheck \
   --filter=./packages/ai \
   --filter=./packages/link \
   --filter=./packages/suggestion \
-  --filter=./packages/list-classic \
+  --filter=./packages/platejs/src/features/list \
   --filter=./packages/code-block \
   --filter=./packages/table
 

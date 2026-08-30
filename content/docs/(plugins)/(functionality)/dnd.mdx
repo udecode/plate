@@ -36,10 +36,10 @@ The fastest way to add drag and drop functionality is with the `DndKit`, which i
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { DndKit } from '@/components/editor/dnd';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...DndKit,
@@ -56,16 +56,16 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/dnd react-dnd react-dnd-html5-backend
+npm install platejs @tanstack/react-virtual raf react-dnd react-dnd-html5-backend
 ```
 
 ### Add Plugin
 
 ```tsx
-import { DndPlugin } from '@platejs/dnd';
-import { createPlateEditor } from 'platejs/react';
+import { DndPlugin } from 'platejs/dnd/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     DndPlugin,
@@ -80,7 +80,7 @@ Configure drag and drop with a draggable component and DnD provider:
 ```tsx
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { DndPlugin } from '@platejs/dnd';
+import { DndPlugin } from 'platejs/dnd/react';
 
 DndPlugin.configure({
   render: {
@@ -99,8 +99,8 @@ DndPlugin.configure({
 Add automatic scrolling and file drop handling:
 
 ```tsx
-import { DndPlugin } from '@platejs/dnd';
-import { PlaceholderPlugin } from '@platejs/media/react';
+import { DndPlugin } from 'platejs/dnd/react';
+import { PlaceholderPlugin } from 'platejs/media/react';
 
 DndPlugin.configure({
   initialState: {
@@ -149,7 +149,7 @@ Plugin for drag and drop functionality within the editor.
       <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
         Object containing the dropped files.
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="editor" type="PlateEditor">
+      <APISubListItem parent="onDropFiles" name="editor" type="Editor">
         The editor instance.
       </APISubListItem>
       <APISubListItem parent="onDropFiles" name="target" type="Path">

@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 
-import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
+import { jsxt } from '@platejs/test';
+import { BaseBlockquotePlugin, createEditor } from 'platejs';
 import {
   BoldPlugin,
   CodePlugin,
@@ -8,14 +9,12 @@ import {
   ScriptPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from 'platejs';
+} from 'platejs/react';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import { MarkdownPlugin } from '../../../../../../packages/platejs/src/markdown/lib/MarkdownPlugin';
 
 jsxt;
 
@@ -27,7 +26,7 @@ const markdownPlugin = MarkdownPlugin.configure({
 });
 
 const createTestEditor = () =>
-  createBaseEditor({
+  createEditor({
     plugins: [
       markdownPlugin,
       BaseBlockquotePlugin,

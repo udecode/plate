@@ -39,18 +39,10 @@ let Slate;
 let SlateInternal = {};
 
 if (isPlite) {
-  Slate = await import('@platejs/plite');
-  SlateInternal = await import('@platejs/plite/internal');
+  Slate = await import('platejs');
+  SlateInternal = await import('@platejs/test');
 } else {
-  try {
-    Slate = await import('slate');
-  } catch {
-    Slate = await import('@platejs/slate');
-  }
-
-  try {
-    SlateInternal = await import('@platejs/slate/internal');
-  } catch {}
+  Slate = await import('slate');
 }
 
 const { ContentSlice, createEditor } = Slate;
@@ -695,7 +687,7 @@ const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
 if (!skipBuild) {
-  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plitejs');
   await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
 }
 

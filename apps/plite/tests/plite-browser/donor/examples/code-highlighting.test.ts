@@ -3,7 +3,7 @@ import {
   openExample,
   recordPliteBrowserRuntimeErrors,
   withExclusiveClipboardAccess,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test.setTimeout(60 * 1000);
 

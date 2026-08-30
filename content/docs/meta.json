@@ -121,13 +121,12 @@
     "[Date](/docs/date)",
     "[Equation](/docs/equation)",
     "[Link](/docs/link)",
-    "[List Classic](/docs/list-classic)",
     "[Media](/docs/media)",
     "[Mention](/docs/mention)",
     "[Table](/docs/table)",
     "[Table of Contents](/docs/toc)",
     "[Footnote](/docs/footnote)",
-    "[Toggle](/docs/toggle)",
+    "[Details](/docs/details)",
     "[Marks](/docs/basic-marks)",
     "[Bold](/docs/bold)",
     "[Italic](/docs/italic)",
@@ -179,10 +178,8 @@
     "[Select Editor](/docs/components/select-editor)",
     "[Emoji Toolbar Button](/docs/components/emoji-toolbar-button)",
     "[Fixed Toolbar Buttons](/docs/components/fixed-toolbar)",
-    "[Fixed Toolbar List Buttons](/docs/components/fixed-toolbar-classic-buttons)",
     "[Fixed Toolbar](/docs/components/fixed-toolbar)",
     "[Floating Toolbar Buttons](/docs/components/floating-toolbar)",
-    "[Floating Toolbar Classic Buttons](/docs/components/floating-toolbar-classic-buttons)",
     "[Floating Toolbar](/docs/components/floating-toolbar)",
     "[Ghost Text](/docs/components/copilot)",
     "[History Toolbar Button](/docs/components/history-toolbar-button)",
@@ -190,11 +187,9 @@
     "[Indent Toolbar Buttons](/docs/components/indent-toolbar-button)",
     "[Inline Combobox](/docs/components/inline-combobox)",
     "[Insert Toolbar Button](/docs/components/insert-toolbar-button)",
-    "[Insert Toolbar Classic Button](/docs/components/insert-toolbar-classic-button)",
     "[Line Height Toolbar Button](/docs/components/line-height-toolbar-button)",
     "[Link Floating Toolbar](/docs/components/link)",
     "[Link Toolbar Button](/docs/components/link-toolbar-button)",
-    "[List Toolbar Buttons](/docs/components/list-classic-toolbar-button)",
     "[Mark Toolbar Button](/docs/components/mark-toolbar-button)",
     "[Media Toolbar](/docs/components/media-toolbar)",
     "[Media Toolbar Button](/docs/components/media-toolbar-button)",
@@ -203,9 +198,8 @@
     "[More Toolbar Button](/docs/components/more-toolbar-button)",
     "[Resize Handle](/docs/components/resize-handle)",
     "[Table Toolbar Button](/docs/components/table-toolbar-button)",
-    "[Toggle Toolbar Button](/docs/components/toggle-toolbar-button)",
+    "[Details Toolbar Button](/docs/components/details-toolbar-button)",
     "[Turn Into Toolbar Button](/docs/components/turn-into-toolbar-button)",
-    "[Turn Into Toolbar Classic Button](/docs/components/turn-into-toolbar-classic-button)",
     "[Remote Cursor Overlay](/docs/components/remote-cursor-overlay)",
     "[Toolbar](/docs/components/toolbar)",
     "[Suggestion Toolbar Button](/docs/components/suggestion-toolbar-button)",
@@ -234,7 +228,6 @@
     "[Media Preview Dialog](/docs/components/media-preview-dialog)",
     "[Keyboard Input Leaf](/docs/components/kbd)",
     "[Link Element](/docs/components/link)",
-    "[List Nodes](/docs/components/list-classic)",
     "[Media Audio Element](/docs/components/media-audio)",
     "[Media Embed Element](/docs/components/media-embed)",
     "[Media File Element](/docs/components/media-file)",
@@ -247,7 +240,7 @@
     "[Table Element](/docs/components/table)",
     "[Tag Element](/docs/components/tag)",
     "[TOC Element](/docs/components/toc)",
-    "[Toggle Element](/docs/components/toggle)",
+    "[Details Element](/docs/components/details)",
     "---Examples---",
     "[Overview](/docs/examples)",
     "[Plate to HTML](/docs/examples/plate-to-html)",
@@ -264,7 +257,6 @@
     "[Excalidraw Demo](/docs/examples/excalidraw)",
     "[Code Drawing Demo](/docs/examples/code-drawing)",
     "[Single Block Demo](/docs/examples/single-block)",
-    "[List Classic Demo](/docs/examples/list-classic)",
     "[Find Replace Demo](/docs/examples/find-replace)",
     "[AI Demo](/docs/examples/ai)",
     "[Align Demo](/docs/examples/align)",
@@ -300,7 +292,7 @@
     "[Plugin Rules Demo](/docs/examples/plugin-rules)",
     "[Table Demo](/docs/examples/table)",
     "[Table of Contents Demo](/docs/examples/toc)",
-    "[Toggle Demo](/docs/examples/toggle)",
+    "[Details Demo](/docs/examples/details)",
     "---Migrations---",
     "[From Plite to Plate](/docs/migration/plite-to-plate)",
     "---API---",
@@ -325,8 +317,6 @@
     "[Plate Store](/docs/api/core/plate-store)",
     "[Plate Controller](/docs/api/core/plate-controller)",
     "[Plate Utils](/docs/api/utils)",
-    "[React Utils](/docs/api/react-utils)",
-    "[cn](/docs/api/cn)",
     "[Floating](/docs/api/floating)",
     "[Resizable](/docs/api/resizable)"
   ],
@@ -406,21 +396,20 @@
                 "createHistoryPlugin",
                 "createInlineVoidPlugin",
                 "createInsertDataPlugin",
-                "createPlateEditor",
+                "createEditor",
                 "defineBasePlugin",
                 "createPrevSelectionPlugin",
                 "definePlatePlugin",
                 "Hotkeys",
                 "toggleBlock",
-                "useActiveEditor",
-                "useEditor",
+                "useOptionalEditorContext",
+                "useEditorContext",
                 "useEditorState",
                 "useElement",
                 "useEditorReadOnly",
                 "useEditorSelection",
                 "useEditorVersion",
                 "useSelectionVersion",
-                "withPlate",
                 "withTReact"
               ],
               "href": "/docs/api/core",
@@ -507,7 +496,7 @@
                     "navigation.clear",
                     "flashTarget",
                     "navigate",
-                    "PlateEditor",
+                    "Editor",
                     "NameofPlugins"
                   ],
                   "href": "/docs/api/core/plate-editor",
@@ -601,7 +590,10 @@
                   "titleCn": "Plate 插件"
                 },
                 {
-                  "headings": ["useEventEditorSelectors", "useEventPlateId"],
+                  "headings": [
+                    "useEventEditorSelectors",
+                    "useEventPlateId"
+                  ],
                   "href": "/docs/api/core/plate-store",
                   "title": "Plate Store",
                   "titleCn": "Plate 存储"
@@ -634,28 +626,14 @@
               "titleCn": "Plate 工具"
             },
             {
-              "description": "React utilities.",
-              "headings": ["PortalBody", "Text", "Box"],
-              "href": "/docs/api/react-utils",
-              "title": "React Utils",
-              "titleCn": "React 工具"
-            },
-            {
-              "description": "Class utilities.",
-              "headings": ["cn"],
-              "href": "/docs/api/cn",
-              "title": "cn",
-              "titleCn": "cn"
-            },
-            {
-              "description": "API reference for @platejs/floating",
+              "description": "API reference for platejs/floating/react",
               "headings": [],
               "href": "/docs/api/floating",
               "title": "Floating",
               "titleCn": "Floating"
             },
             {
-              "description": "API reference for @platejs/resizable",
+              "description": "API reference for platejs/react",
               "headings": [],
               "href": "/docs/api/resizable",
               "title": "Resizable",
@@ -765,11 +743,6 @@
               "titleCn": "Fixed Toolbar Buttons"
             },
             {
-              "href": "/docs/components/fixed-toolbar-classic-buttons",
-              "title": "Fixed Toolbar List Buttons",
-              "titleCn": "Fixed Toolbar List Buttons"
-            },
-            {
               "description": "A fixed toolbar that stays at the top of the editor.",
               "href": "/docs/components/fixed-toolbar",
               "title": "Fixed Toolbar",
@@ -780,12 +753,6 @@
               "href": "/docs/components/floating-toolbar",
               "title": "Floating Toolbar Buttons",
               "titleCn": "Floating Toolbar Buttons"
-            },
-            {
-              "description": "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
-              "href": "/docs/components/floating-toolbar-classic-buttons",
-              "title": "Floating Toolbar Classic Buttons",
-              "titleCn": "Floating Toolbar Classic Buttons"
             },
             {
               "description": "A contextual toolbar that appears over selected text.",
@@ -830,12 +797,6 @@
               "titleCn": "Insert Toolbar Button"
             },
             {
-              "description": "A menu for inserting different types of blocks with classic list support.",
-              "href": "/docs/components/insert-toolbar-classic-button",
-              "title": "Insert Toolbar Classic Button",
-              "titleCn": "Insert Toolbar Classic Button"
-            },
-            {
               "description": "A menu for controlling text line spacing.",
               "href": "/docs/components/line-height-toolbar-button",
               "title": "Line Height Toolbar Button",
@@ -852,12 +813,6 @@
               "href": "/docs/components/link-toolbar-button",
               "title": "Link Toolbar Button",
               "titleCn": "Link Toolbar Button"
-            },
-            {
-              "description": "Toolbar controls for list creation and management.",
-              "href": "/docs/components/list-classic-toolbar-button",
-              "title": "List Toolbar Buttons",
-              "titleCn": "List Toolbar Buttons"
             },
             {
               "description": "A toolbar control for basic text formatting.",
@@ -908,22 +863,16 @@
               "titleCn": "Table Toolbar Button"
             },
             {
-              "description": "A toolbar button for expanding and collapsing blocks.",
-              "href": "/docs/components/toggle-toolbar-button",
-              "title": "Toggle Toolbar Button",
-              "titleCn": "Toggle Toolbar Button"
+              "description": "A toolbar button for wrapping or unwrapping Details blocks.",
+              "href": "/docs/components/details-toolbar-button",
+              "title": "Details Toolbar Button",
+              "titleCn": "详细信息工具栏按钮"
             },
             {
               "description": "A menu for converting between different block types.",
               "href": "/docs/components/turn-into-toolbar-button",
               "title": "Turn Into Toolbar Button",
               "titleCn": "Turn Into Toolbar Button"
-            },
-            {
-              "description": "A dropdown to convert block types with classic list support.",
-              "href": "/docs/components/turn-into-toolbar-classic-button",
-              "title": "Turn Into Toolbar Classic Button",
-              "titleCn": "Turn Into Toolbar Classic Button"
             },
             {
               "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
@@ -1095,12 +1044,6 @@
               "titleCn": "Link Element"
             },
             {
-              "description": "List (classic) nodes for ordered and unordered items.",
-              "href": "/docs/components/list-classic",
-              "title": "List Nodes",
-              "titleCn": "List Nodes"
-            },
-            {
               "description": "An audio player component with caption support.",
               "href": "/docs/components/media-audio",
               "title": "Media Audio",
@@ -1173,10 +1116,10 @@
               "titleCn": "Table of Contents"
             },
             {
-              "description": "A collapsible component for toggling content visibility.",
-              "href": "/docs/components/toggle",
-              "title": "Toggle",
-              "titleCn": "Toggle"
+              "description": "A semantic disclosure block with an editable summary.",
+              "href": "/docs/components/details",
+              "title": "Details",
+              "titleCn": "详细信息"
             }
           ],
           "title": "Node Components",
@@ -1270,12 +1213,6 @@
               "titleCn": "Single Block"
             },
             {
-              "description": "List creation and formatting.",
-              "href": "/docs/examples/list-classic",
-              "title": "List Classic Demo",
-              "titleCn": "List Classic"
-            },
-            {
               "description": "Find and replace functionality in text.",
               "href": "/docs/examples/find-replace",
               "title": "Find Replace Demo",
@@ -1302,7 +1239,10 @@
             {
               "description": "Basic block elements and text marks.",
               "href": "/docs/examples/basic-nodes",
-              "keywords": ["element", "leaf"],
+              "keywords": [
+                "element",
+                "leaf"
+              ],
               "title": "Basic Nodes Demo",
               "titleCn": "Basic Nodes"
             },
@@ -1485,10 +1425,10 @@
               "titleCn": "Table of Contents"
             },
             {
-              "description": "Collapsible content blocks.",
-              "href": "/docs/examples/toggle",
-              "title": "Toggle Demo",
-              "titleCn": "Toggle"
+              "description": "Semantic disclosure blocks with nested body content.",
+              "href": "/docs/examples/details",
+              "title": "Details Demo",
+              "titleCn": "详细信息"
             }
           ]
         }
@@ -1681,7 +1621,9 @@
             },
             {
               "href": "/docs/troubleshooting",
-              "keywords": ["depset"],
+              "keywords": [
+                "dependencies"
+              ],
               "title": "Troubleshooting",
               "titleCn": "故障排除"
             }
@@ -1709,7 +1651,9 @@
                 {
                   "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
                   "href": "/docs/ai",
-                  "keywords": ["ai"],
+                  "keywords": [
+                    "ai"
+                  ],
                   "title": "Stream",
                   "titleCn": "Stream"
                 },
@@ -1718,7 +1662,9 @@
                   "href": "/docs/copilot",
                   "title": "Copilot",
                   "titleCn": "Copilot",
-                  "keywords": ["ai"]
+                  "keywords": [
+                    "ai"
+                  ]
                 }
               ],
               "title": "AI"
@@ -1729,14 +1675,18 @@
                 {
                   "description": "Add comments to text as marks.",
                   "href": "/docs/comment",
-                  "keywords": ["leaf"],
+                  "keywords": [
+                    "leaf"
+                  ],
                   "title": "Comments",
                   "titleCn": "Comments"
                 },
                 {
                   "description": "Add suggestions to text as marks.",
                   "href": "/docs/suggestion",
-                  "keywords": ["leaf"],
+                  "keywords": [
+                    "leaf"
+                  ],
                   "title": "Suggestion",
                   "titleCn": "Suggestion"
                 }
@@ -1754,115 +1704,140 @@
                       "description": "Create blockquotes to emphasize important information.",
                       "href": "/docs/blockquote",
                       "title": "Blockquote",
-                      "keywords": ["element"]
+                      "keywords": [
+                        "element"
+                      ]
                     },
                     {
                       "description": "Create headings of various levels to structure content.",
                       "href": "/docs/heading",
                       "title": "Heading",
-                      "keywords": ["element"]
+                      "keywords": [
+                        "element"
+                      ]
                     },
                     {
                       "description": "Visually divide and organize content sections with a horizontal line.",
                       "href": "/docs/horizontal-rule",
                       "title": "Horizontal Rule",
-                      "keywords": ["element"]
+                      "keywords": [
+                        "element"
+                      ]
                     }
                   ],
                   "title": "Basic Blocks",
                   "titleCn": "Basic Blocks",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Highlight important information or add special notes.",
                   "href": "/docs/callout",
                   "title": "Callout",
                   "titleCn": "Callout",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Display code with syntax highlighting.",
                   "href": "/docs/code-block",
                   "title": "Code Block",
                   "titleCn": "Code Block",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Add columns to your document.",
                   "href": "/docs/column",
                   "title": "Column",
                   "titleCn": "Column",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Insert and format dates in your document.",
                   "href": "/docs/date",
                   "title": "Date",
                   "titleCn": "Date",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Enables the insertion and rendering of LaTeX equations in your editor.",
                   "href": "/docs/equation",
                   "title": "Equation",
                   "titleCn": "Equation",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Insert and manage hyperlinks.",
                   "href": "/docs/link",
                   "title": "Link",
                   "titleCn": "Link",
-                  "keywords": ["element"]
-                },
-                {
-                  "description": "Organize nestable items in a bulleted or numbered list.",
-                  "href": "/docs/list-classic",
-                  "title": "List Classic",
-                  "titleCn": "List Classic",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Embed medias like videos or tweets into your document.",
                   "href": "/docs/media",
                   "title": "Media",
                   "titleCn": "Media",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Enable autocompletion for user mentions.",
                   "href": "/docs/mention",
                   "title": "Mention",
                   "titleCn": "Mention",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Organize and display data in a structured and resizable tabular format.",
                   "href": "/docs/table",
                   "title": "Table",
                   "titleCn": "Table",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Renders a table of contents element with clickable links to headings in the document.",
                   "href": "/docs/toc",
                   "title": "Table of Contents",
                   "titleCn": "Table of Contents",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
                   "description": "Parse and edit GFM footnote references and definitions as dedicated nodes.",
                   "href": "/docs/footnote",
                   "title": "Footnote",
                   "titleCn": "Footnote",
-                  "keywords": ["element"]
+                  "keywords": [
+                    "element"
+                  ]
                 },
                 {
-                  "description": "Add toggles to your document.",
-                  "href": "/docs/toggle",
-                  "title": "Toggle",
-                  "titleCn": "Toggle",
-                  "keywords": ["element"]
+                  "description": "Add semantic disclosure blocks with editable summaries.",
+                  "href": "/docs/details",
+                  "title": "Details",
+                  "titleCn": "详细信息",
+                  "keywords": [
+                    "element"
+                  ]
                 }
               ],
               "title": "Elements",
@@ -1877,63 +1852,81 @@
                   "href": "/docs/bold",
                   "title": "Bold",
                   "titleCn": "Bold",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Apply italic formatting for emphasis or stylistic purposes.",
                   "href": "/docs/italic",
                   "title": "Italic",
                   "titleCn": "Italic",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Apply underline formatting to text.",
                   "href": "/docs/underline",
                   "title": "Underline",
                   "titleCn": "Underline",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Format inline code snippets and technical terms.",
                   "href": "/docs/code",
                   "title": "Code",
                   "titleCn": "Code",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Highlight important text with background colors.",
                   "href": "/docs/highlight",
                   "title": "Highlight",
                   "titleCn": "Highlight",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Display keyboard shortcuts and key combinations.",
                   "href": "/docs/kbd",
                   "title": "Keyboard Input",
                   "titleCn": "Keyboard Input",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Apply strikethrough formatting to indicate deleted content.",
                   "href": "/docs/strikethrough",
                   "title": "Strikethrough",
                   "titleCn": "Strikethrough",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Format text as subscript for mathematical expressions.",
                   "href": "/docs/subscript",
                   "title": "Subscript",
                   "titleCn": "Subscript",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 },
                 {
                   "description": "Format text as superscript for mathematical expressions.",
                   "href": "/docs/superscript",
                   "title": "Superscript",
                   "titleCn": "Superscript",
-                  "keywords": ["leaf"]
+                  "keywords": [
+                    "leaf"
+                  ]
                 }
               ],
               "title": "Marks",
@@ -2303,7 +2296,9 @@
         "titleCn": "Browser"
       },
       "/docs/troubleshooting": {
-        "keywords": ["depset"],
+        "keywords": [
+          "dependencies"
+        ],
         "title": "Troubleshooting",
         "titleCn": "故障排除"
       },
@@ -2313,13 +2308,17 @@
       },
       "/docs/ai": {
         "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
-        "keywords": ["ai"],
+        "keywords": [
+          "ai"
+        ],
         "title": "Stream",
         "titleCn": "Stream"
       },
       "/docs/copilot": {
         "description": "Render AI suggestions ghost text as you type.",
-        "keywords": ["ai"],
+        "keywords": [
+          "ai"
+        ],
         "title": "Copilot",
         "titleCn": "Copilot"
       },
@@ -2329,82 +2328,102 @@
       },
       "/docs/comment": {
         "description": "Add comments to text as marks.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Comments",
         "titleCn": "Comments"
       },
       "/docs/suggestion": {
         "description": "Add suggestions to text as marks.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Suggestion",
         "titleCn": "Suggestion"
       },
       "/docs/basic-blocks": {
         "description": "Enhance your editor with essential formatting elements.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Basic Blocks",
         "titleCn": "Basic Blocks"
       },
       "/docs/blockquote": {
         "description": "Create blockquotes to emphasize important information.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Blockquote"
       },
       "/docs/heading": {
         "description": "Create headings of various levels to structure content.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Heading"
       },
       "/docs/horizontal-rule": {
         "description": "Visually divide and organize content sections with a horizontal line.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Horizontal Rule"
       },
       "/docs/callout": {
         "description": "Highlight important information or add special notes.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Callout",
         "titleCn": "Callout"
       },
       "/docs/code-block": {
         "description": "Display code with syntax highlighting.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Code Block",
         "titleCn": "Code Block"
       },
       "/docs/column": {
         "description": "Add columns to your document.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Column",
         "titleCn": "Column"
       },
       "/docs/date": {
         "description": "Insert and format dates in your document.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Date",
         "titleCn": "Date"
       },
       "/docs/equation": {
         "description": "Enables the insertion and rendering of LaTeX equations in your editor.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Equation",
         "titleCn": "Equation"
       },
       "/docs/link": {
         "description": "Insert and manage hyperlinks.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Link",
         "titleCn": "Link"
       },
-      "/docs/list-classic": {
-        "description": "Organize nestable items in a bulleted or numbered list.",
-        "keywords": ["element"],
-        "title": "List Classic",
-        "titleCn": "List Classic"
-      },
       "/docs/media": {
         "description": "Embed medias like videos or tweets into your document.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Media",
         "titleCn": "Media"
       },
@@ -2415,27 +2434,35 @@
       },
       "/docs/table": {
         "description": "Organize and display data in a structured and resizable tabular format.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Table",
         "titleCn": "Table"
       },
       "/docs/toc": {
         "description": "Renders a table of contents element with clickable links to headings in the document.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Table of Contents",
         "titleCn": "Table of Contents"
       },
       "/docs/footnote": {
         "description": "Parse and edit GFM footnote references and definitions as dedicated nodes.",
-        "keywords": ["element"],
+        "keywords": [
+          "element"
+        ],
         "title": "Footnote",
         "titleCn": "Footnote"
       },
-      "/docs/toggle": {
-        "description": "Add toggles to your document.",
-        "keywords": ["element"],
-        "title": "Toggle",
-        "titleCn": "Toggle"
+      "/docs/details": {
+        "description": "Add semantic disclosure blocks with editable summaries.",
+        "keywords": [
+          "element"
+        ],
+        "title": "Details",
+        "titleCn": "详细信息"
       },
       "/docs/basic-marks": {
         "description": "Set of essential text formatting options.",
@@ -2444,55 +2471,73 @@
       },
       "/docs/bold": {
         "description": "Apply bold formatting to emphasize important text.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Bold",
         "titleCn": "Bold"
       },
       "/docs/italic": {
         "description": "Apply italic formatting for emphasis or stylistic purposes.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Italic",
         "titleCn": "Italic"
       },
       "/docs/underline": {
         "description": "Apply underline formatting to text.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Underline",
         "titleCn": "Underline"
       },
       "/docs/code": {
         "description": "Format inline code snippets and technical terms.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Code",
         "titleCn": "Code"
       },
       "/docs/highlight": {
         "description": "Highlight important text with background colors.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Highlight",
         "titleCn": "Highlight"
       },
       "/docs/kbd": {
         "description": "Display keyboard shortcuts and key combinations.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Keyboard Input",
         "titleCn": "Keyboard Input"
       },
       "/docs/strikethrough": {
         "description": "Apply strikethrough formatting to indicate deleted content.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Strikethrough",
         "titleCn": "Strikethrough"
       },
       "/docs/subscript": {
         "description": "Format text as subscript for mathematical expressions.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Subscript",
         "titleCn": "Subscript"
       },
       "/docs/superscript": {
         "description": "Format text as superscript for mathematical expressions.",
-        "keywords": ["leaf"],
+        "keywords": [
+          "leaf"
+        ],
         "title": "Superscript",
         "titleCn": "Superscript"
       },
@@ -2683,19 +2728,10 @@
         "title": "Emoji Toolbar Button",
         "titleCn": "Emoji Toolbar Button"
       },
-      "/docs/components/fixed-toolbar-classic-buttons": {
-        "title": "Fixed Toolbar List Buttons",
-        "titleCn": "Fixed Toolbar List Buttons"
-      },
       "/docs/components/fixed-toolbar": {
         "description": "A fixed toolbar that stays at the top of the editor.",
         "title": "Fixed Toolbar",
         "titleCn": "Fixed Toolbar"
-      },
-      "/docs/components/floating-toolbar-classic-buttons": {
-        "description": "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
-        "title": "Floating Toolbar Classic Buttons",
-        "titleCn": "Floating Toolbar Classic Buttons"
       },
       "/docs/components/floating-toolbar": {
         "description": "A contextual toolbar that appears over selected text.",
@@ -2732,11 +2768,6 @@
         "title": "Insert Toolbar Button",
         "titleCn": "Insert Toolbar Button"
       },
-      "/docs/components/insert-toolbar-classic-button": {
-        "description": "A menu for inserting different types of blocks with classic list support.",
-        "title": "Insert Toolbar Classic Button",
-        "titleCn": "Insert Toolbar Classic Button"
-      },
       "/docs/components/line-height-toolbar-button": {
         "description": "A menu for controlling text line spacing.",
         "title": "Line Height Toolbar Button",
@@ -2751,11 +2782,6 @@
         "description": "A toolbar control for link management.",
         "title": "Link Toolbar Button",
         "titleCn": "Link Toolbar Button"
-      },
-      "/docs/components/list-classic-toolbar-button": {
-        "description": "Toolbar controls for list creation and management.",
-        "title": "List Toolbar Buttons",
-        "titleCn": "List Toolbar Buttons"
       },
       "/docs/components/mark-toolbar-button": {
         "description": "A toolbar control for basic text formatting.",
@@ -2797,20 +2823,15 @@
         "title": "Table Toolbar Button",
         "titleCn": "Table Toolbar Button"
       },
-      "/docs/components/toggle-toolbar-button": {
-        "description": "A toolbar button for expanding and collapsing blocks.",
-        "title": "Toggle Toolbar Button",
-        "titleCn": "Toggle Toolbar Button"
+      "/docs/components/details-toolbar-button": {
+        "description": "A toolbar button for wrapping or unwrapping Details blocks.",
+        "title": "Details Toolbar Button",
+        "titleCn": "详细信息工具栏按钮"
       },
       "/docs/components/turn-into-toolbar-button": {
         "description": "A menu for converting between different block types.",
         "title": "Turn Into Toolbar Button",
         "titleCn": "Turn Into Toolbar Button"
-      },
-      "/docs/components/turn-into-toolbar-classic-button": {
-        "description": "A dropdown to convert block types with classic list support.",
-        "title": "Turn Into Toolbar Classic Button",
-        "titleCn": "Turn Into Toolbar Classic Button"
       },
       "/docs/components/remote-cursor-overlay": {
         "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
@@ -2946,11 +2967,6 @@
         "title": "Keyboard Input",
         "titleCn": "Keyboard Input"
       },
-      "/docs/components/list-classic": {
-        "description": "List (classic) nodes for ordered and unordered items.",
-        "title": "List Nodes",
-        "titleCn": "List Nodes"
-      },
       "/docs/components/media-audio": {
         "description": "An audio player component with caption support.",
         "title": "Media Audio",
@@ -3011,10 +3027,10 @@
         "title": "Table of Contents",
         "titleCn": "Table of Contents"
       },
-      "/docs/components/toggle": {
-        "description": "A collapsible component for toggling content visibility.",
-        "title": "Toggle",
-        "titleCn": "Toggle"
+      "/docs/components/details": {
+        "description": "A semantic disclosure block with an editable summary.",
+        "title": "Details",
+        "titleCn": "详细信息"
       },
       "/docs/examples": {
         "title": "Overview",
@@ -3088,11 +3104,6 @@
         "title": "Single Block Demo",
         "titleCn": "Single Block"
       },
-      "/docs/examples/list-classic": {
-        "description": "List creation and formatting.",
-        "title": "List Classic Demo",
-        "titleCn": "List Classic"
-      },
       "/docs/examples/find-replace": {
         "description": "Find and replace functionality in text.",
         "title": "Find Replace Demo",
@@ -3115,7 +3126,10 @@
       },
       "/docs/examples/basic-nodes": {
         "description": "Basic block elements and text marks.",
-        "keywords": ["element", "leaf"],
+        "keywords": [
+          "element",
+          "leaf"
+        ],
         "title": "Basic Nodes Demo",
         "titleCn": "Basic Nodes"
       },
@@ -3267,10 +3281,10 @@
         "title": "Table of Contents Demo",
         "titleCn": "Table of Contents"
       },
-      "/docs/examples/toggle": {
-        "description": "Collapsible content blocks.",
-        "title": "Toggle Demo",
-        "titleCn": "Toggle"
+      "/docs/examples/details": {
+        "description": "Semantic disclosure blocks with nested body content.",
+        "title": "Details Demo",
+        "titleCn": "详细信息"
       },
       "/docs/migration/v48": {
         "title": "v48",
@@ -3357,23 +3371,13 @@
         "title": "Plate Utils",
         "titleCn": "Plate 工具"
       },
-      "/docs/api/react-utils": {
-        "description": "React utilities.",
-        "title": "React Utils",
-        "titleCn": "React 工具"
-      },
-      "/docs/api/cn": {
-        "description": "Class utilities.",
-        "title": "cn",
-        "titleCn": "cn"
-      },
       "/docs/api/floating": {
-        "description": "API reference for @platejs/floating",
+        "description": "API reference for platejs/floating/react",
         "title": "Floating",
         "titleCn": "Floating"
       },
       "/docs/api/resizable": {
-        "description": "API reference for @platejs/resizable",
+        "description": "API reference for platejs/react",
         "title": "Resizable",
         "titleCn": "Resizable"
       }

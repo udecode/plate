@@ -1,6 +1,4 @@
 'use client';
-import { AIChatPlugin } from '@platejs/ai/react';
-import { PLUGINS } from '@platejs/utils';
 import {
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -8,7 +6,9 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from 'lucide-react';
-import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
+import { PLUGINS } from 'platejs';
+import { AIChatPlugin } from 'platejs/ai/react';
+import { Plate, useCreateEditor, useStaticEditor } from 'platejs/react';
 import {
   type HTMLAttributes,
   useCallback,
@@ -312,14 +312,14 @@ export default function MarkdownStreamingDemo() {
   const [isPlateStatic, setIsPlateStatic] = useState(false);
   const [speed, setSpeed] = useState<number | null>(null);
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: EditorKit,
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     },
     []
   );
-  const editorStatic = usePlateViewEditor(
+  const editorStatic = useStaticEditor(
     {
       plugins: BaseEditorKit,
     },

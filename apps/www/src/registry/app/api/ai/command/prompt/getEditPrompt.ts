@@ -1,6 +1,6 @@
-import type { AIChatRequestRefs } from '@platejs/ai';
-import type { MarkdownEditor } from '@platejs/markdown';
 import dedent from 'dedent';
+import type { AIChatRequestRefs } from 'platejs/ai';
+import type { MarkdownEditor } from 'platejs/markdown';
 
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 

@@ -71,7 +71,7 @@ Boundaries:
 - Non-goals: changing mapping outcomes, DOM/native selection policy,
   collaboration wire formats, history serialization, or unrelated API cleanup.
 - Direct adoption owners: `packages/suggestion`, `packages/code-block`,
-  `packages/plite-react`, and required maintenance-only `packages/list-classic`
+  `packages/plite-react`, and required maintenance-only `packages/platejs/src/features/list`
   call-site migration. Collaboration needs proof only if source audit finds a
   direct rejected API consumer.
 
@@ -148,7 +148,7 @@ Decision ledger:
 | Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Selection predicates | `isSelection`/`isText` accept invalid optional fields while narrowing to stricter types | Strict built-ins plus editor-aware complete installed-kind validation | Selection interface and protocol | Unknown-input narrowing must be sound | Plite core/docs and custom validators | Red/green invalid-field and custom-kind tests | Stricter guards expose callers relying on false positives | rearchitect |
-| Anchor lifetime API | Update tx exposes persistent `anchor` and scoped Path/Point-only `refs`; spec builder exposes only `refs` | Persistent `editor.anchor`; scoped Path/Point/Range `tx.anchor` on updates and spec builders | Anchor and transaction runtime | Lifetime, not location subtype, is the honest public distinction | Suggestion, code-block, Plite React, list-classic, tests/docs/exports | Mapping, range, expiry, builder, typecheck tests | Persistent draft-anchor callers must opt into `editor.anchor` explicitly | cut |
+| Anchor lifetime API | Update tx exposes persistent `anchor` and scoped Path/Point-only `refs`; spec builder exposes only `refs` | Persistent `editor.anchor`; scoped Path/Point/Range `tx.anchor` on updates and spec builders | Anchor and transaction runtime | Lifetime, not location subtype, is the honest public distinction | Suggestion, code-block, Plite React, legacy-list-model, tests/docs/exports | Mapping, range, expiry, builder, typecheck tests | Persistent draft-anchor callers must opt into `editor.anchor` explicitly | cut |
 | Mapping policy | Anchor and selection protocol decode four-way association independently | One internal pure mapping-policy owner; lifecycle remains in anchor and kind protocol remains in selection | Plite core mapping | Prevent semantic drift without merging responsibilities | Internal only | Existing anchor/rebase matrix plus focused parity tests | Bad extraction could change directionality | move |
 | Native/browser behavior | Source/model proof exists but no fresh native run in this execution yet | Preserve behavior and run one relevant browser lane without broad release claims | Plite browser proof | API refactor must not be called native-correct from model tests | Persistent annotation demo | Focused Playwright/browser route | Environment can block only the browser claim | gate |
 
@@ -256,7 +256,7 @@ Autoreview scope baseline:
 - owner boundary: Plite selection/anchor interfaces and core runtime, direct
   package callers, canonical Plite docs/API generation, changeset, Best API
   doctrine, and Plite Vision.
-- sibling surfaces: suggestion, list-classic, code-block, Plite React drop
+- sibling surfaces: suggestion, legacy-list-model, code-block, Plite React drop
   handling, detached transaction specs, and persistent annotation browser demo.
 - public/security/product contracts: no compatibility aliases, no serialized
   format change, no native-selection or release claim, and no new external
@@ -286,7 +286,7 @@ Verification evidence:
 - Focused mapping suite: anchor contract, anchor mapping, range anchor,
   selection rebase, and selection protocol passed 54/54.
 - Source-first typechecks passed for `@platejs/plite`, `@platejs/plite-react`,
-  suggestion, list-classic, and code-block.
+  suggestion, legacy-list-model, and code-block.
 - `pnpm --filter www api-reference` regenerated the public API manifest;
   `pnpm --filter www check:docs` passed API validation, MDX build, and source
   parity.
@@ -326,7 +326,7 @@ Final handoff prepared:
   validation; one internal helper owns range endpoint association.
 - Public breaks and Plate/collaboration adoption: the transaction `refs` types,
   export, group, and call sites are deleted with no alias. Suggestion,
-  list-classic, code-block, Plite React, Plite tests, detached specs, docs, and
+  legacy-list-model, code-block, Plite React, Plite tests, detached specs, docs, and
   generated API are migrated. No collaboration wire format changed.
 - Applicable browser/Benchmark/docs/provenance decisions: package Browser and
   docs source proof pass; docs UI is blocked by the unrelated build error above;

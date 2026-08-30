@@ -121,13 +121,13 @@ Provider-neutral call sites also avoid unsupported provider-specific props:
 ## Classic items
 
 The registry contains 11 classic items. Ten are public install items;
-`list-classic-demo` is an internal preview.
+`list-demo` is an internal preview.
 
 Classic remains maintenance-only, but every public classic item installs under
 both providers. Two leaf files lost accidental Radix coupling:
 
-- `insert-toolbar-classic-button` does not name the Radix dropdown root type.
-- `turn-into-toolbar-classic-button` uses the selected shadcn radio item as the
+- `insert-toolbar-button` does not name the Radix dropdown root type.
+- `turn-into-toolbar-button` uses the selected shadcn radio item as the
   indicator owner.
 
 No classic item needs a provider copy. Its dependency graph reaches the four

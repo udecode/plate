@@ -1,24 +1,24 @@
 'use client';
 
-import type { Element } from '@platejs/plite';
-import { type SuggestionData, BaseSuggestionPlugin } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { cva } from 'class-variance-authority';
 import { CornerDownLeftIcon } from 'lucide-react';
 import {
+  type Element,
   PLUGINS,
   type BasePluginOverride,
   type TrailingBlockDefinition,
   TextApi,
 } from 'platejs';
 import {
-  type PlateEditor,
+  type Editor,
   type PlateLeafProps,
   type RenderNodeWrapper,
   PlateLeaf,
   useEditorPlugin,
   usePluginStore,
 } from 'platejs/react';
+import { type SuggestionData, BaseSuggestionPlugin } from 'platejs/suggestion';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -29,7 +29,7 @@ import {
   getDiscussionClickTarget,
 } from './discussion';
 
-const getSuggestionApi = (editor: PlateEditor) =>
+const getSuggestionApi = (editor: Editor) =>
   editor.plugin(SuggestionPlugin).api;
 
 export const suggestionVariants = cva(
@@ -97,7 +97,7 @@ export function getBlockSuggestionWrapperClassName({
   );
 }
 
-export function isVoidRemoveSuggestion(editor: PlateEditor, element: Element) {
+export function isVoidRemoveSuggestion(editor: Editor, element: Element) {
   return getSuggestionApi(editor).suggestionData(element)?.type === 'remove';
 }
 
@@ -105,7 +105,7 @@ export function VoidRemoveSuggestionOverlay({
   editor,
   element,
 }: {
-  editor: PlateEditor;
+  editor: Editor;
   element: Element;
 }) {
   const active =

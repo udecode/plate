@@ -17,7 +17,7 @@ const fixturePackage = join(fixtureRoot, 'packages', fixtureSlug);
 mkdirSync(join(fixturePackage, 'src'), { recursive: true });
 writeFileSync(
   join(fixturePackage, 'package.json'),
-  JSON.stringify({ name: '@platejs/example' })
+  JSON.stringify({ name: '@fixture/example' })
 );
 writeFileSync(
   join(fixturePackage, 'src/index.ts'),
@@ -68,7 +68,7 @@ const makePlan = (flowMode, excluded = []) => {
     ? ''
     : `\nPackage file evidence:\n- Package: ${fixtureSlug}\n- Manifest command / file count: version.mjs fingerprint ${fixtureSlug} (${fixtureFingerprint.fileCount} files).\n- Package fingerprint: ${fixtureFingerprint.fingerprint}\n${fixtureFingerprint.files.map((path) => `- File: \`packages/${fixtureSlug}/${path}\``).join('\n')}\n${fixtureFingerprint.files.map((path) => `- [x] \`packages/${fixtureSlug}/${path}\` — score: 100 — verdict: keep — owner: package — evidence: typecheck — next: none.`).join('\n')}\n`;
 
-  return `Flow mode:\n- ${flowMode}\n\nFeature Manifest:\n| Surface | Applies | Owner | Artifacts | Consumer | Proof | Status |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows.join('\n')}\n${packageEvidence}\nCompletion Gates:\n| Gate | Applies | Required action | Evidence |\n| --- | --- | --- | --- |\n| P2 autoreview | yes | review | clean |\n| Goal plan complete | yes | check | pending |\n`;
+  return `Flow mode:\n- ${flowMode}\n\nFeature Manifest:\n| Surface | Applies | Owner | Artifacts | Consumer | Proof | Status |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows.join('\n')}\n${packageEvidence}\nCompletion Gates:\n| Gate | Applies | Required action | Evidence |\n| --- | --- | --- | --- |\n| P1 autoreview | yes | review | clean |\n| Goal plan complete | yes | check | pending |\n`;
 };
 
 test('accepts a full new-package flow', () => {
@@ -139,8 +139,8 @@ test('rejects unresolved evidence and review gates', () => {
     '| API | yes | pending | TODO | consumer | proof | complete |'
   );
   const pendingReview = makePlan('new package').replace(
-    '| P2 autoreview | yes | review | clean |',
-    '| P2 autoreview | yes | review | pending |'
+    '| P1 autoreview | yes | review | clean |',
+    '| P1 autoreview | yes | review | pending |'
   );
 
   assert.match(validate(placeholder).join('\n'), /placeholder/);
@@ -223,8 +223,8 @@ test('rejects N/A for required evidence', () => {
     '| API | yes | owner | N/A: skipped | consumer | proof | complete |'
   );
   const reviewNarrowing = makePlan('new package').replace(
-    '| P2 autoreview | yes | review | clean |',
-    '| P2 autoreview | yes | review | N/A: skipped |'
+    '| P1 autoreview | yes | review | clean |',
+    '| P1 autoreview | yes | review | N/A: skipped |'
   );
 
   assert.match(validate(manifestNarrowing).join('\n'), /placeholder/);

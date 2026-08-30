@@ -2,14 +2,14 @@ import {
   defineExtension,
   NodeApi,
   type Element as PliteElement,
-} from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
   Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
+  useEditor,
+} from 'plitejs/react';
 
 import type {
   CustomElement,
@@ -90,7 +90,7 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
 };
 
 const ForcedLayoutExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), forcedLayout()],
     initialValue: [
       {

@@ -9,7 +9,7 @@ Plate 提供 ESM 包，需要特定的 TypeScript（和打包工具）配置以�
 
 1. **推荐（最简单）：** 使用 TypeScript **5.0+** 并在 `tsconfig.json` 中设置 `"moduleResolution": "bundler"`。
 2. **备选方案（Node 解析）：** 保持 `"moduleResolution": "node"` 并将路径映射到 `dist/react`（可能还需要在打包工具配置中设置别名）。
-3. **保持包最新：** 使用 `depset` 升级 Plate 依赖。
+3. **保持包最新：** 使用 Plate CLI 升级 `platejs`。
 
 
 ## 推荐：`"moduleResolution": "bundler"`
@@ -112,13 +112,7 @@ Plate 提供 ESM 包，需要特定的 TypeScript（和打包工具）配置以�
       "platejs/react": [
         "./node_modules/platejs/dist/react/index.d.ts"
       ],
-      "@platejs/core/react": [
-        "./node_modules/@platejs/core/dist/react/index.d.ts"
-      ],
-      "@platejs/list/react": [
-        "./node_modules/@platejs/list/dist/react/index.d.ts"
-      ]
-      // ...对所有 @platejs/*/react 包重复此操作
+      "platejs/*": ["./node_modules/platejs/dist/*/index.d.ts"]
     }
   }
 }
@@ -137,27 +131,11 @@ export default defineConfig({
         __dirname,
         'node_modules/platejs/dist/react'
       ),
-      '@platejs/core/react': path.resolve(
-        __dirname,
-        'node_modules/@platejs/core/dist/react'
-      ),
-      '@platejs/list/react': path.resolve(
-        __dirname,
-        'node_modules/@platejs/list/dist/react'
-      ),
 
       // 非 /react 基础别名：
       'platejs': path.resolve(
         __dirname,
         'node_modules/platejs'
-      ),
-      '@platejs/core': path.resolve(
-        __dirname,
-        'node_modules/@platejs/core'
-      ),
-      '@platejs/list': path.resolve(
-        __dirname,
-        'node_modules/@platejs/list'
       )
     }
   }
@@ -165,26 +143,22 @@ export default defineConfig({
 ```
 
 **注意：**
-- 你必须为每个使用的 `@platejs/*/react` 导入执行此操作。
+- 如果工具不展开 `platejs/*` 通配符，请为该子路径添加精确别名。
 - 对于测试/Jest，通过 `moduleNameMapper` 或类似方式复制这些别名。
 
-## 确保 Plate 版本一致
+## 更新 Plate
 
-假设你要将某个包升级到 `52.0.1`，请仔细检查所有 `platejs*` 包是否都在**最新版本（不超过 `52.0.1`）**（如果某个包没有 `52.0.1` 版本，它可以保持在 `52.0.0`）。混合版本经常导致不匹配问题。
-
-为了轻松管理和同步 `platejs*` 包版本，你可以使用 `depset` CLI。例如，确保所有 `@platejs/*` 作用域包都与版本 `52.x.y` 兼容：
+使用 Plate CLI 将整个编辑器包升级到指定发布系列：
 
 ```bash
-npx depset@latest @platejs 52 && npx depset@latest platejs 52
+npx @platejs/cli@latest deps platejs 54 --install --yes
 ```
 
-或者，对于特定版本如 `52.0.1`（这将把作用域内的所有包设置为 `52.0.1`，如果可用的话，否则设置为之前的最新版本）：
+需要固定版本时，传入完整版本号：
 
 ```bash
-npx depset@latest @platejs 52.0.1 && npx depset@latest platejs 52.0.1
+npx @platejs/cli@latest deps platejs 54.0.0 --install --yes
 ```
-
-这有助于通过确保所有相关 Plate 包都在兼容版本上来防止版本冲突。
 
 ## 常见问题
 
@@ -216,7 +190,6 @@ module.exports = {
   // ...
   moduleNameMapper: {
     '^platejs/react$': '<rootDir>/node_modules/platejs/dist/react',
-    '^@platejs/core/react$': '<rootDir>/node_modules/@platejs/core/dist/react',
     // ...
   }
 };

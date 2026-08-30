@@ -16,6 +16,8 @@ import {
   createPackageTestCommandArgs,
   createGenericTypecheckGates,
   discoverGenericTypeConfigs,
+  isIsolatedPackageTestFile,
+  usesEntrypointPackageTestGraph,
 } from './check-core.mjs';
 
 const temporaryRoots = [];
@@ -36,7 +38,7 @@ const createPackage = (config) => {
   mkdirSync(testDir, { recursive: true });
   writeFileSync(
     join(packageDir, 'package.json'),
-    JSON.stringify({ name: '@platejs/example' })
+    JSON.stringify({ name: '@fixture/example' })
   );
   writeFileSync(
     join(testDir, 'tsconfig.generic-types.json'),
@@ -73,7 +75,7 @@ test('typechecks generic files from their owning config and excludes them from B
 
   assert.deepEqual(
     configs.map(({ files, name }) => ({ files, name })),
-    [{ files: [genericFile], name: '@platejs/example' }]
+    [{ files: [genericFile], name: '@fixture/example' }]
   );
   assert.deepEqual(gates, [
     {
@@ -85,18 +87,23 @@ test('typechecks generic files from their owning config and excludes them from B
         '--noEmit',
       ],
       command: 'pnpm',
-      label: '@platejs/example generic type contracts (1 file)',
+      label: '@fixture/example generic type contracts (1 file)',
     },
   ]);
   assert.deepEqual(runtimeFiles, [runtimeContract, runtimeTest]);
 });
 
-test('loads the root source-first Bun config before package test dispatch', () => {
+test('loads the source-first Bun preloader before package test dispatch', () => {
   assert.deepEqual(
-    createPackageTestCommandArgs({ bunArgs: ['--config=../../bunfig.toml'] }, [
+    createPackageTestCommandArgs(
+      { bunArgs: ['--preload=../../config/plite-source-test-setup.ts'] },
+      ['./src/example.spec.ts']
+    ),
+    [
+      '--preload=../../config/plite-source-test-setup.ts',
+      'test',
       './src/example.spec.ts',
-    ]),
-    ['--config=../../bunfig.toml', 'test', './src/example.spec.ts']
+    ]
   );
 });
 
@@ -125,16 +132,32 @@ test('rejects ambient value declarations from the Bun runtime inventory', () => 
   );
 });
 
+test('isolates direct and test-suffixed contract files', () => {
+  const { testDir } = createPackage({ files: ['./owned-contract.ts'] });
+  const directContract = join(testDir, 'owned-contract.ts');
+  const testContract = join(testDir, 'runtime-contract.test.tsx');
+  const ordinaryTest = join(testDir, 'runtime.test.ts');
+
+  writeFileSync(directContract, 'export {};');
+  writeFileSync(testContract, 'export {};');
+  writeFileSync(ordinaryTest, 'export {};');
+
+  assert.equal(isIsolatedPackageTestFile(directContract), true);
+  assert.equal(isIsolatedPackageTestFile(testContract), true);
+  assert.equal(isIsolatedPackageTestFile(ordinaryTest), false);
+});
+
+test('delegates consolidated roots to their generated entrypoint test graph', () => {
+  assert.equal(usesEntrypointPackageTestGraph({ name: 'plitejs' }), true);
+  assert.equal(usesEntrypointPackageTestGraph({ name: 'platejs' }), true);
+  assert.equal(usesEntrypointPackageTestGraph({ name: '@platejs/test' }), true);
+});
+
 test('owns every current Plite generic config outside its Bun inventory', () => {
   const configs = discoverGenericTypeConfigs(repoRoot);
   const genericFiles = new Set(configs.flatMap((config) => config.files));
 
-  for (const name of [
-    '@platejs/plite',
-    '@platejs/plite-dom',
-    '@platejs/plite-history',
-    '@platejs/plite-react',
-  ]) {
+  for (const name of ['plitejs']) {
     assert.equal(
       configs.some((config) => config.name === name),
       true,

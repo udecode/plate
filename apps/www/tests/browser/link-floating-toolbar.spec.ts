@@ -1,7 +1,7 @@
 import {
   createPliteBrowserEditorHarness,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const AI_CASE_ID = 'ai:floating-menu-single-shell';
@@ -61,9 +61,9 @@ const changedPixelCount = (left: PixelImage, right: PixelImage) => {
 
   for (let index = 0; index < left.data.length; index += 4) {
     const delta = Math.max(
-      Math.abs(left.data[index]! - right.data[index]!),
-      Math.abs(left.data[index + 1]! - right.data[index + 1]!),
-      Math.abs(left.data[index + 2]! - right.data[index + 2]!)
+      Math.abs(left.data[index] - right.data[index]),
+      Math.abs(left.data[index + 1] - right.data[index + 1]),
+      Math.abs(left.data[index + 2] - right.data[index + 2])
     );
 
     if (delta > 16) count += 1;

@@ -1,5 +1,5 @@
-import { AIChatPlugin } from '@platejs/ai/react';
-import { createBaseEditor, type Range, type Value } from 'platejs';
+import { createEditor, type Range, type Value } from 'platejs';
+import { AIChatPlugin } from 'platejs/ai/react';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
@@ -12,7 +12,7 @@ const createTestEditor = (value: Value) => {
 
     return element;
   });
-  const editor = createBaseEditor({
+  const editor = createEditor({
     plugins: [...BaseEditorKit, AIChatPlugin],
     initialValue,
   });

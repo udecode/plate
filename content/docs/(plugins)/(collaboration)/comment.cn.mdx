@@ -41,10 +41,10 @@ docs:
 ### 添加 Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CommentKit } from '@/components/editor/comment';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...CommentKit,
@@ -61,7 +61,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/comment @platejs/plite-dom
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 扩展评论插件
@@ -69,9 +69,9 @@ npm install @platejs/comment @platejs/plite-dom
 创建带有扩展配置的评论插件以进行状态管理:
 
 ```tsx
-import { isString } from '@platejs/plite-dom';
+import { isString } from 'platejs/dom';
 import { TextApi, type Path } from 'platejs';
-import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
+import { BaseCommentPlugin, getDraftCommentKey } from 'platejs/comment';
 import { CommentLeaf } from '@/components/editor/comment';
 
 const initialState: {
@@ -201,9 +201,9 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
 ### 添加插件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     commentPlugin,
@@ -218,7 +218,7 @@ const editor = createPlateEditor({
 ```tsx
 import { discussionPlugin } from '@/components/editor/discussion';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     discussionPlugin,

@@ -14,7 +14,7 @@ const anyPluginDeclarationPattern =
 const incompleteReadonlyAliasPattern =
   /\btype\s+[A-Za-z_$][\w$]*(?:<[^;]+>)?\s*=\s*Readonly\s*;/gu;
 const reactRuntimePackages = [
-  '@platejs/plite-react',
+  'plitejs/react',
   'react',
   'react-compiler-runtime',
   'react-dom',
@@ -24,7 +24,10 @@ export function getPackageBuildArtifacts(packageJson) {
   const artifacts = new Set();
   const addArtifact = (target) => {
     if (!target || target === './package.json') return;
-    if (!target.startsWith('./dist/')) {
+    const isPublicStylesheet =
+      target.startsWith('./') && /\.css(?:\.d\.ts)?$/u.test(target);
+
+    if (!target.startsWith('./dist/') && !isPublicStylesheet) {
       throw new Error(`Public build target must live in ./dist: ${target}`);
     }
 

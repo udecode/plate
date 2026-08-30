@@ -18,7 +18,7 @@ reset, and externally owned loading.
 
 | Goal | API |
 | --- | --- |
-| Set initial content. | `initialValue` in `usePlateEditor` or `createPlateEditor`. |
+| Set initial content. | `initialValue` in `useCreateEditor` or `createEditor`. |
 | Persist edits. | `<Plate onValueChange>` or `<Plate onCommit>`. |
 | Replace content from outside the editor. | `editor.update((tx) => tx.value.replace({ children: value }))`. |
 | Restore initial content. | `editor.update((tx) => tx.value.replace({ children: initialValue }))`. |
@@ -34,7 +34,7 @@ model-aware format.
 
 ```tsx title="components/editor.tsx" showLineNumbers
 import type { Value } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -46,7 +46,7 @@ const initialValue: Value = [
 ];
 
 export function MyEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue,
   });
 
@@ -66,7 +66,7 @@ Use `onValueChange` when you only need the document value.
 
 ```tsx title="components/editor.tsx" showLineNumbers {15-19,25}
 import type { EditorDocumentValue, EditorSchemaIdentity, Value } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -87,7 +87,7 @@ function saveValue(value: EditorDocumentValue, schema: EditorSchemaIdentity) {
 }
 
 export function MyEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: () => {
       const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -194,12 +194,12 @@ initial document.
 ```tsx title="components/async-editor.tsx" showLineNumbers
 import * as React from 'react';
 import type { Value } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
 function LoadedEditor({ initialValue }: { initialValue: Value }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue,
   });
 
@@ -244,12 +244,12 @@ migrations.
 
 ```tsx title="components/manual-init-editor.tsx" showLineNumbers {8,13-18}
 import * as React from 'react';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export function ManualInitEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     skipInitialization: true,
   });
 

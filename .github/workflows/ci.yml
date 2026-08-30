@@ -7,14 +7,9 @@ on:
       - next
     paths:
       - 'packages/**'
-      - '!packages/browser/**'
-      - '!packages/plite/**'
-      - '!packages/plite-dom/**'
-      - '!packages/plite-history/**'
-      - '!packages/plite-hyperscript/**'
-      - '!packages/plite-layout/**'
-      - '!packages/plite-react/**'
-      - '!packages/yjs/**'
+      - 'apps/plite/package.json'
+      - 'apps/plite/scripts/**'
+      - 'benchmarks/**'
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'
@@ -26,9 +21,10 @@ on:
       - 'bunfig.toml'
       - 'tsconfig.json'
       - 'turbo.json'
-      - 'config'
-      - 'scripts'
-      - 'patches'
+      - 'config/**'
+      - 'scripts/**'
+      - 'patches/**'
+      - '.npmrc'
   pull_request:
     types:
       - opened
@@ -36,14 +32,9 @@ on:
       - reopened
     paths:
       - 'packages/**'
-      - '!packages/browser/**'
-      - '!packages/plite/**'
-      - '!packages/plite-dom/**'
-      - '!packages/plite-history/**'
-      - '!packages/plite-hyperscript/**'
-      - '!packages/plite-layout/**'
-      - '!packages/plite-react/**'
-      - '!packages/yjs/**'
+      - 'apps/plite/package.json'
+      - 'apps/plite/scripts/**'
+      - 'benchmarks/**'
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'
@@ -55,9 +46,10 @@ on:
       - 'bunfig.toml'
       - 'tsconfig.json'
       - 'turbo.json'
-      - 'config'
-      - 'scripts'
-      - 'patches'
+      - 'config/**'
+      - 'scripts/**'
+      - 'patches/**'
+      - '.npmrc'
 
   workflow_dispatch:
 
@@ -103,7 +95,7 @@ jobs:
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.12
 
       - name: 📥 Monorepo install
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
@@ -115,8 +107,11 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.cache
+            ${{ github.workspace }}/.turbo
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: packages-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            packages-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: 🧱 Generate barrels
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
@@ -146,6 +141,14 @@ jobs:
       - name: ✅ Check PR
         if: ${{ env.GENERATED_RELEASE_PR != 'true' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') }}
         run: bun check
+
+      - name: 🧪 Check Plate and Plite packages
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        run: |
+          pnpm plite:browser:install chromium
+          pnpm plite:test
+          pnpm plite:bench:targets:check
+          pnpm plite:public-types
 
       - name: 🔧 Configure git
         if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}

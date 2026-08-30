@@ -4,13 +4,13 @@
   "title": "Blockquote",
   "description": "A quote component for block quotes.",
   "dependencies": [
-    "@platejs/basic-nodes"
+    "platejs"
   ],
   "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/blockquote.tsx",
-      "content": "'use client';\n\nimport type { BlockquotePlugin } from '@platejs/basic-nodes/react';\nimport { type PlateElementProps, PlateElement } from 'platejs/react';\n\nexport function BlockquoteElement(\n  props: PlateElementProps<typeof BlockquotePlugin>\n) {\n  return (\n    <PlateElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
+      "content": "'use client';\n\nimport {\n  type BlockquotePlugin,\n  type PlateElementProps,\n  PlateElement,\n} from 'platejs/react';\n\nexport function BlockquoteElement(\n  props: PlateElementProps<typeof BlockquotePlugin>\n) {\n  return (\n    <PlateElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/blockquote.tsx"
     }

@@ -229,7 +229,7 @@ Verification evidence:
 - Final `pnpm --filter @platejs/core typecheck:contracts` -> no codec-authoring
   errors. The command remains red only at existing history `undo`/`redo`,
   Plite editor-extension portability, and other concurrent contracts.
-- `@platejs/basic-styles`, `@platejs/link`, and `@platejs/list-classic`
+- `@platejs/basic-styles`, `@platejs/link`, and `platejs`
   typechecks -> passed. Basic Nodes and Code Block have no codec callback/source
   errors; their package checks remain red in concurrent plugin/editor update
   consumers. List and Table remain red in unrelated target/history contracts.

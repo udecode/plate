@@ -63,7 +63,7 @@ jobs:
       - name: 🔎 Read stable version
         id: version
         run: |
-          VERSION=$(node -e "const { version } = require('./packages/plate/package.json'); console.log(version.split('-')[0]);")
+          VERSION=$(node -e "const { version } = require('./packages/platejs/package.json'); console.log(version.split('-')[0]);")
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Promoting to v${VERSION}."
 

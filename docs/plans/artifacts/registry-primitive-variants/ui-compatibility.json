@@ -613,7 +613,7 @@
       ]
     },
     {
-      "name": "insert-toolbar-classic-button",
+      "name": "insert-toolbar-button",
       "sourceKind": "plate",
       "usages": [
         {
@@ -627,7 +627,7 @@
             "onOpenChange",
             "open"
           ],
-          "file": "components/editor/insert-toolbar-classic-button.tsx"
+          "file": "components/editor/insert-toolbar-button.tsx"
         },
         {
           "imported": "DropdownMenuContent",
@@ -639,7 +639,7 @@
             "align",
             "className"
           ],
-          "file": "components/editor/insert-toolbar-classic-button.tsx"
+          "file": "components/editor/insert-toolbar-button.tsx"
         },
         {
           "imported": "DropdownMenuItem",
@@ -652,7 +652,7 @@
             "key",
             "onSelect"
           ],
-          "file": "components/editor/insert-toolbar-classic-button.tsx"
+          "file": "components/editor/insert-toolbar-button.tsx"
         },
         {
           "imported": "DropdownMenuTrigger",
@@ -663,7 +663,7 @@
           "props": [
             "asChild"
           ],
-          "file": "components/editor/insert-toolbar-classic-button.tsx"
+          "file": "components/editor/insert-toolbar-button.tsx"
         }
       ]
     },
@@ -1703,7 +1703,7 @@
       ]
     },
     {
-      "name": "list-classic",
+      "name": "legacy-list-model",
       "sourceKind": "plate",
       "usages": [
         {
@@ -1717,7 +1717,7 @@
             "disabled",
             "onCheckedChange"
           ],
-          "file": "components/editor/list-classic.tsx"
+          "file": "components/editor/legacy-list-model.tsx"
         }
       ]
     },
@@ -3689,8 +3689,8 @@
         "onOpenChange",
         "open"
       ],
-      "file": "components/editor/insert-toolbar-classic-button.tsx",
-      "item": "insert-toolbar-classic-button",
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
       "missingIn": [],
       "sourceKind": "plate"
     },
@@ -3704,8 +3704,8 @@
         "align",
         "className"
       ],
-      "file": "components/editor/insert-toolbar-classic-button.tsx",
-      "item": "insert-toolbar-classic-button",
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
       "missingIn": [],
       "sourceKind": "plate"
     },
@@ -3720,8 +3720,8 @@
         "key",
         "onSelect"
       ],
-      "file": "components/editor/insert-toolbar-classic-button.tsx",
-      "item": "insert-toolbar-classic-button",
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
       "missingIn": [],
       "sourceKind": "plate"
     },
@@ -3734,8 +3734,8 @@
       "props": [
         "asChild"
       ],
-      "file": "components/editor/insert-toolbar-classic-button.tsx",
-      "item": "insert-toolbar-classic-button",
+      "file": "components/editor/insert-toolbar-button.tsx",
+      "item": "insert-toolbar-button",
       "missingIn": [],
       "sourceKind": "plate"
     },
@@ -4917,8 +4917,8 @@
         "disabled",
         "onCheckedChange"
       ],
-      "file": "components/editor/list-classic.tsx",
-      "item": "list-classic",
+      "file": "components/editor/legacy-list-model.tsx",
+      "item": "legacy-list-model",
       "missingIn": [],
       "sourceKind": "plate"
     },

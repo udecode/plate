@@ -52,7 +52,7 @@ const MyComponent = () => {
 
 ### `editor`
 
-当前的 `PlateEditor` 实例：
+当前的 `Editor` 实例：
 
 ```ts
 const MyPlugin = definePlatePlugin('myPlugin', {
@@ -233,6 +233,6 @@ Map 保持 MIME-keyed；`'text/html'` 使用单个 rule 或非空有序 rule tup
 能力专属 helper 和 Plate plugin context 会一起推断。抽取 domain input，
 不要抽取整个 Plate plugin context。
 
-从 `@platejs/plite` import 的 `defineExtension` 只用于独立复用的
+从 `platejs` import 的 `defineExtension` 只用于独立复用的
 standalone Plite descriptor。完整示例见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。

@@ -1,13 +1,17 @@
 'use client';
 
+import type { Value } from 'platejs';
+import {
+  Plate,
+  type Editor as ProductEditor,
+  useCreateEditor,
+} from 'platejs/react';
 import type {
   TableCellElement,
   TableElement,
   TableRowElement,
-} from '@platejs/table';
-import { TablePlugin } from '@platejs/table/react';
-import type { Value } from 'platejs';
-import { Plate, type PlateEditor, usePlateEditor } from 'platejs/react';
+} from 'platejs/table';
+import { TablePlugin } from 'platejs/table/react';
 import * as React from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
@@ -135,7 +139,7 @@ export default function TablePerfPage() {
   const [editorKey, setEditorKey] = React.useState(0);
   const [selectionSimulation, setSelectionSimulation] =
     React.useState(DEFAULT_SELECTION);
-  const editorRef = React.useRef<PlateEditor | null>(null);
+  const editorRef = React.useRef<ProductEditor | null>(null);
   const configRef = React.useRef(config);
   const selectionSimulationRef = React.useRef(selectionSimulation);
   const metricsRef = React.useRef<TablePerfMetrics>({ ...EMPTY_METRICS });
@@ -217,14 +221,14 @@ export default function TablePerfPage() {
     [readSnapshot, refreshSummary, remount, resetResults]
   );
 
-  const setCollapsedSelection = React.useCallback((editor: PlateEditor) => {
+  const setCollapsedSelection = React.useCallback((editor: ProductEditor) => {
     const point = cellPoint(0, 0);
     editor.update.selection.set({ anchor: point, focus: point });
   }, []);
 
   const setTableSelection = React.useCallback(
     (
-      editor: PlateEditor,
+      editor: ProductEditor,
       selection: Pick<
         typeof DEFAULT_SELECTION,
         'cols' | 'rows'
@@ -429,11 +433,11 @@ function TablePerfEditor({
   onEditor,
   table,
 }: {
-  onEditor: (editor: PlateEditor) => void;
+  onEditor: (editor: ProductEditor) => void;
   table: TableElement;
 }) {
   const initialValue: Value = [table];
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue,
     plugins: [...BasicBlocksKit, ...DndKit, ...TableKit],
   });

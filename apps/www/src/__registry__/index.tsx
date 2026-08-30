@@ -191,6 +191,14 @@ export const Index: Record<string, any> = {
       path: "src/registry/components/editor/select-editor.tsx",
       type: "registry:component",
       target: "@components/editor/select-editor.tsx"
+    },{
+      path: "src/registry/components/editor/select-command.tsx",
+      type: "registry:component",
+      target: "@components/editor/select-command.tsx"
+    },{
+      path: "src/registry/components/editor/select-command-score.ts",
+      type: "registry:lib",
+      target: "@components/editor/select-command-score.ts"
     }],
     component: null,
     meta: {"docs":[{"route":"/docs/multi-select"}],"examples":["select-editor-demo"],"label":"New"},
@@ -220,32 +228,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"docs":[{"route":"/docs/emoji"},{"route":"https://pro.platejs.org/docs/components/emoji-picker"}],"examples":["emoji-demo","emoji-pro"]},
-  },
-  "fixed-toolbar-classic-buttons": {
-    name: "fixed-toolbar-classic-buttons",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/toolbar.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/align-toolbar-button.json","https://platejs.org/r/font-color-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/emoji-toolbar-button.json","https://platejs.org/r/history-toolbar-button.json","https://platejs.org/r/insert-toolbar-classic-button.json","https://platejs.org/r/line-height-toolbar-button.json","https://platejs.org/r/list-classic-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/media-toolbar-button.json","https://platejs.org/r/mode-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/table-toolbar-button.json","https://platejs.org/r/toggle-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-classic-button.json"],
-    files: [{
-      path: "src/registry/components/editor/fixed-toolbar-classic-buttons.tsx",
-      type: "registry:component",
-      target: "@components/editor/fixed-toolbar-classic-buttons.tsx"
-    }],
-    component: null,
-    meta: {},
-  },
-  "floating-toolbar-classic-buttons": {
-    name: "floating-toolbar-classic-buttons",
-    description: "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/toolbar.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-classic-button.json"],
-    files: [{
-      path: "src/registry/components/editor/floating-toolbar-classic-buttons.tsx",
-      type: "registry:component",
-      target: "@components/editor/floating-toolbar-classic-buttons.tsx"
-    }],
-    component: null,
-    meta: {"examples":["list-classic-demo"]},
   },
   "history-toolbar-button": {
     name: "history-toolbar-button",
@@ -290,7 +272,7 @@ export const Index: Record<string, any> = {
     name: "inline-combobox",
     description: "A combobox for inline suggestions.",
     type: "registry:component",
-    registryDependencies: [],
+    registryDependencies: undefined,
     files: [{
       path: "src/registry/components/editor/inline-combobox.tsx",
       type: "registry:component",
@@ -311,19 +293,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"examples":["basic-nodes-demo"]},
-  },
-  "insert-toolbar-classic-button": {
-    name: "insert-toolbar-classic-button",
-    description: "A menu for inserting different types of blocks with classic list support.",
-    type: "registry:component",
-    registryDependencies: ["dropdown-menu","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms-classic.json"],
-    files: [{
-      path: "src/registry/components/editor/insert-toolbar-classic-button.tsx",
-      type: "registry:component",
-      target: "@components/editor/insert-toolbar-classic-button.tsx"
-    }],
-    component: null,
-    meta: {"examples":["list-classic-demo"]},
   },
   "line-height-toolbar-button": {
     name: "line-height-toolbar-button",
@@ -350,19 +319,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"docs":[{"route":"/docs/link"},{"route":"https://pro.platejs.org/docs/components/link-toolbar-button"}],"examples":["link-demo","link-pro"]},
-  },
-  "list-classic-toolbar-button": {
-    name: "list-classic-toolbar-button",
-    description: "Toolbar controls for list creation and management.",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/toolbar.json"],
-    files: [{
-      path: "src/registry/components/editor/list-classic-toolbar-button.tsx",
-      type: "registry:component",
-      target: "@components/editor/list-classic-toolbar-button.tsx"
-    }],
-    component: null,
-    meta: {"docs":[{"route":"/docs/list-classic"}],"examples":["list-classic-demo"]},
   },
   "mark-toolbar-button": {
     name: "mark-toolbar-button",
@@ -455,18 +411,18 @@ export const Index: Record<string, any> = {
     component: null,
     meta: {"docs":[{"route":"/docs/table"}],"examples":["table-demo"]},
   },
-  "toggle-toolbar-button": {
-    name: "toggle-toolbar-button",
-    description: "A toolbar button for expanding and collapsing blocks.",
+  "details-toolbar-button": {
+    name: "details-toolbar-button",
+    description: "A toolbar button for wrapping or unwrapping Details blocks.",
     type: "registry:component",
     registryDependencies: ["https://platejs.org/r/toolbar.json"],
     files: [{
-      path: "src/registry/components/editor/toggle-toolbar-button.tsx",
+      path: "src/registry/components/editor/details-toolbar-button.tsx",
       type: "registry:component",
-      target: "@components/editor/toggle-toolbar-button.tsx"
+      target: "@components/editor/details-toolbar-button.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/toggle"}],"examples":["toggle-demo"]},
+    meta: {"docs":[{"route":"/docs/details"}],"examples":["details-demo"]},
   },
   "turn-into-toolbar-button": {
     name: "turn-into-toolbar-button",
@@ -480,19 +436,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"docs":[{"route":"https://pro.platejs.org/docs/components/turn-into-toolbar-button"}],"examples":["basic-nodes-demo","basic-nodes-pro"]},
-  },
-  "turn-into-toolbar-classic-button": {
-    name: "turn-into-toolbar-classic-button",
-    description: "A dropdown to convert block types with classic list support.",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-dropdown-menu.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/transforms-classic.json"],
-    files: [{
-      path: "src/registry/components/editor/turn-into-toolbar-classic-button.tsx",
-      type: "registry:component",
-      target: "@components/editor/turn-into-toolbar-classic-button.tsx"
-    }],
-    component: null,
-    meta: {"examples":["list-classic-demo"]},
   },
   "remote-cursor-overlay": {
     name: "remote-cursor-overlay",
@@ -1274,15 +1217,15 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
-  "toggle-static": {
-    name: "toggle-static",
+  "details-static": {
+    name: "details-static",
     description: "",
     type: "registry:component",
     registryDependencies: [],
     files: [{
-      path: "src/registry/components/editor/toggle-static.tsx",
+      path: "src/registry/components/editor/details-static.tsx",
       type: "registry:component",
-      target: "@components/editor/toggle-static.tsx"
+      target: "@components/editor/details-static.tsx"
     }],
     component: null,
     meta: undefined,
@@ -1291,7 +1234,7 @@ export const Index: Record<string, any> = {
     name: "editor-plugins-static",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-static.json","https://platejs.org/r/align-static.json","https://platejs.org/r/basic-blocks-static.json","https://platejs.org/r/basic-marks-static.json","https://platejs.org/r/callout-static.json","https://platejs.org/r/code-block-static.json","https://platejs.org/r/column-static.json","https://platejs.org/r/comment-static.json","https://platejs.org/r/date-static.json","https://platejs.org/r/font-static.json","https://platejs.org/r/footnote-static.json","https://platejs.org/r/line-height-static.json","https://platejs.org/r/link-static.json","https://platejs.org/r/list-static.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math-static.json","https://platejs.org/r/media-static.json","https://platejs.org/r/mention-static.json","https://platejs.org/r/suggestion-static.json","https://platejs.org/r/table-static.json","https://platejs.org/r/toc-static.json","https://platejs.org/r/toggle-static.json"],
+    registryDependencies: ["https://platejs.org/r/editor-static.json","https://platejs.org/r/align-static.json","https://platejs.org/r/basic-blocks-static.json","https://platejs.org/r/basic-marks-static.json","https://platejs.org/r/callout-static.json","https://platejs.org/r/code-block-static.json","https://platejs.org/r/column-static.json","https://platejs.org/r/comment-static.json","https://platejs.org/r/date-static.json","https://platejs.org/r/font-static.json","https://platejs.org/r/footnote-static.json","https://platejs.org/r/line-height-static.json","https://platejs.org/r/link-static.json","https://platejs.org/r/list-static.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math-static.json","https://platejs.org/r/media-static.json","https://platejs.org/r/mention-static.json","https://platejs.org/r/suggestion-static.json","https://platejs.org/r/table-static.json","https://platejs.org/r/toc-static.json","https://platejs.org/r/details-static.json"],
     files: [{
       path: "src/registry/components/editor/plugins-static.ts",
       type: "registry:component",
@@ -1322,19 +1265,6 @@ export const Index: Record<string, any> = {
       path: "src/registry/components/editor/align.tsx",
       type: "registry:component",
       target: "@components/editor/align.tsx"
-    }],
-    component: null,
-    meta: undefined,
-  },
-  "autoformat-classic": {
-    name: "autoformat-classic",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/autoformat.json","https://platejs.org/r/list-classic.json","https://platejs.org/r/list-classic-toolbar-button.json"],
-    files: [{
-      path: "src/registry/components/editor/autoformat-classic.tsx",
-      type: "registry:component",
-      target: "@components/editor/autoformat-classic.tsx"
     }],
     component: null,
     meta: undefined,
@@ -1577,7 +1507,7 @@ export const Index: Record<string, any> = {
     name: "editor-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/align.json","https://platejs.org/r/autoformat.json","https://platejs.org/r/basic-blocks.json","https://platejs.org/r/basic-marks.json","https://platejs.org/r/block-menu.json","https://platejs.org/r/block-placeholder.json","https://platejs.org/r/callout.json","https://platejs.org/r/code-block.json","https://platejs.org/r/column.json","https://platejs.org/r/comment.json","https://platejs.org/r/cursor-overlay.json","https://platejs.org/r/date.json","https://platejs.org/r/discussion.json","https://platejs.org/r/dnd.json","https://platejs.org/r/emoji.json","https://platejs.org/r/exit-break.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/font.json","https://platejs.org/r/footnote.json","https://platejs.org/r/line-height.json","https://platejs.org/r/link.json","https://platejs.org/r/list.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math.json","https://platejs.org/r/media.json","https://platejs.org/r/mention.json","https://platejs.org/r/slash.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/table.json","https://platejs.org/r/toc.json","https://platejs.org/r/toggle.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/align.json","https://platejs.org/r/autoformat.json","https://platejs.org/r/basic-blocks.json","https://platejs.org/r/basic-marks.json","https://platejs.org/r/block-menu.json","https://platejs.org/r/block-placeholder.json","https://platejs.org/r/callout.json","https://platejs.org/r/code-block.json","https://platejs.org/r/column.json","https://platejs.org/r/comment.json","https://platejs.org/r/cursor-overlay.json","https://platejs.org/r/date.json","https://platejs.org/r/discussion.json","https://platejs.org/r/dnd.json","https://platejs.org/r/emoji.json","https://platejs.org/r/exit-break.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/font.json","https://platejs.org/r/footnote.json","https://platejs.org/r/line-height.json","https://platejs.org/r/link.json","https://platejs.org/r/list.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math.json","https://platejs.org/r/media.json","https://platejs.org/r/mention.json","https://platejs.org/r/slash.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/table.json","https://platejs.org/r/toc.json","https://platejs.org/r/details.json"],
     files: [{
       path: "src/registry/components/editor/plugins.ts",
       type: "registry:component",
@@ -1612,24 +1542,11 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
-  "fixed-toolbar-classic": {
-    name: "fixed-toolbar-classic",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/fixed-toolbar-classic-buttons.json"],
-    files: [{
-      path: "src/registry/components/editor/fixed-toolbar-classic.tsx",
-      type: "registry:component",
-      target: "@components/editor/fixed-toolbar-classic.tsx"
-    }],
-    component: null,
-    meta: undefined,
-  },
   "fixed-toolbar": {
     name: "fixed-toolbar",
     description: "A set of commonly used formatting buttons.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/toolbar.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/align-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/emoji-toolbar-button.json","https://platejs.org/r/font-color-toolbar-button.json","https://platejs.org/r/font-size-toolbar-button.json","https://platejs.org/r/history-toolbar-button.json","https://platejs.org/r/list-toolbar-button.json","https://platejs.org/r/indent-toolbar-button.json","https://platejs.org/r/insert-toolbar-button.json","https://platejs.org/r/line-height-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/media-toolbar-button.json","https://platejs.org/r/mode-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/table-toolbar-button.json","https://platejs.org/r/toggle-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
+    registryDependencies: ["https://platejs.org/r/toolbar.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/align-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/emoji-toolbar-button.json","https://platejs.org/r/font-color-toolbar-button.json","https://platejs.org/r/font-size-toolbar-button.json","https://platejs.org/r/history-toolbar-button.json","https://platejs.org/r/list-toolbar-button.json","https://platejs.org/r/indent-toolbar-button.json","https://platejs.org/r/insert-toolbar-button.json","https://platejs.org/r/line-height-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/media-toolbar-button.json","https://platejs.org/r/mode-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/table-toolbar-button.json","https://platejs.org/r/details-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
     files: [{
       path: "src/registry/components/editor/fixed-toolbar.tsx",
       type: "registry:component",
@@ -1642,7 +1559,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar",
     description: "A set of formatting buttons for the floating toolbar.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
+    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/use-on-click-outside.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
     files: [{
       path: "src/registry/components/editor/floating-toolbar.tsx",
       type: "registry:component",
@@ -1650,19 +1567,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"docs":[{"route":"/docs/api/floating"},{"route":"https://pro.platejs.org/docs/components/floating-toolbar"}],"examples":["floating-toolbar-demo","floating-toolbar-pro"]},
-  },
-  "floating-toolbar-classic": {
-    name: "floating-toolbar-classic",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/floating-toolbar-classic-buttons.json"],
-    files: [{
-      path: "src/registry/components/editor/floating-toolbar-classic.tsx",
-      type: "registry:component",
-      target: "@components/editor/floating-toolbar-classic.tsx"
-    }],
-    component: null,
-    meta: undefined,
   },
   "footnote": {
     name: "footnote",
@@ -1720,7 +1624,7 @@ export const Index: Record<string, any> = {
     name: "link",
     description: "A component for rendering hyperlinks with hover states.",
     type: "registry:component",
-    registryDependencies: ["button","input","separator","https://platejs.org/r/comment.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/suggestion-style.json"],
+    registryDependencies: ["button","input","separator","https://platejs.org/r/comment.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/suggestion-style.json","https://platejs.org/r/use-on-click-outside.json"],
     files: [{
       path: "src/registry/components/editor/link.tsx",
       type: "registry:component",
@@ -1728,19 +1632,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"docs":[{"route":"/docs/link"},{"route":"/docs/api/floating"},{"route":"https://pro.platejs.org/docs/components/link-toolbar"}],"examples":["link-demo","link-pro"]},
-  },
-  "list-classic": {
-    name: "list-classic",
-    description: "Classic ordered, unordered, and task list components.",
-    type: "registry:component",
-    registryDependencies: ["checkbox","https://platejs.org/r/list-classic-toolbar-button.json"],
-    files: [{
-      path: "src/registry/components/editor/list-classic.tsx",
-      type: "registry:component",
-      target: "@components/editor/list-classic.tsx"
-    }],
-    component: null,
-    meta: {"docs":[{"route":"/docs/list-classic"}],"examples":["list-classic-demo"]},
   },
   "list": {
     name: "list",
@@ -1881,18 +1772,18 @@ export const Index: Record<string, any> = {
     component: null,
     meta: {"docs":[{"route":"/docs/toc"},{"route":"https://pro.platejs.org/docs/components/toc"}],"examples":["toc-demo","toc-pro"]},
   },
-  "toggle": {
-    name: "toggle",
-    description: "A collapsible component for toggling content visibility.",
+  "details": {
+    name: "details",
+    description: "A semantic disclosure block with an editable summary.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/indent.json","https://platejs.org/r/toggle-toolbar-button.json","button"],
+    registryDependencies: ["https://platejs.org/r/details-toolbar-button.json","button"],
     files: [{
-      path: "src/registry/components/editor/toggle.tsx",
+      path: "src/registry/components/editor/details.tsx",
       type: "registry:component",
-      target: "@components/editor/toggle.tsx"
+      target: "@components/editor/details.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/toggle"}],"examples":["toggle-demo"]},
+    meta: {"docs":[{"route":"/docs/details"}],"examples":["details-demo"]},
   },
   "ai-api": {
     name: "ai-api",
@@ -1907,10 +1798,6 @@ export const Index: Record<string, any> = {
       path: "src/registry/app/api/ai/command/utils.ts",
       type: "registry:file",
       target: "app/api/ai/command/utils.ts"
-    },{
-      path: "src/registry/app/api/ai/command/prompt/index.ts",
-      type: "registry:file",
-      target: "app/api/ai/command/prompt/index.ts"
     },{
       path: "src/registry/app/api/ai/command/prompt/common.ts",
       type: "registry:file",
@@ -2004,19 +1891,6 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
-  "transforms-classic": {
-    name: "transforms-classic",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/link.json"],
-    files: [{
-      path: "src/registry/components/editor/transforms-classic.ts",
-      type: "registry:component",
-      target: "@components/editor/transforms-classic.ts"
-    }],
-    component: null,
-    meta: undefined,
-  },
   "editor-ai": {
     name: "editor-ai",
     description: "An AI editor",
@@ -2059,7 +1933,7 @@ export const Index: Record<string, any> = {
     name: "editor-basic",
     description: "A basic editor",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor.json","https://platejs.org/r/basic-nodes.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor.json","https://platejs.org/r/basic-nodes.json"],
     files: [{
       path: "src/registry/blocks/editor-basic/page.tsx",
       type: "registry:page",
@@ -2219,6 +2093,19 @@ export const Index: Record<string, any> = {
     type: "registry:style",
     registryDependencies: undefined,
     files: [],
+    component: null,
+    meta: undefined,
+  },
+  "use-on-click-outside": {
+    name: "use-on-click-outside",
+    description: "",
+    type: "registry:hook",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/hooks/use-on-click-outside.ts",
+      type: "registry:hook",
+      target: ""
+    }],
     component: null,
     meta: undefined,
   },
@@ -2623,27 +2510,6 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/examples/editable-voids-demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"registry":false},
-  },
-  "list-classic-demo": {
-    name: "list-classic-demo",
-    description: "List creation and formatting.",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/autoformat-classic.json","https://platejs.org/r/fixed-toolbar-classic.json","https://platejs.org/r/floating-toolbar-classic.json","https://platejs.org/r/list-classic.json","https://platejs.org/r/editor-plugins.json"],
-    files: [{
-      path: "src/registry/examples/list-classic-demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/examples/values/list-classic-value.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/list-classic-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3430,11 +3296,11 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/toc","title":"TOC"}],"registry":false},
   },
-  "toggle-demo": {
-    name: "toggle-demo",
+  "details-demo": {
+    name: "details-demo",
     description: "Collapsible content blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/toggle.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/details.json","https://platejs.org/r/editor.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",

@@ -7,72 +7,63 @@ description: 使用 Plate 时常见问题的解决方案。
 
 使用 Plate 的项目中，依赖版本不匹配或冲突是常见问题来源。本节介绍如何识别和解决这类问题。
 
-### 使用 `depset` 管理 Plate 包版本
+### 使用 Plate CLI 更新 Plate
 
-确保所有 ``@platejs/*`` 包（包括 Plate 及其相关插件）同步到一致且兼容的版本集，推荐使用 [`depset`](https://npmjs.com/package/depset) 命令行工具。
-
-**为什么选择 `depset`？**
-- 它简化了 ``@platejs`` 范围内多个包的升级或对齐操作
-- 防止因部分 Plate 包使用一个版本而其他包使用可能不兼容的不同版本导致的问题
+编辑器功能统一由 `platejs` 提供。使用 Plate CLI 即可更新完整编辑器，无需对齐多个功能包。
 
 **使用方法：**
 
-要将 ``@platejs`` 范围内的所有包升级或对齐到特定目标版本（如 ``52.0.1``），在项目根目录运行：
+要将 `platejs` 更新到特定版本，请在项目根目录运行：
 ```bash
-npx depset@latest @platejs 52.0.1 && npx depset@latest platejs 52.0.1
+npx @platejs/cli@latest deps platejs 54.0.0 --install --yes
 ```
 
-要将所有 ``@platejs`` 包升级到主版本 ``46`` 以下的最新版本（例如如果 ``52.x.y`` 是最新发布版本，则会选择这些）：
+要更新到指定主版本的最新版本：
 ```bash
-npx depset@latest @platejs 52 && npx depset@latest platejs 52
+npx @platejs/cli@latest deps platejs 54 --install --yes
 ```
-
-- 将 ``<target_version>``（如 ``52.0.1`` 或 ``52``）替换为你想要的版本标识符
-- ``depset`` 会更新你的 ``package.json``
 
 ### 示例：多个 Plate 实例
 
 **问题：** 出现意外行为或"hooks can only be called inside a component"错误。
 
-**根本原因：** 项目中存在不兼容版本的 Plate 包。通常意味着不同的 ``platejs*`` 包或 ``@platejs/core`` 使用了不同版本且未设计为协同工作。
+**根本原因：** 项目中安装了多个 `platejs` 版本或多个 React 运行时。
 
 **诊断方法：** 检查多个 Plate 包版本：
 
 ```bash
 # npm
-npm ls platejs @platejs/core
+npm ls platejs
 
 # pnpm
 pnpm why platejs
-pnpm why @platejs/core
 ```
 
 **解决方案：**
-主要解决方案是确保所有 ``@platejs/*`` 包都更新到各自最新且设计为相互兼容的版本。这样可以防止项目中某些 Plate 包版本过旧或过新导致的不匹配问题。使用上述的 ``depset`` 工具。
+使用上述 Plate CLI 命令更新 `platejs`，然后检查锁文件是否仍解析出多个版本。
 
-### 示例：多个 Plite 实例
+### 示例：多个 Plate 实例
 
 **问题：** 编辑器功能可能无法正常工作。
 
-**根本原因：** 包管理器有时会安装不匹配的 Plite 依赖版本。例如，`pnpm` 可能安装多个 `@platejs/plite` 版本。
+**根本原因：** 包管理器有时会安装不匹配的 Plate 依赖版本。例如，`pnpm` 可能安装多个 `platejs` 版本。
 
-**诊断方法：** 检查多个 Plite 版本：
+**诊断方法：** 检查多个 Plate 版本：
 
 ```bash
 # npm
-npm ls @platejs/plite @platejs/plite-dom @platejs/plite-react
+npm ls platejs react react-dom
 
 # pnpm
-pnpm why @platejs/plite
-pnpm why @platejs/plite-dom
-pnpm why @platejs/plite-react
+pnpm why platejs
+pnpm why react react-dom
 ```
 
 **解决方案：** 按顺序尝试以下解决方案：
 
 1. 从 `package.json` 中移除 `slate*` 依赖（如果有）。Plate 会管理这些依赖。
 
-2. 使用上述的 ``depset`` 工具。
+2. 使用上述 Plate CLI 命令更新 `platejs`。
 
 2. 强制使用一致的 Plite 依赖版本：
 
@@ -80,9 +71,9 @@ pnpm why @platejs/plite-react
 // package.json
 {
   "resolutions": {
-    "@platejs/plite": "54.0.0-beta.0",
-    "@platejs/plite-dom": "54.0.0-beta.0",
-    "@platejs/plite-react": "54.0.0-beta.0"
+    "platejs": "54.0.0-beta.0",
+    "platejs/dom": "54.0.0-beta.0",
+    "platejs/react": "54.0.0-beta.0"
   }
 }
 ```

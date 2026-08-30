@@ -1,5 +1,5 @@
 ---
-'@platejs/utils': major
+'platejs': major
 ---
 
 Fix mark toolbar buttons so mutually exclusive marks are cleared only when enabling the target mark.
@@ -25,7 +25,7 @@ Export complete `NormalizeTypesPluginState`, `TrailingBlockPluginState`, and `Bl
 - Type resizable widths as numeric or relative CSS lengths
 - Persist `TTextAlignProps` under the canonical `textAlign` property
 
-**Migration:** Replace `TNodeMap` imports with `NodeMap`, import editor node primitives from `@platejs/plite`, and type media nodes directly as `TImageElement`, `TAudioElement`, `TFileElement`, `TVideoElement`, or `TMediaEmbedElement`; render each media element's direct children as its caption. Compose `SingleBlockPlugin` or `SingleLinePlugin` alongside `TrailingBlockPlugin`; the constraint leaves a missing peer alone.
+**Migration:** Replace `TNodeMap` imports with `NodeMap`, import editor node primitives from `platejs`, and type media nodes directly as `TImageElement`, `TAudioElement`, `TFileElement`, `TVideoElement`, or `TMediaEmbedElement`; render each media element's direct children as its caption. Compose `SingleBlockPlugin` or `SingleLinePlugin` alongside `TrailingBlockPlugin`; the constraint leaves a missing peer alone.
 
 Call exit-break commands through the plugin descriptor:
 

@@ -44,7 +44,7 @@ Freeze the last worthwhile non-React queue after the bun-check fixes so future p
 10. `[done]` `5` [splitIncompleteMdx.ts](packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts)
 11. `[done]` `5` [isLastNonEmptyTextOfInlineFormattingContext.ts](packages/core/src/lib/plugins/html/utils/collapse-white-space/isLastNonEmptyTextOfInlineFormattingContext.ts)
 12. `[done]` `5` [traverseHtmlNode.ts](packages/core/src/lib/plugins/html/utils/traverseHtmlNode.ts)
-13. `[done]` `5` [moveListItemSublistItemsToListItemSublist.ts](packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts)
+13. `[done]` `5` [moveListItemSublistItemsToListItemSublist.ts](packages/platejs/src/features/list/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts)
 14. `[done]` `5` [mdastToSlate.ts](packages/markdown/src/lib/deserializer/mdastToSlate.ts)
 15. `[done]` `5` [markdownToPliteNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.ts)
 16. `[done]` `5` [addMarkSuggestion.ts](packages/suggestion/src/lib/transforms/addMarkSuggestion.ts)

@@ -38,11 +38,11 @@ Keyboard Input applies the `kbd` leaf mark to selected text. Use it for shortcut
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -72,16 +72,16 @@ export function FormattingMoreMenu() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `KbdPlugin` directly when you want the default `<kbd>` render.
 
 ```tsx
-import { KbdPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { KbdPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [KbdPlugin],
 });
 ```
@@ -89,7 +89,7 @@ export const editor = createPlateEditor({
 Attach the registry leaf when you want the same visual treatment as the kit.
 
 ```tsx
-import { KbdPlugin } from '@platejs/basic-nodes/react';
+import { KbdPlugin } from 'platejs/react';
 
 import { KbdLeaf } from '@/components/editor/kbd';
 
@@ -100,8 +100,8 @@ export const kbdPlugin = KbdPlugin.configure({ component: KbdLeaf });
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseKbdPlugin` | `@platejs/basic-nodes` | Headless keyboard-input mark, HTML parser, render tag, selection rule, and `toggle` transform. |
-| `KbdPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless keyboard-input mark. |
+| `BaseKbdPlugin` | `platejs` | Headless keyboard-input mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `KbdPlugin` | `platejs/react` | React wrapper for the headless keyboard-input mark. |
 | `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `PlateLeaf`. |
 | `KbdLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `KbdPlugin.configure({ component: KbdLeaf })`. |
@@ -126,8 +126,8 @@ The package owns the mark. The registry owns keycap styling and toolbar placemen
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseKbdPlugin` | `@platejs/basic-nodes` | Headless keyboard-input plugin. |
-| `KbdPlugin` | `@platejs/basic-nodes/react` | React keyboard-input plugin. |
-| `tx.kbd.toggle()` | `@platejs/basic-nodes` | Toggles the keyboard-input mark at the selection. |
+| `BaseKbdPlugin` | `platejs` | Headless keyboard-input plugin. |
+| `KbdPlugin` | `platejs/react` | React keyboard-input plugin. |
+| `tx.kbd.toggle()` | `platejs` | Toggles the keyboard-input mark at the selection. |
 | `KbdLeaf` | Registry UI | Styled client keyboard-input leaf. |
 | `KbdLeafStatic` | Registry UI | Styled static keyboard-input leaf. |

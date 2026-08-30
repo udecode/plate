@@ -11,11 +11,11 @@ Selection bugs need the layer that can actually fail.
 
 | Claim                                           | Assert                                                      | Owner                                           |
 | ----------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
-| The Plite selection is correct                  | model selection                                             | `@platejs/plite`                                |
-| The browser caret lands in the right DOM text   | DOM caret or DOM selection                                  | `@platejs/plite-react` and `@platejs/plite-dom` |
-| The visible browser highlight is not duplicated | displayed selection snapshot                                | `@platejs/browser`                              |
-| Hidden content remains selectable or copyable   | DOM coverage policy plus model result                       | `@platejs/plite-dom` and `@platejs/plite-react` |
-| Follow-up typing still works                    | text, selection, focus, and commit after the asserted state | `@platejs/browser`                              |
+| The Plite selection is correct                  | model selection                                             | `plitejs`                                |
+| The browser caret lands in the right DOM text   | DOM caret or DOM selection                                  | `plitejs/react` and `plitejs/dom` |
+| The visible browser highlight is not duplicated | displayed selection snapshot                                | `@platejs/test`                              |
+| Hidden content remains selectable or copyable   | DOM coverage policy plus model result                       | `plitejs/dom` and `plitejs/react` |
+| Follow-up typing still works                    | text, selection, focus, and commit after the asserted state | `@platejs/test`                              |
 
 Do not close a selection bug with only one layer unless the bug only exists in that layer.
 
@@ -41,7 +41,7 @@ const selection = editor.read((state) => state.selection());
 Write selection inside `editor.update(...)`.
 
 ```tsx
-import { SelectionApi } from "@platejs/plite";
+import { SelectionApi } from "plitejs";
 
 editor.update((tx) => {
   tx.selection.set(
@@ -115,7 +115,7 @@ creates its `NodeSelection`. Clicking editable child text creates a normal
 `TextSelection`.
 
 ```tsx
-import { defineExtension, schema } from "@platejs/plite";
+import { defineExtension, schema } from "plitejs";
 
 const media = defineExtension("media", {
   schema: {
@@ -172,7 +172,7 @@ Use [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries) 
 Void elements still need a model text anchor so Plite can place selection around them. Editable islands keep an element void for outer rendering policy while allowing cursor projection into its text children.
 
 ```tsx
-import { defineExtension, schema } from "@platejs/plite";
+import { defineExtension, schema } from "plitejs";
 
 const media = defineExtension("media", {
   schema: {
@@ -203,7 +203,7 @@ Use [Editable Component](../libraries/plite-react/editable#dom-strategy) for `do
 Selection proof should assert the layers named by the claim.
 
 ```tsx
-import { openExample } from "@platejs/browser/playwright";
+import { openExample } from "@platejs/test/playwright";
 
 const editor = await openExample(page, "plaintext", {
   ready: { editor: "visible" },

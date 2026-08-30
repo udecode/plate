@@ -113,8 +113,8 @@ const createFixture = (
 ) => {
   const directory = mkdtempSync(join(packageRoot, 'tmp-cli-test-'));
   const entryPath = join(directory, `editor.${tsx ? 'tsx' : 'ts'}`);
-  const entry = `import { defineBasePlugin } from '../../core/src/index';
-import { property, schema as s, target } from '../../plite/src/index';
+  const entry = `import { defineBasePlugin } from 'platejs';
+import { property, schema as s, target } from 'platejs';
 
 const CalloutPlugin = defineBasePlugin('calloutCapability', {
   schema: {
@@ -185,20 +185,9 @@ ${tsx ? 'export const FixtureComponent = () => <div />;\n' : ''}`;
       jsx: 'react-jsx',
       noEmit: true,
       paths: {
-        '@platejs/core': [resolve(repoRoot, 'packages/core/src/index.ts')],
-        '@platejs/core/internal': [
-          resolve(repoRoot, 'packages/core/src/internal/index.ts'),
-        ],
-        '@platejs/core/react': [
-          resolve(repoRoot, 'packages/core/src/react/index.ts'),
-        ],
-        '@platejs/plite': [resolve(repoRoot, 'packages/plite/src/index.ts')],
-        '@platejs/plite/internal': [
-          resolve(repoRoot, 'packages/plite/src/internal/index.ts'),
-        ],
-        platejs: [resolve(repoRoot, 'packages/plate/src/index.tsx')],
+        platejs: [resolve(repoRoot, 'packages/platejs/src/index.tsx')],
         'platejs/react': [
-          resolve(repoRoot, 'packages/plate/src/react/index.tsx'),
+          resolve(repoRoot, 'packages/platejs/src/react/index.tsx'),
         ],
       },
     },
@@ -474,15 +463,7 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 
   it('keeps standalone generated headers independent of machine paths', async () => {
     const sourceFixture = createFixture();
-    const standaloneSource = readFileSync(sourceFixture.entryPath, 'utf-8')
-      .replace(
-        '../../core/src/index',
-        resolve(repoRoot, 'packages/core/src/index.ts')
-      )
-      .replace(
-        '../../plite/src/index',
-        resolve(repoRoot, 'packages/plite/src/index.ts')
-      );
+    const standaloneSource = readFileSync(sourceFixture.entryPath, 'utf-8');
     const config = JSON.parse(
       readFileSync(join(sourceFixture.directory, 'tsconfig.json'), 'utf-8')
     ) as { compilerOptions: Record<string, unknown> };
@@ -530,8 +511,8 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { defineBasePlugin } from '../../core/src/index';",
-          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin } from '../../core/src/index';"
+          "import { defineBasePlugin } from 'platejs';",
+          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin } from 'platejs';"
         )
         .replace(
           "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
@@ -594,12 +575,8 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       nestedEntryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { defineBasePlugin } from '../../core/src/index';",
-          "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin } from '../../../../core/src/index';"
-        )
-        .replace(
-          "from '../../plite/src/index'",
-          "from '../../../../plite/src/index'"
+          "import { defineBasePlugin } from 'platejs';",
+          "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin } from 'platejs';"
         )
         .replace(
           "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
@@ -1222,8 +1199,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './invalid-type-payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from './invalid-type-payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1270,8 +1247,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './substituted-payload.js';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from './substituted-payload.js';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1331,8 +1308,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './types';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from './types';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1400,8 +1377,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from '@app/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1466,8 +1443,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          `import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '${modelImport.startsWith('.') ? modelImport : `./${modelImport}`}';`
+          "import { property, schema as s, target } from 'platejs';",
+          `import { property, schema as s, target } from 'platejs';\nimport type { Payload } from '${modelImport.startsWith('.') ? modelImport : `./${modelImport}`}';`
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1528,8 +1505,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from '@app/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1603,8 +1580,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@app/payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from '@app/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1653,8 +1630,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from './payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from './payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1701,8 +1678,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type { Payload } from '@fixture/payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type { Payload } from '@fixture/payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1740,8 +1717,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport { Payload } from './ordinary-payload';"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport { Payload } from './ordinary-payload';"
         )
         .replace(
           "value is { id: string; tags: readonly ('a' | 'b')[] }",
@@ -1792,8 +1769,8 @@ ${readFileSync(entryPath, 'utf-8').replace(
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { property, schema as s, target } from '../../plite/src/index';",
-          "import { property, schema as s, target } from '../../plite/src/index';\nimport type Payload = require('./import-equals-payload');"
+          "import { property, schema as s, target } from 'platejs';",
+          "import { property, schema as s, target } from 'platejs';\nimport type Payload = require('./import-equals-payload');"
         )
         .replace(
           /payload: property\.json\(\{[\s\S]*?validationVersion: 1,\n {8}\}\),/,

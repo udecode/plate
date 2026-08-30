@@ -24,16 +24,16 @@ Navigation Feedback is a small core plugin for "you landed here" UX. It doesn't 
 
 ### React Plugin
 
-`NavigationFeedbackPlugin` is part of the React editor defaults and is included by `createPlateEditor` automatically. You don't need to add it to the `plugins` array for the defaults to work.
+`NavigationFeedbackPlugin` is part of the React editor defaults and is included by `createEditor` automatically. You don't need to add it to the `plugins` array for the defaults to work.
 
 ### Configure Duration
 
 The default flash lasts 1.6 seconds. If you want it tighter or longer, use the top-level `navigationFeedback` editor option:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   navigationFeedback: {
     duration: 1200,
   },
@@ -45,7 +45,7 @@ const editor = createPlateEditor({
 Disable the plugin entirely if you don't want any landed-target flash:
 
 ```tsx
-const editor = createPlateEditor({
+const editor = createEditor({
   navigationFeedback: false,
 });
 ```

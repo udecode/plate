@@ -199,7 +199,7 @@ Site/config files required by the root graph:
 
 Package manifest/script layer:
 
-- `packages/plite/package.json`
+- `packages/plitejs/package.json`
 - `packages/plite-history/package.json`
 - `packages/plite-hyperscript/package.json`
 - `packages/plite-dom/package.json`
@@ -270,20 +270,20 @@ Root/site compatibility surfaces:
 Primary package surfaces:
 
 - `packages/plite-react/package.json`
-- `packages/plite-react/src/**/*`
-- `packages/plite-react/test/**/*`
+- `packages/plitejs/src/react/**/*`
+- `packages/plitejs/test/react/**/*`
 - `packages/plite-dom/package.json`
-- `packages/plite-dom/src/**/*`
-- `packages/plite-dom/test/**/*`
+- `packages/plitejs/src/dom/**/*`
+- `packages/plitejs/test/dom/**/*`
 
 Optional early-adopt lane:
 
-- `packages/browser/**/*`
+- `packages/test/**/*`
   from the archived Plite browser donor package corpus
 
 Forced spillover only if needed by compatibility:
 
-- `packages/plite/package.json`
+- `packages/plitejs/package.json`
 - `packages/plite-history/package.json`
 - `packages/plite-hyperscript/package.json`
 
@@ -340,8 +340,8 @@ Settle `packages/plite` on the best public API:
 
 ### Scope
 
-- `packages/plite/src/**/*`
-- `packages/plite/test/**/*`
+- `packages/plitejs/src/**/*`
+- `packages/plitejs/test/**/*`
 - `packages/plite/type-tests/custom-types/**/*`
 - `docs/plite/ledgers/legacy-slate-test-files.md`
 - `docs/plite/ledgers/slate-editor-api.md`
@@ -352,7 +352,7 @@ Settle `packages/plite` on the best public API:
 
 - freeze the current deleted/residue inventory before changing source
 - audit kept exported contracts before fixing consumers
-- for `packages/plite/src/**`, the better end-state API outranks retrofit
+- for `packages/plitejs/src/**`, the better end-state API outranks retrofit
   preservation
 - rewrite current internals when that is the cleanest way to reach the better
   API
@@ -384,11 +384,11 @@ Close the support packages only after the `slate` core redesign settles.
 
 ### Scope
 
-- `packages/plite-history/src/**/*`
-- `packages/plite-history/test/**/*`
+- `packages/plitejs/src/history/**/*`
+- `packages/plitejs/test/history/**/*`
 - `packages/plite-history/package.json`
-- `packages/plite-hyperscript/src/**/*`
-- `packages/plite-hyperscript/test/**/*`
+- `packages/plitejs/src/hyperscript/**/*`
+- `packages/plitejs/test/hyperscript/**/*`
 - `packages/plite-hyperscript/package.json`
 - `docs/plite/ledgers/slate-history-api.md`
 
@@ -418,8 +418,8 @@ only for DOM seams that still belong in the kept claim.
 
 ### Scope
 
-- `packages/plite-dom/src/**/*`
-- `packages/plite-dom/test/**/*`
+- `packages/plitejs/src/dom/**/*`
+- `packages/plitejs/test/dom/**/*`
 - `packages/plite-dom/package.json`
 - `docs/plite/ledgers/slate-react-api.md`
 - DOM-related examples and proof rows under:
@@ -456,8 +456,8 @@ and only for React/browser seams that still belong in the kept claim.
 
 ### Scope
 
-- `packages/plite-react/src/**/*`
-- `packages/plite-react/test/**/*`
+- `packages/plitejs/src/react/**/*`
+- `packages/plitejs/test/react/**/*`
 - `packages/plite-react/package.json`
 - `apps/www/components/**/*`
 - `apps/www/examples/**/*`

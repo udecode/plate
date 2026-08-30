@@ -1,0 +1,1128 @@
+import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
+
+import {
+  NodeApi,
+  type Path,
+  type Range,
+  RangeApi,
+  type RootKey,
+  type Selection,
+  SelectionApi,
+} from '../..';
+import { getSelection, Hotkeys, isDOMElement, isDOMText } from '../../dom';
+import type { DOMPhaseScheduler } from '../../dom/internal';
+import {
+  getDOMHostLanguage,
+  hasDOMHostQuirk,
+  isBlinkDOMHost,
+  isWebKitDOMHost,
+  selectDOMInputDefaultActionPhase,
+  supportsDOMBeforeInput,
+  usesAppleDOMHotkeys,
+} from '../../dom/internal';
+import type { EditableKeyDownHandler } from '../components/editable';
+import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
+import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { focusPliteEditable } from '../hooks/focus-plite-editable';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { MAIN_ROOT_KEY } from '../root-key';
+import { readPliteViewSelection } from '../view-selection';
+import { applyEditableCaretMovement, getTextDirection } from './caret-engine';
+import {
+  applyContentRootNavigation,
+  applyContentRootViewSelection,
+} from './content-root-navigation';
+import { shouldModelOwnPlainVerticalLargeDocumentExtension } from './dom-coverage-vertical-selection';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  isDestructiveEditableCommand,
+  isEditableEditingEpochCommand,
+  markEditableEditingEpochCommandHandled,
+} from './editing-epoch-adapter';
+import { getEditableCommandFromKeyDown } from './editing-kernel';
+import {
+  getModelOwnedHistoryFocusRepair,
+  type HistoryFocusOwnerApi,
+} from './history-focus';
+import {
+  type EditableCompositionStateSetter,
+  type EditableInputController,
+  type EditableRepairRequest,
+  isInteractiveInternalTarget,
+  isNestedEditableDOMTarget,
+  setEditableModelSelectionPreference,
+} from './input-controller';
+import { applyModelOwnedHistoryIntent } from './model-input-strategy';
+import { applyEditableCommand } from './mutation-controller';
+import {
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+  isElementReadOnly as editorIsElementReadOnly,
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
+  toInternalRoot,
+} from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
+
+export type EditableKeyDownResult = {
+  focusEditor?: ReactRuntimeEditor;
+  handled: boolean;
+  repair?: EditableRepairRequest | null;
+};
+
+const keyDownHandled = (
+  repair?: EditableRepairRequest | null,
+  focusEditor?: ReactRuntimeEditor
+): EditableKeyDownResult => ({
+  ...(focusEditor ? { focusEditor } : {}),
+  handled: true,
+  repair,
+});
+const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
+
+const DEFAULT_MODEL_COMMAND_REPAIR: EditableRepairRequest = {
+  focus: true,
+  kind: 'repair-caret',
+  selectionSourceTransition: {
+    preferModelSelection: true,
+    reason: 'model-command',
+    selectionSource: 'model-owned',
+  },
+};
+
+const getOwnerlessViewSelectionRange = (
+  editor: ReactRuntimeEditor
+): Range | null => {
+  const viewSelection = readPliteViewSelection(editor);
+
+  if (
+    !viewSelection ||
+    viewSelection.anchor.owner ||
+    viewSelection.focus.owner
+  ) {
+    return null;
+  }
+
+  return {
+    anchor: viewSelection.anchor.point,
+    focus: viewSelection.focus.point,
+  };
+};
+
+const isPlainTextKeyboardInput = (event: KeyboardEvent) =>
+  event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey;
+
+const selectionSpansNativeTextInputBoundary = ({
+  editor,
+  selection,
+}: {
+  editor: ReactRuntimeEditor;
+  selection: Range | null;
+}) => {
+  if (!selection || !RangeApi.isExpanded(selection)) {
+    return false;
+  }
+
+  return editor.read((state) =>
+    state.nodes.some({
+      at: selection,
+      match: (node) =>
+        NodeApi.isElement(node) &&
+        (editorIsInline(editor, node) ||
+          editorIsVoid(editor, node) ||
+          editorIsElementReadOnly(editor, node)),
+      voids: true,
+    })
+  );
+};
+
+const getTargetElement = (target: EventTarget | null) =>
+  isDOMElement(target)
+    ? target
+    : isDOMText(target)
+      ? target.parentElement
+      : null;
+
+const getNestedEditableRootKey = (
+  editor: ReactRuntimeEditor,
+  target: EventTarget | null
+): RootKey | null => {
+  const targetElement = getTargetElement(target);
+  const targetEditor = targetElement?.closest('[data-plite-editor="true"]');
+
+  if (!(targetEditor instanceof HTMLElement)) {
+    return null;
+  }
+
+  let editorElement: HTMLElement;
+
+  try {
+    editorElement = ReactEditor.assertDOMNode(editor, editor);
+  } catch {
+    return null;
+  }
+
+  if (targetEditor === editorElement || !editorElement.contains(targetEditor)) {
+    return null;
+  }
+
+  return targetEditor.getAttribute('data-plite-root') ?? null;
+};
+
+const qualifySelectionRoot = (
+  selection: Range | Selection,
+  root: RootKey | null
+): Range | Selection => {
+  if (!selection || !root || root === MAIN_ROOT_KEY) {
+    return selection;
+  }
+
+  if (SelectionApi.isNode(selection)) {
+    return selection.root
+      ? selection
+      : SelectionApi.nodes(selection.paths, {
+          anchorPath: selection.anchorPath,
+          focusPath: selection.focusPath,
+          root,
+        });
+  }
+
+  return {
+    anchor: { ...selection.anchor, root: selection.anchor.root ?? root },
+    focus: { ...selection.focus, root: selection.focus.root ?? root },
+  };
+};
+
+const readNestedEditableDOMSelection = (
+  nestedEditor: ReactRuntimeEditor
+): Range | null => {
+  let root: Document | ShadowRoot;
+
+  try {
+    root = ReactEditor.findDocumentOrShadowRoot(nestedEditor);
+  } catch {
+    return null;
+  }
+
+  const domSelection = getSelection(root);
+
+  if (!domSelection || domSelection.rangeCount === 0) {
+    return null;
+  }
+
+  if (
+    !ReactEditor.hasSelectableTarget(nestedEditor, domSelection.anchorNode) ||
+    !ReactEditor.hasSelectableTarget(nestedEditor, domSelection.focusNode)
+  ) {
+    return null;
+  }
+
+  return ReactEditor.resolvePliteRange(nestedEditor, domSelection, {
+    exactMatch: false,
+  });
+};
+
+const getNestedEditableSelectionContext = ({
+  editor,
+  getMountedViewEditor,
+  target,
+}: {
+  editor: ReactRuntimeEditor;
+  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
+  target: EventTarget | null;
+}) => {
+  const root = getNestedEditableRootKey(editor, target);
+  const nestedEditor = root ? (getMountedViewEditor?.(root) ?? null) : null;
+  const rawSelection = nestedEditor
+    ? (readNestedEditableDOMSelection(nestedEditor) ??
+      readRuntimeSelection(nestedEditor))
+    : null;
+
+  return {
+    editor: nestedEditor,
+    rawSelection,
+    root,
+    selection: qualifySelectionRoot(rawSelection, root),
+  };
+};
+
+const isReadOnlyNativeEditingKey = (nativeEvent: KeyboardEvent) => {
+  if (Hotkeys.isUndo(nativeEvent) || Hotkeys.isRedo(nativeEvent)) {
+    return true;
+  }
+
+  const key = nativeEvent.key.toLowerCase();
+
+  if (
+    (nativeEvent.metaKey || nativeEvent.ctrlKey) &&
+    (key === 'x' || key === 'v' || key === 'y' || key === 'z')
+  ) {
+    return true;
+  }
+
+  if (nativeEvent.metaKey || nativeEvent.ctrlKey || nativeEvent.altKey) {
+    return false;
+  }
+
+  return (
+    nativeEvent.key.length === 1 ||
+    nativeEvent.key === 'Backspace' ||
+    nativeEvent.key === 'Delete' ||
+    nativeEvent.key === 'Enter'
+  );
+};
+
+const getModelOwnedHistoryKeyDownResult = (
+  options: {
+    editor: ReactRuntimeEditor;
+  } & HistoryFocusOwnerApi
+): EditableKeyDownResult => {
+  const { focusEditor, repair } = getModelOwnedHistoryFocusRepair(options);
+
+  return keyDownHandled(repair, focusEditor);
+};
+
+const isPartialDOMStrategyRuntime = (domStrategyRuntime: unknown) =>
+  typeof domStrategyRuntime === 'object' &&
+  domStrategyRuntime !== null &&
+  ((domStrategyRuntime as { type?: unknown }).type === 'partial-dom' ||
+    (domStrategyRuntime as { type?: unknown }).type === 'staged' ||
+    (domStrategyRuntime as { type?: unknown }).type === 'virtualized');
+
+const getRangeSelection = (selection: Range | Selection): Range | null =>
+  selection && RangeApi.isRange(selection) ? selection : null;
+
+const isCollapsedSelectionBackedByEditableTextDOM = ({
+  editor,
+  inputController,
+  selection,
+}: {
+  editor: ReactRuntimeEditor;
+  inputController: EditableInputController;
+  selection: Range | null;
+}) => {
+  if (!selection || !RangeApi.isCollapsed(selection)) {
+    return false;
+  }
+
+  let root: Document | ShadowRoot;
+
+  try {
+    root = ReactEditor.findDocumentOrShadowRoot(editor);
+  } catch {
+    return false;
+  }
+
+  const domSelection = getSelection(root);
+  const anchorNode = domSelection?.anchorNode ?? null;
+  const focusNode = domSelection?.focusNode ?? null;
+
+  if (
+    !domSelection?.isCollapsed ||
+    !ReactEditor.hasSelectableTarget(editor, anchorNode) ||
+    !ReactEditor.hasSelectableTarget(editor, focusNode)
+  ) {
+    return false;
+  }
+
+  const anchorElement = isDOMText(anchorNode)
+    ? anchorNode.parentElement
+    : isDOMElement(anchorNode)
+      ? anchorNode
+      : null;
+  const textHost = anchorElement?.closest('[data-plite-node="text"]');
+  const textHostPath = textHost?.getAttribute('data-plite-path');
+  const domOffset = isDOMText(anchorNode) ? domSelection.anchorOffset : null;
+  const pendingNativeTextInputRepairPathKey =
+    inputController.state?.pendingNativeTextInputRepairPathKey ?? null;
+
+  if (
+    pendingNativeTextInputRepairPathKey &&
+    textHostPath === pendingNativeTextInputRepairPathKey &&
+    selection.anchor.path.join(',') === pendingNativeTextInputRepairPathKey
+  ) {
+    return true;
+  }
+
+  return (
+    textHostPath === selection.anchor.path.join(',') &&
+    domOffset === selection.anchor.offset
+  );
+};
+
+export const shouldDeferBackspaceToNativeInput = ({
+  nativeEvent,
+  runtime,
+  isIOS = usesAppleDOMHotkeys(nativeEvent) &&
+    hasDOMHostQuirk(nativeEvent, 'compositionend-precedes-final-input'),
+  language = getDOMHostLanguage(nativeEvent),
+}: {
+  isIOS?: boolean;
+  language?: string;
+  nativeEvent: KeyboardEvent;
+  runtime?: Readonly<{
+    selectDefaultActionPhase: (
+      input: Parameters<typeof selectDOMInputDefaultActionPhase>[0]
+    ) => ReturnType<typeof selectDOMInputDefaultActionPhase>;
+  }>;
+}) =>
+  Hotkeys.isDeleteBackward(nativeEvent) &&
+  (runtime?.selectDefaultActionPhase({
+    action: 'delete-backward',
+    host: { isIOS, language },
+  }) ??
+    selectDOMInputDefaultActionPhase({
+      action: 'delete-backward',
+      host: { isIOS, language },
+    })) === 'beforeinput';
+
+const applyUserKeyDownHandler = ({
+  editor,
+  event,
+  handler,
+}: {
+  editor: ReactRuntimeEditor;
+  event: ReactKeyboardEvent<HTMLDivElement>;
+  handler?: EditableKeyDownHandler;
+}): EditableKeyDownResult => {
+  if (!handler) {
+    return keyDownUnhandled();
+  }
+
+  // The custom event handler may return a boolean to specify whether the event
+  // shall be treated as being handled or not.
+  const shouldTreatEventAsHandled = handler(event, { editor });
+
+  if (shouldTreatEventAsHandled != null) {
+    if (!shouldTreatEventAsHandled) {
+      return keyDownUnhandled();
+    }
+
+    event.preventDefault();
+
+    return keyDownHandled(
+      shouldTreatEventAsHandled === true
+        ? DEFAULT_MODEL_COMMAND_REPAIR
+        : shouldTreatEventAsHandled
+    );
+  }
+
+  return event.isDefaultPrevented() || event.isPropagationStopped()
+    ? keyDownHandled()
+    : keyDownUnhandled();
+};
+
+export const applyEditableKeyDown = ({
+  androidInputManagerRef,
+  domPhaseScheduler,
+  editor,
+  event,
+  forceRender,
+  inputController,
+  domStrategyRuntime,
+  onKeyDown,
+  preferredVerticalX,
+  readOnly,
+  getActiveContentRootOwner,
+  getContentRootOwnerViewEditor,
+  getMountedViewEditor,
+  setExplicitPartialDOMBackedSelection,
+  setComposing,
+  partialDOMBackedSelection,
+}: {
+  androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
+  domPhaseScheduler: DOMPhaseScheduler;
+  editor: ReactRuntimeEditor;
+  event: ReactKeyboardEvent<HTMLDivElement>;
+  forceRender: () => void;
+  inputController: EditableInputController;
+  domStrategyRuntime: unknown;
+  onKeyDown?: EditableKeyDownHandler;
+  preferredVerticalX?: number;
+  readOnly: boolean;
+  getActiveContentRootOwner?: (root: RootKey) => {
+    childRoot: RootKey;
+    ownerPath: Path;
+    ownerRoot: RootKey;
+  } | null;
+  getContentRootOwnerViewEditor?: (owner: {
+    childRoot: RootKey;
+    ownerPath: Path;
+    ownerRoot: RootKey;
+  }) => ReactRuntimeEditor | null;
+  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
+  setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
+  setComposing: EditableCompositionStateSetter;
+  partialDOMBackedSelection: boolean;
+}): EditableKeyDownResult => {
+  if (isInteractiveInternalTarget(editor, event.target)) {
+    const { nativeEvent } = event;
+    const nestedEditableTarget = (() => {
+      try {
+        return isNestedEditableDOMTarget(
+          ReactEditor.assertDOMNode(editor, editor),
+          event.target
+        );
+      } catch {
+        return false;
+      }
+    })();
+    const nestedSelectionContext = nestedEditableTarget
+      ? getNestedEditableSelectionContext({
+          editor,
+          getMountedViewEditor,
+          target: event.target,
+        })
+      : null;
+    const selection =
+      nestedSelectionContext?.selection ?? readRuntimeSelection(editor);
+    const projectedCommand =
+      nestedEditableTarget && readPliteViewSelection(editor)
+        ? getEditableCommandFromKeyDown({
+            event,
+            selection,
+          })
+        : null;
+
+    const selectionRoot = SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
+    const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+    const shouldHandleProjectedSelection =
+      nestedEditableTarget || selectionRoot !== viewRoot;
+
+    if (shouldHandleProjectedSelection) {
+      const focusEditor = nestedSelectionContext?.editor ?? editor;
+      const focusSelection = nestedSelectionContext?.rawSelection ?? selection;
+      const focusRange = getRangeSelection(focusSelection);
+      const focusNode =
+        focusRange && editorHasPath(focusEditor, focusRange.focus.path)
+          ? NodeApi.parent(focusEditor, focusRange.focus.path)
+          : null;
+      const isRTL = focusNode
+        ? getTextDirection(NodeApi.string(focusNode)) === 'rtl'
+        : false;
+      const contentRootViewSelectionResult = applyContentRootViewSelection({
+        editor,
+        event,
+        getActiveContentRootOwner,
+        getContentRootOwnerViewEditor,
+        getMountedViewEditor,
+        isRTL,
+        preferredX: preferredVerticalX,
+        selection: getRangeSelection(selection),
+      });
+
+      if (contentRootViewSelectionResult.handled) {
+        return keyDownHandled({
+          focus: true,
+          forceRender: true,
+          kind: 'sync-selection',
+          selectionSourceTransition: {
+            preferModelSelection: true,
+            reason: 'model-command',
+            selectionSource: 'model-owned',
+          },
+        });
+      }
+    }
+
+    if (!readOnly && isEditableEditingEpochCommand(projectedCommand)) {
+      event.preventDefault();
+      event.stopPropagation();
+      applyEditableCommand({ command: projectedCommand, editor });
+      markEditableEditingEpochCommandHandled(editor, projectedCommand);
+
+      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+    }
+
+    if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (
+        applyModelOwnedHistoryIntent({
+          direction: 'redo',
+          editor,
+        })
+      ) {
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
+      }
+
+      return keyDownHandled();
+    }
+
+    if (!readOnly && Hotkeys.isUndo(nativeEvent)) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (
+        applyModelOwnedHistoryIntent({
+          direction: 'undo',
+          editor,
+        })
+      ) {
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
+      }
+
+      return keyDownHandled();
+    }
+
+    event.stopPropagation();
+    return keyDownHandled();
+  }
+
+  try {
+    if (
+      isNestedEditableDOMTarget(
+        ReactEditor.assertDOMNode(editor, editor),
+        event.target
+      )
+    ) {
+      return keyDownUnhandled();
+    }
+  } catch {
+    // Unit tests and unmounted editables can exercise the strategy without DOM.
+  }
+
+  if (readOnly && ReactEditor.hasEditableTarget(editor, event.target)) {
+    if (isReadOnlyNativeEditingKey(event.nativeEvent)) {
+      event.preventDefault();
+      event.stopPropagation();
+      return keyDownHandled({ forceRender: true, kind: 'force-render' });
+    }
+
+    return keyDownUnhandled();
+  }
+
+  if (!readOnly && ReactEditor.hasEditableTarget(editor, event.target)) {
+    androidInputManagerRef.current?.handleKeyDown(event);
+
+    const { nativeEvent } = event;
+
+    // COMPAT: The composition end event isn't fired reliably in all browsers,
+    // so we sometimes might end up stuck in a composition state even though we
+    // aren't composing any more.
+    if (ReactEditor.isComposing(editor) && !nativeEvent.isComposing) {
+      setComposing(false);
+    }
+
+    if (ReactEditor.isComposing(editor)) {
+      return keyDownHandled();
+    }
+
+    const userKeyDownResult = applyUserKeyDownHandler({
+      editor,
+      event,
+      handler: onKeyDown,
+    });
+    if (userKeyDownResult.handled) {
+      return userKeyDownResult;
+    }
+
+    const selection = readRuntimeSelection(editor);
+    const selectionRange = getRangeSelection(selection);
+    const selectionRoot = SelectionApi.root(selection);
+    const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
+
+    if (
+      SelectionApi.isNode(selection) &&
+      isPlainTextKeyboardInput(nativeEvent)
+    ) {
+      event.preventDefault();
+      applyEditableCommand({
+        command: {
+          inputType: 'insertText',
+          kind: 'insert-text',
+          text: nativeEvent.key,
+        },
+        editor,
+      });
+      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+    }
+
+    if (
+      SelectionApi.isNode(selection) &&
+      (Hotkeys.isOpenLine(nativeEvent) ||
+        Hotkeys.isSoftBreak(nativeEvent) ||
+        Hotkeys.isSplitBlock(nativeEvent))
+    ) {
+      event.preventDefault();
+      applyEditableCommand({
+        command: {
+          kind: 'insert-break',
+          variant: Hotkeys.isSoftBreak(nativeEvent)
+            ? 'soft'
+            : Hotkeys.isOpenLine(nativeEvent)
+              ? 'open-line'
+              : 'paragraph',
+        },
+        editor,
+      });
+      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+    }
+
+    if (
+      selectionRoot &&
+      selectionRoot !== viewRoot &&
+      nativeEvent.key.length === 1 &&
+      !nativeEvent.altKey &&
+      !nativeEvent.ctrlKey &&
+      !nativeEvent.metaKey
+    ) {
+      const targetEditor = getMountedViewEditor?.(selectionRoot);
+
+      if (targetEditor) {
+        event.preventDefault();
+        applyEditableCommand({
+          command: {
+            inputType: 'insertText',
+            kind: 'insert-text',
+            text: nativeEvent.key,
+          },
+          editor: targetEditor,
+        });
+        focusPliteEditable(targetEditor);
+        const targetScheduler =
+          getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??
+          domPhaseScheduler;
+
+        targetScheduler.schedule(
+          'dom-write',
+          'typed-root-focus-editor',
+          () => {
+            focusPliteEditable(targetEditor);
+          },
+          { timing: 'animation-frame' }
+        );
+
+        return keyDownHandled();
+      }
+    }
+
+    if (isSelectAllHotkey(nativeEvent)) {
+      event.preventDefault();
+      const previousIsUpdatingSelection =
+        inputController.state.isUpdatingSelection;
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: true,
+        reason: 'model-command',
+        selectionSource: 'model-owned',
+      });
+      inputController.state.isUpdatingSelection = true;
+      inputController.state.selectionChangeOrigin = 'programmatic-export';
+      applyEditableCommand({ command: { kind: 'select-all' }, editor });
+      const partialDOMStrategyRuntime =
+        isPartialDOMStrategyRuntime(domStrategyRuntime);
+      if (partialDOMStrategyRuntime) {
+        setEditableModelSelectionPreference({
+          inputController,
+          preferModelSelection: true,
+          selectionSource: 'partial-dom-backed',
+        });
+      }
+      setExplicitPartialDOMBackedSelection(partialDOMStrategyRuntime);
+      forceRender();
+      const clearSelectionUpdate = () => {
+        if (
+          inputController.state.selectionChangeOrigin === 'programmatic-export'
+        ) {
+          inputController.state.isUpdatingSelection =
+            previousIsUpdatingSelection;
+        }
+      };
+
+      domPhaseScheduler.schedule(
+        'selection-repair',
+        'clear-select-all-selection-update',
+        clearSelectionUpdate,
+        { timing: 'timeout' }
+      );
+      return keyDownHandled();
+    }
+
+    if (
+      selectionSpansNativeTextInputBoundary({
+        editor,
+        selection: selectionRange,
+      }) &&
+      isPlainTextKeyboardInput(nativeEvent)
+    ) {
+      event.preventDefault();
+      applyEditableCommand({
+        command: {
+          inputType: 'insertText',
+          kind: 'insert-text',
+          text: nativeEvent.key,
+        },
+        editor,
+      });
+      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+    }
+
+    const children = editor.read((state) => state.nodes.children());
+    const selectedTopLevelIndex = SelectionApi.isNode(selection)
+      ? selection.paths[0]?.[0]
+      : selectionRange?.focus.path[0];
+    const element = children[selectedTopLevelIndex ?? 0];
+    const isRTL = getTextDirection(NodeApi.string(element)) === 'rtl';
+
+    // COMPAT: Since we prevent the default behavior on
+    // `beforeinput` events, the browser doesn't think there's ever
+    // any history stack to undo or redo, so we have to manage these
+    // hotkeys ourselves. (2019/11/06)
+    if (Hotkeys.isRedo(nativeEvent)) {
+      event.preventDefault();
+
+      if (
+        applyModelOwnedHistoryIntent({
+          direction: 'redo',
+          editor,
+        })
+      ) {
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
+      }
+
+      return keyDownHandled();
+    }
+
+    if (Hotkeys.isUndo(nativeEvent)) {
+      event.preventDefault();
+
+      if (
+        applyModelOwnedHistoryIntent({
+          direction: 'undo',
+          editor,
+        })
+      ) {
+        return getModelOwnedHistoryKeyDownResult({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        });
+      }
+
+      return keyDownHandled();
+    }
+
+    if (
+      isPartialDOMStrategyRuntime(domStrategyRuntime) &&
+      partialDOMBackedSelection &&
+      !isCollapsedSelectionBackedByEditableTextDOM({
+        editor,
+        inputController,
+        selection: selectionRange,
+      }) &&
+      selection &&
+      nativeEvent.key.length === 1 &&
+      !nativeEvent.altKey &&
+      !nativeEvent.ctrlKey &&
+      !nativeEvent.metaKey
+    ) {
+      event.preventDefault();
+      applyEditableCommand({
+        command: {
+          inputType: 'insertText',
+          kind: 'insert-text',
+          text: nativeEvent.key,
+        },
+        editor,
+      });
+      return keyDownHandled({
+        focus: true,
+        kind: 'repair-caret-after-text-insert',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
+    }
+
+    const largeDocumentVerticalSelection =
+      getOwnerlessViewSelectionRange(editor) ?? selectionRange;
+
+    if (
+      shouldModelOwnPlainVerticalLargeDocumentExtension({
+        domStrategyRuntime,
+        editor,
+        event: nativeEvent,
+        selection: largeDocumentVerticalSelection,
+      })
+    ) {
+      const caretMovementResult = applyEditableCaretMovement({
+        domPhaseScheduler,
+        domStrategyRuntime,
+        editor,
+        event,
+        preferredX: preferredVerticalX,
+        selection: getOwnerlessViewSelectionRange(editor) ?? selection,
+      });
+
+      if (caretMovementResult.handled) {
+        return keyDownHandled(caretMovementResult.repair);
+      }
+    }
+
+    const contentRootViewSelectionResult = applyContentRootViewSelection({
+      editor,
+      event,
+      getActiveContentRootOwner,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      isRTL,
+      preferredX: preferredVerticalX,
+      selection: selectionRange,
+    });
+
+    if (contentRootViewSelectionResult.handled) {
+      return keyDownHandled({
+        focus: true,
+        kind: 'sync-selection',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
+    }
+
+    const contentRootNavigationResult = applyContentRootNavigation({
+      editor,
+      event,
+      focusEditor: focusPliteEditable,
+      getActiveContentRootOwner,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      isRTL,
+      preferredX: preferredVerticalX,
+      selection: selectionRange,
+    });
+
+    if (contentRootNavigationResult.handled) {
+      return keyDownHandled();
+    }
+
+    const caretMovementResult = applyEditableCaretMovement({
+      domPhaseScheduler,
+      domStrategyRuntime,
+      editor,
+      event,
+      preferredX: preferredVerticalX,
+      selection,
+    });
+
+    if (caretMovementResult.handled) {
+      return keyDownHandled(caretMovementResult.repair);
+    }
+
+    const keyDownCommand = getEditableCommandFromKeyDown({
+      event,
+      selection,
+    });
+
+    if (
+      keyDownCommand?.kind === 'delete' &&
+      keyDownCommand.direction === 'backward' &&
+      shouldDeferBackspaceToNativeInput({
+        nativeEvent,
+        runtime: inputController.domInputRuntime,
+      })
+    ) {
+      return keyDownUnhandled();
+    }
+
+    if (isDestructiveEditableCommand(keyDownCommand)) {
+      event.preventDefault();
+      applyEditableCommand({ command: keyDownCommand, editor });
+      markEditableEditingEpochCommandHandled(editor, keyDownCommand);
+
+      return keyDownHandled({
+        focus: true,
+        kind: 'repair-caret',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
+    }
+
+    if (keyDownCommand?.kind === 'insert-break') {
+      event.preventDefault();
+      applyEditableCommand({ command: keyDownCommand, editor });
+      markEditableEditingEpochCommandHandled(editor, keyDownCommand);
+
+      return keyDownHandled({
+        focus: true,
+        forceRender: true,
+        kind: 'repair-caret',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
+    }
+
+    // COMPAT: Certain browsers don't support the `beforeinput` event, so we
+    // fall back to guessing at the input intention for hotkeys.
+    // COMPAT: In iOS, some of these hotkeys are handled in the
+    if (supportsDOMBeforeInput(nativeEvent)) {
+      if (isBlinkDOMHost(nativeEvent) || isWebKitDOMHost(nativeEvent)) {
+        // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
+        // an event when deleting backwards in a selected void inline node
+        const currentNode =
+          selectionRange && RangeApi.isCollapsed(selectionRange)
+            ? NodeApi.parent(editor, selectionRange.anchor.path)
+            : null;
+        const isDeleteForward = Hotkeys.isDeleteForward(nativeEvent);
+
+        if (
+          selectionRange &&
+          (Hotkeys.isDeleteBackward(nativeEvent) || isDeleteForward) &&
+          RangeApi.isCollapsed(selectionRange) &&
+          currentNode &&
+          NodeApi.isElement(currentNode) &&
+          editorIsVoid(editor, currentNode) &&
+          (editorIsInline(editor, currentNode) ||
+            editorIsBlock(editor, currentNode))
+        ) {
+          event.preventDefault();
+          applyEditableCommand({
+            command: {
+              direction: isDeleteForward ? 'forward' : 'backward',
+              kind: 'delete',
+              unit: 'block',
+            },
+            editor,
+          });
+
+          return keyDownHandled();
+        }
+      }
+    } else {
+      const fallbackCommand = getEditableCommandFromKeyDown({
+        event,
+        selection,
+      });
+
+      if (
+        selectionRange &&
+        RangeApi.isExpanded(selectionRange) &&
+        isPlainTextKeyboardInput(nativeEvent) &&
+        !ReactEditor.isComposing(editor)
+      ) {
+        event.preventDefault();
+        applyEditableCommand({
+          command: {
+            inputType: 'insertText',
+            kind: 'insert-text',
+            text: nativeEvent.key,
+          },
+          editor,
+        });
+        return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+      }
+
+      if (Hotkeys.isTransposeCharacter(nativeEvent)) {
+        event.preventDefault();
+        applyEditableCommand({
+          command: { kind: 'transpose-character' },
+          editor,
+        });
+        return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+      }
+
+      if (Hotkeys.isSoftBreak(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+        return keyDownHandled();
+      }
+
+      if (
+        Hotkeys.isSplitBlock(nativeEvent) ||
+        Hotkeys.isOpenLine(nativeEvent)
+      ) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+        return keyDownHandled();
+      }
+
+      if (Hotkeys.isDeleteBackward(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+
+        return keyDownHandled();
+      }
+
+      if (Hotkeys.isDeleteForward(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+
+        return keyDownHandled();
+      }
+
+      if (Hotkeys.isDeleteLineBackward(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+
+        return keyDownHandled();
+      }
+
+      if (Hotkeys.isDeleteLineForward(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+
+        return keyDownHandled();
+      }
+
+      if (Hotkeys.isDeleteWordBackward(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+
+        return keyDownHandled();
+      }
+
+      if (Hotkeys.isDeleteWordForward(nativeEvent)) {
+        event.preventDefault();
+        if (fallbackCommand) {
+          applyEditableCommand({ command: fallbackCommand, editor });
+        }
+
+        return keyDownHandled();
+      }
+    }
+  }
+
+  return keyDownUnhandled();
+};

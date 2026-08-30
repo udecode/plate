@@ -1,13 +1,6 @@
 'use client';
 
 import {
-  BaseCommentPlugin,
-  getCommentCount,
-  getCommentKey,
-  getDraftCommentKey,
-} from '@platejs/comment';
-import type { CommentPlugin } from '@platejs/comment/react';
-import {
   differenceInDays,
   differenceInHours,
   differenceInMinutes,
@@ -30,15 +23,21 @@ import {
   TextApi,
 } from 'platejs';
 import {
+  BaseCommentPlugin,
+  getCommentCount,
+  getCommentKey,
+  getDraftCommentKey,
+} from 'platejs/comment';
+import type { CommentPlugin } from 'platejs/comment/react';
+import {
   Plate,
   PlateLeaf,
-  type PlateEditor,
   type PlateLeafProps,
   toPlatePlugin,
   useEditor,
   useEditorPlugin,
   useEditorSelector,
-  usePlateEditor,
+  useCreateEditor,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -185,23 +184,6 @@ export type TComment = {
   userId: string;
 };
 
-const replaceEditorValue = (editor: PlateEditor, value: Value) => {
-  editor
-    .update({ history: 'skip' })
-    .value.replace({ children: value, selection: null });
-};
-
-const focusEditorAtEnd = (editor: PlateEditor) => {
-  editor.update((tx) => {
-    const point = tx.points.end([]);
-
-    if (point) {
-      tx.selection.set({ anchor: point, focus: point });
-    }
-  });
-  editor.api.dom.focus();
-};
-
 export function Comment(props: {
   comment: TComment;
   discussionLength: number;
@@ -288,7 +270,7 @@ export function Comment(props: {
 
   const initialValue = comment.contentRich;
 
-  const commentEditor = usePlateEditor(
+  const commentEditor = useCreateEditor(
     {
       id: comment.id,
       plugins: BasicMarksKit,
@@ -299,7 +281,9 @@ export function Comment(props: {
 
   const onCancel = () => {
     setEditingId(null);
-    replaceEditorValue(commentEditor, initialValue);
+    commentEditor
+      .update({ history: 'skip' })
+      .value.replace({ children: initialValue, selection: null });
   };
 
   const onSave = () => {
@@ -366,7 +350,14 @@ export function Comment(props: {
             <CommentMoreDropdown
               onFinalFocus={() => {
                 setTimeout(() => {
-                  focusEditorAtEnd(commentEditor);
+                  commentEditor.update((tx) => {
+                    const point = tx.points.end([]);
+
+                    if (point) {
+                      tx.selection.set({ anchor: point, focus: point });
+                    }
+                  });
+                  commentEditor.api.dom.focus();
                 }, 0);
               }}
               onRemoveComment={() => {
@@ -594,7 +585,7 @@ export function CommentCreateForm({
     () => commentValue?.map((node) => NodeApi.string(node)).join('') ?? '',
     [commentValue]
   );
-  const commentEditor = usePlateEditor({
+  const commentEditor = useCreateEditor({
     id: 'comment',
     plugins: BasicMarksKit,
   });
@@ -608,7 +599,9 @@ export function CommentCreateForm({
   const onAddComment = React.useCallback(() => {
     if (!commentValue) return;
 
-    replaceEditorValue(commentEditor, []);
+    commentEditor
+      .update({ history: 'skip' })
+      .value.replace({ children: [], selection: null });
 
     if (discussionId) {
       // Get existing discussion

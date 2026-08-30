@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/ai-react",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/ai-react.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/ai/react/**/*"],
+  "references": [
+    {
+      "path": "./ai.json"
+    },
+    {
+      "path": "./combobox.json"
+    },
+    {
+      "path": "./core.json"
+    },
+    {
+      "path": "./cursor-react.json"
+    },
+    {
+      "path": "./markdown.json"
+    },
+    {
+      "path": "./react-core.json"
+    },
+    {
+      "path": "./suggestion.json"
+    },
+    {
+      "path": "./suggestion-react.json"
+    },
+    {
+      "path": "./table.json"
+    }
+  ]
+}

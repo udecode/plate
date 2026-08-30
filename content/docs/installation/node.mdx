@@ -8,9 +8,9 @@ Use Plate in Node.js when you need to read, validate, transform, or serialize ed
 ## Node.js Setup
 
 <Callout type="warning" title="Use base imports">
-  Do not import from `platejs/react` or `@platejs/*/react` in Node.js scripts.
-  Use `createBaseEditor` from `platejs` and base plugins from `@platejs/*`
-  packages.
+  Do not import from `platejs/react` or another `/react` subpath in Node.js
+  scripts. Use `createEditor` from `platejs` and feature APIs from their base
+  `platejs/*` subpaths.
 </Callout>
 
 <Steps>
@@ -20,14 +20,14 @@ Use Plate in Node.js when you need to read, validate, transform, or serialize ed
 Install the core runtime and the packages your pipeline needs.
 
 ```bash
-npm install platejs @platejs/basic-nodes @platejs/markdown
+npm install platejs marked remark-mdx remark-parse remark-stringify unified
 ```
 
 | Package | Owns |
 | --- | --- |
-| `platejs` | `createBaseEditor`, core editor APIs, core paragraph behavior. |
-| `@platejs/basic-nodes` | Base headings, blockquotes, horizontal rules, and text marks. |
-| `@platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
+| `platejs` | `createEditor`, core editor APIs, core paragraph behavior. |
+| `platejs` | Base headings, blockquotes, horizontal rules, and text marks. |
+| `platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
 
 ### Create a Server Editor
 
@@ -38,8 +38,8 @@ React tree.
 ```ts showLineNumbers title="scripts/process-content.ts"
 import type { Value } from 'platejs';
 
-import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
-import { createBaseEditor } from 'platejs';
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
+import { createEditor } from 'platejs';
 
 const value: Value = [
   {
@@ -56,7 +56,7 @@ const value: Value = [
   },
 ];
 
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: [BaseHeadingPlugin, BaseBoldPlugin],
   initialValue: value,
 });
@@ -72,11 +72,11 @@ Add `MarkdownPlugin` when the script needs Markdown conversion. Use the
 editor's `markdown` API for both directions.
 
 ```ts showLineNumbers title="scripts/markdown-io.ts"
-import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { createBaseEditor } from 'platejs';
+import { BaseBoldPlugin, BaseHeadingPlugin } from 'platejs';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor } from 'platejs';
 
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: [BaseHeadingPlugin, BaseBoldPlugin, MarkdownPlugin],
 });
 
@@ -104,14 +104,13 @@ import type { Value } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseHeadingPlugin,
-  
-} from '@platejs/basic-nodes';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { createBaseEditor } from 'platejs';
+} from 'platejs';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor } from 'platejs';
 
 export function normalizeHeadings(value: Value) {
-  const editor = createBaseEditor({
-    plugins: [BaseHeadingPlugin,  BaseBoldPlugin, MarkdownPlugin],
+  const editor = createEditor({
+    plugins: [BaseHeadingPlugin, BaseBoldPlugin, MarkdownPlugin],
     initialValue: value,
   });
 
@@ -146,8 +145,8 @@ export function normalizeHeadings(value: Value) {
 
 | Runtime | Import from | Use for |
 | --- | --- | --- |
-| Node.js scripts | `platejs`, `@platejs/*` | Migration, validation, serialization, search indexing. |
-| React editors | `platejs/react`, `@platejs/*/react` | Editable UI, hooks, rendered components, toolbar behavior. |
+| Node.js scripts | `platejs`, `platejs/*` | Migration, validation, serialization, search indexing. |
+| React editors | `platejs/react`, `platejs/*/react` | Editable UI, hooks, rendered components, toolbar behavior. |
 | Static rendering | `platejs/static` | Server-rendered read-only content. |
 
 <Callout type="info">
@@ -160,12 +159,12 @@ export function normalizeHeadings(value: Value) {
 
 | API | Package | Notes |
 | --- | --- | --- |
-| `createBaseEditor` | `platejs` | Creates a non-React editor instance. |
+| `createEditor` | `platejs` | Creates a non-React editor instance. |
 | `editor.read((state) => state.text.string([]))` | `platejs` | Reads text from the whole document. |
 | `editor.update((tx) => tx.nodes.set(...))` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
 | `editor.update((tx) => tx.nodes.insert(...))` | `platejs` | Inserts nodes at a path. |
-| `editor.api.markdown.deserialize` | `@platejs/markdown` | Converts Markdown into a Plate value. |
-| `editor.api.markdown.serialize` | `@platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
+| `editor.api.markdown.deserialize` | `platejs/markdown` | Converts Markdown into a Plate value. |
+| `editor.api.markdown.serialize` | `platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
 
 ## Next Steps
 

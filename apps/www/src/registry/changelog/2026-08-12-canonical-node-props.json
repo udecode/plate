@@ -195,18 +195,6 @@
       ]
     },
     {
-      "name": "list-classic-node",
-      "files": [],
-      "definitionFiles": [],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for list-classic-node."
-        }
-      ]
-    },
-    {
       "name": "paragraph-node",
       "files": [],
       "definitionFiles": [],
@@ -305,7 +293,6 @@
         "kbd-node",
         "link-node",
         "link-node-static",
-        "list-classic-node",
         "paragraph-node",
         "search-highlight-node",
         "suggestion-node",

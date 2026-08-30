@@ -1,7 +1,7 @@
-import { BaseTocPlugin, type Heading } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
-import type { BaseEditor } from 'platejs';
+import type { Editor } from 'platejs';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { BaseTocPlugin, type Heading } from 'platejs/toc';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -57,7 +57,7 @@ export function TocElementStatic(
   );
 }
 
-const getHeadingList = (editor?: BaseEditor) => {
+const getHeadingList = (editor?: Editor) => {
   if (!editor) return [];
 
   return editor.plugin(BaseTocPlugin).read.headings();

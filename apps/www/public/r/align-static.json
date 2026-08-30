@@ -2,13 +2,13 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "align-static",
   "dependencies": [
-    "@platejs/basic-styles"
+    "platejs"
   ],
   "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/align-static.tsx",
-      "content": "import { BaseTextAlignPlugin } from '@platejs/basic-styles';\nimport { PLUGINS } from 'platejs';\n\nexport const BaseAlignKit = [\n  BaseTextAlignPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'start',\n        styleKey: 'textAlign',\n        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],\n      },\n    },\n    targetPlugins: [\n      PLUGINS.heading,\n      PLUGINS.paragraph,\n      PLUGINS.image,\n      PLUGINS.mediaEmbed,\n      PLUGINS.audio,\n      PLUGINS.video,\n    ],\n  }),\n];\n",
+      "content": "import { BaseTextAlignPlugin, PLUGINS } from 'platejs';\n\nexport const BaseAlignKit = [\n  BaseTextAlignPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'start',\n        styleKey: 'textAlign',\n        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],\n      },\n    },\n    targetPlugins: [\n      PLUGINS.heading,\n      PLUGINS.paragraph,\n      PLUGINS.image,\n      PLUGINS.mediaEmbed,\n      PLUGINS.audio,\n      PLUGINS.video,\n    ],\n  }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/align-static.tsx"
     }

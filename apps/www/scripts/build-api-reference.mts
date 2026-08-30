@@ -1,5 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -236,6 +242,12 @@ const main = async () => {
       execFileSync('tar', ['-xzf', packResult.filename, '-C', tempRoot]);
 
       const packageRoot = join(tempRoot, 'package');
+      // Packed workspace packages keep real dependency edges, so runtime export
+      // inspection needs the workspace's installed dependency graph.
+      symlinkSync(
+        join(packageDirectory, 'node_modules'),
+        join(packageRoot, 'node_modules')
+      );
       const packageJson = JSON.parse(
         readFileSync(join(packageRoot, 'package.json'), 'utf-8')
       ) as {

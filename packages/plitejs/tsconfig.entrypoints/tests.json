@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "disableSourceOfProjectReferenceRedirect": true,
+    "noEmit": true
+  },
+  "exclude": [],
+  "extends": "../tsconfig.json",
+  "files": [
+    "../src/diff/lib/computeDiff.spec.ts",
+    "../src/diff/lib/excludeDiffFragment.spec.ts",
+    "../../../tooling/config/global.d.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "./core.json"
+    },
+    {
+      "path": "./diff.json"
+    }
+  ]
+}

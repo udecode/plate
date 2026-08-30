@@ -82,11 +82,11 @@ Only reopen the architecture if:
 
 Current local proof seams:
 
-- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/range-ref-contract.ts)
-- [projections-and-selection-contract.tsx](/Users/zbeyens/git/plate-2/packages/plite-react/test/projections-and-selection-contract.tsx)
-- [annotation-store-contract.tsx](/Users/zbeyens/git/plate-2/packages/plite-react/test/annotation-store-contract.tsx)
-- [widget-layer-contract.tsx](/Users/zbeyens/git/plate-2/packages/plite-react/test/widget-layer-contract.tsx)
-- [bridge.ts](/Users/zbeyens/git/plate-2/packages/plite-dom/test/bridge.ts)
+- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/packages/plitejs/test/range-ref-contract.ts)
+- [projections-and-selection-contract.tsx](/Users/zbeyens/git/plate-2/packages/plitejs/test/react/projections-and-selection-contract.tsx)
+- [annotation-store-contract.tsx](/Users/zbeyens/git/plate-2/packages/plitejs/test/react/annotation-store-contract.tsx)
+- [widget-layer-contract.tsx](/Users/zbeyens/git/plate-2/packages/plitejs/test/react/widget-layer-contract.tsx)
+- [bridge.ts](/Users/zbeyens/git/plate-2/packages/plitejs/test/dom/bridge.ts)
 - [search-highlighting.test.ts](/Users/zbeyens/git/plate-2/apps/www/tests/plite-browser/donor/examples/search-highlighting.test.ts)
 - [code-highlighting.test.ts](/Users/zbeyens/git/plate-2/apps/www/tests/plite-browser/donor/examples/code-highlighting.test.ts)
 - [persistent-annotation-anchors.test.ts](/Users/zbeyens/git/plate-2/apps/www/tests/plite-browser/donor/examples/persistent-annotation-anchors.test.ts)
@@ -680,7 +680,7 @@ Every wave needs all three proof classes when relevant:
 #### Wave 5
 
 - contract:
-  - `packages/plite-dom/test/bridge.ts`
+  - `packages/plitejs/test/dom/bridge.ts`
 - browser:
   - `mark-placeholder.test.ts`
   - `placeholder-ime.test.ts`
@@ -958,7 +958,7 @@ Files:
 
 - [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md)
 - [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/plite/decorations-annotations-cluster.md)
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/index.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/index.ts`
 
 Required decisions:
 
@@ -996,18 +996,18 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite/src/interfaces/range-ref.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/editor/range-ref.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/range-projection.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/editor/range-refs.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/interfaces/range-ref.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/editor/range-ref.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/range-projection.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/editor/range-refs.ts`
 - landed files:
-  - `/Users/zbeyens/git/plate-2/packages/plite/src/interfaces/bookmark.ts`
-  - `/Users/zbeyens/git/plate-2/packages/plite/src/editor/bookmark.ts`
+  - `/Users/zbeyens/git/plate-2/packages/plitejs/src/interfaces/bookmark.ts`
+  - `/Users/zbeyens/git/plate-2/packages/plitejs/src/editor/bookmark.ts`
 
 Tests:
 
-- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/packages/plite/test/range-ref-contract.ts)
-- `/Users/zbeyens/git/plate-2/packages/plite/test/bookmark-contract.ts`
+- [range-ref-contract.ts](/Users/zbeyens/git/plate-2/packages/plitejs/test/range-ref-contract.ts)
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/bookmark-contract.ts`
 
 Required scenarios:
 
@@ -1041,20 +1041,20 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/projection-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/projection-context.tsx`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-projections.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/projection-context.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-projections.tsx`
 - related files that were already stronger than initially assumed:
-  - `/Users/zbeyens/git/plate-2/packages/plite-react/src/annotation-store.ts`
-  - `/Users/zbeyens/git/plate-2/packages/plite-react/src/widget-store.ts`
-  - `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-annotations.tsx`
-  - `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-widgets.tsx`
+  - `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/annotation-store.ts`
+  - `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/widget-store.ts`
+  - `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-annotations.tsx`
+  - `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-widgets.tsx`
 
 Tests:
 
-- [projections-and-selection-contract.tsx](/Users/zbeyens/git/plate-2/packages/plite-react/test/projections-and-selection-contract.tsx)
-- `/Users/zbeyens/git/plate-2/packages/plite-react/test/annotation-store-contract.tsx`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/test/widget-layer-contract.tsx`
+- [projections-and-selection-contract.tsx](/Users/zbeyens/git/plate-2/packages/plitejs/test/react/projections-and-selection-contract.tsx)
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/react/annotation-store-contract.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/react/widget-layer-contract.tsx`
 
 Required scenarios:
 
@@ -1085,9 +1085,9 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/projection-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/decoration-source.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-decoration-source.ts`
 
 Example owners:
 
@@ -1134,12 +1134,12 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/annotation-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/widget-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-widget-store.tsx`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-annotation-store.tsx`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/test/annotation-store-contract.tsx`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/test/widget-layer-contract.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/annotation-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/widget-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-widget-store.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-annotation-store.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/react/annotation-store-contract.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/react/widget-layer-contract.tsx`
 
 Browser/example proof:
 
@@ -1185,13 +1185,13 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite-dom/src/plugin/dom-editor.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-dom/src/plugin/dom-clipboard-runtime.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-dom/test/bridge.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/dom/plugin/dom-editor.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/dom/bridge.ts`
 
 Tests:
 
-- [bridge.ts](/Users/zbeyens/git/plate-2/packages/plite-dom/test/bridge.ts)
+- [bridge.ts](/Users/zbeyens/git/plate-2/packages/plitejs/test/dom/bridge.ts)
 - [placeholder.test.ts](/Users/zbeyens/git/plate-2/apps/www/tests/plite-browser/donor/examples/placeholder.test.ts)
 
 Required scenarios:
@@ -1217,7 +1217,7 @@ Primary files:
 - `/Users/zbeyens/git/plate-2/benchmarks/plite/donor/browser/react/rerender-breadth.tsx`
 - `/Users/zbeyens/git/plate-2/benchmarks/plite/donor/browser/react/huge-document-overlays.tsx`
 - `/Users/zbeyens/git/plate-2/benchmarks/plite/donor/shared/react-benchmark.tsx`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/components/editable-text-blocks.tsx`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/components/editable-text-blocks.tsx`
 
 React runtime rules to enforce:
 
@@ -1328,11 +1328,11 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite/src/interfaces/editor.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/core/apply.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/core/update-dirty-paths.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/core/get-dirty-paths.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite/src/range-projection.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/interfaces/editor.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/core/apply.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/core/update-dirty-paths.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/core/get-dirty-paths.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/range-projection.ts`
 
 Required model:
 
@@ -1383,11 +1383,11 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/decoration-source.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/annotation-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/widget-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/projection-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/hooks/use-slate-decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/annotation-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/widget-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-slate-decoration-source.ts`
 
 Required source classes:
 
@@ -1446,9 +1446,9 @@ Goal:
 
 Primary files:
 
-- `/Users/zbeyens/git/plate-2/packages/plite/src/range-projection.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/projection-store.ts`
-- `/Users/zbeyens/git/plate-2/packages/plite-react/src/decoration-source.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/range-projection.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/projection-store.ts`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/react/decoration-source.ts`
 - `/Users/zbeyens/git/plate-2/benchmarks/plite/donor/browser/react/rerender-breadth.tsx`
 - `/Users/zbeyens/git/plate-2/benchmarks/plite/donor/browser/react/huge-document-overlays.tsx`
 

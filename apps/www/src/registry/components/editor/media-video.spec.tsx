@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import * as actualCoreReact from '@platejs/core/react';
-import * as actualDnd from '@platejs/dnd';
-import * as actualMedia from '@platejs/media';
 import { render } from '@testing-library/react';
+import * as actualDnd from 'platejs/dnd/react';
+import * as actualMedia from 'platejs/media';
+import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const parseTwitterUrlMock = mock();
@@ -12,12 +12,12 @@ const parseMediaUrlMock = mock();
 const useEditorMountedMock = mock();
 const useDraggableMock = mock();
 
-mock.module('@platejs/dnd', () => ({
+mock.module('platejs/dnd/react', () => ({
   ...actualDnd,
   useDraggable: useDraggableMock,
 }));
 
-mock.module('@platejs/media', () => ({
+mock.module('platejs/media', () => ({
   ...actualMedia,
   parseMediaUrl: parseMediaUrlMock,
   parseTwitterUrl: parseTwitterUrlMock,

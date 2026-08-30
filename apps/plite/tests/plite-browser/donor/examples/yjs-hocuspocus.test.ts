@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 
 test.describe('yjs hocuspocus example', () => {
   test('keeps distinct app-owned peers sync-gated without a server', async ({

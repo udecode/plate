@@ -1,10 +1,12 @@
 ---
-'@platejs/diff': major
+'plitejs': major
 ---
 
 Keep inserted and deleted replacement markers on their exact text ranges. Preserve exact formatting boundaries and JSON-compatible property removals in derived diff spans.
 
 Use `excludeDiffFromFragment` for direct fragment cleanup. `BaseDiffPlugin` registers copied-fragment cleanup through its root `readMiddleware`.
+
+Install `diff-match-patch-ts` when importing `plitejs/diff` or `platejs/diff`.
 
 Install the behavior through the plugin:
 

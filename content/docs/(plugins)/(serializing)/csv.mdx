@@ -13,7 +13,7 @@ title: Serializing CSV
 
 <Callout className="my-4" type="note">
   `CsvPlugin` does not serialize a complete Plate value. When you copy multiple
-  table cells, `@platejs/table` writes CSV, TSV, and plain-text clipboard data.
+  table cells, `platejs` writes CSV, TSV, and plain-text clipboard data.
 </Callout>
 
 </PackageInfo>
@@ -25,16 +25,16 @@ title: Serializing CSV
 ### Installation
 
 ```bash
-npm install @platejs/csv
+npm install platejs @tanstack/react-virtual @types/papaparse papaparse
 ```
 
 ### Add Plugin
 
 ```tsx
-import { CsvPlugin } from '@platejs/csv';
-import { createPlateEditor } from 'platejs/react';
+import { CsvPlugin } from 'platejs/csv';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CsvPlugin,
@@ -45,10 +45,10 @@ const editor = createPlateEditor({
 ### Configure Plugin
 
 ```tsx
-import { CsvPlugin } from '@platejs/csv';
-import { createPlateEditor } from 'platejs/react';
+import { CsvPlugin } from 'platejs/csv';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CsvPlugin.configure({

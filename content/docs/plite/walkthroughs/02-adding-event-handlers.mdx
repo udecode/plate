@@ -11,7 +11,7 @@ small input policies that belong to one editor surface.
 This is the editor from the install walkthrough:
 
 ```tsx
-import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+import { Editable, Plite, useEditor } from "plitejs/react";
 
 const initialValue = [
   {
@@ -21,7 +21,7 @@ const initialValue = [
 ];
 
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -37,7 +37,7 @@ Pass `onKeyDown` when you only need to observe the browser event.
 
 ```tsx
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -58,7 +58,7 @@ Prevent the browser default when Plite should own the edit, then write inside
 
 ```tsx
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>

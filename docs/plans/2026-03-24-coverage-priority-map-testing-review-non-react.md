@@ -41,7 +41,7 @@ Do not do another package sweep.
 
 The strict next batch is the raw `score >= 6` set:
 
-1. `list-classic`: [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`
+1. `legacy-list-model`: [BaseTodoListPlugin.ts](packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts) — score `8`
 2. `core`: [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
 3. `markdown`: [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`
 4. `suggestion`: [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`
@@ -56,7 +56,7 @@ The strict next batch is the raw `score >= 6` set:
 
 The wider but still defensible batch is the raw `score >= 5` set:
 
-1. `list-classic`: [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`
+1. `legacy-list-model`: [BaseTodoListPlugin.ts](packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts) — score `8`
 2. `core`: [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
 3. `markdown`: [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`
 4. `suggestion`: [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`
@@ -89,7 +89,7 @@ The wider but still defensible batch is the raw `score >= 5` set:
 
 1. `table` — package score `33`, top files `deleteColumn.ts:7; insertTableColumn.ts:7; insertTableRow.ts:7; BaseTablePlugin.ts:6; withInsertFragmentTable.ts:6`
 2. `core` — package score `31`, top files `pluginDeserializeHtml.ts:7; withMergeRules.ts:6; htmlElementToLeaf.ts:6; resolvePlugin.ts:6; cleanHtmlFontElements.ts:6`
-3. `list-classic` — package score `30`, top files `BaseTodoListPlugin.ts:8; insertTodoListItem.ts:6; unwrapList.ts:6; withInsertFragmentList.ts:5; withList.ts:5`
+3. `legacy-list-model` — package score `30`, top files `BaseTodoListPlugin.ts:8; insertTodoListItem.ts:6; unwrapList.ts:6; withInsertFragmentList.ts:5; withList.ts:5`
 4. `suggestion` — package score `30`, top files `deleteSuggestion.ts:7; rejectSuggestion.ts:7; BaseSuggestionPlugin.ts:6; acceptSuggestion.ts:5; removeMarkSuggestion.ts:5`
 5. `markdown` — package score `29`, top files `deserializeMd.ts:7; customMdxDeserialize.ts:6; deserializeInlineMd.ts:6; convertNodesSerialize.ts:5; splitIncompleteMdx.ts:5`
 6. `code-block` — package score `21`, top files `insertCodeBlock.ts:6; BaseCodeBlockPlugin.ts:5; htmlDeserializerCodeBlock.ts:5; withCodeBlock.ts:3; formatter.ts:2`
@@ -102,7 +102,7 @@ The wider but still defensible batch is the raw `score >= 5` set:
 
 ## Best Files By Value
 
-1. `list-classic` — [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`, coverage `37.1%`, uncovered `22`
+1. `legacy-list-model` — [BaseTodoListPlugin.ts](packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts) — score `8`, coverage `37.1%`, uncovered `22`
 2. `core` — [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`, coverage `88.8%`, uncovered `18`
 3. `markdown` — [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`, coverage `79.2%`, uncovered `15`
 4. `suggestion` — [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`, coverage `93.6%`, uncovered `10`

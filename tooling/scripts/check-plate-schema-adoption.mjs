@@ -124,14 +124,10 @@ const staleCapabilityFactoryContextBindings = new Set([
   'pluginTransforms',
 ]);
 const plateEditorConstructionOptionIndexes = new Map([
-  ['createBaseEditor', 0],
-  ['createPlateEditor', 0],
-  ['createSlateEditor', 0],
+  ['createEditor', 0],
   ['createStaticEditor', 0],
-  ['extendBaseEditor', 1],
-  ['extendPlateEditor', 1],
-  ['usePlateEditor', 0],
-  ['usePlateViewEditor', 0],
+  ['useEditor', 0],
+  ['useStaticEditor', 0],
 ]);
 const defaultPlateEditorConstructorNames = new Map(
   [...plateEditorConstructionOptionIndexes.keys()].map((name) => [name, name])
@@ -176,22 +172,22 @@ const deletedSymbols = new Set([
   'resolvePlatePluginType',
 ]);
 const privateSchemaGroupOwners = new Set([
-  'packages/core/src/internal/plugin/compilePlateModel.ts',
+  'packages/platejs/src/internal/plugin/compilePlateModel.ts',
 ]);
-const plitePrivateWitnessOwner = 'packages/plite/src/interfaces/editor.ts';
+const plitePrivateWitnessOwner = 'packages/plitejs/src/interfaces/editor.ts';
 const internalRenderNodeOwners = new Set([
-  'packages/core/src/internal/plugin/resolvePlugins.ts',
-  'packages/core/src/lib/plugin/defineBasePlugin.ts',
-  'packages/core/src/react/plugin/toPlatePlugin.ts',
+  'packages/platejs/src/internal/plugin/resolvePlugins.ts',
+  'packages/platejs/src/lib/plugin/defineBasePlugin.ts',
+  'packages/platejs/src/react/plugin/toPlatePlugin.ts',
 ]);
 const intentionalRenderNodeNegativeContract =
-  'packages/core/src/lib/plugin/defineBasePlugin.typed.spec.ts';
+  'packages/platejs/src/lib/plugin/defineBasePlugin.typed.spec.ts';
 const intentionalRuntimeRenderNodeNegativeMarker =
   '@plate-schema-adoption-negative-render-node';
 const intentionalPluginDeclarationStageMarker =
   '@plate-plugin-declaration-stage';
 const intentionalRuntimeRenderNodeNegativeContractCounts = new Map([
-  ['packages/core/src/lib/plugin/defineBasePlugin.spec.ts', 1],
+  ['packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts', 1],
 ]);
 const intentionalRawCodecNegativeMarker =
   '@plate-schema-adoption-negative-codec';
@@ -199,27 +195,27 @@ const intentionalPliteConfigNegativeMarker =
   '@ts-expect-error Plite extensions validate the candidate context, not Plate config';
 const intentionalReactFactoryNegativeMarker = '@ts-expect-error react ';
 const intentionalRawCodecNegativeContractCounts = new Map([
-  ['packages/core/src/internal/plugin/compilePlateHtmlCodec.spec.ts', 1],
-  ['packages/core/src/lib/plugins/ProductCodecs.spec.ts', 1],
-  ['packages/core/src/lib/plugins/html/HtmlPlugin.codec.spec.ts', 1],
-  ['packages/core/type-tests/base-plugin-contracts.ts', 1],
-  ['packages/markdown/src/lib/internal/markdownCodecs.spec.ts', 1],
+  ['packages/platejs/src/internal/plugin/compilePlateHtmlCodec.spec.ts', 1],
+  ['packages/platejs/src/lib/plugins/ProductCodecs.spec.ts', 1],
+  ['packages/platejs/src/lib/plugins/html/HtmlPlugin.codec.spec.ts', 1],
+  ['packages/platejs/type-tests/base-plugin-contracts.ts', 1],
+  ['packages/platejs/src/markdown/lib/internal/markdownCodecs.spec.ts', 1],
 ]);
 const intentionalPliteConfigNegativeContractCounts = new Map([
-  ['packages/plite/test/generic-extension-contract.ts', 1],
+  ['packages/plitejs/test/generic-extension-contract.ts', 1],
 ]);
 const intentionalReactFactoryNegativeContractCounts = new Map([
-  ['packages/plite-react/test/generic-react-editor-contract.tsx', 2],
+  ['packages/plitejs/test/react/generic-react-editor-contract.tsx', 2],
 ]);
 const intentionalRuntimeNegativeDefinitionFields = new Map([
   [
-    'packages/core/src/react/plugin/definePlatePlugin.spec.ts',
+    'packages/platejs/src/react/plugin/definePlatePlugin.spec.ts',
     new Set(['invalidApi:api']),
   ],
 ]);
 const packageConfigureInstallationOwners = new Set([
-  'packages/core/src/lib/plugins/getCorePlugins.ts',
-  'packages/core/src/react/editor/getPlateCorePlugins.ts',
+  'packages/platejs/src/lib/plugins/getCorePlugins.ts',
+  'packages/platejs/src/react/editor/getPlateCorePlugins.ts',
 ]);
 const packagePluginSourcePattern =
   /^packages\/[^/]+\/src\/.*\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx)$/;
@@ -234,8 +230,9 @@ const baseOrStaticSourcePattern =
 const reactPluginEntrypointPattern = /^(?:platejs|@platejs\/[^/]+)\/react$/;
 const plateReactAdapterEntrypointPattern =
   /^(?:platejs|@platejs\/core)\/react$/;
-const pliteReactModulePattern = /^@platejs\/plite-react$/;
-const pliteRootModulePattern = /^@platejs\/plite$/;
+const pliteReactModulePattern = /^plitejs\/react$/;
+const pliteRootModulePattern = /^plitejs$/;
+const privatePliteModulePattern = /^plitejs\/internal(?:\/|$)/;
 const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
@@ -255,7 +252,6 @@ const internalCoreCompilerTypeSymbols = new Set([
   'NormalizePlatePluginInput',
 ]);
 const internalPliteContractTypeSymbols = new Set([
-  'EditorExtensionDependencyReferenceFor',
   'EditorExtensionTypeLambda',
   'InternalEditorExtensionDependencyReference',
   'InternalEditorExtensionInstalledCapabilitiesOf',
@@ -263,77 +259,93 @@ const internalPliteContractTypeSymbols = new Set([
   'InternalEditorExtensionWitnessFor',
 ]);
 const liveRegistryNodeModulePattern =
-  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc|toggle)$/;
+  /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
 const intentionalProductionExtendStageChains = new Map([
   [
-    'packages/core/src/lib/plugins/affinity/AffinityPlugin.ts',
+    'packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts',
     [[['commands']]],
   ],
-  ['packages/core/src/lib/plugins/HistoryPlugin.ts', [[['$factory:history']]]],
   [
-    'packages/core/src/lib/plugins/dom/DOMPlugin.ts',
+    'packages/platejs/src/lib/plugins/HistoryPlugin.ts',
+    [[['$factory:history']]],
+  ],
+  [
+    'packages/platejs/src/lib/plugins/dom/DOMPlugin.ts',
     [[['$value:plateDOMExtension']]],
   ],
   [
-    'packages/core/src/lib/plugins/input-rules/InputRulesPlugin.ts',
+    'packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts',
     [[['commands', 'contributions']]],
   ],
   [
-    'packages/core/src/lib/plugins/override/OverridePlugin.ts',
+    'packages/platejs/src/lib/plugins/override/OverridePlugin.ts',
     [[['commands', 'corrections', 'readMiddleware']]],
   ],
   [
-    'packages/core/src/react/editor/getPlateCorePlugins.ts',
+    'packages/platejs/src/react/editor/getPlateCorePlugins.ts',
     [[['$value:plateReactExtension']]],
   ],
   [
     'apps/www/src/registry/examples/version-history-demo.tsx',
-    [[['$factory:excludeDiffFragment']]],
+    [[['$factory:excludeDiffFragment'], ['render']]],
   ],
   [
-    'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
+    'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts',
+    [[['corrections', 'on', 'prepareDocument', 'read']]],
+  ],
+  [
+    'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
     [[['update'], ['commands', 'contributions']], [['corrections', 'on']]],
   ],
   [
-    'packages/comment/src/lib/BaseCommentPlugin.ts',
+    'packages/platejs/src/features/comment/lib/BaseCommentPlugin.ts',
     [[['api', 'corrections', 'read', 'rules'], ['update']]],
   ],
-  ['packages/date/src/lib/BaseDatePlugin.ts', [[['update']]]],
-  ['packages/indent/src/lib/BaseIndentPlugin.ts', [[['corrections']]]],
+  ['packages/platejs/src/features/date/lib/BaseDatePlugin.ts', [[['update']]]],
   [
-    'packages/list/src/lib/BaseListPlugin.ts',
+    'packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts',
+    [[['corrections']]],
+  ],
+  [
+    'packages/platejs/src/features/list/lib/BaseListPlugin.ts',
     [
       [
         ['codecs'],
         ['api', 'read'],
         ['override', 'update'],
-        ['commands', 'corrections', 'on'],
+        ['commands'],
+        ['corrections'],
       ],
     ],
   ],
   [
-    'packages/list-classic/src/lib/BaseListPlugin.ts',
-    [[['commands']], [['read'], ['update'], ['commands', 'corrections']]],
+    'packages/platejs/src/features/link/lib/BaseLinkPlugin.ts',
+    [[['update'], ['commands']]],
   ],
-  ['packages/link/src/lib/BaseLinkPlugin.ts', [[['update'], ['commands']]]],
-  ['packages/csv/src/lib/CsvPlugin.ts', [[['api'], ['codecs']]]],
-  ['packages/markdown/src/lib/MarkdownPlugin.ts', [[['api']]]],
-  ['packages/tabbable/src/react/TabbablePlugin.tsx', [[['read']]]],
-  ['packages/toc/src/lib/BaseTocPlugin.ts', [[['read']]]],
+  ['packages/platejs/src/csv/lib/CsvPlugin.ts', [[['api'], ['codecs']]]],
+  ['packages/platejs/src/markdown/lib/MarkdownPlugin.ts', [[['api']]]],
+  ['packages/platejs/src/tabbable/react/TabbablePlugin.tsx', [[['read']]]],
+  ['packages/platejs/src/features/toc/lib/BaseTocPlugin.ts', [[['read']]]],
   [
-    'packages/toggle/src/lib/BaseTogglePlugin.ts',
-    [[['api', 'read', 'selectors']]],
+    'packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts',
+    [[['api', 'corrections', 'on', 'selectors', 'update']]],
   ],
-  ['packages/cursor/src/CursorOverlayPlugin.tsx', [[['on']]]],
-  ['packages/tag/src/lib/BaseTagPlugin.ts', [[['read', 'update'], ['read']]]],
   [
-    'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx',
+    'packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx',
+    [[['on']]],
+  ],
+  [
+    'packages/platejs/src/features/tag/lib/BaseTagPlugin.ts',
+    [[['read', 'update'], ['read']]],
+  ],
+  [
+    'packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx',
     [[['selectors'], ['inject', 'useHooks']]],
   ],
   [
-    'packages/table/src/lib/BaseTablePlugin.ts',
+    'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
     [
       [
         ['api'],
@@ -351,11 +363,11 @@ const intentionalProductionExtendStageChains = new Map([
     ],
   ],
   [
-    'packages/ai/src/react/CopilotPlugin.tsx',
+    'packages/platejs/src/ai/react/CopilotPlugin.tsx',
     [[['api'], ['commands', 'on', 'render', 'selectors', 'shortcuts']]],
   ],
   [
-    'packages/ai/src/react/AIChatPlugin.ts',
+    'packages/platejs/src/ai/react/AIChatPlugin.ts',
     [
       [
         ['api', 'read', 'selectors', 'update'],
@@ -364,23 +376,29 @@ const intentionalProductionExtendStageChains = new Map([
     ],
   ],
   [
-    'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
+    'packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.ts',
     [[['api', 'rules'], ['read'], ['update'], ['commands', 'corrections']]],
   ],
   [
-    'packages/footnote/src/lib/BaseFootnotePlugin.ts',
+    'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts',
     [[['commands'], ['update']]],
   ],
-  ['packages/emoji/src/lib/BaseEmojiPlugin.ts', [[['commands']]]],
-  ['packages/mention/src/lib/BaseMentionPlugin.ts', [[['commands']]]],
-  ['packages/slash-command/src/lib/BaseSlashPlugin.ts', [[['commands']]]],
+  ['packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts', [[['commands']]]],
   [
-    'packages/layout/src/lib/BaseColumnPlugin.ts',
+    'packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts',
+    [[['commands']]],
+  ],
+  [
+    'packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts',
+    [[['commands']]],
+  ],
+  [
+    'packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts',
     [[['update'], ['shortcuts']], [['corrections', 'update']]],
   ],
-  ['packages/math/src/lib/BaseEquationPlugin.ts', [[['update']]]],
+  ['packages/platejs/src/math/lib/BaseEquationPlugin.ts', [[['update']]]],
   [
-    'packages/media/src/lib/BaseMediaPlugin.ts',
+    'packages/platejs/src/features/media/lib/BaseMediaPlugin.ts',
     [
       [['$factory:defineMediaPlugin']],
       [['$factory:defineMediaPlugin']],
@@ -388,14 +406,14 @@ const intentionalProductionExtendStageChains = new Map([
     ],
   ],
   [
-    'packages/media/src/lib/image/BaseImagePlugin.ts',
+    'packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts',
     [[['$factory:defineMediaPlugin'], ['contributions']]],
   ],
   [
-    'packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts',
+    'packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts',
     [[['$factory:defineMediaPlugin']]],
   ],
-  ['packages/yjs/src/plate/BaseYjsPlugin.ts', [[['$factory:yjs']]]],
+  ['packages/platejs/src/yjs/BaseYjsPlugin.ts', [[['$factory:yjs']]]],
 ]);
 const allowedSchemaFactoryBindings = new Set([
   'initialState',
@@ -410,27 +428,43 @@ const intentionalRawSchemaQueryCounts = new Map([
     'apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx',
     1,
   ],
-  ['packages/ai/src/lib/BaseAIPlugin.spec.tsx', 6],
-  ['packages/basic-styles/src/lib/BaseStylePlugins.spec.ts', 8],
-  ['packages/code-block/src/lib/BaseCodeBlockPlugin.spec.tsx', 1],
-  ['packages/code-drawing/src/lib/BaseCodeDrawingPlugin.spec.ts', 1],
-  ['packages/comment/src/lib/BaseCommentPlugin.spec.ts', 5],
-  ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 4],
-  ['packages/core/src/lib/editor/withPlite.slow.ts', 2],
-  ['packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
-  ['packages/core/src/lib/plugins/html/HtmlPlugin.ts', 4],
-  ['packages/core/src/lib/plugins/element-id/ElementIdPlugin.spec.tsx', 1],
-  ['packages/core/type-tests/plugin-schema-contracts.ts', 8],
-  ['packages/find-replace/src/lib/FindReplacePlugin.spec.ts', 1],
-  ['packages/math/src/lib/BaseEquationPlugin.spec.tsx', 2],
-  ['packages/plite/test/editor-foundation-contract.ts', 2],
-  ['packages/plite/test/schema-contract.ts', 5],
-  ['packages/plite/test/schema-inference-contract.ts', 2],
-  ['packages/plite/test/schema-validation-diagnostics.test.ts', 4],
-  ['packages/excalidraw/src/lib/BaseExcalidrawPlugin.spec.ts', 1],
-  ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.tsx', 12],
-  ['packages/table/src/lib/BaseTablePlugin.schema.spec.ts', 5],
-  ['packages/tag/src/lib/BaseTagPlugin.spec.tsx', 1],
+  ['packages/platejs/src/ai/lib/BaseAIPlugin.spec.tsx', 6],
+  [
+    'packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts',
+    8,
+  ],
+  [
+    'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx',
+    1,
+  ],
+  ['packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts', 3],
+  ['packages/platejs/src/features/comment/lib/BaseCommentPlugin.spec.ts', 5],
+  ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 4],
+  ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
+  ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
+  ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 4],
+  ['packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts', 1],
+  ['packages/platejs/src/migrations/migratePlateV54.ts', 1],
+  ['packages/platejs/src/migrations/migratePlateV55.ts', 1],
+  ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
+  [
+    'packages/platejs/src/features/find-replace/lib/FindReplacePlugin.spec.ts',
+    1,
+  ],
+  ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
+  ['packages/plitejs/test/editor-foundation-contract.ts', 2],
+  ['packages/plitejs/test/schema-contract.ts', 10],
+  ['packages/plitejs/test/schema-inference-contract.ts', 2],
+  ['packages/plitejs/test/schema-validation-diagnostics.test.ts', 4],
+  ['packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.spec.ts', 1],
+  ['packages/platejs/src/markdown/lib/internal/markdownConversion.ts', 1],
+  ['packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.ts', 2],
+  [
+    'packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.spec.tsx',
+    12,
+  ],
+  ['packages/platejs/src/features/table/lib/BaseTablePlugin.schema.spec.ts', 5],
+  ['packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx', 1],
 ]);
 const intentionalNamedSchemaLineages = new Map([
   ['content/docs/(guides)/editor.cn.mdx', new Map([['acme-document@3', 1]])],
@@ -444,31 +478,48 @@ const intentionalNamedSchemaLineages = new Map([
     new Map([['yjs-example@1', 1]]),
   ],
   [
-    'packages/yjs/src/plate/BaseYjsPlugin.api.spec.ts',
+    'packages/platejs/src/yjs/BaseYjsPlugin.api.spec.ts',
     new Map([['plate:yjs-api-test@1', 4]]),
   ],
   [
-    'packages/yjs/test/react-contract.spec.tsx',
+    'apps/www/src/registry/examples/document-migration-demo.tsx',
+    new Map([['document-migration-demo@55', 1]]),
+  ],
+  [
+    'packages/platejs/src/migrations/migratePlateV54.spec.ts',
+    new Map([['plate@54', 20]]),
+  ],
+  [
+    'packages/platejs/src/migrations/migratePlateV55.spec.ts',
+    new Map([['plate@55', 2]]),
+  ],
+  [
+    'packages/platejs/type-tests/plate-editor-value-contracts.ts',
+    new Map([
+      ['conditional-policy@1', 1],
+      ['identity-only@1', 1],
+    ]),
+  ],
+  [
+    'packages/platejs/test/yjs/react-contract.spec.tsx',
     new Map([['plate:yjs-react-contract@1', 1]]),
   ],
-  ['packages/yjs/README.md', new Map([['yjs-example@1', 1]])],
 ]);
 const requiredNamedSchemaLineageFiles = new Set([
   'content/docs/(guides)/editor.cn.mdx',
   'content/docs/(guides)/editor.mdx',
   'content/docs/(plugins)/(collaboration)/yjs.cn.mdx',
   'content/docs/(plugins)/(collaboration)/yjs.mdx',
-  'packages/yjs/src/plate/BaseYjsPlugin.api.spec.ts',
-  'packages/yjs/README.md',
+  'packages/platejs/src/yjs/BaseYjsPlugin.api.spec.ts',
 ]);
 
 if (
   [...intentionalRawSchemaQueryCounts.values()].reduce(
     (total, count) => total + count,
     0
-  ) !== 77
+  ) !== 89
 ) {
-  throw new Error('Plate raw schema query allowlist must contain 77 calls.');
+  throw new Error('Plate raw schema query allowlist must contain 89 calls.');
 }
 
 const toPosixPath = (path) => path.split(sep).join('/');
@@ -1071,7 +1122,7 @@ const collectStaticValueBindings = (ast, staticStringBindings) => {
 
       const key =
         getResolvedObjectPropertyName(property, staticStringBindings) ??
-        (property.computed ? 'schemaIdentity' : undefined);
+        (property.computed ? 'schema' : undefined);
 
       if (!key) continue;
 
@@ -1183,7 +1234,7 @@ const getNamedSchemaLineage = (
   );
   const resolvedHoistedSchema = resolveStaticObjectProperty(
     options,
-    'schemaIdentity',
+    'schema',
     staticValueBindings,
     staticStringBindings
   );
@@ -1203,7 +1254,7 @@ const getNamedSchemaLineage = (
         resolvedHoistedSchema.useNode ?? node
       )
     : optionsPath && !resolvedHoistedSchema.resolved
-      ? bindings.getAt(`${optionsPath}.schemaIdentity`, node.start, node)
+      ? bindings.getAt(`${optionsPath}.schema`, node.start, node)
       : undefined;
 
   if (hoistedLineage) {
@@ -1222,7 +1273,7 @@ const getNamedSchemaLineage = (
         const spread = unwrapTypedExpression(property.argument);
         const resolvedSpreadSchema = resolveStaticObjectProperty(
           spread,
-          'schemaIdentity',
+          'schema',
           staticValueBindings,
           staticStringBindings
         );
@@ -1264,7 +1315,7 @@ const getNamedSchemaLineage = (
       const isUnresolvedComputedNamedSchema =
         property.computed && !key && Boolean(lineage);
 
-      if (key === 'schemaIdentity' || isUnresolvedComputedNamedSchema) {
+      if (key === 'schema' || isUnresolvedComputedNamedSchema) {
         result = { hasSchema: true, lineage, node: property };
       }
     }
@@ -1308,7 +1359,7 @@ const getNamedSchemaLineage = (
 
         const resolvedSchema = resolveStaticObjectProperty(
           argument,
-          'schemaIdentity',
+          'schema',
           staticValueBindings,
           staticStringBindings
         );
@@ -2401,7 +2452,7 @@ const defaultPluginCreatorNames = new Set([
   'definePlatePlugin',
 ]);
 const defaultPliteExtensionCreatorNames = new Set(['defineExtension']);
-const pliteModulePattern = /^@platejs\/plite(?:\/|$)/;
+const pliteModulePattern = /^plitejs(?:\/|$)/;
 const isCallExpressionNode = (node) =>
   node?.type === 'CallExpression' || node?.type === 'OptionalCallExpression';
 
@@ -4312,7 +4363,7 @@ const readCallChainRootName = (node) => {
 const isForeignStoreSelectorExtension = (node, file) =>
   readMemberCallName(node) === 'extendSelectors' &&
   (readCallChainRootName(node) === 'createZustandStore' ||
-    (file === 'packages/core/src/internal/plugin/resolvePlugins.ts' &&
+    (file === 'packages/platejs/src/internal/plugin/resolvePlugins.ts' &&
       node.callee.object?.type === 'Identifier' &&
       node.callee.object.name === 'store'));
 
@@ -5250,6 +5301,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
     if (
       node.type === 'ImportDeclaration' &&
+      privatePliteModulePattern.test(node.source.value)
+    ) {
+      report(node, 'plitejs/internal is not a public package entrypoint');
+    }
+    if (
+      node.type === 'ImportDeclaration' &&
       pliteRootModulePattern.test(node.source.value)
     ) {
       for (const specifier of node.specifiers) {
@@ -5261,7 +5318,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         ) {
           report(
             specifier,
-            `${getPropertyName(specifier.imported)} is internal dependency typing; import it from @platejs/plite/internal`
+            `${getPropertyName(specifier.imported)} is internal dependency typing and cannot be imported from plitejs`
           );
         }
       }
@@ -5306,13 +5363,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         if (internalPliteContractTypeSymbols.has(exportedName)) {
           report(
             specifier,
-            `${exportedName} is internal dependency typing; re-export it only from @platejs/plite/internal`
+            `${exportedName} is internal dependency typing and cannot be re-exported from plitejs`
           );
         }
       }
     }
     if (
-      file === 'packages/plite/src/index.ts' &&
+      file === 'packages/plitejs/src/index.ts' &&
       node.type === 'ExportSpecifier'
     ) {
       const exportedName = getPropertyName(node.local);
@@ -5325,7 +5382,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file === 'packages/core/src/index.ts' &&
+      file === 'packages/platejs/src/index.ts' &&
       node.type === 'ExportSpecifier'
     ) {
       const exportedName = getPropertyName(node.local);
@@ -5338,7 +5395,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file === 'packages/core/src/internal/index.ts' &&
+      file === 'packages/platejs/src/internal/index.ts' &&
       node.type === 'ExportSpecifier'
     ) {
       const exportedName = getPropertyName(node.local);
@@ -5351,7 +5408,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file.startsWith('packages/core/src/') &&
+      file.startsWith('packages/platejs/src/') &&
       !file.includes('.internal.') &&
       node.type === 'ExportSpecifier'
     ) {
@@ -5365,7 +5422,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
     if (
-      file.startsWith('packages/core/src/') &&
+      file.startsWith('packages/platejs/src/') &&
       !file.includes('.internal.') &&
       node.type === 'ExportAllDeclaration' &&
       node.source.value.includes('.internal')
@@ -5597,7 +5654,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       const key = getResolvedObjectPropertyName(node, staticStringBindings);
       const parentObject = ancestors.at(-1);
       const isElementSourceMarker =
-        file === 'packages/plite/src/core/schema-definition.ts' &&
+        file === 'packages/plitejs/src/core/schema-definition.ts' &&
         key === 'type' &&
         parentObject?.type === 'ObjectExpression' &&
         getObjectProperty(parentObject, 'source');
@@ -5822,6 +5879,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         memberCallName !== 'clone' ||
         callsLocallyCreatedPluginDescriptor ||
         pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? '');
+      const callsLikelyPluginAuthoring =
+        memberCallName === 'clone'
+          ? callsLikelyPluginClone
+          : callsLocallyCreatedPluginDescriptor ||
+            pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? '');
 
       if (
         memberCallName === 'assign' &&
@@ -6235,7 +6297,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         ['clone', 'configure', 'configurePlugin', 'extendPlugin'].includes(
           memberCallName
         ) &&
-        isPackagePluginDefinitionSource(file)
+        isPackagePluginDefinitionSource(file) &&
+        callsLikelyPluginAuthoring
       ) {
         report(
           node,

@@ -10,7 +10,7 @@ custom rendering and behavior into plugins.
 ## Install
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
 Use feature packages only for the nodes, marks, or behavior you add to the
@@ -21,7 +21,7 @@ instead of rebuilding every component by hand.
 
 | Plite surface | Plate surface |
 | --- | --- |
-| `createEditor()` plus `withReact()` | `usePlateEditor({ ... })` in React components, or `createPlateEditor({ ... })` in factories and tests. |
+| `createEditor()` plus `withReact()` | `useCreateEditor({ ... })` in React components, or `createEditor({ ... })` in factories and tests. |
 | `<Plite>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
 | `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
 | `withX(editor)` plugin functions | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and codec declarations built by `defineCodecs`. |
@@ -36,7 +36,7 @@ Move the editor value into the editor creation call and render the editable with
 ```tsx title="components/editor.tsx" showLineNumbers
 'use client';
 
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
 
 const initialValue = [
   {
@@ -46,7 +46,7 @@ const initialValue = [
 ];
 
 export function Editor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue,
   });
 
@@ -58,12 +58,12 @@ export function Editor() {
 }
 ```
 
-Use `createPlateEditor({ ... })` when the editor is created outside React memoization.
+Use `createEditor({ ... })` when the editor is created outside React memoization.
 
 ```ts title="lib/create-editor.ts"
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   initialValue: [
     {
       children: [{ text: 'Draft' }],
@@ -103,9 +103,9 @@ the closed editor schema. Plugin configuration cannot rewrite schema identity.
 
 ```tsx title="components/editor/document-editor.tsx" showLineNumbers
 import { schema } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [AppParagraphPlugin],
   schema: {
     overrides: [
@@ -229,12 +229,12 @@ editor.api.debug.log(text);
 
 ## Headless Code
 
-Use `createBaseEditor` from `platejs` for non-React importers, serializers, transforms, and tests.
+Use `createEditor` from `platejs` for non-React importers, serializers, transforms, and tests.
 
 ```ts title="lib/headless-editor.ts"
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 
-export const editor = createBaseEditor({
+export const editor = createEditor({
   initialValue: [
     {
       children: [{ text: 'Headless document.' }],

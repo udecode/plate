@@ -42,7 +42,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/ai', 'cmdk'],
+    dependencies: ['platejs', 'cmdk'],
     description: 'A menu for AI-powered content generation and insertion.',
     files: [
       { path: 'components/editor/ai-menu.tsx', type: 'registry:component' },
@@ -72,7 +72,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/ai'],
+    dependencies: ['platejs'],
     description: 'A toolbar button for accessing AI features.',
     files: [
       {
@@ -94,7 +94,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-styles'],
+    dependencies: ['platejs'],
     description: 'A dropdown menu for text alignment controls.',
     files: [
       {
@@ -112,11 +112,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/docx-import',
-      '@platejs/markdown',
-      'use-file-picker@2.1.2',
-    ],
+    dependencies: ['platejs', 'use-file-picker@2.1.2'],
     description: 'A toolbar button to import editor content from a file.',
     files: [
       {
@@ -135,13 +131,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/docx-export',
-      '@platejs/markdown',
-      'html2canvas-pro',
-      'pdf-lib',
-      'lucide-react',
-    ],
+    dependencies: ['platejs', 'html2canvas-pro', 'pdf-lib', 'lucide-react'],
     description:
       'A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).',
     files: [
@@ -169,7 +159,7 @@ export const editorComponents: Registry['items'] = [
   },
 
   {
-    dependencies: ['@platejs/resizable'],
+    dependencies: ['platejs'],
     description: 'Inline caption UI for media elements.',
     files: [
       { path: 'components/editor/caption.tsx', type: 'registry:component' },
@@ -202,7 +192,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@udecode/cn', '@platejs/basic-styles', 'lodash'],
+    dependencies: ['platejs', 'lodash'],
     description:
       'A color picker toolbar button with text and background color controls.',
     files: [
@@ -256,14 +246,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/comment',
-      '@platejs/core',
-      '@platejs/date',
-      '@platejs/plite',
-      '@platejs/suggestion',
-      'date-fns',
-    ],
+    dependencies: ['platejs', 'date-fns'],
     description:
       'A popover interface for managing discussions: comments, replies, suggestions.',
     files: [
@@ -300,12 +283,25 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['fzf@0.5.2', '@platejs/tag', '@udecode/cmdk'],
+    dependencies: [
+      'platejs',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-primitive',
+      'fzf@0.5.2',
+    ],
     description: 'An editor to select tags.',
     files: [
       {
         path: 'components/editor/select-editor.tsx',
         type: 'registry:component',
+      },
+      {
+        path: 'components/editor/select-command.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/select-command-score.ts',
+        type: 'registry:lib',
       },
     ],
     meta: {
@@ -323,7 +319,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/emoji', '@emoji-mart/data@1.2.1'],
+    dependencies: ['platejs', '@emoji-mart/data@1.2.1'],
     description: 'A searchable emoji picker with frequent emoji storage.',
     files: [
       {
@@ -363,70 +359,6 @@ export const editorComponents: Registry['items'] = [
   },
   {
     dependencies: [],
-    files: [
-      {
-        path: 'components/editor/fixed-toolbar-classic-buttons.tsx',
-        type: 'registry:component',
-      },
-    ],
-    // description: 'A set of commonly used formatting buttons.',
-    meta: {
-      // examples: ['toolbar-demo'],
-    },
-    name: 'fixed-toolbar-classic-buttons',
-    registryDependencies: [
-      '@plate/toolbar',
-      '@plate/ai-toolbar-button',
-      '@plate/align-toolbar-button',
-      '@plate/font-color-toolbar-button',
-      '@plate/comment-toolbar-button',
-      '@plate/emoji-toolbar-button',
-      '@plate/history-toolbar-button',
-      '@plate/insert-toolbar-classic-button',
-      '@plate/line-height-toolbar-button',
-      '@plate/list-classic-toolbar-button',
-      '@plate/link-toolbar-button',
-      '@plate/mark-toolbar-button',
-      '@plate/media-toolbar-button',
-      '@plate/mode-toolbar-button',
-      '@plate/more-toolbar-button',
-      '@plate/table-toolbar-button',
-      '@plate/toggle-toolbar-button',
-      '@plate/turn-into-toolbar-classic-button',
-    ],
-    title: 'Fixed Toolbar List Buttons',
-    type: 'registry:component',
-  },
-  {
-    dependencies: [],
-    description:
-      'A set of commonly used formatting buttons for the floating toolbar with classic list support.',
-    files: [
-      {
-        path: 'components/editor/floating-toolbar-classic-buttons.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: {
-      examples: ['list-classic-demo'],
-    },
-    name: 'floating-toolbar-classic-buttons',
-    registryDependencies: [
-      '@plate/toolbar',
-      '@plate/ai-toolbar-button',
-      '@plate/comment-toolbar-button',
-      '@plate/equation-toolbar-button',
-      '@plate/link-toolbar-button',
-      '@plate/mark-toolbar-button',
-      '@plate/more-toolbar-button',
-      '@plate/suggestion-toolbar-button',
-      '@plate/turn-into-toolbar-classic-button',
-    ],
-    title: 'Floating Toolbar Classic Buttons',
-    type: 'registry:component',
-  },
-  {
-    dependencies: [],
     description: 'Toolbar buttons for undo and redo operations.',
     files: [
       {
@@ -449,7 +381,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/list'],
+    dependencies: ['platejs'],
     description: 'Toolbar controls for bulleted, numbered, and todo lists.',
     files: [
       {
@@ -467,7 +399,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/indent'],
+    dependencies: ['platejs'],
     description: 'Toolbar controls for block indentation.',
     files: [
       {
@@ -485,7 +417,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ariakit/react', '@platejs/combobox', '@platejs/plite'],
+    dependencies: ['@ariakit/react', 'platejs'],
     description: 'A combobox for inline suggestions.',
     files: [
       {
@@ -501,7 +433,6 @@ export const editorComponents: Registry['items'] = [
       examples: ['mention-demo', 'slash-command-demo', 'emoji-demo'],
     },
     name: 'inline-combobox',
-    registryDependencies: [],
     title: 'Inline Combobox',
     type: 'registry:component',
   },
@@ -527,29 +458,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [],
-    description:
-      'A menu for inserting different types of blocks with classic list support.',
-    files: [
-      {
-        path: 'components/editor/insert-toolbar-classic-button.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: {
-      examples: ['list-classic-demo'],
-    },
-    name: 'insert-toolbar-classic-button',
-    registryDependencies: [
-      'dropdown-menu',
-      '@plate/toolbar',
-      '@plate/transforms-classic',
-    ],
-    title: 'Insert Toolbar Classic Button',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['@platejs/basic-styles'],
+    dependencies: ['platejs'],
     description: 'A menu for controlling text line spacing.',
     files: [
       {
@@ -567,7 +476,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/link'],
+    dependencies: ['platejs'],
     description: 'A toolbar control for link management.',
     files: [
       {
@@ -590,25 +499,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/list-classic'],
-    description: 'Toolbar controls for list creation and management.',
-    files: [
-      {
-        path: 'components/editor/list-classic-toolbar-button.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: {
-      docs: [{ route: '/docs/list-classic' }],
-      examples: ['list-classic-demo'],
-    },
-    name: 'list-classic-toolbar-button',
-    registryDependencies: ['@plate/toolbar'],
-    title: 'List Toolbar Buttons',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A toolbar control for basic text formatting.',
     files: [
       {
@@ -626,7 +517,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['platejs'],
     description: 'A toolbar interface for media settings.',
     files: [
       {
@@ -651,7 +542,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media', 'use-file-picker@2.1.2', 'sonner'],
+    dependencies: ['platejs', 'use-file-picker@2.1.2', 'sonner'],
     description: 'Toolbar button for inserting and managing media.',
     files: [
       {
@@ -674,7 +565,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/suggestion'],
+    dependencies: ['platejs'],
     description: 'A menu for switching between editor modes.',
     files: [
       {
@@ -691,7 +582,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A menu for additional text formatting options.',
     files: [
       {
@@ -713,7 +604,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media', '@platejs/resizable'],
+    dependencies: ['platejs'],
     description: 'A resizable wrapper with resize handles.',
     files: [
       {
@@ -734,7 +625,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/table'],
+    dependencies: ['platejs'],
     description: 'A menu for table manipulation and formatting.',
     files: [
       {
@@ -752,25 +643,25 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/toggle'],
-    description: 'A toolbar button for expanding and collapsing blocks.',
+    dependencies: ['platejs'],
+    description: 'A toolbar button for wrapping or unwrapping Details blocks.',
     files: [
       {
-        path: 'components/editor/toggle-toolbar-button.tsx',
+        path: 'components/editor/details-toolbar-button.tsx',
         type: 'registry:component',
       },
     ],
     meta: {
-      docs: [{ route: '/docs/toggle' }],
-      examples: ['toggle-demo'],
+      docs: [{ route: '/docs/details' }],
+      examples: ['details-demo'],
     },
-    name: 'toggle-toolbar-button',
+    name: 'details-toolbar-button',
     registryDependencies: ['@plate/toolbar'],
-    title: 'Toggle Toolbar Button',
+    title: 'Details Toolbar Button',
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/plite', '@platejs/utils'],
+    dependencies: ['platejs'],
     description: 'A menu for converting between different block types.',
     files: [
       {
@@ -797,28 +688,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/plite', '@platejs/utils'],
-    description: 'A dropdown to convert block types with classic list support.',
-    files: [
-      {
-        path: 'components/editor/turn-into-toolbar-classic-button.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: {
-      examples: ['list-classic-demo'],
-    },
-    name: 'turn-into-toolbar-classic-button',
-    registryDependencies: [
-      '@plate/editor-dropdown-menu',
-      '@plate/toolbar',
-      '@plate/transforms-classic',
-    ],
-    title: 'Turn Into Toolbar Classic Button',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['@platejs/yjs'],
+    dependencies: ['platejs'],
     description:
       'Remote Yjs selections and carets positioned over the Plate editor.',
     files: [
@@ -897,7 +767,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/suggestion'],
+    dependencies: ['platejs'],
     description: 'A toolbar button for toggling suggestion mode in the editor.',
     files: [
       {
@@ -918,7 +788,7 @@ export const editorComponents: Registry['items'] = [
 
 export const editorNodes: Registry['items'] = [
   {
-    dependencies: ['@platejs/list'],
+    dependencies: ['platejs'],
     description: 'List components.',
     files: [
       { path: 'components/editor/block-list.tsx', type: 'registry:component' },
@@ -933,7 +803,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/list'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/block-list-static.tsx',
@@ -945,7 +815,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A quote component for block quotes.',
     files: [
       {
@@ -966,7 +836,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/blockquote-static.tsx',
@@ -978,7 +848,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'An inline component for code snippets.',
     files: [{ path: 'components/editor/code.tsx', type: 'registry:component' }],
     meta: {
@@ -994,7 +864,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     files: [
       { path: 'components/editor/code-static.tsx', type: 'registry:component' },
     ],
@@ -1003,7 +873,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/math'],
+    dependencies: ['platejs'],
     description: 'A toolbar button for inserting and editing equations.',
     files: [
       {
@@ -1026,7 +896,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-styles'],
+    dependencies: ['platejs'],
     description: 'A toolbar control for adjusting font size.',
     files: [
       {
@@ -1049,7 +919,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A heading with multiple level support.',
     files: [
       {
@@ -1070,7 +940,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/heading-static.tsx',
@@ -1082,7 +952,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A text highlighter with customizable colors.',
     files: [
       {
@@ -1100,7 +970,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/highlight-static.tsx',
@@ -1112,7 +982,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A horizontal rule component with focus states.',
     files: [
       {
@@ -1133,7 +1003,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/horizontal-rule-static.tsx',
@@ -1145,7 +1015,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/dnd', '@platejs/media'],
+    dependencies: ['platejs'],
     description:
       'Image element with lazy loading, resizing capabilities, and optional caption.',
     files: [
@@ -1173,7 +1043,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/media-image-static.tsx',
@@ -1185,7 +1055,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media', '@udecode/react-utils'],
+    dependencies: ['platejs'],
     description: 'A modal component for previewing and manipulating images.',
     files: [
       {
@@ -1206,7 +1076,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     description: 'A component for styling keyboard shortcuts.',
     files: [{ path: 'components/editor/kbd.tsx', type: 'registry:component' }],
     meta: {
@@ -1219,7 +1089,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/basic-nodes'],
+    dependencies: ['platejs'],
     files: [
       { path: 'components/editor/kbd-static.tsx', type: 'registry:component' },
     ],
@@ -1228,7 +1098,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['platejs'],
     description: 'An audio player component with caption support.',
     files: [
       {
@@ -1251,7 +1121,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/media-audio-static.tsx',
@@ -1263,7 +1133,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media', 'react-tweet', 'react-lite-youtube-embed'],
+    dependencies: ['platejs', 'react-tweet', 'react-lite-youtube-embed'],
     description:
       'A component for embedded media content with resizing and caption support.',
     files: [
@@ -1292,7 +1162,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/media-embed-static.tsx',
@@ -1304,7 +1174,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media', '@platejs/suggestion'],
+    dependencies: ['platejs'],
     description:
       'A file attachment component with download capability and caption.',
     files: [
@@ -1326,7 +1196,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media', '@platejs/suggestion'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/media-file-static.tsx',
@@ -1339,7 +1209,7 @@ export const editorNodes: Registry['items'] = [
   },
   {
     dependencies: [
-      '@platejs/media',
+      'platejs',
       '@uploadthing/react@7.3.3',
       'sonner',
       'uploadthing@7.7.4',
@@ -1368,12 +1238,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/dnd',
-      '@platejs/media',
-      'react-player@3.3.1',
-      'react-lite-youtube-embed',
-    ],
+    dependencies: ['platejs', 'react-player@3.3.1', 'react-lite-youtube-embed'],
     description:
       'A video player component with YouTube and file upload support.',
     files: [
@@ -1398,7 +1263,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/media'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/media-video-static.tsx',
@@ -1443,7 +1308,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/find-replace'],
+    dependencies: ['platejs'],
     description: 'A component that highlights search results in text.',
     files: [
       {
@@ -1461,7 +1326,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/tag'],
+    dependencies: ['platejs'],
     description: 'A tag element component with selection states and styling.',
     files: [{ path: 'components/editor/tag.tsx', type: 'registry:component' }],
     meta: {

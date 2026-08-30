@@ -16,7 +16,7 @@ Current non-substrate callers of `PathRef`, `PointRef`, or `RangeRef`:
 | `packages/core` | 2 | Navigation-feedback stored target |
 | `packages/diff` | 1 | Change-tracking inserted/property range tracking |
 | `packages/footnote` | 1 | Definition/reference registries |
-| `packages/list-classic` | 4 | List move/remove/normalize path tracking |
+| `packages/platejs/src/features/list` | 4 | List move/remove/normalize path tracking |
 | `packages/table` | 2 | Expanded row/column deletion path tracking |
 | `apps/www` | 1 | Inline-combobox insertion point |
 
@@ -61,7 +61,7 @@ Current non-substrate files that both import from `@platejs/plite` and mention
 | `packages/cursor` | 7 | `packages/diff` | 1 |
 | `packages/find-replace` | 1 | `packages/floating` | 2 |
 | `packages/footnote` | 1 | `packages/layout` | 2 |
-| `packages/link` | 3 | `packages/list-classic` | 3 |
+| `packages/link` | 3 | `packages/platejs/src/features/list` | 3 |
 | `packages/math` | 1 | `packages/selection` | 6 |
 | `packages/suggestion` | 1 | `packages/table` | 3 |
 | `packages/test-utils` | 1 | `packages/utils` | 1 |

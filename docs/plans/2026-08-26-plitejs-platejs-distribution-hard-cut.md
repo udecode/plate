@@ -1,15 +1,17 @@
 # PliteJS and PlateJS distribution hard cut
 
 Objective:
+Complete the PlateJS foundation Phase 2; done when every Phase 2 checklist and
+proof gate passes; plan
+`docs/plans/2026-08-26-plitejs-platejs-distribution-hard-cut.md`.
+
+Program objective:
 Replace the current Plate and Plite package graph with two default
 distributions: `plitejs` for the raw editor substrate and `platejs` for the
-product framework. The cut is complete only when package ownership, public
-editor vocabulary, facade parity, dependency policy, versioning, monorepo
-adoption, release artifacts, bundle isolation, and beta publication proof all
-agree.
+product framework.
 
 Flow mode:
-agent-led plan hardening
+one-shot execution for accepted Phase 2
 
 Goal plan:
 `docs/plans/2026-08-26-plitejs-platejs-distribution-hard-cut.md`
@@ -51,8 +53,9 @@ Verification surface:
 
 Constraints:
 
-- This artifact is planning only. Product edits start after the user accepts
-  this exact plan and invokes its execution owner.
+- The user accepted repository implementation through Phase 2. This activation
+  stops before ordinary feature absorption, release-graph changes, npm
+  publication, dist-tag mutation, deprecation, commits, pushes, or a PR.
 - `plitejs` and `platejs` are the only default editor distributions.
 - Plate application and Plate extension authors install and import `platejs`,
   never `plitejs`.
@@ -88,7 +91,7 @@ Boundaries:
 - Non-goals: new editor semantics, a StarterKit or EditorKit export, feature
   redesign, performance tuning, third-party compatibility code, automatic
   source codemods, stable-channel promotion, and deletion of the separately
-  maintained classic-list implementation.
+  maintained legacy-list-model implementation.
 - Historical changelogs may retain old names. Executable source, current docs,
   current examples, generated registry source, and published declarations may
   not.
@@ -110,21 +113,143 @@ Blocked condition:
   release authority is absent at rollout. A failing implementation gate routes
   back to its owning phase; it does not weaken the target.
 
-Plite Plan state:
+Distribution plan state:
 
-- status: planning-complete
-- phase: handoff
-- next: user acceptance, then Phase 0 through Phase 8
-- handoff: prepared
+- status: Phase 2 complete
+- phase: physical `platejs` foundation proved
+- next: none inside this activation
+- handoff: ordinary feature absorption and release work remain excluded
+
+Execution activation — Phase 0 and Phase 1:
+
+- Completion threshold: Phase 0 and Phase 1 exit gates pass with fresh source,
+  package, type, test, packed-consumer, runtime-identity, and Chromium evidence.
+- Verification surface: the final `plitejs` manifest and export map, zero
+  cross-package Plite-internal imports, positive public type contracts,
+  source-first typecheck, focused tests, release packs and isolated consumers,
+  and the focused Plite Chromium route.
+- Boundaries: package and doctrine owners needed by Phase 0 and Phase 1. Do not
+  consolidate Core, Utils, ordinary Plate features, or advanced survivors.
+- Blocked condition: stop only when the same unresolved ownership or build
+  constraint prevents all safe Phase 0 and Phase 1 moves after three distinct
+  source-backed attempts.
+
+Execution checklist:
+
+- [x] Revalidate the accepted export, facade-exception, and dependency-direction contracts against live owners.
+- [x] Classify and remove every cross-package Plite `internal` import outside the final `plitejs` source owner.
+- [x] Apply `best-api repair` to doctrine and affected worker owners; regenerate mirrors and prove no stale teaching.
+- [x] Add positive editor vocabulary, context, capability-inference, facade, and runtime-identity contracts.
+- [x] Consolidate Plite, DOM, History, Hyperscript, React, Page Layout, Diff, and Testing into `plitejs` subpaths.
+- [x] Remove old Plite-family, Diff, and Test Utils workspace package owners without forwarding packages.
+- [x] Update repository tooling and raw Plite consumers required for Phase 1 closure.
+- [x] Run focused package/type/test/pack/consumer/Chromium proof and record exact evidence.
+- [x] Run the applicable source/export review and the final Autogoal completeness check for this activation.
+
+Execution phase table:
+| Phase | Status | Evidence | Next |
+| --- | --- | --- | --- |
+| Phase 0 — contract lock | complete | Vision and worker doctrine use the accepted package-selected vocabulary; Plate Next v112 validates with generated mirror parity | None inside this activation |
+| Phase 1 — `plitejs` consolidation | complete | One package owns ten explicit exports; source, type, test, Chromium, packed-consumer, identity, docs, registry, and release-artifact gates pass | Hand off the consolidated substrate |
+| Phase 2 — `platejs` foundation | complete | `packages/platejs` is the sole Plate Plite boundary; source, declarations, packages, apps, packed consumers, Browser, strict Plite, doctrine, and root gates pass | Stop at the Phase 2 boundary |
+| Phase 3 onward | excluded | Ordinary feature absorption, release-lane changes, npm mutation, commit, push, and PR creation are outside this activation | Stop after the Phase 2 handoff |
+
+Execution activation — Phase 2:
+
+- Outcome: `packages/platejs` physically owns former Core and Plate Utils code;
+  `platejs` is the only editor distribution imported or declared by every
+  other Plate package and repository app; `packages/platejs` is the sole Plate
+  dependency and import boundary for `plitejs`; the dedicated raw Plite proof
+  island imports `plitejs` directly; `plitejs` remains Plate's normal private
+  runtime dependency and the literal substrate owner.
+- Completion threshold: `packages/core` and `packages/utils` no longer exist;
+  no live package manifest imports or depends on `@platejs/core` or
+  `@platejs/utils`; every Plate app file under `apps/**` has zero `plitejs`
+  imports, dependencies, aliases, or generated registry payloads; the dedicated
+  raw Plite proof island keeps direct `plitejs` imports; every Plate package
+  except `packages/platejs` has zero `plitejs` imports, dependencies, or aliases;
+  the `platejs` facade excludes raw names redefined or replaced by Plate; root,
+  React, static, migrations, and approved Plite facade subpaths build,
+  typecheck, pack, and preserve runtime identity.
+- Verification surface: source and manifest counts; positive public API and
+  facade contracts; source-first package and adopter typechecks; Plate and
+  Plite tests; NodeNext and Bundler packed consumers; root-without-React proof;
+  app typechecks; generated API/registry checks; Browser editing proof; strict
+  Plite closure; and root `pnpm check` if the repository lane remains runnable.
+- Constraints: preserve Plite document, transaction, selection, DOM, history,
+  static rendering, plugin inference, and runtime identity laws. Do not absorb
+  ordinary feature packages, retain forwarding packages or public internal
+  entrypoints, publish npm packages, alter dist-tags, commit, push, or create a
+  PR.
+- Boundaries: `packages/platejs`, `packages/core`, `packages/utils`, direct
+  package adopters, all repository apps and current docs/examples/registry,
+  package/build/test/release tooling, and the smallest affected doctrine
+  owners. No Plate package, including browser and Yjs tooling, may bypass the
+  `platejs` facade.
+- Output budget strategy: count and classify imports by owner before printing
+  matches; exclude generated build output, caches, historical changelogs, and
+  research snapshots from live-source audits; cap broad reads and store only
+  genuinely large classifications as artifacts.
+- Blocked condition: stop only when the same source-backed ownership,
+  declaration, or build constraint prevents every safe implementation path
+  after three distinct repairs. A failing gate routes back to its literal
+  owner and does not justify aliases or a weakened facade.
+
+Current enforcement slice — 2026-08-27:
+
+- Add native Oxlint import restrictions immediately. Only the physical
+  `platejs` source owner and the dedicated raw Plite proof island may import
+  `plitejs`; every Plate package, app, and tooling owner must consume `platejs`
+  or private relative source inside its own distribution.
+- Add matching React-direction restrictions for the non-React source zones of
+  both `platejs` and `plitejs`. Their root owners may not import React, React
+  DOM, their React entrypoints, or relative React implementation trees.
+- Forbid production self-imports in both distributions and forbid every
+  `plitejs -> platejs` source edge. Cross-entrypoint implementation uses private
+  relative owners; only tests that verify published entrypoints self-import.
+- Do not add a compatibility allowlist for current offenders. Existing
+  violations are migration evidence and remain Phase 2 work rather than
+  exceptions to the target.
+- The current checkout still stores the `platejs` package at `packages/plate`,
+  so the first Oxlint owner glob uses that literal path. Phase 2 renames it to
+  `packages/platejs` and updates the glob in the same change; both directories
+  must never survive together.
+- Handoff this slice with the final physical package and public entrypoint
+  shape. Do not absorb ordinary features, publish, commit, push, or open a PR.
+
+Phase 2 execution checklist:
+
+- [x] Revalidate Core, Utils, Plate, app, export, and dependency owners against the post-Phase-1 tree.
+- [x] Install native Oxlint gates for the sole `platejs -> plitejs` source edge and React-free `platejs`/`plitejs` root zones; exempt only Plite's own published-entrypoint contract tests.
+- [x] Capture the final user requirements: physical owner `packages/platejs`; no `packages/plate`; no public `/core`, `/utils`, `/react-hotkeys`, or `/react-utils`; no new `platejs/<feature>` entrypoints in this pass; retain `/page-layout` and `/page-layout/react`.
+- [x] Capture the dependency policy: React and React DOM are optional host peers; implementation libraries stay normal dependencies; generic `@udecode/*` APIs are not blindly merged or reexported.
+- [x] Move Core runtime, React, static, and private implementation into `packages/platejs` without duplicate public owners.
+- [x] Move curated Plate Utils, hotkey, and React-helper APIs into `packages/platejs`; keep independently generic `@udecode/*` libraries as dependencies rather than blind public barrels.
+- [x] Make `platejs` depend normally on `plitejs` and publish explicit root, React, static, migrations, and Plite facade subpaths.
+- [x] Apply `createEditor`, `Editor`, `CreateEditorOptions`, `useEditor`, `useEditorContext`, and `useOptionalEditorContext` consistently across Plate entrypoints.
+- [x] Rewrite every package adopter from `@platejs/core` and `@platejs/utils` to `platejs` or `platejs/react`, then delete both old workspace owners without forwarding packages.
+- [x] Rewrite every Plate package except `packages/platejs` from `plitejs` subpaths to matching curated `platejs` subpaths; remove direct dependencies and aliases; enforce the sole-boundary rule mechanically.
+- [x] Exclude every Plite export that Plate redefines or replaces from the `platejs` facade while retaining runtime identity for approved shared exports.
+- [x] Rewrite every Plate app, current Plate example, registry source, generated registry payload, manifest, and alias to use `platejs`; prove zero Plate-app-owned `plitejs` usage while the dedicated raw Plite proof island imports `plitejs` directly.
+- [x] Repair current docs and affected doctrine/worker owners, bump versioned doctrine, regenerate mirrors, and prove no stale live teaching.
+- [x] Run barrels, install, source/type/test/build, packed-consumer, identity, headless-root, app, registry/API, Browser, strict Plite, and applicable root checks.
+- [x] Record review, failures, exact evidence, remaining Phase 3 boundary, and pass the final Autogoal checker.
+
+Phase 2 explicit non-goals:
+
+- Do not add ordinary feature entrypoints such as `platejs/basic-nodes` in this pass.
+- Do not execute Phase 3 or later phases.
+- Do not publish, mutate dist-tags, deprecate packages, commit, push, or open a PR.
+- Do not preserve removed package owners through forwarding packages or compatibility subpaths.
 
 Start Gates:
 | Gate | Applies | Evidence |
 | --- | --- | --- |
 | Prompt requirements captured | yes | Constraints preserve the accepted two-distribution model, Plate-only application dependency, full curated facade, one editor vocabulary, and hard cut. |
-| Active goal and plan verified | yes | The active goal points to this exact plan and measures planning completeness. |
+| Active goal and plan verified | yes | A fresh one-shot Phase 2 execution goal points to this exact plan and measures every Phase 2 checklist and proof gate. |
 | Current owners read | yes | `VISION.md`, both layer Vision files, current package manifests and entrypoints, constructor and context owners, Changesets config, and packed-release checker were inspected from `next`. |
 | Best API target resolved | yes | Accepted target: package-selected `createEditor` and `Editor`; React-selected `useEditor`; explicit context hooks; no branded aliases. |
-| Mode and execution boundary resolved | yes | Deep planning is complete; repository implementation waits for plan acceptance and npm mutation waits for release authority. |
+| Mode and execution boundary resolved | yes | Phase 2 repository implementation is complete; npm mutation still waits for separate release authority. |
 | Package/API pack selected | yes | Package identity, exports, API, types, dependencies, and publication all change. |
 | Public surface or package boundary identified | yes | The entrypoint and package-disposition tables classify every current editor package. |
 | Release artifact path selected | yes | Published deltas use one `.changeset` file per affected surviving package; absorbed packages receive no fake release. Registry-only changelog does not apply. |
@@ -285,19 +410,19 @@ SSR imports from evaluating unrelated feature modules.
 | `@platejs/basic-nodes`, `basic-styles`, `callout`, `code-block`, `combobox`, `comment`, `csv`, `cursor`, `date`, `dnd`, `emoji`, `find-replace`, `floating`, `footnote`, `indent`, `link`, `list`, `markdown`, `math`, `media`, `mention`, `resizable`, `slash-command`, `suggestion`, `tabbable`, `table`, `tag`, `toc`, `toggle` | Matching `platejs/<feature>` and optional `/<feature>/react` subpaths        | Merge. These are ordinary editor capabilities; optional usage is not an independent package job.                                                 |
 | `@platejs/layout`                                                                                                                                                                                                                                                                                                                  | `platejs/columns` and `platejs/columns/react`                                | Merge and rename. Its source owns `BaseColumnPlugin` and `ColumnPlugin`; calling it generic layout would collide with Plite page layout.         |
 | `@platejs/ai`                                                                                                                                                                                                                                                                                                                      | retain                                                                       | Separate AI subsystem with AI SDK peers, streaming/UI policy, and an independent release surface.                                                |
-| `@platejs/browser`                                                                                                                                                                                                                                                                                                                 | retain                                                                       | Separate Playwright/browser proof toolchain; peers on `plitejs`.                                                                                 |
+| `@platejs/browser`                                                                                                                                                                                                                                                                                                                 | retain                                                                       | Separate Playwright/browser proof toolchain; peers on the public `platejs` facade.                                                               |
 | `@platejs/cli`                                                                                                                                                                                                                                                                                                                     | retain                                                                       | Separate executable/toolchain with TypeScript and esbuild ownership.                                                                             |
 | `@platejs/code-drawing`                                                                                                                                                                                                                                                                                                            | retain                                                                       | Separate multi-renderer subsystem with CodeMirror, Mermaid, PlantUML, Viz, and Flowchart engines.                                                |
 | `@platejs/docx`, `docx-import`, `docx-export`, `docx-paste`                                                                                                                                                                                                                                                                        | one `@platejs/docx` package with `/import`, `/export`, and `/paste` subpaths | Retain one advanced DOCX subsystem; delete its three implementation packages.                                                                    |
 | `@platejs/excalidraw`                                                                                                                                                                                                                                                                                                              | retain                                                                       | Separate third-party canvas integration and release risk.                                                                                        |
 | `@platejs/juice`                                                                                                                                                                                                                                                                                                                   | retain                                                                       | Separate server/export integration with a large HTML/CSS processing dependency tree.                                                             |
-| `@platejs/yjs`                                                                                                                                                                                                                                                                                                                     | retain                                                                       | Separate collaboration protocol shared by Plite and Plate; no collaboration code enters either default root.                                     |
-| `@platejs/list-classic`                                                                                                                                                                                                                                                                                                            | retain as maintenance-only                                                   | Explicit exception. Do not merge legacy behavior into the default package and do not delete its behavior without its separate removal authority. |
+| `@platejs/yjs`                                                                                                                                                                                                                                                                                                                     | retain                                                                       | Separate advanced collaboration subsystem; consumes `platejs`, and no collaboration code enters either default root.                             |
+| `platejs`                                                                                                                                                                                                                                                                                                            | retain as maintenance-only                                                   | Explicit exception. Do not merge legacy behavior into the default package and do not delete its behavior without its separate removal authority. |
 | `@plate/scripts` and `@udecode/*`                                                                                                                                                                                                                                                                                                  | retain outside the distribution cut                                          | Internal tooling and generic libraries are not editor distributions. They leave the global Plate version group.                                  |
 
 Final public editor packages are therefore `plitejs`, `platejs`, and nine scoped
 survivors: AI, Browser, CLI, Code Drawing, DOCX, Excalidraw, Juice, Yjs, and the
-maintenance-only Classic List package.
+maintenance-only Legacy list model package.
 
 ## Public editor-instance API cut
 
@@ -372,8 +497,9 @@ Facade exception set:
   adapter owner. Merged Plate features import private Plate modules, not the
   package's own public specifier.
 - Retained Plate-only packages peer on `platejs` and use it for public types.
-  Only `@platejs/browser` and the raw Yjs entrypoints may peer directly on
-  `plitejs`.
+  No Plate package, app, browser harness, Yjs adapter, or tooling owner may
+  import or declare `plitejs` directly. Raw substrate-only work belongs inside
+  `plitejs` itself.
 - No default root imports React, Yjs, AI SDK, React DnD, CodeMirror, Mermaid,
   Excalidraw, DOCX, Juice, or feature-only CSS.
 
@@ -416,7 +542,7 @@ Facade exception set:
 | Ordinary features   | About thirty scoped packages                        | `platejs/<feature>` subpaths                       | Plate feature owners               | Move in dependency order                | Per-cluster tests and export consumers             | Accidental root loading      | merge                  |
 | Advanced features   | Mixed with ordinary packages                        | Nine explicit survivors                            | Named subsystem owners             | Rewrite to new public dependencies      | Isolated packed consumers                          | Duplicate Plite or React     | retain                 |
 | DOCX                | Four packages                                       | One package with three subpaths                    | DOCX                               | Move import/export/paste source         | DOCX tests and pack                                | Heavy root import            | merge internally       |
-| Classic list        | Separate legacy package                             | Separate maintenance-only package                  | Classic list                       | Dependency import update only           | Existing package tests                             | Legacy enters default        | retain outside default |
+| Legacy list model        | Separate legacy package                             | Separate maintenance-only package                  | Legacy list model                       | Dependency import update only           | Existing package tests                             | Legacy enters default        | retain outside default |
 | Editor constructors | Four branded public factories                       | `createEditor` selected by entrypoint              | Plite and Plate constructor owners | Rewrite all callers and docs            | Runtime and type contracts                         | Wrong layer selected         | replace                |
 | React lifecycle     | Two branded creator hooks                           | `useEditor` selected by entrypoint                 | Plite and Plate React owners       | Rewrite component-owned callers         | Hook lifetime tests                                | Context collision            | replace                |
 | React context       | Two `useEditor` context hooks plus nullable variant | `useEditorContext` and `useOptionalEditorContext`  | React context owners               | Rewrite mounted consumers               | Provider/context tests                             | Creator/context confusion    | rename                 |
@@ -505,7 +631,8 @@ Owner: Plate package layer.
 
 Actions:
 
-1. Move Core and Utils source into `packages/plate`, preserving private owner
+1. Rename the current `packages/plate` owner to `packages/platejs`, then move
+   Core and Utils source into it while preserving private owner
    folders for runtime, React, static, and utilities.
 2. Implement `platejs -> plitejs` as a normal dependency.
 3. Replace editor constructors, types, lifecycle hooks, context hooks, and
@@ -547,7 +674,7 @@ Actions:
    source proves both jobs exist. The current Plate Layout package moves to
    `platejs/columns`; it does not share the Plite page-layout path.
 3. Convert cross-feature imports to private relative owner imports inside
-   `packages/plate`; no public self-imports.
+   `packages/platejs`; no public self-imports.
 4. Preserve precise side-effect metadata. The Katex stylesheet is listed; JS
    feature modules remain side-effect free.
 5. Delete each old feature workspace package immediately after its imports,
@@ -565,21 +692,21 @@ Owner: each retained subsystem owner.
 
 Actions:
 
-1. Rewrite AI, CLI, Code Drawing, Excalidraw, Juice, and Classic List to consume
+1. Rewrite AI, CLI, Code Drawing, Excalidraw, Juice, and Legacy list model to consume
    `platejs` and its feature subpaths, with compatible Plate peers.
 2. Merge DOCX Import, Export, and Paste into one `@platejs/docx` source package
    and expose explicit subpaths.
-3. Rewrite Browser to peer on `plitejs` and preserve optional Playwright use.
-4. Rewrite Yjs raw paths to peer on `plitejs`, Plate adapters to peer on
-   `platejs`, and keep React/Yjs optionality isolated by subpath.
-5. Remove direct Plite imports from Plate-only survivors. Browser and raw Yjs
-   are the only allowlisted exceptions.
+3. Rewrite Browser to peer on `platejs` and preserve optional Playwright use.
+4. Rewrite Yjs to peer on `platejs` and Yjs, and keep React/Yjs optionality
+   isolated by subpath.
+5. Remove every direct Plite import and declaration from retained scoped
+   packages. There are no `@platejs/*` exceptions.
 
 Exit gate:
 
 - Each survivor packs and installs with only its documented hosts, DOCX has no
   sibling implementation packages, Yjs is absent from default bundles, and
-  Classic List stays outside `platejs`.
+  Legacy list model stays outside `platejs`.
 
 ### Phase 5 — Complete monorepo adoption and current teaching
 
@@ -698,12 +825,12 @@ Exit gate:
 
 | Consumer                     | Final dependency/import law                                                 | Phase         |
 | ---------------------------- | --------------------------------------------------------------------------- | ------------- |
-| Raw Plite apps and tests     | Depend on `plitejs`; import matching substrate subpaths                     | 1 and 5       |
-| Plate apps and registry      | Depend on `platejs`; never declare or import `plitejs`                      | 2, 3, and 5   |
-| Merged Plate features        | Private modules inside `packages/plate`; no self-package imports            | 3             |
+| Repository apps and registry | Depend on `platejs`; never declare, alias, generate, or import `plitejs`    | 2 and 5       |
+| Raw Plite package tests      | Import matching `plitejs` substrate subpaths inside package/tooling owners | 1 and 5       |
+| Merged Plate features        | Private modules inside `packages/platejs`; no self-package imports          | 3             |
 | Plate-only scoped survivors  | Peer on and import `platejs`                                                | 4             |
-| Browser proof                | Peer on and import `plitejs`                                                | 1 and 4       |
-| Yjs raw integration          | Peer on `plitejs` and Yjs; Plate adapter peers on `platejs`                 | 4             |
+| Browser proof                | Peer on and import `platejs`                                                | 4             |
+| Yjs integration              | Peer on and import `platejs` and Yjs                                        | 4             |
 | Third-party Plate extensions | Import public types and helpers from `platejs`; old major remains available | Release notes |
 | Docs and examples            | Teach only final installs and current imports                               | 5             |
 | Templates                    | Updated through registry/workflow owners, never by hand                     | 5             |
@@ -781,7 +908,7 @@ Decisions and tradeoffs:
   all Plite modules into `platejs` root.
 - Version lines are independent. The facade creates release obligations, not a
   reason to bump unrelated packages.
-- Classic List remains separate because merging legacy behavior into the
+- Legacy list model remains separate because merging legacy behavior into the
   default is worse than one explicit maintenance exception. Its deletion is a
   separate product decision.
 - Static rendering keeps distinct names because it is a different job. Brand
@@ -803,9 +930,26 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 | --- | ---: | --- | --- |
-| Plan file replacement used two operations in one patch | 1 | Delete and add in separate `apply_patch` calls | Recreated the file through the required patch tool. |
+| Plan file replacement used two operations in one patch | 2 | Use one update block with multiple hunks for the same file | The single-owner rerun updated the plan through the required patch tool. |
 | Package-coverage one-liner contained shell-active backticks | 1 | Use single-quoted JavaScript with plain string concatenation | The safe rerun found every current editor package in the plan. |
 | TypeScript 7 package exposed no compiler API for declaration export inspection | 2 | Parse the rolled-up declaration export block and pair it with runtime identity checks | The fallback found the root and React collision sets without changing source. |
+| Phase 0 import scan included generated registry artifacts and streamed excessive output | 1 | Count authored owner files first; exclude `dist`, generated registry JSON, caches, and public registry output before inspecting matches | Subsequent audits are owner-scoped and capped. |
+| Source-move inventory used zsh's special `path` variable and cleared command lookup | 1 | Use a task-specific loop variable and rerun before any move | The failed command changed no files because every move command was unresolved. |
+| Initial consolidated manifests retained absorbed workspace package names and a stale `plitejs/diff` dependency | 2 | Rebuild the manifest from the target ownership table and run `pnpm install` | The final manifest owns all absorbed code directly and install passes. |
+| Stale generated Fumadocs source config referenced deleted package paths | 1 | Remove the stale generated cache and regenerate from live source | Install, API reference check, and registry build pass from the consolidated topology. |
+| First moved Bun and React test runs retained old test roots, aliases, and config paths | 2 | Move each test owner with its runtime and repair package-local configs | Full Plite Bun and React suites pass under `packages/plitejs`. |
+| Packed root pulled React through `@tanstack/react-virtual` | 1 | Make the React-only vendor an optional peer and keep it behind React entrypoints | The isolated packed root and page-layout root import without React. |
+| Core declaration bundling corrupted one giant conditional capability alias | 1 | Split the public projection into named type owners before declaration rollup | Core and packed declaration consumers pass under NodeNext and Bundler resolution. |
+| Contract closure found stale benchmark paths, API-reference `internal`, and one dirty-checkout regex | 3 | Route each oracle to the final physical owner and rerun the complete contract gate | 172 tooling contracts, 74 benchmark contracts, 44 targets, and public types pass. |
+| `plitejs/testing` initially reexported `end` from the wrong module | 1 | Export the helper from its literal editor owner without widening root | Build, exact runtime export smoke, and packed release proof pass. |
+| First doctrine validation found a stale fingerprint, absorbed package rows, and rewritten immutable history | 2 | Restore immutable entries, append v112, retire absorbed rows, regenerate mirrors | Plate Next v112 validates; all 14 version-law tests pass. |
+| Current-doc rewrite passed a newline-delimited file list as one zsh scalar | 1 | Use null-delimited `rg -0` and `xargs -0` with explicit historical exclusions | The failed command changed no files; the null-delimited rerun migrated current docs and preserved historical ledgers. |
+| Native boundary enforcement makes root lint red on the still-unmigrated Phase 2 graph | 2 | Migrate each offender to `platejs`; do not weaken the rule or add package exceptions | The boundary-only scan reaches zero and `pnpm lint` passes. |
+| The first strict Chromium replay measured a Yjs remote caret before responsive layout settled | 1 | Schedule an immediate and animation-frame remeasurement, then add the package contract | The Yjs React contract passes and the exact browser row reaches the correct post-layout geometry. |
+| Full strict replay proved the browser assertion itself still sampled geometry too early | 1 | Run Regression repair and require bounded convergence after resize before asserting final boxes | Regression doctrine, template, executable contract, and generated mirror now enforce convergence; five forced fresh exact runs and the full strict suite pass. |
+| The first doctrine version test used Bun for a Node `.mjs` test owner | 1 | Run the test with its declared Node test runner | All 14 Plate Next version-law tests pass. |
+| The first Regression workflow test ran before generated skill mirrors were synchronized | 1 | Run `pnpm install`, then rerun source, mirror, and validator proof | All 68 workflow tests pass with exact source/mirror parity. |
+| The first five browser stability reruns reused the proof cache | 1 | Set `PLITE_BROWSER_FORCE_PROOF=1` for every exact rerun | Five fresh, retry-free collaboration rows pass and the cached attempts are excluded from evidence. |
 
 Verification evidence:
 
@@ -823,6 +967,73 @@ Verification evidence:
 - Ran
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-26-plitejs-platejs-distribution-hard-cut.md`
   as the mechanical planning close gate.
+- Preserved all 1,642 Plite source and test files while moving the original
+  package plus seven absorbed package owners into `packages/plitejs`; the seven
+  obsolete sibling directories were moved to macOS Trash and remain
+  recoverable.
+- `pnpm --filter plitejs typecheck`, `build`, and `lint` pass. Full package
+  proof reports 2,021 Bun tests and 1,105 React/Vitest tests passing.
+- `pnpm check:plite:dev` passes 46 source-first typechecks, package tests,
+  contracts, and three Chromium smoke rows. `pnpm check:plite` passes the full
+  package closure and 710 Chromium tests with eight declared skips.
+- `pnpm check:plite:contracts` passes 172 Node tooling contracts, 74 Bun
+  benchmark contracts, 44 benchmark targets, and public declaration builds.
+- `pnpm plite:release:packages` verifies five packed packages, 28 public
+  subpaths, NodeNext and Bundler declaration consumers, DCE, package direction,
+  exact cross-subpath runtime identity, and root/page-layout-root imports
+  without React.
+- `pnpm --filter www api-reference:check` and
+  `pnpm --filter www build:registry` pass after removing the deleted public
+  `internal` entrypoint.
+- Browser proof on `/examples/plite/richtext` rendered one editable, accepted
+  inserted text, and produced no console errors.
+- `pnpm brl` passes 49 package barrel tasks. `pnpm install`, Plate Next v112
+  validation, and all 14 doctrine version tests pass with generated mirrors in
+  parity.
+- Final source and declaration audits find no live import from
+  `plitejs/internal`, no live old scoped Plite import, and no exported
+  `createReactEditor`, `UsePliteEditorOptions`, `usePliteEditor`, or
+  `ReactEditor` alias. Negative checker fixtures and the external Slate donor
+  keep their intentional spellings.
+- `pnpm exec oxlint oxlint.config.ts` passes after adding the native
+  `no-restricted-imports` owner rules. Focused proof accepts Plate React,
+  Plite root, Plite React, and Plite public-contract test owners while rejecting
+  an external `plitejs` import, Plate-root React imports, production
+  self-imports, and an upward `plitejs -> platejs` edge.
+- The activation scan reported 334 migration diagnostics across 231 files: 323
+  direct Plite imports across 223 files outside the physical Plate owner and 11
+  React-direction leaks across eight Plate-root files. The final owner audit
+  reports zero package Plite imports outside `packages/platejs`, zero Plate-app
+  Plite imports outside the raw proof island, and zero old foundation imports or
+  manifest edges.
+- Native `no-restricted-imports` covers import/export declarations and runtime
+  dynamic imports. It does not prove manifests, emitted chunks, declarations,
+  CommonJS `require`, or TypeScript inline import types; manifest constraints,
+  recursive artifact inspection, and packed declaration consumers remain
+  mandatory closure gates.
+- `pnpm lint`, typed Oxlint, `pnpm brl`, all 49 package typechecks, the www
+  typecheck, API-reference generation/check, and registry build pass on the
+  completed graph.
+- `pnpm plite:release:boundaries` passes the isolated Plite and Plate roots
+  without React, both React adapters, Layout isolation, and Yjs root, React,
+  and Plate adapters. `pnpm plite:release:packages` verifies five packed
+  packages, 32 public subpaths, NodeNext and Bundler declarations, package
+  direction, bare and named DCE, and runtime isolation.
+- Final `pnpm check:plite` passes 2,028 Plite Bun tests, 1,106 Plite React tests,
+  224 Yjs tests, 173 Node contracts, 74 benchmark contracts, 44 targets, and
+  710 Chromium tests with eight declared skips across 79 bounded batches.
+- Browser proof passes on `/blocks/editor-basic` and
+  `/examples/plite/richtext`: both editors render, accept inserted text, and
+  produce zero console warnings or errors.
+- Final root `pnpm check` passes formatting, typed lint, 49 builds and
+  typechecks, 3,168 primary fast tests, 695 primary slow tests, and every
+  isolated test lane. The final debug-marker scan is empty.
+- Plate Next doctrine v114 is current with an unchanged 375-file fingerprint;
+  validation, 14 version-law tests, 68 Regression workflow tests, source/mirror
+  parity, and the agent-native review all pass.
+- Breaking `platejs` and `plitejs` changesets plus the Markdown correctness
+  changeset are present; `pnpm changeset status --since=main` passes. No publish,
+  dist-tag mutation, commit, push, or PR occurred.
 
 Final handoff prepared:
 
@@ -832,9 +1043,9 @@ Final handoff prepared:
 - Public breaks: old scoped Plite/Core/Utils/ordinary feature packages and
   branded editor creators/types/hooks disappear without aliases. Existing v53
   remains available.
-- Adoption: all raw consumers move to `plitejs`; all Plate consumers and
-  Plate-only survivors move to `platejs`; Browser and raw Yjs are the only
-  direct Plite survivor exceptions.
+- Adoption: `plitejs` remains private substrate source. Every Plate consumer,
+  survivor, app, browser harness, Yjs adapter, and tool imports `platejs`; only
+  the physical `platejs` package imports and declares `plitejs`.
 - Proof: package, type, facade, DCE, dependency, browser, docs, release-scenario,
   and npm read-back gates are explicit.
 - Main risks: accidental heavy root imports, Plite/Plate beta skew, duplicate
@@ -842,22 +1053,37 @@ Final handoff prepared:
   falsifying test.
 - Execution order: contract, Plite, Plate foundation, ordinary features,
   advanced survivors, adoption, release graph, packed closure, beta rollout.
-- User attention: accept this plan to start repository work; give a separate
-  explicit release instruction before Phase 8 mutates npm.
+- User attention: Phase 0 through Phase 2 are complete. Phase 3 feature
+  absorption and npm publication require separate activation.
 
 Timeline:
 
 - 2026-08-26: plan created, source-grounded, package cut resolved, and handoff
   prepared.
+- 2026-08-27: Phase 0 contract lock and Phase 1 `plitejs` consolidation
+  completed with source, package, browser, packed-consumer, docs, registry, and
+  doctrine proof.
+- 2026-08-27: user authorized native Oxlint source restrictions for the sole
+  `platejs -> plitejs` dependency direction and React-free root zones in both
+  distributions; compatibility allowlists are explicitly rejected.
+- 2026-08-27: installed and probed those restrictions. The rule inventory is
+  intentionally red on 334 Phase 2 imports; Plite's root has zero violations.
+- 2026-08-27: created a fresh one-shot execution goal for complete Phase 2 closure and recorded the final package, entrypoint, optional-peer, and non-goal constraints before implementation resumed.
+- 2026-08-27: completed the physical `platejs` foundation, migrated every Plate
+  package and app boundary, removed the old owners, and passed source, package,
+  packed-consumer, Browser, strict Plite, doctrine, and root closure gates.
+- 2026-08-27: repaired the responsive-geometry Regression workflow after the
+  strict replay exposed an invalid immediate post-resize assertion; five forced
+  exact reruns and the complete Chromium suite pass.
 
 Reboot status:
 | Question | Answer |
 | --- | --- |
-| Where am I? | Planning complete; implementation has not been authorized. |
-| Where am I going? | Phase 0 contract lock, then the eight dependent implementation and rollout phases. |
+| Where am I? | Phase 2 is complete: `packages/platejs` is the only Plate Plite boundary and every required gate passes. |
+| Where am I going? | Stop here. Phase 3 feature absorption and release work are separate activations. |
 | What is the goal? | Two default distributions with one editor vocabulary and proved package isolation. |
-| What have I learned? | The current facade points in the right direction, but Core, Utils, ordinary features, branded constructors, and global linked versioning preserve the old graph. |
-| What have I done? | Classified every package, fixed the public API cut, version policy, release order, adoption map, and proof matrix. |
+| What have I learned? | The consolidation works when package subpaths, optional host peers, declarations, exact identity, responsive geometry, and dependency direction are executable contracts. |
+| What have I done? | Completed the two foundations, unified the editor API, migrated all current Plate consumers, and proved the final graph from source through packed artifacts and browsers. |
 
 Open risks:
 
@@ -865,9 +1091,8 @@ Open risks:
   authority; repository implementation can finish through Phase 7 first.
 - A hidden third-party import of a current public `internal` path will break.
   That is accepted by the hard cut and documented only in release notes.
-- Package consolidation may expose private source cycles that separate package
-  builds currently mask. Phase 3 moves dependency clusters in order and rejects
-  public self-imports.
+- Phase 3 ordinary feature absorption remains intentionally unimplemented; the
+  completed foundation does not imply new `platejs/<feature>` entrypoints.
 - The 5% or 2 KiB gzip comparison may reveal a real root or React regression.
   The response is to fix import ownership, not relax the budget without source
   proof.

@@ -1,7 +1,7 @@
 'use client';
 
-import { useYjsRemoteCursorOverlayPositions } from '@platejs/yjs/react';
 import { useEditor, useEditorScrollElement } from 'platejs/react';
+import { useYjsRemoteCursorOverlayPositions } from 'platejs/yjs/react';
 import * as React from 'react';
 
 type CursorData = {

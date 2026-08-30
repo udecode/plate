@@ -1,8 +1,8 @@
 'use client';
 
-import { remarkMdx, remarkMention } from '@platejs/markdown';
 import { NodeApi } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { remarkMdx, remarkMention } from 'platejs/markdown';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
@@ -100,12 +100,12 @@ export default function MarkdownDemo() {
   const [markdownValue, setMarkdownValue] = React.useState(initialMarkdown);
   const debouncedMarkdownValue = useDebounce(markdownValue, 300);
 
-  const markdownEditor = usePlateEditor({
+  const markdownEditor = useCreateEditor({
     plugins: [],
     initialValue: [{ children: [{ text: markdownValue }], type: 'paragraph' }],
   });
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: EditorKit,
     },

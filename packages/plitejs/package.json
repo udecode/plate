@@ -1,0 +1,192 @@
+{
+  "name": "plitejs",
+  "version": "0.0.1",
+  "description": "A headless-first framework for building rich text editors.",
+  "keywords": [
+    "contenteditable",
+    "document",
+    "editor",
+    "headless",
+    "plitejs",
+    "react",
+    "richtext",
+    "wysiwyg"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/plitejs"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./dom": {
+      "types": "./dist/dom/index.d.ts",
+      "import": "./dist/dom/index.js",
+      "default": "./dist/dom/index.js"
+    },
+    "./history": {
+      "types": "./dist/history/index.d.ts",
+      "import": "./dist/history/index.js",
+      "default": "./dist/history/index.js"
+    },
+    "./hyperscript": {
+      "types": "./dist/hyperscript/index.d.ts",
+      "import": "./dist/hyperscript/index.js",
+      "default": "./dist/hyperscript/index.js"
+    },
+    "./page-layout": {
+      "types": "./dist/page-layout/index.d.ts",
+      "import": "./dist/page-layout/index.js",
+      "default": "./dist/page-layout/index.js"
+    },
+    "./page-layout/react": {
+      "types": "./dist/page-layout/react.d.ts",
+      "import": "./dist/page-layout/react.js",
+      "default": "./dist/page-layout/react.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js",
+      "default": "./dist/react/index.js"
+    },
+    "./diff": {
+      "types": "./dist/diff/index.d.ts",
+      "import": "./dist/diff/index.js",
+      "default": "./dist/diff/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js",
+      "default": "./dist/testing/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "brl": "echo 'No barrels to generate'",
+    "build": "tsdown --config tsdown.config.mts --log-level warn",
+    "clean": "rimraf dist lib",
+    "lint": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs lint",
+    "lint:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs diff",
+    "lint:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs dom",
+    "lint:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs history",
+    "lint:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs hyperscript",
+    "lint:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs page-layout",
+    "lint:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs page-layout/react",
+    "lint:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react",
+    "lint:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs root",
+    "lint:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
+    "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
+    "lint:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs core",
+    "lint:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs diff",
+    "lint:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs dom",
+    "lint:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs history",
+    "lint:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs layout",
+    "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react",
+    "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
+    "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs test",
+    "test:bun": "bun test --preload ../../config/plite-source-test-setup.ts --path-ignore-patterns 'test/react/**'",
+    "test:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs diff",
+    "test:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs dom",
+    "test:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs history",
+    "test:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs hyperscript",
+    "test:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs page-layout",
+    "test:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs page-layout/react",
+    "test:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
+    "test:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs root",
+    "test:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
+    "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs core",
+    "test:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs diff",
+    "test:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs dom",
+    "test:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs history",
+    "test:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs layout",
+    "test:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
+    "test:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
+    "test:react": "vitest run --config ./vitest.config.mjs",
+    "typecheck": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs typecheck",
+    "typecheck:contracts": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-contracts plitejs core",
+    "typecheck:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs diff",
+    "typecheck:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs dom",
+    "typecheck:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs history",
+    "typecheck:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs hyperscript",
+    "typecheck:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs page-layout",
+    "typecheck:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs page-layout/react",
+    "typecheck:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
+    "typecheck:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs root",
+    "typecheck:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
+    "typecheck:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs core",
+    "typecheck:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs diff",
+    "typecheck:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs dom",
+    "typecheck:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs history",
+    "typecheck:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs layout",
+    "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
+    "typecheck:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
+    "typecheck:tests": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-package-tests plitejs core"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "scroll-into-view-if-needed": "^3.1.0"
+  },
+  "devDependencies": {
+    "@chenglou/pretext": "^0.0.7",
+    "@happy-dom/global-registrator": "20.0.10",
+    "@tanstack/react-virtual": "^3.13.25",
+    "@testing-library/dom": "10.4.0",
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.3.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/lodash": "^4.14.200",
+    "@types/node": "24.12.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "diff-match-patch-ts": "^0.6.0",
+    "fast-check": "^3.23.2",
+    "jsdom": "20.0.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@chenglou/pretext": "^0.0.7",
+    "@tanstack/react-virtual": "^3.13.25",
+    "diff-match-patch-ts": "^0.6.0",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@chenglou/pretext": {
+      "optional": true
+    },
+    "@tanstack/react-virtual": {
+      "optional": true
+    },
+    "diff-match-patch-ts": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  }
+}

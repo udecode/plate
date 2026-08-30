@@ -390,6 +390,22 @@ export function createMainToNextBetaPreState() {
   };
 }
 
+export function reconcileBetaPreState(preState, currentInitialVersions) {
+  validateMainToNextBetaPreState(preState);
+
+  return {
+    ...preState,
+    initialVersions: Object.fromEntries(
+      Object.entries(currentInitialVersions)
+        .sort(([left], [right]) => compareStrings(left, right))
+        .map(([packageName, currentVersion]) => [
+          packageName,
+          preState.initialVersions?.[packageName] ?? currentVersion,
+        ])
+    ),
+  };
+}
+
 export function validateMainToNextBetaPreState(preState) {
   if (preState?.mode !== 'pre') {
     throw new Error(
@@ -408,7 +424,21 @@ function ensureMainToNextBetaPreMode() {
   const existingPreState = readRepoJsonIfExists('.changeset/pre.json');
 
   if (existingPreState) {
-    validateMainToNextBetaPreState(existingPreState);
+    const reconciledPreState = reconcileBetaPreState(
+      existingPreState,
+      createMainToNextBetaPreState().initialVersions
+    );
+
+    if (
+      JSON.stringify(reconciledPreState) !== JSON.stringify(existingPreState)
+    ) {
+      writeRepoFile(
+        '.changeset/pre.json',
+        JSON.stringify(reconciledPreState, null, 2)
+      );
+      return { action: 'updated' };
+    }
+
     return { action: 'kept' };
   }
 

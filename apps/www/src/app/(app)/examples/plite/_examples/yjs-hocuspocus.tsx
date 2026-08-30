@@ -1,5 +1,18 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
+  yjs,
+  type YjsAwarenessLike,
+  type YjsProviderEvent,
+  type YjsProviderEventHandler,
+  type YjsProviderLike,
+  type YjsProviderStatus,
+} from 'platejs/yjs';
+import {
+  useYjsProviderStatus,
+  useYjsProviderSynced,
+  useYjsRemoteCursors,
+} from 'platejs/yjs/react';
+import {
   type Descendant,
   type Editor,
   type EditorUpdateTransaction,
@@ -7,28 +20,15 @@ import {
   type Path,
   type Range,
   RangeApi,
-} from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
+  Plite,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import {
-  yjs,
-  type YjsAwarenessLike,
-  type YjsProviderEvent,
-  type YjsProviderEventHandler,
-  type YjsProviderLike,
-  type YjsProviderStatus,
-} from '@platejs/yjs';
-import {
-  useYjsProviderStatus,
-  useYjsProviderSynced,
-  useYjsRemoteCursors,
-} from '@platejs/yjs/react';
+  useEditor,
+} from 'plitejs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
@@ -1154,7 +1154,7 @@ const ProviderBackedPeer = ({
   peer: PeerDefinition;
   provider: PliteHocuspocusProvider;
 }) => {
-  const editor = usePliteEditor<
+  const editor = useEditor<
     CustomValue,
     readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
   >({
@@ -1163,7 +1163,7 @@ const ProviderBackedPeer = ({
       yjs({
         clientId: peer.id,
         provider,
-        rootName: '@platejs/plite',
+        rootName: 'plitejs',
         seedProviderOnSync: peer.id === 'a',
       }),
     ],

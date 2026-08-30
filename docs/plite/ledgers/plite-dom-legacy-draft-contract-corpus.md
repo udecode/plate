@@ -14,8 +14,8 @@ status: active
 
 Draft contract rows:
 
-- `/Users/zbeyens/git/plite-draft/packages/plite-dom/test/bridge.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite-dom/test/clipboard-boundary.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/dom/bridge.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/dom/clipboard-boundary.ts`
 - draft release/deletion/docs owners under:
   - [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite-draft/release-file-review-ledger.md)
   - [package-end-state-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite-draft/archive/package-end-state-roadmap.md)
@@ -27,14 +27,14 @@ Legacy pressure:
 
 Current live owners:
 
-- `packages/plite-dom/src/index.ts`
-- `packages/plite-dom/src/plugin/dom-editor.ts`
-- `packages/plite-dom/src/plugin/with-dom.ts`
-- `packages/plite-dom/src/utils/**`
-- `packages/plite-dom/test/bridge.ts`
-- `packages/plite-dom/test/bridge.test.ts`
-- `packages/plite-dom/test/clipboard-boundary.ts`
-- `packages/plite-dom/test/clipboard-boundary.test.ts`
+- `packages/plitejs/src/dom/index.ts`
+- `packages/plitejs/src/dom/plugin/dom-editor.ts`
+- `packages/plitejs/src/dom/plugin/with-dom.ts`
+- `packages/plitejs/src/dom/utils/**`
+- `packages/plitejs/test/dom/bridge.ts`
+- `packages/plitejs/test/dom/bridge.test.ts`
+- `packages/plitejs/test/dom/clipboard-boundary.ts`
+- `packages/plitejs/test/dom/clipboard-boundary.test.ts`
 
 ## `keep-now`
 
@@ -45,8 +45,8 @@ Current live owners:
 
 Immediate current proof owners to restore or keep alive:
 
-- `packages/plite-dom/test/bridge.ts`
-- `packages/plite-dom/test/clipboard-boundary.ts`
+- `packages/plitejs/test/dom/bridge.ts`
+- `packages/plitejs/test/dom/clipboard-boundary.ts`
 
 Current read:
 

@@ -1,6 +1,10 @@
-import { getPlateRuntime } from '@platejs/core/internal';
-import { type BasePluginInput, PLUGINS, TrailingBlockPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  getPlateRuntime,
+  type BasePluginInput,
+  PLUGINS,
+  TrailingBlockPlugin,
+} from 'platejs';
+import { createEditor } from 'platejs/react';
 
 import { DiscussionKit } from './discussion';
 import { suggestionPlugin, SuggestionKit } from './suggestion';
@@ -8,7 +12,7 @@ import { suggestionPlugin, SuggestionKit } from './suggestion';
 const createSuggestionEditor = <const P extends readonly BasePluginInput[]>(
   plugins: P
 ) =>
-  createPlateEditor({
+  createEditor({
     plugins: [...DiscussionKit, ...(plugins ?? [])],
   });
 
@@ -26,7 +30,7 @@ describe('SuggestionKit', () => {
       hoverId: null,
     });
 
-    const trailingOnly = createPlateEditor({
+    const trailingOnly = createEditor({
       plugins: [TrailingBlockPlugin],
     });
 

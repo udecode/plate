@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 
 import React, { act } from 'react';
-import type { Descendant } from '../../../../../packages/plite/src/index.ts';
+import type { Descendant } from '../../../../../packages/plitejs/src/index.ts';
 import {
-  createReactEditor,
+  createEditor,
   Editable,
   Plite,
-} from '../../../../../packages/plite-react/src/index.ts';
-import { createPliteReactRenderCounter } from '../../../../../packages/plite-react/src/render-profiler.ts';
+} from '../../../../../packages/plitejs/src/react/index.ts';
+import { createPliteReactRenderCounter } from '../../../../../packages/plitejs/src/react/render-profiler.ts';
 import {
   mountApp,
   round,
@@ -34,7 +34,7 @@ const getCount = (byKey: Record<string, number>, key: string) =>
   byKey[key] ?? 0;
 
 const runScenario = async (scenario: ScenarioId, iteration: number) => {
-  const editor = createReactEditor({ initialValue: createValue(blockCount) });
+  const editor = createEditor({ initialValue: createValue(blockCount) });
   const counter = createPliteReactRenderCounter();
   const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
   let mounted: Awaited<ReturnType<typeof mountApp>> | null = null;

@@ -14,7 +14,7 @@ obvious block-start callers onto that API.
 4. Migrate the obvious block-start rule families:
    - basic blockquote / heading / hr
    - code fence
-   - list / list-classic
+   - list / legacy-list-model
    - block math
    - paste autolink text-before-selection
 5. Verify touched packages and the shipped app surface
@@ -43,7 +43,7 @@ obvious block-start callers onto that API.
   - `packages/basic-nodes`
   - `packages/code-block`
   - `packages/list`
-  - `packages/list-classic`
+  - `packages/platejs/src/features/list`
   - `packages/math`
   - `packages/link`
 - Added a new learning doc:
@@ -51,8 +51,8 @@ obvious block-start callers onto that API.
 
 ## Verification
 
-- `bun test packages/core/src/react/utils/inputRules.spec.tsx packages/basic-nodes/src/lib/BaseBlockquoteInputRules.spec.tsx packages/basic-nodes/src/lib/BaseHeadingInputRules.spec.tsx packages/code-block/src/lib/BaseCodeBlockPlugin.inputRules.spec.tsx packages/list/src/lib/inputRules.spec.tsx packages/list-classic/src/lib/BaseListInputRules.spec.tsx packages/math/src/lib/inputRules.spec.tsx packages/link/src/lib/internal/inputRules.spec.tsx`
+- `bun test packages/core/src/react/utils/inputRules.spec.tsx packages/basic-nodes/src/lib/BaseBlockquoteInputRules.spec.tsx packages/basic-nodes/src/lib/BaseHeadingInputRules.spec.tsx packages/code-block/src/lib/BaseCodeBlockPlugin.inputRules.spec.tsx packages/list/src/lib/inputRules.spec.tsx packages/platejs/src/features/list/src/lib/BaseListInputRules.spec.tsx packages/math/src/lib/inputRules.spec.tsx packages/link/src/lib/internal/inputRules.spec.tsx`
   - `33 pass, 0 fail`
-- `pnpm turbo build --filter=./packages/core --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/link --filter=./packages/list --filter=./packages/list-classic --filter=./packages/math --filter=./apps/www`
-- `pnpm turbo typecheck --filter=./packages/core --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/link --filter=./packages/list --filter=./packages/list-classic --filter=./packages/math --filter=./apps/www`
+- `pnpm turbo build --filter=./packages/core --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/link --filter=./packages/list --filter=./packages/platejs/src/features/list --filter=./packages/math --filter=./apps/www`
+- `pnpm turbo typecheck --filter=./packages/core --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/link --filter=./packages/list --filter=./packages/platejs/src/features/list --filter=./packages/math --filter=./apps/www`
 - `pnpm lint:fix`

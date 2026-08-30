@@ -1,7 +1,7 @@
 # Plate Next v7 sync: seven colocation packages
 
 Objective:
-Sync find-replace, link, suggestion, table, media, list-classic, and list to
+Sync find-replace, link, suggestion, table, media, legacy-list-model, and list to
 Plate Next doctrine v7 with owner-first colocation, inferred plugin callbacks,
 honest reusable capability stages, current fingerprints, and fresh proof.
 
@@ -75,7 +75,7 @@ Work Checklist:
 - [x] Sync suggestion helper/capability ownership and attest v7.
 - [x] Sync table command/capability/test families and attest v7.
 - [x] Sync media plugin/component/hook families and attest v7.
-- [x] Sync list-classic owner chain and attest v7.
+- [x] Sync legacy-list-model owner chain and attest v7.
 - [x] Sync list against the final unified `.extend()` and dependency-witness types.
 - [x] Run fresh seven-package type, fast, slow, build, lint, and barrel proof.
 - [x] Run Media registry test and live browser proof.
@@ -243,22 +243,22 @@ Expected rows: 159. Actual rows: 159. Missing: 0. Extra: 0. Deferred: 0.
 - [x] `packages/media/tsconfig.build.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
 - [x] `packages/media/tsconfig.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
 
-### list-classic (14/14)
+### legacy-list-model (14/14)
 
-- [x] `packages/list-classic/.npmignore` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/package.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/index.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/lib/BaseListPlugin.spec.tsx` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/lib/BaseListPlugin.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/lib/index.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/react/ListPlugin.spec.tsx` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/react/ListPlugin.tsx` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/react/index.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/react/useListToolbarButton.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/src/react/useTodoListElement.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/tsconfig.build.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
-- [x] `packages/list-classic/tsconfig.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/.npmignore` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/package.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/index.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/lib/BaseListPlugin.spec.tsx` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/lib/BaseListPlugin.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/lib/index.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/react/ListPlugin.spec.tsx` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/react/ListPlugin.tsx` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/react/index.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/react/useListToolbarButton.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/src/react/useTodoListElement.ts` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/tsconfig.build.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
+- [x] `packages/platejs/src/features/list/tsconfig.json` — score: 100 — verdict: current v7 owner shape — evidence: scoped source audit plus fresh type/test/build/lint/barrel proof
 
 ### list (14/14)
 
@@ -286,7 +286,7 @@ Package results:
 | suggestion | Queries/transforms staged honestly; one-use findProps logic inlined; proof families consolidated |
 | table | Flat scoped update verbs, staged reuse without editor/tx ferry parameters, durable algorithm boundaries, consolidated test families |
 | media | Embed/placeholder/media owners restored; Image, FloatingMedia, and Placeholder families colocated; consumer uses PlaceholderUpdates |
-| list-classic | Module behavior moved into the owner chain; toggle logic inlined; nested expanded-selection toggle regression fixed |
+| legacy-list-model | Module behavior moved into the owner chain; toggle logic inlined; nested expanded-selection toggle regression fixed |
 | list | Final minimal `.extend()` chain preserved; emitted dependency inference fixed at createBasePlugin rather than annotated locally |
 
 Source audit:
@@ -310,7 +310,7 @@ Version evidence:
 | suggestion | v7 | 17 | `sha256:00f2fa5fca4fbef94b004be39a0eae0774eeccb090e9763893ef9ad06324d6b5` | current | `docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md` |
 | table | v7 | 55 | `sha256:9c4583bc620cd71ef2abf977df08be37155d3e7d7ea43d5f2f56caa390d7af8f` | current | `docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md` |
 | media | v7 | 38 | `sha256:1490143a1a6a11d618a7777c3ff8bcac45f8e04010146f0b82a37dd96bbdcf41` | current | `docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md` |
-| list-classic | v7 | 14 | `sha256:617786c74dea6197a9d78191be0734ea64df541374e93bd95ca60f7ba73c2482` | current | `docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md` |
+| legacy-list-model | v7 | 14 | `sha256:617786c74dea6197a9d78191be0734ea64df541374e93bd95ca60f7ba73c2482` | current | `docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md` |
 | list | v7 | 14 | `sha256:b8ebcefde8a1685d838389b20716260e7532f1bcdba1aa4d86bb25f8b32c44b7` | current | `docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md` |
 
 Completion Gates:
@@ -339,7 +339,7 @@ Phase / pass table:
 
 Verification evidence:
 - `pnpm turbo typecheck` with all seven filters: 25/25 tasks.
-- `pnpm test packages/{find-replace,link,suggestion,table,media,list-classic,list}/src`:
+- `pnpm test packages/{find-replace,link,suggestion,table,media,legacy-list-model,list}/src`:
   609 main tests plus 8 secondary runtime-runner tests, all green.
 - `pnpm test:slow` on all seven source trees: 248/248.
 - Seven package `build` commands: all green, including List declaration emit.

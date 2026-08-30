@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 
 export const parsePackageManager = async (repo) => {
@@ -97,6 +97,31 @@ const runnerArgsFor = (packageManager, entry) => {
   return { command: 'node', args: [entry] };
 };
 
+const linkCurrentWorkspacePackages = async (repo, runDirectory) => {
+  const nodeModules = resolve(runDirectory, 'node_modules');
+
+  for (const packageName of ['platejs', 'plitejs']) {
+    const packageDirectory = resolve(repo, 'packages', packageName);
+
+    try {
+      const manifest = JSON.parse(
+        await readFile(resolve(packageDirectory, 'package.json'), 'utf8')
+      );
+
+      if (manifest.name !== packageName) continue;
+    } catch {
+      continue;
+    }
+
+    await mkdir(nodeModules, { recursive: true });
+    await symlink(
+      packageDirectory,
+      resolve(nodeModules, packageName),
+      process.platform === 'win32' ? 'junction' : 'dir'
+    );
+  }
+};
+
 export const benchmarkRepo = async ({
   benchmarkSource,
   env,
@@ -104,12 +129,14 @@ export const benchmarkRepo = async ({
   repo,
 }) => {
   const tempDir = resolve(repo, '.tmp', 'benchmarks');
-  await mkdir(tempDir, { recursive: true });
-
-  const filePath = resolve(
+  const runDirectory = resolve(
     tempDir,
-    `runner-${Date.now()}-${Math.random().toString(16).slice(2)}.mjs`
+    `run-${Date.now()}-${Math.random().toString(16).slice(2)}`
   );
+  const filePath = resolve(runDirectory, 'runner.mjs');
+
+  await mkdir(runDirectory, { recursive: true });
+  await linkCurrentWorkspacePackages(repo, runDirectory);
   await writeFile(filePath, benchmarkSource);
 
   let failed = false;
@@ -127,7 +154,7 @@ export const benchmarkRepo = async ({
     throw error;
   } finally {
     if (!failed || process.env.BENCHMARK_KEEP_FAILED_RUNNER !== '1') {
-      await rm(filePath, { force: true });
+      await rm(runDirectory, { force: true, recursive: true });
     }
   }
 };

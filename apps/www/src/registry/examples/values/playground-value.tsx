@@ -663,7 +663,7 @@ export const playgroundValue: EditorDocumentValue = {
     },
     // Callout
     {
-      children: [{ text: 'Callouts and Toggles' }],
+      children: [{ text: 'Callouts and Details' }],
       level: 3,
       type: 'heading',
     },

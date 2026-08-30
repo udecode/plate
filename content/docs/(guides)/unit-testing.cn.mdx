@@ -3,12 +3,18 @@ title: Plate 单元测试
 description: 学习如何对 Plate 编辑器和插件进行单元测试。
 ---
 
-本指南概述了使用 `@platejs/test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
+本指南概述了使用 `@platejs/test` 对 Plate 插件和组件进行单元测试的最佳实践。
 
 ## 安装
 
 ```bash
-npm install @platejs/test-utils
+npm install -D platejs @platejs/test
+```
+
+只有在测试导入 `@platejs/test/react` 时，才安装 React 测试 peer：
+
+```bash
+npm install -D react react-dom @testing-library/react
 ```
 
 ## 设置测试
@@ -18,7 +24,11 @@ npm install @platejs/test-utils
 ```typescript
 /** @jsx jsx */
 
-import { jsx } from '@platejs/test-utils';
+import {
+  jsx,
+  projectTestSelectionRange,
+  type TestEditorFixture,
+} from '@platejs/test';
 
 jsx; // so Biome doesn't remove unused imports
 ```
@@ -38,7 +48,7 @@ const input = (
       Hello<cursor /> world
     </hp>
   </editor>
-) as any as PlateEditor;
+) as TestEditorFixture;
 ```
 
 节点元素如 `<hp />`、`<hul />`、`<hli />` 表示不同类型的节点。
@@ -49,7 +59,7 @@ const input = (
 
 1. 创建输入状态
 2. 定义预期输出状态
-3. 使用 `createPlateEditor` 设置编辑器
+3. 使用 `createEditor` 设置编辑器
 4. 直接应用转换
 5. 断言编辑器的新状态
 
@@ -65,7 +75,7 @@ it('should apply bold formatting', () => {
         <focus />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
   const output = (
     <editor>
@@ -73,9 +83,9 @@ it('should apply bold formatting', () => {
         Hello <htext bold>world</htext>
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
-  const editor = createPlateEditor({
+  const editor = createEditor({
     plugins: [BoldPlugin],
     initialValue: input.children,
     selection: input.selection,
@@ -85,7 +95,7 @@ it('should apply bold formatting', () => {
     tx.marks.toggle('bold');
   });
 
-  expect(editor.children).toEqual(output.children);
+  expect(editor.read.children()).toEqual(output.children);
 });
 ```
 
@@ -101,7 +111,7 @@ it('should collapse selection on backspace', () => {
         He<anchor />llo wor<focus />ld
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
   const output = (
     <editor>
@@ -109,9 +119,9 @@ it('should collapse selection on backspace', () => {
         He<cursor />ld
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
-  const editor = createPlateEditor({
+  const editor = createEditor({
     initialValue: input.children,
     selection: input.selection,
   });
@@ -120,8 +130,10 @@ it('should collapse selection on backspace', () => {
     tx.text.deleteBackward({ unit: 'character' });
   });
 
-  expect(editor.children).toEqual(output.children);
-  expect(editor.selection).toEqual(output.selection);
+  expect(editor.read.children()).toEqual(output.children);
+  expect(editor.read.selection()).toEqual(
+    projectTestSelectionRange(output.selection)
+  );
 });
 ```
 
@@ -130,7 +142,7 @@ it('should collapse selection on backspace', () => {
 当你需要直接测试键盘处理程序时：
 
 ```typescript
-import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlatePlugin } from 'platejs/react';
 
 it('should call the keyDown handler', () => {
   const input = (
@@ -139,7 +151,7 @@ it('should call the keyDown handler', () => {
         Hello <anchor />world<focus />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
   // Create a mock handler to verify it's called
   const keyDownMock = jest.fn();
@@ -150,7 +162,7 @@ it('should call the keyDown handler', () => {
     },
   });
 
-  const editor = createPlateEditor({
+  const editor = createEditor({
     initialValue: input.children,
     selection: input.selection,
     plugins: [TestPlugin],
@@ -187,7 +199,7 @@ describe('Table plugin', () => {
           Test<cursor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as TestEditorFixture;
 
     const output = (
       <editor>
@@ -213,9 +225,9 @@ describe('Table plugin', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as PlateEditor;
+    ) as TestEditorFixture;
 
-    const editor = createPlateEditor({
+    const editor = createEditor({
       initialValue: input.children,
       selection: input.selection,
       plugins: [TablePlugin],
@@ -225,8 +237,10 @@ describe('Table plugin', () => {
       tx.insert.table({ colCount: 2, rowCount: 2 });
     });
 
-    expect(editor.children).toEqual(output.children);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.children()).toEqual(output.children);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 });
 ```
@@ -239,25 +253,25 @@ describe('Table plugin', () => {
 describe('when keepSelectedTextOnPaste is disabled', () => {
   it('replaces the selected text with the pasted url', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           start <anchor />
           of regular text
           <focus />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditorFixture;
 
     const output = (
-      <fragment>
+      <editor>
         <hp>
           start <ha url="https://google.com">https://google.com</ha>
           <htext />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditorFixture;
 
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: [
         LinkPlugin.configure({
           initialState: {
@@ -265,14 +279,15 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
           },
         }),
       ],
-      initialValue: input,
+      initialValue: input.children,
+      selection: input.selection,
     });
 
     editor.api.dom.clipboard.insertData({
       getData: (type: string) => (type === 'text/plain' ? 'https://google.com' : ''),
     } as any);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });
 ```

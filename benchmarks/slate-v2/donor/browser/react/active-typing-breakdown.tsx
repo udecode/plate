@@ -4,20 +4,20 @@ import React, { Profiler } from 'react';
 import type {
   Descendant,
   Element,
-} from '../../../../../packages/plite/src/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
 import {
   point as editorPoint,
   replace as editorReplace,
   string as editorString,
-} from '../../../../../packages/plite/src/internal/index.ts';
+} from '../../../../../packages/plitejs/src/internal/index.ts';
 import {
-  createReactEditor,
+  createEditor,
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,
   Plite,
-} from '../../../../../packages/plite-react/src/index.ts';
+} from '../../../../../packages/plitejs/src/react/index.ts';
 import { mountApp, now, summarizeMetrics } from '../../shared/react-benchmark';
 
 (globalThis as typeof globalThis & { React?: typeof React }).React = React;
@@ -80,7 +80,7 @@ const createRenderers = (counts: Counts) => {
 };
 
 const createMountedEditor = async () => {
-  const editor = createReactEditor();
+  const editor = createEditor();
   editorReplace(editor, {
     children: createChildren(),
     selection: null,
@@ -146,7 +146,7 @@ const promoteSegment = async ({
 }: {
   blockIndex: number;
   container: Element;
-  editor: ReturnType<typeof createReactEditor>;
+  editor: ReturnType<typeof createEditor>;
 }) => {
   const segmentIndex = Math.floor(blockIndex / segmentSize);
   const partialDOMPlaceholder = container.querySelector(

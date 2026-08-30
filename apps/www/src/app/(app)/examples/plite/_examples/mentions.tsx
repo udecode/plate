@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority';
 import {
   defineEditorSchema,
   property,
@@ -7,8 +8,8 @@ import {
   type SchemaElementFor,
   type SchemaText,
   TextApi,
-} from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
@@ -17,9 +18,8 @@ import {
   Plite,
   useEditorFocused,
   useElementSelected,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { cva } from 'class-variance-authority';
+  useEditor,
+} from 'plitejs/react';
 import {
   type KeyboardEvent,
   useCallback,
@@ -107,7 +107,7 @@ const MentionExample = () => {
   const [target, setTarget] = useState<Range | null>(null);
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), MentionSchema],
     initialValue: [
       {

@@ -39,11 +39,13 @@ npx shadcn@latest add @plate/plate-ui
 ### 安装 Plate
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
 <Callout type="note" title="插件依赖">
-  手动安装 Plate 时，您需要为要使用的每个插件添加特定的包。例如，如果您想使用 `AIMenu` 组件，则需要 `@platejs/ai` 及其依赖项。请查看每个组件的文档了解其所需的包，或使用 CLI 自动安装所需的包。
+  Plate 功能通过 `platejs/*` 子路径导入。请安装所用功能要求的可选 peer
+  依赖。例如，AI 需要 `@ai-sdk/react`、`ai` 和 Markdown peer
+  依赖。每个功能页面都会列出这些依赖；CLI 会随复制的组件一起安装。
 </Callout>
 
 ### 配置 CSS 变量
@@ -72,7 +74,7 @@ npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
 在编辑器中导入并使用它们：
 
 ```tsx showLineNumbers title="components/editor.tsx"
-import { Plate } from "platejs/react";
+import { BoldPlugin, Plate } from "platejs/react";
 import { FixedToolbar } from "@/components/editor/fixed-toolbar";
 import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
 // ... other imports
@@ -82,7 +84,7 @@ export function MyEditor() {
   return (
     <Plate editor={editor}>
       <FixedToolbar>
-        <MarkToolbarButton nodeType="bold" tooltip="Bold">B</MarkToolbarButton>
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
         {/* ... other toolbar buttons ... */}
       </FixedToolbar>
       {/* ... Editor component ... */}

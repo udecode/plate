@@ -30,8 +30,30 @@ Current priorities:
 
 ## Plate Rules
 
+- `packages/platejs` is Plate's sole editor distribution owner. Applications
+  install `platejs`; only that owner depends on or imports `plitejs`.
+- `packages/test` is Plate's sole public test distribution. It peers on
+  `platejs`, never imports `plitejs`, keeps headless fixtures in its Node-safe
+  root, and isolates React, DOM, Playwright, and proof harnesses behind
+  explicit subpaths. Test-runner differences do not justify more npm packages.
+- `platejs` reexports the approved Plite surface by identity and replaces only
+  an executable exception set. Runtime React code stays behind
+  `platejs/static` or `platejs/react`; the root and its required dependency
+  closure remain runnable without React.
+- Standard editor contracts live at `platejs` or `platejs/react`. The standard
+  feature set is basic nodes, basic styles, code block, indent, link, and list.
+  Their React adapters follow the same root ownership. Independent product
+  capabilities live at explicit `platejs/<feature>` or
+  `platejs/<feature>/react` entrypoints. One-owner helpers stay in their
+  entrypoint or copied registry item. Do not publish editor feature, utility,
+  React-utility, class-name, or wrapper packages to version Plate code
+  separately.
+- Do not add `platejs/basic` or a root `BasicKit`. The root exports individual
+  standard capabilities; application and registry source own preset membership
+  and ordering. A feature's current size does not decide ownership. Give it an
+  explicit entrypoint when it owns an independent workflow that can grow.
 - Keep Plate core unopinionated enough for framework use. Feature capability
-  belongs in its package; product policy belongs in app/registry kits and
+  belongs in its entrypoint; product policy belongs in app/registry kits and
   examples.
 - A behavior, API, or gate change needs an adoption story. "Cleaner" alone is
   not enough.
@@ -48,7 +70,7 @@ Current priorities:
 - Core stays lean. Keep invariants in their owner, plugin runtime values in
   `initialState` and its scoped store, and product policy app- or kit-owned;
   proven substitutable capabilities use
-  ordinary plugins or packages.
+  ordinary plugins or entrypoints.
 - Plugin authoring keeps one-owner behavior colocated and inferred. Public
   builders, configuration paths, and contribution namespaces each need a
   distinct user job; current assembly machinery is evidence, not doctrine.
@@ -76,16 +98,17 @@ Current priorities:
   different serialized identity belongs in `type`.
 - Public roots expose author contracts, not `Any*`, `Internal*`, compiler and
   normalization graphs, accumulators, or witnesses. Unparameterized editors
-  expose only guaranteed Core capabilities. React context retrieval is
-  non-generic: `useEditor()` and `useActiveEditor()` return the mounted Plate
-  contract, while selector hooks infer only their selected result. Exact
-  feature capabilities come from descriptor portals. Keep an editor generic
-  only when typed constructor/options input or an explicit editor argument
-  correlates it with the result. Do not pass an application definition, plugin
-  kit, or generated contract to `useEditor()` or `useActiveEditor()` as a type
-  assertion. Optional generated types belong at explicit static boundaries;
-  runtime construction owns capability inference and verification. Plite's
-  runtime type is `Editor`; Plate owns `BaseEditor` and `PlateEditor`.
+  expose only guaranteed Core capabilities. `platejs` and `platejs/react` call
+  the live editor type `Editor`; package and entrypoint establish the layer.
+  React creation uses `useCreateEditor(options, deps?)`, while
+  `useEditor({ id? })` and `useOptionalEditor({ id? })` retrieve mounted
+  editors without caller generics. Selector hooks infer only their
+  selected result. Exact feature capabilities come from descriptor portals.
+  Keep an editor generic only when typed constructor/options input or an
+  explicit editor argument correlates it with the result. Do not pass an
+  application definition, plugin kit, or generated contract to a context hook
+  as a type assertion. Optional generated types belong at explicit static
+  boundaries; runtime construction owns capability inference and verification.
 - Raw `PluginReference` carries nominal identity only; it has no definition
   generic or private witness. Concrete Base and Plate descriptors own the
   single invariant definition witness. Plite's root
@@ -119,7 +142,7 @@ Current priorities:
   Core owns that return-boundary repair.
 - `EditorExtensionTypeProvider` is the sole public value-sensitive capability
   bridge. Its higher-kinded encoding, normalized installed-capability carrier,
-  and transitive dependency expansion stay under `@platejs/plite/internal`.
+  and transitive dependency expansion stay private inside `plitejs`.
   They do not recursively encode exact dependency ancestry. Static portals
   prove a unique literal name and mutual capability assignability; runtime
   portals prove exact installed descriptor identity. Plite keeps
@@ -131,8 +154,9 @@ Current priorities:
 - Raw plugin tuples infer lightweight runtime capabilities and
   descriptor-local node shapes while keeping editor-wide `Value` broad. The
   ordinary application module exports one human-named readonly plugin kit and,
-  when needed, one human-named schema; `usePlateEditor` or `createPlateEditor`
-  maps them to its `plugins` and `schema` options. `plate generate` discovers
+  when needed, one human-named schema; `useEditor` or `createEditor` from the
+  appropriate `platejs` entrypoint maps them to its `plugins` and `schema`
+  options. `plate generate` discovers
   the unique exported plugin tuple and optional application schema by validated
   runtime shape, never fixed identifiers. It may emit committed exact `Editor`,
   `Value`, schema, mutation, and fingerprint artifacts. It never emits the
@@ -279,7 +303,7 @@ Current priorities:
   Feature packages must not activate built-in format typing through empty or
   side-effect type imports. Markdown is the concrete first-party case: Core
   owns its MDAST-facing authoring types and built-in `text/markdown` registry
-  entry, while `@platejs/markdown` owns the optional compiler/runtime. Truly
+  entry, while `platejs/markdown` owns the optional compiler/runtime. Truly
   optional or third-party format contracts stay outside Core behind an explicit
   type path. Installed feature plugins own their shipped format codecs. Compile
   those declarations once from the installed plugin graph; do not centralize
@@ -529,8 +553,8 @@ Current priorities:
   per subcomponent, public prop-bag hooks, speculative providers/stores, small
   component factories/HOCs, React 18 branches, or `forwardRef`. A separate
   state owner needs independent lifecycle or cross-family reuse.
-- A package may publish a headless React primitive when reusable DOM behavior
-  and accessibility are the contract. The package owns interaction mechanics
+- A React entrypoint may publish a headless primitive when reusable DOM behavior
+  and accessibility are the contract. The entrypoint owns interaction mechanics
   and positioning or hit-testing required for correct behavior; copied
   registry UI owns visual styles, labels, editor persistence, and product
   composition. Internal providers, stores, and prop hooks stay private.
@@ -550,7 +574,7 @@ Current priorities:
   composition. Package publication requires independent terminal consumers or
   a durable headless semantic, DOM, or accessibility contract. Siblings inside
   one component family are one owner, not reuse.
-- Keep feature-package React roots flat by default. A nested component/hook
+- Keep feature React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.
 - Treat each registry item as a source-distribution owner. Colocate integration
@@ -568,6 +592,10 @@ Current priorities:
   variants resolve at install time, expose one editor-facing contract, and
   write to one target; never ship runtime base switching or variant-only shared
   helpers.
+- The reusable presentation component in `editor.tsx` is `Editor`. A complete
+  block-owned `plate-editor.tsx` that creates the editor and mounts `Plate` is
+  `PlateEditor`. Name the higher composition instead of aliasing or renaming the
+  stable presentation component to `EditorSurface` or `EditorContent`.
 - Plate registry provider support is explicit and narrower than any upstream
   preset catalog. Base is the default; Radix remains explicit. Build docs and
   primitive-agnostic items once. A provider variant exists only for a named
@@ -576,13 +604,9 @@ Current priorities:
   direct owner instead of filtering an item or cloning its assembly.
   Unsupported provider/style routes fail closed. Preserve semantic item ids and
   materialize same-style Plate self-dependencies at the request boundary.
-- Registry surfaces dedicated to `*-classic`, including `list-classic`, are
-  maintenance-only pending deprecation. Do not add parity work, new variants,
-  shared abstractions, polish, demos, adoption, or API investment. Touch them
-  only for a user-facing regression, security or release blocker, or an
-  explicitly authorized deprecation/removal. New work targets the modern
-  registry surface; planned deprecation alone does not authorize deletion or a
-  broken supported-provider install.
+- Root `ListPlugin` owns list schema, transforms, codecs, React behavior, and
+  copied registry UI. Do not create a parallel persisted list model or an
+  alternative registry graph.
 - Preferred extension path is npm package distribution plus local app
   composition and registry usage for development.
 - If you build a plugin or component pack, host and maintain it in your own
@@ -646,9 +670,9 @@ inspection.
 
 Keep local when repeated logic is mostly node creation, mark toggling, list
 transforms, link validation or insertion, equation insertion, code-block
-insertion, or any semantic transform owned by a feature package.
+insertion, or any semantic transform owned by a feature entrypoint.
 
-Core owns matcher primitives and shared input-state access. Feature packages
+Core owns matcher primitives and shared input-state access. Feature entrypoints
 own semantic apply behavior.
 
 ## Plite Boundary
@@ -718,12 +742,12 @@ application identity.
   reproduce, route, or review from public context.
 - Core UI/components that are app-specific, one-off, or design-opinionated
   without broad reuse.
-- Optional plugins/features that can live as separate packages or app-local
-  code.
+- Optional plugins/features that can live in explicit `platejs` entrypoints or
+  app-local code.
 - Convenience abstractions that hide editor ownership, schema design, or trust
   boundaries.
 - Large framework detours that dilute the Plate-on-Plite model.
-- Heavy AI-specific orchestration in core when the existing plugin/package
+- Heavy AI-specific orchestration in core when the existing plugin/entrypoint
   surface is enough.
 - Full-doc translation sets beyond English and Chinese for now.
 

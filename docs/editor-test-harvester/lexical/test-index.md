@@ -1674,7 +1674,7 @@ target: indexed 2 test/describe lines; target packages/plite/test; add focused b
 
 category: portable
 family: ime-composition / history-undo-redo
-target: indexed 28 test/describe lines; target apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; packages/browser/src/playwright/ime.ts; packages/plite-history/test
+target: indexed 28 test/describe lines; target apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; packages/test/src/playwright/ime.ts; packages/plite-history/test
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs:37` test: {launchOptions: {slowMo: 50}});
 - `../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs:38` test: 'Composition', () => {
@@ -3490,7 +3490,7 @@ target: indexed 3 test/describe lines; target packages/plite/test; add focused b
 
 category: portable
 family: ime-composition / history-undo-redo
-target: indexed 9 test/describe lines; target apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; packages/browser/src/playwright/ime.ts; packages/plite-history/test
+target: indexed 9 test/describe lines; target apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; packages/test/src/playwright/ime.ts; packages/plite-history/test
 
 - `../lexical/packages/lexical-playground/__tests__/regression/8153-safari-ime-delete-selection.spec.mjs:36` test: 'Regression #8153', () => {
 - `../lexical/packages/lexical-playground/__tests__/regression/8153-safari-ime-delete-selection.spec.mjs:37` test: ({isCollab, page}) => initialize({isCollab, page}));

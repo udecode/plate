@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { jsx } from '@platejs/test-utils';
+import { jsx } from '@platejs/test';
 import type { EditorDocumentValue } from 'platejs';
 
 jsx;

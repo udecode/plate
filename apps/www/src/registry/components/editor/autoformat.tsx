@@ -1,10 +1,13 @@
 'use client';
 
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
-import type { BaseEditor } from 'platejs';
-import { defineBasePlugin, createTextSubstitutionInputRule } from 'platejs';
+import {
+  BaseCodeBlockPlugin,
+  createTextSubstitutionInputRule,
+  defineBasePlugin,
+  type Editor,
+} from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: BaseEditor) =>
+const isTextSubstitutionBlocked = (editor: Editor) =>
   editor.read.nodes.some({
     type: BaseCodeBlockPlugin,
   });

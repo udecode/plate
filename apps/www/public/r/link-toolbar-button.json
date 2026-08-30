@@ -4,7 +4,7 @@
   "title": "Link Toolbar Button",
   "description": "A toolbar control for link management.",
   "dependencies": [
-    "@platejs/link"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/link.json",

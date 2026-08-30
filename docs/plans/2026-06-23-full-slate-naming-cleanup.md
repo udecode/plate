@@ -150,7 +150,7 @@ Verification evidence:
 - `rg createPliteEditor` after rewrite -> only `content/docs/migration/v48.mdx`, accepted historical migration text.
 - `pnpm --filter @platejs/core build` -> passed in `.tmp/cut-slate-plugin-naming/full/build-core.final2.log`.
 - `sh .tmp/cut-slate-plugin-naming/full/typecheck-touched-packages.sh` -> 56 successful tasks in `.tmp/cut-slate-plugin-naming/full/typecheck-touched-packages.final3.log`.
-- Sequential package tests passed for `@platejs/ai`, `@platejs/toggle`, `@platejs/comment`, `@platejs/dnd`, `@platejs/selection`, `@platejs/list-classic`, `@platejs/suggestion`, `@platejs/basic-styles`, `@platejs/combobox`, `@platejs/table`, `@platejs/plite-hyperscript`, and `@platejs/plite-react` in `.tmp/cut-slate-plugin-naming/full/package-tests-sequential.final3.log`.
+- Sequential package tests passed for `@platejs/ai`, `@platejs/toggle`, `@platejs/comment`, `@platejs/dnd`, `@platejs/selection`, `platejs`, `@platejs/suggestion`, `@platejs/basic-styles`, `@platejs/combobox`, `@platejs/table`, `@platejs/plite-hyperscript`, and `@platejs/plite-react` in `.tmp/cut-slate-plugin-naming/full/package-tests-sequential.final3.log`.
 - `pnpm --filter www build:source` and `pnpm --filter www check:docs` passed.
 - Scoped Biome check for renamed docs/app/package-test files passed.
 - `pnpm brl` passed with 58 successful tasks.

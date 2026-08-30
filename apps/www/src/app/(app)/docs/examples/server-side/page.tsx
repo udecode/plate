@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 
-import { DocxPastePlugin } from '@platejs/docx-paste';
 import {
-  createBaseEditor,
+  createEditor,
   ExitBreakPlugin,
   TrailingBlockPlugin,
 } from 'platejs';
@@ -18,6 +17,7 @@ import { H2, H3, P } from '@/components/typography';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
+import { detailsValue } from '@/registry/examples/values/details-value';
 
 const title = 'Server-Side Example';
 const description = 'Server-side rendering example for Plate.';
@@ -50,16 +50,15 @@ export default function RSCPage() {
     // ... other necessary properties
   };
 
-  const editor = createBaseEditor({
+  const editor = createEditor({
     plugins: [
       ...BaseEditorKit,
 
       // Functionality
       ExitBreakPlugin,
       TrailingBlockPlugin,
-      DocxPastePlugin,
     ],
-    initialValue: [...basicBlocksValue, ...basicMarksValue],
+    initialValue: [...basicBlocksValue, ...basicMarksValue, ...detailsValue],
   });
 
   const md = editor.api.markdown.serialize();
@@ -77,7 +76,7 @@ export default function RSCPage() {
       <H3>Creating a Server-Side Editor</H3>
       <P>
         To use Plate on the server, you can leverage the{' '}
-        <Code>createBaseEditor</Code>
+        <Code>createEditor</Code>
         function. This allows you to create and manipulate Plate documents
         without a DOM environment.
       </P>

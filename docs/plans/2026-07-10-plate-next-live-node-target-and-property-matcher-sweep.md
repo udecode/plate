@@ -149,7 +149,7 @@ Review matrix:
 | Live-node type/ID rediscovery | 5 | hard-cut | Plite node target | Three initial Caption consumers; zero current rediscovery matches | Pass live node or resolve its path once. |
 | Exact metadata callbacks | 2 | simplify | Plite matcher | Scalar and one-of contracts pass | Keep property objects for exact metadata. |
 | Content/structure predicates | 0 | keep | Caller | `NodeApi.matches` deliberately excludes `text` and `children` | Keep callbacks. |
-| Path/computed predicates | 0 | keep | Caller | Tag and List Classic predicates consume path or computed membership | Keep callbacks. |
+| Path/computed predicates | 0 | keep | Caller | Tag and Legacy list model predicates consume path or computed membership | Keep callbacks. |
 | Predicate-only test doubles | 3 | repair | Owning specs | AI mock failure reproduced and fixed | Model both matcher forms. |
 
 Best Plate v2 recommendation:
@@ -190,7 +190,7 @@ Out-of-scope package drift:
 | Package / command | Error summary | Why not blocking | Owner / next |
 |-------------------|---------------|------------------|--------------|
 | AI | Full suite imports removed `createTSlatePlugin` | Focused `undoAI` shortcut behavior passes | AI Plate Next pass |
-| List / List Classic | Removed `useReadOnly`, missing package exports, and old transforms | Shortcut mocks are repaired; modules fail before target tests load | List package passes |
+| List / Legacy list model | Removed `useReadOnly`, missing package exports, and old transforms | Shortcut mocks are repaired; modules fail before target tests load | List package passes |
 | DnD, Excalidraw, Link, Math, Media, Tabbable, Table, Tag, Toggle | Removed Plate exports/APIs in unfinished package migrations | Broad typecheck failures predate and exceed this API-class change; focused Link/Excalidraw proof passes | One Plate Next pass per package |
 | `apps/www` route | App compile resolves the same unmigrated package exports | Docs consistency passes; route cannot render until package migration closes | App proof after package sweep |
 

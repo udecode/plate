@@ -35,10 +35,10 @@ docs:
 将套件加入插件列表：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { ColumnKit } from '@/components/editor/column';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...ColumnKit,
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/layout
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -63,10 +63,10 @@ npm install @platejs/layout
 将 `ColumnPlugin` 加入编辑器。它会把 `ColumnItemPlugin` 作为必需的结构依赖安装。
 
 ```tsx
-import { ColumnPlugin } from '@platejs/layout/react';
-import { createPlateEditor } from 'platejs/react';
+import { ColumnPlugin } from 'platejs/layout/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ColumnPlugin,
@@ -79,11 +79,11 @@ const editor = createPlateEditor({
 配置分栏组；需要替换依赖的渲染组件时，再加入完整的 `ColumnItemPlugin` 描述符。
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
-import { createPlateEditor } from 'platejs/react';
+import { ColumnPlugin, ColumnItemPlugin } from 'platejs/layout/react';
+import { createEditor } from 'platejs/react';
 import { ColumnGroupElement, ColumnElement } from '@/components/editor/column';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ColumnPlugin.configure({ component: ColumnGroupElement }),

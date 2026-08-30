@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 
-import { encodeContentSlice } from '../../../packages/plite/src/core/content-slice';
+import { encodeContentSlice } from '../../../packages/plitejs/src/core/content-slice';
 import {
   ContentSlice,
   type Descendant,
   ElementApi,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 

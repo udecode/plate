@@ -146,9 +146,9 @@ Legacy parity does not close the north-star lane by itself either.
 - `plite-history` is now materially closed enough on top of settled core
   `slate`:
   - direct kept-row proof lives in
-    `packages/plite-history/test/history-contract.ts`
+    `packages/plitejs/test/history/history-contract.ts`
   - batching / save / merge / stack-write / commit-order proof lives in
-    `packages/plite-history/test/integrity-contract.ts`
+    `packages/plitejs/test/history/integrity-contract.ts`
   - the live compare owner exists again:
     `bun run bench:history:compare:local`
   - latest compare read is faster than legacy across the measured p95 lanes:
@@ -161,9 +161,9 @@ Legacy parity does not close the north-star lane by itself either.
   `slate` and settled support-package `plite-history`:
   - package-local test/build/typecheck/lint are green
   - fixture parsing and cursor/selection construction stay owned by
-    `packages/plite-hyperscript/test/index.spec.ts`
+    `packages/plitejs/test/hyperscript/index.spec.ts`
   - draft smoke rows now have a direct Bun-owned proof owner in
-    `packages/plite-hyperscript/test/smoke-contract.ts`
+    `packages/plitejs/test/hyperscript/smoke-contract.ts`
   - the small public creation surface stays preserved:
     - `createHyperscript`
     - `createEditor`

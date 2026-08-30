@@ -62,32 +62,32 @@ apps/www/src/registry/app/api/ai/command/utils.ts:236:    const [_, end] = Range
 apps/www/src/registry/app/api/ai/command/utils.ts:282:  if (!editor.selection) return false;
 apps/www/src/registry/app/api/ai/command/utils.ts:286:      at: editor.selection!,
 apps/www/src/registry/app/api/ai/command/utils.ts:296:  const selection = editor.selection;
-packages/list-classic/src/lib/transforms/moveListItems.ts:29:    at = editor.selection ?? undefined,
-packages/list-classic/src/lib/transforms/toggleList.ts:29:      if (!editor.selection) {
-packages/list-classic/src/lib/transforms/toggleList.ts:99:        const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:19:  if (!editor.selection) {
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:43:        editor.selection!.focus,
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:65:        isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:68:            anchor: editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/moveListItems.ts:29:    at = editor.selection ?? undefined,
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:29:      if (!editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:99:        const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:19:  if (!editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:43:        editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:65:        isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:68:            anchor: editor.selection!.focus,
 packages/core/src/lib/plugins/input-rules/createInputRules.ts:300:      if (match.beforeEndMatchPoint !== editor.selection?.anchor) {
 packages/core/src/lib/plugins/input-rules/createInputRules.ts:304:            focus: editor.selection!.anchor,
 packages/core/src/lib/plugins/input-rules/createInputRules.ts:757:  const selection = editor.selection;
 packages/core/src/lib/plugins/input-rules/createInputRules.ts:809:      if (!editor.selection || !hasCollapsedSelection(editor)) return;
-packages/list-classic/src/lib/transforms/insertListItem.ts:24:  if (!editor.selection) {
-packages/list-classic/src/lib/transforms/insertListItem.ts:59:        editor.selection!.focus,
-packages/list-classic/src/lib/transforms/insertListItem.ts:91:            anchor: editor.selection!.focus,
-packages/list-classic/src/lib/BaseTodoListPlugin.ts:32:        if (!editor.selection) return next();
+packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts:24:  if (!editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts:59:        editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts:91:            anchor: editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts:32:        if (!editor.selection) return next();
 packages/tabbable/src/lib/findTabDestination.ts:94:  const selectionPath = editor.selection?.anchor?.path || [];
-packages/list-classic/src/lib/internal/editorQueries.ts:103:      at: editor.selection!.focus,
-packages/list-classic/src/lib/internal/editorQueries.ts:107:    return !!block && state.points.isEnd(editor.selection!.focus, block[1]);
-packages/list-classic/src/lib/internal/editorQueries.ts:114:      at: editor.selection!,
-packages/list-classic/src/lib/ListClassicExtension.ts:304:    state.points.after(editor.selection!.focus)
-packages/list-classic/src/lib/ListClassicExtension.ts:317:    at: editor.selection!.anchor,
-packages/list-classic/src/lib/ListClassicExtension.ts:415:      state.points.after(editor.selection!.focus)
-packages/list-classic/src/lib/ListClassicExtension.ts:421:        anchor: editor.selection!.anchor,
-packages/list-classic/src/lib/ListClassicExtension.ts:661:                state.points.before(editor.selection!.focus)
-packages/list-classic/src/lib/ListClassicExtension.ts:670:                  anchor: editor.selection!.anchor,
-packages/list-classic/src/lib/ListClassicExtension.ts:831:        if (!editor.selection) return next();
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:103:      at: editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:107:    return !!block && state.points.isEnd(editor.selection!.focus, block[1]);
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:114:      at: editor.selection!,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:304:    state.points.after(editor.selection!.focus)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:317:    at: editor.selection!.anchor,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:415:      state.points.after(editor.selection!.focus)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:421:        anchor: editor.selection!.anchor,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:661:                state.points.before(editor.selection!.focus)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:670:                  anchor: editor.selection!.anchor,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:831:        if (!editor.selection) return next();
 packages/link/src/react/transforms/submitFloatingLink.ts:12:  if (!editor.selection) return;
 packages/link/src/lib/transforms/upsertLink.ts:140:  const path = editor.selection?.focus.path;
 packages/link/src/lib/transforms/unwrapLink.ts:19:    const at = options?.at ?? editor.selection ?? undefined;

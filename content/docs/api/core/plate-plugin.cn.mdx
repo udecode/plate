@@ -139,7 +139,7 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 
 ```ts
 type OnNodeChange = (
-  ctx: PlatePluginContext & EditorNodeChangeContext<PlateEditor>
+  ctx: PlatePluginContext & EditorNodeChangeContext<Editor>
 ) => HandlerReturnType;
 ```
 
@@ -157,7 +157,7 @@ type OnNodeChange = (
 
 ```ts
 type OnTextChange = (
-  ctx: PlatePluginContext & EditorTextChangeContext<PlateEditor>
+  ctx: PlatePluginContext & EditorTextChangeContext<Editor>
 ) => HandlerReturnType;
 ```
 
@@ -418,7 +418,7 @@ update method。
 <APIItem name="conflicts" type="readonly (EditorExtensionReference | PluginReference)[]">
   不能与当前插件同时安装的 Plate plugin 或 raw Plite extension descriptor。两种
   reference type 都可以从 `platejs` 导入；Plite-only library 也可以从
-  `@platejs/plite` 导入 `EditorExtensionReference`。
+  `platejs` 导入 `EditorExtensionReference`。
 </APIItem>
 
 <APIItem name="readMiddleware" type="EditorExtensionReadMiddlewareFactory">
@@ -565,7 +565,7 @@ factory，或使用前一阶段新增类型。
   `on`、`activate` 和 `validate`：直接声明在插件上的原生 Plite 能力
 - `codecs`：context-bound `defineCodecs` 返回的 declaration
 
-独立复用的 standalone Plite descriptor 使用从 `@platejs/plite` import 的
+独立复用的 standalone Plite descriptor 使用从 `platejs` import 的
 `defineExtension`。Plate 插件在根级声明相同的原生能力。
 
 Self/product codec 使用 `defineCodecs(map)`；foreign codec 使用
@@ -585,7 +585,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 
 <API name="Context">
   <APIAttributes>
-    <APIItem name="editor" type="PlateEditor">
+    <APIItem name="editor" type="Editor">
       当前编辑器实例。
     </APIItem>
     <APIItem name="plugin" type="ResolvedPlatePlugin<D>">

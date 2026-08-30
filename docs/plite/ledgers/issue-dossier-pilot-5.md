@@ -72,8 +72,8 @@ Evidence:
   boundary bridge cluster.
 - duplicate/stale/invalid proof: none.
 - live GitHub checked: yes, open, `bug` label.
-- current v2 proof: `packages/plite-dom/test/bridge.ts`;
-  `packages/plite-dom/test/dom-coverage.ts`;
+- current v2 proof: `packages/plitejs/test/dom/bridge.ts`;
+  `packages/plitejs/test/dom/dom-coverage.ts`;
   `docs/plans/2026-05-04-plite-full-issue-ledger-architecture-ralplan.md`;
   `docs/plans/2026-05-04-plite-full-issue-ledger-architecture-ralplan-issue-matrix.md`.
 
@@ -178,7 +178,7 @@ Evidence:
 - live GitHub checked: yes, open, `improvement` label.
 - current v2 proof: `docs/plite/ledgers/issue-coverage-matrix.md`;
   `docs/plite/references/pr-description.md`;
-  `packages/plite/test/state-tx-public-api-contract.ts`.
+  `packages/plitejs/test/state-tx-public-api-contract.ts`.
 
 Decision:
 Keep the exact `Fixes #6013` claim. Plite makes editor initialization own the

@@ -1,14 +1,17 @@
-import { createEditor, defineEditorSchema, schema } from '@platejs/plite';
-import {
-  createEditorFixture,
-  createHyperscript,
-} from '@platejs/plite-hyperscript';
-
-import { createElement } from '../packages/plite-hyperscript/src/creators.ts';
 import {
   initializeEditorSchemaDocument,
   setCurrentSelection,
-} from '../packages/plite/src/core/public-state.ts';
+} from '../packages/plitejs/src/core/public-state.ts';
+import { createElement } from '../packages/plitejs/src/hyperscript/creators.ts';
+import {
+  createEditorFixture,
+  createHyperscript,
+} from '../packages/plitejs/src/hyperscript/index.ts';
+import {
+  createEditor,
+  defineEditorSchema,
+  schema,
+} from '../packages/plitejs/src/index.ts';
 
 export const getFixtureElementType = (tagName, attributes = {}) => {
   const inline = tagName === 'inline' || attributes.inline === true;

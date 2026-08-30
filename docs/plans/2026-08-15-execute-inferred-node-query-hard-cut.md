@@ -240,7 +240,7 @@ Completion Gates:
 | Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | Existing major changesets for `@platejs/plite` and `@platejs/core` teach the exact hard cut and migration call sites. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: this is package API/runtime work; registry source remained outside this task's write authority. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: published package users see a breaking delta. |
-| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Plite/Core/List Classic focused proof, 53-package graph, full fast tests, www, and strict Plite gate all pass. |
+| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Plite/Core/Legacy list model focused proof, 53-package graph, full fast tests, www, and strict Plite gate all pass. |
 | Barrel/export generation | yes | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | `pnpm brl`: 56/56 tasks passed. |
 | Agent source / generated sync | yes | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | `pnpm install` applied Skiller and synced required resources; source/mirror searches and Plate Next v78 validation pass. |
 | Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | `best-api`, `plate-next`, and `plate-plugin-creator` each teach independent `type`, function-only `match`, and no caller result generic. |
@@ -360,7 +360,7 @@ Implementation notes:
 - Explicit path-position splitting resolves the selected ancestor and still
   forces boundary splits. Focused runtime rows cover interior and zero-boundary
   positions.
-- One List Classic regression exposed a migrated misuse of exact `nodes.get`
+- One Legacy list model regression exposed a migrated misuse of exact `nodes.get`
   filtering as a type assertion. Removing the fake filter restored ancestor
   traversal from text selections and the editor root. A repo-wide exact-get
   audit found no sibling misuse.
@@ -401,14 +401,14 @@ Error attempts:
 |------------------------|-------|---------------------|------------|
 | Exact final-schema projection on every direct one-shot structural mutation exhausted Node's normal 4 GB heap | 3 | Keep exact final-schema inference on reads, transactions, and direct set/unset; use broad `Element` plus descriptor guards on the remaining one-shot callbacks | Full EditorKit/www typecheck passes under the normal heap without publishing a false exact type. |
 | Full strict Plite package tests executed a compile-only static parent contract at module load | 1 | Make the whole compile contract inert rather than seeding fake runtime data | Plite package tests pass 1,441/1,441 and strict proof passes. |
-| List Classic lost ancestor traversal after exact `get` filtered a text/root path | 1 | Remove type-assertion filters and let `above` own ancestor selection | List Classic passes 90/90; repo-wide exact-get audit found no equivalent misuse. |
+| Legacy list model lost ancestor traversal after exact `get` filtered a text/root path | 1 | Remove type-assertion filters and let `above` own ancestor selection | Legacy list model passes 90/90; repo-wide exact-get audit found no equivalent misuse. |
 
 Verification evidence:
 - `pnpm --filter @platejs/plite typecheck`: pass.
 - `pnpm --filter @platejs/core typecheck`: pass, including declaration
   contracts.
-- `pnpm --filter @platejs/list-classic typecheck`: pass.
-- `pnpm --filter @platejs/list-classic test`: 90 passed.
+- `pnpm --filter platejs typecheck`: pass.
+- `pnpm --filter platejs test`: 90 passed.
 - `bun test --preload ./config/plite-source-test-setup.ts
   ./packages/plite/test/transforms-contract.ts`: 52 passed.
 - `bun run test`: 3,110 passed, 0 failed across 346 files, plus every bounded
@@ -463,7 +463,7 @@ Timeline:
   Plite/Plate, hard-cut, TDD, docs, changeset, best-api, and agent-native owners.
 - 2026-08-15T15:40:00+02:00 Full fast tests, the 53-package typecheck graph,
   www integration, lint, barrels, API reference, doctrine sync, and strict
-  Plite/Chromium proof passed after the compile-contract and List Classic
+  Plite/Chromium proof passed after the compile-contract and Legacy list model
   regressions were repaired.
 - 2026-08-15T17:43:53+02:00 Final direct-generic and raw-node audits, barrels,
   lint, Plate Next v78 validation/tests, diff check, and clean two-pass P2

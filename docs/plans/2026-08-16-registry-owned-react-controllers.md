@@ -63,7 +63,7 @@ Constraints:
 - Do not run `build:registry` or manually edit `templates/**`.
 - Preserve semantic feature behavior. This migration changes ownership and
   public React surface, not document semantics or Plite runtime law.
-- The current prompt explicitly authorizes the audited `list-classic`
+- The current prompt explicitly authorizes the audited `legacy-list-model`
   ownership cleanup despite its maintenance-only status. Do not add features,
   variants, or polish there.
 
@@ -175,7 +175,7 @@ Completion Gates:
 | Agent-native review | pass | Load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted findings, or record N/A | PASS: agent route -> rule source -> generated skill -> validation commands is complete; no findings |
 | Public API / package boundary proof | pass | Source-audit public API, exports, and package boundary impact | Zero moved/deleted names remain in package source; zero internal hooks remain in public barrels |
 | Release artifact classification | pass | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Public package hook cuts use package changesets; copied registry behavior uses one registry changelog event |
-| Published package changeset | pass | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | AI, combobox, comment, emoji, floating, link, list-classic, math, media, table, tag, selection, dnd, and utils changesets repaired |
+| Published package changeset | pass | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | AI, combobox, comment, emoji, floating, link, legacy-list-model, math, media, table, tag, selection, dnd, and utils changesets repaired |
 | Registry changelog | pass | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | Existing direct-component-family event updated; generator/check reports 61/61 events |
 | No release artifact | pass | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A beyond the explicit agent-only doctrine files, which are represented by v88 rather than a package release |
 | Package typecheck/build/test | pass | Run owning package checks or record N/A with reason | 60/60 root package build and typecheck; affected `www` and 16-package graph passed earlier |
@@ -218,7 +218,7 @@ Decision ledger:
 | UI plugin state | Package plugin stores product popover/hotkey/picker state | Registry-owned extension colocated with the consuming family/kit | Registry item | Product composition belongs to app/registry | Move emoji/link/media/table UI state and consumers | Typecheck, focused tests, Browser | Optional dependency wiring | accept |
 | Internal hooks | Package implementation hooks are root-exported | Keep private beside real subsystem owner | Package | Access is not public ownership | Remove barrel exports and external imports | Export scan and package tests | Hidden consumer | accept |
 | Redundant hooks | Thin wrappers over existing plugin/editor primitives | Delete; call the canonical primitive | Package/registry | Avoid alternatives and prop-hook pipelines | Adopt all callers | Zero-symbol search | Behavior mismatch | accept |
-| Classic list | Maintenance-only public hooks remain in accepted manifest | Ownership-only migration, no feature investment | Registry `list-classic` and package | Current prompt explicitly authorizes full accepted ledger | Move four UI-only hooks; preserve behavior | Focused type/test proof | Deprecated surface churn | accept, narrowly |
+| Legacy list model | Maintenance-only public hooks remain in accepted manifest | Ownership-only migration, no feature investment | Registry `legacy-list-model` and package | Current prompt explicitly authorizes full accepted ledger | Move four UI-only hooks; preserve behavior | Focused type/test proof | Deprecated surface churn | accept, narrowly |
 | Plite/Core hooks | Generic runtime/view infrastructure | Keep | Plite/Core | Real substrate and independent consumers | None | Exclusion audit | Scope creep | keep |
 
 ## Complete Hook Manifest
@@ -238,10 +238,10 @@ new live row rather than silently changing the denominator.
 | emoji | `useEmojiPicker` | `emoji-picker.tsx` family plus registry-owned UI state extension |
 | floating | `useFloatingToolbar` | `floating-toolbar.tsx` family |
 | link | `useFloatingLink` | link toolbar family plus registry-owned UI state extension |
-| list-classic | `useListToolbarButtonState` | classic list toolbar family |
-| list-classic | `useListToolbarButton` | classic list toolbar family |
-| list-classic | `useTodoListElementState` | classic todo element family |
-| list-classic | `useTodoListElement` | classic todo element family |
+| legacy-list-model | `useListToolbarButtonState` | legacy list model toolbar family |
+| legacy-list-model | `useListToolbarButton` | legacy list model toolbar family |
+| legacy-list-model | `useTodoListElementState` | classic todo element family |
+| legacy-list-model | `useTodoListElement` | classic todo element family |
 | math | `useEquation` | equation registry family |
 | media | `useImagePreview` | media image/preview family |
 | media | `useFloatingMedia` | media toolbar family plus registry-owned UI state extension |
@@ -307,7 +307,7 @@ Execution slices:
 | 1. Live manifest | `plate-ui` | refresh all package `use*` declarations and terminal consumers | 53-row baseline | zero unmapped live rows | scripted/recorded source enumeration and counts |
 | 2. Registry controllers A | registry + combobox/emoji/floating/link | move local controllers, hotkeys, stores, extensions | locked rows | package exports/callers removed; registry behavior preserved | package/www typecheck, focused tests, Browser routes |
 | 3. Registry controllers B | registry + ai/comment/math/media | move local controllers and preview/toolbar state | locked rows | honest registry owners and thin package semantics | package/www typecheck, focused tests, Browser routes |
-| 4. Registry controllers C | registry + table/tag/list-classic | move table transient state and remaining UI hooks | locked rows | package table primitives accept explicit inputs; classic behavior unchanged | package/www typecheck, focused tests, Browser routes |
+| 4. Registry controllers C | registry + table/tag/legacy-list-model | move table transient state and remaining UI hooks | locked rows | package table primitives accept explicit inputs; classic behavior unchanged | package/www typecheck, focused tests, Browser routes |
 | 5. Package surface cleanup | dnd/selection/toggle/utils and all moved packages | internalize nine, delete four, cut barrels | moved rows closed | zero stale exports/imports, no compatibility wrappers | `pnpm brl`, package tests/typechecks, symbol scans |
 | 6. Adoption/release | docs, registry metadata, changesets/changelog | current-state docs, dependencies, release artifacts | final source shape | every public cut and copied item install is honest | source-backed docs audit, registry checks, MDX build when needed |
 | 7. Closure | repo | lint, root check, Browser, P2 review, plan checker | all focused gates green | no accepted P0-P2 findings and complete goal | `pnpm lint:fix`, `pnpm check`, Browser evidence, autoreview, `check-complete` |
@@ -358,7 +358,7 @@ Decisions and tradeoffs:
 - Hard-cut public exports. No deprecated aliases, forwarding hooks, or dual
   ownership.
 - Treat the current prompt as explicit authority for the narrow
-  `list-classic` ownership migration, not broader investment.
+  `legacy-list-model` ownership migration, not broader investment.
 
 Review fixes:
 - Root lint rejected synchronous state derivation in the newly colocated

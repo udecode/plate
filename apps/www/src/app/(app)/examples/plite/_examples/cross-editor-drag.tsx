@@ -1,9 +1,9 @@
 'use client';
 
-import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
+import { Editable, Plite, useEditor } from 'plitejs/react';
 
 const DragEditor = ({ label, text }: { label: string; text: string }) => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'paragraph',

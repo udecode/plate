@@ -72,12 +72,8 @@ shape.
 
 When building or changing Plate registry items:
 
-- exclude `*-classic` items, including `list-classic`, from proactive parity,
-  modernization, new abstractions, polish, demos, and adoption work; they are
-  maintenance-only pending deprecation. This does not permit an item-level
-  provider exclusion: every retained public item installs through every
-  supported Plate provider, with coupling repaired at the direct owner instead
-  of cloning the assembly
+- keep list parity work on the standard list registry graph; do not create an
+  alternative persisted list model or copied UI family
 - check `../shadcn` first
 - copy upstream file/layout/helper patterns when they fit
 - prefer upstream naming and dependency structure over Plate-specific novelty

@@ -1,5 +1,10 @@
 /** @jsx jsx */
 
+import { jsx } from '@platejs/test';
+import { BaseListPlugin, BaseParagraphPlugin, createEditor } from 'platejs';
+import { DocxPastePlugin } from 'platejs/docx';
+import { JuicePlugin } from 'platejs/juice';
+import { ImagePlugin } from 'platejs/media/react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -10,24 +15,15 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
   HorizontalRulePlugin,
-} from '@platejs/basic-nodes/react';
-import {
   TextAlignPlugin,
   TextIndentPlugin,
   LineHeightPlugin,
-} from '@platejs/basic-styles/react';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { DocxPastePlugin } from '@platejs/docx-paste';
-import { IndentPlugin } from '@platejs/indent/react';
-import { JuicePlugin } from '@platejs/juice';
-import { LinkPlugin } from '@platejs/link/react';
-import { BaseListPlugin } from '@platejs/list';
-import { ImagePlugin } from '@platejs/media/react';
-import { TablePlugin } from '@platejs/table/react';
-import { jsx } from '@platejs/test-utils';
-import { BaseParagraphPlugin } from 'platejs';
+  CodeBlockPlugin,
+  IndentPlugin,
+  LinkPlugin,
+} from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 
-import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor';
 import { readTestFile } from './readTestFile';
 
 jsx;
@@ -64,7 +60,7 @@ export const testDocxDeserializer = ({
   plugins?: any[];
 }) => {
   it('deserialize', () => {
-    const actual = createBaseEditor({
+    const actual = createEditor({
       plugins: [
         ...plugins,
         ImagePlugin,

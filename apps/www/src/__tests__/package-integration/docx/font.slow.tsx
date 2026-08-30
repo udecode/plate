@@ -1,13 +1,13 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@platejs/test';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
   FontWeightPlugin,
-} from '@platejs/basic-styles/react';
-import { jsxt } from '@platejs/test-utils';
+} from 'platejs/react';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 

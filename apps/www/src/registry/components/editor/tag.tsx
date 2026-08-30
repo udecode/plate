@@ -1,15 +1,15 @@
 'use client';
 
-import type { MultiSelectPlugin } from '@platejs/tag/react';
-import Link from 'next/link';
 import type { LinkProps } from 'next/link';
-import type { PlateElementProps } from 'platejs/react';
+import Link from 'next/link';
 import {
+  type PlateElementProps,
   PlateElement,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
 } from 'platejs/react';
+import type { MultiSelectPlugin } from 'platejs/tag/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

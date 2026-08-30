@@ -1,12 +1,12 @@
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 export function PlateEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: BasicNodesKit,
     initialValue: value,
   });

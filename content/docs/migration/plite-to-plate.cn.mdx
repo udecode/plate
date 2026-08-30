@@ -10,7 +10,7 @@ Plate 构建于 Plite 之上，因此从纯 Plite 实现迁移到 Plate 相对�
 首先，安装必要的 Plate 包。如果您是 Plate 的新用户，可以先阅读[介绍](/docs/installation)了解库的概况。
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
 ## 2. 替换 Plite 导入
@@ -19,23 +19,23 @@ npm install platejs
 
 ```ts
 // 之前
-import { createBaseEditor } from '@platejs/plite';
-import { Plite, Editable, withReact } from '@platejs/plite-react';
+import { createEditor } from 'plitejs';
+import { Plite, Editable, withReact } from 'plitejs/react';
 
 // 之后
-import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
+import { createEditor, Plate, PlateContent } from 'platejs/react';
 ```
 
 ## 3. 创建 Plate 编辑器
 
-将 `createBaseEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
+将 Plite 创建器、`withHistory` 和 `withReact` 替换为 Plate 的 `createEditor`：
 
 ```ts
 // 之前
-const editor = useMemo(() => withReact(withHistory(createBaseEditor())), []);
+const editor = useMemo(() => withReact(withHistory(createEditor())), []);
 
 // 之后
-const editor = createPlateEditor({
+const editor = createEditor({
   initialValue: value,
   plugins: [
     // 在此处添加其他插件
@@ -76,8 +76,8 @@ const renderElement = useCallback(({ attributes, children, element }) => {
 }, []);
 
 // 之后
-import { definePlatePlugin, schema } from 'platejs';
-import { PlateElement, type PlateElementProps } from 'platejs/react';
+import { schema } from 'platejs';
+import { definePlatePlugin, PlateElement, type PlateElementProps } from 'platejs/react';
 import { cn } from '@/lib/utils';
 
 export function ParagraphElement(
@@ -221,7 +221,7 @@ const plugins = [
   // ... 其他插件
 ];
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins,
 });
 ```

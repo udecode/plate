@@ -259,7 +259,7 @@ Boundaries:
 - docs/browser surfaces: no apps/www, content docs, registry, or Browser proof;
   package review proof is package-local unless a public behavior blocker proves
   a separately owned route requirement
-- non-goals: no List Classic execution, no broad package sweep, no Core sweep,
+- non-goals: no Legacy list model execution, no broad package sweep, no Core sweep,
   no rename pass, no unrelated docs/examples/callers, no compatibility layer
 - out-of-scope package errors: record and defer unless caused by a named/touched
   package or smallest owner change
@@ -283,7 +283,7 @@ Current verdict:
 - next owner: plate-next
 - keep / revert / quarantine call: undecided per package until origin/main,
   source, inference, behavior, and proof audits close
-- reason: List Classic is already explicitly deferred to its Plate Plan; this
+- reason: Legacy list model is already explicitly deferred to its Plate Plan; this
   invocation redirects to the next untouched batch rather than repeating it
 
 Start Gates:

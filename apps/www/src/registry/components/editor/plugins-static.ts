@@ -6,6 +6,7 @@ import { BaseCodeBlockKit } from './code-block-static';
 import { BaseColumnKit } from './column-static';
 import { BaseCommentKit } from './comment-static';
 import { BaseDateKit } from './date-static';
+import { BaseDetailsKit } from './details-static';
 import { BaseFontKit } from './font-static';
 import { BaseFootnoteKit } from './footnote-static';
 import { BaseLineHeightKit } from './line-height-static';
@@ -18,13 +19,12 @@ import { BaseMentionKit } from './mention-static';
 import { BaseSuggestionKit } from './suggestion-static';
 import { BaseTableKit } from './table-static';
 import { BaseTocKit } from './toc-static';
-import { BaseToggleKit } from './toggle-static';
 
 export const BaseEditorKit = [
   ...BaseBasicBlocksKit,
   ...BaseCodeBlockKit,
   ...BaseTableKit,
-  ...BaseToggleKit,
+  ...BaseDetailsKit,
   ...BaseTocKit,
   ...BaseMediaKit,
   ...BaseCalloutKit,

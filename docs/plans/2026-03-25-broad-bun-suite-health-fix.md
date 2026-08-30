@@ -52,7 +52,7 @@ Make the broad Bun package-graph sweep honest again after the non-React coverage
 - Package slice:
   - `bun test packages/table/src`
 - Broad sweep:
-  - `bun test packages/link/src packages/markdown/src packages/core/src packages/autoformat/src packages/basic-nodes/src packages/table/src packages/list-classic/src packages/suggestion/src`
+  - `bun test packages/link/src packages/markdown/src packages/core/src packages/autoformat/src packages/basic-nodes/src packages/table/src packages/platejs/src/features/list/src packages/suggestion/src`
 - Noise cleanup:
   - `bun test packages/core/src/react/stores/element/useElementStore.spec.tsx`
 - Build-first gate:

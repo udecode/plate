@@ -1,5 +1,5 @@
 ---
-'@platejs/plite-history': major
+'plitejs': major
 ---
 
 - Add validated versioned history serialization and atomic restoration for canonical changes, selection state, and registered effects

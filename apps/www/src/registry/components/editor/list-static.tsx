@@ -1,5 +1,4 @@
-import { BaseListPlugin, isOrderedList, ListType } from '@platejs/list';
-import { PLUGINS } from 'platejs';
+import { BaseListPlugin, isOrderedList, ListType, PLUGINS } from 'platejs';
 
 import { BlockListStatic } from '@/registry/components/editor/block-list-static';
 import { BaseIndentKit } from '@/registry/components/editor/indent-static';
@@ -35,7 +34,7 @@ export const BaseListKit = [
       PLUGINS.heading,
       PLUGINS.blockquote,
       PLUGINS.codeBlock,
-      PLUGINS.toggle,
+      PLUGINS.details,
     ],
   }),
 ];

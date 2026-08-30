@@ -56,6 +56,22 @@ jobs:
           TEMPLATE_SKIP_VERIFY: 'true'
         run: pnpm templates:update --local
 
+      - name: ✅ Validate refreshed templates
+        run: |
+          (
+            cd templates/plate-template
+            bun install --no-frozen-lockfile
+            bun lint
+            bun run build
+          )
+
+          (
+            cd templates/plate-playground-template
+            bun install --no-frozen-lockfile
+            bun lint
+            bun run build -- --debug-prerender
+          )
+
       - name: 🔧 Configure git
         run: |
           git config user.name "github-actions[bot]"

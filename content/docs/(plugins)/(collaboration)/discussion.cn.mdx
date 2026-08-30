@@ -34,10 +34,10 @@ docs:
 ### 添加 Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { DiscussionKit } from '@/components/editor/discussion';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...DiscussionKit,
@@ -54,7 +54,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/comment @platejs/suggestion
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 创建插件
@@ -118,9 +118,9 @@ export const discussionPlugin = definePlatePlugin('discussion', {
 ### 添加插件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     discussionPlugin,

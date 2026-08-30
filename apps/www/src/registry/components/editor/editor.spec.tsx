@@ -22,6 +22,8 @@ const PlateStaticMock = mock(({ className }: any) => (
 ));
 
 mock.module('platejs/react', () => ({
+  NodeSelectionDrag: () => null,
+  NodeSelectionHighlight: () => null,
   PlateContainer: PlateContainerMock,
   PlateContent: PlateContentMock,
   PlateView: PlateViewMock,

@@ -41,10 +41,10 @@ The fastest way to add comment functionality is with the `CommentKit`, which inc
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CommentKit } from '@/components/editor/comment';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...CommentKit,
@@ -61,7 +61,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/comment @platejs/plite-dom
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Extend Comment Plugin
@@ -69,9 +69,9 @@ npm install @platejs/comment @platejs/plite-dom
 Create the comment plugin with extended configuration for state management:
 
 ```tsx
-import { isString } from '@platejs/plite-dom';
+import { isString } from 'platejs/dom';
 import { TextApi, type Path } from 'platejs';
-import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
+import { BaseCommentPlugin, getDraftCommentKey } from 'platejs/comment';
 import { CommentLeaf } from '@/components/editor/comment';
 
 const initialState: {
@@ -199,9 +199,9 @@ You can add [`CommentToolbarButton`](/docs/components/comment-toolbar-button) to
 ### Add Plugins
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     commentPlugin,
@@ -216,7 +216,7 @@ The comment plugin works with the [discussion plugin](/docs/discussion) for comp
 ```tsx
 import { discussionPlugin } from '@/components/editor/discussion';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     discussionPlugin,

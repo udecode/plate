@@ -31,11 +31,11 @@ docs:
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -45,17 +45,17 @@ export const editor = createPlateEditor({
 安装标记包。
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 添加共享脚本插件，并配置上标输入规则。
 
 ```tsx
-import { ScriptRules } from '@platejs/basic-nodes';
-import { ScriptPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { ScriptRules } from 'platejs';
+import { ScriptPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     ScriptPlugin.configure({
       inputRules: [ScriptRules.markdown({ value: 'sup' })],

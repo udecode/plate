@@ -1,9 +1,9 @@
+import { all, createLowlight } from 'lowlight';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-} from '@platejs/code-block';
-import { all, createLowlight } from 'lowlight';
+} from 'platejs';
 import {
   type PliteElementProps,
   type PliteLeafProps,

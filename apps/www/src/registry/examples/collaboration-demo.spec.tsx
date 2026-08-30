@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import * as actualCoreReact from '@platejs/core/react';
 import { render, waitFor } from '@testing-library/react';
+import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const createPlateEditorMock = mock();
@@ -13,7 +13,7 @@ let currentPositions: any[] = [];
 
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
-  createPlateEditor: (options: any) => {
+  createEditor: (options: any) => {
     const yjsPlugin = options.plugins.find(
       (plugin: any) => plugin?.name === 'yjs'
     );
@@ -63,7 +63,10 @@ mock.module('platejs/react', () => ({
   useEditorScrollElement: (editor: any) => editor.api.dom.scroll(),
 }));
 
-mock.module('@platejs/yjs/react', () => ({
+mock.module('platejs/yjs/react', () => ({
+  YjsPlugin: {
+    configure: ({ initialState }: any) => ({ initialState, name: 'yjs' }),
+  },
   useYjsRemoteCursorOverlayPositions: (editor: unknown) => {
     overlayPositionsMock(editor);
 
@@ -71,12 +74,6 @@ mock.module('@platejs/yjs/react', () => ({
   },
   useYjsProviderStatus: (editor: any) => editor.provider.status,
   useYjsProviderSynced: (editor: any) => editor.provider.synced,
-}));
-
-mock.module('@platejs/yjs/plate', () => ({
-  YjsPlugin: {
-    configure: ({ initialState }: any) => ({ initialState, name: 'yjs' }),
-  },
 }));
 
 mock.module('@/registry/components/editor/basic-nodes', () => ({

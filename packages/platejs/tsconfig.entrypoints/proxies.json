@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/proxies",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/proxies.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": [
+    "../src/diff/**/*",
+    "../src/dom/**/*",
+    "../src/history/**/*",
+    "../src/hyperscript/**/*",
+    "../src/page-layout/**/*",
+    "../src/page-layout/react/**/*"
+  ],
+  "references": [
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/diff.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/dom.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/history.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/layout.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/testing.json"
+    }
+  ]
+}

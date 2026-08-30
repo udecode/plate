@@ -1,4 +1,4 @@
-import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseCalloutPlugin } from 'platejs/callout';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

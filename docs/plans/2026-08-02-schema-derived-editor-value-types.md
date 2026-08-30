@@ -27,7 +27,7 @@ Mode:
 Completion threshold:
 - All 11 execution slices pass their exit proof; the 32 exported AST mirrors,
   central `NodeMap`, independent Plate editor/factory value generics, and stale
-  docs are gone except the explicit `list-classic` maintenance boundary;
+  docs are gone except the explicit `legacy-list-model` maintenance boundary;
   schema-derived values expose exact node discriminators, property values, and
   text marks without recursively encoding content grammar; large EditorKit
   capability projections compile without TS2589/TS2590; Plite/Core/package
@@ -202,7 +202,7 @@ Decision ledger:
 | Registry application value | `apps/www/.../plate-types.ts` manually recreates the editor tree and `MyEditor` is `PlateEditor<Value, typeof EditorKit>`. | Delete the registry AST mirror. `MyEditor = PlateEditor<typeof EditorKit>` and `MyValue = ValueOf<MyEditor>` only where a named value improves reuse; component node props use plugin descriptors/hooks. | Registry app | The registry should demonstrate the intended API, not carry the largest duplicate schema. | Main editor and editor-ai kit, registry UI/static nodes, values/examples, server-side use. | www typecheck plus representative Browser routes. | Type-only imports must avoid runtime cycles. | hard cut |
 | Static/RSC rendering | Static node components consume manual element props in several registry files. | Preserve component publication and static/RSC behavior; only replace node types with descriptor-derived types. | Core static + registry | Type migration must not repeat the prior component-field regression. | Static node files and server-side example are explicit proof owners. | Static package tests and server-side route render. | Accidental runtime import can break RSC or create cycles. | keep |
 | Utils package role | `@platejs/utils` publicly teaches shared feature AST shapes and `platejs` re-exports them. | Utils retains identity/catalog and honest generic utilities/plugins; feature AST and payload types leave. `platejs` re-exports owner package types only where it already owns that package surface, never recreates a map. | Utils + umbrella Plate | Utils must not know Table, Media, Suggestion, or future schemas. | Delete `plate-types.ts` when zero consumers remain; regenerate barrels. | Utils/Plate typecheck and export audit. | Consumers relying on umbrella-only feature types must import the feature owner. | hard cut |
-| List classic | `TTodoListItemElement` is a handwritten package-local mirror in a maintenance-only package. | Do not proactively modernize list-classic. Touch only if the central hard cut prevents it from compiling; otherwise leave it for explicit deprecation/removal authority. | list-classic | Plate vision explicitly excludes new architecture investment here. | No new docs/examples/parity work. | Package typecheck only if affected. | A zero-global-`T*` slogan would violate the stronger maintenance boundary. | defer |
+| Legacy list model | `TTodoListItemElement` is a handwritten package-local mirror in a maintenance-only package. | Do not proactively modernize legacy-list-model. Touch only if the central hard cut prevents it from compiling; otherwise leave it for explicit deprecation/removal authority. | legacy-list-model | Plate vision explicitly excludes new architecture investment here. | No new docs/examples/parity work. | Package typecheck only if affected. | A zero-global-`T*` slogan would violate the stronger maintenance boundary. | defer |
 | Compatibility/release | Existing public names are widely imported. | One breaking cut with changesets; no aliases, deprecated re-exports, dual generic order, or runtime shim. Public docs teach only the final state. | All changed packages | Compatibility would preserve two truths and prolong inference ambiguity. | Changesets, generated barrels, release notes, migration examples in changesets—not latest-state docs. | Export/stale-symbol scans and package artifact builds where exports require them. | Coordinating many packages in one cut is costly but architecturally cleaner. | hard cut |
 | Browser/device | This is primarily a type and schema-law migration; requiredness can affect runtime validation. | Run desktop Browser proof on representative live, static, table, media/link, and AI registry routes. Keep physical-device/Appium proof deferred and fail-closed. | www/browser owners; device lane deferred | Typecheck cannot prove runtime schema adoption or RSC. Device hardware adds no evidence for generic correctness. | Browser proof occurs after package/app migration. | DOM render, console, schema validation, representative edits, static render. | Browser success cannot replace compile contracts; device deferral must not be misreported as proof. | gate |
 
@@ -300,7 +300,7 @@ arbitrary parent/child/root paths. This plan does not restore `content.type`,
 - Build a second Core value accumulator: rejected because Plite already owns
   schema composition and `EditorExtensionTypeProvider` is the only public
   value-sensitive capability bridge.
-- Modernize list-classic as collateral work: rejected by the explicit
+- Modernize legacy-list-model as collateral work: rejected by the explicit
   maintenance-only boundary.
 
 Execution slices:
@@ -313,7 +313,7 @@ Execution slices:
 | 4. Hard-cut editor and factory generics | Core editor/hooks/store | Change normal `BaseEditor`/`PlateEditor` to plugin-first derivation and remove caller value generics from `createBaseEditor`, `createPlateEditor`, `usePlateEditor`, related stores, and test helpers. Keep factory `initialValue` broad, validate it at runtime, retain explicit `createEditor<V>` for Plite, and preserve an honest injected-editor advanced path. Relax public plugin-input constraints to readonly unknown tuples so inference does not structurally instantiate full descriptors. | Slice 3 can infer the installed output value. | `PlateEditor<typeof Kit>` and `BaseEditor<typeof Kit>` are the ordinary types; factories infer without annotations; incompatible documents fail at runtime schema validation. | Exact output inference, broad input, runtime mismatch, broad-boundary, injected-editor, callback inference, and public declaration contracts; stale generic scan. |
 | 5. Table vertical slice | Table plus Plite/Core owners | Migrate table, row, cell/header, border payload, APIs, React hooks, tests, and static registry consumers. Stage descriptor construction only where a behavior needs its own derived node type. | Slices 1–4 pass focused proof. | Table proves exact node/property vocabulary plus runtime `Table -> Row -> Cell/Header -> block` validation, transforms, clipboard/history, and static rendering without a handwritten AST mirror. | Full Table typecheck/tests, shallow vocabulary assertions, runtime relationship rejection tests, exact editor inference, representative `/blocks/table-demo` Browser proof, RSC/static proof. |
 | 6. Migrate element-owning feature packages | Each schema owner | Wave A: basic nodes, callout, code-block, columns, date, equation, link, mention, tag, media, code-drawing, Excalidraw, footnote, and other unique element descriptors. Replace repeated public types with owner-local derived aliases only where readability/reuse earns them. | Table establishes the pattern. | No migrated element package restates `type`, children, or schema-owned properties in a manual interface. | Per-package source-first typecheck/tests; descriptor/extractor type contracts; Browser proof for changed visible registry surfaces. |
-| 7. Migrate property and mark capabilities | Plite inference plus feature owners | Wave B: node-id, indent, list, resizable, comment, suggestion, basic/font marks, code syntax, and other property contributors. Replace fake element ownership with honest guards/refinements derived from installed editor values. | Contextual property inference from Slice 2 is proven. | Property plugins infer keys/value/placement without claiming a unique element; semantic APIs return precise narrowed types. | Guard/refinement contracts, package tests/typechecks, dynamic-prefix and target tests. `list-classic` remains excluded unless compilation forces a minimal repair. |
+| 7. Migrate property and mark capabilities | Plite inference plus feature owners | Wave B: node-id, indent, list, resizable, comment, suggestion, basic/font marks, code syntax, and other property contributors. Replace fake element ownership with honest guards/refinements derived from installed editor values. | Contextual property inference from Slice 2 is proven. | Property plugins infer keys/value/placement without claiming a unique element; semantic APIs return precise narrowed types. | Guard/refinement contracts, package tests/typechecks, dynamic-prefix and target tests. `legacy-list-model` remains excluded unless compilation forces a minimal repair. |
 | 8. Delete central AST maps and mirrors | Utils, Markdown/codecs, feature owners | Move genuine payload types to owners, derive Markdown/codec node types from installed schema/descriptors, delete `NodeMap` and `packages/utils/src/lib/plate-types.ts`, update umbrella exports, and regenerate barrels. | All consumers have an owner-derived replacement. | Utils no longer imports knowledge of feature ASTs; no central first-party node map remains. | Markdown codec/type tests; Utils/Plate typecheck; `pnpm brl`; zero targeted mirror/map imports or exports. |
 | 9. Migrate registry, apps, tests, and docs | Core consumers, registry, docs | Delete registry `plate-types.ts`; derive `MyEditor`/`MyValue`; remove explicit Plate factory/editor value generics; update component props without runtime import cycles; update current EN/CN docs and examples to teach inference first. | Package exports are final. | First-party consumers demonstrate the final API; static/RSC component fields and registry transparency remain intact. | www/docs typecheck; static rendering tests; representative live/static/table/media/link/AI Browser routes; docs stale scan. |
 | 10. Release closure | All changed owners | Add package changesets, run barrels/lint/typechecks/tests/Plite handoff gates, stale-symbol scans, declaration diagnostics comparison, Browser proof, and `autoreview`; repair every accepted P0/P1 finding. | Slices 0–9 are green. | One source-frozen hard cut with no compatibility path, no weaker inferred type, and no unproved runtime claim. | Commands in the proof matrix; changeset/export audit; final review receipt. |
@@ -396,7 +396,7 @@ Findings:
 - The low-level broad `Value` is still necessary. Schema-less importers and
   externally owned data should use explicit Plite `createEditor<V>`; forcing a
   pretend plugin schema would be worse API.
-- `list-classic` is maintenance-only under current doctrine. It is not a valid
+- `legacy-list-model` is maintenance-only under current doctrine. It is not a valid
   reason to leave central aliases alive, nor permission for collateral
   modernization; a minimal compile repair is the only allowed touch.
 
@@ -443,7 +443,7 @@ Review fixes:
   runtime-cycle gates.
 - Classified central `T*` types instead of applying a blind naming deletion;
   payloads/refinements now have explicit owners.
-- Excluded proactive `list-classic` modernization and physical-device testing.
+- Excluded proactive `legacy-list-model` modernization and physical-device testing.
 
 ## Adoption inventory
 
@@ -456,7 +456,7 @@ the current mirror family: 32 `T*Element`/`T*Text`/`T*Leaf` symbols and one
 | Unique element schema mirrors | `TAudioElement`, `TCalloutElement`, `TCodeBlockElement`, `TCodeDrawingElement`, `TColumnElement`, `TColumnGroupElement`, `TComboboxInputElement`, `TDateElement`, `TEquationElement`, `TExcalidrawElement`, `TFileElement`, `TFootnoteElement`, `TImageElement`, `TLinkElement`, `TMediaElement`, `TMediaEmbedElement`, `TMentionElement`, `TPlaceholderElement`, `TTableCellElement`, `TTableElement`, `TTableRowElement`, `TTagElement`, `TVideoElement` | Delete handwritten declarations. Use `ElementOf<typeof OwnerPlugin>` directly; export owner-local `AudioElement`, `TableElement`, and similar aliases only when repeated public signatures justify the noun. |
 | Text/leaf schema mirrors | `TCodeSyntaxLeaf`, `TCommentText`, `TSuggestionText` | Derive from `TextOf` for the owning descriptor or installed editor. Keep an owner-local refinement only where a dynamic prefix/semantic guard returns a stricter text branch. |
 | Property-present element refinements | `TIdElement`, `TIndentElement`, `TListElement`, `TResizableElement`, `TSuggestionElement` | Remove from Utils. Feature guards/APIs derive and return an intersection/refined member of the installed element union; property plugins do not acquire fake element identity. |
-| Maintenance-only exception | `TTodoListItemElement` | Leave package-local in `list-classic` unless the central export cut makes it fail compilation; if forced, do the minimum owner-local derivation and no broader modernization. |
+| Maintenance-only exception | `TTodoListItemElement` | Leave package-local in `legacy-list-model` unless the central export cut makes it fail compilation; if forced, do the minimum owner-local derivation and no broader modernization. |
 | Central map | `NodeMap` | Delete after Markdown/codecs infer from installed descriptors. Do not replace it with another global interface or module augmentation registry. |
 
 The rest of `packages/utils/src/lib/plate-types.ts` is classified rather than
@@ -478,7 +478,7 @@ Package migration waves are dependency-ordered, not alphabetical:
 4. Text/property owners: basic marks, font, comments, suggestion, code syntax.
 5. Markdown/codecs, Utils, umbrella Plate.
 6. Registry/apps/tests/current EN/CN docs.
-7. `list-classic` only if a compile failure proves unavoidable impact.
+7. `legacy-list-model` only if a compile failure proves unavoidable impact.
 
 ## Public migration contract
 

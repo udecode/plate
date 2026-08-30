@@ -1,6 +1,6 @@
 # Plugin Authoring Audit
 
-Use these as bounded examples, never as whole-file authority. Core builders,
+Use these as bounded examples, never as whole-file authority. Plate foundation builders,
 type tests, and this skill outrank package precedent.
 
 ## Contents
@@ -15,10 +15,10 @@ type tests, and this skill outrank package precedent.
 
 ## Semantic Base And Thin Wrapper
 
-- [BaseCommentPlugin.ts](../../../../packages/comment/src/lib/BaseCommentPlugin.ts)
-- [CommentPlugin.tsx](../../../../packages/comment/src/react/CommentPlugin.tsx)
-- [BaseCodeBlockPlugin.ts](../../../../packages/code-block/src/lib/BaseCodeBlockPlugin.ts)
-- [CodeBlockPlugin.tsx](../../../../packages/code-block/src/react/CodeBlockPlugin.tsx)
+- [BaseCommentPlugin.ts](../../../../packages/platejs/src/features/comment/lib/BaseCommentPlugin.ts)
+- [CommentPlugin.tsx](../../../../packages/platejs/src/react/features/comment/CommentPlugin.tsx)
+- [BaseCodeBlockPlugin.ts](../../../../packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts)
+- [CodeBlockPlugin.tsx](../../../../packages/platejs/src/react/features/code-block/CodeBlockPlugin.tsx)
 
 Copy:
 
@@ -30,9 +30,9 @@ Do not infer that every base plugin needs a React wrapper.
 
 ## Base-Only Plugin
 
-- [HtmlPlugin.ts](../../../../packages/core/src/lib/plugins/html/HtmlPlugin.ts)
-- [MarkdownPlugin.ts](../../../../packages/markdown/src/lib/MarkdownPlugin.ts)
-- [CsvPlugin.ts](../../../../packages/csv/src/lib/CsvPlugin.ts)
+- [HtmlPlugin.ts](../../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts)
+- [MarkdownPlugin.ts](../../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts)
+- [CsvPlugin.ts](../../../../packages/platejs/src/csv/lib/CsvPlugin.ts)
 
 Copy:
 
@@ -42,9 +42,9 @@ Copy:
 
 ## Direct React Plugin
 
-- [EventEditorPlugin.ts](../../../../packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts)
-- [CopilotPlugin.tsx](../../../../packages/ai/src/react/CopilotPlugin.tsx)
-- [CursorOverlayPlugin.tsx](../../../../packages/cursor/src/CursorOverlayPlugin.tsx)
+- [EventEditorPlugin.ts](../../../../packages/platejs/src/react/plugins/event-editor/EventEditorPlugin.ts)
+- [CopilotPlugin.tsx](../../../../packages/platejs/src/ai/react/CopilotPlugin.tsx)
+- [CursorOverlayPlugin.tsx](../../../../packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx)
 
 Copy direct `definePlatePlugin` only when the behavior is genuinely hook,
 DOM/editor-surface, or React-native. Do not copy explicit types or file
@@ -59,10 +59,10 @@ registry data and deliberate fixtures use explicit persisted literals.
 
 ## Owner-First Production Colocation
 
-- [BaseSuggestionPlugin.ts](../../../../packages/suggestion/src/lib/BaseSuggestionPlugin.ts)
-- [BaseTablePlugin.ts](../../../../packages/table/src/lib/BaseTablePlugin.ts)
-- [BaseMediaEmbedPlugin.ts](../../../../packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts)
-- [BasePlaceholderPlugin.ts](../../../../packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts)
+- [BaseSuggestionPlugin.ts](../../../../packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.ts)
+- [BaseTablePlugin.ts](../../../../packages/platejs/src/features/table/lib/BaseTablePlugin.ts)
+- [BaseMediaEmbedPlugin.ts](../../../../packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts)
+- [BasePlaceholderPlugin.ts](../../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts)
 
 Copy:
 
@@ -99,8 +99,8 @@ builder context or a scoped API can own the behavior.
 
 ## Scoped Capabilities And State
 
-- [MarkdownPlugin.ts](../../../../packages/markdown/src/lib/MarkdownPlugin.ts)
-- [BaseTablePlugin.ts](../../../../packages/table/src/lib/BaseTablePlugin.ts)
+- [MarkdownPlugin.ts](../../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts)
+- [BaseTablePlugin.ts](../../../../packages/platejs/src/features/table/lib/BaseTablePlugin.ts)
 
 Copy:
 
@@ -132,8 +132,8 @@ Copy:
 
 ## React-Only Prop Augmentation
 
-- [BlockPlaceholderPlugin.tsx](../../../../packages/utils/src/react/BlockPlaceholderPlugin.tsx)
-- [NavigationFeedbackPlugin.ts](../../../../packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
+- [BlockPlaceholderPlugin.tsx](../../../../packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx)
+- [NavigationFeedbackPlugin.ts](../../../../packages/platejs/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
 
 Copy `inject.nodeProps.transformProps` when the exact job is hook-driven prop
 augmentation of an already-rendered node. It does not replace components,

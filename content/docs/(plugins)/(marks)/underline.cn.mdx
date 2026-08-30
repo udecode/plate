@@ -32,10 +32,10 @@ The fastest way to add the underline plugin is with the `BasicMarksKit`, which i
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...BasicMarksKit,
@@ -52,7 +52,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugin
@@ -60,10 +60,10 @@ npm install @platejs/basic-nodes
 Include `UnderlinePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { UnderlinePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { UnderlinePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     UnderlinePlugin,
@@ -76,10 +76,10 @@ const editor = createPlateEditor({
 You can configure the `UnderlinePlugin` with custom keyboard shortcuts.
 
 ```tsx
-import { UnderlinePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { UnderlinePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     UnderlinePlugin.configure({

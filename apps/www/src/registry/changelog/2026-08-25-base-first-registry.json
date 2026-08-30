@@ -146,84 +146,6 @@
       "diagnostics": []
     },
     {
-      "name": "autoformat-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/autoformat-classic.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "fixed-toolbar-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/fixed-toolbar-classic.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "fixed-toolbar-classic-buttons",
-      "files": [
-        "apps/www/src/registry/components/editor/fixed-toolbar-classic-buttons.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "floating-toolbar-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/floating-toolbar-classic.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "floating-toolbar-classic-buttons",
-      "files": [
-        "apps/www/src/registry/components/editor/floating-toolbar-classic-buttons.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "insert-toolbar-classic-button",
-      "files": [
-        "apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "list-classic",
-      "files": ["apps/www/src/registry/components/editor/list-classic.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "list-classic-toolbar-button",
-      "files": [
-        "apps/www/src/registry/components/editor/list-classic-toolbar-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "transforms-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/transforms-classic.ts"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "turn-into-toolbar-classic-button",
-      "files": [
-        "apps/www/src/registry/components/editor/turn-into-toolbar-classic-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "fumadocs",
       "files": [],
       "definitionFiles": [],
@@ -341,34 +263,6 @@
       }
     },
     {
-      "id": "2026-08-25-classic-supported-providers-07aeb0d6",
-      "kind": "fix",
-      "summary": "Install the classic editor graph with Base or Radix through the same semantic item ids.",
-      "details": [],
-      "migrationNotes": [],
-      "targets": [
-        "autoformat-classic",
-        "fixed-toolbar-classic",
-        "fixed-toolbar-classic-buttons",
-        "floating-toolbar-classic",
-        "floating-toolbar-classic-buttons",
-        "insert-toolbar-classic-button",
-        "list-classic",
-        "list-classic-toolbar-button",
-        "transforms-classic",
-        "turn-into-toolbar-classic-button"
-      ],
-      "source": {
-        "line": 26,
-        "row": 4,
-        "legacyRelease": {
-          "date": "2026-08-25",
-          "entry": "2026-08-25-base-first-registry",
-          "section": null
-        }
-      }
-    },
-    {
       "id": "2026-08-25-fumadocs-supported-providers-7dca80c5",
       "kind": "fix",
       "summary": "Install the docs block with Base or Radix without fixed Radix primitive packages.",
@@ -376,8 +270,8 @@
       "migrationNotes": [],
       "targets": ["fumadocs"],
       "source": {
-        "line": 30,
-        "row": 5,
+        "line": 26,
+        "row": 4,
         "legacyRelease": {
           "date": "2026-08-25",
           "entry": "2026-08-25-base-first-registry",
@@ -393,8 +287,8 @@
       "migrationNotes": [],
       "targets": ["editor-basic", "ai", "date", "link", "suggestion-style"],
       "source": {
-        "line": 34,
-        "row": 6,
+        "line": 30,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-08-25",
           "entry": "2026-08-25-base-first-registry",

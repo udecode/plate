@@ -6,7 +6,7 @@ root_cause: config_error
 module: ai
 severity: medium
 symptoms:
-  - "`@platejs/ai` typecheck fails in CI with `TS2307` against `/Users/.../packages/plate/dist/react/index.js`"
+  - "`@platejs/ai` typecheck fails in CI with `TS2307` against `/Users/.../packages/platejs/dist/react/index.js`"
   - "ai chat specs pass locally on one machine but fail on runners with a different workspace path"
 tags:
   - ai
@@ -34,7 +34,7 @@ exports while still falling back to the actual implementation.
 The fallback import used this shape:
 
 ```ts
-await import("packages/plate/dist/react/index.js");
+await import("packages/platejs/dist/react/index.js");
 ```
 
 TypeScript tried to resolve that literal during package typecheck. On CI, it

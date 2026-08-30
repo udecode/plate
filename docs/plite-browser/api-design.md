@@ -42,7 +42,7 @@ Not:
 ## Current Public Shape
 
 ```ts
-import { openExample } from "@platejs/browser/playwright";
+import { openExample } from "@platejs/test/playwright";
 
 const editor = await openExample(page, "placeholder");
 
@@ -85,7 +85,7 @@ The right API should steal their **shape discipline**, not their exact names.
 ## 1. Example Harness
 
 ```ts
-import { openExample } from "@platejs/browser/playwright";
+import { openExample } from "@platejs/test/playwright";
 
 const editor = await openExample(page, "placeholder");
 ```
@@ -291,7 +291,7 @@ Playwright harness, so parallel tests do not casually stomp each other.
 ## 6. Placeholder / Zero-Width Module
 
 ```ts
-import { inspectZeroWidthPlaceholder } from "@platejs/browser/browser";
+import { inspectZeroWidthPlaceholder } from "@platejs/test/browser";
 
 await editor.assert.placeholderShape({
   kind: "line-break",
@@ -306,9 +306,9 @@ Why:
 
 Current package split:
 
-- `@platejs/browser/core`
-- `@platejs/browser/browser`
-- `@platejs/browser/playwright`
+- `@platejs/test/proof`
+- `@platejs/test/browser`
+- `@platejs/test/playwright`
 
 ## 7. Imperative Boundary
 
@@ -430,14 +430,14 @@ If any of these come back later, they need a real backing boundary first.
 
 ## Build Contract
 
-Repo-local Playwright tests import `@platejs/browser/playwright` through the public
+Repo-local Playwright tests import `@platejs/test/playwright` through the public
 package exports.
 
 That means the package must be built before those tests run.
 
 Current repo contract:
 
-- `pnpm --filter @platejs/browser build`
+- `pnpm --filter @platejs/test build`
 - then `PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm --filter www test:plite-browser`
 
 The root commands already do this.

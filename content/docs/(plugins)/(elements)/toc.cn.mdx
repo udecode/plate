@@ -39,10 +39,10 @@ TOC 使用 editor 作用域内的 `NodeKey` 跟踪标题。它不需要持久化
 将套件加入插件列表：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TocKit } from '@/components/editor/toc';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...TocKit,
@@ -59,24 +59,22 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/basic-nodes @platejs/toc
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
 
-在创建编辑器时，将 `TocPlugin` 和 `HnPlugin` 加入 Plate 插件数组。
+在创建编辑器时，将 `TocPlugin` 和 `HeadingPlugin` 加入 Plate 插件数组。
 
 ```tsx
-import { TocPlugin } from '@platejs/toc/react';
-import { HeadingPlugin,  HeadingPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { TocPlugin } from 'platejs/toc/react';
+import { HeadingPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     HeadingPlugin,
-    
-    
     TocPlugin,
   ],
 });
@@ -87,17 +85,15 @@ const editor = createPlateEditor({
 使用自定义组件和滚动选项配置 `TocPlugin`。
 
 ```tsx
-import { TocPlugin } from '@platejs/toc/react';
-import { HeadingPlugin,  HeadingPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { TocPlugin } from 'platejs/toc/react';
+import { HeadingPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TocElement } from '@/components/editor/toc';
-import { HeadingElement,  HeadingElement } from '@/components/editor/heading';
+import { HeadingElement } from '@/components/editor/heading';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
-    HeadingPlugin.configure({ component: HeadingElement }),
-    HeadingPlugin.configure({ component: HeadingElement }),
     HeadingPlugin.configure({ component: HeadingElement }),
     TocPlugin.configure({
       component: TocElement,
@@ -183,13 +179,13 @@ function Layout() {
 插入目录元素。
 
 ```ts
-import { BaseTocPlugin } from '@platejs/toc';
+import { BaseTocPlugin } from 'platejs/toc';
 
 editor.plugin(BaseTocPlugin).update.insert();
 ```
 
 <API name="editor.plugin(BaseTocPlugin).update.insert">
-<APIOptions type="object<BaseEditor>">
+<APIOptions type="object<Editor>">
     节点插入选项
 </APIOptions>
 </API>

@@ -1,9 +1,14 @@
 import type { Registry } from 'shadcn/schema';
 
+import {
+  EDITOR_AI_OPTIONAL_PEER_DEPENDENCIES,
+  EDITOR_BASIC_OPTIONAL_PEER_DEPENDENCIES,
+} from './registry-package-dependencies';
+
 export const registryBlocks: Registry['items'] = [
   {
     categories: ['Editors'],
-    dependencies: ['sonner'],
+    dependencies: ['sonner', ...EDITOR_AI_OPTIONAL_PEER_DEPENDENCIES],
     description: 'An AI editor',
     files: [
       {
@@ -45,6 +50,7 @@ export const registryBlocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
+    dependencies: EDITOR_BASIC_OPTIONAL_PEER_DEPENDENCIES,
     description: 'A basic editor',
     files: [
       {
@@ -58,16 +64,12 @@ export const registryBlocks: Registry['items'] = [
       },
     ],
     name: 'editor-basic',
-    registryDependencies: [
-      '@plate/editor',
-      '@plate/basic-nodes',
-      '@plate/editor-plugins',
-    ],
+    registryDependencies: ['@plate/editor', '@plate/basic-nodes'],
     type: 'registry:block',
   },
   {
     categories: ['Serializers'],
-    dependencies: ['@platejs/core', '@platejs/test-utils', 'next-themes'],
+    dependencies: ['platejs', '@platejs/test', 'next-themes'],
     files: [
       {
         path: 'blocks/plate-to-html/page.tsx',

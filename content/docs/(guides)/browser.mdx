@@ -3,31 +3,37 @@ title: "Browser"
 description: "Use the first-party browser proof harness for editor behavior tests."
 ---
 
-`@platejs/browser` is the first-party proof harness for browser-visible editor behavior: model state, rendered DOM, native selection, focus, screenshots, traces, clipboard, and replayable scenarios. It is test infrastructure, not the product editing API; application code builds editors with Plate and Plite packages. Read [Editing Behavior](/docs/plite/concepts/15-editing-behavior) for the runtime pipeline, [Selection And DOM](/docs/plite/concepts/16-selection-and-dom) for caret proof, [Clipboard And Paste](/docs/plite/concepts/17-clipboard-and-paste) for payload proof, and [Projection And Overlays](/docs/plite/concepts/18-projection-and-overlays) for visible highlight and overlay proof.
+`@platejs/test` is Plate's test distribution. This guide covers its browser,
+Playwright, and proof entrypoints for model state, rendered DOM, native
+selection, focus, screenshots, traces, clipboard, and replayable scenarios. It
+is test infrastructure, not the product editing API; application code builds
+editors with `platejs`.
 
 ## Install
 
 ```text
-npm install -D @platejs/browser @playwright/test
+npm install -D @platejs/test @playwright/test
 ```
 
 ## Imports
 
-The package is subpath-only:
+Use the environment-specific subpath:
 
-- `@platejs/browser/playwright` for Playwright editor harnesses.
-- `@platejs/browser/core` for pure proof contracts, raw-mobile receipt
+- `@platejs/test/playwright` for Playwright editor harnesses.
+- `@platejs/test/proof` for pure proof contracts, raw-mobile receipt
   validation, capability classifiers, and selection serialization helpers.
-- `@platejs/browser/browser` for DOM selection snapshots and zero-width
+- `@platejs/test/browser` for DOM selection snapshots and zero-width
   placeholder inspection in browser-capable test environments.
 
-Do not import from `@platejs/browser` directly.
+The Node-safe `@platejs/test` root owns headless fixtures and JSX test builders.
+Use the [Unit Testing Plate](/docs/unit-testing) guide for those APIs and the
+React test helpers.
 
 ## First Test
 
 ```ts
 import { expect, test } from "@playwright/test";
-import { openExample } from "@platejs/browser/playwright";
+import { openExample } from "@platejs/test/playwright";
 
 test("types through the Browser path", async ({ page }) => {
   const editor = await openExample(page, "plaintext", {
@@ -35,9 +41,9 @@ test("types through the Browser path", async ({ page }) => {
   });
 
   await editor.focus();
-  await editor.type("Hello from @platejs/browser");
+  await editor.type("Hello from @platejs/test");
 
-  await editor.assert.text("Hello from @platejs/browser");
+  await editor.assert.text("Hello from @platejs/test");
   await editor.assert.noDoubleSelectionHighlight();
   expect(await editor.get.selectedText()).toBe("");
 });
@@ -81,7 +87,7 @@ import {
   getPliteBrowserEditable,
   locatePliteBrowserBlock,
   locatePliteBrowserText,
-} from "@platejs/browser/playwright";
+} from "@platejs/test/playwright";
 ```
 
 | Helper                    | Use                                                            |
@@ -133,7 +139,7 @@ commit.
 ```text
 pnpm --filter plite test:plite-browser
 pnpm --filter plite test:plite-browser:chromium
-pnpm --filter @platejs/browser test
+pnpm --filter @platejs/test test
 ```
 
 Use focused Playwright specs for behavior routes and generated stress replay for

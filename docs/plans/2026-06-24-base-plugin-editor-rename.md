@@ -186,7 +186,7 @@ Verification evidence:
 - `pnpm brl` passed.
 - `pnpm turbo typecheck --filter='./packages/*'` passed before reinstall: 75
   tasks successful.
-- `pnpm turbo build --filter=./packages/ai --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/link --filter=./packages/list-classic --filter=./packages/list --filter=./packages/math --filter=./packages/media --filter=./packages/mention --filter=./packages/toggle` passed.
+- `pnpm turbo build --filter=./packages/ai --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/link --filter=./packages/platejs/src/features/list --filter=./packages/list --filter=./packages/math --filter=./packages/media --filter=./packages/mention --filter=./packages/toggle` passed.
 - `rg -l "createEditorPlugin|createBasePlateEditor|BasePlateEditor|isBasePlateEditor|getEditorPlugin" packages/*/dist --glob '!**/*.map'` produced no files.
 - `rg -n "\bcreateEditorPlugin\b|\bcreateBasePlateEditor\b|\bBasePlateEditor\b|\bTBasePlateEditor\b|\bAnyEditorPlugin\b|\bEditorPluginContext\b|\bEditorPluginMethods\b|\bEditorPluginConfig\b|\bgetEditorPlugin\b|\bisBasePlateEditor\b|\binitializeBasePlateEditor\b" packages apps/www/src content/docs --glob '!**/dist/**' --glob '!apps/www/public/**' --glob '!**/node_modules/**'` produced no matches.
 - `pnpm run reinstall` passed.

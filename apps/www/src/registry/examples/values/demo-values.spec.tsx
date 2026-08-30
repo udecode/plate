@@ -1,4 +1,4 @@
-import { NodeApi, TextApi } from '@platejs/plite';
+import { NodeApi, TextApi } from 'platejs';
 
 import { createValue, DEMO_VALUES } from './demo-values';
 

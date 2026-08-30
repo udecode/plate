@@ -1,5 +1,5 @@
 ---
-'depset': patch
+'@platejs/cli': patch
 ---
 
 - Run npm lookups without shell interpolation

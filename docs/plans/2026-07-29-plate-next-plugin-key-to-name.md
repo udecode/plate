@@ -544,7 +544,7 @@ Extracted file ledger:
 Out-of-scope package drift:
 | Package / command | Error summary | Why not blocking this run | Owner / next |
 |-------------------|---------------|---------------------------|--------------|
-| `pnpm check:core` source-adoption policy | Existing/concurrent extend-stage and codec-colocation findings in basic-nodes, basic-styles, code-block, footnote, layout, link, list, list-classic, media, mention, suggestion, and table | The gate reports no identity failure; changing those architectures violates “do not anything else” | future Plate Next architecture packet |
+| `pnpm check:core` source-adoption policy | Existing/concurrent extend-stage and codec-colocation findings in basic-nodes, basic-styles, code-block, footnote, layout, link, list, legacy-list-model, media, mention, suggestion, and table | The gate reports no identity failure; changing those architectures violates “do not anything else” | future Plate Next architecture packet |
 
 Out-of-scope matches discovered:
 | Pattern / API | Outside-scope owners | Why not patched now | Next package / owner |

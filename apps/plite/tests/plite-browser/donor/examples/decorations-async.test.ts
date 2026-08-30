@@ -1,6 +1,6 @@
 import { expect, type Locator, test } from '@playwright/test';
 
-import { openExample } from '@platejs/browser/playwright';
+import { openExample } from '@platejs/test/playwright';
 
 const INITIAL_TEXT = 'This is some text here about. there';
 const INSERTED_TEXT = ' there';

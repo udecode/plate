@@ -1,9 +1,21 @@
 {
   "route": "/mobile-lab",
   "scenarios": [
-    { "action": "tap a text position", "id": "tap", "updateCount": 0 },
-    { "action": "double-tap a word", "id": "double-tap", "updateCount": 0 },
-    { "action": "long-press a word", "id": "long-press", "updateCount": 0 },
+    {
+      "action": "tap a text position",
+      "id": "tap",
+      "updateCount": 0
+    },
+    {
+      "action": "double-tap a word",
+      "id": "double-tap",
+      "updateCount": 0
+    },
+    {
+      "action": "long-press a word",
+      "id": "long-press",
+      "updateCount": 0
+    },
     {
       "action": "drag the forward native selection handle",
       "id": "selection-handle-forward",
@@ -44,8 +56,16 @@
       "id": "inline-void-boundary",
       "updateCount": 0
     },
-    { "action": "press Enter once", "id": "enter", "updateCount": 1 },
-    { "action": "press Backspace once", "id": "backspace", "updateCount": 1 },
+    {
+      "action": "press Enter once",
+      "id": "enter",
+      "updateCount": 1
+    },
+    {
+      "action": "press Backspace once",
+      "id": "backspace",
+      "updateCount": 1
+    },
     {
       "action": "type one autocapitalized word",
       "id": "autocapitalization",

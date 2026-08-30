@@ -35,7 +35,7 @@ extras on top.
 - Added a core regression proving custom block-start extras merge with the base
   match payload.
 - Hard-cut the API in core types and runtime.
-- Simplified modern and classic list rules plus blockquote rules to stop
+- Simplified modern and legacy list model rules plus blockquote rules to stop
   threading `range` manually.
 - Added the API learning in
   `docs/solutions/best-practices/block-start-resolve-match-should-return-extras-while-core-provides-base-match.md`.

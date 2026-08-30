@@ -3,7 +3,7 @@ import {
   assertPliteBrowserSelectionContract,
   attachPliteBrowserSelectionScreenshot,
   openExample,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const normalizeInlineSelectionText = (text: string) =>
   text

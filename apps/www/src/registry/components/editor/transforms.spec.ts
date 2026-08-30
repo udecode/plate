@@ -1,31 +1,36 @@
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { BaseColumnPlugin } from '@platejs/layout';
+import {
+  PLUGINS,
+  type Selection,
+  SelectionApi,
+  type Value,
+  schema,
+} from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseColumnPlugin } from 'platejs/layout';
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BasePlaceholderPlugin,
   BaseVideoPlugin,
-} from '@platejs/media';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { BaseTocPlugin } from '@platejs/toc';
-import { PLUGINS } from '@platejs/utils';
-import { type Selection, type Value, schema } from 'platejs';
-import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+} from 'platejs/media';
+import {
+  CodeBlockPlugin,
+  createEditor,
+  definePlatePlugin,
+} from 'platejs/react';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
+import { BaseTocPlugin } from 'platejs/toc';
 
 import { linkPlugin } from '@/registry/components/editor/link';
 
 import { BaseBasicBlocksKit } from './basic-blocks-static';
+import { BaseDetailsKit } from './details-static';
 import { BaseListKit } from './list-static';
-import { BaseToggleKit } from './toggle-static';
 import {
   applyBlockAction,
   insertBlock,
   insertInlineElement,
 } from './transforms';
-import {
-  applyBlockAction as applyClassicBlockAction,
-  insertBlock as insertClassicBlock,
-} from './transforms-classic';
 
 const CustomBlockPlugin = definePlatePlugin('customOwner', {
   schema: {
@@ -33,7 +38,7 @@ const CustomBlockPlugin = definePlatePlugin('customOwner', {
   },
 });
 
-const createEditor = ({
+const createTestEditor = ({
   selection = {
     kind: 'text',
     anchor: { offset: 2, path: [1, 0] },
@@ -47,11 +52,11 @@ const createEditor = ({
   initialValue: Value;
   selection: Selection;
 }> = {}) =>
-  createPlateEditor({
+  createEditor({
     plugins: [
       ...BaseBasicBlocksKit,
       ...BaseListKit,
-      ...BaseToggleKit,
+      ...BaseDetailsKit,
       CodeBlockPlugin,
       linkPlugin,
       BaseAudioPlugin,
@@ -69,7 +74,7 @@ const createEditor = ({
 
 describe('editor block transforms', () => {
   it('opens the floating link owner without a stale trigger API', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     insertInlineElement(editor, PLUGINS.link);
 
@@ -81,7 +86,7 @@ describe('editor block transforms', () => {
   });
 
   it('keeps selection inside the wrapped paragraph when turning a block into a blockquote', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     applyBlockAction(editor, PLUGINS.blockquote);
 
@@ -99,7 +104,7 @@ describe('editor block transforms', () => {
   });
 
   it('keeps selection inside the wrapped paragraph when turning a path into a blockquote', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     applyBlockAction(editor, PLUGINS.blockquote, { at: [1] });
 
@@ -117,7 +122,7 @@ describe('editor block transforms', () => {
   });
 
   it('does not nest a blockquote inside an active blockquote', () => {
-    const editor = createEditor({
+    const editor = createTestEditor({
       selection: {
         kind: 'text',
         anchor: { offset: 2, path: [0, 0, 0] },
@@ -142,7 +147,7 @@ describe('editor block transforms', () => {
   });
 
   it('turns a paragraph into a list inside the owning update', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     applyBlockAction(editor, 'disc');
 
@@ -163,7 +168,7 @@ describe('editor block transforms', () => {
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 3, path: [1, 0] },
     };
-    const editor = createEditor({ selection });
+    const editor = createTestEditor({ selection });
 
     applyBlockAction(editor, 'heading-1');
 
@@ -178,7 +183,7 @@ describe('editor block transforms', () => {
   });
 
   it('upserts a list action by its list identity', () => {
-    const editor = createEditor({
+    const editor = createTestEditor({
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
@@ -204,7 +209,7 @@ describe('editor block transforms', () => {
   });
 
   it('keeps TOC placement options out of the element properties', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     insertBlock(editor, PLUGINS.toc);
 
@@ -214,8 +219,43 @@ describe('editor block transforms', () => {
     });
   });
 
+  it('inserts valid Details through the feature owner', () => {
+    const editor = createTestEditor();
+
+    insertBlock(editor, PLUGINS.details);
+
+    expect(editor.read.children()[2]).toMatchObject({
+      children: [
+        { children: [{ text: '' }], type: 'summary' },
+        { children: [{ text: '' }], type: 'paragraph' },
+      ],
+      type: 'details',
+    });
+    expect(
+      editor.plugin(BaseDetailsPlugin).store.get('isOpen', editor.key([2])!)
+    ).toBe(true);
+  });
+
+  it('wraps selected blocks when turning them into Details', () => {
+    const editor = createTestEditor({
+      selection: SelectionApi.nodes([[0], [1]]),
+    });
+
+    applyBlockAction(editor, PLUGINS.details);
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [
+          { children: [{ text: 'one' }], type: 'summary' },
+          { children: [{ text: 'two' }], type: 'paragraph' },
+        ],
+        type: 'details',
+      },
+    ]);
+  });
+
   it('resolves the three-column action through the column plugin', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     insertBlock(editor, 'action_three_columns');
 
@@ -226,7 +266,7 @@ describe('editor block transforms', () => {
   });
 
   it('selects the inserted blockquote paragraph instead of the previous block', () => {
-    const editor = createEditor();
+    const editor = createTestEditor();
 
     insertBlock(editor, PLUGINS.blockquote);
 
@@ -245,7 +285,7 @@ describe('editor block transforms', () => {
   });
 
   it('selects the inserted blockquote when replacing an empty current block', () => {
-    const editor = createEditor({
+    const editor = createTestEditor({
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
@@ -273,7 +313,7 @@ describe('editor block transforms', () => {
   });
 
   it('inserts a block and removes the empty source in one commit', () => {
-    const editor = createEditor({
+    const editor = createTestEditor({
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
@@ -296,7 +336,7 @@ describe('editor block transforms', () => {
   });
 
   it('keeps a code block converted in place from an empty paragraph', () => {
-    const editor = createEditor({
+    const editor = createTestEditor({
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [1, 0] },
@@ -322,7 +362,7 @@ describe('editor block transforms', () => {
   it.each([PLUGINS.audio, PLUGINS.file, PLUGINS.video])(
     'inserts a %s placeholder through its plugin owner',
     (mediaType) => {
-      const editor = createEditor({
+      const editor = createTestEditor({
         selection: {
           kind: 'text',
           anchor: { offset: 0, path: [1, 0] },
@@ -346,40 +386,4 @@ describe('editor block transforms', () => {
       ]);
     }
   );
-});
-
-describe('classic editor block transforms', () => {
-  it('resolves the three-column action through the column plugin', () => {
-    const editor = createEditor();
-
-    insertClassicBlock(editor, 'action_three_columns');
-
-    expect(editor.read.children()[2]).toMatchObject({
-      children: [{ type: 'column' }, { type: 'column' }, { type: 'column' }],
-      type: 'columnGroup',
-    });
-  });
-
-  it('resolves a block action through the owning plugin capability', () => {
-    const editor = createEditor();
-
-    applyClassicBlockAction(editor, CustomBlockPlugin.name);
-
-    expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'paragraph' },
-      { children: [{ text: 'two' }], type: 'customBlock' },
-    ]);
-  });
-
-  it('resolves an insert action through the owning plugin capability', () => {
-    const editor = createEditor();
-
-    insertClassicBlock(editor, CustomBlockPlugin.name);
-
-    expect(editor.read.children()).toMatchObject([
-      { children: [{ text: 'one' }], type: 'paragraph' },
-      { children: [{ text: 'two' }], type: 'paragraph' },
-      { children: [{ text: '' }], type: 'customBlock' },
-    ]);
-  });
 });

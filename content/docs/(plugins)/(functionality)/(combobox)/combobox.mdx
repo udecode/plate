@@ -38,7 +38,7 @@ Insert emojis with autocomplete using `:`
 ### Installation
 
 ```bash
-npm install @platejs/combobox
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Create Input Plugin
@@ -60,7 +60,7 @@ Create your main plugin with trigger metadata:
 
 ```tsx
 import { defineBasePlugin } from 'platejs';
-import type { TriggerComboboxPluginState } from '@platejs/combobox';
+import type { TriggerComboboxPluginState } from 'platejs/combobox';
 
 export type TagPluginState = TriggerComboboxPluginState;
 
@@ -180,11 +180,11 @@ export function TagElement({ element, ...props }) {
 
 ```tsx
 import { PLUGINS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TagPlugin, TagInputPlugin } from './tag-plugin';
 import { TagElement, TagInputElement } from './tag-components';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     TagPlugin.configure({
@@ -237,7 +237,7 @@ Configuration options for trigger-based combobox plugins.
     Pattern to match the character before trigger.
     - **Example:** `/^\s?$/` matches start of line or space
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
     Custom query function to control when trigger is active.
   </APIItem>
 </APIOptions>

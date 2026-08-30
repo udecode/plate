@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { AIChatPlugin } from '@platejs/ai/react';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt } from '@platejs/test';
+import { AIChatPlugin } from 'platejs/ai/react';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 

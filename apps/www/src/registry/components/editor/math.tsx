@@ -1,11 +1,11 @@
 'use client';
 
-import '@platejs/math/katex.css';
-import { MathRules } from '@platejs/math';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import 'platejs/math/katex.css';
 import katex, { type KatexOptions } from 'katex';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import { isHotkey } from 'platejs';
+import { MathRules } from 'platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 import {
   type PlateElementProps,
   PlateElement,
@@ -23,9 +23,9 @@ import TextareaAutosize, {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  FloatingPopover as Popover,
-  FloatingPopoverContent as PopoverContent,
-  FloatingPopoverTrigger as PopoverTrigger,
+  FloatingPopover,
+  FloatingPopoverContent,
+  FloatingPopoverTrigger,
 } from '@/registry/components/editor/floating-popover';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
@@ -76,8 +76,8 @@ export function EquationElement(
 
   return (
     <PlateElement className="my-1" {...props}>
-      <Popover open={open} onOpenChange={setOpen} modal={false}>
-        <PopoverTrigger>
+      <FloatingPopover open={open} onOpenChange={setOpen} modal={false}>
+        <FloatingPopoverTrigger>
           <button
             aria-label={
               props.element.latex.length > 0 ? 'Edit equation' : 'Add equation'
@@ -102,7 +102,7 @@ export function EquationElement(
             )}
             {lineBreakBadge}
           </button>
-        </PopoverTrigger>
+        </FloatingPopoverTrigger>
 
         <EquationPopoverContent
           open={open}
@@ -112,7 +112,7 @@ export function EquationElement(
           isInline={false}
           setOpen={setOpen}
         />
-      </Popover>
+      </FloatingPopover>
 
       {props.children}
     </PlateElement>
@@ -170,8 +170,8 @@ export function InlineEquationElement(
         'mx-1 inline-block select-none rounded-sm [&_.katex-display]:my-0!'
       )}
     >
-      <Popover open={open} onOpenChange={setOpen} modal={false}>
-        <PopoverTrigger>
+      <FloatingPopover open={open} onOpenChange={setOpen} modal={false}>
+        <FloatingPopoverTrigger>
           <button
             aria-label={
               element.latex.length > 0 ? 'Edit equation' : 'Add equation'
@@ -202,7 +202,7 @@ export function InlineEquationElement(
               </span>
             )}
           </button>
-        </PopoverTrigger>
+        </FloatingPopoverTrigger>
 
         <EquationPopoverContent
           className="my-auto"
@@ -211,7 +211,7 @@ export function InlineEquationElement(
           setOpen={setOpen}
           isInline
         />
-      </Popover>
+      </FloatingPopover>
 
       {props.children}
     </PlateElement>
@@ -365,7 +365,7 @@ const EquationPopoverContent = ({
   };
 
   return (
-    <PopoverContent
+    <FloatingPopoverContent
       className="flex gap-2"
       onFinalFocus={(event) => {
         if (isInline) event.preventDefault();
@@ -387,7 +387,7 @@ const EquationPopoverContent = ({
       <Button variant="secondary" className="px-3" onClick={onClose}>
         Done <CornerDownLeftIcon className="size-3.5" />
       </Button>
-    </PopoverContent>
+    </FloatingPopoverContent>
   );
 };
 

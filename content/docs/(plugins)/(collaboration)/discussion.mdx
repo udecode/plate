@@ -36,10 +36,10 @@ The fastest way to add discussion functionality is with the `DiscussionKit`, whi
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { DiscussionKit } from '@/components/editor/discussion';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...DiscussionKit,
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/comment @platejs/suggestion
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Create Plugin
@@ -121,9 +121,9 @@ export const discussionPlugin = definePlatePlugin('discussion', {
 ### Add Plugin
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     discussionPlugin,

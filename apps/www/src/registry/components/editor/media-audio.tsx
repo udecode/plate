@@ -1,8 +1,12 @@
 'use client';
 
-import type { AudioPlugin } from '@platejs/media/react';
-import type { PlateElementProps } from 'platejs/react';
-import { PlateElement, useElementSelected, usePath } from 'platejs/react';
+import type { AudioPlugin } from 'platejs/media/react';
+import {
+  type PlateElementProps,
+  PlateElement,
+  useElementSelected,
+  usePath,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

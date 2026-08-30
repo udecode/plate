@@ -24,9 +24,9 @@ title: 尾部块
 
 ```tsx
 import { ElementApi, TrailingBlockPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     TrailingBlockPlugin,
@@ -40,9 +40,9 @@ const editor = createPlateEditor({
 
 ```tsx
 import { TrailingBlockPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     TrailingBlockPlugin.configure({
@@ -70,7 +70,7 @@ const editor = createPlateEditor({
 `SuggestionKit` 不会安装 `TrailingBlockPlugin`。编辑器需要两种行为时，请分别组合：
 
 ```tsx
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...SuggestionKit, TrailingBlockPlugin],
 });
 ```

@@ -36,11 +36,11 @@ Use `AlignKit` for the Plate UI setup. It targets headings, paragraphs, images, 
 <ComponentSource name="align" />
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
 import { AlignKit } from "@/components/editor/align";
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...AlignKit],
 });
 ```
@@ -66,7 +66,7 @@ export function AlignControls() {
 ### Install Package
 
 ```bash
-npm install @platejs/basic-styles
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add the Plugin
@@ -74,11 +74,11 @@ npm install @platejs/basic-styles
 Configure the blocks that can store alignment.
 
 ```tsx
-import { TextAlignPlugin } from "@platejs/basic-styles/react";
+import { TextAlignPlugin } from "platejs/react";
 import { PLUGINS } from "platejs";
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     TextAlignPlugin.configure({
       targetPlugins: [
@@ -119,9 +119,9 @@ editor.update.textAlign.set("start", { at: [] });
 
 | Surface                       | Owner                         | What It Does                                                                                   |
 | ----------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------- |
-| `BaseTextAlignPlugin`         | `@platejs/basic-styles`       | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
-| `TextAlignPlugin`             | `@platejs/basic-styles/react` | React wrapper around `BaseTextAlignPlugin`.                                                    |
-| `editor.update.textAlign.set` | `@platejs/basic-styles`       | Bound update method exposed by the plugin.                                                     |
+| `BaseTextAlignPlugin`         | `platejs`       | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
+| `TextAlignPlugin`             | `platejs/react` | React wrapper around `BaseTextAlignPlugin`.                                                    |
+| `editor.update.textAlign.set` | `platejs`       | Bound update method exposed by the plugin.                                                     |
 | `BaseAlignKit`                | Registry kit                  | Static/headless setup for headings, paragraphs, images, and media embeds.                      |
 | `AlignKit`                    | Registry kit                  | React setup plus toolbar dependency.                                                           |
 | `AlignToolbarButton`          | Registry UI                   | Dropdown that writes alignment through `textAlign.set`.                                        |
@@ -158,10 +158,10 @@ with a `text-align` style becomes a `textAlign` property on matching blocks.
 
 | API                                            | Package                       | Use                                          |
 | ---------------------------------------------- | ----------------------------- | -------------------------------------------- |
-| `TextAlignPlugin`                              | `@platejs/basic-styles/react` | React alignment plugin.                      |
-| `BaseTextAlignPlugin`                          | `@platejs/basic-styles`       | Headless alignment plugin.                   |
-| `editor.update.textAlign.set(value, options?)` | `@platejs/basic-styles`       | Sets or clears alignment on matching blocks. |
-| `tx.textAlign.set(value, options?)`            | `@platejs/basic-styles`       | Transaction form for a larger atomic update. |
+| `TextAlignPlugin`                              | `platejs/react` | React alignment plugin.                      |
+| `BaseTextAlignPlugin`                          | `platejs`       | Headless alignment plugin.                   |
+| `editor.update.textAlign.set(value, options?)` | `platejs`       | Sets or clears alignment on matching blocks. |
+| `tx.textAlign.set(value, options?)`            | `platejs`       | Transaction form for a larger atomic update. |
 
 ## Options
 

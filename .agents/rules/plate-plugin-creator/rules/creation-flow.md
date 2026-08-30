@@ -101,7 +101,7 @@ Plate constructors expose genuine editor-wide Plite substrate through flat
 native fields such as `commands`, `corrections`, `contributions`, `on`, and
 `readMiddleware`. Never hide those fields in a nested `extension` object.
 
-Use `defineExtension` from `@platejs/plite` only for an independently
+Use `defineExtension` from `plitejs` only for an independently
 reusable standalone descriptor that composes as a dependency. If several Plate
 plugins need the same generic primitive, that is evidence for a Plite owner,
 not a shared Plate helper dump.
@@ -163,10 +163,10 @@ through package helpers or hooks, repair the generic or declaration boundary
 instead of creating a structural AST mirror, shadow plugin descriptor, or
 widened public type. A generic factory constrained to a required schema
 must receive required flat `schema.type` / `schema.key`; optional handles are a
-Core `PluginAuthorSchemaView` bug, not permission for an assertion or guard.
+Plate foundation `PluginAuthorSchemaView` bug, not permission for an assertion or guard.
 For a context-bound reusable factory, keep the installed-plugin editor in the
 authoring callback only and project its public factory/result to a portable
-contract. Fix an internal-editor declaration leak at the Core return boundary,
+contract. Fix an internal-editor declaration leak at the Plate foundation return boundary,
 not with package-level editor aliases, reconstructed rule types, annotations,
 or casts.
 

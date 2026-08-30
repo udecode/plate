@@ -58,8 +58,8 @@ cleanup merged those back where the new file did not earn its keep.
 
 ## Verification Evidence
 
-- `bun test ./packages/plite/test/public-surface-contract.ts ./packages/plite/test/transaction-contract.ts ./packages/plite/test/delete-contract.ts`
-- `bun test ./packages/plite-react/test/surface-contract.tsx ./packages/plite-react/test/projected-command-contract.test.ts`
+- `bun test ./packages/plitejs/test/public-surface-contract.ts ./packages/plitejs/test/transaction-contract.ts ./packages/plitejs/test/delete-contract.ts`
+- `bun test ./packages/plitejs/test/react/surface-contract.tsx ./packages/plitejs/test/react/projected-command-contract.test.ts`
 - `bun test test/core/scenario.test.ts` from `.tmp/plite/packages/plite-browser`
 - `bun run typecheck` from `.tmp/plite/packages/plite-browser`
 - `bun --filter ./packages/plite typecheck && bun --filter ./packages/plite-react typecheck`

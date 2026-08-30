@@ -1,23 +1,5 @@
 'use client';
 
-import { AIChatPlugin } from '@platejs/ai/react';
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import {
-  type UseVirtualFloatingOptions,
-  flip,
-  getSelectionBoundingClientRect,
-  offset,
-  useVirtualFloating,
-} from '@platejs/floating';
-import { useComposedRef } from '@udecode/cn';
-import { useOnClickOutside } from '@udecode/react-utils';
-import { mergeProps } from '@udecode/utils';
 import {
   BoldIcon,
   Code2Icon,
@@ -26,7 +8,20 @@ import {
   UnderlineIcon,
   WandSparklesIcon,
 } from 'lucide-react';
+import { AIChatPlugin } from 'platejs/ai/react';
 import {
+  type UseVirtualFloatingOptions,
+  flip,
+  getSelectionBoundingClientRect,
+  offset,
+  useVirtualFloating,
+} from 'platejs/floating/react';
+import {
+  BoldPlugin,
+  CodePlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
   useEditorReadOnly,
   definePlatePlugin,
   useEditor,
@@ -34,11 +29,13 @@ import {
   useEditorSelector,
   useEventEditorValue,
   usePluginStore,
+  useComposedRef,
 } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
+import { useOnClickOutside } from '@/registry/hooks/use-on-click-outside';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -182,33 +179,29 @@ function TextFloatingToolbar({
     (!waitForCollapsedSelection || readOnly || ownedOverlayOpen) &&
     mouseDownOpen !== false &&
     dismissedSelection !== selectionRange;
-  const floating = useVirtualFloating(
-    mergeProps<UseVirtualFloatingOptions>(
-      {
-        open,
-        getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
-        onOpenChange: (nextOpen) => {
-          setDismissedSelection(nextOpen ? null : selectionRange);
-        },
-      },
-      {
-        middleware: [
-          offset(12),
-          flip({
-            fallbackPlacements: [
-              'top-start',
-              'top-end',
-              'bottom-start',
-              'bottom-end',
-            ],
-            padding: 12,
-          }),
+  const { onOpenChange, ...floatingOptions } = options?.floatingOptions ?? {};
+  const floating = useVirtualFloating({
+    open,
+    getBoundingClientRect: () => getSelectionBoundingClientRect(editor),
+    middleware: [
+      offset(12),
+      flip({
+        fallbackPlacements: [
+          'top-start',
+          'top-end',
+          'bottom-start',
+          'bottom-end',
         ],
-        placement: 'top',
-        ...options?.floatingOptions,
-      }
-    )
-  );
+        padding: 12,
+      }),
+    ],
+    placement: 'top',
+    ...floatingOptions,
+    onOpenChange: (nextOpen) => {
+      setDismissedSelection(nextOpen ? null : selectionRange);
+      onOpenChange?.(nextOpen);
+    },
+  });
   const openStateRef = React.useRef(open);
 
   React.useEffect(() => {

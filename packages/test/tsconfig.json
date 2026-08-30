@@ -1,0 +1,98 @@
+{
+  "extends": "../../tooling/config/tsconfig.base.json",
+  "include": ["src", "test/types", "../../tooling/config/global.d.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "paths": {
+      "@platejs/test": ["./src/index.ts"],
+      "@platejs/test/browser": ["./src/browser/index.ts"],
+      "@platejs/test/playwright": ["./src/playwright/index.ts"],
+      "@platejs/test/proof": ["./src/proof/index.ts"],
+      "@platejs/test/react": ["./src/react/index.ts"],
+      "platejs": ["../platejs/src/index.tsx"],
+      "platejs/ai": ["../platejs/src/ai/index.ts"],
+      "platejs/ai/react": ["../platejs/src/ai/react/index.ts"],
+      "platejs/callout": ["../platejs/src/features/callout/index.ts"],
+      "platejs/callout/react": [
+        "../platejs/src/react/features/callout/index.ts"
+      ],
+      "platejs/code-drawing": ["../platejs/src/code-drawing/index.ts"],
+      "platejs/code-drawing/react": [
+        "../platejs/src/code-drawing/react/index.ts"
+      ],
+      "platejs/combobox": ["../platejs/src/features/combobox/index.ts"],
+      "platejs/comment": ["../platejs/src/features/comment/index.ts"],
+      "platejs/comment/react": [
+        "../platejs/src/react/features/comment/index.ts"
+      ],
+      "platejs/csv": ["../platejs/src/csv/index.ts"],
+      "platejs/cursor/react": ["../platejs/src/react/features/cursor/index.ts"],
+      "platejs/date": ["../platejs/src/features/date/index.ts"],
+      "platejs/date/react": ["../platejs/src/react/features/date/index.ts"],
+      "platejs/details": ["../platejs/src/features/details/index.ts"],
+      "platejs/details/react": [
+        "../platejs/src/react/features/details/index.ts"
+      ],
+      "platejs/diff": ["../platejs/src/diff/index.ts"],
+      "platejs/dnd/react": ["../platejs/src/dnd/react/index.ts"],
+      "platejs/docx": ["../platejs/src/docx/index.ts"],
+      "platejs/dom": ["../platejs/src/dom/index.ts"],
+      "platejs/emoji": ["../platejs/src/emoji/index.ts"],
+      "platejs/emoji/react": ["../platejs/src/emoji/react/index.ts"],
+      "platejs/excalidraw": ["../platejs/src/excalidraw/index.ts"],
+      "platejs/excalidraw/react": ["../platejs/src/excalidraw/react/index.ts"],
+      "platejs/find-replace": ["../platejs/src/features/find-replace/index.ts"],
+      "platejs/floating/react": ["../platejs/src/floating/react/index.ts"],
+      "platejs/footnote": ["../platejs/src/features/footnote/index.ts"],
+      "platejs/footnote/react": [
+        "../platejs/src/react/features/footnote/index.ts"
+      ],
+      "platejs/history": ["../platejs/src/history/index.ts"],
+      "platejs/hyperscript": ["../platejs/src/hyperscript/index.ts"],
+      "platejs/juice": ["../platejs/src/juice/index.ts"],
+      "platejs/layout": ["../platejs/src/features/layout/index.ts"],
+      "platejs/layout/react": ["../platejs/src/react/features/layout/index.ts"],
+      "platejs/markdown": ["../platejs/src/markdown/index.ts"],
+      "platejs/math": ["../platejs/src/math/index.ts"],
+      "platejs/math/react": ["../platejs/src/math/react/index.ts"],
+      "platejs/media": ["../platejs/src/features/media/index.ts"],
+      "platejs/media/react": ["../platejs/src/react/features/media/index.ts"],
+      "platejs/mention": ["../platejs/src/features/mention/index.ts"],
+      "platejs/mention/react": [
+        "../platejs/src/react/features/mention/index.ts"
+      ],
+      "platejs/migrations": ["../platejs/src/migrations/index.ts"],
+      "platejs/page-layout": ["../platejs/src/page-layout/index.ts"],
+      "platejs/page-layout/react": [
+        "../platejs/src/page-layout/react/index.ts"
+      ],
+      "platejs/react": ["../platejs/src/react/index.tsx"],
+      "platejs/resizable/react": [
+        "../platejs/src/react/features/resizable/index.ts"
+      ],
+      "platejs/slash-command": [
+        "../platejs/src/features/slash-command/index.ts"
+      ],
+      "platejs/slash-command/react": [
+        "../platejs/src/react/features/slash-command/index.ts"
+      ],
+      "platejs/static": ["../platejs/src/static/index.ts"],
+      "platejs/suggestion": ["../platejs/src/features/suggestion/index.ts"],
+      "platejs/suggestion/react": [
+        "../platejs/src/react/features/suggestion/index.ts"
+      ],
+      "platejs/tabbable": ["../platejs/src/tabbable/index.ts"],
+      "platejs/tabbable/react": ["../platejs/src/tabbable/react/index.ts"],
+      "platejs/table": ["../platejs/src/features/table/index.ts"],
+      "platejs/table/react": ["../platejs/src/react/features/table/index.ts"],
+      "platejs/tag": ["../platejs/src/features/tag/index.ts"],
+      "platejs/tag/react": ["../platejs/src/react/features/tag/index.ts"],
+      "platejs/toc": ["../platejs/src/features/toc/index.ts"],
+      "platejs/toc/react": ["../platejs/src/react/features/toc/index.ts"],
+      "platejs/yjs": ["../platejs/src/yjs/index.ts"],
+      "platejs/yjs/react": ["../platejs/src/yjs/react/index.ts"],
+      "platejs/math/katex.css": ["../platejs/math/katex.css"]
+    },
+    "types": ["node"]
+  }
+}

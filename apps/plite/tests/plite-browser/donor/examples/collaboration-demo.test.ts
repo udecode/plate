@@ -1,5 +1,5 @@
 import { expect, type Locator, test } from '@playwright/test';
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 
 const INITIAL_TEXT =
   'Ada and Lin edit independent documents through a local Yjs room.';
@@ -48,8 +48,7 @@ test.describe('Plate collaboration registry example', () => {
       );
       await expect(page.locator('[contenteditable="true"]')).toHaveCount(2);
 
-      await adaEditor.click();
-      await adaEditor.press('End');
+      await selectEditorPoint(adaEditor, INITIAL_TEXT.length);
       await adaEditor.type('!');
 
       await expect
@@ -78,8 +77,7 @@ test.describe('Plate collaboration registry example', () => {
         'disconnected'
       );
 
-      await linEditor.click();
-      await linEditor.press('End');
+      await selectEditorPoint(linEditor, INITIAL_TEXT.length + 1);
       await linEditor.type('L');
       await selectEditorPoint(adaEditor, 0);
       await adaEditor.type('A');
@@ -140,9 +138,32 @@ test.describe('Plate collaboration registry example', () => {
       );
       const remoteLabel = remoteCaret.locator('[data-remote-cursor-label]');
       const linOverlay = linCard.locator('[data-remote-cursor-overlay]');
-      const caretBeforeScroll = await remoteCaret.boundingBox();
-      const labelBeforeScroll = await remoteLabel.boundingBox();
-      const overlayBeforeScroll = await linOverlay.boundingBox();
+      const readOverlayBoxes = () =>
+        Promise.all([
+          remoteCaret.boundingBox(),
+          remoteLabel.boundingBox(),
+          linOverlay.boundingBox(),
+        ]);
+
+      await expect
+        .poll(async () => {
+          const [caret, label, overlay] = await readOverlayBoxes();
+
+          if (!caret || !label || !overlay) return false;
+
+          const overlayRight = overlay.x + overlay.width;
+
+          return (
+            caret.x >= overlay.x &&
+            caret.x <= overlayRight &&
+            label.x >= overlay.x &&
+            label.x + label.width <= overlayRight
+          );
+        })
+        .toBe(true);
+
+      const [caretBeforeScroll, labelBeforeScroll, overlayBeforeScroll] =
+        await readOverlayBoxes();
       const rootSize = await root.evaluate((element) => ({
         clientWidth: element.clientWidth,
         scrollWidth: element.scrollWidth,

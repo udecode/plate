@@ -12,7 +12,7 @@ import {
   snapshotEnvironment,
 } from './plite-proof-inputs.mjs';
 
-const browserRoot = path.join(repoRoot, 'packages/browser');
+const browserRoot = path.join(repoRoot, 'packages/test');
 
 const requiredOutputs = [
   'core/index.js',
@@ -50,12 +50,12 @@ export const buildBrowserIfStale = async ({
   ]);
 
   if (outputsAreFresh({ inputDigest })) {
-    console.log('@platejs/browser dist is fresh');
+    console.log('@platejs/test dist is fresh');
     return 0;
   }
 
   const result = await runBoundedProcess({
-    args: ['--filter', '@platejs/browser', 'build'],
+    args: ['--filter', '@platejs/test', 'build'],
     command: 'pnpm',
     cwd: repoRoot,
     env: environment,

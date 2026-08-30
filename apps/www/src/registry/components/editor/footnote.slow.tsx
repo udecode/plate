@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render, waitFor } from '@testing-library/react';
+import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
 let isFocused = false;
@@ -99,6 +100,7 @@ const PliteElementMock = mock(
 );
 
 mock.module('platejs/react', () => ({
+  ...PlateReact,
   PlateElement: PlateElementMock,
   toPlatePlugin: (plugin: unknown) => plugin,
   useEditor: () => lastPluginEditor ?? withPluginEditor({}),

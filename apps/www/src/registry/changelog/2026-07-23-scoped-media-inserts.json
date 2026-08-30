@@ -22,14 +22,6 @@
       "files": ["apps/www/src/registry/components/editor/transforms.ts"],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
       "diagnostics": []
-    },
-    {
-      "name": "transforms-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/transforms-classic.ts"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
     }
   ],
   "entries": [
@@ -39,7 +31,7 @@
       "summary": "Use plugin-scoped media insertion in copied editor transforms.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["transforms", "transforms-classic"],
+      "targets": ["transforms"],
       "source": {
         "line": 14,
         "row": 1,

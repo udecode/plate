@@ -39,10 +39,10 @@ The fastest way to add AI functionality is with the `AIKit`. It ships the config
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...AIKit,
@@ -73,19 +73,19 @@ AI_GATEWAY_API_KEY="your-api-key"
 ### Installation
 
 ```bash
-npm install @platejs/ai @platejs/markdown @ai-sdk/react ai
+npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
 ```
 
-`@platejs/suggestion` is optional but required for diff-based edit suggestions.
+`platejs` is optional but required for diff-based edit suggestions.
 
 ### Add Plugins
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
-import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
-import { MarkdownPlugin } from '@platejs/markdown';
+import { createEditor } from 'platejs/react';
+import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
+import { MarkdownPlugin } from 'platejs/markdown';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     MarkdownPlugin,
     AIPlugin,
@@ -112,7 +112,7 @@ import {
   AIChatPlugin,
   AIPlugin,
   useChatChunk,
-} from '@platejs/ai/react';
+} from 'platejs/ai/react';
 import { ElementApi, PathApi, PLUGINS } from 'platejs';
 import { usePluginStore } from 'platejs/react';
 
@@ -207,7 +207,7 @@ Handle `editor.plugin(AIChatPlugin).api.submit` requests on the server. Each req
 ```ts title="app/api/ai/command/route.ts"
 import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
@@ -215,7 +215,7 @@ import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transfor
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
 
-  const editor = createBaseEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     selection: ctx.selection,
     initialValue: ctx.children,
@@ -250,7 +250,7 @@ import { useEffect } from 'react';
 
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
+import { AIChatPlugin, createAIChatAdapter } from 'platejs/ai/react';
 import { useEditorPlugin } from 'platejs/react';
 
 type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
@@ -397,7 +397,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
   <APIOptions>
     <APIItem name="trigger" type="RegExp | string | string[]" optional>Character(s) that open the command menu. Defaults to `' '`.</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
-    <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
+    <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>Store the adapter returned by `createAIChatAdapter(useChat(...))` so API calls can access chat state and controls.</APIItem>
     <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for diff edit suggestions (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
@@ -626,7 +626,7 @@ Extend the `aiChatItems` map to add new commands. Each command receives `{ edito
 #### Simple Custom Command
 
 ```tsx
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin } from 'platejs/ai/react';
 import { ListIcon } from 'lucide-react';
 
 export const aiChatItems = {
@@ -647,7 +647,7 @@ export const aiChatItems = {
 #### Command with Complex Logic
 
 ```tsx
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin } from 'platejs/ai/react';
 import { PLUGINS } from 'platejs';
 import { BookIcon } from 'lucide-react';
 

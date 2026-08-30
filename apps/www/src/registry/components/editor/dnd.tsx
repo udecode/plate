@@ -1,33 +1,36 @@
 'use client';
 
+import { GripVertical } from 'lucide-react';
+import {
+  ElementApi,
+  PathApi,
+  type Element,
+  type NodeKey,
+  type Path,
+} from 'platejs';
 import {
   DndPlugin,
   type DropLineDirection,
   useDraggable,
   useDropLine,
-} from '@platejs/dnd';
-import { BaseColumnItemPlugin } from '@platejs/layout';
-import { ListPlugin } from '@platejs/list/react';
-import { PlaceholderPlugin } from '@platejs/media/react';
-import type { NodeKey, Path, Element as PliteElement } from '@platejs/plite';
-import { failInvariant } from '@platejs/plite/internal';
+} from 'platejs/dnd/react';
+import { BaseColumnItemPlugin } from 'platejs/layout';
+import { PlaceholderPlugin } from 'platejs/media/react';
 import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
-import { GripVertical } from 'lucide-react';
-import { ElementApi, PathApi } from 'platejs';
-import {
-  type PlateEditor,
+  ListPlugin,
+  type Editor,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
-  MemoizedChildren,
   useEditor,
   useEditorSelector,
   useElement,
   usePluginStore,
 } from 'platejs/react';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from 'platejs/table';
 import * as React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -199,14 +202,14 @@ function Draggable({ activate, active, container, ...props }: DraggableProps) {
       <DropLine dropLine={dropLine} />
 
       <div ref={nodeRef} className="plite-blockWrapper flow-root">
-        <MemoizedChildren>{children}</MemoizedChildren>
+        {children}
       </div>
     </div>
   );
 }
 
 const getDraggableContainer = (
-  editor: PlateEditor,
+  editor: Editor,
   path: Path
 ): DraggableContainer | null => {
   if (path.length === 1) return 'root';
@@ -246,7 +249,7 @@ function DraggableRuntime({
   resetPreview,
 }: {
   dragButtonRef: React.RefObject<HTMLButtonElement | null>;
-  element: PliteElement;
+  element: Element;
   nodeRef: React.RefObject<HTMLDivElement | null>;
   onDraggingChange: (dragging: boolean) => void;
   onDropLineChange: (dropLine: DropLineDirection) => void;
@@ -496,14 +499,14 @@ function DropLine({
 }
 
 const createDragPreviewElements = (
-  editor: PlateEditor,
-  blocks: PliteElement[]
+  editor: Editor,
+  blocks: Element[]
 ): HTMLElement[] => {
   const elements: HTMLElement[] = [];
   const keys: NodeKey[] = [];
 
   /**
-   * Remove data attributes so the preview is not recognized as Plite content.
+   * Remove data attributes so the preview is not recognized as Plate content.
    */
   const removeDataAttributes = (element: HTMLElement) => {
     Array.from(element.attributes).forEach((attr) => {
@@ -517,15 +520,20 @@ const createDragPreviewElements = (
     });
   };
 
-  const resolveElement = (node: PliteElement, index: number) => {
-    const domNode =
-      editor.api.dom.resolveDOMNode(node) ??
-      failInvariant('Expected value to be defined');
+  const resolveElement = (node: Element, index: number) => {
+    const domNode = editor.api.dom.resolveDOMNode(node);
+
+    if (domNode == null) {
+      throw new Error(
+        'Cannot create a drag preview for a node without a DOM element'
+      );
+    }
+
     const newDomNode = domNode.cloneNode(true) as HTMLElement;
 
     // Apply visual compensation for horizontal scroll
     const applyScrollCompensation = (
-      original: Element,
+      original: HTMLElement,
       cloned: HTMLElement
     ) => {
       const { scrollLeft } = original;
@@ -566,16 +574,25 @@ const createDragPreviewElements = (
     const lastDomNode = blocks[index - 1];
 
     if (lastDomNode) {
-      const lastDomNodeRect = (
-        (
-          editor.api.dom.resolveDOMNode(lastDomNode) ??
-          failInvariant('Expected value to be defined')
-        ).parentElement ?? failInvariant('Expected value to be defined')
-      ).getBoundingClientRect();
+      const previousDomNode = editor.api.dom.resolveDOMNode(lastDomNode);
 
-      const domNodeRect = (
-        domNode.parentElement ?? failInvariant('Expected value to be defined')
-      ).getBoundingClientRect();
+      if (previousDomNode == null) {
+        throw new Error('Cannot measure a dragged node without a DOM element');
+      }
+      if (previousDomNode.parentElement == null) {
+        throw new Error(
+          'Cannot measure a dragged node without a parent element'
+        );
+      }
+      if (domNode.parentElement == null) {
+        throw new Error(
+          'Cannot measure a drag preview without a parent element'
+        );
+      }
+
+      const lastDomNodeRect =
+        previousDomNode.parentElement.getBoundingClientRect();
+      const domNodeRect = domNode.parentElement.getBoundingClientRect();
 
       const distance = domNodeRect.top - lastDomNodeRect.bottom;
 
@@ -599,26 +616,44 @@ const createDragPreviewElements = (
 };
 
 const calculatePreviewTop = (
-  editor: PlateEditor,
+  editor: Editor,
   {
     blocks,
     element,
   }: {
-    blocks: readonly PliteElement[];
-    element: PliteElement;
+    blocks: readonly Element[];
+    element: Element;
   }
 ): number => {
-  const child =
-    editor.api.dom.resolveDOMNode(element) ??
-    failInvariant('Expected value to be defined');
-  const editable =
-    editor.api.dom.resolveDOMNode(editor) ??
-    failInvariant('Expected value to be defined');
+  const child = editor.api.dom.resolveDOMNode(element);
+
+  if (child == null) {
+    throw new Error(
+      'Cannot position a drag preview without the dragged DOM element'
+    );
+  }
+
+  const editable = editor.api.dom.resolveDOMNode(editor);
+
+  if (editable == null) {
+    throw new Error(
+      'Cannot position a drag preview without the editor DOM element'
+    );
+  }
+
   const firstSelectedChild = blocks[0];
 
-  const firstDomNode =
-    editor.api.dom.resolveDOMNode(firstSelectedChild) ??
-    failInvariant('Expected value to be defined');
+  if (firstSelectedChild == null) {
+    throw new Error('Cannot position a drag preview without a selected block');
+  }
+
+  const firstDomNode = editor.api.dom.resolveDOMNode(firstSelectedChild);
+
+  if (firstDomNode == null) {
+    throw new Error(
+      'Cannot position a drag preview without the first selected DOM element'
+    );
+  }
   // Get editor's top padding
   const editorPaddingTop = Number(
     window.getComputedStyle(editable).paddingTop.replace('px', '')
@@ -652,13 +687,14 @@ const calculatePreviewTop = (
   return previewElementsTopDistance;
 };
 
-const calcDragButtonTop = (
-  editor: PlateEditor,
-  element: PliteElement
-): number => {
-  const child =
-    editor.api.dom.resolveDOMNode(element) ??
-    failInvariant('Expected value to be defined');
+const calcDragButtonTop = (editor: Editor, element: Element): number => {
+  const child = editor.api.dom.resolveDOMNode(element);
+
+  if (child == null) {
+    throw new Error(
+      'Cannot position a drag handle without the block DOM element'
+    );
+  }
 
   const currentMarginTopString = window.getComputedStyle(child).marginTop;
   const currentMarginTop = Number(currentMarginTopString.replace('px', ''));

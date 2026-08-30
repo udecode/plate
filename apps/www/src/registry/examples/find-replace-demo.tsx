@@ -1,11 +1,11 @@
 'use client';
 
-import { FindReplacePlugin } from '@platejs/find-replace';
+import { FindReplacePlugin } from 'platejs/find-replace';
 import {
   Plate,
   useEditor,
   useEditorPlugin,
-  usePlateEditor,
+  useCreateEditor,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -39,7 +39,7 @@ export function FindToolbar() {
 }
 
 export default function FindReplaceDemo() {
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: [
         ...EditorKit,

@@ -46,9 +46,9 @@ Current tranche-3 landed waves:
 
 - [2026-04-18-plite-slate-accessor-batch-wave-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-plite-slate-accessor-batch-wave-plan.md)
 - restored direct proof owners now live in `Plate repo root`:
-  - `packages/plite/test/query-contract.ts`
-  - `packages/plite/test/legacy-editor-nodes-fixtures.ts`
-  - `packages/plite/test/legacy-interfaces-fixtures.ts`
+  - `packages/plitejs/test/query-contract.ts`
+  - `packages/plitejs/test/legacy-editor-nodes-fixtures.ts`
+  - `packages/plitejs/test/legacy-interfaces-fixtures.ts`
 
 Historical tranche-3 planning docs:
 

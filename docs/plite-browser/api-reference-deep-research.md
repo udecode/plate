@@ -7,11 +7,11 @@ topic: plite-browser-api-reference-deep-research
 
 > Specialist testing/proof doc. For current queue and roadmap truth, see [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md).
 >
-> Proposed API research only. This file does not define the current shipped `@platejs/browser` surface.
+> Proposed API research only. This file does not define the current shipped `@platejs/test` surface.
 
 ## Purpose
 
-This doc compares `@platejs/browser` against the local reference repos in
+This doc compares `@platejs/test` against the local reference repos in
 [editor-architecture-candidates.md](/Users/zbeyens/git/plate-2/docs/analysis/editor-architecture-candidates.md),
 with the specific goal of improving the public testing API.
 
@@ -25,18 +25,20 @@ It is a focused API and test-lane design read:
 
 ## Current Plite Browser Read
 
-Current public `@platejs/browser` shape in the Plate repo:
+Current public `@platejs/test` shape in the Plate repo:
 
-- `@platejs/browser/core`
-- `@platejs/browser/browser`
-- `@platejs/browser/playwright`
+- `@platejs/test`
+- `@platejs/test/react`
+- `@platejs/test/proof`
+- `@platejs/test/browser`
+- `@platejs/test/playwright`
 
 Strengths:
 
 - editor-first Playwright harness
 - semantic selection normalization for zero-width markers
 - real clipboard write plus real paste gesture
-- explicit package split between pure, browser, and Playwright surfaces
+- explicit entrypoint split between headless, React, DOM, Playwright, and proof surfaces
 
 Weak spots:
 
@@ -139,7 +141,7 @@ Best steals:
 
 Important take:
 
-- this supports keeping `@platejs/browser/browser` crisp and narrow
+- this supports keeping `@platejs/test/browser` crisp and narrow
 - placeholder and zero-width helpers should stay explicit and configuration-led
 
 ## Premirror

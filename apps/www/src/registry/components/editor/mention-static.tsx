@@ -1,4 +1,4 @@
-import { BaseMentionPlugin } from '@platejs/mention';
+import { BaseMentionPlugin } from 'platejs/mention';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

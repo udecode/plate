@@ -203,7 +203,7 @@ Verification evidence:
   from an unrelated generic projection.
 - Primitive behavior: focused Plite transaction and command suite passed 61/61.
 - Consumer behavior: Basic Styles, Footnote, Indent, Layout, Link,
-  List Classic, List, and Table suites passed 555/555 across 39 files.
+  Legacy list model, List, and Table suites passed 555/555 across 39 files.
 - Generated API reference: `pnpm --filter www api-reference:check` passed.
 - Formatting/lint: `pnpm lint:fix` passed with no fixes and 15 existing
   oversized-artifact warnings.

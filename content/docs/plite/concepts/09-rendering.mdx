@@ -11,7 +11,7 @@ a fresh renderer on every render.
 ## Elements
 
 ```tsx
-import { Plite, Editable, usePliteEditor } from "@platejs/plite-react";
+import { Plite, Editable, useEditor } from "plitejs/react";
 
 const ParagraphElement = ({ attributes, children }) => {
   return <p {...attributes}>{children}</p>;
@@ -41,7 +41,7 @@ const renderElement = (props) => {
 };
 
 const MyEditor = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -135,7 +135,7 @@ Decorations are different from Marks in that they are not stored on editor state
 
 ## Toolbars, Menus, Overlays, and more!
 
-In addition to controlling the rendering of nodes inside Plite, you can retrieve the editor from other components with `useEditor()`.
+In addition to controlling the rendering of nodes inside Plite, descendants can retrieve the provider editor with `useEditorContext()`.
 
 Use editor-level hooks for shell UI such as toolbars. Keep broad editor subscriptions out of rendered document nodes.
 
@@ -143,7 +143,7 @@ A common use case for this is rendering a toolbar with formatting buttons that a
 
 ```tsx
 const MyEditor = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -175,7 +175,7 @@ Custom styles can be applied to the editor itself by using the `style` prop on t
 
 ```tsx
 const MyEditor = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>

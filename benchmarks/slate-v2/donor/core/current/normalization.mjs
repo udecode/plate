@@ -4,8 +4,8 @@ import {
   createEditor,
   defineEditorSchema,
   schema,
-} from '../../../../../packages/plite/src/index.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number(process.env.NORMALIZATION_BENCH_ITERATIONS || 3);

@@ -333,8 +333,8 @@ new row. Avoid duplicate tests.
 Prefer focused commands from the owner repo:
 
 ```bash
-pnpm --filter @platejs/<package> test -- <file-or-pattern>
-bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<test>"
+pnpm --filter platejs test -- <file-or-pattern>
+bun test ./packages/platejs/<file>.ts --test-name-pattern "<test>"
 PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/<suite>.test.ts --grep "<test>"
 ```
 

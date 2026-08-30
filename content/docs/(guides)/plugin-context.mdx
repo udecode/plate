@@ -12,8 +12,8 @@ editor methods or React hooks when code runs outside a plugin callback.
 ## Context Shape
 
 `PlatePluginContext` extends the shared plugin context with a React
-`PlateEditor`. The same helper names are available in headless Plate base plugins,
-but the editor type is `BaseEditor`.
+`Editor`. The same helper names are available in headless Plate base plugins,
+but the editor type is `Editor`.
 
 | Property | Use for |
 | --- | --- |
@@ -124,7 +124,7 @@ Declare native Plite fields directly in the constructor or a staged
 context are inferred together. Extract domain inputs instead of the whole
 Plate plugin context.
 
-Use `defineExtension` from `@platejs/plite` only for independently
+Use `defineExtension` from `platejs` only for independently
 reusable standalone Plite descriptors. See
 [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
@@ -161,7 +161,7 @@ Use `editor.plugin(Plugin)` when plugin-owned code needs another plugin's
 consumer portal.
 
 ```ts title="link-aware-plugin.ts" showLineNumbers
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 import { definePlatePlugin } from 'platejs/react';
 
 export const LinkAwarePlugin = definePlatePlugin('linkAware', {
@@ -244,11 +244,11 @@ export const CounterPluginWithInitialCount = CounterPlugin.extend(
 `store.set` accepts either a partial object or a draft callback.
 
 ```ts title="counter-actions.ts" showLineNumbers
-import type { PlateEditor } from 'platejs/react';
+import type { Editor } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
-export function resetCounter(editor: PlateEditor) {
+export function resetCounter(editor: Editor) {
   const { store } = editor.plugin(CounterPlugin);
 
   store.set({

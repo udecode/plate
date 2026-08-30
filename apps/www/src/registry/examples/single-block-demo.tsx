@@ -5,7 +5,7 @@ import {
   SingleLinePlugin,
   TrailingBlockPlugin,
 } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,7 +16,7 @@ import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 export default function SingleBlockDemo() {
   const [isSingleBlock, setIsSingleBlock] = React.useState(true);
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: [
         ...BasicBlocksKit,

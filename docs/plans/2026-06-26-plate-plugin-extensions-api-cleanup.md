@@ -247,7 +247,7 @@ Packet ledger:
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
 | API hard cut | 1 | auto | `extensions` is the correct public Plate plugin field; `extendEditor`/`editorExtensions` should die. | `packages/core/src/lib/plugin/BasePlugin.ts`, `packages/core/src/react/plugin/PlatePlugin.ts`, `packages/core/src/lib/editor/withPlite.ts`, `packages/core/src/react/editor/createPlateRuntimeEditor.ts` | N/A: API/type packet | keep | none |
 | Docs alignment | 1 | auto | Current docs must not teach dead plugin extension fields. | `content/docs/(guides)/plugin*.mdx`, API/debugging docs, stale-symbol audit | N/A: docs packet | keep | none |
-| Downstream type repair | 1 | auto | Touched plugin callers must keep inference and avoid type-depth regressions. | `packages/math`, `packages/list-classic`, `packages/table`; touched package typecheck | N/A: type packet | keep | none |
+| Downstream type repair | 1 | auto | Touched plugin callers must keep inference and avoid type-depth regressions. | `packages/math`, `packages/platejs/src/features/list`, `packages/table`; touched package typecheck | N/A: type packet | keep | none |
 | Closure proof | 1 | auto | Core/Plite proof should pass after API hard cut. | `pnpm check:core` | N/A: package proof | keep | none |
 
 Behavior proof ledger:
@@ -285,7 +285,7 @@ Workflow slowdowns:
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | Plate plugin config now uses `extensions`; runtime installers read `plugin.extensions`; `HistoryPlugin` uses `history()` extension; `withPlateHistory`, `withCurrentRuntimeHistory`, and `withPlateReact` dead paths removed; direct callers in ai/math/list-classic/suggestion/table use `extensions`; table wrapper generic pinned correctly. |
+| code/runtime/API | Plate plugin config now uses `extensions`; runtime installers read `plugin.extensions`; `HistoryPlugin` uses `history()` extension; `withPlateHistory`, `withCurrentRuntimeHistory`, and `withPlateReact` dead paths removed; direct callers in ai/math/legacy-list-model/suggestion/table use `extensions`; table wrapper generic pinned correctly. |
 | tests/oracles/browser proof | Type contracts cover single, readonly-array, and factory `extensions`; Core/runtime/plugin specs updated; math/list specs repaired to preserve inference and avoid TS depth blowups. |
 | benchmarks/metrics/targets | N/A. |
 | examples/docs | Current plugin guide/API/debugging docs teach `extensions` or `overrideEditor`, not `extendEditor`. |
@@ -306,7 +306,7 @@ Stopping checkpoints to unblock:
 Findings:
 - Stale current docs remained only in `content/docs/(guides)/plugin*.mdx`; source stale-symbol audit was clean after the API patch.
 - `mergePlugins` needed a special `extensions` rule so single extension objects are preserved instead of swallowed by default `extensions: []`.
-- Touched package typecheck found real follow-up type issues: math runtime selection tests, list-classic plugin-array generics, and table's heavy `toPlatePlugin` inference.
+- Touched package typecheck found real follow-up type issues: math runtime selection tests, legacy-list-model plugin-array generics, and table's heavy `toPlatePlugin` inference.
 
 Decisions and tradeoffs:
 - `extensions` is the public plugin field for Plite substrate behavior.
@@ -318,7 +318,7 @@ Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | `pnpm turbo typecheck ...` failed in math with TS2589 | 2 | Use direct update method instead of callback where inference is not under test. | `BaseInlineEquationPlugin.spec.ts` now uses `editor.update.moveSelection`; tx inference test remains inferred. |
-| `pnpm turbo typecheck ...` failed in list-classic | 1 | Type parser callback and use current plugin-array generic inference. | `BaseListPlugin.ts` and `BaseTodoListPlugin.spec.ts` patched. |
+| `pnpm turbo typecheck ...` failed in legacy-list-model | 1 | Type parser callback and use current plugin-array generic inference. | `BaseListPlugin.ts` and `BaseTodoListPlugin.spec.ts` patched. |
 | `pnpm turbo typecheck ...` failed in table | 2 | Pin the correct `toPlatePlugin<TableConfig>` overload. | `TablePlugin.tsx` patched. |
 | `pnpm check:core` failed formatter | 1 | Apply formatter-compatible wrapping. | `createPlateRuntimeEditor.ts` type field wrapped. |
 
@@ -326,14 +326,14 @@ Verification evidence:
 - `pnpm brl` -> pass.
 - `pnpm test:types` -> pass.
 - `pnpm --filter @platejs/core exec bun test --preload ../../config/plite-source-test-setup.ts ./src/react/editor/createPlateRuntimeEditor.spec.ts ./src/react/plugin/createPlatePlugin.spec.ts ./src/lib/editor/withPlite.spec.ts ./src/lib/plugin/createBasePlugin.spec.ts ./src/lib/plugin/getBasePlugin.spec.ts` -> 152 pass.
-- `pnpm turbo typecheck --filter=./packages/core --filter=./packages/ai --filter=./packages/math --filter=./packages/list-classic --filter=./packages/suggestion --filter=./packages/table` -> pass.
+- `pnpm turbo typecheck --filter=./packages/core --filter=./packages/ai --filter=./packages/math --filter=./packages/platejs/src/features/list --filter=./packages/suggestion --filter=./packages/table` -> pass.
 - `pnpm --filter @platejs/core build` -> pass.
 - `pnpm --filter @platejs/math exec bun test --preload ../../config/plite-source-test-setup.ts ./src/lib/BaseInlineEquationPlugin.spec.ts` -> 4 pass.
-- `pnpm --filter @platejs/list-classic exec bun test --preload ../../config/plite-source-test-setup.ts ./src/lib/BaseTodoListPlugin.spec.ts` -> 5 pass.
+- `pnpm --filter platejs exec bun test --preload ../../config/plite-source-test-setup.ts ./src/lib/BaseTodoListPlugin.spec.ts` -> 5 pass.
 - `pnpm --filter @platejs/table typecheck` -> pass.
 - `pnpm check:core` -> pass.
-- `rg -n '\bextendEditor\b|\beditorExtensions\b' packages/core/src packages/core/type-tests packages/ai/src packages/math/src packages/list-classic/src packages/suggestion/src packages/table/src content/docs/api 'content/docs/(guides)' content/docs/plite --glob '!**/dist/**' --glob '!**/CHANGELOG.md'` -> no matches.
-- `rg -n '\bwithPlateHistory\b|\bwithCurrentRuntimeHistory\b|\bwithPlateReact\b' packages/core/src packages/core/type-tests packages/ai/src packages/math/src packages/list-classic/src packages/suggestion/src packages/table/src --glob '!**/dist/**' --glob '!**/CHANGELOG.md'` -> no matches.
+- `rg -n '\bextendEditor\b|\beditorExtensions\b' packages/core/src packages/core/type-tests packages/ai/src packages/math/src packages/platejs/src/features/list/src packages/suggestion/src packages/table/src content/docs/api 'content/docs/(guides)' content/docs/plite --glob '!**/dist/**' --glob '!**/CHANGELOG.md'` -> no matches.
+- `rg -n '\bwithPlateHistory\b|\bwithCurrentRuntimeHistory\b|\bwithPlateReact\b' packages/core/src packages/core/type-tests packages/ai/src packages/math/src packages/platejs/src/features/list/src packages/suggestion/src packages/table/src --glob '!**/dist/**' --glob '!**/CHANGELOG.md'` -> no matches.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-26-plate-plugin-extensions-api-cleanup.md` -> pass.
 - Browser docs proof: `PORT=3002 pnpm --filter www dev`; `http://localhost:3002/docs/plugin` renders `Install Plite Extensions`, has no exact rendered `extendEditor` or `editorExtensions`, and has no console errors.
 

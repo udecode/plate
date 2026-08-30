@@ -68,7 +68,7 @@ namespaces such as `NodeApi`, `ElementApi`, `TextApi`, `PathApi`, `PointApi`,
 `RangeApi`, and `SelectionApi`.
 
 ```ts
-import { ElementApi, NodeApi, RangeApi } from "@platejs/plite";
+import { ElementApi, NodeApi, RangeApi } from "plitejs";
 
 const string = NodeApi.string(element);
 const isElement = ElementApi.isElement(value);
@@ -95,7 +95,7 @@ Keep domain helpers as normal functions or expose them from an extension when
 they need editor state.
 
 ```ts
-import { ElementApi, type Element } from "@platejs/plite";
+import { ElementApi, type Element } from "plitejs";
 
 type ImageElement = Element & {
   type: "image";

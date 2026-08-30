@@ -13,60 +13,13 @@ const compareStrings = (left, right) => {
 
 const root = process.cwd();
 const TEST_FILE_RE = /\.(?:spec|test)\.[cm]?[tj]sx?$/;
-const CONTRACT_FILE_RE = /-contract\.[cm]?[tj]sx?$/;
+const CONTRACT_FILE_RE = /-contract(?:\.(?:spec|test))?\.[cm]?[tj]sx?$/;
 const TOP_LEVEL_AMBIENT_VALUE_RE =
   /^declare\s+(?:const|let|var|function|class)\b/m;
 
-const basePackageSlugs = ['core', 'plite', 'utils'];
-
-// Every current package with a completed Plate Next package-review plan.
-const reviewedPackageSlugs = [
-  'ai',
-  'basic-nodes',
-  'basic-styles',
-  'callout',
-  'code-block',
-  'code-drawing',
-  'combobox',
-  'comment',
-  'csv',
-  'cursor',
-  'date',
-  'diff',
-  'dnd',
-  'docx',
-  'docx-export',
-  'docx-import',
-  'docx-paste',
-  'emoji',
-  'excalidraw',
-  'find-replace',
-  'floating',
-  'footnote',
-  'indent',
-  'juice',
-  'layout',
-  'link',
-  'list',
-  'list-classic',
-  'markdown',
-  'math',
-  'media',
-  'mention',
-  'plate',
-  'resizable',
-  'slash-command',
-  'suggestion',
-  'tabbable',
-  'table',
-  'tag',
-  'test-utils',
-  'toc',
-  'toggle',
-  'yjs',
-];
-
-const packageSlugs = [...basePackageSlugs, ...reviewedPackageSlugs];
+const packageSlugs = ['plitejs', 'platejs', 'test', 'cli'];
+export const reviewedPackageSlugs = ['platejs', 'test'];
+const entrypointPackageNames = new Set(['@platejs/test', 'platejs', 'plitejs']);
 
 const testBatchSizeOverride = process.env.CORE_TEST_BATCH_SIZE;
 
@@ -97,7 +50,7 @@ const packageTestTargets = packageSlugs.map((slug) => {
     roots: ['src', 'test'].filter((rootName) =>
       existsSync(join(dir, rootName))
     ),
-    bunArgs: ['--config=../../bunfig.toml'],
+    bunArgs: ['--preload=../../config/plite-source-test-setup.ts'],
   };
 });
 
@@ -239,6 +192,12 @@ const isTestFile = (fileName) =>
 const hasModuleMock = (file) =>
   readFileSync(file, 'utf-8').includes('mock.module(');
 
+export const isIsolatedPackageTestFile = (file) =>
+  hasModuleMock(file) || CONTRACT_FILE_RE.test(file);
+
+export const usesEntrypointPackageTestGraph = (target) =>
+  entrypointPackageNames.has(target.name);
+
 const collectTestFiles = (dir) => {
   const entries = readdirSync(dir, { withFileTypes: true });
   const files = [];
@@ -284,13 +243,20 @@ const collectTestInventory = (genericTypeFiles) =>
   }));
 
 const runPackageTests = (target) => {
+  if (usesEntrypointPackageTestGraph(target)) {
+    run(`${target.name} entrypoint test graph`, 'pnpm', ['run', 'test'], {
+      cwd: target.dir,
+    });
+    return;
+  }
+
   const toRelativeTestPath = (file) =>
     `./${toPosixPath(relative(target.dir, file))}`;
   const sharedFiles = target.files
-    .filter((file) => !hasModuleMock(file) && !CONTRACT_FILE_RE.test(file))
+    .filter((file) => !isIsolatedPackageTestFile(file))
     .map(toRelativeTestPath);
   const isolatedFiles = target.files
-    .filter((file) => hasModuleMock(file) || CONTRACT_FILE_RE.test(file))
+    .filter(isIsolatedPackageTestFile)
     .map(toRelativeTestPath);
   const batchSize = getTestBatchSize(sharedFiles.length || 1);
   const batches = [];
@@ -379,14 +345,13 @@ const main = () => {
   run(`typecheck ${packageSlugs.length} Core and reviewed packages`, 'pnpm', [
     'turbo',
     'typecheck',
-    '--only',
     ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
   ]);
   run('type contracts', 'pnpm', [
     'exec',
     'tsc',
     '-p',
-    'packages/core/tsconfig.type-tests.json',
+    'packages/platejs/tsconfig.type-tests.json',
     '--noEmit',
   ]);
   run('post-typecheck source declaration leak audit', 'node', [
@@ -398,7 +363,6 @@ const main = () => {
   run(`lint ${packageSlugs.length} Core and reviewed packages`, 'pnpm', [
     'turbo',
     'lint',
-    '--only',
     ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
   ]);
   for (const target of testInventory) {

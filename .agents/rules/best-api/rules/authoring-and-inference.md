@@ -115,19 +115,19 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   named internal runtime boundaries, and keep direct `update.selection`
   mutation-only.
 - Default every public editor capability generic to the core-only
-  `readonly []` tuple. A bare `Editor`, `BaseEditor`, read surface, or update
+  `readonly []` tuple. A bare `Editor`, read surface, or update
   surface must never expose arbitrary uninstalled groups through `any`; use the
   explicit internal `AnyEditor` boundary when runtime code genuinely erases
   the installed tuple.
 - Project each installed extension graph exactly once. A layered editor such
-  as Plate must not re-intersect whole `ReactEditor` or `DOMEditor`
+  as Plate must not re-intersect whole private React or DOM editor carriers
   `read`/`update` surfaces after those extensions are already installed; that
   duplicates capability truth and forces TypeScript through recursive callback
   comparisons. Add only a genuinely missing shallow capability at its owner.
 - Generic editor helpers must preserve the caller's layered editor type or
   accept the smallest structural capability they actually consume. Never infer
-  one provider and reconstruct an entire raw `Editor`, `ReactEditor`, or
-  `DOMEditor`; that discards sibling capabilities and reopens recursive
+  one provider and reconstruct an entire raw or adapter-branded editor type;
+  that discards sibling capabilities and reopens recursive
   whole-editor comparisons. Erase only inside a named runtime implementation,
   after the public call signature has preserved exact inference.
 - Publication-dependent activation work is `afterPublish`; cleanup remains
@@ -181,24 +181,23 @@ the explicit handle and list literal array items directly.
 
 Package roots expose author-facing descriptors, editors, operations, and
 definition extractors only. `Any*`, `Internal*`, normalized/compiler types,
-accumulators, witnesses, and callback graphs belong in a documented internal
-entrypoint or remain private. An unparameterized editor exposes only guaranteed
-Core capabilities. React context retrieval is therefore non-generic:
-`useEditor()` and `useActiveEditor()` return the mounted layer contract, and
-selector hooks infer only their selected result. A caller-supplied editor type
-with no typed input is an assertion, not inference. Resolve exact feature
-capabilities through descriptor portals such as
+accumulators, witnesses, and callback graphs remain private inside their
+distribution owner. An unparameterized editor exposes only guaranteed Plate foundation
+capabilities. Plate React creation uses `useCreateEditor(options, deps?)`;
+mounted retrieval uses `useEditor()` or `useOptionalEditor()` without caller
+generics, and selector hooks infer only their selected result. A caller-supplied
+editor type with no typed input is an assertion, not inference. Resolve exact
+feature capabilities through descriptor portals such as
 `editor.plugin(FooPlugin)`, `useEditorPlugin(FooPlugin)`, and
 `editor.extension(FooExtension)`. Keep an editor generic only when typed
 constructor/options input or an explicit editor argument correlates that
-generic with the returned value. Do not pass an authored plugin tuple,
-feature kit, or generated contract to `useEditor()` or `useActiveEditor()` as a
-typing assertion. Optional generated `Editor` and `Value` types belong at
+generic with the returned value. Do not pass an authored plugin tuple, feature
+kit, or generated contract to a context hook as a typing assertion. Optional
+generated `Editor` and `Value` types belong at
 explicit static boundaries such as exported function parameters, stored
 document contracts, and compile-time assertions; runtime editor construction
-still owns capability inference and verification.
-Plite calls its public runtime type `Editor`; Plate keeps `BaseEditor` and
-`PlateEditor` for its two product layers.
+still owns capability inference and verification. Every editor entrypoint calls
+its public runtime type `Editor`; package and entrypoint establish the layer.
 
 Raw `PluginReference` is nominal: it carries only the identity needed to locate
 a plugin. It does not carry a definition generic or the private witness.
@@ -209,9 +208,9 @@ providers, a definition witness, or exact transitive ancestry.
 
 `EditorExtensionTypeProvider` is the sole public value-sensitive capability
 bridge. Its higher-kinded encoding, normalized installed-capability carrier,
-and transitive dependency expansion are internal compiler machinery exported
-only from `@platejs/plite/internal`; those internals must not appear at the root
-or recurse through the complete dependency graph. A static portal is valid only
+and transitive dependency expansion are private compiler machinery inside
+`plitejs`; they must not appear at any public entrypoint or recurse through the
+complete dependency graph. A static portal is valid only
 when the requested literal name resolves to one installed capability that is
 mutually assignable with the descriptor capability. Runtime portal access still
 proves the exact installed descriptor identity, not merely an equal name. Plite
@@ -250,7 +249,7 @@ used, commit them and run `plate generate --check` in CI. Runtime construction
 still consumes the authored `plugins` and optional `schema`; generated output
 never validates, wraps, or replaces those values. Keep explicit
 `createEditor<ExternalValue>` only for genuinely schema-less or externally
-owned raw Plite data. Do not add a second Core value accumulator, central node
+owned raw Plite data. Do not add a second Plate foundation value accumulator, central node
 map, handwritten feature AST mirror, compatibility alias, or synonym
 extractor. A property-only plugin contributes to installed node variants but
 never becomes an `ElementOf` / `TextOf` identity handle. Derive an exact

@@ -38,11 +38,11 @@ Horizontal Rule adds a void `horizontalRule` block for separating sections. The 
 <ComponentSource name="basic-blocks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: BasicBlocksKit,
 });
 ```
@@ -65,8 +65,8 @@ Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/basic-nodes` | Package | Exports `BaseHorizontalRulePlugin` and `HorizontalRuleRules`. |
-| `@platejs/basic-nodes/react` | Package | Exports `HorizontalRulePlugin`. |
+| `platejs` | Package | Exports `BaseHorizontalRulePlugin` and `HorizontalRuleRules`. |
+| `platejs/react` | Package | Exports `HorizontalRulePlugin`. |
 | `basic-blocks` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
 | `basic-blocks-static` | Registry | Adds `BaseHorizontalRulePlugin.configure({ component: HrElementStatic })`. |
 | `horizontal-rule` | Registry UI | Renders editable and static divider components. |
@@ -81,7 +81,7 @@ There is no package-specific `insertHorizontalRule` helper. App UI usually passe
 ### Install Package
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add The Plugin
@@ -89,13 +89,13 @@ npm install @platejs/basic-nodes
 Use the React plugin when the editor renders the divider UI.
 
 ```tsx
-import { HorizontalRuleRules } from '@platejs/basic-nodes';
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { HorizontalRuleRules } from 'platejs';
+import { HorizontalRulePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { HrElement } from '@/components/editor/horizontal-rule';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     HorizontalRulePlugin.configure({
       component: HrElement,
@@ -113,7 +113,7 @@ export const editor = createPlateEditor({
 Use the base plugin with the static component in static rendering paths.
 
 ```tsx
-import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
+import { BaseHorizontalRulePlugin } from 'platejs';
 import { createStaticEditor } from 'platejs/static';
 
 import { HrElementStatic } from '@/components/editor/horizontal-rule-static';
@@ -182,7 +182,7 @@ The divider component renders `{props.children}` after the non-editable wrapper 
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseHorizontalRulePlugin` | `@platejs/basic-nodes` | Headless void `horizontalRule` block with HTML deserialization and default render tag. |
-| `HorizontalRulePlugin` | `@platejs/basic-nodes/react` | React horizontal rule plugin. |
-| `HorizontalRuleRules.markdown({ variant: '-' })` | `@platejs/basic-nodes` | Creates the dash input rule for `---`. |
-| `HorizontalRuleRules.markdown({ variant: '_' })` | `@platejs/basic-nodes` | Creates the underscore input rule for `___ `. |
+| `BaseHorizontalRulePlugin` | `platejs` | Headless void `horizontalRule` block with HTML deserialization and default render tag. |
+| `HorizontalRulePlugin` | `platejs/react` | React horizontal rule plugin. |
+| `HorizontalRuleRules.markdown({ variant: '-' })` | `platejs` | Creates the dash input rule for `---`. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | `platejs` | Creates the underscore input rule for `___ `. |

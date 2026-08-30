@@ -2,7 +2,7 @@
 
 ## Goal
 
-Benchmark the remaining `@platejs/basic-nodes` plugins versus Plite using the existing editor perf harness.
+Benchmark the remaining `platejs` basic-node plugins versus Plite using the existing editor perf harness.
 
 ## Steps
 

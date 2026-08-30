@@ -1,20 +1,15 @@
-import {
-  type Descendant,
-  NodeApi,
-  type Point,
-  type Range,
-} from '@platejs/plite';
-import { isHotkey } from '@platejs/plite-dom';
-import { history } from '@platejs/plite-history';
+import { type Descendant, NodeApi, type Point, type Range } from 'plitejs';
+import { isHotkey } from 'plitejs/dom';
+import { history } from 'plitejs/history';
 import {
   Editable,
-  type RenderElementProps,
   Plite,
   type PliteRangeDecoration,
+  type RenderElementProps,
   useEditor,
-  usePliteEditor,
+  useEditorContext,
   usePliteRangeDecorationSource,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import type React from 'react';
 import type { ChangeEvent, PointerEvent } from 'react';
 
@@ -61,7 +56,7 @@ const initialValue = [
 ]
 
 const App = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue,
   })
 
@@ -82,21 +77,21 @@ const App = () => {
       type: CodeBlockType,
       language: 'typescript',
       children: toCodeLines(`// TypeScript users only add this code
-import { Descendant } from '@platejs/plite'
-import { usePliteEditor } from '@platejs/plite-react'
+import { Descendant } from 'plitejs'
+import { useEditor } from 'plitejs/react'
 
 type CustomElement = { type: 'paragraph'; children: CustomText[] }
 type CustomText = { text: string }
 type CustomValue = CustomElement[]
 
-const editor = usePliteEditor<CustomValue>({ initialValue })`),
+const editor = useEditor<CustomValue>({ initialValue })`),
     },
     {
       type: ParagraphType,
       children: toChildren('There you have it!'),
     },
   ];
-  const editor = usePliteEditor({ extensions: [history()], initialValue });
+  const editor = useEditor({ extensions: [history()], initialValue });
   const codeHighlightingSource = usePliteRangeDecorationSource(editor, {
     id: 'code-highlighting',
     dirtiness: 'always',
@@ -145,7 +140,7 @@ const editor = usePliteEditor<CustomValue>({ initialValue })`),
 
 const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
   const { attributes, children, element } = props;
-  const editor = useEditor();
+  const editor = useEditorContext();
 
   if (element.type === CodeBlockType) {
     const setLanguage = (language: string) => {
@@ -216,7 +211,7 @@ const ExampleToolbar = () => (
 );
 
 const CodeBlockButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
 
   return (
     <Button

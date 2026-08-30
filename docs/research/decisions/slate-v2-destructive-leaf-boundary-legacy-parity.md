@@ -18,7 +18,7 @@ v2_refs:
   - packages/slate/test/leaf-lifecycle-contract.ts
   - packages/slate/test/selection-rebase-contract.ts
   - packages/slate-react/test/rendered-dom-shape-contract.tsx
-  - packages/browser/src/playwright/index.ts
+  - packages/test/src/playwright/index.ts
   - apps/www/tests/slate-browser/donor/examples/richtext.test.ts
   - apps/www/tests/slate-browser/donor/examples/inlines.test.ts
 ---

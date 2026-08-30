@@ -14,18 +14,17 @@ import React, {
 } from 'react';
 import type {
   Anchor,
-  createEditor,
   Descendant,
   EditorSnapshot,
   Range,
   RuntimeId,
-} from '../../../../../packages/plite/src/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
 import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
-} from '../../../../../packages/plite/src/internal/index.ts';
+} from '../../../../../packages/plitejs/src/internal/index.ts';
 import {
-  createReactEditor,
+  createEditor,
   Editable,
   EditableElement,
   Plite,
@@ -34,7 +33,7 @@ import {
   type PliteProjectionStore,
   type PliteWidget,
   type PliteWidgetStore,
-  useEditor,
+  useEditorContext,
   useEditorSelection,
   useEditorSelector,
   usePliteAnnotationStore,
@@ -42,8 +41,8 @@ import {
   usePliteProjectionEntries,
   usePliteWidgetStore,
   usePliteWidgets,
-} from '../../../../../packages/plite-react/src/index.ts';
-import { createPliteProjectionStore } from '../../../../../packages/plite-react/src/projection-store.ts';
+} from '../../../../../packages/plitejs/src/react/index.ts';
+import { createPliteProjectionStore } from '../../../../../packages/plitejs/src/react/projection-store.ts';
 import {
   cloneCounts,
   deltaCounts,
@@ -287,7 +286,7 @@ const formatRange = (range: Range | null) =>
 
 const BroadEditorSlice = memo(
   ({ counts }: { counts: Record<string, number> }) => {
-    useEditor();
+    useEditorContext();
     increment(counts, 'broad');
     return <span id="broad-subscriber">broad</span>;
   }
@@ -917,7 +916,7 @@ const measureLane = async (run: () => Promise<Record<string, number>>) => {
 
 const measureSelectionBreadth = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const counts: Record<string, number> = {};
 
     editorReplace(editor, {
@@ -963,7 +962,7 @@ const measureSelectionBreadth = async () =>
 
 const measureManyLeafBreadth = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const blockCounts: Record<string, number> = {};
     const leafCounts: Record<string, number> = {};
     const targetLeafKey = `leaf-${targetLeafIndex}`;
@@ -1026,7 +1025,7 @@ const measureManyLeafBreadth = async () =>
 
 const measureDeepAncestorBreadth = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const elementCounts: Record<string, number> = {};
     const leafCounts: Record<string, number> = {};
     const { ancestorKeys, children, deepTextPath } =
@@ -1085,7 +1084,7 @@ const measureDeepAncestorBreadth = async () =>
 
 const measureDecorationSourceToggleBreadth = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const counts: Record<string, number> = {};
     let projectionStore: PliteProjectionStore<{
       highlight?: boolean;
@@ -1143,7 +1142,7 @@ const measureDecorationSourceToggleBreadth = async () =>
 
 const measureHiddenPanelActivity = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const counts: Record<string, number> = {};
 
     editorReplace(editor, {
@@ -1247,7 +1246,7 @@ const measureHiddenPanelActivity = async () =>
 
 const measureAnnotationWidgetBreadth = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const counts: Record<string, number> = {};
     let annotationStore: PliteAnnotationStore<{
       kind: string;
@@ -1352,7 +1351,7 @@ const measureAnnotationWidgetBreadth = async () =>
 
 const measureSourceScopedInvalidation = async () =>
   measureLane(async () => {
-    const editor = createReactEditor();
+    const editor = createEditor();
     const counts: Record<string, number> = {};
     const externalActiveRef = { current: false };
 

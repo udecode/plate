@@ -70,7 +70,7 @@ Generated editor typing derives the current schema from the plugin tuple and
 does not require named persisted identity.
 
 Do not use this for unrelated plugins or divergent authoring branches that
-merely share a name; Core rejects those collisions.
+merely share a name; Plate foundation rejects those collisions.
 
 Before deduplicating example setup, compare the source with
 `registry-examples.ts`, its feature kit, and the independently copied install

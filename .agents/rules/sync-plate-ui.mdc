@@ -169,13 +169,8 @@ Plate registry sources to inspect first:
 
 Do not run `build:registry`. Do not edit generated registry output.
 
-Treat `*-classic` registry components, including `list-classic`, as
-maintenance-only pending deprecation. Inventory an in-scope classic row so it
-is not silently lost, but classify proactive parity, modernization, polish,
-new variants, shared abstractions, demos, and adoption as `N/A`. Sync it only
-for an explicitly accepted user-facing regression, security/release blocker,
-or deprecation/removal row. Planned deprecation does not authorize deleting a
-downstream copy.
+Sync list UI through the standard list registry graph. Reject rows that would
+create another persisted list model or copied list UI family.
 
 ## Target Mapping
 
@@ -192,7 +187,7 @@ For Potion-like targets, expect:
 
 - copied Plate UI under `src/registry/**`
 - app-level wrappers under `src/components/**`
-- pinned `@platejs/*` and `platejs` versions
+- pinned `platejs` and any `@platejs/cli` or `@platejs/test` tool versions
 - local import aliases that differ from Plate docs
 - existing sync scripts that may be stale
 

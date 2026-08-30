@@ -43,7 +43,7 @@ symmetric diagnostic diff is empty.
 
 ## Install-transform boundary
 
-The installed Base copy of `insert-toolbar-classic-button` proves shadcn's
+The installed Base copy of `insert-toolbar-button` proves shadcn's
 supported source transform: its authored `DropdownMenuTrigger asChild` becomes
 a Base `render={<ToolbarButton ... />}` trigger. The Radix installation retains
 `asChild`. Both consumers compile to the same diagnostic set.

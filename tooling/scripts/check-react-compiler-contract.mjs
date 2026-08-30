@@ -215,7 +215,7 @@ export function auditReactCompilerTextContract({
       ),
     ];
     const hasExactRenderProbeBoundary =
-      /files:\s*\[\s*['"]packages\/plite-react\/test\/render-probes\/\*\*\/\*\.\{ts,tsx\}['"]\s*\][\s\S]{0,240}?['"]react\/immutability['"]\s*:\s*['"]off['"]/.test(
+      /files:\s*\[\s*['"]packages\/plitejs\/test\/react\/render-probes\/\*\*\/\*\.\{ts,tsx\}['"]\s*\][\s\S]{0,240}?['"]react\/immutability['"]\s*:\s*['"]off['"]/.test(
         lintConfig.source
       );
 

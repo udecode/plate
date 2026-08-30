@@ -63,7 +63,7 @@ Boundaries:
 - Source owners: `packages/plite`, `packages/core`, `packages/basic-nodes`, and
   any directly affected published package or app owner found by exact search.
 - Non-goals: other editor-audit proposals, dependency API redesign, generic mark
-  exclusivity, unrelated ordering cleanup, and `*-classic` registry investment.
+  exclusivity, unrelated ordering cleanup, and alternative variants registry investment.
 - Direct Plite boundary owners: property descriptor/compiler and extension
   resolution only.
 

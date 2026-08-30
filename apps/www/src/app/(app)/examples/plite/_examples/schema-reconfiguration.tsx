@@ -5,17 +5,17 @@ import {
   defineExtensionSlot,
   ElementApi,
   schema,
-} from '@platejs/plite';
+} from 'plitejs';
 import {
   Editable,
   Plite,
   type RenderElementProps,
   type RenderVoidProps,
-  useEditor,
+  useEditorContext,
   useNodeSelector,
   useEditorState,
-  usePliteEditor,
-} from '@platejs/plite-react';
+  useEditor,
+} from 'plitejs/react';
 
 type SchemaProfile =
   | 'block'
@@ -160,7 +160,7 @@ const SchemaVoid = ({ element }: RenderVoidProps) => {
 const renderVoid = (props: RenderVoidProps) => <SchemaVoid {...props} />;
 
 const SchemaControls = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const status = useEditorState((state) => {
     const probe = state.nodes.get([0])?.[0];
     const guard = state.nodes.get([1, 1])?.[0];
@@ -224,7 +224,7 @@ const SchemaControls = () => {
 };
 
 const SchemaReconfigurationExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [schemaSlot.of(createSchema('block'))] as const,
     initialValue: {
       children: [

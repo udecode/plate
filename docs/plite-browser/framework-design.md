@@ -312,7 +312,9 @@ Minimum future agent-native artifacts:
 
 Recommended repo command families:
 
-- `test:core`
+- `test:node`
+- `test:react`
+- `test:proof`
 - `test:dom`
 - `test:examples`
 - `test:ime:chromium`
@@ -321,7 +323,9 @@ Recommended repo command families:
 
 Recommended implementation:
 
-- `test:core` -> Bun
+- `test:node` -> Bun
+- `test:react` -> Bun
+- `test:proof` -> Bun
 - `test:dom` -> Vitest browser
 - `test:examples` -> Playwright
 - `test:ime:chromium` -> Playwright + CDP helpers

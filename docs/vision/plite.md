@@ -14,7 +14,7 @@ Plite doctrine after the lane is selected.
 3. `docs/plite/agent-start.md`.
 4. Relevant `plite-*` source rule under `.agents/rules`.
 5. Transplanted Plite package source/tests/benchmarks in this Plate checkout:
-   `packages/plite*`, `packages/browser`, `packages/yjs`,
+   `packages/plitejs`, `packages/test`, `packages/platejs/src/yjs`,
    `apps/plite/tests/plite-browser/**`, and `benchmarks/plite/**`.
 6. `docs/plite/**` for accepted claim width.
 7. `benchmarks/targets/slate-v2.json` for perf target authority.
@@ -48,8 +48,9 @@ donor checkout as proof after the transplant.
 - Public roots expose author contracts, not `Any*`, `Internal*`, compiler and
   normalization graphs, accumulators, or witnesses. An unparameterized editor
   exposes only guaranteed Core capabilities; package consumers carry concrete
-  editor or extension generics. Plite's public runtime type is `Editor`;
-  `BaseEditor` and `PlateEditor` belong to Plate.
+  editor or extension generics. Every `plitejs` entrypoint calls its public
+  runtime type `Editor`; private layered carriers do not create public branded
+  editor variants.
 - Root `EditorExtensionDependencyReference` is a shallow, non-generic identity
   value with `name` and optional `enabled`. `EditorExtensionTypeProvider` is the
   sole public value-sensitive capability bridge. Its higher-kinded encoding,
@@ -59,11 +60,11 @@ donor checkout as proof after the transplant.
 - Schema is the sole first-party AST-shape truth. Plite derives exact root,
   child, text/property, default/requiredness, named-root, recursive, and
   open-world value types; Plate lowers its installed plugin graph into that
-  compiler once. Normal Plate code uses `PlateEditor<typeof Kit>` and the
-  existing `ValueOf`/`ElementOf`/`TextOf` extractors, never a parallel value
-  generic or central node map. Raw schema-less Plite may still own an explicit
-  `createEditor<ExternalValue>` generic. Feature aliases may name an inferred
-  owner result but never restate schema fields. Property-only plugins do not
+  compiler once. Normal Plate code infers `Editor` through `platejs` creation
+  and uses the existing `ValueOf`/`ElementOf`/`TextOf` extractors, never a
+  parallel value generic or central node map. Raw schema-less Plite may still
+  own an explicit `createEditor<ExternalValue>` generic. Feature aliases may
+  name an inferred owner result but never restate schema fields. Property-only plugins do not
   become element identity handles; Plate may project their compiled property
   capabilities onto broad elements or text while preserving aliases, prefixes,
   defaults, and exact value domains from Plite descriptors.
@@ -75,11 +76,13 @@ donor checkout as proof after the transplant.
 - Static portals require a unique literal name and mutually assignable
   descriptor/installed capabilities. Runtime portals require exact installed
   descriptor identity, so a same-name object is not an interchangeable token.
-- React context retrieval is non-generic. `useEditor()` returns the mounted
-  React editor contract, and selector hooks infer only their selected result.
-  Exact extension capabilities come from `editor.extension(Extension)`. Keep
-  editor generics only on constructors or hooks whose typed input actually
-  correlates with the result.
+- React creation and context retrieval are separate jobs. `useEditor(options,
+  deps?)` owns one editor for a component lifetime. `useEditorContext()` and
+  `useOptionalEditorContext()` retrieve the mounted contract without caller
+  generics, and selector hooks infer only their selected result. Exact
+  extension capabilities come from `editor.extension(Extension)`. Keep editor
+  generics only on constructors or hooks whose typed input actually correlates
+  with the result.
 - A mounted `Plite` or `PliteRuntime` binds one editor runtime owner. Replacing
   that owner requires a keyed remount. Root views may change inside the same
   runtime, but subscription cleanup retires queued work from the prior view
@@ -239,10 +242,10 @@ donor checkout as proof after the transplant.
 - Browser editing claims require model, DOM, selection/caret where observable,
   focus owner, commit metadata when mutating, legal trace, replayability, and
   follow-up typing.
-- Use `@platejs/browser` to the maximum reasonable extent for browser-facing
+- Use `@platejs/test` to the maximum reasonable extent for browser-facing
   proof.
 - Route-local Playwright is acceptable for first reproduction only. If the same
-  action/assertion appears twice, move it into `@platejs/browser` or record why
+  action/assertion appears twice, move it into `@platejs/test` or record why
   the abstraction would be fake.
 - Require screenshots/geometry checks for text movement, blank windows,
   overlap, wrong caret line, wrong margin click, or wrong scroll anchoring.
@@ -259,7 +262,7 @@ donor checkout as proof after the transplant.
   evidence. Repository release tooling verifies the producer run, downloads
   its one named artifact by ID, checks GitHub's archive digest, binds the live
   run attempt, rejects dirty source, and owns aggregate claim policy;
-  `@platejs/browser` owns reusable lane-specific validators.
+  `@platejs/test` owns reusable lane-specific validators.
 
 ## Plite Runtime Loop
 

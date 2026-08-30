@@ -10,54 +10,48 @@ import {
   BaseBlockquotePlugin,
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
-} from '@platejs/basic-nodes';
-import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
-} from '@platejs/basic-styles';
-import { BaseCalloutPlugin } from '@platejs/callout';
-import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-} from '@platejs/code-block';
-import { BaseDatePlugin } from '@platejs/date';
+  BaseLinkPlugin,
+  BaseListPlugin,
+  BaseParagraphPlugin,
+  createEditor,
+  ElementIdPlugin,
+} from 'platejs';
+import { BaseCalloutPlugin } from 'platejs/callout';
+import { BaseDatePlugin } from 'platejs/date';
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnotePlugin,
-} from '@platejs/footnote';
-import { BaseColumnPlugin } from '@platejs/layout';
-import { BaseLinkPlugin } from '@platejs/link';
-import { BaseListPlugin } from '@platejs/list';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
+} from 'platejs/footnote';
+import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
   BaseMediaEmbedPlugin,
   BaseVideoPlugin,
-} from '@platejs/media';
-import { BaseMentionPlugin } from '@platejs/mention';
+} from 'platejs/media';
+import { BaseMentionPlugin } from 'platejs/mention';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
-} from '@platejs/table';
-import { BaseTocPlugin } from '@platejs/toc';
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  ElementIdPlugin,
-} from 'platejs';
+} from 'platejs/table';
+import { BaseTocPlugin } from 'platejs/toc';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
+import { MarkdownPlugin } from '../../../../../../packages/platejs/src/markdown/lib/MarkdownPlugin';
 import {
   remarkMdx,
   remarkMention,
-} from '../../../../../../packages/markdown/src/lib/plugins';
+} from '../../../../../../packages/platejs/src/markdown/lib/plugins';
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
@@ -114,6 +108,6 @@ const testPlugins = [
 ] as const;
 
 export const createTestEditor = ({ elementIds = false } = {}) =>
-  createBaseEditor({
+  createEditor({
     plugins: [...(elementIds ? [ElementIdPlugin] : []), ...testPlugins],
   });

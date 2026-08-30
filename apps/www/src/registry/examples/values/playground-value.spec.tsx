@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 
-import { CalloutPlugin } from '@platejs/callout/react';
-import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
+import { CalloutPlugin } from 'platejs/callout/react';
+import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
 
 import { playgroundValue } from './playground-value';
 
 describe('playgroundValue', () => {
   it('matches its required persisted-node plugins', () => {
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: [CalloutPlugin, CodeDrawingPlugin],
       initialValue: {
         ...playgroundValue,

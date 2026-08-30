@@ -4,7 +4,7 @@
   "title": "AI Toolbar Button",
   "description": "A toolbar button for accessing AI features.",
   "dependencies": [
-    "@platejs/ai"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json"
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/ai-toolbar-button.tsx",
-      "content": "'use client';\n\nimport { AIChatPlugin } from '@platejs/ai/react';\nimport { useEditorPlugin } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function AIToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { api } = useEditorPlugin(AIChatPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        api.show();\n      }}\n    />\n  );\n}\n",
+      "content": "'use client';\n\nimport { AIChatPlugin } from 'platejs/ai/react';\nimport { useEditorPlugin } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function AIToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { api } = useEditorPlugin(AIChatPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        api.show();\n      }}\n    />\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/ai-toolbar-button.tsx"
     }

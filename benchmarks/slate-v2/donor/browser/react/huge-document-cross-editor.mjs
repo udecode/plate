@@ -114,7 +114,7 @@ import {
   createReactEditor,
   Editable,
   Slate,
-} from '@platejs/slate-react'
+} from 'plitejs/react'
 import {
   $createParagraphNode,
   $createTextNode,
@@ -409,7 +409,7 @@ const selectSlateBlock = async (blockIndex, offset = 0) => {
 }
 
 const waitForTypingSurface = async (surface, blockIndex) => {
-  if (!surface.startsWith('@platejs/slate')) {
+  if (!surface.startsWith('slate')) {
     await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
     return
   }
@@ -437,7 +437,7 @@ const waitForTypingSurface = async (surface, blockIndex) => {
 }
 
 const selectTypingSurface = async (surface, blockIndex, offset) => {
-  if (!surface.startsWith('@platejs/slate')) {
+  if (!surface.startsWith('slate')) {
     return
   }
 
@@ -486,7 +486,7 @@ const selectTypingSurface = async (surface, blockIndex, offset) => {
 }
 
 const waitForPendingTextInputRepair = async (surface) => {
-  if (!surface.startsWith('@platejs/slate')) {
+  if (!surface.startsWith('slate')) {
     return
   }
 
@@ -505,7 +505,7 @@ const waitForPendingTextInputRepair = async (surface) => {
 }
 
 const blockText = (surface, blockIndex) => {
-  if (surface.startsWith('@platejs/slate')) {
+  if (surface.startsWith('slate')) {
     return state.slateEditor.read(
       (readState) =>
         readState.runtime.snapshot().children[blockIndex]?.children[0]?.text ??
@@ -525,7 +525,7 @@ const blockText = (surface, blockIndex) => {
 }
 
 const modelSelectionTextLength = (surface) => {
-  if (!surface.startsWith('@platejs/slate')) {
+  if (!surface.startsWith('slate')) {
     return document
       .getSelection()
       ?.toString()
@@ -589,7 +589,7 @@ globalThis.__CROSS_EDITOR_HUGE__ = {
     }
   },
   async install(surface, blockCount) {
-    if (surface.startsWith('@platejs/slate')) {
+    if (surface.startsWith('slate')) {
       await installSlate(surface, blockCount)
       return
     }
@@ -641,7 +641,7 @@ globalThis.__CROSS_EDITOR_HUGE__ = {
     globalThis.__CROSS_EDITOR_EVENT_TRACE__?.events.splice(0)
   },
   async select(surface, blockIndex, offset = 0) {
-    if (surface.startsWith('@platejs/slate')) {
+    if (surface.startsWith('slate')) {
       await selectSlateBlock(blockIndex, offset)
     } else if (surface === 'prosemirror') {
       selectProseMirrorBlock(blockIndex, offset)
@@ -666,7 +666,7 @@ globalThis.__CROSS_EDITOR_HUGE__ = {
         ...globalThis.__CROSS_EDITOR_TRACE__.longTasks.map((entry) => entry.duration)
       ),
       observedBlocks:
-        surface.startsWith('@platejs/slate')
+        surface.startsWith('slate')
           ? state.slateEditor.read(
               (readState) => readState.runtime.snapshot().children.length
             )
@@ -923,8 +923,8 @@ const buildSlateReactPackage = async () => {
     return;
   }
 
-  console.log('Building slate-react package for cross-editor benchmark');
-  await run('bun', ['--filter', '@platejs/slate-react', 'build'], currentRepo);
+  console.log('Building Plite React for the cross-editor benchmark');
+  await run('bun', ['--filter', 'plitejs', 'build'], currentRepo);
 };
 
 const summarizeMetric = (samples, key) =>
@@ -1211,7 +1211,7 @@ const readCrossEditorEventTrace = (page) =>
 
 const readSlateDebugSnapshot = (page, surface) =>
   page.evaluate((selectedSurface) => {
-    if (!selectedSurface.startsWith('@platejs/slate')) {
+    if (!selectedSurface.startsWith('slate')) {
       return null;
     }
 
@@ -1499,7 +1499,7 @@ const measureSurface = async ({ page, surface }) => {
 
           const root = document.querySelector('[data-slate-editor="true"]');
           const handle = root?.__slateBrowserHandle;
-          const debugState = selectedSurface.startsWith('@platejs/slate')
+          const debugState = selectedSurface.startsWith('slate')
             ? {
                 activeElement:
                   document.activeElement instanceof Element

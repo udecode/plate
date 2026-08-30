@@ -40,11 +40,14 @@ If you prefer a step-by-step approach or are not using the shadcn CLI, follow th
 ### Install Plate
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
 <Callout type="note" title="Plugin Dependencies">
-  When manually installing Plate, you'll need to add the specific packages for each plugin you want to use. For example, if you want to use the `AIMenu` component, you would need `@platejs/ai` and its dependencies. Check each component's documentation for its required packages, or use the CLI to automatically install the required packages.
+  Plate features live at `platejs/*` import subpaths. Install the optional peer
+  libraries required by the features you use. For example, AI needs
+  `@ai-sdk/react`, `ai`, and the Markdown peer libraries. Each feature page
+  lists its peers; the CLI installs them with copied components.
 </Callout>
 
 ### Configure CSS Variables
@@ -73,7 +76,7 @@ npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
 Import and use them in your editor:
 
 ```tsx showLineNumbers title="components/editor.tsx"
-import { Plate } from "platejs/react";
+import { BoldPlugin, Plate } from "platejs/react";
 import { FixedToolbar } from "@/components/editor/fixed-toolbar";
 import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
 // ... other imports
@@ -83,7 +86,7 @@ export function MyEditor() {
   return (
     <Plate editor={editor}>
       <FixedToolbar>
-        <MarkToolbarButton nodeType="bold" tooltip="Bold">B</MarkToolbarButton>
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
         {/* ... other toolbar buttons ... */}
       </FixedToolbar>
       {/* ... Editor component ... */}

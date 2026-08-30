@@ -1,6 +1,6 @@
-import { CsvPlugin } from '@platejs/csv';
-import { DocxPastePlugin } from '@platejs/docx-paste';
 import { TrailingBlockPlugin } from 'platejs';
+import { CsvPlugin } from 'platejs/csv';
+import { DocxPastePlugin } from 'platejs/docx';
 
 import { AIKit } from './ai';
 import { AlignKit } from './align';
@@ -15,6 +15,7 @@ import { ColumnKit } from './column';
 import { CommentKit } from './comment';
 import { CursorOverlayKit } from './cursor-overlay';
 import { DateKit } from './date';
+import { DetailsKit } from './details';
 import { DiscussionKit } from './discussion';
 import { DndKit } from './dnd';
 import { EmojiKit } from './emoji';
@@ -34,7 +35,6 @@ import { SlashKit } from './slash';
 import { SuggestionKit } from './suggestion';
 import { TableKit } from './table';
 import { TocKit } from './toc';
-import { ToggleKit } from './toggle';
 
 export const EditorKit = [
   ...AIKit,
@@ -44,7 +44,7 @@ export const EditorKit = [
   ...BasicBlocksKit,
   ...CodeBlockKit,
   ...TableKit,
-  ...ToggleKit,
+  ...DetailsKit,
   ...TocKit,
   ...MediaKit,
   ...CalloutKit,

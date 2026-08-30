@@ -1,0 +1,25 @@
+import { jsx } from '../../..';
+/** @jsx jsx */
+import { before as editorBefore } from '../../../../src/internal';
+
+jsx;
+
+export const input = (
+  <editor>
+    <block void>one</block>
+    <block void>two</block>
+  </editor>
+);
+
+export const test = (editor) =>
+  editorBefore(
+    editor,
+    {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 1], offset: 2 },
+    },
+    { voids: true }
+  );
+
+export const output = { path: [0, 0], offset: 0 };

@@ -1,16 +1,12 @@
 'use client';
 
-import {
-  BlockquoteRules,
-  HeadingRules,
-  HorizontalRuleRules,
-} from '@platejs/basic-nodes';
+import { BlockquoteRules, HeadingRules, HorizontalRuleRules } from 'platejs';
 import {
   BlockquotePlugin,
   HeadingPlugin,
   HorizontalRulePlugin,
-} from '@platejs/basic-nodes/react';
-import { ParagraphPlugin } from 'platejs/react';
+  ParagraphPlugin,
+} from 'platejs/react';
 
 import { BlockquoteElement } from '@/registry/components/editor/blockquote';
 import { HeadingElement } from '@/registry/components/editor/heading';

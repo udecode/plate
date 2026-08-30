@@ -1,16 +1,16 @@
-import type { Element as PliteElement } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+import type { Element as PliteElement } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
+  Plite,
+  useEditor,
+  useEditorFocused,
+  useElementSelected,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,
   type RenderVoidProps,
-  Plite,
-  useEditorFocused,
-  useElementSelected,
-  usePliteEditor,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import type React from 'react';
 import { useMemo } from 'react';
 
@@ -24,7 +24,7 @@ import type {
 import { html } from './paste-html-import';
 
 const PasteHtmlExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), html()],
     initialValue: [
       {

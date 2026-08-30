@@ -64,10 +64,14 @@ common doctrine after the lane is selected.
 
 ## Boundary Law
 
-- Plite packages are the raw editor substrate: model, canonical changes, runtime,
-  DOM/input, selection, history, browser proof, and unopinionated APIs.
-- Plate packages are the product/editor framework layer: plugins, React
-  wrappers, components, kits, opinionated UX, examples, and app-facing docs.
+- `plitejs` is the raw editor distribution: model, canonical changes, runtime,
+  explicit DOM/React/history subpaths, selection, browser proof, and
+  unopinionated APIs.
+- `platejs` is the default product/editor framework distribution: plugins,
+  React wrappers, components, ordinary features, opinionated UX, examples, and
+  app-facing docs. Plate applications never install or import `plitejs`.
+  Dedicated raw Plite examples and proof apps import `plitejs` to verify the
+  substrate itself.
 - Do not fix a Plate product concern by polluting Plite core.
 - Do not hide a Plite primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
@@ -75,6 +79,12 @@ common doctrine after the lane is selected.
 - Package roots expose only code backed by required dependencies. Optional
   framework or runtime peers stay behind explicit subpaths whose packed runtime
   and declarations prove entrypoint-specific dependency closure.
+- Package and entrypoint select the editor layer. The common public vocabulary
+  is `createEditor`, `Editor`, and `CreateEditorOptions`. In `plitejs/react`,
+  `useEditor` creates an editor and `useEditorContext` retrieves one. In
+  `platejs/react`, `useCreateEditor` creates an editor while `useEditor` and
+  `useOptionalEditor` retrieve a mounted editor. Branded editor variants and
+  public internal entrypoints do not survive.
 
 ## Evidence Hierarchy
 

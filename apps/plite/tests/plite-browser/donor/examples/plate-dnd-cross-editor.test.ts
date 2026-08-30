@@ -1,6 +1,6 @@
 import {
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const openPlateDndEditors = async (page: Page) => {

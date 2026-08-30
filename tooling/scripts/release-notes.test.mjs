@@ -19,9 +19,9 @@ import {
 test('selects the highest published package version for the global release', () => {
   assert.equal(
     getGlobalReleaseVersion([
-      { name: '@platejs/list', version: '53.0.2' },
-      { name: 'depset', version: '0.1.2' },
-      { name: '@platejs/table', version: '53.0.1' },
+      { name: '@platejs/test', version: '53.0.2' },
+      { name: '@platejs/cli', version: '0.1.2' },
+      { name: 'platejs', version: '53.0.1' },
     ]),
     '53.0.2'
   );
@@ -29,14 +29,14 @@ test('selects the highest published package version for the global release', () 
 
 test('parses changesets published package output safely', () => {
   assert.deepEqual(
-    parsePublishedPackages('[{"name":"@platejs/list","version":"53.0.2"}]'),
-    [{ name: '@platejs/list', version: '53.0.2' }]
+    parsePublishedPackages('[{"name":"@platejs/test","version":"53.0.2"}]'),
+    [{ name: '@platejs/test', version: '53.0.2' }]
   );
   assert.deepEqual(parsePublishedPackages('not json'), []);
 });
 
 test('extracts exact package changelog sections and preserves change types', () => {
-  const changelog = `# @platejs/table
+  const changelog = `# @platejs/cli
 
 ## 54.0.0
 
@@ -68,16 +68,16 @@ test('extracts exact package changelog sections and preserves change types', () 
 test('generates raw release notes from published package changelogs', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'plate-release-notes-'));
   const packageRoot = path.join(root, 'packages');
-  const packageDirectory = path.join(packageRoot, 'list');
+  const packageDirectory = path.join(packageRoot, 'browser');
 
   await mkdir(packageDirectory, { recursive: true });
   await writeFile(
     path.join(packageDirectory, 'package.json'),
-    JSON.stringify({ name: '@platejs/list', version: '53.0.2' })
+    JSON.stringify({ name: '@platejs/test', version: '53.0.2' })
   );
   await writeFile(
     path.join(packageDirectory, 'CHANGELOG.md'),
-    `# @platejs/list
+    `# @platejs/test
 
 ## 53.0.2
 
@@ -92,11 +92,11 @@ test('generates raw release notes from published package changelogs', async () =
       label: 'v53.0.1...v53.0.2',
       url: 'https://github.com/udecode/plate/compare/v53.0.1...v53.0.2',
     },
-    publishedPackages: [{ name: '@platejs/list', version: '53.0.2' }],
+    publishedPackages: [{ name: '@platejs/test', version: '53.0.2' }],
     workspacePackages: await getWorkspacePackages([packageRoot]),
   });
 
-  assert.match(body, /## `@platejs\/list`/);
+  assert.match(body, /## `@platejs\/test`/);
   assert.match(body, /### Patch Changes/);
   assert.match(body, /Fix ordered list numbering/);
   assert.match(body, /## Contributors/);
@@ -111,14 +111,14 @@ test('generates raw release notes from published package changelogs', async () =
 test('builds changelog URLs for every published workspace package', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'plate-detailed-changes-'));
   const packageRoot = path.join(root, 'packages');
-  const listDirectory = path.join(packageRoot, 'list');
-  const plateDirectory = path.join(packageRoot, 'plate');
+  const testDirectory = path.join(packageRoot, 'test');
+  const plateDirectory = path.join(packageRoot, 'platejs');
 
-  await mkdir(listDirectory, { recursive: true });
+  await mkdir(testDirectory, { recursive: true });
   await mkdir(plateDirectory, { recursive: true });
   await writeFile(
-    path.join(listDirectory, 'package.json'),
-    JSON.stringify({ name: '@platejs/list', version: '53.0.5' })
+    path.join(testDirectory, 'package.json'),
+    JSON.stringify({ name: '@platejs/test', version: '53.0.5' })
   );
   await writeFile(
     path.join(plateDirectory, 'package.json'),
@@ -129,7 +129,7 @@ test('builds changelog URLs for every published workspace package', async () => 
     getPackageChangelogUrls({
       commitRef: 'abc123',
       publishedPackages: [
-        { name: '@platejs/list', version: '53.0.5' },
+        { name: '@platejs/test', version: '53.0.5' },
         { name: 'platejs', version: '53.0.5' },
       ],
       repoRootDirectory: root,
@@ -137,12 +137,12 @@ test('builds changelog URLs for every published workspace package', async () => 
     }),
     new Map([
       [
-        '@platejs/list',
-        'https://github.com/udecode/plate/blob/abc123/packages/list/CHANGELOG.md',
+        '@platejs/test',
+        'https://github.com/udecode/plate/blob/abc123/packages/test/CHANGELOG.md',
       ],
       [
         'platejs',
-        'https://github.com/udecode/plate/blob/abc123/packages/plate/CHANGELOG.md',
+        'https://github.com/udecode/plate/blob/abc123/packages/platejs/CHANGELOG.md',
       ],
     ])
   );
@@ -151,21 +151,21 @@ test('builds changelog URLs for every published workspace package', async () => 
 test('adds package changelog links only during AI finalization', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'plate-package-links-'));
   const packageRoot = path.join(root, 'packages');
-  const listDirectory = path.join(packageRoot, 'list');
-  const plateDirectory = path.join(packageRoot, 'plate');
+  const testDirectory = path.join(packageRoot, 'test');
+  const plateDirectory = path.join(packageRoot, 'platejs');
 
-  await mkdir(listDirectory, { recursive: true });
+  await mkdir(testDirectory, { recursive: true });
   await mkdir(plateDirectory, { recursive: true });
   await writeFile(
-    path.join(listDirectory, 'package.json'),
-    JSON.stringify({ name: '@platejs/list', version: '53.0.5' })
+    path.join(testDirectory, 'package.json'),
+    JSON.stringify({ name: '@platejs/test', version: '53.0.5' })
   );
   await writeFile(
     path.join(plateDirectory, 'package.json'),
     JSON.stringify({ name: 'platejs', version: '53.0.5' })
   );
 
-  const content = `## \`@platejs/list\`
+  const content = `## \`@platejs/test\`
 
 ### Patch Changes
 
@@ -189,7 +189,7 @@ Full changelog: [\`v53.0.4...v53.0.5\`](https://github.com/udecode/plate/compare
   const linkedContent = addPackageChangelogLinks(content, {
     commitRef: 'abc123',
     publishedPackages: [
-      { name: '@platejs/list', version: '53.0.5' },
+      { name: '@platejs/test', version: '53.0.5' },
       { name: 'platejs', version: '53.0.5' },
     ],
     repoRootDirectory: root,
@@ -198,11 +198,11 @@ Full changelog: [\`v53.0.4...v53.0.5\`](https://github.com/udecode/plate/compare
 
   assert.match(
     linkedContent,
-    /## `@platejs\/list`[\s\S]*For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\/packages\/list\/CHANGELOG\.md\)[\s\S]*## `platejs`/
+    /## `@platejs\/test`[\s\S]*For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\/packages\/test\/CHANGELOG\.md\)[\s\S]*## `platejs`/
   );
   assert.match(
     linkedContent,
-    /## `platejs`[\s\S]*For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\/packages\/plate\/CHANGELOG\.md\)[\s\S]*## Contributors/
+    /## `platejs`[\s\S]*For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\/packages\/platejs\/CHANGELOG\.md\)[\s\S]*## Contributors/
   );
 });
 
@@ -214,7 +214,7 @@ test('uses release index package tags for full changelog fallback', async () => 
     releaseIndexFile,
     JSON.stringify([
       {
-        packageTag: '@platejs/ai@98.0.0',
+        packageTag: '@platejs/test@98.0.0',
         tag: 'v98.0.0',
       },
     ])
@@ -229,7 +229,7 @@ test('uses release index package tags for full changelog fallback', async () => 
     }),
     {
       label: 'v98.0.0...v99.0.0',
-      url: 'https://github.com/udecode/plate/compare/%40platejs%2Fai%4098.0.0...platejs%4099.0.0',
+      url: 'https://github.com/udecode/plate/compare/%40platejs%2Ftest%4098.0.0...platejs%4099.0.0',
     }
   );
 });
@@ -263,7 +263,7 @@ test('uses previous global tag when it matches the release index version', async
 });
 
 test('validates AI release notes preserve deterministic structure', () => {
-  const raw = `## \`@platejs/table\`
+  const raw = `## \`@platejs/cli\`
 
 ### Major Changes
 
@@ -280,7 +280,7 @@ Thanks to everyone who contributed to this release:
 `;
   const good = raw.replace('Removed `oldApi`', 'Removed `oldApi` from tables');
   const bad = raw
-    .replace('## `@platejs/table`', '## `@platejs/core`')
+    .replace('## `@platejs/cli`', '## `platejs`')
     .replace('[#5000](https://github.com/udecode/plate/pull/5000)', '')
     .replace('> **Migration:** Use `newApi`.\n', '')
     .replace(
@@ -300,7 +300,7 @@ Thanks to everyone who contributed to this release:
 });
 
 test('validates AI release notes preserve the Contributors section itself', () => {
-  const raw = `## \`@platejs/table\`
+  const raw = `## \`@platejs/cli\`
 
 ### Patch Changes
 
@@ -326,7 +326,7 @@ Thanks to everyone who contributed to this release:
 });
 
 test('validates AI release notes preserve comma-separated contributor handles', () => {
-  const raw = `## \`@platejs/table\`
+  const raw = `## \`@platejs/cli\`
 
 ### Patch Changes
 
@@ -350,7 +350,7 @@ Thanks to everyone who contributed to this release:
 });
 
 test('validates AI release notes preserve exact PR links', () => {
-  const raw = `## \`@platejs/table\`
+  const raw = `## \`@platejs/cli\`
 
 ### Patch Changes
 
@@ -370,13 +370,13 @@ For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/
 });
 
 test('validates AI release notes preserve exact commit links', () => {
-  const raw = `## \`@platejs/plite\`
+  const raw = `## \`plitejs\`
 
 ### Patch Changes
 
 - Updated \`slate-react\`. ([\`ce9ec87\`](https://github.com/udecode/plate/commit/ce9ec871c9547a8a3c78ded13a93049ef9fe049c))
 
-For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/abc/packages/plite/CHANGELOG.md)
+For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/abc/packages/plitejs/CHANGELOG.md)
 `;
   const withoutCommit = raw.replace(
     '([`ce9ec87`](https://github.com/udecode/plate/commit/ce9ec871c9547a8a3c78ded13a93049ef9fe049c))',
@@ -390,7 +390,7 @@ For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/
 });
 
 test('validates AI release notes reject added release entries', () => {
-  const raw = `## \`@platejs/table\`
+  const raw = `## \`@platejs/cli\`
 
 ### Patch Changes
 

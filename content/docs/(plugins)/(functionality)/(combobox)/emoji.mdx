@@ -21,7 +21,7 @@ controllers, including picker state and frequent emoji storage.
 
 ## Features
 
-- `:` trigger powered by `@platejs/combobox`.
+- `:` trigger powered by `platejs`.
 - Edit-only inline void `emojiInput` node.
 - Emoji search from `@emoji-mart/data`.
 - Default insertion as Unicode text.
@@ -42,11 +42,11 @@ controllers, including picker state and frequent emoji storage.
 <ComponentSource name="emoji" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { EmojiKit } from '@/components/editor/emoji';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: EmojiKit,
 });
 ```
@@ -71,16 +71,16 @@ export const editor = createPlateEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/emoji` | Package | Exports `BaseEmojiPlugin`, `BaseEmojiInputPlugin`, emoji search libraries, settings, categories, and types. |
-| `@platejs/emoji/react` | Package | Exports `EmojiPlugin` and `EmojiInputPlugin`. |
-| `@platejs/combobox` | Package | Provides trigger detection and transient input cleanup for the `:` flow. |
+| `platejs/emoji` | Package | Exports `BaseEmojiPlugin`, `BaseEmojiInputPlugin`, emoji search libraries, settings, categories, and types. |
+| `platejs/emoji/react` | Package | Exports `EmojiPlugin` and `EmojiInputPlugin`. |
+| `platejs` | Package | Provides trigger detection and transient input cleanup for the `:` flow. |
 | `@emoji-mart/data` | Dependency | Provides the emoji dataset used by the registry kit. |
 | `emoji` | Registry | Configures `EmojiPlugin` with the full emoji-mart dataset and binds `EmojiInputElement`. |
 | `emoji` | Registry UI | Renders inline emoji search with `InlineCombobox`. |
 | `emoji-picker` | Registry UI | Owns popover state, search, category focus, preview, selection, and frequent emoji storage. |
 | `emoji-toolbar-button` | Registry UI | Adapts `EmojiPicker` to the editor toolbar. |
 | `inline-combobox` | Registry UI | Renders the inline trigger input and popover primitives. |
-| `@platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |
+| `platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |
 
 The emoji plugin is edit-only. It inserts text or your custom node, then the transient `emojiInput` disappears.
 
@@ -91,7 +91,7 @@ The emoji plugin is edit-only. It inserts text or your custom node, then the tra
 ### Install Packages
 
 ```bash
-npm install @platejs/emoji @emoji-mart/data
+npm install platejs @emoji-mart/data @tanstack/react-virtual
 ```
 
 ### Add Plugins
@@ -101,15 +101,15 @@ Add the complete input descriptor beside it when you replace the dependency's
 component.
 
 ```tsx
-import { EmojiInputPlugin } from '@platejs/emoji/react';
-import { createPlateEditor } from 'platejs/react';
+import { EmojiInputPlugin } from 'platejs/emoji/react';
+import { createEditor } from 'platejs/react';
 
 import {
   EmojiInputElement,
   emojiPlugin,
 } from '@/components/editor/emoji';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     emojiPlugin,
     EmojiInputPlugin.configure({ component: EmojiInputElement }),
@@ -204,7 +204,7 @@ the default frequent set.
 
 ## Markdown
 
-`@platejs/markdown` deserializes emoji shortcodes to Unicode text.
+`platejs/markdown` deserializes emoji shortcodes to Unicode text.
 
 ```md
 Launch :fire: soon
@@ -220,12 +220,12 @@ Launch 🔥 soon
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseEmojiPlugin` | `@platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, text insertion, and a required `BaseEmojiInputPlugin` dependency. |
-| `BaseEmojiInputPlugin` | `@platejs/emoji` | Required edit-only inline void `emojiInput` plugin. |
-| `EmojiPlugin` | `@platejs/emoji/react` | React emoji plugin with a required `EmojiInputPlugin` dependency. |
-| `EmojiInputPlugin` | `@platejs/emoji/react` | React input dependency for `EmojiInputElement`; add it directly to replace its component or configuration. |
-| `editor.plugin(EmojiPlugin).update.insert(emoji)` | `@platejs/emoji` | Inserts `createEmojiNode(emoji)`. |
-| `EmojiInlineIndexSearch` | `@platejs/emoji` | Inline search index used by `emoji`. |
+| `BaseEmojiPlugin` | `platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, text insertion, and a required `BaseEmojiInputPlugin` dependency. |
+| `BaseEmojiInputPlugin` | `platejs/emoji` | Required edit-only inline void `emojiInput` plugin. |
+| `EmojiPlugin` | `platejs/emoji/react` | React emoji plugin with a required `EmojiInputPlugin` dependency. |
+| `EmojiInputPlugin` | `platejs/emoji/react` | React input dependency for `EmojiInputElement`; add it directly to replace its component or configuration. |
+| `editor.plugin(EmojiPlugin).update.insert(emoji)` | `platejs/emoji` | Inserts `createEmojiNode(emoji)`. |
+| `EmojiInlineIndexSearch` | `platejs/emoji` | Inline search index used by `emoji`. |
 | `EmojiPicker` | `emoji-picker` registry UI | Owns popover state, search, category focus, preview, selection, and frequent emoji updates. |
 | `EmojiPickerTrigger` | `emoji-picker` registry UI | Composes an application-owned trigger without exposing the selected primitive API. |
 | `EmojiToolbarButton` | `emoji-toolbar-button` registry UI | Renders `EmojiPicker` from the toolbar. |

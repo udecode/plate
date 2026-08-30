@@ -2,8 +2,9 @@
 
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
-import type { PlateContentProps, PlateViewProps } from 'platejs/react';
 import {
+  type PlateContentProps,
+  type PlateViewProps,
   NodeSelectionDrag,
   NodeSelectionHighlight,
   PlateContainer,

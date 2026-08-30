@@ -22,7 +22,10 @@ test('uses repo-neutral auto-release markers', () => {
 test('detects real changeset files', () => {
   assert.equal(hasChangesetFile(['.changeset/media-redos.md']), true);
   assert.equal(
-    hasChangesetFile(['.changeset/README.md', 'packages/media/src/index.ts']),
+    hasChangesetFile([
+      '.changeset/README.md',
+      'packages/platejs/src/features/media/index.ts',
+    ]),
     false
   );
   assert.equal(
@@ -64,7 +67,7 @@ test('detects the highest changeset release type from PR file patches', () => {
         filename: '.changeset/media-redos.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/media": patch
++"@platejs/test": patch
 +---
 +
 +Fix parser`,
@@ -79,7 +82,7 @@ test('detects the highest changeset release type from PR file patches', () => {
         filename: '.changeset/media-redos.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/media": patch
++"@platejs/test": patch
 +---
 +Fix parser`,
       },
@@ -87,7 +90,7 @@ test('detects the highest changeset release type from PR file patches', () => {
         filename: '.changeset/core-api.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/core": minor
++"platejs": minor
 +---
 +Add API`,
       },
@@ -101,7 +104,7 @@ test('detects the highest changeset release type from PR file patches', () => {
         filename: '.changeset/core-break.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/core": major
++"platejs": major
 +---
 +Remove API`,
       },
@@ -109,7 +112,7 @@ test('detects the highest changeset release type from PR file patches', () => {
         filename: '.changeset/media-redos.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/media": patch
++"@platejs/test": patch
 +---
 +Fix parser`,
       },
@@ -143,8 +146,8 @@ test('validates changeset filenames and frontmatter entries', () => {
         filename: '.changeset/media-redos.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/media": patch
-+"@platejs/core": none
++"@platejs/test": patch
++"platejs": none
 +---
 +
 +Fix parser`,
@@ -159,7 +162,7 @@ test('validates changeset filenames and frontmatter entries', () => {
         filename: '.changeset/Media_Redos.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/media": feature
++"@platejs/test": feature
 +---
 +
 +Fix parser`,
@@ -167,7 +170,7 @@ test('validates changeset filenames and frontmatter entries', () => {
     ]),
     [
       '.changeset/Media_Redos.md has an invalid filename. Use lowercase letters, digits, and hyphens.',
-      '.changeset/Media_Redos.md has invalid entry "\\"@platejs/media\\": feature". Expected \'"package-name": patch|minor|major|none\'.',
+      '.changeset/Media_Redos.md has invalid entry "\\"@platejs/test\\": feature". Expected \'"package-name": patch|minor|major|none\'.',
     ]
   );
 

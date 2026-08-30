@@ -22,7 +22,7 @@ Completion threshold:
 Verification surface:
 - TypeScript-AST manifest over `apps/**` and `packages/**`, excluding tests,
   build output, dependencies, and type-test fixtures.
-- Focused renderer, suggestion-kit, list-classic, and toggle tests.
+- Focused renderer, suggestion-kit, legacy-list-model, and toggle tests.
 - Source-first package typecheck plus the www TypeScript check, with unrelated
   shared-checkout failures classified by file.
 - Scoped Biome, registry changelog generation check, and `git diff --check`.
@@ -119,7 +119,7 @@ Review matrix:
 | Surface | Count | Verdict | Owner evidence |
 |---|---:|---|---|
 | Descriptor-bound production props | 112 | keep | Stable Base/live descriptors infer schema node and plugin context together. |
-| Schema-agnostic app wrappers | 13 | keep generic | `block-list` family (5), heading family shells (2), classic-list family shells (2), caption, draggable, block selection, and block discussion. |
+| Schema-agnostic app wrappers | 13 | keep generic | `block-list` family (5), heading family shells (2), legacy-list-model family shells (2), caption, draggable, block selection, and block discussion. |
 | Generic Core/Plite React machinery | 25 | keep generic | Public prop definitions, render plumbing, plugin author fields, and the primitive Plite renderer cannot name one feature descriptor. |
 | Direct node aliases in production props | 0 | cut complete | No `SuggestionText`, `CodeSyntaxText`, classic todo alias, or other concrete node alias remains as a renderer prop argument. |
 
@@ -145,14 +145,14 @@ Changed list:
 | Group | Current-run changes |
 |---|---|
 | Registry renderers | Suggestion, code block, basic blocks/marks, headings, lists, AI, TOC, toggle, emoji, footnote, find/replace, media file, and local example plugins use descriptors. |
-| Packages | Classic-list todo state derives from `BaseListPlugin`; toggle visibility derives from `BaseTogglePlugin`. |
+| Packages | legacy-list-model todo state derives from `BaseListPlugin`; toggle visibility derives from `BaseTogglePlugin`. |
 | Doctrine | Plate UI source rule and generated skill require descriptor-owned renderer props. |
-| Release metadata | Existing list-classic/toggle changesets and the canonical-node-props registry changelog describe the final API. |
+| Release metadata | Existing legacy-list-model/toggle changesets and the canonical-node-props registry changelog describe the final API. |
 
 Out-of-scope package drift:
 | Command / surface | Error summary | Why it does not block this packet |
 |---|---|---|
-| `pnpm turbo typecheck --filter=./packages/toggle --filter=./packages/list-classic` | Existing `packages/plite-react/src/plugin/with-react.ts:178` DOM API cast incompatibility | The error is upstream of both changed package files and contains no renderer-props diagnostic. |
+| `pnpm turbo typecheck --filter=./packages/toggle --filter=./packages/platejs/src/features/list` | Existing `packages/plite-react/src/plugin/with-react.ts:178` DOM API cast incompatibility | The error is upstream of both changed package files and contains no renderer-props diagnostic. |
 | www `tsc --noEmit` | Existing source collection export, editor-kit hook generic, table depth, Bun mock globals, and list/suggestion/table/Plite React errors | Final log contains no changed renderer-props file. |
 | Whole-checkout P2 | CLI watch/type printer, blockquote transforms, callout, table focus, editor-kit, and a temporary CLI fixture | None belongs to the named packet; no unrelated source was changed. |
 
@@ -196,7 +196,7 @@ Verification evidence:
   no changed renderer-props file after the heading correction; remaining
   diagnostics are listed in out-of-scope drift.
 - `pnpm turbo typecheck --filter=./packages/toggle
-  --filter=./packages/list-classic` reaches package typecheck and stops at the
+  --filter=./packages/platejs/src/features/list` reaches package typecheck and stops at the
   pre-existing Plite React DOM API cast.
 - `pnpm exec biome check --write` on changed renderer files passed; final
   scoped Biome and `git diff --check` are clean.

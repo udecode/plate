@@ -151,7 +151,7 @@ Called whenever a committed node is inserted, moved, removed, or updated.
 
 ```ts
 type OnNodeChange = (
-  ctx: PlatePluginContext & EditorNodeChangeContext<PlateEditor>
+  ctx: PlatePluginContext & EditorNodeChangeContext<Editor>
 ) => HandlerReturnType;
 ```
 
@@ -169,7 +169,7 @@ Called whenever committed text changes.
 
 ```ts
 type OnTextChange = (
-  ctx: PlatePluginContext & EditorTextChangeContext<PlateEditor>
+  ctx: PlatePluginContext & EditorTextChangeContext<Editor>
 ) => HandlerReturnType;
 ```
 
@@ -440,7 +440,7 @@ Specifies the HTML tag name used when no component is bound through
 <APIItem name="conflicts" type="readonly (EditorExtensionReference | PluginReference)[]">
   Plate plugin or raw Plite extension descriptors that cannot be installed
   with this plugin. Import both reference types from `platejs`; Plite-only
-  libraries can import `EditorExtensionReference` from `@platejs/plite`.
+  libraries can import `EditorExtensionReference` from `platejs`.
 </APIItem>
 
 <APIItem name="readMiddleware" type="EditorExtensionReadMiddlewareFactory">
@@ -594,7 +594,7 @@ The contribution fields have distinct owners:
 - `codecs`: the declaration returned by context-bound `defineCodecs`
 
 Independently reusable standalone Plite descriptors use
-`defineExtension` from `@platejs/plite`. Plate plugins declare the same
+`defineExtension` from `platejs`. Plate plugins declare the same
 native capabilities at their root.
 
 Use `defineCodecs(map)` for self/product codecs and
@@ -616,7 +616,7 @@ field, including `api`, `read`, `selectors`, `update`, native Plite fields, and
 
 <API name="Context">
   <APIAttributes>
-    <APIItem name="editor" type="PlateEditor">
+    <APIItem name="editor" type="Editor">
       The current editor instance.
     </APIItem>
     <APIItem name="plugin" type="ResolvedPlatePlugin<D>">

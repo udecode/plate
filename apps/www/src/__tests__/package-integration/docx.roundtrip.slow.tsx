@@ -3,12 +3,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BaseCodeHighlightPlugin } from '@platejs/code-block';
-import { htmlToDocxBlob } from '@platejs/docx-export';
-import { DocxImportPlugin } from '@platejs/docx-import';
-import type { Node as PliteNode } from '@platejs/plite';
-import { jsx } from '@platejs/test-utils';
-import { createBaseEditor, type Value } from 'platejs';
+import { jsx } from '@platejs/test';
+import {
+  BaseCodeHighlightPlugin,
+  type Node as PliteNode,
+  createEditor,
+  type Value,
+} from 'platejs';
+import { htmlToDocxBlob, DocxImportPlugin } from 'platejs/docx';
 import { renderStaticHtml } from 'platejs/static';
 
 import { CodeSyntaxLeafDocx } from '@/registry/components/editor/code-block-static';
@@ -18,7 +20,7 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 jsx;
 
 const createTestEditor = (value?: Value) =>
-  createBaseEditor({
+  createEditor({
     plugins: [...BaseEditorKit, DocxImportPlugin, ...DocxExportKit],
     initialValue: value,
   });

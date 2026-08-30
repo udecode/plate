@@ -115,7 +115,7 @@ const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const doctrineVersionPattern = /Current doctrine version: `(\d+)`\./;
 const frontmatterPattern = /^---\n([\s\S]*?)\n---/;
 const reviewedPackageBlockPattern =
-  /const reviewedPackageSlugs = \[([\s\S]*?)\n\];/;
+  /const reviewedPackageSlugs = \[([\s\S]*?)\];/;
 const reviewedPackageSlugPattern = /'([^']+)'/g;
 const sha256Pattern = /^sha256:[a-f0-9]{64}$/;
 const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);

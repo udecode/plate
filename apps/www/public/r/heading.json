@@ -4,7 +4,7 @@
   "title": "Heading",
   "description": "A heading with multiple level support.",
   "dependencies": [
-    "@platejs/basic-nodes"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/highlight-style.json"
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/heading.tsx",
-      "content": "'use client';\n\nimport type { HeadingPlugin } from '@platejs/basic-nodes/react';\nimport { cva } from 'class-variance-authority';\nimport type { PlateElementProps } from 'platejs/react';\nimport { PlateElement } from 'platejs/react';\nimport * as React from 'react';\n\nconst headingVariants = cva(\n  'relative mb-1 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',\n  {\n    variants: {\n      level: {\n        1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',\n        2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',\n        3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',\n        4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',\n        5: 'mt-[0.75em] font-semibold text-lg tracking-tight',\n        6: 'mt-[0.75em] font-semibold text-base tracking-tight',\n      },\n    },\n  }\n);\n\nexport function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {\n  const { level } = props.element;\n  const tag = `h${level}` as const;\n\n  return (\n    <PlateElement as={tag} className={headingVariants({ level })} {...props}>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "content": "'use client';\n\nimport { cva } from 'class-variance-authority';\nimport {\n  type HeadingPlugin,\n  type PlateElementProps,\n  PlateElement,\n} from 'platejs/react';\nimport * as React from 'react';\n\nconst headingVariants = cva(\n  'relative mb-1 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',\n  {\n    variants: {\n      level: {\n        1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',\n        2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',\n        3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',\n        4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',\n        5: 'mt-[0.75em] font-semibold text-lg tracking-tight',\n        6: 'mt-[0.75em] font-semibold text-base tracking-tight',\n      },\n    },\n  }\n);\n\nexport function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {\n  const { level } = props.element;\n  const tag = `h${level}` as const;\n\n  return (\n    <PlateElement as={tag} className={headingVariants({ level })} {...props}>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/heading.tsx"
     }

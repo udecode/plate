@@ -1,4 +1,4 @@
-import { BaseCommentPlugin } from '@platejs/comment';
+import { BaseCommentPlugin } from 'platejs/comment';
 import { type PliteLeafProps, PliteLeaf } from 'platejs/static';
 import * as React from 'react';
 

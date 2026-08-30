@@ -401,9 +401,9 @@
   },
   {
     "id": 114,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseListItemContentPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 55,
     "current": {
       "api": [],
@@ -427,9 +427,9 @@
   },
   {
     "id": 115,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseListItemPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 66,
     "current": {
       "api": [],
@@ -453,9 +453,9 @@
   },
   {
     "id": 116,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseBulletedListPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 121,
     "current": {
       "api": [],
@@ -479,9 +479,9 @@
   },
   {
     "id": 117,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseNumberedListPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 148,
     "current": {
       "api": [],
@@ -505,9 +505,9 @@
   },
   {
     "id": 118,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseTaskListPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 175,
     "current": {
       "api": [],
@@ -531,9 +531,9 @@
   },
   {
     "id": 119,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseTodoListPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 203,
     "current": {
       "api": [],
@@ -557,9 +557,9 @@
   },
   {
     "id": 120,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseListPlugin",
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "line": 284,
     "current": {
       "api": [],
@@ -628,9 +628,9 @@
   },
   {
     "id": 121,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BulletedListPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 13,
     "current": {
       "api": [],
@@ -654,9 +654,9 @@
   },
   {
     "id": 122,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "TaskListPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 15,
     "current": {
       "api": [],
@@ -680,9 +680,9 @@
   },
   {
     "id": 123,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "NumberedListPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 17,
     "current": {
       "api": [],
@@ -706,9 +706,9 @@
   },
   {
     "id": 124,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "ListItemContentPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 19,
     "current": {
       "api": [],
@@ -732,9 +732,9 @@
   },
   {
     "id": 125,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "ListItemPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 21,
     "current": {
       "api": [],
@@ -758,9 +758,9 @@
   },
   {
     "id": 126,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "ListPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 27,
     "current": {
       "api": [],
@@ -820,7 +820,7 @@
       ]
     },
     "priority": "P1",
-    "verdict": "Inherit the Base classic-list split after its snapshot-free helpers move from read to api.",
+    "verdict": "Inherit the Base legacy-list-model split after its snapshot-free helpers move from read to api.",
     "evidence": "This React adapter adds only dependency replacement, so its effective public correction is entirely owned by BaseListPlugin.",
     "extendJustified": null,
     "gaps": [
@@ -829,9 +829,9 @@
   },
   {
     "id": 127,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "TodoListPlugin",
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "line": 37,
     "current": {
       "api": [],

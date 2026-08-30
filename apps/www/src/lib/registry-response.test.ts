@@ -7,19 +7,6 @@ import {
 } from './plate-registry-styles';
 import { createRegistryResponse } from './registry-response';
 
-const CLASSIC_ITEM_NAMES = [
-  'autoformat-classic',
-  'fixed-toolbar-classic',
-  'fixed-toolbar-classic-buttons',
-  'floating-toolbar-classic',
-  'floating-toolbar-classic-buttons',
-  'insert-toolbar-classic-button',
-  'list-classic',
-  'list-classic-toolbar-button',
-  'transforms-classic',
-  'turn-into-toolbar-classic-button',
-] as const;
-
 const SUPPORTED_STYLES = PLATE_REGISTRY_BASES.flatMap((base) =>
   PLATE_REGISTRY_STYLE_NAMES.map((style) => `${base}-${style}`)
 );
@@ -158,25 +145,6 @@ describe('registry style responses', () => {
         }),
       ])
     );
-    for (const name of CLASSIC_ITEM_NAMES) {
-      expect(
-        items.some((item) => item.name === name),
-        name
-      ).toBe(true);
-    }
-  });
-
-  it('serves every classic item under Base', async () => {
-    for (const name of CLASSIC_ITEM_NAMES) {
-      expect(
-        await createRegistryResponse({
-          directory: 'r',
-          fileName: `${name}.json`,
-          origin: 'https://platejs.org',
-          style: 'base-nova',
-        })
-      ).not.toBeNull();
-    }
   });
 
   it('serves every public registry payload under all 16 combinations', async () => {
@@ -187,7 +155,7 @@ describe('registry style responses', () => {
 
     expect(fileNames.length).toBeGreaterThan(0);
 
-    expect(fileNames).toHaveLength(381);
+    expect(fileNames).toHaveLength(367);
 
     for (const style of SUPPORTED_STYLES) {
       for (const fileName of fileNames) {

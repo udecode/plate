@@ -66,7 +66,7 @@ const packageMap = [
   {
     from: 'slate-browser',
     to: 'browser',
-    name: '@platejs/browser',
+    name: '@platejs/test',
     customBuild: true,
   },
   {
@@ -79,7 +79,7 @@ const packageMap = [
 
 const specifierMap = new Map([
   ['@slate/yjs', '@platejs/yjs'],
-  ['slate-browser', '@platejs/browser'],
+  ['slate-browser', '@platejs/test'],
   ['slate-dom', '@platejs/slate-dom'],
   ['slate-history', '@platejs/slate-history'],
   ['slate-hyperscript', '@platejs/slate-hyperscript'],
@@ -114,9 +114,11 @@ const slateBrowserCommandBlockPattern =
   /Root commands:\n\n(?:- `.*`\n)+\nThe package-local/;
 const slateSourceTestSetup = '../../config/slate-source-test-setup.ts';
 const sourceFirstPaths = {
-  '@platejs/browser/browser': ['../browser/src/browser/index.ts'],
-  '@platejs/browser/core': ['../browser/src/core/index.ts'],
-  '@platejs/browser/playwright': ['../browser/src/playwright/index.ts'],
+  '@platejs/test': ['../test/src/index.ts'],
+  '@platejs/test/browser': ['../test/src/browser/index.ts'],
+  '@platejs/test/playwright': ['../test/src/playwright/index.ts'],
+  '@platejs/test/proof': ['../test/src/proof/index.ts'],
+  '@platejs/test/react': ['../test/src/react/index.ts'],
   '@platejs/slate': ['../slate/src/index.ts'],
   '@platejs/slate/internal': ['../slate/src/internal/index.ts'],
   '@platejs/slate-dom': ['../slate-dom/src/index.ts'],
@@ -203,9 +205,9 @@ const rewritePackageSpecifiers = (content) => {
 
   rewritten = rewritten
     .replaceAll('@slate/yjs', '@platejs/yjs')
-    .replaceAll('packages/slate-browser', 'packages/browser')
+    .replaceAll('packages/slate-browser', 'packages/test')
     .replaceAll('packages/slate-yjs', 'packages/yjs')
-    .replaceAll('slate-browser/', '@platejs/browser/')
+    .replaceAll('slate-browser/', '@platejs/test/')
     .replaceAll('slate-yjs/', '@platejs/yjs/')
     .replaceAll(
       '../../config/typescript/tsconfig.json',
@@ -431,24 +433,24 @@ const updateBrowserReadme = (target, packageEntry) => {
 
   const readme = fs.readFileSync(readmePath, 'utf8');
   const rewritten = readme
-    .replace(slateBrowserHeadingPattern, '# @platejs/browser')
-    .replace(/`slate-browser`/g, '`@platejs/browser`')
+    .replace(slateBrowserHeadingPattern, '# @platejs/test')
+    .replace(/`slate-browser`/g, '`@platejs/test`')
     .replace(
       slateBrowserInstallPattern,
-      'npm install -D @platejs/browser @playwright/test'
+      'npm install -D @platejs/test @playwright/test'
     )
-    .replace(slateBrowserSubpathPattern, '@platejs/browser/')
-    .replace(slateBrowserGreetingPattern, 'Hello from @platejs/browser')
+    .replace(slateBrowserSubpathPattern, '@platejs/test/')
+    .replace(slateBrowserGreetingPattern, 'Hello from @platejs/test')
     .replace(
       slateBrowserCommandBlockPattern,
       `${[
         'Package commands:',
         '',
-        '- `pnpm --filter @platejs/browser build`',
-        '- `pnpm --filter @platejs/browser test`',
-        '- `pnpm --filter @platejs/browser test:core`',
-        '- `pnpm --filter @platejs/browser test:dom`',
-        '- `pnpm --filter @platejs/browser test:selection`',
+        '- `pnpm --filter @platejs/test build`',
+        '- `pnpm --filter @platejs/test test`',
+        '- `pnpm --filter @platejs/test test:proof`',
+        '- `pnpm --filter @platejs/test test:dom`',
+        '- `pnpm --filter @platejs/test test:selection`',
       ].join('\n')}\n\nThe package-local`
     );
 

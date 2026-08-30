@@ -24,7 +24,7 @@ npm create vite@latest
 安装`platejs`以使用编辑器核心功能和React组件。
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
 ### TypeScript配置
@@ -54,10 +54,10 @@ Plate提供ESM格式的包。如果使用TypeScript，请确保`tsconfig.json`�
 ```tsx title="src/App.tsx"
 import React from 'react';
 import type { Value } from 'platejs';
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
 
 export default function App() {
-  const editor = usePlateEditor();
+  const editor = useCreateEditor();
 
   return (
     <Plate editor={editor}>
@@ -71,7 +71,7 @@ export default function App() {
 ```
 
 <Callout type="info">
-  `usePlateEditor`会创建记忆化的编辑器实例，确保在重新渲染时保持稳定。如需非记忆化版本，可使用`platejs/react`中的`createPlateEditor`。
+  `useCreateEditor`会创建记忆化的编辑器实例，确保在重新渲染时保持稳定。如需非记忆化版本，可使用`platejs/react`中的`createEditor`。
 </Callout>
 
 <ComponentPreview name="installation-next-01-editor-demo" height="200px" />
@@ -83,7 +83,7 @@ export default function App() {
 安装基础节点包，然后添加标记插件：
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 现在添加对基础文本格式（如加粗、斜体和下划线）的支持。
@@ -96,11 +96,11 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
   PlateContent,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 const initialValue: Value = [
@@ -119,7 +119,7 @@ const initialValue: Value = [
 ];
 
 export default function App() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
     initialValue,
   });
@@ -157,12 +157,12 @@ import {
   
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
-  usePlateEditor,
+  useCreateEditor,
   type PlateElementProps,
 } from 'platejs/react';
 
@@ -187,15 +187,9 @@ const initialValue: Value = [
 
 // 定义元素组件
 function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h1" {...props} />;
-}
+  const tag = `h${props.element.level}` as const;
 
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h2" {...props} />;
-}
-
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h3" {...props} />;
+  return <PlateElement as={tag} {...props} />;
 }
 
 function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
@@ -216,13 +210,11 @@ function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
 }
 
 export default function App() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      HeadingPlugin.configure({ component: HeadingElement }),
-      HeadingPlugin.configure({ component: HeadingElement }),
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
@@ -260,12 +252,12 @@ import {
   
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
-  usePlateEditor,
+  useCreateEditor,
   type PlateElementProps,
 } from 'platejs/react';
 
@@ -290,15 +282,9 @@ const initialValue: Value = [
 
 // 定义元素组件
 function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h1" {...props} />;
-}
+  const tag = `h${props.element.level}` as const;
 
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h2" {...props} />;
-}
-
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h3" {...props} />;
+  return <PlateElement as={tag} {...props} />;
 }
 
 function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
@@ -319,13 +305,11 @@ function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
 }
 
 export default function App() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      HeadingPlugin.configure({ component: HeadingElement }),
-      HeadingPlugin.configure({ component: HeadingElement }),
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
@@ -378,7 +362,7 @@ export default function App() {
 
 <Callout type="info" title="值管理">
   上例演示了管理编辑器值的基础模式：
-  - 通过 `usePlateEditor` 的 `initialValue` 选项设置初始值
+  - 通过 `useCreateEditor` 的 `initialValue` 选项设置初始值
   - 通过 `<Plate>` 的 `onValueChange` 属性处理变化
   - 重置按钮使用 `editor.update((tx) => tx.value.replace(...))` 恢复初始值
   - 如需控制值，请参阅[受控值](/docs/controlled)
@@ -393,7 +377,7 @@ export default function App() {
 *   **添加样式：**
     *   如需快速使用预制组件，考虑使用[Plate UI](/docs/installation/plate-ui)
     *   或继续使用CSS、CSS-in-JS库或您偏好的样式解决方案手动设置样式
-*   **[添加插件](/docs/plugins):** Plate拥有丰富的插件生态（如表单、提及、图片、列表等）。安装对应包（如`@platejs/table`）并添加到`plugins`数组
+*   **[添加插件](/docs/plugins):** Plate拥有丰富的插件生态（如表单、提及、图片、列表等）。安装对应包（如`platejs`）并添加到`plugins`数组
 *   **[构建工具栏](/docs/toolbar):** 创建使用[编辑器转换](/docs/transforms)应用格式的工具栏按钮组件（如`editor.update.bold.toggle()`、`editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`）。您也可以结合[编辑器API](/docs/api)使用编辑器状态
 *   **深入学习：**
     *   [编辑器配置](/docs/editor)

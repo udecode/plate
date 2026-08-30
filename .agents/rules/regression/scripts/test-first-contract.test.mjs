@@ -205,6 +205,27 @@ test('stability-only failures freeze product edits until proof drift is classifi
   assert.match(template, /stability-only failure[\s\S]*froze product edits/);
 });
 
+test('responsive geometry proof waits for bounded layout convergence', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /animation frame[\s\S]*bounded convergence poll[\s\S]*immediate bounding[\s\S]*invalid proof[\s\S]*pre-convergence[\s\S]*converged geometry/
+  );
+  assert.match(
+    methodology,
+    /Responsive geometry[\s\S]*bounded timeout[\s\S]*immediate bounding-box read[\s\S]*invalid[\s\S]*pre-convergence and converged geometry/
+  );
+  assert.match(
+    template,
+    /Responsive geometry proof[\s\S]*bounded invariant poll[\s\S]*pre-convergence and converged geometry/
+  );
+});
+
 test('exact Chrome proof attests the launched executable and separates proof-host failures', () => {
   const regressionRule = read('.agents/rules/regression.mdc');
   const methodology = read(

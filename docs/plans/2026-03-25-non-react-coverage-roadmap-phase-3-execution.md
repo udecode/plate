@@ -18,7 +18,7 @@ status: completed
 - [completed] Phase 1: inspect current seams and harnesses
 - [completed] Phase 2: Tier 1 (`link`, `markdown`)
 - [completed] Phase 3: `core` and `autoformat`
-- [completed] Phase 4: `basic-nodes`, `table`, `list-classic`, `suggestion`
+- [completed] Phase 4: `basic-nodes`, `table`, `legacy-list-model`, `suggestion`
 - [completed] Phase 5: verification and roadmap status update
 
 ## Learnings Applied
@@ -38,7 +38,7 @@ status: completed
 
 - Tier 1 and Tier 2 are complete.
 - `upsertLink.ts` and `markdownToPliteNodesSafely.ts` each had dead branches removed instead of receiving fake tests.
-- New direct specs landed for the remaining honest helper seams in `core`, `markdown`, `table`, `list-classic`, and `suggestion`.
+- New direct specs landed for the remaining honest helper seams in `core`, `markdown`, `table`, `legacy-list-model`, and `suggestion`.
 - This pass exposed and fixed two real product bugs:
   - `splitIncompleteMdx.ts` treated a closing `>` at end-of-string as incomplete.
   - `getTableCellBorders.ts` accepted any parent node as a table ancestor instead of requiring the real table type.
@@ -49,12 +49,12 @@ status: completed
   - `bun test ...` on 19 touched specs -> `105 pass`, `0 fail`
 - Build-first gate:
   - `pnpm install`
-  - `pnpm turbo build --filter=./packages/link --filter=./packages/markdown --filter=./packages/core --filter=./packages/autoformat --filter=./packages/basic-nodes --filter=./packages/table --filter=./packages/list-classic --filter=./packages/suggestion`
-  - `pnpm turbo typecheck --concurrency=1 --filter=./packages/link --filter=./packages/markdown --filter=./packages/core --filter=./packages/autoformat --filter=./packages/basic-nodes --filter=./packages/table --filter=./packages/list-classic --filter=./packages/suggestion`
+  - `pnpm turbo build --filter=./packages/link --filter=./packages/markdown --filter=./packages/core --filter=./packages/autoformat --filter=./packages/basic-nodes --filter=./packages/table --filter=./packages/platejs/src/features/list --filter=./packages/suggestion`
+  - `pnpm turbo typecheck --concurrency=1 --filter=./packages/link --filter=./packages/markdown --filter=./packages/core --filter=./packages/autoformat --filter=./packages/basic-nodes --filter=./packages/table --filter=./packages/platejs/src/features/list --filter=./packages/suggestion`
   - `pnpm lint:fix`
 - Post-lint confirmation:
   - targeted roadmap slice rerun -> `105 pass`, `0 fail`
 
 ## Verification Notes
 
-- A broad `bun test packages/link/src packages/markdown/src packages/core/src packages/autoformat/src packages/basic-nodes/src packages/table/src packages/list-classic/src packages/suggestion/src` sweep is still dirty outside this roadmap slice. The failures are shared suite-order or mock-surface debt in unrelated areas, not regressions in the touched Phase 3 seams.
+- A broad `bun test packages/link/src packages/markdown/src packages/core/src packages/autoformat/src packages/basic-nodes/src packages/table/src packages/platejs/src/features/list/src packages/suggestion/src` sweep is still dirty outside this roadmap slice. The failures are shared suite-order or mock-surface debt in unrelated areas, not regressions in the touched Phase 3 seams.

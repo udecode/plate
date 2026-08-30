@@ -22,13 +22,13 @@ room document. The provider is credential-free and development-only.
 
 | Piece | Owner | Notes |
 | --- | --- | --- |
-| `YjsPlugin` | `@platejs/yjs/plate` | Installs the Yjs adapter in a Plate editor and binds the configured document and providers. |
+| `YjsPlugin` | `platejs/yjs/react` | Installs the Yjs adapter in a Plate editor and binds the configured document and providers. |
 | Provider wrapper | App infrastructure | Wrap Hocuspocus, WebRTC, IndexedDB, or custom transport as `YjsProviderLike`. |
 | Local room | Registry example | Exchanges document and awareness updates between two independent peers. |
 | Production room state | App | Keep room ids, auth tokens, persistence, and provider URLs outside Plate packages. |
 | Connection commands | `tx.yjs` | Connect, disconnect, reconnect, publish selection, and clear selection. |
 | Connection reads | `state.yjs` | Read connected, synced, and provider status from `editor.read`. |
-| Undo and redo | `@platejs/plite-history` | Replay canonical editor changes through the same Yjs bridge. |
+| Undo and redo | `platejs/history` | Replay canonical editor changes through the same Yjs bridge. |
 
 Use the full [Yjs guide](/docs/yjs) when wiring a real provider.
 
@@ -40,7 +40,7 @@ Remote cursor UI belongs at the app edge. The reusable registry component is
 <ComponentSource name="remote-cursor-overlay" />
 
 Render it inside a positioned editor container. It reads cursor state and DOM
-geometry from `@platejs/yjs/react`, excludes the local cursor, and ignores
+geometry from `platejs/yjs/react`, excludes the local cursor, and ignores
 unresolved ranges.
 
 ## Try It

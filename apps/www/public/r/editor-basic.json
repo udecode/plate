@@ -2,11 +2,13 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-basic",
   "description": "A basic editor",
+  "dependencies": [
+    "@tanstack/react-virtual@^3.13.25"
+  ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui.json",
     "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/basic-nodes.json",
-    "https://platejs.org/r/editor-plugins.json"
+    "https://platejs.org/r/basic-nodes.json"
   ],
   "files": [
     {
@@ -17,7 +19,7 @@
     },
     {
       "path": "src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
-      "content": "'use client';\n\nimport { Plate, usePlateEditor } from 'platejs/react';\n\nimport { BasicNodesKit } from '@/registry/components/editor/basic-nodes';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\n\nexport function PlateEditor() {\n  const editor = usePlateEditor({\n    plugins: BasicNodesKit,\n    initialValue: value,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor variant=\"demo\" placeholder=\"Type...\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\nconst value = [\n  {\n    children: [{ text: 'Basic Editor' }],\n    level: 1,\n    type: 'heading',\n  },\n  {\n    children: [{ text: 'Heading 2' }],\n    level: 2,\n    type: 'heading',\n  },\n  {\n    children: [{ text: 'Heading 3' }],\n    level: 3,\n    type: 'heading',\n  },\n  {\n    children: [\n      {\n        children: [{ text: 'This blockquote contains more than one block.' }],\n        type: 'paragraph',\n      },\n      {\n        children: [\n          {\n            text: 'It can also wrap nested quotes instead of flattening them.',\n          },\n        ],\n        type: 'paragraph',\n      },\n      {\n        children: [\n          {\n            children: [\n              {\n                text: 'Nested blockquotes keep the quote hierarchy intact.',\n              },\n            ],\n            type: 'paragraph',\n          },\n        ],\n        type: 'blockquote',\n      },\n    ],\n    type: 'blockquote',\n  },\n  {\n    children: [\n      { text: 'Basic marks: ' },\n      { bold: true, text: 'bold' },\n      { text: ', ' },\n      { italic: true, text: 'italic' },\n      { text: ', ' },\n      { text: 'underline', underline: true },\n      { text: ', ' },\n      { strikethrough: true, text: 'strikethrough' },\n      { text: '.' },\n    ],\n    type: 'paragraph',\n  },\n];\n",
+      "content": "'use client';\n\nimport { Plate, useCreateEditor } from 'platejs/react';\n\nimport { BasicNodesKit } from '@/registry/components/editor/basic-nodes';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\n\nexport function PlateEditor() {\n  const editor = useCreateEditor({\n    plugins: BasicNodesKit,\n    initialValue: value,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor variant=\"demo\" placeholder=\"Type...\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\nconst value = [\n  {\n    children: [{ text: 'Basic Editor' }],\n    level: 1,\n    type: 'heading',\n  },\n  {\n    children: [{ text: 'Heading 2' }],\n    level: 2,\n    type: 'heading',\n  },\n  {\n    children: [{ text: 'Heading 3' }],\n    level: 3,\n    type: 'heading',\n  },\n  {\n    children: [\n      {\n        children: [{ text: 'This blockquote contains more than one block.' }],\n        type: 'paragraph',\n      },\n      {\n        children: [\n          {\n            text: 'It can also wrap nested quotes instead of flattening them.',\n          },\n        ],\n        type: 'paragraph',\n      },\n      {\n        children: [\n          {\n            children: [\n              {\n                text: 'Nested blockquotes keep the quote hierarchy intact.',\n              },\n            ],\n            type: 'paragraph',\n          },\n        ],\n        type: 'blockquote',\n      },\n    ],\n    type: 'blockquote',\n  },\n  {\n    children: [\n      { text: 'Basic marks: ' },\n      { bold: true, text: 'bold' },\n      { text: ', ' },\n      { italic: true, text: 'italic' },\n      { text: ', ' },\n      { text: 'underline', underline: true },\n      { text: ', ' },\n      { strikethrough: true, text: 'strikethrough' },\n      { text: '.' },\n    ],\n    type: 'paragraph',\n  },\n];\n",
       "type": "registry:component",
       "target": "@components/editor/plate-editor.tsx"
     }

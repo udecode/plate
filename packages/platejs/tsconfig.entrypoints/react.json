@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/react",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/react.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/react/index.*"],
+  "references": [
+    {
+      "path": "./react-core.json"
+    },
+    {
+      "path": "./root.json"
+    },
+    {
+      "path": "./standard-basic-nodes-react.json"
+    },
+    {
+      "path": "./standard-basic-styles-react.json"
+    },
+    {
+      "path": "./standard-code-block-react.json"
+    },
+    {
+      "path": "./standard-indent-react.json"
+    },
+    {
+      "path": "./standard-link-react.json"
+    },
+    {
+      "path": "./standard-list-react.json"
+    }
+  ]
+}

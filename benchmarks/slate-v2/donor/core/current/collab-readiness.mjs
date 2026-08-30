@@ -4,10 +4,10 @@ import { performance } from 'node:perf_hooks';
 import {
   createEditor,
   defineExtension,
-} from '../../../../../packages/plite/src/index.ts';
-import { ChangeDraft } from '../../../../../packages/plite/src/core/change/builder.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
-import { history as historyExtension } from '../../../../../packages/plite-history/src/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
+import { ChangeDraft } from '../../../../../packages/plitejs/src/core/change/builder.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
+import { history as historyExtension } from '../../../../../packages/plitejs/src/history/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(

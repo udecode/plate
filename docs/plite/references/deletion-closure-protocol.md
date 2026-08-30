@@ -24,7 +24,7 @@ Do not use vague “package closure” language.
 
 ### 2. Parent/child closure is mandatory
 
-Closing `packages/plite-react/test/**` does not close
+Closing `packages/plitejs/test/react/**` does not close
 `packages/plite-react/**`.
 
 ### 3. Freeze the deleted inventory first

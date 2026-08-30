@@ -8,8 +8,8 @@ description: 安装并配置适用于 React Server Components 的 Plate。
 ## RSC 配置
 
 <Callout type="warning" title="使用静态导入">
-  不要在 Server Component 中从 `platejs/react` 或 `@platejs/*/react`
-  导入。请使用 `platejs/static`、`platejs` 和基础 `@platejs/*` 入口。
+  不要在 Server Component 中从 `platejs/react` 或其他 `/react`
+  子路径导入。请使用 `platejs/static`、`platejs` 和基础 `platejs/*` 子路径。
 </Callout>
 
 <Steps>
@@ -98,10 +98,10 @@ export async function GET() {
 如果只需要数据转换或 Markdown 输入/输出，请使用 Node.js 路径，而不是静态 React 渲染。
 
 ```bash
-npm install platejs @platejs/basic-nodes @platejs/markdown
+npm install platejs marked remark-mdx remark-parse remark-stringify unified
 ```
 
-该路径使用 `platejs` 的 `createBaseEditor`，不需要复制的 UI 组件。
+该路径使用 `platejs` 的 `createEditor`，不需要复制的 UI 组件。
 
 </Steps>
 
@@ -111,11 +111,11 @@ npm install platejs @platejs/basic-nodes @platejs/markdown
 | --- | --- | --- |
 | Server Component | `platejs/static` | 使用 `<PlateStatic>` 生成只读 React 输出。 |
 | Route Handler | `platejs/static` | 使用 `renderStaticHtml` 进行静态 React 渲染。 |
-| Node.js 脚本 | `platejs`、`@platejs/*` | 验证、迁移和 Markdown 输入/输出。 |
-| 客户端编辑器 | `platejs/react`、`@platejs/*/react` | 可编辑 UI、hooks 和工具栏交互。 |
+| Node.js 脚本 | `platejs`、`platejs/*` | 验证、迁移和 Markdown 输入/输出。 |
+| 客户端编辑器 | `platejs/react`、`platejs/*/react` | 可编辑 UI、hooks 和工具栏交互。 |
 
 <Callout type="info">
-  `createStaticEditor` 会在你的插件之前加入静态 `ViewPlugin`。需要渲染输出时使用它；脚本只读取或转换值时使用 `createBaseEditor`。
+  `createStaticEditor` 会在你的插件之前加入静态 `ViewPlugin`。需要渲染输出时使用它；脚本只读取或转换值时使用 `createEditor`。
 </Callout>
 
 ## 后续步骤

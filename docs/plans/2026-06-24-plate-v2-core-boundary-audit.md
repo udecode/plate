@@ -108,7 +108,7 @@ Scenario matrix:
 | Public `T*` naming | present | 36 source/docs files use `TPlateEditor`, `createTPlatePlugin`, `toTPlatePlugin`, or `TBaseEditor`. | Cut/rename in next API cleanup packet. |
 | `packages/slate-legacy` | absent | `test -e packages/slate-legacy` reported absent; manifest scan found no legacy refs. | Closed. |
 | Runtime monolith | present | `createPlateRuntimeEditor.ts` is 9,886 lines. | Split only by durable runtime owner after bridge cleanup. |
-| Deferred runtime owners | present | Command-surface plan names `ai`, `list-classic`, `media`, `selection`, `suggestion`, `table`. | Package-by-package after core API shape is accepted. |
+| Deferred runtime owners | present | Command-surface plan names `ai`, `legacy-list-model`, `media`, `selection`, `suggestion`, `table`. | Package-by-package after core API shape is accepted. |
 
 Prioritized cut list:
 | Rank | Item | Why it matters | Next packet |
@@ -118,7 +118,7 @@ Prioritized cut list:
 | 3 | `createPlateRuntimeEditor.ts` monolith | 9.9k lines is too big for agent navigation and hides first-party runtime special cases. | Extract only durable owners: runtime plugin normalization, first-party runtime routes, DOM/selection services, render adapters. Do not split by arbitrary line count. |
 | 4 | First-party runtime special cases | The runtime file has keyed branches such as blockquote/list/toggle/code/link/comment/footnote. That is acceptable only as a migration packet, not final architecture. | Convert stable branches into explicit plugin runtime adapters or extension slots; leave only generic dispatch in core. |
 | 5 | Docs stale API | Docs still teach `T*` names and old migration framing. | After API names are approved, update latest-state docs and keep migration docs separate. |
-| 6 | Deferred runtime package owners | `ai`, `list-classic`, `media`, `selection`, `suggestion`, `table` still need behavior-specific runtime closure. | One package owner at a time with typecheck/test/build and browser proof only when visible behavior changes. |
+| 6 | Deferred runtime package owners | `ai`, `legacy-list-model`, `media`, `selection`, `suggestion`, `table` still need behavior-specific runtime closure. | One package owner at a time with typecheck/test/build and browser proof only when visible behavior changes. |
 | 7 | `platejs` aggregate facade | `platejs` exports Plate core and Plite. That may be fine, but it must be intentional and documented as a product facade, not a random barrel. | Review after T-name and bridge cleanup; do not force feature packages to bypass `platejs` by default. |
 
 Changed list:

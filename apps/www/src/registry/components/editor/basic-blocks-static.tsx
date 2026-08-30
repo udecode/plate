@@ -2,8 +2,8 @@ import {
   BaseBlockquotePlugin,
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
-} from '@platejs/basic-nodes';
-import { BaseParagraphPlugin } from 'platejs';
+  BaseParagraphPlugin,
+} from 'platejs';
 
 import { BlockquoteElementStatic } from '@/registry/components/editor/blockquote-static';
 import { HeadingElementStatic } from '@/registry/components/editor/heading-static';

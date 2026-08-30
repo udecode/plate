@@ -1,7 +1,5 @@
 'use client';
 
-import { AIChatPlugin } from '@platejs/ai/react';
-import { SlashInputPlugin, SlashPlugin } from '@platejs/slash-command/react';
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -24,11 +22,13 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 import { PLUGINS } from 'platejs';
+import { AIChatPlugin } from 'platejs/ai/react';
 import {
-  type PlateEditor,
+  type Editor,
   type PlateElementProps,
   PlateElement,
 } from 'platejs/react';
+import { SlashInputPlugin, SlashPlugin } from 'platejs/slash-command/react';
 import * as React from 'react';
 
 import {
@@ -51,7 +51,7 @@ type Group = {
   items: Array<{
     icon: React.ReactNode;
     value: string;
-    onSelect: (editor: PlateEditor, value: string) => void;
+    onSelect: (editor: Editor, value: string) => void;
     className?: string;
     focusEditor?: boolean;
     keywords?: string[];
@@ -121,8 +121,8 @@ const groups: Group[] = [
       {
         icon: <ChevronRightIcon />,
         keywords: ['collapsible', 'expandable'],
-        label: 'Toggle',
-        value: PLUGINS.toggle,
+        label: 'Details',
+        value: PLUGINS.details,
       },
       {
         icon: <Code2 />,

@@ -1,4 +1,3 @@
-import { BaseAIPlugin } from '@platejs/ai';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -6,10 +5,13 @@ import {
   BaseKbdPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
-} from '@platejs/basic-nodes';
-import { BaseCommentPlugin } from '@platejs/comment';
-import { BaseLinkPlugin } from '@platejs/link';
-import { BaseParagraphPlugin, createBaseEditor, type Value } from 'platejs';
+  BaseLinkPlugin,
+  BaseParagraphPlugin,
+  createEditor,
+  type Value,
+} from 'platejs';
+import { BaseAIPlugin } from 'platejs/ai';
+import { BaseCommentPlugin } from 'platejs/comment';
 
 const plugins = [
   BaseParagraphPlugin,
@@ -25,7 +27,7 @@ const plugins = [
 ];
 
 const createTestEditor = (value: Value) =>
-  createBaseEditor({
+  createEditor({
     plugins,
     initialValue: value,
   });

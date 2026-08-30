@@ -41,10 +41,10 @@ The fastest way to add link functionality is with the `LinkKit`, which includes 
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { LinkKit } from '@/components/editor/link';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...LinkKit,
@@ -61,7 +61,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/link
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugin
@@ -69,11 +69,11 @@ npm install @platejs/link
 Include `LinkPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { LinkRules } from '@platejs/link';
-import { LinkPlugin } from '@platejs/link/react';
-import { createPlateEditor } from 'platejs/react';
+import { LinkRules } from 'platejs';
+import { LinkPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     LinkPlugin,
@@ -86,12 +86,12 @@ const editor = createPlateEditor({
 Configure the plugin with floating toolbar and custom components.
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
-import { createPlateEditor } from 'platejs/react';
+import { LinkPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { LinkElement } from '@/components/editor/link';
 import { LinkFloatingToolbar } from '@/components/editor/link';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     LinkPlugin.configure({
@@ -113,9 +113,9 @@ const editor = createPlateEditor({
 Configure `LinkPlugin` to enable the built-in link input presets:
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     LinkPlugin.configure({
       inputRules: [

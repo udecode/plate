@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import {
   assertPliteBrowserFirstPartyParityContracts,
   PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
-} from '@platejs/browser/core';
+} from '@platejs/test/proof';
 import {
   assertNoIllegalKernelTransitions,
   createPliteBrowserInternalControlGauntlet,
@@ -12,7 +12,7 @@ import {
   openExample,
   type PliteBrowserScenarioStep,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 import {
   createStressArtifact,

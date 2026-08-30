@@ -1090,7 +1090,7 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/fixed-toolbar-classic-buttons.tsx",
+          "path": "components/editor/fixed-toolbar.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -1102,10 +1102,10 @@
               "./emoji-toolbar-button",
               "./font-color-toolbar-button",
               "./history-toolbar-button",
-              "./insert-toolbar-classic-button",
+              "./insert-toolbar-button",
               "./line-height-toolbar-button",
               "./link-toolbar-button",
-              "./list-classic-toolbar-button",
+              "./list-toolbar-button",
               "./mark-toolbar-button",
               "./media-toolbar-button",
               "./mode-toolbar-button",
@@ -1113,7 +1113,7 @@
               "./table-toolbar-button",
               "./toggle-toolbar-button",
               "./toolbar",
-              "./turn-into-toolbar-classic-button",
+              "./turn-into-toolbar-button",
               "@platejs/basic-nodes/react",
               "@platejs/basic-styles/react",
               "@platejs/media",
@@ -1127,12 +1127,12 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/fixed-toolbar-classic-buttons.tsx",
+          "target": "@components/editor/fixed-toolbar.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "fixed-toolbar-classic-buttons",
+      "name": "fixed-toolbar",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "ai-toolbar-button",
@@ -1141,10 +1141,10 @@
         "emoji-toolbar-button",
         "font-color-toolbar-button",
         "history-toolbar-button",
-        "insert-toolbar-classic-button",
+        "insert-toolbar-button",
         "line-height-toolbar-button",
         "link-toolbar-button",
-        "list-classic-toolbar-button",
+        "list-toolbar-button",
         "mark-toolbar-button",
         "media-toolbar-button",
         "mode-toolbar-button",
@@ -1152,7 +1152,7 @@
         "table-toolbar-button",
         "toggle-toolbar-button",
         "toolbar",
-        "turn-into-toolbar-classic-button"
+        "turn-into-toolbar-button"
       ],
       "registryDependencies": [
         "@plate/ai-toolbar-button",
@@ -1161,10 +1161,10 @@
         "@plate/emoji-toolbar-button",
         "@plate/font-color-toolbar-button",
         "@plate/history-toolbar-button",
-        "@plate/insert-toolbar-classic-button",
+        "@plate/insert-toolbar-button",
         "@plate/line-height-toolbar-button",
         "@plate/link-toolbar-button",
-        "@plate/list-classic-toolbar-button",
+        "@plate/list-toolbar-button",
         "@plate/mark-toolbar-button",
         "@plate/media-toolbar-button",
         "@plate/mode-toolbar-button",
@@ -1172,7 +1172,7 @@
         "@plate/table-toolbar-button",
         "@plate/toggle-toolbar-button",
         "@plate/toolbar",
-        "@plate/turn-into-toolbar-classic-button"
+        "@plate/turn-into-toolbar-button"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -1189,7 +1189,7 @@
         "floating-popover",
         "font-color-toolbar-button",
         "inline-combobox",
-        "insert-toolbar-classic-button",
+        "insert-toolbar-button",
         "line-height-toolbar-button",
         "link",
         "media-toolbar-button",
@@ -1209,7 +1209,7 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/floating-toolbar-classic-buttons.tsx",
+          "path": "components/editor/floating-toolbar.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -1223,7 +1223,7 @@
               "./more-toolbar-button",
               "./suggestion-toolbar-button",
               "./toolbar",
-              "./turn-into-toolbar-classic-button",
+              "./turn-into-toolbar-button",
               "@platejs/basic-nodes/react",
               "lucide-react",
               "platejs/react",
@@ -1234,12 +1234,12 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/floating-toolbar-classic-buttons.tsx",
+          "target": "@components/editor/floating-toolbar.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "floating-toolbar-classic-buttons",
+      "name": "floating-toolbar",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "ai-toolbar-button",
@@ -1250,7 +1250,7 @@
         "more-toolbar-button",
         "suggestion-toolbar-button",
         "toolbar",
-        "turn-into-toolbar-classic-button"
+        "turn-into-toolbar-button"
       ],
       "registryDependencies": [
         "@plate/ai-toolbar-button",
@@ -1261,7 +1261,7 @@
         "@plate/more-toolbar-button",
         "@plate/suggestion-toolbar-button",
         "@plate/toolbar",
-        "@plate/turn-into-toolbar-classic-button"
+        "@plate/turn-into-toolbar-button"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -1585,7 +1585,7 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/insert-toolbar-classic-button.tsx",
+          "path": "components/editor/insert-toolbar-button.tsx",
           "source": {
             "asChildCount": 1,
             "basePrimitiveImports": [],
@@ -1593,7 +1593,7 @@
             "imports": [
               "./toolbar",
               "@/components/ui/dropdown-menu",
-              "@/registry/components/editor/transforms-classic",
+              "@/registry/components/editor/transforms",
               "lucide-react",
               "platejs",
               "platejs/react",
@@ -1606,20 +1606,20 @@
             ],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/insert-toolbar-classic-button.tsx",
+          "target": "@components/editor/insert-toolbar-button.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "insert-toolbar-classic-button",
+      "name": "insert-toolbar-button",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "toolbar",
-        "transforms-classic"
+        "transforms"
       ],
       "registryDependencies": [
         "@plate/toolbar",
-        "@plate/transforms-classic",
+        "@plate/transforms",
         "dropdown-menu"
       ],
       "renderPropCount": 0,
@@ -1637,7 +1637,7 @@
         "comment",
         "editor-dropdown-menu",
         "floating-popover",
-        "insert-toolbar-classic-button",
+        "insert-toolbar-button",
         "link",
         "toolbar"
       ],
@@ -1770,21 +1770,21 @@
       "basePrimitiveImports": [],
       "classification": "primitive-agnostic",
       "dependencies": [
-        "@platejs/list-classic"
+        "platejs"
       ],
       "dependencyPrimitivePackages": [],
       "fileCount": 1,
       "files": [
         {
           "exists": true,
-          "path": "components/editor/list-classic-toolbar-button.tsx",
+          "path": "components/editor/list-toolbar-button.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
             "dynamicImports": [],
             "imports": [
               "./toolbar",
-              "@platejs/list-classic/react",
+              "platejs/react",
               "lucide-react",
               "platejs",
               "platejs/react",
@@ -1795,12 +1795,12 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/list-classic-toolbar-button.tsx",
+          "target": "@components/editor/list-toolbar-button.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "list-classic-toolbar-button",
+      "name": "list-toolbar-button",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "toolbar"
@@ -2387,7 +2387,7 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/turn-into-toolbar-classic-button.tsx",
+          "path": "components/editor/turn-into-toolbar-button.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -2395,7 +2395,7 @@
             "imports": [
               "./dropdown-menu",
               "./toolbar",
-              "@/registry/components/editor/transforms-classic",
+              "@/registry/components/editor/transforms",
               "@platejs/plite",
               "@platejs/utils",
               "lucide-react",
@@ -2407,22 +2407,22 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/turn-into-toolbar-classic-button.tsx",
+          "target": "@components/editor/turn-into-toolbar-button.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "turn-into-toolbar-classic-button",
+      "name": "turn-into-toolbar-button",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "editor-dropdown-menu",
         "toolbar",
-        "transforms-classic"
+        "transforms"
       ],
       "registryDependencies": [
         "@plate/editor-dropdown-menu",
         "@plate/toolbar",
-        "@plate/transforms-classic"
+        "@plate/transforms"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -5762,7 +5762,7 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/autoformat-classic.tsx",
+          "path": "components/editor/autoformat.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -5775,22 +5775,22 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/autoformat-classic.tsx",
+          "target": "@components/editor/autoformat.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "autoformat-classic",
+      "name": "autoformat",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "autoformat",
-        "list-classic",
-        "list-classic-toolbar-button"
+        "legacy-list-model",
+        "list-toolbar-button"
       ],
       "registryDependencies": [
         "@plate/autoformat",
-        "@plate/list-classic",
-        "@plate/list-classic-toolbar-button"
+        "@plate/list",
+        "@plate/list-toolbar-button"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -5799,7 +5799,7 @@
       "thirdPartyPrimitiveImports": [],
       "type": "registry:component",
       "couplingRoots": [
-        "list-classic",
+        "legacy-list-model",
         "toolbar"
       ],
       "effectiveClassification": "primitive-transitive"
@@ -7253,14 +7253,14 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/fixed-toolbar-classic.tsx",
+          "path": "components/editor/fixed-toolbar.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
             "dynamicImports": [],
             "imports": [
               "@/registry/components/editor/fixed-toolbar",
-              "@/registry/components/editor/fixed-toolbar-classic-buttons",
+              "@/registry/components/editor/fixed-toolbar",
               "platejs/react"
             ],
             "nativeButtonCount": 0,
@@ -7268,20 +7268,20 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/fixed-toolbar-classic.tsx",
+          "target": "@components/editor/fixed-toolbar.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "fixed-toolbar-classic",
+      "name": "fixed-toolbar",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "fixed-toolbar",
-        "fixed-toolbar-classic-buttons"
+        "fixed-toolbar"
       ],
       "registryDependencies": [
         "@plate/fixed-toolbar",
-        "@plate/fixed-toolbar-classic-buttons"
+        "@plate/fixed-toolbar"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -7299,7 +7299,7 @@
         "font-color-toolbar-button",
         "inline-combobox",
         "insert-toolbar-button",
-        "insert-toolbar-classic-button",
+        "insert-toolbar-button",
         "line-height-toolbar-button",
         "link",
         "list-toolbar-button",
@@ -7547,14 +7547,14 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/floating-toolbar-classic.tsx",
+          "path": "components/editor/floating-toolbar.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
             "dynamicImports": [],
             "imports": [
               "@/registry/components/editor/floating-toolbar",
-              "@/registry/components/editor/floating-toolbar-classic-buttons",
+              "@/registry/components/editor/floating-toolbar",
               "platejs/react"
             ],
             "nativeButtonCount": 0,
@@ -7562,20 +7562,20 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/floating-toolbar-classic.tsx",
+          "target": "@components/editor/floating-toolbar.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "floating-toolbar-classic",
+      "name": "floating-toolbar",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "floating-toolbar",
-        "floating-toolbar-classic-buttons"
+        "floating-toolbar"
       ],
       "registryDependencies": [
         "@plate/floating-toolbar",
-        "@plate/floating-toolbar-classic-buttons"
+        "@plate/floating-toolbar"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -7920,14 +7920,14 @@
       "basePrimitiveImports": [],
       "classification": "shadcn-ui-direct",
       "dependencies": [
-        "@platejs/list-classic"
+        "platejs"
       ],
       "dependencyPrimitivePackages": [],
       "fileCount": 1,
       "files": [
         {
           "exists": true,
-          "path": "components/editor/list-classic.tsx",
+          "path": "components/editor/legacy-list-model.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -7935,8 +7935,8 @@
             "imports": [
               "@/components/ui/checkbox",
               "@/lib/utils",
-              "@platejs/list-classic",
-              "@platejs/list-classic/react",
+              "platejs",
+              "platejs/react",
               "class-variance-authority",
               "platejs",
               "platejs/react",
@@ -7949,18 +7949,18 @@
             ],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/list-classic.tsx",
+          "target": "@components/editor/legacy-list-model.tsx",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "list-classic",
+      "name": "legacy-list-model",
       "nativeButtonCount": 0,
       "plateDependencies": [
-        "list-classic-toolbar-button"
+        "list-toolbar-button"
       ],
       "registryDependencies": [
-        "@plate/list-classic-toolbar-button",
+        "@plate/list-toolbar-button",
         "checkbox"
       ],
       "renderPropCount": 0,
@@ -7974,7 +7974,7 @@
       "thirdPartyPrimitiveImports": [],
       "type": "registry:component",
       "couplingRoots": [
-        "list-classic",
+        "legacy-list-model",
         "toolbar"
       ],
       "effectiveClassification": "shadcn-ui-direct"
@@ -9329,7 +9329,7 @@
         "@platejs/footnote",
         "@platejs/layout",
         "@platejs/link",
-        "@platejs/list-classic",
+        "platejs",
         "@platejs/math",
         "@platejs/media",
         "@platejs/plite",
@@ -9343,7 +9343,7 @@
       "files": [
         {
           "exists": true,
-          "path": "components/editor/transforms-classic.ts",
+          "path": "components/editor/transforms.ts",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -9355,7 +9355,7 @@
               "@platejs/date",
               "@platejs/footnote",
               "@platejs/layout",
-              "@platejs/list-classic",
+              "platejs",
               "@platejs/math",
               "@platejs/media",
               "@platejs/media/react",
@@ -9372,12 +9372,12 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "@components/editor/transforms-classic.ts",
+          "target": "@components/editor/transforms.ts",
           "type": "registry:component"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "transforms-classic",
+      "name": "transforms",
       "nativeButtonCount": 0,
       "plateDependencies": [
         "link"
@@ -12185,21 +12185,21 @@
       "files": [
         {
           "exists": true,
-          "path": "examples/list-classic-demo.tsx",
+          "path": "examples/list-demo.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
             "dynamicImports": [],
             "imports": [
-              "@/registry/components/editor/autoformat-classic",
+              "@/registry/components/editor/autoformat",
               "@/registry/components/editor/editor",
               "@/registry/components/editor/fixed-toolbar",
-              "@/registry/components/editor/fixed-toolbar-classic",
+              "@/registry/components/editor/fixed-toolbar",
               "@/registry/components/editor/floating-toolbar",
-              "@/registry/components/editor/floating-toolbar-classic",
-              "@/registry/components/editor/list-classic",
+              "@/registry/components/editor/floating-toolbar",
+              "@/registry/components/editor/legacy-list-model",
               "@/registry/components/editor/plugins",
-              "@/registry/examples/values/list-classic-value",
+              "@/registry/examples/values/legacy-list-model-value",
               "@platejs/indent/react",
               "@platejs/list/react",
               "platejs/react",
@@ -12215,7 +12215,7 @@
         },
         {
           "exists": true,
-          "path": "examples/values/list-classic-value.tsx",
+          "path": "examples/values/legacy-list-model-value.tsx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
@@ -12234,23 +12234,23 @@
         }
       ],
       "missingPlateDependencies": [],
-      "name": "list-classic-demo",
+      "name": "list-demo",
       "nativeButtonCount": 0,
       "plateDependencies": [
-        "autoformat-classic",
+        "autoformat",
         "editor",
         "editor-plugins",
-        "fixed-toolbar-classic",
-        "floating-toolbar-classic",
-        "list-classic"
+        "fixed-toolbar",
+        "floating-toolbar",
+        "legacy-list-model"
       ],
       "registryDependencies": [
-        "@plate/autoformat-classic",
+        "@plate/autoformat",
         "@plate/editor",
         "@plate/editor-plugins",
-        "@plate/fixed-toolbar-classic",
-        "@plate/floating-toolbar-classic",
-        "@plate/list-classic"
+        "@plate/fixed-toolbar",
+        "@plate/floating-toolbar",
+        "@plate/list"
       ],
       "renderPropCount": 0,
       "shadcnRegistryDependencies": [],
@@ -12278,10 +12278,10 @@
         "footnote",
         "inline-combobox",
         "insert-toolbar-button",
-        "insert-toolbar-classic-button",
+        "insert-toolbar-button",
         "line-height-toolbar-button",
         "link",
-        "list-classic",
+        "legacy-list-model",
         "list-toolbar-button",
         "math",
         "media-toolbar",
@@ -16030,7 +16030,7 @@
         "kbd-docs",
         "line-height-docs",
         "link-docs",
-        "list-classic-docs",
+        "legacy-list-model-docs",
         "list-docs",
         "markdown-docs",
         "media-docs",
@@ -16230,7 +16230,7 @@
         "@plate/kbd-docs",
         "@plate/line-height-docs",
         "@plate/link-docs",
-        "@plate/list-classic-docs",
+        "@plate/list-docs",
         "@plate/list-docs",
         "@plate/markdown-docs",
         "@plate/media-docs",
@@ -16673,7 +16673,7 @@
               "@platejs/core",
               "@platejs/layout/react",
               "@platejs/link/react",
-              "@platejs/list-classic/react",
+              "platejs/react",
               "@platejs/markdown",
               "@platejs/math/react",
               "@platejs/mention/react",
@@ -17990,15 +17990,15 @@
       "files": [
         {
           "exists": true,
-          "path": "external:content/docs/(plugins)/(elements)/list-classic.mdx",
+          "path": "external:content/docs/(plugins)/(elements)/legacy-list-model.mdx",
           "source": {
             "asChildCount": 0,
             "basePrimitiveImports": [],
             "dynamicImports": [],
             "imports": [
-              "@/components/editor/list-classic",
-              "@platejs/list-classic",
-              "@platejs/list-classic/react",
+              "@/components/editor/legacy-list-model",
+              "platejs",
+              "platejs/react",
               "platejs/react"
             ],
             "nativeButtonCount": 0,
@@ -18006,12 +18006,12 @@
             "shadcnUiImports": [],
             "thirdPartyPrimitiveImports": []
           },
-          "target": "content/docs/plate/(plugins)/(elements)/list-classic.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/legacy-list-model.mdx",
           "type": "registry:file"
         }
       ],
       "missingPlateDependencies": [],
-      "name": "list-classic-docs",
+      "name": "legacy-list-model-docs",
       "nativeButtonCount": 0,
       "plateDependencies": [],
       "registryDependencies": [],
@@ -25691,7 +25691,7 @@
       "dynamicImports": [],
       "imports": [
         "./toolbar",
-        "@platejs/list-classic/react",
+        "platejs/react",
         "lucide-react",
         "platejs",
         "platejs/react",
@@ -25706,9 +25706,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "list-classic-toolbar-button"
+        "list-toolbar-button"
       ],
-      "path": "components/editor/list-classic-toolbar-button.tsx"
+      "path": "components/editor/list-toolbar-button.tsx"
     },
     {
       "asChildCount": 0,
@@ -26097,9 +26097,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "autoformat-classic"
+        "autoformat"
       ],
-      "path": "components/editor/autoformat-classic.tsx"
+      "path": "components/editor/autoformat.tsx"
     },
     {
       "asChildCount": 0,
@@ -26476,10 +26476,10 @@
         "./emoji-toolbar-button",
         "./font-color-toolbar-button",
         "./history-toolbar-button",
-        "./insert-toolbar-classic-button",
+        "./insert-toolbar-button",
         "./line-height-toolbar-button",
         "./link-toolbar-button",
-        "./list-classic-toolbar-button",
+        "./list-toolbar-button",
         "./mark-toolbar-button",
         "./media-toolbar-button",
         "./mode-toolbar-button",
@@ -26487,7 +26487,7 @@
         "./table-toolbar-button",
         "./toggle-toolbar-button",
         "./toolbar",
-        "./turn-into-toolbar-classic-button",
+        "./turn-into-toolbar-button",
         "@platejs/basic-nodes/react",
         "@platejs/basic-styles/react",
         "@platejs/media",
@@ -26505,9 +26505,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "fixed-toolbar-classic-buttons"
+        "fixed-toolbar"
       ],
-      "path": "components/editor/fixed-toolbar-classic-buttons.tsx"
+      "path": "components/editor/fixed-toolbar.tsx"
     },
     {
       "asChildCount": 0,
@@ -27112,7 +27112,7 @@
         "@platejs/date",
         "@platejs/footnote",
         "@platejs/layout",
-        "@platejs/list-classic",
+        "platejs",
         "@platejs/math",
         "@platejs/media",
         "@platejs/media/react",
@@ -27133,9 +27133,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "transforms-classic"
+        "transforms"
       ],
-      "path": "components/editor/transforms-classic.ts"
+      "path": "components/editor/transforms.ts"
     },
     {
       "asChildCount": 0,
@@ -27596,7 +27596,7 @@
         "./more-toolbar-button",
         "./suggestion-toolbar-button",
         "./toolbar",
-        "./turn-into-toolbar-classic-button",
+        "./turn-into-toolbar-button",
         "@platejs/basic-nodes/react",
         "lucide-react",
         "platejs/react",
@@ -27611,9 +27611,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "floating-toolbar-classic-buttons"
+        "floating-toolbar"
       ],
-      "path": "components/editor/floating-toolbar-classic-buttons.tsx"
+      "path": "components/editor/floating-toolbar.tsx"
     },
     {
       "asChildCount": 1,
@@ -28305,7 +28305,7 @@
       "imports": [
         "./toolbar",
         "@/components/ui/dropdown-menu",
-        "@/registry/components/editor/transforms-classic",
+        "@/registry/components/editor/transforms",
         "lucide-react",
         "platejs",
         "platejs/react",
@@ -28322,9 +28322,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "insert-toolbar-classic-button"
+        "insert-toolbar-button"
       ],
-      "path": "components/editor/insert-toolbar-classic-button.tsx"
+      "path": "components/editor/insert-toolbar-button.tsx"
     },
     {
       "asChildCount": 0,
@@ -28682,7 +28682,7 @@
       "dynamicImports": [],
       "imports": [
         "@/registry/components/editor/fixed-toolbar",
-        "@/registry/components/editor/fixed-toolbar-classic-buttons",
+        "@/registry/components/editor/fixed-toolbar",
         "platejs/react"
       ],
       "nativeButtonCount": 0,
@@ -28694,9 +28694,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "fixed-toolbar-classic"
+        "fixed-toolbar"
       ],
-      "path": "components/editor/fixed-toolbar-classic.tsx"
+      "path": "components/editor/fixed-toolbar.tsx"
     },
     {
       "asChildCount": 0,
@@ -28949,7 +28949,7 @@
       "imports": [
         "./dropdown-menu",
         "./toolbar",
-        "@/registry/components/editor/transforms-classic",
+        "@/registry/components/editor/transforms",
         "@platejs/plite",
         "@platejs/utils",
         "lucide-react",
@@ -28965,9 +28965,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "turn-into-toolbar-classic-button"
+        "turn-into-toolbar-button"
       ],
-      "path": "components/editor/turn-into-toolbar-classic-button.tsx"
+      "path": "components/editor/turn-into-toolbar-button.tsx"
     },
     {
       "asChildCount": 0,
@@ -29021,8 +29021,8 @@
       "imports": [
         "@/components/ui/checkbox",
         "@/lib/utils",
-        "@platejs/list-classic",
-        "@platejs/list-classic/react",
+        "platejs",
+        "platejs/react",
         "class-variance-authority",
         "platejs",
         "platejs/react",
@@ -29039,9 +29039,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "list-classic"
+        "legacy-list-model"
       ],
-      "path": "components/editor/list-classic.tsx"
+      "path": "components/editor/legacy-list-model.tsx"
     },
     {
       "asChildCount": 0,
@@ -29476,7 +29476,7 @@
       "dynamicImports": [],
       "imports": [
         "@/registry/components/editor/floating-toolbar",
-        "@/registry/components/editor/floating-toolbar-classic-buttons",
+        "@/registry/components/editor/floating-toolbar",
         "platejs/react"
       ],
       "nativeButtonCount": 0,
@@ -29488,9 +29488,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "floating-toolbar-classic"
+        "floating-toolbar"
       ],
-      "path": "components/editor/floating-toolbar-classic.tsx"
+      "path": "components/editor/floating-toolbar.tsx"
     },
     {
       "asChildCount": 0,
@@ -30880,7 +30880,7 @@
         "./indent-value",
         "./line-height-value",
         "./link-value",
-        "./list-classic-value",
+        "./legacy-list-model-value",
         "./list-value",
         "./media-value",
         "./mention-value",
@@ -31187,7 +31187,7 @@
       "isPublished": false,
       "isVariant": false,
       "owners": [],
-      "path": "examples/values/cn/list-classic-value.tsx"
+      "path": "examples/values/cn/legacy-list-model-value.tsx"
     },
     {
       "asChildCount": 0,
@@ -31531,7 +31531,7 @@
         "./indent-value",
         "./line-height-value",
         "./link-value",
-        "./list-classic-value",
+        "./legacy-list-model-value",
         "./list-value",
         "./media-value",
         "./mention-value",
@@ -31891,9 +31891,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "list-classic-demo"
+        "list-demo"
       ],
-      "path": "examples/values/list-classic-value.tsx"
+      "path": "examples/values/legacy-list-model-value.tsx"
     },
     {
       "asChildCount": 0,
@@ -32153,15 +32153,15 @@
       "basePrimitiveImports": [],
       "dynamicImports": [],
       "imports": [
-        "@/registry/components/editor/autoformat-classic",
+        "@/registry/components/editor/autoformat",
         "@/registry/components/editor/editor",
         "@/registry/components/editor/fixed-toolbar",
-        "@/registry/components/editor/fixed-toolbar-classic",
+        "@/registry/components/editor/fixed-toolbar",
         "@/registry/components/editor/floating-toolbar",
-        "@/registry/components/editor/floating-toolbar-classic",
-        "@/registry/components/editor/list-classic",
+        "@/registry/components/editor/floating-toolbar",
+        "@/registry/components/editor/legacy-list-model",
         "@/registry/components/editor/plugins",
-        "@/registry/examples/values/list-classic-value",
+        "@/registry/examples/values/legacy-list-model-value",
         "@platejs/indent/react",
         "@platejs/list/react",
         "platejs/react",
@@ -32176,9 +32176,9 @@
       "isPublished": true,
       "isVariant": false,
       "owners": [
-        "list-classic-demo"
+        "list-demo"
       ],
-      "path": "examples/list-classic-demo.tsx"
+      "path": "examples/list-demo.tsx"
     },
     {
       "asChildCount": 0,

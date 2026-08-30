@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
 
-import type { CodeDrawingElement } from '@platejs/code-drawing';
 import { render } from '@testing-library/react';
+import type { CodeDrawingElement } from 'platejs/code-drawing';
 import * as React from 'react';
 
 mock.module('platejs/static', () => ({
@@ -9,7 +9,7 @@ mock.module('platejs/static', () => ({
     <div>{children}</div>
   ),
 }));
-mock.module('@platejs/code-drawing', () => ({
+mock.module('platejs/code-drawing', () => ({
   BaseCodeDrawingPlugin: {
     configure: mock(() => ({ name: 'codeDrawing' })),
     name: 'codeDrawing',

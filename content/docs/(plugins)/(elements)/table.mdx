@@ -44,10 +44,10 @@ The fastest way to add table functionality is with the `TableKit`, which include
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TableKit } from '@/components/editor/table';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...TableKit,
@@ -64,7 +64,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/table
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugin
@@ -74,10 +74,10 @@ Include `TablePlugin` in your Plate plugins array when creating the editor.
 `TablePlugin` installs `TableRowPlugin` and `TableCellPlugin` as required structural dependencies.
 
 ```tsx
-import { TablePlugin } from '@platejs/table/react';
-import { createPlateEditor } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     TablePlugin,
@@ -90,19 +90,15 @@ const editor = createPlateEditor({
 Configure the table owner and add complete row or cell descriptors when you need to replace a dependency's component or configuration.
 
 ```tsx
-import {
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '@platejs/table/react';
-import { createPlateEditor } from 'platejs/react';
+import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
+import { createEditor } from 'platejs/react';
 import {
   TableCellElement,
   TableElement,
   TableRowElement,
 } from '@/components/editor/table';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     TablePlugin.configure({

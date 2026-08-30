@@ -11,7 +11,7 @@ status: in_progress
 
 Cover the fresh post-check non-React `score >= 5` seams:
 
-- `list-classic`
+- `legacy-list-model`
 - `list`
 - `table`
 - `diff`
@@ -25,7 +25,7 @@ Do real unit or thin editor-contract tests only. No `/react`. No smoke-test cosp
 
 ## Scope
 
-1. `list-classic`
+1. `legacy-list-model`
    - `toggleList.ts`
    - `insertListItem.ts`
    - `unindentListItems.ts`

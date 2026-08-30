@@ -1,11 +1,5 @@
 import { createGateway } from '@ai-sdk/gateway';
 import {
-  type AIChatRequestContext,
-  type AIChatRequestRefs,
-  resolveAIChatRequestContext,
-} from '@platejs/ai';
-import type { MarkdownEditor } from '@platejs/markdown';
-import {
   type LanguageModel,
   type UIMessageStreamWriter,
   createUIMessageStream,
@@ -17,7 +11,13 @@ import {
 } from 'ai';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createBaseEditor, nanoid } from 'platejs';
+import { createEditor, nanoid } from 'platejs';
+import {
+  type AIChatRequestContext,
+  type AIChatRequestRefs,
+  resolveAIChatRequestContext,
+} from 'platejs/ai';
+import type { MarkdownEditor } from 'platejs/markdown';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
@@ -27,13 +27,11 @@ import type {
 } from '@/registry/components/editor/use-chat';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
-import {
-  buildEditTableMultiCellPrompt,
-  getChooseToolPrompt,
-  getCommentPrompt,
-  getEditPrompt,
-  getGeneratePrompt,
-} from './prompt';
+import { getChooseToolPrompt } from './prompt/getChooseToolPrompt';
+import { getCommentPrompt } from './prompt/getCommentPrompt';
+import { getEditPrompt } from './prompt/getEditPrompt';
+import { buildEditTableMultiCellPrompt } from './prompt/getEditTablePrompt';
+import { getGeneratePrompt } from './prompt/getGeneratePrompt';
 
 const toolNameSchema = z.enum(['comment', 'edit', 'generate']);
 
@@ -50,7 +48,7 @@ export async function POST(req: NextRequest) {
   const request = resolveAIChatRequestContext({ nodeSelection, selection });
   const { isSelecting } = request;
 
-  const editor = createBaseEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     selection: request.selection,
     initialValue: children,

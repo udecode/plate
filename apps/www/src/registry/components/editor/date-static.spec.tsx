@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import type { DateElement } from '@platejs/date';
 import { render } from '@testing-library/react';
+import type { DateElement } from 'platejs/date';
 import * as React from 'react';
 
 const getDateDisplayLabelMock = mock((value: string) => {
@@ -15,7 +15,7 @@ mock.module('platejs/static', () => ({
     <span>{children}</span>
   ),
 }));
-mock.module('@platejs/date', () => ({
+mock.module('platejs/date', () => ({
   BaseDatePlugin: {
     configure: mock(() => ({ name: 'date' })),
     name: 'date',

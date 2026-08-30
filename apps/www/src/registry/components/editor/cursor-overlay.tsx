@@ -1,15 +1,15 @@
 'use client';
 
-import { AIChatPlugin } from '@platejs/ai/react';
+import { RangeApi } from 'platejs';
+import { AIChatPlugin } from 'platejs/ai/react';
 import {
   type CursorData,
   type CursorOverlayState,
   CursorOverlayPlugin,
   useCursorOverlayPositions,
-} from '@platejs/cursor';
-import { BaseTablePlugin } from '@platejs/table';
-import { RangeApi } from 'platejs';
+} from 'platejs/cursor/react';
 import { useEditor, usePlateValue, usePluginStore } from 'platejs/react';
+import { BaseTablePlugin } from 'platejs/table';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

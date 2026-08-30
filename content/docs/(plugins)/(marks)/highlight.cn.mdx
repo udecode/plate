@@ -34,10 +34,10 @@ docs:
 将套件添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...BasicMarksKit,
@@ -54,7 +54,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -62,10 +62,10 @@ npm install @platejs/basic-nodes
 在创建编辑器时将 `HighlightPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { HighlightPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { HighlightPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     HighlightPlugin,
@@ -78,11 +78,11 @@ const editor = createPlateEditor({
 你可以使用自定义组件和快捷键来配置 `HighlightPlugin`。
 
 ```tsx
-import { HighlightPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { HighlightPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { HighlightLeaf } from '@/components/editor/highlight';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     HighlightPlugin.configure({

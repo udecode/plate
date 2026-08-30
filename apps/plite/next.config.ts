@@ -37,11 +37,18 @@ const getIndexEntry = (dir: string) => {
 const WORKSPACE_ALIAS_SUBPATHS = [
   'browser',
   'core',
+  'diff',
+  'dom',
+  'history',
+  'hyperscript',
   'internal',
+  'page-layout',
+  'page-layout/react',
   'playwright',
   'react',
   'react/internal',
   'static',
+  'testing',
 ];
 
 const addAliasEntries = (
@@ -52,10 +59,28 @@ const addAliasEntries = (
 ) => {
   const rootDir = path.join(packageDir, rootDirName);
   const rootEntry = getIndexEntry(rootDir);
+  const manifestPath = path.join(packageDir, 'package.json');
+  const publicSubpaths = fs.existsSync(manifestPath)
+    ? Object.keys(
+        (
+          JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as {
+            exports?: Record<string, unknown>;
+          }
+        ).exports ?? {}
+      )
+        .filter((subpath) => subpath.startsWith('./'))
+        .map((subpath) => subpath.slice(2))
+        .filter(
+          (subpath) => subpath !== 'package.json' && !subpath.endsWith('.css')
+        )
+    : [];
 
   if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
 
-  for (const subpath of WORKSPACE_ALIAS_SUBPATHS) {
+  for (const subpath of new Set([
+    ...WORKSPACE_ALIAS_SUBPATHS,
+    ...publicSubpaths,
+  ])) {
     const subpathEntry = getIndexEntry(path.join(rootDir, subpath));
 
     if (subpathEntry) {
@@ -70,35 +95,32 @@ const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') => {
   addAliasEntries(
     aliases,
     'platejs',
-    path.join(PACKAGES_ROOT, 'plate'),
+    path.join(PACKAGES_ROOT, 'platejs'),
+    rootDirName
+  );
+  addAliasEntries(
+    aliases,
+    'plitejs',
+    path.join(PACKAGES_ROOT, 'plitejs'),
     rootDirName
   );
 
   for (const entry of fs.readdirSync(PACKAGES_ROOT, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
 
-    if (entry.name === 'udecode') {
-      const udecodeRoot = path.join(PACKAGES_ROOT, 'udecode');
+    const manifestPath = path.join(PACKAGES_ROOT, entry.name, 'package.json');
 
-      for (const udecodeEntry of fs.readdirSync(udecodeRoot, {
-        withFileTypes: true,
-      })) {
-        if (!udecodeEntry.isDirectory()) continue;
+    if (!fs.existsSync(manifestPath)) continue;
 
-        addAliasEntries(
-          aliases,
-          `@udecode/${udecodeEntry.name}`,
-          path.join(udecodeRoot, udecodeEntry.name),
-          rootDirName
-        );
-      }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8')) as {
+      name?: string;
+    };
 
-      continue;
-    }
+    if (!manifest.name?.startsWith('@')) continue;
 
     addAliasEntries(
       aliases,
-      `@platejs/${entry.name}`,
+      manifest.name,
       path.join(PACKAGES_ROOT, entry.name),
       rootDirName
     );
@@ -110,18 +132,6 @@ const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') => {
 const buildWorkspaceDevAliases = () => ({
   ...buildWorkspaceAliases('src'),
   '@': toAppImportPath(path.join(WWW_ROOT, 'src')),
-  '@platejs/plite/internal': toAppImportPath(
-    path.join(PACKAGES_ROOT, 'plite/src/internal/index.ts')
-  ),
-  '@platejs/plite-layout/react': toAppImportPath(
-    path.join(PACKAGES_ROOT, 'plite-layout/src/react.tsx')
-  ),
-  '@platejs/yjs/plate': toAppImportPath(
-    path.join(PACKAGES_ROOT, 'yjs/src/plate/index.ts')
-  ),
-  '@platejs/yjs/react': toAppImportPath(
-    path.join(PACKAGES_ROOT, 'yjs/src/react/index.ts')
-  ),
 });
 
 const nextConfig: NextConfig = {

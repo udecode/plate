@@ -38,11 +38,11 @@ Bold applies the `bold` leaf mark to selected text. `BoldPlugin` owns the mark k
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -53,7 +53,7 @@ Pass `BoldPlugin` to `MarkToolbarButton` so the button uses the configured mark 
 
 ```tsx
 import { BoldIcon } from 'lucide-react';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -73,16 +73,16 @@ export function BoldToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `BoldPlugin` directly when you do not want the whole kit.
 
 ```tsx
-import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { BoldPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [BoldPlugin],
 });
 ```
@@ -90,8 +90,8 @@ export const editor = createPlateEditor({
 Register Markdown-style input rules when users should type bold delimiters.
 
 ```tsx
-import { BoldRules } from '@platejs/basic-nodes';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldRules } from 'platejs';
+import { BoldPlugin } from 'platejs/react';
 
 export const boldPlugin = BoldPlugin.configure({
   inputRules: [
@@ -105,9 +105,9 @@ export const boldPlugin = BoldPlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseBoldPlugin` | `@platejs/basic-nodes` | Headless bold mark, HTML parser, render tag, and `toggle` transform. |
-| `BoldPlugin` | `@platejs/basic-nodes/react` | React wrapper with default `mod+b` shortcut. |
-| `BoldRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BaseBoldPlugin` | `platejs` | Headless bold mark, HTML parser, render tag, and `toggle` transform. |
+| `BoldPlugin` | `platejs/react` | React wrapper with default `mod+b` shortcut. |
+| `BoldRules.markdown` | `platejs` | Optional mark input rule factory. |
 | `BasicMarksKit` | Registry | Adds `BoldPlugin` with `*` and `_` Markdown-style input rules. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
@@ -130,7 +130,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseBoldPlugin` | `@platejs/basic-nodes` | Headless bold plugin. |
-| `BoldPlugin` | `@platejs/basic-nodes/react` | React bold plugin with shortcut defaults. |
-| `BoldRules.markdown(options)` | `@platejs/basic-nodes` | Creates a bold mark input rule. |
-| `tx.bold.toggle()` | `@platejs/basic-nodes` | Toggles the bold mark at the selection. |
+| `BaseBoldPlugin` | `platejs` | Headless bold plugin. |
+| `BoldPlugin` | `platejs/react` | React bold plugin with shortcut defaults. |
+| `BoldRules.markdown(options)` | `platejs` | Creates a bold mark input rule. |
+| `tx.bold.toggle()` | `platejs` | Toggles the bold mark at the selection. |

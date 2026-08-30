@@ -1,14 +1,14 @@
-import { defineExtension, schema } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+import { defineExtension, schema } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
-  useEditor,
+  useEditorContext,
   useElementPath,
-  usePliteEditor,
-} from '@platejs/plite-react';
+  useEditor,
+} from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
 import { Button, Icon, Toolbar } from './components';
@@ -66,7 +66,7 @@ const getNextSiblingPath = (path: readonly number[]) => [
 const SyncedBlocksExample = () => {
   const sharedBodyRoot = 'synced-block:shared:body';
   const separateBodyRoot = 'synced-block:separate:body';
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), syncedBlocks()],
     initialValue: {
       children: [
@@ -182,7 +182,7 @@ const SyncedBlock = ({
   element,
   slots,
 }: RenderElementProps<SyncedBlockElement>) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const path = useElementPath();
   const bodyRoot = element.childRoots.body;
   const isOriginal = element.copyId === 'original';
@@ -266,7 +266,7 @@ const SyncedBlock = ({
 };
 
 const InsertSyncedBlockButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
 
   return (
     <Button

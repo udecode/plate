@@ -31,7 +31,7 @@ description: 在 TOC、脚注、搜索或自定义跳转之后高亮落点目标
 
 `NavigationFeedbackPlugin` 属于 React 编辑器默认插件的一部分。
 
-如果你使用 `createPlateEditor` 创建编辑器，它会自动启用。你不需要
+如果你使用 `createEditor` 创建编辑器，它会自动启用。你不需要
 为了默认行为单独把它加入 `plugins` 数组。
 
 ### 配置时长
@@ -39,9 +39,9 @@ description: 在 TOC、脚注、搜索或自定义跳转之后高亮落点目标
 通过 `navigationFeedback` 编辑器选项调整高亮时长：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   navigationFeedback: {
     duration: 1200,
   },

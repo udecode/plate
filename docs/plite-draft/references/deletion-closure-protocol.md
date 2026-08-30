@@ -36,8 +36,8 @@ Specialist lane ownership stays in
 
 Allowed:
 
-- `Plite React deleted test-family closure: packages/plite-react/test/**`
-- `Plite React deleted source-family closure: packages/plite-react/src/**`
+- `Plite React deleted test-family closure: packages/plitejs/test/react/**`
+- `Plite React deleted source-family closure: packages/plitejs/src/react/**`
 
 Not allowed:
 
@@ -61,8 +61,8 @@ Example parent:
 
 Example children:
 
-- `packages/plite-react/test/**`
-- `packages/plite-react/src/**`
+- `packages/plitejs/test/react/**`
+- `packages/plitejs/src/react/**`
 - narrower source children derived from the frozen inventory
 
 The child tree must come from the frozen deleted inventory, not from memory.
@@ -73,7 +73,7 @@ Closing a child bucket does not close the parent bucket.
 
 Allowed:
 
-- ``packages/plite-react/test/**` is closed`
+- ``packages/plitejs/test/react/**` is closed`
 - `Plite React test-family is closed`
 
 Not allowed unless the parent row reconciles:
@@ -170,7 +170,7 @@ Before refresh:
 
 Representative case:
 
-- a child bucket like `packages/plite-react/test/**` can be closed
+- a child bucket like `packages/plitejs/test/react/**` can be closed
 - while the parent package like `packages/plite-react/**` stays open until the
   remaining child rows reconcile
 

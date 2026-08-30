@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
+import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
 const formatDateValueMock = mock(
@@ -16,13 +17,14 @@ const parseCanonicalDateValueMock = mock(() => new Date(2026, 2, 23));
 const plateElementMock = mock();
 const useReadOnlyMock = mock();
 
-mock.module('@platejs/date', () => ({
+mock.module('platejs/date', () => ({
   formatDateValue: formatDateValueMock,
   getDateDisplayLabel: getDateDisplayLabelMock,
   parseCanonicalDateValue: parseCanonicalDateValueMock,
 }));
 
 mock.module('platejs/react', () => ({
+  ...PlateReact,
   PlateElement: (props: any) => {
     plateElementMock(props);
 

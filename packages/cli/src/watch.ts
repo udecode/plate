@@ -180,6 +180,14 @@ export const watchEditors = async (
     ignoreInitial: true,
     ignored,
   });
+  const observedDirectories = new Set<string>();
+  const forgetObservedDirectory = (path: string) => {
+    observedDirectories.forEach((directory) => {
+      if (directory === path || directory.startsWith(`${path}${sep}`)) {
+        observedDirectories.delete(directory);
+      }
+    });
+  };
   let closed = false;
   let readyForChanges = false;
   let running = false;
@@ -194,7 +202,11 @@ export const watchEditors = async (
   const refreshWatchSet = (nextPaths: readonly string[]) => {
     const next = new Set([...entryPaths, ...nextPaths]);
     const nextTargets = watchTargets(next);
-    const added = [...nextTargets].filter((path) => !watchedTargets.has(path));
+    // Re-adding a directory already reached through a recursive parent starts
+    // another ignoreInitial crawl, which can swallow its first new file.
+    const added = [...nextTargets].filter(
+      (path) => !watchedTargets.has(path) && !observedDirectories.has(path)
+    );
     const removed = [...watchedTargets].filter(
       (path) => !nextTargets.has(path)
     );
@@ -207,10 +219,17 @@ export const watchEditors = async (
     );
 
     // Chokidar 4 unwatch is synchronous; only close() awaits watcher cleanup.
-    if (unwatchable.length > 0) watcher.unwatch(unwatchable);
+    if (unwatchable.length > 0) {
+      unwatchable.forEach(forgetObservedDirectory);
+      watcher.unwatch(unwatchable);
+    }
     if (added.length > 0) watcher.add(added);
     watched = next;
-    watchedTargets = new Set([...nextTargets, ...retainedAncestors]);
+    watchedTargets = new Set(
+      [...watchedTargets, ...added].filter(
+        (path) => !unwatchable.includes(path)
+      )
+    );
   };
   const regenerate = async (
     targetEntries: readonly string[],
@@ -242,9 +261,14 @@ export const watchEditors = async (
     } catch (error) {
       const attemptedSources = await Promise.all(
         targetEntries.map(async (entry) => {
+          const entryPath = resolve(cwd, entry);
+
+          // No replacement graph can exist until the entry returns. Retain
+          // the last-good sources instead of starting unrelated watch crawls.
+          if (!existsSync(entryPath)) return [entryPath];
+
           try {
             const sourceFiles = [...(await discoverAttemptedSources(entry))];
-            const entryPath = resolve(cwd, entry);
 
             sourcesByEntry.set(entryPath, new Set([entryPath, ...sourceFiles]));
 
@@ -297,6 +321,9 @@ export const watchEditors = async (
   watcher.on('all', (event, path) => {
     const resolvedPath = resolve(path);
     let matched = false;
+
+    if (event === 'addDir') observedDirectories.add(resolvedPath);
+    if (event === 'unlinkDir') forgetObservedDirectory(resolvedPath);
 
     sourcesByEntry.forEach((sources, entryPath) => {
       if (

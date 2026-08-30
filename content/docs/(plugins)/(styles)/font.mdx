@@ -44,10 +44,10 @@ The fastest way to add font styling functionality is with the `FontKit`, which i
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 import { FontKit } from "@/components/editor/font";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...FontKit,
@@ -64,7 +64,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/basic-styles
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
@@ -77,10 +77,10 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from "@platejs/basic-styles/react";
-import { createPlateEditor } from "platejs/react";
+} from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     FontColorPlugin,
@@ -98,10 +98,10 @@ text instead of a block target list. Configure render props only when your UI
 needs a different default.
 
 ```tsx
-import { FontColorPlugin } from "@platejs/basic-styles/react";
-import { createPlateEditor } from "platejs/react";
+import { FontColorPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     FontColorPlugin.configure({

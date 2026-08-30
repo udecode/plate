@@ -1,13 +1,12 @@
 'use client';
 
-import { KbdPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
 import {
   KeyboardIcon,
   MoreHorizontalIcon,
   SubscriptIcon,
   SuperscriptIcon,
 } from 'lucide-react';
-import { useEditor } from 'platejs/react';
+import { KbdPlugin, ScriptPlugin, useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import {

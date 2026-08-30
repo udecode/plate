@@ -25,16 +25,16 @@ applies actions to nodes from the editor selection.
 <ComponentSource name="block-menu" />
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
 import { BlockMenuKit } from "@/components/editor/block-menu";
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BlockMenuKit],
 });
 ```
 
-Install `@platejs/ai` only when the menu keeps the Ask AI action.
+Install `platejs/ai` only when the menu keeps the Ask AI action.
 
 ## Selection behavior
 

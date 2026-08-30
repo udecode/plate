@@ -3,34 +3,34 @@ title: "Installing Plite"
 description: "Install the React editor packages and render the smallest useful Plite editor."
 ---
 
-Plite is split into small packages. For a React editor, install the core editor, the DOM helpers, the React renderer, and React itself.
+Plite ships its editor runtime and optional subpaths in one package. Install it with React and React DOM for a React editor.
 
 ## Installation
 
 Install the React editor path first.
 
 ```text
-npm install @platejs/plite @platejs/plite-dom @platejs/plite-react react react-dom
+npm install plitejs react react-dom
 ```
 
 | Package | Owns |
 | --- | --- |
-| `@platejs/plite` | editor runtime, document model, transactions, helper APIs |
-| `@platejs/plite-dom` | DOM conversion, clipboard helpers, browser environment helpers |
-| `@platejs/plite-react` | `<Plite>`, `<Editable>`, React hooks, editor setup |
+| `plitejs` | editor runtime, document model, transactions, helper APIs |
+| `plitejs/dom` | DOM conversion, clipboard helpers, browser environment helpers |
+| `plitejs/react` | `<Plite>`, `<Editable>`, React hooks, editor setup |
 | `react`, `react-dom` | React peer packages |
 
 ## Usage
 
-Import the React editor pieces from `@platejs/plite-react`.
+Import the React editor pieces from `plitejs/react`.
 
 ```tsx
 import {
   Editable,
   Plite,
   type PliteValueChangeContext,
-  usePliteEditor,
-} from "@platejs/plite-react";
+  useEditor,
+} from "plitejs/react";
 ```
 
 Before we render anything, let's define the document shape for this editor.
@@ -49,17 +49,17 @@ const initialValue: CustomValue = [
 ```
 
 `CustomValue` is the TypeScript shape of this editor's primary document.
-Passing it to `usePliteEditor` keeps element and text types attached to the
+Passing it to `useEditor` keeps element and text types attached to the
 editor API.
 
-Call `usePliteEditor` inside the component so React keeps the same editor
+Call `useEditor` inside the component so React keeps the same editor
 object for the component lifetime.
 
 Render the editor with `<Plite>` and `<Editable>`.
 
 ```tsx
 const App = () => {
-  const editor = usePliteEditor<CustomValue>({ initialValue });
+  const editor = useEditor<CustomValue>({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -69,7 +69,7 @@ const App = () => {
 };
 ```
 
-The editor is seeded by `usePliteEditor({ initialValue })`. `<Plite>`
+The editor is seeded by `useEditor({ initialValue })`. `<Plite>`
 provides that existing editor to everything underneath it, and `<Editable>`
 renders the editable document surface.
 
@@ -82,7 +82,7 @@ a single-root document.
 
 ```tsx
 const App = () => {
-  const editor = usePliteEditor<CustomValue>({ initialValue });
+  const editor = useEditor<CustomValue>({ initialValue });
 
   const handleValueChange = ({
     value,
@@ -98,7 +98,7 @@ const App = () => {
 };
 ```
 
-Use `initialValue` as the one-shot initial document passed to `usePliteEditor`.
+Use `initialValue` as the one-shot initial document passed to `useEditor`.
 If your app needs to replace the whole document after the
 editor exists, use an explicit editor update instead of treating `<Plite>` like
 a controlled `<textarea>`.

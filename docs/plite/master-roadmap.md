@@ -127,14 +127,14 @@ Tranche-3 closeout read:
   - public docs/examples/tests teach only current state and transaction APIs
 - explicit normalization claim width is settled:
   - heavier adjacent-text/spacer cleanup stays explicit-only
-  - owner: `packages/plite/test/fixture-claim-overrides.ts`
+  - owner: `packages/plitejs/test/fixture-claim-overrides.ts`
 - standalone `snapshot-contract.ts` is green again and included in the same-turn
   proof stack
 - remaining hard-cut debate is deferred claim-width work, not a tranche-3 blocker
 
 Tranche-3 progress also landed:
 
-- `packages/plite/test/range-ref-contract.ts`
+- `packages/plitejs/test/range-ref-contract.ts`
 - `scripts/benchmarks/slate/6038-transaction-execution.mjs`
 - `bun run bench:plite:6038:local`
 
@@ -147,7 +147,7 @@ Current tranche-3 doctrine:
   - [2026-04-19-slate-absolute-api-replan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-19-slate-absolute-api-replan.md)
 - explicit-cut family now exists for legacy ordinary-op adjacent-text/spacer
   canonicalization rows:
-  - owner: `/Users/zbeyens/git/plate-2/packages/plite/test/fixture-claim-overrides.ts`
+  - owner: `/Users/zbeyens/git/plate-2/packages/plitejs/test/fixture-claim-overrides.ts`
 - the perfect redesign is now the live direction, not a deferred later lane
 - the `slate` core API direction is the live claim
 - remaining work is final gate closure and claim-width sync, not a new public

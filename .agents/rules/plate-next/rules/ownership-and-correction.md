@@ -34,9 +34,9 @@ After any code/template/API correction:
 2. Run focused `rg`/caller searches inside the active scope:
    - named file/API: target owner plus the smallest caller graph needed to
      prove the decision;
-   - package review: the named package plus the smallest Plite/Core owner that
+   - package review: the named package plus the smallest Plite/Plate foundation owner that
      blocks that package;
-   - Core review: `packages/core/src` and relevant `packages/core/type-tests`;
+   - Plate foundation review: `packages/platejs/src` and relevant `packages/platejs/type-tests`;
    - broad sweep/full-loop: the explicitly requested broad manifest.
 3. Review every match in that scoped class, not just the first one.
 4. Apply the same correction only inside the active scope when it is clearly
@@ -67,7 +67,7 @@ Concrete editor read/update callbacks stay contravariant; callback bivariance
 must not let annotations manufacture uninstalled capabilities. Keep exact
 tuples invariant, erase only at named internal runtime boundaries, and keep
 direct `update.selection` mutation-only. Public editor capability generics
-default to the core-only `readonly []` tuple; a bare `Editor` or `BaseEditor`
+default to the core-only `readonly []` tuple; a bare `Editor`
 must not expose arbitrary groups through `any`. Reserve `AnyEditor` for named
 internal runtime erasure. Project installed extension capabilities once; never
 re-intersect whole React/DOM editor read or update surfaces onto Plate after
@@ -78,18 +78,18 @@ infer one provider and reconstruct a whole raw editor around it. Keep deliberate
 erasure behind a named runtime implementation after the public signature has
 preserved exact inference.
 
-This is narrower than a full Core sweep. It is mandatory after a correction,
+This is narrower than a full Plate foundation sweep. It is mandatory after a correction,
 even for one-by-one review, but it is not permission to update unrelated
 packages, docs, examples, or generated surfaces.
 
 ## Extracted File Recovery Law
 
 Review mode must inventory extracted files, not only modified files. Before
-claiming a Core review pass is clean:
+claiming a Plate foundation review pass is clean:
 
 - Run an untracked-file inventory for the target scope, for example
-  `git ls-files --others --exclude-standard packages/core | sort`.
-- Treat every untracked Core/Plate source, spec, type-test, and config file as a
+  `git ls-files --others --exclude-standard packages/platejs | sort`.
+- Treat every untracked Plate foundation/Plate source, spec, type-test, and config file as a
   required ledger row.
 - For each row, compare against `origin/main` to recover behavior and understand
   the former owner. Then choose the best current owner. Recover the old path
@@ -106,18 +106,18 @@ claiming a Core review pass is clean:
 - Record cosmetic naming ideas as deferred, but complete owner-driven
   merge/delete/rename work in the active packet.
 
-`sweep`, `all core`, `full-loop`, `full review`, and similar broad Core
-requests are not autopilot sampling. They mean full Core file review. Do not
-close one of those runs after a narrow packet unless every Core source file has
+`sweep`, `all plate`, `full-loop`, `full review`, and similar broad Plate foundation
+requests are not autopilot sampling. They mean full Plate foundation file review. Do not
+close one of those runs after a narrow packet unless every Plate foundation source file has
 a drift score and the score gate passes.
 
-When the target is Core or a broad Core sweep, stay scoped to Core. Ignore
-errors from non-Core packages unless the user named those packages, the current
-packet edited them, or the failure proves a Core public API regression. Do not
-chase feature-package fallout during a Core cleanup run. Record it as
+When the target is Plate foundation or a broad Plate foundation sweep, stay scoped to Plate foundation. Ignore
+errors from non-Plate foundation packages unless the user named those packages, the current
+packet edited them, or the failure proves a Plate foundation public API regression. Do not
+chase feature-package fallout during a Plate foundation cleanup run. Record it as
 out-of-scope package drift with the owning package and move on.
 
-## Core Law
+## Plate foundation Law
 
 Plate Next means:
 
@@ -126,7 +126,7 @@ Plate Next means:
   extension installation.
 - Plate owns product composition: plugins, UI, app/registry kits, product
   command ergonomics, docs/examples, and app-facing defaults.
-- Core must not wrap Plite editor APIs under Plate names.
+- Plate foundation must not wrap Plite editor APIs under Plate names.
 - Schema cleanup uses the final Plite vocabulary: direct complete/named roots,
   safe omitted `elements`/`unknown` defaults, `schema.element.textBlock()`,
   validator-backed narrow JSON properties, placement-owned

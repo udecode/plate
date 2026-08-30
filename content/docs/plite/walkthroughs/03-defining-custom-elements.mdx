@@ -20,7 +20,7 @@ const initialValue = [
 ];
 
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -71,7 +71,7 @@ Pass the renderer to `Editable`:
 
 ```tsx
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -99,10 +99,10 @@ them once.
 Use `editor.update(...)` and `tx.nodes.set(...)` to change the selected block.
 
 ```tsx
-import { ElementApi } from "@platejs/plite";
+import { ElementApi } from "plitejs";
 
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -126,10 +126,10 @@ const App = () => {
 To make the shortcut toggle, read first, then write:
 
 ```tsx
-import { ElementApi } from "@platejs/plite";
+import { ElementApi } from "plitejs";
 
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>

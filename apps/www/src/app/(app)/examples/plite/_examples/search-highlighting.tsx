@@ -1,15 +1,15 @@
-import { NodeApi } from '@platejs/plite';
+import { SearchIcon } from 'lucide-react';
+import { parseAsString, useQueryState } from 'nuqs';
+import { NodeApi } from 'plitejs';
 import {
   Editable,
   type EditableProps,
-  type ReactEditor,
+  type Editor,
   Plite,
   type PliteDecorationSource,
-  usePliteEditor,
+  useEditor,
   usePliteRangeDecorationSource,
-} from '@platejs/plite-react';
-import { SearchIcon } from 'lucide-react';
-import { parseAsString, useQueryState } from 'nuqs';
+} from 'plitejs/react';
 import { memo } from 'react';
 
 import {
@@ -28,7 +28,7 @@ const SearchHighlightingExample = () => {
     'q',
     parseAsString.withDefault('').withOptions(replaceQueryOptions)
   );
-  const editor = usePliteEditor<CustomValue>({
+  const editor = useEditor<CustomValue>({
     initialValue: [
       {
         type: 'paragraph',
@@ -90,7 +90,7 @@ const SearchHighlightingEditor = memo(
     editor,
     searchSource,
   }: {
-    editor: ReactEditor<CustomValue>;
+    editor: Editor<CustomValue>;
     searchSource: PliteDecorationSource<{ highlight: true }>;
   }) => (
     <Plite decorationSources={[searchSource]} editor={editor}>

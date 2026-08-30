@@ -1,7 +1,12 @@
-import { getPlateRuntime } from '@platejs/core/internal';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { PLUGINS, createBaseEditor, defineBasePlugin, property } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  getPlateRuntime,
+  PLUGINS,
+  createEditor,
+  defineBasePlugin,
+  property,
+} from 'platejs';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor as createReactEditor } from 'platejs/react';
 
 import { registryBlocks } from '@/registry/registry-blocks';
 import { registryFeatures } from '@/registry/registry-features';
@@ -20,8 +25,8 @@ const footnoteNames = [
 describe('MarkdownKit', () => {
   it('configures both live and base editors', () => {
     const editors = [
-      createPlateEditor({ plugins: MarkdownKit }),
-      createBaseEditor({ plugins: MarkdownKit }),
+      createReactEditor({ plugins: MarkdownKit }),
+      createEditor({ plugins: MarkdownKit }),
     ];
 
     for (const editor of editors) {
@@ -38,7 +43,7 @@ describe('MarkdownKit', () => {
     const CommentMarkPlugin = defineBasePlugin(PLUGINS.comment, {
       schema: { mark: { key: 'commentMark', property: property.boolean() } },
     });
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [SuggestionMarkPlugin, CommentMarkPlugin, ...MarkdownKit],
     });
 
@@ -58,7 +63,7 @@ describe('MarkdownKit', () => {
         view: 'split',
       },
     ];
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [...BaseCodeDrawingKit, ...MarkdownKit],
       initialValue: value,
     });
@@ -72,7 +77,7 @@ describe('MarkdownKit', () => {
   });
 
   it('composes without duplicating live Footnote plugins', () => {
-    const editor = createPlateEditor({
+    const editor = createReactEditor({
       plugins: [...FootnoteKit, ...MarkdownKit],
     });
     const names = getPlateRuntime(editor).pluginList.map(
@@ -87,7 +92,7 @@ describe('MarkdownKit', () => {
   });
 
   it('composes without duplicating static Footnote plugins', () => {
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [...BaseFootnoteKit, ...MarkdownKit],
     });
     const names = getPlateRuntime(editor).pluginList.map(

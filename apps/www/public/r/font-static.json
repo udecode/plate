@@ -2,14 +2,13 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "font-static",
   "dependencies": [
-    "@platejs/basic-styles",
-    "@platejs/utils"
+    "platejs"
   ],
   "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/font-static.tsx",
-      "content": "import {\n  BaseFontBackgroundColorPlugin,\n  BaseFontColorPlugin,\n  BaseFontFamilyPlugin,\n  BaseFontSizePlugin,\n} from '@platejs/basic-styles';\n\nexport const BaseFontKit = [\n  BaseFontColorPlugin,\n  BaseFontBackgroundColorPlugin,\n  BaseFontSizePlugin,\n  BaseFontFamilyPlugin,\n];\n",
+      "content": "import {\n  BaseFontBackgroundColorPlugin,\n  BaseFontColorPlugin,\n  BaseFontFamilyPlugin,\n  BaseFontSizePlugin,\n} from 'platejs';\n\nexport const BaseFontKit = [\n  BaseFontColorPlugin,\n  BaseFontBackgroundColorPlugin,\n  BaseFontSizePlugin,\n  BaseFontFamilyPlugin,\n];\n",
       "type": "registry:component",
       "target": "@components/editor/font-static.tsx"
     }

@@ -14,11 +14,11 @@ const compareStrings = (left, right) => {
 
 const repoRoot = resolve(import.meta.dirname, '../..');
 const editorConstructorNames = new Set([
-  'createBaseEditor',
-  'createPlateEditor',
+  'createEditor',
+  'createEditor',
   'createStaticEditor',
-  'usePlateEditor',
-  'usePlateViewEditor',
+  'useEditor',
+  'useStaticEditor',
 ]);
 const codeFenceLanguages = new Set([
   'javascript',
@@ -39,13 +39,14 @@ const codeFencePattern =
 const whitespacePattern = /\s+/;
 const pluginFactoryNamePattern = /^define(?:BasePlugin|Extension|PlatePlugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
-const pliteDomModulePattern = /^@platejs\/plite-dom(?:\/|$)/;
+const pliteDomModulePattern = /^(?:platejs|plitejs)\/dom(?:\/|$)/;
 const pluginDescriptorOwnerPathPattern =
   /(?:^|\.)(?:editor|plugin|[A-Za-z_$][\w$]*Plugin)$/;
 const prefixedOnListenerPattern = /^on[A-Z]/;
-const pliteModulePattern = /^@platejs\/plite(?:\/|$)/;
-const pliteReactModulePattern = /^@platejs\/plite-react$/;
-const pliteRootModulePattern = /^@platejs\/plite$/;
+const pliteModulePattern = /^(?:platejs|plitejs)(?:\/|$)/;
+const pliteReactModulePattern = /^(?:platejs|plitejs)\/react$/;
+const pliteRootModulePattern = /^(?:platejs|plitejs)$/;
+const privatePliteModulePattern = /^(?:platejs|plitejs)\/internal(?:\/|$)/;
 const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
@@ -56,7 +57,6 @@ const internalCoreContractTypeSymbols = new Set([
   'StaticEditorExtensionTypeLambda',
 ]);
 const internalPliteContractTypeSymbols = new Set([
-  'EditorExtensionDependencyReferenceFor',
   'EditorExtensionTypeLambda',
   'InternalEditorExtensionDependencyReference',
   'InternalEditorExtensionInstalledCapabilitiesOf',
@@ -240,6 +240,8 @@ const readSchemaIdentity = (schemaProperty) => {
 
   const id = getObjectProperty(value, 'id')?.value;
   const version = getObjectProperty(value, 'version')?.value;
+
+  if (!id && !version) return { complete: true };
 
   return {
     complete:
@@ -1061,6 +1063,19 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       }
       if (
         node.type === 'ImportDeclaration' &&
+        privatePliteModulePattern.test(node.source.value)
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            `${node.source.value} is not a public package entrypoint`
+          )
+        );
+      }
+      if (
+        node.type === 'ImportDeclaration' &&
         pliteRootModulePattern.test(node.source.value)
       ) {
         for (const specifier of node.specifiers) {
@@ -1075,7 +1090,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                 file,
                 fence,
                 specifier,
-                `${importedName} is internal dependency typing; import it from @platejs/plite/internal`
+                `${importedName} is internal dependency typing and cannot be imported from the public editor root`
               )
             );
           }

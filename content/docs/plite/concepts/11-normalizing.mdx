@@ -64,7 +64,7 @@ Put related structural writes in one `editor.update(...)`. The callback reads
 one isolated draft, and Plite publishes one canonical `DocumentChange`.
 
 ```ts
-import { ElementApi, type Editor } from "@platejs/plite";
+import { ElementApi, type Editor } from "plitejs";
 
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 
@@ -100,7 +100,7 @@ declares the node event that can make its invariant stale: `children`,
 `content`, or `properties`.
 
 ```ts
-import { ElementApi, defineExtension } from "@platejs/plite";
+import { ElementApi, defineExtension } from "plitejs";
 
 const ValidLinkExtension = defineExtension("valid-link", {
   corrections: [

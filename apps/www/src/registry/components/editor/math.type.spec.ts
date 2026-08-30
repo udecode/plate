@@ -1,7 +1,7 @@
 // compile-time type regression file.
 
-import { MathRules } from '@platejs/math';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { MathRules } from 'platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 
 void MathRules.markdown({ variant: '$' });
 void MathRules.markdown({ on: 'break', variant: '$$' });

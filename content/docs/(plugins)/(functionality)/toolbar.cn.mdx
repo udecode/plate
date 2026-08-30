@@ -41,11 +41,11 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { FixedToolbarKit } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbarKit } from '@/components/editor/floating-toolbar';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...FixedToolbarKit,
@@ -91,7 +91,7 @@ const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     fixedToolbarPlugin,
@@ -154,19 +154,20 @@ export function CustomToolbarButton() {
 
 ```tsx
 import { BoldIcon } from 'lucide-react';
+import { BoldPlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
-    <MarkToolbarButton nodeType="bold" tooltip="粗体 (⌘+B)">
+    <MarkToolbarButton plugin={BoldPlugin} tooltip="粗体 (⌘+B)">
       <BoldIcon />
     </MarkToolbarButton>
   );
 }
 ```
 
-- `nodeType`: 指定要切换的标记类型(如`bold`、`italic`)
+- `plugin`: 指定要切换的标记插件（例如 `BoldPlugin`）
 - `tooltip`: 为按钮提供提示信息
 - `MarkToolbarButton` 直接在组件中读取标记状态并处理切换。
 

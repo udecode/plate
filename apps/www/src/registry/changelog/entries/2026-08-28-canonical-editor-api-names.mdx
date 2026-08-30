@@ -1,0 +1,14 @@
+---
+id: 2026-08-28-canonical-editor-api-names
+date: 2026-08-28
+status: draft
+kind: rename
+summary: 'Use canonical editor API names'
+change: { 'type': 'source', 'date': '2026-08-28', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-08-28-canonical-editor-api-names-b33e35c1","kind":"rename","migrationNotes":[]} -->
+
+- **`dnd`**, **`inline-combobox`**, **`block-discussion`**, **`use-chat`**, **`ai`**, **`ai-menu`**, **`comment`**, **`select-editor`**, **`find-replace-demo`**, **`code-block`**, **`font-size-toolbar-button`**, **`math`**, **`media-preview-dialog`**, **`huge-document-demo`**: Use `useCreateEditor` for React editor creation. `use-chat` exports `useEditorChat`, block discussion exports `BlockResolvedSuggestion`, and missing required values report contextual errors.

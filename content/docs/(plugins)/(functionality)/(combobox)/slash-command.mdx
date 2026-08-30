@@ -37,10 +37,10 @@ The fastest way to add slash command functionality is with the `SlashKit`, which
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/slash';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...SlashKit,
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/slash-command
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
@@ -65,10 +65,10 @@ npm install @platejs/slash-command
 `SlashPlugin` installs `SlashInputPlugin` as a required dependency.
 
 ```tsx
-import { SlashPlugin } from '@platejs/slash-command/react';
-import { createPlateEditor } from 'platejs/react';
+import { SlashPlugin } from 'platejs/slash-command/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     SlashPlugin,
@@ -81,15 +81,12 @@ const editor = createPlateEditor({
 Add a complete `SlashInputPlugin` descriptor beside the owner when you need to replace the dependency's component or configuration.
 
 ```tsx
-import {
-  SlashInputPlugin,
-  SlashPlugin,
-} from '@platejs/slash-command/react';
+import { SlashInputPlugin, SlashPlugin } from 'platejs/slash-command/react';
 import { PLUGINS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/editor/slash';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     SlashPlugin.configure({
@@ -167,7 +164,7 @@ Plugin for slash command functionality. Extends [TriggerComboboxPluginState](/do
     });
     ```
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: PlateEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
     Function to determine when slash commands should be enabled. Useful for disabling in certain contexts like code blocks.
   </APIItem>
 </APIOptions>

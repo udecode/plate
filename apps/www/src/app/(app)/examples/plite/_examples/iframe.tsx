@@ -1,13 +1,13 @@
-import { isHotkey } from '@platejs/plite-dom';
+import { isHotkey } from 'plitejs/dom';
 import {
   Editable,
+  Plite,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
   useEditor,
+  useEditorContext,
   useEditorSelector,
-  usePliteEditor,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import type React from 'react';
 import { type PointerEvent, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -67,7 +67,7 @@ const IFrameExample = () => {
       ],
     },
   ];
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue,
   });
 
@@ -141,7 +141,7 @@ interface MarkButtonProps {
 }
 
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) =>
     isMarkActive(innerEditor, format)
   );

@@ -49,14 +49,14 @@ What canonicalizes it:
 
 Proof rows:
 
-- [normalization-contract.ts](/Users/zbeyens/git/plite/packages/plite/test/normalization-contract.ts)
+- [normalization-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/normalization-contract.ts)
   — explicit adjacent-text cleanup owner rows
-- [range-ref-contract.ts](/Users/zbeyens/git/plite/packages/plite/test/range-ref-contract.ts)
+- [range-ref-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/range-ref-contract.ts)
   — explicit adjacent-text cleanup rebasing row
-- [clipboard-contract.ts](/Users/zbeyens/git/plite/packages/plite/test/clipboard-contract.ts)
+- [clipboard-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/clipboard-contract.ts)
   — broad mixed-inline proof stays green because this is not default live
   cleanup
-- [app-owned-customization.tsx](/Users/zbeyens/git/plite/packages/plite-react/test/app-owned-customization.tsx)
+- [app-owned-customization.tsx](/Users/zbeyens/git/plite/packages/plitejs/test/react/app-owned-customization.tsx)
   — runtime selection/render proof stays green because this is not default live
   cleanup
 
@@ -83,14 +83,14 @@ What canonicalizes it:
 
 Proof rows:
 
-- [normalization-contract.ts](/Users/zbeyens/git/plite/packages/plite/test/normalization-contract.ts)
+- [normalization-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/normalization-contract.ts)
   — explicit inline-container flattening owner row
-- [range-ref-contract.ts](/Users/zbeyens/git/plite/packages/plite/test/range-ref-contract.ts)
+- [range-ref-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/range-ref-contract.ts)
   — explicit inline-container flattening rebasing row
-- [clipboard-contract.ts](/Users/zbeyens/git/plite/packages/plite/test/clipboard-contract.ts)
+- [clipboard-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/clipboard-contract.ts)
   — broad mixed-inline proof stays green because broad live flattening is not
   default
-- [primitives-contract.tsx](/Users/zbeyens/git/plite/packages/plite-react/test/primitives-contract.tsx)
+- [primitives-contract.tsx](/Users/zbeyens/git/plite/packages/plitejs/test/react/primitives-contract.tsx)
   — mixed-inline runtime/selection proof stays green because broad live
   flattening is not default
 

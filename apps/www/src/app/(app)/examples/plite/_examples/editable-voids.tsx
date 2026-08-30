@@ -1,16 +1,16 @@
-import { defineExtension, schema } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+import { defineExtension, schema } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
   Plite,
-  useEditor,
+  useEditorContext,
   usePliteChildRoot,
-  usePliteEditor,
+  useEditor,
   usePliteRootChrome,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
 import { Button, Icon, Toolbar } from './components';
@@ -65,7 +65,7 @@ const createEditableVoidBody = (): CustomValue => [
 const createEmptyEditableVoidBody = (): CustomValue => [paragraph('')];
 
 const EditableVoidsExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), editableVoid()],
     initialValue: {
       children: [
@@ -234,7 +234,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
 };
 
 const InsertEditableVoidButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   return (
     <Button
       onClick={() => {

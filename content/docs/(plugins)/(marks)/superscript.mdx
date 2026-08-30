@@ -39,11 +39,11 @@ Superscript is the `'sup'` value of Plate's `script` mark. `ScriptPlugin` owns b
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -53,7 +53,7 @@ export const editor = createPlateEditor({
 Pass the shared plugin and the superscript value to `MarkToolbarButton`.
 
 ```tsx
-import { ScriptPlugin } from '@platejs/basic-nodes/react';
+import { ScriptPlugin } from 'platejs/react';
 import { SuperscriptIcon } from 'lucide-react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
@@ -78,17 +78,17 @@ export function SuperscriptToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add the shared script plugin and configure only the input rule you need.
 
 ```tsx
-import { ScriptRules } from '@platejs/basic-nodes';
-import { ScriptPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { ScriptRules } from 'platejs';
+import { ScriptPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     ScriptPlugin.configure({
       inputRules: [ScriptRules.markdown({ value: 'sup' })],
@@ -107,9 +107,9 @@ editor.update.script.toggle('sup');
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseScriptPlugin` | `@platejs/basic-nodes` | Declares the enum mark, HTML codec, selection rule, and typed toggle. |
-| `ScriptPlugin` | `@platejs/basic-nodes/react` | Renders `'sub'` as `<sub>` and `'sup'` as `<sup>`. |
-| `ScriptRules.markdown` | `@platejs/basic-nodes` | Creates a value-aware `~x~` or `^x^` input rule. |
+| `BaseScriptPlugin` | `platejs` | Declares the enum mark, HTML codec, selection rule, and typed toggle. |
+| `ScriptPlugin` | `platejs/react` | Renders `'sub'` as `<sub>` and `'sup'` as `<sup>`. |
+| `ScriptRules.markdown` | `platejs` | Creates a value-aware `~x~` or `^x^` input rule. |
 | `BasicMarksKit` | Registry | Configures both input rules and shortcuts. |
 | `MarkToolbarButton` | Registry UI | Toggles the requested script value. |
 

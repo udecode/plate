@@ -3,7 +3,7 @@
  * Do not edit.
  */
 import type { Element, GeneratedEditorTypeProvider, Text } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type { Editor as BaseEditor } from 'platejs/react';
 
 import type * as EditorModule from "./plugins";
 
@@ -50,7 +50,7 @@ export interface AudioElement extends Element {
 }
 
 export interface BlockquoteElement extends Element {
-  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | TableElement | TocElement | ToggleElement | VideoElement)[];
+  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
   readonly type: "blockquote";
   readonly aiPreview?: boolean;
   readonly checked?: boolean;
@@ -98,7 +98,7 @@ export interface CodeLineElement extends Element {
 }
 
 export interface ColumnElement extends Element {
-  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | TableElement | TocElement | ToggleElement | VideoElement)[];
+  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
   readonly type: "column";
   readonly aiPreview?: boolean;
   readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
@@ -121,6 +121,20 @@ export interface DateElement extends Element {
   readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
   readonly suggestionTransient?: boolean;
   readonly value: string;
+}
+
+export interface DetailsElement extends Element {
+  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
+  readonly type: "details";
+  readonly aiPreview?: boolean;
+  readonly checked?: boolean;
+  readonly indent?: number;
+  readonly listRestart?: number;
+  readonly listStart?: number;
+  readonly listStyle?: string;
+  readonly listType?: "bulleted" | "numbered" | "task";
+  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
+  readonly suggestionTransient?: boolean;
 }
 
 export interface EmojiInputElement extends Element {
@@ -155,7 +169,7 @@ export interface FileElement extends Element {
 }
 
 export interface FootnoteDefinitionElement extends Element {
-  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | TableElement | TocElement | ToggleElement | VideoElement)[];
+  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
   readonly type: "footnoteDefinition";
   readonly aiPreview?: boolean;
   readonly ref: string;
@@ -318,6 +332,14 @@ export interface SlashInputElement extends Element {
   readonly value?: string;
 }
 
+export interface DetailsSummaryElement extends Element {
+  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
+  readonly type: "summary";
+  readonly aiPreview?: boolean;
+  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
+  readonly suggestionTransient?: boolean;
+}
+
 export interface TableElement extends Element {
   readonly children: readonly (TableRowElement)[];
   readonly type: "table";
@@ -329,7 +351,7 @@ export interface TableElement extends Element {
 }
 
 export interface TableCellElement extends Element {
-  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | TableElement | TocElement | ToggleElement | VideoElement)[];
+  readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
   readonly type: "tableCell";
   readonly aiPreview?: boolean;
   readonly backgroundColor?: string;
@@ -358,20 +380,6 @@ export interface TocElement extends Element {
   readonly suggestionTransient?: boolean;
 }
 
-export interface ToggleElement extends Element {
-  readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
-  readonly type: "toggle";
-  readonly aiPreview?: boolean;
-  readonly checked?: boolean;
-  readonly indent?: number;
-  readonly listRestart?: number;
-  readonly listStart?: number;
-  readonly listStyle?: string;
-  readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
-}
-
 export interface VideoElement extends Element {
   readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
   readonly type: "video";
@@ -385,8 +393,8 @@ export interface VideoElement extends Element {
   readonly width?: number | string;
 }
 
-export type EditorElement = AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | CodeLineElement | ColumnElement | ColumnGroupElement | DateElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | PlaceholderElement | SlashInputElement | TableElement | TableCellElement | TableRowElement | TocElement | ToggleElement | VideoElement;
-export type Value = readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | TableElement | TocElement | ToggleElement | VideoElement)[];
+export type EditorElement = AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | CodeLineElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | PlaceholderElement | SlashInputElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | VideoElement;
+export type Value = readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
 export type Schema = Readonly<{
   readonly plugins: Readonly<{
     readonly paragraph: Readonly<{ readonly type: "paragraph"; }>;
@@ -402,8 +410,8 @@ export type Schema = Readonly<{
     readonly tableCell: Readonly<{ readonly type: "tableCell"; }>;
     readonly tableRow: Readonly<{ readonly type: "tableRow"; }>;
     readonly table: Readonly<{ readonly type: "table"; }>;
-    readonly indent: Readonly<{ readonly key: "indent"; }>;
-    readonly toggle: Readonly<{ readonly type: "toggle"; }>;
+    readonly detailsSummary: Readonly<{ readonly type: "summary"; }>;
+    readonly details: Readonly<{ readonly type: "details"; }>;
     readonly toc: Readonly<{ readonly type: "toc"; }>;
     readonly image: Readonly<{ readonly type: "image"; }>;
     readonly mediaEmbed: Readonly<{ readonly type: "mediaEmbed"; }>;
@@ -435,6 +443,7 @@ export type Schema = Readonly<{
     readonly backgroundColor: Readonly<{ readonly key: "backgroundColor"; }>;
     readonly fontSize: Readonly<{ readonly key: "fontSize"; }>;
     readonly fontFamily: Readonly<{ readonly key: "fontFamily"; }>;
+    readonly indent: Readonly<{ readonly key: "indent"; }>;
     readonly textAlign: Readonly<{ readonly key: "textAlign"; }>;
     readonly lineHeight: Readonly<{ readonly key: "lineHeight"; }>;
     readonly comment: Readonly<{ readonly key: "comment"; }>;
@@ -604,6 +613,31 @@ export type Mutations = Readonly<{
       readonly value: string;
     }>;
     readonly type: "date";
+  }>;
+  readonly details: Readonly<{
+    readonly construction: Readonly<{
+      readonly aiPreview?: boolean;
+      readonly checked?: boolean;
+      readonly indent?: number;
+      readonly listRestart?: number;
+      readonly listStart?: number;
+      readonly listStyle?: string;
+      readonly listType?: "bulleted" | "numbered" | "task";
+      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
+      readonly suggestionTransient?: boolean;
+    }>;
+    readonly properties: Readonly<{
+      readonly aiPreview?: boolean;
+      readonly checked?: boolean;
+      readonly indent?: number;
+      readonly listRestart?: number;
+      readonly listStart?: number;
+      readonly listStyle?: string;
+      readonly listType?: "bulleted" | "numbered" | "task";
+      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
+      readonly suggestionTransient?: boolean;
+    }>;
+    readonly type: "details";
   }>;
   readonly emojiInput: Readonly<{
     readonly construction: Readonly<{
@@ -945,6 +979,20 @@ export type Mutations = Readonly<{
     }>;
     readonly type: "slashInput";
   }>;
+  readonly detailsSummary: Readonly<{
+    readonly construction: Readonly<{
+      readonly aiPreview?: boolean;
+      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
+      readonly suggestionTransient?: boolean;
+    }>;
+    readonly properties: Readonly<{
+      readonly aiPreview?: boolean;
+      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
+      readonly suggestionTransient?: boolean;
+    }>;
+    readonly toggle: true;
+    readonly type: "summary";
+  }>;
   readonly table: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
@@ -1013,32 +1061,6 @@ export type Mutations = Readonly<{
     }>;
     readonly type: "toc";
   }>;
-  readonly toggle: Readonly<{
-    readonly construction: Readonly<{
-      readonly aiPreview?: boolean;
-      readonly checked?: boolean;
-      readonly indent?: number;
-      readonly listRestart?: number;
-      readonly listStart?: number;
-      readonly listStyle?: string;
-      readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
-    }>;
-    readonly properties: Readonly<{
-      readonly aiPreview?: boolean;
-      readonly checked?: boolean;
-      readonly indent?: number;
-      readonly listRestart?: number;
-      readonly listStart?: number;
-      readonly listStyle?: string;
-      readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
-    }>;
-    readonly toggle: true;
-    readonly type: "toggle";
-  }>;
   readonly video: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
@@ -1086,8 +1108,8 @@ export const schema = Object.freeze({
     tableCell: Object.freeze({ type: "tableCell" }),
     tableRow: Object.freeze({ type: "tableRow" }),
     table: Object.freeze({ type: "table" }),
-    indent: Object.freeze({ key: "indent" }),
-    toggle: Object.freeze({ type: "toggle" }),
+    detailsSummary: Object.freeze({ type: "summary" }),
+    details: Object.freeze({ type: "details" }),
     toc: Object.freeze({ type: "toc" }),
     image: Object.freeze({ type: "image" }),
     mediaEmbed: Object.freeze({ type: "mediaEmbed" }),
@@ -1119,6 +1141,7 @@ export const schema = Object.freeze({
     backgroundColor: Object.freeze({ key: "backgroundColor" }),
     fontSize: Object.freeze({ key: "fontSize" }),
     fontFamily: Object.freeze({ key: "fontFamily" }),
+    indent: Object.freeze({ key: "indent" }),
     textAlign: Object.freeze({ key: "textAlign" }),
     lineHeight: Object.freeze({ key: "lineHeight" }),
     comment: Object.freeze({ key: "comment" }),
@@ -1128,8 +1151,8 @@ export const schema = Object.freeze({
   properties: Object.freeze({}),
 }) satisfies Schema;
 
-export const fingerprint = "fnv1a64:983f2e92578bb5da";
+export const fingerprint = "fnv1a64:7b514f094be6c65e";
 
 type EditorPlugins = (typeof EditorModule)["EditorKit"] & GeneratedEditorTypeProvider<Types>;
 
-export type Editor = PlateEditor<EditorPlugins>;
+export type Editor = BaseEditor<Value, readonly [], EditorPlugins>;

@@ -6,20 +6,20 @@ import { fileURLToPath } from 'node:url';
 import {
   createEditor,
   DocumentChange,
-} from '../../../../../packages/plite/src/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
 import {
   getLastCommit,
   getSnapshot,
   replace,
-} from '../../../../../packages/plite/src/internal/index.ts';
+} from '../../../../../packages/plitejs/src/internal/index.ts';
 import {
   insertNodeChange,
   insertTextChange,
   moveNodeChange,
   removeTextChange,
   setNodeChange,
-} from '../../../../../packages/plite/src/core/change/root-change.ts';
-import { DocumentIndex } from '../../../../../packages/plite/src/core/change/document-index.ts';
+} from '../../../../../packages/plitejs/src/core/change/root-change.ts';
+import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
 import { round, summarize } from '../../shared/stats.mjs';
 
 const runs = Number.parseInt(process.env.PLITE_CHANGESET_RUNS ?? '3', 10);

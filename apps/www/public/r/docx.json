@@ -2,13 +2,12 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "docx",
   "dependencies": [
-    "@platejs/docx",
-    "@platejs/juice"
+    "platejs"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/docx.tsx",
-      "content": "'use client';\n\nimport {\n  DocxExportPlugin,\n  DocxImportPlugin,\n  DocxPastePlugin,\n} from '@platejs/docx';\nimport { JuicePlugin } from '@platejs/juice';\n\nexport const DocxKit = [\n  JuicePlugin,\n  DocxPastePlugin,\n  DocxImportPlugin,\n  DocxExportPlugin,\n] as const;\n",
+      "content": "'use client';\n\nimport {\n  DocxExportPlugin,\n  DocxImportPlugin,\n  DocxPastePlugin,\n} from 'platejs/docx';\nimport { JuicePlugin } from 'platejs/juice';\n\nexport const DocxKit = [\n  JuicePlugin,\n  DocxPastePlugin,\n  DocxImportPlugin,\n  DocxExportPlugin,\n] as const;\n",
       "type": "registry:component",
       "target": "@components/editor/docx.tsx"
     }

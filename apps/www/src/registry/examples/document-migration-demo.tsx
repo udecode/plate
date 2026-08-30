@@ -5,7 +5,7 @@ import {
   migratePlateV54,
   migratePlateV55,
 } from 'platejs/migrations';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
@@ -107,7 +107,7 @@ const MigrationDemoMigrations = defineDocumentMigrations(MigrationDemoSchema, {
 });
 
 export default function DocumentMigrationDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: v53Document,
     migrations: MigrationDemoMigrations,
     plugins: MigrationDemoKit,

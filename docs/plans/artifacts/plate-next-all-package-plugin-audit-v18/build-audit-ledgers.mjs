@@ -425,10 +425,10 @@ add(
 add(
   'LISTC-01',
   'P1',
-  'list-classic',
+  'legacy-list-model',
   'plugin',
   'stale-capability-capture',
-  'packages/list-classic/src/lib/BaseListPlugin.ts:1341',
+  'packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:1341',
   ['BaseListPlugin'],
   'The final extension captures api during assembly and can retain a pre-publication capability.',
   'Resolve context.api inside runtime callbacks.'
@@ -436,10 +436,10 @@ add(
 add(
   'LISTC-02',
   'P2',
-  'list-classic',
+  'legacy-list-model',
   'types',
   'dead-export',
-  'packages/list-classic/src/lib/BaseListPlugin.ts:1',
+  'packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:1',
   ['BaseListPlugin'],
   'ListPluginTransaction is exported with no consumer.',
   'Delete it.'
@@ -447,10 +447,10 @@ add(
 add(
   'LISTC-03',
   'P2',
-  'list-classic',
+  'legacy-list-model',
   'react',
   'callback-only-subscription',
-  'packages/list-classic/src/react/useTodoListElement.ts:6',
+  'packages/platejs/src/features/list/src/react/useTodoListElement.ts:6',
   ['TodoListPlugin'],
   'The hook subscribes to readOnly only to use it in an event callback.',
   'Read editor state inside the event.'
@@ -458,10 +458,10 @@ add(
 add(
   'LISTC-04',
   'P3',
-  'list-classic',
+  'legacy-list-model',
   'test',
   'test-family-colocation',
-  'packages/list-classic/src/react/ListPlugin.spec.tsx:1',
+  'packages/platejs/src/features/list/src/react/ListPlugin.spec.tsx:1',
   [],
   'A generic React test file spans multiple hook families.',
   'Split or merge tests by the owning hook family during repair.'
@@ -1717,7 +1717,7 @@ transaction use, React family ownership, and one-owner topology still drift.
 
 1. Core type kernel, builder inference, and honest optional-plugin lookup.
 2. Media shared-factory inference and Selection's transaction/weak-peer/hook ownership.
-3. Suggestion nullability, Link and Markdown capability ownership, AI/Table fake casts, and List Classic stale capability capture.
+3. Suggestion nullability, Link and Markdown capability ownership, AI/Table fake casts, and Legacy list model stale capability capture.
 4. Hook/component families in DnD, Toggle, Utils, Selection, Core EventEditor, and package-specific React ownership.
 5. P2/P3 one-owner helpers, taxonomy directories, dead aliases, tests, and constants.
 

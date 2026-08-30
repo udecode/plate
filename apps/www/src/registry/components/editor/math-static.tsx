@@ -1,11 +1,11 @@
+import { RadicalIcon } from 'lucide-react';
+
+import 'platejs/math/katex.css';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
   getEquationHtml,
-} from '@platejs/math';
-
-import '@platejs/math/katex.css';
-import { RadicalIcon } from 'lucide-react';
+} from 'platejs/math';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

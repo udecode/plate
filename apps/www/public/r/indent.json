@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "indent",
   "dependencies": [
-    "@platejs/indent"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/indent-toolbar-button.json"
@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/indent.tsx",
-      "content": "'use client';\n\nimport { IndentPlugin } from '@platejs/indent/react';\nimport { PLUGINS } from 'platejs';\n\nexport const IndentKit = [\n  IndentPlugin.configure({\n    initialState: {\n      offset: 24,\n    },\n    targetPlugins: [\n      PLUGINS.heading,\n      PLUGINS.paragraph,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.toggle,\n      PLUGINS.image,\n    ],\n  }),\n];\n",
+      "content": "'use client';\n\nimport { PLUGINS } from 'platejs';\nimport { IndentPlugin } from 'platejs/react';\n\nexport const IndentKit = [\n  IndentPlugin.configure({\n    initialState: {\n      offset: 24,\n    },\n    targetPlugins: [\n      PLUGINS.heading,\n      PLUGINS.paragraph,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.details,\n      PLUGINS.image,\n    ],\n  }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/indent.tsx"
     }

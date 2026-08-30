@@ -27,7 +27,7 @@
         "upgrade": "Warm reads and 100 document commits must execute zero read factories. The 100-extension p95 must stay within 2x of the one-extension cohort."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/read-view-lifecycle-contract.test.ts ./packages/plite/test/extension-namespaces-contract.ts ./packages/plite/test/editor-runtime-view-contract.ts ./packages/plite/test/state-tx-public-api-contract.ts ./benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/read-view-lifecycle-contract.test.ts ./packages/plitejs/test/extension-namespaces-contract.ts ./packages/plitejs/test/editor-runtime-view-contract.ts ./packages/plitejs/test/state-tx-public-api-contract.ts ./benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.test.ts",
         "policy": "Promotion requires exact configuration and transform invalidation, current direct facades, active-draft reads, cached root projections, method-only groups, and structural benchmark counters."
       },
       "artifacts": [
@@ -61,7 +61,7 @@
         "upgrade": "A sparse schema-backed edit must retain untouched boundary identities and change fewer than 64 tokens. The 100/1,000/10,000/50,000 timing rows are labeled immutable-publication diagnostic because they measure immutable DocumentChange ancestor publication, not schema construction."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
         "policy": "Promotion requires contextual fitter laws, strict direct-write rejection, mapped selection/runtime identity, canonical idempotence, a sentinel proving the benchmark's compiled schema is active, and the strict locality benchmark."
       },
       "artifacts": [
@@ -131,7 +131,7 @@
         "upgrade": "Preserve every established compile/query/validation/invalidation/cache/heap gate. Add exact 1/100/1,000 contribution compile/cache counts; 100/1,000 Plate descriptor resolution plus cold and structurally cached startup; isolated createAndFill construction-plan cardinality across 100/1,000 irrelevant defaults; equivalent and non-equivalent Plate publication; 1k/10k explicit migration; fixed two-node canonical open-edge projected clipboard locality across 1k/50k documents; and 100/1,000 TypeScript fixture budgets with an explicit 1,000-plugin widening boundary."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./packages/plite-react/test/schema-runtime-invalidation-contract.test.ts ./packages/core/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/projected-clipboard-contract.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
         "policy": "Promotion keeps the existing compiler/property/incremental/schema-delta contracts and additionally requires Plate model publication, canonical projected clipboard behavior, exact workload cohorts, explicit type widening, and every strict execution budget."
       },
       "artifacts": [
@@ -167,7 +167,7 @@
         "upgrade": "Warm fitting of one fixed detached parent/slice must remain within 1.5x across 10 to 50,000 unrelated editor blocks and 5 to 100 declared element types. Cold editor setup and 1/10/100-node slice timings remain absolute baselines."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-content-contract.test.ts ./benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/slice-fit-content-contract.test.ts ./benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts",
         "policy": "Every measured fit must validate under the detached parent, remain deterministic and idempotent, and publish no editor state or commit."
       },
       "artifacts": [
@@ -201,7 +201,7 @@
         "upgrade": "A property write must schedule exactly the matching properties and content corrections, never children corrections or unrelated siblings, through the 50,000-block cohort."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/normalization-contract.ts",
         "policy": "Promotion requires composed-change classification, runtime-ID remapping, fixed-point/cycle laws, force repair, root lifecycle, and strict sparse touched-count proof."
       },
       "artifacts": [
@@ -235,7 +235,7 @@
         "upgrade": "Every simple and prefix lane must stay within its explicit absolute p50/p95 budget. Simple dispatch at 20,000 blocks must remain within 2x its 100-block p50 at every handler depth. Runtime proof observes zero callable continuation identities in simple handlers and one fresh identity per around visit. Prefix document-size ratios are recorded only because each handler intentionally constructs a generic immutable TransactionSpec. The synthetic same-run interpreter is a correctness and machine-noise control, never a replacement for the unavailable pre-edit baseline."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/command-spec.test.ts ./packages/plite/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/command-spec.test.ts ./packages/plitejs/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
         "policy": "Promotion requires command fallback/prefix/rollback/configuration laws, exact actual/reference visit and handled-result parity, exact callable-continuation identity evidence, zero no-op commits, fixed absolute latency budgets, and the simple large-document ratio gate."
       },
       "artifacts": [
@@ -256,7 +256,7 @@
     {
       "id": "plite-history-depth",
       "question": "Does the cost of one history-skipped remote commit stay independent of retained undo depth?",
-      "owner": "plite-history",
+      "owner": "plitejs/history",
       "family": "history",
       "kind": "current",
       "cwd": ".",
@@ -269,7 +269,7 @@
         "upgrade": "At equal 1,000-commit remote bursts, depth 1,000 must stay within 4x the depth-100 median and p95 while lazy undo resolves exactly."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite-history/test/history-branch-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/history/history-branch-contract.spec.ts",
         "policy": "The benchmark gate requires immutable depth clipping, lazy/eager equivalence, explicit mapping failure, and exact undo after the burst."
       },
       "artifacts": [
@@ -292,7 +292,7 @@
       "family": "collaboration",
       "kind": "current",
       "cwd": ".",
-      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/yjs/scripts/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
+      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/yjs/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
       "metrics": {
         "primary": "plite_yjs_event_change_sync_distance_ratio",
         "direction": "lower",
@@ -301,7 +301,7 @@
         "upgrade": "Start, middle, and end edits must keep local and sync medians within 2x, decode one top-level node, retain one changed range, and keep runtime-ID p95 below 1ms."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.slow.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/platejs/test/yjs/remote-import-contract.slow.ts ./packages/platejs/test/yjs/canonical-change-contract.spec.ts",
         "policy": "The performance claim requires exact event-native traces, narrow changed ranges, full event-shape coverage, and explicit fallback tests."
       },
       "artifacts": [
@@ -452,7 +452,7 @@
         "upgrade": "Primary metric is the aggregate fanout violation count; local root-order edits should be 0 and full replacement should stay within the benchmark allowance."
       },
       "correctness": {
-        "command": "pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
         "policy": "Promotion requires the runtime-node selector fanout contract plus the benchmark metric at 0."
       },
       "artifacts": [
@@ -524,7 +524,7 @@
         "upgrade": "Promotion requires parity, no normal-cohort regression, and the large and stress median/p95 ratio gates in the benchmark artifact."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/resolved-token-cursor.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/resolved-token-cursor.test.ts",
         "policy": "Promotion requires generated query equivalence plus unchanged public structural path APIs."
       },
       "artifacts": [
@@ -547,7 +547,7 @@
     {
       "id": "react-stable-id-overlay-source",
       "question": "Does one changed stable-ID decoration, annotation, or widget justify incremental mapping at 10,000 and 100,000 source entries?",
-      "owner": "plite-react",
+      "owner": "plitejs/react",
       "family": "react-locality",
       "kind": "current",
       "cwd": ".",
@@ -560,7 +560,7 @@
         "upgrade": "The artifact reports all decoration, annotation, and widget median/p95 controls; promotion requires every 100k row to clear the shared gate."
       },
       "correctness": {
-        "command": "pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/stable-id-mapped-source.test.ts test/annotation-store-contract.test.tsx test/widget-layer-contract.test.tsx test/projections-and-selection-contract.test.tsx",
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/projections-and-selection-contract.test.tsx",
         "policy": "Promotion requires snapshot/subscriber parity plus every 100k concept and churn row above 3x median and 2x p95 speedup."
       },
       "artifacts": [
@@ -843,7 +843,7 @@
         "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/normalization-contract.ts",
         "policy": "Normalization benchmark iteration runs the focused correction and normalization laws; pnpm check:plite remains a separate handoff gate."
       },
       "artifacts": [
@@ -1153,7 +1153,7 @@
     },
     {
       "id": "yjs-collaboration",
-      "question": "Does @platejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "question": "Does platejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
       "owner": "slate-v2",
       "family": "collaboration",
       "kind": "current",
@@ -1167,8 +1167,8 @@
         "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, yjs_large_doc_remote_apply_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification, remote-import, or convergence regressions."
       },
       "correctness": {
-        "command": "pnpm --filter @platejs/yjs test && pnpm --filter @platejs/yjs typecheck",
-        "policy": "Promotion requires the @platejs/yjs package suite and source-first typecheck plus yjs_correctness_failures=0 from the benchmark artifact."
+        "command": "pnpm --filter platejs test:partition:yjs && pnpm --filter platejs typecheck:partition:yjs",
+        "policy": "Promotion requires the platejs/yjs partition suite and source-first typecheck plus yjs_correctness_failures=0 from the benchmark artifact."
       },
       "artifacts": [
         {
@@ -1479,7 +1479,7 @@
         "upgrade": "The mixed native batch must preserve snapshot parity, publish exactly once, keep its median at or below separate publications, and keep p95 within 1.25x."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/state-tx-public-api-contract.ts ./packages/plite/test/transaction-extension-contract.ts ./packages/plite/test/generic-update-policy-contract.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/state-tx-public-api-contract.ts ./packages/plitejs/test/transaction-extension-contract.ts ./packages/plitejs/test/generic-update-policy-contract.ts",
         "policy": "Promotion requires native transaction isolation/composition laws plus snapshot parity and publication-count assertions in the benchmark."
       },
       "artifacts": [
@@ -1543,7 +1543,7 @@
         "upgrade": "Cold transitive compile, dynamic root install, and reverse cleanup must stay below fixed 1,000 ms p95 budgets at 1,000 descriptors. Every cycle must activate and clean each descriptor exactly once and retain zero extension, descriptor, dependency-order, output, state, or transaction registry records after removal."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/extension-configuration.test.ts ./packages/plite/test/extension-methods-contract.ts ./benchmarks/editor/benchmarks/plite-extension-graph-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/extension-configuration.test.ts ./packages/plitejs/test/extension-methods-contract.ts ./benchmarks/editor/benchmarks/plite-extension-graph-benchmark.test.ts",
         "policy": "Promotion requires descriptor inference, DAG order, cycle/conflict/duplicate rejection, candidate isolation, transitive reference counting, rollback, reverse cleanup, fixed p95 budgets, and zero post-removal registry records."
       },
       "artifacts": [
@@ -1565,7 +1565,7 @@
     {
       "id": "plite-history-retained-memory",
       "question": "Does one 5,000-block History batch retain one versioned change without duplicating more than 2.25x its input payload?",
-      "owner": "plite-history",
+      "owner": "plitejs/history",
       "family": "history",
       "kind": "current",
       "cwd": ".",
@@ -1578,7 +1578,7 @@
         "upgrade": "Both replacement and range-delete lanes must restore one versioned entry, run with exposed GC, and keep serialized History payload at or below 2.25x the measured input."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite-history/test/history-branch-contract.spec.ts ./packages/plite-history/test/history-persistence-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/history/history-branch-contract.spec.ts ./packages/plitejs/test/history/history-persistence-contract.spec.ts",
         "policy": "Promotion requires immutable branch and persistence laws plus the benchmark's exact restore and GC assertions."
       },
       "artifacts": [

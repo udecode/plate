@@ -30,7 +30,6 @@ const typeOnlyExportSpecifierPrefixPattern = /^type\s+/;
 const exportSpecifierAliasPattern = /\s+as\s+/;
 const canonicalEditorExtensionTypeLambda = 'EditorExtensionTypeLambda';
 const internalPliteContractTypeSymbols = [
-  'EditorExtensionDependencyReferenceFor',
   'EditorExtensionTypeLambda',
   'InternalEditorExtensionDependencyReference',
   'InternalEditorExtensionInstalledCapabilitiesOf',
@@ -167,7 +166,10 @@ const exposesCompilerType = (source, symbol) => {
   );
 };
 
-export function auditPrivatePlateDeclarationBrands(files) {
+export function auditPrivatePlateDeclarationBrands(
+  files,
+  { publicDeclarationPaths } = {}
+) {
   const errors = [];
 
   for (const file of files) {
@@ -258,7 +260,11 @@ export function auditPrivatePlateDeclarationBrands(files) {
       }
     }
 
+    const isPublicDeclaration =
+      !publicDeclarationPaths || publicDeclarationPaths.has(file.path);
+
     for (const symbol of internalPlatePluginCompilerTypeSymbols) {
+      if (!isPublicDeclaration) continue;
       if (
         internalCoreContractTypeSymbols.includes(symbol) &&
         (publicPackageDeclarationEntrypointPattern.test(file.path) ||
@@ -288,11 +294,51 @@ export function assertNoPrivatePlateDeclarationBrands(
     path: toPosixPath(relative(packageRoot, path)),
     source: readFileSync(path, 'utf-8'),
   }));
-  const errors = auditPrivatePlateDeclarationBrands(files);
+  const errors = auditPrivatePlateDeclarationBrands(files, {
+    publicDeclarationPaths: collectPublicDeclarationPaths(packageRoot),
+  });
 
   if (errors.length > 0) {
     throw new Error(errors.join('\n'));
   }
+}
+
+function collectPublicDeclarationPaths(packageRoot) {
+  const packageJson = JSON.parse(
+    readFileSync(join(packageRoot, 'package.json'), 'utf-8')
+  );
+  const paths = new Set();
+
+  const addDeclarationPath = (value) => {
+    if (typeof value !== 'string') return;
+
+    const declarationPath = value
+      .replace(/^\.\//, '')
+      .replace(/\.mjs$/, '.d.mts')
+      .replace(/\.cjs$/, '.d.cts')
+      .replace(/\.js$/, '.d.ts');
+
+    if (declarationFilePattern.test(declarationPath)) {
+      paths.add(declarationPath);
+    }
+  };
+
+  const visitExportTarget = (target) => {
+    if (typeof target === 'string') {
+      addDeclarationPath(target);
+      return;
+    }
+    if (!target || typeof target !== 'object') return;
+
+    for (const value of Object.values(target)) {
+      visitExportTarget(value);
+    }
+  };
+
+  addDeclarationPath(packageJson.types);
+  visitExportTarget(packageJson.exports);
+
+  return paths;
 }
 
 function walkDeclarationFiles(directory) {

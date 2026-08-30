@@ -3,17 +3,17 @@ title: Plate Components
 description: API reference for Plate React components.
 ---
 
-Plate components connect a `PlateEditor` to React rendering. Use `Plate` and `PlateContent` for editable editors, `PlateView` for read-only static views, and the node primitives when writing custom plugin components.
+Plate components connect a `Editor` to React rendering. Use `Plate` and `PlateContent` for editable editors, `PlateView` for read-only static views, and the node primitives when writing custom plugin components.
 
 ## Editable Editor
 
 `Plate` owns the editor store. `PlateContent` renders the editable surface under that store.
 
 ```tsx title="components/editor.tsx"
-import { Plate, PlateContent, usePlateEditor } from "platejs/react";
+import { Plate, PlateContent, useCreateEditor } from "platejs/react";
 
 export function Editor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: [
       {
         children: [{ text: "Start writing." }],
@@ -32,7 +32,7 @@ export function Editor() {
 
 <Callout type="warning" title="Provider required">
   `PlateContent` must render below `Plate`. `useEditor()` requires an active
-  editor and throws otherwise. Use `useActiveEditor()` only in controller UI
+  editor and throws otherwise. Use `useOptionalEditor()` only in controller UI
   that intentionally handles `null` while no editor is active.
 </Callout>
 
@@ -41,7 +41,7 @@ export function Editor() {
 Use `PlateView` with a static editor when you need rendered content and Plate copy behavior without an editable surface.
 
 ```tsx title="components/read-only-editor.tsx"
-import { PlateView, usePlateViewEditor } from "platejs/react";
+import { PlateView, useStaticEditor } from "platejs/react";
 
 const value = [
   {
@@ -51,7 +51,7 @@ const value = [
 ];
 
 export function ReadOnlyEditor() {
-  const editor = usePlateViewEditor({ initialValue: value });
+  const editor = useStaticEditor({ initialValue: value });
 
   if (!editor) return null;
 
@@ -75,7 +75,6 @@ export function ReadOnlyEditor() {
 | `PlateElement`           | Default element renderer for block and inline elements.                                          |
 | `PlateLeaf`              | Default decorated text-leaf renderer.                                                            |
 | `PlateText`              | Default text-node renderer for non-decoration leaf rendering.                                    |
-| `PlateTest`              | Test helper that creates or wraps an editor and renders `PlateContent` with test attributes.     |
 
 ## Render Pipeline
 
@@ -212,7 +211,7 @@ Root provider for one editor instance.
 
 <API name="Plate">
   <APIProps>
-    <APIItem name="editor" type="PlateEditor | null">
+    <APIItem name="editor" type="Editor | null">
       Editor instance. When `null`, `Plate` renders nothing.
     </APIItem>
     <APIItem name="children" type="React.ReactNode">
@@ -373,7 +372,7 @@ Read-only static renderer with Plate copy support.
 
 <API name="PlateView">
   <APIProps>
-    <APIItem name="editor" type="BaseEditor">
+    <APIItem name="editor" type="Editor">
       Static editor instance.
     </APIItem>
     <APIItem

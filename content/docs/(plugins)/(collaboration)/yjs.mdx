@@ -15,7 +15,7 @@ still own production transport, authentication, persistence, and room naming.
 
 ## Features
 
-- **Provider Boundary:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, or custom transport code. `@platejs/yjs` adapts a `Y.Doc`, provider lifecycle, awareness, selection state, and canonical editor changes.
+- **Provider Boundary:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, or custom transport code. `platejs/yjs` adapts a `Y.Doc`, provider lifecycle, awareness, selection state, and canonical editor changes.
 - **Custom Providers:** Wrap provider packages as `YjsProviderLike` and pass them to `YjsPlugin.configure`.
 - **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
 - **Multi-Root Documents:** Synchronizes primary children, named roots, and root-qualified awareness through one editor extension and Yjs transaction boundary.
@@ -33,7 +33,7 @@ still own production transport, authentication, persistence, and room naming.
 Install the Yjs plugin.
 
 ```bash
-npm install @platejs/yjs
+npm install platejs @tanstack/react-virtual diff-match-patch-ts yjs
 ```
 
 For Hocuspocus server-based collaboration:
@@ -55,10 +55,10 @@ match by fingerprint. Use an explicit `id` and `version` for a durable room
 lineage, and migrate the room before bumping the version.
 
 ```tsx
-import { YjsPlugin } from "@platejs/yjs/plate";
-import { createPlateEditor } from "platejs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   schema: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
@@ -87,8 +87,8 @@ Wrap your provider as `YjsProviderLike`, then pass it through the plugin's
 remote cursor hooks.
 
 ```tsx
-import { YjsPlugin } from "@platejs/yjs/plate";
-import { useYjsRemoteCursors } from "@platejs/yjs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+import { useYjsRemoteCursors } from "platejs/yjs/react";
 import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
@@ -155,7 +155,7 @@ Access provider states and add event handlers for connection monitoring:
 
 ```tsx
 import React from "react";
-import { useYjsProviderStatus, useYjsProviderSynced } from "@platejs/yjs/react";
+import { useYjsProviderStatus, useYjsProviderSynced } from "platejs/yjs/react";
 
 function EditorStatus() {
   const status = useYjsProviderStatus(editor);
@@ -184,8 +184,8 @@ installs the Plite/Yjs synchronization extension.
 | Provider package installation            | App                                     |
 | Room naming and authentication           | App                                     |
 | Persistence and server scaling           | App                                     |
-| Editor operations, selection, undo/redo  | `@platejs/plite` and `@platejs/plite-history` |
-| Awareness and remote cursors             | `@platejs/yjs`                          |
+| Editor operations, selection, undo/redo  | `platejs` and `platejs/history` |
+| Awareness and remote cursors             | `platejs/yjs`                          |
 
 ## Connection Commands
 
@@ -246,7 +246,7 @@ cursors by itself.
   unmount teardown.
 - If remote cursors are wrong, verify the app sends cursor metadata through
   `tx.yjs.sendSelection(...)` and renders the React cursor hooks from
-  `@platejs/yjs/react`.
+  `platejs/yjs/react`.
 
 ## Related
 

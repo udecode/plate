@@ -12,9 +12,7 @@ import { useSiteRegistryProvider, useSiteRegistryStyle } from './provider';
 type ToolbarModule = typeof RadixToolbar;
 
 function useToolbarModule(): ToolbarModule {
-  return useSiteRegistryProvider() === 'base'
-    ? (BaseToolbar as ToolbarModule)
-    : RadixToolbar;
+  return useSiteRegistryProvider() === 'base' ? BaseToolbar : RadixToolbar;
 }
 
 function useToolbarStyleClasses() {

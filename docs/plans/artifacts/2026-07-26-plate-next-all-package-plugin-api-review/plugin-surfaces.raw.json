@@ -3650,12 +3650,12 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 113,
     "key": "KEYS.lic",
     "kind": "createBasePlugin",
     "line": 55,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseListItemContentPlugin"
   },
   {
@@ -3683,12 +3683,12 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 114,
     "key": "KEYS.li",
     "kind": "createBasePlugin",
     "line": 66,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseListItemPlugin"
   },
   {
@@ -3716,12 +3716,12 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 115,
     "key": "KEYS.ulClassic",
     "kind": "createBasePlugin",
     "line": 121,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseBulletedListPlugin"
   },
   {
@@ -3749,12 +3749,12 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 116,
     "key": "KEYS.olClassic",
     "kind": "createBasePlugin",
     "line": 148,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseNumberedListPlugin"
   },
   {
@@ -3782,12 +3782,12 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 117,
     "key": "KEYS.taskList",
     "kind": "createBasePlugin",
     "line": 175,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseTaskListPlugin"
   },
   {
@@ -3815,12 +3815,12 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 118,
     "key": "KEYS.listTodoClassic",
     "kind": "createBasePlugin",
     "line": 203,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseTodoListPlugin"
   },
   {
@@ -3849,7 +3849,7 @@
         "update": []
       },
       "fields": ["api", "dependencies", "key", "options", "schema"],
-      "key": "KEYS.listClassic",
+      "key": "KEYS.legacyListModel",
       "stage": "constructor"
     },
     "exported": true,
@@ -3893,12 +3893,12 @@
         "stage": "extend:3"
       }
     ],
-    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "file": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
     "id": 119,
-    "key": "KEYS.listClassic",
+    "key": "KEYS.legacyListModel",
     "kind": "createBasePlugin",
     "line": 284,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BaseListPlugin"
   },
   {
@@ -3914,11 +3914,11 @@
     "configuration": [],
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 120,
     "kind": "toPlatePlugin",
     "line": 13,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "BulletedListPlugin"
   },
   {
@@ -3934,11 +3934,11 @@
     "configuration": [],
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 121,
     "kind": "toPlatePlugin",
     "line": 15,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "TaskListPlugin"
   },
   {
@@ -3954,11 +3954,11 @@
     "configuration": [],
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 122,
     "kind": "toPlatePlugin",
     "line": 17,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "NumberedListPlugin"
   },
   {
@@ -3974,11 +3974,11 @@
     "configuration": [],
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 123,
     "kind": "toPlatePlugin",
     "line": 19,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "ListItemContentPlugin"
   },
   {
@@ -3994,11 +3994,11 @@
     "configuration": [],
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 124,
     "kind": "toPlatePlugin",
     "line": 21,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "ListItemPlugin"
   },
   {
@@ -4026,11 +4026,11 @@
     },
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 125,
     "kind": "toPlatePlugin",
     "line": 27,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "ListPlugin"
   },
   {
@@ -4046,11 +4046,11 @@
     "configuration": [],
     "exported": true,
     "extendStages": [],
-    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "file": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
     "id": 126,
     "kind": "toPlatePlugin",
     "line": 37,
-    "package": "list-classic",
+    "package": "legacy-list-model",
     "symbol": "TodoListPlugin"
   },
   {

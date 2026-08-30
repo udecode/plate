@@ -8,7 +8,7 @@ import {
   readEditorSchemaContract,
   type EditorSchemaContract,
   type EditorSchemaContractDiff,
-} from '@platejs/plite';
+} from 'platejs';
 
 import { compileEditor, replaceArtifacts } from './generate';
 

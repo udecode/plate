@@ -34,11 +34,11 @@ Excalidraw adds a void `excalidraw` element that embeds the Excalidraw canvas in
 <ComponentSource name="excalidraw" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { ExcalidrawKit } from '@/components/editor/excalidraw';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: ExcalidrawKit,
 });
 ```
@@ -54,7 +54,7 @@ export const editor = createPlateEditor({
 The registry insert toolbar calls the installed Excalidraw command.
 
 ```tsx title="components/editor/transforms.ts"
-import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
+import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { PLUGINS } from 'platejs';
 
 export const insertBlockMap = {
@@ -69,8 +69,8 @@ export const insertBlockMap = {
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/excalidraw` | Package | Exports `BaseExcalidrawPlugin`, `ExcalidrawElement`, and `ExcalidrawDataState`. |
-| `@platejs/excalidraw/react` | Package | Exports the React `ExcalidrawPlugin` descriptor. |
+| `platejs/excalidraw` | Package | Exports `BaseExcalidrawPlugin`, `ExcalidrawElement`, and `ExcalidrawDataState`. |
+| `platejs/excalidraw/react` | Package | Exports the React `ExcalidrawPlugin` descriptor. |
 | `excalidraw` | Registry | Adds `ExcalidrawPlugin.configure({ component: ExcalidrawElement })`. |
 | `excalidraw` | Registry UI | Dynamically renders `@excalidraw/excalidraw` inside a Plate element. |
 | App persistence | App code | Stores the Plate value that contains Excalidraw element data. |
@@ -84,7 +84,7 @@ export const insertBlockMap = {
 ### Install Package
 
 ```bash
-npm install @platejs/excalidraw
+npm install platejs @excalidraw/excalidraw @tanstack/react-virtual
 ```
 
 ### Add The Plugin
@@ -92,12 +92,12 @@ npm install @platejs/excalidraw
 Use the React plugin when the editor renders the Excalidraw canvas.
 
 ```tsx
-import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
-import { createPlateEditor } from 'platejs/react';
+import { ExcalidrawPlugin } from 'platejs/excalidraw/react';
+import { createEditor } from 'platejs/react';
 
 import { ExcalidrawElement } from '@/components/editor/excalidraw';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [ExcalidrawPlugin.configure({ component: ExcalidrawElement })],
 });
 ```
@@ -109,7 +109,7 @@ insertion. Pass `at` for an exact location; otherwise it inserts after the
 selected block. It is a no-op without a selection or explicit `at`.
 
 ```tsx
-import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
+import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 
 editor.plugin(BaseExcalidrawPlugin).update.insert(
   {
@@ -159,7 +159,7 @@ const value = [
 | `data.elements` | Excalidraw elements | Stored as partial Excalidraw elements. |
 | `data.state` | Excalidraw app state | Stored as imported Excalidraw app state. |
 
-Markdown serialization is not owned by `@platejs/excalidraw`. Persist the Plate value when you need to keep drawings.
+Markdown serialization is not owned by `platejs/excalidraw`. Persist the Plate value when you need to keep drawings.
 
 ## UI Behavior
 
@@ -180,8 +180,8 @@ The registry element imports `@excalidraw/excalidraw/index.css`, so custom copie
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseExcalidrawPlugin` | `@platejs/excalidraw` | Headless void element plugin. |
-| `ExcalidrawPlugin` | `@platejs/excalidraw/react` | React Excalidraw plugin. |
+| `BaseExcalidrawPlugin` | `platejs/excalidraw` | Headless void element plugin. |
+| `ExcalidrawPlugin` | `platejs/excalidraw/react` | React Excalidraw plugin. |
 | `editor.plugin(BaseExcalidrawPlugin).update.insert(props?, options?)` | `BaseExcalidrawPlugin` | Inserts a void Excalidraw node at `options.at` or after the selected block. |
-| `ExcalidrawElement` | `@platejs/excalidraw` | Element shape with optional `data`. |
-| `ExcalidrawDataState` | `@platejs/excalidraw` | Data shape for stored Excalidraw elements and app state. |
+| `ExcalidrawElement` | `platejs/excalidraw` | Element shape with optional `data`. |
+| `ExcalidrawDataState` | `platejs/excalidraw` | Data shape for stored Excalidraw elements and app state. |

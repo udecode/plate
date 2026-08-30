@@ -35,7 +35,7 @@ Plate is a React framework for building rich-text editors. It gives you a headle
 | Layer | What it owns | Start here |
 | --- | --- | --- |
 | `platejs` | Core editor runtime, React bindings, and editor APIs. | [Installation](/docs/installation) |
-| `@platejs/*` packages | Headless plugins for nodes, marks, serialization, collaboration, AI, and editor behavior. | [Plugin guide](/docs/plugin) |
+| `platejs/*` subpaths | Headless plugins for nodes, marks, serialization, collaboration, AI, and editor behavior. | [Plugin guide](/docs/plugin) |
 | Plate UI registry | App-local UI components, kits, editor templates, and API routes installed through the shadcn CLI. | [Plate UI](/docs/installation/plate-ui) |
 | Your app | The copied component code, styling, routing, data model, and product-specific editor behavior. | [Plugin Components](/docs/plugin-components) |
 
@@ -71,7 +71,7 @@ Done. You can install the full UI path, drop down to headless packages, or start
   </Accordion>
 
   <Accordion title="How do I manage updates with an Open Code approach?">
-    Package behavior updates through `platejs` and `@platejs/*` dependencies. Copied UI code is yours, so update it by comparing the Plate registry source with your local files or by using the [MCP setup](/docs/installation/mcp).
+    Package behavior updates through the `platejs` dependency. Copied UI code is yours, so update it by comparing the Plate registry source with your local files or by using the [MCP setup](/docs/installation/mcp).
   </Accordion>
 
   <Accordion title="Why copy/paste components instead of using an npm package?">

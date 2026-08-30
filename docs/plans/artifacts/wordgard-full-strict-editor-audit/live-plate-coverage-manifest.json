@@ -66,7 +66,7 @@
     "orderedContentPressure": {
       "activeCorrectionEntries": 5,
       "activeCorrectionOwners": 4,
-      "classicListPositionalAssumptions": 10
+      "legacyListModelPositionalAssumptions": 10
     },
     "queryMiddleware": {
       "executionOwnerLines": 216,
@@ -3285,7 +3285,7 @@
       "kind": "product",
       "lines": 2,
       "package": null,
-      "path": "apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/autoformat.tsx",
       "sha256": "5a24746fd03f05c2de29128ce8157eaf7e350f7a0c2e6ba3f958319d24a4a45c"
     },
     {
@@ -4486,7 +4486,7 @@
       "kind": "product",
       "lines": 20,
       "package": null,
-      "path": "apps/www/src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/fixed-toolbar-kit.tsx",
       "sha256": "608ba8dd78df30a552961ccb469d8af85455b0ed132723bc1d6ecc150d035e75"
     },
     {
@@ -4531,7 +4531,7 @@
       "kind": "product",
       "lines": 20,
       "package": null,
-      "path": "apps/www/src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/floating-toolbar-kit.tsx",
       "sha256": "503c269d6a9185d30a3d208e901b2f84adaaab8bc7ca22e88ed29cc0976fbd60"
     },
     {
@@ -4909,7 +4909,7 @@
       "kind": "product",
       "lines": 64,
       "package": null,
-      "path": "apps/www/src/registry/components/editor/plugins/list-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/list.tsx",
       "sha256": "60ad900c031979fd5526d55c89e9cfb1a27c4b0923322bb04eafc3000cab06c8"
     },
     {
@@ -5936,7 +5936,7 @@
       "kind": "product",
       "lines": 260,
       "package": null,
-      "path": "apps/www/src/registry/components/editor/transforms-classic.ts",
+      "path": "apps/www/src/registry/components/editor/transforms.ts",
       "sha256": "f4dcb45d21afb158dc821bf2b868c36048e70f33ef4d049f8455b93b12201fa2"
     },
     {
@@ -7224,14 +7224,14 @@
           "exported": true,
           "kind": "function",
           "line": 20,
-          "name": "ListClassicDemo"
+          "name": "LegacyListModelDemo"
         }
       ],
       "exclusion": null,
       "kind": "product",
       "lines": 47,
       "package": null,
-      "path": "apps/www/src/registry/examples/list-classic-demo.tsx",
+      "path": "apps/www/src/registry/examples/list-demo.tsx",
       "sha256": "7bd4fd1ff74d0070e82f8205e615c7d3689afd9164ea1b90f61174fac02c8c3c"
     },
     {
@@ -8392,7 +8392,7 @@
       "kind": "product",
       "lines": 69,
       "package": null,
-      "path": "apps/www/src/registry/examples/values/cn/list-classic-value.tsx",
+      "path": "apps/www/src/registry/examples/values/cn/legacy-list-model-value.tsx",
       "sha256": "8ce3bfc376a0f8bfb1b3b1d59c34ccfd642f7e550a0bc1eb3acf5be14d6e9c5d"
     },
     {
@@ -9336,7 +9336,7 @@
       "kind": "product",
       "lines": 70,
       "package": null,
-      "path": "apps/www/src/registry/examples/values/list-classic-value.tsx",
+      "path": "apps/www/src/registry/examples/values/legacy-list-model-value.tsx",
       "sha256": "b79d785e80e37f171865a2f96e1a0cff324df4136866cb8ff4cb713d7d005dcb"
     },
     {
@@ -12696,7 +12696,7 @@
       "kind": "product",
       "lines": 178,
       "package": null,
-      "path": "apps/www/src/registry/ui/fixed-toolbar-classic-buttons.tsx",
+      "path": "apps/www/src/registry/ui/fixed-toolbar.tsx",
       "sha256": "4549c55beb15873a7139564711002769ca6dc550653a43339d6645cd811fbc89"
     },
     {
@@ -12753,7 +12753,7 @@
       "kind": "product",
       "lines": 91,
       "package": null,
-      "path": "apps/www/src/registry/ui/floating-toolbar-classic-buttons.tsx",
+      "path": "apps/www/src/registry/ui/floating-toolbar.tsx",
       "sha256": "a59d37e026b525088c3b18ac017e8535cc4d27efa950eecc0a458e94d96f9c04"
     },
     {
@@ -13815,7 +13815,7 @@
       "kind": "product",
       "lines": 258,
       "package": null,
-      "path": "apps/www/src/registry/ui/insert-toolbar-classic-button.tsx",
+      "path": "apps/www/src/registry/ui/insert-toolbar-button.tsx",
       "sha256": "2ef319dc07fb765fcced7161c344655e4d02b02e593775dc3b8d8755602e51ed"
     },
     {
@@ -14037,7 +14037,7 @@
       "kind": "product",
       "lines": 106,
       "package": null,
-      "path": "apps/www/src/registry/ui/list-classic-node.tsx",
+      "path": "apps/www/src/registry/ui/block-list.tsx",
       "sha256": "9aa8416a7e8e9ffb6b501caf3cf5a5d102ce2d1a42cf56de63a9391074367613"
     },
     {
@@ -14070,7 +14070,7 @@
       "kind": "product",
       "lines": 72,
       "package": null,
-      "path": "apps/www/src/registry/ui/list-classic-toolbar-button.tsx",
+      "path": "apps/www/src/registry/ui/list-toolbar-button.tsx",
       "sha256": "a7b26bf401ea0bf2a00b5c6749a24861dd94dd1c20461dfa619f2a1fcc19e628"
     },
     {
@@ -16132,7 +16132,7 @@
       "kind": "product",
       "lines": 185,
       "package": null,
-      "path": "apps/www/src/registry/ui/turn-into-toolbar-classic-button.tsx",
+      "path": "apps/www/src/registry/ui/turn-into-toolbar-button.tsx",
       "sha256": "1934c45c799d07c1b37e4b34375b6cc1257ffc7225e3d044cf838417d6a66fa2"
     },
     {
@@ -16935,7 +16935,7 @@
       "kind": "documentation",
       "lines": 533,
       "package": null,
-      "path": "content/docs/(plugins)/(elements)/list-classic.cn.mdx",
+      "path": "content/docs/(plugins)/(elements)/legacy-list-model.cn.mdx",
       "sha256": "191da44b3b46b3bf72053cbad714e9b6ab99bb66934959a8f428383f922a954b"
     },
     {
@@ -16946,7 +16946,7 @@
       "kind": "documentation",
       "lines": 512,
       "package": null,
-      "path": "content/docs/(plugins)/(elements)/list-classic.mdx",
+      "path": "content/docs/(plugins)/(elements)/legacy-list-model.mdx",
       "sha256": "7da95ce3a0a4d3b443ed143365fa226029f11bb02ed9c87a50439d0028407e60"
     },
     {
@@ -63186,124 +63186,124 @@
       "bytes": 1707,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "package",
       "lines": 68,
       "package": {
         "exports": [".", "./package.json", "./react"],
-        "name": "@platejs/list-classic"
+        "name": "platejs"
       },
-      "path": "packages/list-classic/package.json",
+      "path": "packages/platejs/src/features/list/package.json",
       "sha256": "e630091a717db6d48bda14ff4dbcdd443f8328af9c0a9eca74e9b3448d2b827f"
     },
     {
       "bytes": 85,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 6,
       "package": null,
-      "path": "packages/list-classic/src/index.ts",
+      "path": "packages/platejs/src/features/list/src/index.ts",
       "sha256": "176e13aa58fa8c9e4fd7907924e5becbf9871703b37725c349af9d3cd753c26c"
     },
     {
       "bytes": 93107,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "proof",
       "lines": 3892,
       "package": null,
-      "path": "packages/list-classic/src/lib/BaseListPlugin.spec.tsx",
+      "path": "packages/platejs/src/features/list/src/lib/BaseListPlugin.spec.tsx",
       "sha256": "a0691e2d5c46796234f27edb61327e712eeb17e4a56587135a3a72b9c3219838"
     },
     {
       "bytes": 84791,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 2678,
       "package": null,
-      "path": "packages/list-classic/src/lib/BaseListPlugin.ts",
+      "path": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
       "sha256": "f8135c7c52bba79133fa82027158988a143775595cc81b9981e0a4127be5f769"
     },
     {
       "bytes": 3658,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "proof",
       "lines": 133,
       "package": null,
-      "path": "packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts",
+      "path": "packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts",
       "sha256": "aac0c53a4c4fe661b4172e478cc3145a65934f691b85bbd7e128c0eab59058f1"
     },
     {
       "bytes": 90,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 6,
       "package": null,
-      "path": "packages/list-classic/src/lib/index.ts",
+      "path": "packages/platejs/src/features/list/src/lib/index.ts",
       "sha256": "bb669d111dfe5d0c9751df8f59caa6a3bc8594ae32b1ea47367eb7431eb3fc04"
     },
     {
       "bytes": 2731,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "proof",
       "lines": 98,
       "package": null,
-      "path": "packages/list-classic/src/react/ListPlugin.spec.tsx",
+      "path": "packages/platejs/src/features/list/src/react/ListPlugin.spec.tsx",
       "sha256": "15e61aa838038a0845dba71a52271ff5933420807f7719aca5fee5e9cbb7594a"
     },
     {
       "bytes": 971,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 38,
       "package": null,
-      "path": "packages/list-classic/src/react/ListPlugin.tsx",
+      "path": "packages/platejs/src/features/list/src/react/ListPlugin.tsx",
       "sha256": "dadae3f34d30b940182d67f898423210aa5244eeecbd16d53535d7554527d269"
     },
     {
       "bytes": 164,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 8,
       "package": null,
-      "path": "packages/list-classic/src/react/index.ts",
+      "path": "packages/platejs/src/features/list/src/react/index.ts",
       "sha256": "4b4a0b9e1e41eaedb7556991bd162f99ae9a89675639e498f812816db79b03d8"
     },
     {
       "bytes": 908,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 40,
       "package": null,
-      "path": "packages/list-classic/src/react/useListToolbarButton.ts",
+      "path": "packages/platejs/src/features/list/src/react/useListToolbarButton.ts",
       "sha256": "fb03962c1b750415374296acc04fccb631a11a0a155631f2d90015aefaae0066"
     },
     {
       "bytes": 836,
       "concepts": [],
       "declarations": [],
-      "exclusion": "Maintenance-only classic-list package; excluded from target architecture by VISION.md.",
+      "exclusion": "Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.",
       "kind": "source",
       "lines": 40,
       "package": null,
-      "path": "packages/list-classic/src/react/useTodoListElement.ts",
+      "path": "packages/platejs/src/features/list/src/react/useTodoListElement.ts",
       "sha256": "b09a7759f8745ef52a8b48ad9a2701cb89cc5f748ca430af5e7d753ab1f4e299"
     },
     {
@@ -65676,14 +65676,14 @@
           "exported": false,
           "kind": "variable",
           "line": 57,
-          "name": "createClassicListItemContent"
+          "name": "createLegacyListModelItemContent"
         },
         {
           "concepts": ["PL-BND-01", "PL-CODEC-04", "PL-FEATURE-01"],
           "exported": false,
           "kind": "variable",
           "line": 65,
-          "name": "deserializeClassicListItemChildren"
+          "name": "deserializeLegacyListModelItemChildren"
         },
         {
           "concepts": ["PL-BND-01", "PL-CODEC-04", "PL-FEATURE-01"],

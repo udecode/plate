@@ -1,8 +1,7 @@
 'use client';
 
-import { IndentPlugin } from '@platejs/indent/react';
 import { IndentIcon, OutdentIcon } from 'lucide-react';
-import { useEditorPlugin } from 'platejs/react';
+import { IndentPlugin, useEditorPlugin } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';

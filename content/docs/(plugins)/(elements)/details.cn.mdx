@@ -1,0 +1,198 @@
+---
+title: 详细信息
+docs:
+  - route: /docs/components/details
+    title: 详细信息元素
+  - route: /docs/components/details-toolbar-button
+    title: 详细信息工具栏按钮
+---
+
+<ComponentPreview name="details-demo" />
+
+Details 提供语义化的折叠内容块，其中包含一个可编辑的 Summary 和任意数量的直属内容块。展开状态属于编辑器会话，因此 HTML、Markdown、保存值、协作和撤销记录只保留文档内容。
+
+<PackageInfo>
+
+## 功能
+
+- 使用原生 `details` 和 `summary` 标签序列化 HTML。
+- 支持包含直属块内容的嵌套 Details。
+- 使用节点标识维护临时展开状态。
+- 提供包裹、解除包裹和插入转换。
+- 提供进入、退出和解除 Details 的键盘行为。
+
+</PackageInfo>
+
+## 文档模型
+
+Details 节点必须以唯一的 Summary 开头。其余子节点都是直属内容块：
+
+```tsx
+const value = [
+  {
+    type: 'details',
+    children: [
+      { type: 'summary', children: [{ text: '配送详情' }] },
+      { type: 'paragraph', children: [{ text: '将在 2–3 天内发货。' }] },
+    ],
+  },
+];
+```
+
+`open` 和 `name` 不是文档属性。应用需要展开或折叠 Details 节点时，请使用插件状态。
+
+## 使用套件
+
+<Steps>
+
+### 安装
+
+使用 Plate CLI 安装复制到应用中的 `DetailsKit`、React 元素和工具栏按钮：
+
+<ComponentSource name="details" />
+
+套件包含 `DetailsPlugin`、`DetailsSummaryPlugin`、`DetailsElement` 和 `DetailsSummaryElement`。
+
+### 添加套件
+
+将 `DetailsKit` 添加到编辑器插件：
+
+```tsx title="editor.tsx"
+import { createEditor } from 'platejs/react';
+import { DetailsKit } from '@/components/editor/details';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DetailsKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+为两个节点配置组件。`DetailsPlugin` 负责容器行为，`DetailsSummaryPlugin` 负责第一个可编辑子节点。
+
+```tsx title="editor.tsx"
+import {
+  DetailsPlugin,
+  DetailsSummaryPlugin,
+} from 'platejs/details/react';
+import { createEditor } from 'platejs/react';
+import {
+  DetailsElement,
+  DetailsSummaryElement,
+} from '@/components/editor/details';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    DetailsSummaryPlugin.configure({ component: DetailsSummaryElement }),
+    DetailsPlugin.configure({ component: DetailsElement }),
+  ],
+});
+```
+
+### 添加无界面支持
+
+服务端转换和序列化只需要 `BaseDetailsPlugin`：
+
+```ts
+import { createEditor } from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
+
+const editor = createEditor({
+  plugins: [BaseDetailsPlugin],
+});
+```
+
+</Steps>
+
+## 转换
+
+### `editor.plugin(BaseDetailsPlugin).update.insert`
+
+插入一个展开的 Details 节点，其中包含空 Summary 和正文段落。传入 `select: true` 可将选区放入 Summary。
+
+```tsx
+editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
+```
+
+### `editor.plugin(BaseDetailsPlugin).update.wrap`
+
+包裹选中的同级块。第一个文本块会成为 Summary；如果第一个块是结构化节点，则会在它之前插入空 Summary。
+
+```tsx
+editor.plugin(BaseDetailsPlugin).update.wrap();
+```
+
+### `editor.plugin(BaseDetailsPlugin).update.unwrap`
+
+解除选中的 Details 节点。Summary 会转换为编辑器的默认文本块，并位于正文块之前。
+
+```tsx
+editor.plugin(BaseDetailsPlugin).update.unwrap();
+```
+
+## 展开状态
+
+通过 `BaseDetailsPlugin` 读取和更新展开状态。该状态使用 `NodeKey`，而不是序列化的元素属性。
+
+```tsx
+const details = editor.plugin(BaseDetailsPlugin);
+const key = editor.key(detailsElement);
+
+if (key !== undefined) {
+  details.api.setOpen(key, true);
+  const open = details.store.get('isOpen', key);
+}
+```
+
+关闭 Details 节点时，正文内的选区会移动到 Summary 末尾。删除节点会清理对应的临时键。
+
+## 序列化
+
+HTML 使用固定的 `<details>` 和 `<summary>` 标签。Markdown 使用等价的 MDX 元素，并支持嵌套 Details。解码会忽略 `open` 和 `name`，编码也不会写入这两个属性。
+
+## 工具栏
+
+使用 [`DetailsToolbarButton`](/docs/components/details-toolbar-button) 包裹当前块，或解除当前 Details 节点。
+
+## 插件
+
+### `BaseDetailsPlugin`
+
+为 `details` 节点提供无界面 schema、编解码器、修正逻辑、临时状态和转换。
+
+### `BaseDetailsSummaryPlugin`
+
+为持久化的 `summary` 节点类型提供无界面文本块 schema 和编解码器。
+
+### `DetailsPlugin`
+
+提供 Enter、Backspace 和 Delete 行为的 React 适配器。
+
+### `DetailsSummaryPlugin`
+
+用于渲染 Summary 的 React 适配器。
+
+## 类型
+
+```ts
+import type {
+  DetailsElement,
+  DetailsSummaryElement,
+} from 'platejs/details';
+```

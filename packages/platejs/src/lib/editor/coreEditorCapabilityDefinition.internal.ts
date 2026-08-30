@@ -1,0 +1,72 @@
+import type { Value } from 'plitejs';
+import type { HistoryStateApi, HistoryTxApi } from 'plitejs/history';
+
+import type { AffinityPluginUpdate } from '../plugins/affinity/AffinityPlugin';
+import type { DebugApi } from '../plugins/debug/DebugPlugin';
+import type { DomApi, DomPluginUpdate } from '../plugins/dom/DOMPlugin';
+import type { ElementStateApi } from '../plugins/element-state/ElementStatePlugin';
+import type { HtmlApi } from '../plugins/html/HtmlPlugin';
+import type { OverridePluginUpdate } from '../plugins/override/OverridePlugin';
+
+/**
+ * Non-recursive capability leaf for the plugins installed by every Base
+ * editor. Public plugin definitions remain inferred from their descriptors.
+ */
+export type CoreEditorCapabilityDefinition =
+  | Readonly<{
+      name: 'affinity';
+      update: AffinityPluginUpdate;
+    }>
+  | Readonly<{
+      api: DebugApi;
+      name: 'debug';
+    }>
+  | Readonly<{
+      api: DomApi;
+      name: 'dom';
+      update: DomPluginUpdate;
+    }>
+  | Readonly<{
+      api: ElementStateApi;
+      name: 'elementState';
+    }>
+  | Readonly<{
+      name: 'history';
+      read: HistoryStateApi;
+      update: HistoryTxApi;
+    }>
+  | Readonly<{
+      api: HtmlApi;
+      name: 'html';
+    }>
+  | Readonly<{ name: 'inputRules' }>
+  | Readonly<{
+      name: 'override';
+      update: OverridePluginUpdate;
+    }>
+  | Readonly<{ name: 'paragraph' }>;
+
+export type CoreEditorApi<V extends Value = Value> = Readonly<{
+  debug: DebugApi;
+  dom: DomApi;
+  elementState: ElementStateApi;
+  html: HtmlApi<V>;
+}>;
+
+export type CoreEditorRead = Readonly<{
+  history: HistoryStateApi;
+}>;
+
+export type CoreEditorTransaction = Readonly<{
+  affinity: AffinityPluginUpdate;
+  dom: DomPluginUpdate;
+  history: HistoryStateApi & HistoryTxApi;
+  override: OverridePluginUpdate;
+}>;
+
+export type CoreEditorUpdate = Readonly<{
+  affinity: AffinityPluginUpdate;
+  dom: DomPluginUpdate;
+  history: HistoryTxApi;
+  override: OverridePluginUpdate;
+}>;

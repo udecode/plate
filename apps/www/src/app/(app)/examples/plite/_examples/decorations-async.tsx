@@ -1,19 +1,19 @@
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import {
   type Ancestor,
   type Descendant,
   NodeApi,
   type Path,
   type Range,
-} from '@platejs/plite';
+} from 'plitejs';
 import {
   Editable,
   type EditableDecorate,
   Plite,
   type PliteDecoration,
   usePliteDecorationSource,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { replaceQueryOptions } from './query-controls';
@@ -72,7 +72,7 @@ const AsyncDecorationsExample = () => {
       .withDefault('prop')
       .withOptions(replaceQueryOptions)
   );
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'paragraph',

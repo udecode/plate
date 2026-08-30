@@ -33,10 +33,10 @@ docs:
 将套件添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { DateKit } from '@/components/editor/date';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...DateKit,
@@ -53,7 +53,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/date
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -61,10 +61,10 @@ npm install @platejs/date
 在创建编辑器时将 `DatePlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { DatePlugin } from '@platejs/date/react';
-import { createPlateEditor } from 'platejs/react';
+import { DatePlugin } from 'platejs/date/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     DatePlugin,
@@ -77,11 +77,11 @@ const editor = createPlateEditor({
 使用自定义组件配置插件来渲染日期元素。
 
 ```tsx
-import { DatePlugin } from '@platejs/date/react';
-import { createPlateEditor } from 'platejs/react';
+import { DatePlugin } from 'platejs/date/react';
+import { createEditor } from 'platejs/react';
 import { DateElement } from '@/components/editor/date';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     DatePlugin.configure({ component: DateElement }),

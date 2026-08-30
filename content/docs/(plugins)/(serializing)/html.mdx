@@ -24,11 +24,11 @@ The fastest way to enable HTML serialization is with the `BaseEditorKit`, which 
 ### Add Kit
 
 ```tsx
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: BaseEditorKit,
   initialValue: [
     { type: 'heading', level: 1, children: [{ text: 'Hello World' }] },
@@ -55,9 +55,9 @@ Convert Plate editor content (Plate nodes) into an HTML string. This is often do
 [View Server-Side Example](/docs/examples/plate-to-html)
 
 <Callout type="warning" title="Key Server-Side Constraint">
-  When using `renderStaticHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `@platejs/basic-nodes` instead of `@platejs/basic-nodes/react`).
+  When using `renderStaticHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `platejs` instead of `platejs/react`).
 
-  This means you should use `createBaseEditor` from `platejs` for server-side editor instances, not `usePlateEditor` or `createPlateEditor` from `platejs/react`.
+  This means you should use `createEditor` from `platejs` for server-side editor instances, not `useCreateEditor` or `createEditor` from `platejs/react`.
 </Callout>
 
 <Steps>
@@ -67,7 +67,7 @@ Convert Plate editor content (Plate nodes) into an HTML string. This is often do
 Provide a server-side editor instance and configure your Plate components during editor creation.
 
 ```tsx title="lib/generate-html.ts"
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // Static import
 // Import a server-safe registry kit (NOT from /react package paths)
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
@@ -85,7 +85,7 @@ const components = {
 };
 
 // Create a server-side editor instance with components
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: [
     ...BaseBasicBlocksKit, // Paragraph, headings, blockquote, and horizontal rule
     // ... add all other base plugins relevant to your content
@@ -185,13 +185,13 @@ matching codecs.
 Call the root HTML API from a client-side Plate editor.
 
 ```tsx title="components/my-html-importer.tsx"
-import { usePlateEditor } from 'platejs/react';
+import { useCreateEditor } from 'platejs/react';
 // Import ALL Plate plugins needed to represent the HTML content
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... and so on for bold, italic, tables, lists, etc.
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       ...BasicBlocksKit, // Paragraph, headings, blockquote, and horizontal rule
       // ... include all plugins corresponding to the HTML you expect to parse
@@ -352,8 +352,8 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
 
 <API name="renderStaticHtml">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    A server-side Plate editor instance, created via `createBaseEditor` with components configured.
+  <APIItem name="editor" type="Editor">
+    A server-side Plate editor instance, created via `createEditor` with components configured.
   </APIItem>
   <APIItem name="options" type="RenderStaticHtmlOptions" optional>
     Static React rendering options.

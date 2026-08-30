@@ -61,7 +61,7 @@ infrastructure instead of piling more folklore into the app kits.
 - Current app kits still encode the real shipped rule ordering and several
   product decisions in:
   - [autoformat-kit.tsx](apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx)
-  - [autoformat-classic-kit.tsx](apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx)
+  - [autoformat.tsx](apps/www/src/registry/components/editor/plugins/autoformat.tsx)
 - The strongest current app-specific learning is still
   [blockquote-autoformat-must-wrap-nested-quotes.md](docs/solutions/ui-bugs/2026-04-02-blockquote-autoformat-must-wrap-nested-quotes.md):
   wrapper/container rules cannot be treated like flat block retags.
@@ -186,7 +186,7 @@ Primary files:
 
 - [packages/autoformat/src/lib/rules/\*\*](packages/autoformat/src/lib/rules)
 - [apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx](apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx)
-- [apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx](apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx)
+- [apps/www/src/registry/components/editor/plugins/autoformat.tsx](apps/www/src/registry/components/editor/plugins/autoformat.tsx)
 
 Deliverable:
 

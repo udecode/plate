@@ -42,12 +42,11 @@ Modern list rules supplied custom `apply` functions:
 That meant the shorthand marker range was never deleted unless the rule did it
 manually.
 
-`list-classic` already handled this correctly by deleting `match.range` inside
-its custom apply path. Modern list rules did not.
+The list rule did not delete `match.range` inside its custom apply path.
 
 ## Solution
 
-Make modern list rules mirror `list-classic`:
+Make list rules own marker cleanup:
 
 - use the block-start match payload, which already includes the marker range
 - delete `match.range` inside custom `apply`
@@ -86,8 +85,7 @@ editor should have done all along.
   - transformed structure
   - marker text removal
   - final selection
-- When `list-classic` and modern `list` disagree, inspect the cleanup path
-  before touching normalization or rendering.
+- Inspect marker cleanup before touching normalization or rendering.
 
 ## Verification
 

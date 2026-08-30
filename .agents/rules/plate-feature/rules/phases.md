@@ -16,10 +16,15 @@ accepted call sites and owner before implementation.
 
 ## 3. Manual Package Shell
 
-For a new package, inspect two current sibling packages and create only the
-needed `package.json`, TypeScript/build config, source entrypoints, tests, and
-workspace dependencies. Do not invoke or add a generator. Run install and
-manifest validation after dependency or package metadata changes.
+Editor features live in `platejs`; do not create another editor-facing package.
+Add a root feature module for standard behavior or an explicit
+`platejs/<feature>` and `platejs/<feature>/react` entrypoint for an optional or
+advanced runtime. Declare every direct entrypoint dependency in
+`tooling/entrypoints/entrypoint-dag.mjs`; only `packages/platejs` may declare or
+import `plitejs`. The only scoped package roots are `@platejs/cli` and
+`@platejs/test`, which peer on `platejs` with `workspace:^` as their local
+dev provider. Run install and `pnpm test:manifests` after dependency or package
+metadata changes.
 
 ## 4. Package Semantics
 
@@ -32,6 +37,11 @@ surface before React work.
 Load `plate-ui` with `plate-plugin-creator`. Add only durable package React
 adapters. Copied-product composition, handlers, layout, and opinionated state
 belong in registry source.
+
+When this phase changes source roots or entrypoints, update the exact
+`oxlint.config.ts` `no-restricted-imports` coverage. Headless roots stay free of
+React packages, React entrypoints, and React-owned source trees. Add only narrow
+React/test/proof exclusions; never ignore the whole package.
 
 ## 6. Registry UI
 

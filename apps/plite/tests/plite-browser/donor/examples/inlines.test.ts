@@ -5,7 +5,7 @@ import {
   createPliteBrowserInlineCutTypingGauntlet,
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const getBrowserWordBackwardDeleteCandidates = async (page: Page) =>
   page.evaluate(() =>

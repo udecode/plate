@@ -34,10 +34,16 @@ mock.module('@/components/ui/button', () => ({
   buttonVariants: () => '',
 }));
 
-mock.module('@/components/ui/popover', () => ({
-  Popover: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  PopoverAnchor: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  PopoverContent: ({ children }: React.PropsWithChildren) => <>{children}</>,
+mock.module('@/registry/components/editor/floating-popover', () => ({
+  FloatingPopover: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  FloatingPopoverAnchor: ({
+    element: anchorElement,
+  }: {
+    element: React.ReactNode;
+  }) => <>{anchorElement}</>,
+  FloatingPopoverContent: ({ children }: React.PropsWithChildren) => (
+    <>{children}</>
+  ),
 }));
 
 mock.module('@/components/ui/separator', () => ({

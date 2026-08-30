@@ -124,7 +124,7 @@ storybook-static/
 
 # Local
 **/.tmp/
-packages/plate/docs/
+packages/platejs/docs/
 # Local Netlify folder
 .netlify
 /test-results/

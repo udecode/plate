@@ -111,7 +111,6 @@ await fs.writeFile(
     'packages:',
     "  - 'projects/*'",
     "  - 'packages/*'",
-    "  - 'packages/udecode/*'",
     '',
   ].join('\n')
 );
@@ -137,75 +136,73 @@ await copyPackages(
   path.join(repoRoot, 'packages'),
   path.join(workspace, 'packages')
 );
-await copyPackages(
-  path.join(repoRoot, 'packages/udecode'),
-  path.join(workspace, 'packages/udecode')
-);
 
-const proxy = http.createServer(async (request, response) => {
-  try {
-    const requestUrl = new URL(request.url ?? '/', 'http://127.0.0.1');
-    const address = proxy.address();
+const proxy = http.createServer((request, response) => {
+  void (async () => {
+    try {
+      const requestUrl = new URL(request.url ?? '/', 'http://127.0.0.1');
+      const address = proxy.address();
 
-    if (!address || typeof address === 'string') {
-      throw new Error('Directory proxy has no TCP address');
-    }
+      if (!address || typeof address === 'string') {
+        throw new Error('Directory proxy has no TCP address');
+      }
 
-    const proxyOrigin = `http://127.0.0.1:${address.port}`;
+      const proxyOrigin = `http://127.0.0.1:${address.port}`;
 
-    if (requestUrl.pathname === '/r/registries.json') {
-      const upstream = await fetch(`${shadcnOrigin}/r/registries.json`);
-      const directory = (await upstream.json()) as Array<
-        Record<string, unknown> & { name?: string }
-      >;
-      const plate = directory.find((entry) => entry.name === '@plate') ?? {
-        name: '@plate',
-      };
+      if (requestUrl.pathname === '/r/registries.json') {
+        const upstream = await fetch(`${shadcnOrigin}/r/registries.json`);
+        const directory = (await upstream.json()) as Array<
+          Record<string, unknown> & { name?: string }
+        >;
+        const plate = directory.find((entry) => entry.name === '@plate') ?? {
+          name: '@plate',
+        };
 
-      plate.url = `${proxyOrigin}/plate/r/{style}/{name}.json`;
-      if (!directory.includes(plate)) directory.push(plate);
+        plate.url = `${proxyOrigin}/plate/r/{style}/{name}.json`;
+        if (!directory.includes(plate)) directory.push(plate);
 
-      response.writeHead(200, { 'content-type': 'application/json' });
-      response.end(JSON.stringify(directory));
-      return;
-    }
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(JSON.stringify(directory));
+        return;
+      }
 
-    const plateMatch = requestUrl.pathname.match(
-      /^\/plate\/r\/([^/]+)\/([^/]+)$/
-    );
+      const plateMatch = requestUrl.pathname.match(
+        /^\/plate\/r\/([^/]+)\/([^/]+)$/
+      );
 
-    if (plateMatch) {
-      const [, style, fileName] = plateMatch;
-      const platePath = `/r/${style}/${fileName}`;
-      const payload = await createRegistryResponse({
-        directory: 'r',
-        fileName,
-        origin: `${proxyOrigin}/plate`,
-        style,
+      if (plateMatch) {
+        const [, style, fileName] = plateMatch;
+        const platePath = `/r/${style}/${fileName}`;
+        const payload = await createRegistryResponse({
+          directory: 'r',
+          fileName,
+          origin: `${proxyOrigin}/plate`,
+          style,
+        });
+
+        plateRequests.push(platePath);
+        response.writeHead(payload ? 200 : 404, {
+          'content-type': payload ? 'application/json' : 'text/plain',
+        });
+        response.end(payload ? JSON.stringify(payload) : 'Not found');
+        return;
+      }
+
+      const upstream = await fetch(
+        `${shadcnOrigin}${requestUrl.pathname}${requestUrl.search}`
+      );
+      const body = Buffer.from(await upstream.arrayBuffer());
+
+      response.writeHead(upstream.status, {
+        'content-type':
+          upstream.headers.get('content-type') ?? 'application/octet-stream',
       });
-
-      plateRequests.push(platePath);
-      response.writeHead(payload ? 200 : 404, {
-        'content-type': payload ? 'application/json' : 'text/plain',
-      });
-      response.end(payload ? JSON.stringify(payload) : 'Not found');
-      return;
+      response.end(body);
+    } catch (error) {
+      response.writeHead(500, { 'content-type': 'text/plain' });
+      response.end(error instanceof Error ? error.stack : String(error));
     }
-
-    const upstream = await fetch(
-      `${shadcnOrigin}${requestUrl.pathname}${requestUrl.search}`
-    );
-    const body = Buffer.from(await upstream.arrayBuffer());
-
-    response.writeHead(upstream.status, {
-      'content-type':
-        upstream.headers.get('content-type') ?? 'application/octet-stream',
-    });
-    response.end(body);
-  } catch (error) {
-    response.writeHead(500, { 'content-type': 'text/plain' });
-    response.end(error instanceof Error ? error.stack : String(error));
-  }
+  })();
 });
 
 await new Promise<void>((resolve) => {
@@ -283,11 +280,11 @@ try {
     const packageJson = JSON.parse(
       await fs.readFile(path.join(project, 'package.json'), 'utf-8')
     ) as { dependencies?: Record<string, string> };
-    const plateDependency = packageJson.dependencies?.['@platejs/plite'];
+    const plateDependency = packageJson.dependencies?.platejs;
 
     if (!plateDependency?.startsWith('workspace:')) {
       throw new Error(
-        `${name} did not install the local @platejs/plite artifact: ${plateDependency}`
+        `${name} did not install the local platejs artifact: ${plateDependency}`
       );
     }
 

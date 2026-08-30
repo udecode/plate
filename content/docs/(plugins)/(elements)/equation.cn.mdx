@@ -42,10 +42,10 @@ docs:
 将套件添加到插件中:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { MathKit } from '@/components/editor/math';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...MathKit,
@@ -62,7 +62,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/math
+npm install platejs @tanstack/react-virtual katex
 ```
 
 ### 添加插件
@@ -70,11 +70,11 @@ npm install @platejs/math
 在创建编辑器时将公式插件包含到Plate插件数组中。
 
 ```tsx
-import { MathRules } from '@platejs/math';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
-import { createPlateEditor } from 'platejs/react';
+import { MathRules } from 'platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     EquationPlugin,
@@ -88,12 +88,12 @@ const editor = createPlateEditor({
 使用自定义组件和 input rules 配置插件来渲染公式元素。
 
 ```tsx
-import { MathRules } from '@platejs/math';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
-import { createPlateEditor } from 'platejs/react';
+import { MathRules } from 'platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
+import { createEditor } from 'platejs/react';
 import { EquationElement, InlineEquationElement } from '@/components/editor/math';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     InlineEquationPlugin.configure({
@@ -173,7 +173,7 @@ const editor = createPlateEditor({
 ### `EquationElement`
 
 ```typescript
-import type { EquationElement } from '@platejs/math';
+import type { EquationElement } from 'platejs/math';
 ```
 
 `EquationElement` 是从块级和行内公式插件 schema 派生的联合类型。

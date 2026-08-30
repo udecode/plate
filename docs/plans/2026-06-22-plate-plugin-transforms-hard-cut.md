@@ -11,7 +11,7 @@ Completion threshold:
 
 Verification surface:
 - Source API owners: `packages/core/src/lib/plugin/**`, `packages/core/src/react/plugin/**`, `packages/core/src/lib/editor/**`, `packages/core/src/react/editor/**`.
-- Feature packages: `basic-nodes`, `list-classic`, `code-block`, `date`, `math`, `callout`, `media`, `mention`, `tag`, `docx-io`, `comment`, `footnote`, `ai`, `link`, `toggle`, `plate`.
+- Feature packages: `basic-nodes`, `legacy-list-model`, `code-block`, `date`, `math`, `callout`, `media`, `mention`, `tag`, `docx-io`, `comment`, `footnote`, `ai`, `link`, `toggle`, `plate`.
 - Public docs: `content/**` and package READMEs.
 - Package proof: Plite/core/feature package typecheck, build, and tests.
 
@@ -101,7 +101,7 @@ Proof matrix:
 | Plite tx context compiles | repo root | `pnpm --filter @platejs/plite build` | passes | complete |
 | Footnote/link regressions pass | repo root | `pnpm turbo test --filter=./packages/footnote --filter=./packages/link` | link 85 pass, footnote 25 pass | complete |
 | Docx API regression passes | repo root | `pnpm turbo test --filter=./packages/docx-io` | 93 pass | complete |
-| Feature package batch passes | repo root | `pnpm turbo test --filter=./packages/basic-nodes --filter=./packages/list-classic --filter=./packages/code-block --filter=./packages/date --filter=./packages/math --filter=./packages/callout --filter=./packages/media --filter=./packages/mention --filter=./packages/tag --filter=./packages/docx-io --filter=./packages/comment --filter=./packages/footnote --filter=./packages/ai --filter=./packages/link --filter=./packages/toggle --filter=./packages/plate` | 16 successful tasks | complete |
+| Feature package batch passes | repo root | `pnpm turbo test --filter=./packages/basic-nodes --filter=./packages/platejs/src/features/list --filter=./packages/code-block --filter=./packages/date --filter=./packages/math --filter=./packages/callout --filter=./packages/media --filter=./packages/mention --filter=./packages/tag --filter=./packages/docx-io --filter=./packages/comment --filter=./packages/footnote --filter=./packages/ai --filter=./packages/link --filter=./packages/toggle --filter=./packages/plate` | 16 successful tasks | complete |
 | Foundation packages pass | repo root | `pnpm turbo test --filter=./packages/plite --filter=./packages/core --filter=./packages/selection --filter=./packages/utils` | slate 1007 pass / 85 skip, core 951 pass, selection/utils pass | complete |
 | Public package facade builds | repo root | `pnpm --filter platejs build` | passes | complete |
 | Public docs compile | repo root | `pnpm --filter www check:docs` | passes | complete |

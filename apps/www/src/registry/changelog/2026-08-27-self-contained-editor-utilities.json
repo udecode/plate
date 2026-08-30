@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-27-self-contained-editor-utilities",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-27-self-contained-editor-utilities.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Install editor utilities from Plate and copied source",
+  "targets": [
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-command-score.ts",
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-on-click-outside",
+      "files": ["apps/www/src/registry/hooks/use-on-click-outside.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-27-column-plate-copied-helpers-editor-4a046de1",
+      "kind": "wiring",
+      "summary": "Install with `platejs` and copied helper source; `select-editor` includes its controlled command implementation.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "column",
+        "floating-toolbar",
+        "font-color-toolbar-button",
+        "link",
+        "media-preview-dialog",
+        "select-editor",
+        "use-on-click-outside"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-27",
+          "entry": "2026-08-27-self-contained-editor-utilities",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

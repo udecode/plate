@@ -6,13 +6,13 @@ description: "Type custom Plite values, elements, text nodes, and React editors 
 Plite types custom document models through editor value generics. Define the
 element and text shapes for your editor, create a `Value` from the element
 union, then pass that value to `createEditor<Value>()` or
-`usePliteEditor<Value>()` when React owns the editor lifetime.
+`useEditor<Value>()` when React owns the editor lifetime.
 
 ## Defining Element And Text Types
 
 ```typescript
-import { type ElementOf, type TextOf, type ValueOf } from "@platejs/plite";
-import { usePliteEditor, type ReactEditor } from "@platejs/plite-react";
+import { type ElementOf, type TextOf, type ValueOf } from "plitejs";
+import { useEditor, type Editor } from "plitejs/react";
 
 type CustomText = { text: string; bold?: true };
 
@@ -28,10 +28,10 @@ type HeadingElement = {
 };
 
 type CustomValue = (ParagraphElement | HeadingElement)[];
-type CustomEditor = ReactEditor<CustomValue>;
+type CustomEditor = Editor<CustomValue>;
 
 const useCustomEditor = () => {
-  const editor = usePliteEditor<CustomValue>();
+  const editor = useEditor<CustomValue>();
 
   type CustomElement = ElementOf<typeof editor>;
   type EditorText = TextOf<typeof editor>;
@@ -46,7 +46,7 @@ const useCustomEditor = () => {
 Annotate the editor's initial value with your value type.
 
 ```tsx
-import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+import { Editable, Plite, useEditor } from "plitejs/react";
 
 type CustomText = { text: string; bold?: true };
 type ParagraphElement = { type: "paragraph"; children: CustomText[] };
@@ -60,7 +60,7 @@ const initialValue: CustomValue = [
 ];
 
 const App = () => {
-  const editor = usePliteEditor<CustomValue>({ initialValue });
+  const editor = useEditor<CustomValue>({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -76,7 +76,7 @@ Use exported helper types to derive the document types from an editor instead
 of duplicating unions at every call site.
 
 ```typescript
-import type { ElementOf, TextOf, ValueOf } from "@platejs/plite";
+import type { ElementOf, TextOf, ValueOf } from "plitejs";
 
 type CustomElement = ElementOf<typeof editor>;
 type CustomText = TextOf<typeof editor>;
@@ -87,7 +87,7 @@ When reading a generic `Node`, narrow it before accessing element-specific
 properties.
 
 ```typescript
-import { ElementApi, type Node } from "@platejs/plite";
+import { ElementApi, type Node } from "plitejs";
 
 const isParagraph = (node: Node) =>
   ElementApi.isElement(node) && node.type === "paragraph";

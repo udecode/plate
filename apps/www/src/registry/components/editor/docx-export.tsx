@@ -1,13 +1,13 @@
-import { BaseHeadingPlugin } from '@platejs/basic-nodes';
-import { BaseCalloutPlugin } from '@platejs/callout';
 import {
+  BaseHeadingPlugin,
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-} from '@platejs/code-block';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
-import { BaseTocPlugin } from '@platejs/toc';
+} from 'platejs';
+import { BaseCalloutPlugin } from 'platejs/callout';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
+import { BaseTocPlugin } from 'platejs/toc';
 
 import { CalloutElementDocx } from '@/registry/components/editor/callout-static';
 import {

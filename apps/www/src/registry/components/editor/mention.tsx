@@ -1,7 +1,7 @@
 'use client';
 
-import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
 import { IS_APPLE } from 'platejs';
+import { MentionInputPlugin, MentionPlugin } from 'platejs/mention/react';
 import {
   type PlateElementProps,
   PlateElement,

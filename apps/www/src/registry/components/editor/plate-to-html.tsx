@@ -2,7 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import type { InitialValue } from 'platejs';
-import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
+import { Plate, useCreateEditor, useStaticEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,7 @@ export function HtmlIframe({
 }
 
 export function EditorClient({ value }: { value: InitialValue }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       ...PlateToHtmlClientSchemaKit,
       ...EditorKit,
@@ -101,7 +101,7 @@ export function EditorClient({ value }: { value: InitialValue }) {
 }
 
 export const EditorViewClient = ({ value }: { value: InitialValue }) => {
-  const editor = usePlateViewEditor({
+  const editor = useStaticEditor({
     plugins: PlateToHtmlEditorKit,
     initialValue: value,
   });

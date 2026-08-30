@@ -64,8 +64,8 @@ The mutable execution-state owner was moved to:
 ## Method
 
 1. Read live tranche-3 owner docs in `plate-2`.
-2. Inventory current `plite/packages/plite/test/**` and
-   `plite/packages/plite/src/**`.
+2. Inventory current `plite/packages/plitejs/test/**` and
+   `plite/packages/plitejs/src/**`.
 3. Compare against the draft-backed proof-owner list already named in
    `slate-legacy-draft-contract-corpus.md`.
 4. Classify missing items:
@@ -103,7 +103,7 @@ The corpus doc says tranche 3 keeps these proof-owner lanes alive:
 - package-local correctness/build/type/lint gates are green
 - the `#6038` benchmark lane exists and runs
 - the broad standalone oracle file
-  `packages/plite/test/snapshot-contract.ts`
+  `packages/plitejs/test/snapshot-contract.ts`
   is **not** part of the package-closeout proof by default and is currently red
   when run directly
 
@@ -124,7 +124,7 @@ The corpus doc says tranche 3 keeps these proof-owner lanes alive:
 ## Current Gates
 
 - targeted correctness:
-  - `cd Plate repo root && bun test ./packages/plite/test/text-units-contract.ts`
+  - `cd Plate repo root && bun test ./packages/plitejs/test/text-units-contract.ts`
 - package closeout gates:
   - `cd Plate repo root && bun test ./packages/plite/test`
   - `cd Plate repo root && bunx turbo build --filter=./packages/plite`
@@ -134,42 +134,42 @@ The corpus doc says tranche 3 keeps these proof-owner lanes alive:
 
 ## Latest Slice
 
-- landed `packages/plite/src/text-units.ts`
-- exported the seam from `packages/plite/src/index.ts`
-- landed `packages/plite/test/text-units-contract.ts`
-- landed `packages/plite/test/interfaces-contract.ts`
-- landed `packages/plite/test/transaction-contract.ts`
-- landed `packages/plite/test/headless-contract.ts`
-- landed `packages/plite/test/bookmark-contract.ts`
-- landed `packages/plite/test/normalization-contract.ts`
-- landed `packages/plite/test/transforms-contract.ts`
-- landed `packages/plite/test/extension-contract.ts`
-- landed `packages/plite/test/surface-contract.ts`
-- landed `packages/plite/test/clipboard-contract.ts`
-- landed `packages/plite/test/range-ref-contract.ts`
+- landed `packages/plitejs/src/text-units.ts`
+- exported the seam from `packages/plitejs/src/index.ts`
+- landed `packages/plitejs/test/text-units-contract.ts`
+- landed `packages/plitejs/test/interfaces-contract.ts`
+- landed `packages/plitejs/test/transaction-contract.ts`
+- landed `packages/plitejs/test/headless-contract.ts`
+- landed `packages/plitejs/test/bookmark-contract.ts`
+- landed `packages/plitejs/test/normalization-contract.ts`
+- landed `packages/plitejs/test/transforms-contract.ts`
+- landed `packages/plitejs/test/extension-contract.ts`
+- landed `packages/plitejs/test/surface-contract.ts`
+- landed `packages/plitejs/test/clipboard-contract.ts`
+- landed `packages/plitejs/test/range-ref-contract.ts`
 - landed `scripts/benchmarks/slate/6038-transaction-execution.mjs`
 - landed `package.json#bench:plite:6038:local`
-- fixed transaction rollback in `packages/plite/src/core/public-state.ts` so
+- fixed transaction rollback in `packages/plitejs/src/core/public-state.ts` so
   restored draft state keeps the pre-transaction runtime-id index
 - recovered missing static `Editor.getFragment(editor)` in
-  `packages/plite/src/interfaces/editor.ts`
+  `packages/plitejs/src/interfaces/editor.ts`
 - recovered bookmark surface:
-  - `packages/plite/src/interfaces/bookmark.ts`
-  - `packages/plite/src/editor/bookmark.ts`
+  - `packages/plitejs/src/interfaces/bookmark.ts`
+  - `packages/plitejs/src/editor/bookmark.ts`
   - `Editor.bookmark(...)`
   - root `Bookmark*` exports through `interfaces/index.ts`
 - verification:
-  - `bun test ./packages/plite/test/text-units-contract.ts`
-  - `bun test ./packages/plite/test/interfaces-contract.ts`
-  - `bun test ./packages/plite/test/transaction-contract.ts`
-  - `bun test ./packages/plite/test/headless-contract.ts`
-  - `bun test ./packages/plite/test/bookmark-contract.ts`
-  - `bun test ./packages/plite/test/normalization-contract.ts`
-  - `bun test ./packages/plite/test/transforms-contract.ts`
-  - `bun test ./packages/plite/test/extension-contract.ts`
-  - `bun test ./packages/plite/test/surface-contract.ts`
-  - `bun test ./packages/plite/test/clipboard-contract.ts`
-  - `bun test ./packages/plite/test/range-ref-contract.ts`
+  - `bun test ./packages/plitejs/test/text-units-contract.ts`
+  - `bun test ./packages/plitejs/test/interfaces-contract.ts`
+  - `bun test ./packages/plitejs/test/transaction-contract.ts`
+  - `bun test ./packages/plitejs/test/headless-contract.ts`
+  - `bun test ./packages/plitejs/test/bookmark-contract.ts`
+  - `bun test ./packages/plitejs/test/normalization-contract.ts`
+  - `bun test ./packages/plitejs/test/transforms-contract.ts`
+  - `bun test ./packages/plitejs/test/extension-contract.ts`
+  - `bun test ./packages/plitejs/test/surface-contract.ts`
+  - `bun test ./packages/plitejs/test/clipboard-contract.ts`
+  - `bun test ./packages/plitejs/test/range-ref-contract.ts`
   - `bun test ./packages/plite/test`
   - `bunx turbo build --filter=./packages/plite`
   - `bunx turbo typecheck --filter=./packages/plite`

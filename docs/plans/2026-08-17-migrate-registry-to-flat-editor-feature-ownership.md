@@ -327,9 +327,9 @@ Semantic naming closure:
   TypeScript, 142-module runtime import smoke, Excalidraw/browser bundling,
   docs parity, editor generation, changelog, scoped lint, and Browser fixture
   interaction pass.
-- The explicit Classic follow-up merged `list-classic-node.tsx` into
-  `list-classic.tsx`, removed the obsolete item, and cut the hidden reverse
-  dependency from `list-classic` to `autoformat-classic`. Editor metadata now
+- The explicit Classic follow-up merged `block-list.tsx` into
+  `legacy-list-model.tsx`, removed the obsolete item, and cut the hidden reverse
+  dependency from `legacy-list-model` to `autoformat`. Editor metadata now
   has 70 items, zero `*-node` items/files, and zero mixed live/static items.
 
 Final handoff prepared:

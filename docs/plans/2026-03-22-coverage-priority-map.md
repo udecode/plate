@@ -64,7 +64,7 @@ Best next package.
   - [registry.ts](packages/yjs/src/lib/providers/registry.ts)
   - [hocuspocus-provider.ts](packages/yjs/src/lib/providers/hocuspocus-provider.ts)
 
-### 2. `list-classic`
+### 2. `legacy-list-model`
 
 Best next move if you want to stay closest to the existing testing plan.
 
@@ -73,11 +73,11 @@ Best next move if you want to stay closest to the existing testing plan.
   - transform and query seams are badly under-covered
   - real editor behavior, not vanity coverage
 - Start here:
-  - [getHighestEmptyList.ts](packages/list-classic/src/lib/queries/getHighestEmptyList.ts)
-  - [getTodoListItemEntry.ts](packages/list-classic/src/lib/queries/getTodoListItemEntry.ts)
-  - [moveListSiblingsAfterCursor.ts](packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.ts)
-  - [withDeleteFragmentList.ts](packages/list-classic/src/lib/withDeleteFragmentList.ts)
-  - [withInsertBreakList.ts](packages/list-classic/src/lib/withInsertBreakList.ts)
+  - [getHighestEmptyList.ts](packages/platejs/src/features/list/src/lib/queries/getHighestEmptyList.ts)
+  - [getTodoListItemEntry.ts](packages/platejs/src/features/list/src/lib/queries/getTodoListItemEntry.ts)
+  - [moveListSiblingsAfterCursor.ts](packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.ts)
+  - [withDeleteFragmentList.ts](packages/platejs/src/features/list/src/lib/withDeleteFragmentList.ts)
+  - [withInsertBreakList.ts](packages/platejs/src/features/list/src/lib/withInsertBreakList.ts)
 
 ### 3. `docx`
 
@@ -191,7 +191,7 @@ One sharp little slice, not a whole campaign.
   - not zero debt, just not urgent
 - `emoji` and `code-drawing`
   - the raw matrix scores them high because they are zero-covered deterministic code
-  - I still would not spend the next cycle there before `yjs`, `list-classic`, `docx`, `suggestion`, or `ai`
+  - I still would not spend the next cycle there before `yjs`, `legacy-list-model`, `docx`, `suggestion`, or `ai`
 
 ## Artifacts
 

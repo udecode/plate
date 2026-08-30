@@ -1,7 +1,7 @@
 'use client';
 
-import { IndentPlugin } from '@platejs/indent/react';
 import { PLUGINS } from 'platejs';
+import { IndentPlugin } from 'platejs/react';
 
 export const IndentKit = [
   IndentPlugin.configure({
@@ -13,7 +13,7 @@ export const IndentKit = [
       PLUGINS.paragraph,
       PLUGINS.blockquote,
       PLUGINS.codeBlock,
-      PLUGINS.toggle,
+      PLUGINS.details,
       PLUGINS.image,
     ],
   }),

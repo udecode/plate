@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { CopilotKit } from '@/registry/components/editor/copilot';
@@ -9,7 +9,7 @@ import { EditorKit } from '@/registry/components/editor/plugins';
 import { copilotValue } from '@/registry/examples/values/copilot-value';
 
 export default function CopilotDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [...EditorKit, ...CopilotKit],
     initialValue: copilotValue,
   });

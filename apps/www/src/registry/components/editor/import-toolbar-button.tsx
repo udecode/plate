@@ -1,9 +1,9 @@
 'use client';
 
-import { DocxImportPlugin } from '@platejs/docx-import';
-import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { HtmlPlugin } from 'platejs';
+import { DocxImportPlugin } from 'platejs/docx';
+import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor } from 'platejs/react';
 import { getEditorDOMFromHtmlString } from 'platejs/static';
 import * as React from 'react';

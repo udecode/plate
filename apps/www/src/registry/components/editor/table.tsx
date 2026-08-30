@@ -1,13 +1,5 @@
 'use client';
 
-import { useDraggable, useDropLine } from '@platejs/dnd';
-import { resizeLengthClampStatic } from '@platejs/resizable';
-import {
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-  useTableSelectionDOM,
-} from '@platejs/table/react';
 import {
   type LucideProps,
   ArrowDown,
@@ -24,6 +16,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import { type Path, PathApi } from 'platejs';
+import { useDraggable, useDropLine } from 'platejs/dnd/react';
 import {
   type PlateElementProps,
   PlateElement,
@@ -38,6 +31,13 @@ import {
   usePluginStore,
   useElementSelector,
 } from 'platejs/react';
+import { resizeLengthClampStatic } from 'platejs/resizable/react';
+import {
+  TableCellPlugin,
+  TablePlugin,
+  TableRowPlugin,
+  useTableSelectionDOM,
+} from 'platejs/table/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';

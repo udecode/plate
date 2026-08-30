@@ -1,11 +1,11 @@
 'use client';
 
-import type { PlateElementProps } from 'platejs/react';
 import {
+  type PlateElementProps,
   definePlatePlugin,
   Plate,
   PlateElement,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -26,7 +26,7 @@ export function EditableVoidElement({
 }: PlateElementProps<typeof EditableVoidPlugin>) {
   const [inputValue, setInputValue] = React.useState('');
 
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: EditorKit,
   });
 
@@ -84,7 +84,7 @@ export function EditableVoidElement({
 }
 
 export default function EditableVoidsDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       ...EditorKit,
       EditableVoidPlugin.configure({ component: EditableVoidElement }),

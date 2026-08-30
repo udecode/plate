@@ -90,11 +90,11 @@ test('reports the exact integrity invalidation path and event', () => {
     formatIntegrityFailureDetails(
       {
         eventType: 'update',
-        path: '/repo/packages/core/src/internal/plugin/resolvePlugin.ts',
+        path: '/repo/packages/platejs/src/internal/plugin/resolvePlugin.ts',
       },
       '/repo'
     ),
-    ': packages/core/src/internal/plugin/resolvePlugin.ts (update)'
+    ': packages/platejs/src/internal/plugin/resolvePlugin.ts (update)'
   );
   assert.equal(
     formatIntegrityFailureDetails({ path: '/repo' }, '/repo'),
@@ -1197,6 +1197,10 @@ test('fans CI proof into independent project jobs with one build owner', () => {
     path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
     'utf-8'
   );
+  const packageWorkflow = fs.readFileSync(
+    path.resolve(appRoot, '../../.github/workflows/ci.yml'),
+    'utf-8'
+  );
   const { dependencies } = JSON.parse(
     fs.readFileSync(path.join(appRoot, 'package.json'), 'utf-8')
   );
@@ -1225,7 +1229,10 @@ test('fans CI proof into independent project jobs with one build owner', () => {
   );
   assert.match(workflow, /Verify exact Chromium coverage/);
   assert.match(workflow, /Verify exact browser-matrix coverage/);
-  assert.match(workflow, /run: pnpm check:plite:contracts/);
+  assert.match(packageWorkflow, /pnpm plite:bench:targets:check/);
+  assert.match(packageWorkflow, /pnpm plite:public-types/);
+  assert.doesNotMatch(workflow, /pnpm plite:bench:targets:check/);
+  assert.doesNotMatch(workflow, /pnpm plite:public-types/);
   assert.doesNotMatch(workflow, /run: pnpm --filter plite test:runner/);
   assert.equal(
     workflow.match(

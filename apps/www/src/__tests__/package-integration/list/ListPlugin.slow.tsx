@@ -1,5 +1,16 @@
 /** @jsx jsxt */
 
+import { jsxt } from '@platejs/test';
+import {
+  BaseListPlugin,
+  BaseParagraphPlugin,
+  createEditor,
+  type BasePluginInput,
+  type Editor,
+} from 'platejs';
+import { DocxPastePlugin } from 'platejs/docx';
+import { JuicePlugin } from 'platejs/juice';
+import { ImagePlugin } from 'platejs/media/react';
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -10,23 +21,12 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
   HorizontalRulePlugin,
-} from '@platejs/basic-nodes/react';
-import { TextAlignPlugin, LineHeightPlugin } from '@platejs/basic-styles/react';
-import { DocxPastePlugin } from '@platejs/docx-paste';
-import { IndentPlugin } from '@platejs/indent/react';
-import { JuicePlugin } from '@platejs/juice';
-import { LinkPlugin } from '@platejs/link/react';
-import { ImagePlugin } from '@platejs/media/react';
-import { TablePlugin } from '@platejs/table/react';
-import { jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin } from 'platejs';
-
-import {
-  type BaseEditor,
-  createBaseEditor,
-  type BasePluginInput,
-} from '../../../../../../packages/core/src/lib/editor';
-import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseListPlugin';
+  TextAlignPlugin,
+  LineHeightPlugin,
+  IndentPlugin,
+  LinkPlugin,
+} from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 
 jsxt;
 
@@ -69,7 +69,7 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
     types: rtf ? ['text/html', 'text/rtf'] : ['text/html'],
   }) as any;
 
-const insertData = (editor: Pick<BaseEditor, 'api'>, data: DataTransfer) => {
+const insertData = (editor: Pick<Editor, 'api'>, data: DataTransfer) => {
   editor.api.dom.clipboard.insertData(data);
 };
 
@@ -82,7 +82,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         </hp>
       </editor>
     ) as any;
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: listTestPlugins,
       selection: e.selection,
       initialValue: e.children,
@@ -160,7 +160,7 @@ describe('when insertData with nested ul inside li', () => {
         </hp>
       </editor>
     ) as any;
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: listTestPlugins,
       selection: e.selection,
       initialValue: e.children,

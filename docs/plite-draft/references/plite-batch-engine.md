@@ -44,16 +44,16 @@ The exact-path `set_node` rewrite is now in the right architectural shape locall
 - `Editor.withBatch(editor, fn)` is the lifecycle boundary
 - `Transforms.applyBatch(editor, ops)` is the public batch entry point
 - `editor.apply(op)` stays the only plugin seam
-- `editor.children` is accessor-backed through `packages/plite/src/core/children.ts`
+- `editor.children` is accessor-backed through `packages/plitejs/src/core/children.ts`
 - exact-path batched `set_node` ops stage into a private draft and materialize immutable snapshots on read
 - generic batched tree ops write to a private draft root instead of committed children
 - `Transforms.applyBatch(...)` routes through ordinary `editor.apply(op)` wrappers and still keeps exact-path fast-path performance
 - public `setNodesBatch(...)` is deleted
 - the old `batch-safe apply` gate and `wrapExactSetNodeBatch(...)` bridge are deleted
-- `packages/plite/src/core/apply.ts` is back to being a thin dispatch layer:
-  - `packages/plite/src/core/batching/planner.ts` owns batch segmentation rules
-  - `packages/plite/src/core/batching/executor.ts` owns batched execution and dirty-path strategies
-  - `packages/plite/src/core/batching/` is the namespace for batch-only internals, so reviewers do not have to infer which helpers are part of ordinary single-op apply
+- `packages/plitejs/src/core/apply.ts` is back to being a thin dispatch layer:
+  - `packages/plitejs/src/core/batching/planner.ts` owns batch segmentation rules
+  - `packages/plitejs/src/core/batching/executor.ts` owns batched execution and dirty-path strategies
+  - `packages/plitejs/src/core/batching/` is the namespace for batch-only internals, so reviewers do not have to infer which helpers are part of ordinary single-op apply
 - external `editor.children` reads during a batch now act as a real observation barrier:
   - the live draft is normalized in place
   - normalize-generated ops still flow through `editor.apply` wrappers
@@ -141,9 +141,9 @@ Current local Plite checkpoint in `Plate repo root`:
 - `Transforms.applyBatch(editor, ops)` exists
 - public `setNodesBatch(...)` is deleted
 - exact-path `set_node` batching lives behind `applyBatch(...)` and `Editor.withBatch(...)`
-- the batch executor is owned by `packages/plite/src/core/apply.ts`
-- draft storage and snapshot materialization live in `packages/plite/src/core/children.ts`
-- exact-set-node tree rewriting lives in `packages/plite/src/core/batching/exact-set-node-children.ts`
+- the batch executor is owned by `packages/plitejs/src/core/apply.ts`
+- draft storage and snapshot materialization live in `packages/plitejs/src/core/children.ts`
+- exact-set-node tree rewriting lives in `packages/plitejs/src/core/batching/exact-set-node-children.ts`
 - transparent `editor.apply` wrappers still see each op in order
 - previously published node refs stay immutable
 - the benchmark harness measures real wall time again and reports helper breakdowns separately
@@ -167,7 +167,7 @@ Current local Plite checkpoint in `Plate repo root`:
   - mixed-op triple coverage now exists as an 8-cell replay-oracle matrix plus a 32-cell observation matrix, and it finally includes insert+move structural triples instead of pretending set+move is the whole story
   - history now covers both `applyBatch(...)` and manual `withBatch(...)` across 8 declared manifest cells, plus the explicit merge/new-batch edge cases
 - the combined `withHistory + withReact` wrapper stack now runs through a 48-cell replay-oracle matrix with history assertions, instead of pretending the single-wrapper manifests prove composition
-- React-only batch coverage now lives in `packages/plite-react/test/chunking.spec.ts`:
+- React-only batch coverage now lives in `packages/plitejs/test/react/chunking.spec.ts`:
   - batched `move_node` replay equivalence is pinned for both `Transforms.applyBatch(...)` and manual `Editor.withBatch(...)`
   - the assertion is chunk-tree reconcile equivalence, not just final Plite children
   - that matters because `withReact` owns chunk-tree `movedNodeKeys`, which is a real seam separate from history
@@ -177,11 +177,11 @@ Current local Plite checkpoint in `Plate repo root`:
   - transparent and rewriting `editor.apply` wrappers
   - no observation, read-after-each observation, and persisted-ref observation where the scenario shape makes that meaningful
 - the matrix helper counts declared cells so the manifest is explicit
-- the declared manifest counts now live in one shared registry at `packages/plite/test/utils/batch-matrix-manifest.js`
+- the declared manifest counts now live in one shared registry at `packages/plitejs/test/utils/batch-matrix-manifest.js`
 - the matrix specs assert against that shared registry instead of scattering magic numbers inline
-- `packages/plite/test/batch-matrix-manifest.js` now scans the Plite, Plite History, and Plite React test trees for `assertBatchMatrixManifest(...)` calls and fails if the registry and helper usage drift
-- `packages/plite/test/perf/set-nodes-bench.js` now exports its benchmark registry and a required-lane list instead of hiding them behind CLI-only state
-- `packages/plite/test/perf-benchmark-manifest.js` now fails if a required perf lane disappears or if the benchmark prototype equivalence check stops matching replay
+- `packages/plitejs/test/batch-matrix-manifest.js` now scans the Plite, Plite History, and Plite React test trees for `assertBatchMatrixManifest(...)` calls and fails if the registry and helper usage drift
+- `packages/plitejs/test/perf/set-nodes-bench.js` now exports its benchmark registry and a required-lane list instead of hiding them behind CLI-only state
+- `packages/plitejs/test/perf-benchmark-manifest.js` now fails if a required perf lane disappears or if the benchmark prototype equivalence check stops matching replay
 - direct `editor.children = ...` inside `Editor.withBatch(...)` is now treated as a hard batch reset:
   - stale pre-assignment `editor.operations` are dropped
   - stale exact-set, insert, live-move, and live-insert-move batch bookkeeping is discarded
@@ -678,11 +678,11 @@ Goal:
 
 Implementation units:
 
-- `packages/plite/test/with-batch.js`
-- `packages/plite/test/apply-batch-exact-set-node.js`
-- `packages/plite-history/test/apply-batch-exact-set-node.js`
-- `packages/plite-react/test/apply-batch.spec.tsx`
-- `packages/plite/test/perf/set-nodes-bench.js`
+- `packages/plitejs/test/with-batch.js`
+- `packages/plitejs/test/apply-batch-exact-set-node.js`
+- `packages/plitejs/test/history/apply-batch-exact-set-node.js`
+- `packages/plitejs/test/react/apply-batch.spec.tsx`
+- `packages/plitejs/test/perf/set-nodes-bench.js`
 
 Tests to add first:
 
@@ -838,11 +838,11 @@ Goal:
 
 Implementation units:
 
-- `packages/plite/src/create-editor.ts`
-- `packages/plite/src/interfaces/editor.ts`
-- `packages/plite/src/utils/weak-maps.ts`
+- `packages/plitejs/src/create-editor.ts`
+- `packages/plitejs/src/interfaces/editor.ts`
+- `packages/plitejs/src/utils/weak-maps.ts`
 - new internal helper, likely:
-  - `packages/plite/src/core/children.ts`
+  - `packages/plitejs/src/core/children.ts`
 
 Design:
 
@@ -872,11 +872,11 @@ Goal:
 
 Implementation units:
 
-- `packages/plite/src/core/apply.ts`
-- `packages/plite/src/core/batch.ts`
-- `packages/plite/src/utils/weak-maps.ts`
-- `packages/plite/src/core/children.ts`
-- `packages/plite/src/core/batching/exact-set-node-children.ts`
+- `packages/plitejs/src/core/apply.ts`
+- `packages/plitejs/src/core/batch.ts`
+- `packages/plitejs/src/utils/weak-maps.ts`
+- `packages/plitejs/src/core/children.ts`
+- `packages/plitejs/src/core/batching/exact-set-node-children.ts`
 
 Design:
 
@@ -919,9 +919,9 @@ Goal:
 
 Implementation units:
 
-- `packages/plite/src/core/children.ts`
-- `packages/plite/src/core/batch.ts`
-- `packages/plite/src/core/apply.ts`
+- `packages/plitejs/src/core/children.ts`
+- `packages/plitejs/src/core/batch.ts`
+- `packages/plitejs/src/core/apply.ts`
 
 Design:
 
@@ -958,11 +958,11 @@ Goal:
 
 Implementation units:
 
-- `packages/plite/src/core/batch.ts`
-- `packages/plite/src/create-editor.ts`
-- `packages/plite-history/src/with-history.ts`
-- `packages/plite-dom/src/plugin/with-dom.ts`
-- `packages/plite-react/src/plugin/with-react.ts`
+- `packages/plitejs/src/core/batch.ts`
+- `packages/plitejs/src/create-editor.ts`
+- `packages/plitejs/src/history/with-history.ts`
+- `packages/plitejs/src/dom/plugin/with-dom.ts`
+- `packages/plitejs/src/react/plugin/with-react.ts`
 
 Delete or simplify:
 
@@ -997,12 +997,12 @@ Goal:
 
 Implementation units:
 
-- `packages/plite/src/core/children.ts`
-- `packages/plite/src/core/apply.ts`
-- `packages/plite/src/core/batch.ts`
-- `packages/plite/src/interfaces/transforms/general.ts`
-- tests in `packages/plite/test/with-batch.js`
-- tests in `packages/plite/test/apply-batch-generic-tree-ops.js`
+- `packages/plitejs/src/core/children.ts`
+- `packages/plitejs/src/core/apply.ts`
+- `packages/plitejs/src/core/batch.ts`
+- `packages/plitejs/src/interfaces/transforms/general.ts`
+- tests in `packages/plitejs/test/with-batch.js`
+- tests in `packages/plitejs/test/apply-batch-generic-tree-ops.js`
 
 Design:
 
@@ -1297,7 +1297,7 @@ If a new op family, wrapper mode, observation mode, or planner boundary is added
 
 Keep broad matrix coverage split by concern instead of growing one monster file.
 
-#### `packages/plite/test/with-batch.js`
+#### `packages/plitejs/test/with-batch.js`
 
 Keep explicit seam tests here:
 
@@ -1307,7 +1307,7 @@ Keep explicit seam tests here:
 - throw/deopt semantics
 - snapshot identity / immutability assertions
 
-#### `packages/plite/test/apply-batch-exact-set-node.js`
+#### `packages/plitejs/test/apply-batch-exact-set-node.js`
 
 This becomes the exhaustive family matrix for exact `set_node`.
 
@@ -1319,7 +1319,7 @@ Required generator dimensions:
 - plain vs rewriting wrapper
 - `applyBatch` vs manual `withBatch`
 
-#### `packages/plite/test/apply-batch-generic-tree-ops.js`
+#### `packages/plitejs/test/apply-batch-generic-tree-ops.js`
 
 This owns the exhaustive family matrices for:
 
@@ -1331,7 +1331,7 @@ This owns the exhaustive family matrices for:
 
 And the pairwise mixed-tree matrix.
 
-#### `packages/plite/test/apply-batch-generic-ops.js`
+#### `packages/plitejs/test/apply-batch-generic-ops.js`
 
 This owns non-tree and cross-domain mixes:
 
@@ -1343,7 +1343,7 @@ This owns non-tree and cross-domain mixes:
 - selection + tree
 - text + selection + tree
 
-#### `packages/plite-history/test/apply-batch-exact-set-node.js`
+#### `packages/plitejs/test/history/apply-batch-exact-set-node.js`
 
 History matrix, not just spot checks.
 
@@ -1356,7 +1356,7 @@ Required axes:
 - `withNewBatch(...)` split case
 - throw case leaves undo stack sane
 
-#### `packages/plite-react/test/chunking.spec.ts`
+#### `packages/plitejs/test/react/chunking.spec.ts`
 
 React-specific batch coverage, not just one smoke test.
 
@@ -1372,13 +1372,13 @@ If DOM bookkeeping still has unique risk after that, add a dedicated DOM regress
 
 ### Perf coverage
 
-`packages/plite/test/perf/set-nodes-bench.js` remains the source of truth.
+`packages/plitejs/test/perf/set-nodes-bench.js` remains the source of truth.
 
 The perf lane registry is explicit now:
 
-- benchmark ids live in `packages/plite/test/perf/set-nodes-bench.js`
+- benchmark ids live in `packages/plitejs/test/perf/set-nodes-bench.js`
 - required ids live in `REQUIRED_BENCHMARK_IDS`
-- `packages/plite/test/perf-benchmark-manifest.js` fails if a required lane disappears
+- `packages/plitejs/test/perf-benchmark-manifest.js` fails if a required lane disappears
 - the benchmark prototype equivalence check is part of that perf-manifest test, not just an ad hoc CLI preflight
 
 Add or preserve lanes for:
@@ -1435,32 +1435,32 @@ Completion rule:
 
 Primary implementation files:
 
-- `/Users/zbeyens/git/plite/packages/plite/src/create-editor.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/interfaces/editor.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/utils/weak-maps.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/core/batch.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/core/apply.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/interfaces/transforms/general.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/core/children.ts`
-- `/Users/zbeyens/git/plite/packages/plite/src/core/batching/exact-set-node-children.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/create-editor.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/interfaces/editor.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/utils/weak-maps.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/core/batch.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/core/apply.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/interfaces/transforms/general.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/core/children.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/src/core/batching/exact-set-node-children.ts`
 
 Primary tests:
 
-- `/Users/zbeyens/git/plite/packages/plite/test/with-batch.js`
-- `/Users/zbeyens/git/plite/packages/plite/test/apply-batch-exact-set-node.js`
-- `/Users/zbeyens/git/plite/packages/plite/test/apply-batch-generic-tree-ops.js`
-- `/Users/zbeyens/git/plite/packages/plite/test/apply-batch-generic-ops.js`
-- `/Users/zbeyens/git/plite/packages/plite/test/children-accessor.js`
-- `/Users/zbeyens/git/plite/packages/plite-history/test/apply-batch-exact-set-node.js`
-- `/Users/zbeyens/git/plite/packages/plite-react/test/chunking.spec.ts`
-- `/Users/zbeyens/git/plite/packages/plite/test/perf/set-nodes-bench.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/with-batch.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/apply-batch-exact-set-node.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/apply-batch-generic-tree-ops.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/apply-batch-generic-ops.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/children-accessor.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/history/apply-batch-exact-set-node.js`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/react/chunking.spec.ts`
+- `/Users/zbeyens/git/plite/packages/plitejs/test/perf/set-nodes-bench.js`
 
 ## Verification plan
 
 - targeted unit tests in `packages/plite`
 - targeted history safety spot-checks
 - package build and typecheck for touched Plite packages
-- focused perf runs with `packages/plite/test/perf/set-nodes-bench.js`
+- focused perf runs with `packages/plitejs/test/perf/set-nodes-bench.js`
 - manual sanity check with `site/examples/ts/huge-document.tsx`
 
 ## Risks

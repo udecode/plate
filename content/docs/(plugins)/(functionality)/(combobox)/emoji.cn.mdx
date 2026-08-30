@@ -36,10 +36,10 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { EmojiKit } from '@/components/editor/emoji';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...EmojiKit,
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/emoji @emoji-mart/data
+npm install platejs @emoji-mart/data @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -65,9 +65,9 @@ npm install @platejs/emoji @emoji-mart/data
 
 ```tsx
 import { emojiPlugin } from '@/components/editor/emoji';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     emojiPlugin,
@@ -80,14 +80,14 @@ const editor = createPlateEditor({
 需要替换依赖的组件或配置时，把完整的 `EmojiInputPlugin` 描述符加入同一数组。
 
 ```tsx
-import { EmojiInputPlugin } from '@platejs/emoji/react';
-import { createPlateEditor } from 'platejs/react';
+import { EmojiInputPlugin } from 'platejs/emoji/react';
+import { createEditor } from 'platejs/react';
 import {
   EmojiInputElement,
   emojiPlugin,
 } from '@/components/editor/emoji';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     emojiPlugin.configure({

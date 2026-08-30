@@ -72,7 +72,7 @@ Raw package order from the fresh scoring:
 6. `link` — package score `40`, top files `triggerFloatingLinkInsert.ts:10; triggerFloatingLinkEdit.ts:9; triggerFloatingLink.ts:9; useFloatingLinkInsert.ts:6; submitFloatingLink.ts:6`
 7. `media` — package score `37`, top files `history.ts:9; usePlaceholderPopover.ts:8; usePlaceholderElement.ts:7; getMediaType.ts:7; insertMedia.ts:6`
 8. `list` — package score `36`, top files `useListToolbarButton.ts:8; useTodoListElement.ts:8; useTodoListToolbarButton.ts:8; toggleList.ts:6; getSiblingList.ts:6`
-9. `list-classic` — package score `34`, top files `useTodoListElement.ts:8; useListToolbarButton.ts:8; moveListItemSublistItemsToListItemSublist.ts:6; getHighestEmptyList.ts:6; moveListItemDown.ts:6`
+9. `legacy-list-model` — package score `34`, top files `useTodoListElement.ts:8; useListToolbarButton.ts:8; moveListItemSublistItemsToListItemSublist.ts:6; getHighestEmptyList.ts:6; moveListItemDown.ts:6`
 10. `table` — package score `34`, top files `useTableMergeState.ts:9; useCellIndices.ts:7; getTableCellBorders.ts:6; deleteRow.ts:6; deleteRowWhenExpanded.ts:6`
 
 Actual execution order is a bit stricter than the raw package table:
@@ -83,7 +83,7 @@ Actual execution order is a bit stricter than the raw package table:
 4. `toggle`
 5. `table`, `media`, `combobox`
 6. `toc`, `emoji`
-7. `cursor`, `math`, `list`, `list-classic`, `callout`, `excalidraw`
+7. `cursor`, `math`, `list`, `legacy-list-model`, `callout`, `excalidraw`
 
 Reason: raw package totals overrate some hook clusters. The file queue is the real source of truth.
 

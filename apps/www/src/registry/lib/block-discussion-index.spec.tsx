@@ -2,24 +2,24 @@
 
 import { describe, expect, it } from 'bun:test';
 
-import { BaseCommentPlugin } from '@platejs/comment';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
+import { jsxt, type TestEditorFixture } from '@platejs/test';
 import {
   PLUGINS,
-  type BaseEditor,
+  type Editor,
   type Element,
   type Node,
   type NodeEntry,
   type NodeKey,
   type Text,
-  createBaseEditor,
+  createEditor,
   defineBasePlugin,
   ElementApi,
   property,
   schema,
 } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import { BaseCommentPlugin } from 'platejs/comment';
+import { BaseDatePlugin } from 'platejs/date';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
 
 import {
   BLOCK_SUGGESTION_TOKEN,
@@ -104,7 +104,8 @@ const ParagraphPlugin = defineBasePlugin('p', {
   schema: { element: schema.element.textBlock() },
 });
 
-const getResolvedSuggestions = (editor: BaseEditor) => {
+const getResolvedSuggestions = (editor: Editor) => {
+  const date = editor.plugin(BaseDatePlugin);
   const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
 
   return (
@@ -117,7 +118,7 @@ const getResolvedSuggestions = (editor: BaseEditor) => {
       getSuggestionId: (node) => suggestionApi.id(node),
       getSuggestionKey: (id) => suggestionApi.key(id),
       isBlockSuggestion: (node) => suggestionApi.isBlockSuggestion(node),
-      isDate: (node) => node.type === PLUGINS.date,
+      isDate: (node) => date.installed && node.type === date.schema.type,
       isInlineEquation: (node) => {
         const inlineEquation = editor.plugin(InlineEquationPlugin);
 
@@ -130,14 +131,19 @@ const getResolvedSuggestions = (editor: BaseEditor) => {
 };
 
 describe('shouldRefreshBlockDiscussionIndex', () => {
-  const createEditor = (text: Text) =>
-    createBaseEditor({
-      plugins: [BaseCommentPlugin, BaseSuggestionPlugin, ParagraphPlugin],
+  const createTestEditor = (text: Text) =>
+    createEditor({
+      plugins: [
+        BaseCommentPlugin,
+        BaseDatePlugin,
+        BaseSuggestionPlugin,
+        ParagraphPlugin,
+      ],
       initialValue: [{ type: 'p', children: [text] }],
-    }) as unknown as PlateEditor;
+    });
 
   it('ignores plain text typing', () => {
-    const editor = createEditor({ text: 'body' });
+    const editor = createTestEditor({ text: 'body' });
 
     editor.update.text.insert('!', { at: { path: [0, 0], offset: 4 } });
 
@@ -147,7 +153,7 @@ describe('shouldRefreshBlockDiscussionIndex', () => {
   });
 
   it('refreshes text typing inside a suggestion', () => {
-    const editor = createEditor({
+    const editor = createTestEditor({
       suggestion: true,
       suggestion_1: suggestionData,
       text: 'body',
@@ -438,7 +444,7 @@ describe('buildBlockDiscussionIndex', () => {
     ({ createValue, expectedText, plugins }) => {
       const input = createValue() as TestEditorFixture;
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
             initialState: { currentUserId: 'u1' },

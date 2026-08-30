@@ -58,7 +58,6 @@ const REMOVED_FAMILY_ITEM_NAMES = new Set([
   'hr-node',
   'kbd-node',
   'link-node',
-  'list-classic-node',
   'media-audio-node',
   'media-embed-node',
   'media-file-node',

@@ -40,7 +40,7 @@ Do this in order:
 3. one-file surgical seams:
    - `toggle/someToggle.ts`
    - `suggestion/findSuggestionNode.ts`
-4. only then reopen recent packages like `autoformat`, `markdown`, `list`, or `list-classic`
+4. only then reopen recent packages like `autoformat`, `markdown`, `list`, or `legacy-list-model`
 
 Why:
 
@@ -74,7 +74,7 @@ Why:
 6. `markdown`
 7. `media`
 8. `list`
-9. `list-classic`
+9. `legacy-list-model`
 10. `code-drawing`
 
 ## Raw Package Totals Caveat
@@ -85,7 +85,7 @@ Raw package totals still overstate:
 - `autoformat`
 - `list`
 - `slate`
-- `list-classic`
+- `legacy-list-model`
 
 That is because what remains there is mostly revisit work, already-swept crumbs, or DOM-ish dust. Use the sorted recommendations above, not raw totals alone.
 

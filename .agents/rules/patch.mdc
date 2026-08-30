@@ -68,11 +68,10 @@ Use `task` for every unrelated skill, generator, or repository-tooling change.
 - Implementation: the caller-provided current Plate checkout. Do not switch
   branches; coordinators own integration-target decisions such as Slate work on
   `next`.
-- Plite substrate owners: `packages/plite`, `packages/plite-dom`,
-  `packages/plite-react`, `packages/plite-history`, `packages/yjs`, and
-  `packages/browser`.
-- Plate product owners: the owning Plate core/plugin/component package and its
-  canonical example or registry source under `apps/www`.
+- Plite substrate owners: the relevant entrypoint under `packages/plitejs` and
+  the proof harness under `packages/test`.
+- Plate product owners: the relevant entrypoint under `packages/platejs` and
+  its canonical example or registry source under `apps/www`.
 - Plite Browser proof: `apps/plite`, importing Plite examples from `apps/www`.
 - Plate Browser proof: the affected `apps/www` route; prefer
   `/blocks/[id]-demo` for registry components when it exists.
@@ -305,11 +304,9 @@ complexity for a relative benchmark or isolated hardening claim.
 Run focused proof first. Choose the lane; do not run both packs by habit.
 
 ```bash
-# Plite package examples; choose only affected owners
-pnpm --filter @platejs/plite test
-pnpm --filter @platejs/plite-dom test
-pnpm --filter @platejs/plite-react test
-pnpm --filter @platejs/plite-react typecheck
+# Plite package examples; choose only affected entrypoints
+pnpm --filter plitejs test
+pnpm --filter plitejs typecheck
 
 # Focused browser row
 pnpm --filter plite test:plite-browser:chromium <file-or--grep>

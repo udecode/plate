@@ -1,15 +1,17 @@
 'use client';
 
-import type { Alignment } from '@platejs/basic-styles';
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
   AlignLeftIcon,
   AlignRightIcon,
 } from 'lucide-react';
-import { ElementApi } from 'platejs';
-import { useEditor, useSelectionFragmentProp } from 'platejs/react';
+import { type Alignment, ElementApi } from 'platejs';
+import {
+  TextAlignPlugin,
+  useEditor,
+  useSelectionFragmentProp,
+} from 'platejs/react';
 import * as React from 'react';
 
 import {

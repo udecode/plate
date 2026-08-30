@@ -94,7 +94,7 @@ element owner uses `ElementOf<typeof FinalPlugin>`. A property capability uses
 `ElementWith<typeof Plugin, RequiredLocalIds>` or `TextWith`; aliases, prefixes,
 defaults, and value domains stay descriptor-derived. An algorithm that accepts
 malformed or open-world input uses broad `Element` / `Text` and narrows every
-consumed property at runtime. Fix remaining declaration recursion in Core or at
+consumed property at runtime. Fix remaining declaration recursion in Plate foundation or at
 the declaration boundary.
 
 A generic plugin factory constrained to a required element or mark schema must
@@ -105,13 +105,13 @@ assert, guard, cast, or copy the identity in the package.
 A factory bound to a plugin may infer the exact installed-plugin editor inside
 its author callback. Its public factory and emitted value must still project to
 the smallest portable public type. If declaration emit names
-`InternalBaseEditorWithInstalledPlugins`, repair the Core return boundary.
-Never publish a package-local `BaseEditor<typeof Plugin>` alias, reconstructed
+`InternalBaseEditorWithInstalledPlugins`, repair the Plate foundation return boundary.
+Never publish a package-local `Editor<typeof Plugin>` alias, reconstructed
 factory options/rule interface, annotation, or cast to hide that leak.
 
 TS7056 never earns a package-local declaration bridge. Preserve the direct
 inferred export, compact the honest dependency source, and route any remaining
-failure to the owning Core generic or declaration boundary. Do not add
+failure to the owning Plate foundation generic or declaration boundary. Do not add
 `@plate-plugin-declaration-stage`, a private definition carrier, an annotated
 staging alias, a widened dependency, a cast, or a public subset type. Existing
 marked stages are transitional debt with a direct-build deletion gate and block
@@ -153,7 +153,7 @@ Plugin callbacks already expose the typed owner context:
 
 Keep one-owner behavior inline and capture those values. Do not move a callback
 into another file by inventing context/descriptor ferry types or threading
-`BaseEditor`, resolved plugin name, store state, and `tx` through helper
+the editor, resolved plugin name, store state, and `tx` through helper
 signatures.
 
 Use those current-owner values directly:
@@ -344,10 +344,10 @@ stale `editor.read` merely to remove a parameter.
 Do not add:
 
 ```ts
-.extend(({ editor }: { editor: BaseEditor }) => ({
+.extend(({ editor }: { editor: Editor }) => ({
   update: ({ tx }) => ({ ... }),
 }))
-targetParserToInject: ({ editor }: { editor: BaseEditor }) => ...
+targetParserToInject: ({ editor }: { editor: Editor }) => ...
 const plugin: BasePlugin<FooDefinition> = defineBasePlugin(...)
 const plugin = defineBasePlugin(...) as BasePlugin<FooDefinition>
 ```
@@ -421,7 +421,7 @@ The exported plugin value must infer from:
 
 Never annotate or cast that result merely to preserve a desired type. If the
 chain widens, loses dependencies, or drops API/tx capability, repair the owning
-builder generic and add a Core compile-only inference test.
+builder generic and add a Plate foundation compile-only inference test.
 
 ## Locals, Tests, And Examples
 
@@ -503,8 +503,8 @@ hide a missing typed Plite/Plate API.
 
 When code disagrees, trust:
 
-1. `packages/core/src/lib/plugin/*`;
-2. `packages/core/src/react/plugin/*`;
-3. `packages/core/type-tests/*`;
+1. `packages/platejs/src/lib/plugin/*`;
+2. `packages/platejs/src/react/plugin/*`;
+3. `packages/platejs/type-tests/*`;
 4. current packages that agree with those owners;
 5. old package precedent.

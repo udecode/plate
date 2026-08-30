@@ -1,24 +1,25 @@
 'use client';
 
-import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { FontSizePlugin } from '@platejs/basic-styles/react';
-import { CodeBlockPlugin, CodeLinePlugin } from '@platejs/code-block/react';
-import { LinkPlugin } from '@platejs/link/react';
-import { ListPlugin } from '@platejs/list/react';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
-import { ContentSlice, property, schema } from '@platejs/plite';
-import { writeHostFragmentData } from '@platejs/plite-dom';
-import { TablePlugin } from '@platejs/table/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { ImagePlugin, MediaEmbedPlugin } from 'platejs/media/react';
 import {
+  BoldPlugin,
+  FontSizePlugin,
+  CodeBlockPlugin,
+  CodeLinePlugin,
+  LinkPlugin,
+  ListPlugin,
   definePlatePlugin,
   ParagraphPlugin,
   Plate,
   PlateContent,
   useEditor,
   useEditorSelector,
-  usePlateEditor,
+  useCreateEditor as useProductEditor,
 } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+import { ContentSlice, property, schema } from 'plitejs';
+import { writeHostFragmentData } from 'plitejs/dom';
 import { useState } from 'react';
 
 const CODEC_PROOF_FORMAT = 'application/x-plate-codec-proof';
@@ -504,7 +505,7 @@ const ApplicationRootControls = () => {
 };
 
 const ApplicationRootEditor = () => {
-  const editor = usePlateEditor({
+  const editor = useProductEditor({
     plugins: [ApplicationSectionPlugin],
     schema: ApplicationRootSchema,
   });
@@ -524,7 +525,7 @@ const ApplicationRootEditor = () => {
 };
 
 const PlateSchemaDescriptorsExample = () => {
-  const editor = usePlateEditor({
+  const editor = useProductEditor({
     plugins: [
       ParagraphPlugin.configure({
         render: { as: 'article' },

@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import {
   createEditor,
   defineExtension,
-} from '../../../../../packages/plite/src/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const samples = Number.parseInt(

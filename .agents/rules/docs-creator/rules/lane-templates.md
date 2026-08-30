@@ -130,11 +130,12 @@ Required shape:
    - use `### Installation` and `### Add Kit`
    - include `<ComponentSource name="actual-kit-name" />`
    - list relevant kit components from `apps/www/src/registry/registry-kits.ts`
-   - show `createPlateEditor({ plugins: [...RelevantKit] })`
+   - show `createEditor({ plugins: [...RelevantKit] })` from `platejs/react`
 4. `## Manual Usage`:
    - show the package install command
-   - import plugin APIs from the actual `platejs` or `@platejs/*` path
-   - add the plugin to `createPlateEditor`
+   - import plugin APIs from `platejs`, `platejs/react`, or the actual
+     `platejs/<feature>` entrypoint
+   - add the plugin to `createEditor`
    - declare an ordinary node `component` in
      `defineBasePlugin(name, { component })` or
      `definePlatePlugin(name, { component })`
@@ -163,7 +164,7 @@ Required shape:
    - keep Plate-context capture inside the authoring callback and extract
      domain inputs; never teach a context identity helper, callback annotation,
      cast, or `any` to recover erased inference
-   - use `defineExtension` imported from `@platejs/plite` only for
+   - use `defineExtension` imported from `plitejs` only for
      independently reusable standalone Plite descriptors composed as
      dependencies
    - put constructor-accessible fields and their context callbacks directly in
@@ -192,7 +193,7 @@ Required shape:
    - teach typed portals as a static literal-name plus capability-equivalence
      proof and a runtime exact-descriptor-identity proof; never imply that a
      same-name object is an interchangeable runtime token
-   - never teach Core's author-source-to-canonical-lowered normalization
+   - never teach Plate foundation's author-source-to-canonical-lowered normalization
      aliases; plugin authors supply one object and receive one descriptor
    - show low-level React composition as `react({ dom })` with the exact DOM
      descriptor; never teach `react()`, flattened DOM options, caller

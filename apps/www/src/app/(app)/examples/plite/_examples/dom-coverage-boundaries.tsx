@@ -1,13 +1,13 @@
-import { NodeApi, type Element as PliteElement } from '@platejs/plite';
-import { DOMCoverage } from '@platejs/plite-dom';
+import { parseAsBoolean, useQueryStates } from 'nuqs';
+import { NodeApi, type Element as PliteElement } from 'plitejs';
+import { DOMCoverage } from 'plitejs/dom';
 import {
   Editable,
   EditableElement,
   type RenderElementProps,
   Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { parseAsBoolean, useQueryStates } from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ const hiddenBoundaryUrlKeys = {
 };
 
 const DomCoverageBoundariesExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'header',

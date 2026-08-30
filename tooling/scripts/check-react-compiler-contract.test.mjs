@@ -87,7 +87,7 @@ test('accepts the complete React 19 compiler, manifest, lockfile, and app contra
       source: `
         export default {
           overrides: [{
-            files: ['packages/plite-react/test/render-probes/**/*.{ts,tsx}'],
+            files: ['packages/plitejs/test/react/render-probes/**/*.{ts,tsx}'],
             rules: { 'react/immutability': 'off' },
           }],
           rules: {

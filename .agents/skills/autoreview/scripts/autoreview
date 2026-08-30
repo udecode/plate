@@ -7725,6 +7725,10 @@ def review_secret_fragments(
                 )
                 if segment[start:end]
                 and segment[start:end].casefold() not in SECRET_PLACEHOLDER_VALUES
+                and reusable_secret_fragment(
+                    segment[start:end],
+                    javascript_dialect=javascript_dialect,
+                )
             )
             fragments.update(
                 fragment
@@ -7737,6 +7741,30 @@ def review_secret_fragments(
             "recursion limit; split the review target or simplify pathological syntax"
         ) from None
     return fragments
+
+
+JAVASCRIPT_REFERENCE_FRAGMENT_PATTERN = re.compile(
+    r"[A-Za-z_$][A-Za-z0-9_$]*"
+    r"(?:(?:\?\.|\.)[A-Za-z_$][A-Za-z0-9_$]*"
+    r"|\[(?:\d+|[A-Za-z_$][A-Za-z0-9_$]*)\])*"
+)
+
+
+def reusable_secret_fragment(
+    fragment: str,
+    *,
+    javascript_dialect: str | None = None,
+) -> bool:
+    # Deleted lines stay redacted, but references and tiny fixtures are not
+    # credential material that can be leaked by appearing in another file.
+    if len(fragment) < 7:
+        return False
+    if (
+        javascript_dialect is not None
+        and JAVASCRIPT_REFERENCE_FRAGMENT_PATTERN.fullmatch(fragment) is not None
+    ):
+        return False
+    return True
 
 
 def refuse_secret_like_review_patch(label: str) -> None:
@@ -12938,6 +12966,18 @@ def self_test_fallback_scope() -> None:
     print("self-test fallback scope: ok")
 
 
+def self_test_secret_fragment_filter() -> None:
+    source = "\n".join(
+        (
+            "const token = segment.slices[0]?.data?.token;",
+            "const password = '123';",
+        )
+    )
+    if review_secret_fragments(source, javascript_dialect="typescript"):
+        raise SystemExit("self-test secret fragment filter failed")
+    print("self-test secret fragment filter: ok")
+
+
 def self_test() -> int:
     self_test_opencode_jsonl_parser()
     self_test_opencode_isolation()
@@ -12945,6 +12985,7 @@ def self_test() -> int:
     self_test_fallback_scope()
     self_test_heartbeat_metrics()
     self_test_json_array_parser()
+    self_test_secret_fragment_filter()
     return self_test_engine_isolation()
 
 

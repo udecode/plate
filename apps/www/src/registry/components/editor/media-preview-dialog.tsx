@@ -1,16 +1,11 @@
 'use client';
 
-import {
-  BaseImagePlugin,
-  type ImageElement as ImageNode,
-} from '@platejs/media';
-import { ImagePlugin } from '@platejs/media/react';
-import { useComposedRef } from '@udecode/react-utils';
 import { cva } from 'class-variance-authority';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
-import type { NodeKey } from 'platejs';
-import { isHotkey } from 'platejs';
-import { useEditorPlugin, usePluginStore } from 'platejs/react';
+import { type NodeKey, isHotkey } from 'platejs';
+import { BaseImagePlugin, type ImageElement } from 'platejs/media';
+import { ImagePlugin } from 'platejs/media/react';
+import { useComposedRef, useEditorPlugin, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -91,7 +86,7 @@ export const imagePlugin = ImagePlugin.extend({
           });
         }
       },
-      open: (element: ImageNode, resolvedUrl = element.url) => {
+      open: (element: ImageElement, resolvedUrl = element.url) => {
         const currentKey = editor.key(element);
 
         if (currentKey == null) return;

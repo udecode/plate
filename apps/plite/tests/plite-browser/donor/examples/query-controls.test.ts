@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { openExample } from '@platejs/browser/playwright';
+import { openExample } from '@platejs/test/playwright';
 
 const getQueryParam = (page: Page, key: string) =>
   page.evaluate(

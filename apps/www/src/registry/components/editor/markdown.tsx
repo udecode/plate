@@ -1,5 +1,5 @@
-import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
 import { PLUGINS } from 'platejs';
+import { MarkdownPlugin, remarkMdx, remarkMention } from 'platejs/markdown';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';

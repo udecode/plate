@@ -167,7 +167,7 @@ the path inside the handler.
 
 ```tsx
 const ImageElement = ({ element }) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
 
   return (
     <button
@@ -342,7 +342,7 @@ import {
   defineExtension,
   editorCommands,
   RangeApi,
-} from "@platejs/plite";
+} from "plitejs";
 
 const markdown = defineExtension("markdown", {
   commands: ({ handle }) => [
@@ -390,7 +390,7 @@ cross-package projection model.
 Inline, void, selectable, and read-only behavior belongs to the editor schema.
 
 ```tsx
-import { defineEditorSchema, schema } from "@platejs/plite";
+import { defineEditorSchema, schema } from "plitejs";
 
 const MentionSchema = defineEditorSchema("schema:mentions", {
   elements: {
@@ -413,7 +413,7 @@ const MentionSchema = defineEditorSchema("schema:mentions", {
   version: 1,
 });
 
-const editor = usePliteEditor({
+const editor = useEditor({
   extensions: [MentionSchema] as const,
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });

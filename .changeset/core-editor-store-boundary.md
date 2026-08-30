@@ -1,5 +1,5 @@
 ---
-'@platejs/core': major
+'platejs': major
 ---
 
-Return a plain `PlateEditor` from `useEditor`, `useActiveEditor`, and `useEditorSelector`. Read the Plate store with `usePlateStore`.
+Return a plain `Editor` from `useEditor`, `useOptionalEditor`, and `useEditorSelector`. Read the Plate store with `usePlateStore`.

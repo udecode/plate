@@ -1,7 +1,12 @@
-import { BaseParagraphPlugin, defineBasePlugin } from '@platejs/core';
-import { PLUGINS } from '@platejs/utils';
-import { schema, type BaseEditor, createBaseEditor } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  BaseParagraphPlugin,
+  defineBasePlugin,
+  PLUGINS,
+  schema,
+  type Editor,
+  createEditor,
+} from 'platejs';
+import { createEditor as createReactEditor } from 'platejs/react';
 import ReactDOMServer from 'react-dom/server';
 
 import { BlockList } from '@/registry/components/editor/block-list';
@@ -14,7 +19,7 @@ const ListTargetSchemaPlugins = [
   PLUGINS.heading,
   PLUGINS.blockquote,
   PLUGINS.codeBlock,
-  PLUGINS.toggle,
+  PLUGINS.details,
   PLUGINS.image,
 ] as const;
 
@@ -47,12 +52,12 @@ type ListNodePropsContract = {
   transformProps: (options: unknown) => unknown;
 };
 
-const getListNodeProps = (editor: BaseEditor) =>
+const getListNodeProps = (editor: Editor) =>
   editor.plugin(PLUGINS.list).inject.nodeProps! as ListNodePropsContract;
 
 describe('ListKit unordered list rendering', () => {
   it('decodes configured list items as paragraphs with list properties', () => {
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [BaseParagraphPlugin, ...ListTargetSchemaKit, ...BaseListKit],
     });
 
@@ -95,12 +100,12 @@ describe('ListKit unordered list rendering', () => {
 
   it('injects root list-item props without wiping indent margin', () => {
     const interactiveNodeProps = getListNodeProps(
-      createPlateEditor({
+      createReactEditor({
         plugins: [...ListTargetSchemaKit, ...ListKit],
       })
     );
     const staticNodeProps = getListNodeProps(
-      createBaseEditor({
+      createEditor({
         plugins: [...ListTargetSchemaKit, ...BaseListKit],
       })
     );

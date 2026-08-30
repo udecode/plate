@@ -36,10 +36,10 @@ The fastest way to add the callout plugin is with the `CalloutKit`, which includ
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CalloutKit } from '@/components/editor/callout';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...CalloutKit,
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/callout
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugin
@@ -64,10 +64,10 @@ npm install @platejs/callout
 Include `CalloutPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
-import { createPlateEditor } from 'platejs/react';
+import { CalloutPlugin } from 'platejs/callout/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CalloutPlugin,
@@ -80,11 +80,11 @@ const editor = createPlateEditor({
 You can configure the `CalloutPlugin` with a custom component to render callout elements.
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
-import { createPlateEditor } from 'platejs/react';
+import { CalloutPlugin } from 'platejs/callout/react';
+import { createEditor } from 'platejs/react';
 import { CalloutElement } from '@/components/editor/callout';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CalloutPlugin.configure({ component: CalloutElement }),
@@ -137,7 +137,7 @@ Insert a callout element into the editor.
 ### `CalloutElement`
 
 ```typescript
-import type { CalloutElement } from '@platejs/callout';
+import type { CalloutElement } from 'platejs/callout';
 ```
 
 `CalloutElement` is derived from `BaseCalloutPlugin`. Its schema exposes

@@ -97,7 +97,7 @@ After that, the next reopen-worthy work is a small `docx` / `docx-io` revisit. T
 7. `tag` — score `18`, top file `9`
 8. `dnd` — score `15`, top file `3`
 9. `list` — score `15`, top file `3`
-10. `list-classic` — score `14`, top file `4`
+10. `legacy-list-model` — score `14`, top file `4`
 
 ## Best Remaining Files
 
@@ -120,7 +120,7 @@ After that, the next reopen-worthy work is a small `docx` / `docx-io` revisit. T
 ## What I Would Skip For Now
 
 - `selection` as a package: still mostly DOM-ish internal machinery, even when a few helpers are technically non-React.
-- recently swept low-signal leftovers in `core`, `slate`, `table`, `list`, `list-classic`, `markdown`, `suggestion`, `autoformat`, `dnd`, `basic-styles`
+- recently swept low-signal leftovers in `core`, `slate`, `table`, `list`, `legacy-list-model`, `markdown`, `suggestion`, `autoformat`, `dnd`, `basic-styles`
 - UI-only packages filtered out by design
 
 ## Full Data

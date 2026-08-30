@@ -3,7 +3,7 @@
   "name": "copilot-demo",
   "description": "Renders AI ghost text suggestions at the cursor position.",
   "dependencies": [
-    "@platejs/test-utils"
+    "@platejs/test"
   ],
   "registryDependencies": [
     "https://platejs.org/r/copilot.json",
@@ -13,12 +13,12 @@
   "files": [
     {
       "path": "src/registry/examples/copilot-demo.tsx",
-      "content": "'use client';\n\nimport { Plate, usePlateEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { CopilotKit } from '@/registry/components/editor/copilot';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport { EditorKit } from '@/registry/components/editor/plugins';\nimport { copilotValue } from '@/registry/examples/values/copilot-value';\n\nexport default function CopilotDemo() {\n  const editor = usePlateEditor({\n    plugins: [...EditorKit, ...CopilotKit],\n    initialValue: copilotValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "content": "'use client';\n\nimport { Plate, useCreateEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { CopilotKit } from '@/registry/components/editor/copilot';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport { EditorKit } from '@/registry/components/editor/plugins';\nimport { copilotValue } from '@/registry/examples/values/copilot-value';\n\nexport default function CopilotDemo() {\n  const editor = useCreateEditor({\n    plugins: [...EditorKit, ...CopilotKit],\n    initialValue: copilotValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
       "type": "registry:example"
     },
     {
       "path": "src/registry/examples/values/copilot-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const copilotValue: Value = (\n  <fragment>\n    <hheading level={2}>Copilot</hheading>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Position your cursor at the</htext>\n      <htext bold> end of a paragraph </htext>\n      <htext>where you want to add or modify text.</htext>\n    </hp>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Press Control + Space to trigger Copilot</htext>\n    </hp>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Copilot will</htext>\n      <htext bold> automatically</htext>\n      <htext> suggest completions as you type.</htext>\n    </hp>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Choose from the suggested completions:</htext>\n    </hp>\n    <hp indent={2} listType=\"bulleted\">\n      <htext bold>Tab</htext>:\n      <htext>Accept the entire suggested completion</htext>\n    </hp>\n    <hp indent={2} listType=\"bulleted\">\n      <htext bold>Command + Right Arrow</htext>\n      <htext>: Complete one character at a time</htext>\n    </hp>\n    <hp indent={2} listType=\"bulleted\">\n      <htext bold>Escape</htext>\n      <htext>: Cancel the Copilot</htext>\n    </hp>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const copilotValue: Value = (\n  <fragment>\n    <hheading level={2}>Copilot</hheading>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Position your cursor at the</htext>\n      <htext bold> end of a paragraph </htext>\n      <htext>where you want to add or modify text.</htext>\n    </hp>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Press Control + Space to trigger Copilot</htext>\n    </hp>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Copilot will</htext>\n      <htext bold> automatically</htext>\n      <htext> suggest completions as you type.</htext>\n    </hp>\n    <hp indent={1} listType=\"numbered\">\n      <htext>Choose from the suggested completions:</htext>\n    </hp>\n    <hp indent={2} listType=\"bulleted\">\n      <htext bold>Tab</htext>:\n      <htext>Accept the entire suggested completion</htext>\n    </hp>\n    <hp indent={2} listType=\"bulleted\">\n      <htext bold>Command + Right Arrow</htext>\n      <htext>: Complete one character at a time</htext>\n    </hp>\n    <hp indent={2} listType=\"bulleted\">\n      <htext bold>Escape</htext>\n      <htext>: Cancel the Copilot</htext>\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     }
   ],

@@ -384,7 +384,7 @@ revalidate again.
 Example from Slate v2:
 
 ```bash
-pnpm --filter @platejs/slate-react build
+pnpm --filter platejs build
 clawpatch revalidate --finding <findingId> --json
 ```
 

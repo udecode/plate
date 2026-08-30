@@ -160,7 +160,7 @@ const provenCause = {
   correctnessRerun: 'pnpm test exact',
   decisionOwner: 'benchmark',
   fixClass: 'internal-implementation',
-  fixOwner: 'packages/core owner',
+  fixOwner: 'packages/plate owner',
   isolatedOwner: 'Plate core layer',
   lane: 'plate-vs-plite-decomposition',
   layerPlan: 'N/A: internal implementation only',

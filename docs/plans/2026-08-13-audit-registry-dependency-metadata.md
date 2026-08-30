@@ -249,7 +249,7 @@ Confirmed published registry install-closure gaps:
 | `block-context-menu` | `@plate/transforms` |
 | `block-draggable` | `button` |
 | `emoji-toolbar-button` | `button` |
-| `fixed-toolbar-classic-buttons` | `@plate/history-toolbar-button` |
+| `fixed-toolbar` | `@plate/history-toolbar-button` |
 | `media-toolbar` | `@plate/caption` |
 | `callout-node` | `button` |
 | `column-node` | `button`, `popover`, `separator`, `tooltip` |
@@ -258,7 +258,7 @@ Confirmed published registry install-closure gaps:
 | `media-audio-node` | `@plate/resize-handle` |
 | `media-file-node` | `@plate/resize-handle` |
 | `toc-node` | `button` |
-| `autoformat-classic-kit` | `@plate/autoformat-kit` |
+| `autoformat` | `@plate/autoformat-kit` |
 | `ai-api` | `@plate/editor-base-kit`, `@plate/use-chat` |
 | `plate-to-html` | `@plate/editor-kit`, `@plate/fixed-toolbar-kit`, `@plate/floating-toolbar-kit` |
 | `multiple-editors-demo` | `@plate/align-kit` |
@@ -303,7 +303,7 @@ Confirmed published registry install-closure gaps:
   `suggestion-node`. It is currently resolvable but makes transitive dependency
   correctness fragile.
 - Internal-only drift: `single-block-demo` lacks `checkbox`, `label`, and
-  `editor`; `list-classic-demo` lacks `floating-toolbar-classic-kit`;
+  `editor`; `list-demo` lacks `floating-toolbar-kit`;
   `exit-break-demo` imports an unbundled table value. Forty-one other unresolved
   imports are shared internal demo/config files and are filtered from the
   public registry.

@@ -37,10 +37,10 @@ docs:
 将套件添加到插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { LinkKit } from '@/components/editor/link';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...LinkKit,
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/link
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -65,10 +65,10 @@ npm install @platejs/link
 在创建编辑器时，将 `LinkPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
-import { createPlateEditor } from 'platejs/react';
+import { LinkPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     LinkPlugin,
@@ -81,12 +81,12 @@ const editor = createPlateEditor({
 使用浮动工具栏和自定义组件配置插件。
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
-import { createPlateEditor } from 'platejs/react';
+import { LinkPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { LinkElement } from '@/components/editor/link';
 import { LinkFloatingToolbar } from '@/components/editor/link';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     LinkPlugin.configure({
@@ -108,10 +108,10 @@ const editor = createPlateEditor({
 你也可以配置 `LinkPlugin` 来启用内置的链接 input rules：
 
 ```tsx
-import { LinkRules } from '@platejs/link';
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkRules } from 'platejs';
+import { LinkPlugin } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     LinkPlugin.configure({
       inputRules: [

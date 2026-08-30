@@ -63,16 +63,16 @@ Status words:
 
 | File                                                       | Status    | Note                                                                                                    |
 | ---------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
-| `packages/plite/package.json`                | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
+| `packages/plitejs/package.json`                | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
 | `packages/plite-history/package.json`        | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
 | `packages/plite-hyperscript/package.json`    | `adapted` | package is now explicitly module-typed and publishes ESM-only output through tsdown                     |
-| `packages/browser/package.json`        | `adapted` | private proof package now publishes ESM-only multi-subpath output through a package-local tsdown config |
+| `packages/test/package.json`        | `adapted` | private proof package now publishes ESM-only multi-subpath output through a package-local tsdown config |
 | `packages/plite-dom/package.json`            | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
 | `packages/plite-react/package.json`          | `adapted` | build now runs through tsdown, publishes ESM-only output, and keeps React 19.2.5 / React 19 peer floor  |
-| `packages/browser/README.md`           | `adapted` | package docs now describe the Bun-era package-local and root convenience commands only                  |
-| `packages/browser/tsconfig.build.json` | `ported`  | build-time declaration owner for the proof package                                                      |
-| `packages/browser/tsconfig.test.json`  | `adapted` | source + browser-test typecheck owner without cross-runtime Bun/Vitest global conflicts                 |
-| `packages/browser/tsdown.config.mts`   | `adapted` | package-local multi-entry build owner for `browser`, `core`, `playwright`, and `transports` subpaths    |
+| `packages/test/README.md`           | `adapted` | package docs now describe the Bun-era package-local and root convenience commands only                  |
+| `packages/test/tsconfig.build.json` | `ported`  | build-time declaration owner for the proof package                                                      |
+| `packages/test/tsconfig.test.json`  | `adapted` | source + browser-test typecheck owner without cross-runtime Bun/Vitest global conflicts                 |
+| `packages/test/tsdown.config.mts`   | `adapted` | package-local multi-entry build owner for `browser`, `core`, `playwright`, and `transports` subpaths    |
 | `packages/plite-history/tsconfig.build.json` | `ported`  | build-time declaration owner                                                                            |
 | `packages/plite-dom/tsconfig.build.json`     | `ported`  | build-time declaration owner                                                                            |
 | `packages/plite-react/tsconfig.build.json`   | `ported`  | build-time declaration owner                                                                            |
@@ -84,12 +84,12 @@ Status words:
 | `Plate repo root/config/typescript/tsconfig.json`                                                   | `adapted` | TS6 baseline moved the repo onto bundler resolution and dropped the deprecated node resolver                                             |
 | `Plate repo root/playwright/tsconfig.json`                                                          | `adapted` | Playwright TS now matches the modern ESM/Bundler toolchain, TS6 baseline, and explicit Node typing                                       |
 | `apps/www/tsconfig.example.json`                                                        | `adapted` | example TS config now matches the live bundler-resolution baseline                                                                       |
-| `packages/plite-react/src/components/editable.tsx`                                  | `adapted` | React 19 type fallout was closed with strict `useRef` init and input-event typing fixes only                                             |
-| `packages/plite-react/src/components/restore-dom/restore-dom.tsx`                   | `adapted` | null-aware ref typing landed for React 19 without changing restore timing                                                                |
-| `packages/plite-react/src/hooks/android-input-manager/use-android-input-manager.ts` | `adapted` | ref typing widened to the real DOM-ref shape under React 19                                                                              |
-| `packages/plite-react/src/hooks/use-generic-selector.tsx`                           | `adapted` | stricter React 19 `useRef` initialization landed without selector behavior drift                                                         |
-| `packages/plite-react/src/hooks/use-mutation-observer.ts`                           | `adapted` | null-aware ref typing landed without mutation-observer behavior drift                                                                    |
-| `packages/plite-hyperscript/src/creators.ts`                                        | `adapted` | TS6 tightened `find()` results, so the selection creator now narrows `anchor` and `focus` honestly before use                            |
+| `packages/plitejs/src/react/components/editable.tsx`                                  | `adapted` | React 19 type fallout was closed with strict `useRef` init and input-event typing fixes only                                             |
+| `packages/plitejs/src/react/components/restore-dom/restore-dom.tsx`                   | `adapted` | null-aware ref typing landed for React 19 without changing restore timing                                                                |
+| `packages/plitejs/src/react/hooks/android-input-manager/use-android-input-manager.ts` | `adapted` | ref typing widened to the real DOM-ref shape under React 19                                                                              |
+| `packages/plitejs/src/react/hooks/use-generic-selector.tsx`                           | `adapted` | stricter React 19 `useRef` initialization landed without selector behavior drift                                                         |
+| `packages/plitejs/src/react/hooks/use-mutation-observer.ts`                           | `adapted` | null-aware ref typing landed without mutation-observer behavior drift                                                                    |
+| `packages/plitejs/src/hyperscript/creators.ts`                                        | `adapted` | TS6 tightened `find()` results, so the selection creator now narrows `anchor` and `focus` honestly before use                            |
 | `apps/www/src/app/(app)/examples/plite/_examples/code-highlighting.tsx`                                            | `adapted` | TS6 tightened `Transforms.setNodes` inference, so the example now narrows the code-block setNodes call explicitly without behavior drift |
 
 ## Docs Split
@@ -150,7 +150,7 @@ package/runtime truth already captured in the draft stack.
 
 ## Package-Level Deletion And Recovery Trees
 
-- [x] `packages/plite/test/**`
+- [x] `packages/plitejs/test/**`
       proof owner: `true-slate-rc-proof-ledger.md`
       note: deleted core test-family bucket is closed as archaeology; kept rows are
       now being re-driven through the merged corpus
@@ -171,32 +171,32 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/plite`
 
-- `packages/plite/test/query-contract.ts`
+- `packages/plitejs/test/query-contract.ts`
   disposition: restored
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct query owner is back in the live repo and green
-- `packages/plite/test/legacy-editor-nodes-fixtures.ts`
+- `packages/plitejs/test/legacy-editor-nodes-fixtures.ts`
   disposition: restored
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct `Editor.nodes/**` legacy oracle owner is back and green
-- `packages/plite/test/legacy-interfaces-fixtures.ts`
+- `packages/plitejs/test/legacy-interfaces-fixtures.ts`
   disposition: restored
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct non-Editor interface oracle owner is back and green
-- `packages/plite/test/legacy-fixture-utils.ts`
+- `packages/plitejs/test/legacy-fixture-utils.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: legacy fixture loading now runs on the Bun-era toolchain instead of
   dead Babel assumptions
-- `packages/plite/src/editor/unhang-range.ts`
+- `packages/plitejs/src/editor/unhang-range.ts`
   disposition: adapted
   proof owner: `query-contract.ts`
   note: current void-aware unhang behavior now matches the restored query rows
-- `packages/plite/src/editor/positions.ts`
+- `packages/plitejs/src/editor/positions.ts`
   disposition: adapted
   proof owner: `query-contract.ts`
   note: current positions iterator now matches the restored `voids` row
-- `packages/plite/src/editor/fragment.ts`
+- `packages/plitejs/src/editor/fragment.ts`
   disposition: adapted
   proof owner: `query-contract.ts`
   note: collapsed fragment reads now fail closed to `[]` on the restored query
@@ -204,24 +204,24 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/plite-history`
 
-- `packages/plite-history/src/history.ts`
+- `packages/plitejs/src/history/history.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: live `History` / `HistoryBatch` surface is restored in place
-- `packages/plite-history/src/history-editor.ts`
+- `packages/plitejs/src/history/history-editor.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: history helper surface carries merge/save/split-once state
-- `packages/plite-history/src/with-history.ts`
+- `packages/plitejs/src/history/with-history.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: commit-time history capture now derives from the committed publish seam,
   and undo/redo replay runs inside one outer transaction per history batch
-- `packages/plite-history/test/history-contract.ts`
+- `packages/plitejs/test/history/history-contract.ts`
   disposition: created
   proof owner: `true-slate-rc-proof-ledger.md`
   note: kept undo/redo parity rows now have a direct owner
-- `packages/plite-history/test/integrity-contract.ts`
+- `packages/plitejs/test/history/integrity-contract.ts`
   disposition: created
   proof owner: `true-slate-rc-proof-ledger.md`
   note: batching, save/merge flags, stack-write seam, and commit-before-onChange
@@ -233,167 +233,167 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/plite-react`
 
-- `packages/plite-react/src/components/editable.tsx`
+- `packages/plitejs/src/react/components/editable.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: mounted root, clipboard, and current Editable behavior are reviewed as
   live seams
-- `packages/plite-react/src/plugin/react-editor.ts`
+- `packages/plitejs/src/react/plugin/react-editor.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: current ReactEditor helper namespace is a real kept surface
-- `packages/plite-react/src/plugin/with-react.ts`
+- `packages/plitejs/src/react/plugin/with-react.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: withReact remains a real compatibility construction helper
-- `packages/plite-react/test/provider-hooks-contract.tsx`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused provider/hooks proof is now real and green
-- `packages/plite-react/test/react-editor-contract.tsx`
+- `packages/plitejs/test/react/react-editor-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused ReactEditor proof is now real and green
-- `packages/plite-react/test/surface-contract.tsx`
+- `packages/plitejs/test/react/surface-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused surface proof now owns translate policy, mount identity, and
   path-rebasing stability
-- `packages/plite-react/test/editable-behavior.tsx`
+- `packages/plitejs/test/react/editable-behavior.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused Editable proof now owns callback partition and current value-vs-selection change behavior
-- `packages/plite-react/test/projections-and-selection-contract.tsx`
+- `packages/plitejs/test/react/projections-and-selection-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused projection/runtime proof now owns overlap-safe splitting, ancestor/editor propagation, and path-shift stability
-- `packages/plite-react/src/annotation-store.ts`
+- `packages/plitejs/src/react/annotation-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: first source-backed annotation store now exists over core bookmarks and projected node-key slices
-- `packages/plite-react/src/projection-context.tsx`
+- `packages/plitejs/src/react/projection-context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed projection provider context now exists instead of keeping projection wiring implicit inside one hook file
-- `packages/plite-react/src/projection-store.ts`
+- `packages/plitejs/src/react/projection-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed projection store now exists as a public runtime surface instead of hiding projection logic behind local hooks only
-- `packages/plite-react/src/context.tsx`
+- `packages/plitejs/src/react/context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: node-key and element-path contexts now exist as first-class public support surface
-- `packages/plite-react/src/hooks/use-plite-node-ref.tsx`
+- `packages/plitejs/src/react/hooks/use-plite-node-ref.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: node-key DOM binding hook now also seeds plain-editor DOM key maps so
   app-owned selection/scroll rows can resolve text nodes honestly
-- `packages/plite-react/src/hooks/use-slate-selector.tsx`
+- `packages/plitejs/src/react/hooks/use-slate-selector.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: selector context now wakes plain editors as well as withReact editors
-- `packages/plite-react/src/components/slate.tsx`
+- `packages/plitejs/src/react/components/slate.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: provider no longer churns node keys on auto-wrapped app-owned
   surfaces, and plain-editor changes now reach selector subscribers
-- `packages/plite-react/src/components/editable-text-blocks.tsx`
+- `packages/plitejs/src/react/components/editable-text-blocks.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: public `Editable` now keeps projection/node keys stable,
   forwards app-owned block behavior honestly, and owns the shell/promotion
   large-document surface
-- `packages/plite-react/src/large-document/create-island-plan.ts`
+- `packages/plitejs/src/react/large-document/create-island-plan.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: island planning now exists as an explicit large-document runtime seam
-- `packages/plite-react/src/large-document/classify-island-kind.ts`
+- `packages/plitejs/src/react/large-document/classify-island-kind.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: shell previews now classify island semantics instead of rendering flat
   anonymous shells
-- `packages/plite-react/src/large-document/island-shell.tsx`
+- `packages/plitejs/src/react/large-document/island-shell.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: inactive large-document islands now have a real shell owner with
   preview and promotion behavior
-- `packages/plite-react/src/large-document/large-document-commands.ts`
+- `packages/plitejs/src/react/large-document/large-document-commands.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: shell-backed selection and full-document large-doc commands now have a
   named runtime owner
-- `packages/plite-react/src/hooks/use-slate-annotation-store.tsx`
+- `packages/plitejs/src/react/hooks/use-slate-annotation-store.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed annotation-store hook now exists as its own public surface
-- `packages/plite-react/src/hooks/use-slate-widget-store.tsx`
+- `packages/plitejs/src/react/hooks/use-slate-widget-store.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed widget-store hook now exists as its own public surface
-- `packages/plite-react/src/components/slate-element.tsx`
+- `packages/plitejs/src/react/components/slate-element.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public element host surface is now real
-- `packages/plite-react/src/components/slate-spacer.tsx`
+- `packages/plitejs/src/react/components/slate-spacer.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public spacer surface is now real
-- `packages/plite-react/src/components/slate-leaf.tsx`
+- `packages/plitejs/src/react/components/slate-leaf.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public leaf surface is now real
-- `packages/plite-react/src/components/slate-text.tsx`
+- `packages/plitejs/src/react/components/slate-text.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public text-node surface is now real
-- `packages/plite-react/src/components/slate-placeholder.tsx`
+- `packages/plitejs/src/react/components/slate-placeholder.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public placeholder surface is now real
-- `packages/plite-react/src/components/text-string.tsx`
+- `packages/plitejs/src/react/components/text-string.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public text-string surface is now real
-- `packages/plite-react/src/components/zero-width-string.tsx`
+- `packages/plitejs/src/react/components/zero-width-string.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public zero-width surface is now real
-- `packages/plite-react/src/components/editable-element.tsx`
+- `packages/plitejs/src/react/components/editable-element.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public editable element wrapper is now real
-- `packages/plite-react/src/components/void-element.tsx`
+- `packages/plitejs/src/react/components/void-element.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public void wrapper surface is now real
-- `packages/plite-react/test/primitives-contract.tsx`
+- `packages/plitejs/test/react/primitives-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused primitive proof now owns the recovered low-level public runtime surface
-- `packages/plite-react/test/annotation-store-contract.tsx`
+- `packages/plitejs/test/react/annotation-store-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused annotation proof now owns bookmark-backed range rebasing and projection-slice publication
-- `packages/plite-react/src/widget-store.ts`
+- `packages/plitejs/src/react/widget-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: first source-backed widget store now exists for selection-driven widget visibility with local subscriptions
-- `packages/plite-react/test/widget-layer-contract.tsx`
+- `packages/plitejs/test/react/widget-layer-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused widget proof now owns local widget visibility and no-text-rerender selection widget behavior
-- `packages/plite-react/test/app-owned-customization.tsx`
+- `packages/plitejs/test/react/app-owned-customization.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused app-owned proof now owns markdown projections, markdown
   shortcuts, forced layout, and app-owned scroll forwarding
-- `packages/plite-react/test/large-doc-and-scroll.tsx`
+- `packages/plitejs/test/react/large-doc-and-scroll.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused large-document proof now owns shelling, shell promotion,
   shell-backed full-document selection, shell-backed paste, and the kept scroll
   forwarding seam
-- `packages/plite-react/test/with-react-contract.tsx`
+- `packages/plitejs/test/react/with-react-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused withReact proof now owns the Android pending-selection
@@ -401,24 +401,24 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/plite-dom`
 
-- `packages/plite-dom/src/plugin/dom-editor.ts`
+- `packages/plitejs/src/dom/plugin/dom-editor.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: mounted DOM bridge behavior still lives here, but it now also has a
   direct package proof owner
-- `packages/plite-dom/src/plugin/with-dom.ts`
+- `packages/plitejs/src/dom/plugin/with-dom.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: clipboard boundary behavior still lives here, and shifted node keys are
   now preserved across insert/remove paths so mounted React surfaces keep their
   DOM identity; decorated multi-leaf clipboard export also strips render-only
   wrappers from copied HTML
-- `packages/plite-dom/test/bridge.ts`
+- `packages/plitejs/test/dom/bridge.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct package bridge proof now owns path/point/range translation and
   decorated offset behavior
-- `packages/plite-dom/test/clipboard-boundary.ts`
+- `packages/plitejs/test/dom/clipboard-boundary.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct package clipboard-boundary proof now owns fragment payload, HTML
@@ -426,7 +426,7 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/plite-browser`
 
-- `packages/browser/src/playwright/index.ts`
+- `packages/test/src/playwright/index.ts`
   disposition: adapted
   proof owner: `docs/plite-browser/proof-lane-matrix.md`
   note: editor-first Playwright harness owns current example e2e, IME, anchor,
@@ -434,19 +434,19 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/plite-hyperscript`
 
-- `packages/plite-hyperscript/src/index.ts`
+- `packages/plitejs/src/hyperscript/index.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: public hyperscript export surface still matches the kept package claim
-- `packages/plite-hyperscript/src/hyperscript.ts`
+- `packages/plitejs/src/hyperscript/hyperscript.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: factory and shorthand creation surface remains source-compatible
-- `packages/plite-hyperscript/test/index.spec.ts`
+- `packages/plitejs/test/hyperscript/index.spec.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: fixture parsing and cursor/selection construction stay owned by the Bun fixture runner
-- `packages/plite-hyperscript/test/smoke-contract.ts`
+- `packages/plitejs/test/hyperscript/smoke-contract.ts`
   disposition: added
   proof owner: `true-slate-rc-proof-ledger.md`
   note: draft smoke rows now have a direct Bun-owned proof owner instead of stale Mocha-only closure language
@@ -467,10 +467,10 @@ stays tracked in `true-slate-rc-proof-ledger.md`, not as fake file rows here.
 | `apps/www/tests/plite-browser/donor/examples/persistent-annotation-anchors.test.ts` | `adapted` | Chromium proof now owns bookmark-backed anchor persistence across fragment and text edits                              |
 | `apps/www/tests/plite-browser/donor/examples/external-decoration-sources.test.ts`   | `adapted` | Chromium proof now owns explicit external overlay refresh behavior                                                     |
 | `apps/www/tests/plite-browser/donor/examples/review-comments.test.ts`               | `adapted` | Chromium proof now owns comment creation, inline review slices, sidebar state, and annotation-backed widget visibility |
-| `packages/plite-react/test/projections-and-selection-contract.tsx`      | `adapted` | explicit projection/runtime contract owner is green on the kept overlay runtime                                        |
-| `packages/plite-react/test/annotation-store-contract.tsx`               | `adapted` | explicit annotation runtime contract owner is green on the kept annotation store path                                  |
-| `packages/plite-react/test/widget-layer-contract.tsx`                   | `adapted` | explicit widget runtime contract owner is green on the kept widget-store path                                          |
-| `packages/plite-react/test/large-doc-and-scroll.tsx`                    | `adapted` | explicit large-doc runtime contract owner is green on the kept semantic-islands corridor surface                       |
+| `packages/plitejs/test/react/projections-and-selection-contract.tsx`      | `adapted` | explicit projection/runtime contract owner is green on the kept overlay runtime                                        |
+| `packages/plitejs/test/react/annotation-store-contract.tsx`               | `adapted` | explicit annotation runtime contract owner is green on the kept annotation store path                                  |
+| `packages/plitejs/test/react/widget-layer-contract.tsx`                   | `adapted` | explicit widget runtime contract owner is green on the kept widget-store path                                          |
+| `packages/plitejs/test/react/large-doc-and-scroll.tsx`                    | `adapted` | explicit large-doc runtime contract owner is green on the kept semantic-islands corridor surface                       |
 
 ## Current Read
 

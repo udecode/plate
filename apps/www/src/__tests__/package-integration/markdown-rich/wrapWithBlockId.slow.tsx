@@ -1,9 +1,9 @@
 /** @jsx jsx */
 
-import type { MdParagraph } from '@platejs/markdown';
-import { jsx } from '@platejs/test-utils';
+import { jsx } from '@platejs/test';
+import type { MdParagraph } from 'platejs/markdown';
 
-import { wrapWithBlockId } from '../../../../../../packages/markdown/src/lib/serializer/wrapWithBlockId';
+import { wrapWithBlockId } from '../../../../../../packages/platejs/src/markdown/lib/serializer/wrapWithBlockId';
 import { createTestEditor } from './createTestEditor';
 
 jsx;

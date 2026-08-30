@@ -1,18 +1,17 @@
-import type { Anchor, Range, Value } from '@platejs/plite';
+import { cva } from 'class-variance-authority';
+import type { Anchor, Range, Value } from 'plitejs';
 import {
   Editable,
   Plite,
   type PliteAnnotationStore,
-  type ReactEditor,
+  type Editor,
   useEditorSelection,
   usePliteAnnotationStore,
   usePliteAnnotations,
-  usePliteEditor,
+  useEditor,
   usePliteWidgetStore,
   usePliteWidgets,
-} from '@platejs/plite-react';
-import { failInvariant } from '@platejs/plite/internal';
-import { cva } from 'class-variance-authority';
+} from 'plitejs/react';
 import {
   type Dispatch,
   type PointerEvent,
@@ -26,6 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
 
+import { failInvariant } from '../../../../../lib/failInvariant';
 import { Instruction } from './components';
 
 type CommentStatus = 'open' | 'resolved';
@@ -54,7 +54,7 @@ type CommentProjection = {
 
 type CommentVisualState = 'question' | 'resolved' | 'review';
 
-type CommentEditor = ReactEditor;
+type CommentEditor = Editor;
 
 const initialValue: Value = [
   {
@@ -575,7 +575,7 @@ const CommentModePane = ({
 };
 
 const CommentModeExample = () => {
-  const writerEditor = usePliteEditor({
+  const writerEditor = useEditor({
     initialSelection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
@@ -583,7 +583,7 @@ const CommentModeExample = () => {
     },
     initialValue: cloneValue(initialValue),
   });
-  const commentEditor = usePliteEditor({
+  const commentEditor = useEditor({
     initialSelection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },

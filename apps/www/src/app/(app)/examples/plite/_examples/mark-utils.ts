@@ -1,4 +1,4 @@
-import type { BooleanMarksOf } from '@platejs/plite';
+import type { BooleanMarksOf } from 'plitejs';
 
 import type { CustomEditor, CustomText, CustomTextKey } from './custom-types.d';
 

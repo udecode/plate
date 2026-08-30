@@ -1,5 +1,5 @@
 ---
-'@platejs/link': patch
+'platejs': patch
 ---
 
 Define link Markdown conversion on the link plugin.

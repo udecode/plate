@@ -381,7 +381,7 @@ Key results:
 
 ## Iteration 1 fix
 
-The first code fix landed in `packages/core/src/react/utils/pipeRenderElement.tsx`.
+The first code fix landed in `packages/platejs/src/react/utils/pipeRenderElement.tsx`.
 
 The important false lead was this:
 
@@ -408,7 +408,7 @@ The landed fast path now skips the heavier `pluginRenderElement` wrapper when th
 
 It still preserves plugin class injection, `BelowRootNodes`, and edit-only behavior.
 
-Guard tests live in `packages/core/src/react/utils/pipeRenderElement.spec.tsx`.
+Guard tests live in `packages/platejs/src/react/utils/pipeRenderElement.spec.tsx`.
 
 Measured improvement versus the previous iteration:
 
@@ -452,7 +452,7 @@ That means:
 
 ## Iteration 2 fix
 
-The second code fix also landed in `packages/core/src/react/utils/pipeRenderElement.tsx`.
+The second code fix also landed in `packages/platejs/src/react/utils/pipeRenderElement.tsx`.
 
 The same plain-element fast path from iteration 1 no longer mounts
 `ElementProvider`.
@@ -522,9 +522,9 @@ That means:
 
 ## Iteration 3 fix
 
-The third code fix landed in `packages/core/src/react/components/plate-nodes.tsx`
+The third code fix landed in `packages/platejs/src/react/components/plate-nodes.tsx`
 with focused coverage in
-`packages/core/src/react/components/plate-nodes.spec.tsx`.
+`packages/platejs/src/react/components/plate-nodes.spec.tsx`.
 
 `PlateElement` now computes whether a node can ever emit `data-block-id`
 before touching the plate store:
@@ -586,8 +586,8 @@ the editor already owned the whole value.
 ## Iteration 4 fix
 
 The fourth code fix landed in
-`packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts` with focused coverage
-in `packages/core/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx`.
+`packages/platejs/src/lib/plugins/node-id/NodeIdPlugin.ts` with focused coverage
+in `packages/platejs/src/lib/plugins/node-id/NodeIdPlugin.spec.tsx`.
 
 `normalizeInitialValue` now walks `editor.children` directly and assigns ids in
 place using editor-aware block checks.
@@ -783,7 +783,7 @@ provider-backed path.
 Production fix:
 
 - file:
-  [pluginRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderElement.tsx)
+  [pluginRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderElement.tsx)
 - keep `ElementProvider`
 - keep custom node components and their access to element context
 - stop calling `useElement()` inside `ElementContent`
@@ -791,7 +791,7 @@ Production fix:
 
 Guard test:
 
-- [pluginRenderElement.spec.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderElement.spec.tsx)
+- [pluginRenderElement.spec.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderElement.spec.tsx)
 - verifies default paragraph rendering still works
 - verifies custom components bound through `.withComponent()` still receive
   element context through the provider
@@ -831,7 +831,7 @@ same store hydration, same children, less pointless work.
 Production fix:
 
 - file:
-  [useElementStore.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/stores/element/useElementStore.tsx)
+  [useElementStore.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/stores/element/useElementStore.tsx)
 - keep `elementStore` and `useElementStore`
 - stop exporting the generic effect-backed provider from `createAtomStore`
 - build a no-effect provider with `createAtomProvider('element', elementStore.atom)`
@@ -881,7 +881,7 @@ That made the next seam precise:
 Production fix:
 
 - file:
-  [getRenderNodeProps.ts](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/getRenderNodeProps.ts)
+  [getRenderNodeProps.ts](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/getRenderNodeProps.ts)
 - add a fast path that only triggers when:
   - no inject node props are active
   - the plugin has no `node.props`
@@ -896,7 +896,7 @@ Production fix:
 Guard coverage:
 
 - file:
-  [getRenderNodeProps.spec.ts](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/getRenderNodeProps.spec.ts)
+  [getRenderNodeProps.spec.ts](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/getRenderNodeProps.spec.ts)
 - keep the plain paragraph fast path behavior
 - keep the full path for plugin props, allowed attrs, and injected node props
 
@@ -940,9 +940,9 @@ So that patch was reverted. It was not the seam.
 The next cut went after repeated plugin-context allocation instead:
 
 - file:
-  [pluginRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderElement.tsx)
+  [pluginRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderElement.tsx)
 - file:
-  [getRenderNodeProps.ts](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/getRenderNodeProps.ts)
+  [getRenderNodeProps.ts](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/getRenderNodeProps.ts)
 - compute `pluginContext = getEditorPlugin(editor, plugin)` once per
   `pluginRenderElement(...)` closure
 - thread that object into `getRenderNodeProps(...)`
@@ -950,8 +950,8 @@ The next cut went after repeated plugin-context allocation instead:
 
 Guard coverage:
 
-- [pluginRenderElement.spec.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderElement.spec.tsx)
-- [getRenderNodeProps.spec.ts](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/getRenderNodeProps.spec.ts)
+- [pluginRenderElement.spec.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderElement.spec.tsx)
+- [getRenderNodeProps.spec.ts](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/getRenderNodeProps.spec.ts)
 
 Measured carry-through at `5,000` blocks:
 
@@ -1002,7 +1002,7 @@ The deeper split sharpens the take:
   - `10,000`: `10.83 ms`
 - `normalizeInitialValue: null` is now a true disable path in practice, not just in the comment.
 - The upstream Slate follow-up closes the `setNodes(...)` question:
-  - benchmark file: [set-nodes-bench.js](/Users/zbeyens/git/plite/packages/plite/test/perf/set-nodes-bench.js)
+  - benchmark file: [set-nodes-bench.js](/Users/zbeyens/git/plite/packages/plitejs/test/perf/set-nodes-bench.js)
   - flat `5,000` paragraphs:
     - `setNodes` per path: `73.35 ms`
     - direct `apply(set_node)`: `44.62 ms`
@@ -1444,7 +1444,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - the outer default wrapper costs another `50.24 ms`, which is where the
       real remaining waste lived
   - fix:
-    - in [pipeRenderLeaf.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pipeRenderLeaf.tsx),
+    - in [pipeRenderLeaf.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pipeRenderLeaf.tsx),
       when there is no `renderLeafProp`, no inject-node-props work, and no
       `leafProps`, return the plain outer `<span>` fallback instead of the
       outer `getRenderNodeProps(...)` + `PlateLeaf` path
@@ -1465,7 +1465,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     when there was no inject-node-props work, no `textProps`, and no custom
     `renderText`
   - the fix mirrored the existing leaf fast path:
-    - in [pipeRenderText.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pipeRenderText.tsx),
+    - in [pipeRenderText.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pipeRenderText.tsx),
       when there is no `renderTextProp`, no inject-node-props work, and no
       `textProps`, return the plain outer `<span>` fallback instead of the
       outer `getRenderNodeProps(...)` + `PlateText` path
@@ -1492,9 +1492,9 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       behavior
   - fix:
     - in
-      [pluginRenderLeaf.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderLeaf.tsx)
+      [pluginRenderLeaf.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderLeaf.tsx)
       and
-      [pluginRenderText.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderText.tsx),
+      [pluginRenderText.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderText.tsx),
       keep the existing hook behavior but return a plain intrinsic
       `render.as` element for those simple mark cases instead of routing
       through `getRenderNodeProps(...)` and `PlateLeaf` / `PlateText`
@@ -1666,7 +1666,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       paid hook-driven `readOnly` and path work before it knew it needed those
       hooks
   - fix:
-    - in [pipeRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pipeRenderElement.tsx),
+    - in [pipeRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pipeRenderElement.tsx),
       split the paragraph path into a hook-free direct-tag branch and a smaller
       helper that only pays `useNodePath()` when block-id or directional
       affinity behavior actually needs `PlateElement`
@@ -1705,10 +1705,10 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       after mount; it was not doing meaningful editor work
   - fix:
     - remove the mounted gating from
-      [pipeRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pipeRenderElement.tsx)
+      [pipeRenderElement.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pipeRenderElement.tsx)
       so the plain block-id fast path emits `data-block-id` immediately
     - remove the same gate from
-      [plate-nodes.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/components/plate-nodes.tsx)
+      [plate-nodes.tsx](/Users/zbeyens/git/plate-2/packages/platejs/src/react/components/plate-nodes.tsx)
       so `PlateElement` no longer fans out per-node subscriptions just to decide
       whether to print that attribute
   - post-fix results:
@@ -1826,4 +1826,4 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
   - `docs/plans/editor-perf-5000-jotaix-linked-scope-experiment.json`
   - `docs/plans/editor-perf-5000-element-fast-branch-summary.json`
 - Upstream transform benchmark:
-  - `/Users/zbeyens/git/plite/packages/plite/test/perf/set-nodes-bench.js`
+  - `/Users/zbeyens/git/plite/packages/plitejs/test/perf/set-nodes-bench.js`

@@ -74,7 +74,7 @@ describe('composed toolbar registry', () => {
 
       expect(componentSource.match(/\buseEditorReadOnly\(\)/g)).toHaveLength(1);
       expect(componentSource).not.toMatch(
-        /\b(?:useEditor|useEditorSelector|useEditorState|usePlateEditor|useSelectionFragmentProp)\(/
+        /\b(?:useEditor|useEditorSelector|useEditorState|useEditor|useSelectionFragmentProp)\(/
       );
       expect(componentSource).not.toMatch(
         /\b(?:editor\.children|read\.children|read\.nodes)\b/

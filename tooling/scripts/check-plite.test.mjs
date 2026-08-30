@@ -66,7 +66,7 @@ test('strict and package checks compose each proof owner exactly once', () => {
 });
 
 test('affected package work uses bounded workspace concurrency', () => {
-  const plan = createAffectedPlan(['packages/plite/src/index.ts']);
+  const plan = createAffectedPlan(['packages/plitejs/src/index.ts']);
   const steps = createCheckSteps('dev', plan);
 
   for (const step of steps.filter(({ id }) =>
@@ -75,37 +75,36 @@ test('affected package work uses bounded workspace concurrency', () => {
     assert.ok(step.args.includes('--workspace-concurrency=8'));
     assert.equal(step.args.includes('--parallel'), false);
   }
+  for (const step of steps.filter(({ id }) =>
+    ['entrypoint-tests', 'entrypoint-typecheck'].includes(id)
+  )) {
+    assert.ok(step.args.includes('--concurrency=8'));
+    assert.equal(step.args.includes('--parallel'), false);
+  }
 });
 
-test('development proof keeps Browser core tests out of browser-server proof', () => {
-  const plan = createAffectedPlan(['packages/browser/src/core/index.ts']);
+test('a proof source change runs the test package entrypoint tasks', () => {
+  const plan = createAffectedPlan(['packages/test/src/proof/index.ts']);
   const steps = createCheckSteps('dev', plan);
 
   assert.deepEqual(ids(steps), [
-    'typecheck',
-    'browser-core-tests',
+    'entrypoint-typecheck',
+    'entrypoint-tests',
     'browser-smoke',
   ]);
-  assert.deepEqual(steps.find(({ id }) => id === 'browser-core-tests')?.args, [
-    '--filter',
-    '@platejs/browser',
-    'test:core',
+  assert.deepEqual(steps.find(({ id }) => id === 'entrypoint-tests')?.args, [
+    'turbo',
+    'run',
+    'test',
+    '--filter=@platejs/test',
+    '--concurrency=8',
   ]);
 });
 
 test('a core source change invalidates every dependent Plite package', () => {
-  const plan = createAffectedPlan(['packages/plite/src/index.ts']);
+  const plan = createAffectedPlan(['packages/plitejs/src/index.ts']);
 
-  assert.deepEqual(plan.packageNames, [
-    '@platejs/plite',
-    '@platejs/plite-dom',
-    '@platejs/plite-history',
-    '@platejs/plite-hyperscript',
-    '@platejs/plite-react',
-    '@platejs/plite-layout',
-    '@platejs/browser',
-    '@platejs/yjs',
-  ]);
+  assert.deepEqual(plan.packageNames, ['plitejs', 'platejs', '@platejs/test']);
   assert.deepEqual(plan.adopterPackageNames, adopterNames);
   assert.deepEqual(plan.adopterTestPackageNames, []);
   assert.deepEqual(plan.typecheckPackageNames, [
@@ -114,55 +113,47 @@ test('a core source change invalidates every dependent Plite package', () => {
     'plite',
   ]);
   assert.deepEqual(plan.testPackageNames, plan.packageNames);
-  assert.equal(plan.packageNames.includes('@platejs/browser'), true);
+  assert.equal(plan.packageNames.includes('@platejs/test'), true);
   assert.equal(plan.browserSmoke, true);
 });
 
 test('a leaf test change stays package-local and skips browser preparation', () => {
   const plan = createAffectedPlan([
-    'packages/plite-layout/test/layout-contract.test.ts',
+    'packages/plitejs/test/page-layout/layout-contract.test.ts',
   ]);
   const steps = createCheckSteps('dev', plan);
 
-  assert.deepEqual(plan.packageNames, ['@platejs/plite-layout']);
-  assert.deepEqual(plan.typecheckPackageNames, ['@platejs/plite-layout']);
+  assert.deepEqual(plan.packageNames, ['plitejs']);
+  assert.deepEqual(plan.typecheckPackageNames, ['plitejs']);
   assert.equal(plan.appTypecheck, false);
   assert.equal(plan.browserSmoke, false);
-  assert.deepEqual(ids(steps), ['typecheck', 'package-tests']);
+  assert.deepEqual(ids(steps), ['entrypoint-typecheck', 'entrypoint-tests']);
 });
 
 test('Plite-family test edits do not invalidate runtime dependents', () => {
   const coreTest = createAffectedPlan([
-    'packages/plite/test/document-change-laws.test.ts',
+    'packages/plitejs/test/document-change-laws.test.ts',
   ]);
   const domTest = createAffectedPlan([
-    'packages/plite-dom/test/host-codec.test.ts',
+    'packages/plitejs/test/dom/host-codec.test.ts',
   ]);
 
-  assert.deepEqual(coreTest.packageNames, ['@platejs/plite']);
-  assert.deepEqual(coreTest.typecheckPackageNames, ['@platejs/plite']);
+  assert.deepEqual(coreTest.packageNames, ['plitejs']);
+  assert.deepEqual(coreTest.typecheckPackageNames, ['plitejs']);
   assert.equal(coreTest.browserSmoke, false);
-  assert.deepEqual(domTest.packageNames, ['@platejs/plite-dom']);
-  assert.deepEqual(domTest.typecheckPackageNames, ['@platejs/plite-dom']);
+  assert.deepEqual(domTest.packageNames, ['plitejs']);
+  assert.deepEqual(domTest.typecheckPackageNames, ['plitejs']);
   assert.equal(domTest.browserSmoke, false);
 });
 
-test('fixture JSX config maps to its three consuming package proofs', () => {
+test('fixture JSX config maps to the consolidated package proof', () => {
   for (const input of [
     'config/plite-test-jsx.js',
     'config/plite-test-jsx-globals.d.ts',
   ]) {
     const plan = createAffectedPlan([input]);
 
-    assert.deepEqual(
-      plan.packageNames,
-      [
-        '@platejs/plite',
-        '@platejs/plite-history',
-        '@platejs/plite-hyperscript',
-      ],
-      input
-    );
+    assert.deepEqual(plan.packageNames, ['plitejs'], input);
     assert.deepEqual(plan.typecheckPackageNames, plan.packageNames, input);
     assert.deepEqual(plan.testPackageNames, plan.packageNames, input);
     assert.equal(plan.appTypecheck, false, input);
@@ -170,28 +161,23 @@ test('fixture JSX config maps to its three consuming package proofs', () => {
     assert.equal(plan.contracts, false, input);
     assert.deepEqual(
       ids(createCheckSteps('dev', plan)),
-      ['typecheck', 'package-tests'],
+      ['entrypoint-typecheck', 'entrypoint-tests'],
       input
     );
   }
 });
 
-test('a Plite DOM runtime edit reaches React, Layout, and Yjs', () => {
-  const plan = createAffectedPlan(['packages/plite-dom/src/index.ts']);
+test('a Plite DOM runtime edit reaches consolidated dependents', () => {
+  const plan = createAffectedPlan(['packages/plitejs/src/dom/index.ts']);
 
-  assert.deepEqual(plan.packageNames, [
-    '@platejs/plite-dom',
-    '@platejs/plite-react',
-    '@platejs/plite-layout',
-    '@platejs/yjs',
-  ]);
+  assert.deepEqual(plan.packageNames, ['plitejs', 'platejs', '@platejs/test']);
   assert.deepEqual(plan.adopterPackageNames, adopterNames);
   assert.deepEqual(plan.adopterTestPackageNames, []);
 });
 
 test('reviewed Plate adopters map to package-local source-first proof', () => {
   for (const { name, root } of plateAdopterPackages) {
-    if (name === '@platejs/core') continue;
+    if (name === 'platejs') continue;
 
     const plan = createAffectedPlan([`${root}/src/index.ts`]);
     const manifest = JSON.parse(
@@ -216,27 +202,30 @@ test('reviewed Plate adopters map to package-local source-first proof', () => {
   }
 });
 
-test('Core runtime invalidates integration owners while Core tests stay local', () => {
-  const runtime = createAffectedPlan(['packages/core/src/lib/editor/index.ts']);
+test('Plate runtime invalidates integration owners while Plate tests stay local', () => {
+  const runtime = createAffectedPlan([
+    'packages/platejs/src/lib/editor/index.ts',
+  ]);
   const testOnly = createAffectedPlan([
-    'packages/core/src/lib/editor/BaseEditor.spec.ts',
+    'packages/platejs/src/lib/editor/Editor.spec.ts',
   ]);
 
   assert.deepEqual(runtime.adopterPackageNames, adopterNames);
-  assert.deepEqual(runtime.adopterTestPackageNames, ['@platejs/core']);
-  assert.deepEqual(runtime.packageNames, ['@platejs/yjs']);
+  assert.deepEqual(runtime.adopterTestPackageNames, []);
+  assert.deepEqual(runtime.packageNames, ['platejs', '@platejs/test']);
   assert.deepEqual(runtime.typecheckPackageNames, [
-    '@platejs/yjs',
+    'platejs',
+    '@platejs/test',
     ...adopterNames,
     'plite',
   ]);
-  assert.deepEqual(runtime.testPackageNames, ['@platejs/yjs', '@platejs/core']);
+  assert.deepEqual(runtime.testPackageNames, ['platejs', '@platejs/test']);
   assert.equal(runtime.browserSmoke, true);
-  assert.deepEqual(testOnly.adopterPackageNames, ['@platejs/core']);
-  assert.deepEqual(testOnly.adopterTestPackageNames, ['@platejs/core']);
-  assert.deepEqual(testOnly.packageNames, []);
-  assert.deepEqual(testOnly.typecheckPackageNames, ['@platejs/core']);
-  assert.deepEqual(testOnly.testPackageNames, ['@platejs/core']);
+  assert.deepEqual(testOnly.adopterPackageNames, []);
+  assert.deepEqual(testOnly.adopterTestPackageNames, []);
+  assert.deepEqual(testOnly.packageNames, ['platejs']);
+  assert.deepEqual(testOnly.typecheckPackageNames, ['platejs']);
+  assert.deepEqual(testOnly.testPackageNames, ['platejs']);
   assert.equal(testOnly.appTypecheck, false);
   assert.equal(testOnly.browserSmoke, false);
 });
@@ -308,6 +297,8 @@ test('split tooling contracts remain in affected Plite proof', () => {
     'tooling/scripts/bench-targets.slow.test.mjs',
     'tooling/scripts/check-plite-release-artifacts.test.mjs',
     'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+    'tooling/scripts/entrypoint-turbo.slow.test.mjs',
+    'tooling/scripts/entrypoint-turbo.test.mjs',
     'tooling/scripts/plite-source-aliases.test.mjs',
     'tooling/scripts/plite-source-aliases.slow.test.mjs',
     'tooling/scripts/run-bounded-process.test.mjs',
@@ -370,8 +361,8 @@ test('shared config fails closed while unrelated docs are a no-op', () => {
     'bunfig.toml',
     'config/plite-source-aliases.ts',
     'config/workspace-source-entries.mjs',
-    'packages/core/bunfig.toml',
-    'packages/plate-scripts/run-with-pkg-dir.cjs',
+    'packages/platejs/bunfig.toml',
+    'tooling/scripts/run-with-pkg-dir.cjs',
     'tooling/scripts/typecheck-package-source.mjs',
   ];
   const docs = createAffectedPlan(['docs/plite/agent-start.md']);
@@ -423,17 +414,11 @@ test('Plite CI watches and typechecks the bounded www adopter surface', () => {
     )?.length,
     2
   );
-  assert.equal(
-    workflow.match(
-      /^\s+run: pnpm --filter www exec tsc --noEmit -p tsconfig\.package-integration\.json$/gmu
-    )?.length,
-    1
-  );
+  assert.doesNotMatch(workflow, /check:plite:adopters/u);
   assert.ok(config.include.includes('src/app/dev/editor-perf/**/*.ts'));
   assert.ok(config.include.includes('src/app/dev/editor-perf/**/*.tsx'));
   assert.ok(config.include.includes('src/types/**/*.d.ts'));
   assert.ok(config.include.includes('../../packages/*/src/**/*.d.ts'));
-  assert.ok(config.include.includes('../../packages/udecode/*/src/**/*.d.ts'));
   assert.ok(
     config.include.includes('src/__tests__/package-integration/**/*.ts')
   );
@@ -481,9 +466,13 @@ test('Plite CI browser containers use a root-owned home', () => {
   assert.equal(workflow.match(/^\s+HOME: \/root$/gmu)?.length, 2);
 });
 
-test('Plite CI watches every benchmark authority root through cheap contracts', () => {
-  const workflow = fs.readFileSync(
+test('Plite workflows route benchmark authorities to one package-check owner', () => {
+  const pliteWorkflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
+    'utf-8'
+  );
+  const packageWorkflow = fs.readFileSync(
+    path.join(repoRoot, '.github/workflows/ci.yml'),
     'utf-8'
   );
 
@@ -491,11 +480,16 @@ test('Plite CI watches every benchmark authority root through cheap contracts', 
     'benchmarks/editor/benchmarks/plite-*',
     'benchmarks/slate-v2/donor/core/current/**',
     'benchmarks/slate-v2/donor/shared/**',
+    'packages/plitejs/**',
+    'tooling/entrypoints/**',
+    'tooling/scripts/entrypoint-turbo*.mjs',
+    'tooling/scripts/run-entrypoint-*.mjs',
   ]) {
     const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     assert.equal(
-      workflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))?.length,
+      pliteWorkflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))
+        ?.length,
       2,
       input
     );
@@ -511,6 +505,7 @@ test('Plite CI watches every benchmark authority root through cheap contracts', 
     'tooling/scripts/check-plite-release-artifacts.mjs',
     'tooling/scripts/check-plite-release-artifacts.test.mjs',
     'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+    'tooling/scripts/generate-entrypoint-turbo.mjs',
     'tooling/scripts/plite-source-aliases.test.mjs',
     'tooling/scripts/plite-source-aliases.slow.test.mjs',
     'tooling/scripts/run-bounded-process.mjs',
@@ -524,33 +519,23 @@ test('Plite CI watches every benchmark authority root through cheap contracts', 
     const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     assert.equal(
-      workflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))?.length,
+      pliteWorkflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))
+        ?.length,
       2,
       input
     );
   }
 
-  assert.equal(
-    workflow.match(/^\s+run: pnpm check:plite:contracts$/gmu)?.length,
-    1
-  );
-  assert.doesNotMatch(workflow, /plite:bench:targets:run/u);
+  assert.match(packageWorkflow, /name: 🧪 Check Plate and Plite packages/u);
+  assert.match(packageWorkflow, /pnpm plite:test/u);
+  assert.match(packageWorkflow, /pnpm plite:bench:targets:check/u);
+  assert.match(packageWorkflow, /pnpm plite:public-types/u);
+  assert.doesNotMatch(pliteWorkflow, /^ {2}packages:$/mu);
+  assert.doesNotMatch(pliteWorkflow, /plite:bench:targets:run/u);
 });
 
-test('Plite runtime uses one source-first adopter typecheck lane', () => {
-  const runtime = createAffectedPlan(['packages/plite/src/index.ts']);
-  const testOnly = createAffectedPlan([
-    'packages/plite/test/document-change-laws.test.ts',
-  ]);
-  const [step] = createCheckSteps('adopters', runtime);
-
-  assert.equal(step.id, 'typecheck');
-  assert.equal(step.command, 'pnpm');
-  assert.deepEqual(
-    step.args.filter((argument) => adopterNames.includes(argument)),
-    adopterNames
-  );
-  assert.deepEqual(createCheckSteps('adopters', testOnly), []);
+test('Plite runtime has no redundant package-adopter lane', () => {
+  const runtime = createAffectedPlan(['packages/plitejs/src/index.ts']);
 
   const workflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
@@ -561,9 +546,9 @@ test('Plite runtime uses one source-first adopter typecheck lane', () => {
     'utf-8'
   );
 
-  assert.match(workflow, /^ {2}plite-adopters:$/mu);
-  assert.match(workflow, /run: pnpm check:plite:adopters/u);
-  assert.match(workflow, /PLITE_CHECK_BASE:/u);
+  assert.deepEqual(runtime.adopterPackageNames, []);
+  assert.doesNotMatch(workflow, /^ {2}plite-adopters:$/mu);
+  assert.doesNotMatch(workflow, /check:plite:adopters/u);
   assert.doesNotMatch(sourceTypecheck, /\bbuild\b/u);
 });
 
@@ -582,24 +567,19 @@ test('local affected proof uses working changes unless CI supplies a base', () =
   );
 });
 
-test('Plate Core runtime fans out to all adopters while app dependencies stay bounded', () => {
-  const core = createAffectedPlan(['packages/core/src/index.ts']);
-  const appDependency = createAffectedPlan([
-    'packages/udecode/utils/src/index.ts',
-  ]);
+test('Plate runtime fans out to all adopters', () => {
+  const core = createAffectedPlan(['packages/platejs/src/index.ts']);
 
-  assert.deepEqual(core.packageNames, ['@platejs/yjs']);
+  assert.deepEqual(core.packageNames, ['platejs', '@platejs/test']);
   assert.deepEqual(core.adopterPackageNames, adopterNames);
   assert.deepEqual(core.typecheckPackageNames, [
-    '@platejs/yjs',
+    'platejs',
+    '@platejs/test',
     ...adopterNames,
     'plite',
   ]);
-  assert.deepEqual(core.testPackageNames, ['@platejs/yjs', '@platejs/core']);
+  assert.deepEqual(core.testPackageNames, ['platejs', '@platejs/test']);
   assert.equal(core.browserSmoke, true);
-  assert.deepEqual(appDependency.packageNames, []);
-  assert.deepEqual(appDependency.typecheckPackageNames, ['plite']);
-  assert.equal(appDependency.browserSmoke, true);
 });
 
 test('root scripts keep source-first typecheck and strict browser closure separate', () => {
@@ -612,10 +592,7 @@ test('root scripts keep source-first typecheck and strict browser closure separa
     scripts['check:plite'],
     'node tooling/scripts/check-plite.mjs strict'
   );
-  assert.equal(
-    scripts['check:plite:adopters'],
-    'node tooling/scripts/check-plite.mjs adopters'
-  );
+  assert.equal(scripts['check:plite:adopters'], undefined);
   assert.equal(
     scripts['check:plite:packages'],
     'node tooling/scripts/check-plite.mjs packages'
@@ -629,12 +606,13 @@ test('root scripts keep source-first typecheck and strict browser closure separa
     'tooling/scripts/bench-targets.slow.test.mjs',
     'tooling/scripts/check-plite-release-artifacts.test.mjs',
     'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+    'tooling/scripts/entrypoint-turbo.slow.test.mjs',
+    'tooling/scripts/entrypoint-turbo.test.mjs',
     'tooling/scripts/plite-source-aliases.test.mjs',
     'tooling/scripts/plite-source-aliases.slow.test.mjs',
     'tooling/scripts/run-bounded-process.test.mjs',
     'tooling/scripts/run-bounded-process.slow.test.mjs',
     'tooling/scripts/test-suite-routing.test.mjs',
-    'packages/plite/test/slice-fit-contract.test.ts',
     'benchmarks/editor/benchmarks/benchmark-artifact.test.ts',
     'benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts',
     'benchmarks/editor/benchmarks/plite-content-slice-value-benchmark.test.ts',
@@ -654,9 +632,13 @@ test('root scripts keep source-first typecheck and strict browser closure separa
   );
   assert.equal(
     scripts['plite:public-types'],
-    'pnpm plite:packages:build && tsc --project packages/plite/test/tsconfig.public-package-types.json --noEmit'
+    'pnpm plite:packages:build && tsc --project packages/plitejs/test/tsconfig.public-package-types.json --noEmit'
   );
-  assert.doesNotMatch(scripts['plite:typecheck'], /\b(?:build|turbo)\b/);
+  assert.match(
+    scripts['plite:typecheck'],
+    /^turbo run typecheck --filter=plitejs --filter=platejs --filter=@platejs\/test --concurrency=8/u
+  );
+  assert.doesNotMatch(scripts['plite:typecheck'], /\bbuild\b/u);
   assert.equal(scripts['test:plite'], 'pnpm plite:test');
   assert.equal(scripts['check:plite'].includes('browser-matrix'), false);
   assert.equal(
@@ -685,20 +667,52 @@ test('www package integration inherits the complete source map', () => {
   assert.equal(config.compilerOptions?.paths, undefined);
 });
 
-test('Plite package CI installs Chromium before browser-backed package tests', () => {
+test('root CI owns Plate and Plite package proof without workflow duplication', () => {
   const workflow = fs.readFileSync(
+    path.join(repoRoot, '.github/workflows/ci.yml'),
+    'utf-8'
+  );
+  const pliteWorkflow = fs.readFileSync(
     path.join(repoRoot, '.github/workflows/plite-ci.yml'),
     'utf-8'
   );
-  const packagesJob = workflow.match(
-    /\n {2}packages:(?<body>[\s\S]*?)(?=\n {2}[a-z][a-z0-9-]*:|$)/u
+  const packageProof = workflow.match(
+    /- name: 🧪 Check Plate and Plite packages(?<body>[\s\S]*?)(?=\n\s+- name:)/u
   )?.groups?.body;
 
-  assert.ok(packagesJob, 'missing packages job');
+  assert.ok(packageProof, 'missing root package proof step');
   assert.ok(
-    packagesJob.indexOf('run: pnpm plite:browser:install chromium') <
-      packagesJob.indexOf('run: pnpm plite:test'),
-    'packages job must install Chromium before browser-backed package tests'
+    packageProof.indexOf('pnpm plite:browser:install chromium') <
+      packageProof.indexOf('pnpm plite:test'),
+    'root package proof must install Chromium before browser-backed tests'
+  );
+  assert.doesNotMatch(pliteWorkflow, /^ {2}packages:$/mu);
+  assert.doesNotMatch(pliteWorkflow, /pnpm plite:test/u);
+});
+
+test('workflows contain no retired Plite package owners', () => {
+  const workflows = ['ci.yml', 'plite-ci.yml']
+    .map((filename) =>
+      fs.readFileSync(
+        path.join(repoRoot, '.github/workflows', filename),
+        'utf-8'
+      )
+    )
+    .join('\n');
+
+  for (const retiredPath of [
+    'packages/plite/',
+    'packages/plite-dom/',
+    'packages/plite-history/',
+    'packages/plite-hyperscript/',
+    'packages/plite-layout/',
+    'packages/plite-react/',
+  ]) {
+    assert.equal(workflows.includes(retiredPath), false, retiredPath);
+  }
+  assert.equal(
+    fs.existsSync(path.join(repoRoot, '.github/workflows/plite-deps-pr.yml')),
+    false
   );
 });
 

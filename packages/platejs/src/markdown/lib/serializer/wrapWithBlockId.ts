@@ -1,0 +1,69 @@
+import type { MdMdxJsxFlowElement, MdRootContent } from '../mdast';
+
+type MdFlowContent = MdMdxJsxFlowElement['children'][number];
+type MdPhrasingContent =
+  import('../mdast').MdMdxJsxTextElement['children'][number];
+
+const PHRASING_TYPES = new Set([
+  'break',
+  'delete',
+  'emphasis',
+  'footnoteReference',
+  'image',
+  'imageReference',
+  'inlineCode',
+  'inlineMath',
+  'link',
+  'linkReference',
+  'mdxJsxTextElement',
+  'mdxTextExpression',
+  'strong',
+  'text',
+]);
+
+export const isMdFlowContent = (node: MdRootContent): node is MdFlowContent =>
+  !PHRASING_TYPES.has(node.type);
+
+export const isMdPhrasingContent = (
+  node: MdRootContent
+): node is MdPhrasingContent => PHRASING_TYPES.has(node.type);
+
+/**
+ * Wraps an mdast node with a block element containing an ID attribute. Used for
+ * preserving block IDs when serializing to markdown.
+ *
+ * @param mdastNode - The mdast node to wrap
+ * @param blockId - The persisted element ID to attach to the block element
+ * @returns The wrapped mdast node with block element and ID attribute
+ */
+export const wrapWithBlockId = (
+  mdastNode: MdRootContent,
+  blockId: string
+): MdMdxJsxFlowElement => {
+  if (typeof blockId !== 'string' || blockId.length === 0) {
+    throw new Error('Element ID must be a non-empty string.');
+  }
+  if (!isMdFlowContent(mdastNode)) {
+    throw new Error('Block IDs can only wrap Markdown flow content.');
+  }
+
+  const data: NonNullable<MdMdxJsxFlowElement['data']> & {
+    _mdxExplicitJsx: true;
+  } = {
+    _mdxExplicitJsx: true,
+  };
+
+  return {
+    attributes: [
+      {
+        name: 'id',
+        type: 'mdxJsxAttribute',
+        value: blockId,
+      },
+    ],
+    children: [mdastNode],
+    data,
+    name: 'block',
+    type: 'mdxJsxFlowElement',
+  };
+};

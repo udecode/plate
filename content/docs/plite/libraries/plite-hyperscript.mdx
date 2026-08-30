@@ -3,14 +3,14 @@ title: "Plite Hyperscript"
 description: "Write Plite test fixtures as JSX when nested editor state is clearer as markup."
 ---
 
-`@platejs/plite-hyperscript` creates Plite test fixtures with JSX. Use it when nested
+`plitejs/hyperscript` creates Plite test fixtures with JSX. Use it when nested
 editor state is easier to read as markup than as raw JSON.
 
 ## JSX Fixtures
 
 ```tsx
 /** @jsx jsx */
-import { jsx } from "@platejs/plite-hyperscript";
+import { jsx } from "plitejs/hyperscript";
 
 const editor = (
   <editor>
@@ -35,7 +35,7 @@ The built-in tags create normal Plite objects:
 Define domain tags with `createHyperscript`.
 
 ```tsx
-import { createHyperscript } from "@platejs/plite-hyperscript";
+import { createHyperscript } from "plitejs/hyperscript";
 
 const h = createHyperscript({
   elements: {
@@ -49,8 +49,8 @@ const paragraph = h("paragraph", {}, "hello");
 ## Creator Helpers
 
 `jsx` is the default fixture factory. `createHyperscript` builds a custom
-factory. `createEditor` and `createText` are low-level creators for custom
-factories and fixture helpers. `HyperscriptCreators` and
+factory. `createEditor`, `createEditorFixture`, and `createText` are low-level
+creators for custom factories and fixture helpers. `HyperscriptCreators` and
 `HyperscriptShorthands` are TypeScript helper types for custom factories.
 
 Keep hyperscript in tests and fixtures. Runtime editor code should use normal

@@ -26,7 +26,7 @@ Verification surface:
   adapter, external-format, generated, render, domain, or mutable-boundary rows.
 - Raw `Element`/`Text` structural-mirror search returns only the CLI-generated
   application contract template.
-- Runtime proof covers Table, Media, List Classic, Suggestion, Plite schema,
+- Runtime proof covers Table, Media, Legacy list model, Suggestion, Plite schema,
   and Plite React owners. Browser proof is N/A because this packet changes type
   derivation and schema declarations without a visible route or interaction.
 
@@ -73,9 +73,9 @@ Phase / pass table:
 |---|---|---|
 | Scope and manifest | complete | 78 rows materialized with exact path, symbol, verdict, owner, and evidence. |
 | Generic owner | complete | Plite preserves exact property values/defaults; Core exports `ElementWith` and `TextWith`. |
-| Feature adoption | complete | Media, List, List Classic, Suggestion, Table, Code Block, Markdown, Plite React, Comment, AI, Footnote, and Layout use derived or runtime-narrowed shapes. |
+| Feature adoption | complete | Media, List, Legacy list model, Suggestion, Table, Code Block, Markdown, Plite React, Comment, AI, Footnote, and Layout use derived or runtime-narrowed shapes. |
 | Doctrine and release | complete | Plate Next v66, generated skill parity, barrels, and Core/Plite/Media changesets are current. |
-| Verification | complete | Affected typecheck 53/53; Table 245/245; Media 86/86; List Classic 90/90; lint and diff check clean. |
+| Verification | complete | Affected typecheck 53/53; Table 245/245; Media 86/86; Legacy list model 90/90; lint and diff check clean. |
 | Review | complete | Direct scoped P0-P2 review found no actionable issue; automated review preflight refusal is recorded separately. |
 
 Work Checklist:
@@ -106,7 +106,7 @@ Completion Gates:
 | Plite inference | yes | `PropertyValueOf` preserves validated JSON domains and exact defaults through a type-only descriptor carrier. |
 | Feature mirrors | yes | 37 schema-derived rows; no handwritten persisted feature property bag remains. |
 | Legitimate survivors | yes | 41 rows are classified compiler/substrate/adapter/external/generated/render/domain/mutable boundaries. |
-| Package proof | yes | Affected Turbo typecheck passed 53/53; Table 245/245; Media 86/86; List Classic 90/90. |
+| Package proof | yes | Affected Turbo typecheck passed 53/53; Table 245/245; Media 86/86; Legacy list model 90/90. |
 | Wider runtime proof | yes | Earlier focused run passed 422 tests; the correct Plite React runner passed 1,039 tests. |
 | Core contracts | yes | Core compile-only schema contracts pass; `check:core` source, declaration, brand, and schema-adoption gates pass. |
 | Broad shared gate | no | Final docs-only subgate reports 30 untouched contextual configure examples owned outside this packet. |
@@ -152,9 +152,9 @@ Related scoped sweep ledger:
 Changed list:
 - Core/Plite: property inference, descriptor-property extraction, public node
   utilities, Markdown codec consumers, compile contracts, and barrels.
-- Features: Media, List, List Classic, Suggestion, Table, Code Block, Markdown,
+- Features: Media, List, Legacy list model, Suggestion, Table, Code Block, Markdown,
   Plite React, Comment, AI, Footnote, and Layout aliases/boundaries.
-- Proof: Plite schema contracts, Core type contracts, Table/List Classic test
+- Proof: Plite schema contracts, Core type contracts, Table/Legacy list model test
   fixtures, and the 78-row source ledger.
 - Doctrine/release: Plate Next v66, Best API and plugin-creator rules, Plate and
   Plite vision notes, generated skills, and existing Core/Plite/Media changesets.
@@ -179,7 +179,7 @@ Error attempts:
 | Attempt | Resolution |
 |---|---|
 | Required-ID helper initially used the wider local-ID constraint. | Restricted it to exact non-prefix property entries and added a negative compile contract. |
-| List Classic test reused the pre-initialization object reference. | Read the live node and narrow it through the resolved plugin schema type. |
+| Legacy list model test reused the pre-initialization object reference. | Read the live node and narrow it through the resolved plugin schema type. |
 | `check:core` final docs gate exited 1. | Classified 30 untouched heading/blockquote/basic-blocks contextual configure examples as another owner. |
 | Autoreview preflight exited 1 before model execution. | Preserved the secret-scan boundary and completed a direct scoped P0-P2 review. |
 
@@ -193,7 +193,7 @@ Verification evidence:
 - Affected Turbo typecheck passed 53/53 across 15 packages.
 - `pnpm --filter @platejs/table test`: 245 passed.
 - `pnpm --filter @platejs/media test`: 86 passed.
-- `pnpm --filter @platejs/list-classic test`: 90 passed.
+- `pnpm --filter platejs test`: 90 passed.
 - Earlier focused behavior suite: 422 passed; Plite React Vitest: 1,039 passed.
 - `pnpm check:core` passed runner, declaration leak, package brand, source
   adoption, schema adoption, and Core type gates before the unrelated docs-only

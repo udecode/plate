@@ -144,7 +144,7 @@ const createFixture = () => {
   const logFile = path.join(appRoot, '.tmp/fake-playwright-invocations.jsonl');
   const manifestFile = path.join(
     fixtureRoot,
-    'packages/browser/dist/.plite-browser-build.json'
+    'packages/test/dist/.plite-browser-build.json'
   );
   const packageRoot = path.join(fixtureRoot, 'node_modules/@playwright/test');
   fs.mkdirSync(path.join(fixtureRoot, 'node_modules'), { recursive: true });
@@ -179,7 +179,7 @@ const createFixture = () => {
   writeFile(path.join(packageRoot, 'cli.js'), fakePlaywrightCli);
   writeFile(manifestFile, '{"fingerprint":"fixture-browser"}\n');
   writeFile(
-    path.join(fixtureRoot, 'packages/browser/dist/index.js'),
+    path.join(fixtureRoot, 'packages/test/dist/index.js'),
     'export const fixture = true;\n'
   );
   writeFile(controlFile, '{"unitOrdinal":0}\n');

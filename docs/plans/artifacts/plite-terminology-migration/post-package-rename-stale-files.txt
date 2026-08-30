@@ -1295,7 +1295,7 @@ packages/juice/package.json
 packages/layout/package.json
 packages/link/CHANGELOG.md
 packages/link/package.json
-packages/list-classic/package.json
+packages/platejs/src/features/list/package.json
 packages/list/CHANGELOG.md
 packages/list/package.json
 packages/markdown/CHANGELOG.md

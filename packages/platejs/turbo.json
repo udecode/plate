@@ -1,0 +1,4941 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "env": ["CI"],
+      "inputs": [
+        "src/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/config/direct-package.config.mts",
+        "$TURBO_ROOT$/tooling/config/tsdown.config.ts",
+        "$TURBO_ROOT$/tooling/scripts/check-package-build-artifacts.mjs",
+        "tsconfig.build.json",
+        "tsdown.config.mts"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "cache": true,
+      "dependsOn": [
+        "lint:partition:ai",
+        "lint:partition:ai-react",
+        "lint:partition:callout",
+        "lint:partition:callout-react",
+        "lint:partition:code-drawing",
+        "lint:partition:code-drawing-react",
+        "lint:partition:combobox",
+        "lint:partition:comment",
+        "lint:partition:comment-react",
+        "lint:partition:core",
+        "lint:partition:csv",
+        "lint:partition:cursor-react",
+        "lint:partition:date",
+        "lint:partition:date-react",
+        "lint:partition:details",
+        "lint:partition:details-react",
+        "lint:partition:dnd-react",
+        "lint:partition:docx",
+        "lint:partition:emoji",
+        "lint:partition:emoji-react",
+        "lint:partition:excalidraw",
+        "lint:partition:excalidraw-react",
+        "lint:partition:find-replace",
+        "lint:partition:floating-react",
+        "lint:partition:footnote",
+        "lint:partition:footnote-react",
+        "lint:partition:juice",
+        "lint:partition:layout",
+        "lint:partition:layout-react",
+        "lint:partition:markdown",
+        "lint:partition:math",
+        "lint:partition:math-react",
+        "lint:partition:media",
+        "lint:partition:media-react",
+        "lint:partition:mention",
+        "lint:partition:mention-react",
+        "lint:partition:migrations",
+        "lint:partition:proxies",
+        "lint:partition:react",
+        "lint:partition:react-core",
+        "lint:partition:resizable-react",
+        "lint:partition:root",
+        "lint:partition:slash-command",
+        "lint:partition:slash-command-react",
+        "lint:partition:standard-basic-nodes",
+        "lint:partition:standard-basic-nodes-react",
+        "lint:partition:standard-basic-styles",
+        "lint:partition:standard-basic-styles-react",
+        "lint:partition:standard-code-block",
+        "lint:partition:standard-code-block-react",
+        "lint:partition:standard-indent",
+        "lint:partition:standard-indent-react",
+        "lint:partition:standard-link",
+        "lint:partition:standard-link-react",
+        "lint:partition:standard-list",
+        "lint:partition:standard-list-react",
+        "lint:partition:static",
+        "lint:partition:suggestion",
+        "lint:partition:suggestion-react",
+        "lint:partition:tabbable",
+        "lint:partition:tabbable-react",
+        "lint:partition:table",
+        "lint:partition:table-react",
+        "lint:partition:tag",
+        "lint:partition:tag-react",
+        "lint:partition:toc",
+        "lint:partition:toc-react",
+        "lint:partition:yjs",
+        "lint:partition:yjs-react"
+      ],
+      "inputs": [
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:ai": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/ai/**",
+        "!src/ai/react/**",
+        "test/ai/**",
+        "!test/ai/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:ai-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/ai/react/**",
+        "test/ai/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:callout": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/callout/**",
+        "test/features/callout/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:callout-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/callout/**",
+        "test/react/features/callout/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:code-drawing": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/code-drawing/**",
+        "!src/code-drawing/react/**",
+        "test/code-drawing/**",
+        "!test/code-drawing/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:code-drawing-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/code-drawing/react/**",
+        "test/code-drawing/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:combobox": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/combobox/**",
+        "test/features/combobox/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:comment": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/comment/**",
+        "test/features/comment/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:comment-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/comment/**",
+        "test/react/features/comment/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:core": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/**",
+        "!src/ai/**",
+        "!src/ai/react/**",
+        "!src/code-drawing/**",
+        "!src/code-drawing/react/**",
+        "!src/csv/**",
+        "!src/diff/**",
+        "!src/dom/**",
+        "!src/dnd/react/**",
+        "!src/docx/**",
+        "!src/emoji/**",
+        "!src/emoji/react/**",
+        "!src/excalidraw/**",
+        "!src/excalidraw/react/**",
+        "!src/floating/react/**",
+        "!src/history/**",
+        "!src/hyperscript/**",
+        "!src/juice/**",
+        "!src/markdown/**",
+        "!src/math/**",
+        "!src/math/react/**",
+        "!src/migrations/**",
+        "!src/page-layout/**",
+        "!src/page-layout/react/**",
+        "!src/react/**",
+        "!src/react/index.*",
+        "!src/index.*",
+        "!src/root.*",
+        "!src/static/**",
+        "!src/features/basic-nodes/**",
+        "!src/features/basic-styles/**",
+        "!src/features/code-block/**",
+        "!src/features/indent/**",
+        "!src/features/link/**",
+        "!src/features/list/**",
+        "!src/react/features/basic-nodes/**",
+        "!src/react/features/basic-styles/**",
+        "!src/react/features/code-block/**",
+        "!src/react/features/indent/**",
+        "!src/react/features/link/**",
+        "!src/react/features/list/**",
+        "!src/features/callout/**",
+        "!src/features/combobox/**",
+        "!src/features/comment/**",
+        "!src/features/date/**",
+        "!src/features/details/**",
+        "!src/features/find-replace/**",
+        "!src/features/footnote/**",
+        "!src/features/layout/**",
+        "!src/features/media/**",
+        "!src/features/mention/**",
+        "!src/features/slash-command/**",
+        "!src/features/suggestion/**",
+        "!src/features/table/**",
+        "!src/features/tag/**",
+        "!src/features/toc/**",
+        "!src/react/features/callout/**",
+        "!src/react/features/comment/**",
+        "!src/react/features/date/**",
+        "!src/react/features/details/**",
+        "!src/react/features/footnote/**",
+        "!src/react/features/layout/**",
+        "!src/react/features/media/**",
+        "!src/react/features/mention/**",
+        "!src/react/features/slash-command/**",
+        "!src/react/features/suggestion/**",
+        "!src/react/features/table/**",
+        "!src/react/features/tag/**",
+        "!src/react/features/toc/**",
+        "!src/react/features/cursor/**",
+        "!src/react/features/resizable/**",
+        "!src/tabbable/**",
+        "!src/tabbable/react/**",
+        "!src/yjs/**",
+        "!src/yjs/react/**",
+        "test/**",
+        "!test/ai/**",
+        "!test/ai/react/**",
+        "!test/code-drawing/**",
+        "!test/code-drawing/react/**",
+        "!test/csv/**",
+        "!test/diff/**",
+        "!test/dom/**",
+        "!test/dnd/react/**",
+        "!test/docx/**",
+        "!test/emoji/**",
+        "!test/emoji/react/**",
+        "!test/excalidraw/**",
+        "!test/excalidraw/react/**",
+        "!test/floating/react/**",
+        "!test/history/**",
+        "!test/hyperscript/**",
+        "!test/juice/**",
+        "!test/markdown/**",
+        "!test/math/**",
+        "!test/math/react/**",
+        "!test/migrations/**",
+        "!test/page-layout/**",
+        "!test/page-layout/react/**",
+        "!test/react/**",
+        "!test/react/index*",
+        "!test/index*",
+        "!test/root*",
+        "!test/static/**",
+        "!test/features/basic-nodes/**",
+        "!test/features/basic-styles/**",
+        "!test/features/code-block/**",
+        "!test/features/indent/**",
+        "!test/features/link/**",
+        "!test/features/list/**",
+        "!test/react/features/basic-nodes/**",
+        "!test/react/features/basic-styles/**",
+        "!test/react/features/code-block/**",
+        "!test/react/features/indent/**",
+        "!test/react/features/link/**",
+        "!test/react/features/list/**",
+        "!test/features/callout/**",
+        "!test/features/combobox/**",
+        "!test/features/comment/**",
+        "!test/features/date/**",
+        "!test/features/details/**",
+        "!test/features/find-replace/**",
+        "!test/features/footnote/**",
+        "!test/features/layout/**",
+        "!test/features/media/**",
+        "!test/features/mention/**",
+        "!test/features/slash-command/**",
+        "!test/features/suggestion/**",
+        "!test/features/table/**",
+        "!test/features/tag/**",
+        "!test/features/toc/**",
+        "!test/react/features/callout/**",
+        "!test/react/features/comment/**",
+        "!test/react/features/date/**",
+        "!test/react/features/details/**",
+        "!test/react/features/footnote/**",
+        "!test/react/features/layout/**",
+        "!test/react/features/media/**",
+        "!test/react/features/mention/**",
+        "!test/react/features/slash-command/**",
+        "!test/react/features/suggestion/**",
+        "!test/react/features/table/**",
+        "!test/react/features/tag/**",
+        "!test/react/features/toc/**",
+        "!test/react/features/cursor/**",
+        "!test/react/features/resizable/**",
+        "!test/tabbable/**",
+        "!test/tabbable/react/**",
+        "!test/yjs/**",
+        "!test/yjs/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:csv": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/csv/**",
+        "test/csv/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:cursor-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/cursor/**",
+        "test/react/features/cursor/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:date": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/date/**",
+        "test/features/date/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:date-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/date/**",
+        "test/react/features/date/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:details": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/details/**",
+        "test/features/details/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:details-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/details/**",
+        "test/react/features/details/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:dnd-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/dnd/react/**",
+        "test/dnd/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:docx": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/docx/**",
+        "test/docx/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:emoji": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/emoji/**",
+        "!src/emoji/react/**",
+        "test/emoji/**",
+        "!test/emoji/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:emoji-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/emoji/react/**",
+        "test/emoji/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:excalidraw": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/excalidraw/**",
+        "!src/excalidraw/react/**",
+        "test/excalidraw/**",
+        "!test/excalidraw/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:excalidraw-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/excalidraw/react/**",
+        "test/excalidraw/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:find-replace": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/find-replace/**",
+        "test/features/find-replace/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:floating-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/floating/react/**",
+        "test/floating/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:footnote": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/footnote/**",
+        "test/features/footnote/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:footnote-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/footnote/**",
+        "test/react/features/footnote/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:juice": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/juice/**",
+        "test/juice/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:layout": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/layout/**",
+        "test/features/layout/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:layout-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/layout/**",
+        "test/react/features/layout/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:markdown": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/markdown/**",
+        "test/markdown/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:math": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/math/**",
+        "!src/math/react/**",
+        "test/math/**",
+        "!test/math/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:math-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/math/react/**",
+        "test/math/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:media": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/media/**",
+        "test/features/media/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:media-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/media/**",
+        "test/react/features/media/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:mention": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/mention/**",
+        "test/features/mention/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:mention-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/mention/**",
+        "test/react/features/mention/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:migrations": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/migrations/**",
+        "test/migrations/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:proxies": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/diff/**",
+        "src/dom/**",
+        "src/history/**",
+        "src/hyperscript/**",
+        "src/page-layout/**",
+        "src/page-layout/react/**",
+        "test/diff/**",
+        "test/dom/**",
+        "test/history/**",
+        "test/hyperscript/**",
+        "test/page-layout/**",
+        "test/page-layout/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/index.*",
+        "test/react/index*",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:react-core": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/**",
+        "!src/react/index.*",
+        "!src/react/features/basic-nodes/**",
+        "!src/react/features/basic-styles/**",
+        "!src/react/features/code-block/**",
+        "!src/react/features/indent/**",
+        "!src/react/features/link/**",
+        "!src/react/features/list/**",
+        "!src/react/features/callout/**",
+        "!src/react/features/comment/**",
+        "!src/react/features/date/**",
+        "!src/react/features/details/**",
+        "!src/react/features/footnote/**",
+        "!src/react/features/layout/**",
+        "!src/react/features/media/**",
+        "!src/react/features/mention/**",
+        "!src/react/features/slash-command/**",
+        "!src/react/features/suggestion/**",
+        "!src/react/features/table/**",
+        "!src/react/features/tag/**",
+        "!src/react/features/toc/**",
+        "!src/react/features/cursor/**",
+        "!src/react/features/resizable/**",
+        "test/react/**",
+        "!test/react/index*",
+        "!test/react/features/basic-nodes/**",
+        "!test/react/features/basic-styles/**",
+        "!test/react/features/code-block/**",
+        "!test/react/features/indent/**",
+        "!test/react/features/link/**",
+        "!test/react/features/list/**",
+        "!test/react/features/callout/**",
+        "!test/react/features/comment/**",
+        "!test/react/features/date/**",
+        "!test/react/features/details/**",
+        "!test/react/features/footnote/**",
+        "!test/react/features/layout/**",
+        "!test/react/features/media/**",
+        "!test/react/features/mention/**",
+        "!test/react/features/slash-command/**",
+        "!test/react/features/suggestion/**",
+        "!test/react/features/table/**",
+        "!test/react/features/tag/**",
+        "!test/react/features/toc/**",
+        "!test/react/features/cursor/**",
+        "!test/react/features/resizable/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:resizable-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/resizable/**",
+        "test/react/features/resizable/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:root": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/root.*",
+        "test/index*",
+        "test/root*",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:slash-command": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/slash-command/**",
+        "test/features/slash-command/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:slash-command-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/slash-command/**",
+        "test/react/features/slash-command/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-basic-nodes": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/basic-nodes/**",
+        "test/features/basic-nodes/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-basic-nodes-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/basic-nodes/**",
+        "test/react/features/basic-nodes/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-basic-styles": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/basic-styles/**",
+        "test/features/basic-styles/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-basic-styles-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/basic-styles/**",
+        "test/react/features/basic-styles/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-code-block": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/code-block/**",
+        "test/features/code-block/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-code-block-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/code-block/**",
+        "test/react/features/code-block/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-indent": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/indent/**",
+        "test/features/indent/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-indent-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/indent/**",
+        "test/react/features/indent/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-link": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/link/**",
+        "test/features/link/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-link-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/link/**",
+        "test/react/features/link/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-list": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/list/**",
+        "test/features/list/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:standard-list-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/list/**",
+        "test/react/features/list/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:static": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/static/**",
+        "test/static/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:suggestion": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/suggestion/**",
+        "test/features/suggestion/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:suggestion-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/suggestion/**",
+        "test/react/features/suggestion/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:tabbable": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/tabbable/**",
+        "!src/tabbable/react/**",
+        "test/tabbable/**",
+        "!test/tabbable/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:tabbable-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/tabbable/react/**",
+        "test/tabbable/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:table": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/table/**",
+        "test/features/table/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:table-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/table/**",
+        "test/react/features/table/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:tag": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/tag/**",
+        "test/features/tag/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:tag-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/tag/**",
+        "test/react/features/tag/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:toc": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/toc/**",
+        "test/features/toc/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:toc-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/features/toc/**",
+        "test/react/features/toc/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:yjs": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/yjs/**",
+        "!src/yjs/react/**",
+        "test/yjs/**",
+        "!test/yjs/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:yjs-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/yjs/react/**",
+        "test/yjs/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test": {
+      "cache": true,
+      "dependsOn": [
+        "test:partition:ai",
+        "test:partition:ai-react",
+        "test:partition:callout",
+        "test:partition:code-drawing",
+        "test:partition:combobox",
+        "test:partition:comment",
+        "test:partition:core",
+        "test:partition:csv",
+        "test:partition:cursor-react",
+        "test:partition:date",
+        "test:partition:details",
+        "test:partition:details-react",
+        "test:partition:dnd-react",
+        "test:partition:docx",
+        "test:partition:emoji",
+        "test:partition:excalidraw",
+        "test:partition:find-replace",
+        "test:partition:floating-react",
+        "test:partition:footnote",
+        "test:partition:footnote-react",
+        "test:partition:juice",
+        "test:partition:layout",
+        "test:partition:markdown",
+        "test:partition:math",
+        "test:partition:media",
+        "test:partition:media-react",
+        "test:partition:mention",
+        "test:partition:mention-react",
+        "test:partition:migrations",
+        "test:partition:react-core",
+        "test:partition:resizable-react",
+        "test:partition:slash-command",
+        "test:partition:standard-basic-nodes",
+        "test:partition:standard-basic-nodes-react",
+        "test:partition:standard-basic-styles",
+        "test:partition:standard-code-block",
+        "test:partition:standard-code-block-react",
+        "test:partition:standard-indent",
+        "test:partition:standard-link",
+        "test:partition:standard-list",
+        "test:partition:standard-list-react",
+        "test:partition:static",
+        "test:partition:suggestion",
+        "test:partition:tabbable-react",
+        "test:partition:table",
+        "test:partition:table-react",
+        "test:partition:tag",
+        "test:partition:tag-react",
+        "test:partition:toc",
+        "test:partition:yjs",
+        "test:partition:yjs-react"
+      ],
+      "inputs": [
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:ai": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:ai",
+        "typecheck:partition:ai-react",
+        "typecheck:partition:core",
+        "typecheck:partition:suggestion"
+      ],
+      "inputs": [
+        "src/ai/**",
+        "!src/ai/react/**",
+        "test/ai/**",
+        "!test/ai/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:ai-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:ai",
+        "typecheck:partition:ai-react",
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:cursor-react",
+        "typecheck:partition:markdown",
+        "typecheck:partition:react-core",
+        "typecheck:partition:suggestion",
+        "typecheck:partition:suggestion-react",
+        "typecheck:partition:table"
+      ],
+      "inputs": [
+        "src/ai/react/**",
+        "test/ai/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:callout": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:callout", "typecheck:partition:core"],
+      "inputs": [
+        "src/features/callout/**",
+        "test/features/callout/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:code-drawing": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:code-drawing",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/code-drawing/**",
+        "!src/code-drawing/react/**",
+        "test/code-drawing/**",
+        "!test/code-drawing/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:combobox": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
+      "inputs": [
+        "src/features/combobox/**",
+        "test/features/combobox/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:comment": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:comment", "typecheck:partition:core"],
+      "inputs": [
+        "src/features/comment/**",
+        "test/features/comment/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:core": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:history",
+        "plitejs#typecheck:partition:testing",
+        "typecheck:partition:core",
+        "typecheck:partition:react",
+        "typecheck:partition:react-core",
+        "typecheck:partition:root"
+      ],
+      "inputs": [
+        "src/**",
+        "!src/ai/**",
+        "!src/ai/react/**",
+        "!src/code-drawing/**",
+        "!src/code-drawing/react/**",
+        "!src/csv/**",
+        "!src/diff/**",
+        "!src/dom/**",
+        "!src/dnd/react/**",
+        "!src/docx/**",
+        "!src/emoji/**",
+        "!src/emoji/react/**",
+        "!src/excalidraw/**",
+        "!src/excalidraw/react/**",
+        "!src/floating/react/**",
+        "!src/history/**",
+        "!src/hyperscript/**",
+        "!src/juice/**",
+        "!src/markdown/**",
+        "!src/math/**",
+        "!src/math/react/**",
+        "!src/migrations/**",
+        "!src/page-layout/**",
+        "!src/page-layout/react/**",
+        "!src/react/**",
+        "!src/react/index.*",
+        "!src/index.*",
+        "!src/root.*",
+        "!src/static/**",
+        "!src/features/basic-nodes/**",
+        "!src/features/basic-styles/**",
+        "!src/features/code-block/**",
+        "!src/features/indent/**",
+        "!src/features/link/**",
+        "!src/features/list/**",
+        "!src/react/features/basic-nodes/**",
+        "!src/react/features/basic-styles/**",
+        "!src/react/features/code-block/**",
+        "!src/react/features/indent/**",
+        "!src/react/features/link/**",
+        "!src/react/features/list/**",
+        "!src/features/callout/**",
+        "!src/features/combobox/**",
+        "!src/features/comment/**",
+        "!src/features/date/**",
+        "!src/features/details/**",
+        "!src/features/find-replace/**",
+        "!src/features/footnote/**",
+        "!src/features/layout/**",
+        "!src/features/media/**",
+        "!src/features/mention/**",
+        "!src/features/slash-command/**",
+        "!src/features/suggestion/**",
+        "!src/features/table/**",
+        "!src/features/tag/**",
+        "!src/features/toc/**",
+        "!src/react/features/callout/**",
+        "!src/react/features/comment/**",
+        "!src/react/features/date/**",
+        "!src/react/features/details/**",
+        "!src/react/features/footnote/**",
+        "!src/react/features/layout/**",
+        "!src/react/features/media/**",
+        "!src/react/features/mention/**",
+        "!src/react/features/slash-command/**",
+        "!src/react/features/suggestion/**",
+        "!src/react/features/table/**",
+        "!src/react/features/tag/**",
+        "!src/react/features/toc/**",
+        "!src/react/features/cursor/**",
+        "!src/react/features/resizable/**",
+        "!src/tabbable/**",
+        "!src/tabbable/react/**",
+        "!src/yjs/**",
+        "!src/yjs/react/**",
+        "test/**",
+        "!test/ai/**",
+        "!test/ai/react/**",
+        "!test/code-drawing/**",
+        "!test/code-drawing/react/**",
+        "!test/csv/**",
+        "!test/diff/**",
+        "!test/dom/**",
+        "!test/dnd/react/**",
+        "!test/docx/**",
+        "!test/emoji/**",
+        "!test/emoji/react/**",
+        "!test/excalidraw/**",
+        "!test/excalidraw/react/**",
+        "!test/floating/react/**",
+        "!test/history/**",
+        "!test/hyperscript/**",
+        "!test/juice/**",
+        "!test/markdown/**",
+        "!test/math/**",
+        "!test/math/react/**",
+        "!test/migrations/**",
+        "!test/page-layout/**",
+        "!test/page-layout/react/**",
+        "!test/react/**",
+        "!test/react/index*",
+        "!test/index*",
+        "!test/root*",
+        "!test/static/**",
+        "!test/features/basic-nodes/**",
+        "!test/features/basic-styles/**",
+        "!test/features/code-block/**",
+        "!test/features/indent/**",
+        "!test/features/link/**",
+        "!test/features/list/**",
+        "!test/react/features/basic-nodes/**",
+        "!test/react/features/basic-styles/**",
+        "!test/react/features/code-block/**",
+        "!test/react/features/indent/**",
+        "!test/react/features/link/**",
+        "!test/react/features/list/**",
+        "!test/features/callout/**",
+        "!test/features/combobox/**",
+        "!test/features/comment/**",
+        "!test/features/date/**",
+        "!test/features/details/**",
+        "!test/features/find-replace/**",
+        "!test/features/footnote/**",
+        "!test/features/layout/**",
+        "!test/features/media/**",
+        "!test/features/mention/**",
+        "!test/features/slash-command/**",
+        "!test/features/suggestion/**",
+        "!test/features/table/**",
+        "!test/features/tag/**",
+        "!test/features/toc/**",
+        "!test/react/features/callout/**",
+        "!test/react/features/comment/**",
+        "!test/react/features/date/**",
+        "!test/react/features/details/**",
+        "!test/react/features/footnote/**",
+        "!test/react/features/layout/**",
+        "!test/react/features/media/**",
+        "!test/react/features/mention/**",
+        "!test/react/features/slash-command/**",
+        "!test/react/features/suggestion/**",
+        "!test/react/features/table/**",
+        "!test/react/features/tag/**",
+        "!test/react/features/toc/**",
+        "!test/react/features/cursor/**",
+        "!test/react/features/resizable/**",
+        "!test/tabbable/**",
+        "!test/tabbable/react/**",
+        "!test/yjs/**",
+        "!test/yjs/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:csv": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:csv"],
+      "inputs": [
+        "src/csv/**",
+        "test/csv/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:cursor-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:cursor-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/cursor/**",
+        "test/react/features/cursor/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:date": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:date"],
+      "inputs": [
+        "src/features/date/**",
+        "test/features/date/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:details": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:details"],
+      "inputs": [
+        "src/features/details/**",
+        "test/features/details/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:details-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:details",
+        "typecheck:partition:details-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/details/**",
+        "test/react/features/details/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:dnd-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:dnd-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/dnd/react/**",
+        "test/dnd/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:docx": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx",
+        "typecheck:partition:static"
+      ],
+      "inputs": [
+        "src/docx/**",
+        "test/docx/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:emoji": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:emoji",
+        "typecheck:partition:emoji-react"
+      ],
+      "inputs": [
+        "src/emoji/**",
+        "!src/emoji/react/**",
+        "test/emoji/**",
+        "!test/emoji/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:excalidraw": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:excalidraw"
+      ],
+      "inputs": [
+        "src/excalidraw/**",
+        "!src/excalidraw/react/**",
+        "test/excalidraw/**",
+        "!test/excalidraw/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:find-replace": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:find-replace"
+      ],
+      "inputs": [
+        "src/features/find-replace/**",
+        "test/features/find-replace/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:floating-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:floating-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/floating/react/**",
+        "test/floating/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:footnote": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:footnote"
+      ],
+      "inputs": [
+        "src/features/footnote/**",
+        "test/features/footnote/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:footnote-react": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:footnote",
+        "typecheck:partition:footnote-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/footnote/**",
+        "test/react/features/footnote/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:juice": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:juice"],
+      "inputs": [
+        "src/juice/**",
+        "test/juice/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:layout": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:layout",
+        "typecheck:partition:layout-react"
+      ],
+      "inputs": [
+        "src/features/layout/**",
+        "test/features/layout/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:markdown": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:markdown",
+        "typecheck:partition:media",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-list"
+      ],
+      "inputs": [
+        "src/markdown/**",
+        "test/markdown/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:math": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:math"],
+      "inputs": [
+        "src/math/**",
+        "!src/math/react/**",
+        "test/math/**",
+        "!test/math/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:media": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:media"
+      ],
+      "inputs": [
+        "src/features/media/**",
+        "test/features/media/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:media-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:media",
+        "typecheck:partition:media-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/media/**",
+        "test/react/features/media/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:mention": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:mention",
+        "typecheck:partition:mention-react"
+      ],
+      "inputs": [
+        "src/features/mention/**",
+        "test/features/mention/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:mention-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:mention",
+        "typecheck:partition:mention-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/mention/**",
+        "test/react/features/mention/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:migrations": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "typecheck:partition:core",
+        "typecheck:partition:media",
+        "typecheck:partition:migrations",
+        "typecheck:partition:root",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-list",
+        "typecheck:partition:table"
+      ],
+      "inputs": [
+        "src/migrations/**",
+        "test/migrations/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:react-core": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:react",
+        "plitejs#typecheck:partition:testing",
+        "typecheck:partition:core",
+        "typecheck:partition:react",
+        "typecheck:partition:react-core",
+        "typecheck:partition:static"
+      ],
+      "inputs": [
+        "src/react/**",
+        "!src/react/index.*",
+        "!src/react/features/basic-nodes/**",
+        "!src/react/features/basic-styles/**",
+        "!src/react/features/code-block/**",
+        "!src/react/features/indent/**",
+        "!src/react/features/link/**",
+        "!src/react/features/list/**",
+        "!src/react/features/callout/**",
+        "!src/react/features/comment/**",
+        "!src/react/features/date/**",
+        "!src/react/features/details/**",
+        "!src/react/features/footnote/**",
+        "!src/react/features/layout/**",
+        "!src/react/features/media/**",
+        "!src/react/features/mention/**",
+        "!src/react/features/slash-command/**",
+        "!src/react/features/suggestion/**",
+        "!src/react/features/table/**",
+        "!src/react/features/tag/**",
+        "!src/react/features/toc/**",
+        "!src/react/features/cursor/**",
+        "!src/react/features/resizable/**",
+        "test/react/**",
+        "!test/react/index*",
+        "!test/react/features/basic-nodes/**",
+        "!test/react/features/basic-styles/**",
+        "!test/react/features/code-block/**",
+        "!test/react/features/indent/**",
+        "!test/react/features/link/**",
+        "!test/react/features/list/**",
+        "!test/react/features/callout/**",
+        "!test/react/features/comment/**",
+        "!test/react/features/date/**",
+        "!test/react/features/details/**",
+        "!test/react/features/footnote/**",
+        "!test/react/features/layout/**",
+        "!test/react/features/media/**",
+        "!test/react/features/mention/**",
+        "!test/react/features/slash-command/**",
+        "!test/react/features/suggestion/**",
+        "!test/react/features/table/**",
+        "!test/react/features/tag/**",
+        "!test/react/features/toc/**",
+        "!test/react/features/cursor/**",
+        "!test/react/features/resizable/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:resizable-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:resizable-react"
+      ],
+      "inputs": [
+        "src/react/features/resizable/**",
+        "test/react/features/resizable/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:slash-command": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:slash-command",
+        "typecheck:partition:slash-command-react"
+      ],
+      "inputs": [
+        "src/features/slash-command/**",
+        "test/features/slash-command/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-basic-nodes": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes"
+      ],
+      "inputs": [
+        "src/features/basic-nodes/**",
+        "test/features/basic-nodes/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-basic-nodes-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-nodes-react"
+      ],
+      "inputs": [
+        "src/react/features/basic-nodes/**",
+        "test/react/features/basic-nodes/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-basic-styles": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-styles"
+      ],
+      "inputs": [
+        "src/features/basic-styles/**",
+        "test/features/basic-styles/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-code-block": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:static"
+      ],
+      "inputs": [
+        "src/features/code-block/**",
+        "test/features/code-block/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-code-block-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-code-block-react"
+      ],
+      "inputs": [
+        "src/react/features/code-block/**",
+        "test/react/features/code-block/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-indent": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-indent"
+      ],
+      "inputs": [
+        "src/features/indent/**",
+        "test/features/indent/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-link": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:standard-link-react"
+      ],
+      "inputs": [
+        "src/features/link/**",
+        "test/features/link/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-list": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-list"
+      ],
+      "inputs": [
+        "src/features/list/**",
+        "test/features/list/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:standard-list-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-list",
+        "typecheck:partition:standard-list-react"
+      ],
+      "inputs": [
+        "src/react/features/list/**",
+        "test/react/features/list/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:static": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:react",
+        "plitejs#typecheck:partition:testing",
+        "typecheck:partition:core",
+        "typecheck:partition:static"
+      ],
+      "inputs": [
+        "src/static/**",
+        "test/static/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:suggestion": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:diff",
+        "typecheck:partition:core",
+        "typecheck:partition:suggestion"
+      ],
+      "inputs": [
+        "src/features/suggestion/**",
+        "test/features/suggestion/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:tabbable-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:tabbable",
+        "typecheck:partition:tabbable-react"
+      ],
+      "inputs": [
+        "src/tabbable/react/**",
+        "test/tabbable/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:table": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:table",
+        "typecheck:partition:table-react",
+        "typecheck:partition:yjs-react"
+      ],
+      "inputs": [
+        "src/features/table/**",
+        "test/features/table/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:table-react": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:table",
+        "typecheck:partition:table-react"
+      ],
+      "inputs": [
+        "src/react/features/table/**",
+        "test/react/features/table/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:tag": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:tag"],
+      "inputs": [
+        "src/features/tag/**",
+        "test/features/tag/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:tag-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:tag",
+        "typecheck:partition:tag-react"
+      ],
+      "inputs": [
+        "src/react/features/tag/**",
+        "test/react/features/tag/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:toc": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:toc"],
+      "inputs": [
+        "src/features/toc/**",
+        "test/features/toc/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:yjs": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:proxies",
+        "typecheck:partition:react",
+        "typecheck:partition:root",
+        "typecheck:partition:yjs",
+        "typecheck:partition:yjs-react"
+      ],
+      "inputs": [
+        "src/yjs/**",
+        "!src/yjs/react/**",
+        "test/yjs/**",
+        "!test/yjs/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:yjs-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:yjs",
+        "typecheck:partition:yjs-react"
+      ],
+      "inputs": [
+        "src/yjs/react/**",
+        "test/yjs/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "typecheck": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:ai",
+        "typecheck:partition:ai-react",
+        "typecheck:partition:callout",
+        "typecheck:partition:callout-react",
+        "typecheck:partition:code-drawing",
+        "typecheck:partition:code-drawing-react",
+        "typecheck:partition:combobox",
+        "typecheck:partition:comment",
+        "typecheck:partition:comment-react",
+        "typecheck:partition:core",
+        "typecheck:partition:csv",
+        "typecheck:partition:cursor-react",
+        "typecheck:partition:date",
+        "typecheck:partition:date-react",
+        "typecheck:partition:details",
+        "typecheck:partition:details-react",
+        "typecheck:partition:dnd-react",
+        "typecheck:partition:docx",
+        "typecheck:partition:emoji",
+        "typecheck:partition:emoji-react",
+        "typecheck:partition:excalidraw",
+        "typecheck:partition:excalidraw-react",
+        "typecheck:partition:find-replace",
+        "typecheck:partition:floating-react",
+        "typecheck:partition:footnote",
+        "typecheck:partition:footnote-react",
+        "typecheck:partition:juice",
+        "typecheck:partition:layout",
+        "typecheck:partition:layout-react",
+        "typecheck:partition:markdown",
+        "typecheck:partition:math",
+        "typecheck:partition:math-react",
+        "typecheck:partition:media",
+        "typecheck:partition:media-react",
+        "typecheck:partition:mention",
+        "typecheck:partition:mention-react",
+        "typecheck:partition:migrations",
+        "typecheck:partition:proxies",
+        "typecheck:partition:react",
+        "typecheck:partition:react-core",
+        "typecheck:partition:resizable-react",
+        "typecheck:partition:root",
+        "typecheck:partition:slash-command",
+        "typecheck:partition:slash-command-react",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-nodes-react",
+        "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-basic-styles-react",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-code-block-react",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-indent-react",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:standard-link-react",
+        "typecheck:partition:standard-list",
+        "typecheck:partition:standard-list-react",
+        "typecheck:partition:static",
+        "typecheck:partition:suggestion",
+        "typecheck:partition:suggestion-react",
+        "typecheck:partition:tabbable",
+        "typecheck:partition:tabbable-react",
+        "typecheck:partition:table",
+        "typecheck:partition:table-react",
+        "typecheck:partition:tag",
+        "typecheck:partition:tag-react",
+        "typecheck:partition:toc",
+        "typecheck:partition:toc-react",
+        "typecheck:partition:yjs",
+        "typecheck:partition:yjs-react",
+        "typecheck:contracts"
+      ],
+      "inputs": [
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "typecheck:contracts": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:history",
+        "plitejs#typecheck:partition:react",
+        "typecheck:partition:core",
+        "typecheck:partition:proxies",
+        "typecheck:partition:react",
+        "typecheck:partition:react-core",
+        "typecheck:partition:root",
+        "typecheck:partition:static",
+        "typecheck:partition:table",
+        "typecheck:partition:table-react"
+      ],
+      "inputs": [
+        "type-tests/**",
+        "tsconfig.type-tests.json",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
+        "$TURBO_ROOT$/tooling/scripts/typecheck-package-source.mjs",
+        "tsconfig.entrypoints/contracts.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "typecheck:partition:ai": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:suggestion"
+      ],
+      "inputs": [
+        "src/ai/**",
+        "!src/ai/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/ai.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/ai/**",
+        ".turbo/entrypoint-types/ai.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:ai-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:ai",
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:cursor-react",
+        "typecheck:partition:markdown",
+        "typecheck:partition:react-core",
+        "typecheck:partition:suggestion",
+        "typecheck:partition:suggestion-react",
+        "typecheck:partition:table"
+      ],
+      "inputs": [
+        "src/ai/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/ai-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/ai-react/**",
+        ".turbo/entrypoint-types/ai-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:callout": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/callout/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/callout.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/callout/**",
+        ".turbo/entrypoint-types/callout.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:callout-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:callout",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/callout/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/callout-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/callout-react/**",
+        ".turbo/entrypoint-types/callout-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:code-drawing": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/code-drawing/**",
+        "!src/code-drawing/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/code-drawing.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/code-drawing/**",
+        ".turbo/entrypoint-types/code-drawing.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:code-drawing-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:code-drawing",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/code-drawing/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/code-drawing-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/code-drawing-react/**",
+        ".turbo/entrypoint-types/code-drawing-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:combobox": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/combobox/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/combobox.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/combobox/**",
+        ".turbo/entrypoint-types/combobox.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:comment": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/comment/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/comment.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/comment/**",
+        ".turbo/entrypoint-types/comment.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:comment-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:comment",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/comment/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/comment-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/comment-react/**",
+        ".turbo/entrypoint-types/comment-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:core": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:history"
+      ],
+      "inputs": [
+        "src/**",
+        "!src/ai/**",
+        "!src/ai/react/**",
+        "!src/code-drawing/**",
+        "!src/code-drawing/react/**",
+        "!src/csv/**",
+        "!src/diff/**",
+        "!src/dom/**",
+        "!src/dnd/react/**",
+        "!src/docx/**",
+        "!src/emoji/**",
+        "!src/emoji/react/**",
+        "!src/excalidraw/**",
+        "!src/excalidraw/react/**",
+        "!src/floating/react/**",
+        "!src/history/**",
+        "!src/hyperscript/**",
+        "!src/juice/**",
+        "!src/markdown/**",
+        "!src/math/**",
+        "!src/math/react/**",
+        "!src/migrations/**",
+        "!src/page-layout/**",
+        "!src/page-layout/react/**",
+        "!src/react/**",
+        "!src/react/index.*",
+        "!src/index.*",
+        "!src/root.*",
+        "!src/static/**",
+        "!src/features/basic-nodes/**",
+        "!src/features/basic-styles/**",
+        "!src/features/code-block/**",
+        "!src/features/indent/**",
+        "!src/features/link/**",
+        "!src/features/list/**",
+        "!src/react/features/basic-nodes/**",
+        "!src/react/features/basic-styles/**",
+        "!src/react/features/code-block/**",
+        "!src/react/features/indent/**",
+        "!src/react/features/link/**",
+        "!src/react/features/list/**",
+        "!src/features/callout/**",
+        "!src/features/combobox/**",
+        "!src/features/comment/**",
+        "!src/features/date/**",
+        "!src/features/details/**",
+        "!src/features/find-replace/**",
+        "!src/features/footnote/**",
+        "!src/features/layout/**",
+        "!src/features/media/**",
+        "!src/features/mention/**",
+        "!src/features/slash-command/**",
+        "!src/features/suggestion/**",
+        "!src/features/table/**",
+        "!src/features/tag/**",
+        "!src/features/toc/**",
+        "!src/react/features/callout/**",
+        "!src/react/features/comment/**",
+        "!src/react/features/date/**",
+        "!src/react/features/details/**",
+        "!src/react/features/footnote/**",
+        "!src/react/features/layout/**",
+        "!src/react/features/media/**",
+        "!src/react/features/mention/**",
+        "!src/react/features/slash-command/**",
+        "!src/react/features/suggestion/**",
+        "!src/react/features/table/**",
+        "!src/react/features/tag/**",
+        "!src/react/features/toc/**",
+        "!src/react/features/cursor/**",
+        "!src/react/features/resizable/**",
+        "!src/tabbable/**",
+        "!src/tabbable/react/**",
+        "!src/yjs/**",
+        "!src/yjs/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/core.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/core/**",
+        ".turbo/entrypoint-types/core.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:csv": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/csv/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/csv.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/csv/**",
+        ".turbo/entrypoint-types/csv.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:cursor-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/cursor/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/cursor-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/cursor-react/**",
+        ".turbo/entrypoint-types/cursor-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:date": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/date/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/date.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/date/**",
+        ".turbo/entrypoint-types/date.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:date-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:date",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/date/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/date-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/date-react/**",
+        ".turbo/entrypoint-types/date-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:details": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/details/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/details.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/details/**",
+        ".turbo/entrypoint-types/details.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:details-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:details",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/details/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/details-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/details-react/**",
+        ".turbo/entrypoint-types/details-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:dnd-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/dnd/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/dnd-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/dnd-react/**",
+        ".turbo/entrypoint-types/dnd-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:docx": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:static"],
+      "inputs": [
+        "src/docx/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/docx.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/docx/**",
+        ".turbo/entrypoint-types/docx.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:emoji": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
+      "inputs": [
+        "src/emoji/**",
+        "!src/emoji/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/emoji.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/emoji/**",
+        ".turbo/entrypoint-types/emoji.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:emoji-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:emoji",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/emoji/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/emoji-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/emoji-react/**",
+        ".turbo/entrypoint-types/emoji-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:excalidraw": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/excalidraw/**",
+        "!src/excalidraw/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/excalidraw.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/excalidraw/**",
+        ".turbo/entrypoint-types/excalidraw.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:excalidraw-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:excalidraw",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/excalidraw/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/excalidraw-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/excalidraw-react/**",
+        ".turbo/entrypoint-types/excalidraw-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:find-replace": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/find-replace/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/find-replace.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/find-replace/**",
+        ".turbo/entrypoint-types/find-replace.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:floating-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/floating/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/floating-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/floating-react/**",
+        ".turbo/entrypoint-types/floating-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:footnote": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
+      "inputs": [
+        "src/features/footnote/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/footnote.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/footnote/**",
+        ".turbo/entrypoint-types/footnote.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:footnote-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:footnote",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/footnote/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/footnote-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/footnote-react/**",
+        ".turbo/entrypoint-types/footnote-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:juice": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/juice/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/juice.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/juice/**",
+        ".turbo/entrypoint-types/juice.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:layout": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/layout/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/layout.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/layout/**",
+        ".turbo/entrypoint-types/layout.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:layout-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:layout",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/layout/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/layout-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/layout-react/**",
+        ".turbo/entrypoint-types/layout-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:markdown": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-list"
+      ],
+      "inputs": [
+        "src/markdown/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/markdown.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/markdown/**",
+        ".turbo/entrypoint-types/markdown.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:math": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/math/**",
+        "!src/math/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/math.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/math/**",
+        ".turbo/entrypoint-types/math.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:math-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:math",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/math/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/math-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/math-react/**",
+        ".turbo/entrypoint-types/math-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:media": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/features/media/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/media.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/media/**",
+        ".turbo/entrypoint-types/media.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:media-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:media",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/media/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/media-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/media-react/**",
+        ".turbo/entrypoint-types/media-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:mention": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
+      "inputs": [
+        "src/features/mention/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/mention.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/mention/**",
+        ".turbo/entrypoint-types/mention.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:mention-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:mention",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/mention/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/mention-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/mention-react/**",
+        ".turbo/entrypoint-types/mention-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:migrations": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/migrations/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/migrations.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/migrations/**",
+        ".turbo/entrypoint-types/migrations.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:proxies": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:diff",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:history",
+        "plitejs#typecheck:partition:layout",
+        "plitejs#typecheck:partition:testing"
+      ],
+      "inputs": [
+        "src/diff/**",
+        "src/dom/**",
+        "src/history/**",
+        "src/hyperscript/**",
+        "src/page-layout/**",
+        "src/page-layout/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/proxies.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/proxies/**",
+        ".turbo/entrypoint-types/proxies.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:root",
+        "typecheck:partition:standard-basic-nodes-react",
+        "typecheck:partition:standard-basic-styles-react",
+        "typecheck:partition:standard-code-block-react",
+        "typecheck:partition:standard-indent-react",
+        "typecheck:partition:standard-link-react",
+        "typecheck:partition:standard-list-react"
+      ],
+      "inputs": [
+        "src/react/index.*",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/react/**",
+        ".turbo/entrypoint-types/react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:react-core": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:react",
+        "typecheck:partition:core",
+        "typecheck:partition:static"
+      ],
+      "inputs": [
+        "src/react/**",
+        "!src/react/index.*",
+        "!src/react/features/basic-nodes/**",
+        "!src/react/features/basic-styles/**",
+        "!src/react/features/code-block/**",
+        "!src/react/features/indent/**",
+        "!src/react/features/link/**",
+        "!src/react/features/list/**",
+        "!src/react/features/callout/**",
+        "!src/react/features/comment/**",
+        "!src/react/features/date/**",
+        "!src/react/features/details/**",
+        "!src/react/features/footnote/**",
+        "!src/react/features/layout/**",
+        "!src/react/features/media/**",
+        "!src/react/features/mention/**",
+        "!src/react/features/slash-command/**",
+        "!src/react/features/suggestion/**",
+        "!src/react/features/table/**",
+        "!src/react/features/tag/**",
+        "!src/react/features/toc/**",
+        "!src/react/features/cursor/**",
+        "!src/react/features/resizable/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/react-core.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/react-core/**",
+        ".turbo/entrypoint-types/react-core.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:resizable-react": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:react-core"],
+      "inputs": [
+        "src/react/features/resizable/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/resizable-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/resizable-react/**",
+        ".turbo/entrypoint-types/resizable-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:root": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:standard-list"
+      ],
+      "inputs": [
+        "src/index.*",
+        "src/root.*",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/root.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/root/**",
+        ".turbo/entrypoint-types/root.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:slash-command": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
+      "inputs": [
+        "src/features/slash-command/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/slash-command.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/slash-command/**",
+        ".turbo/entrypoint-types/slash-command.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:slash-command-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:slash-command"
+      ],
+      "inputs": [
+        "src/react/features/slash-command/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/slash-command-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/slash-command-react/**",
+        ".turbo/entrypoint-types/slash-command-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-basic-nodes": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/basic-nodes/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-basic-nodes.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-basic-nodes/**",
+        ".turbo/entrypoint-types/standard-basic-nodes.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-basic-nodes-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes"
+      ],
+      "inputs": [
+        "src/react/features/basic-nodes/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-basic-nodes-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-basic-nodes-react/**",
+        ".turbo/entrypoint-types/standard-basic-nodes-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-basic-styles": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/basic-styles/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-basic-styles.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-basic-styles/**",
+        ".turbo/entrypoint-types/standard-basic-styles.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-basic-styles-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-styles"
+      ],
+      "inputs": [
+        "src/react/features/basic-styles/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-basic-styles-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-basic-styles-react/**",
+        ".turbo/entrypoint-types/standard-basic-styles-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-code-block": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/features/code-block/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-code-block.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-code-block/**",
+        ".turbo/entrypoint-types/standard-code-block.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-code-block-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-code-block"
+      ],
+      "inputs": [
+        "src/react/features/code-block/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-code-block-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-code-block-react/**",
+        ".turbo/entrypoint-types/standard-code-block-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-indent": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/indent/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-indent.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-indent/**",
+        ".turbo/entrypoint-types/standard-indent.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-indent-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-indent"
+      ],
+      "inputs": [
+        "src/react/features/indent/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-indent-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-indent-react/**",
+        ".turbo/entrypoint-types/standard-indent-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-link": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/link/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-link.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-link/**",
+        ".turbo/entrypoint-types/standard-link.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-link-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-link"
+      ],
+      "inputs": [
+        "src/react/features/link/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-link-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-link-react/**",
+        ".turbo/entrypoint-types/standard-link-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-list": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-indent"
+      ],
+      "inputs": [
+        "src/features/list/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-list.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-list/**",
+        ".turbo/entrypoint-types/standard-list.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:standard-list-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-list"
+      ],
+      "inputs": [
+        "src/react/features/list/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/standard-list-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/standard-list-react/**",
+        ".turbo/entrypoint-types/standard-list-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:static": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:dom",
+        "plitejs#typecheck:partition:react",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/static/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/static.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/static/**",
+        ".turbo/entrypoint-types/static.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:suggestion": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:diff",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/features/suggestion/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/suggestion.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/suggestion/**",
+        ".turbo/entrypoint-types/suggestion.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:suggestion-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:suggestion"
+      ],
+      "inputs": [
+        "src/react/features/suggestion/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/suggestion-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/suggestion-react/**",
+        ".turbo/entrypoint-types/suggestion-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:tabbable": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/tabbable/**",
+        "!src/tabbable/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/tabbable.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/tabbable/**",
+        ".turbo/entrypoint-types/tabbable.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:tabbable-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:tabbable"
+      ],
+      "inputs": [
+        "src/tabbable/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/tabbable-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/tabbable-react/**",
+        ".turbo/entrypoint-types/tabbable-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:table": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/features/table/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/table.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/table/**",
+        ".turbo/entrypoint-types/table.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:table-react": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:dom",
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:table"
+      ],
+      "inputs": [
+        "src/react/features/table/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/table-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/table-react/**",
+        ".turbo/entrypoint-types/table-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:tag": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/tag/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/tag.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/tag/**",
+        ".turbo/entrypoint-types/tag.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:tag-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:tag"
+      ],
+      "inputs": [
+        "src/react/features/tag/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/tag-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/tag-react/**",
+        ".turbo/entrypoint-types/tag-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:toc": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/toc/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/toc.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/toc/**",
+        ".turbo/entrypoint-types/toc.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:toc-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:react-core",
+        "typecheck:partition:toc"
+      ],
+      "inputs": [
+        "src/react/features/toc/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/toc-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/toc-react/**",
+        ".turbo/entrypoint-types/toc-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:yjs": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/yjs/**",
+        "!src/yjs/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/yjs.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/yjs/**",
+        ".turbo/entrypoint-types/yjs.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:yjs-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:yjs"
+      ],
+      "inputs": [
+        "src/yjs/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/yjs-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/yjs-react/**",
+        ".turbo/entrypoint-types/yjs-react.tsbuildinfo"
+      ]
+    }
+  }
+}

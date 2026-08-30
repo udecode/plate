@@ -36,11 +36,11 @@ Date adds inline void elements that display a date label inside text. One requir
 <ComponentSource name="date" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { DateKit } from '@/components/editor/date';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: DateKit,
 });
 ```
@@ -56,7 +56,7 @@ export const editor = createPlateEditor({
 The registry insert toolbar maps `PLUGINS.date` to the plugin-owned update.
 
 ```tsx title="components/editor/transforms.ts"
-import { BaseDatePlugin } from '@platejs/date';
+import { BaseDatePlugin } from 'platejs/date';
 import { PLUGINS } from 'platejs';
 
 export const insertInlineMap = {
@@ -71,12 +71,12 @@ export const insertInlineMap = {
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/date` | Package | Exports `BaseDatePlugin` and date value helpers. |
-| `@platejs/date/react` | Package | Exports `DatePlugin`. |
+| `platejs` | Package | Exports `BaseDatePlugin` and date value helpers. |
+| `platejs/react` | Package | Exports `DatePlugin`. |
 | `date` | Registry | Adds `DatePlugin.configure({ component: DateElement })`. |
 | `date-static` | Registry | Adds `BaseDatePlugin.configure({ component: DateElementStatic })`. |
 | `date` | Registry UI | Renders the editable popover/calendar element and static element. |
-| `@platejs/markdown` | Package | Converts date MDX tags to the package-owned `value`. |
+| `platejs/markdown` | Package | Converts date MDX tags to the package-owned `value`. |
 
 `BaseDatePlugin` is inline and void. The text child exists only to satisfy Plite's element shape.
 
@@ -87,7 +87,7 @@ export const insertInlineMap = {
 ### Install Package
 
 ```bash
-npm install @platejs/date
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add The Plugin
@@ -95,12 +95,12 @@ npm install @platejs/date
 Use the React plugin when the editor renders the calendar popover.
 
 ```tsx
-import { DatePlugin } from '@platejs/date/react';
-import { createPlateEditor } from 'platejs/react';
+import { DatePlugin } from 'platejs/date/react';
+import { createEditor } from 'platejs/react';
 
 import { DateElement } from '@/components/editor/date';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [DatePlugin.configure({ component: DateElement })],
 });
 ```
@@ -197,11 +197,11 @@ The deserializer also accepts child text such as `<date>Mon Mar 23 2026</date>` 
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseDatePlugin` | `@platejs/date` | Headless inline void date plugin. |
-| `DatePlugin` | `@platejs/date/react` | React date plugin. |
+| `BaseDatePlugin` | `platejs` | Headless inline void date plugin. |
+| `DatePlugin` | `platejs/react` | React date plugin. |
 | `editor.plugin(BaseDatePlugin).update.insert(input?, options?)` | `BaseDatePlugin` update | Inserts a date with separate date input and node placement options. |
-| `normalizeDateValue(value)` | `@platejs/date` | Returns the canonical or authored string, or `undefined` for empty/invalid input. |
-| `formatDateValue(date)` | `@platejs/date` | Formats a `Date` object as `YYYY-MM-DD`. |
-| `parseCanonicalDateValue(value)` | `@platejs/date` | Parses only valid canonical date strings. |
-| `getDateDisplayLabel(value, options?)` | `@platejs/date` | Builds the visible date label. |
-| `DateElement` | `@platejs/date` | Element shape with one required `value`. |
+| `normalizeDateValue(value)` | `platejs` | Returns the canonical or authored string, or `undefined` for empty/invalid input. |
+| `formatDateValue(date)` | `platejs` | Formats a `Date` object as `YYYY-MM-DD`. |
+| `parseCanonicalDateValue(value)` | `platejs` | Parses only valid canonical date strings. |
+| `getDateDisplayLabel(value, options?)` | `platejs` | Builds the visible date label. |
+| `DateElement` | `platejs` | Element shape with one required `value`. |

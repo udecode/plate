@@ -4,7 +4,7 @@
   "title": "Mark Toolbar Button",
   "description": "A toolbar control for basic text formatting.",
   "dependencies": [
-    "@platejs/basic-nodes"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json"
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/mark-toolbar-button.tsx",
-      "content": "'use client';\n\nimport type { ScriptValue } from '@platejs/basic-nodes';\nimport type {\n  BoldPlugin,\n  CodePlugin,\n  HighlightPlugin,\n  ItalicPlugin,\n  KbdPlugin,\n  ScriptPlugin,\n  StrikethroughPlugin,\n  UnderlinePlugin,\n} from '@platejs/basic-nodes/react';\nimport { useEditor, useEditorSelector } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\ntype ToolbarButtonProps = React.ComponentProps<typeof ToolbarButton>;\n\ntype BooleanMarkPlugin =\n  | typeof BoldPlugin\n  | typeof CodePlugin\n  | typeof HighlightPlugin\n  | typeof ItalicPlugin\n  | typeof KbdPlugin\n  | typeof StrikethroughPlugin\n  | typeof UnderlinePlugin;\n\ntype MarkToolbarButtonProps = ToolbarButtonProps &\n  (\n    | {\n        plugin: BooleanMarkPlugin;\n        value?: never;\n      }\n    | {\n        plugin: typeof ScriptPlugin;\n        value: ScriptValue;\n      }\n  );\n\nexport function MarkToolbarButton({\n  plugin,\n  value,\n  ...props\n}: MarkToolbarButtonProps) {\n  const editor = useEditor();\n  const pressed = useEditorSelector((innerEditor) =>\n    innerEditor.plugin(plugin).read.isActive(value)\n  );\n\n  return (\n    <ToolbarButton\n      {...props}\n      pressed={pressed}\n      onClick={() => {\n        if (value === undefined) {\n          editor.plugin(plugin).update.toggle();\n        } else {\n          editor.plugin(plugin).update.toggle(value);\n        }\n\n        editor.api.dom.focus();\n      }}\n    />\n  );\n}\n",
+      "content": "'use client';\n\nimport type { ScriptValue } from 'platejs';\nimport {\n  type BoldPlugin,\n  type CodePlugin,\n  type HighlightPlugin,\n  type ItalicPlugin,\n  type KbdPlugin,\n  type ScriptPlugin,\n  type StrikethroughPlugin,\n  type UnderlinePlugin,\n  useEditor,\n  useEditorSelector,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\ntype ToolbarButtonProps = React.ComponentProps<typeof ToolbarButton>;\n\ntype BooleanMarkPlugin =\n  | typeof BoldPlugin\n  | typeof CodePlugin\n  | typeof HighlightPlugin\n  | typeof ItalicPlugin\n  | typeof KbdPlugin\n  | typeof StrikethroughPlugin\n  | typeof UnderlinePlugin;\n\ntype MarkToolbarButtonProps = ToolbarButtonProps &\n  (\n    | {\n        plugin: BooleanMarkPlugin;\n        value?: never;\n      }\n    | {\n        plugin: typeof ScriptPlugin;\n        value: ScriptValue;\n      }\n  );\n\nexport function MarkToolbarButton({\n  plugin,\n  value,\n  ...props\n}: MarkToolbarButtonProps) {\n  const editor = useEditor();\n  const pressed = useEditorSelector((innerEditor) =>\n    innerEditor.plugin(plugin).read.isActive(value)\n  );\n\n  return (\n    <ToolbarButton\n      {...props}\n      pressed={pressed}\n      onClick={() => {\n        if (value === undefined) {\n          editor.plugin(plugin).update.toggle();\n        } else {\n          editor.plugin(plugin).update.toggle(value);\n        }\n\n        editor.api.dom.focus();\n      }}\n    />\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/mark-toolbar-button.tsx"
     }

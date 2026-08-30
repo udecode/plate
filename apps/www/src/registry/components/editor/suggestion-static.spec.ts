@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createPluginContext } from '@platejs/core/internal';
-import { createBaseEditor } from 'platejs';
+import { createPluginContext, createEditor } from 'platejs';
 
 describe('BaseSuggestionKit', () => {
   it('injects inline suggestion type for static inline element rendering', async () => {
     const { BaseSuggestionKit } = await import('./suggestion-static');
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: BaseSuggestionKit,
     });
     const suggestion = createPluginContext(editor, BaseSuggestionKit[0]);

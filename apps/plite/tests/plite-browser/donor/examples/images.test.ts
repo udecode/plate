@@ -6,7 +6,7 @@ import {
   recordPliteBrowserRuntimeErrors,
   resetPliteReactRenderProfiler,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 type BlockDropCursorEdge = 'bottom' | 'top';
 
@@ -1019,9 +1019,9 @@ test.describe('images example', () => {
         editor: 'visible',
       },
     });
-    const expectedSelectedLines = await editor.root
-      .locator('p')
-      .allTextContents();
+    const expectedSelectedLines = (await editor.get.modelBlockTexts()).filter(
+      (line) => line.length > 0
+    );
 
     await editor.selection.selectDOM({
       anchor: { path: [0, 0], offset: 10 },

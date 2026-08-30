@@ -1,4 +1,4 @@
-import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
+import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

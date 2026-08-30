@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
-import { createEditor } from '../../../../../packages/plite/src/index.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
+import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 function rangeIsCollapsed(selection) {

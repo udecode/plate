@@ -5,20 +5,20 @@ import type {
   Descendant,
   EditorSnapshot,
   RuntimeId,
-} from '../../../../../packages/plite/src/index.ts';
-import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '../../../../../packages/plite/src/internal/index.ts';
-import { createDecorationSource } from '../../../../../packages/plite-react/src/decoration-source.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
+import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '../../../../../packages/plitejs/src/internal/index.ts';
+import { createDecorationSource } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
 import {
-  createReactEditor,
+  createEditor,
   Editable,
-  type ReactEditor,
+  type Editor,
   Plite,
   type PliteDecorationSource,
   useEditorSelector,
   useElementPath,
   usePliteProjectionEntries,
-} from '../../../../../packages/plite-react/src/index.ts';
-import { createPliteReactRenderCounter } from '../../../../../packages/plite-react/src/render-profiler.ts';
+} from '../../../../../packages/plitejs/src/react/index.ts';
+import { createPliteReactRenderCounter } from '../../../../../packages/plitejs/src/react/render-profiler.ts';
 import {
   cloneCounts,
   deltaCounts,
@@ -223,7 +223,7 @@ const RenderingStrategyOverlayApp = ({
   onDecorationSource,
 }: {
   counts: Record<string, number>;
-  editor: ReactEditor;
+  editor: Editor;
   onDecorationSource?: (
     source: PliteDecorationSource<{ highlight?: boolean }>
   ) => void;
@@ -347,7 +347,7 @@ const countShells = (container: HTMLElement) =>
     .length;
 
 const setupScenario = async () => {
-  const editor = createReactEditor();
+  const editor = createEditor();
   const counts: Record<string, number> = {};
   let decorationSource: PliteDecorationSource<{ highlight?: boolean }> | null =
     null;

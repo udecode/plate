@@ -1,7 +1,6 @@
 'use client';
 
-import { DndPlugin, useDraggable } from '@platejs/dnd';
-import { NodeApi } from '@platejs/plite';
+import { DndPlugin, useDraggable } from 'platejs/dnd/react';
 import {
   ParagraphPlugin,
   Plate,
@@ -9,8 +8,9 @@ import {
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   useEditorValue,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
+import { NodeApi } from 'plitejs';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
@@ -71,7 +71,7 @@ const DndEditor = ({
   label: string;
   texts: string[];
 }) => {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     id,
     plugins: [ParagraphPlugin, FixtureDndPlugin],
     initialValue: texts.map((text) => ({

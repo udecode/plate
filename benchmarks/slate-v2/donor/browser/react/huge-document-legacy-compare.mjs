@@ -54,7 +54,7 @@ const createPasteFragment = () => [
 ];
 const currentJsdomRequireFrom = resolve(
   currentRepo,
-  'packages/plite-react/package.json'
+  'packages/plitejs/package.json'
 );
 const latestArtifactPath =
   'tmp/slate-react-huge-document-legacy-compare-benchmark.json';
@@ -755,17 +755,17 @@ const renderChunk = ({ attributes, children }) =>
 const currentSharedSource = sharedSource
   .replace(
     "import * as SlateCore from 'slate'",
-    "import * as SlateCore from '@platejs/plite'\nimport * as InternalEditor from '@platejs/plite/internal'"
+    "import * as SlateCore from 'platejs'"
   )
   .replace(
     'const { createEditor, Editor } = SlateCore',
-    "const { createEditor } = SlateCore\nconst Editor = { ...InternalEditor, end: (editor, at) => InternalEditor.point(editor, at, { edge: 'end' }), start: (editor, at) => InternalEditor.point(editor, at, { edge: 'start' }), string: InternalEditor.string }"
+    "const { createEditor } = SlateCore\nconst Editor = { end: (editor, at) => editor.read.points.end(at), replace: (editor, input) => editor.update((tx) => tx.value.replace(input)), start: (editor, at) => editor.read.points.start(at), string: (editor, at) => editor.read.text.string(at) }"
   )
   .replace(
     "import { withReact } from 'slate-react'",
-    "import { createReactEditor } from '../../packages/plite-react/dist/index.js'"
+    "import { createEditor as createReactViewEditor } from '../../packages/plitejs/dist/react.js'"
   )
-  .replaceAll('withReact(createEditor())', 'createReactEditor()')
+  .replaceAll('withReact(createEditor())', 'createReactViewEditor()')
   .replaceAll('__SLATE_REACT_RENDER_PROFILER__', '__PLITE_REACT_RENDER_PROFILER__')
   .replaceAll('data-slate-', 'data-plite-');
 
@@ -1141,7 +1141,7 @@ console.log(JSON.stringify({
 
 const currentBenchmarkSource = `
 ${currentSharedSource}
-import { Editable, Plite as Slate } from '../../packages/plite-react/dist/index.js'
+import { Editable, Plite as Slate } from '../../packages/plitejs/dist/react.js'
 
 const segmentSize = Number(process.env.REACT_HUGE_COMPARE_ISLAND_SIZE || 32)
 const overscan = Number(process.env.REACT_HUGE_COMPARE_ACTIVE_RADIUS || 0)
@@ -1568,7 +1568,7 @@ const createEditableProps = ({
 })
 
 const mount = async ({ domStrategy, renderElement }) => {
-  const editor = createReactEditor()
+  const editor = createReactViewEditor()
   Editor.replace(editor, {
     children: createChildren(),
     selection: null,
@@ -1607,7 +1607,7 @@ const mount = async ({ domStrategy, renderElement }) => {
 }
 
 const createModelOnlyContext = () => {
-  const editor = createReactEditor()
+  const editor = createReactViewEditor()
   Editor.replace(editor, {
     children: createChildren(),
     selection: null,
@@ -1797,7 +1797,7 @@ const measureModelOnlyLane = async (setup, run) => {
 const measureReady = async ({ domStrategy, renderElement }) =>
   measureLane(
     async () => {
-      const editor = createReactEditor()
+      const editor = createReactViewEditor()
       Editor.replace(editor, {
         children: createChildren(),
         selection: null,
@@ -1843,7 +1843,7 @@ const measureReady = async ({ domStrategy, renderElement }) =>
 const measureNativeSurfaceComplete = async ({ domStrategy, renderElement }) =>
   measureLane(
     async () => {
-      const editor = createReactEditor()
+      const editor = createReactViewEditor()
       Editor.replace(editor, {
         children: createChildren(),
         selection: null,
@@ -2508,8 +2508,7 @@ console.log(JSON.stringify({
 const currentPackageManager = await parsePackageManager(currentRepo);
 
 if (!skipBuild) {
-  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
-  await buildRepo(currentRepo, currentPackageManager, './packages/plite-react');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plitejs');
 }
 
 const env = {

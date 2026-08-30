@@ -29,9 +29,9 @@ Add `TrailingBlockPlugin` when users need a safe place to continue typing after 
 
 ```tsx
 import { TrailingBlockPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [TrailingBlockPlugin],
 });
 ```
@@ -42,9 +42,9 @@ export const editor = createPlateEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Owns the correction that checks and inserts the trailing block. |
+| `TrailingBlockPlugin` | `platejs` | Owns the correction that checks and inserts the trailing block. |
 | `tx.nodes.last([], { level })` | Plite transaction | Finds the last node at the configured depth. |
-| `NodeApi.matches(...)` | `@platejs/plite` | Applies the optional last-node match. |
+| `NodeApi.matches(...)` | `platejs` | Applies the optional last-node match. |
 | `editor.ts` plugins | Registry | Add `TrailingBlockPlugin` after editing plugins. |
 | `SuggestionKit` | Registry | Weakly adapts an installed trailing block without installing it. |
 
@@ -73,7 +73,7 @@ The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most e
 Use `match` to limit insertion based on the current last block.
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 import { PLUGINS, TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlockPlugins = [
@@ -120,7 +120,7 @@ suggestion kit contributes this option through `override.plugins` only when the
 editor also installs `TrailingBlockPlugin`.
 
 ```tsx
-import { SUGGESTION_SKIP_TAG } from '@platejs/suggestion';
+import { SUGGESTION_SKIP_TAG } from 'platejs/suggestion';
 import { TrailingBlockPlugin } from 'platejs';
 
 TrailingBlockPlugin.configure({
@@ -156,8 +156,8 @@ through the active transaction.
 
 | API | Package | Use |
 |-----|---------|-----|
-| `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Normalizer that ensures a trailing block exists. |
-| `TrailingBlockPluginState.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
-| `TrailingBlockPluginState.level` | `@platejs/utils` | Depth used by `tx.nodes.last`. Defaults to `0`. |
-| `TrailingBlockPluginState.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
-| `TrailingBlockPluginState.match` | `@platejs/plite` node match | Limits insertion to matching last nodes. |
+| `TrailingBlockPlugin` | `platejs` | Normalizer that ensures a trailing block exists. |
+| `TrailingBlockPluginState.type` | `platejs` | Block type to insert. Defaults to the editor paragraph type. |
+| `TrailingBlockPluginState.level` | `platejs` | Depth used by `tx.nodes.last`. Defaults to `0`. |
+| `TrailingBlockPluginState.insert` | `platejs` | Custom wrapper around the generated insertion. |
+| `TrailingBlockPluginState.match` | `platejs` node match | Limits insertion to matching last nodes. |

@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "link-static",
   "dependencies": [
-    "@platejs/link"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/suggestion-style.json"
@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/link-static.tsx",
-      "content": "import { BaseLinkPlugin } from '@platejs/link';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';\n\nexport function LinkElementStatic(\n  props: PliteElementProps<typeof BaseLinkPlugin>\n) {\n  return (\n    <PliteElement\n      {...props}\n      as=\"a\"\n      className={cn(\n        'font-medium text-primary underline decoration-primary underline-offset-4',\n        inlineSuggestionVariants()\n      )}\n      attributes={{\n        ...props.attributes,\n        ...props.editor.plugin(BaseLinkPlugin).api.getAttributes(props.element),\n      }}\n    >\n      {props.children}\n    </PliteElement>\n  );\n}\n\nexport const BaseLinkKit = [\n  BaseLinkPlugin.configure({ component: LinkElementStatic }),\n];\n",
+      "content": "import { BaseLinkPlugin } from 'platejs';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';\n\nexport function LinkElementStatic(\n  props: PliteElementProps<typeof BaseLinkPlugin>\n) {\n  return (\n    <PliteElement\n      {...props}\n      as=\"a\"\n      className={cn(\n        'font-medium text-primary underline decoration-primary underline-offset-4',\n        inlineSuggestionVariants()\n      )}\n      attributes={{\n        ...props.attributes,\n        ...props.editor.plugin(BaseLinkPlugin).api.getAttributes(props.element),\n      }}\n    >\n      {props.children}\n    </PliteElement>\n  );\n}\n\nexport const BaseLinkKit = [\n  BaseLinkPlugin.configure({ component: LinkElementStatic }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/link-static.tsx"
     }

@@ -3,7 +3,7 @@ title: DOCX
 description: 从 Word 粘贴、导入 DOCX 文件，并将 Plate 内容导出为 DOCX。
 ---
 
-DOCX 支持三个方向：将 Word 剪贴板内容粘贴到 Plate、将 `.docx` 文件导入为 Plate 节点，以及将 Plate 节点导出为 `.docx` 文件。每个方向都有独立包，`@platejs/docx` 则重新导出三个包的公共 API。
+DOCX 支持三个方向：将 Word 剪贴板内容粘贴到 Plate、将 `.docx` 文件导入为 Plate 节点，以及将 Plate 节点导出为 `.docx` 文件。每个方向都有独立包，`platejs/docx` 则重新导出三个包的公共 API。
 
 <ComponentPreview name="docx-demo" />
 
@@ -25,10 +25,10 @@ DOCX 支持三个方向：将 Word 剪贴板内容粘贴到 Plate、将 `.docx` 
 
 | API | 所属包 | 用途 |
 | --- | --- | --- |
-| DOCX 门面包 | `@platejs/docx` | 从一个包导入粘贴、导入和导出 API |
-| `DocxPastePlugin` | `@platejs/docx-paste` | 从 Word 粘贴 |
-| `DocxImportPlugin` | `@platejs/docx-import` | 将 `.docx` 缓冲区转换为 Plate 节点 |
-| `DocxExportPlugin`、`exportToDocx` | `@platejs/docx-export` | 将 Plate 节点转换为 DOCX Blob |
+| DOCX 门面包 | `platejs/docx` | 从一个包导入粘贴、导入和导出 API |
+| `DocxPastePlugin` | `platejs/docx` | 从 Word 粘贴 |
+| `DocxImportPlugin` | `platejs/docx` | 将 `.docx` 缓冲区转换为 Plate 节点 |
+| `DocxExportPlugin`、`exportToDocx` | `platejs/docx` | 将 Plate 节点转换为 DOCX Blob |
 | Registry `DocxKit` | 应用内复制代码 | 选择完整 DOCX 预设的插件及其顺序 |
 | Registry `DocxExportKit` | 应用内复制代码 | 提供 DOCX 专用静态渲染器 |
 
@@ -41,7 +41,7 @@ Registry kit 是最快的完整配置。应用内数组安装 `JuicePlugin`、`D
 ### 安装
 
 ```bash
-npm install @platejs/docx @platejs/juice
+npm install platejs @tanstack/react-virtual color-name html-to-vdom jszip juice mammoth mime-types validator virtual-dom xmlbuilder2
 ```
 
 ### 添加 Kit
@@ -49,10 +49,10 @@ npm install @platejs/docx @platejs/juice
 <ComponentSource name="docx" />
 
 ```tsx title="components/editor/editor.tsx"
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { DocxKit } from '@/components/editor/docx';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...DocxKit],
 });
 ```
@@ -61,18 +61,18 @@ const editor = createPlateEditor({
 
 ## 从 Word 粘贴
 
-如果只需要剪贴板输入，请安装 `@platejs/docx-paste`。`JuicePlugin` 会保留 Word 粘贴 HTML 中定义的样式。
+如果只需要剪贴板输入，请安装 `platejs/docx`。`JuicePlugin` 会保留 Word 粘贴 HTML 中定义的样式。
 
 ```bash
-npm install @platejs/docx-paste @platejs/juice
+npm install platejs @tanstack/react-virtual color-name html-to-vdom jszip juice mammoth mime-types validator virtual-dom xmlbuilder2
 ```
 
 ```tsx title="components/editor/editor.tsx"
-import { DocxPastePlugin } from '@platejs/docx-paste';
-import { JuicePlugin } from '@platejs/juice';
-import { createPlateEditor } from 'platejs/react';
+import { DocxPastePlugin } from 'platejs/docx';
+import { JuicePlugin } from 'platejs/juice';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [JuicePlugin, DocxPastePlugin],
 });
 ```
@@ -84,15 +84,15 @@ const editor = createPlateEditor({
 `DocxImportPlugin` 将 DOCX `ArrayBuffer` 转换为节点、批注和警告。编辑器中已安装的 HTML codecs 决定最终的 Plate 节点。
 
 ```bash
-npm install @platejs/docx-import
+npm install platejs @tanstack/react-virtual color-name html-to-vdom jszip juice mammoth mime-types validator virtual-dom xmlbuilder2
 ```
 
 ```tsx title="components/editor/editor.tsx"
-import { DocxImportPlugin } from '@platejs/docx-import';
-import { createPlateEditor } from 'platejs/react';
+import { DocxImportPlugin } from 'platejs/docx';
+import { createEditor } from 'platejs/react';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...BaseEditorKit, DocxImportPlugin],
 });
 
@@ -117,17 +117,17 @@ export async function importDocx(file: File) {
 `DocxExportPlugin` 负责编辑器绑定的导出。显式传入文档快照，使导出操作保持确定性。
 
 ```bash
-npm install @platejs/docx-export
+npm install platejs @tanstack/react-virtual color-name html-to-vdom jszip juice mammoth mime-types validator virtual-dom xmlbuilder2
 ```
 
 ```tsx title="components/editor/editor.tsx"
-import { DocxExportPlugin, downloadDocx } from '@platejs/docx-export';
-import { createPlateEditor } from 'platejs/react';
+import { DocxExportPlugin, downloadDocx } from 'platejs/docx';
+import { createEditor } from 'platejs/react';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { DocxExportKit } from '@/components/editor/docx-export';
 
 const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as const;
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...editorPlugins, DocxExportPlugin],
 });
 
@@ -146,7 +146,7 @@ export async function downloadEditorDocx() {
 如果不需要已安装的插件 portal，可直接使用 `exportToDocx`：
 
 ```tsx
-import { downloadDocx, exportToDocx } from '@platejs/docx-export';
+import { downloadDocx, exportToDocx } from 'platejs/docx';
 
 const blob = await exportToDocx(editor.read.children(), {
   editorPlugins,
@@ -164,7 +164,7 @@ downloadDocx(blob, 'document.docx');
 
 ## API 参考
 
-### `@platejs/docx`
+### `platejs/docx`
 
 该门面包重新导出 `DocxPastePlugin`、`DocxImportPlugin`、`DocxExportPlugin`，以及三个独立包中的操作和类型。应用通过本地插件数组决定插件成员和顺序。
 

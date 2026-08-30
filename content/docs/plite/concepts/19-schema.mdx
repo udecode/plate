@@ -11,8 +11,8 @@ and unknown vocabulary by default; a raw editor without one stays permissive.
 
 | Need                                     | API                                        | Owner                                   |
 | ---------------------------------------- | ------------------------------------------ | --------------------------------------- |
-| Declare the complete document vocabulary | `defineEditorSchema(...)`                  | `@platejs/plite`                        |
-| Add feature-owned schema declarations    | extension `schema` contribution            | `@platejs/plite` or a framework adapter |
+| Declare the complete document vocabulary | `defineEditorSchema(...)`                  | `plitejs`                        |
+| Add feature-owned schema declarations    | extension `schema` contribution            | `plitejs` or a framework adapter |
 | Inspect compiled behavior                | `editor.read.schema.*`                     | committed editor state                  |
 | Validate a complete persisted document   | `editor.read.schema.assertDocument(...)`   | compiled schema                         |
 | Validate closed children                 | `editor.read.schema.assertFragment(...)`   | compiled schema                         |
@@ -41,7 +41,7 @@ import {
   property,
   schema,
   target,
-} from "@platejs/plite";
+} from "plitejs";
 
 const ArticleSchema = defineEditorSchema("schema:article", {
   elements: {
@@ -329,7 +329,7 @@ against an editor state. See [Clipboard And Paste](17-clipboard-and-paste).
 Use the smallest surface that preserves the information you have.
 
 ```ts
-import { ContentSlice } from "@platejs/plite";
+import { ContentSlice } from "plitejs";
 
 editor.update.fragment.replace([
   { type: "paragraph", children: [{ text: "Closed content" }] },
@@ -376,7 +376,7 @@ import {
   defineEditorSchema,
   defineExtensionSlot,
   schema,
-} from "@platejs/plite";
+} from "plitejs";
 
 const articleSchema = (version: number, type: string) =>
   defineEditorSchema("schema:article", {
@@ -438,7 +438,7 @@ different fingerprint is an invalid deployment contract.
 
 The document returned by `editor.read.value()` does not embed schema identity.
 Persist it in an application envelope when documents may cross schema versions.
-`@platejs/plite-history` does this in `History.toJSON(editor)` and rejects a
+`plitejs/history` does this in `History.toJSON(editor)` and rejects a
 mismatch in `History.fromJSON(editor, json)` before decoding any batch.
 
 ## Related Docs

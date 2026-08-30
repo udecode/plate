@@ -490,7 +490,7 @@ is not.
 
 Current retained evidence is too weak:
 
-- the strongest invalid-order example is `packages/list-classic`, which current
+- the strongest invalid-order example is `packages/platejs/src/features/list`, which current
   API doctrine marks maintenance-only and forbids as a target-architecture
   investment driver;
 - modern list, table, code-block, layout, media, callout, and inline schemas in
@@ -629,7 +629,7 @@ Line references below point to
 1. **Demote `A2` from P1 to evidence-backed defer.**
    The ranking at line 444 and dossier at lines 603–734 do not clear the
    material-value gate. The local case at lines 612–614 is five heterogeneous
-   corrections plus a `list-classic` ordering defect; `list-classic` is
+   corrections plus a `legacy-list-model` ordering defect; `legacy-list-model` is
    maintenance-only, while retained table, code, layout, media, and callout
    schemas are homogeneous or repeated-type rules. `TrailingBlockPlugin`,
    `SingleBlockPlugin`, and `SingleLinePlugin` also contain dynamic command,

@@ -200,8 +200,8 @@ const expectedPressure = {
       /\bevent:\s*'(?:children|content)'/
     ),
     activeCorrectionOwners: 4,
-    classicListPositionalAssumptions: countLineMatches(
-      ['packages/list-classic/src/lib/BaseListPlugin.ts'],
+    legacyListModelPositionalAssumptions: countLineMatches(
+      ['packages/platejs/src/features/list/src/lib/BaseListPlugin.ts'],
       /concat\(0\)|concat\(\[1\]\)|concat\(1\)|children\[0\]|children\[1\]|\[\.\.\.liPath, 1(?:, 0)?\]/
     ),
   },

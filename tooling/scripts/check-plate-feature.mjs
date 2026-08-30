@@ -383,25 +383,25 @@ export const validateFeaturePlan = (
   } catch (error) {
     errors.push(error.message);
   }
-  const p2Index = completionRows.findIndex(
-    ([gate]) => gate === 'P2 autoreview'
+  const p1Index = completionRows.findIndex(
+    ([gate]) => gate === 'P1 autoreview'
   );
   const goalIndex = completionRows.findIndex(
     ([gate]) => gate === 'Goal plan complete'
   );
-  const p2Gate = completionRows[p2Index];
+  const p1Gate = completionRows[p1Index];
   const goalGate = completionRows[goalIndex];
 
-  if (!p2Gate || p2Gate[1] !== 'yes') {
-    errors.push('Missing required P2 autoreview completion gate.');
-  } else if (!isResolved(p2Gate[3])) {
-    errors.push('P2 autoreview completion gate needs resolved evidence.');
+  if (!p1Gate || p1Gate[1] !== 'yes') {
+    errors.push('Missing required P1 autoreview completion gate.');
+  } else if (!isResolved(p1Gate[3])) {
+    errors.push('P1 autoreview completion gate needs resolved evidence.');
   }
   if (!goalGate || goalGate[1] !== 'yes') {
     errors.push('Missing required Goal plan complete gate.');
   }
-  if (p2Index === -1 || goalIndex === -1 || p2Index > goalIndex) {
-    errors.push('P2 autoreview must appear before Goal plan complete.');
+  if (p1Index === -1 || goalIndex === -1 || p1Index > goalIndex) {
+    errors.push('P1 autoreview must appear before Goal plan complete.');
   }
 
   return errors;

@@ -1,16 +1,16 @@
 'use client';
 
-import { PlaceholderPlugin } from '@platejs/media/react';
 import { generateReactHelpers } from '@uploadthing/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { PLUGINS } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
+import { PlaceholderPlugin } from 'platejs/media/react';
 import {
   PlateElement,
   useEditor,
   useEditorPlugin,
   usePath,
   usePluginStore,
+  type PlateElementProps,
 } from 'platejs/react';
 import * as React from 'react';
 import { toast } from 'sonner';

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "details-static",
+  "dependencies": [
+    "platejs"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/details-static.tsx",
+      "content": "import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nexport function DetailsElementStatic(\n  props: PliteElementProps<typeof BaseDetailsPlugin>\n) {\n  const { element, slots } = props;\n\n  return (\n    <PliteElement {...props} as=\"details\" className=\"my-1\">\n      {slots.children({ from: 0, to: 0 })}\n      {element.children.length > 1\n        ? slots.children({ from: 1, to: element.children.length - 1 })\n        : null}\n    </PliteElement>\n  );\n}\n\nexport function DetailsSummaryElementStatic(\n  props: PliteElementProps<typeof BaseDetailsSummaryPlugin>\n) {\n  return (\n    <PliteElement {...props} as=\"summary\" className=\"font-medium\">\n      {props.children}\n    </PliteElement>\n  );\n}\n\nexport const BaseDetailsKit = [\n  BaseDetailsSummaryPlugin.configure({\n    component: DetailsSummaryElementStatic,\n  }),\n  BaseDetailsPlugin.configure({ component: DetailsElementStatic }),\n] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/details-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

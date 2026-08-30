@@ -10,7 +10,7 @@ import {
   type EditorDocumentValue,
   type Element,
   type SchemaElement,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 

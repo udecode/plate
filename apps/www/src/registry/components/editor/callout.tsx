@@ -1,6 +1,6 @@
 'use client';
 
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 import {
   type PlateElementProps,
   PlateElement,

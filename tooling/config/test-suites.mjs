@@ -1,5 +1,7 @@
 export const TEST_FILE_PATTERNS = [
   'apps/**/*.spec.{ts,tsx}',
+  'apps/**/*.test.mjs',
+  'benchmarks/editor/benchmarks/*.test.ts',
   'packages/**/*.spec.{ts,tsx}',
   'tooling/scripts/**/*.test.mjs',
 ];
@@ -18,6 +20,8 @@ export const TEST_IGNORE_PATTERNS = [
   '**/coverage/**',
   '**/dist/**',
   '**/node_modules/**',
+  'packages/platejs/**',
+  'packages/plitejs/**',
   '**/tests/plite-browser/**',
   '**/tests/browser/**',
   '.next/**',

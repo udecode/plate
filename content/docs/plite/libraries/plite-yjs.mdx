@@ -3,7 +3,7 @@ title: "Plite Yjs"
 description: "Connect a Plite editor to Yjs document meta, awareness, and provider lifecycle."
 ---
 
-`@platejs/yjs` connects a Plite editor to a Yjs document. Use it when your app
+`platejs/yjs` connects a Plite editor to a Yjs document. Use it when your app
 owns the collaboration transport and wants Plite document changes, selection state,
 awareness, and provider lifecycle to share one Yjs source of truth. Plite
 History owns undo and redo; canonical history replay uses the same Yjs bridge
@@ -14,7 +14,7 @@ as every editor change.
 Install the adapter with the Plite packages your editor already uses.
 
 ```text
-npm install @platejs/yjs yjs @platejs/plite @platejs/plite-react @platejs/plite-history react react-dom
+npm install plitejs platejs @tanstack/react-virtual diff-match-patch-ts yjs react react-dom
 ```
 
 Install your transport package separately. For Hocuspocus, add the provider at
@@ -31,9 +31,9 @@ Create or wrap a provider as a `YjsProviderLike`, then pass it to
 adapter.
 
 ```tsx
-import { createEditor } from "@platejs/plite";
-import { yjs } from "@platejs/yjs";
-import { history } from "@platejs/plite-history";
+import { createEditor } from "plitejs";
+import { yjs } from "platejs/yjs";
+import { history } from "plitejs/history";
 
 const editor = createEditor({
   extensions: [
@@ -42,7 +42,7 @@ const editor = createEditor({
       clientId: "local-user",
       doc,
       provider,
-      rootName: "@platejs/plite",
+      rootName: "plitejs",
     }),
   ],
   initialValue,
@@ -158,8 +158,8 @@ import {
   defineExtension,
   defineEffect,
   valueCodecs,
-} from "@platejs/plite";
-import { yjs } from "@platejs/yjs";
+} from "plitejs";
+import { yjs } from "platejs/yjs";
 
 const incrementCounter = defineEffect<number>({
   codec: valueCodecs.number,
@@ -251,7 +251,7 @@ import {
   useYjsProviderStatus,
   useYjsProviderSynced,
   useYjsRemoteCursors,
-} from "@platejs/yjs/react";
+} from "platejs/yjs/react";
 ```
 
 `useYjsRemoteCursorDecorationSource` converts remote selections into a Plite
@@ -260,7 +260,7 @@ geometry when the mounted editor can provide DOM rects.
 
 ## Provider Boundary
 
-Provider packages stay out of `@platejs/yjs`. Your app chooses Hocuspocus,
+Provider packages stay out of `platejs/yjs`. Your app chooses Hocuspocus,
 WebSocket, WebRTC, IndexedDB, or a custom provider and maps it into
 `YjsProviderLike`.
 
@@ -271,10 +271,10 @@ outside the Plite package.
 ## Proof
 
 The package is covered by change, selection, awareness, provider, React, and
-structural soak contracts under `packages/yjs/test`.
+structural soak contracts under `packages/platejs/test/yjs`.
 
 ```sh
-pnpm --filter @platejs/yjs test
+pnpm --filter platejs test:partition:yjs
 ```
 
 Run the focused Chromium rows for editor convergence, the Plate collaboration

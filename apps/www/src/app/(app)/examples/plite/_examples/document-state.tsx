@@ -3,18 +3,18 @@ import {
   defineStateField,
   type EditorCommit,
   valueCodecs,
-} from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   Plite,
   PliteReactUpdatePolicy,
-  useEditor,
+  useEditorContext,
   useEditorState,
   useSetStateField,
-  usePliteEditor,
+  useEditor,
   useStateFieldValue,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import { type ChangeEvent, type KeyboardEvent, useRef } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +93,7 @@ const getHistoryShortcut = (event: KeyboardEvent<HTMLInputElement>) => {
 };
 
 const DocumentStatePanel = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const historyPortal = editor.extension(HistoryExtension);
   const title = useStateFieldValue(documentTitle);
   const setTitle = useSetStateField(documentTitle);
@@ -257,7 +257,7 @@ const DocumentStatePanel = () => {
 };
 
 const DocumentStateExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [HistoryExtension, DocumentStateExtension],
     initialValue: {
       children: [

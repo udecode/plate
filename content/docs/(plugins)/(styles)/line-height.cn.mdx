@@ -34,10 +34,10 @@ docs:
 将套件添加到插件中：
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 import { LineHeightKit } from "@/components/editor/line-height";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...LineHeightKit,
@@ -54,7 +54,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/basic-styles
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -62,10 +62,10 @@ npm install @platejs/basic-styles
 在创建编辑器时将 `LineHeightPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { LineHeightPlugin } from "@platejs/basic-styles/react";
-import { createPlateEditor } from "platejs/react";
+import { LineHeightPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     LineHeightPlugin,
@@ -78,11 +78,11 @@ const editor = createPlateEditor({
 您可以配置 `LineHeightPlugin` 来指定目标元素并定义默认或有效的行高值。
 
 ```tsx
-import { LineHeightPlugin } from "@platejs/basic-styles/react";
+import { LineHeightPlugin } from "platejs/react";
 import { PLUGINS } from "platejs";
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     LineHeightPlugin.configure({

@@ -390,7 +390,7 @@ Completion Gates:
 | Package file checklist | yes | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | 88 expected/actual, 88 checked, 0 missing/extra/deferred/untracked |
 | Package/API proof | yes | Run focused typecheck/test/build or record N/A | package and aggregate proof pass |
 | Shared Core gate coverage | no | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | generic udecode packages; no Core/Plite owner changed |
-| Non-Core package error triage | yes | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | media and list-classic/resizable failures recorded by owner |
+| Non-Core package error triage | yes | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | media and legacy-list-model/resizable failures recorded by owner |
 | Source audit | yes | Run exact audit for removed compatibility names or record N/A | removed exports have zero package-import callers; declaration indexes are clean |
 | Rename ledger | no | Update `docs/plans/pre-renaming.md` when a rename is postponed or intentionally kept | no rename proposed or deferred |
 | Extracted-file inventory | yes | Record untracked/extracted file command, row count, and bucket for every file in scope | 0 package-untracked files; exact origin/main manifest parity |
@@ -570,7 +570,7 @@ Out-of-scope package drift:
 | Package / command | Error summary | Why not blocking this run | Owner / next |
 |-------------------|---------------|---------------------------|--------------|
 | `@platejs/media` consumer typecheck | existing Slate-era package errors plus `PreviewImage` types a button mouse event on an image and puts its ref inside hook props | package is outside this sequential packet; weakening react-utils inference would hide a caller bug | media package cleanup: type the image event as `HTMLImageElement` and return the ref through the hook result |
-| `@platejs/list-classic` / transitive `@platejs/resizable` consumer typecheck | existing Slate-era editor API drift, including missing migrated editor transform/read surfaces | failures do not reference the removed udecode/utils symbols or changed generic signatures; packages are outside this sequential packet | close those packages in their own Plate Next migration packet |
+| `platejs` / transitive `@platejs/resizable` consumer typecheck | existing Slate-era editor API drift, including missing migrated editor transform/read surfaces | failures do not reference the removed udecode/utils symbols or changed generic signatures; packages are outside this sequential packet | close those packages in their own Plate Next migration packet |
 
 Out-of-scope matches discovered:
 | Pattern / API | Outside-scope owners | Why not patched now | Next package / owner |
@@ -590,7 +590,7 @@ Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
 | 1 | media image event/ref caller | strict react-utils inference exposes a real caller mismatch | `packages/media/src/lib/media/PreviewImage.tsx` | fix during media migration review; do not weaken react-utils |
-| 2 | list-classic/resizable Slate-era drift | targeted consumer proof cannot close those unrelated packages | package typecheck output | handle in their own Plate Next packets |
+| 2 | legacy-list-model/resizable Slate-era drift | targeted consumer proof cannot close those unrelated packages | package typecheck output | handle in their own Plate Next packets |
 
 Findings:
 - The next untouched workspace packages after depset are
@@ -613,7 +613,7 @@ Error attempts:
 | Removing `useStableFn` dependencies broke the core consumer that intentionally changes callback identity with an atom | 1 | retain the explicit dependency contract and move only the latest-function ref update after render | core consumer typecheck passes |
 | Consumer proof exposed the invalid media image event/ref hook | 1 | keep strict owner types and classify the caller instead of weakening the package | core/link/caption pass; media row recorded out of scope |
 | First udecode/utils source-first typecheck exposed a stale generic argument in the unused `getHandler` spec | 1 | verify repository callers and hard-cut the dead helper/spec instead of repairing compatibility-only proof | package typecheck passes; exact caller audit is empty |
-| Initial broad utils consumer command included a nonexistent package filter and later reached existing list-classic/resizable migration failures | 1 | rerun targeted known consumers and classify unrelated package failures by owner | core, react-utils, floating, basic-nodes, csv, markdown, and link pass; unrelated failures recorded |
+| Initial broad utils consumer command included a nonexistent package filter and later reached existing legacy-list-model/resizable migration failures | 1 | rerun targeted known consumers and classify unrelated package failures by owner | core, react-utils, floating, basic-nodes, csv, markdown, and link pass; unrelated failures recorded |
 | First scoped autoreview found the returned `useHotkeys` element ref changed identity on every render | 1 | return React's stable state setter directly and add a ref-identity regression test in the existing owner | focused lint/typecheck, 26 tests, build, and clean autoreview rerun pass |
 
 Verification evidence:
@@ -642,11 +642,11 @@ Final handoff contract:
 - verdict matrix summary: all three packages score 100 and are kept after cleanup
 - Plite/Plate gaps or blockers: none inside scope
 - related scoped sweep query/active scope/matches/patched/deferred: exact type-escape, removed-name, caller, declaration, and lifecycle audits recorded above; 0 active-package deferrals
-- out-of-scope matches discovered: media caller mismatch, list-classic/resizable migration drift, and independent same-name local types/helpers
+- out-of-scope matches discovered: media caller mismatch, legacy-list-model/resizable migration drift, and independent same-name local types/helpers
 - changes made: lifecycle/runtime typing repairs, focused regression tests, generated barrels, 15 hard-cuts, package-scoped changesets
 - tests/proof commands: package lint, source-first typecheck, tests, builds, barrels, declaration and caller audits; aggregate commands below
 - old compatibility names audited: all hard-cut runtime/type exports have zero `@udecode/utils` imports; obsolete React utility exports have zero callers
-- needs attention: media and list-classic/resizable rows above, outside this packet
+- needs attention: media and legacy-list-model/resizable rows above, outside this packet
 - next best Plate Next packet: intentionally not selected; user requested exactly three packages
 
 Reboot status:
@@ -680,5 +680,5 @@ Timeline:
 - 2026-07-13 Mechanical completion checker exited 0 with `[autogoal] complete`.
 
 Open risks:
-- No in-scope open risk; media and list-classic/resizable corrections stay in
+- No in-scope open risk; media and legacy-list-model/resizable corrections stay in
   their owning future packets.

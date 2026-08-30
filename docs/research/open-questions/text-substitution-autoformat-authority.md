@@ -25,7 +25,7 @@ This family is weaker than block shorthand or markdown-delimiter autoformat.
 Current evidence is:
 
 - strong for current Plate package behavior:
-  - `@platejs/autoformat` ships the substitution tables
+  - `platejs` ships the substitution tables
   - tests cover punctuation, legal symbols, smart quotes, division/per-mille,
     fractions, and undo-on-delete
 - decent for mainstream typing norms:

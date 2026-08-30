@@ -53,7 +53,7 @@ Strong take: the raw matrix still slightly over-scores `core` and `table` becaus
 
 ## My Order
 
-### 1. `list-classic`
+### 1. `legacy-list-model`
 
 Best next package.
 
@@ -62,11 +62,11 @@ Best next package.
   - high-value editor behavior, not coverage cosplay
   - sits exactly where the older plan already wanted the next serious spend
 - Start here:
-  - [getTodoListItemEntry.ts](packages/list-classic/src/lib/queries/getTodoListItemEntry.ts)
-  - [getHighestEmptyList.ts](packages/list-classic/src/lib/queries/getHighestEmptyList.ts)
-  - [withDeleteFragmentList.ts](packages/list-classic/src/lib/withDeleteFragmentList.ts)
-  - [withInsertBreakList.ts](packages/list-classic/src/lib/withInsertBreakList.ts)
-  - [moveListSiblingsAfterCursor.ts](packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.ts)
+  - [getTodoListItemEntry.ts](packages/platejs/src/features/list/src/lib/queries/getTodoListItemEntry.ts)
+  - [getHighestEmptyList.ts](packages/platejs/src/features/list/src/lib/queries/getHighestEmptyList.ts)
+  - [withDeleteFragmentList.ts](packages/platejs/src/features/list/src/lib/withDeleteFragmentList.ts)
+  - [withInsertBreakList.ts](packages/platejs/src/features/list/src/lib/withInsertBreakList.ts)
+  - [moveListSiblingsAfterCursor.ts](packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.ts)
 
 ### 2. `suggestion`
 
@@ -125,7 +125,7 @@ Best next package.
 - Why:
   - still has clean query and toggle seams left
   - smaller and cheaper than the packages above
-  - good follow-up once `list-classic` is moving
+  - good follow-up once `legacy-list-model` is moving
 - Start here:
   - [getSiblingListStyleType.ts](packages/list/src/lib/queries/getSiblingListStyleType.ts)
   - [toggleListByPath.ts](packages/list/src/lib/transforms/toggleListByPath.ts)
@@ -204,7 +204,7 @@ This is my actual recommendation order, not just the raw heuristic sort.
 
 | Rank | Package        | Score | Take                                                   |
 | ---- | -------------- | ----: | ------------------------------------------------------ |
-| 1    | `list-classic` |    49 | Best next deterministic editor-behavior lane           |
+| 1    | `legacy-list-model` |    49 | Best next deterministic editor-behavior lane           |
 | 2    | `suggestion`   |    46 | Rich transform/diff value without `/react`             |
 | 3    | `docx`         |    45 | Very unit-testable cleaner/import seams                |
 | 4    | `ai`           |    47 | Good pure transform/helper lane, avoid network theater |

@@ -1,5 +1,5 @@
 ---
-'@platejs/csv': major
+'platejs': major
 ---
 
 Export `CsvPluginState` as the complete mutable state contract for `CsvPlugin`.

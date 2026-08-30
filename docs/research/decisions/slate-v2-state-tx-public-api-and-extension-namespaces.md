@@ -12,8 +12,8 @@ source_refs:
   - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts
   - /Users/zbeyens/git/prosemirror/state/src/transaction.ts
   - /Users/zbeyens/git/prosemirror/state/src/plugin.ts
-  - /Users/zbeyens/git/tiptap/packages/core/src/CommandManager.ts
-  - /Users/zbeyens/git/tiptap/packages/core/src/Extendable.ts
+  - /Users/zbeyens/git/tiptap/packages/platejs/src/CommandManager.ts
+  - /Users/zbeyens/git/tiptap/packages/platejs/src/Extendable.ts
 related:
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md

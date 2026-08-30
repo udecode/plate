@@ -1,9 +1,9 @@
 'use client';
 
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
 import { setEditorReadOnly } from 'platejs';
 import { useEditor, useEditorViewState, usePluginStore } from 'platejs/react';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import {

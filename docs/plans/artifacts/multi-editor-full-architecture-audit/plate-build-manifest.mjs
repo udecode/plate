@@ -147,8 +147,8 @@ const excludedReason = (file) => {
   if (file.startsWith('packages/plate-scripts/')) {
     return 'Repository build tooling, not a Plate editor architecture surface.';
   }
-  if (file.startsWith('packages/list-classic/')) {
-    return 'Maintenance-only classic-list package; excluded from target architecture by VISION.md.';
+  if (file.startsWith('packages/platejs/src/features/list/')) {
+    return 'Maintenance-only legacy-list-model package; excluded from target architecture by VISION.md.';
   }
   if (file.startsWith('apps/www/src/registry/changelog/')) {
     return 'Historical registry changelog, not a current architecture contract.';
@@ -553,8 +553,8 @@ const pressure = {
       /\bevent:\s*'(?:children|content)'/
     ),
     activeCorrectionOwners: orderedCorrectionPaths.length,
-    classicListPositionalAssumptions: countLineMatches(
-      ['packages/list-classic/src/lib/BaseListPlugin.ts'],
+    legacyListModelPositionalAssumptions: countLineMatches(
+      ['packages/platejs/src/features/list/src/lib/BaseListPlugin.ts'],
       /concat\(0\)|concat\(\[1\]\)|concat\(1\)|children\[0\]|children\[1\]|\[\.\.\.liPath, 1(?:, 0)?\]/
     ),
   },

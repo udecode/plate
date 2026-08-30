@@ -30,12 +30,12 @@ layering, open-code preservation, and registry wiring.
 
 ## Routing Gate
 
-| Owner                  | Scope                                                                |
-| ---------------------- | -------------------------------------------------------------------- |
-| `vision` / `best-api`  | durable doctrine and reusable public call shape                      |
-| `plate-plugin-creator` | package plugin mechanics and package proof                           |
-| `plate-ui`             | all Plate React/component law, copied UI, wiring, and browser proof   |
-| `docs-creator`         | current-state public teaching                                        |
+| Owner                  | Scope                                                               |
+| ---------------------- | ------------------------------------------------------------------- |
+| `vision` / `best-api`  | durable doctrine and reusable public call shape                     |
+| `plate-plugin-creator` | package plugin mechanics and package proof                          |
+| `plate-ui`             | all Plate React/component law, copied UI, wiring, and browser proof |
+| `docs-creator`         | current-state public teaching                                       |
 
 Continue here whenever a Plate package or registry task makes a React,
 component, hook, provider, store, primitive, or composition decision. Package
@@ -50,11 +50,8 @@ schema law, and application typing remain outside this skill.
 4. **Keep UI composition local until proven otherwise.** Popovers, labels, and layout belong in the component unless multiple surfaces need the same contract.
 5. **Registry wiring is part of authorship.** A component is not done until kits, examples, and style deps are coherent.
 6. **React floor is 19.2+.** Do not add backward-compat code for React 18-era limitations or patterns.
-7. **Classic registry surfaces are maintenance-only.** Do not invest in
-   proactive `*-classic` redesign, including `list-classic`, while they await
-   deprecation. A retained public classic item must still install through every
-   supported registry provider; repair accidental coupling at its real owner
-   instead of hiding the item or cloning the assembly.
+7. **Lists have one UI graph.** Root `ListPlugin` owns list behavior. The
+   standard list registry items are the only copied UI family for lists.
 8. **Examples teach the install shape.** Do not remove an explicit feature
    plugin, kit, renderer binding, or dependency merely because an aggregate
    application editor installed by the `editor-kit` registry item also includes
@@ -69,13 +66,18 @@ schema law, and application typing remain outside this skill.
 10. **Direct components are the default.** A component family gets zero or one
     semantic controller hook, never a state-hook/prop-hook pipeline or one hook
     per subcomponent.
-11. **React APIs are modern by construction.** Use React 19.2 forms directly;
+11. **Complete blocks name their owner.** Keep the reusable presentation
+    component exported by `editor.tsx` as `Editor`. A block-owned
+    `plate-editor.tsx` that creates the editor and mounts `Plate` exports
+    `PlateEditor`; it never forces consumers to alias the presentation
+    component as `EditorSurface` or `EditorContent`.
+12. **React APIs are modern by construction.** Use React 19.2 forms directly;
     do not preserve React 18 branches, `forwardRef`, or compatibility wrappers.
-12. **One installed editor namespace.** Plate registry source installs under
+13. **One installed editor namespace.** Plate registry source installs under
     `components/editor`; `components/ui` belongs only to shadcn primitives.
-13. **Kit is a value, not topology.** Feature files/items use the feature name;
+14. **Kit is a value, not topology.** Feature files/items use the feature name;
     their app-owned plugin tuple is `FooKit`, including one-descriptor features.
-14. **Variants resolve before install.** Plate supports Radix and Base UI.
+15. **Variants resolve before install.** Plate supports Radix and Base UI.
     Source variants expose one editor-facing contract and write to one target.
     Never branch on the primitive library at runtime.
     A website-only isolated preview may select author-source variants at
@@ -85,17 +87,21 @@ schema law, and application typing remain outside this skill.
     Plate adapter merely to replace syntax that shadcn already translates.
     Add an adapter when Plate owns behavior, focus, or props that the transform
     does not normalize; its consumers use the provider-neutral contract.
-15. **Preset catalogs are not compatibility proof.** Keep one complete
+16. **Preset catalogs are not compatibility proof.** Keep one complete
     Base/Nova canonical registry graph. Add a provider source variant only for
     a named reusable boundary whose complete installed graph passes that
     provider. Materialize supported styles from pinned upstream transforms as
     sparse logical overlays; reject unsupported providers and styles instead of
     widening Plate support from `shadcn/preset`.
-16. **Supported providers expose the complete semantic registry.** Base is the
+17. **Supported providers expose the complete semantic registry.** Base is the
     default provider. Never 404 or filter a public item because its current
     source is coupled to Radix. Remove the coupling or translate it at the
     smallest direct primitive owner; keep assemblies and transitive items
     canonical.
+18. **Plate consumes one distribution.** Package and registry source imports
+    Plate APIs from their canonical `platejs` root, React root, or feature
+    subpath, never directly from `plitejs`. Only the physical
+    `packages/platejs` facade owner crosses that boundary.
 
 ## Critical Rules
 
@@ -206,8 +212,8 @@ schema law, and application typing remain outside this skill.
   bundled into a neutral owner.
 - Base and Plate constructors accept root-level `component`; Base `.extend()`
   does not. Static/base kits declare or terminally replace the owning
-  server-safe component and never import `platejs/react`, `@platejs/core/react`,
-  or any `@platejs/*/react` entrypoint just to bind it.
+  server-safe component and never import `platejs/react` or any
+  `platejs/*/react` entrypoint just to bind it.
 - Use `toPlatePlugin()` at the owning React adapter to publish a reusable
   Plate-layer descriptor or add genuine Plate-only authoring. A terminal
   consumer never inserts conversion merely to set `component`.
@@ -250,11 +256,8 @@ Read this reference for component families, registry feature variants, headless 
   descriptor. Append a terminal configuration of that authored plugin after
   the inherited application plugins so earlier fields survive and the explicit
   later configuration wins.
-- Do not create, modernize, polish, or parity-sync `*-classic` registry
-  variants, including `list-classic`. Touch an existing classic surface only
-  for a user-facing regression, security/release blocker, or an explicitly
-  authorized deprecation/removal. Planned deprecation is not deletion
-  authority; new component work targets the modern surface.
+- Do not create a second list registry variant. Extend the standard list item
+  family when list UI needs another capability.
 
 ### Registry Changelog
 
@@ -390,9 +393,11 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
 9. Share runtime-neutral kits; wire base/live renderer kits and registry deps
    only where the renderer ownership actually differs.
 10. Apply the registry changelog decision:
-   - user-visible registry change: add or update a registry changelog entry,
-     run the generator, and run the registry changelog check
-   - not user-visible: record `N/A: <reason>`
+
+- user-visible registry change: add or update a registry changelog entry,
+  run the generator, and run the registry changelog check
+- not user-visible: record `N/A: <reason>`
+
 11. If package exports changed, run `pnpm brl`.
 12. If the work changed a reusable API or canonical consumer pattern, run the
     automatic `best-api repair` chain before closeout.

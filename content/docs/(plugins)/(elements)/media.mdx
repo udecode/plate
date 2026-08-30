@@ -89,10 +89,10 @@ which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`,
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { MediaKit } from '@/components/editor/media';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...MediaKit,
@@ -121,7 +121,7 @@ UPLOADTHING_TOKEN=xxx
 ### Installation
 
 ```bash
-npm install @platejs/media
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
@@ -129,17 +129,10 @@ npm install @platejs/media
 Include the media plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  PlaceholderPlugin,
-  VideoPlugin,
-} from '@platejs/media/react';
-import { createPlateEditor } from 'platejs/react';
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ImagePlugin,
@@ -157,15 +150,8 @@ const editor = createPlateEditor({
 Configure the plugins with custom components and upload settings.
 
 ```tsx
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  PlaceholderPlugin,
-  VideoPlugin,
-} from '@platejs/media/react';
-import { createPlateEditor } from 'platejs/react';
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
 import { 
   AudioElement, 
   FileElement, 
@@ -176,7 +162,7 @@ import {
 } from '@/components/editor/media-nodes';
 import { MediaUploadToast } from '@/components/editor/media';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ImagePlugin.configure({ component: ImageElement }),
@@ -211,7 +197,7 @@ node type, or content root.
 Configure only the media plugin and its renderer:
 
 ```tsx
-import { ImagePlugin } from '@platejs/media/react';
+import { ImagePlugin } from 'platejs/media/react';
 import { ImageElement } from '@/components/editor/media-image';
 
 export const MediaKit = [
@@ -373,7 +359,7 @@ Then integrate your custom upload hook with the media components:
 
 ```tsx
 import { type PlateElementProps, useEditor } from 'platejs/react';
-import { PlaceholderPlugin } from '@platejs/media/react';
+import { PlaceholderPlugin } from 'platejs/media/react';
 import { PLUGINS } from 'platejs';
 
 import { useUploadFile } from '@/hooks/use-upload-file'; // Your custom hook
@@ -735,11 +721,11 @@ Transforms and normalizes a URL, then inserts a media embed.
 ### `insertMediaUrl`
 
 Prompts for an image or embed URL and dispatches to its scoped plugin update.
-Import it from `@platejs/media/react`.
+Import it from `platejs/react`.
 
 <API name="insertMediaUrl">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
+  <APIItem name="editor" type="Editor">
     The editor receiving the media element.
   </APIItem>
   <APIItem name="options" type="InsertMediaUrlOptions" optional>
@@ -771,7 +757,7 @@ download behavior.
 <ComponentSource name="media-preview-dialog" />
 
 For resizable media, compose the direct `Resizable` and `ResizeHandle`
-components from [`@platejs/resizable`](/docs/api/resizable). The media renderer
+components from [`platejs/react`](/docs/api/resizable). The media renderer
 commits the final width through its scoped plugin update.
 
 ## Utilities
@@ -847,13 +833,7 @@ Parses the URL of an iframe embed.
 ### Media element types
 
 ```tsx
-import type {
-  AudioElement,
-  FileElement,
-  ImageElement,
-  MediaEmbedElement,
-  VideoElement,
-} from '@platejs/media';
+import type { AudioElement, FileElement, ImageElement, MediaEmbedElement, VideoElement } from 'platejs/media';
 ```
 
 Each alias is derived from its owning plugin schema. `Element.children` stores
@@ -863,7 +843,7 @@ the caption's direct inline content. Use
 ### `PlaceholderElement`
 
 ```tsx
-import type { PlaceholderElement } from '@platejs/media';
+import type { PlaceholderElement } from 'platejs/media';
 ```
 
 `PlaceholderElement` is derived from `BasePlaceholderPlugin` and requires a

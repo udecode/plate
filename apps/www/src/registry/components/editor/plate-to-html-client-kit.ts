@@ -1,7 +1,7 @@
 'use client';
 
-import { ElementIdPlugin } from '@platejs/core';
-import { toPlatePlugin } from '@platejs/core/react';
+import { ElementIdPlugin } from 'platejs';
+import { toPlatePlugin } from 'platejs/react';
 
 export const PlateToHtmlClientSchemaKit = [
   toPlatePlugin(ElementIdPlugin),

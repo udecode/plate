@@ -21,7 +21,7 @@ External direct changes must already satisfy the canonical representation.
 for imported raw data or rules installed after data already exists.
 
 Proof lives in
-[`normalization-contract.ts`](/Users/zbeyens/git/plate-2/packages/plite/test/normalization-contract.ts),
-[`slice-fit-contract.test.ts`](/Users/zbeyens/git/plate-2/packages/plite/test/slice-fit-contract.test.ts),
+[`normalization-contract.ts`](/Users/zbeyens/git/plate-2/packages/plitejs/test/normalization-contract.ts),
+[`slice-fit-contract.test.ts`](/Users/zbeyens/git/plate-2/packages/plitejs/test/slice-fit-contract.test.ts),
 and
 [`architecture-contract.md`](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md).

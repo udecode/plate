@@ -9,7 +9,7 @@ import {
   ScriptRules,
   StrikethroughRules,
   UnderlineRules,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 import {
   BoldPlugin,
   CodePlugin,
@@ -19,7 +19,7 @@ import {
   ScriptPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 
 import { CodeLeaf } from '@/registry/components/editor/code';
 import { HighlightLeaf } from '@/registry/components/editor/highlight';

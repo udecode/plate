@@ -7,7 +7,7 @@ import {
   BaseScriptPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 import { type PliteLeafProps, PliteLeaf } from 'platejs/static';
 import * as React from 'react';
 

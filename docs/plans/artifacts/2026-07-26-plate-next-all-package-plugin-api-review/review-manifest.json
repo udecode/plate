@@ -246,7 +246,7 @@
       "changed": 0
     },
     {
-      "package": "list-classic",
+      "package": "legacy-list-model",
       "rows": 14,
       "keep": 12,
       "P0": 0,

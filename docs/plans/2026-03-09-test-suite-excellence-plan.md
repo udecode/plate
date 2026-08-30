@@ -77,7 +77,7 @@ status: active
 - `table`: prioritize transform-heavy and `with*` seams first, especially row or column mutations, selection helpers, merge or split behavior, and any remaining low-signal zero-coverage clusters.
 - `selection`: keep it non-DOM where possible. Cover internal transforms, selection bookkeeping, copy or insert helpers, and hook behavior. Keep `moveSelection` and `shiftSelection` on Plate as the reviewed exception.
 - `markdown`: deepen parser and serializer matrices, incomplete markdown and MDX boundaries, list edge cases, and explicit string assertions for readable outputs. Keep snapshots only where serialized structure is the contract.
-- `code-block`, `list-classic`, `autoformat`, `link`: only add tests where real transform, parsing, or option behavior is still under-specified. Do not reopen packages that were already mostly cleanup work unless there is real logic left.
+- `code-block`, `legacy-list-model`, `autoformat`, `link`: only add tests where real transform, parsing, or option behavior is still under-specified. Do not reopen packages that were already mostly cleanup work unless there is real logic left.
 
 ### Phase 5: secondary risk ring
 

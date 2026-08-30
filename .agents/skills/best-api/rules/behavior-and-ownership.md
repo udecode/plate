@@ -88,9 +88,9 @@ For Plate plugin relationships, classify ownership before choosing a field:
 - app and registry-owned readonly plugin arrays group complete defaults,
   presets, and product policy.
 
-Copied registry source may directly import an optional feature package when
-that behavior belongs to the importing component or kit. Declare the package
-and registry dependencies honestly, and guard optional plugin portal access
+Copied registry source may directly import an optional `platejs/<feature>`
+entrypoint when that behavior belongs to the importing component or kit.
+Declare its peer requirements and registry dependencies honestly, and guard optional plugin portal access
 when absence is valid. Do not create a cross-editor `*Integrations` file or a
 bag of terminal `.configure()` calls just to invert dependencies or make the
 registry graph look cleaner. Extraction must own a coherent capability or
@@ -333,12 +333,9 @@ labels, or menu rows across items is cheaper than adding another shared
 registry file and dependency. Extract only when the new owner has an
 independent install/use job or owns real behavior beyond presentation reuse.
 
-Registry surfaces dedicated to `*-classic`, including `list-classic`, are
-maintenance-only pending deprecation. Do not propose or perform parity work,
-new variants, shared abstractions, polish, demos, adoption, or API investment
-for them. Touch them only for a user-facing regression, security or release
-blocker, or an explicitly authorized deprecation/removal. New work targets the
-modern registry surface. Planned deprecation alone does not authorize deletion.
+Root `ListPlugin` is the only list-model owner. Reject any API proposal that
+adds a second persisted list structure, transform family, serializer path, or
+copied registry graph.
 
 Repeated callers of plugin behavior reuse that plugin-owned API; they do not
 create a second helper owner. Keep the algorithm inside the plugin and expose
@@ -428,14 +425,14 @@ Plate element resolves its installed application schema type, while emitted or
 matched MDAST/HTML nodes keep their format-owned literal type. Use the authored
 default only when that Plate plugin is genuinely absent.
 
-A universal first-party format authoring contract belongs in Core when feature
-packages broadly author it and Core can express it through type-only
-dependencies. Core directly owns that format's public codec types and built-in
+A universal first-party format authoring contract belongs in Plate foundation when feature
+packages broadly author it and Plate foundation can express it through type-only
+dependencies. Plate foundation directly owns that format's public codec types and built-in
 MIME registry entry; the optional format package still owns the compiler,
 intrinsic language behavior, and operation-level escape hatch. Do not create a
-contract-only package whose job is to ambiently augment Core, and never require
+contract-only package whose job is to ambiently augment Plate foundation, and never require
 feature authors to activate a built-in format with an empty or side-effect type
-import. Truly optional or third-party format contracts stay outside Core and
+import. Truly optional or third-party format contracts stay outside Plate foundation and
 must integrate through an explicit, discoverable type path.
 
 Each installed feature plugin owns its shipped encode/decode declaration for
@@ -487,7 +484,7 @@ semantic owner.
 For TS7056 at a package declaration boundary, the only acceptable target is the
 direct inferred exported descriptor. Treat the failure as an owning generic or
 declaration-boundary defect: compact the package's honest dependency source,
-then repair Core's inferred graph or declaration carrier until direct emit
+then repair Plate foundation's inferred graph or declaration carrier until direct emit
 passes. Never introduce another `@plate-plugin-declaration-stage`, private
 definition carrier, annotated staging alias, widened dependency, cast, or
 capability-subset type as the answer. Existing marked stages are transitional
@@ -513,7 +510,7 @@ Context-bound factory authoring and public factory output are separate type
 jobs. Let the author callback see the exact installed-plugin editor, then
 project the returned factory/value to the smallest portable public contract.
 If inferred declarations expose `InternalBaseEditorWithInstalledPlugins`, the
-Core return boundary is wrong. Package-level editor aliases, reconstructed
+Plate foundation return boundary is wrong. Package-level editor aliases, reconstructed
 option/result interfaces, export annotations, and casts merely fossilize the
 compiler graph as public API.
 

@@ -19,25 +19,22 @@ import {
   ScriptRules,
   StrikethroughRules,
   UnderlineRules,
-} from '@platejs/basic-nodes';
-import { BaseIndentPlugin } from '@platejs/indent';
-import { BaseLinkPlugin, LinkRules } from '@platejs/link';
-import {
+  BaseIndentPlugin,
+  BaseLinkPlugin,
+  LinkRules,
   BaseListPlugin,
   BulletedListRules,
   OrderedListRules,
   TaskListRules,
-} from '@platejs/list';
+  BaseParagraphPlugin,
+  TrailingBlockPlugin,
+  createEditor as createProductEditor,
+} from 'platejs';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
   MathRules,
-} from '@platejs/math';
-import {
-  BaseParagraphPlugin,
-  TrailingBlockPlugin,
-  createBaseEditor,
-} from 'platejs';
+} from 'platejs/math';
 
 const createEditor = ({
   offset,
@@ -48,7 +45,7 @@ const createEditor = ({
   plugins: any[];
   text: string;
 }) =>
-  createBaseEditor({
+  createProductEditor({
     plugins,
     selection: {
       kind: 'text',

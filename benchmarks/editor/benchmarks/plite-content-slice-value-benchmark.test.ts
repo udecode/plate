@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
-import { ContentSlice } from '../../../packages/plite/src/index';
+import { ContentSlice } from '../../../packages/plitejs/src/index';
 
 const root = resolve(import.meta.dir, '../../..');
 const benchmarkPath = resolve(

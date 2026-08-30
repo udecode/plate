@@ -87,7 +87,7 @@ codec, API, and runtime can disagree about which revision exists.
 
 ### Real plugins already reveal the two concepts
 
-- `packages/list-classic/src/lib/BaseListPlugin.ts:66-108`: `validLiChildren`
+- `packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:66-108`: `validLiChildren`
   changes the compiled schema.
 - `packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts:695-724`: `idKey`
   changes a schema property key, while runtime normalization later reads

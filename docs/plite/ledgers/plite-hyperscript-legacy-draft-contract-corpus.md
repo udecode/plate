@@ -14,7 +14,7 @@ status: active
 
 Legacy package truth:
 
-- `/Users/zbeyens/git/slate/packages/plite-hyperscript/src/**`
+- `/Users/zbeyens/git/slate/packages/plitejs/src/hyperscript/**`
 - `/Users/zbeyens/git/slate/packages/plite-hyperscript/test/**`
 
 Draft contract rows:
@@ -25,7 +25,7 @@ Draft contract rows:
 
 Current live owners:
 
-- `packages/plite-hyperscript/src/**`
+- `packages/plitejs/src/hyperscript/**`
 - `packages/plite-hyperscript/test/index.spec.ts`
 - `packages/plite-hyperscript/test/smoke-contract.ts`
 - `packages/plite-hyperscript/test/fixtures/**`

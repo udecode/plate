@@ -43,10 +43,10 @@ description: 用于构建内容的常用块级元素。
 将套件添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...BasicBlocksKit,
@@ -67,7 +67,7 @@ const editor = createPlateEditor({
 ## 手动安装
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 如需单独配置插件，请查看上方链接对应的具体插件文档页面。

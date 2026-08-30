@@ -63,6 +63,11 @@ After Plate UI is installed, choose the runtime guide that matches your app:
 
 Use feature kits when you want complete plugin + UI wiring. Use manual plugin docs when you want only the headless package behavior.
 
+Install `platejs` once. Import core and standard editor plugins from `platejs`
+or `platejs/react`. Import independent features from their named subpaths, such
+as `platejs/table` and `platejs/table/react`. Server code never imports a
+`/react` subpath.
+
 </Steps>
 
 ## Other Environments
@@ -74,7 +79,7 @@ Use feature kits when you want complete plugin + UI wiring. Use manual plugin do
 | Node.js | You need backend migration, validation, or serialization scripts. | [Node.js](/docs/installation/node) |
 
 <Callout type="note">
-  Server-only environments use base package imports like `platejs` and `@platejs/basic-nodes`. Do not import from `/react` subpaths in RSC or Node.js.
+  Server-only environments use base package imports like `platejs`. Do not import from `/react` subpaths in RSC or Node.js.
 </Callout>
 
 ## Next Steps

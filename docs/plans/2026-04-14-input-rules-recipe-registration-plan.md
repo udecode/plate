@@ -301,12 +301,12 @@ Target:
 - use semantic params like `{ checked: boolean }` instead of raw token
   mechanics for task variants
 
-### `@platejs/list-classic`
+### `platejs`
 
 Files:
 
-- `packages/list-classic/src/lib/BaseListPlugin.ts`
-- `packages/list-classic/src/lib/inputRules.ts`
+- `packages/platejs/src/features/list/src/lib/BaseListPlugin.ts`
+- `packages/platejs/src/features/list/src/lib/inputRules.ts`
 
 Current rule families:
 
@@ -317,7 +317,7 @@ Current rule families:
 
 Target:
 
-- export classic list markdown families under split feature namespaces
+- export legacy list model markdown families under split feature namespaces
 - evaluate whether `checked` / `unchecked` collapse into one `task` family with
   `{ checked: boolean }`
 
@@ -372,7 +372,7 @@ Files:
 - `apps/www/src/registry/components/editor/plugins/code-block-kit.tsx`
 - `apps/www/src/registry/components/editor/plugins/link-kit.tsx`
 - `apps/www/src/registry/components/editor/plugins/list-kit.tsx`
-- `apps/www/src/registry/components/editor/plugins/list-classic-kit.tsx`
+- `apps/www/src/registry/components/editor/plugins/list.tsx`
 - `apps/www/src/registry/components/editor/plugins/math-kit.tsx`
 
 Target:
@@ -479,7 +479,7 @@ Recommended order:
 2. headings + horizontal rule + blockquote
 3. mark plugins
 4. code block
-5. list + list-classic
+5. list + legacy-list-model
 6. link
 7. math
 8. shipped kits

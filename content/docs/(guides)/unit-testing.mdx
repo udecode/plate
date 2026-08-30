@@ -3,13 +3,29 @@ title: Unit Testing Plate
 description: Learn how to unit test Plate editor and plugins.
 ---
 
-This guide outlines best practices for unit testing Plate plugins and components using `@platejs/test-utils`.
+`@platejs/test` keeps Plate fixtures and test harnesses in one package without
+mixing their runtimes. Its root works in plain Node. Import React, DOM, and
+Playwright helpers only from their explicit subpaths.
 
 ## Installation
 
 ```bash
-npm install @platejs/test-utils
+npm install -D platejs @platejs/test
 ```
+
+Install React test peers only when a test imports `@platejs/test/react`:
+
+```bash
+npm install -D react react-dom @testing-library/react
+```
+
+| Import | Use for |
+| --- | --- |
+| `@platejs/test` | Node-safe JSX fixtures, editor builders, selection projection, and `DataTransfer` fixtures |
+| `@platejs/test/react` | `PlateTest` and Testing Library interaction helpers |
+| `@platejs/test/browser` | Browser DOM and selection inspection |
+| `@platejs/test/playwright` | Playwright editor harnesses |
+| `@platejs/test/proof` | Pure proof contracts, classifiers, replay validation, and mobile receipts |
 
 ## Setting Up Tests
 
@@ -18,12 +34,38 @@ Add the JSX pragma at the top of your test file:
 ```typescript
 /** @jsx jsx */
 
-import { jsx } from '@platejs/test-utils';
+import {
+  jsx,
+  projectTestSelectionRange,
+  type TestEditorFixture,
+} from '@platejs/test';
 
 jsx; // so Biome doesn't remove unused imports
 ```
 
 This allows you to use JSX syntax for creating editor values.
+
+## Testing React Components
+
+Use the React entrypoint when the test mounts `PlateContent` or interacts with
+the rendered editor:
+
+```tsx
+import { createPlateTestEditor } from '@platejs/test/react';
+import { ParagraphPlugin } from 'platejs/react';
+
+const [editor, actions] = await createPlateTestEditor({
+  initialValue: [
+    { children: [{ text: '' }], type: 'paragraph' },
+  ],
+  plugins: [ParagraphPlugin],
+});
+
+await actions.type('Hello');
+expect(editor.read.children()).toEqual([
+  { children: [{ text: 'Hello' }], type: 'paragraph' },
+]);
+```
 
 ## Creating Test Cases
 
@@ -38,7 +80,7 @@ const input = (
       Hello<cursor /> world
     </hp>
   </editor>
-) as any as PlateEditor;
+) as TestEditorFixture;
 ```
 
 Node elements like `<hp />`, `<hul />`, `<hli />` represent different types of nodes.
@@ -49,7 +91,7 @@ Special elements like `<cursor />`, `<anchor />`, and `<focus />` represent sele
 
 1. Create an input state
 2. Define the expected output state
-3. Use `createPlateEditor` to set up the editor
+3. Use `createEditor` to set up the editor
 4. Apply the transform(s) directly
 5. Assert the editor's new state
 
@@ -65,7 +107,7 @@ it('should apply bold formatting', () => {
         <focus />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
   const output = (
     <editor>
@@ -73,9 +115,9 @@ it('should apply bold formatting', () => {
         Hello <htext bold>world</htext>
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
-  const editor = createPlateEditor({
+  const editor = createEditor({
     plugins: [BoldPlugin],
     initialValue: input.children,
     selection: input.selection,
@@ -85,7 +127,7 @@ it('should apply bold formatting', () => {
     tx.marks.toggle('bold');
   });
 
-  expect(editor.children).toEqual(output.children);
+  expect(editor.read.children()).toEqual(output.children);
 });
 ```
 
@@ -101,7 +143,7 @@ it('should collapse selection on backspace', () => {
         He<anchor />llo wor<focus />ld
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
   const output = (
     <editor>
@@ -109,9 +151,9 @@ it('should collapse selection on backspace', () => {
         He<cursor />ld
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
-  const editor = createPlateEditor({
+  const editor = createEditor({
     initialValue: input.children,
     selection: input.selection,
   });
@@ -120,8 +162,10 @@ it('should collapse selection on backspace', () => {
     tx.text.deleteBackward({ unit: 'character' });
   });
 
-  expect(editor.children).toEqual(output.children);
-  expect(editor.selection).toEqual(output.selection);
+  expect(editor.read.children()).toEqual(output.children);
+  expect(editor.read.selection()).toEqual(
+    projectTestSelectionRange(output.selection)
+  );
 });
 ```
 
@@ -130,7 +174,7 @@ it('should collapse selection on backspace', () => {
 When you need to test keyboard handlers directly:
 
 ```typescript
-import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlatePlugin } from 'platejs/react';
 
 it('should call the keyDown handler', () => {
   const input = (
@@ -139,7 +183,7 @@ it('should call the keyDown handler', () => {
         Hello <anchor />world<focus />
       </hp>
     </editor>
-  ) as any as PlateEditor;
+  ) as TestEditorFixture;
 
   // Create a mock handler to verify it's called
   const keyDownMock = jest.fn();
@@ -150,7 +194,7 @@ it('should call the keyDown handler', () => {
     },
   });
 
-  const editor = createPlateEditor({
+  const editor = createEditor({
     initialValue: input.children,
     selection: input.selection,
     plugins: [TestPlugin],
@@ -187,7 +231,7 @@ describe('Table plugin', () => {
           Test<cursor />
         </hp>
       </editor>
-    ) as any as PlateEditor;
+    ) as TestEditorFixture;
 
     const output = (
       <editor>
@@ -213,9 +257,9 @@ describe('Table plugin', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as PlateEditor;
+    ) as TestEditorFixture;
 
-    const editor = createPlateEditor({
+    const editor = createEditor({
       initialValue: input.children,
       selection: input.selection,
       plugins: [TablePlugin],
@@ -225,8 +269,10 @@ describe('Table plugin', () => {
       tx.insert.table({ colCount: 2, rowCount: 2 });
     });
 
-    expect(editor.children).toEqual(output.children);
-    expect(editor.selection).toEqual(output.selection);
+    expect(editor.read.children()).toEqual(output.children);
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 });
 ```
@@ -239,25 +285,25 @@ Test how different initial state affects behavior:
 describe('when keepSelectedTextOnPaste is disabled', () => {
   it('replaces the selected text with the pasted url', () => {
     const input = (
-      <fragment>
+      <editor>
         <hp>
           start <anchor />
           of regular text
           <focus />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditorFixture;
 
     const output = (
-      <fragment>
+      <editor>
         <hp>
           start <ha url="https://google.com">https://google.com</ha>
           <htext />
         </hp>
-      </fragment>
-    ) as any;
+      </editor>
+    ) as TestEditorFixture;
 
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: [
         LinkPlugin.configure({
           initialState: {
@@ -265,14 +311,15 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
           },
         }),
       ],
-      initialValue: input,
+      initialValue: input.children,
+      selection: input.selection,
     });
 
     editor.api.dom.clipboard.insertData({
       getData: (type: string) => (type === 'text/plain' ? 'https://google.com' : ''),
     } as any);
 
-    expect(input.children).toEqual(output.children);
+    expect(editor.read.children()).toEqual(output.children);
   });
 });
 ```

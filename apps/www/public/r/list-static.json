@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "list-static",
   "dependencies": [
-    "@platejs/list"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/block-list-static.json",
@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/list-static.tsx",
-      "content": "import { BaseListPlugin, isOrderedList, ListType } from '@platejs/list';\nimport { PLUGINS } from 'platejs';\n\nimport { BlockListStatic } from '@/registry/components/editor/block-list-static';\nimport { BaseIndentKit } from '@/registry/components/editor/indent-static';\n\nexport const BaseListKit = [\n  ...BaseIndentKit,\n  BaseListPlugin.configure({\n    inject: {\n      nodeProps: {\n        nodeKey: 'listType',\n        query: ({ nodeProps }) => {\n          const { element } = nodeProps;\n\n          return (\n            element?.listType === ListType.Bulleted && !isOrderedList(element)\n          );\n        },\n        transformProps: ({ props }) => ({\n          ...props,\n          role: 'listitem',\n          style: {\n            ...props.style,\n            display: 'list-item',\n          },\n        }),\n      },\n    },\n    render: {\n      belowNodes: BlockListStatic,\n    },\n    targetPlugins: [\n      PLUGINS.paragraph,\n      PLUGINS.heading,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.toggle,\n    ],\n  }),\n];\n",
+      "content": "import { BaseListPlugin, isOrderedList, ListType, PLUGINS } from 'platejs';\n\nimport { BlockListStatic } from '@/registry/components/editor/block-list-static';\nimport { BaseIndentKit } from '@/registry/components/editor/indent-static';\n\nexport const BaseListKit = [\n  ...BaseIndentKit,\n  BaseListPlugin.configure({\n    inject: {\n      nodeProps: {\n        nodeKey: 'listType',\n        query: ({ nodeProps }) => {\n          const { element } = nodeProps;\n\n          return (\n            element?.listType === ListType.Bulleted && !isOrderedList(element)\n          );\n        },\n        transformProps: ({ props }) => ({\n          ...props,\n          role: 'listitem',\n          style: {\n            ...props.style,\n            display: 'list-item',\n          },\n        }),\n      },\n    },\n    render: {\n      belowNodes: BlockListStatic,\n    },\n    targetPlugins: [\n      PLUGINS.paragraph,\n      PLUGINS.heading,\n      PLUGINS.blockquote,\n      PLUGINS.codeBlock,\n      PLUGINS.details,\n    ],\n  }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/list-static.tsx"
     }

@@ -18,8 +18,8 @@ import {
   getReleaseAnchor,
   getReleaseMajorAnchor,
   getReleaseMajorGroups,
-  type ReleaseMajorGroup,
   type ReleaseIndexRelease,
+  type ReleaseMajorGroup,
 } from '@/lib/releases';
 import { cn } from '@/lib/utils';
 

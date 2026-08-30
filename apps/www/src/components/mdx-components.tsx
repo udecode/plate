@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import * as React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
+import * as React from 'react';
 
 import { APIReference } from '@/components/api-reference';
 import { Card, Cards } from '@/components/cards';

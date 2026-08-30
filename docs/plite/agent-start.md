@@ -81,10 +81,12 @@ matrix remains closure-only.
 The publish path runs `pnpm plite:release:packages` after the release build.
 That command validates packed package/install behavior only. It packs every
 Plite-family package, consumes every public subpath from the tarballs under
-NodeNext and Bundler resolution, checks runtime dependency direction, and
-proves unused bare and named imports tree-shake to the empty consumer baseline.
-Keep this release-only; it validates built output and does not belong in the
-daily Plite loop.
+NodeNext and Bundler resolution, Node-imports every runtime entrypoint, executes
+headless entrypoints without React or DOM, renders SSR entrypoints without DOM,
+checks runtime dependency direction, and proves unused bare and named imports
+tree-shake to the empty consumer baseline. The Plite Chromium lane exercises
+the generated client-entrypoint matrix in a real browser. Keep these strict
+artifact and browser checks out of the daily Plite loop.
 
 When `PLITE_RELEASE_CLAIM_PROFILE=release-ready`,
 `pnpm plite:release:proof` resolves

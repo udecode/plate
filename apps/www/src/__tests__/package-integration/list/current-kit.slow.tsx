@@ -2,18 +2,19 @@ import {
   BaseBlockquotePlugin,
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
-} from '@platejs/basic-nodes';
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
-import { BaseImagePlugin } from '@platejs/media';
-import { BaseTogglePlugin } from '@platejs/toggle';
-import { BaseParagraphPlugin, ElementIdPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+  BaseCodeBlockPlugin,
+  BaseParagraphPlugin,
+  ElementIdPlugin,
+} from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseImagePlugin } from 'platejs/media';
+import { createEditor } from 'platejs/react';
 
 import { ListKit } from '@/registry/components/editor/list';
 
 describe('ListKit current contract', () => {
   it('promotes `- ` into a list item and moves selection into the empty item', () => {
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: [
         ElementIdPlugin,
         BaseParagraphPlugin,
@@ -22,7 +23,7 @@ describe('ListKit current contract', () => {
 
         BaseHorizontalRulePlugin,
         BaseCodeBlockPlugin,
-        BaseTogglePlugin,
+        BaseDetailsPlugin,
         BaseImagePlugin,
         ...ListKit,
       ],

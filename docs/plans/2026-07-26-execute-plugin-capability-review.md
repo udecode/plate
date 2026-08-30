@@ -61,7 +61,7 @@ Boundaries:
 - In scope: the 43 accepted descriptor rows, their Base/React owners, direct
   callers, tests, exports, docs, examples, registry adoption, and release prose.
 - Source owners: `packages/ai`, `basic-nodes`, `code-block`, `comment`, `core`,
-  `docx-io`, `emoji`, `footnote`, `indent`, `layout`, `link`, `list-classic`,
+  `docx-io`, `emoji`, `footnote`, `indent`, `layout`, `link`, `legacy-list-model`,
   `markdown`, `media`, `mention`, `selection`, `suggestion`, `tabbable`,
   `table`, `tag`, `toc`, and `toggle`, plus direct adopters.
 - Non-goals: the 140 keep rows, unrelated package cleanup, unrelated shared WIP,
@@ -207,8 +207,8 @@ Accepted row execution ledger:
 | 105 | layout | `BaseColumnItemPlugin` | constructor-fold shortcut | complete | Independent declaration fields folded into constructor; dependent typing preserved |
 | 110 | link | `BaseLinkPlugin` | extension tx group to plugin update | complete | Flat update replaces editor-wide tx group; extension owns interception only |
 | 111 | link | `LinkPlugin` | inherit Base update | complete | React adapter inherits Base update |
-| 120 | list-classic | `BaseListPlugin` | snapshot-free read helpers to API | complete | Pure structural helpers moved to scoped API; document-state queries remain read |
-| 126 | list-classic | `ListPlugin` | inherit Base split | complete | React adapter inherits Base API/read/update |
+| 120 | legacy-list-model | `BaseListPlugin` | snapshot-free read helpers to API | complete | Pure structural helpers moved to scoped API; document-state queries remain read |
+| 126 | legacy-list-model | `ListPlugin` | inherit Base split | complete | React adapter inherits Base API/read/update |
 | 128 | markdown | `MarkdownPlugin` | keyed API plus current-state read serialization | complete | Sole root `editor.api.markdown.{serialize,deserialize,deserializeInline}` surface retained and adopted |
 | 139 | media | `PlaceholderPlugin` | upload getter to selector | complete | Uploading-file projection is a selector; recovery and picker paths are single-upload safe |
 | 146 | mention | `BaseMentionPlugin` | complete `update.insert` | complete | Cursor movement and trailing-space behavior are owned by update |

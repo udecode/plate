@@ -80,7 +80,7 @@ There is one last real non-React cleanup phase left. It is mostly parser or seri
 10. `markdown`: [splitIncompleteMdx.ts](packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts) — score `5`
 11. `core`: [isLastNonEmptyTextOfInlineFormattingContext.ts](packages/core/src/lib/plugins/html/utils/collapse-white-space/isLastNonEmptyTextOfInlineFormattingContext.ts) — score `5`
 12. `core`: [traverseHtmlNode.ts](packages/core/src/lib/plugins/html/utils/traverseHtmlNode.ts) — score `5`
-13. `list-classic`: [moveListItemSublistItemsToListItemSublist.ts](packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts) — score `5`
+13. `legacy-list-model`: [moveListItemSublistItemsToListItemSublist.ts](packages/platejs/src/features/list/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts) — score `5`
 14. `markdown`: [mdastToSlate.ts](packages/markdown/src/lib/deserializer/mdastToSlate.ts) — score `5`
 15. `markdown`: [markdownToPliteNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.ts) — score `5`
 16. `suggestion`: [addMarkSuggestion.ts](packages/suggestion/src/lib/transforms/addMarkSuggestion.ts) — score `5`
@@ -94,7 +94,7 @@ There is one last real non-React cleanup phase left. It is mostly parser or seri
 3. `table` — package score `22`
 4. `basic-nodes` — package score `21`
 5. `suggestion` — package score `20`
-6. `list-classic` — package score `19`
+6. `legacy-list-model` — package score `19`
 7. `code-block` — package score `14`
 8. `docx-io` — package score `14`
 9. `list` — package score `11`

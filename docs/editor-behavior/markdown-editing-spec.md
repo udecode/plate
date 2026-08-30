@@ -2057,7 +2057,7 @@ Ownership:
 
 Plugin surface:
 
-- `@platejs/footnote` exposes `FootnoteReferencePlugin` and
+- `platejs` exposes `FootnoteReferencePlugin` and
   `FootnoteDefinitionPlugin`
 - `editor.update.insert.footnote` inserts a reference, creates a missing
   definition, and moves focus into the definition body

@@ -276,7 +276,7 @@ Likely files:
 Likely files:
 
 - [apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx](apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx)
-- [apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx](apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx)
+- [apps/www/src/registry/components/editor/plugins/autoformat.tsx](apps/www/src/registry/components/editor/plugins/autoformat.tsx)
 
 Decision to encode:
 

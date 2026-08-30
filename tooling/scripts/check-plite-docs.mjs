@@ -16,7 +16,7 @@ const docsRoots = [
 ];
 const contractPath = join(
   repoRoot,
-  'packages/plite/test/public-surface-contract.ts'
+  'packages/plitejs/test/public-surface-contract.ts'
 );
 const requiredContractSignals = [
   'bannedPublicSurface',
@@ -30,8 +30,8 @@ const teachingDocs = new Set([
   'content/docs/(plugins)/(elements)/media.cn.mdx',
   'content/docs/(plugins)/(elements)/media.mdx',
   'content/docs/(plugins)/(elements)/heading.mdx',
-  'content/docs/(plugins)/(elements)/toggle.cn.mdx',
-  'content/docs/(plugins)/(elements)/toggle.mdx',
+  'content/docs/(plugins)/(elements)/details.cn.mdx',
+  'content/docs/(plugins)/(elements)/details.mdx',
   'content/docs/(plugins)/(styles)/indent.cn.mdx',
   'content/docs/(plugins)/(styles)/indent.mdx',
   'content/docs/(plugins)/(styles)/line-height.cn.mdx',
@@ -118,7 +118,7 @@ const deletedCodeBlockPatterns = [
 const removedRootMutationFacadePattern =
   /\b(?:editor\.(?:tf|transforms)|overrideEditor)\b|\btf\s*:\s*\{/;
 const removedPlateSchemaFlagsPattern =
-  /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
+  /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\b(?:isElement\s*:\s*true[^\n]{0,160}\bisLeaf\s*:\s*true|isLeaf\s*:\s*true[^\n]{0,160}\bisElement\s*:\s*true|setting\s+both\s+isElement\s+and\s+isLeaf\s+to\s+true)\b/;
 const removedSchemaTargetOptionsPattern =
   /\boptions\s*:\s*\{[^}\n]*\btargetPlugins\b/;
 const removedCaptionTargetOptionsPattern =
@@ -134,8 +134,8 @@ const removedDefinitionAliasNamePattern =
   /\btype\s+(?![A-Za-z_$][\w$]*Definition\b)[A-Za-z_$][\w$]*\s*=\s*DefinitionOf\s*</;
 const removedGenericDependencyReferencePattern =
   /\bEditorExtensionDependencyReference\s*</;
-const removedRootInternalDependencyTypePattern =
-  /\b(?:EditorExtensionDependencyReferenceFor|EditorExtensionTypeLambda|InternalEditorExtensionDependencyReference|InternalEditorExtensionInstalledCapabilitiesOf|InternalEditorExtensionTypeProviderOf|InternalEditorExtensionWitnessFor)\b[\s\S]{0,500}\bfrom\s+['"]@platejs\/plite['"]/;
+const removedInternalDependencyTypePattern =
+  /(?:\bInternalEditorExtension(?:DependencyReference|InstalledCapabilitiesOf|TypeProviderOf|WitnessFor)\b[\s\S]{0,500}\bfrom\s+['"]plitejs(?:\/internal)?['"]|\bfrom\s+['"]plitejs\/internal['"])/;
 const removedZeroArgumentReactPattern = /\breact\s*\(\s*\)/;
 const removedStaticCapabilityPattern =
   /\b(?:api|commands|read|readMiddleware|update)\s*:\s*\{/;
@@ -185,9 +185,8 @@ const deletedArchitecturePatterns = [
     reason: 'root dependency references are shallow and non-generic',
   },
   {
-    pattern: removedRootInternalDependencyTypePattern,
-    reason:
-      'finite dependency capability/provider types import from @platejs/plite/internal',
+    pattern: removedInternalDependencyTypePattern,
+    reason: 'Plite dependency contracts use clean public names from plitejs',
   },
   {
     pattern: removedZeroArgumentReactPattern,
@@ -445,24 +444,24 @@ function auditSlateV2Docs() {
     }
   }
 
-  const yjsPackageJson = JSON.parse(
-    readFileSync(join(repoRoot, 'packages/yjs/package.json'), 'utf-8')
+  const platePackageJson = JSON.parse(
+    readFileSync(join(repoRoot, 'packages/platejs/package.json'), 'utf-8')
   );
-  const yjsScripts = yjsPackageJson.scripts ?? {};
+  const plateScripts = platePackageJson.scripts ?? {};
 
   for (const alias of yjsSoakScriptAliases) {
-    if (Object.hasOwn(yjsScripts, alias)) {
+    if (Object.hasOwn(plateScripts, alias)) {
       failures.push(
-        `packages/yjs/package.json: Yjs soak script alias must stay manual-only and absent: ${alias}`
+        `packages/platejs/package.json: Yjs soak script alias must stay manual-only and absent: ${alias}`
       );
     }
   }
 
-  for (const script of Object.values(yjsScripts)) {
+  for (const script of Object.values(plateScripts)) {
     for (const signal of manualYjsSoakRunnerSignals) {
       if (String(script).includes(signal)) {
         failures.push(
-          `packages/yjs/package.json: automatic scripts must not reference manual-only Yjs soak runner: ${signal}`
+          `packages/platejs/package.json: automatic scripts must not reference manual-only Yjs soak runner: ${signal}`
         );
       }
     }
@@ -727,7 +726,7 @@ export {
   removedPlatePluginShapePattern,
   removedDefinitionAliasNamePattern,
   removedGenericDependencyReferencePattern,
-  removedRootInternalDependencyTypePattern,
+  removedInternalDependencyTypePattern,
   removedZeroArgumentReactPattern,
   removedStaticCapabilityPattern,
   removedSchemaTargetOptionsPattern,

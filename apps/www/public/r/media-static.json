@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-static",
   "dependencies": [
-    "@platejs/media"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/media-audio-static.json",
@@ -14,7 +14,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/media-static.tsx",
-      "content": "import {\n  BaseAudioPlugin,\n  BaseFilePlugin,\n  BaseImagePlugin,\n  BaseMediaEmbedPlugin,\n  BasePlaceholderPlugin,\n  BaseVideoPlugin,\n} from '@platejs/media';\n\nimport { AudioElementStatic } from '@/registry/components/editor/media-audio-static';\nimport { MediaEmbedElementStatic } from '@/registry/components/editor/media-embed-static';\nimport { FileElementStatic } from '@/registry/components/editor/media-file-static';\nimport { ImageElementStatic } from '@/registry/components/editor/media-image-static';\nimport { VideoElementStatic } from '@/registry/components/editor/media-video-static';\n\nexport const BaseMediaKit = [\n  BaseImagePlugin.configure({ component: ImageElementStatic }),\n  BaseVideoPlugin.configure({ component: VideoElementStatic }),\n  BaseAudioPlugin.configure({ component: AudioElementStatic }),\n  BaseFilePlugin.configure({ component: FileElementStatic }),\n  BaseMediaEmbedPlugin.configure({\n    component: MediaEmbedElementStatic,\n  }),\n  BasePlaceholderPlugin,\n];\n",
+      "content": "import {\n  BaseAudioPlugin,\n  BaseFilePlugin,\n  BaseImagePlugin,\n  BaseMediaEmbedPlugin,\n  BasePlaceholderPlugin,\n  BaseVideoPlugin,\n} from 'platejs/media';\n\nimport { AudioElementStatic } from '@/registry/components/editor/media-audio-static';\nimport { MediaEmbedElementStatic } from '@/registry/components/editor/media-embed-static';\nimport { FileElementStatic } from '@/registry/components/editor/media-file-static';\nimport { ImageElementStatic } from '@/registry/components/editor/media-image-static';\nimport { VideoElementStatic } from '@/registry/components/editor/media-video-static';\n\nexport const BaseMediaKit = [\n  BaseImagePlugin.configure({ component: ImageElementStatic }),\n  BaseVideoPlugin.configure({ component: VideoElementStatic }),\n  BaseAudioPlugin.configure({ component: AudioElementStatic }),\n  BaseFilePlugin.configure({ component: FileElementStatic }),\n  BaseMediaEmbedPlugin.configure({\n    component: MediaEmbedElementStatic,\n  }),\n  BasePlaceholderPlugin,\n];\n",
       "type": "registry:component",
       "target": "@components/editor/media-static.tsx"
     }

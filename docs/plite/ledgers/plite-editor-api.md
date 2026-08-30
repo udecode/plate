@@ -88,13 +88,13 @@ transaction boundary.
 
 ## Proof Owners
 
-- `packages/plite/test/accessor-transaction.test.ts`
-- `packages/plite/test/native-transaction-spec-contract.test.ts`
-- `packages/plite/test/document-change-laws.test.ts`
-- `packages/plite/test/command-spec.test.ts`
-- `packages/plite/test/extension-configuration.test.ts`
-- `packages/plite/test/architecture-contracts.test.ts`
-- `packages/plite/test/public-package-import-smoke.test.ts`
+- `packages/plitejs/test/accessor-transaction.test.ts`
+- `packages/plitejs/test/native-transaction-spec-contract.test.ts`
+- `packages/plitejs/test/document-change-laws.test.ts`
+- `packages/plitejs/test/command-spec.test.ts`
+- `packages/plitejs/test/extension-configuration.test.ts`
+- `packages/plitejs/test/architecture-contracts.test.ts`
+- `packages/plitejs/test/public-package-import-smoke.test.ts`
 
 ## Sources
 

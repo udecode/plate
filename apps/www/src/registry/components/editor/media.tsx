@@ -7,7 +7,7 @@ import {
   FilePlugin,
   MediaEmbedPlugin,
   VideoPlugin,
-} from '@platejs/media/react';
+} from 'platejs/media/react';
 import { usePluginStore } from 'platejs/react';
 import * as React from 'react';
 import { toast } from 'sonner';

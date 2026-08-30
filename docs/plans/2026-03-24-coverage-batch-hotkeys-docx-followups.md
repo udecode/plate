@@ -21,7 +21,7 @@ Execute the full next-value non-React coverage batch from the fresh priority map
 - `markdown`
 - `media`
 - `list`
-- `list-classic`
+- `legacy-list-model`
 - `code-drawing`
 
 ## Target Files
@@ -38,7 +38,7 @@ Execute the full next-value non-React coverage batch from the fresh priority map
 - `packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts`
 - `packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts`
 - `packages/list/src/lib/queries/isOrderedList.ts`
-- `packages/list-classic/src/lib/normalizers/normalizeNestedList.ts`
+- `packages/platejs/src/features/list/src/lib/normalizers/normalizeNestedList.ts`
 - `packages/code-drawing/src/lib/utils/download.ts`
 - `packages/markdown/src/lib/mdast.ts` scored as a false positive because it is a type barrel and not worth runtime coverage
 
@@ -69,5 +69,5 @@ Execute the full next-value non-React coverage batch from the fresh priority map
   - targeted and affected-package `bun test` runs are green
   - `pnpm test:slowest` is green and under the fast-lane thresholds
   - filtered build is green
-  - filtered typecheck is still blocked by existing `list-classic` generic/type drift unrelated to the new seams
+  - filtered typecheck is still blocked by existing `legacy-list-model` generic/type drift unrelated to the new seams
   - `pnpm lint:fix` is green

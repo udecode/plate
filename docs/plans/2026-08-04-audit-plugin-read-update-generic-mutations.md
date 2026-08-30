@@ -286,7 +286,7 @@ Findings:
 | Indent | — | `decrease`, `increase`, `set`, `tab`, `untab` | `set` M to `change`; remaining K. `set` currently means relative change, so it must stop lying |
 | Column Item / Group | — | `insert`, `insertGroup`, `moveMiddle`, `selectAll`, `set`, `toggle` | `insert` G; `insertGroup` M to `BaseColumnPlugin.update.insert`; `set` M to `BaseColumnPlugin.update.setColumns`; `toggle` M to BaseColumnPlugin; `moveMiddle` and `selectAll` K |
 | Link | `findAutolink` | `exitEnd`, `insert`, `unwrap`, `upsert`, `upsertText`, `wrap` | all K |
-| List Classic / Todo | `getListItemEntry`, `getListRoot`, `isListNested` | Todo `toggle`; list `moveListItemUp`, `moveListItemsToList`, `removeFirstListItem`, `removeListItem`, `unwrapList`, `indent`, `outdent`, `toggle` | all K |
+| Legacy list model / Todo | `getListItemEntry`, `getListRoot`, `isListNested` | Todo `toggle`; list `moveListItemUp`, `moveListItemsToList`, `removeFirstListItem`, `removeListItem`, `unwrapList`, `indent`, `outdent`, `toggle` | all K |
 | List | `getNext`, `getPrevious`, `expandItemsWithChildren`, `isActive` | `indent`, `outdent`, `toggle` | all K |
 | Equation block | — | `insert` | G after `texExpression` becomes a canonical schema default |
 | Equation inline | — | `insert` | K: derives expression from selected text; split input/options |

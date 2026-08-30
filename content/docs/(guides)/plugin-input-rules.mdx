@@ -66,7 +66,7 @@ You can use one, both, or neither.
 Use the same kits you already use for nodes and marks. Each kit registers its own markdown rules on the right plugins, so you don't wire anything by hand:
 
 ```tsx showLineNumbers
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/components/editor/basic-marks';
@@ -75,7 +75,7 @@ import { LinkKit } from '@/components/editor/link';
 import { ListKit } from '@/components/editor/list';
 import { MathKit } from '@/components/editor/math';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     ...BasicBlocksKit,
     ...BasicMarksKit,
@@ -99,11 +99,11 @@ which rules it registers and on which plugins.
 the patterns.
 
 ```tsx showLineNumbers
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { AutoformatKit } from '@/components/editor/autoformat';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...AutoformatKit],
 });
 ```
@@ -113,7 +113,7 @@ Type `->` and get `→`. Type `(c)` and get `©`. The full pattern list is visib
 <Callout>
 **Feature-owned rules and text substitutions are different lanes.** Markdown
 shortcuts live in the feature packages that own the semantics
-(`@platejs/basic-nodes`, `@platejs/link`, `@platejs/math`, ...). Text
+(`platejs`, `platejs`, `platejs/math`, ...). Text
 substitutions are glyph-for-glyph replacements that live in your app.
 </Callout>
 
@@ -132,7 +132,7 @@ plugin's `inputRules`.
 
 ### Basic Blocks
 
-Basic block rules ship with `@platejs/basic-nodes`. Register them per plugin.
+Basic block rules ship with `platejs`. Register them per plugin.
 
 **Headings.** `HeadingRules.markdown()` is the same factory for H1 through H6.
 It reads the heading depth from a resolved persisted type matching `h1` through
@@ -140,7 +140,7 @@ It reads the heading depth from a resolved persisted type matching `h1` through
 heading to a different type, provide an app-owned rule for that type instead.
 
 ```tsx showLineNumbers
-import { HeadingRules } from '@platejs/basic-nodes';
+import { HeadingRules } from 'platejs';
 import {
   HeadingPlugin,
   
@@ -148,14 +148,9 @@ import {
   
   
   
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 
 export const HeadingInputRulesKit = [
-  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
-  HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
   HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
 ] as const;
 ```
@@ -167,8 +162,8 @@ paragraph in place. The rule is gated with `enabled` so it won't fire inside a
 code block.
 
 ```tsx showLineNumbers
-import { BlockquoteRules } from '@platejs/basic-nodes';
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { BlockquoteRules } from 'platejs';
+import { BlockquotePlugin } from 'platejs/react';
 
 export const BlockquoteInputRulesPlugin = BlockquotePlugin.configure({
   inputRules: [BlockquoteRules.markdown()],
@@ -178,8 +173,8 @@ export const BlockquoteInputRulesPlugin = BlockquotePlugin.configure({
 **Horizontal rule.** `HorizontalRuleRules.markdown()` takes a `variant` so you can register more than one trigger.
 
 ```tsx showLineNumbers
-import { HorizontalRuleRules } from '@platejs/basic-nodes';
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
+import { HorizontalRuleRules } from 'platejs';
+import { HorizontalRulePlugin } from 'platejs/react';
 
 export const HorizontalRuleInputRulesPlugin = HorizontalRulePlugin.configure({
   inputRules: [
@@ -202,12 +197,12 @@ import {
   BoldRules,
   ItalicRules,
   UnderlineRules,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 
 export const BasicMarkInputRulesKit = [
   BoldPlugin.configure({
@@ -233,8 +228,8 @@ multi-delimiter patterns like `***bold italic***`. Register combos alongside the
 single-mark rules on the plugin that owns the dominant mark.
 
 ```tsx showLineNumbers
-import { BoldRules, MarkComboRules } from '@platejs/basic-nodes';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldRules, MarkComboRules } from 'platejs';
+import { BoldPlugin } from 'platejs/react';
 
 export const ComboInputRulesPlugin = BoldPlugin.configure({
   inputRules: [
@@ -258,13 +253,13 @@ import {
   HighlightRules,
   ScriptRules,
   StrikethroughRules,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 import {
   CodePlugin,
   HighlightPlugin,
   ScriptPlugin,
   StrikethroughPlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 
 export const AdditionalMarkInputRulesKit = [
   CodePlugin.configure({ inputRules: [CodeRules.markdown()] }),
@@ -295,8 +290,8 @@ or pass a different variant.
 Code blocks are fenced, which makes them different from simple marks or block prefixes. They ship as a **block fence rule**, and you must pass `on` to pick when the fence commits.
 
 ```tsx showLineNumbers
-import { CodeBlockRules } from '@platejs/code-block';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeBlockRules } from 'platejs';
+import { CodeBlockPlugin } from 'platejs/react';
 
 export const ImmediateCodeBlockPlugin = CodeBlockPlugin.configure({
   inputRules: [CodeBlockRules.markdown({ on: 'match' })],
@@ -328,15 +323,15 @@ const codeBlockRule = CodeBlockRules.markdown({
 
 ### Lists
 
-List rules live in `@platejs/list` and register on the single `ListPlugin`. Each factory targets one shape.
+List rules live in `platejs` and register on the single `ListPlugin`. Each factory targets one shape.
 
 ```tsx showLineNumbers
 import {
   BulletedListRules,
   OrderedListRules,
   TaskListRules,
-} from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
+} from 'platejs';
+import { ListPlugin } from 'platejs/react';
 
 export const ListInputRulesPlugin = ListPlugin.configure({
   inputRules: [
@@ -361,8 +356,8 @@ All list rules use `enabled` to opt out inside code blocks.
 Math has two shapes: inline `$x$` and block `$$x$$`. They're intentionally split so apps can enable one without the other.
 
 ```tsx showLineNumbers
-import { MathRules } from '@platejs/math';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { MathRules } from 'platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 
 export const MathInputRulesKit = [
   InlineEquationPlugin.configure({
@@ -384,8 +379,8 @@ Enter after the fence.
 Link rules are not just substitutions — they validate URLs and wrap text with a full link node.
 
 ```tsx showLineNumbers
-import { LinkRules } from '@platejs/link';
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkRules } from 'platejs';
+import { LinkPlugin } from 'platejs/react';
 
 export const LinkInputRulesPlugin = LinkPlugin.configure({
   inputRules: [
@@ -538,10 +533,10 @@ override a field like `priority` or `enabled` on a finished instance, spread the
 rule and replace the field:
 
 ```tsx showLineNumbers
-import { HeadingRules } from '@platejs/basic-nodes';
-import { LinkRules } from '@platejs/link';
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
-import { LinkPlugin } from '@platejs/link/react';
+import { HeadingRules } from 'platejs';
+import { LinkRules } from 'platejs';
+import { HeadingPlugin } from 'platejs/react';
+import { LinkPlugin } from 'platejs/react';
 
 export const CustomInputRulesKit = [
   HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
@@ -575,7 +570,7 @@ receives a `rule` builder. Use this form when your rules depend on plugin-local
 state or when you want your rule wiring to live next to the plugin's types.
 
 ```tsx showLineNumbers
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { BaseCodeBlockPlugin } from 'platejs';
 import { defineBasePlugin } from 'platejs';
 
 const CustomPlugin = defineBasePlugin('custom', {
@@ -702,7 +697,7 @@ Every `enabled`, `resolve`, and `apply` call receives a context object with the 
 
 | Field | Returns |
 | ----- | ------- |
-| `editor` | The current `BaseEditor` |
+| `editor` | The current `Editor` |
 | `isCollapsed` | Whether the selection is collapsed |
 | `plugin` | The descriptor that owns the rule; use `editor.plugin(plugin).schema` for persisted identity. |
 | `getBlockEntry()` | The current block's `NodeEntry`, or `undefined` |
@@ -928,7 +923,7 @@ function createBlockFenceInputRule<TMatch>(config: {
 ```
 
 ```ts
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { BaseCodeBlockPlugin } from 'platejs';
 import { createBlockFenceInputRule } from 'platejs';
 
 createBlockFenceInputRule({
@@ -1029,22 +1024,22 @@ Every family below is a single export from its package. Each `.markdown()` (or `
 
 | Family | Package | Description |
 | ------ | ------- | ----------- |
-| `HeadingRules` | `@platejs/basic-nodes` | Markdown prefix rules for resolved persisted types `h1` through `h6` |
-| `BlockquoteRules` | `@platejs/basic-nodes` | `>` block-wrap rule, gated out of code blocks |
-| `HorizontalRuleRules` | `@platejs/basic-nodes` | `---` and `___` variant rules |
-| `BoldRules` | `@platejs/basic-nodes` | `**x**` / `__x__` mark rule |
-| `ItalicRules` | `@platejs/basic-nodes` | `*x*` / `_x_` mark rule |
-| `UnderlineRules` | `@platejs/basic-nodes` | `__x__` mark rule |
-| `CodeRules` | `@platejs/basic-nodes` | `` `x` `` inline code mark rule |
-| `StrikethroughRules` | `@platejs/basic-nodes` | `~~x~~` mark rule |
-| `ScriptRules` | `@platejs/basic-nodes` | `~x~` for `'sub'`, `^x^` for `'sup'` |
-| `HighlightRules` | `@platejs/basic-nodes` | `==x==` / `≡x≡` mark rule |
-| `MarkComboRules` | `@platejs/basic-nodes` | Multi-mark combo rules (bold/italic/underline) |
-| `CodeBlockRules` | `@platejs/code-block` | Triple-backtick block fence rule, requires `on` |
-| `BulletedListRules` | `@platejs/list` | `-` / `*` bulleted list rule |
-| `OrderedListRules` | `@platejs/list` | `1.` / `1)` ordered list rule, preserves start number |
-| `TaskListRules` | `@platejs/list` | `[]` / `[x]` task list rule |
-| `MathRules` | `@platejs/math` | Inline `$x$` and block `$$x$$` rules |
-| `LinkRules` | `@platejs/link` | Markdown `[label](url)` and autolink rules |
+| `HeadingRules` | `platejs` | Markdown prefix rules for resolved persisted types `h1` through `h6` |
+| `BlockquoteRules` | `platejs` | `>` block-wrap rule, gated out of code blocks |
+| `HorizontalRuleRules` | `platejs` | `---` and `___` variant rules |
+| `BoldRules` | `platejs` | `**x**` / `__x__` mark rule |
+| `ItalicRules` | `platejs` | `*x*` / `_x_` mark rule |
+| `UnderlineRules` | `platejs` | `__x__` mark rule |
+| `CodeRules` | `platejs` | `` `x` `` inline code mark rule |
+| `StrikethroughRules` | `platejs` | `~~x~~` mark rule |
+| `ScriptRules` | `platejs` | `~x~` for `'sub'`, `^x^` for `'sup'` |
+| `HighlightRules` | `platejs` | `==x==` / `≡x≡` mark rule |
+| `MarkComboRules` | `platejs` | Multi-mark combo rules (bold/italic/underline) |
+| `CodeBlockRules` | `platejs` | Triple-backtick block fence rule, requires `on` |
+| `BulletedListRules` | `platejs` | `-` / `*` bulleted list rule |
+| `OrderedListRules` | `platejs` | `1.` / `1)` ordered list rule, preserves start number |
+| `TaskListRules` | `platejs` | `[]` / `[x]` task list rule |
+| `MathRules` | `platejs/math` | Inline `$x$` and block `$$x$$` rules |
+| `LinkRules` | `platejs` | Markdown `[label](url)` and autolink rules |
 
 Each family's factory takes a narrow options object — see the per-section examples above for the exact shape.

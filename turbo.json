@@ -1,11 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "GITHUB_OAUTH_TOKEN", "OPENAI_API_KEY"],
   "tasks": {
     "dev": { "cache": false, "persistent": true },
     "build": {
       "dependsOn": ["^build"],
       "env": [
+        "CI",
         "COMPONENTS_BASE_URL",
         "NEXT_PUBLIC_APP_URL",
         "NEXT_PUBLIC_GA_MEASUREMENT_ID",
@@ -22,7 +22,7 @@
     "lint": { "cache": true, "dependsOn": [], "outputs": [] },
     "www#lint": { "dependsOn": ["prebuild"], "outputs": [] },
     "prebuild": { "outputs": [] },
-    "test": { "outputs": [], "cache": false },
+    "test": { "outputs": [], "cache": false, "env": ["CI"] },
     "typecheck": { "dependsOn": ["^build"], "outputs": [], "cache": true },
     "www#typecheck": { "dependsOn": ["^build"], "outputs": [] }
   }

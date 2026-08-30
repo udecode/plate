@@ -6,9 +6,9 @@ description: 在Node.js环境中安装和配置Plate
 本指南演示如何在Node.js环境中使用Plate。这对于后端任务非常有用，例如数据处理、内容迁移、验证，或任何需要在不使用浏览器或完整React前端的情况下与Plate编辑器内容交互的场景。
 
 <Callout type="warning" title="Node.js关键限制">
-  在Node.js环境中使用Plate时，**绝对不要**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而不是`@platejs/basic-nodes/react`）。
+  在Node.js环境中使用Plate时，**绝对不要**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`platejs`而不是`platejs/react`）。
 
-  这意味着你不能使用`platejs/react`中的`createPlateEditor`。应改用`platejs`中的`createBaseEditor`。
+  这意味着你不能使用`platejs/react`中的`createEditor`。应改用`platejs`中的`createEditor`。
 </Callout>
 
 <Steps>
@@ -18,18 +18,18 @@ description: 在Node.js环境中安装和配置Plate
 安装核心Plate包以及数据处理所需的特定插件包。
 
 ```bash
-npm install platejs @platejs/basic-nodes
+npm install platejs
 ```
 
 -   `platejs`: Plate编辑器的核心功能
--   `@platejs/basic-nodes`: 提供基础节点（如标题、粗体、斜体、下划线等）的插件
+-   `platejs`: 提供基础节点（如标题、粗体、斜体、下划线等）的插件
 
 ### 创建编辑器实例
 
-在Node.js脚本中，使用`platejs`的`createBaseEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
+在Node.js脚本中，使用`platejs`的`createEditor`初始化编辑器实例。此函数与框架无关，不依赖React或浏览器API。
 
 ```typescript title="scripts/process-content.ts"
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -38,7 +38,7 @@ import {
   
   
   BaseBlockquotePlugin,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 
 const initialValue = [
   {
@@ -64,7 +64,7 @@ const initialValue = [
   },
 ];
 
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: [
     BaseBoldPlugin,
     BaseItalicPlugin,
@@ -82,7 +82,7 @@ console.debug('编辑器内容:', editor.children);
 ```
 
 <Callout type="info">
-  `createBaseEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
+  `createEditor`创建一个原始的Plate编辑器实例，适用于服务端逻辑、数据转换或准备静态渲染内容。它提供与React版本相同的API，但没有浏览器依赖。
 </Callout>
 
 ### 内容操作
@@ -90,7 +90,7 @@ console.debug('编辑器内容:', editor.children);
 Plate在Node.js中的主要用例是程序化内容操作：
 
 ```typescript title="scripts/transform-content.ts"
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseItalicPlugin,
@@ -98,10 +98,10 @@ import {
   
   
   BaseBlockquotePlugin,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 
 async function processDocument(value: any[]) {
-  const editor = createBaseEditor({
+  const editor = createEditor({
     plugins: [
       BaseBoldPlugin,
       BaseItalicPlugin,

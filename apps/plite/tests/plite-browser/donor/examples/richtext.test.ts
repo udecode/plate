@@ -13,7 +13,7 @@ import {
   createPliteBrowserWarmToolbarArrowGauntlet,
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3101';
 const macChromeUserAgent =
@@ -1043,6 +1043,7 @@ test.describe('On richtext example', () => {
     try {
       await editor.selectAll();
       await editor.deleteFragment();
+
       await editor.insertText('Styled');
       await editor.selection.select({
         anchor: { path: [0, 0], offset: 0 },
@@ -5669,7 +5670,6 @@ test.describe('On richtext example', () => {
     page,
   }) => {
     test.setTimeout(60_000);
-
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {

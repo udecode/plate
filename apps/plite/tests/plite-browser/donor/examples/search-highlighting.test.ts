@@ -4,7 +4,7 @@ import {
   openExample,
   resetPliteReactRenderProfiler,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test.describe('search highlighting', () => {
   const openSearchHighlighting = async (

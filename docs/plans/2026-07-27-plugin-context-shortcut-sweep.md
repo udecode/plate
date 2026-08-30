@@ -124,7 +124,7 @@ Gap ledger:
 | Finding | Verdict | Owner / proof |
 | --- | --- | --- |
 | Plate callback fields reconstructed `State` as `{}`, making `read` unknown. | fixed | `PlatePlugin.ts` now reprojects contextual fields from `PlatePlugin<C>`; Core type contract and www typecheck pass. |
-| Threading full `InferState<C>` through all React plugin config fields caused TS2589 in List Classic. | rejected and deleted | Narrow callback-field projection keeps inference without expanding the whole config. |
+| Threading full `InferState<C>` through all React plugin config fields caused TS2589 in Legacy list model. | rejected and deleted | Narrow callback-field projection keeps inference without expanding the whole config. |
 | Shortcut/input-rule/state-value callbacks expose only editor. | keep | Exact typed portals remain; no declaration wrapping or new API. |
 | Editor-wide DOM/React APIs resemble current plugin keys. | keep | Property spelling alone never proves owner equivalence. |
 | Missing Plite substrate | none | No Plite API gap was needed for this sweep. |

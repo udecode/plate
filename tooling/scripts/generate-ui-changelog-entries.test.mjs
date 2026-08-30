@@ -640,7 +640,7 @@ test('does not guess release dependencies for source-only change units', () => {
       {
         content: 'Release list package',
         date: '2026-06-14',
-        packageTag: '@platejs/list@53.1.3',
+        packageTag: '@platejs/test@53.1.3',
         tag: 'v53.1.3',
         versionPackagePrUrl: 'https://github.com/udecode/plate/pull/5012',
       },

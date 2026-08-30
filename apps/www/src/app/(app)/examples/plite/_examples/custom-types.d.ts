@@ -1,10 +1,5 @@
-import type {
-  BooleanMarkKeysOf,
-  Descendant,
-  Element,
-  Range,
-} from '@platejs/plite';
-import type { ReactEditor } from '@platejs/plite-react';
+import type { BooleanMarkKeysOf, Descendant, Element, Range } from 'plitejs';
+import type { Editor } from 'plitejs/react';
 
 export type BlockQuoteElement = {
   type: 'block-quote';
@@ -213,6 +208,6 @@ export type EmptyText = {
 };
 
 export type CustomEditor<TExtensions extends readonly unknown[] = readonly []> =
-  ReactEditor<CustomValue, TExtensions> & {
+  Editor<CustomValue, TExtensions> & {
     nodeToDecorations?: Map<Element, Range[]>;
   };

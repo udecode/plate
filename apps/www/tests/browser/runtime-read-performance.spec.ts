@@ -2,7 +2,7 @@ import {
   createPliteBrowserEditorHarness,
   measurePliteTrustedTyping,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
@@ -10,7 +10,7 @@ const FRAME_BUDGET_MS = 16.67;
 const MEASURED_TEXT = 'qwertyuiopasdfghjklz';
 const CASES = [
   { offset: 'This is editable '.length, route: 'find-replace-demo' },
-  { offset: 0, route: 'list-classic-demo' },
+  { offset: 0, route: 'list-demo' },
   { offset: 0, route: 'code-drawing-demo' },
   { offset: 0, route: 'copilot-demo' },
   { offset: 0, route: 'excalidraw-demo' },

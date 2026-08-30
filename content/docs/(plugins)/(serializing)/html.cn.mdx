@@ -21,11 +21,11 @@ toc: true
 ### 添加套件
 
 ```tsx
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: BaseEditorKit,
   initialValue: [
     { type: 'heading', level: 1, children: [{ text: 'Hello World' }] },
@@ -52,9 +52,9 @@ const html = await renderStaticHtml(editor);
 [查看服务端示例](/docs/examples/plate-to-html)
 
 <Callout type="warning" title="关键服务端限制">
-  在服务端环境（Node.js, RSC）中使用`renderStaticHtml`或其他Plate工具时，**不得**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而非`@platejs/basic-nodes/react`）。
+  在服务端环境（Node.js, RSC）中使用`renderStaticHtml`或其他Plate工具时，**不得**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`platejs`而非`platejs/react`）。
 
-  这意味着服务端编辑器实例应使用`platejs`中的`createBaseEditor`，而非`platejs/react`中的`usePlateEditor`或`createPlateEditor`。
+  这意味着服务端编辑器实例应使用`platejs`中的`createEditor`，而非`platejs/react`中的`useCreateEditor`或`createEditor`。
 </Callout>
 
 <Steps>
@@ -64,7 +64,7 @@ const html = await renderStaticHtml(editor);
 提供服务端编辑器实例并在编辑器创建时配置Plate组件。
 
 ```tsx title="lib/generate-html.ts"
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // 静态导入
 // 导入服务端安全的 registry kit（不从 /react 包路径导入）
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
@@ -82,7 +82,7 @@ const components = {
 };
 
 // 创建带组件的服务端编辑器实例
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins: [
     ...BaseBasicBlocksKit, // 段落、标题、引用和分隔线基础插件
     // ... 添加与内容相关的所有其他基础插件
@@ -178,13 +178,13 @@ HTML反序列化器允许将HTML内容（字符串或DOM元素）转换回Plate�
 在客户端 Plate 编辑器中调用根级 HTML API。
 
 ```tsx title="components/my-html-importer.tsx"
-import { usePlateEditor } from 'platejs/react';
+import { useCreateEditor } from 'platejs/react';
 // 导入表示HTML内容所需的所有Plate插件
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... 以及粗体、斜体、表格、列表等的插件
 
 function MyHtmlImporter({ htmlString }: { htmlString: string }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       ...BasicBlocksKit, // 用于段落、标题、引用和分隔线
       // ... 包含与预期解析的HTML对应的所有插件
@@ -339,8 +339,8 @@ const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
 
 <API name="renderStaticHtml">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    通过 `createBaseEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
+  <APIItem name="editor" type="Editor">
+    通过 `createEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
   </APIItem>
   <APIItem name="options" type="RenderStaticHtmlOptions" optional>
     静态 React 渲染选项。

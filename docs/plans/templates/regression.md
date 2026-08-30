@@ -202,6 +202,10 @@ Work Checklist:
 - [ ] Final proof ran through `capture-proof-receipt.mjs`; its ref, input digest,
       host, timestamps, retry count, and receipt ID validate.
 - [ ] Required retry-free stability runs passed with no retry.
+- [ ] Responsive geometry proof waits through animation-frame, resize-observer,
+      or renderer-commit settling with a bounded invariant poll; it records
+      pre-convergence and converged geometry instead of treating one immediate
+      post-resize bounding-box read as final.
 - [ ] Any stability-only failure after an exact green run froze product edits,
       gained a phase-specific executable diagnostic, and restarted baselines
       after product-versus-proof classification.

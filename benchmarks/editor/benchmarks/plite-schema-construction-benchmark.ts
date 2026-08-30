@@ -5,8 +5,8 @@ import {
   property,
   schema,
   target,
-} from '../../../packages/plite/src/index';
-import { getCompiledEditorSchema } from '../../../packages/plite/src/internal/index';
+} from '../../../packages/plitejs/src/index';
+import { getCompiledEditorSchema } from '../../../packages/plitejs/src/internal/index';
 import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 

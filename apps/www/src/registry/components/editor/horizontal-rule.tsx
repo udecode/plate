@@ -1,8 +1,8 @@
 'use client';
 
-import type { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import type { PlateElementProps } from 'platejs/react';
 import {
+  type HorizontalRulePlugin,
+  type PlateElementProps,
   PlateElement,
   useEditorFocused,
   useEditorReadOnly,

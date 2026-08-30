@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
-import { compileEditorSchemaContributions } from '../../../packages/plite/src/internal/index';
+import { compileEditorSchemaContributions } from '../../../packages/plitejs/src/internal/index';
 import {
   measureCohortsRoundRobin,
   validateAndWriteStrictBenchmarkArtifact,

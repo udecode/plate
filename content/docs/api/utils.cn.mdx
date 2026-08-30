@@ -1,14 +1,28 @@
 ---
 title: Plate 工具集
-description: \@platejs/utils 的 API 参考文档。
+description: Plate 共享工具、类型、标识和插件的 API 参考。
 ---
 
-`@platejs/utils` 包含用于 Plate 的实用工具函数。
+`platejs` 包含共享的无 React 工具。React hooks 从 `platejs/react` 导入。
 
-## Hooks
+## 共享工具
+
+| 导出 | 用途 |
+| --- | --- |
+| `isDefined(value)` | 排除 `null` 和 `undefined`。 |
+| `isUrl(value)` | 检查带协议和域名的 URL 字符串。 |
+| `sanitizeUrl(url, options)` | 拒绝不允许的协议，并返回规范化 URL 或 `null`。 |
+| `IS_APPLE` | 判断当前浏览器 user agent 是否为 macOS。 |
+| `AnyObject` | 值无需检查的字符串键对象。 |
+| `UnknownObject` | 值必须先收窄的字符串键对象。 |
+| `Nullable<T>` | 为 `T` 的每个属性添加 `null`。 |
+
+## React Hooks
 
 | Hook | 返回值 | 用途 |
 | --- | --- | --- |
+| `useComposedRef(...refs)` | `React.RefCallback<T>` | 将同一个节点写入 callback ref 和 ref object。 |
+| `useIsomorphicLayoutEffect` | React effect hook | 浏览器中使用 `useLayoutEffect`，SSR 中使用 `useEffect`。 |
 | `useSelectionFragmentProp(options?)` | `unknown` | 从选择内容读取一个属性。 |
 
 ## 类型工具

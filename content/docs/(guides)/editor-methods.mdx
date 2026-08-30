@@ -14,7 +14,7 @@ pick the editor hook by how often the component should re-render.
 | Read the required editor inside callbacks. | `useEditor()` |
 | Re-render from an editor-derived value. | `useEditorSelector(selector, options?)` |
 | Re-render from immutable state. | `useEditorState(selector, options?)` |
-| Render while a controller may have no editor. | `useActiveEditor()` and handle `null`. |
+| Render while a controller may have no editor. | `useOptionalEditor()` and handle `null`. |
 
 ```tsx title="components/bold-button.tsx" showLineNumbers
 import { useEditor, useEditorSelector } from 'platejs/react';
@@ -85,7 +85,7 @@ lives outside a single `<Plate>` tree.
 ```tsx title="components/editor-shell.tsx" showLineNumbers
 import type React from 'react';
 
-import { PlateController, useActiveEditor } from 'platejs/react';
+import { PlateController, useOptionalEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 
@@ -99,7 +99,7 @@ export function EditorShell({ children }: { children: React.ReactNode }) {
 }
 
 function ActiveEditorToolbar() {
-  const editor = useActiveEditor();
+  const editor = useOptionalEditor();
 
   if (!editor) return null;
 
@@ -110,7 +110,7 @@ function ActiveEditorToolbar() {
 ```
 
 `PlateController` resolves an editor by explicit `id`, focused editor, then
-primary editors. `useActiveEditor()` returns `null` while none is active.
+primary editors. `useOptionalEditor()` returns `null` while none is active.
 Components that require an editor should use `useEditor()` and fail fast.
 
 ## Editor API and Commands
@@ -120,7 +120,7 @@ plugin services, and `editor.update` for operations that change the document,
 selection, history, or plugin state.
 
 ```ts title="editor-methods.ts" showLineNumbers
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 const selection = editor.read.selection();
 const selectedText = selection ? editor.read.text.string(selection) : '';
@@ -153,7 +153,7 @@ The portal exposes resolved descriptor fields and owns that plugin's scoped
 API, one-shot update commands, and live state.
 
 ```ts title="html-methods.ts" showLineNumbers
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 editor.plugin(BoldPlugin).update.toggle();
 ```
@@ -178,7 +178,7 @@ plugin state. Use `usePluginStore` when React UI needs to re-render from that
 state.
 
 ```tsx title="components/find-replace-control.tsx" showLineNumbers
-import { FindReplacePlugin } from '@platejs/find-replace';
+import { FindReplacePlugin } from 'platejs/find-replace';
 import { useEditor, usePluginStore } from 'platejs/react';
 
 export function FindReplaceControl() {

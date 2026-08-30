@@ -28,9 +28,9 @@ List turns supported blocks into flat list items. Kind, marker style, explicit n
 
 ~~~tsx
 import { ListKit } from '@/components/editor/list';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...ListKit],
 });
 ~~~
@@ -71,8 +71,8 @@ Both fields are signed safe integers, so zero and negative ordered-list starts r
 ## Commands
 
 ~~~ts
-import { ListStyle, ListType } from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
+import { ListStyle, ListType } from 'platejs';
+import { ListPlugin } from 'platejs/react';
 
 const list = editor.plugin(ListPlugin);
 

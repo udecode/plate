@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { BaseListPlugin } from '@platejs/list';
-import { jsxt } from '@platejs/test-utils';
+import { jsxt } from '@platejs/test';
+import { BaseListPlugin } from 'platejs';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 

@@ -11,7 +11,7 @@ import { createTypeAwareLintSteps } from './lint-type-aware.mjs';
 const require = createRequire(import.meta.url);
 const {
   createBunTestArgs,
-} = require('../../packages/plate-scripts/bun-test-args.cjs');
+} = require('../../tooling/scripts/bun-test-args.cjs');
 
 test('workspace source entries cover every public runtime entry exactly once', () => {
   const entries = getWorkspaceSourceEntries(repoRoot);
@@ -27,31 +27,26 @@ test('workspace source entries cover every public runtime entry exactly once', (
   }
 
   for (const specifier of [
-    '@platejs/core/react',
-    '@platejs/plite/internal',
-    '@platejs/yjs/plate',
     'platejs/react',
+    'plitejs/react',
+    'platejs/yjs',
+    'platejs/yjs/react',
   ]) {
     assert.equal(specifiers.has(specifier), true, specifier);
   }
 });
 
-test('www maps every Plite public runtime entry to its exact source file', () => {
+test('www does not expose Plite runtime aliases to application code', () => {
   const appRoot = path.join(repoRoot, 'apps/www');
   const appConfig = JSON.parse(
     readFileSync(path.join(appRoot, 'tsconfig.json'), 'utf-8')
   );
   const { paths } = appConfig.compilerOptions;
 
-  for (const { sourceEntry, specifier } of getWorkspaceSourceEntries(
-    repoRoot
-  ).filter(({ specifier: innerSpecifier }) =>
-    innerSpecifier.startsWith('@platejs/plite')
-  )) {
-    assert.deepEqual(paths[specifier], [
-      path.relative(appRoot, sourceEntry).replaceAll(path.sep, '/'),
-    ]);
-  }
+  assert.deepEqual(
+    Object.keys(paths).filter((specifier) => specifier.startsWith('plitejs')),
+    []
+  );
 });
 
 test('Plite CI runs the repository Bun version', () => {
@@ -70,7 +65,7 @@ test('Plite CI runs the repository Bun version', () => {
   assert.deepEqual([...new Set(versions)], [rootManifest.devDependencies.bun]);
 });
 
-test('Core proof does not build workspace artifacts or serialize package lint', () => {
+test('Core proof preserves generated partition dependencies', () => {
   const source = readFileSync(
     path.join(repoRoot, 'tooling/scripts/check-core.mjs'),
     'utf-8'
@@ -79,28 +74,29 @@ test('Core proof does not build workspace artifacts or serialize package lint', 
   assert.doesNotMatch(source, /run\('build /);
   assert.match(
     source,
-    /run\(`lint \$\{packageSlugs\.length\} Core and reviewed packages`, 'pnpm', \[\s*'turbo',\s*'lint',\s*'--only'/s
+    /run\(`lint \$\{packageSlugs\.length\} Core and reviewed packages`, 'pnpm', \[\s*'turbo',\s*'lint'/s
   );
+  assert.doesNotMatch(source, /['"]--only['"]/u);
 });
 
 test('ordinary package tests use the root source-first Bun config', () => {
   assert.deepEqual(
     createBunTestArgs({
-      packageCwd: path.join(repoRoot, 'packages/plite'),
+      packageCwd: path.join(repoRoot, 'packages/plitejs'),
       projectCwd: repoRoot,
     }),
     [
       `--config=${path.join(repoRoot, 'bunfig.toml')}`,
       `--cwd=${repoRoot}`,
       'test',
-      'packages/plite/',
+      'packages/plitejs/',
     ]
   );
 });
 
 test('package typecheck gets source paths without exposing them to Bun', () => {
   const packageRunner = readFileSync(
-    path.join(repoRoot, 'packages/plate-scripts/run-with-pkg-dir.cjs'),
+    path.join(repoRoot, 'tooling/scripts/run-with-pkg-dir.cjs'),
     'utf-8'
   );
   const baseConfig = JSON.parse(
@@ -119,7 +115,7 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
 
   assert.match(
     rootManifest.scripts['plite:typecheck'],
-    /^pnpm --workspace-concurrency=8 /
+    /^turbo run typecheck --filter=plitejs --filter=platejs --filter=@platejs\/test --concurrency=8/u
   );
   assert.doesNotMatch(rootManifest.scripts['plite:typecheck'], /--parallel/);
 });
@@ -161,16 +157,29 @@ test('type-aware lint prepares exact package declarations before Oxlint', () => 
 });
 
 test('every Plite package typechecks against workspace source', () => {
-  for (const { root } of plitePackages) {
+  for (const { name, root } of plitePackages) {
     const manifest = JSON.parse(
       readFileSync(path.join(repoRoot, root, 'package.json'), 'utf-8')
     );
+    const entrypointTypecheckScripts = {
+      '@platejs/test':
+        'node ../../tooling/scripts/run-entrypoint-package-task.mjs @platejs/test typecheck',
+      platejs:
+        'node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs typecheck',
+      plitejs:
+        'node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs typecheck',
+    };
+    const entrypointTypecheck = entrypointTypecheckScripts[name];
 
-    assert.match(
-      manifest.scripts?.typecheck ?? '',
-      /^plate-pkg p:typecheck(?:\s|$)/u,
-      root
-    );
+    if (entrypointTypecheck) {
+      assert.equal(manifest.scripts?.typecheck, entrypointTypecheck, root);
+    } else {
+      assert.match(
+        manifest.scripts?.typecheck ?? '',
+        /^node \.\.\/\.\.\/tooling\/scripts\/plate-pkg\.cjs p:typecheck(?:\s|$)/u,
+        root
+      );
+    }
   }
 });
 
@@ -198,7 +207,7 @@ test('Playwright containers install Bun prerequisites before setup', () => {
   }
 });
 
-test('type-test fixtures resolve the Plite React internal entry from source', () => {
+test('Plate type-test fixtures resolve Plate and Plite from source', () => {
   const config = JSON.parse(
     readFileSync(
       path.join(repoRoot, 'tooling/config/tsconfig.type-tests.json'),
@@ -206,13 +215,16 @@ test('type-test fixtures resolve the Plite React internal entry from source', ()
     )
   );
 
-  assert.deepEqual(
-    config.compilerOptions.paths['@platejs/plite-react/internal'],
-    ['../../packages/plite-react/src/internal/index.ts']
-  );
-  assert.deepEqual(config.compilerOptions.paths['@udecode/*'], [
-    '../../packages/udecode/*/src/index.ts',
-    '../../packages/udecode/*/src/index.tsx',
-    '../../packages/udecode/*/src',
+  assert.deepEqual(config.compilerOptions.paths['platejs/react'], [
+    '../../packages/platejs/src/react/index.tsx',
   ]);
+  assert.deepEqual(config.compilerOptions.paths['plitejs/react'], [
+    '../../packages/plitejs/src/react/index.ts',
+  ]);
+  assert.equal(config.compilerOptions.paths['plitejs/internal'], undefined);
+  assert.equal(
+    config.compilerOptions.paths['plitejs/react/internal'],
+    undefined
+  );
+  assert.equal(config.compilerOptions.paths['@udecode/*'], undefined);
 });

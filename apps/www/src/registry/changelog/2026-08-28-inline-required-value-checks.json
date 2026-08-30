@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-28-inline-required-value-checks",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-28-inline-required-value-checks.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Inline required-value checks",
+  "targets": [
+    {
+      "name": "expect-defined",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for expect-defined."
+        }
+      ]
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-28-inline-required-value-checks",
+      "kind": "remove",
+      "summary": "Keep required-value checks in each component with contextual errors and no shared registry dependency.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "expect-defined",
+        "dnd",
+        "inline-combobox",
+        "block-discussion",
+        "use-chat"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-28",
+          "entry": "2026-08-28-inline-required-value-checks",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

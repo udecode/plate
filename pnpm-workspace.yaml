@@ -37,7 +37,6 @@ minimumReleaseAgeExclude:
 packages:
   - 'apps/*'
   - 'packages/*'
-  - 'packages/udecode/*'
 
 trustPolicy: no-downgrade
 trustPolicyExclude:

@@ -554,8 +554,7 @@ function getPackageChangelogUrl(packageName, commitRef) {
 }
 
 function getPackageDirectory(packageName) {
-  if (packageName === 'platejs') return 'packages/plate';
-  if (packageName === 'depset') return 'packages/udecode/depset';
+  if (packageName === 'platejs') return 'packages/platejs';
 
   if (packageName.startsWith('@platejs/')) {
     return `packages/${packageName.slice('@platejs/'.length)}`;
@@ -567,8 +566,6 @@ function getPackageDirectory(packageName) {
     if (name.startsWith('plate-')) {
       return `packages/${name.slice('plate-'.length)}`;
     }
-
-    return `packages/udecode/${name}`;
   }
 
   return undefined;

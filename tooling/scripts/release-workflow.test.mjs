@@ -16,6 +16,7 @@ import {
   getStableVersion,
   mainToNextSyncCommitMessage,
   mergeChangelogsForMainToNextSync,
+  reconcileBetaPreState,
   resolvePackageManifestForMainToNextSync,
   validateMainToNextBetaPreState,
   verifyMainToNextResolvedFile,
@@ -28,6 +29,10 @@ import {
 
 const releaseWorkflowPath = new URL(
   '../../.github/workflows/release.yml',
+  import.meta.url
+);
+const syncTemplatesWorkflowPath = new URL(
+  '../../.github/workflows/sync-templates.yml',
   import.meta.url
 );
 const promoteWorkflowPath = new URL(
@@ -43,6 +48,14 @@ const releasePackagesPath = new URL('release-packages.mjs', import.meta.url);
 const releaseBranchPrsPath = new URL('release-branch-prs.mjs', import.meta.url);
 const nextConfigPath = new URL(
   '../../apps/www/next.config.ts',
+  import.meta.url
+);
+const changesetConfigPath = new URL(
+  '../../.changeset/config.json',
+  import.meta.url
+);
+const changesetPreStatePath = new URL(
+  '../../.changeset/pre.json',
   import.meta.url
 );
 
@@ -131,6 +144,37 @@ test('release workflow uses the pruned GitHub Release path', async () => {
   assert.doesNotMatch(workflow, /release\/\*\*/);
 });
 
+test('template refresh paths validate both generated apps before push', async () => {
+  const releaseWorkflow = await readFile(releaseWorkflowPath, 'utf-8');
+  const manualWorkflow = await readFile(syncTemplatesWorkflowPath, 'utf-8');
+  const releaseUpdate = releaseWorkflow.indexOf('name: 🔄 Update templates');
+  const releaseValidation = releaseWorkflow.indexOf('name: ✅ Run template CI');
+  const releasePush = releaseWorkflow.indexOf('name: ⬆️ Push template updates');
+  const manualUpdate = manualWorkflow.indexOf('name: 🔄 Update templates');
+  const manualValidation = manualWorkflow.indexOf(
+    'name: ✅ Validate refreshed templates'
+  );
+  const manualPush = manualWorkflow.indexOf(
+    'name: ⬆️ Push refreshed templates'
+  );
+
+  assert.ok(releaseUpdate > 0);
+  assert.ok(releaseValidation > releaseUpdate);
+  assert.ok(releasePush > releaseValidation);
+  assert.match(releaseWorkflow, /pnpm templates:update --local/);
+  assert.match(releaseWorkflow, /cd templates\/plate-template/);
+  assert.match(releaseWorkflow, /cd templates\/plate-playground-template/);
+  assert.match(releaseWorkflow, /git add templates/);
+
+  assert.ok(manualUpdate > 0);
+  assert.ok(manualValidation > manualUpdate);
+  assert.ok(manualPush > manualValidation);
+  assert.match(manualWorkflow, /pnpm templates:update --local/);
+  assert.match(manualWorkflow, /cd templates\/plate-template/);
+  assert.match(manualWorkflow, /cd templates\/plate-playground-template/);
+  assert.match(manualWorkflow, /git add templates/);
+});
+
 test('promote workflow exits beta mode and creates next to main PR', async () => {
   const workflow = await readFile(promoteWorkflowPath, 'utf-8');
 
@@ -142,7 +186,7 @@ test('promote workflow exits beta mode and creates next to main PR', async () =>
   assert.match(workflow, /ref:\s*next/);
   assert.match(workflow, /pnpm changeset pre exit/);
   assert.match(workflow, /pnpm ci:version/);
-  assert.match(workflow, /packages\/plate\/package\.json/);
+  assert.match(workflow, /packages\/platejs\/package\.json/);
   assert.match(workflow, /\[skip release\]/);
   assert.match(workflow, /git push origin next/);
   assert.match(
@@ -195,7 +239,7 @@ test('main to next sync reports automated release metadata resolution', () => {
   const report = {
     changelogs: [
       {
-        file: 'packages/core/CHANGELOG.md',
+        file: 'packages/platejs/CHANGELOG.md',
         insertedStableVersions: ['53.1.8'],
         refreshedStableVersions: ['53.1.2'],
       },
@@ -203,10 +247,10 @@ test('main to next sync reports automated release metadata resolution', () => {
     checks: ['verified by test'],
     packageManifests: [
       {
-        file: 'packages/core/package.json',
+        file: 'packages/platejs/package.json',
         keptVersion: '54.0.0-beta.1',
         mainVersion: '53.1.8',
-        packageName: '@platejs/core',
+        packageName: 'platejs',
       },
     ],
     preJsonFiles: [{ file: '.changeset/pre.json' }],
@@ -229,17 +273,17 @@ test('main to next direct sync creates beta changesets for public package change
     getMainToNextChangedPackages([
       'apps/www/src/app/layout.tsx',
       'content/docs/installation.mdx',
-      'packages/core/src/lib/editor/SlateEditor.ts',
-      'packages/core/CHANGELOG.md',
+      'packages/platejs/src/lib/editor/SlateEditor.ts',
+      'packages/platejs/CHANGELOG.md',
     ]),
-    ['@platejs/core']
+    ['platejs']
   );
   assert.equal(
-    createMainToNextSyncChangesetContent('@platejs/core'),
-    '---\n"@platejs/core": patch\n---\n\nSynced latest changes from `main` into the beta lane.\n'
+    createMainToNextSyncChangesetContent('platejs'),
+    '---\n"platejs": patch\n---\n\nSynced latest changes from `main` into the beta lane.\n'
   );
-  assert.deepEqual(getMainToNextSyncChangesetFiles(['@platejs/core']), [
-    '.changeset/auto-main-to-next-sync-platejs-core.md',
+  assert.deepEqual(getMainToNextSyncChangesetFiles(['platejs']), [
+    '.changeset/auto-main-to-next-sync-platejs.md',
   ]);
 });
 
@@ -272,7 +316,7 @@ test('main to next direct sync can restore beta pre mode in the sync commit', ()
 
   assert.equal(preState.mode, 'pre');
   assert.equal(preState.tag, 'beta');
-  assert.equal(typeof preState.initialVersions['@platejs/core'], 'string');
+  assert.equal(typeof preState.initialVersions.plitejs, 'string');
   assert.equal(typeof preState.initialVersions.platejs, 'string');
   assert.deepEqual(preState.changesets, []);
   assert.doesNotThrow(() => {
@@ -286,31 +330,75 @@ test('main to next direct sync can restore beta pre mode in the sync commit', ()
   }, /beta pre-release tag/);
 });
 
+test('beta pre-state reconciliation keeps live baselines and drops deleted packages', () => {
+  assert.deepEqual(
+    reconcileBetaPreState(
+      {
+        changesets: ['already-consumed'],
+        initialVersions: {
+          '@platejs/core': '53.1.2',
+          platejs: '53.1.2',
+        },
+        mode: 'pre',
+        tag: 'beta',
+      },
+      {
+        '@platejs/test': '54.0.0-beta.0',
+        platejs: '54.0.0-beta.1',
+        plitejs: '0.0.1',
+      }
+    ),
+    {
+      changesets: ['already-consumed'],
+      initialVersions: {
+        '@platejs/test': '54.0.0-beta.0',
+        platejs: '53.1.2',
+        plitejs: '0.0.1',
+      },
+      mode: 'pre',
+      tag: 'beta',
+    }
+  );
+});
+
+test('Changesets keeps every surviving package version independent', async () => {
+  const [config, preState] = await Promise.all([
+    readFile(changesetConfigPath, 'utf-8').then(JSON.parse),
+    readFile(changesetPreStatePath, 'utf-8').then(JSON.parse),
+  ]);
+  const liveInitialVersions = createMainToNextBetaPreState().initialVersions;
+
+  assert.deepEqual(config.linked, []);
+  assert.deepEqual(
+    Object.keys(preState.initialVersions).sort(),
+    Object.keys(liveInitialVersions).sort()
+  );
+});
+
 test('main to next sync keeps beta package versions', () => {
   const resolved = resolvePackageManifestForMainToNextSync({
     ours: JSON.stringify({
       description: 'test',
-      name: '@platejs/core',
+      name: 'platejs',
       version: '54.0.0-beta.1',
     }),
     theirs: JSON.stringify({
       description: 'test',
-      name: '@platejs/core',
+      name: 'platejs',
       version: '53.1.8',
     }),
   });
 
   assert.deepEqual(JSON.parse(resolved), {
     description: 'test',
-    name: '@platejs/core',
+    name: 'platejs',
     version: '54.0.0-beta.1',
   });
   assert.throws(
     () =>
       resolvePackageManifestForMainToNextSync({
-        ours: '{"name":"@platejs/core","version":"54.0.0-beta.1"}',
-        theirs:
-          '{"name":"@platejs/core","description":"changed","version":"53.1.8"}',
+        ours: '{"name":"platejs","version":"54.0.0-beta.1"}',
+        theirs: '{"name":"platejs","description":"changed","version":"53.1.8"}',
       }),
     /changed fields other than version/
   );
@@ -319,44 +407,44 @@ test('main to next sync keeps beta package versions', () => {
 test('main to next sync verifier checks package, pre-state, and changelog output', () => {
   const nextPackage = JSON.stringify({
     description: 'test',
-    name: '@platejs/core',
+    name: 'platejs',
     version: '54.0.0-beta.1',
   });
   const mainPackage = JSON.stringify({
     description: 'test',
-    name: '@platejs/core',
+    name: 'platejs',
     version: '53.1.8',
   });
 
   assert.deepEqual(
     verifyMainToNextResolvedFile({
-      file: 'packages/core/package.json',
+      file: 'packages/platejs/package.json',
       ours: nextPackage,
       resolved: nextPackage,
       theirs: mainPackage,
     }),
     {
-      file: 'packages/core/package.json',
+      file: 'packages/platejs/package.json',
       message: 'kept package version 54.0.0-beta.1',
       type: 'package-manifest',
     }
   );
   assert.deepEqual(
     verifyMainToNextResolvedFile({
-      file: 'packages/core/package.json',
+      file: 'packages/platejs/package.json',
       ours: nextPackage,
       resolved: JSON.stringify({
         dependencies: {
-          '@platejs/plite': '54.0.1-beta.0',
+          plitejs: '54.0.1-beta.0',
         },
         description: 'test',
-        name: '@platejs/core',
+        name: 'platejs',
         version: '54.0.1-beta.0',
       }),
       theirs: mainPackage,
     }),
     {
-      file: 'packages/core/package.json',
+      file: 'packages/platejs/package.json',
       message: 'advanced beta package version 54.0.0-beta.1 to 54.0.1-beta.0',
       type: 'package-manifest',
     }
@@ -364,11 +452,11 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   assert.throws(
     () =>
       verifyMainToNextResolvedFile({
-        file: 'packages/core/package.json',
+        file: 'packages/platejs/package.json',
         ours: nextPackage,
         resolved: JSON.stringify({
           description: 'test',
-          name: '@platejs/core',
+          name: 'platejs',
           scripts: {
             prepack: 'echo unsafe',
           },
@@ -381,7 +469,7 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   assert.throws(
     () =>
       verifyMainToNextResolvedFile({
-        file: 'packages/core/package.json',
+        file: 'packages/platejs/package.json',
         ours: nextPackage,
         resolved: mainPackage,
         theirs: mainPackage,
@@ -391,11 +479,11 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   assert.throws(
     () =>
       verifyMainToNextResolvedFile({
-        file: 'packages/core/package.json',
+        file: 'packages/platejs/package.json',
         ours: nextPackage,
         resolved: JSON.stringify({
           description: 'third state',
-          name: '@platejs/core',
+          name: 'platejs',
           version: '54.0.0-beta.1',
         }),
         theirs: mainPackage,
@@ -428,7 +516,7 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   );
 
   const oursChangelog = [
-    '# @platejs/core',
+    '# platejs',
     '',
     '## 54.0.0-beta.1',
     '',
@@ -444,7 +532,7 @@ test('main to next sync verifier checks package, pre-state, and changelog output
     '',
   ].join('\n');
   const theirsChangelog = [
-    '# @platejs/core',
+    '# platejs',
     '',
     '## 53.1.8',
     '',
@@ -466,13 +554,13 @@ test('main to next sync verifier checks package, pre-state, and changelog output
 
   assert.deepEqual(
     verifyMainToNextResolvedFile({
-      file: 'packages/core/CHANGELOG.md',
+      file: 'packages/platejs/CHANGELOG.md',
       ours: oursChangelog,
       resolved: changelogResolution.content,
       theirs: theirsChangelog,
     }),
     {
-      file: 'packages/core/CHANGELOG.md',
+      file: 'packages/platejs/CHANGELOG.md',
       insertedStableVersions: ['53.1.8'],
       message: 'inserted stable sections 53.1.8',
       type: 'changelog',
@@ -480,10 +568,10 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   );
   assert.deepEqual(
     verifyMainToNextResolvedFile({
-      file: 'packages/core/CHANGELOG.md',
+      file: 'packages/platejs/CHANGELOG.md',
       ours: oursChangelog,
       resolved: [
-        '# @platejs/core',
+        '# platejs',
         '',
         '## 54.0.1-beta.0',
         '',
@@ -491,15 +579,13 @@ test('main to next sync verifier checks package, pre-state, and changelog output
         '',
         '- Synced latest changes from `main` into the beta lane.',
         '',
-        changelogResolution.content
-          .replace('# @platejs/core\n\n', '')
-          .trimEnd(),
+        changelogResolution.content.replace('# platejs\n\n', '').trimEnd(),
         '',
       ].join('\n'),
       theirs: theirsChangelog,
     }),
     {
-      file: 'packages/core/CHANGELOG.md',
+      file: 'packages/platejs/CHANGELOG.md',
       insertedStableVersions: ['53.1.8'],
       message: 'verified versioned changelog with stable sections 53.1.8',
       type: 'changelog',
@@ -508,7 +594,7 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   assert.throws(
     () =>
       verifyMainToNextResolvedFile({
-        file: 'packages/core/CHANGELOG.md',
+        file: 'packages/platejs/CHANGELOG.md',
         ours: oursChangelog,
         resolved: oursChangelog,
         theirs: theirsChangelog,
@@ -518,7 +604,7 @@ test('main to next sync verifier checks package, pre-state, and changelog output
   assert.throws(
     () =>
       verifyMainToNextResolvedFile({
-        file: 'packages/core/CHANGELOG.md',
+        file: 'packages/platejs/CHANGELOG.md',
         ours: oursChangelog,
         resolved: `${changelogResolution.content}\n=======\n`,
         theirs: theirsChangelog,
@@ -544,12 +630,12 @@ test('main to next sync verifier scopes metadata files to synced changes', () =>
         'packages/basic-nodes/CHANGELOG.md',
         'packages/basic-nodes/package.json',
       ],
-      resolvedChangedFiles: ['packages/core/CHANGELOG.md'],
+      resolvedChangedFiles: ['packages/platejs/CHANGELOG.md'],
     }),
     [
       'packages/basic-nodes/CHANGELOG.md',
       'packages/basic-nodes/package.json',
-      'packages/core/CHANGELOG.md',
+      'packages/platejs/CHANGELOG.md',
     ]
   );
 });
@@ -557,7 +643,7 @@ test('main to next sync verifier scopes metadata files to synced changes', () =>
 test('main to next sync keeps beta changelog sections above stable history', () => {
   const resolved = mergeChangelogsForMainToNextSync({
     ours: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 54.0.0-beta.1',
       '',
@@ -591,7 +677,7 @@ test('main to next sync keeps beta changelog sections above stable history', () 
       '',
     ].join('\n'),
     theirs: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 53.1.8',
       '',
@@ -642,7 +728,7 @@ test('main to next sync keeps beta changelog sections above stable history', () 
 test('main to next sync inserts stable changelog sections between existing anchors', () => {
   const resolved = mergeChangelogsForMainToNextSync({
     ours: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 54.0.0-beta.1',
       '',
@@ -664,7 +750,7 @@ test('main to next sync inserts stable changelog sections between existing ancho
       '',
     ].join('\n'),
     theirs: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 53.1.8',
       '',
@@ -699,7 +785,7 @@ test('main to next sync inserts stable changelog sections between existing ancho
 test('main to next sync appends stable changelog sections after beta-only history', () => {
   const resolved = mergeChangelogsForMainToNextSync({
     ours: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 54.0.0-beta.1',
       '',
@@ -715,7 +801,7 @@ test('main to next sync appends stable changelog sections after beta-only histor
       '',
     ].join('\n'),
     theirs: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 53.1.8',
       '',
@@ -741,7 +827,7 @@ test('main to next sync appends stable changelog sections after beta-only histor
 test('main to next sync keeps stable sections after the last matched anchor', () => {
   const resolved = mergeChangelogsForMainToNextSync({
     ours: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 54.0.0-beta.1',
       '',
@@ -757,7 +843,7 @@ test('main to next sync keeps stable sections after the last matched anchor', ()
       '',
     ].join('\n'),
     theirs: [
-      '# @platejs/core',
+      '# platejs',
       '',
       '## 53.1.8',
       '',

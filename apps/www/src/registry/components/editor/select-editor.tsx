@@ -1,7 +1,5 @@
 'use client';
 
-import { MultiSelectPlugin } from '@platejs/tag/react';
-import { Command as CommandPrimitive, useCommandActions } from '@udecode/cmdk';
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 import { isHotkey, TextApi } from 'platejs';
@@ -9,9 +7,10 @@ import {
   Plate,
   useEditor,
   useEditorSelector,
-  usePlateEditor,
+  useCreateEditor,
   usePlateValue,
 } from 'platejs/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -22,6 +21,10 @@ import {
 } from '@/registry/components/editor/floating-popover';
 
 import { Editor, EditorContainer } from './editor';
+import {
+  Command as CommandPrimitive,
+  useCommandActions,
+} from './select-command';
 import { TagElement } from './tag';
 
 export type SelectItem = {
@@ -121,7 +124,7 @@ export function SelectEditorContent({
   const { controlled, value } = useSelectEditorContext();
   const { setSearch } = useCommandActions();
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: [MultiSelectPlugin.configure({ component: TagElement })],
       initialValue: createEditorValue(value),
@@ -216,7 +219,7 @@ export const SelectEditorInput = ({
         selectFirstItem();
         onFocusCapture?.(event);
       }}
-      onKeyDown={(e) => {
+      onKeyDown={(e, context) => {
         if (isHotkey('mod+z', e)) {
           e.preventDefault();
           return true;
@@ -238,7 +241,7 @@ export const SelectEditorInput = ({
           return true;
         }
 
-        return onKeyDown?.(e);
+        return onKeyDown?.(e, context);
       }}
     />
   );
@@ -445,10 +448,6 @@ const fzfFilter = (value: string, search: string): boolean => {
   return fzf.find(search).length > 0;
 };
 
-/**
- * You could replace this with import from '@/components/ui/command' + replace
- * 'cmdk' import with '@udecode/cmdk'
- */
 function Command({
   className,
   ...props

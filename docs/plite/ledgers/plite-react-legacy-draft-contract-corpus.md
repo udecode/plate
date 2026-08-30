@@ -18,24 +18,24 @@ Legacy exact rows:
 
 Draft contract rows:
 
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/provider-hooks-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/react-editor-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/primitives-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/editable-behavior.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/projections-and-selection-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/annotation-store-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/widget-layer-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/app-owned-customization.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/large-doc-and-scroll.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/surface-contract.tsx`
-- `/Users/zbeyens/git/plite-draft/packages/plite-react/test/with-react-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/react-editor-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/primitives-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/editable-behavior.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/projections-and-selection-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/annotation-store-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/widget-layer-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/app-owned-customization.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/large-doc-and-scroll.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/surface-contract.tsx`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/react/with-react-contract.tsx`
 
 Current live owners:
 
 - [slate-react-api.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/slate-react-api.md)
 - [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/example-parity-matrix.md)
-- `packages/plite-react/src/**`
-- `packages/plite-react/test/**`
+- `packages/plitejs/src/react/**`
+- `packages/plitejs/test/react/**`
 - `apps/www/src/app/(app)/examples/plite/_examples/**`
 - `apps/www/tests/plite-browser/donor/examples/**`
 
@@ -68,17 +68,17 @@ than legacy.
 
 Immediate current proof owners to restore or create:
 
-- `packages/plite-react/test/provider-hooks-contract.tsx`
-- `packages/plite-react/test/react-editor-contract.tsx`
-- `packages/plite-react/test/primitives-contract.tsx`
-- `packages/plite-react/test/editable-behavior.tsx`
-- `packages/plite-react/test/projections-and-selection-contract.tsx`
-- `packages/plite-react/test/annotation-store-contract.tsx`
-- `packages/plite-react/test/widget-layer-contract.tsx`
-- `packages/plite-react/test/app-owned-customization.tsx`
-- `packages/plite-react/test/large-doc-and-scroll.tsx`
-- `packages/plite-react/test/surface-contract.tsx`
-- `packages/plite-react/test/with-react-contract.tsx`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `packages/plitejs/test/react/react-editor-contract.tsx`
+- `packages/plitejs/test/react/primitives-contract.tsx`
+- `packages/plitejs/test/react/editable-behavior.tsx`
+- `packages/plitejs/test/react/projections-and-selection-contract.tsx`
+- `packages/plitejs/test/react/annotation-store-contract.tsx`
+- `packages/plitejs/test/react/widget-layer-contract.tsx`
+- `packages/plitejs/test/react/app-owned-customization.tsx`
+- `packages/plitejs/test/react/large-doc-and-scroll.tsx`
+- `packages/plitejs/test/react/surface-contract.tsx`
+- `packages/plitejs/test/react/with-react-contract.tsx`
 
 ## `keep-later`
 

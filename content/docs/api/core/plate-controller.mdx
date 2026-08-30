@@ -14,7 +14,7 @@ import {
   Plate,
   PlateContent,
   PlateController,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 export function EditorShell() {
@@ -28,7 +28,7 @@ export function EditorShell() {
 }
 
 function MainEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
      id: 'main' });
 
   return (
@@ -39,7 +39,7 @@ function MainEditor() {
 }
 
 function SecondaryEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
      id: 'secondary' });
 
   return (
@@ -50,7 +50,7 @@ function SecondaryEditor() {
 }
 ```
 
-`primary` belongs on `Plate`, not on `createPlateEditor` or `usePlateEditor`.
+`primary` belongs on `Plate`, not on `createEditor` or `useCreateEditor`.
 
 ## Active Editor Lookup
 
@@ -62,7 +62,7 @@ editor outside a specific editor tree.
 |--------|----------|
 | `useEditor({ id: 'main' })` | Resolves the active editor registered for `main`; throws when it is absent. |
 | `useEditor()` | Resolves the active editor, then the first mounted primary editor; throws when none exists. |
-| `useActiveEditor()` | Uses the same lookup and returns `null` when no editor is active. |
+| `useOptionalEditor()` | Uses the same lookup and returns `null` when no editor is active. |
 | Missing store without controller | Throws `Plate hooks must be used inside a Plate or PlateController`. |
 
 Controller lookup order without an explicit ID:
@@ -74,15 +74,15 @@ Controller lookup order without an explicit ID:
 ## Optional Active Editors
 
 Plate keeps an inert editor internally so hook subscriptions retain a stable
-call shape. Public code never receives it. Use `useActiveEditor()` for UI that
+call shape. Public code never receives it. Use `useOptionalEditor()` for UI that
 can render while no editor is active; use `useEditor()` when absence is a
 programming error.
 
 ```tsx title="components/active-editor-label.tsx"
-import { useActiveEditor } from 'platejs/react';
+import { useOptionalEditor } from 'platejs/react';
 
 export function ActiveEditorLabel() {
-  const editor = useActiveEditor();
+  const editor = useOptionalEditor();
 
   if (!editor) return <p>No editor selected.</p>;
 

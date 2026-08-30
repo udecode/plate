@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import {
   createEditor,
   DocumentChange,
-} from "../../../../../packages/plite/src/index.ts";
-import * as Editor from "../../../../../packages/plite/src/internal/index.ts";
+} from "../../../../../packages/plitejs/src/index.ts";
+import * as Editor from "../../../../../packages/plitejs/src/internal/index.ts";
 import { summarize, writeBenchmarkArtifact } from "../../shared/stats.mjs";
 
 const iterations = Number(

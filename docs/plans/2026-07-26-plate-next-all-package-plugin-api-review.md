@@ -469,7 +469,7 @@ Review matrix:
 | Basic nodes | 1 P3 / 32 | 31 keep; fold one independent shortcut stage | `basic-nodes` | `review-basic-nodes.json` | constructor cleanup only |
 | Core + styles | 1 P0, 3 P1 / 34 | Navigation, Debug, ElementState, View need ownership/name repair | Core | `review-core-styles.json` | Navigation first |
 | AI through Footnote | 3 P0, 10 P1 / 35 | split AI state/controller work; add Code Block, DOCX IO, Emoji, Comment, Footnote capabilities | package owners + Core for composite AI update | `review-early-packages.json` | AI protocol before adoption |
-| Indent through Math | 7 P1, 2 P2 / 31 | Link/Markdown/root API and classic-list read corrections; two constructor folds | package owners | `review-mid-packages.json` | root feature API cuts |
+| Indent through Math | 7 P1, 2 P2 / 31 | Link/Markdown/root API and legacy-list-model read corrections; two constructor folds | package owners | `review-mid-packages.json` | root feature API cuts |
 | Media through Suggestion | 7 P1 / 26 | option selectors, state reads, named updates, deterministic suggestion identity | package owners | `review-media-packages.json` | Selection/Suggestion first |
 | Tabbable through Yjs | 2 P0, 9 P1 / 25 | Table query split plus missing Tabbable/Tag/TOC/Toggle reads | package owners | `review-late-packages.json` | Table first |
 | Exhaustive ledger | 43 changed / 183 | one current/final row per descriptor | `plate-next` | `plugin-api-review.json` and rendered `plugin-api-review.md` | hand accepted target to `plate-plan` |

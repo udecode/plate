@@ -49,7 +49,7 @@ No Plate feature package retains an unexplained full-root normalization call.
 | 2 | `packages/link/src/lib/BaseLinkRuntimePlugin.spec.ts` | `explicit-normalizer-test` | Invalid link placement explicitly exercises link normalization. |
 | 1 | `packages/link/src/lib/LinkRules.spec.tsx` | `explicit-normalizer-test` | Explicit post-edit link-rule fixture normalization. |
 | 1 | `packages/link/src/lib/withLink.spec.tsx` | `explicit-normalizer-test` | Explicit zero-width link normalization; `force: true` is now stated. |
-| 1 | `packages/list-classic/src/lib/withNormalizeList.spec.tsx` | `explicit-normalizer-test` | List normalizer fixture helper. |
+| 1 | `packages/platejs/src/features/list/src/lib/withNormalizeList.spec.tsx` | `explicit-normalizer-test` | List normalizer fixture helper. |
 | 1 | `packages/list/src/lib/normalizers/normalizeListStart.slow.tsx` | `explicit-normalizer-test` | Slow idempotence fixture verifies an already-normalized tree stays referentially stable. |
 | 1 | `packages/plite/test/generic-extension-namespace-contract.ts` | `explicit-normalizer-test` | Compile-time rejection proves normalizer transactions cannot recursively normalize. |
 | 1 | `packages/plite/test/transforms/normalization/set_node.tsx` | `explicit-normalizer-test` | Low-level normalization fixture explicitly invokes the static editor surface. |
@@ -75,7 +75,7 @@ No Plate feature package retains an unexplained full-root normalization call.
 ## Proof Limits
 
 Date, Suggestion, and focused Plite unwrap behavior are green. Full tests for
-Layout, Tag, Link, List Classic, List, and Table remain blocked by their
+Layout, Tag, Link, Legacy list model, List, and Table remain blocked by their
 existing unfinished Plate migration: removed `createSlate*` exports, deleted
 runtime bridge modules, and other old API references fail before the changed
 normalizer fixtures execute. No reported error points at the replacement

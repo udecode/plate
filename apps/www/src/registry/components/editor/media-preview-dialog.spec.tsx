@@ -41,9 +41,12 @@ let preview = {
   translate: { x: 0, y: 0 },
 };
 
-mock.module('@platejs/media/react', () => ({ ImagePlugin: imagePlugin }));
+mock.module('platejs/media/react', () => ({
+  ImagePlugin: imagePlugin,
+}));
 
 mock.module('platejs/react', () => ({
+  useComposedRef: (...refs: unknown[]) => refs.find(Boolean),
   useEditorPlugin: () => ({ api: { preview: previewApi }, store }),
   usePluginStore: (_plugin: unknown, key: string) =>
     key === 'preview' ? preview : isOpen,

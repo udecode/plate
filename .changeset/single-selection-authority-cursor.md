@@ -1,5 +1,5 @@
 ---
-'@platejs/cursor': minor
+'platejs': major
 ---
 
-Export `CursorOverlayPlugin` from `@platejs/cursor` for editor-selection overlays.
+Export `CursorOverlayPlugin` from `platejs/react` for editor-selection overlays.

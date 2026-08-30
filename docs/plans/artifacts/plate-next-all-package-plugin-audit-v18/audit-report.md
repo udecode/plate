@@ -20,7 +20,7 @@ transaction use, React family ownership, and one-owner topology still drift.
 
 1. Core type kernel, builder inference, and honest optional-plugin lookup.
 2. Media shared-factory inference and Selection's transaction/weak-peer/hook ownership.
-3. Suggestion nullability, Link and Markdown capability ownership, AI/Table fake casts, and List Classic stale capability capture.
+3. Suggestion nullability, Link and Markdown capability ownership, AI/Table fake casts, and Legacy list model stale capability capture.
 4. Hook/component families in DnD, Toggle, Utils, Selection, Core EventEditor, and package-specific React ownership.
 5. P2/P3 one-owner helpers, taxonomy directories, dead aliases, tests, and constants.
 
@@ -55,7 +55,7 @@ transaction use, React family ownership, and one-owner topology still drift.
 | layout | 4 | 1 | 0 | 0 | 1 | 0 | repair-P2 |
 | link | 2 | 2 | 0 | 3 | 3 | 1 | blocked-P1 |
 | list | 2 | 2 | 0 | 0 | 2 | 1 | repair-P2 |
-| list-classic | 14 | 2 | 0 | 1 | 2 | 1 | blocked-P1 |
+| legacy-list-model | 14 | 2 | 0 | 1 | 2 | 1 | blocked-P1 |
 | markdown | 1 | 1 | 0 | 2 | 1 | 3 | blocked-P1 |
 | math | 4 | 2 | 0 | 1 | 0 | 0 | blocked-P1 |
 | media | 14 | 9 | 0 | 1 | 4 | 4 | blocked-P1 |
@@ -116,7 +116,7 @@ transaction use, React family ownership, and one-owner topology still drift.
 | LINK-02 | P1 | link | supplied-state-bypass | `packages/link/src/lib/BaseLinkPlugin.ts:1` | A read contribution uses editor.read instead of its supplied state. | repair: Use the supplied read state. |
 | LINK-05 | P1 | link | document-read-in-api | `packages/link/src/react/LinkPlugin.tsx:1` | React trigger APIs query the document. | repair: Move pure document queries to read. |
 | LINK-06 | P1 | link | document-mutation-in-api | `packages/link/src/react/LinkPlugin.tsx:1` | React submit APIs mutate the document. | repair: Move mutations to update; keep API only for orchestration if needed. |
-| LISTC-01 | P1 | list-classic | stale-capability-capture | `packages/list-classic/src/lib/BaseListPlugin.ts:1341` | The final extension captures api during assembly and can retain a pre-publication capability. | repair: Resolve context.api inside runtime callbacks. |
+| LISTC-01 | P1 | legacy-list-model | stale-capability-capture | `packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:1341` | The final extension captures api during assembly and can retain a pre-publication capability. | repair: Resolve context.api inside runtime callbacks. |
 | MD-01 | P1 | markdown | duplicate-public-helper | `packages/markdown/src/lib/serializer/serializeInlineMd.ts:11` | serializeInlineMd is a public editor-parameter helper with no production caller. | best-api: Route through the sole editor.api.markdown surface or a true standalone runtime; hard-cut the duplicate helper. |
 | MD-06 | P1 | markdown | root-api-ownership | `packages/markdown/src/lib/MarkdownPlugin.ts:113` | MarkdownPlugin publishes its keyed feature service through extension.api, leaving its scoped plugin API empty. | repair: Author deserialize, deserializeInline, and serialize as the Markdown plugin api so keyed projection still exposes editor.api.markdown.*; do not move serialize to editor.read or add another call surface. |
 | MATH-01 | P1 | math | rule-factory-inference | `packages/math/src/lib/BaseEquationPlugin.ts:1` | Math rule matches require casts because createRuleFactory loses inference. | core: Fix CORE-04, then remove the consumer casts. |
@@ -170,8 +170,8 @@ transaction use, React family ownership, and one-owner topology still drift.
 | LINK-07 | P2 | link | selector-annotation | `packages/link/src/react/LinkPlugin.tsx:1` | A selector state parameter is explicitly annotated where inference should own it. | repair: Remove the annotation and repair the owner if inference fails. |
 | LIST-01 | P2 | list | semantic-react-boundary | `packages/list/src/lib/BaseListPlugin.tsx:1` | The semantic Base plugin imports React/JSX while ListPlugin is an empty adapter. | repair: Move live JSX to ListPlugin and bind static renderers explicitly. |
 | LIST-02 | P2 | list | dead-alias | `packages/list/src/react/ListPlugin.tsx:5` | ListConfig aliases BaseListConfig with no consumer. | repair: Delete it. |
-| LISTC-02 | P2 | list-classic | dead-export | `packages/list-classic/src/lib/BaseListPlugin.ts:1` | ListPluginTransaction is exported with no consumer. | repair: Delete it. |
-| LISTC-03 | P2 | list-classic | callback-only-subscription | `packages/list-classic/src/react/useTodoListElement.ts:6` | The hook subscribes to readOnly only to use it in an event callback. | repair: Read editor state inside the event. |
+| LISTC-02 | P2 | legacy-list-model | dead-export | `packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:1` | ListPluginTransaction is exported with no consumer. | repair: Delete it. |
+| LISTC-03 | P2 | legacy-list-model | callback-only-subscription | `packages/platejs/src/features/list/src/react/useTodoListElement.ts:6` | The hook subscribes to readOnly only to use it in an event callback. | repair: Read editor state inside the event. |
 | MD-02 | P2 | markdown | optional-plugin-law | `packages/markdown/src/lib/internal/markdownConversion.ts:79` | Optional plugin discovery uses getPlugin plus throw/catch. | repair: Use a typed portal with installed. |
 | MEDIA-02 | P2 | media | dead-state-and-dependency | `packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts:13` | Placeholder rules/state are unused and media dependencies belong only to the React replacement stage. | repair: Delete dead state and move dependencies to PlaceholderPlugin. |
 | MEDIA-03 | P2 | media | constructor-ownership | `packages/media/src/react/placeholder/PlaceholderPlugin.tsx:226` | The first extend adds independent API/selectors from declared store state. | repair: Fold it into toPlatePlugin; retain later update/handler stages. |
@@ -198,7 +198,7 @@ transaction use, React family ownership, and one-owner topology still drift.
 | EMOJI-02 | P3 | emoji | dead-declaration | `packages/emoji/src/lib/BaseEmojiPlugin.ts:211` | NUM_OF_CATEGORIES has no consumer. | repair: Delete it. |
 | LINK-04 | P3 | link | raw-plugin-key | `packages/link/src/lib/BaseLinkPlugin.ts:1` | A raw link key bypasses KEYS.link. | repair: Use the canonical key. |
 | LIST-03 | P3 | list | editor-plumbing | `packages/list/src/react/useTodoListElement.ts:6` | One hook returns editor only so another hook can mutate. | repair: Resolve editor in the mutation-owning hook. |
-| LISTC-04 | P3 | list-classic | test-family-colocation | `packages/list-classic/src/react/ListPlugin.spec.tsx:1` | A generic React test file spans multiple hook families. | repair: Split or merge tests by the owning hook family during repair. |
+| LISTC-04 | P3 | legacy-list-model | test-family-colocation | `packages/platejs/src/features/list/src/react/ListPlugin.spec.tsx:1` | A generic React test file spans multiple hook families. | repair: Split or merge tests by the owning hook family during repair. |
 | MD-03 | P3 | markdown | internal-export | `packages/markdown/src/lib/internal/markdownConversion.ts:1` | Internal and test-only conversion helpers are exported. | repair: Keep only the durable runtime/API owners public. |
 | MD-04 | P3 | markdown | taxonomy-directory | `packages/markdown/src/lib/deserializer/utils/index.ts:1` | Deserializer/rules/root utils are split by implementation taxonomy. | repair: Flatten or colocate with their semantic owners. |
 | MD-05 | P3 | markdown | one-owner-constant | `packages/markdown/src/lib/MarkdownPlugin.ts:1` | basicMarkdownMarks is exported but owned by one plugin file. | repair: Keep it lexical unless a real external owner appears. |

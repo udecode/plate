@@ -2,13 +2,13 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comment-static",
   "dependencies": [
-    "@platejs/comment"
+    "platejs"
   ],
   "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/comment-static.tsx",
-      "content": "import { BaseCommentPlugin } from '@platejs/comment';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function CommentLeafStatic(\n  props: PliteLeafProps<typeof BaseCommentPlugin>\n) {\n  return (\n    <PliteLeaf\n      {...props}\n      className=\"border-b-2 border-b-highlight/35 bg-highlight/15\"\n    >\n      {props.children}\n    </PliteLeaf>\n  );\n}\n\nexport const BaseCommentKit = [\n  BaseCommentPlugin.configure({ component: CommentLeafStatic }),\n];\n",
+      "content": "import { BaseCommentPlugin } from 'platejs/comment';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function CommentLeafStatic(\n  props: PliteLeafProps<typeof BaseCommentPlugin>\n) {\n  return (\n    <PliteLeaf\n      {...props}\n      className=\"border-b-2 border-b-highlight/35 bg-highlight/15\"\n    >\n      {props.children}\n    </PliteLeaf>\n  );\n}\n\nexport const BaseCommentKit = [\n  BaseCommentPlugin.configure({ component: CommentLeafStatic }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/comment-static.tsx"
     }

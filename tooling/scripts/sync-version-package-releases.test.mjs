@@ -13,7 +13,7 @@ test('parses Version Packages PR body into release entries', () => {
     body: `This PR was opened by Changesets.
 
 # Releases
-## @platejs/ai@53.0.3
+## @platejs/test@53.0.3
 
 ### Patch Changes
 
@@ -23,9 +23,9 @@ test('parses Version Packages PR body into release entries', () => {
 
 ### Patch Changes
 
--   Updated \`@platejs/utils\`.
+-   Updated \`platejs\`.
 
-## @platejs/footnote@53.0.3
+## plitejs@53.0.3
 
 ### Minor Changes
 
@@ -33,7 +33,7 @@ test('parses Version Packages PR body into release entries', () => {
     \`FootnoteInputPlugin\` for real footnote nodes and inline \`[^\` combobox
     insertion in Plate editors.
 
-## depset@0.1.2
+## @platejs/cli@0.1.2
 
 ### Patch Changes
 
@@ -45,17 +45,17 @@ test('parses Version Packages PR body into release entries', () => {
     url: 'https://github.com/udecode/plate/pull/4969',
   });
   const release = releases.find((item) => item.tag === 'v53.0.3');
-  const depsetRelease = releases.find((item) => item.tag === 'v0.1.2');
+  const cliRelease = releases.find((item) => item.tag === 'v0.1.2');
 
   assert.equal(releases.length, 2);
   assert.equal(release.tag, 'v53.0.3');
   assert.equal(release.date, '2026-04-29');
   assert.equal(
     release.changelogUrl,
-    'https://github.com/udecode/plate/blob/abc123/packages/plate/CHANGELOG.md'
+    'https://github.com/udecode/plate/blob/abc123/packages/platejs/CHANGELOG.md'
   );
   assert.equal(release.packageTag, 'platejs@53.0.3');
-  assert.match(release.content, /^`@platejs\/ai`$/m);
+  assert.match(release.content, /^`@platejs\/test`$/m);
   assert.match(release.content, /### Bug Fixes/);
   assert.match(
     release.content,
@@ -81,9 +81,9 @@ test('parses Version Packages PR body into release entries', () => {
       username: '@zbeyens',
     },
   ]);
-  assert.equal(depsetRelease.tag, 'v0.1.2');
-  assert.equal(depsetRelease.packageTag, 'depset@0.1.2');
-  assert.match(depsetRelease.content, /^`depset`$/m);
+  assert.equal(cliRelease.tag, 'v0.1.2');
+  assert.equal(cliRelease.packageTag, '@platejs/cli@0.1.2');
+  assert.match(cliRelease.content, /^`@platejs\/cli`$/m);
 });
 
 test('filters unmerged Version Packages PRs from release history', () => {
@@ -117,7 +117,7 @@ test('filters unmerged Version Packages PRs from release history', () => {
 test('parses beta Version Packages PR titles', () => {
   const [release] = parseVersionPackagesPullRequest({
     body: `# Releases
-## @platejs/core@54.0.0-beta.1
+## platejs@54.0.0-beta.1
 
 ### Patch Changes
 
@@ -137,7 +137,7 @@ test('falls back to first package tag and builds compare URLs', () => {
       {
         content: 'older',
         date: '2026-04-25',
-        packageTag: '@platejs/media@53.0.1',
+        packageTag: '@platejs/test@53.0.1',
         tag: 'v53.0.1',
         title: 'v53.0.1',
         versionPackagePrUrl: 'https://github.com/udecode/plate/pull/1',
@@ -151,7 +151,7 @@ test('falls back to first package tag and builds compare URLs', () => {
           { url: 'https://github.com/alpha', username: '@alpha' },
         ],
         date: '2026-04-25',
-        packageTag: '@platejs/list@53.0.2',
+        packageTag: '@platejs/test@53.0.2',
         tag: 'v53.0.2',
         title: 'v53.0.2',
         versionPackagePrUrl: 'https://github.com/udecode/plate/pull/2',
@@ -162,7 +162,7 @@ test('falls back to first package tag and builds compare URLs', () => {
   assert.equal(releases[0].url, 'https://github.com/udecode/plate/pull/2');
   assert.match(
     releases[0].content,
-    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/2\) · \[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fmedia%4053\.0\.1\.\.\.%40platejs%2Flist%4053\.0\.2\) · By \[@beta\]\(https:\/\/github\.com\/beta\), \[@alpha\]\(https:\/\/github\.com\/alpha\)/
+    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/2\) · \[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Ftest%4053\.0\.1\.\.\.%40platejs%2Ftest%4053\.0\.2\) · By \[@beta\]\(https:\/\/github\.com\/beta\), \[@alpha\]\(https:\/\/github\.com\/alpha\)/
   );
   assert.doesNotMatch(releases[0].content, /For detailed changes/);
   assert.doesNotMatch(releases[0].content, /Full changelog:/);
@@ -179,7 +179,7 @@ test('uses GitHub Release URLs without fake package changelog footer links', () 
       {
         content: 'older',
         date: '2026-05-12',
-        packageTag: '@platejs/ai@53.0.4',
+        packageTag: '@platejs/test@53.0.4',
         tag: 'v53.0.4',
         title: 'v53.0.4',
         versionPackagePrUrl: 'https://github.com/udecode/plate/pull/4975',
@@ -196,7 +196,7 @@ test('uses GitHub Release URLs without fake package changelog footer links', () 
         ],
         date: '2026-05-21',
         changelogUrl:
-          'https://github.com/udecode/plate/blob/d09298282dd3af8022052e51c212eb6cdcdd3843/packages/plate/CHANGELOG.md',
+          'https://github.com/udecode/plate/blob/d09298282dd3af8022052e51c212eb6cdcdd3843/packages/platejs/CHANGELOG.md',
         packageTag: 'platejs@53.0.5',
         tag: 'v53.0.5',
         title: 'v53.0.5',
@@ -216,7 +216,7 @@ test('uses GitHub Release URLs without fake package changelog footer links', () 
   );
   assert.match(
     releases[0].content,
-    /\[`v53\.0\.4\.\.\.v53\.0\.5`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fai%4053\.0\.4\.\.\.platejs%4053\.0\.5\) · By \[@github-actions\\\[bot\\\]\]\(https:\/\/github\.com\/github-actions%5Bbot%5D\)/
+    /\[`v53\.0\.4\.\.\.v53\.0\.5`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Ftest%4053\.0\.4\.\.\.platejs%4053\.0\.5\) · By \[@github-actions\\\[bot\\\]\]\(https:\/\/github\.com\/github-actions%5Bbot%5D\)/
   );
   assert.doesNotMatch(releases[0].content, /\[`CHANGELOG`\]/);
   assert.doesNotMatch(releases[0].content, /pull\/4978/);
@@ -262,7 +262,7 @@ test('compares global tags when adjacent GitHub Releases exist', () => {
 test('parses wrapper-only Changesets entries', () => {
   const [release] = parseVersionPackagesPullRequest({
     body: `# Releases
-## @udecode/plate-ai@49.0.0
+## @fixture/legacy-ai@49.0.0
 
 ### Major Changes
 
@@ -299,7 +299,7 @@ test('parses wrapper-only Changesets entries', () => {
 test('parses commit-linked Changesets entries', () => {
   const [release] = parseVersionPackagesPullRequest({
     body: `# Releases
-## @platejs/plite@53.0.5
+## plitejs@53.0.5
 
 ### Patch Changes
 

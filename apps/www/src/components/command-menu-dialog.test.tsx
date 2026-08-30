@@ -127,8 +127,8 @@ describe('CommandMenuDialog search ordering', () => {
           {
             items: [
               {
-                href: '/docs/components/list-classic',
-                title: 'List Classic',
+                href: '/docs/components/list-toolbar-button',
+                title: 'List Toolbar Button',
               },
             ],
             title: 'Components',
@@ -178,8 +178,8 @@ describe('CommandMenuDialog search ordering', () => {
           {
             items: [
               {
-                href: '/docs/components/list-classic',
-                title: 'List Classic',
+                href: '/docs/components/list-toolbar-button',
+                title: 'List Toolbar Button',
               },
             ],
             title: 'Components',

@@ -33,7 +33,7 @@ Baseline: 602 diagnostics across 134 files after removing every file-header cate
 | `apps/www/src/registry/components/editor/comment.tsx` | 1 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
 | `apps/www/src/registry/components/editor/import-toolbar-button.tsx` | 3 | untyped external callback payload | typed the three file-picker callback boundaries as `File[]` and removed all unsafe headers | targeted lint passed |
 | `apps/www/src/registry/components/editor/media-placeholder.tsx` | 2 | untyped external callback payload | typed the file-picker callback boundary as `File[]` and removed its unsafe header | targeted lint passed |
-| `apps/www/src/registry/components/editor/transforms-classic.ts` | 1 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
+| `apps/www/src/registry/components/editor/transforms.ts` | 1 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
 | `apps/www/src/registry/components/editor/transforms.ts` | 1 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
 | `apps/www/src/registry/components/editor/use-chat.ts` | 1 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
 | `apps/www/src/registry/examples/code-drawing-demo.tsx` | 1 | erased classic-JSX fixture export | typed `codeDrawingValue` as `Value` at its source | targeted lint passed |
@@ -43,7 +43,7 @@ Baseline: 602 diagnostics across 134 files after removing every file-header cate
 | `apps/www/src/registry/examples/find-replace-demo.tsx` | 1 | erased classic-JSX fixture export | typed the owning fixture as `Value` | targeted lint passed |
 | `apps/www/src/registry/examples/huge-document-demo.tsx` | 4 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
 | `apps/www/src/registry/examples/installation-next-04-value-demo.tsx` | 2 | schema-generic editor app value | retained the exact file boundary for a behavior-proven editor/runtime phase | all sites inspected; effective lint passed |
-| `apps/www/src/registry/examples/list-classic-demo.tsx` | 1 | erased classic-JSX fixture export | typed `listValue` as `Value` at its source | targeted lint passed |
+| `apps/www/src/registry/examples/list-demo.tsx` | 1 | erased classic-JSX fixture export | typed `listValue` as `Value` at its source | targeted lint passed |
 | `apps/www/src/registry/examples/multiple-editors-demo.tsx` | 2 | erased classic-JSX fixture exports | typed both owning fixtures as `Value` | targeted lint passed |
 | `apps/www/src/registry/examples/preview-markdown-demo.tsx` | 1 | erased classic-JSX fixture export | typed the owning fixture as `Value` | targeted lint passed |
 | `apps/www/src/registry/examples/tabbable-demo.tsx` | 1 | erased classic-JSX fixture export | typed the owning fixture as `Value` | targeted lint passed |

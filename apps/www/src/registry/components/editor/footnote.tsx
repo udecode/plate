@@ -1,13 +1,13 @@
 'use client';
 
+import { PathApi, type Path } from 'platejs';
 import {
   FootnotePlugin,
   FootnoteDefinitionPlugin,
   FootnoteInputPlugin,
-} from '@platejs/footnote/react';
-import { PathApi, type Path } from 'platejs';
+} from 'platejs/footnote/react';
 import {
-  type PlateEditor,
+  type Editor,
   type PlateElementProps,
   PlateElement,
   useEditor,
@@ -81,7 +81,7 @@ const getFootnotePreviewLabel = (text?: string) => {
 };
 
 const getReferenceContextLabel = (
-  editor: PlateEditor,
+  editor: Editor,
   path: Path,
   index: number
 ) => {

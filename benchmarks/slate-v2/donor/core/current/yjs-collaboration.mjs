@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 
-import { createEditor } from '../../../../../packages/plite/src/index.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
-import * as Y from '../../../../../packages/yjs/node_modules/yjs/dist/yjs.mjs';
+import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
+import * as Y from 'yjs';
 
-import { createYjsExtension } from '../../../../../packages/yjs/src/core/extension.ts';
+import { createYjsExtension } from '../../../../../packages/platejs/src/yjs/core/extension.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(
@@ -135,7 +135,7 @@ const createPeer = ({
   }
 
   editor.extend(
-    createYjsExtension({ awareness, clientId, doc, rootName: '@platejs/plite' })
+    createYjsExtension({ awareness, clientId, doc, rootName: 'plitejs' })
   );
 
   return { awareness, doc, editor, id: clientId };

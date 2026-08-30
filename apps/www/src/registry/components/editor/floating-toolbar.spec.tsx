@@ -26,19 +26,30 @@ const editor = {
   },
 };
 
-mock.module('@platejs/ai/react', () => ({
+mock.module('platejs/ai/react', () => ({
   AIChatPlugin: { name: 'aiChat' },
 }));
 
-mock.module('@platejs/basic-nodes/react', () => ({
+mock.module('platejs/react', () => ({
   BoldPlugin: { name: 'bold' },
   CodePlugin: { name: 'code' },
+  definePlatePlugin: (name: string, definition: object) => ({
+    ...definition,
+    name,
+  }),
   ItalicPlugin: { name: 'italic' },
   StrikethroughPlugin: { name: 'strikethrough' },
   UnderlinePlugin: { name: 'underline' },
+  useEditor: () => editor,
+  useEditorId: () => 'editor-1',
+  useEditorReadOnly: () => false,
+  useEditorSelector: (selector: (editor: any) => unknown) => selector(editor),
+  useEventEditorValue: () => focusedEditorId,
+  usePluginStore: () => false,
+  useComposedRef: () => mock(),
 }));
 
-mock.module('@platejs/floating', () => ({
+mock.module('platejs/floating/react', () => ({
   flip: () => ({}),
   getSelectionBoundingClientRect: () => new DOMRect(),
   offset: () => ({}),
@@ -53,36 +64,12 @@ mock.module('@platejs/floating', () => ({
   },
 }));
 
-mock.module('@udecode/cn', () => ({
-  useComposedRef: () => mock(),
-}));
-
-mock.module('@udecode/react-utils', () => ({
-  useComposedRef: () => mock(),
+mock.module('@/registry/hooks/use-on-click-outside', () => ({
   useOnClickOutside: (callback: () => void) => {
     clickOutside = callback;
 
     return mock();
   },
-  useStableFn: <T extends (...args: never[]) => unknown>(fn: T) => fn,
-}));
-
-mock.module('@udecode/utils', () => ({
-  isDefined: (value: unknown) => value !== undefined,
-  mergeProps: (...values: object[]) => Object.assign({}, ...values),
-}));
-
-mock.module('platejs/react', () => ({
-  definePlatePlugin: (name: string, definition: object) => ({
-    ...definition,
-    name,
-  }),
-  useEditor: () => editor,
-  useEditorId: () => 'editor-1',
-  useEditorReadOnly: () => false,
-  useEditorSelector: (selector: (editor: any) => unknown) => selector(editor),
-  useEventEditorValue: () => focusedEditorId,
-  usePluginStore: () => false,
 }));
 
 mock.module('@/lib/utils', () => ({

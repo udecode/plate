@@ -20,7 +20,7 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 
 - Inline void `mention` nodes with required `ref` and optional `label`.
 - Inline void `mentionInput` nodes created by trigger text.
-- Trigger combobox support from `@platejs/combobox`.
+- Trigger combobox support from `platejs`.
 - Configurable trigger strings, regexes, and trigger queries.
 - Markable void rendering so bold, italic, and underline can style a mention.
 - Optional trailing space after selected mention items.
@@ -39,11 +39,11 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 <ComponentSource name="mention" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { MentionKit } from '@/components/editor/mention';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: MentionKit,
 });
 ```
@@ -66,14 +66,14 @@ export const editor = createPlateEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/mention` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and the scoped mention update. |
-| `@platejs/mention/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
-| `@platejs/combobox` | Package | Provides trigger options and combobox input hooks. |
+| `platejs` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and the scoped mention update. |
+| `platejs/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
+| `platejs` | Package | Provides trigger options and combobox input hooks. |
 | `mention` | Registry | Adds mention plugins with editable mention and input components. |
 | `mention-static` | Registry | Adds `BaseMentionPlugin.configure({ component: MentionElementStatic })`. |
 | `mention` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
 | `inline-combobox` | Registry UI | Renders the Ariakit-backed popover, input, groups, items, and empty state. |
-| `@platejs/markdown` | Package | Serializes mentions as `mention:` links and deserializes mention links or bare mentions. |
+| `platejs/markdown` | Package | Serializes mentions as `mention:` links and deserializes mention links or bare mentions. |
 
 ## Manual Setup
 
@@ -82,7 +82,7 @@ export const editor = createPlateEditor({
 ### Install Package
 
 ```bash
-npm install @platejs/mention
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
@@ -90,15 +90,15 @@ npm install @platejs/mention
 `MentionPlugin` installs `MentionInputPlugin` as a required dependency. Add the complete input descriptor beside it when you need to replace the dependency's render component.
 
 ```tsx
-import { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';
-import { createPlateEditor } from 'platejs/react';
+import { MentionInputPlugin, MentionPlugin } from 'platejs/mention/react';
+import { createEditor } from 'platejs/react';
 
 import {
   MentionElement,
   MentionInputElement,
 } from '@/components/editor/mention';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     MentionPlugin.configure({
       component: MentionElement,
@@ -192,7 +192,7 @@ If `editor.runtime.userId` exists, the combobox input stores that `userId` so on
 
 ## Markdown
 
-`@platejs/markdown` serializes `ref` in the link-style `mention:` URL and uses `label ?? ref` as visible text.
+`platejs/markdown` serializes `ref` in the link-style `mention:` URL and uses `label ?? ref` as visible text.
 
 ```md
 Hello [Jane Smith](mention:user_123).
@@ -204,9 +204,9 @@ Deserialization supports link-style mentions and bare `@alice` text. Normal link
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseMentionPlugin` | `@platejs/mention` | Headless inline markable void mention plugin with trigger-combobox behavior and a required `BaseMentionInputPlugin` dependency. |
-| `BaseMentionInputPlugin` | `@platejs/mention` | Required inline void input node inserted while the combobox is active. |
-| `MentionPlugin` | `@platejs/mention/react` | React mention plugin with a required `MentionInputPlugin` dependency. |
-| `MentionInputPlugin` | `@platejs/mention/react` | React mention input dependency; add it directly to replace its component or configuration. |
+| `BaseMentionPlugin` | `platejs` | Headless inline markable void mention plugin with trigger-combobox behavior and a required `BaseMentionInputPlugin` dependency. |
+| `BaseMentionInputPlugin` | `platejs` | Required inline void input node inserted while the combobox is active. |
+| `MentionPlugin` | `platejs/react` | React mention plugin with a required `MentionInputPlugin` dependency. |
+| `MentionInputPlugin` | `platejs/react` | React mention input dependency; add it directly to replace its component or configuration. |
 | `editor.plugin(MentionPlugin).update.insert({ ref, label? })` | `BaseMentionPlugin` update | Inserts the mention node at the current selection. |
 | `inline-combobox` | Copied registry UI | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for the mention input. |

@@ -1,9 +1,13 @@
 'use client';
 
-import { AIChatPlugin } from '@platejs/ai/react';
-import { IndentPlugin } from '@platejs/indent/react';
 import { ElementApi, PLUGINS } from 'platejs';
-import { definePlatePlugin, useEditor, useEditorReadOnly } from 'platejs/react';
+import { AIChatPlugin } from 'platejs/ai/react';
+import {
+  IndentPlugin,
+  definePlatePlugin,
+  useEditor,
+  useEditorReadOnly,
+} from 'platejs/react';
 import * as React from 'react';
 
 import {

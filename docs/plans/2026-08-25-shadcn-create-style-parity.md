@@ -77,7 +77,7 @@ Constraints:
 - Do not commit, push, open a PR, publish, or contact another task/chat.
 - Do not inspect, edit, regenerate, restore, or gate `templates/**`; it is
   post-release CI output.
-- Do not add style work to maintenance-only `*-classic` items.
+- Do not add style work to maintenance-only alternative variants items.
 - Keep one plan as the default artifact; add a machine-readable artifact only
   when it materially improves a large audit.
 

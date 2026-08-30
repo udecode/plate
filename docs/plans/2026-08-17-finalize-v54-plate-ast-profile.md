@@ -77,7 +77,7 @@ Boundaries:
   `platejs/migrations`, Core codec/plugin consumers, app-owned registry kits,
   docs, and `.agents/rules`/Vision doctrine.
 - Non-goals: UNIST-native text leaves, changing Plite transactions/selections,
-  new format adapters, list-classic parity, migration plugins, aliases, v54-to-
+  new format adapters, legacy-list-model parity, migration plugins, aliases, v54-to-
   final compatibility, template output, or release/push/PR work.
 - Direct Plite boundary owners: no Plite runtime/API change. Existing validated
   `property.json`, content grammar, schema fitting, and document envelope are
@@ -236,7 +236,7 @@ Conditional evidence:
   source-level node model comparison; accepted findings are materialized here.
 - Issue/PR provenance: N/A: direct user architecture decision, no public issue.
 - Docs/registry/browser/release/behavior-law owners: all apply and are assigned
-  to slices 6-7; list-classic and native browser/device proof remain excluded.
+  to slices 6-7; legacy-list-model and native browser/device proof remain excluded.
 
 Findings:
 - The Plite base remains correct and requires no source change.

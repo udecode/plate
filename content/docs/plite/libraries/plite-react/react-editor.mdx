@@ -3,15 +3,15 @@ title: "React Editor"
 description: "Use React, DOM, focus, selection, clipboard, and DataTransfer host APIs on a React editor."
 ---
 
-`createReactEditor` creates an editor with React, DOM, and clipboard host APIs
-installed. Hooks such as `usePliteEditor` create the same editor shape.
+`createEditor` creates an editor with React, DOM, and clipboard host APIs
+installed. Hooks such as `useEditor` create the same editor shape.
 
 ## Minimal Usage
 
 ```typescript
-import { createReactEditor } from "@platejs/plite-react";
+import { createEditor } from "plitejs/react";
 
-const editor = createReactEditor();
+const editor = createEditor();
 
 editor.api.dom.focus();
 ```

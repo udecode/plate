@@ -20,6 +20,7 @@ const BaseContextMenuContent =
 const BaseContextMenuTrigger =
   ShadcnContextMenuTrigger as React.ComponentType<BaseContextMenuPrimitive.Trigger.Props>;
 
+// biome-ignore lint/performance/noBarrelFile: This adapter owns one stable menu API across registry bases.
 export {
   ContextMenuCheckboxItem,
   ContextMenuGroup,

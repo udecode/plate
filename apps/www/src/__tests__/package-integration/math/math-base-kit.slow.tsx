@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
-import { jsxt } from '@platejs/test-utils';
-import { type Value, BaseParagraphPlugin, createBaseEditor } from 'platejs';
+import { jsxt } from '@platejs/test';
+import { type Value, BaseParagraphPlugin, createEditor } from 'platejs';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 
 import { BaseMathKit } from '@/registry/components/editor/math-static';
 
@@ -11,7 +11,7 @@ jsxt;
 const mathPlugins = [BaseParagraphPlugin, ...BaseMathKit] as const;
 
 const createMathEditor = (value: Value) =>
-  createBaseEditor({
+  createEditor({
     plugins: mathPlugins,
     initialValue: value,
   });

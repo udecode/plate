@@ -8,7 +8,7 @@ description: Debugging in Plate.
 The `DebugPlugin` is automatically included when you create a Plate editor. You can access its methods through the editor's API:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [/* your plugins */],
 });
 
@@ -30,7 +30,7 @@ The `DebugPlugin` supports four log levels:
 You can set the minimum log level to control which messages are displayed:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     DebugPlugin.configure({
       initialState: {
@@ -53,7 +53,7 @@ Seed the `DebugPlugin` store with these fields:
 Example configuration:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     DebugPlugin.configure({
       initialState: {
@@ -107,7 +107,7 @@ Besides using the DebugPlugin, there are other effective ways to debug your Plat
 Subscribe to commits when you need to inspect editor writes. Each commit exposes the canonical `DocumentChange`, tags, version, and changed-state queries without patching editor methods:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [],
 });
 
@@ -134,7 +134,7 @@ test that behavior directly.
 If you're experiencing issues, try removing plugins one by one to isolate the problem:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // Comment out or remove suspected plugins
     // HeadingPlugin,

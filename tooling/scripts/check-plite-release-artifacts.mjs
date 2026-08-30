@@ -11,12 +11,25 @@ import {
   readdirSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { builtinModules } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { parse } from '@babel/parser';
+
+import {
+  entrypointDags,
+  getPublicEntrypointRuntimeRows,
+  publicFeatureDependencies,
+  publicFeatureReactEntrypoints,
+  publicReactOnlyEntrypoints,
+  resolvePublicEntrypoint,
+} from '../entrypoints/entrypoint-dag.mjs';
+import { createSsrRuntimeProofSource } from '../entrypoints/entrypoint-runtime.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -27,6 +40,10 @@ const compareStrings = (left, right) => {
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDirectory, '..', '..');
+const plateEntrypointSizeBaselinePath = join(
+  repoRoot,
+  'tooling/entrypoints/platejs-entrypoint-sizes.json'
+);
 const temporaryRoot = join(repoRoot, '.tmp');
 const localImportPattern =
   /\b(?:import|export)\s+(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
@@ -42,89 +59,71 @@ const builtins = new Set([
   ...builtinModules,
   ...builtinModules.map((name) => `node:${name}`),
 ]);
+const isFile = (filePath) =>
+  existsSync(filePath) && statSync(filePath).isFile();
 
 export const PLITE_RELEASE_PACKAGES = [
   {
     allowedPlateRuntime: [],
-    directory: 'packages/plite',
-    name: '@platejs/plite',
+    directory: 'packages/plitejs',
+    name: 'plitejs',
   },
   {
-    allowedPlateRuntime: ['@platejs/plite'],
-    directory: 'packages/plite-dom',
-    name: '@platejs/plite-dom',
+    allowedPlateRuntime: ['platejs'],
+    directory: 'packages/test',
+    name: '@platejs/test',
   },
   {
-    allowedPlateRuntime: ['@platejs/plite'],
-    directory: 'packages/plite-history',
-    name: '@platejs/plite-history',
+    allowedPlateRuntime: ['platejs'],
+    directory: 'packages/cli',
+    name: '@platejs/cli',
   },
   {
-    allowedPlateRuntime: ['@platejs/plite'],
-    directory: 'packages/plite-hyperscript',
-    name: '@platejs/plite-hyperscript',
-  },
-  {
-    allowedPlateRuntime: [
-      '@platejs/plite',
-      '@platejs/plite-dom',
-      '@platejs/plite-history',
-    ],
-    directory: 'packages/plite-react',
-    name: '@platejs/plite-react',
-  },
-  {
-    allowedPlateRuntime: ['@platejs/plite', '@platejs/plite-react'],
-    directory: 'packages/plite-layout',
-    name: '@platejs/plite-layout',
-  },
-  {
-    allowedPlateRuntime: [],
-    directory: 'packages/browser',
-    name: '@platejs/browser',
-  },
-  {
-    allowedPlateRuntime: [],
-    directory: 'packages/udecode/utils',
-    name: '@udecode/utils',
-  },
-  {
-    allowedPlateRuntime: [
-      '@platejs/plite',
-      '@platejs/plite-dom',
-      '@platejs/plite-history',
-      '@platejs/plite-hyperscript',
-      '@platejs/plite-react',
-    ],
-    directory: 'packages/core',
-    name: '@platejs/core',
-  },
-  {
-    // @platejs/yjs deliberately publishes both the Plite collaboration
-    // substrate and the Plate plugin adapter from separate public subpaths.
-    allowedPlateRuntime: [
-      '@platejs/core',
-      '@platejs/plite',
-      '@platejs/plite-react',
-    ],
-    directory: 'packages/yjs',
-    name: '@platejs/yjs',
+    allowedPlateRuntime: ['plitejs'],
+    directory: 'packages/platejs',
+    name: 'platejs',
   },
 ];
 
-const PLITE_PACKAGE_BOUNDARY_NAMES = new Set([
-  '@platejs/plite',
-  '@platejs/plite-dom',
-  '@platejs/plite-react',
-  '@platejs/plite-layout',
-  '@platejs/core',
-  '@platejs/yjs',
-]);
+const PLITE_PACKAGE_BOUNDARY_NAMES = new Set(['plitejs', 'platejs']);
 
 export const getPlitePackageBoundaryContracts = () =>
   PLITE_RELEASE_PACKAGES.filter(({ name }) =>
     PLITE_PACKAGE_BOUNDARY_NAMES.has(name)
   );
+
+export const getPlateEntrypointSizeSpecifiers = () => [
+  'platejs',
+  ...Object.keys(publicFeatureDependencies).map((name) => `platejs/${name}`),
+  ...publicFeatureReactEntrypoints.map((name) => `platejs/${name}/react`),
+  ...publicReactOnlyEntrypoints.map((name) => `platejs/${name}/react`),
+];
+
+export function assertPlateEntrypointSizes(actual, expected) {
+  const actualSpecifiers = Object.keys(actual).sort(compareStrings);
+  const expectedSpecifiers = Object.keys(expected).sort(compareStrings);
+
+  if (JSON.stringify(actualSpecifiers) !== JSON.stringify(expectedSpecifiers)) {
+    throw new Error(
+      `Plate entrypoint size snapshot keys differ. Expected ${expectedSpecifiers.join(', ')}; received ${actualSpecifiers.join(', ')}.`
+    );
+  }
+
+  const changes = actualSpecifiers
+    .filter((specifier) => actual[specifier] !== expected[specifier])
+    .map((specifier) => {
+      const delta = actual[specifier] - expected[specifier];
+      const sign = delta > 0 ? '+' : '';
+
+      return `${specifier}: ${expected[specifier]} -> ${actual[specifier]} bytes (${sign}${delta})`;
+    });
+
+  if (changes.length > 0) {
+    throw new Error(
+      `Plate entrypoint bundle sizes changed:\n${changes.join('\n')}\nRun pnpm plite:entrypoint-sizes:update after reviewing the diff.`
+    );
+  }
+}
 
 export function getPublicExports(packageJson) {
   const packageExports = packageJson.exports;
@@ -140,6 +139,279 @@ export function getPublicExports(packageJson) {
     subpath,
     typesTarget: readPublicTypesTarget(value),
   }));
+}
+
+const getEntrypointRuntimeMetadata = (specifier) => {
+  const target = resolvePublicEntrypoint(specifier);
+
+  if (!target) return null;
+
+  const entrypoint =
+    entrypointDags[target.packageName].entrypoints[target.entrypointName];
+
+  return {
+    runtime: entrypoint.runtime,
+    runtimeProof: entrypoint.runtimeProof,
+  };
+};
+
+export function assertPackedRuntimeCoverage(packedPackages) {
+  const expected = getPublicEntrypointRuntimeRows().map(
+    ({ specifier }) => specifier
+  );
+  const actual = packedPackages
+    .flatMap(({ publicExports }) =>
+      publicExports
+        .filter(({ runtime }) => runtime !== undefined)
+        .map(({ specifier }) => specifier)
+    )
+    .sort(compareStrings);
+
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(
+      `Packed runtime entrypoints differ from the canonical DAG. Expected ${expected.join(', ')}; received ${actual.join(', ')}.`
+    );
+  }
+}
+
+export function collectPublicExportOptionalPeers({
+  kinds = ['runtime', 'types'],
+  packageExport,
+  packedPackage,
+  packedPackages,
+}) {
+  const packedByName = new Map(
+    packedPackages.map((item) => [item.packageJson.name, item])
+  );
+  const requiredPeers = new Set();
+  const seen = new Set();
+  const queue = [];
+
+  const enqueueTarget = (owner, target, kind) => {
+    if (!target) return;
+
+    queue.push({
+      filePath: resolvePackageTarget(owner.packageDirectory, target),
+      kind,
+      owner,
+    });
+  };
+
+  if (kinds.includes('runtime')) {
+    enqueueTarget(packedPackage, packageExport.importTarget, 'runtime');
+  }
+  if (kinds.includes('types')) {
+    enqueueTarget(packedPackage, packageExport.typesTarget, 'types');
+  }
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    const seenKey = `${current.owner.packageJson.name}:${current.kind}:${current.filePath}`;
+
+    if (seen.has(seenKey)) continue;
+    seen.add(seenKey);
+
+    const source = readFileSync(current.filePath, 'utf-8');
+    const specifiers =
+      current.kind === 'types'
+        ? collectDeclarationImportSpecifiers(source)
+        : collectImportSpecifiers(source);
+
+    for (const specifier of specifiers) {
+      if (specifier.startsWith('.')) {
+        const absoluteTarget = resolve(dirname(current.filePath), specifier);
+        const declarationTarget = absoluteTarget.replace(
+          javascriptExtensionPattern,
+          '.d.ts'
+        );
+        const candidates =
+          current.kind === 'types'
+            ? [
+                declarationTarget,
+                `${absoluteTarget}.d.ts`,
+                join(absoluteTarget, 'index.d.ts'),
+              ]
+            : [
+                absoluteTarget,
+                `${absoluteTarget}.js`,
+                join(absoluteTarget, 'index.js'),
+              ];
+        const target = candidates.find(isFile);
+
+        if (target) {
+          queue.push({ ...current, filePath: target });
+        }
+        continue;
+      }
+      if (specifier.startsWith('/') || specifier.includes(':')) continue;
+
+      const dependencyName = getDependencyName(specifier);
+      const packedDependency = packedByName.get(dependencyName);
+
+      if (packedDependency) {
+        const dependencyExport = packedDependency.publicExports.find(
+          (item) => item.specifier === specifier
+        );
+
+        if (!dependencyExport) {
+          throw new Error(
+            `${current.owner.packageJson.name} imports unexported packed entrypoint ${specifier}.`
+          );
+        }
+
+        enqueueTarget(
+          packedDependency,
+          current.kind === 'types'
+            ? dependencyExport.typesTarget
+            : dependencyExport.importTarget,
+          current.kind
+        );
+        continue;
+      }
+
+      const optionalPeers = new Set(
+        Object.entries(current.owner.packageJson.peerDependenciesMeta ?? {})
+          .filter(([, metadata]) => metadata?.optional === true)
+          .map(([name]) => name)
+      );
+
+      if (optionalPeers.has(dependencyName)) {
+        requiredPeers.add(dependencyName);
+      }
+
+      const typePackage = dependencyName.startsWith('@')
+        ? `@types/${dependencyName.slice(1).replace('/', '__')}`
+        : `@types/${dependencyName}`;
+
+      if (optionalPeers.has(typePackage)) {
+        requiredPeers.add(typePackage);
+      }
+    }
+  }
+
+  return [...requiredPeers].sort(compareStrings);
+}
+
+export function createPackedPublicExportPeerProofs(packedPackages) {
+  const allOptionalPeers = new Set(
+    packedPackages.flatMap(({ packageJson }) =>
+      Object.entries(packageJson.peerDependenciesMeta ?? {})
+        .filter(([, metadata]) => metadata?.optional === true)
+        .map(([name]) => name)
+    )
+  );
+  const declarationPackageNames = packedPackages.map(
+    ({ packageJson }) => packageJson.name
+  );
+  const groups = new Map();
+
+  for (const packedPackage of packedPackages) {
+    for (const packageExport of packedPackage.publicExports) {
+      if (
+        packageExport.subpath === './package.json' ||
+        !javascriptExtensionPattern.test(packageExport.importTarget ?? '')
+      ) {
+        continue;
+      }
+
+      const requiredOptionalPackages = collectPublicExportOptionalPeers({
+        packageExport,
+        packedPackage,
+        packedPackages,
+      });
+      const key = `${packedPackage.packageJson.name}:${packageExport.runtime}:${requiredOptionalPackages.join(',')}`;
+      const existing = groups.get(key);
+
+      if (existing) {
+        existing.specifiers.push(packageExport.specifier);
+        continue;
+      }
+
+      const requiredOptional = new Set(requiredOptionalPackages);
+      const typePackages = ['@types/node'];
+
+      if (requiredOptional.has('react')) typePackages.push('@types/react');
+      if (requiredOptional.has('react-dom')) {
+        typePackages.push('@types/react-dom');
+      }
+
+      groups.set(key, {
+        declarationPackageNames,
+        forbiddenPackages: [...allOptionalPeers]
+          .filter((name) => !requiredOptional.has(name))
+          .sort(compareStrings),
+        packageNames: [packedPackage.packageJson.name],
+        requiredOptionalPackages,
+        runtime: packageExport.runtime,
+        specifiers: [packageExport.specifier],
+        typePackages,
+      });
+    }
+  }
+
+  return [...groups.values()].sort((left, right) =>
+    compareStrings(left.specifiers[0], right.specifiers[0])
+  );
+}
+
+export function createPackedHeadlessRuntimeProofs(packedPackages) {
+  const allOptionalPeers = new Set(
+    packedPackages.flatMap(({ packageJson }) =>
+      Object.entries(packageJson.peerDependenciesMeta ?? {})
+        .filter(([, metadata]) => metadata?.optional === true)
+        .map(([name]) => name)
+    )
+  );
+  const declarationPackageNames = packedPackages.map(
+    ({ packageJson }) => packageJson.name
+  );
+  const groups = new Map();
+
+  for (const packedPackage of packedPackages) {
+    for (const packageExport of packedPackage.publicExports) {
+      if (
+        packageExport.runtime !== 'headless' ||
+        !javascriptExtensionPattern.test(packageExport.importTarget ?? '')
+      ) {
+        continue;
+      }
+
+      const requiredOptionalPackages = collectPublicExportOptionalPeers({
+        kinds: ['runtime'],
+        packageExport,
+        packedPackage,
+        packedPackages,
+      });
+      const key = `${packedPackage.packageJson.name}:${requiredOptionalPackages.join(',')}`;
+      const existing = groups.get(key);
+
+      if (existing) {
+        existing.specifiers.push(packageExport.specifier);
+        existing.runtimeProofs.push(packageExport.runtimeProof ?? null);
+        continue;
+      }
+
+      const requiredOptional = new Set(requiredOptionalPackages);
+
+      groups.set(key, {
+        declarationPackageNames,
+        forbiddenPackages: [...allOptionalPeers]
+          .filter((name) => !requiredOptional.has(name))
+          .sort(compareStrings),
+        packageNames: [packedPackage.packageJson.name],
+        requiredOptionalPackages,
+        runtime: 'headless',
+        runtimeProofs: [packageExport.runtimeProof ?? null],
+        specifiers: [packageExport.specifier],
+        typecheck: false,
+        typePackages: [],
+      });
+    }
+  }
+
+  return [...groups.values()].sort((left, right) =>
+    compareStrings(left.specifiers[0], right.specifiers[0])
+  );
 }
 
 export function filterTypeScriptConsumerDiagnostics(
@@ -230,6 +502,40 @@ export function collectImportSpecifiers(source) {
   return [...imports].sort(compareStrings);
 }
 
+function collectDeclarationImportSpecifiers(source) {
+  const root = parse(source, {
+    plugins: ['typescript'],
+    sourceType: 'module',
+  });
+  const imports = new Set();
+
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+
+    if (
+      (node.type === 'ImportDeclaration' ||
+        node.type === 'ExportNamedDeclaration' ||
+        node.type === 'ExportAllDeclaration') &&
+      node.source?.type === 'StringLiteral'
+    ) {
+      imports.add(node.source.value);
+    } else if (
+      node.type === 'TSImportType' &&
+      node.argument?.type === 'StringLiteral'
+    ) {
+      imports.add(node.argument.value);
+    }
+
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(visit);
+      else visit(value);
+    }
+  };
+
+  visit(root);
+  return [...imports].sort(compareStrings);
+}
+
 export function auditPackedPackage({
   allowedPlateRuntime,
   files,
@@ -243,8 +549,18 @@ export function auditPackedPackage({
     errors.push('package must declare type=module');
   }
 
-  if (packageJson.sideEffects !== false) {
-    errors.push('package must declare sideEffects=false for the DCE contract');
+  const validSideEffects =
+    packageJson.sideEffects === false ||
+    (Array.isArray(packageJson.sideEffects) &&
+      packageJson.sideEffects.length > 0 &&
+      packageJson.sideEffects.every(
+        (entry) => typeof entry === 'string' && entry.endsWith('.css')
+      ));
+
+  if (!validSideEffects) {
+    errors.push(
+      'package sideEffects must be false or contain only explicit CSS assets'
+    );
   }
 
   if (publicExports.length === 0) {
@@ -317,7 +633,9 @@ export function auditPackedPackage({
     }
 
     if (
-      dependencyName.startsWith('@platejs/') &&
+      (dependencyName === 'plitejs' ||
+        dependencyName === 'platejs' ||
+        dependencyName.startsWith('@platejs/')) &&
       dependencyName !== packageJson.name &&
       !allowedPlatePackages.has(dependencyName)
     ) {
@@ -351,13 +669,30 @@ export function createConsumerSources(packages) {
         continue;
       }
 
+      if (!javascriptExtensionPattern.test(packageExport.importTarget ?? '')) {
+        typeImports.push(
+          `import * as ${alias} from ${JSON.stringify(packageExport.specifier)};`,
+          `void ${alias};`
+        );
+        importIndex += 1;
+        continue;
+      }
+
       typeImports.push(
         `import * as ${alias} from ${JSON.stringify(packageExport.specifier)};`,
         `void ${alias};`
       );
+      packageExport.runtimeExportNames.forEach((name, runtimeIndex) => {
+        const runtimeAlias = `${alias}Runtime${runtimeIndex}`;
+
+        typeImports.push(
+          `import { ${name} as ${runtimeAlias} } from ${JSON.stringify(packageExport.specifier)};`,
+          `void ${runtimeAlias};`
+        );
+      });
       runtimeImports.push(
         `import * as ${alias} from ${JSON.stringify(packageExport.specifier)};`,
-        `void ${alias};`
+        `Object.values(${alias}).forEach((value) => void value);`
       );
       bareImports.push(`import ${JSON.stringify(packageExport.specifier)};`);
 
@@ -376,28 +711,38 @@ export function createConsumerSources(packages) {
   const consumesPliteRoot = packages.some((packedPackage) =>
     packedPackage.publicExports.some(
       (packageExport) =>
-        packageExport.specifier === '@platejs/plite' &&
-        packageExport.subpath === '.'
+        packageExport.specifier === 'plitejs' && packageExport.subpath === '.'
     )
   );
 
   if (consumesPliteRoot) {
     typeImports.push(createPliteSchemaConsumerSource({ typed: true }));
     runtimeImports.push(createPliteSchemaConsumerSource({ typed: false }));
+    runtimeImports.push(createPliteRuntimeIdentityConsumerSource());
   }
 
-  const consumesCoreRoot = packages.some((packedPackage) =>
+  const consumesPlateRoot = packages.some((packedPackage) =>
     packedPackage.publicExports.some(
       (packageExport) =>
-        packageExport.specifier === '@platejs/core' &&
-        packageExport.subpath === '.'
+        packageExport.specifier === 'platejs' && packageExport.subpath === '.'
     )
   );
 
-  if (consumesCoreRoot) {
+  if (consumesPlateRoot) {
     typeImports.push(createPlateSchemaConsumerSource({ typed: true }));
     runtimeImports.push(createPlateSchemaConsumerSource({ typed: false }));
+    runtimeImports.push(createPlateRuntimeIdentityConsumerSource());
   }
+
+  const runtimeRows = packages.flatMap((packedPackage) =>
+    packedPackage.publicExports
+      .filter((packageExport) => packageExport.runtime !== undefined)
+      .map(({ runtime, runtimeProof, specifier }) => ({
+        runtime,
+        runtimeProof,
+        specifier,
+      }))
+  );
 
   const sentinel = 'globalThis.__PLITE_RELEASE_ARTIFACT_SENTINEL__ = 1;';
 
@@ -407,8 +752,115 @@ export function createConsumerSources(packages) {
     named: [...namedImports, sentinel, ''].join('\n'),
     namedImportCount: namedImports.length,
     runtime: [...runtimeImports, ''].join('\n'),
+    runtimeRows,
+    ssr: createSsrRuntimeProofSource(runtimeRows),
     types: [...typeImports, ''].join('\n'),
   };
+}
+
+function createPliteRuntimeIdentityConsumerSource() {
+  return [
+    "import { strictEqual as releaseIdentityEqual } from 'node:assert/strict';",
+    "import * as releaseRoot from 'plitejs';",
+    "import { dom as createReleaseDOMExtension } from 'plitejs/dom';",
+    "import * as releaseLayout from 'plitejs/page-layout';",
+    "import * as releaseLayoutReact from 'plitejs/page-layout/react';",
+    "import * as releaseReact from 'plitejs/react';",
+    '',
+    'releaseIdentityEqual(releaseRoot.defineExtension, releaseReact.defineExtension);',
+    'releaseIdentityEqual(releaseRoot.schema, releaseReact.schema);',
+    'releaseIdentityEqual(',
+    '  releaseLayout.createPlitePageLayout,',
+    '  releaseLayoutReact.createPlitePageLayout',
+    ');',
+    'const releaseDOMExtension = createReleaseDOMExtension();',
+    'const releaseReactExtension = releaseReact.react({',
+    '  dom: releaseDOMExtension,',
+    '});',
+    'releaseIdentityEqual(',
+    '  releaseReactExtension.dependencies[0],',
+    '  releaseDOMExtension',
+    ');',
+  ].join('\n');
+}
+
+function createPlateRuntimeIdentityConsumerSource() {
+  return [
+    "import { deepStrictEqual as releasePlateDeepEqual, strictEqual as releasePlateIdentityEqual } from 'node:assert/strict';",
+    "import * as releasePliteRoot from 'plitejs';",
+    "import * as releasePliteDiff from 'plitejs/diff';",
+    "import * as releasePliteDOM from 'plitejs/dom';",
+    "import * as releasePliteHistory from 'plitejs/history';",
+    "import * as releasePliteHyperscript from 'plitejs/hyperscript';",
+    "import * as releasePliteLayout from 'plitejs/page-layout';",
+    "import * as releasePliteLayoutReact from 'plitejs/page-layout/react';",
+    "import * as releasePliteReact from 'plitejs/react';",
+    "import * as releasePlateRoot from 'platejs';",
+    "import * as releasePlateDiff from 'platejs/diff';",
+    "import * as releasePlateDOM from 'platejs/dom';",
+    "import * as releasePlateHistory from 'platejs/history';",
+    "import * as releasePlateHyperscript from 'platejs/hyperscript';",
+    "import * as releasePlateLayout from 'platejs/page-layout';",
+    "import * as releasePlateLayoutReact from 'platejs/page-layout/react';",
+    "import * as releasePlateReact from 'platejs/react';",
+    '',
+    'const releaseFacadeDiff = (substrate, facade) => ({',
+    '  identityExceptions: Object.keys(substrate)',
+    '    .filter((name) => name in facade && substrate[name] !== facade[name])',
+    '    .sort(),',
+    '  omitted: Object.keys(substrate)',
+    '    .filter((name) => !(name in facade))',
+    '    .sort(),',
+    '});',
+    'releasePlateDeepEqual(releaseFacadeDiff(releasePliteRoot, releasePlateRoot), {',
+    "  identityExceptions: ['createEditor'],",
+    '  omitted: [],',
+    '});',
+    'releasePlateDeepEqual(releaseFacadeDiff(releasePliteReact, releasePlateReact), {',
+    '  identityExceptions: [',
+    "    'createEditor',",
+    "    'useEditor',",
+    "    'useEditorSelection',",
+    "    'useEditorSelector',",
+    "    'useEditorState',",
+    "    'useElement',",
+    "    'useOptionalElement',",
+    '  ],',
+    '  omitted: [',
+    "    'Editable',",
+    "    'Plite',",
+    "    'PliteElement',",
+    "    'PliteLeaf',",
+    "    'PlitePlaceholder',",
+    "    'PliteText',",
+    "    'useEditorContext',",
+    "    'useOptionalEditorContext',",
+    '  ],',
+    '});',
+    'for (const [substrate, facade] of [',
+    '  [releasePliteDiff, releasePlateDiff],',
+    '  [releasePliteDOM, releasePlateDOM],',
+    '  [releasePliteHistory, releasePlateHistory],',
+    '  [releasePliteHyperscript, releasePlateHyperscript],',
+    '  [releasePliteLayout, releasePlateLayout],',
+    '  [releasePliteLayoutReact, releasePlateLayoutReact],',
+    ']) {',
+    '  releasePlateDeepEqual(releaseFacadeDiff(substrate, facade), {',
+    '    identityExceptions: [],',
+    '    omitted: [],',
+    '  });',
+    '}',
+    'releasePlateIdentityEqual(releasePlateRoot.defineExtension, releasePliteRoot.defineExtension);',
+    'releasePlateIdentityEqual(releasePlateRoot.schema, releasePliteRoot.schema);',
+    'releasePlateIdentityEqual(releasePlateReact.defineExtension, releasePliteReact.defineExtension);',
+    'releasePlateIdentityEqual(releasePlateRoot.defineBasePlugin, releasePlateReact.defineBasePlugin);',
+    'releasePlateIdentityEqual(releasePlateDOM.dom, releasePliteDOM.dom);',
+    'releasePlateIdentityEqual(releasePlateHistory.history, releasePliteHistory.history);',
+    'releasePlateIdentityEqual(',
+    '  releasePlateLayout.createPlitePageLayout,',
+    '  releasePliteLayout.createPlitePageLayout',
+    ');',
+  ].join('\n');
 }
 
 function createPliteSchemaConsumerSource({ typed }) {
@@ -419,10 +871,10 @@ function createPliteSchemaConsumerSource({ typed }) {
     '  defineEditorSchema as defineReleaseEditorSchema,',
     '  property as releaseProperty,',
     '  schema as releaseSchemaApi,',
-    "} from '@platejs/plite';",
+    "} from 'plitejs';",
     ...(typed
       ? [
-          "import type { SchemaElementFor as ReleaseSchemaElementFor } from '@platejs/plite';",
+          "import type { SchemaElementFor as ReleaseSchemaElementFor } from 'plitejs';",
         ]
       : []),
     '',
@@ -480,13 +932,11 @@ function createPlateSchemaConsumerSource({ typed }) {
   return [
     "import { deepStrictEqual as releasePlateAssertDeepEqual, equal as releasePlateAssertEqual } from 'node:assert/strict';",
     'import {',
+    '  createEditor as createReleaseBaseEditor,',
+    '  defineBasePlugin as defineReleaseBasePlugin,',
     '  property as releasePlateProperty,',
     '  schema as releasePlateSchemaApi,',
-    "} from '@platejs/plite';",
-    'import {',
-    '  createBaseEditor as createReleaseBaseEditor,',
-    '  defineBasePlugin as defineReleaseBasePlugin,',
-    "} from '@platejs/core';",
+    "} from 'platejs';",
     '',
     "const ReleaseElementPlugin = defineReleaseBasePlugin('releaseArtifactElement', {",
     '  api: ({ store }) => ({',
@@ -622,6 +1072,7 @@ function createPlateSchemaConsumerSource({ typed }) {
 export function checkPliteReleaseArtifacts({
   keep = false,
   packageBoundariesOnly = false,
+  updateEntrypointSizes = false,
 } = {}) {
   ensureDirectory(temporaryRoot);
 
@@ -655,87 +1106,87 @@ export function checkPliteReleaseArtifacts({
         tarballDirectory,
       })
     );
-    verifyIsolatedPackedConsumer({
-      directory: join(isolatedConsumerRoot, 'plite-layout-without-react'),
-      forbiddenPackages: ['@platejs/plite-react', 'react', 'react-dom'],
-      packageNames: ['@platejs/plite', '@platejs/plite-layout'],
-      packedPackages,
-      specifiers: ['@platejs/plite-layout'],
-      typePackages: ['@types/node'],
-    });
-    verifyIsolatedPackedConsumer({
-      directory: join(isolatedConsumerRoot, 'plite-layout-react-adapter'),
-      forbiddenPackages: ['@platejs/plite-history'],
-      packageNames: [
-        '@platejs/plite',
-        '@platejs/plite-dom',
-        '@platejs/plite-react',
-        '@platejs/plite-layout',
-      ],
-      packedPackages,
-      specifiers: ['@platejs/plite-layout/react'],
-      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
-    });
-    verifyIsolatedPackedConsumer({
-      directory: join(isolatedConsumerRoot, 'plite-react-without-history'),
-      forbiddenPackages: ['@platejs/plite-history'],
-      packageNames: [
-        '@platejs/plite',
-        '@platejs/plite-dom',
-        '@platejs/plite-react',
-      ],
-      packedPackages,
-      specifiers: ['@platejs/plite-react'],
-      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
-    });
-    verifyIsolatedPackedConsumer({
-      directory: join(isolatedConsumerRoot, 'yjs-root-without-plate-react'),
-      forbiddenPackages: [
-        '@platejs/core',
-        '@platejs/plite-react',
-        'react',
-        'react-dom',
-      ],
-      packageNames: ['@platejs/plite', '@platejs/yjs'],
-      packedPackages,
-      specifiers: ['@platejs/yjs'],
-      typePackages: ['@types/node'],
-    });
-    verifyIsolatedPackedConsumer({
-      directory: join(isolatedConsumerRoot, 'yjs-react-without-plate'),
-      forbiddenPackages: ['@platejs/core'],
-      packageNames: [
-        '@platejs/plite',
-        '@platejs/plite-dom',
-        '@platejs/plite-react',
-        '@platejs/yjs',
-      ],
-      packedPackages,
-      specifiers: ['@platejs/yjs/react'],
-      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
-    });
-    verifyIsolatedPackedConsumer({
-      declarationPackageNames: ['@platejs/yjs'],
-      directory: join(isolatedConsumerRoot, 'yjs-plate-adapter'),
-      forbiddenPackages: [],
-      packageNames: [
-        '@platejs/plite',
-        '@platejs/plite-dom',
-        '@platejs/plite-react',
-        '@platejs/core',
-        '@platejs/yjs',
-      ],
-      packedPackages,
-      requiredOptionalPackages: ['use-sync-external-store'],
-      specifiers: ['@platejs/yjs/plate'],
-      typePackages: ['@types/node', '@types/react', '@types/react-dom'],
-    });
+    if (!packageBoundariesOnly) {
+      assertPackedRuntimeCoverage(packedPackages);
+    }
+    const peerProofs = createPackedPublicExportPeerProofs(packedPackages);
+    const provenHeadlessSpecifiers = new Set();
+    const headlessRuntimeIsolationSpecifiers = new Set();
+    const transitivePeerOverlaps = new Set();
+
+    for (const [index, proof] of peerProofs.entries()) {
+      const result = verifyIsolatedPackedConsumer({
+        ...proof,
+        directory: join(isolatedConsumerRoot, `public-export-${index}`),
+        packedPackages,
+      });
+
+      result.transitivePeerOverlaps.forEach((name) =>
+        transitivePeerOverlaps.add(name)
+      );
+      if (proof.runtime === 'headless') {
+        const target = ['react', 'react-dom'].some(
+          (name) =>
+            proof.requiredOptionalPackages.includes(name) ||
+            result.transitivePeerOverlaps.includes(name)
+        )
+          ? headlessRuntimeIsolationSpecifiers
+          : provenHeadlessSpecifiers;
+
+        proof.specifiers.forEach((specifier) => target.add(specifier));
+      }
+    }
 
     if (packageBoundariesOnly) {
       console.log(
-        'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, Yjs root without Plate/React, Yjs React without Plate, and the Yjs Plate adapter.'
+        `Verified ${peerProofs.length} exact direct optional-peer closures across every packed Plite and Plate JavaScript export.`
       );
+      printTransitivePeerOverlaps(transitivePeerOverlaps);
       return;
+    }
+
+    const headlessProofs = createPackedHeadlessRuntimeProofs(
+      packedPackages
+    ).filter(({ specifiers }) =>
+      specifiers.some((specifier) =>
+        headlessRuntimeIsolationSpecifiers.has(specifier)
+      )
+    );
+    const expectedHeadlessSpecifiers = getPublicEntrypointRuntimeRows()
+      .filter(({ runtime }) => runtime === 'headless')
+      .map(({ specifier }) => specifier);
+    for (const [index, proof] of headlessProofs.entries()) {
+      const result = verifyIsolatedPackedConsumer({
+        ...proof,
+        directory: join(isolatedConsumerRoot, `headless-${index}`),
+        packedPackages,
+      });
+
+      if (
+        ['react', 'react-dom'].some(
+          (name) =>
+            proof.requiredOptionalPackages.includes(name) ||
+            result.transitivePeerOverlaps.includes(name)
+        )
+      ) {
+        throw new Error(
+          `${proof.specifiers.join(', ')} is classified headless but loads React.`
+        );
+      }
+      proof.specifiers.forEach((specifier) =>
+        provenHeadlessSpecifiers.add(specifier)
+      );
+    }
+
+    const provenHeadless = [...provenHeadlessSpecifiers].sort(compareStrings);
+
+    if (
+      JSON.stringify(provenHeadless) !==
+      JSON.stringify(expectedHeadlessSpecifiers)
+    ) {
+      throw new Error(
+        `Headless packed proof differs from the canonical DAG. Expected ${expectedHeadlessSpecifiers.join(', ')}; received ${provenHeadless.join(', ')}.`
+      );
     }
 
     linkConsumerDependencies({ consumerDirectory, packedPackages });
@@ -763,6 +1214,7 @@ export function checkPliteReleaseArtifacts({
     writeFileSync(join(consumerDirectory, 'bare.mjs'), sources.bare);
     writeFileSync(join(consumerDirectory, 'named.mjs'), sources.named);
     writeFileSync(join(consumerDirectory, 'runtime.mjs'), sources.runtime);
+    writeFileSync(join(consumerDirectory, 'ssr.mjs'), sources.ssr);
     writeTypeScriptConfigs(consumerDirectory);
 
     captureProof(errors, 'NodeNext declaration consumer', () => {
@@ -771,8 +1223,11 @@ export function checkPliteReleaseArtifacts({
     captureProof(errors, 'Bundler declaration consumer', () => {
       runTypeScriptConsumer(consumerDirectory, 'tsconfig.bundler.json');
     });
-    captureProof(errors, 'Node runtime consumer', () =>
+    captureProof(errors, 'Node import consumer', () =>
       runCommand(process.execPath, ['runtime.mjs'], { cwd: consumerDirectory })
+    );
+    captureProof(errors, 'SSR runtime consumer', () =>
+      runCommand(process.execPath, ['ssr.mjs'], { cwd: consumerDirectory })
     );
     captureProof(errors, 'bare and named DCE', () => {
       const baseline = bundleConsumerEntry(
@@ -803,17 +1258,77 @@ export function checkPliteReleaseArtifacts({
         );
       }
     });
+    captureProof(errors, 'Plate entrypoint bundle sizes', () => {
+      const sizes = Object.fromEntries(
+        getPlateEntrypointSizeSpecifiers().map((specifier, index) => {
+          const filename = `entrypoint-size-${index}.mjs`;
+
+          writeFileSync(
+            join(consumerDirectory, filename),
+            `import * as entrypoint from ${JSON.stringify(specifier)};\nglobalThis.__plateEntrypoint = entrypoint;\n`
+          );
+
+          return [
+            specifier,
+            Buffer.byteLength(
+              normalizeBundle(
+                bundleConsumerEntry(
+                  consumerDirectory,
+                  filename,
+                  bundleExternals
+                )
+              )
+            ),
+          ];
+        })
+      );
+
+      if (updateEntrypointSizes) {
+        writeJson(plateEntrypointSizeBaselinePath, {
+          sizes,
+          version: 1,
+        });
+        console.log(
+          `Updated ${relative(repoRoot, plateEntrypointSizeBaselinePath)}.`
+        );
+        return;
+      }
+
+      if (!existsSync(plateEntrypointSizeBaselinePath)) {
+        throw new Error(
+          'Plate entrypoint size snapshot is missing. Run pnpm plite:entrypoint-sizes:update.'
+        );
+      }
+
+      const baseline = readJson(plateEntrypointSizeBaselinePath);
+      if (baseline.version !== 1 || !baseline.sizes) {
+        throw new Error(
+          'Plate entrypoint size snapshot has an unsupported shape.'
+        );
+      }
+      assertPlateEntrypointSizes(sizes, baseline.sizes);
+    });
 
     if (errors.length > 0) {
       throw new Error(errors.join('\n\n'));
     }
 
     console.log(
-      `Verified ${packedPackages.length} packed release packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
+      `Verified ${packedPackages.length} packed release packages, ${packedPackages.reduce((count, item) => count + item.publicExports.length, 0)} public subpaths, runtime/declaration export parity, NodeNext/Bundler declarations, package direction, and bare/named DCE.`
+    );
+    const runtimeCounts = Object.fromEntries(
+      ['headless', 'ssr', 'client'].map((runtime) => [
+        runtime,
+        sources.runtimeRows.filter((row) => row.runtime === runtime).length,
+      ])
     );
     console.log(
-      'Verified isolated packed Plite Layout root without React, Plite Layout React adapter, Plite React without History, Yjs root without Plate/React, Yjs React without Plate, and the Yjs Plate adapter.'
+      `Verified Node import for ${sources.runtimeRows.length} runtime entrypoints, React-free headless execution for ${runtimeCounts.headless}, and DOM-free SSR rendering for ${runtimeCounts.ssr}.`
     );
+    console.log(
+      `Verified ${peerProofs.length} exact direct optional-peer closures across every packed JavaScript export.`
+    );
+    printTransitivePeerOverlaps(transitivePeerOverlaps);
   } finally {
     if (keep) {
       console.log(`Kept release artifact fixture at ${workDirectory}`);
@@ -828,10 +1343,14 @@ function verifyIsolatedPackedConsumer({
   declarationPackageNames,
   directory,
   forbiddenPackages,
+  omittedPackages,
   packageNames,
   packedPackages,
   requiredOptionalPackages,
+  runtime,
+  runtimeProofs = [],
   specifiers,
+  typecheck = true,
   typePackages,
 }) {
   ensureDirectory(join(directory, 'node_modules'));
@@ -847,6 +1366,7 @@ function verifyIsolatedPackedConsumer({
       packedPackage,
     ])
   );
+  const requiredOptional = new Set(requiredOptionalPackages);
   const queue = [...packageNames];
   const installed = new Set();
   const dependencyRequests = typePackages.map((name) => ({
@@ -882,7 +1402,7 @@ function verifyIsolatedPackedConsumer({
     const requiredDependencies = new Set([
       ...Object.keys(packedPackage.packageJson.dependencies ?? {}),
       ...Object.keys(packedPackage.packageJson.peerDependencies ?? {}).filter(
-        (name) => !optionalPeers.has(name)
+        (name) => !optionalPeers.has(name) || requiredOptional.has(name)
       ),
     ]);
 
@@ -893,49 +1413,83 @@ function verifyIsolatedPackedConsumer({
       }
 
       dependencyRequests.push({
+        allowForbiddenTransitives:
+          optionalPeers.has(dependencyName) &&
+          requiredOptional.has(dependencyName),
         fromDirectory: join(repoRoot, packedPackage.packageContract.directory),
         name: dependencyName,
       });
     }
   }
 
-  materializeResolvedDependencyClosure({
+  const dependencyClosure = materializeResolvedDependencyClosure({
     destinationNodeModules: join(directory, 'node_modules'),
     forbiddenPackages,
+    omittedPackages,
     requests: dependencyRequests,
     requiredOptionalPackages,
   });
 
-  const source = specifiers
-    .map(
-      (specifier, index) =>
-        `import * as packageExport${index} from ${JSON.stringify(specifier)}; void packageExport${index};`
-    )
-    .join('\n');
+  const source = [
+    ...(runtime === 'headless'
+      ? [
+          "import { equal as runtimeEqual } from 'node:assert/strict';",
+          ...(runtimeProofs.includes('plate-plugin')
+            ? [
+                "import { createEditor as createPlateProofEditor, isNominalPluginDescriptor as isPlateProofPlugin } from 'platejs';",
+              ]
+            : []),
+          "runtimeEqual(typeof globalThis.document, 'undefined');",
+          "runtimeEqual(typeof globalThis.window, 'undefined');",
+        ]
+      : []),
+    ...specifiers.flatMap((specifier, index) => [
+      `import * as packageExport${index} from ${JSON.stringify(specifier)};`,
+      `Object.values(packageExport${index}).forEach((value) => void value);`,
+      ...(runtimeProofs[index] === 'plate-plugin'
+        ? [
+            `const platePlugins${index} = Object.values(packageExport${index}).filter(isPlateProofPlugin);`,
+            `runtimeEqual(platePlugins${index}.length > 0, true);`,
+            `createPlateProofEditor({ plugins: platePlugins${index}, skipInitialization: true });`,
+          ]
+        : []),
+    ]),
+  ].join('\n');
 
   writeFileSync(join(directory, 'consumer.ts'), `${source}\n`);
   writeFileSync(join(directory, 'runtime.mjs'), `${source}\n`);
   writeTypeScriptConfigs(directory);
-  runTypeScriptConsumer(directory, 'tsconfig.nodenext.json', {
-    packageNames: declarationPackageNames,
-  });
-  runTypeScriptConsumer(directory, 'tsconfig.bundler.json', {
-    packageNames: declarationPackageNames,
-  });
+  if (typecheck) {
+    runTypeScriptConsumer(directory, 'tsconfig.nodenext.json', {
+      packageNames: declarationPackageNames,
+    });
+    runTypeScriptConsumer(directory, 'tsconfig.bundler.json', {
+      packageNames: declarationPackageNames,
+    });
+  }
   runCommand(process.execPath, ['runtime.mjs'], { cwd: directory });
+
+  return dependencyClosure;
 }
 
 export function materializeResolvedDependencyClosure({
   destinationNodeModules,
   forbiddenPackages,
+  omittedPackages = [],
   requests,
   requiredOptionalPackages = [],
 }) {
   const forbidden = new Set(forbiddenPackages);
+  const allowedForbiddenTransitives = new Set();
+  const omitted = new Set(omittedPackages);
   const packageNodes = new Map();
   const requiredOptional = new Set(requiredOptionalPackages);
   const rootSources = new Map();
-  const queue = requests.map((request) => ({ ...request, root: true }));
+  const queue = requests.map((request) => ({
+    ...request,
+    root: true,
+    via: [request.name],
+  }));
   const copyResolvedPackage = (source, destination) => {
     cpSync(source, destination, {
       dereference: true,
@@ -953,6 +1507,9 @@ export function materializeResolvedDependencyClosure({
 
   while (queue.length > 0) {
     const request = queue.shift();
+
+    if (omitted.has(request.name)) continue;
+
     const source = resolveInstalledDependencyDirectory(
       request.name,
       request.fromDirectory
@@ -967,9 +1524,13 @@ export function materializeResolvedDependencyClosure({
     }
 
     if (forbidden.has(request.name)) {
-      throw new Error(
-        `${request.name} is reachable through the isolated dependency closure.`
-      );
+      if (!request.allowForbiddenTransitives) {
+        throw new Error(
+          `${request.name} is reachable through the isolated dependency closure via ${request.via.join(' -> ')}.`
+        );
+      }
+
+      allowedForbiddenTransitives.add(request.name);
     }
 
     if (request.root) {
@@ -1010,15 +1571,23 @@ export function materializeResolvedDependencyClosure({
           !optionalPeers.has(peerName) || requiredOptional.has(peerName)
       ),
     ])) {
-      queue.push({ fromDirectory: source, name, parentSource: source });
+      queue.push({
+        allowForbiddenTransitives: request.allowForbiddenTransitives,
+        fromDirectory: source,
+        name,
+        parentSource: source,
+        via: [...request.via, name],
+      });
     }
 
     for (const name of Object.keys(packageJson.optionalDependencies ?? {})) {
       queue.push({
+        allowForbiddenTransitives: request.allowForbiddenTransitives,
         fromDirectory: source,
         name,
         optional: true,
         parentSource: source,
+        via: [...request.via, name],
       });
     }
   }
@@ -1063,7 +1632,28 @@ export function materializeResolvedDependencyClosure({
     );
   }
 
-  assertPhysicalDependencyTree(destinationNodeModules, forbidden);
+  assertPhysicalDependencyTree(
+    destinationNodeModules,
+    new Set(
+      [...forbidden].filter(
+        (packageName) => !allowedForbiddenTransitives.has(packageName)
+      )
+    )
+  );
+
+  return {
+    transitivePeerOverlaps: [...allowedForbiddenTransitives].sort(
+      compareStrings
+    ),
+  };
+}
+
+function printTransitivePeerOverlaps(overlaps) {
+  if (overlaps.size === 0) return;
+
+  console.log(
+    `Required optional peers bring these sibling peers transitively: ${[...overlaps].sort(compareStrings).join(', ')}.`
+  );
 }
 
 function resolveInstalledDependencyDirectory(packageName, fromDirectory) {
@@ -1161,9 +1751,20 @@ function packAndInstallPackage({
   const publicExports = getPublicExports(packageJson).map((packageExport) => {
     if (
       !packageExport.importTarget ||
-      packageExport.subpath === './package.json'
+      packageExport.subpath === './package.json' ||
+      !javascriptExtensionPattern.test(packageExport.importTarget)
     ) {
       return { ...packageExport, runtimeExportNames: [] };
+    }
+
+    const runtimeMetadata = getEntrypointRuntimeMetadata(
+      packageExport.specifier
+    );
+
+    if (!runtimeMetadata && packageContract.name in entrypointDags) {
+      throw new Error(
+        `${packageExport.specifier} is absent from the canonical entrypoint runtime DAG.`
+      );
     }
 
     const targetPath = resolvePackageTarget(
@@ -1173,6 +1774,7 @@ function packAndInstallPackage({
 
     return {
       ...packageExport,
+      ...runtimeMetadata,
       runtimeExportNames: parseRuntimeExportNames(
         readFileSync(targetPath, 'utf-8')
       ),
@@ -1228,7 +1830,7 @@ function auditDeclarationImports(files) {
   for (const file of files) {
     if (!file.path.endsWith('.d.ts')) continue;
 
-    for (const specifier of collectImportSpecifiers(file.source)) {
+    for (const specifier of collectDeclarationImportSpecifiers(file.source)) {
       if (!specifier.startsWith('.')) continue;
 
       if (
@@ -1491,6 +2093,8 @@ function bundleConsumerEntry(consumerDirectory, entryName, externals) {
       'node',
       '--out-dir',
       outputDirectory,
+      '--tsconfig',
+      'tsconfig.bundler.json',
       '--minify',
       '--logLevel',
       'error',
@@ -1609,6 +2213,7 @@ if (isMainModule()) {
     checkPliteReleaseArtifacts({
       keep: process.argv.includes('--keep'),
       packageBoundariesOnly: process.argv.includes('--package-boundaries-only'),
+      updateEntrypointSizes: process.argv.includes('--update-entrypoint-sizes'),
     });
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);

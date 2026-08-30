@@ -122,8 +122,8 @@ export const runEditorMigrations = async (
       stdin: {
         contents: `import * as editorModule from ${JSON.stringify(entryPath)};
 import { readFileSync, writeFileSync } from 'node:fs';
-import { createBaseEditor, migrateDocument } from '@platejs/core';
-import { isNominalPluginDescriptor } from '@platejs/core/internal';
+import { createEditor, migrateDocument, readEditorSelection } from 'platejs';
+import { isNominalPluginDescriptor } from 'platejs';
 ${JSON_EQUAL_SOURCE}
 
 const plugins = editorModule.EditorKit;
@@ -158,7 +158,7 @@ if (
 }
 const request = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const outputs = request.paths.map((path) => {
-  const editor = createBaseEditor({ plugins, schema, migrations, skipInitialization: true });
+  const editor = createEditor({ plugins, schema, migrations, skipInitialization: true });
   const sourceText = readFileSync(path, 'utf8');
   const source = JSON.parse(sourceText);
   const input = Array.isArray(source) ? { children: source } : source;
@@ -175,7 +175,7 @@ const outputs = request.paths.map((path) => {
   const output = {
     document: editor.read.value(),
     schema: current,
-    ...(hasSelection ? { selection: editor.read.selection() } : {}),
+    ...(hasSelection ? { selection: readEditorSelection(editor) } : {}),
   };
   const outputText = JSON.stringify(output, null, 2) + '\\n';
 

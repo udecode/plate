@@ -67,10 +67,10 @@ docs:
 将套件添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...BasicMarksKit,
@@ -95,7 +95,7 @@ const editor = createPlateEditor({
 ## 手动使用
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加工具栏按钮

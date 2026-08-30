@@ -8,31 +8,31 @@ const require = createRequire(import.meta.url);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const {
   createBunTestArgs,
-} = require('../../packages/plate-scripts/bun-test-args.cjs');
+} = require('../../tooling/scripts/bun-test-args.cjs');
 
 test('runs package tests from the root Bun config with a package selector', () => {
   assert.deepEqual(
     createBunTestArgs({
-      packageCwd: join(repoRoot, 'packages/date'),
+      packageCwd: join(repoRoot, 'packages/platejs'),
       projectCwd: repoRoot,
     }),
     [
       `--config=${join(repoRoot, 'bunfig.toml')}`,
       `--cwd=${repoRoot}`,
       'test',
-      'packages/date/',
+      'packages/platejs/',
     ]
   );
 });
 
 test('uses a package-boundary selector for prefix-sharing packages', () => {
   const listArgs = createBunTestArgs({
-    packageCwd: join(repoRoot, 'packages/list'),
+    packageCwd: join(repoRoot, 'packages/platejs'),
     projectCwd: repoRoot,
   });
 
-  assert.equal(listArgs.at(-1), 'packages/list/');
-  assert.notEqual(listArgs.at(-1), 'packages/list-classic/');
+  assert.equal(listArgs.at(-1), 'packages/platejs/');
+  assert.notEqual(listArgs.at(-1), 'packages/platejs-classic/');
 });
 
 test('scopes explicit test paths without rewriting option values', () => {
@@ -41,10 +41,10 @@ test('scopes explicit test paths without rewriting option values', () => {
       commandArgs: [
         '--rerun-each',
         '2',
-        'src/lib/dateValue.spec.ts',
+        'src/features/date/lib/dateValue.spec.ts',
         '--reporter=dots',
       ],
-      packageCwd: join(repoRoot, 'packages/date'),
+      packageCwd: join(repoRoot, 'packages/platejs'),
       projectCwd: repoRoot,
       watch: true,
     }),
@@ -55,7 +55,7 @@ test('scopes explicit test paths without rewriting option values', () => {
       '--watch',
       '--rerun-each',
       '2',
-      'packages/date/src/lib/dateValue.spec.ts',
+      'packages/platejs/src/features/date/lib/dateValue.spec.ts',
       '--reporter=dots',
     ]
   );

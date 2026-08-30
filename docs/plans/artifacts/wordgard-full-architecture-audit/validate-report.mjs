@@ -150,7 +150,7 @@ for (const requiredCall of [
   '`query`, `transformData`, and `transformFragment` hooks live directly under `parsers.html`',
   'prepareHtmlParserQuery',
   '**Decision:** Rejected by user.',
-  'Keep `@platejs/list-classic`',
+  'Keep `platejs`',
 ]) {
   if (!plan.includes(requiredCall))
     fail(`Missing target call: ${requiredCall}`);

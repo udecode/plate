@@ -1,13 +1,13 @@
 import { render } from '@testing-library/react';
 import type { Value } from 'platejs';
 import {
-  createPlateEditor,
+  createEditor,
   definePlatePlugin,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 import React from 'react';
 
-describe('usePlateEditor Plite runtime route', () => {
+describe('useCreateEditor Plate runtime route', () => {
   it('exposes inferred plugin tx groups from public app imports', () => {
     const value: Value = [
       { children: [{ text: 'runtime' }], type: 'paragraph' },
@@ -28,7 +28,7 @@ describe('usePlateEditor Plite runtime route', () => {
     };
 
     const Probe = () => {
-      const editor = usePlateEditor({
+      const editor = useCreateEditor({
         plugins: [TxPlugin],
         initialValue: value,
       });
@@ -69,7 +69,7 @@ describe('usePlateEditor Plite runtime route', () => {
       }),
     });
 
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: [TxPlugin],
       initialValue: value,
     });

@@ -414,7 +414,7 @@ The planning scan found:
 
 The identity-use owners span `ai`, `basic-nodes`, `basic-styles`, `callout`,
 `code-block`, `combobox`, `comment`, `core`, `csv`, `date`, `docx`, `emoji`,
-`find-replace`, `footnote`, `indent`, `layout`, `link`, `list`, `list-classic`,
+`find-replace`, `footnote`, `indent`, `layout`, `link`, `list`, `legacy-list-model`,
 `markdown`, `math`, `media`, `mention`, `selection`, `slash-command`,
 `suggestion`, `table`, `toggle`, `utils`, `apps/www`, and `content/docs`.
 

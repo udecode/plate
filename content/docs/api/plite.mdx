@@ -1,26 +1,35 @@
 ---
 title: Plite
-description: API reference for @platejs/plite.
+description: API reference for plitejs.
 ---
 
-`@platejs/plite` is the framework-free editor runtime. It owns document values,
+`plitejs` is the framework-free editor runtime. It owns document values,
 roots, canonical document changes, schema extensions, state fields, read APIs, transaction
 groups, and pure node/location helper namespaces.
 
 ## Installation
 
 ```bash
-npm install @platejs/plite
+npm install plitejs
 ```
 
-Use `@platejs/plite` in package code that should not import React or Plate core.
-Framework packages such as `@platejs/plite-react` and `@platejs/core/react`
-mount this runtime instead of replacing it.
+Use `plitejs` in package code that should not import React or Plate core.
+Framework entrypoints such as `plitejs/react` and `platejs/react` mount this
+runtime instead of replacing it.
+
+Optional entrypoints declare their own peers:
+
+| Import | Optional peer |
+| --- | --- |
+| `plitejs/diff` | `diff-match-patch-ts` |
+| `plitejs/page-layout` | `@chenglou/pretext` |
+| `plitejs/page-layout/react` | `@chenglou/pretext`, `@tanstack/react-virtual`, React, and React DOM |
+| `plitejs/react` | `@tanstack/react-virtual`, React, and React DOM |
 
 ## Quick Use
 
 ```ts title="Create a framework-free editor"
-import { createEditor } from "@platejs/plite";
+import { createEditor } from "plitejs";
 
 const editor = createEditor({
   initialValue: [{ children: [{ text: "Hello" }], type: "paragraph" }],
@@ -45,13 +54,13 @@ changes.
 | --------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Editor factory | `createEditor` | Creates a framework-free Plite editor. |
 | Runtime views | `createEditor`, `createEditorView` | Create one committed editor and optional root-scoped views. |
-| Editor types | `Editor`, `BaseEditor`, `Value`, `InitialValue`, `Selection`, `ValueOf` | Type editor instances, document values, and selection state. |
+| Editor types | `Editor`, `Editor`, `Value`, `InitialValue`, `Selection`, `ValueOf` | Type editor instances, document values, and selection state. |
 | Read API | `EditorStateView`, `EditorStateValueApi`, `EditorStateSelectionApi`, `EditorStateTextApi` | Read committed state inside `editor.read(...)`. |
 | Transaction API | `EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorTransactionNodesApi`, `EditorTransactionSelectionApi` | Mutate editor state inside `editor.update(...)`. |
 | Interfaces | `ElementApi`, `NodeApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi` | Typed helpers for Plite data structures. |
 | Anchors | `Anchor`, `editor.anchor`, `tx.anchor` | Keep paths, points, and ranges mapped through document changes. |
 | Extensions | `defineExtension`, `defineEditorSchema`, `defineStateField`, `property`, `schema` | Register schema facts, owner-local reads and updates, corrections, commands, read middleware, and lifecycle hooks. |
-| Dependency references | `EditorExtensionDependencyReference` | Describe one shallow extension identity with `name` and optional `enabled`; capability/provider compiler types stay under `@platejs/plite/internal`. |
+| Dependency references | `EditorExtensionDependencyReference` | Describe one shallow extension identity with `name` and optional `enabled`; finite capability/provider contracts use clean public types from `plitejs`. |
 | Value codecs | `defineValueCodec`, `valueCodecs`, `encodeEditorEffect`, `decodeEditorEffect` | Version persisted fields and keyed shared effects. |
 
 ## Editor Shape
@@ -116,7 +125,7 @@ import {
   defineStateField,
   property,
   schema,
-} from "@platejs/plite";
+} from "plitejs";
 ```
 
 ## Helper Namespaces
@@ -131,7 +140,7 @@ on Plite data outside an editor transaction.
 
 ## Related APIs
 
-- [Plate](/docs/api/plate) shows where `@platejs/plite` is re-exported from the
+- [Plate](/docs/api/plate) shows where `plitejs` is re-exported from the
   `platejs` umbrella package.
 - [Plate Editor](/docs/api/core/plate-editor) covers the React/Core editor layer
   built on top of this package.

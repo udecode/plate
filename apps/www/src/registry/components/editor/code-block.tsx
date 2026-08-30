@@ -1,15 +1,12 @@
 'use client';
 
-import { BaseCodeBlockPlugin, CodeBlockRules } from '@platejs/code-block';
+import { all, createLowlight } from 'lowlight';
+import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
+import { BaseCodeBlockPlugin, CodeBlockRules, NodeApi } from 'platejs';
 import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
   CodeLinePlugin,
-} from '@platejs/code-block/react';
-import { all, createLowlight } from 'lowlight';
-import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
-import { NodeApi } from 'platejs';
-import {
   PlateElement,
   PlateLeaf,
   type PlateElementProps,
@@ -31,9 +28,9 @@ import {
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import {
-  FloatingPopover as Popover,
-  FloatingPopoverContent as PopoverContent,
-  FloatingPopoverTrigger as PopoverTrigger,
+  FloatingPopover,
+  FloatingPopoverContent,
+  FloatingPopoverTrigger,
 } from '@/registry/components/editor/floating-popover';
 
 type CodeBlockElementProps = PlateElementProps<typeof CodeBlockPlugin> & {
@@ -220,8 +217,8 @@ function CodeBlockCombobox({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
+    <FloatingPopover open={open} onOpenChange={setOpen}>
+      <FloatingPopoverTrigger>
         <Button
           size="sm"
           variant="ghost"
@@ -232,8 +229,8 @@ function CodeBlockCombobox({
         >
           {getCodeBlockLanguageLabel(value) ?? 'Plain Text'}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
+      </FloatingPopoverTrigger>
+      <FloatingPopoverContent
         className="w-[200px] p-0"
         id="code-block-language-options"
         onFinalFocus={() => {
@@ -281,8 +278,8 @@ function CodeBlockCombobox({
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }
 

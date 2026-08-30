@@ -4,7 +4,7 @@ import {
   openExample,
   recordPliteBrowserRuntimeErrors,
   type PliteBrowserRawViewSelectionSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const SHARED_ROOT = 'synced-block:shared:body';
 const SEPARATE_ROOT = 'synced-block:separate:body';

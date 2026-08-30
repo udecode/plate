@@ -24,19 +24,9 @@ import {
   getPackageBuildArtifacts,
 } from './check-package-build-artifacts.mjs';
 
-const directPackageDirectories = [
-  'browser',
-  'cli',
-  'core',
-  'plite',
-  'plite-dom',
-  'plite-history',
-  'plite-hyperscript',
-  'plite-layout',
-  'plite-react',
-  'udecode/utils',
-  'yjs',
-];
+const directPackageDirectories = ['cli', 'platejs', 'plitejs', 'test'];
+const directBuildScript = 'tsdown --config tsdown.config.mts --log-level warn';
+const plateBuildScript = `${directBuildScript} && tsc --project tsconfig.build.json --pretty false && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist`;
 
 test('derives runtime and declaration artifacts from public exports', () => {
   assert.deepEqual(
@@ -124,7 +114,7 @@ test('rejects forbidden runtime packages through emitted local chunks', (t) => {
   );
   writeFileSync(
     path.join(packageRoot, 'dist/base.js'),
-    "export { react } from '@platejs/plite-react/internal';\n"
+    "export { react } from 'plitejs/react';\n"
   );
   writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export {};\n');
 
@@ -134,11 +124,11 @@ test('rejects forbidden runtime packages through emitted local chunks', (t) => {
         runtimeImportBoundaries: [
           {
             entry: 'dist/index.js',
-            forbiddenPackages: ['@platejs/plite-react'],
+            forbiddenPackages: ['plitejs/react'],
           },
         ],
       }),
-    /Runtime import boundary violation from dist\/index\.js: dist\/index\.js -> dist\/base\.js -> @platejs\/plite-react\/internal/u
+    /Runtime import boundary violation from dist\/index\.js: dist\/index\.js -> dist\/base\.js -> plitejs\/react/u
   );
 });
 
@@ -225,7 +215,7 @@ test('direct package builds enforce inferred runtime boundaries', async (t) => {
   );
   writeFileSync(
     path.join(packageRoot, 'dist/index.js'),
-    "import '@platejs/plite-react';\n"
+    "import 'plitejs/react';\n"
   );
   writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export {};\n');
   writeFileSync(path.join(packageRoot, 'dist/react/index.js'), 'export {};\n');
@@ -238,7 +228,7 @@ test('direct package builds enforce inferred runtime boundaries', async (t) => {
 
   await assert.rejects(
     () => config.hooks['build:done']({}),
-    /Runtime import boundary violation from dist\/index\.js: dist\/index\.js -> @platejs\/plite-react/u
+    /Runtime import boundary violation from dist\/index\.js: dist\/index\.js -> plitejs\/react/u
   );
 });
 
@@ -287,7 +277,7 @@ test('infers React-free root boundaries from split package exports', () => {
       {
         entry: 'dist/index.js',
         forbiddenPackages: [
-          '@platejs/plite-react',
+          'plitejs/react',
           'react',
           'react-compiler-runtime',
           'react-dom',
@@ -370,7 +360,7 @@ test('all root and React packages use a runtime-boundary-aware build owner', () 
 
     assert.equal(
       packageJson.scripts?.build,
-      'tsdown --config tsdown.config.mts --log-level warn'
+      packageJson.name === 'platejs' ? plateBuildScript : directBuildScript
     );
     assert.match(
       readFileSync(localConfigPath, 'utf-8'),
@@ -455,7 +445,10 @@ test('rejects declaration aliases with erased Readonly arguments', (t) => {
 });
 
 test('shared package config builds from the invoking package root', async () => {
-  const packageRoot = path.resolve(import.meta.dirname, '../../packages/media');
+  const packageRoot = path.resolve(
+    import.meta.dirname,
+    '../../packages/platejs'
+  );
   const repositoryRoot = path.resolve(import.meta.dirname, '../..');
   const previousInitCwd = process.env.INIT_CWD;
 
@@ -500,7 +493,7 @@ test('shared package config builds from the invoking package root', async () => 
   }
 });
 
-test('all Plite release packages use one direct tsdown build', async () => {
+test('all editor release packages use the direct runtime build owner', async () => {
   for (const packageDirectory of directPackageDirectories) {
     const packageRoot = path.resolve(
       import.meta.dirname,
@@ -533,7 +526,7 @@ test('all Plite release packages use one direct tsdown build', async () => {
 
     assert.equal(
       packageJson.scripts.build,
-      'tsdown --config tsdown.config.mts --log-level warn',
+      packageJson.name === 'platejs' ? plateBuildScript : directBuildScript,
       packageDirectory
     );
     assert.ok(

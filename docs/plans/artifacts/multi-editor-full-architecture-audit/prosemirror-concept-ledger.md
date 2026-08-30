@@ -219,9 +219,9 @@ list-item body must precede zero or more nested lists. Its compiled program only
 checks that each child belongs to one global set and that the total count is in
 one range (`packages/plite/src/core/slice-fit/compiled-slice-fitter.ts:282-309`,
 `488-555`; `packages/plite/src/core/editor-schema.ts:2188-2230`). The live
-classic-list declaration consequently accepts a nested list before the body,
+legacy-list-model declaration consequently accepts a nested list before the body,
 multiple bodies, and arbitrary interleaving
-(`packages/list-classic/src/lib/BaseListPlugin.ts:68-108`).
+(`packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:68-108`).
 
 Current public authoring shape:
 
@@ -447,7 +447,7 @@ Adoption:
 - Host packages: HTML/Markdown/clipboard parsers ask the same matcher/fitter;
   they do not carry a second grammar.
 - Plate core: schema lowering and HTML codec classification.
-- Plate packages: list-classic first, then table, list, code-block, layout,
+- Plate packages: legacy-list-model first, then table, list, code-block, layout,
   media, callout, and every remaining `schema.content.*` declaration.
 - Product/docs: schema examples and custom plugin authoring.
 
@@ -506,9 +506,9 @@ Current application shape:
 
 ```ts
 import { useMarkToolbarButtonState } from "@platejs/utils/react";
-import { useEditor } from "platejs/react";
+import { useCreateEditor } from "platejs/react";
 
-const editor = useEditor();
+const editor = useCreateEditor();
 const state = useMarkToolbarButtonState({
   clear: "superscript",
   nodeType: "subscript",
@@ -565,9 +565,9 @@ Proposed application shape:
 
 ```ts
 import { useMarkToolbarButtonState } from "@platejs/utils/react";
-import { useEditor } from "platejs/react";
+import { useCreateEditor } from "platejs/react";
 
-const editor = useEditor();
+const editor = useCreateEditor();
 const state = useMarkToolbarButtonState({
   nodeType: "subscript",
 });

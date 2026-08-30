@@ -1,20 +1,13 @@
 /** @jsx jsxt */
-import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
-import { BaseListPlugin } from '@platejs/list-classic';
-import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from 'platejs';
+import { jsxt } from '@platejs/test';
+import { BaseHorizontalRulePlugin } from 'platejs';
 
-import { createTestEditor } from '../../../../../../packages/markdown/src/lib/__tests__/createTestEditor';
-import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import type { DeserializeMdOptions } from '../../../../../../packages/markdown/src/lib/types';
+import { createTestEditor } from '../../../../../../packages/platejs/src/markdown/lib/__tests__/createTestEditor';
+import type { DeserializeMdOptions } from '../../../../../../packages/platejs/src/markdown/lib/types';
 
 jsxt;
 
 const editor = createTestEditor();
-const listEditor = createBaseEditor({
-  plugins: [BaseListPlugin, MarkdownPlugin],
-});
-
 const parseMarkdown = (
   input: string,
   currentEditor = editor,
@@ -302,79 +295,7 @@ Paragraph 2 line 1`,
     });
   });
 
-  describe('lists and tables', () => {
-    it.each([
-      {
-        input: '- List item 1\n- List item 2',
-        name: 'deserializes unordered lists',
-        output: (
-          <fragment>
-            <hul>
-              <hli>
-                <hlic>List item 1</hlic>
-              </hli>
-              <hli>
-                <hlic>List item 2</hlic>
-              </hli>
-            </hul>
-          </fragment>
-        ),
-      },
-      {
-        input: '1. List item 1\n2. List item 2',
-        name: 'deserializes ordered lists',
-        output: (
-          <fragment>
-            <hol>
-              <hli>
-                <hlic>List item 1</hlic>
-              </hli>
-              <hli>
-                <hlic>List item 2</hlic>
-              </hli>
-            </hol>
-          </fragment>
-        ),
-      },
-      {
-        input: '- List item 1\n  1. List item 1.1',
-        name: 'deserializes nested mixed lists',
-        output: (
-          <fragment>
-            <hul>
-              <hli>
-                <hlic>List item 1</hlic>
-                <hol>
-                  <hli>
-                    <hlic>List item 1.1</hlic>
-                  </hli>
-                </hol>
-              </hli>
-            </hul>
-          </fragment>
-        ),
-      },
-      {
-        input: 'foo\n\n*\n\nbar',
-        name: 'deserializes empty list items with list item content',
-        output: (
-          <fragment>
-            <hp>foo</hp>
-            <hul>
-              <hli>
-                <hlic>
-                  <htext />
-                </hlic>
-              </hli>
-            </hul>
-            <hp>bar</hp>
-          </fragment>
-        ),
-      },
-    ])('$name', ({ input, output }) => {
-      expect(parseMarkdown(input, listEditor as any)).toEqual(output);
-    });
-
+  describe('tables', () => {
     it('deserializes markdown tables', () => {
       const input = `
 | Left columns  | Right columns |

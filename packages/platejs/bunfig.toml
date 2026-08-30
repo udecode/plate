@@ -1,0 +1,6 @@
+[test]
+preload = [
+  "../../config/plite-source-aliases.ts",
+  "../../tooling/config/bunTestSetup.ts",
+]
+onlyFailures = true

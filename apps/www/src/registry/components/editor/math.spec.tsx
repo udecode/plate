@@ -31,12 +31,12 @@ const mockPlugin = (name: string) => ({
   configure: mock(() => ({ name })),
 });
 
-mock.module('@platejs/math/react', () => ({
+mock.module('platejs/math/react', () => ({
   EquationPlugin: mockPlugin('equation'),
   InlineEquationPlugin: mockPlugin('inlineEquation'),
 }));
 
-mock.module('@platejs/math', () => ({
+mock.module('platejs/math', () => ({
   MathRules: { markdown: mock(() => ({})) },
 }));
 
@@ -92,7 +92,7 @@ mock.module('@/components/ui/button', () => ({
   ),
 }));
 
-mock.module('./floating-popover', () => ({
+mock.module('@/registry/components/editor/floating-popover', () => ({
   FloatingPopover: ({
     children,
     onOpenChange,

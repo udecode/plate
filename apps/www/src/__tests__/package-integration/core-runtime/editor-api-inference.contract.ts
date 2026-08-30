@@ -11,6 +11,7 @@ type ExpectedEditorApiKeys =
   | 'csv'
   | 'cursorOverlay'
   | 'debug'
+  | 'details'
   | 'dom'
   | 'elementState'
   | 'file'
@@ -24,7 +25,6 @@ type ExpectedEditorApiKeys =
   | 'react'
   | 'suggestion'
   | 'table'
-  | 'toggle'
   | 'video';
 
 type _EveryInstalledApiIsDiscoverable = AssertNever<

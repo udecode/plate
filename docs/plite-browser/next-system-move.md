@@ -17,14 +17,16 @@ Plite program.
 
 ## Current State
 
-`@platejs/browser` already has the first tranche it needed:
+`@platejs/test` already has the first tranche it needed:
 
 - real workspace package under
-  [/Users/zbeyens/git/plate-2/packages/browser](/Users/zbeyens/git/plate-2/packages/browser)
+  [/Users/zbeyens/git/plate-2/packages/test](/Users/zbeyens/git/plate-2/packages/test)
 - public split:
-  - `@platejs/browser/core`
-  - `@platejs/browser/browser`
-  - `@platejs/browser/playwright`
+  - `@platejs/test`
+  - `@platejs/test/react`
+  - `@platejs/test/proof`
+  - `@platejs/test/browser`
+  - `@platejs/test/playwright`
 - live root commands:
   - `pnpm plite:browser:test`
   - `pnpm plite:browser:test:proof`
@@ -145,7 +147,7 @@ This is the wrong move today.
 Why:
 
 - there is one real public backend today:
-  `@platejs/browser/playwright`
+  `@platejs/test/playwright`
 - building a generic `EditorDriver` now would be abstraction cosplay
 - the package already has the right split:
   - lane-neutral nouns in `core` and `browser`

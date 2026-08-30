@@ -1,9 +1,9 @@
-import type { EditorExtension } from '../../../packages/plite/src/index';
+import type { EditorExtension } from '../../../packages/plitejs/src/index';
 import {
   createEditor,
   defineExtension,
-} from '../../../packages/plite/src/index';
-import { getExtensionRegistry } from '../../../packages/plite/src/internal';
+} from '../../../packages/plitejs/src/index';
+import { getExtensionRegistry } from '../../../packages/plitejs/src/internal';
 import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 

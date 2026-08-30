@@ -33,16 +33,16 @@ docs:
 ### 安装
 
 ```bash
-npm install @platejs/tag
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
 
 ```tsx
-import { MultiSelectPlugin } from '@platejs/tag/react';
-import { createPlateEditor } from 'platejs/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     MultiSelectPlugin, // 具有标签功能的多选编辑器
@@ -53,11 +53,11 @@ const editor = createPlateEditor({
 ### 配置插件
 
 ```tsx
-import { MultiSelectPlugin } from '@platejs/tag/react';
-import { createPlateEditor } from 'platejs/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
+import { createEditor } from 'platejs/react';
 import { TagElement } from '@/components/editor/tag';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     MultiSelectPlugin.configure({ component: TagElement }),
@@ -75,7 +75,7 @@ const editor = createPlateEditor({
 ### 基本示例
 
 ```tsx
-import { MultiSelectPlugin } from '@platejs/tag/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
 import { TagElement } from '@/components/editor/tag';
 import {
   SelectEditor,
@@ -184,7 +184,7 @@ export default function MySelectEditor() {
 ### TagElement
 
 ```ts
-import type { TagElement } from '@platejs/tag';
+import type { TagElement } from 'platejs/tag';
 ```
 
 `TagElement` 从 `BaseTagPlugin` 派生，并且需要字符串 `value`。
@@ -192,5 +192,5 @@ import type { TagElement } from '@platejs/tag';
 ### TagItem
 
 ```ts
-import type { TagItem } from '@platejs/tag';
+import type { TagItem } from 'platejs/tag';
 ```

@@ -52,7 +52,7 @@ Strict batch, sorted by value:
 4. `autoformat`: [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `6`
 5. `callout`: [BaseCalloutPlugin.ts](packages/callout/src/lib/BaseCalloutPlugin.ts) — score `6`
 6. `table`: [withNormalizeTable.ts](packages/table/src/lib/withNormalizeTable.ts) — score `6`
-7. `list-classic`: [withNormalizeList.ts](packages/list-classic/src/lib/withNormalizeList.ts) — score `6`
+7. `legacy-list-model`: [withNormalizeList.ts](packages/platejs/src/features/list/src/lib/withNormalizeList.ts) — score `6`
 8. `core`: [deserializeHtmlNode.ts](packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.ts) — score `6`
 
 ## Threshold Counts
@@ -69,7 +69,7 @@ Strict batch, sorted by value:
 
 1. `core` — package score `35`, top files `getSelectedDomFragment.tsx:8; resolvePlugin.ts:8; resolvePlugins.ts:7; deserializeHtmlNode.ts:6; pipeNormalizeInitialValue.ts:6`
 2. `markdown` — package score `27`, top files `splitIncompleteMdx.ts:6; deserializeInlineMd.ts:6; mdast.ts:5; convertNodesSerialize.ts:5; customMdxDeserialize.ts:5`
-3. `list-classic` — package score `26`, top files `withNormalizeList.ts:6; withInsertFragmentList.ts:5; withList.ts:5; insertTodoListItem.ts:5; unwrapList.ts:5`
+3. `legacy-list-model` — package score `26`, top files `withNormalizeList.ts:6; withInsertFragmentList.ts:5; withList.ts:5; insertTodoListItem.ts:5; unwrapList.ts:5`
 4. `table` — package score `26`, top files `withNormalizeTable.ts:6; withApplyTable.ts:5; getSelectedCellsBorders.ts:5; setBorderSize.ts:5; moveSelectionFromCell.ts:5`
 5. `docx-io` — package score `25`, top files `importDocx.ts:5; html-to-docx.ts:5; font-table.ts:5; content-types.ts:5; settings.ts:5`
 6. `slate` — package score `24`, top files `node-entry.ts:5; legacy-editor.ts:5; editor-type.ts:5; deleteText.ts:5; mergeNodes.ts:4`
@@ -86,7 +86,7 @@ Strict batch, sorted by value:
 4. `autoformat` — [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `6`, coverage `37.0%`, uncovered `46`
 5. `callout` — [BaseCalloutPlugin.ts](packages/callout/src/lib/BaseCalloutPlugin.ts) — score `6`, coverage `0.0%`, uncovered `20`
 6. `table` — [withNormalizeTable.ts](packages/table/src/lib/withNormalizeTable.ts) — score `6`, coverage `92.7%`, uncovered `8`
-7. `list-classic` — [withNormalizeList.ts](packages/list-classic/src/lib/withNormalizeList.ts) — score `6`, coverage `92.5%`, uncovered `7`
+7. `legacy-list-model` — [withNormalizeList.ts](packages/platejs/src/features/list/src/lib/withNormalizeList.ts) — score `6`, coverage `92.5%`, uncovered `7`
 8. `core` — [deserializeHtmlNode.ts](packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.ts) — score `6`, coverage `94.4%`, uncovered `4`
 9. `markdown` — [splitIncompleteMdx.ts](packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts) — score `6`, coverage `95.7%`, uncovered `3`
 10. `markdown` — [deserializeInlineMd.ts](packages/markdown/src/lib/deserializer/utils/deserializeInlineMd.ts) — score `6`, coverage `93.3%`, uncovered `2`

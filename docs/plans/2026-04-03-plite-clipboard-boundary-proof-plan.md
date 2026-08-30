@@ -235,7 +235,7 @@ Acceptance:
 - Implement through private helpers only. Do not export generic low-level node ops in this slice.
 - Audit known downstream `insertFragment` override consumers as compatibility pressure only:
   - table
-  - list-classic
+  - legacy-list-model
   - code-block
   - suggestion
     The proof does not need parity here, but it must not ignore them.

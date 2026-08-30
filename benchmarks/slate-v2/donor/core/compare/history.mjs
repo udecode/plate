@@ -35,21 +35,12 @@ let SlateInternal = {};
 let SlateHistory;
 
 if (isPlite) {
-  Slate = await import('@platejs/plite');
-  SlateInternal = await import('@platejs/plite/internal');
-  SlateHistory = await import('@platejs/plite-history');
+  Slate = await import('platejs');
+  SlateInternal = await import('@platejs/test');
+  SlateHistory = await import('platejs/history');
 } else {
-  try {
-    Slate = await import('slate');
-    SlateHistory = await import('slate-history');
-  } catch {
-    Slate = await import('@platejs/slate');
-    SlateHistory = await import('@platejs/slate-history');
-  }
-
-  try {
-    SlateInternal = await import('@platejs/slate/internal');
-  } catch {}
+  Slate = await import('slate');
+  SlateHistory = await import('slate-history');
 }
 
 const { createEditor } = Slate;

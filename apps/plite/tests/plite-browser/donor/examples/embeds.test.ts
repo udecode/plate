@@ -6,7 +6,7 @@ import {
   recordPliteBrowserRuntimeErrors,
   resetPliteReactRenderProfiler,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test.describe('embeds example', () => {
   const pliteEditor = 'div[data-plite-editor="true"]';
