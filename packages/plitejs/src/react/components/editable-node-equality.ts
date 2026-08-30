@@ -67,6 +67,7 @@ export const sameDescendantBinding = (
   left: {
     childNodeKeys: readonly NodeKey[];
     directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
+    emptyTextParentRenderKey: string | null;
     isInline: boolean;
     isVoid: boolean;
     node: Descendant | null;
@@ -76,6 +77,7 @@ export const sameDescendantBinding = (
   right: {
     childNodeKeys: readonly NodeKey[];
     directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
+    emptyTextParentRenderKey: string | null;
     isInline: boolean;
     isVoid: boolean;
     node: Descendant | null;
@@ -85,6 +87,7 @@ export const sameDescendantBinding = (
 ) =>
   left != null &&
   left.renderRevision === right.renderRevision &&
+  left.emptyTextParentRenderKey === right.emptyTextParentRenderKey &&
   left.isInline === right.isInline &&
   left.isVoid === right.isVoid &&
   samePath(left.path, right.path) &&

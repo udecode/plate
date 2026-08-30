@@ -128,12 +128,11 @@ export const DetailsPlugin = toPlatePlugin(BaseDetailsPlugin, {
       }
 
       const block = state.nodes.block({ at: selection });
-      const childIndex = block?.[1].at(-1);
 
       if (
         input.direction === 'backward' &&
         block &&
-        childIndex === 1 &&
+        PathApi.equals(block[1], details[1].concat(1)) &&
         state.points.isStart(selection.anchor, block[1])
       ) {
         const point = state.points.end(details[1].concat(0));

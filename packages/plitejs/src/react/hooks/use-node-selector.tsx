@@ -9,6 +9,7 @@ import {
   TextApi,
 } from '../..';
 import { NodeKeyContext } from '../context';
+import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
 import { readNodeByKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorContext } from './use-editor-context';
@@ -42,7 +43,30 @@ type PliteRuntimeSelectorUpdatePolicy =
   | 'skip-synced-text-render';
 
 type InternalEditorRuntimeSelectorOptions = EditorRuntimeSelectorOptions & {
+  observeEmptyTextParentStructure?: boolean;
   updatePolicy?: PliteRuntimeSelectorUpdatePolicy;
+};
+
+const shouldUpdateEmptyTextForParentStructure = (
+  editor: ReactRuntimeEditor,
+  nodeKey: NodeKey,
+  change: EditorCommit
+) => {
+  if (!change.changed.hasAny('structure')) {
+    return false;
+  }
+
+  const { node, path } = readNodeByKey(editor, nodeKey);
+
+  if (!path || !TextApi.isText(node) || node.text !== '') {
+    return false;
+  }
+
+  const parentNodeKey = editorGetNodeKey(editor, path.slice(0, -1));
+
+  return Boolean(
+    parentNodeKey && change.changed.hasNodeKey(parentNodeKey, 'node')
+  );
 };
 
 const shouldUpdateRuntimeNode = (
@@ -50,7 +74,8 @@ const shouldUpdateRuntimeNode = (
   nodeKey: NodeKey | null,
   change?: EditorCommit,
   updatePolicy: PliteRuntimeSelectorUpdatePolicy = 'model-truth',
-  includeRootOrderChanges = false
+  includeRootOrderChanges = false,
+  observeEmptyTextParentStructure = false
 ) => {
   if (
     updatePolicy === 'skip-synced-text-render' &&
@@ -67,9 +92,16 @@ const shouldUpdateRuntimeNode = (
     return true;
   }
 
-  return (
+  if (
     change.changed.hasNodeKey(nodeKey, 'node') ||
     change.changed.hasNodeKey(nodeKey, 'path')
+  ) {
+    return true;
+  }
+
+  return (
+    observeEmptyTextParentStructure &&
+    shouldUpdateEmptyTextForParentStructure(editor, nodeKey, change)
   );
 };
 
@@ -124,6 +156,7 @@ function useRuntimeNodeSelector<T>(
     deferred = false,
     includeRootOrderChanges = false,
     nodeKey: nodeKeyProp,
+    observeEmptyTextParentStructure = false,
     updatePolicy = 'model-truth',
   }: InternalEditorRuntimeSelectorOptions = {}
 ): T {
@@ -150,9 +183,16 @@ function useRuntimeNodeSelector<T>(
         nodeKey,
         change,
         updatePolicy,
-        includeRootOrderChanges
+        includeRootOrderChanges,
+        observeEmptyTextParentStructure
       ),
-    [editor, includeRootOrderChanges, nodeKey, updatePolicy]
+    [
+      editor,
+      includeRootOrderChanges,
+      nodeKey,
+      observeEmptyTextParentStructure,
+      updatePolicy,
+    ]
   );
 
   return useEditorSelector(nodeSelector, {
@@ -188,6 +228,7 @@ export function useMountedNodeRenderSelector<T>(
 ): T {
   return useRuntimeNodeSelector(selector, equalityFn, {
     ...options,
+    observeEmptyTextParentStructure: true,
     updatePolicy: 'skip-synced-text-render',
   });
 }

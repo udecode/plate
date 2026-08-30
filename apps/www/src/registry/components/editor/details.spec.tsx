@@ -89,7 +89,9 @@ describe('Details registry components', () => {
     fireEvent.click(view.getByRole('button', { name: 'Expand details' }));
     expect(setOpen).toHaveBeenCalledWith('details-key', true);
 
-    const boundaryOptions = contentBoundary.mock.calls[0][0];
+    const boundaryOptions = contentBoundary.mock.calls[0][0] as {
+      onMaterialize: () => void;
+    };
 
     boundaryOptions.onMaterialize();
     expect(setOpen).toHaveBeenLastCalledWith('details-key', true);

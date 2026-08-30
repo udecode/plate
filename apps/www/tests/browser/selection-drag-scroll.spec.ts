@@ -249,7 +249,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
       );
 
       expect(positiveSamples.length).toBeGreaterThan(0);
-      expect(positiveSamples.at(-1).anchorTop).toBeLessThan(
+      expect(positiveSamples.at(-1)!.anchorTop).toBeLessThan(
         positiveSamples[0].anchorTop
       );
       await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
@@ -385,7 +385,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
       );
 
       expect(negativeSamples.length).toBeGreaterThan(0);
-      expect(negativeSamples.at(-1).anchorTop).toBeGreaterThan(
+      expect(negativeSamples.at(-1)!.anchorTop).toBeGreaterThan(
         negativeSamples[0].anchorTop
       );
       expect(upwardNative.textLength).toBeGreaterThan(100);

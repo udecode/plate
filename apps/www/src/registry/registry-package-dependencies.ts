@@ -15,6 +15,8 @@ export const EDITOR_AI_PACKAGE_ENTRYPOINTS = [
   'platejs/cursor/react',
   'platejs/date',
   'platejs/date/react',
+  'platejs/details',
+  'platejs/details/react',
   'platejs/dnd/react',
   'platejs/docx',
   'platejs/emoji',
@@ -42,8 +44,6 @@ export const EDITOR_AI_PACKAGE_ENTRYPOINTS = [
   'platejs/table/react',
   'platejs/toc',
   'platejs/toc/react',
-  'platejs/details',
-  'platejs/details/react',
 ] as const;
 
 export const EDITOR_AI_OPTIONAL_PEER_NAMES = [

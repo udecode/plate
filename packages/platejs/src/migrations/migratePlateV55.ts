@@ -101,7 +101,7 @@ export const migratePlateV55: DocumentMigration = ({ document, editor }) => {
 
     const indent = rawIndent === undefined ? 0 : Math.trunc(rawIndent);
 
-    return element.listType === undefined ? indent : indent - 1;
+    return element.listType === undefined || indent <= 0 ? indent : indent - 1;
   };
   const consumeLegacyEnclosureDepth = (
     input: Descendant,

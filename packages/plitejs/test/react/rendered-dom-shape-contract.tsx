@@ -26,6 +26,17 @@ const inlineLinkSchema = defineEditorSchema(
   }
 );
 
+const inlineVoidSchema = defineEditorSchema(
+  'schema:rendered-dom-shape-inline-void',
+  {
+    elements: { mention: { void: 'inline' } },
+    id: 'rendered-dom-shape-inline-void',
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  }
+);
+
 const getFirstElement = (container: HTMLElement) => {
   const element = container.querySelector('[data-plite-node="element"]');
 
@@ -340,6 +351,61 @@ describe('rendered DOM shape contract', () => {
     expect(inline).toBeTruthy();
     expect(getZeroWidthLineBreaks(block)).toHaveLength(0);
     expect(getZeroWidthLineBreaks(inline as HTMLElement)).toHaveLength(0);
+  });
+
+  test('inserting an inline void moves the empty-block line break after the inline', async () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: '' }],
+        },
+      ],
+    });
+
+    editor.install(inlineVoidSchema);
+
+    const rendered = render(
+      <Plite editor={editor}>
+        <Editable
+          id="rendered-dom-shape-inline-void"
+          renderLeaf={({ attributes, children }) => (
+            <span {...attributes}>{children}</span>
+          )}
+          renderVoid={() => <span>@</span>}
+        />
+      </Plite>
+    );
+
+    expect(
+      getZeroWidthLineBreaks(getFirstElement(rendered.container))
+    ).toHaveLength(1);
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.nodes.insert(
+          {
+            type: 'mention',
+            children: [{ text: '' }],
+          } as never,
+          { at: [0, 1] }
+        );
+      });
+    });
+
+    expect(
+      getZeroWidthLineBreaks(getFirstElement(rendered.container))
+    ).toHaveLength(1);
+    expect(
+      getTextByPath(rendered.container, '0,0').querySelector(
+        '[data-plite-zero-width="z"]'
+      )
+    ).toBeTruthy();
+    expect(
+      getTextByPath(rendered.container, '0,2').querySelector(
+        '[data-plite-zero-width="n"] > br'
+      )
+    ).toBeTruthy();
   });
 
   test('empty blocks still render one line-break placeholder', () => {

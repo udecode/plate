@@ -1,4 +1,10 @@
-import type { Descendant, NodeKey, Path, Text as PliteTextNode } from '../..';
+import {
+  type Descendant,
+  type NodeKey,
+  NodeApi,
+  type Path,
+  type Text as PliteTextNode,
+} from '../..';
 import type { AnyEditor as EditorType } from '../editable/runtime-editor-api';
 import {
   getNodeKey as editorGetNodeKey,
@@ -7,6 +13,7 @@ import {
   isInline as editorIsInline,
   isVoid as editorIsVoid,
 } from '../editable/runtime-editor-api';
+import { readRuntimeNode } from '../editable/runtime-live-state';
 import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
@@ -17,6 +24,7 @@ const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
 export type EditableDescendantBinding = {
   childNodeKeys: readonly NodeKey[];
   directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
+  emptyTextParentRenderKey: string | null;
   isInline: boolean;
   isVoid: boolean;
   node: Descendant | null;
@@ -26,6 +34,30 @@ export type EditableDescendantBinding = {
 
 export const isEditableTextNode = (value: Descendant): value is PliteTextNode =>
   typeof (value as PliteTextNode).text === 'string';
+
+const readEmptyTextParentRenderKey = (
+  editor: EditorType,
+  node: Descendant,
+  path: Path
+) => {
+  if (!isEditableTextNode(node) || node.text !== '') {
+    return null;
+  }
+
+  const parent = readRuntimeNode(editor, path.slice(0, -1));
+
+  if (!parent || editorIsEditor(parent) || !NodeApi.isElement(parent)) {
+    return null;
+  }
+
+  return [
+    parent.children.length,
+    path.at(-1),
+    NodeApi.string(parent),
+    editorIsInline(editor, parent),
+    editorIsVoid(editor, parent),
+  ].join(':');
+};
 
 export const readEditableDescendantBinding = ({
   editor,
@@ -46,6 +78,7 @@ export const readEditableDescendantBinding = ({
     return {
       childNodeKeys: EMPTY_RUNTIME_IDS,
       directTextChildNodes: EMPTY_DIRECT_TEXT_CHILD_NODES,
+      emptyTextParentRenderKey: null,
       isInline: false,
       isVoid: false,
       node: null,
@@ -85,6 +118,11 @@ export const readEditableDescendantBinding = ({
           isEditableTextNode(child) ? child : null
         )
       : EMPTY_DIRECT_TEXT_CHILD_NODES,
+    emptyTextParentRenderKey: readEmptyTextParentRenderKey(
+      editor,
+      descendant,
+      path
+    ),
     isInline: isElement && editorIsInline(editor, descendant),
     isVoid: isElement && editorIsVoid(editor, descendant),
     node: descendant,

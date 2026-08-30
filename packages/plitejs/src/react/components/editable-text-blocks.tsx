@@ -618,26 +618,6 @@ const EditableRenderedVoid = <
   );
 };
 
-const getNearestEditableBlockText = (editor: Editor, path: Path) => {
-  for (let depth = path.length - 1; depth >= 0; depth -= 1) {
-    const ancestorPath = path.slice(0, depth) as Path;
-    const ancestor =
-      ancestorPath.length === 0
-        ? editor
-        : (readRuntimeNode(editor, ancestorPath) as Ancestor | undefined);
-
-    if (!ancestor || !('children' in ancestor)) {
-      continue;
-    }
-
-    if (editorIsEditor(ancestor) || !editorIsInline(editor, ancestor)) {
-      return NodeApi.string(ancestor);
-    }
-  }
-
-  return '';
-};
-
 const resolveTextZeroWidth = ({
   editor,
   node,
@@ -664,11 +644,18 @@ const resolveTextZeroWidth = ({
     return { isLineBreak: true };
   }
 
-  if (getNearestEditableBlockText(editor, path) !== '') {
-    return { isLineBreak: false };
+  if (
+    parent &&
+    !editorIsEditor(parent) &&
+    NodeApi.isElement(parent) &&
+    !editorIsInline(editor, parent) &&
+    path.at(-1) === parent.children.length - 1 &&
+    NodeApi.string(parent) === ''
+  ) {
+    return { isLineBreak: true };
   }
 
-  return { isLineBreak: true };
+  return { isLineBreak: false };
 };
 
 export type EditableDecoration<T = unknown> = PliteRangeDecoration<T>;

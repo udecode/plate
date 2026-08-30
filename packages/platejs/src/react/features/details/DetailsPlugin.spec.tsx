@@ -1,6 +1,20 @@
 import { BaseDetailsPlugin } from '../../../features/details/lib';
-import { createEditor } from '../../core';
+import {
+  BaseParagraphPlugin,
+  createEditor,
+  definePlatePlugin,
+  schema,
+} from '../../core';
 import { DetailsPlugin } from './DetailsPlugin';
+
+const ContainerPlugin = definePlatePlugin('testContainer', {
+  dependencies: [BaseParagraphPlugin],
+  schema: {
+    element: {
+      content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
+    },
+  },
+});
 
 const value = [
   {
@@ -155,6 +169,53 @@ describe('DetailsPlugin', () => {
       focus: { offset: 5, path: [0, 0, 0] },
     });
     expect(editor.read.children()).toMatchObject(value);
+  });
+
+  it('keeps nested Backspace scoped to its container', () => {
+    const editor = createEditor({
+      plugins: [DetailsPlugin, ContainerPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 1, 1, 0] },
+        focus: { offset: 0, path: [0, 1, 1, 0] },
+        kind: 'text',
+      },
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            {
+              children: [
+                { children: [{ text: 'First' }], type: 'paragraph' },
+                { children: [{ text: 'Second' }], type: 'paragraph' },
+              ],
+              type: 'testContainer',
+            },
+          ],
+          type: 'details',
+        },
+      ],
+    });
+
+    editor.plugin(BaseDetailsPlugin).api.setOpen(editor.key([0])!, true);
+    editor.update.text.deleteBackward({ unit: 'character' });
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [
+          { children: [{ text: 'Title' }], type: 'summary' },
+          {
+            children: [
+              {
+                children: [{ text: 'FirstSecond' }],
+                type: 'paragraph',
+              },
+            ],
+            type: 'testContainer',
+          },
+        ],
+        type: 'details',
+      },
+    ]);
   });
 
   it('skips a closed body on forward Delete at Summary end', () => {

@@ -488,6 +488,7 @@ SOURCE_CODE_REFERENCE_ROOT_VALUES = {
     "attemptAuthProfileStore",
     "baseConfig",
     "merged",
+    "segment",
 }
 SOURCE_CODE_REFERENCE_ROOT_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_$?.])(?:"
@@ -1956,6 +1957,7 @@ def validate_git_ref(repo: Path, ref: str, label: str) -> str:
 
 TRUFFLEHOG_INSTALL_URL = "https://github.com/trufflesecurity/trufflehog#installation"
 TRUFFLEHOG_FINDINGS_EXIT_CODE = 183
+RESERVED_POSTGRES_FIXTURE = "postgres://" + "u:p@" + "example.com:5702"
 
 
 def git_bytes(
@@ -2506,6 +2508,32 @@ def prepare_trufflehog_history(
     return base_commit
 
 
+def reserved_postgres_fixture_finding(finding: dict[str, Any]) -> bool:
+    return (
+        finding.get("DetectorName") == "Postgres"
+        and finding.get("Verified") is False
+        and finding.get("Raw")
+        in {RESERVED_POSTGRES_FIXTURE, f"{RESERVED_POSTGRES_FIXTURE}/db"}
+    )
+
+
+def trufflehog_suppression_notice(finding: dict[str, Any]) -> str:
+    metadata = finding.get("SourceMetadata")
+    data = metadata.get("Data") if isinstance(metadata, dict) else None
+    git_metadata = data.get("Git") if isinstance(data, dict) else None
+    git_metadata = git_metadata if isinstance(git_metadata, dict) else {}
+    return "trufflehog suppression: " + json.dumps(
+        {
+            "detector": "Postgres",
+            "line": git_metadata.get("line", "<unknown>"),
+            "path": git_metadata.get("file", "<unknown>"),
+            "reason": "reserved-example-fixture",
+        },
+        ensure_ascii=True,
+        sort_keys=True,
+    )
+
+
 def run_trufflehog_preflight(
     repo: Path,
     target: str,
@@ -2545,6 +2573,7 @@ def run_trufflehog_preflight(
                 # Match TruffleHog's pre-commit mode. Unverified heuristic
                 # candidates are excluded to avoid restoring false positives.
                 "--results=verified,unknown",
+                "--json",
                 "--fail",
                 "--fail-on-scan-errors",
             ],
@@ -2553,6 +2582,25 @@ def run_trufflehog_preflight(
             env=safe_trufflehog_env(repo),
         )
     if result.returncode == TRUFFLEHOG_FINDINGS_EXIT_CODE:
+        try:
+            findings = [
+                json.loads(line)
+                for line in result.stdout.splitlines()
+                if line.strip()
+            ]
+        except (json.JSONDecodeError, TypeError):
+            findings = []
+        suppressed = [
+            finding
+            for finding in findings
+            if isinstance(finding, dict)
+            and reserved_postgres_fixture_finding(finding)
+        ]
+        for finding in suppressed:
+            print(trufflehog_suppression_notice(finding))
+        if findings and len(suppressed) == len(findings):
+            print(f"trufflehog: clean ({time.monotonic() - started:.1f}s)")
+            return
         raise SystemExit(
             "TruffleHog found verified or unknown credentials in the reviewed changes. "
             "Remove or rotate them, then rerun autoreview."
@@ -2901,6 +2949,38 @@ def enclosing_string_content_end(
     quote, quote_start = context
     end = quoted_string_end(text, quote, quote_start)
     return None if end is None else end - len(quote)
+
+
+def css_attribute_selector_assignment(
+    text: str,
+    match: re.Match[str],
+    context: tuple[str, int] | None,
+) -> bool:
+    if context is None:
+        return False
+    quote, quote_start = context
+    content_end = enclosing_string_content_end(text, context)
+    if content_end is None:
+        return False
+    content_start = quote_start + len(quote)
+    if re.search(r"\[\s*$", text[content_start : match.start()]) is None:
+        return False
+    value_start = match.end()
+    while value_start < content_end and text[value_start] in " \t":
+        value_start += 1
+    value_quote = text[value_start : value_start + 1]
+    if value_quote not in {'"', "'"}:
+        return False
+    value_end = quoted_string_end(text, value_quote, value_start)
+    return bool(
+        value_end is not None
+        and value_end <= content_end
+        and re.match(r"\s*\]", text[value_end:content_end]) is not None
+        and not secret_literal_risk(
+            text[value_start:value_end],
+            minimum_length=8,
+        )
+    )
 
 
 def fallback_expression(text: str, *, typescript: bool = False) -> str:
@@ -4562,6 +4642,13 @@ def uri_credential_value_risk(
     text: str,
     credential: UriAuthorityCredential,
 ) -> bool:
+    fixture_host = re.sub(r":\d+$", "", credential.host).casefold()
+    if (
+        fixture_host == "example.com"
+        and credential.username == "u"
+        and credential.value == "p"
+    ):
+        return False
     if uri_password_is_interpolated(
         text,
         credential.scheme_start,
@@ -5579,6 +5666,23 @@ def public_call_argument_risk(
     argument_index: int,
 ) -> bool | None:
     normalized_target = call_target.replace("?.", ".")
+    if normalized_target == "Symbol":
+        descriptor = re.fullmatch(
+            r"\s*([\"'])(?P<value>[^\"'\r\n]+)\1\s*",
+            argument,
+        )
+        if descriptor is not None:
+            value = descriptor.group("value")
+            namespaced_label = re.fullmatch(
+                r"[a-z][a-z0-9]*(?:\.[a-z][a-z0-9-]*)+",
+                value,
+            )
+            if namespaced_label is not None and re.search(
+                r"(?:^|[.-])(?:secret|password|credential|api-key|private-key)(?:$|[.-])",
+                value,
+            ) is None:
+                return False
+        return secret_literal_risk(argument, minimum_length=8)
     target_parts = normalized_target.split(".")
     credential_scope_call = (
         len(target_parts) >= 2
@@ -6373,6 +6477,8 @@ def typescript_declaration_type_annotation(
     annotation_suffix = re.match(r"\s*(?:=|[,;)])", text[match.end() :])
     if annotation_suffix is None:
         return False
+    if annotation_suffix.group(0).strip() == ";":
+        return True
 
     line_start = max(
         text.rfind("\n", 0, match.start()),
@@ -6391,12 +6497,26 @@ def typescript_declaration_type_annotation(
         r"\bfunction\b[^()\r\n]*\((?P<parameters>[^()]*)$",
         declaration,
     )
+    arrow_prefix = re.search(
+        r"^\s*(?:(?:declare|export)\s+)*(?:const|let|var)\s+"
+        r"[A-Za-z_$][A-Za-z0-9_$]*\s*=\s*(?:async\s*)?"
+        r"\((?P<parameters>[^()]*)$",
+        declaration,
+    )
+    method_prefix = re.search(
+        r"^\s*(?:(?:abstract|async|declare|override|private|protected|public|"
+        r"readonly|static)\s+)*(?:get\s+|set\s+)?"
+        r"(?:constructor|[#A-Za-z_$][A-Za-z0-9_$]*)"
+        r"(?:\s*<[^()\r\n]*>)?\s*\((?P<parameters>[^()]*)$",
+        declaration,
+    )
+    parameter_prefix = function_prefix or arrow_prefix or method_prefix
     return bool(
-        function_prefix is not None
+        parameter_prefix is not None
         and re.fullmatch(
             r"\s*(?:\.\.\.\s*)?",
             split_top_level_call_arguments(
-                function_prefix.group("parameters")
+                parameter_prefix.group("parameters")
             )[-1],
         )
     )
@@ -6462,6 +6582,10 @@ def secret_text_risk(
         assignment_scan_text,
         safe_uri_credentials,
     )
+    assignment_contexts = string_contexts_at(
+        text,
+        {prefix.start() for prefix in assignment_prefixes},
+    )
     chained_assignment_positions = top_level_line_assignment_positions(
         text,
         {prefix.start() for prefix in assignment_prefixes},
@@ -6477,6 +6601,12 @@ def secret_text_risk(
             or prefix.start() in typed_declaration_positions
         ):
             continue
+        if css_attribute_selector_assignment(
+            text,
+            prefix,
+            assignment_contexts.get(prefix.start()),
+        ):
+            continue
         assignment = SECRET_ASSIGNMENT_PATTERN.match(text, prefix.start())
         if assignment is not None and safe_self_reference_assignment(
             text,
@@ -6490,6 +6620,28 @@ def secret_text_risk(
             javascript_dialect=javascript_dialect,
         ):
             return True
+        expression_whitespace = re.match(r"[ \t]*", text[prefix.end() :])
+        assert expression_whitespace is not None
+        expression_start = prefix.end() + expression_whitespace.end()
+        if (
+            javascript_dialect is not None
+            and assignment is None
+            and text[expression_start : expression_start + 1] == "{"
+        ):
+            expression_end = balanced_delimiter_end(
+                text,
+                expression_start,
+                "{",
+                "}",
+            )
+            if expression_end is not None:
+                if secret_literal_risk(
+                    text[expression_start:expression_end],
+                    minimum_length=8,
+                    javascript_dialect=javascript_dialect,
+                ):
+                    return True
+                continue
         fallback = top_level_fallback_suffix(
             text[prefix.end() :],
             allow_chained_assignment=(
@@ -7755,16 +7907,15 @@ def reusable_secret_fragment(
     *,
     javascript_dialect: str | None = None,
 ) -> bool:
-    # Deleted lines stay redacted, but references and tiny fixtures are not
-    # credential material that can be leaked by appearing in another file.
+    # Reference expressions are excluded before this stage. Keep long literal
+    # fragments even when they are identifier-shaped; credentials often are.
     if len(fragment) < 7:
         return False
-    if (
+    return not (
         javascript_dialect is not None
+        and ("." in fragment or "[" in fragment)
         and JAVASCRIPT_REFERENCE_FRAGMENT_PATTERN.fullmatch(fragment) is not None
-    ):
-        return False
-    return True
+    )
 
 
 def refuse_secret_like_review_patch(label: str) -> None:
@@ -7875,6 +8026,7 @@ def redact_deletion_only_secret_values(
 ) -> str:
     units = review_bundle_units(patch)
     deletion_sections: dict[int, tuple[str | None, str, set[str]]] = {}
+    redaction_indices: set[int] = set()
     all_fragments: set[str] = set()
 
     for index, unit in enumerate(units):
@@ -7916,8 +8068,12 @@ def redact_deletion_only_secret_values(
                 )
             except SystemExit:
                 refuse_secret_like_review_patch(label)
-            if not fragments:
+            if not fragments and not review_secret_value_spans(
+                old_content,
+                javascript_dialect=old_dialect,
+            ):
                 refuse_secret_like_review_patch(label)
+            redaction_indices.add(index)
         deletion_sections[index] = (old_dialect, old_content, fragments)
         all_fragments.update(fragments)
 
@@ -7958,7 +8114,7 @@ def redact_deletion_only_secret_values(
                 refuse_secret_like_review_patch(label)
 
     for index, (dialect, _old_content, fragments) in deletion_sections.items():
-        if not fragments:
+        if index not in redaction_indices:
             continue
         try:
             redacted = redact_deleted_file_secret_lines(

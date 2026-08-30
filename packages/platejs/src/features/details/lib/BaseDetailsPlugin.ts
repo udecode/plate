@@ -11,7 +11,7 @@ import {
   PLUGINS,
   RangeApi,
   schema,
-  TextApi,
+  SelectionApi,
 } from '../../../core';
 
 export type BaseDetailsPluginState = {
@@ -139,13 +139,14 @@ export const BaseDetailsPlugin = defineBasePlugin(PLUGINS.details, {
         const detailsEntry = editor.read.nodes.get(key);
         const selection = editor.read.selection();
 
-        if (
-          detailsEntry &&
-          ElementApi.isElementType(detailsEntry[0], type) &&
-          RangeApi.isRange(selection)
-        ) {
+        if (detailsEntry && ElementApi.isElementType(detailsEntry[0], type)) {
           const detailsPath = detailsEntry[1];
-          const isInBody = [selection.anchor.path, selection.focus.path].some(
+          const selectedPaths = SelectionApi.isNode(selection)
+            ? selection.paths
+            : RangeApi.isRange(selection)
+              ? [selection.anchor.path, selection.focus.path]
+              : [];
+          const isInBody = selectedPaths.some(
             (path) =>
               PathApi.isDescendant(path, detailsPath) &&
               path[detailsPath.length] !== 0
@@ -310,7 +311,10 @@ export const BaseDetailsPlugin = defineBasePlugin(PLUGINS.details, {
 
       const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
       const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema.type;
-      const firstIsTextBlock = first[0].children.every(TextApi.isText);
+      const firstIsTextBlock = editor.read.schema.isElementTypeInGroup(
+        first[0].type,
+        'textBlock'
+      );
       let paths = blocks.map(([, path]) => path);
 
       if (firstIsTextBlock) {

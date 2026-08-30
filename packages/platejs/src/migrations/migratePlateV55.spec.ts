@@ -1088,6 +1088,63 @@ describe('migratePlateV55 profile', () => {
     ]);
   });
 
+  it('does not enclose an unindented peer after a zero-indent list Toggle', () => {
+    const { editor, migrations } = createMigrationEditor(54);
+    const result = migrateDocument(
+      {
+        children: [
+          {
+            children: [{ text: 'Title' }],
+            indent: 0,
+            listType: 'bulleted',
+            type: 'toggle',
+          },
+          { children: [{ text: 'After' }], type: 'paragraph' },
+        ],
+      },
+      { editor, migrations }
+    ).document;
+
+    expect(result.children).toMatchObject([
+      {
+        children: [{ children: [{ text: 'Title' }], type: 'summary' }],
+        indent: 0,
+        listType: 'bulleted',
+        type: 'details',
+      },
+      { children: [{ text: 'After' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('normalizes nested zero indentation before final schema validation', () => {
+    const { editor, migrations } = createMigrationEditor(54);
+    const result = migrateDocument(
+      {
+        children: [
+          { children: [{ text: 'Outer' }], type: 'toggle' },
+          {
+            children: [
+              { children: [{ text: 'Nested' }], type: 'summary' },
+              {
+                children: [{ text: 'Body' }],
+                indent: 0,
+                type: 'paragraph',
+              },
+            ],
+            indent: 1,
+            type: 'details',
+          },
+        ],
+      },
+      { editor, migrations }
+    ).document;
+
+    expect(() => editor.read.schema.assertDocument(result)).not.toThrow();
+    expect(result.children[0].children[1]?.children[1]).not.toHaveProperty(
+      'indent'
+    );
+  });
+
   it('converts Toggles in named roots and fails closed on unsafe input', () => {
     const { editor, migrations } = createMigrationEditor(54);
     const converted = migrateDocument(

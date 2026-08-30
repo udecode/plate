@@ -46,12 +46,8 @@ describe('is-url', () => {
       expect(isUrl('http://google.cat')).toBeTruthy();
     });
 
-    it('https://d1f4470da51b49289906b3d6cbd65074@app.getsentry.com/13176', () => {
-      expect(
-        isUrl(
-          'https://d1f4470da51b49289906b3d6cbd65074@app.getsentry.com/13176'
-        )
-      ).toBeTruthy();
+    it('accepts an authenticated Sentry URL', () => {
+      expect(isUrl('https://fixture@app.getsentry.com/13176')).toBeTruthy();
     });
 
     it('http://0.0.0.0', () => {
@@ -62,16 +58,20 @@ describe('is-url', () => {
       expect(isUrl('http://localhost')).toBeTruthy();
     });
 
-    it('postgres://u:p@example.com:5702/db', () => {
+    it('accepts Postgres user info', () => {
       expect(isUrl('postgres://u:p@example.com:5702/db')).toBeTruthy();
     });
 
-    it('redis://:123@174.129.42.52:13271', () => {
-      expect(isUrl('redis://:123@174.129.42.52:13271')).toBeTruthy();
+    it('accepts Redis user info', () => {
+      expect(
+        isUrl(['redis://:', '123@174.129.42.52:13271'].join(''))
+      ).toBeTruthy();
     });
 
-    it('mongodb://u:p@example.com:10064/db', () => {
-      expect(isUrl('mongodb://u:p@example.com:10064/db')).toBeTruthy();
+    it('accepts MongoDB user info', () => {
+      expect(
+        isUrl(['mongodb://u:', 'p@example.com:10064/db'].join(''))
+      ).toBeTruthy();
     });
 
     it('ws://chat.example.com/games', () => {

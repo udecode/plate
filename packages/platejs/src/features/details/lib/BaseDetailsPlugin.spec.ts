@@ -1,10 +1,24 @@
-import { BaseParagraphPlugin, createEditor, SelectionApi } from '../../../core';
+import {
+  BaseParagraphPlugin,
+  createEditor,
+  defineBasePlugin,
+  schema,
+  SelectionApi,
+} from '../../../core';
 import {
   BaseDetailsPlugin,
   BaseDetailsSummaryPlugin,
 } from './BaseDetailsPlugin';
 
 const plugins = [BaseParagraphPlugin, BaseDetailsPlugin] as const;
+const BaseInlinePlugin = defineBasePlugin('testInline', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+  },
+});
 
 describe('BaseDetailsPlugin', () => {
   it('publishes semantic Details and Summary schema identities', () => {
@@ -124,6 +138,29 @@ describe('BaseDetailsPlugin', () => {
     });
   });
 
+  it('moves a body node selection to Summary before closing', () => {
+    const editor = createEditor({
+      plugins,
+      selection: SelectionApi.nodes([[0, 1]]),
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ],
+    });
+
+    editor.plugin(BaseDetailsPlugin).api.setOpen(editor.key([0])!, false);
+
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { offset: 5, path: [0, 0, 0] },
+      focus: { offset: 5, path: [0, 0, 0] },
+    });
+  });
+
   it('inserts valid editable Details and selects Summary', () => {
     const editor = createEditor({
       plugins,
@@ -173,6 +210,46 @@ describe('BaseDetailsPlugin', () => {
         children: [
           { children: [{ text: 'Title' }], type: 'summary' },
           { children: [{ text: 'Body' }], type: 'paragraph' },
+        ],
+        type: 'details',
+      },
+    ]);
+  });
+
+  it('wraps a text block with inline content as Summary', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseInlinePlugin],
+      selection: SelectionApi.nodes([[0]]),
+      initialValue: [
+        {
+          children: [
+            {
+              children: [{ text: 'Title' }],
+              type: 'testInline',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    editor.plugin(BaseDetailsPlugin).update.wrap();
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [
+          {
+            children: [
+              { text: '' },
+              {
+                children: [{ text: 'Title' }],
+                type: 'testInline',
+              },
+              { text: '' },
+            ],
+            type: 'summary',
+          },
+          { children: [{ text: '' }], type: 'paragraph' },
         ],
         type: 'details',
       },
