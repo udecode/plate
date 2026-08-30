@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import test from 'node:test';
 
-import { validateWorkspacePackageManifests } from './check-workspace-package-manifests.mjs';
+import {
+  validateChangesetPackageDeclarations,
+  validateWorkspacePackageManifests,
+} from './check-workspace-package-manifests.mjs';
 
 const root = '/repo';
 const workspacePackage = (directory, packageJson) => ({
@@ -94,4 +97,25 @@ test('rejects unabsorbed workspace runtime dependencies from platejs', () => {
 
   assert.equal(offenders.length, 1);
   assert.match(offenders[0], /absorbed Plate code must not remain/);
+});
+
+test('rejects changesets for packages missing from the workspace', () => {
+  const offenders = validateChangesetPackageDeclarations(
+    [
+      {
+        changesetPath: path.join(root, '.changeset', 'valid.md'),
+        packageName: 'plitejs',
+      },
+      {
+        changesetPath: path.join(root, '.changeset', 'stale.md'),
+        packageName: '@platejs/plite-react',
+      },
+    ],
+    [platejs(), plitejs, browser()],
+    root
+  );
+
+  assert.deepEqual(offenders, [
+    '.changeset/stale.md: changeset targets missing workspace package @platejs/plite-react',
+  ]);
 });

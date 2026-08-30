@@ -1,5 +1,5 @@
 ---
-'@platejs/test': minor
+'@platejs/test': patch
 ---
 
 Require `platejs@>=54.0.0-beta.1` as a peer dependency.

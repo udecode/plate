@@ -43,6 +43,10 @@ const verifyChangesetsWorkflowPath = new URL(
   '../../.github/workflows/verify-changesets.yml',
   import.meta.url
 );
+const changesetAutoReleaseWorkflowPath = new URL(
+  '../../.github/workflows/changeset-auto-release.yml',
+  import.meta.url
+);
 const packageJsonPath = new URL('../../package.json', import.meta.url);
 const releasePackagesPath = new URL('release-packages.mjs', import.meta.url);
 const releaseBranchPrsPath = new URL('release-branch-prs.mjs', import.meta.url);
@@ -889,7 +893,7 @@ test('verify changesets workflow allows minor on main and keeps release branches
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /-\s*main/);
   assert.match(workflow, /-\s*next/);
-  assert.match(workflow, /-\s*'release\/\*\*'/);
+  assert.match(workflow, /-\s*["']release\/\*\*["']/);
   assert.match(workflow, /merge_group:/);
   assert.match(workflow, /headRef === 'next' && baseRef === 'main'/);
   assert.match(workflow, /headRef === 'main' && baseRef === 'next'/);
@@ -900,10 +904,22 @@ test('verify changesets workflow allows minor on main and keeps release branches
   );
   assert.doesNotMatch(workflow, /github\.event\.repository\.default_branch/);
   assert.doesNotMatch(workflow, /Checkout workflow helper/);
+  assert.match(workflow, /Checkout changesets/);
+  assert.match(
+    workflow,
+    /ref: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/
+  );
+  assert.match(workflow, /sparse-checkout: \.changeset/);
   assert.doesNotMatch(workflow, /pathToFileURL/);
   assert.match(workflow, /function isChangesetFile/);
   assert.match(workflow, /function getChangesetReleaseTypes/);
   assert.match(workflow, /function getChangesetReleaseType/);
+  assert.doesNotMatch(workflow, /getAddedPatchContent/);
+  assert.match(
+    workflow,
+    /await readFile\(resolve\(process\.env\.GITHUB_WORKSPACE/
+  );
+  assert.match(workflow, /'\[\^'\]\+'/);
   assert.ok(preJsonGuardIndex > 0);
   assert.ok(promoteExemptionIndex > preJsonGuardIndex);
   assert.match(workflow, /Missing changeset/);
@@ -934,6 +950,19 @@ test('verify changesets workflow allows minor on main and keeps release branches
   assert.match(workflow, /baseRef\.startsWith\('release\/'\)/);
   assert.match(workflow, /hasMinorChangeset \|\| hasMajorChangeset/);
   assert.match(workflow, /Only patch bumps are allowed on \$\{baseRef\}/);
+});
+
+test('changeset auto-release reads complete files from the pull request head', async () => {
+  const workflow = await readFile(changesetAutoReleaseWorkflowPath, 'utf-8');
+
+  assert.match(workflow, /github\.rest\.repos\.getContent/);
+  assert.match(workflow, /ref: pullRequest\.head\.sha/);
+  assert.match(workflow, /Buffer\.from\(data\.content, 'base64'\)/);
+  assert.match(workflow, /if \(isHeadCheckedOut\)/);
+  assert.match(workflow, /await readFile/);
+  assert.doesNotMatch(workflow, /Promise\.all/);
+  assert.match(workflow, /files: filesWithContents/);
+  assert.match(workflow, /getChangesetReleaseType\(filesWithContents\)/);
 });
 
 test('package scripts expose CI version and release commands only', async () => {

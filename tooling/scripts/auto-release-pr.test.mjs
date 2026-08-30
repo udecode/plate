@@ -146,7 +146,7 @@ test('validates changeset filenames and frontmatter entries', () => {
         filename: '.changeset/media-redos.md',
         patch: `@@ -0,0 +1,5 @@
 +---
-+"@platejs/test": patch
++'@platejs/test': patch
 +"platejs": none
 +---
 +
@@ -170,7 +170,7 @@ test('validates changeset filenames and frontmatter entries', () => {
     ]),
     [
       '.changeset/Media_Redos.md has an invalid filename. Use lowercase letters, digits, and hyphens.',
-      '.changeset/Media_Redos.md has invalid entry "\\"@platejs/test\\": feature". Expected \'"package-name": patch|minor|major|none\'.',
+      '.changeset/Media_Redos.md has invalid entry "\\"@platejs/test\\": feature". Expected a quoted package name and patch|minor|major|none.',
     ]
   );
 

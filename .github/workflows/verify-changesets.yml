@@ -24,14 +24,25 @@ jobs:
         if: github.event_name == 'merge_group'
         run: echo "Skipping merge_group; this policy runs on the source PR."
 
+      - name: 📥 Checkout changesets
+        if: github.event_name != 'merge_group'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: .changeset
+
       - name: 🛡️ Verify changeset policy
         if: github.event_name != 'merge_group'
         uses: actions/github-script@v7
         with:
           script: |
+            const { readFile } = await import('node:fs/promises');
+            const { resolve } = await import('node:path');
             const changesetFrontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
             const changesetReleaseTypePattern = /:\s*(major|minor|patch)\b/g;
             const changesetFilenamePattern = /^[a-z][a-z0-9-]*\.md$/;
+            const changesetContents = new Map();
 
             function isChangesetFile(file) {
               return (
@@ -42,16 +53,8 @@ jobs:
               );
             }
 
-            function getAddedPatchContent(patch = '') {
-              return patch
-                .split('\n')
-                .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
-                .map((line) => line.slice(1))
-                .join('\n');
-            }
-
             function getChangesetContent(file) {
-              return getAddedPatchContent(file.patch);
+              return changesetContents.get(file.filename) ?? '';
             }
 
             function parseChangesetReleaseTypes(content) {
@@ -105,7 +108,7 @@ jobs:
               }
 
               for (const entry of entries) {
-                if (!/^"[^"]+"\s*:\s*(major|minor|patch|none)$/.test(entry)) {
+                if (!/^(?:"[^"]+"|'[^']+')\s*:\s*(major|minor|patch|none)$/.test(entry)) {
                   errors.push(`${file.filename} has invalid changeset frontmatter: ${entry}`);
                 }
               }
@@ -165,6 +168,15 @@ jobs:
             const labels = new Set((pullRequest.labels ?? []).map((label) => label.name));
 
             const changesetFiles = files.filter(isChangesetFile);
+
+            await Promise.all(
+              changesetFiles.map(async (file) => {
+                changesetContents.set(
+                  file.filename,
+                  await readFile(resolve(process.env.GITHUB_WORKSPACE, file.filename), 'utf8')
+                );
+              })
+            );
 
             if (changesetFiles.length === 0) {
               const hasPackageChanges = files.some((file) => file.filename.startsWith('packages/'));
